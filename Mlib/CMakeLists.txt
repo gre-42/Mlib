@@ -1,0 +1,17 @@
+include(../CMakeCommands.cmake)
+
+set(mlib_excluded_files "")
+my_add_shared_library(Mlib "0" "" "${mlib_excluded_files}")
+include_directories(${Mlib_INCLUDE_DIR})
+
+add_subdirectory(Cv)
+add_subdirectory(Geometry)
+add_subdirectory(Images)
+add_subdirectory(Math)
+add_subdirectory(Physics)
+add_subdirectory(Scene_Graph)
+add_subdirectory(Sfm)
+if (glfw3_FOUND)
+    add_subdirectory(Render)
+    add_subdirectory(Scene)
+endif()

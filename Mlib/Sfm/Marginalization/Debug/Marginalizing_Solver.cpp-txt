@@ -1,0 +1,138 @@
+#include "Marginalizing_Solver.hpp"
+
+using namespace Mlib;
+
+static Array<size_t> index_complement(const Array<size_t>& a_compl, size_t length) {
+    assert(length >= a_compl.length());
+    Array<size_t> res{ArrayShape{length - a_compl.length()}};
+    std::set<size_t> s{a_compl.element_iterable().begin(), a_compl.element_iterable().end()};
+    size_t j = 0;
+    for(size_t i = 0; i < length; ++i) {
+        if (s.find(i) == s.end()) {
+            res(j++) = i;
+        }
+    }
+    assert(j == res.length());
+    return res;
+}
+
+static Array<size_t> strip_indices(
+    const Array<size_t>& ids_old,
+    const std::map<UUID, size_t>& uuids_new,
+    const std::map<size_t, UUID>& uuids_old)
+{
+    std::vector<size_t> ids_new;
+    ids_new.reserve(ids_old.length());
+    size_t j = 0;
+    for(size_t i : ids_old.element_iterable()) {
+        auto it = uuids_new.find(uuids_old.at(i));
+        if (it != uuids_new.end()) {
+            ids_new.push_back(it->second);
+        } else {
+            std::cerr << "stripping index " << uuids_old.at(i) << " " << j << " " << i << std::endl;
+            assert(false);
+        }
+        ++j;
+    }
+    return Array<size_t>(&*ids_new.begin(), &*ids_new.end());
+}
+
+MarginalizingSolver::MarginalizingSolver(float alpha, float beta)
+: lhs_ka_{ArrayShape{0, 0}},
+  rhs_ka_{ArrayShape{0}},
+  ids_ka_{ArrayShape{0}},
+  ids_a_{ArrayShape{0}},
+  x_{ArrayShape{0}},
+  shape_{0, 0},
+  alpha_(alpha),
+  beta_(beta)
+{}
+
+void MarginalizingSolver::update_indices(const std::map<UUID, size_t>& uuids_ka) {
+    {
+        RegridArray ra{ids_ka_, uuids_ka, uuids_ka_map_};
+        lhs_ka_.reassign(ra.regrid_2d(lhs_ka_));
+        rhs_ka_.reassign(ra.regrid_1d(rhs_ka_));
+        ids_ka_.reassign(ra.ids_col_);
+    }
+    {
+        RegridArray ra{ids_a_, uuids_ka, uuids_ka_map_};
+        ids_a_.reassign(ra.ids_col_);
+    }
+    uuids_ka_map_.clear();
+    for(const auto& v : uuids_ka) {
+        uuids_ka_map_.insert(std::make_pair(v.second, v.first));
+    }
+    shape_ = ArrayShape{uuids_ka.size(), uuids_ka.size()};
+}
+
+void MarginalizingSolver::update_indices2(const std::map<UUID, size_t>& uuids_ka) {
+    Array<size_t> ids_ka_new = strip_indices(ids_ka_, uuids_ka, uuids_ka_map_);
+    ids_a_.reassign(strip_indices(ids_a_, uuids_ka, uuids_ka_map_));
+
+    lhs_ka_.reassign(lhs_ka_.unblocked(ids_ka_, ids_ka_, shape_, 0).blocked(ids_ka_new, ids_ka_new));
+    rhs_ka_.reassign(rhs_ka_.unblocked(ids_ka_, shape_(1), 0).blocked(ids_ka_new));
+    ids_ka_.reassign(ids_ka_new);
+    uuids_ka_map_.clear();
+    for(const auto& v : uuids_ka) {
+        uuids_ka_map_.insert(std::make_pair(v.second, v.first));
+    }
+    shape_ = ArrayShape{uuids_ka.size(), uuids_ka.size()};
+}
+
+void MarginalizingSolver::recompute_hessian(const SparseArrayCcs<float>& J)
+{
+    ArrayShape s{J.shape(1), J.shape(1)};
+    assert(all(shape_ == s));
+    
+    Array<size_t> ids_k = index_complement(ids_a_, s(1));
+    {
+        lhs_ka_.reassign(lhs_ka_.unblocked(ids_ka_, ids_ka_, s, 0).blocked(ids_a_, ids_a_).unblocked(ids_a_, ids_a_, s, 0));
+        lhs_ka_ += dot2d(J.columns(ids_a_).vH(), J.columns(ids_k)).unblocked(ids_a_, ids_k, s, 0);
+        lhs_ka_ += dot2d(J.columns(ids_k).vH(), J.columns(ids_a_)).unblocked(ids_k, ids_a_, s, 0);
+        lhs_ka_ += dot2d(J.columns(ids_k).vH(), J.columns(ids_k)).unblocked(ids_k, ids_k, s, 0);
+    }
+    {
+        rhs_ka_.reassign(rhs_ka_.unblocked(ids_ka_, s(1), 0));
+    }
+}
+
+void MarginalizingSolver::marginalize(
+    const SparseArrayCcs<float>& J,
+    const Array<float>& residual,
+    const Array<float>& x0,
+    const Array<size_t>& ids_k,
+    const Array<size_t>& ids_a,
+    const Array<size_t>& ids_b,
+    const Array<size_t>& ids_ka)
+{
+    Array<float> lhs_ka_old = lhs_ka_;
+    Array<float> rhs_ka_old = rhs_ka_;
+
+    lhs_ka_.destroy();
+    rhs_ka_.destroy();
+    // Mlib::marginalize(lhs_ka_old, rhs_ka_old, ids_k, ids_a, ids_b, ids_ka, lhs_ka_, rhs_ka_, alpha_, beta_);
+    Mlib::marginalize_least_squares(J, residual, x0, ids_k, ids_a, ids_b, ids_ka, lhs_ka_, rhs_ka_, alpha_, beta_);
+
+    ids_ka_.reassign(ids_ka);
+    ids_a_.reassign(ids_a);
+}
+
+void MarginalizingSolver::update_x(
+    const SparseArrayCcs<float>& J,
+    const Array<float>& residual,
+    const Array<float>& x)
+{
+    marginalize(
+        J,
+        residual,
+        x,
+        arange<size_t>(x.length()),  // ids_k
+        arange<size_t>(0),           // ids_a_
+        arange<size_t>(0),           // ids_b
+        arange<size_t>(x.length())); // ids_ka
+}
+
+void MarginalizingSolver::solve() {
+    x_.reassign(solve_symm_1d(lhs_ka_, rhs_ka_, alpha_, beta_));
+}

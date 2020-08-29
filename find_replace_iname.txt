@@ -1,0 +1,1 @@
+.*((bashrc|profile|studyrc|Makefile).*|\.(sh|py|html|xhtml|css|ini|csv|rst|m|patch|txt|c|h|cpp|hpp|js|desktop|cmake)$)
