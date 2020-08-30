@@ -1,6 +1,7 @@
 #include "Renderable_Colored_Vertex_Array.hpp"
 #include "Renderable_Colored_Vertex_Array_Instance.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -24,6 +25,7 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
 }
 
 void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>& mvp, const FixedArray<float, 4, 4>& m, const FixedArray<float, 4, 4>& iv, const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const RenderPass& render_pass) {
+    LOG_FUNCTION("RenderableColoredVertexArrayInstance::render");
     if (render_pass.external.pass == ExternalRenderPass::DIRTMAP) {
         return;
     }
@@ -65,6 +67,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         FixedArray<float, 3> diffusivity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.diffusivity : fixed_zeros<float, 3>();
         FixedArray<float, 3> specularity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.specularity : fixed_zeros<float, 3>();
         bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
+        LOG_INFO("RenderableColoredVertexArrayInstance::render get_render_program");
         const ColoredRenderProgram& rp = rcva_->get_render_program(
             {
                 aggregate_mode: cva->material.aggregate_mode,
@@ -82,8 +85,11 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 specularity: OrderableFixedArray{specularity}},
             filtered_lights);
         const VertexArray& va = rcva_->get_vertex_array(cva.get());
+        LOG_INFO("RenderableColoredVertexArrayInstance::render glUseProgram");
         CHK(glUseProgram(rp.program));
+        LOG_INFO("RenderableColoredVertexArrayInstance::render mvp");
         CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, (const GLfloat*) mvp.flat_begin()));
+        LOG_INFO("RenderableColoredVertexArrayInstance::render textures");
         if (has_texture) {
             CHK(glUniform1i(rp.texture1_location, 0));
         }
@@ -102,6 +108,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             CHK(glUniform1i(rp.texture_dirtmap_location, 1 + filtered_lights.size()));
             CHK(glUniform1i(rp.texture_dirt_location, 2 + filtered_lights.size()));
         }
+        LOG_INFO("RenderableColoredVertexArrayInstance::render lights");
         if (any(diffusivity != 0.f) || any(specularity != 0.f)) {
             CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, (const GLfloat*) m.flat_begin()));
             // CHK(glUniform3fv(rp.light_position_location, 1, (const GLfloat*) t3_from_4x4(filtered_lights.front().first).flat_begin()));
@@ -115,14 +122,19 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         if (any(specularity != 0.f)) {
             CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
         }
+        LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");
         CHK(glBindVertexArray(va.vertex_array));
+        LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture");
         if (has_texture) {
+            LOG_INFO("RenderableColoredVertexArrayInstance::render get texture \"" + cva->material.texture + '"');
             GLuint texture = rcva_->rendering_resources_->get_texture(
                 cva->material.texture,
                 cva->material.blend_mode != BlendMode::OFF,
                 cva->material.mixed_texture,
                 cva->material.overlap_npixels);
+            LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture \"" + cva->material.texture + '"');
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
+            LOG_INFO("RenderableColoredVertexArrayInstance::render clamp texture \"" + cva->material.texture + '"');
             if (cva->material.clamp_mode_s == ClampMode::REPEAT) {
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
             } else {
@@ -135,6 +147,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             }
         }
         assert_true(!(has_lightmap_color && has_lightmap_depth));
+        LOG_INFO("RenderableColoredVertexArrayInstance::render bind light color textures");
         if (has_lightmap_color) {
             size_t i = 0;
             for(const auto& l : filtered_lights) {
@@ -153,6 +166,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 ++i;
             }
         }
+        LOG_INFO("RenderableColoredVertexArrayInstance::render bind light depth textures");
         if (has_lightmap_depth) {
             size_t i = 0;
             for(const auto& l : filtered_lights) {
@@ -169,6 +183,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 ++i;
             }
         }
+        LOG_INFO("RenderableColoredVertexArrayInstance::render bind dirtmap texture");
         if (has_dirtmap) {
             std::string mname = "dirtmap";
             const auto& light_vp = rcva_->rendering_resources_->get_vp(mname);
@@ -210,10 +225,12 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             default:
                 throw std::runtime_error("Unknown blend_mode");
         }
+        LOG_INFO("RenderableColoredVertexArrayInstance::render glDrawArrays");
         CHK(glDrawArrays(GL_TRIANGLES, 0, 3 * cva->triangles.size()));
         CHK(glDisable(GL_CULL_FACE));
         CHK(glDisable(GL_BLEND));
         CHK(glDepthMask(GL_TRUE));
+        LOG_INFO("RenderableColoredVertexArrayInstance::render glDrawArrays finished");
     }
 }
 
