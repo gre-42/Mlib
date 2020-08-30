@@ -106,6 +106,14 @@ void test_lines_to_rectangles() {
     assert_allclose(p11.to_array(), Array<float>{0.958579, -0.1});
 }
 
+FixedArray<float, 3> a2k(const FixedArray<float, 3>& angles) {
+    return inverse_rodrigues(tait_bryan_angles_2_matrix(angles));
+}
+
+FixedArray<float, 3> k2a(const FixedArray<float, 3>& k) {
+    return matrix_2_tait_bryan_angles(rodrigues(k));
+}
+
 void test_inverse_rodrigues() {
     {
         FixedArray<float, 3> k{1, 3, 1.2};
@@ -116,6 +124,14 @@ void test_inverse_rodrigues() {
     {
         FixedArray<float, 3> k{fixed_zeros<float, 3>()};
         assert_allclose(k.to_array(), inverse_rodrigues(rodrigues(k)).to_array());
+    }
+    {
+        FixedArray<float, 3> a{-3.13672, -3.92299e-05, -3.14133};
+        assert_allclose(
+            tait_bryan_angles_2_matrix(a).to_array(),
+            tait_bryan_angles_2_matrix(k2a(a2k(a))).to_array(),
+            1e-4);
+        assert_allclose(k2a(a2k(a)).to_array(), a.to_array(), 1e-4);
     }
 }
 
