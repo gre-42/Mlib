@@ -292,7 +292,7 @@ void LoadScene::operator()(
         "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
         "\\s*y_snappiness=([\\w+-.]+)$");
     const std::regex record_track_reg("^(?:\\r?\\n|\\s)*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
-    const std::regex playback_track_reg("^(?:\\r?\\n|\\s)*playback_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
+    const std::regex playback_track_reg("^(?:\\r?\\n|\\s)*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex check_points_reg("^(?:\\r?\\n|\\s)*check_points moving-node=([\\w+-.]+) beacon_node0=([\\w+-.]+) beacon_node1=([\\w+-.]+) player=([\\w+-.]+) nth=(\\d+) radius=([\\w+-.]+) track_filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex set_camera_cycle_reg("^(?:\\r?\\n|\\s)*set_camera_cycle name=(near|far)((?: [\\w+-.]+)+)$");
     const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
@@ -980,9 +980,10 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, playback_track_reg)) {
             auto playback_node = scene.get_node(match[1].str());
             auto playback = std::make_shared<RigidBodyPlayback>(
-                fpath(match[2].str()),
+                fpath(match[3].str()),
                 physics_engine.advance_times_,
-                ui_focus.focus);
+                ui_focus.focus,
+                safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
         } else if (std::regex_match(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
