@@ -42,6 +42,7 @@
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
@@ -95,6 +96,7 @@ void LoadScene::operator()(
     Players& players,
     Scene& scene,
     PhysicsEngine& physics_engine,
+    ButtonPress& button_press,
     std::vector<CameraKeyBinding>& camera_key_bindings,
     std::vector<AbsoluteMovableIdleBinding>& absolute_movable_idle_bindings,
     std::vector<AbsoluteMovableKeyBinding>& absolute_movable_key_bindings,
@@ -804,7 +806,8 @@ void LoadScene::operator()(
                 ui_focus,
                 ui_focus.n_submenus++,
                 next_scene_filename,
-                leave_render_loop);
+                leave_render_loop,
+                button_press);
             render_logics.append(nullptr, scene_selector_logic);
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
             substitutions.clear();
@@ -830,7 +833,8 @@ void LoadScene::operator()(
                 ui_focus,
                 ui_focus.n_submenus++,
                 substitutions,
-                leave_render_loop);
+                leave_render_loop,
+                button_press);
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (std::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
@@ -1042,6 +1046,7 @@ void LoadScene::operator()(
                 players,
                 scene,
                 physics_engine,
+                button_press,
                 camera_key_bindings,
                 absolute_movable_idle_bindings,
                 absolute_movable_key_bindings,

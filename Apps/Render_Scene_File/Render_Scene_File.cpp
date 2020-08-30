@@ -16,6 +16,7 @@
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Loop.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -126,6 +127,7 @@ int main(int argc, char** argv) {
             cameras: selected_cameras,
             focus: ui_focus.focus,
             physics_set_fps: &physics_set_fps};
+        ButtonPress button_press;
 
         while (!render2.window_should_close()) {
             leave_render_loop = false;
@@ -202,6 +204,7 @@ int main(int argc, char** argv) {
                 players,
                 scene,
                 physics_engine,
+                button_press,
                 key_bindings->camera_key_bindings_,
                 key_bindings->absolute_movable_idle_bindings_,
                 key_bindings->absolute_movable_key_bindings_,

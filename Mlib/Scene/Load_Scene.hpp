@@ -25,6 +25,7 @@ class ReadPixelsLogic;
 class DirtmapLogic;
 class SkyboxLogic;
 struct SelectedCameras;
+class ButtonPress;
 
 struct Macro {
     std::string filename;
@@ -42,6 +43,7 @@ public:
         Players& players,
         Scene& scene,
         PhysicsEngine& physics_engine,
+        ButtonPress& button_press,
         std::vector<CameraKeyBinding>& camera_key_bindings,
         std::vector<AbsoluteMovableIdleBinding>& absolute_movable_idle_bindings,
         std::vector<AbsoluteMovableKeyBinding>& absolute_movable_key_bindings,

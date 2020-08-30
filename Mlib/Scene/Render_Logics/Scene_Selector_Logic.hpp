@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/ListView.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <vector>
 
 namespace Mlib {
+
+class ButtonPress;
 
 class SceneSelectorLogic: public RenderLogic {
 public:
@@ -18,7 +19,8 @@ public:
         UiFocus& ui_focus,
         size_t submenu_id_,
         std::string& scene_filename,
-        bool& leave_render_loop);
+        bool& leave_render_loop,
+        ButtonPress& button_press);
     ~SceneSelectorLogic();
 
     virtual void initialize(GLFWwindow* window) override;
@@ -38,7 +40,7 @@ private:
     ListView<std::string> scene_selector_list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;
-    ButtonPress button_press_;
+    ButtonPress& button_press_;
     GLFWwindow* window_;
     std::string& scene_filename_;
     bool& leave_render_loop_;
