@@ -130,6 +130,7 @@ void Scene::render(
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPass external_render_pass) const
 {
+    LOG_FUNCTION("Scene::render");
     std::list<std::pair<FixedArray<float, 4, 4>, Light*>> lights;
     std::list<Blended> blended;
     if ((external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && !external_render_pass.black_node_name.empty()) {
@@ -141,7 +142,7 @@ void Scene::render(
         // |Dynamic  |x     |x      |     |     |x   |
         // |Static   |x     |x      |x    |x    |    |
         // |Aggregate|      |       |x    |x    |    |
-        LOG_FUNCTION("Scene::render lights");
+        LOG_INFO("Scene::render lights");
         {
             std::shared_lock lock{dynamic_mutex_};
             for(const auto& n : root_nodes_) {
