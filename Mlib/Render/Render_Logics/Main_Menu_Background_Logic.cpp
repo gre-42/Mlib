@@ -7,9 +7,11 @@ using namespace Mlib;
 MainMenuBackgroundLogic::MainMenuBackgroundLogic(
     RenderingResources& rendering_resources,
     const std::string& image_resource_name,
-    const Focus& focus)
+    const Focus& focus,
+    Focus target_focus)
 : FillWithTextureLogic{rendering_resources, image_resource_name},
-  focus_{focus}
+  focus_{focus},
+  target_focus_{target_focus}
 {}
 
 void MainMenuBackgroundLogic::initialize(GLFWwindow* window) {
@@ -24,7 +26,7 @@ void MainMenuBackgroundLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (focus_ == Focus::MENU) {
+    if (focus_ == target_focus_) {
         FillWithTextureLogic::render(width, height, render_config, scene_graph_config, render_results, frame_id);
     }
 }

@@ -9,10 +9,11 @@ using namespace Mlib;
 RigidBodyPlayback::RigidBodyPlayback(
     const std::string& filename,
     AdvanceTimes& advance_times,
-    const Focus& focus)
+    const Focus& focus,
+    float speed)
 : advance_times_{advance_times},
   focus_{focus},
-  track_reader_{filename}
+  track_reader_{filename, speed}
 {}
 
 void RigidBodyPlayback::advance_time(float dt) {

@@ -1,13 +1,14 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/ListView.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <memory>
 #include <vector>
 
 namespace Mlib {
+
+class ButtonPress;
 
 struct ReplacementParameter {
     std::string name;
@@ -25,7 +26,8 @@ public:
         UiFocus& ui_focus,
         size_t submenu_id,
         std::string& substitutions,
-        bool& leave_render_loop);
+        bool& leave_render_loop,
+        ButtonPress& button_press);
     ~ParameterSetterLogic();
 
     virtual void initialize(GLFWwindow* window) override;
@@ -47,7 +49,7 @@ private:
     size_t submenu_id_;
     std::string& substitutions_;
     bool& leave_render_loop_;
-    ButtonPress button_press_;
+    ButtonPress& button_press_;
     GLFWwindow* window_;
 };
 

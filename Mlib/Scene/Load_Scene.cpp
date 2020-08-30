@@ -42,6 +42,7 @@
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
@@ -95,6 +96,7 @@ void LoadScene::operator()(
     Players& players,
     Scene& scene,
     PhysicsEngine& physics_engine,
+    ButtonPress& button_press,
     std::vector<CameraKeyBinding>& camera_key_bindings,
     std::vector<AbsoluteMovableIdleBinding>& absolute_movable_idle_bindings,
     std::vector<AbsoluteMovableKeyBinding>& absolute_movable_key_bindings,
@@ -273,7 +275,7 @@ void LoadScene::operator()(
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
-    const std::regex scene_selector_background_reg("^(?:\\r?\\n|\\s)*scene_selector_background texture=([\\w-. \\(\\)/+-]+)$");
+    const std::regex ui_background_reg("^(?:\\r?\\n|\\s)*ui_background texture=([\\w-. \\(\\)/+-]+) target_focus=(menu|loading|countdown|scene)$");
     const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     const std::regex ortho_camera_reg("^(?:\\r?\\n|\\s)*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
@@ -282,18 +284,17 @@ void LoadScene::operator()(
     const std::regex keep_offset_reg("^(?:\\r?\\n|\\s)*keep-offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex yaw_pitch_look_at_nodes_reg("^(?:\\r?\\n|\\s)*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
     const std::regex follow_node_reg(
-        "^(?:\\r?\\n|\\s)*follow-node\\r?\\n"
+        "^(?:\\r?\\n|\\s)*follow_node\\r?\\n"
         "\\s*follower=([\\w+-.]+)\\r?\\n"
         "\\s*followed=([\\w+-.]+)\\r?\\n"
         "\\s*distance=([\\w+-.]+)\\r?\\n"
-        "\\s*attachment_position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*node_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*look_at_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*snappiness=([\\w+-.]+)\\r?\\n"
         "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
         "\\s*y_snappiness=([\\w+-.]+)$");
     const std::regex record_track_reg("^(?:\\r?\\n|\\s)*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
-    const std::regex playback_track_reg("^(?:\\r?\\n|\\s)*playback_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
+    const std::regex playback_track_reg("^(?:\\r?\\n|\\s)*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex check_points_reg("^(?:\\r?\\n|\\s)*check_points moving-node=([\\w+-.]+) beacon_node0=([\\w+-.]+) beacon_node1=([\\w+-.]+) player=([\\w+-.]+) nth=(\\d+) radius=([\\w+-.]+) track_filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex set_camera_cycle_reg("^(?:\\r?\\n|\\s)*set_camera_cycle name=(near|far)((?: [\\w+-.]+)+)$");
     const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
@@ -805,7 +806,8 @@ void LoadScene::operator()(
                 ui_focus,
                 ui_focus.n_submenus++,
                 next_scene_filename,
-                leave_render_loop);
+                leave_render_loop,
+                button_press);
             render_logics.append(nullptr, scene_selector_logic);
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
             substitutions.clear();
@@ -831,13 +833,15 @@ void LoadScene::operator()(
                 ui_focus,
                 ui_focus.n_submenus++,
                 substitutions,
-                leave_render_loop);
+                leave_render_loop,
+                button_press);
             render_logics.append(nullptr, parameter_setter_logic);
-        } else if (std::regex_match(line, match, scene_selector_background_reg)) {
+        } else if (std::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 rendering_resources,
                 fpath(match[1].str()),
-                ui_focus.focus);
+                ui_focus.focus,
+                focus_from_string(match[2].str()));
             render_logics.append(nullptr, bg);
         } else if (std::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
@@ -952,21 +956,18 @@ void LoadScene::operator()(
                 physics_engine.advance_times_,
                 followed_node,
                 followed_node->get_absolute_movable(),
-                distance,
-                FixedArray<float, 2>{
+                distance,                          // attachment_distance
+                FixedArray<float, 3>{              // node_displacement
                     safe_stof(match[4].str()),
-                    safe_stof(match[5].str())},
-                FixedArray<float, 3>{
-                    safe_stof(match[6].str()),
+                    safe_stof(match[5].str()),
+                    safe_stof(match[6].str())},
+                FixedArray<float, 3>{              // look_at_displacement
                     safe_stof(match[7].str()),
-                    safe_stof(match[8].str())},
-                FixedArray<float, 3>{
-                    safe_stof(match[9].str()),
-                    safe_stof(match[10].str()),
-                    safe_stof(match[11].str())},
-                safe_stof(match[12].str()),
-                safe_stof(match[13].str()),
-                safe_stof(match[14].str()));
+                    safe_stof(match[8].str()),
+                    safe_stof(match[9].str())},
+                safe_stof(match[10].str()),        // snappiness
+                safe_stof(match[11].str()),        // y_adaptivity
+                safe_stof(match[12].str()));       // y_snappiness
             linker.link_absolute_movable(*follower_node, follower);
         } else if (std::regex_match(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
@@ -983,9 +984,10 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, playback_track_reg)) {
             auto playback_node = scene.get_node(match[1].str());
             auto playback = std::make_shared<RigidBodyPlayback>(
-                fpath(match[2].str()),
+                fpath(match[3].str()),
                 physics_engine.advance_times_,
-                ui_focus.focus);
+                ui_focus.focus,
+                safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
         } else if (std::regex_match(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
@@ -1044,6 +1046,7 @@ void LoadScene::operator()(
                 players,
                 scene,
                 physics_engine,
+                button_press,
                 camera_key_bindings,
                 absolute_movable_idle_bindings,
                 absolute_movable_key_bindings,
@@ -1092,6 +1095,6 @@ void LoadScene::operator()(
     }
 
     if (!ifs.eof() && ifs.fail()) {
-        throw std::runtime_error("Error reading from file: " + script_filename);
+        throw std::runtime_error("Error reading from file: \"" + script_filename + '"');
     }
 }

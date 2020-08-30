@@ -1,6 +1,7 @@
 #include "Scene_Selector_Logic.hpp"
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -16,7 +17,8 @@ SceneSelectorLogic::SceneSelectorLogic(
     UiFocus& ui_focus,
     size_t submenu_id,
     std::string& scene_filename,
-    bool& leave_render_loop)
+    bool& leave_render_loop,
+    ButtonPress& button_press)
 : scene_selector_list_view_{
   scene_files,
   ttf_filename,
@@ -26,6 +28,7 @@ SceneSelectorLogic::SceneSelectorLogic(
   [](const std::string& s){return fs::path{s}.stem().string();}},
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
+  button_press_{button_press},
   window_{nullptr},
   scene_filename_{scene_filename},
   leave_render_loop_{leave_render_loop}
@@ -37,6 +40,7 @@ SceneSelectorLogic::~SceneSelectorLogic()
 void SceneSelectorLogic::initialize(GLFWwindow* window) {
     scene_selector_list_view_.initialize(window);
     window_ = window;
+    scene_filename_ = scene_selector_list_view_.selected_element();
 }
 
 void SceneSelectorLogic::render(

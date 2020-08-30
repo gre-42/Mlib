@@ -16,7 +16,6 @@ FollowMovable::FollowMovable(
     SceneNode* followed_node,
     AbsoluteMovable* followed,
     float attachment_distance,
-    const FixedArray<float, 2>& attachment_position,
     const FixedArray<float, 3>& node_displacement,
     const FixedArray<float, 3>& look_at_displacement,
     float snappiness,
@@ -26,7 +25,7 @@ FollowMovable::FollowMovable(
   followed_node_{followed_node},
   followed_{followed},
   attachment_distance_{attachment_distance},
-  attachment_position_{attachment_position},
+  attachment_position_{fixed_nans<float, 2>()},
   node_displacement_{node_displacement},
   look_at_displacement_{look_at_displacement},
   snappiness_{snappiness},
@@ -44,6 +43,9 @@ void FollowMovable::advance_time(float dt) {
     if (followed_ == nullptr) {
         return;
     }
+    if (any(isnan(attachment_position_))) {
+        throw std::runtime_error("Attachment position is NAN, set_absolute_model_matrix not called?");
+    }
     auto dmat = followed_->get_new_absolute_model_matrix();
     FixedArray<float, 3> dpos3 = t3_from_4x4(dmat);
     FixedArray<float, 2> dpos2{dpos3(0), dpos3(2)};
@@ -58,7 +60,7 @@ void FollowMovable::advance_time(float dt) {
     FixedArray<float, 2> dx2{dp(0), dp(2)};
     float dy = dp(1);
     float dx2_len2 = sum(squared(dx2));
-    if ((dx2_len2 > 1e-12) && (dot0d(residual2, dx2) < 0)) {
+    if ((dx2_len2 > 1e-3) && (dot0d(residual2, dx2) < 0)) {
         y_adapt_ = y_adaptivity_ * exponential_smoother_(kalman_filter_(std::clamp(-dy / std::sqrt(dx2_len2), 0.f, 0.5f)));
     }
     position_(1) += y_adapt_;
@@ -69,6 +71,8 @@ void FollowMovable::advance_time(float dt) {
 void FollowMovable::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) {
     position_ = t3_from_4x4(absolute_model_matrix);
     rotation_ = R3_from_4x4(absolute_model_matrix);
+    attachment_position_(0) = position_(0) - node_displacement_(0);
+    attachment_position_(1) = position_(2) - node_displacement_(2);
 }
 
 FixedArray<float, 4, 4> FollowMovable::get_new_absolute_model_matrix() const {
