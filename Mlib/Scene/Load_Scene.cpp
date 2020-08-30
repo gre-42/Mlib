@@ -286,7 +286,6 @@ void LoadScene::operator()(
         "\\s*follower=([\\w+-.]+)\\r?\\n"
         "\\s*followed=([\\w+-.]+)\\r?\\n"
         "\\s*distance=([\\w+-.]+)\\r?\\n"
-        "\\s*attachment_position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*node_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*look_at_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*snappiness=([\\w+-.]+)\\r?\\n"
@@ -953,21 +952,18 @@ void LoadScene::operator()(
                 physics_engine.advance_times_,
                 followed_node,
                 followed_node->get_absolute_movable(),
-                distance,
-                FixedArray<float, 2>{
+                distance,                          // attachment_distance
+                FixedArray<float, 3>{              // node_displacement
                     safe_stof(match[4].str()),
-                    safe_stof(match[5].str())},
-                FixedArray<float, 3>{
-                    safe_stof(match[6].str()),
+                    safe_stof(match[5].str()),
+                    safe_stof(match[6].str())},
+                FixedArray<float, 3>{              // look_at_displacement
                     safe_stof(match[7].str()),
-                    safe_stof(match[8].str())},
-                FixedArray<float, 3>{
-                    safe_stof(match[9].str()),
-                    safe_stof(match[10].str()),
-                    safe_stof(match[11].str())},
-                safe_stof(match[12].str()),
-                safe_stof(match[13].str()),
-                safe_stof(match[14].str()));
+                    safe_stof(match[8].str()),
+                    safe_stof(match[9].str())},
+                safe_stof(match[10].str()),        // snappiness
+                safe_stof(match[11].str()),        // y_adaptivity
+                safe_stof(match[12].str()));       // y_snappiness
             linker.link_absolute_movable(*follower_node, follower);
         } else if (std::regex_match(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());

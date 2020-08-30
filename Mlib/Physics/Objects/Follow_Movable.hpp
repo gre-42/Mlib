@@ -19,7 +19,6 @@ public:
         SceneNode* followed_node,
         AbsoluteMovable* followed,
         float attachment_distance,
-        const FixedArray<float, 2>& attachment_position,
         const FixedArray<float, 3>& node_displacement,
         const FixedArray<float, 3>& look_at_displacement,
         float snappiness = 2,
