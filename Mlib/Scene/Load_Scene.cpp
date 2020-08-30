@@ -315,7 +315,7 @@ void LoadScene::operator()(
         } else if (f.is_absolute()) {
             return f.string();
         } else {
-            return fs::canonical(fs::path(scene_filename).parent_path() / f).string();
+            return fs::weakly_canonical(fs::path(scene_filename).parent_path() / f).string();
         }
     };
 
