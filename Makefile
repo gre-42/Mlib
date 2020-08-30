@@ -3,15 +3,27 @@
 all: debug release
 
 debug:
-	CXX=g++-10 ./build.sh Debug
+	./build.sh Debug
 
 release:
-	CXX=g++-10 ./build.sh Release
+	./build.sh Release
 
 test_debug: debug
-	CXX=g++-10 ./build.sh Debug test
+	./build.sh Debug test
 
 test_release: release
+	./build.sh Release test
+
+debug10:
+	CXX=g++-10 ./build.sh Debug
+
+release10:
+	CXX=g++-10 ./build.sh Release
+
+test_debug10: debug10
+	CXX=g++-10 ./build.sh Debug test
+
+test_release10: release10
 	CXX=g++-10 ./build.sh Release test
 
 debug_clang:

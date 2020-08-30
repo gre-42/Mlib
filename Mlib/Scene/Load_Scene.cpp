@@ -312,9 +312,9 @@ void LoadScene::operator()(
         if (f.empty()) {
             return "";
         } else if (f.is_absolute()) {
-            return f;
+            return f.string();
         } else {
-            return fs::canonical(fs::path(scene_filename).parent_path() / f);
+            return fs::canonical(fs::path(scene_filename).parent_path() / f).string();
         }
     };
 
@@ -328,9 +328,9 @@ void LoadScene::operator()(
             if (f.empty()) {
                 return "";
             } else if (f.is_absolute()) {
-                return f;
+                return f.string();
             } else {
-                return fs::canonical(fs::path(line_script_filename).parent_path() / f);
+                return fs::canonical(fs::path(line_script_filename).parent_path() / f).string();
             }
         };
 
