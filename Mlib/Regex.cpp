@@ -66,6 +66,20 @@ void Mlib::findall(
     }
 }
 
+std::list<std::pair<std::string, std::string>> find_all_name_values(
+    const std::string& str,
+    const std::string& value_pattern)
+{
+    std::list<std::pair<std::string, std::string>> res;
+    findall(str, std::regex{"(?:\\r?\\n|\\s)*name=([\\w+-. ]+) value=(" + value_pattern + ")|(.+)"}, [&](const std::smatch& m){
+        if (!m[3].str().empty()) {
+            throw std::runtime_error("Could not parse \"" + str + "\", unknown element: \"" + m[3].str() + '"');
+        }
+        res.push_back({m[1].str(), m[2].str()});
+    });
+    return res;
+}
+
 SubstitutionString::SubstitutionString()
 {}
 

@@ -265,7 +265,7 @@ void LoadScene::operator()(
         "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
-        "\\s*scene_files=([\\r\\n\\w-. \\(\\)/+-]+)$");
+        "\\s*scene_files=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     const std::regex clear_parameters_reg(
         "^(?:\\r?\\n|\\s)*clear_parameters$");
     const std::regex parameter_setter_reg(
@@ -791,12 +791,14 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
         } else if (std::regex_match(line, match, scene_selector_reg)) {
-            std::vector<std::string> scene_files = string_to_vector(match[6].str());
-            for(std::string& f : scene_files) {
-                f = fpath(f);
+            std::list<SceneEntry> scene_entries;
+            for(const auto& e : find_all_name_values(match[6].str(), "[\\w-. \\(\\)/+-]+")) {
+                scene_entries.push_back(SceneEntry{
+                    name: e.first,
+                    filename: fpath(e.second)});
             }
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
-                scene_files,
+                std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
                 fpath(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
                     safe_stof(match[2].str()),
@@ -812,16 +814,12 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
             substitutions.clear();
         } else if (std::regex_match(line, match, parameter_setter_reg)) {
-            std::string parameters = match[6].str();
             std::list<ReplacementParameter> rps;
-            findall(parameters, std::regex{"(?:(?:\\r?\\n|\\s)*name=([\\w+-.]+)(" + substitute_pattern + ")|(.+))"}, [&](const std::smatch& m){
-                if (!m[3].str().empty()) {
-                    throw std::runtime_error("Could not parse \"" + parameters + "\", unknown element: \"" + m[3].str() + '"');
-                }
+            for(const auto& e : find_all_name_values(match[6].str(), substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
-                    name: m[1].str(),
-                    substitutions: SubstitutionString{m[2].str()}});
-            });
+                    name: e.first,
+                    substitutions: SubstitutionString{e.second}});
+            }
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
                 fpath(match[1].str()),            // ttf_filename

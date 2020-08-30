@@ -8,10 +8,15 @@ namespace Mlib {
 
 class ButtonPress;
 
+struct SceneEntry {
+    std::string name;
+    std::string filename;
+};
+
 class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
-        const std::vector<std::string>& scene_files,
+        const std::vector<SceneEntry>& scene_files,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         float font_height_pixels,
@@ -37,7 +42,7 @@ public:
     virtual bool requires_postprocessing() const override;
 
 private:
-    ListView<std::string> scene_selector_list_view_;
+    ListView<SceneEntry> scene_selector_list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;
     ButtonPress& button_press_;

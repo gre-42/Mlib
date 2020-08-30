@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 
 SceneSelectorLogic::SceneSelectorLogic(
-    const std::vector<std::string>& scene_files,
+    const std::vector<SceneEntry>& scene_files,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     float font_height_pixels,
@@ -20,12 +20,12 @@ SceneSelectorLogic::SceneSelectorLogic(
     bool& leave_render_loop,
     ButtonPress& button_press)
 : scene_selector_list_view_{
-  scene_files,
-  ttf_filename,
-  position,
-  font_height_pixels,
-  line_distance_pixels,
-  [](const std::string& s){return fs::path{s}.stem().string();}},
+    scene_files,
+    ttf_filename,
+    position,
+    font_height_pixels,
+    line_distance_pixels,
+    [](const SceneEntry& s){return s.name;}},
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
   button_press_{button_press},
@@ -40,7 +40,7 @@ SceneSelectorLogic::~SceneSelectorLogic()
 void SceneSelectorLogic::initialize(GLFWwindow* window) {
     scene_selector_list_view_.initialize(window);
     window_ = window;
-    scene_filename_ = scene_selector_list_view_.selected_element();
+    scene_filename_ = scene_selector_list_view_.selected_element().filename;
 }
 
 void SceneSelectorLogic::render(
@@ -63,7 +63,7 @@ void SceneSelectorLogic::render(
                 ui_focus_.goto_next_submenu();
             }
             if (scene_selector_list_view_.has_selected_element()) {
-                scene_filename_ = scene_selector_list_view_.selected_element();
+                scene_filename_ = scene_selector_list_view_.selected_element().filename;
             }
             if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
                 ui_focus_.focus = Focus::LOADING;

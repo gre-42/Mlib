@@ -1,11 +1,12 @@
 #pragma once
 #include <functional>
+#include <list>
 #include <regex>
 #include <string>
 
 namespace Mlib {
 
-static const std::string substitute_pattern = "(?:(?:\\r?\\n|\\s)+\\S+:\\S*)*";
+static const std::string substitute_pattern = "(?:\\S+:\\S*)?(?:(?:\\r?\\n|\\s)+\\S+:\\S*)*";
 
 std::string substitute(
     const std::string& str,
@@ -17,6 +18,10 @@ void findall(
     const std::string& str,
     const std::regex& pattern,
     const std::function<void(const std::smatch&)>& f);
+
+std::list<std::pair<std::string, std::string>> find_all_name_values(
+    const std::string& str,
+    const std::string& value_pattern);
 
 class SubstitutionString {
 public:
