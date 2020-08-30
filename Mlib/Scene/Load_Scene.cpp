@@ -273,7 +273,7 @@ void LoadScene::operator()(
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
-    const std::regex scene_selector_background_reg("^(?:\\r?\\n|\\s)*scene_selector_background texture=([\\w-. \\(\\)/+-]+)$");
+    const std::regex ui_background_reg("^(?:\\r?\\n|\\s)*ui_background texture=([\\w-. \\(\\)/+-]+) target_focus=(menu|loading|countdown|scene)$");
     const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     const std::regex ortho_camera_reg("^(?:\\r?\\n|\\s)*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
@@ -833,11 +833,12 @@ void LoadScene::operator()(
                 substitutions,
                 leave_render_loop);
             render_logics.append(nullptr, parameter_setter_logic);
-        } else if (std::regex_match(line, match, scene_selector_background_reg)) {
+        } else if (std::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 rendering_resources,
                 fpath(match[1].str()),
-                ui_focus.focus);
+                ui_focus.focus,
+                focus_from_string(match[2].str()));
             render_logics.append(nullptr, bg);
         } else if (std::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
@@ -1092,6 +1093,6 @@ void LoadScene::operator()(
     }
 
     if (!ifs.eof() && ifs.fail()) {
-        throw std::runtime_error("Error reading from file: " + script_filename);
+        throw std::runtime_error("Error reading from file: \"" + script_filename + '"');
     }
 }

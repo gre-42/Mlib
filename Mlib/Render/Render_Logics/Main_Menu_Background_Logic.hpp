@@ -15,7 +15,8 @@ public:
     MainMenuBackgroundLogic(
         RenderingResources& rendering_resources,
         const std::string& image_resource_name,
-        const Focus& focus);
+        const Focus& focus,
+        Focus target_focus);
 
     virtual void initialize(GLFWwindow* window) override;
     virtual void render(
@@ -32,6 +33,7 @@ public:
 
 private:
     const Focus& focus_;
+    Focus target_focus_;
 };
 
 }

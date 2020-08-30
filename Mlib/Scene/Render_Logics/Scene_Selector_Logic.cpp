@@ -37,6 +37,7 @@ SceneSelectorLogic::~SceneSelectorLogic()
 void SceneSelectorLogic::initialize(GLFWwindow* window) {
     scene_selector_list_view_.initialize(window);
     window_ = window;
+    scene_filename_ = scene_selector_list_view_.selected_element();
 }
 
 void SceneSelectorLogic::render(

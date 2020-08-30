@@ -33,6 +33,7 @@ ParameterSetterLogic::~ParameterSetterLogic()
 void ParameterSetterLogic::initialize(GLFWwindow* window) {
     scene_selector_list_view_.initialize(window);
     window_ = window;
+    substitutions_ = scene_selector_list_view_.selected_element().substitutions;
 }
 
 void ParameterSetterLogic::render(

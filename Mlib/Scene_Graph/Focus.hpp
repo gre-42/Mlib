@@ -30,7 +30,9 @@ struct UiFocus {
 inline Focus focus_from_string(const std::string& str) {
     if (str == "menu") {
         return Focus::MENU;
-    } else if (str == "countdown") {
+    } else if (str == "loading") {
+        return Focus::LOADING;
+    } if (str == "countdown") {
         return Focus::COUNTDOWN;
     } if (str == "scene") {
         return Focus::SCENE;
