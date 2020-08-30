@@ -24,7 +24,7 @@ static GenShaderText vertex_shader_text_gen{[](
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
-    sstr << "#version 440" << std::endl;
+    sstr << "#version 330 core" << std::endl;
     sstr << "uniform mat4 MVP;" << std::endl;
     if (has_diffusivity || has_specularity) {
         sstr << "uniform mat4 M;" << std::endl;
@@ -98,7 +98,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
-    sstr << "#version 440" << std::endl;
+    sstr << "#version 330 core" << std::endl;
     sstr << "in vec3 color;" << std::endl;
     if (has_texture) {
         sstr << "in vec2 tex_coord;" << std::endl;
