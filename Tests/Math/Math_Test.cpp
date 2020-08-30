@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Gaussian_Elimination.hpp>
 #include <Mlib/Math/Huber_Norm.hpp>
+#include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Interpolate.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Non_Zero_Ids.hpp>
@@ -355,6 +356,16 @@ void test_fixed_cholesky() {
         solve_symm_1d(fa, fb).to_array());
 }
 
+void test_interp() {
+    Interp<float> interp{{0, 0.1, 2, 3}, {4.123, 2.567, 3.89, 4.2}, false, -10, 20};
+    assert_allclose(
+        Array<float>{interp(-1), interp(4.3)},
+        Array<float>{-10, 20});
+    assert_allclose(
+        Array<float>{interp(0), interp(0.05), interp(0.1), interp(2), interp(3)},
+        Array<float>{4.123, 3.345, 2.567, 3.89, 4.2});
+}
+
 int main(int argc, const char** argv) {
     test_svd();
     test_qdq();
@@ -387,5 +398,6 @@ int main(int argc, const char** argv) {
     test_nonzero_ids();
     test_fixed_transposed();
     test_fixed_cholesky();
+    test_interp();
     return 0;
 }

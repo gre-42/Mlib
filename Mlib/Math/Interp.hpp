@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <stdexcept>
 #include <vector>
 
@@ -23,8 +24,8 @@ public:
         if (x_.size() != y_.size()) {
             throw std::runtime_error("size mismatch");
         }
-        if (x_.size() < 2) {
-            throw std::runtime_error("size must be >= 2");
+        if (x_.size() < 1) {
+            throw std::runtime_error("size must be >= 1");
         }
         if (vx < x_[0]) {
             if (throw_out_of_range_) {
@@ -32,22 +33,19 @@ public:
             }
             return low_;
         }
-        if (vx > x_[x_.size() - 1]) {
+        auto it = std::lower_bound(x_.begin(), x_.end(), vx);
+        if (it == x_.end()) {
             if (throw_out_of_range_) {
                 throw std::runtime_error("interpolation value too large");
             }
             return high_;
         }
-        for(size_t i = 0; i < x_.size() - 1; ++i) {
-            if (vx <= x_[i + 1]) {
-                if (vx < x_[i]) {
-                    throw std::runtime_error("interval error: " + std::to_string(x_[i]) + " " + std::to_string(x_[i + 1]) + " " + std::to_string(vx));
-                }
-                TData alpha = (vx  - x_[i]) / (x_[i + 1] - x_[i]);
-                return y_[i] * (1 - alpha) + y_[i + 1] * alpha;
-            }
+        if (it == x_.begin()) {
+            return y_[0];
         }
-        throw std::runtime_error("interp did not find an internal for " + std::to_string(vx));
+        size_t i = it - x_.begin();
+        TData alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
+        return y_[i - 1] * (1 - alpha) + y_[i] * alpha;
     }
 private:
     std::vector<TData> x_;
