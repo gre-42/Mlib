@@ -106,6 +106,19 @@ void test_lines_to_rectangles() {
     assert_allclose(p11.to_array(), Array<float>{0.958579, -0.1});
 }
 
+void test_inverse_rodrigues() {
+    {
+        FixedArray<float, 3> k{1, 3, 1.2};
+        k /= std::sqrt(sum(squared(k)));
+        k *= 0.45;
+        assert_allclose(k.to_array(), inverse_rodrigues(rodrigues(k)).to_array());
+    }
+    {
+        FixedArray<float, 3> k{fixed_zeros<float, 3>()};
+        assert_allclose(k.to_array(), inverse_rodrigues(rodrigues(k)).to_array());
+    }
+}
+
 int main(int argc, const char** argv) {
     test_cross();
     test_contour();
@@ -113,5 +126,6 @@ int main(int argc, const char** argv) {
     test_invert_scaled_4x4();
     test_intersect_lines();
     test_lines_to_rectangles();
+    test_inverse_rodrigues();
     return 0;
 }

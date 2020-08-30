@@ -53,4 +53,21 @@ FixedArray<TData, 3> matrix_2_tait_bryan_angles(FixedArray<TData, 3, 3> R, bool 
     }
 }
 
+/**
+ * From: https://en.wikipedia.org/wiki/Axis-angle_representation#Relationship_to_other_representations
+ */
+template <class TData>
+FixedArray<TData, 3> inverse_rodrigues(const FixedArray<TData, 3, 3>& R) {
+    TData t = std::acos((R(0, 0) + R(1, 1) + R(2, 2) - 1) / 2);
+    float s = std::sin(t);
+    if (std::abs(s) < 1e-12) {
+        return fixed_zeros<float, 3>();
+    }
+    FixedArray<TData, 3> w = 1 / (2 * s) * FixedArray<TData, 3>{
+        R(2, 1) - R(1, 2),
+        R(0, 2) - R(2, 0),
+        R(1, 0) - R(0, 1)};
+    return w * t;
+}
+
 }
