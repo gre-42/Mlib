@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Regex.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/ListView.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -12,7 +13,7 @@ class ButtonPress;
 
 struct ReplacementParameter {
     std::string name;
-    std::string substitutions;
+    SubstitutionString substitutions;
 };
 
 class ParameterSetterLogic: public RenderLogic {
@@ -25,7 +26,7 @@ public:
         float line_distance_pixels,
         UiFocus& ui_focus,
         size_t submenu_id,
-        std::string& substitutions,
+        SubstitutionString& substitutions,
         bool& leave_render_loop,
         ButtonPress& button_press);
     ~ParameterSetterLogic();
@@ -47,7 +48,7 @@ private:
     ListView<ReplacementParameter> scene_selector_list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;
-    std::string& substitutions_;
+    SubstitutionString& substitutions_;
     bool& leave_render_loop_;
     ButtonPress& button_press_;
     GLFWwindow* window_;

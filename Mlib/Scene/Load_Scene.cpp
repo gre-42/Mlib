@@ -111,7 +111,7 @@ void LoadScene::operator()(
     DirtmapLogic& dirtmap_logic,
     SkyboxLogic& skybox_logic,
     UiFocus& ui_focus,
-    std::string& substitutions,
+    SubstitutionString& substitutions,
     bool& leave_render_loop,
     bool verbose)
 {
@@ -820,7 +820,7 @@ void LoadScene::operator()(
                 }
                 rps.push_back(ReplacementParameter{
                     name: m[1].str(),
-                    substitutions: m[2].str()});
+                    substitutions: SubstitutionString{m[2].str()}});
             });
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
@@ -1090,7 +1090,7 @@ void LoadScene::operator()(
         } else if (!recording_macros.empty()) {
             recording_macros.back().second.lines.push_back(line);
         } else {
-            process_line(substitute(line, substitutions), script_filename);
+            process_line(substitutions.substitute(line), script_filename);
         }
     }
 

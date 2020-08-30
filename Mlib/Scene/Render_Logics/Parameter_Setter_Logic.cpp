@@ -1,4 +1,5 @@
 #include "Parameter_Setter_Logic.hpp"
+#include <Mlib/Regex.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 
@@ -12,7 +13,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     float line_distance_pixels,
     UiFocus& ui_focus,
     size_t submenu_id,
-    std::string& substitutions,
+    SubstitutionString& substitutions,
     bool& leave_render_loop,
     ButtonPress& button_press)
 : scene_selector_list_view_{
@@ -36,7 +37,7 @@ ParameterSetterLogic::~ParameterSetterLogic()
 void ParameterSetterLogic::initialize(GLFWwindow* window) {
     scene_selector_list_view_.initialize(window);
     window_ = window;
-    substitutions_ = scene_selector_list_view_.selected_element().substitutions;
+    substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
 }
 
 void ParameterSetterLogic::render(
@@ -59,7 +60,7 @@ void ParameterSetterLogic::render(
                 ui_focus_.goto_next_submenu();
             }
             if (scene_selector_list_view_.has_selected_element()) {
-                substitutions_ = scene_selector_list_view_.selected_element().substitutions;
+                substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
             }
             if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
                 ui_focus_.focus = Focus::LOADING;

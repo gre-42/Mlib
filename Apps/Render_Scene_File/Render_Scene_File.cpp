@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Objects/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Regex.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
@@ -121,7 +122,7 @@ int main(int argc, char** argv) {
         
         SelectedCameras selected_cameras;
         UiFocus ui_focus = UiFocus{focus: Focus::SCENE};
-        std::string substitutions;
+        SubstitutionString substitutions;
         SetFps physics_set_fps;
         FlyingCameraUserClass user_object{
             cameras: selected_cameras,

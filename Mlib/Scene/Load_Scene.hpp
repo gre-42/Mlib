@@ -26,6 +26,7 @@ class DirtmapLogic;
 class SkyboxLogic;
 struct SelectedCameras;
 class ButtonPress;
+class SubstitutionString;
 
 struct Macro {
     std::string filename;
@@ -58,7 +59,7 @@ public:
         DirtmapLogic& dirtmap_logic,
         SkyboxLogic& skybox_logic,
         UiFocus& ui_focus,
-        std::string& substitutions,
+        SubstitutionString& substitutions,
         bool& leave_render_loop,
         bool verbose);
 private:
