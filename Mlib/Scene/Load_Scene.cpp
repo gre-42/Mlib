@@ -282,7 +282,7 @@ void LoadScene::operator()(
     const std::regex keep_offset_reg("^(?:\\r?\\n|\\s)*keep-offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex yaw_pitch_look_at_nodes_reg("^(?:\\r?\\n|\\s)*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
     const std::regex follow_node_reg(
-        "^(?:\\r?\\n|\\s)*follow-node\\r?\\n"
+        "^(?:\\r?\\n|\\s)*follow_node\\r?\\n"
         "\\s*follower=([\\w+-.]+)\\r?\\n"
         "\\s*followed=([\\w+-.]+)\\r?\\n"
         "\\s*distance=([\\w+-.]+)\\r?\\n"
