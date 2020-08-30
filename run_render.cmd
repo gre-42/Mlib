@@ -1,2 +1,2 @@
-MRelease\Bin\render_scene_file.exe ..\mgame\scenes\scene.scn --print_residual_time
+MRelease\Bin\render_scene_file.exe ..\mgame\scripts\main.scn --print_residual_time
 pause
