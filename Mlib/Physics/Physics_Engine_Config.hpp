@@ -10,7 +10,7 @@ struct PhysicsEngineConfig {
     bool print_residual_time = false;
     bool sat = true;
     bool collide_only_normals = false;
-    float min_acceleration = 2e-1;
+    float min_acceleration = 8e-1;
     float min_velocity = 1e-1;
     float min_angular_velocity = 1e-2;
     float damping = std::exp(-7);
