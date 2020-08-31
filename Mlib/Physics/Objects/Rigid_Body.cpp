@@ -80,11 +80,12 @@ void RigidBody::integrate_gravity(const FixedArray<float, 3>& g) {
 
 void RigidBody::advance_time(
     float dt,
+    float min_acceleration,
     float min_velocity,
     float min_angular_velocity)
 {
     std::lock_guard lock{advance_time_mutex_};
-    rbi_.advance_time(dt, min_velocity, min_angular_velocity);
+    rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);
 }
 
 float RigidBody::mass() const {
@@ -141,7 +142,7 @@ FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
     return z;
 }
 
-float RigidBody::consume_tire_surface_power(size_t id, size_t ntires) {
+float RigidBody::consume_tire_surface_power(size_t id) {
     auto en = tire_engines_.find(id);
     if (en == tire_engines_.end()) {
         return 0;
@@ -150,7 +151,7 @@ float RigidBody::consume_tire_surface_power(size_t id, size_t ntires) {
     if (e == engines_.end()) {
         throw std::runtime_error("No engine with name \"" + en->second + "\" exists");
     }
-    return e->second.consume_abs_surface_power(ntires);
+    return e->second.consume_abs_surface_power();
 }
 
 void RigidBody::set_surface_power(const std::string& engine_name, float surface_power) {

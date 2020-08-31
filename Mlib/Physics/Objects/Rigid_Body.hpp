@@ -45,6 +45,7 @@ public:
     void integrate_gravity(const FixedArray<float, 3>& g);
     void advance_time(
         float dt,
+        float min_acceleration,
         float min_velocity,
         float min_angular_velocity);
     float mass() const;
@@ -55,7 +56,7 @@ public:
     void set_max_velocity(float max_velocity);
     void set_tire_angle(size_t id, float angle);
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
-    float consume_tire_surface_power(size_t id, size_t ntires);
+    float consume_tire_surface_power(size_t id);
     void set_surface_power(const std::string& engine_name, float surface_power);
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;

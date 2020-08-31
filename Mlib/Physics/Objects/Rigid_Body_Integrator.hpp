@@ -23,6 +23,7 @@ struct RigidBodyIntegrator {
 
     void advance_time(
         float dt,
+        float min_acceleration,
         float min_velocity,
         float min_angular_velocity);
 

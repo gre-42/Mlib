@@ -79,6 +79,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
         P = 0;
     }
     Mlib::FixedArray<float, 3> res;
+    // if (!std::isnan(P) && !(sign(P) * v < 0 && std::abs(v) > hand_break_velocity) && !(P == 0 && std::abs(v) < roll_velocity)) {
     if (!std::isnan(P) && (sign(P) * v > 0 || ((P != 0) == (std::abs(v) < hand_break_velocity)))) {
         float F_sqrt = sign(P) * std::sqrt(squared(m * v) + 2 * std::abs(P) * m * dt);
         float F_c = (P != 0) * (-m * v);

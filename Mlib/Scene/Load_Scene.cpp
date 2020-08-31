@@ -607,6 +607,7 @@ void LoadScene::operator()(
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }
             for(const std::string& t : string_to_list(match[4].str())) {
+                ep.first->second.increment_ntires();
                 auto tp = rb->tire_engines_.insert(std::make_pair(safe_stoi(t), match[2].str()));
                 if (!tp.second) {
                     throw std::runtime_error("Tire with ID \"" + t + "\" already exists");

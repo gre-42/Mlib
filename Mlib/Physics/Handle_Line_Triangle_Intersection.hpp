@@ -26,7 +26,6 @@ struct IntersectionScene {
     const SatTracker& st;
     std::vector<FixedArray<float, 3>>& beacons;
     size_t tire_id;
-    size_t ntires;
     bool mesh0_two_sided;
     bool lines_are_normals;
 };

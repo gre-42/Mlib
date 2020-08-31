@@ -66,7 +66,6 @@ static void handle_triangle_triangle_intersection(
                 st: st,
                 beacons: beacons,
                 tire_id: SIZE_MAX,
-                ntires: 0,
                 mesh0_two_sided: t0.two_sided,
                 lines_are_normals: false});
         }
@@ -83,7 +82,6 @@ static void handle_triangle_triangle_intersection(
                 st: st,
                 beacons: beacons,
                 tire_id: SIZE_MAX,
-                ntires: 0,
                 mesh0_two_sided: t0.two_sided,
                 lines_are_normals: false});
         }
@@ -100,7 +98,6 @@ static void handle_triangle_triangle_intersection(
                 st: st,
                 beacons: beacons,
                 tire_id: SIZE_MAX,
-                ntires: 0,
                 mesh0_two_sided: t0.two_sided,
                 lines_are_normals: false});
         }
@@ -166,7 +163,6 @@ static void collide_objects(
                             st: st,
                             beacons: beacons,
                             tire_id: SIZE_MAX,
-                            ntires: 0,
                             mesh0_two_sided: t0.two_sided,
                             lines_are_normals: true});
                     }
@@ -185,7 +181,6 @@ static void collide_objects(
                             st: st,
                             beacons: beacons,
                             tire_id: tire_id,
-                            ntires: lines.size(),
                             mesh0_two_sided: t0.two_sided,
                             lines_are_normals: true});
                         ++tire_id;
@@ -275,6 +270,7 @@ void PhysicsEngine::move_rigid_bodies() {
         if (o.rigid_body->mass() != INFINITY) {
             o.rigid_body->advance_time(
                 cfg_.dt,
+                cfg_.min_acceleration,
                 cfg_.min_velocity,
                 cfg_.min_angular_velocity);
         }

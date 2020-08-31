@@ -98,7 +98,7 @@ void HandleLineTriangleIntersection::handle()
             // smallest negative distance
             dist = -std::min(dist_0, dist_1);
         }
-        if (i_.ntires != 0) {
+        if (i_.tire_id != SIZE_MAX) {
             dist = std::max(0.f, dist - i_.cfg.wheel_penetration_depth);
         }
         float frac0;
@@ -116,6 +116,7 @@ void HandleLineTriangleIntersection::handle()
         auto o11 = i_.o1->rbi_;
         o11.advance_time(
             i_.cfg.dt,
+            i_.cfg.min_acceleration,
             i_.cfg.min_velocity,
             i_.cfg.min_angular_velocity);
         auto v11 = o11.velocity_at_position(intersection_point_);
@@ -132,7 +133,7 @@ void HandleLineTriangleIntersection::handle()
         //     fac = 1;
         // }
         FixedArray<float, 3> motor_force_t;
-        if (i_.ntires != 0 && i_.o0->mass() == INFINITY && i_.o1->mass() != INFINITY) {
+        if (i_.tire_id != SIZE_MAX && i_.o0->mass() == INFINITY && i_.o1->mass() != INFINITY) {
             FixedArray<float, 3> n3 = i_.o1->get_abs_tire_z(i_.tire_id);
             // bool tire_sliding = o1->get_tire_sliding(tire_id);
             FixedArray<float, 3> motor_force = power_to_forces_infinite_mass(
@@ -144,7 +145,7 @@ void HandleLineTriangleIntersection::handle()
                 i_.cfg.friction_force_multiplier,
                 i_.o1->max_velocity_,
                 n3,
-                i_.o1->consume_tire_surface_power(i_.tire_id, i_.ntires),
+                i_.o1->consume_tire_surface_power(i_.tire_id),
                 i_.o1->mass(),
                 v11,
                 i_.cfg.dt,
