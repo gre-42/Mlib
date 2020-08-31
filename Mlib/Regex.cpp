@@ -30,11 +30,13 @@ std::string Mlib::substitute(const std::string& str, const std::string& replacem
     std::string new_line = str;
     iterate_replacements(replacements, [&new_line](const std::string& key, const std::string& value){
         try {
+            new_line = std::regex_replace(new_line, std::regex{":" + key + "=\\S*"}, ':' + value);
             new_line = std::regex_replace(new_line, std::regex{"\\b" + key + "\\b(?!:)"}, value);
         } catch (const std::regex_error&) {
             throw std::runtime_error("Error in regex " + key);
         }
     });
+    new_line = std::regex_replace(new_line, std::regex{"(\\S+:)\\S+="}, "$1");
     return new_line;
 }
 
