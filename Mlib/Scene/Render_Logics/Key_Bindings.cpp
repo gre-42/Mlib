@@ -88,7 +88,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            rb->set_surface_power(0);
+            rb->set_surface_power("main", 0);
             rb->set_max_velocity(INFINITY);
             rb->tire_angles_.clear();
             rb->tires_z_ = k.tires_z;
@@ -105,7 +105,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (any(k.rotate != 0.f)) {
                     rb->rbi_.rotation_ = dot2d(rb->rbi_.rotation_, rodrigues((1 - alpha) * k.rotate));
                 }
-                rb->set_surface_power(k.surface_power);
+                rb->set_surface_power("main", k.surface_power);
                 rb->set_max_velocity(k.max_velocity);
                 if (k.tire_id != SIZE_MAX) {
                     static Interp interp{
@@ -129,7 +129,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 rb->tires_z_ /= std::sqrt(sum(squared(rb->tires_z_)));
             } else {
                 rb->tires_z_ = {0, 0, 1};
-                rb->set_surface_power(NAN);
+                rb->set_surface_power("main", NAN);
             }
         }
         for(const auto& k : relative_movable_key_bindings_) {

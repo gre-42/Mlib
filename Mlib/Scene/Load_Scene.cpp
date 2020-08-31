@@ -13,6 +13,7 @@
 #include <Mlib/Physics/Objects/Player.hpp>
 #include <Mlib/Physics/Objects/Relative_Transformer.hpp>
 #include <Mlib/Physics/Objects/Rigid_Body.hpp>
+#include <Mlib/Physics/Objects/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Objects/Rigid_Body_Playback.hpp>
 #include <Mlib/Physics/Objects/Rigid_Body_Recorder.hpp>
 #include <Mlib/Physics/Objects/Rigid_Primitives.hpp>
@@ -193,6 +194,7 @@ void LoadScene::operator()(
     const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
     const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
     const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]+) radius=([\\w+-.]+) tire_id=(\\d+)$");
+    const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+) tires=([\\d\\s]+)$");
     const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+)$");
     const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player-name=([\\w+-.]+) node=([\\w+-.]+)$");
     const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
@@ -593,6 +595,23 @@ void LoadScene::operator()(
                 (size_t)safe_stoi(match[4].str()),
                 safe_stof(match[3].str()));
             linker.link_relative_movable(*scene.get_node(match[2].str()), wheel);
+        } else if (std::regex_match(line, match, create_engine_reg)) {
+            auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Absolute movable is not a rigid body");
+            }
+            auto ep = rb->engines_.insert(
+                std::make_pair(match[2].str(),
+                RigidBodyEngine{safe_stof(match[3].str())}));
+            if (!ep.second) {
+                throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
+            }
+            for(const std::string& t : string_to_list(match[4].str())) {
+                auto tp = rb->tire_engines_.insert(std::make_pair(safe_stoi(t), match[2].str()));
+                if (!tp.second) {
+                    throw std::runtime_error("Tire with ID \"" + t + "\" already exists");
+                }
+            }
         } else if (std::regex_match(line, match, player_create_reg)) {
             auto player = std::make_shared<Player>(physics_engine.collision_query_, players, match[1].str(), match[2].str());
             players.add_player(*player);

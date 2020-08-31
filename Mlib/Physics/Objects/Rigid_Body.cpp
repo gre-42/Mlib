@@ -4,7 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
-#include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
+#include <Mlib/Physics/Objects/Rigid_Body_Engine.hpp>
 #include <chrono>
 
 using namespace Mlib;
@@ -22,9 +22,7 @@ RigidBody::RigidBody(
     const FixedArray<float, 3>& rotation,
     bool I_is_diagonal)
 : rigid_bodies_{rigid_bodies},
-  surface_power_{0},
   max_velocity_{INFINITY},
-  surface_power_nconsumed_{0},
   tires_z_{0, 0, -1},
   mass_{mass},
   rbi_{L,
@@ -38,10 +36,15 @@ RigidBody::RigidBody(
        I_is_diagonal}
 {}
 
+RigidBody::~RigidBody()
+{}
+
 void RigidBody::reset_forces() {
     rbi_.a_ = 0.f;
     rbi_.T_ = 0.f;
-    surface_power_nconsumed_ = 0;
+    for(auto& e : engines_) {
+        e.second.reset_forces();
+    }
 }
 
 void RigidBody::integrate_force(const VectorAtPosition<float, 3>& F)
@@ -120,21 +123,6 @@ void RigidBody::notify_destroyed(void* obj) {
     rigid_bodies_.delete_rigid_body(this);
 }
 
-float RigidBody::consume_abs_surface_power(size_t ntires) {
-    if (surface_power_nconsumed_ >= ntires) {
-        return 0;
-    }
-    if (std::isnan(surface_power_)) {
-        return NAN;
-    }
-    ++surface_power_nconsumed_;
-    return surface_power_ / float(ntires);
-}
-
-void RigidBody::set_surface_power(float surface_power) {
-    surface_power_ = surface_power;
-}
-
 void RigidBody::set_max_velocity(float max_velocity) {
     max_velocity_ = max_velocity;
 }
@@ -151,6 +139,26 @@ FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
     }
     z = dot1d(rbi_.rotation_, z);
     return z;
+}
+
+float RigidBody::consume_tire_surface_power(size_t id, size_t ntires) {
+    auto en = tire_engines_.find(id);
+    if (en == tire_engines_.end()) {
+        return 0;
+    }
+    auto e = engines_.find(en->second);
+    if (e == engines_.end()) {
+        throw std::runtime_error("No engine with name \"" + en->second + "\" exists");
+    }
+    return e->second.consume_abs_surface_power(ntires);
+}
+
+void RigidBody::set_surface_power(const std::string& engine_name, float surface_power) {
+    auto e = engines_.find(engine_name);
+    if (e == engines_.end()) {
+        throw std::runtime_error("No engine with name \"" + engine_name + "\" exists");
+    }
+    e->second.set_surface_power(surface_power);
 }
 
 // void RigidBody::set_tire_sliding(size_t id, bool value) {

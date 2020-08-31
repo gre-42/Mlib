@@ -3,6 +3,8 @@
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Collision_Observer.hpp>
+#include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
+#include <Mlib/Physics/Objects/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Objects/Rigid_Body_Integrator.hpp>
 #include <Mlib/Scene_Graph/Loggable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
@@ -13,6 +15,7 @@
 namespace Mlib {
 
 class RigidBodies;
+class RigidBodyEngine;
 
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
@@ -31,6 +34,7 @@ public:
         const FixedArray<float, 3>& position,
         const FixedArray<float, 3>& rotation,
         bool I_is_diagonal);
+    ~RigidBody();
     void reset_forces();
     void integrate_force(const VectorAtPosition<float, 3>& F);
     void integrate_force(
@@ -48,11 +52,11 @@ public:
     FixedArray<float, 3, 3> abs_I() const;
     VectorAtPosition<float, 3> abs_F(const VectorAtPosition<float, 3>& F) const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
-    float consume_abs_surface_power(size_t ntires);
-    void set_surface_power(float surface_power);
     void set_max_velocity(float max_velocity);
     void set_tire_angle(size_t id, float angle);
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
+    float consume_tire_surface_power(size_t id, size_t ntires);
+    void set_surface_power(const std::string& engine_name, float surface_power);
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;
     virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
@@ -62,10 +66,10 @@ public:
 
     RigidBodies& rigid_bodies_;
 
-    float surface_power_;
     float max_velocity_;
-    size_t surface_power_nconsumed_;
     std::map<size_t, float> tire_angles_;
+    std::map<size_t, std::string> tire_engines_;
+    std::map<std::string, RigidBodyEngine> engines_;
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
 

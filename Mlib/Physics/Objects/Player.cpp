@@ -140,7 +140,7 @@ void Player::move_to_waypoint() {
     {
         FixedArray<float, 2> pos2{rb_->rbi_.position_(0), rb_->rbi_.position_(2)};
         if (sum(squared(pos2 - waypoint_)) < squared(rest_radius)) {
-            rb_->set_surface_power(NAN);  // NAN=break
+            rb_->set_surface_power("main", NAN);  // NAN=break
             return;
         }
     }
@@ -156,7 +156,7 @@ void Player::move_to_waypoint() {
         if (sum(squared(d)) < squared(collision_avoidance_radius)) {
             auto z = (z3_from_3x3(rb_->rbi_.rotation_));
             if (dot0d(d, z) < 0) {
-                rb_->set_surface_power(NAN);  // NAN=break
+                rb_->set_surface_power("main", NAN);  // NAN=break
                 return;
             }
         }
@@ -165,11 +165,11 @@ void Player::move_to_waypoint() {
     {
         float dvel = sum(squared(rb_->rbi_.v_)) - squared(max_velocity);
         if (dvel < 0) {
-            rb_->set_surface_power(surface_power_forward_);
+            rb_->set_surface_power("main", surface_power_forward_);
         } else if (dvel < squared(max_velocity_break)) {
-            rb_->set_surface_power(0);
+            rb_->set_surface_power("main", 0);
         } else {
-            rb_->set_surface_power(NAN);  // NAN=break
+            rb_->set_surface_power("main", NAN);  // NAN=break
         }
     }
     // Steer towards waypoint.

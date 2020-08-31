@@ -144,7 +144,7 @@ void HandleLineTriangleIntersection::handle()
                 i_.cfg.friction_force_multiplier,
                 i_.o1->max_velocity_,
                 n3,
-                i_.o1->consume_abs_surface_power(i_.ntires),
+                i_.o1->consume_tire_surface_power(i_.tire_id, i_.ntires),
                 i_.o1->mass(),
                 v11,
                 i_.cfg.dt,
