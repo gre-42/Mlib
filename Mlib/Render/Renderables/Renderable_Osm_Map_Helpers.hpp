@@ -106,6 +106,11 @@ struct NeighborWay {
     float width;
 };
 
+struct NodeWayInfo {
+    float way_length;
+    FixedArray<float, 3> color;
+};
+
 void get_neighbors(
     const std::string& center,
     const std::map<std::string, NeighborWay>& neighbors,

@@ -444,9 +444,22 @@ void Mlib::draw_streets(
         node_neighbors.insert(std::make_pair(n.first, std::map<std::string, NeighborWay>()));
         node_hole_contours.insert(std::make_pair(n.first, std::map<AngleCurb, FixedArray<float, 2>>()));
     }
-    std::map<std::string, float> node_way_length;
+    std::map<std::string, NodeWayInfo> node_way_info;
     std::set<std::string> node_no_way_length;
     for(const auto& w : ways) {
+        FixedArray<float, 3> color;
+        auto rgb_it = w.second.tags.find("color");
+        if (rgb_it != w.second.tags.end()) {
+            auto l = string_to_vector(rgb_it->second);
+            if (l.size() != 3) {
+                throw std::runtime_error("\"color\" tag does not have 3 values");
+            }
+            color(0) = safe_stof(l[0]);
+            color(1) = safe_stof(l[1]);
+            color(2) = safe_stof(l[2]);
+        } else {
+            color = way_color;
+        }
         const auto& tags = w.second.tags;
         {
             bool exclude_by_tag = false;
@@ -469,11 +482,11 @@ void Mlib::draw_streets(
             float way_length = 0;
             for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 if (node_no_way_length.find(*it) == node_no_way_length.end()) {
-                    if (node_way_length.find(*it) != node_way_length.end()) {
+                    if (node_way_info.find(*it) != node_way_info.end()) {
                         node_no_way_length.insert(*it);
-                        node_way_length.erase(*it);
+                        node_way_info.erase(*it);
                     } else {
-                        node_way_length.insert(std::make_pair(*it, way_length));
+                        node_way_info.insert(std::make_pair(*it, NodeWayInfo{way_length: way_length, color: color}));
                     }
                 }
                 auto s = it;
@@ -530,8 +543,8 @@ void Mlib::draw_streets(
                         nodes.at(it->second.id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
                 } else {
                     // Way length is used to get connected street textures where possible.
-                    auto len0 = node_way_length.find(na.first);
-                    auto len1 = node_way_length.find(it->second.id);
+                    auto len0 = node_way_info.find(na.first);
+                    auto len1 = node_way_info.find(it->second.id);
                     auto& street_lst = it->second.road_type == RoadType::STREET ? tl_street : tl_path;
                     auto& curb_lst = it->second.road_type == RoadType::STREET ? tl_curb_street : tl_curb_path;
                     bool with_b_height_binding;
@@ -544,13 +557,13 @@ void Mlib::draw_streets(
                         const auto& tags = nodes.at(it->second.id).tags;
                         with_c_height_binding = with_height_bindings && (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes");
                     }
-                    if ((len0 != node_way_length.end()) &&
-                        (len1 != node_way_length.end()))
+                    if ((len0 != node_way_info.end()) &&
+                        (len1 != node_way_info.end()))
                     {
-                        rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, way_color, len0->second / scale * uv_scale, len1->second / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+                        rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, len0->second.color, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
                         if (curb_alpha != 1) {
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, len0->second / scale * uv_scale, len1->second / scale * uv_scale, -1, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, len0->second / scale * uv_scale, len1->second / scale * uv_scale, curb_alpha, 1, false, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, 1, false, with_b_height_binding, with_c_height_binding);
                         }
                     } else {
                         float len = std::sqrt(sum(squared(nodes.at(na.first).position - nodes.at(it->second.id).position)));
