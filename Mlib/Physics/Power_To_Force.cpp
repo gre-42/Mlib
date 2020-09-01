@@ -108,13 +108,8 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
                 max_stiction_force);
         }
         res = x * n3 - y * sn3T;
-    } else {
-        float x;
-        if (!avoid_burnout || (std::abs(v) < hand_break_velocity)) {
-            x = v / (std::abs(v) + 1.f);
-        } else {
-            x = sign(v) * break_accel * m;
-        }
+    } else if (!std::isnan(P) && (P != 0)) {
+        float x = sign(v) * break_accel * m;
         float y = tangential_accel * m;
         if (avoid_burnout) {
             x = correct_x(
@@ -123,6 +118,9 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
                 max_stiction_force);
         }
         res = -x * n3 - y * sn3T;
+    } else {
+        FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + 1.f);
+        res = -break_accel * m * sn3 - tangential_accel * m * sn3T;
     }
     if (float len2 = sum(squared(res)); len2 > squared(max_stiction_force)) {
         if (len2 * squared(friction_force_multiplier) < squared(max_friction_force)) {

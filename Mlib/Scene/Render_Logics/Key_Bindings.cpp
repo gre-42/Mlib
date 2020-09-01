@@ -51,7 +51,7 @@ bool KeyBindings::requires_postprocessing() const {
 }
 
 void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in) {
-    if ((window_ != nullptr) && (focus_ == Focus::SCENE)) {
+    if ((window_ != nullptr) && !burn_in && (focus_ == Focus::SCENE)) {
         // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
         // }

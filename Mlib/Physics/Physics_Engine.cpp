@@ -284,6 +284,11 @@ void PhysicsEngine::move_advance_times() {
 }
 
 void PhysicsEngine::burn_in(float seconds) {
+    for(const auto& o : rigid_bodies_.objects_) {
+        for(auto& e : o.rigid_body->engines_) {
+            e.second.set_surface_power(NAN);
+        }
+    }
     for(float time = 0; time < seconds; time += cfg_.dt) {
         std::vector<FixedArray<float, 3>> beacons;
         collide(beacons, true);  // true = burn_in
