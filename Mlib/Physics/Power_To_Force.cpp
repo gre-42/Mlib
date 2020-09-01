@@ -43,6 +43,22 @@ void Mlib::power_to_forces_finite_masses(
 }
 
 /**
+ * Solve x_new^2 + y^2 = r^2 for x_new.
+ * If non such x_new exists, i.e. r < |y|, do nothing (y alone is already too large).
+ * If |x_new| > |x|, do nothing (power is low enough to not cause friction).
+ */
+static float correct_x(float x, float y, float r, float safety_factor = 0.99) {
+    if (r < std::abs(y)) {
+        return x;
+    }
+    float xa = std::sqrt(squared(r) - squared(y));
+    if (std::abs(xa) > std::abs(x)) {
+        return x;
+    }
+    return sign(x) * xa * safety_factor;
+}
+
+/**
  * solve(1/2*m*((v+F/m*t)^2-v^2) = P*t, F);
  * 
  * P == NAN => brake
@@ -60,7 +76,8 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
     float m,
     const FixedArray<float, 3>& v3,
     float dt,
-    float tire_contact)
+    float tire_contact,
+    bool avoid_burnout)
 {
     float v = dot0d(v3, n3);
 
@@ -82,10 +99,15 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
     if (!std::isnan(P) && (sign(P) * v > 0 || ((P != 0) == (std::abs(v) < hand_break_velocity)))) {
         float F_sqrt = sign(P) * std::sqrt(squared(m * v) + 2 * std::abs(P) * m * dt);
         float F_c = (P != 0) * (-m * v);
-        res = n3 * (F_c + F_sqrt) / dt - tangential_accel * m * sn3T;
+        float x = (F_c + F_sqrt) / dt;
+        float y = tangential_accel * m;
+        if (avoid_burnout) {
+            x = correct_x(x, y * std::sqrt(sum(squared(sn3T))), max_stiction_force);
+        }
+        res = x * n3 - y * sn3T;
     } else {
         FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + 1.f);
-        res = -break_accel * m * sn3 - tangential_accel * m * sn3T;
+        res = -(break_accel * m) * sn3 - (tangential_accel * m) * sn3T;
     }
     if (float len2 = sum(squared(res)); len2 > squared(max_stiction_force)) {
         if (len2 * squared(friction_force_multiplier) < squared(max_friction_force)) {

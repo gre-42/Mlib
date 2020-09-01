@@ -149,7 +149,8 @@ void HandleLineTriangleIntersection::handle()
                 i_.o1->mass(),
                 v11,
                 i_.cfg.dt,
-                i_.cfg.contact_interp(dist));
+                i_.cfg.contact_interp(dist),
+                i_.cfg.avoid_burnout);
             motor_force_t = motor_force - plane.normal_ * dot(plane.normal_, motor_force)();
         } else {
             motor_force_t = fixed_zeros<float, 3>();

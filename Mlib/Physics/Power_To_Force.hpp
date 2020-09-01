@@ -34,6 +34,7 @@ FixedArray<float, 3> power_to_forces_infinite_mass(
     float m,
     const FixedArray<float, 3>& v3,
     float dt,
-    float tire_contact);
+    float tire_contact,
+    bool avoid_burnout);
 
 }
