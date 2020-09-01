@@ -45,6 +45,10 @@ void RigidBodyIntegrator::advance_time(
     } else {
         w_ = solve_symm_1d(abs_I(), L_);
     }
+    // std::cerr << std::endl;
+    // std::cerr << std::sqrt(sum(squared(v_))) << " "  << (sum(squared(v_)) < squared(min_velocity)) << std::endl;
+    // std::cerr << std::sqrt(sum(squared(w_))) << " "  << (sum(squared(w_)) < squared(min_angular_velocity)) << std::endl;
+    // std::cerr << std::sqrt(sum(squared(a_))) << " "  << (sum(squared(a_)) < squared(min_acceleration)) << std::endl;
     if ((sum(squared(v_)) < squared(min_velocity)) &&
         (sum(squared(w_)) < squared(min_angular_velocity) &&
         (sum(squared(a_)) < squared(min_acceleration))))
