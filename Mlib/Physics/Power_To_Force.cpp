@@ -102,12 +102,23 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
         float x = (F_c + F_sqrt) / dt;
         float y = tangential_accel * m;
         if (avoid_burnout) {
-            x = correct_x(x, y * std::sqrt(sum(squared(sn3T))), max_stiction_force);
+            x = correct_x(
+                x,
+                y * std::sqrt(sum(squared(sn3T))),
+                max_stiction_force);
         }
         res = x * n3 - y * sn3T;
     } else {
         FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + 1.f);
-        res = -(break_accel * m) * sn3 - (tangential_accel * m) * sn3T;
+        float x = break_accel * m;
+        float y = tangential_accel * m;
+        if (avoid_burnout) {
+            x = correct_x(
+                x * std::sqrt(sum(squared(sn3))),
+                y * std::sqrt(sum(squared(sn3T))),
+                max_stiction_force);
+        }
+        res = -x * sn3 - y * sn3T;
     }
     if (float len2 = sum(squared(res)); len2 > squared(max_stiction_force)) {
         if (len2 * squared(friction_force_multiplier) < squared(max_friction_force)) {
