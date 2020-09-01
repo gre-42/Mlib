@@ -91,12 +91,14 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
         }
     }
 
+    // Ensure maximum velocity is not exceeded.
     if (!std::isnan(P) && (std::abs(v) > std::abs(max_velocity)) && (sign(P) * v > 0)) {
         P = 0;
     }
     Mlib::FixedArray<float, 3> res;
     // if (!std::isnan(P) && !(sign(P) * v < 0 && std::abs(v) > hand_break_velocity) && !(P == 0 && std::abs(v) < roll_velocity)) {
     if (!std::isnan(P) && (sign(P) * v > 0 || ((P != 0) == (std::abs(v) < hand_break_velocity)))) {
+        // Handle acceleration and rolling.
         float F_sqrt = sign(P) * std::sqrt(squared(m * v) + 2 * std::abs(P) * m * dt);
         float F_c = (P != 0) * (-m * v);
         float x = (F_c + F_sqrt) / dt;
@@ -108,7 +110,8 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
                 max_stiction_force);
         }
         res = x * n3 - y * sn3T;
-    } else if (!std::isnan(P) && (P != 0)) {
+    } else if (std::abs(v) >= hand_break_velocity) {
+        // Handle breaking at high velocities.
         float x = sign(v) * break_accel * m;
         float y = tangential_accel * m;
         if (avoid_burnout) {
@@ -119,6 +122,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
         }
         res = -x * n3 - y * sn3T;
     } else {
+        // Handle breaking at low velocities.
         FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + 1.f);
         res = -break_accel * m * sn3 - tangential_accel * m * sn3T;
     }
