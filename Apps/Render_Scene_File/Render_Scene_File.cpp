@@ -17,7 +17,6 @@
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
-#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Physics_Loop.hpp>
@@ -131,7 +130,6 @@ int main(int argc, char** argv) {
             cameras: selected_cameras,
             focus: ui_focus.focus,
             physics_set_fps: &physics_set_fps};
-        ButtonPress button_press{button_states};
 
         while (!render2.window_should_close()) {
             leave_render_loop = false;
@@ -168,16 +166,15 @@ int main(int argc, char** argv) {
             StandardCameraLogic standard_camera_logic{
                 scene,
                 selected_cameras};
-            ButtonPress button_press{button_states};
             auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
                 render2.window(),
-                button_press,
+                button_states,
                 scene,
                 user_object,
                 args.has_named("--fly"),
                 args.has_named("--rotate"));
             auto key_bindings = std::make_shared<KeyBindings>(
-                button_press,
+                button_states,
                 args.has_named("--print_gamepad_buttons"),
                 selected_cameras,
                 ui_focus.focus,
@@ -212,7 +209,7 @@ int main(int argc, char** argv) {
                 players,
                 scene,
                 physics_engine,
-                button_press,
+                button_states,
                 key_bindings->camera_key_bindings_,
                 key_bindings->absolute_movable_idle_bindings_,
                 key_bindings->absolute_movable_key_bindings_,

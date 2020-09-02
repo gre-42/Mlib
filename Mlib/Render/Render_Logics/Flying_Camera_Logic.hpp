@@ -6,8 +6,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 
 namespace Mlib {
 
@@ -36,7 +36,7 @@ class FlyingCameraLogic: public RenderLogic {
 public:
     explicit FlyingCameraLogic(
         GLFWwindow* window,
-        ButtonPress& button_press,
+        const ButtonStates& button_states,
         const Scene& scene,
         FlyingCameraUserClass& user_object,
         bool fly,
@@ -57,7 +57,7 @@ private:
     const Scene& scene_;
     FlyingCameraUserClass& user_object_;
     GLFWwindow* window_;
-    ButtonPress& button_press_;
+    ButtonPress button_press_;
     bool fly_;
     bool rotate_;
 };

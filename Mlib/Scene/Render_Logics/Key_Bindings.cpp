@@ -10,12 +10,12 @@
 using namespace Mlib;
 
 KeyBindings::KeyBindings(
-    ButtonPress& button_press,
+    const ButtonStates& button_states,
     bool print_gamepad_buttons,
     SelectedCameras& selected_cameras,
     const Focus& focus,
     const Scene& scene)
-: button_press_{button_press},
+: button_press_{button_states},
   print_gamepad_buttons_{print_gamepad_buttons},
   scene_{scene},
   selected_cameras_{selected_cameras},

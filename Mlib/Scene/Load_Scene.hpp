@@ -25,7 +25,7 @@ class ReadPixelsLogic;
 class DirtmapLogic;
 class SkyboxLogic;
 struct SelectedCameras;
-class ButtonPress;
+class ButtonStates;
 class SubstitutionString;
 
 struct Macro {
@@ -44,7 +44,7 @@ public:
         Players& players,
         Scene& scene,
         PhysicsEngine& physics_engine,
-        ButtonPress& button_press,
+        const ButtonStates& button_states,
         std::vector<CameraKeyBinding>& camera_key_bindings,
         std::vector<AbsoluteMovableIdleBinding>& absolute_movable_idle_bindings,
         std::vector<AbsoluteMovableKeyBinding>& absolute_movable_key_bindings,

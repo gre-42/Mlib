@@ -14,7 +14,7 @@ template <class TOption>
 class ListView {
 public:
     ListView(
-        ButtonPress& button_press,
+        const ButtonStates& button_states,
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,

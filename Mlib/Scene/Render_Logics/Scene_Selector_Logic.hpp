@@ -25,7 +25,7 @@ public:
         size_t submenu_id_,
         std::string& scene_filename,
         bool& leave_render_loop,
-        ButtonPress& button_press);
+        const ButtonStates& button_states);
     ~SceneSelectorLogic();
 
     virtual void render(
@@ -44,7 +44,7 @@ private:
     ListView<SceneEntry> scene_selector_list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;
-    ButtonPress& button_press_;
+    ButtonPress button_press_;
     std::string& scene_filename_;
     bool& leave_render_loop_;
 };

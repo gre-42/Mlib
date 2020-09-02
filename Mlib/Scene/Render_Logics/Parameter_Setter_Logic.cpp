@@ -15,9 +15,9 @@ ParameterSetterLogic::ParameterSetterLogic(
     size_t submenu_id,
     SubstitutionString& substitutions,
     bool& leave_render_loop,
-    ButtonPress& button_press)
+    const ButtonStates& button_states)
 : scene_selector_list_view_{
-    button_press,
+    button_states,
     options,
     ttf_filename,
     position,
@@ -28,7 +28,7 @@ ParameterSetterLogic::ParameterSetterLogic(
   submenu_id_{submenu_id},
   substitutions_{substitutions},
   leave_render_loop_{leave_render_loop},
-  button_press_{button_press}
+  button_press_{button_states}
 {
     // Initialize the reference
     substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);

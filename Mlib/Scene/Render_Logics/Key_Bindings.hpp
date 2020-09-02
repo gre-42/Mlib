@@ -17,7 +17,7 @@ class Scene;
 class KeyBindings: public ExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
-        ButtonPress& button_press,
+        const ButtonStates& button_states,
         bool print_gamepad_buttons,
         SelectedCameras& selected_cameras,
         const Focus& focus,
@@ -44,7 +44,7 @@ public:
     std::vector<GunKeyBinding> gun_key_bindings_;
 
 private:
-    ButtonPress& button_press_;
+    ButtonPress button_press_;
     bool print_gamepad_buttons_;
     const Scene& scene_;
     SelectedCameras& selected_cameras_;

@@ -18,9 +18,9 @@ SceneSelectorLogic::SceneSelectorLogic(
     size_t submenu_id,
     std::string& scene_filename,
     bool& leave_render_loop,
-    ButtonPress& button_press)
+    const ButtonStates& button_states)
 : scene_selector_list_view_{
-    button_press,
+    button_states,
     scene_files,
     ttf_filename,
     position,
@@ -29,7 +29,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     [](const SceneEntry& s){return s.name;}},
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
-  button_press_{button_press},
+  button_press_{button_states},
   scene_filename_{scene_filename},
   leave_render_loop_{leave_render_loop}
 {

@@ -107,7 +107,7 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
 
 FlyingCameraLogic::FlyingCameraLogic(
     GLFWwindow* window,
-    ButtonPress& button_press,
+    const ButtonStates& button_states,
     const Scene& scene,
     FlyingCameraUserClass& user_object,
     bool fly,
@@ -115,7 +115,7 @@ FlyingCameraLogic::FlyingCameraLogic(
 : scene_{scene},
   user_object_{user_object},
   window_{window},
-  button_press_{button_press},
+  button_press_{button_states},
   fly_{fly},
   rotate_{rotate}
 {
