@@ -15,9 +15,9 @@ int main(int argc, char** argv) {
     if (!glfwInit()) {
         throw std::runtime_error("glfwInit failed");
     }
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    GLFW_CHK(glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE));
 
-    GLFWwindow* window = glfwCreateWindow(640, 480, "Gamepad buttons", NULL, NULL);
+    GLFW_CHK(GLFWwindow* window = glfwCreateWindow(640, 480, "Gamepad buttons", NULL, NULL));
 
     if (!window) {
         glfwTerminate();
@@ -33,6 +33,6 @@ int main(int argc, char** argv) {
     }
 
     GLFW_CHK(glfwDestroyWindow(window));
-    glfwTerminate();
+    GLFW_CHK(glfwTerminate());
     return 0;
 }
