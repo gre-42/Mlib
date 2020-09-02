@@ -95,14 +95,11 @@ Render2::~Render2() {
 }
 
 void Render2::operator () (
-    SceneNodeResources& scene_node_resources,
-    const Scene& scene,
     RenderLogic& logic,
     std::shared_mutex& mutex,
     const SceneGraphConfig& scene_graph_config)
 {
     logic.initialize(window_->window());
-    scene_node_resources.initialize();
 
     SetFps set_fps;
     Fps fps;
@@ -165,7 +162,6 @@ void Render2::operator () (
 }
 
 void Render2::operator () (
-    SceneNodeResources& scene_node_resources,
     const Scene& scene,
     bool rotate,
     float scale,
@@ -174,8 +170,6 @@ void Render2::operator () (
     RotatingLogic rotating_logic{scene, rotate, scale};
     std::shared_mutex mutex;
     (*this)(
-        scene_node_resources,
-        scene,
         rotating_logic,
         mutex,
         scene_graph_config);
@@ -199,7 +193,7 @@ void Render2::operator () (
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
-    (*this)(scene_node_resources, scene, rotate, scale, scene_graph_config);
+    (*this)(scene, rotate, scale, scene_graph_config);
 }
 
 bool Render2::window_should_close() const {

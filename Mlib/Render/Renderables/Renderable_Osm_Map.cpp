@@ -476,10 +476,6 @@ RenderableOsmMap::RenderableOsmMap(
     rva_ = std::make_shared<RenderableColoredVertexArray>(ts, rendering_resources_);
 }
 
-void RenderableOsmMap::initialize() {
-    rva_->initialize();
-}
-
 void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
 {
     {

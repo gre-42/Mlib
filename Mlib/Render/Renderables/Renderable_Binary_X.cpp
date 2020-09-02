@@ -63,10 +63,6 @@ RenderableBinaryX::RenderableBinaryX(
         rendering_resources);
 }
 
-void RenderableBinaryX::initialize() {
-    rva_->initialize();
-}
-
 void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
 {
     // std::unique_lock lock_guard0{scene.dynamic_mutex_};

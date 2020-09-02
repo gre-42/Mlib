@@ -21,14 +21,11 @@ public:
     ~Render2();
 
     void operator () (
-        SceneNodeResources& scene_node_resources,
-        const Scene& scene,
         RenderLogic& logic,
         std::shared_mutex& mutex,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig{});
 
     void operator () (
-        SceneNodeResources& scene_node_resources,
         const Scene& scene,
         bool rotate = false,
         float scale = 1,

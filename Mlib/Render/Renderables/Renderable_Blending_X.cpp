@@ -65,12 +65,6 @@ RenderableBlendingX::RenderableBlendingX(
     }
 }
 
-void RenderableBlendingX::initialize() {
-    for(auto& r : rva_.flat_iterable()) {
-        r->initialize();
-    }
-}
-
 void RenderableBlendingX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
 {
     // std::unique_lock lock_guard0{scene.dynamic_mutex_};

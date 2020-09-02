@@ -64,7 +64,6 @@ public:
     explicit RenderableColoredVertexArray(
         const std::shared_ptr<ColoredVertexArray>& triangles,
         RenderingResources* rendering_resources);
-    virtual void initialize() override;
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) override;
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;

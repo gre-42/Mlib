@@ -66,9 +66,3 @@ void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<
         throw std::runtime_error("generate_ray for resource " + name + " failed: " + e.what());
     }
 }
-
-void SceneNodeResources::initialize() {
-    for(const auto& r : resources_) {
-        r.second->initialize();
-    }
-}

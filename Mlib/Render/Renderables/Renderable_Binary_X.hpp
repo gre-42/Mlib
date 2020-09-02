@@ -15,7 +15,6 @@ public:
         const std::string& texture,
         RenderingResources* rendering_resources,
         bool is_small);
-    virtual void initialize() override;
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) override;
 private:
     std::shared_ptr<RenderableColoredVertexArray> rva_;

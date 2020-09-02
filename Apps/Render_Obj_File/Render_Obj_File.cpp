@@ -142,8 +142,6 @@ int main(int argc, char** argv) {
 
         std::shared_mutex mutex;
         render2(
-            scene_node_resources,
-            scene,
             render_logics,
             mutex,
             SceneGraphConfig{});

@@ -245,8 +245,6 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 : RenderableColoredVertexArray(std::list<std::shared_ptr<ColoredVertexArray>>{triangles}, rendering_resources)
 {}
 
-void RenderableColoredVertexArray::initialize() {}
-
 void RenderableColoredVertexArray::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
 {
     scene_node.add_renderable(name, std::make_shared<RenderableColoredVertexArrayInstance>(

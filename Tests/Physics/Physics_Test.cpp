@@ -269,8 +269,6 @@ void test_physics_engine() {
     render_logics.append(nullptr, read_pixels_logic);
 
     render2(
-        scene_node_resources,
-        scene,
         render_logics,
         mutex,
         SceneGraphConfig{});

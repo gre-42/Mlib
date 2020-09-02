@@ -22,7 +22,6 @@ struct SceneNodeResourceFilter {
 
 class SceneNodeResource {
 public:
-    virtual void initialize() = 0;
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)  {
         throw std::runtime_error("instantiate_renderable not implemented");
     }

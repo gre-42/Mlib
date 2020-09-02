@@ -242,8 +242,6 @@ int main(int argc, char** argv) {
                 std::cin.get();
             } else {
                 render2(
-                    scene_node_resources,
-                    scene,
                     render_logics,
                     mutex,
                     scene_config.scene_graph_config);

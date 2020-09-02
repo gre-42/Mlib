@@ -22,7 +22,6 @@ private:
     mutable std::unique_ptr<RenderableColoredVertexArrayInstance> rcvai_;
     mutable std::mutex mutex_;
     mutable bool is_initialized_ = false;
-    mutable bool rcva_initialized_ = false;
 };
 
 }

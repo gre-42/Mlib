@@ -60,10 +60,6 @@ RenderableBlendingSquare::RenderableBlendingSquare(
         rendering_resources);
 }
 
-void RenderableBlendingSquare::initialize() {
-    rva_->initialize();
-}
-
 void RenderableBlendingSquare::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
 {
     rva_->instantiate_renderable(name, scene_node, resource_filter);

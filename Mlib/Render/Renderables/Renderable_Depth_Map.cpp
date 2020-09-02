@@ -87,10 +87,6 @@ RenderableDepthMap::RenderableDepthMap(
         nullptr);  // rendering_resources
 }
 
-void RenderableDepthMap::initialize() {
-    rva_->initialize();
-}
-
 void RenderableDepthMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
 {
     rva_->instantiate_renderable(name, scene_node, resource_filter);

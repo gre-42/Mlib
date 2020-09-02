@@ -45,10 +45,6 @@ RenderableObjFile::RenderableObjFile(
     rva_ = std::make_shared<RenderableColoredVertexArray>(triangles, rendering_resources);
 }
 
-void RenderableObjFile::initialize() {
-    rva_->initialize();
-}
-
 void RenderableObjFile::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
 {
     rva_->instantiate_renderable(name, scene_node, resource_filter);
