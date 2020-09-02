@@ -47,17 +47,11 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     fullscreen_callback(window, key, scancode, action, mods);
 }
 
-RotatingLogic::RotatingLogic(const Scene& scene, bool rotate, float scale)
+RotatingLogic::RotatingLogic(GLFWwindow* window, const Scene& scene, bool rotate, float scale)
 : scene_{scene},
   rotate_{rotate},
   scale_{scale}
-{}
-
-void RotatingLogic::initialize(GLFWwindow* window) {
-    if (init_called_) {
-        throw std::runtime_error("RotatingLogic::initialize called multiple times");
-    }
-    init_called_ = true;
+{
     glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y);
     glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height);
     glfwSetWindowUserPointer(window, &user_object_);

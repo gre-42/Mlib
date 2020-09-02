@@ -1,10 +1,11 @@
 #pragma once
+#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 namespace Mlib {
 
-class LoadingTextLogic: public RenderTextLogic {
+class LoadingTextLogic: public RenderLogic, public RenderTextLogic {
 public:
     LoadingTextLogic(
         const std::string& ttf_filename,
@@ -15,7 +16,6 @@ public:
         const std::string& text);
     ~LoadingTextLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

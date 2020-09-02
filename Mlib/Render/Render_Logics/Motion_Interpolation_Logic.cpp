@@ -190,15 +190,7 @@ static GenShaderText optical_flow_apply_fragment_shader_text{[](
 MotionInterpolationLogic::MotionInterpolationLogic(RenderLogic& child_logic, InterpolationType interpolation_type)
 : child_logic_{child_logic},
   interpolation_type_{interpolation_type}
-{}
-
-MotionInterpolationLogic::~MotionInterpolationLogic() = default;
-
-void MotionInterpolationLogic::initialize(GLFWwindow* window) {
-    child_logic_.initialize(window);
-
-    GenericPostProcessingLogic::initialize(window);
-
+{
     // shader configuration
     // --------------------
     rp_no_interpolate_.generate(vertex_shader_text, fragment_shader_text({}, false));
@@ -244,6 +236,8 @@ void MotionInterpolationLogic::initialize(GLFWwindow* window) {
         rp_interpolate_of_apply_.height_location = 0;
     }
 }
+
+MotionInterpolationLogic::~MotionInterpolationLogic() = default;
 
 void MotionInterpolationLogic::render(
     int width,

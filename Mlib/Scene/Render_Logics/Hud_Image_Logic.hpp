@@ -25,7 +25,6 @@ public:
 
     virtual void advance_time(float dt) override;
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

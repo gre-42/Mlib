@@ -18,9 +18,6 @@ StandardCameraLogic::StandardCameraLogic(
   cameras_{cameras}
 {}
 
-void StandardCameraLogic::initialize(GLFWwindow* window)
-{}
-
 void StandardCameraLogic::update_projection_and_inverse_view_matrix(
     int width,
     int height,

@@ -30,10 +30,6 @@ void HudImageLogic::advance_time(float dt) {
     // do nothing (yet)
 }
 
-void HudImageLogic::initialize(GLFWwindow* window) {
-    FillWithTextureLogic::initialize(window);
-}
-
 void HudImageLogic::render(
     int width,
     int height,

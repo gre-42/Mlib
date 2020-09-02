@@ -2,6 +2,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <string>
 #include <vector>
 
 namespace Mlib {
@@ -20,7 +21,6 @@ public:
         RenderingResources& rendering_resources);
     ~SkyboxLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,
@@ -41,6 +41,7 @@ private:
     VertexArray va_;
     std::vector<std::string> filenames_;
     std::string alias_;
+    bool loaded_;
 };
 
 }

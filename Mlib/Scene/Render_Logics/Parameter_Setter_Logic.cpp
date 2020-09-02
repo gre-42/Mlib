@@ -6,6 +6,7 @@
 using namespace Mlib;
 
 ParameterSetterLogic::ParameterSetterLogic(
+    GLFWwindow* window,
     const std::vector<ReplacementParameter>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
@@ -17,6 +18,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     bool& leave_render_loop,
     ButtonPress& button_press)
 : scene_selector_list_view_{
+    window,
     options,
     ttf_filename,
     position,
@@ -28,17 +30,13 @@ ParameterSetterLogic::ParameterSetterLogic(
   substitutions_{substitutions},
   leave_render_loop_{leave_render_loop},
   button_press_{button_press},
-  window_{nullptr}
-{}
-
-ParameterSetterLogic::~ParameterSetterLogic()
-{}
-
-void ParameterSetterLogic::initialize(GLFWwindow* window) {
-    scene_selector_list_view_.initialize(window);
-    window_ = window;
+  window_{window}
+{
+    // Initialize the reference
     substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
 }
+
+ParameterSetterLogic::~ParameterSetterLogic() = default;
 
 void ParameterSetterLogic::render(
     int width,
@@ -48,7 +46,6 @@ void ParameterSetterLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    assert_true(window_ != nullptr);
     if (ui_focus_.focus == Focus::MENU) {
         if (ui_focus_.submenu_id == submenu_id_) {
             scene_selector_list_view_.handle_input();

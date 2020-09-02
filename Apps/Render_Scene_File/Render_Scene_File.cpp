@@ -166,11 +166,13 @@ int main(int argc, char** argv) {
                 scene,
                 selected_cameras};
             auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
+                render2.window(),
                 scene,
                 user_object,
                 args.has_named("--fly"),
                 args.has_named("--rotate"));
             auto key_bindings = std::make_shared<KeyBindings>(
+                render2.window(),
                 args.has_named("--print_gamepad_buttons"),
                 selected_cameras,
                 ui_focus.focus,
@@ -200,6 +202,7 @@ int main(int argc, char** argv) {
                 main_scene_filename,
                 main_scene_filename,
                 next_scene_filename,
+                render2.window(),
                 rendering_resources,
                 scene_node_resources,
                 players,

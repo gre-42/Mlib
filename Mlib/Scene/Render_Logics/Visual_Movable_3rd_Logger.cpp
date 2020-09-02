@@ -18,14 +18,13 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     const FixedArray<float, 2>& offset,
     float font_height_pixels,
     float line_distance_pixels)
-: scene_logic_{scene_logic},
+: renderable_text_{new RenderableText{ttf_filename, font_height_pixels}},
+  scene_logic_{scene_logic},
   scene_node_{scene_node},
   advance_times_{advance_times},
   logged_{logged},
   log_components_{log_components},
-  ttf_filename_{ttf_filename},
   offset_{offset},
-  font_height_pixels_{font_height_pixels},
   line_distance_pixels_{line_distance_pixels}
 {
     scene_node.add_destruction_observer(this);
@@ -42,13 +41,6 @@ void VisualMovable3rdLogger::advance_time(float dt) {
     std::stringstream sstr;
     logged_->log(sstr, log_components_);
     text_ = sstr.str();
-}
-
-void VisualMovable3rdLogger::initialize(GLFWwindow* window) {
-    if (renderable_text_ != nullptr) {
-        throw std::runtime_error("Multiple calls to VisualMovable3rdLogger::initialize");
-    }
-    renderable_text_.reset(new RenderableText{ttf_filename_, font_height_pixels_});
 }
 
 void VisualMovable3rdLogger::render(

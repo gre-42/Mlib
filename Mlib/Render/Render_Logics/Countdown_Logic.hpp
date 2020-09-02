@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <chrono>
@@ -6,7 +7,7 @@
 
 namespace Mlib {
 
-class CountDownLogic: public RenderTextLogic {
+class CountDownLogic: public RenderLogic, public RenderTextLogic {
 public:
     CountDownLogic(
         const std::string& ttf_filename,
@@ -17,7 +18,6 @@ public:
         float nseconds);
     ~CountDownLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

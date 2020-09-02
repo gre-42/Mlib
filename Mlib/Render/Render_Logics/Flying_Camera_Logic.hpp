@@ -1,4 +1,8 @@
 #pragma once
+#include <glad/gl.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -29,12 +33,12 @@ public:
 class FlyingCameraLogic: public RenderLogic {
 public:
     explicit FlyingCameraLogic(
+        GLFWwindow* window,
         const Scene& scene,
         FlyingCameraUserClass& user_object,
         bool fly,
         bool rotate);
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

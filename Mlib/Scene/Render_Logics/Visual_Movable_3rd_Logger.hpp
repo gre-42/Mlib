@@ -30,7 +30,6 @@ public:
 
     virtual void advance_time(float dt) override;
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,
@@ -51,9 +50,7 @@ private:
     Loggable* logged_;
     unsigned int log_components_;
     std::string text_;
-    std::string ttf_filename_;
     FixedArray<float, 2> offset_;
-    float font_height_pixels_;
     float line_distance_pixels_;
 
 };

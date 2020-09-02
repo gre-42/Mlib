@@ -9,7 +9,6 @@ class ReadPixelsLogic: public RenderLogic {
 public:
     explicit ReadPixelsLogic(RenderLogic& child_logic);
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

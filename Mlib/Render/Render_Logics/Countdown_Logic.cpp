@@ -23,10 +23,6 @@ CountDownLogic::CountDownLogic(
 CountDownLogic::~CountDownLogic()
 {}
 
-void CountDownLogic::initialize(GLFWwindow* window) {
-    RenderTextLogic::initialize(window);
-}
-
 void CountDownLogic::render(
     int width,
     int height,
@@ -35,7 +31,6 @@ void CountDownLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    assert_true(window_ != nullptr);
     if (focus_ == Focus::COUNTDOWN) {
         if (!timeout_started_) {
             start_time_ = std::chrono::steady_clock::now();

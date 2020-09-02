@@ -17,6 +17,7 @@ class Scene;
 class KeyBindings: public ExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
+        GLFWwindow* window,
         bool print_gamepad_buttons,
         SelectedCameras& selected_cameras,
         const Focus& focus,
@@ -24,7 +25,6 @@ public:
 
     virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in) override;
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

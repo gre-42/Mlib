@@ -24,10 +24,6 @@ PlayersStatsLogic::PlayersStatsLogic(
 PlayersStatsLogic::~PlayersStatsLogic()
 {}
 
-void PlayersStatsLogic::initialize(GLFWwindow* window) {
-    RenderTextLogic::initialize(window);
-}
-
 void PlayersStatsLogic::render(
     int width,
     int height,
@@ -36,7 +32,6 @@ void PlayersStatsLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    assert_true(window_ != nullptr);
     renderable_text_->render(position_, players_.get_score_board(), width, height, line_distance_pixels_, true);  // true=periodic_position
 }
 

@@ -14,6 +14,9 @@ ButtonPress::ButtonPress()
 {}
 
 void ButtonPress::update(GLFWwindow* window) {
+    if (window == nullptr) {
+        throw std::runtime_error("ButtonPress::update received nullptr window");
+    }
     window_ = window;
     has_gamepad_ = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state_);
 }

@@ -19,6 +19,7 @@ struct ReplacementParameter {
 class ParameterSetterLogic: public RenderLogic {
 public:
     ParameterSetterLogic(
+        GLFWwindow* window,
         const std::vector<ReplacementParameter>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -31,7 +32,6 @@ public:
         ButtonPress& button_press);
     ~ParameterSetterLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

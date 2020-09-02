@@ -11,7 +11,6 @@ class SceneNode;
 class RenderLogics: public RenderLogic, public DestructionObserver {
 public:
     ~RenderLogics();
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,
@@ -30,9 +29,7 @@ public:
     void append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic);
 private:
     void insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
-    GLFWwindow* window_ = nullptr;
     std::list<std::pair<SceneNode*, std::shared_ptr<RenderLogic>>> render_logics_;
-    std::list<std::pair<SceneNode*, std::shared_ptr<RenderLogic>>> to_be_initialized_;
 };
 
 }

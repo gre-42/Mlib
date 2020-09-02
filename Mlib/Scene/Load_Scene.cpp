@@ -92,6 +92,7 @@ void LoadScene::operator()(
     const std::string& scene_filename,
     const std::string& script_filename,
     std::string& next_scene_filename,
+    GLFWwindow* window,
     RenderingResources& rendering_resources,
     SceneNodeResources& scene_node_resources,
     Players& players,
@@ -818,6 +819,7 @@ void LoadScene::operator()(
                     filename: fpath(e.second)});
             }
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
+                window,
                 std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
                 fpath(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
@@ -841,6 +843,7 @@ void LoadScene::operator()(
                     substitutions: SubstitutionString{e.second}});
             }
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
+                window,
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
                 fpath(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
@@ -1059,6 +1062,7 @@ void LoadScene::operator()(
                 scene_filename,
                 spath(match[1].str()),
                 next_scene_filename,
+                window,
                 rendering_resources,
                 scene_node_resources,
                 players,

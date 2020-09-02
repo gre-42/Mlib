@@ -41,10 +41,6 @@ void VisualMovableLogger::advance_time(float dt) {
     text_ = sstr.str();
 }
 
-void VisualMovableLogger::initialize(GLFWwindow* window) {
-    RenderTextLogic::initialize(window);
-}
-
 void VisualMovableLogger::render(
     int width,
     int height,

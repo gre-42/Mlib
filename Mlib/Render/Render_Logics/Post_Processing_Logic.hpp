@@ -2,6 +2,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
+#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
 
 namespace Mlib {
@@ -16,7 +17,7 @@ struct PPRenderProgram: public RenderProgram {
     GLint background_color_location = -1;
 };
 
-class PostProcessingLogic: public GenericPostProcessingLogic {
+class PostProcessingLogic: public RenderLogic, public GenericPostProcessingLogic {
 public:
     PostProcessingLogic(
         RenderLogic& child_logic,
@@ -24,7 +25,6 @@ public:
         bool low_pass);
     ~PostProcessingLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

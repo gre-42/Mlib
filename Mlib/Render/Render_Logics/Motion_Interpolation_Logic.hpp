@@ -1,6 +1,8 @@
 #pragma once
+#include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
+#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
 #include <map>
 
@@ -22,12 +24,11 @@ enum class InterpolationType {
     OPTICAL_FLOW
 };
 
-class MotionInterpolationLogic: public GenericPostProcessingLogic {
+class MotionInterpolationLogic: public RenderLogic, public GenericPostProcessingLogic {
 public:
     MotionInterpolationLogic(RenderLogic& child_logic, InterpolationType interpolation_type);
     ~MotionInterpolationLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

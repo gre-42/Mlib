@@ -1,25 +1,21 @@
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "Render2.hpp"
-
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Fps.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/linmath.hpp>
+#include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
+#include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderables/Renderable_Depth_Map.hpp>
 #include <Mlib/Render/Window.hpp>
-#include <Mlib/Render/Render_Results.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Render/linmath.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
 #include <fenv.h>
 #include <iostream>
+
 
 using namespace Mlib;
 
@@ -99,8 +95,6 @@ void Render2::operator () (
     std::shared_mutex& mutex,
     const SceneGraphConfig& scene_graph_config)
 {
-    logic.initialize(window_->window());
-
     SetFps set_fps;
     Fps fps;
     size_t fps_i = 0;
@@ -167,7 +161,7 @@ void Render2::operator () (
     float scale,
     const SceneGraphConfig& scene_graph_config)
 {
-    RotatingLogic rotating_logic{scene, rotate, scale};
+    RotatingLogic rotating_logic{window_->window(), scene, rotate, scale};
     std::shared_mutex mutex;
     (*this)(
         rotating_logic,
@@ -194,6 +188,11 @@ void Render2::operator () (
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
     (*this)(scene, rotate, scale, scene_graph_config);
+}
+
+GLFWwindow* Render2::window() const {
+    assert_true(window_.get());
+    return window_->window();
 }
 
 bool Render2::window_should_close() const {

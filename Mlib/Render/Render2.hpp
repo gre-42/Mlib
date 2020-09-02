@@ -1,4 +1,8 @@
 #pragma once
+#include <glad/gl.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -40,6 +44,8 @@ public:
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},
         const CameraConfig& camera_config = CameraConfig{});
     
+    GLFWwindow* window() const;
+
     bool window_should_close() const;
 
 private:

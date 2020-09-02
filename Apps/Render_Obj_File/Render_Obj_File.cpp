@@ -122,6 +122,7 @@ int main(int argc, char** argv) {
             focus: focus,
             physics_set_fps: nullptr};
         auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
+            render2.window(),
             scene,
             user_object,
             true,               // fly

@@ -9,6 +9,7 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 
 SceneSelectorLogic::SceneSelectorLogic(
+    GLFWwindow* window,
     const std::vector<SceneEntry>& scene_files,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
@@ -20,6 +21,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     bool& leave_render_loop,
     ButtonPress& button_press)
 : scene_selector_list_view_{
+    window,
     scene_files,
     ttf_filename,
     position,
@@ -29,19 +31,16 @@ SceneSelectorLogic::SceneSelectorLogic(
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
   button_press_{button_press},
-  window_{nullptr},
+  window_{window},
   scene_filename_{scene_filename},
   leave_render_loop_{leave_render_loop}
-{}
+{
+    // Initialize the reference
+    scene_filename_ = scene_selector_list_view_.selected_element().filename;
+}
 
 SceneSelectorLogic::~SceneSelectorLogic()
 {}
-
-void SceneSelectorLogic::initialize(GLFWwindow* window) {
-    scene_selector_list_view_.initialize(window);
-    window_ = window;
-    scene_filename_ = scene_selector_list_view_.selected_element().filename;
-}
 
 void SceneSelectorLogic::render(
     int width,

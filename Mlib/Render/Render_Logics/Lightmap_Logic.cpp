@@ -24,9 +24,6 @@ LightmapLogic::LightmapLogic(
 
 LightmapLogic::~LightmapLogic() {}
 
-void LightmapLogic::initialize(GLFWwindow* window)
-{}
-
 void LightmapLogic::render(
     int width,
     int height,

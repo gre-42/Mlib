@@ -83,29 +83,11 @@ SkyboxLogic::SkyboxLogic(
     RenderLogic& child_logic,
     RenderingResources& rendering_resources)
 : child_logic_{child_logic},
-  rendering_resources_{rendering_resources}
+  rendering_resources_{rendering_resources},
+  loaded_{false}
 {}
 
 SkyboxLogic::~SkyboxLogic() {}
-
-void SkyboxLogic::initialize(GLFWwindow* window) {
-    child_logic_.initialize(window);
-
-    if (!filenames_.empty()) {
-        rp_.generate(vertex_shader_text, fragment_shader_text);
-        rp_.skybox_location = checked_glGetUniformLocation(rp_.program, "skybox");
-        rp_.vp_location = checked_glGetUniformLocation(rp_.program, "vp");
-
-        CHK(glGenVertexArrays(1, &va_.vertex_array));
-        CHK(glGenBuffers(1, &va_.vertex_buffer));
-        CHK(glBindVertexArray(va_.vertex_array));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices), &skybox_vertices, GL_STATIC_DRAW));
-        CHK(glEnableVertexAttribArray(0));
-        CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr));
-        CHK(glBindVertexArray(0));
-    }
-}
 
 void SkyboxLogic::render(
     int width,
@@ -115,6 +97,23 @@ void SkyboxLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    if (!loaded_) {
+        loaded_ = true;
+        if (!filenames_.empty()) {
+            rp_.generate(vertex_shader_text, fragment_shader_text);
+            rp_.skybox_location = checked_glGetUniformLocation(rp_.program, "skybox");
+            rp_.vp_location = checked_glGetUniformLocation(rp_.program, "vp");
+
+            CHK(glGenVertexArrays(1, &va_.vertex_array));
+            CHK(glGenBuffers(1, &va_.vertex_buffer));
+            CHK(glBindVertexArray(va_.vertex_array));
+            CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
+            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices), &skybox_vertices, GL_STATIC_DRAW));
+            CHK(glEnableVertexAttribArray(0));
+            CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr));
+            CHK(glBindVertexArray(0));
+        }
+    }
     LOG_FUNCTION("SkyboxLogic::render");
     child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
     if (!filenames_.empty()) {

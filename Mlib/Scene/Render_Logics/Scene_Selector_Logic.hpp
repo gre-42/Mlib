@@ -16,6 +16,7 @@ struct SceneEntry {
 class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
+        GLFWwindow* window,
         const std::vector<SceneEntry>& scene_files,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -28,7 +29,6 @@ public:
         ButtonPress& button_press);
     ~SceneSelectorLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

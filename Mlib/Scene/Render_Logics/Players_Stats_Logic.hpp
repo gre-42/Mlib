@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -9,7 +10,7 @@ namespace Mlib {
 class Players;
 class RenderableText;
 
-class PlayersStatsLogic: public RenderTextLogic {
+class PlayersStatsLogic: public RenderLogic, public RenderTextLogic {
 public:
     PlayersStatsLogic(
         const Players& players,
@@ -19,7 +20,6 @@ public:
         float line_distance_pixels);
     ~PlayersStatsLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

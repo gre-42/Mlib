@@ -22,10 +22,6 @@ LoadingTextLogic::LoadingTextLogic(
 LoadingTextLogic::~LoadingTextLogic()
 {}
 
-void LoadingTextLogic::initialize(GLFWwindow* window) {
-    RenderTextLogic::initialize(window);
-}
-
 void LoadingTextLogic::render(
     int width,
     int height,
@@ -34,7 +30,6 @@ void LoadingTextLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    assert_true(window_ != nullptr);
     if (focus_ == Focus::LOADING) {
         renderable_text_->render(
             position_,

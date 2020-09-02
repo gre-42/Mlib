@@ -103,22 +103,17 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
 }
 
 FlyingCameraLogic::FlyingCameraLogic(
+    GLFWwindow* window,
     const Scene& scene,
     FlyingCameraUserClass& user_object,
     bool fly,
     bool rotate)
 : scene_{scene},
   user_object_{user_object},
-  window_{nullptr},
+  window_{window},
   fly_{fly},
   rotate_{rotate}
-{}
-
-void FlyingCameraLogic::initialize(GLFWwindow* window) {
-    if (window_ != nullptr) {
-        throw std::runtime_error("Multiple calls to FlyingCameraLogic::initialize");
-    }
-    window_ = window;
+{
     // glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y);
     // glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height);
     glfwSetWindowUserPointer(window, &user_object_);

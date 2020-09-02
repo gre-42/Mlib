@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <string>
 
 namespace Mlib {
 
@@ -12,7 +13,6 @@ public:
         RenderingResources& rendering_resources);
     ~DirtmapLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

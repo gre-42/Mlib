@@ -14,10 +14,6 @@ MainMenuBackgroundLogic::MainMenuBackgroundLogic(
   target_focus_{target_focus}
 {}
 
-void MainMenuBackgroundLogic::initialize(GLFWwindow* window) {
-    FillWithTextureLogic::initialize(window);
-}
-
 void MainMenuBackgroundLogic::render(
     int width,
     int height,

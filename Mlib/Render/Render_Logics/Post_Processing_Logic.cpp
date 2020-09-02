@@ -100,41 +100,28 @@ PostProcessingLogic::PostProcessingLogic(RenderLogic& child_logic, bool depth_fo
 : child_logic_{child_logic},
   depth_fog_{depth_fog},
   low_pass_{low_pass}
-{}
+{
+    rp_.generate(vertex_shader_text, fragment_shader_text({}, low_pass_, depth_fog_));
+
+    // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
+    rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");
+    if (low_pass_ || depth_fog_) {
+        rp_.screen_texture_depth_location = checked_glGetUniformLocation(rp_.program, "screenTextureDepth");
+        rp_.z_near_location = checked_glGetUniformLocation(rp_.program, "zNear");
+        rp_.z_far_location = checked_glGetUniformLocation(rp_.program, "zFar");
+    } else {
+        rp_.screen_texture_depth_location = 0;
+        rp_.z_near_location = 0;
+        rp_.z_far_location = 0;
+    }
+    if (depth_fog_) {
+        rp_.background_color_location = checked_glGetUniformLocation(rp_.program, "backgroundColor");
+    } else {
+        rp_.background_color_location = 0;
+    }
+}
 
 PostProcessingLogic::~PostProcessingLogic() = default;
-
-void PostProcessingLogic::initialize(GLFWwindow* window) {
-    child_logic_.initialize(window);
-
-    GenericPostProcessingLogic::initialize(window);
-
-    // shader configuration
-    // --------------------
-    {
-        rp_.generate(vertex_shader_text, fragment_shader_text({}, low_pass_, depth_fog_));
-
-        // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
-        rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");
-        if (low_pass_ || depth_fog_) {
-            rp_.screen_texture_depth_location = checked_glGetUniformLocation(rp_.program, "screenTextureDepth");
-            rp_.z_near_location = checked_glGetUniformLocation(rp_.program, "zNear");
-            rp_.z_far_location = checked_glGetUniformLocation(rp_.program, "zFar");
-        } else {
-            rp_.screen_texture_depth_location = 0;
-            rp_.z_near_location = 0;
-            rp_.z_far_location = 0;
-        }
-        if (depth_fog_) {
-            rp_.background_color_location = checked_glGetUniformLocation(rp_.program, "backgroundColor");
-        } else {
-            rp_.background_color_location = 0;
-        }
-    }
-
-    // framebuffer configuration
-    // -------------------------
-}
 
 void PostProcessingLogic::render(
     int width,

@@ -13,7 +13,6 @@ class StandardCameraLogic: public RenderLogic {
 public:
     explicit StandardCameraLogic(const Scene& scene, SelectedCameras& cameras);
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,

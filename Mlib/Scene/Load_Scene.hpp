@@ -1,4 +1,8 @@
 #pragma once
+#include <glad/gl.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <list>
 #include <map>
@@ -39,6 +43,7 @@ public:
         const std::string& scene_filename,
         const std::string& script_filename,
         std::string& next_scene_filename,
+        GLFWwindow* window,
         RenderingResources& rendering_resources,
         SceneNodeResources& scene_node_resources,
         Players& players,

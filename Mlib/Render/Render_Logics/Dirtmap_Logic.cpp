@@ -16,9 +16,6 @@ DirtmapLogic::DirtmapLogic(
 
 DirtmapLogic::~DirtmapLogic() {}
 
-void DirtmapLogic::initialize(GLFWwindow* window)
-{}
-
 void DirtmapLogic::render(
     int width,
     int height,

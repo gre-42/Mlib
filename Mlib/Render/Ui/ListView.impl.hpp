@@ -6,34 +6,25 @@ namespace Mlib {
 
 template <class TOption>
 ListView<TOption>::ListView(
+    GLFWwindow* window,
     const std::vector<TOption>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
     const std::function<std::string(const TOption&)>& transformation)
-: options_{options},
-  ttf_filename_{ttf_filename},
+: renderable_text_{new RenderableText{ttf_filename, font_height_pixels}},
+  options_{options},
   position_{position},
-  font_height_pixels_{font_height_pixels},
   line_distance_pixels_{line_distance_pixels},
   transformation_{transformation},
   selection_index_{0},
-  window_{nullptr}
+  window_{window}
 {}
 
 template <class TOption>
 ListView<TOption>::~ListView()
 {}
-
-template <class TOption>
-void ListView<TOption>::initialize(GLFWwindow* window) {
-    if (renderable_text_ != nullptr) {
-        throw std::runtime_error("Multiple calls to SceneSelectorLogic::initialize");
-    }
-    renderable_text_.reset(new RenderableText{ttf_filename_, font_height_pixels_});
-    window_ = window;
-}
 
 template <class TOption>
 void ListView<TOption>::handle_input() {

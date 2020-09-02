@@ -13,10 +13,6 @@ ReadPixelsLogic::ReadPixelsLogic(RenderLogic& child_logic)
 : child_logic_{child_logic}
 {}
 
-void ReadPixelsLogic::initialize(GLFWwindow* window) {
-    child_logic_.initialize(window);
-}
-
 void ReadPixelsLogic::render(
     int width,
     int height,

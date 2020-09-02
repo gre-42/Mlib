@@ -10,20 +10,17 @@
 using namespace Mlib;
 
 KeyBindings::KeyBindings(
+    GLFWwindow* window,
     bool print_gamepad_buttons,
     SelectedCameras& selected_cameras,
     const Focus& focus,
     const Scene& scene)
-: window_{nullptr},
+: window_{window},
   print_gamepad_buttons_{print_gamepad_buttons},
   scene_{scene},
   selected_cameras_{selected_cameras},
   focus_{focus}
 {}
-
-void KeyBindings::initialize(GLFWwindow* window) {
-    window_ = window;
-}
 
 void KeyBindings::render(
     int width,

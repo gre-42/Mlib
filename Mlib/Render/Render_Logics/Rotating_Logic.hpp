@@ -16,9 +16,8 @@ public:
 
 class RotatingLogic: public RenderLogic {
 public:
-    explicit RotatingLogic(const Scene& scene, bool rotate, float scale);
+    explicit RotatingLogic(GLFWwindow* window, const Scene& scene, bool rotate, float scale);
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,
@@ -35,7 +34,6 @@ private:
     RotatingLocigUserClass user_object_;
     bool rotate_;
     float scale_;
-    bool init_called_ = false;
 };
 
 }

@@ -22,17 +22,6 @@ RenderLogics::~RenderLogics() {
     }
 }
 
-void RenderLogics::initialize(GLFWwindow* window) {
-    if (window_ != nullptr) {
-        throw std::runtime_error("RenderLogics::initialize called multiple times");
-    }
-    window_ = window;
-    for(auto& v : to_be_initialized_) {
-        v.second->initialize(window);
-    }
-    to_be_initialized_.clear();
-}
-
 void RenderLogics::render(
     int width,
     int height,
@@ -42,9 +31,6 @@ void RenderLogics::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("RenderLogics::render");
-    if (window_ == nullptr) {
-        throw std::runtime_error("RenderLogics::render called without previous initialize");
-    }
     for(const auto& c : render_logics_) {
         c.second->render(width, height, render_config, scene_graph_config, render_results, frame_id);
     }
@@ -75,11 +61,6 @@ void RenderLogics::append(SceneNode* scene_node, const std::shared_ptr<RenderLog
 }
 
 void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
-    if (window_ == nullptr) {
-        to_be_initialized_.push_back(std::make_pair(scene_node, render_logic));
-    } else {
-        render_logic->initialize(window_);
-    }
     if (scene_node != nullptr &&
         (find_render_logic(scene_node, render_logics_) == render_logics_.end()))
     {
@@ -104,7 +85,6 @@ void RenderLogics::notify_destroyed(void* destroyed_object) {
             return true;
         };
         bool found = false;
-        found |= del(to_be_initialized_);
         found |= del(render_logics_);
         if (!found) {
             break;

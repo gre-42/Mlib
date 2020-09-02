@@ -1,11 +1,5 @@
 #pragma once
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Array/Array_Forward.hpp>
-#include <memory>
 
 namespace Mlib {
 
@@ -13,11 +7,9 @@ struct RenderConfig;
 struct RenderResults;
 struct RenderedSceneDescriptor;
 struct SceneGraphConfig;
-struct FrameBuffer;
 
 class RenderLogic {
 public:
-    virtual void initialize(GLFWwindow* window) = 0;
     virtual void render(
         int width,
         int height,

@@ -1,7 +1,3 @@
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "Generic_Post_Processing_Logic.hpp"
 #include <Mlib/Render/CHK.hpp>
 
@@ -20,7 +16,7 @@ const char* GenericPostProcessingLogic::vertex_shader_text =
 "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
 "}";
 
-void GenericPostProcessingLogic::initialize(GLFWwindow* window) {
+GenericPostProcessingLogic::GenericPostProcessingLogic() {
     float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
         -1.0f,  1.0f,  0.0f, 1.0f,

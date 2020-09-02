@@ -20,15 +20,10 @@ static const char* fragment_shader_text =
 FillWithTextureLogic::FillWithTextureLogic(
     RenderingResources& rendering_resources,
     const std::string& image_resource_name)
-: rendering_resources_{rendering_resources},
-  image_resource_name_{image_resource_name}
-{}
-
-void FillWithTextureLogic::initialize(GLFWwindow* window) {
-    GenericPostProcessingLogic::initialize(window);
+{
     rp_.generate(vertex_shader_text, fragment_shader_text);
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
-    rp_.texture_id_ = rendering_resources_.get_texture(image_resource_name_, true);  // true = rgba
+    rp_.texture_id_ = rendering_resources.get_texture(image_resource_name, true);  // true = rgba
 }
 
 void FillWithTextureLogic::render(

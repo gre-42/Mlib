@@ -34,7 +34,6 @@ public:
         bool with_depth_texture);
     ~LightmapLogic();
 
-    virtual void initialize(GLFWwindow* window) override;
     virtual void render(
         int width,
         int height,
