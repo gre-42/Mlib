@@ -14,9 +14,11 @@ namespace Mlib {
 class Scene;
 struct SelectedCameras;
 class SetFps;
+class ButtonStates;
 
 class FlyingCameraUserClass: public BaseUserObject {
 public:
+    ButtonStates& button_states;
     SelectedCameras& cameras;
     Focus& focus;
     SetFps* physics_set_fps;
@@ -34,6 +36,7 @@ class FlyingCameraLogic: public RenderLogic {
 public:
     explicit FlyingCameraLogic(
         GLFWwindow* window,
+        ButtonPress& button_press,
         const Scene& scene,
         FlyingCameraUserClass& user_object,
         bool fly,
@@ -54,7 +57,7 @@ private:
     const Scene& scene_;
     FlyingCameraUserClass& user_object_;
     GLFWwindow* window_;
-    ButtonPress button_press_;
+    ButtonPress& button_press_;
     bool fly_;
     bool rotate_;
 };

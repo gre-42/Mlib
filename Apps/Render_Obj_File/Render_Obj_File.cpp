@@ -14,6 +14,8 @@
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/String.hpp>
@@ -116,13 +118,17 @@ int main(int argc, char** argv) {
 
         // scene.print();
         Focus focus = Focus::SCENE;
+        ButtonStates button_states;
         StandardCameraLogic standard_camera_logic{scene, selected_cameras};
         FlyingCameraUserClass user_object{
+            button_states: button_states,
             cameras: selected_cameras,
             focus: focus,
             physics_set_fps: nullptr};
+        ButtonPress button_press{button_states};
         auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
             render2.window(),
+            button_press,
             scene,
             user_object,
             true,               // fly

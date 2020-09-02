@@ -16,7 +16,6 @@ struct SceneEntry {
 class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
-        GLFWwindow* window,
         const std::vector<SceneEntry>& scene_files,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -46,7 +45,6 @@ private:
     UiFocus& ui_focus_;
     size_t submenu_id_;
     ButtonPress& button_press_;
-    GLFWwindow* window_;
     std::string& scene_filename_;
     bool& leave_render_loop_;
 };

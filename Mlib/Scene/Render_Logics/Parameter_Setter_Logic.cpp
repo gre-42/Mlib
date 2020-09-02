@@ -6,7 +6,6 @@
 using namespace Mlib;
 
 ParameterSetterLogic::ParameterSetterLogic(
-    GLFWwindow* window,
     const std::vector<ReplacementParameter>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
@@ -18,7 +17,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     bool& leave_render_loop,
     ButtonPress& button_press)
 : scene_selector_list_view_{
-    window,
+    button_press,
     options,
     ttf_filename,
     position,
@@ -29,8 +28,7 @@ ParameterSetterLogic::ParameterSetterLogic(
   submenu_id_{submenu_id},
   substitutions_{substitutions},
   leave_render_loop_{leave_render_loop},
-  button_press_{button_press},
-  window_{window}
+  button_press_{button_press}
 {
     // Initialize the reference
     substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
@@ -49,7 +47,6 @@ void ParameterSetterLogic::render(
     if (ui_focus_.focus == Focus::MENU) {
         if (ui_focus_.submenu_id == submenu_id_) {
             scene_selector_list_view_.handle_input();
-            button_press_.update(window_);
             if (button_press_.key_pressed({key: "LEFT", joystick_axis: "1", joystick_axis_sign: -1})) {
                 ui_focus_.goto_prev_submenu();
             }

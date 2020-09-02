@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <chrono>
 #include <thread>
@@ -23,9 +24,10 @@ int main(int argc, char** argv) {
         throw std::runtime_error("Could not initialize window");
     }
 
-    ButtonPress bp;
+    ButtonStates bs;
+    ButtonPress bp{bs};
     while(true) {
-        bp.update(window);
+        bs.update_gamepad_state();
         bp.print();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }

@@ -4,42 +4,35 @@
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <cmath>
 #include <iostream>
 
 using namespace Mlib;
 
-ButtonPress::ButtonPress()
-: window_{nullptr}
+ButtonPress::ButtonPress(const ButtonStates& button_states)
+: button_states_{button_states}
 {}
 
-void ButtonPress::update(GLFWwindow* window) {
-    if (window == nullptr) {
-        throw std::runtime_error("ButtonPress::update received nullptr window");
-    }
-    window_ = window;
-    has_gamepad_ = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state_);
-}
-
 void ButtonPress::print(bool physical) const {
-    if (has_gamepad_) {
+    if (button_states_.has_gamepad) {
         std::cerr << std::endl;
         std::cerr << std::endl;
         if (physical) {
             for(size_t i = 0; i < 15; ++i) {
-                std::cerr << i << "=" << (unsigned int)gamepad_state_.buttons[i] << " ";
+                std::cerr << i << "=" << (unsigned int)button_states_.gamepad_state.buttons[i] << " ";
             }
             std::cerr << std::endl;
             for(size_t i = 0; i < 6; ++i) {
-                std::cerr << i << "=" << gamepad_state_.axes[i] << " ";
+                std::cerr << i << "=" << button_states_.gamepad_state.axes[i] << " ";
             }
         } else {
             for(const auto& b : glfw_gamepad_buttons) {
-                std::cerr << b.first << "=" << (unsigned int)gamepad_state_.buttons[b.second] << " ";
+                std::cerr << b.first << "=" << (unsigned int)button_states_.gamepad_state.buttons[b.second] << " ";
             }
             std::cerr << std::endl;
             for(const auto& b : glfw_joystick_axes) {
-                std::cerr << b.first << "=" << gamepad_state_.axes[b.second] << " ";
+                std::cerr << b.first << "=" << button_states_.gamepad_state.axes[b.second] << " ";
             }
         }
         std::cerr << std::endl;
@@ -49,13 +42,10 @@ void ButtonPress::print(bool physical) const {
 }
 
 bool ButtonPress::key_down(const BaseKeyBinding& k) const {
-    if (window_ == nullptr) {
-        throw std::runtime_error("ButtonPress::update not called");
-    }
     return
-        (!k.key.empty() && glfwGetKey(window_, glfw_keys.at(k.key)) == GLFW_PRESS) ||
-        (has_gamepad_ && !k.gamepad_button.empty() && gamepad_state_.buttons[glfw_gamepad_buttons.at(k.gamepad_button)]) ||
-        (has_gamepad_ && !k.joystick_axis.empty() && (gamepad_state_.axes[glfw_joystick_axes.at(k.joystick_axis)] == k.joystick_axis_sign));
+        (!k.key.empty() && button_states_.get_key_down(glfw_keys.at(k.key))) ||
+        (button_states_.has_gamepad && !k.gamepad_button.empty() && button_states_.gamepad_state.buttons[glfw_gamepad_buttons.at(k.gamepad_button)]) ||
+        (button_states_.has_gamepad && !k.joystick_axis.empty() && (button_states_.gamepad_state.axes[glfw_joystick_axes.at(k.joystick_axis)] == k.joystick_axis_sign));
 }
 
 bool ButtonPress::key_pressed(const BaseKeyBinding& k) {
@@ -84,7 +74,7 @@ float ButtonPress::key_alpha(const BaseKeyBinding& k) {
 
 float ButtonPress::axis_beta(const BaseAxisBinding& k) {
     if (!k.joystick_axis.empty()) {
-        return gamepad_state_.axes[glfw_joystick_axes.at(k.joystick_axis)] * k.joystick_axis_sign;
+        return button_states_.gamepad_state.axes[glfw_joystick_axes.at(k.joystick_axis)] * k.joystick_axis_sign;
     } else {
         return NAN;
     }

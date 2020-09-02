@@ -8,12 +8,13 @@
 namespace Mlib {
 
 class RenderableText;
+class ButtonStates;
 
 template <class TOption>
 class ListView {
 public:
     ListView(
-        GLFWwindow* window,
+        ButtonPress& button_press,
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,

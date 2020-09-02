@@ -10,12 +10,12 @@
 using namespace Mlib;
 
 KeyBindings::KeyBindings(
-    GLFWwindow* window,
+    ButtonPress& button_press,
     bool print_gamepad_buttons,
     SelectedCameras& selected_cameras,
     const Focus& focus,
     const Scene& scene)
-: window_{window},
+: button_press_{button_press},
   print_gamepad_buttons_{print_gamepad_buttons},
   scene_{scene},
   selected_cameras_{selected_cameras},
@@ -48,11 +48,10 @@ bool KeyBindings::requires_postprocessing() const {
 }
 
 void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in) {
-    if ((window_ != nullptr) && !burn_in && (focus_ == Focus::SCENE)) {
+    if (!burn_in && (focus_ == Focus::SCENE)) {
         // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
         // }
-        button_press_.update(window_);
         if (print_gamepad_buttons_) {
             button_press_.print();
         }

@@ -6,6 +6,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Set_Fps.hpp>
@@ -70,6 +71,7 @@ static void flying_key_callback(GLFWwindow* window, int key, int scancode, int a
         }
     }
     fullscreen_callback(window, key, scancode, action, mods);
+    user_object->button_states.notify_key_event(key, action);
 }
 
 static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -100,10 +102,12 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
         }
     }
     fullscreen_callback(window, key, scancode, action, mods);
+    user_object->button_states.notify_key_event(key, action);
 }
 
 FlyingCameraLogic::FlyingCameraLogic(
     GLFWwindow* window,
+    ButtonPress& button_press,
     const Scene& scene,
     FlyingCameraUserClass& user_object,
     bool fly,
@@ -111,6 +115,7 @@ FlyingCameraLogic::FlyingCameraLogic(
 : scene_{scene},
   user_object_{user_object},
   window_{window},
+  button_press_{button_press},
   fly_{fly},
   rotate_{rotate}
 {
@@ -146,7 +151,7 @@ void FlyingCameraLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    button_press_.update(window_);
+    user_object_.button_states.update_gamepad_state();
     if (button_press_.key_pressed({key: "ESCAPE", gamepad_button: "START"})) {
         if (user_object_.focus == Focus::MENU) {
             user_object_.focus = Focus::SCENE;

@@ -6,7 +6,7 @@ namespace Mlib {
 
 template <class TOption>
 ListView<TOption>::ListView(
-    GLFWwindow* window,
+    ButtonPress& button_press,
     const std::vector<TOption>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
@@ -19,7 +19,7 @@ ListView<TOption>::ListView(
   line_distance_pixels_{line_distance_pixels},
   transformation_{transformation},
   selection_index_{0},
-  window_{window}
+  button_press_{button_press}
 {}
 
 template <class TOption>
@@ -28,7 +28,6 @@ ListView<TOption>::~ListView()
 
 template <class TOption>
 void ListView<TOption>::handle_input() {
-    button_press_.update(window_);
     if (button_press_.key_pressed({key: "UP", joystick_axis: "2", joystick_axis_sign: -1})) {
         if (selection_index_ > 0) {
             --selection_index_;
@@ -44,7 +43,6 @@ void ListView<TOption>::handle_input() {
 template <class TOption>
 void ListView<TOption>::render(int width, int height, bool periodic_position)
 {
-    assert_true(window_ != nullptr);
     std::stringstream sstr;
     size_t i = 0;
     for(const auto& s : options_) {
