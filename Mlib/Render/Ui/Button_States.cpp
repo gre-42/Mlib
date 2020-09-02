@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Button_States.hpp"
+#include <Mlib/Render/CHK.hpp>
 
 using namespace Mlib;
 
@@ -20,5 +21,5 @@ bool ButtonStates::get_key_down(int key) const {
 }
 
 void ButtonStates::update_gamepad_state() {
-    has_gamepad = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state);
+    GLFW_CHK(has_gamepad = glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state));
 }
