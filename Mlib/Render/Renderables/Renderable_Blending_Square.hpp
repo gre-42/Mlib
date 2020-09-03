@@ -5,10 +5,7 @@
 
 namespace Mlib {
 
-class RenderableBlendingSquare:
-    public SceneNodeResource,
-    public std::enable_shared_from_this<RenderableBlendingSquare>
-{
+class RenderableBlendingSquare: public SceneNodeResource{
 public:
     RenderableBlendingSquare(
         const FixedArray<float, 2, 2>& square,

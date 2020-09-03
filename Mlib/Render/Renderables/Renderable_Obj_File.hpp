@@ -5,10 +5,7 @@
 
 namespace Mlib {
 
-class RenderableObjFile:
-    public SceneNodeResource,
-    public std::enable_shared_from_this<RenderableObjFile>
-{
+class RenderableObjFile: public SceneNodeResource {
 public:
     RenderableObjFile(
         const std::string& filename,

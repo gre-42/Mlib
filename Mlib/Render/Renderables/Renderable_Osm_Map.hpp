@@ -10,10 +10,7 @@ class RenderingResources;
 class SceneNodeResources;
 class ResourceInstanceDescriptor;
 
-class RenderableOsmMap:
-    public SceneNodeResource,
-    public std::enable_shared_from_this<RenderableOsmMap>
-{
+class RenderableOsmMap: public SceneNodeResource {
 public:
     explicit RenderableOsmMap(
         SceneNodeResources& scene_node_resources,

@@ -5,10 +5,7 @@
 
 namespace Mlib {
 
-class RenderableDepthMap:
-    public SceneNodeResource,
-    public std::enable_shared_from_this<RenderableDepthMap>
-{
+class RenderableDepthMap: public SceneNodeResource {
 public:
     RenderableDepthMap(
         const Array<float>& rgb_picture,

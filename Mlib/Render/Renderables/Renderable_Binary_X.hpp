@@ -5,10 +5,7 @@
 
 namespace Mlib {
 
-class RenderableBinaryX:
-    public SceneNodeResource,
-    public std::enable_shared_from_this<RenderableBinaryX>
-{
+class RenderableBinaryX: public SceneNodeResource {
 public:
     RenderableBinaryX(
         const FixedArray<float, 2, 2>& square,
