@@ -13,7 +13,8 @@ RenderableBinaryX::RenderableBinaryX(
     const FixedArray<float, 2, 2>& square,
     const std::string& texture,
     RenderingResources* rendering_resources,
-    bool is_small)
+    bool is_small,
+    const FixedArray<float, 3>& ambience)
 {
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2);
@@ -55,7 +56,7 @@ RenderableBinaryX::RenderableBinaryX(
                     aggregate_mode: is_small ? AggregateMode::SORTED_CONTINUOUSLY : AggregateMode::ONCE,
                     is_small: is_small,
                     cull_faces: false,
-                    ambience: {2, 2, 2},
+                    ambience: OrderableFixedArray{ambience},
                     diffusivity: {0, 0, 0},
                     specularity: {0, 0, 0}},
                 std::move(triangles),
