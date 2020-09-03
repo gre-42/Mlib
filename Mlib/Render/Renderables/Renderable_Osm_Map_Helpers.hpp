@@ -64,6 +64,15 @@ enum class BuildingType {
     WALL_BARRIER
 };
 
+class ResourceNameCycle {
+public:
+    ResourceNameCycle(const std::vector<std::string>& names);
+    std::string operator () ();
+private:
+    std::vector<std::string> names_;
+    size_t rid_;
+};
+
 std::list<Building> get_buildings_or_wall_barriers(
     BuildingType building_type,
     const std::map<std::string, Way>& ways,
@@ -187,33 +196,38 @@ void apply_height_map(
     const std::map<std::string, Node>& nodes,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings);
 
-void add_vegetation_at_triangle_centers(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
-    const TriangleList& triangles,
-    bool continuous);
-
 void add_grass_inside_triangles(
     std::list<ResourceInstanceDescriptor>& fern_positions,
+    ResourceNameCycle& rnc,
     const TriangleList& triangles,
-    bool continuous,
     float scale,
     float distance);
 
 void add_trees_to_forest_outlines(
     std::list<ResourceInstanceDescriptor>& fern_positions,
     std::list<FixedArray<float, 2>>& steiner_points,
+    ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    bool continuous,
     float tree_distance,
     float tree_inwards_distance,
     float scale);
 
+// void add_grass_outlines(
+//     std::list<ResourceInstanceDescriptor>& fern_positions,
+//     std::list<FixedArray<float, 2>>& steiner_points,
+//     const std::map<std::string, Node>& nodes,
+//     const std::map<std::string, Way>& ways,
+//     bool continuous,
+//     float tree_distance,
+//     float tree_inwards_distance,
+//     float scale);
+
 void add_trees_to_tree_nodes(
     std::list<ResourceInstanceDescriptor>& fern_positions,
     std::list<FixedArray<float, 2>>& steiner_points,
+    ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
-    bool continuous,
     float scale);
 
 void add_binary_vegetation_old(

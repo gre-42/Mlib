@@ -66,30 +66,6 @@ static float compute_area(
     return area2 / 2 / squared(scale);
 }
 
-class NextTreeResourceName {
-public:
-    explicit NextTreeResourceName(bool continuous)
-    : continuous_{continuous},
-      rid_{0}
-    {}
-    std::string operator() () {
-        switch((rid_++) % 4) {
-            case 0:
-                return continuous_ ? "tree-large" : "btree-large";
-            case 1:
-                return continuous_ ? "tree-large2" : "btree-large2";
-            case 2:
-                return continuous_ ? "tree" : "btree";
-            case 3:
-                return continuous_ ? "tree2" : "btree2";
-        }
-        assert_true(false);
-    }
-private:
-    size_t continuous_;
-    size_t rid_;
-};
-
 void Mlib::draw_node(
     std::vector<FixedArray<ColoredVertex, 3>>& triangles,
     const FixedArray<float, 2>& pos2d,
@@ -902,44 +878,17 @@ void Mlib::apply_height_map(
     }
 }
 
-void Mlib::add_vegetation_at_triangle_centers(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
-    const TriangleList& triangles,
-    bool continuous)
-{
-    size_t rid = 0;
-    for(auto& t : triangles.triangles_) {
-        auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
-        ++rid;
-        std::string resource_name;
-        switch(rid % 10) {
-            case 0:
-                resource_name = continuous ? "grass" : "bgrass";
-                break;
-            case 2:
-                resource_name = continuous ? "tree" : "btree";
-                break;
-            case 4:
-                resource_name = continuous ? "tree2" : "btree2";
-                break;
-            default:
-                continue;
-        }
-        fern_positions.push_back({center, resource_name});
-    }
-}
-
 void Mlib::add_grass_inside_triangles(
     std::list<ResourceInstanceDescriptor>& fern_positions,
+    ResourceNameCycle& rnc,
     const TriangleList& triangles,
-    bool continuous,
     float scale,
     float distance)
 {
     if (distance == INFINITY) {
         return;
     }
-    NormalRandomNumberGenerator<float> rng{0, 0.9, 0.2};
+    NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
     size_t gid = 0;
     for(auto& t : triangles.triangles_) {
@@ -955,21 +904,7 @@ void Mlib::add_grass_inside_triangles(
                 }
                 auto p = aa * t(0).position + bb * t(1).position + c * t(2).position;
                 ++gid;
-                std::string resource_name;
-                switch(gid % 3) {
-                    case 0:
-                        resource_name = continuous ? "grass" : "bgrass";
-                        break;
-                    case 1:
-                        resource_name = continuous ? "grass2" : "bgrass2";
-                        break;
-                    case 2:
-                        resource_name = continuous ? "grass3" : "bgrass3";
-                        break;
-                    default:
-                        continue;
-                }
-                fern_positions.push_back({p, resource_name, rng()});
+                fern_positions.push_back({p, rnc(), rng()});
             }
         }
     }
@@ -978,16 +913,15 @@ void Mlib::add_grass_inside_triangles(
 void Mlib::add_trees_to_forest_outlines(
     std::list<ResourceInstanceDescriptor>& fern_positions,
     std::list<FixedArray<float, 2>>& steiner_points,
+    ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    bool continuous,
     float tree_distance,
     float tree_inwards_distance,
     float scale)
 {
-    NormalRandomNumberGenerator<float> rng{0, 0.9, 0.2};
+    NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
-    NextTreeResourceName ntrn{continuous};
     size_t rid = 0;
     for(const auto& w : ways) {
         const auto& tags = w.second.tags;
@@ -1012,7 +946,7 @@ void Mlib::add_trees_to_forest_outlines(
                         continue;
                     }
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + tree_inwards_distance * scale * n * sign(area);
-                    fern_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, ntrn(), rng()});
+                    fern_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, rnc(), rng()});
                     if ((rid++) % 4 == 0) {
                         steiner_points.push_back(p);
                     }
@@ -1022,19 +956,63 @@ void Mlib::add_trees_to_forest_outlines(
     }
 }
 
+// void Mlib::add_grass_outlines(
+//     std::list<ResourceInstanceDescriptor>& fern_positions,
+//     std::list<FixedArray<float, 2>>& steiner_points,
+//     const std::map<std::string, Node>& nodes,
+//     const std::map<std::string, Way>& ways,
+//     bool continuous,
+//     float tree_distance,
+//     float tree_inwards_distance,
+//     float scale)
+// {
+//     NormalRandomNumberGenerator<float> rng{0, 4.9, 0.2};
+//     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
+//     GammaRandomNumberGenerator<float> rng3{0, 3, 2};
+//     NextGrassResourceName ntrn{continuous};
+//     for(float f : linspace<float>(tree_inwards_distance, tree_inwards_distance + 5.f, 3).flat_iterable()) {
+//         for(const auto& w : ways) {
+//             const auto& tags = w.second.tags;
+//             if ((tags.find("landuse") != tags.end() && (tags.at("landuse") == "farmland" || tags.at("landuse") == "meadow")))
+//             {
+//                 float area = compute_area(w.second.nd, nodes, scale);
+//                 for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
+//                     auto s = it;
+//                     ++s;
+//                     if (s == w.second.nd.end()) {
+//                         continue;
+//                     }
+//                     FixedArray<float, 2> p0 = nodes.at(*it).position;
+//                     FixedArray<float, 2> p1 = nodes.at(*s).position;
+//                     float len = std::sqrt(sum(squared(p0 - p1)));
+//                     FixedArray<float, 2> n{p0(1) - p1(1), p1(0) - p0(0)};
+//                     n /= len;
+//                     for(float a = 0.1; a < 0.91; a += tree_distance * scale / len) {
+//                         float aa = a + rng2() * tree_distance * scale / len;
+//                         if (aa < 0 || aa > 0.91) {
+//                             continue;
+//                         }
+//                         FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + (f + rng3()) * scale * n * sign(area);
+//                         fern_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, ntrn(), rng()});
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
 void Mlib::add_trees_to_tree_nodes(
     std::list<ResourceInstanceDescriptor>& fern_positions,
     std::list<FixedArray<float, 2>>& steiner_points,
+    ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
-    bool continuous,
     float scale)
 {
-    NormalRandomNumberGenerator<float> rng{0, 0.9, 0.2};
-    NextTreeResourceName ntrn{continuous};
+    NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
     for(const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
-            fern_positions.push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, ntrn(), rng()});
+            fern_positions.push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, rnc(), rng()});
             steiner_points.push_back(n.second.position);
         }
     }
@@ -1227,4 +1205,14 @@ std::list<FixedArray<float, 2>> Mlib::removed_duplicates(
     std::vector<FixedArray<float, 2>> n{nodes.begin(), nodes.end()};
     std::vector<FixedArray<float, 2>> res{removed_duplicates(n, verbose)};
     return std::list(res.begin(), res.end());
+}
+
+ResourceNameCycle::ResourceNameCycle(const std::vector<std::string>& names)
+: names_{names},
+    rid_{0}
+{}
+
+std::string ResourceNameCycle::operator() () {
+    assert_true(names_.size() > 0);
+    return names_[rid_++ % names_.size()];
 }

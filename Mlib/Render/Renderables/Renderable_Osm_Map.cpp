@@ -33,9 +33,8 @@ RenderableOsmMap::RenderableOsmMap(
     const std::string& barrier_texture,
     BlendMode barrier_blend_mode,
     const std::string& roof_texture,
-    const std::string& grass_texture,
-    const std::string& tree_texture,
-    const std::string& tree_texture_2,
+    const std::vector<std::string>& tree_resource_names,
+    const std::vector<std::string>& grass_resource_names,
     float default_street_width,
     float roof_width,
     float scale,
@@ -49,11 +48,9 @@ RenderableOsmMap::RenderableOsmMap(
     float default_barrier_top,
     bool remove_backfacing_triangles,
     bool with_tree_nodes,
-    bool with_some_vegetation,
     float forest_outline_tree_distance,
     float forest_outline_tree_inwards_distance,
     float much_grass_distance,
-    bool continuous_vegetation,
     bool with_terrain,
     bool with_buildings,
     bool only_raceways,
@@ -291,12 +288,13 @@ RenderableOsmMap::RenderableOsmMap(
             with_height_bindings);
 
         if (forest_outline_tree_distance != INFINITY) {
+            ResourceNameCycle rnc{tree_resource_names};
             add_trees_to_forest_outlines(
                 resource_instance_positions_,
                 steiner_points,
+                rnc,
                 nodes,
                 ways,
-                continuous_vegetation,
                 forest_outline_tree_distance,
                 forest_outline_tree_inwards_distance,
                 scale);
@@ -316,12 +314,24 @@ RenderableOsmMap::RenderableOsmMap(
             //     *tl_terrain,
             //     scale);
         }
+        // if (forest_outline_tree_distance != INFINITY) {
+        //     add_grass_outlines(
+        //         resource_instance_positions_,
+        //         steiner_points,
+        //         nodes,
+        //         ways,
+        //         continuous_vegetation,
+        //         forest_outline_tree_distance / 3,
+        //         forest_outline_tree_inwards_distance * 5,
+        //         scale);
+        // }
         if (with_tree_nodes) {
+            ResourceNameCycle rnc{tree_resource_names};
             add_trees_to_tree_nodes(
                 resource_instance_positions_,
                 steiner_points,
+                rnc,
                 nodes,
-                continuous_vegetation,
                 scale);
         }
 
@@ -462,11 +472,14 @@ RenderableOsmMap::RenderableOsmMap(
     //     colorize_height_map(l->triangles_);
     // }
 
-    if (with_some_vegetation) {
-        add_vegetation_at_triangle_centers(resource_instance_positions_, *tl_terrain, continuous_vegetation);
-    }
     if (much_grass_distance != INFINITY) {
-        add_grass_inside_triangles(resource_instance_positions_, *tl_terrain, continuous_vegetation, scale, much_grass_distance);
+        ResourceNameCycle rnc{grass_resource_names};
+        add_grass_inside_triangles(
+            resource_instance_positions_,
+            rnc,
+            *tl_terrain,
+            scale,
+            much_grass_distance);
     }
 
     std::list<std::shared_ptr<ColoredVertexArray>> ts;

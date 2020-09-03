@@ -136,9 +136,8 @@ void LoadScene::operator()(
         "\\s*barrier_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*barrier_blend_mode=(off|binary|continuous)\\r?\\n"
         "\\s*roof_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*grass_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*tree_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*tree_texture_2=([\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*tree_resource_names=([\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*grass_resource_names=([\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*default_street_width=([\\w+-.]+)\\r?\\n"
         "\\s*roof_width=([\\w+-.]+)\\r?\\n"
         "\\s*scale=([\\w+-.]+)\\r?\\n"
@@ -152,11 +151,9 @@ void LoadScene::operator()(
         "\\s*default_barrier_top=([\\w+-.]+)\\r?\\n"
         "\\s*remove_backfacing_triangles=(0|1)\\r?\\n"
         "\\s*with_tree_nodes=(0|1)\\r?\\n"
-        "\\s*with_some_vegetation=(0|1)\\r?\\n"
         "\\s*forest_outline_tree_distance=([\\w+-.]+)\\r?\\n"
         "\\s*forest_outline_tree_inwards_distance=([\\w+-.]+)\\r?\\n"
         "\\s*much_grass_distance=([\\w+-.]+)\\r?\\n"
-        "\\s*continuous_vegetation=(0|1)\\r?\\n"
         "\\s*with_terrain=(0|1)\\r?\\n"
         "\\s*with_buildings=(0|1)\\r?\\n"
         "\\s*only_raceways=(0|1)\\r?\\n"
@@ -367,36 +364,33 @@ void LoadScene::operator()(
                     fpath(match[15].str()),
                     blend_mode_from_string(match[16].str()),
                     fpath(match[17].str()),
-                    fpath(match[18].str()),
-                    fpath(match[19].str()),
-                    fpath(match[20].str()),
+                    string_to_vector(match[18].str()),
+                    string_to_vector(match[19].str()),
+                    safe_stof(match[20].str()),
                     safe_stof(match[21].str()),
                     safe_stof(match[22].str()),
                     safe_stof(match[23].str()),
                     safe_stof(match[24].str()),
                     safe_stof(match[25].str()),
-                    safe_stof(match[26].str()),
+                    safe_stoi(match[26].str()),
                     safe_stoi(match[27].str()),
-                    safe_stoi(match[28].str()),
+                    safe_stof(match[28].str()),
                     safe_stof(match[29].str()),
                     safe_stof(match[30].str()),
-                    safe_stof(match[31].str()),
+                    safe_stoi(match[31].str()),
                     safe_stoi(match[32].str()),
-                    safe_stoi(match[33].str()),
-                    safe_stoi(match[34].str()),
+                    safe_stof(match[33].str()),
+                    safe_stof(match[34].str()),
                     safe_stof(match[35].str()),
-                    safe_stof(match[36].str()),
-                    safe_stof(match[37].str()),
+                    safe_stoi(match[36].str()),
+                    safe_stoi(match[37].str()),
                     safe_stoi(match[38].str()),
-                    safe_stoi(match[39].str()),
-                    safe_stoi(match[40].str()),
-                    safe_stoi(match[41].str()),
-                    safe_stof(match[42].str()),
+                    safe_stof(match[39].str()),
+                    safe_stof(match[40].str()),
+                    safe_stof(match[41].str()),
+                    safe_stoi(match[42].str()),
                     safe_stof(match[43].str()),
-                    safe_stof(match[44].str()),
-                    safe_stoi(match[45].str()),
-                    safe_stof(match[46].str()),
-                    safe_stoi(match[47].str())));
+                    safe_stoi(match[44].str())));
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                 fpath(match[2].str()),
