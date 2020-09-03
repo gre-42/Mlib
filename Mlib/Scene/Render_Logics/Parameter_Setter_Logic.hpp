@@ -28,7 +28,7 @@ public:
         size_t submenu_id,
         SubstitutionString& substitutions,
         bool& leave_render_loop,
-        const ButtonStates& button_states);
+        ButtonPress& button_press);
     ~ParameterSetterLogic();
 
     virtual void render(
@@ -49,7 +49,7 @@ private:
     size_t submenu_id_;
     SubstitutionString& substitutions_;
     bool& leave_render_loop_;
-    ButtonPress button_press_;
+    ButtonPress& button_press_;
 };
 
 }

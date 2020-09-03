@@ -5,17 +5,18 @@
 #include <Mlib/Physics/Objects/Relative_Transformer.hpp>
 #include <Mlib/Physics/Objects/Rigid_Body.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
 
 KeyBindings::KeyBindings(
-    const ButtonStates& button_states,
+    ButtonPress& button_press,
     bool print_gamepad_buttons,
     SelectedCameras& selected_cameras,
     const Focus& focus,
     const Scene& scene)
-: button_press_{button_states},
+: button_press_{button_press},
   print_gamepad_buttons_{print_gamepad_buttons},
   scene_{scene},
   selected_cameras_{selected_cameras},

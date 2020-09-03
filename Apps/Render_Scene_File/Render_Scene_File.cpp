@@ -121,6 +121,7 @@ int main(int argc, char** argv) {
             render_config};
         
         ButtonStates button_states;
+        ButtonPress button_press{button_states};
         SelectedCameras selected_cameras;
         UiFocus ui_focus = UiFocus{focus: Focus::SCENE};
         SubstitutionString substitutions;
@@ -174,7 +175,7 @@ int main(int argc, char** argv) {
                 args.has_named("--fly"),
                 args.has_named("--rotate"));
             auto key_bindings = std::make_shared<KeyBindings>(
-                button_states,
+                button_press,
                 args.has_named("--print_gamepad_buttons"),
                 selected_cameras,
                 ui_focus.focus,
@@ -209,7 +210,7 @@ int main(int argc, char** argv) {
                 players,
                 scene,
                 physics_engine,
-                button_states,
+                button_press,
                 key_bindings->camera_key_bindings_,
                 key_bindings->absolute_movable_idle_bindings_,
                 key_bindings->absolute_movable_key_bindings_,

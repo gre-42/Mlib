@@ -6,18 +6,18 @@
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 namespace Mlib {
 
 struct SelectedCameras;
+class ButtonPress;
 class Scene;
 
 class KeyBindings: public ExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
-        const ButtonStates& button_states,
+        ButtonPress& button_press,
         bool print_gamepad_buttons,
         SelectedCameras& selected_cameras,
         const Focus& focus,
@@ -44,7 +44,7 @@ public:
     std::vector<GunKeyBinding> gun_key_bindings_;
 
 private:
-    ButtonPress button_press_;
+    ButtonPress& button_press_;
     bool print_gamepad_buttons_;
     const Scene& scene_;
     SelectedCameras& selected_cameras_;

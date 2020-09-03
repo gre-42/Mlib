@@ -15,7 +15,7 @@ class ButtonStates;
 
 class ButtonPress {
 public:
-    ButtonPress(const ButtonStates& button_states);
+    explicit ButtonPress(const ButtonStates& button_states);
     void print(bool physical = false) const;
     bool key_down(const BaseKeyBinding& k) const;
     bool key_pressed(const BaseKeyBinding& k);

@@ -1,6 +1,9 @@
 #pragma once
+#include <glad/gl.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -8,13 +11,13 @@
 namespace Mlib {
 
 class RenderableText;
-class ButtonStates;
+class ButtonPress;
 
 template <class TOption>
 class ListView {
 public:
     ListView(
-        const ButtonStates& button_states,
+        ButtonPress& button_press,
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -34,7 +37,7 @@ private:
     float line_distance_pixels_;
     std::function<std::string(TOption)> transformation_;
     size_t selection_index_;
-    ButtonPress button_press_;
+    ButtonPress& button_press_;
     GLFWwindow* window_;
 };
 
