@@ -42,4 +42,22 @@ private:
     std::normal_distribution<typename FloatType<TData>::value_type> d_;
 };
 
+template <class TData>
+class GammaRandomNumberGenerator {
+public:
+    typedef typename FloatType<TData>::value_type float_type;
+    explicit GammaRandomNumberGenerator(unsigned int seed, const float_type& alpha, const float_type& beta = 1)
+    : e_(seed),
+      d_(alpha, beta)
+    {
+        e_(); // skip first element, it is close to zero
+    }
+    TData operator () () {
+        return d_(e_);
+    }
+private:
+    std::default_random_engine e_;
+    std::gamma_distribution<typename FloatType<TData>::value_type> d_;
+};
+
 }
