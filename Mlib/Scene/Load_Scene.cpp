@@ -191,7 +191,7 @@ void LoadScene::operator()(
     const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
     const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
     const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]+) radius=([\\w+-.]+) tire_id=(\\d+)$");
-    const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+) tires=([\\d\\s]+)$");
+    const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+) tires=([\\d\\s]*)$");
     const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+)$");
     const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player-name=([\\w+-.]+) node=([\\w+-.]+)$");
     const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
