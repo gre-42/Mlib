@@ -69,7 +69,6 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
     float hand_break_velocity,
     float max_stiction_force,
     float max_friction_force,
-    float friction_force_multiplier,
     float max_velocity,
     const FixedArray<float, 3>& n3,
     float P,
@@ -127,11 +126,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
         res = -break_accel * m * sn3 - tangential_accel * m * sn3T;
     }
     if (float len2 = sum(squared(res)); len2 > squared(max_stiction_force)) {
-        if (len2 * squared(friction_force_multiplier) < squared(max_friction_force)) {
-            res *= friction_force_multiplier;
-        } else {
-            res *= max_friction_force / std::sqrt(len2);
-        }
+        res *= max_friction_force / std::sqrt(len2);
     }
     return res * tire_contact;
 }

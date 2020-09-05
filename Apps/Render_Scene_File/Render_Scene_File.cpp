@@ -52,7 +52,6 @@ int main(int argc, char** argv) {
         "[--print_residual_time] "
         "[--max_stiction_force] "
         "[--max_friction_force] "
-        "[--friction_force_multiplier] "
         "[--print_fps] "
         "[--vfx] "
         "[--no_depth_fog] "
@@ -88,8 +87,7 @@ int main(int argc, char** argv) {
          "--physics_dt",
          "--render_dt",
          "--max_stiction_force",
-         "--max_friction_force",
-         "--friction_force_multiplier"});
+         "--max_friction_force"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -150,8 +148,7 @@ int main(int argc, char** argv) {
                 dt: safe_stof(args.named_value("--physics_dt", "0.01667")),
                 print_residual_time: args.has_named("--print_residual_time"),
                 max_stiction_force: safe_stof(args.named_value("--max_stiction_force", "1e4")),
-                max_friction_force: safe_stof(args.named_value("--max_friction_force", "2e3")),
-                friction_force_multiplier: safe_stof(args.named_value("--friction_force_multiplier", "0.5"))};
+                max_friction_force: safe_stof(args.named_value("--max_friction_force", "2e3"))};
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;

@@ -79,17 +79,17 @@ void test_power_to_force() {
     float dt = 0.1;
     float m = 1000;
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_forces_infinite_mass(10, 20, 1e-1, 5e4, 5e4, 0.5, INFINITY, n3, P, m, v3, dt, 1, false);
+        auto F = power_to_forces_infinite_mass(10, 20, 1e-1, 5e4, 5e4, INFINITY, n3, P, m, v3, dt, 1, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
     assert_isclose<float>(v3(0), 32.0889, 1e-4);
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_forces_infinite_mass(10, 20, 1e-1, 5e4, 5e4, 0.5, INFINITY, n3, -P, m, v3, dt, 1, false);
+        auto F = power_to_forces_infinite_mass(10, 20, 1e-1, 5e4, 5e4, INFINITY, n3, -P, m, v3, dt, 1, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
-    assert_isclose<float>(v3(0), -25.4698, 1e-4);
+    assert_isclose<float>(v3(0), -26.4613, 1e-4);
 }
 
 void test_physics_engine() {
