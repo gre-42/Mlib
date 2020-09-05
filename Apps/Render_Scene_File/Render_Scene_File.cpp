@@ -45,6 +45,10 @@ int main(int argc, char** argv) {
         "[--aggregate_update_interval <interval>] "
         "[--screen_width <width>] "
         "[--screen_height <height>] "
+        "[--scene_lightmap_width <width>] "
+        "[--scene_lightmap_height <height>] "
+        "[--black_lightmap_width <width>] "
+        "[--black_lightmap_height <height>] "
         "[--full_screen] "
         "[--no_physics ] "
         "[--physics_dt <dt> ] "
@@ -84,6 +88,10 @@ int main(int argc, char** argv) {
          "--aggregate_update_interval",
          "--screen_width",
          "--screen_height",
+         "--scene_lightmap_width",
+         "--scene_lightmap_height",
+         "--black_lightmap_width",
+         "--black_lightmap_height",
          "--physics_dt",
          "--render_dt",
          "--max_stiction_force",
@@ -102,8 +110,10 @@ int main(int argc, char** argv) {
             window_title: main_scene_filename,
             screen_width: safe_stoi(args.named_value("--screen_width", "640")),
             screen_height: safe_stoi(args.named_value("--screen_height", "480")),
-            scene_lightmap_width: safe_stoi(args.named_value("--scene-lightmap-width", "2048")),
-            scene_lightmap_height: safe_stoi(args.named_value("--scene-lightmap-height", "2048")),
+            scene_lightmap_width: safe_stoi(args.named_value("--scene_lightmap_width", "2048")),
+            scene_lightmap_height: safe_stoi(args.named_value("--scene_lightmap_height", "2048")),
+            black_lightmap_width: safe_stoi(args.named_value("--black_lightmap_width", "1024")),
+            black_lightmap_height: safe_stoi(args.named_value("--black_lightmap_height", "1024")),
             motion_interpolation: args.has_named("--motion_interpolation"),
             full_screen: args.has_named("--full_screen"),
             window_maximized: args.has_named("--window_maximized"),

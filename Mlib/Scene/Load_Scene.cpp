@@ -899,7 +899,7 @@ void LoadScene::operator()(
                 rendering_resources,
                 lightmap_update_cycle_from_string(match[3].str()),
                 resource_index,
-                match[2].str(),               // black_node
+                match[2].str(),               // black_node_name
                 safe_stob(match[4].str())));  // with_depth_texture
             node->add_light(new Light{
                 ambience: {
