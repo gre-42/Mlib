@@ -10,6 +10,13 @@
 
 using namespace Mlib;
 
+/**
+ * From: https://stackoverflow.com/questions/108318/whats-the-simplest-way-to-test-whether-a-number-is-a-power-of-2-in-c/108360#108360
+ */
+bool is_power_of_two(int n) {
+    return n > 0 && ((n & (n - 1)) == 0);
+}
+
 static StbInfo stb_load_texture(const std::string& filename,
                                 bool rgba,
                                 bool flip_vertically,
@@ -23,6 +30,9 @@ static StbInfo stb_load_texture(const std::string& filename,
     }
     if (rgba && (result.nrChannels == 3)) {
         throw std::runtime_error("Requested RGBA texture but it is RGB: " + filename);
+    }
+    if (!is_power_of_two(result.width) || !is_power_of_two(result.height)) {
+        std::cerr << filename << " size: " << result.width << 'x' << result.height << std::endl;
     }
     return result;
 }
