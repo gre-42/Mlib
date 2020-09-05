@@ -49,7 +49,7 @@ public:
 private:
     RenderLogic& child_logic_;
     RenderingResources& rendering_resources_;
-    std::shared_ptr<FrameBuffer> fb_;
+    std::unique_ptr<FrameBuffer> fb_;
     LightmapUpdateCycle update_cycle_;
     size_t light_resource_id_;
     const std::string black_node_name_;

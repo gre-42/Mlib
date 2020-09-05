@@ -45,7 +45,9 @@ void LightmapLogic::render(
             : render_config.black_lightmap_height;
         CHK(glViewport(0, 0, lightmap_width, lightmap_height));
         RenderedSceneDescriptor light_rsd{external_render_pass: {ExternalRenderPass::LIGHTMAP_TO_TEXTURE, black_node_name_}, time_id: 0, light_resource_id: light_resource_id_};
-        fb_ = std::make_shared<FrameBuffer>();
+        if (fb_ == nullptr) {
+            fb_ = std::make_unique<FrameBuffer>();
+        }
         fb_->configure({width: lightmap_width, height: lightmap_height, with_depth_texture: with_depth_texture_});
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_->frame_buffer));
         child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
