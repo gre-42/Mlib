@@ -128,6 +128,8 @@ int main(int argc, char** argv) {
             nullptr,
             render_config};
         
+        render2.print_hardware_info();
+
         ButtonStates button_states;
         ButtonPress button_press{button_states};
         SelectedCameras selected_cameras;

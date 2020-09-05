@@ -90,6 +90,13 @@ Render2::~Render2() {
     GLFW_WARN(glfwTerminate());
 }
 
+void Render2::print_hardware_info() const {
+    const char* vendor = CHK((const char*)glGetString(GL_VENDOR));
+    const char* renderer = CHK((const char*)glGetString(GL_RENDERER));
+    std::cerr << "Vendor: " << vendor << std::endl;
+    std::cerr << "Renderer: " << renderer << std::endl;
+}
+
 void Render2::operator () (
     RenderLogic& logic,
     std::shared_mutex& mutex,

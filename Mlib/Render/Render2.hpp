@@ -24,6 +24,8 @@ public:
         const RenderConfig& render_config = RenderConfig{});
     ~Render2();
 
+    void print_hardware_info() const;
+
     void operator () (
         RenderLogic& logic,
         std::shared_mutex& mutex,

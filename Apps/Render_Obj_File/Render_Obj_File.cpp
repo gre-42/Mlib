@@ -65,6 +65,8 @@ int main(int argc, char** argv) {
                 show_mouse_cursor: true,
                 dt: safe_stof(args.named_value("--render_dt", "0.01667"))}};
 
+        render2.print_hardware_info();
+
         RenderingResources rendering_resources;
         SceneNodeResources scene_node_resources;
         AggregateArrayRenderer small_sorted_aggregate_renderer{&rendering_resources};
