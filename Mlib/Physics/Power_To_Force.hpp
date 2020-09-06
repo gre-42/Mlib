@@ -26,7 +26,7 @@ FixedArray<float, 3> power_to_forces_infinite_mass(
     float tangential_accel,
     float hand_break_velocity,
     float max_stiction_force,
-    float max_friction_force,
+    float friction_force,
     float max_velocity,
     const FixedArray<float, 3>& n3,
     float P,

@@ -19,8 +19,8 @@ struct PhysicsEngineConfig {
     float break_accel = 5;
     float tangential_accel = 10;
     float hand_break_velocity = 0.5;
-    float max_stiction_force = 4e3;
-    float max_friction_force = 2e3;
+    float max_stiction_force = 1e4;
+    float friction_force = 2e3;
     bool avoid_burnout = true;
     float wheel_penetration_depth = 0.2;
     float static_radius = 200;
