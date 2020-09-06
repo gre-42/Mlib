@@ -20,13 +20,12 @@ struct PhysicsEngineConfig {
     float tangential_accel = 10;
     float hand_break_velocity = 0.5;
     // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm
-    float max_stiction_force = 1e4;
-    float friction_force = 8e3;
+    float stiction_coefficient = 4;
+    float friction_coefficient = 3.2;
     bool avoid_burnout = true;
     float wheel_penetration_depth = 0.2;
     float static_radius = 200;
     Interp<float> outness_fac_interp{{-0.5, 1}, {200, 0}, false, 200, 0};
-    Interp<float> contact_interp{{0.f, 0.05f}, {0.f, 1.f}, false, 0.f, 1.f};
 };
 
 }

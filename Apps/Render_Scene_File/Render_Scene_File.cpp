@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
         "[--physics_dt <dt> ] "
         "[--render_dt <dt> ] "
         "[--print_residual_time] "
-        "[--max_stiction_force] "
-        "[--friction_force] "
+        "[--stiction_coefficient] "
+        "[--friction_coefficient] "
         "[--print_fps] "
         "[--vfx] "
         "[--no_depth_fog] "
@@ -94,8 +94,8 @@ int main(int argc, char** argv) {
          "--black_lightmap_height",
          "--physics_dt",
          "--render_dt",
-         "--max_stiction_force",
-         "--friction_force"});
+         "--stiction_coefficient",
+         "--friction_coefficient"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -159,8 +159,8 @@ int main(int argc, char** argv) {
             scene_config.physics_engine_config = PhysicsEngineConfig{
                 dt: safe_stof(args.named_value("--physics_dt", "0.01667")),
                 print_residual_time: args.has_named("--print_residual_time"),
-                max_stiction_force: safe_stof(args.named_value("--max_stiction_force", "1e4")),
-                friction_force: safe_stof(args.named_value("--friction_force", "2e3"))};
+                stiction_coefficient: safe_stof(args.named_value("--stiction_coefficient", "4")),
+                friction_coefficient: safe_stof(args.named_value("--friction_coefficient", "3.2"))};
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;

@@ -75,7 +75,6 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
     float m,
     const FixedArray<float, 3>& v3,
     float dt,
-    float tire_contact,
     bool avoid_burnout)
 {
     float v = dot0d(v3, n3);
@@ -128,7 +127,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
     if (float len2 = sum(squared(res)); len2 > squared(max_stiction_force)) {
         res *= friction_force / std::sqrt(len2);
     }
-    return res * tire_contact;
+    return res;
 }
 
 // Mlib::FixedArray<float, 3> F;
