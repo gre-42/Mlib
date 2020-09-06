@@ -72,7 +72,7 @@ void test_aim() {
     }
 }
 
-void test_power_to_force() {
+void test_power_to_force_negative() {
     FixedArray<float, 3> n3{1, 0, 0};
     float P = 51484.9; // Watt, 70 PS
     FixedArray<float, 3> v3{0, 0, 0};
@@ -90,6 +90,36 @@ void test_power_to_force() {
         // std::cerr << v3 << std::endl;
     }
     assert_isclose<float>(v3(0), -26.4613, 1e-4);
+}
+
+void test_power_to_force_stiction() {
+    FixedArray<float, 3> n3{1, 0, 0};
+    float P = INFINITY;
+    float g = 9.8;
+    FixedArray<float, 3> v3{0, 0, 0};
+    float dt = 0.016667;
+    float m = 1000;
+    float stiction_coefficient = 1;
+    for(float t = 0; t < 10; t += dt) {
+        auto F = power_to_force_infinite_mass(10, 20, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, true);
+        F += power_to_force_infinite_mass(10, 20, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, true);
+        v3 += F / m * dt;
+    }
+    assert_isclose<float>(v3(0), 97.0226, 1e-4);
+}
+
+void test_power_to_force_P() {
+    FixedArray<float, 3> n3{1, 0, 0};
+    float P = 51484.9; // Watt, 70 PS
+    FixedArray<float, 3> v3{0, 0, 0};
+    float dt = 0.016667;
+    float m = 1000;
+    for(float t = 0; t < 10; t += dt) {
+        auto F = power_to_force_infinite_mass(10, 20, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
+        F += power_to_force_infinite_mass(10, 20, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
+        v3 += F / m * dt;
+    }
+    assert_isclose<float>(v3(0), 44.819, 1e-4);
 }
 
 void test_physics_engine() {
@@ -291,7 +321,9 @@ int main(int argc, const char** argv) {
     #endif
 
     test_aim();
-    test_power_to_force();
+    test_power_to_force_negative();
+    test_power_to_force_stiction();
+    test_power_to_force_P();
     test_physics_engine();
     return 0;
 }
