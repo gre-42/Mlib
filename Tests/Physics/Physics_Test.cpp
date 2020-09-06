@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Objects/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Power_To_Force.hpp>
+#include <Mlib/Stats/Linspace.hpp>
 #include <fenv.h>
 
 using namespace Mlib;
@@ -72,7 +73,7 @@ void test_power_to_force_negative() {
     assert_isclose<float>(v3(0), -26.4613, 1e-4);
 }
 
-void test_power_to_force_stiction() {
+void test_power_to_force_stiction_normal() {
     FixedArray<float, 3> n3{1, 0, 0};
     float P = INFINITY;
     float g = 9.8;
@@ -88,7 +89,7 @@ void test_power_to_force_stiction() {
     assert_isclose<float>(v3(0), 97.0226, 1e-4);
 }
 
-void test_power_to_force_P() {
+void test_power_to_force_P_normal() {
     FixedArray<float, 3> n3{1, 0, 0};
     float P = 51484.9; // Watt, 70 PS
     FixedArray<float, 3> v3{0, 0, 0};
@@ -102,6 +103,26 @@ void test_power_to_force_P() {
     assert_isclose<float>(v3(0), 44.819, 1e-4);
 }
 
+// void test_power_to_force_stiction_tangential() {
+//     FixedArray<float, 3> n3{1, 0, 0};
+//     float P = 0;
+//     float g = 9.8;
+//     float dt = 0.016667;
+//     float m = 1000;
+//     float stiction_coefficient = 1;
+//     auto get_force = [&](float v){
+//         FixedArray<float, 3> v3{0, v, 0};
+//         return power_to_force_infinite_mass(10, 20, 1e-1, g * m * stiction_coefficient, 1e3, INFINITY, n3, P, 4321, v3, dt, true);
+//     };
+//     Array<float> vs = linspace(0.f, 5 / 3.6f, 100.f);
+//     Array<float> fs{ArrayShape{0}};
+//     for(float v : vs.flat_iterable()) {
+//         fs.append(get_force(v)(1));
+//     }
+//     Array<float>({vs, fs}).T().save_txt_2d("vf.m");
+//     // assert_isclose<float>(get_force(1.2)(1), 97.0226, 1e-4);
+// }
+
 int main(int argc, const char** argv) {
     #ifndef __MINGW32__
     feenableexcept(FE_INVALID);
@@ -109,7 +130,8 @@ int main(int argc, const char** argv) {
 
     test_aim();
     test_power_to_force_negative();
-    test_power_to_force_stiction();
-    test_power_to_force_P();
+    test_power_to_force_stiction_normal();
+    test_power_to_force_P_normal();
+    // test_power_to_force_stiction_tangential();
     return 0;
 }
