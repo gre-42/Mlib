@@ -21,7 +21,7 @@ void power_to_forces_finite_masses(
  * 
  * P == NAN => brake
  */
-FixedArray<float, 3> power_to_forces_infinite_mass(
+FixedArray<float, 3> power_to_force_infinite_mass(
     float break_accel,
     float tangential_accel,
     float hand_break_velocity,

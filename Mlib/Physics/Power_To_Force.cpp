@@ -63,7 +63,7 @@ static float correct_x(float x, float y, float r, float safety_factor = 0.99) {
  * 
  * P == NAN => brake
  */
-Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
+Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     float break_accel,
     float tangential_accel,
     float hand_break_velocity,
@@ -157,7 +157,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_forces_infinite_mass(
  * solve(vTv + 2 * alpha * vTd + alpha^2 * dTd = 2 * P * t / m + vTv, alpha);
  * d -> n => dTd = 1
  */
-Mlib::FixedArray<float, 3> power_to_forces_infinite_mass_3D(
+Mlib::FixedArray<float, 3> power_to_force_infinite_mass_3D(
     float break_accel,
     const FixedArray<float, 3>& power3,
     float m,

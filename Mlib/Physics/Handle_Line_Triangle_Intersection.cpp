@@ -143,7 +143,7 @@ void HandleLineTriangleIntersection::handle()
         if (i_.tire_id != SIZE_MAX && i_.o0->mass() == INFINITY && i_.o1->mass() != INFINITY) {
             FixedArray<float, 3> n3 = i_.o1->get_abs_tire_z(i_.tire_id);
             // bool tire_sliding = o1->get_tire_sliding(tire_id);
-            FixedArray<float, 3> motor_force = power_to_forces_infinite_mass(
+            FixedArray<float, 3> motor_force = power_to_force_infinite_mass(
                 i_.cfg.break_accel,
                 i_.cfg.tangential_accel,
                 i_.cfg.hand_break_velocity,
