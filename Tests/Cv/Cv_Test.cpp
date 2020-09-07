@@ -34,7 +34,7 @@ void test_homogeneous_jacobian() {
     Array<float> x = random_array3<float>(ArrayShape{4}, 2);
     assert_allclose(
         numerical_differentiation([&](
-            const Array<float>& xx){ return dot1d(M.row_range(0, 2), xx) / dot(M[2], xx)(); },
+            const Array<float>& xx){ return dot1d(M.row_range(0, 2), xx) / dot0d(M[2], xx); },
             x,
             float(1e-3)),
         homogeneous_jacobian_dx(M, x),

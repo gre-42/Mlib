@@ -83,7 +83,7 @@ void MarginalizingBias::marginalize_wip(
 }
 
 float MarginalizingBias::bias(const Array<float>& x) const {
-    return - dot0d(x, rhs_ka_) + 0.5f * dot(dot(x, lhs_ka_), x)();
+    return - dot0d(x, rhs_ka_) + 0.5f * dot0d(dot(x, lhs_ka_), x);
 }
 
 Array<float> MarginalizingBias::solve(

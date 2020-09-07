@@ -85,7 +85,7 @@ Array<float> Mlib::Sfm::fundamental_error(
     assert(all(y0.shape() == y1.shape()));
     Array<float> result(ArrayShape{y0.shape(0)});
     for(size_t r = 0; r < y1.shape(0); ++r) {
-        result[r] = dot(y1[r], dot1d(F, y0[r]))();
+        result[r] = dot0d(y1[r], dot1d(F, y0[r]));
     }
     return result;
 }
