@@ -45,14 +45,14 @@ void Mlib::power_to_forces_finite_masses(
 /**
  * Solve x_new^2 + y^2 = r^2 for x_new.
  * If no such x_new exists, i.e. r < |y|, do nothing (y alone is already too large).
- * If |x_new| > |x|, do nothing (power is low enough to not cause friction).
+ * If |x_new| > |x|, do nothing (do not exceed maximum power).
  */
 static float correct_x(float x, float y, float r, float safety_factor = 0.99) {
     if (r < std::abs(y)) {
         return x;
     }
     float xa = std::sqrt(squared(r) - squared(y));
-    if (std::abs(xa) > std::abs(x)) {
+    if (xa > std::abs(x)) {
         return x;
     }
     return sign(x) * xa * safety_factor;
