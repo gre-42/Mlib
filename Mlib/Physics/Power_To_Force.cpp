@@ -101,6 +101,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         float F_c = (P != 0) * (-m * v);
         float x = (F_c + F_sqrt) / dt;
         float y = tangential_accel * m;
+        // std::cerr << "y / a = " << (y * std::sqrt(sum(squared(sn3T))) / max_stiction_force) << std::endl;
         if (avoid_burnout) {
             x = correct_x(
                 x,
@@ -126,6 +127,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     }
     if (float len2 = sum(squared(res)); len2 > squared(max_stiction_force)) {
         res *= friction_force / std::sqrt(len2);
+        // res = -v3 / std::sqrt(sum(squared(v3))) * friction_force;
     }
     return res;
 }
