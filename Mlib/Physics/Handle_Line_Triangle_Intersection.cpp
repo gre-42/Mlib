@@ -145,21 +145,31 @@ void HandleLineTriangleIntersection::handle()
             n3 -= plane.normal_ * dot0d(plane.normal_, n3);
             if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                 n3 /= std::sqrt(len2);
-                // bool tire_sliding = o1->get_tire_sliding(tire_id);
-                motor_force = power_to_force_infinite_mass(
+                float P = i_.o1->consume_tire_surface_power(i_.tire_id);
+                auto sp = [&](float f){return power_to_force_infinite_mass(
                     i_.cfg.break_accel,
                     i_.cfg.tangential_accel,
                     i_.cfg.hand_break_velocity,
-                    i_.cfg.stiction_coefficient * force_n1,
-                    i_.cfg.friction_coefficient * force_n1,
+                    i_.cfg.stiction_coefficient * force_n1 * f,
+                    i_.cfg.friction_coefficient * force_n1 * f,
                     i_.o1->max_velocity_,
                     n3,
-                    i_.o1->consume_tire_surface_power(i_.tire_id),
+                    P,
                     i_.o1->mass(),
                     v11 - plane.normal_ * dot0d(plane.normal_, v11),
                     i_.cfg.dt,
-                    i_.cfg.avoid_burnout);
-                // std::cerr << std::sqrt(sum(squared(motor_force_t))) / i_.o1->mass() << std::endl;
+                    i_.cfg.avoid_burnout);};
+                FixedArray<float, 3> target_force = sp(2);
+                float best_dist2 = INFINITY;
+                for(float fac = 2; fac > 0.5; fac *= 0.9) {
+                    // bool tire_sliding = o1->get_tire_sliding(tire_id);
+                    FixedArray<float, 3> mf = sp(fac);
+                    if (float bd2 = sum(squared(mf - target_force)); bd2 < best_dist2) {
+                        motor_force = mf;
+                        best_dist2 = bd2;
+                    }
+                    // std::cerr << std::sqrt(sum(squared(motor_force_t))) / i_.o1->mass() << std::endl;
+                }
             } else {
                 motor_force = 0;
             }
