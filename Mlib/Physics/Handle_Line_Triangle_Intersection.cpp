@@ -172,7 +172,7 @@ void HandleLineTriangleIntersection::handle()
                     v11 - plane.normal_ * dot0d(plane.normal_, v11),
                     i_.cfg.dt,
                     i_.cfg.avoid_burnout);};
-                FixedArray<float, 3> target_force = sp(1, 2);
+                FixedArray<float, 3> target_force = sp(1, INFINITY);
                 float best_dist2 = INFINITY;
                 for(float fac = 2; fac > 0.5; fac *= 0.9) {
                     // bool tire_sliding = o1->get_tire_sliding(tire_id);
