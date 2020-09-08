@@ -85,21 +85,33 @@ void HandleLineTriangleIntersection::handle()
         } else {
             plane = i_.p0;
         }
-        if (i_.mesh0_two_sided && (dot0d(i_.o1->abs_com(), plane.normal_) + plane.intercept_ < 0)) {
-            plane.intercept_ *= -1;
-            plane.normal_ *= -1;
-        }
         float dist;
         if (i_.lines_are_normals) {
             dist = -(dot0d(i_.l1(1), plane.normal_) + plane.intercept_);
+            if (dist < 0) {
+                if (i_.mesh0_two_sided) {
+                    plane.intercept_ *= -1;
+                    plane.normal_ *= -1;
+                    dist *= -1;
+                } else {
+                    return;
+                }
+            }
         } else {
+            if (i_.mesh0_two_sided && (dot0d(i_.o1->abs_com(), plane.normal_) + plane.intercept_ < 0)) {
+                plane.intercept_ *= -1;
+                plane.normal_ *= -1;
+            }
             float dist_0 = dot0d(i_.l1(0), plane.normal_) + plane.intercept_;
             float dist_1 = dot0d(i_.l1(1), plane.normal_) + plane.intercept_;
             // smallest negative distance
             dist = -std::min(dist_0, dist_1);
         }
+        assert_true((dist >= 0) || (std::abs(dist) < 1e-3));
         if (i_.tire_id != SIZE_MAX) {
             dist = std::max(0.f, dist - i_.cfg.wheel_penetration_depth);
+        } else {
+            dist = std::max(0.f, dist);
         }
         float frac0;
         float frac1;
@@ -121,6 +133,7 @@ void HandleLineTriangleIntersection::handle()
             i_.cfg.min_angular_velocity);
         auto v11 = o11.velocity_at_position(intersection_point_);
         float outness = dot0d(plane.normal_, v11);
+        assert_true(dist >= 0);
         float fac = i_.cfg.outness_fac_interp(outness) * squared(std::min(0.25f, dist));
         float force_n0 = NAN;
         float force_n1 = NAN;
