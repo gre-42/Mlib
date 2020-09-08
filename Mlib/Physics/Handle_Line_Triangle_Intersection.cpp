@@ -146,12 +146,12 @@ void HandleLineTriangleIntersection::handle()
             if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                 n3 /= std::sqrt(len2);
                 float P = i_.o1->consume_tire_surface_power(i_.tire_id);
-                auto sp = [&](float f){return power_to_force_infinite_mass(
+                auto sp = [&](float ft, float fn){return power_to_force_infinite_mass(
                     i_.cfg.break_accel,
-                    i_.cfg.tangential_accel,
+                    i_.cfg.tangential_accel * ft,
                     i_.cfg.hand_break_velocity,
-                    i_.cfg.stiction_coefficient * force_n1 * f,
-                    i_.cfg.friction_coefficient * force_n1 * f,
+                    i_.cfg.stiction_coefficient * force_n1 * fn,
+                    i_.cfg.friction_coefficient * force_n1 * fn,
                     i_.o1->max_velocity_,
                     n3,
                     P,
@@ -159,11 +159,11 @@ void HandleLineTriangleIntersection::handle()
                     v11 - plane.normal_ * dot0d(plane.normal_, v11),
                     i_.cfg.dt,
                     i_.cfg.avoid_burnout);};
-                FixedArray<float, 3> target_force = sp(2);
+                FixedArray<float, 3> target_force = sp(1, 2);
                 float best_dist2 = INFINITY;
                 for(float fac = 2; fac > 0.5; fac *= 0.9) {
                     // bool tire_sliding = o1->get_tire_sliding(tire_id);
-                    FixedArray<float, 3> mf = sp(fac);
+                    FixedArray<float, 3> mf = sp(fac, 1);
                     if (float bd2 = sum(squared(mf - target_force)); bd2 < best_dist2) {
                         motor_force = mf;
                         best_dist2 = bd2;
@@ -177,10 +177,18 @@ void HandleLineTriangleIntersection::handle()
             motor_force = 0;
         }
         if (frac0 != 0) {
-            i_.o0->integrate_force({-force_n0 * plane.normal_ - motor_force, intersection_point_}, plane.normal_, i_.cfg.damping, i_.cfg.friction);
+            i_.o0->integrate_force(
+                {-force_n0 * plane.normal_ - motor_force, intersection_point_},
+                plane.normal_,
+                i_.cfg.damping,
+                i_.cfg.friction);
         }
         if (frac1 != 0) {
-            i_.o1->integrate_force({force_n1 * plane.normal_ + motor_force, intersection_point_}, plane.normal_, i_.cfg.damping, i_.cfg.friction);
+            i_.o1->integrate_force(
+                {force_n1 * plane.normal_ + motor_force, intersection_point_},
+                plane.normal_,
+                i_.cfg.damping,
+                i_.tire_id == SIZE_MAX ? i_.cfg.friction : 0);
         }
     } else {
         throw std::runtime_error("Unknown collision type");
