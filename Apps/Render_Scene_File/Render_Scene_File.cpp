@@ -54,8 +54,9 @@ int main(int argc, char** argv) {
         "[--physics_dt <dt> ] "
         "[--render_dt <dt> ] "
         "[--print_residual_time] "
-        "[--stiction_coefficient] "
-        "[--friction_coefficient] "
+        "[--damping <x>]"
+        "[--stiction_coefficient <x>] "
+        "[--friction_coefficient <x>] "
         "[--print_fps] "
         "[--vfx] "
         "[--no_depth_fog] "
@@ -94,6 +95,7 @@ int main(int argc, char** argv) {
          "--black_lightmap_height",
          "--physics_dt",
          "--render_dt",
+         "--damping",
          "--stiction_coefficient",
          "--friction_coefficient"});
     try {
@@ -159,6 +161,7 @@ int main(int argc, char** argv) {
             scene_config.physics_engine_config = PhysicsEngineConfig{
                 dt: safe_stof(args.named_value("--physics_dt", "0.01667")),
                 print_residual_time: args.has_named("--print_residual_time"),
+                damping: safe_stof(args.named_value("--damping", "0.00091188")),
                 stiction_coefficient: safe_stof(args.named_value("--stiction_coefficient", "4")),
                 friction_coefficient: safe_stof(args.named_value("--friction_coefficient", "3.2"))};
 
