@@ -162,8 +162,8 @@ int main(int argc, char** argv) {
                 dt: safe_stof(args.named_value("--physics_dt", "0.01667")),
                 print_residual_time: args.has_named("--print_residual_time"),
                 damping: safe_stof(args.named_value("--damping", "0.00091188")),
-                stiction_coefficient: safe_stof(args.named_value("--stiction_coefficient", "4")),
-                friction_coefficient: safe_stof(args.named_value("--friction_coefficient", "3.2"))};
+                stiction_coefficient: safe_stof(args.named_value("--stiction_coefficient", "2")),
+                friction_coefficient: safe_stof(args.named_value("--friction_coefficient", "1.6"))};
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;
