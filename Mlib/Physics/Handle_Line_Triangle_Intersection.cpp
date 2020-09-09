@@ -174,7 +174,7 @@ void HandleLineTriangleIntersection::handle()
                     i_.cfg.avoid_burnout);};
                 FixedArray<float, 3> target_force = sp(1, INFINITY);
                 float best_dist2 = INFINITY;
-                for(float fac = 2; fac > 0.5; fac *= 0.9) {
+                for(float fac = 2; fac > 0.05; fac *= 0.9) {
                     // bool tire_sliding = o1->get_tire_sliding(tire_id);
                     FixedArray<float, 3> mf = sp(fac, 1);
                     if (float bd2 = sum(squared(mf - target_force)); bd2 < best_dist2) {

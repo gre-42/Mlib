@@ -126,8 +126,8 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         res = -break_accel * m * sn3 - tangential_accel * m * sn3T;
     }
     if (float len2 = sum(squared(res)); len2 > squared(max_stiction_force)) {
-        res *= friction_force / std::sqrt(len2);
-        // res = -v3 / std::sqrt(sum(squared(v3))) * friction_force;
+        // res *= friction_force / std::sqrt(len2);
+        res = -v3 / std::sqrt(sum(squared(v3))) * friction_force;
     }
     return res;
 }
