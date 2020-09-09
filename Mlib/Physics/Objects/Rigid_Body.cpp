@@ -86,6 +86,9 @@ void RigidBody::advance_time(
 {
     std::lock_guard lock{advance_time_mutex_};
     rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);
+    for(auto& t : tires_) {
+        t.second.advance_time(dt);
+    }
 }
 
 float RigidBody::mass() const {
@@ -129,27 +132,27 @@ void RigidBody::set_max_velocity(float max_velocity) {
 }
 
 void RigidBody::set_tire_angle(size_t id, float angle) {
-    tire_angles_[id] = angle;
+    tires_.at(id).angle = angle;
 }
 
 FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
-    auto t = tire_angles_.find(id);
+    auto t = tires_.find(id);
     FixedArray<float, 3> z{tires_z_};
-    if (t != tire_angles_.end()) {
-        z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second / 180.f * float(M_PI)), z);
+    if (t != tires_.end()) {
+        z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle / 180.f * float(M_PI)), z);
     }
     z = dot1d(rbi_.rotation_, z);
     return z;
 }
 
 float RigidBody::consume_tire_surface_power(size_t id) {
-    auto en = tire_engines_.find(id);
-    if (en == tire_engines_.end()) {
+    auto en = tires_.find(id);
+    if (en == tires_.end()) {
         return 0;
     }
-    auto e = engines_.find(en->second);
+    auto e = engines_.find(en->second.engine);
     if (e == engines_.end()) {
-        throw std::runtime_error("No engine with name \"" + en->second + "\" exists");
+        throw std::runtime_error("No engine with name \"" + en->second.engine + "\" exists");
     }
     return e->second.consume_abs_surface_power();
 }

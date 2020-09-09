@@ -606,7 +606,11 @@ void LoadScene::operator()(
             }
             for(const std::string& t : string_to_list(match[4].str())) {
                 ep.first->second.increment_ntires();
-                auto tp = rb->tire_engines_.insert(std::make_pair(safe_stoi(t), match[2].str()));
+                // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
+                // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
+
+                // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
+                auto tp = rb->tires_.insert(std::make_pair(safe_stoi(t), Tire{match[2].str(), 1e5, 2e3, 0}));
                 if (!tp.second) {
                     throw std::runtime_error("Tire with ID \"" + t + "\" already exists");
                 }

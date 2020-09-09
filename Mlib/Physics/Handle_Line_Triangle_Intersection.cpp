@@ -109,7 +109,8 @@ void HandleLineTriangleIntersection::handle()
         }
         assert_true((dist >= 0) || (std::abs(dist) < 1e-3));
         if (i_.tire_id != SIZE_MAX) {
-            dist = std::max(0.f, dist - i_.cfg.wheel_penetration_depth);
+            dist = std::max(0.f, dist - i_.cfg.wheel_penetration_depth - i_.o1->tires_.at(i_.tire_id).shock_absorber.position());
+            // std::cerr << "pos " << i_.o1->tires_.at(i_.tire_id).shock_absorber.position() << std::endl;
         } else {
             dist = std::max(0.f, dist);
         }
@@ -142,6 +143,9 @@ void HandleLineTriangleIntersection::handle()
         }
         if (frac1 != 0) {
             force_n1 = fac * frac1 * i_.o1->mass();
+            if (i_.tire_id != SIZE_MAX) {
+                i_.o1->tires_.at(i_.tire_id).shock_absorber.integrate_force(force_n1);
+            }
         }
         // if (outness < -10) {
         //     fac = 1.5e3;

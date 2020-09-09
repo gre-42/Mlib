@@ -39,8 +39,8 @@ FixedArray<float, 4, 4> Wheel::get_new_relative_model_matrix() const
 
 void Wheel::advance_time(float dt) {
     FixedArray<float, 3> tire_angles{fixed_zeros<float, 3>()};
-    if (rigid_body_.tire_angles_.find(tire_id_) != rigid_body_.tire_angles_.end()) {
-        tire_angles(1) = rigid_body_.tire_angles_.at(tire_id_) / 180.f * M_PI;
+    if (rigid_body_.tires_.find(tire_id_) != rigid_body_.tires_.end()) {
+        tire_angles(1) = rigid_body_.tires_.at(tire_id_).angle / 180.f * M_PI;
     }
     angle_x_ += dot0d(rigid_body_.rbi_.v_, rigid_body_.rbi_.abs_z()) * dt * radius_;
     angle_x_ = std::fmod(angle_x_, 2 * M_PI);

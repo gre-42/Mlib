@@ -88,7 +88,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             rb->set_surface_power("main", 0);
             rb->set_surface_power("breaks", 0);
             rb->set_max_velocity(INFINITY);
-            rb->tire_angles_.clear();
+            for(auto& t : rb->tires_) {
+                t.second.angle = 0;
+            }
             rb->tires_z_ = k.tires_z;
         }
         for(const auto& k : absolute_movable_key_bindings_) {

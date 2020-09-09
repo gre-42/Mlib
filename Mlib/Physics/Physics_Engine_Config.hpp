@@ -23,7 +23,7 @@ struct PhysicsEngineConfig {
     float stiction_coefficient = 2;
     float friction_coefficient = 1.6;
     bool avoid_burnout = true;
-    float wheel_penetration_depth = 0.2;
+    float wheel_penetration_depth = 0.15;  // (penetration depth) + (shock absorber) = 0.2
     float static_radius = 200;
     Interp<float> outness_fac_interp{{-0.5, 1}, {200, 0}, false, 200, 0};
 };
