@@ -25,6 +25,7 @@ public:
     size_t tire_id_;
     float angle_x_;
     float radius_;
+    float y0_;
 };
 
 }
