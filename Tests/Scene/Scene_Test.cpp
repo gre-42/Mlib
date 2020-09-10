@@ -117,7 +117,7 @@ void test_physics_engine() {
         true,                                 // apply_static_lighting
         true                                  // werror
     ));
-    scene_node_resources.generate_triangle_rays("obj1", 5, {0.3, 0.3, 0.3});
+    scene_node_resources.generate_triangle_rays("obj1", 5, {1, 1, 1});
     auto scene_node0 = new SceneNode;
     auto scene_node1_0 = new SceneNode;
     auto scene_node1_1 = new SceneNode;
