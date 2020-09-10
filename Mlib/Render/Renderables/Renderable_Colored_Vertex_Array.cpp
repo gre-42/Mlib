@@ -20,7 +20,8 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_lightmap_depth,
     bool has_dirtmap,
     bool has_diffusivity,
-    bool has_specularity)
+    bool has_specularity,
+    bool reorient_normals)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
@@ -46,7 +47,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
     }
-    if (has_specularity) {
+    if (reorient_normals || has_specularity) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
@@ -66,7 +67,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPos, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
-    if (has_specularity) {
+    if (reorient_normals || has_specularity) {
         sstr << "    FragPos = vec3(M * vec4(vPos, 1.0));" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
@@ -127,7 +128,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform vec3 lightDir[" << lights.size() << "];" << std::endl;
         sstr << "uniform vec3 lightColor[" << lights.size() << "];" << std::endl;
     }
-    if (specularity.is_nonzero()) {
+    if (reorient_normals || specularity.is_nonzero()) {
         sstr << "in vec3 FragPos;" << std::endl;
         sstr << "uniform vec3 viewPos;" << std::endl;
     }
@@ -155,7 +156,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
     }
     if (reorient_normals) {
-        sstr << "    norm *= sign(norm.z);" << std::endl;
+        sstr << "    norm *= sign(dot(norm, viewPos - FragPos));" << std::endl;
     }
     if (has_lightmap_color) {
         sstr << "    vec4 color_fac = vec4(1, 1, 1, 1);" << std::endl;
@@ -339,7 +340,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.has_lightmap_depth,
             id.has_dirtmap,
             id.diffusivity.is_nonzero(),
-            id.specularity.is_nonzero()),
+            id.specularity.is_nonzero(),
+            id.reorient_normals),
         fragment_shader_text_textured_rgb_gen(
             filtered_lights,
             filtered_lights.size(),
