@@ -138,7 +138,7 @@ void HandleLineTriangleIntersection::handle()
         float force_n0 = NAN;
         float force_n1 = NAN;
         {
-            float fac = i_.cfg.outness_fac_interp(outness) * squared(std::min(0.25f, dist)) * 5;
+            float fac = i_.cfg.outness_fac_interp(outness) * squared(std::min(0.25f, dist));
             if (frac0 != 0) {
                 force_n0 = fac * frac0 * i_.o0->mass();
             }
