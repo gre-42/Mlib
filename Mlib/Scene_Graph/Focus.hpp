@@ -1,4 +1,5 @@
 #pragma once
+#include <list>
 #include <stdexcept>
 #include <string>
 
@@ -12,7 +13,7 @@ enum class Focus {
 };
 
 struct UiFocus {
-    Focus focus;
+    std::list<Focus> focus;
     size_t submenu_id = 0;
     size_t n_submenus = 0;
     inline void goto_next_submenu() {

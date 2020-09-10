@@ -113,7 +113,7 @@ void LoadScene::operator()(
     SkyboxLogic& skybox_logic,
     UiFocus& ui_focus,
     SubstitutionString& substitutions,
-    bool& leave_render_loop,
+    size_t& num_renderings,
     bool verbose)
 {
     std::ifstream ifs{script_filename};
@@ -300,7 +300,7 @@ void LoadScene::operator()(
     const std::regex set_dirtmap_reg("^(?:\\r?\\n|\\s)*set_dirtmap filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex set_skybox_reg("^(?:\\r?\\n|\\s)*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
     const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
-    const std::regex set_focus_reg("^(?:\\r?\\n|\\s)*set_focus (menu|loading|countdown|scene)$");
+    const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
     const std::regex comment_reg("^(?:\\r?\\n|\\s)*#[\\S\\s]*$");
     const std::regex macro_begin_reg("^(?:\\r?\\n|\\s)*macro_begin ([\\w+-.]+)$");
     const std::regex macro_end_reg("^(?:\\r?\\n|\\s)*macro_end$");
@@ -830,7 +830,7 @@ void LoadScene::operator()(
                 ui_focus,
                 ui_focus.n_submenus++,
                 next_scene_filename,
-                leave_render_loop,
+                num_renderings,
                 button_press);
             render_logics.append(nullptr, scene_selector_logic);
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
@@ -853,7 +853,7 @@ void LoadScene::operator()(
                 ui_focus,
                 ui_focus.n_submenus++,
                 substitutions,
-                leave_render_loop,
+                num_renderings,
                 button_press);
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (std::regex_match(line, match, ui_background_reg)) {
@@ -1046,8 +1046,8 @@ void LoadScene::operator()(
                 match[1].str());
         } else if (std::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
-        } else if (std::regex_match(line, match, set_focus_reg)) {
-            ui_focus.focus = focus_from_string(match[1].str());
+        } else if (std::regex_match(line, match, append_focus_reg)) {
+            ui_focus.focus.push_back(focus_from_string(match[1].str()));
         } else if (std::regex_match(line, match, macro_playback_reg)) {
             auto macro_it = macros_.find(match[1].str());
             if (macro_it == macros_.end()) {
@@ -1082,7 +1082,7 @@ void LoadScene::operator()(
                 skybox_logic,
                 ui_focus,
                 substitutions,
-                leave_render_loop,
+                num_renderings,
                 verbose);
         } else {
             throw std::runtime_error("Could not parse line: \"" + line + '"');

@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
         args.assert_num_unamed(1);
         std::string main_scene_filename = args.unnamed_value(0);
 
-        bool leave_render_loop;
+        size_t num_renderings;
         RenderConfig render_config{
             nsamples_msaa: safe_stoi(args.named_value("--nsamples_msaa", "2")),
             cull_faces: !args.has_named("--no_cull_faces"),
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
             dt: safe_stof(args.named_value("--render_dt", "0.01667")) };
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
-            leave_render_loop,
+            num_renderings,
             nullptr,
             render_config};
         
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
         ButtonStates button_states;
         ButtonPress button_press{button_states};
         SelectedCameras selected_cameras;
-        UiFocus ui_focus = UiFocus{focus: Focus::SCENE};
+        UiFocus ui_focus = UiFocus{focus: {Focus::SCENE}};
         SubstitutionString substitutions;
         SetFps physics_set_fps;
         FlyingCameraUserClass user_object{
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
             physics_set_fps: &physics_set_fps};
 
         while (!render2.window_should_close()) {
-            leave_render_loop = false;
+            num_renderings = SIZE_MAX;
             selected_cameras.light_node_names.clear();
             ui_focus.n_submenus = 0;
 
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
                 *skybox_logic,
                 ui_focus,
                 substitutions,
-                leave_render_loop,
+                num_renderings,
                 args.has_named("--verbose"));
             // scene.print();
 
@@ -262,6 +262,15 @@ int main(int argc, char** argv) {
                     render_logics,
                     mutex,
                     scene_config.scene_graph_config);
+            }
+            if (!render2.window_should_close()) {
+                ui_focus.focus.push_back(Focus::LOADING);
+                num_renderings = 1;
+                render2(
+                    render_logics,
+                    mutex,
+                    scene_config.scene_graph_config);
+                ui_focus.focus.pop_back();
             }
 
             if (pl != nullptr) {

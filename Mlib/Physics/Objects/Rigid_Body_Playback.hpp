@@ -18,7 +18,7 @@ public:
     RigidBodyPlayback(
         const std::string& filename,
         AdvanceTimes& advance_times,
-        const Focus& focus,
+        const std::list<Focus>& focus,
         float speed);
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
@@ -26,7 +26,7 @@ public:
     virtual FixedArray<float, 4, 4> get_new_absolute_model_matrix() const override;
 private:
     AdvanceTimes& advance_times_;
-    const Focus& focus_;
+    const std::list<Focus>& focus_;
     FixedArray<float, 3> position_;
     FixedArray<float, 3, 3> rotation_;
     TrackReader track_reader_;

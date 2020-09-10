@@ -47,14 +47,14 @@ int main(int argc, char** argv) {
         args.assert_num_unamed_atleast(1);
 
         // Declared as first class to let destructors of other classes succeed.
-        bool leave_render_loop = false;
+        size_t num_renderings = SIZE_MAX;
         RenderResults render_results;
         RenderedSceneDescriptor rsd{external_render_pass: {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, time_id: 0, light_resource_id: 0};
         if (args.has_named_value("--output")) {
             render_results.outputs[rsd] = Array<float>{};
         }
         Render2 render2{
-            leave_render_loop,
+            num_renderings,
             &render_results,
             RenderConfig{
                 nsamples_msaa: safe_stoi(args.named_value("--nsamples_msaa", "1")),
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
         scene.get_node("light_node")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
 
         // scene.print();
-        Focus focus = Focus::SCENE;
+        std::list<Focus> focus = {Focus::SCENE};
         ButtonStates button_states;
         StandardCameraLogic standard_camera_logic{scene, selected_cameras};
         FlyingCameraUserClass user_object{

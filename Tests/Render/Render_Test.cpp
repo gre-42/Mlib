@@ -42,8 +42,8 @@ void test_render() {
     {
         Array<float> output;
         RenderResults render_results{output: &output};
-        bool leave_render_loop = false;
-        Render2{leave_render_loop, &render_results, RenderConfig{}}(
+        size_t num_renderings = SIZE_MAX;
+        Render2{num_renderings, &render_results, RenderConfig{}}(
             img.to_float_rgb(),
             depth,
             intrinsic_matrix,

@@ -24,7 +24,7 @@ public:
         UiFocus& ui_focus,
         size_t submenu_id_,
         std::string& scene_filename,
-        bool& leave_render_loop,
+        size_t& num_renderings,
         ButtonPress& button_press);
     ~SceneSelectorLogic();
 
@@ -46,7 +46,7 @@ private:
     size_t submenu_id_;
     ButtonPress& button_press_;
     std::string& scene_filename_;
-    bool& leave_render_loop_;
+    size_t& leave_render_loop_;
 };
 
 }

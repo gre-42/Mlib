@@ -14,7 +14,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     UiFocus& ui_focus,
     size_t submenu_id,
     SubstitutionString& substitutions,
-    bool& leave_render_loop,
+    size_t& num_renderings,
     ButtonPress& button_press)
 : scene_selector_list_view_{
     button_press,
@@ -27,7 +27,7 @@ ParameterSetterLogic::ParameterSetterLogic(
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
   substitutions_{substitutions},
-  leave_render_loop_{leave_render_loop},
+  num_renderings_{num_renderings},
   button_press_{button_press}
 {
     // Initialize the reference
@@ -44,7 +44,10 @@ void ParameterSetterLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (ui_focus_.focus == Focus::MENU) {
+    if (ui_focus_.focus.empty()) {
+        return;
+    }
+    if (ui_focus_.focus.back() == Focus::MENU) {
         if (ui_focus_.submenu_id == submenu_id_) {
             scene_selector_list_view_.handle_input();
             if (button_press_.key_pressed({key: "LEFT", joystick_axis: "1", joystick_axis_sign: -1})) {
@@ -57,12 +60,12 @@ void ParameterSetterLogic::render(
                 substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
             }
             if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
-                ui_focus_.focus = Focus::LOADING;
-                leave_render_loop_ = true;
+                ui_focus_.focus.pop_back();
+                num_renderings_ = 0;
             }
         }
     }
-    if (ui_focus_.focus == Focus::MENU) {
+    if (ui_focus_.focus.back() == Focus::MENU) {
         scene_selector_list_view_.render(width, height, true); // true=periodic_position
     }
 }

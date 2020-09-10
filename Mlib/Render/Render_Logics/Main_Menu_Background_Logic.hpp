@@ -15,7 +15,7 @@ public:
     MainMenuBackgroundLogic(
         RenderingResources& rendering_resources,
         const std::string& image_resource_name,
-        const Focus& focus,
+        const std::list<Focus>& focus,
         Focus target_focus);
 
     virtual void render(
@@ -31,7 +31,7 @@ public:
     virtual bool requires_postprocessing() const override;
 
 private:
-    const Focus& focus_;
+    const std::list<Focus>& focus_;
     Focus target_focus_;
 };
 

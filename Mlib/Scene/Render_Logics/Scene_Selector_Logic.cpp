@@ -17,7 +17,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     UiFocus& ui_focus,
     size_t submenu_id,
     std::string& scene_filename,
-    bool& leave_render_loop,
+    size_t& num_renderings,
     ButtonPress& button_press)
 : scene_selector_list_view_{
     button_press,
@@ -31,7 +31,7 @@ SceneSelectorLogic::SceneSelectorLogic(
   submenu_id_{submenu_id},
   button_press_{button_press},
   scene_filename_{scene_filename},
-  leave_render_loop_{leave_render_loop}
+  leave_render_loop_{num_renderings}
 {
     // Initialize the reference
     scene_filename_ = scene_selector_list_view_.selected_element().filename;
@@ -48,7 +48,10 @@ void SceneSelectorLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (ui_focus_.focus == Focus::MENU) {
+    if (ui_focus_.focus.empty()) {
+        return;
+    }
+    if (ui_focus_.focus.back() == Focus::MENU) {
         if (ui_focus_.submenu_id == submenu_id_) {
             scene_selector_list_view_.handle_input();
             if (button_press_.key_pressed({key: "LEFT", joystick_axis: "1", joystick_axis_sign: -1})) {
@@ -61,12 +64,12 @@ void SceneSelectorLogic::render(
                 scene_filename_ = scene_selector_list_view_.selected_element().filename;
             }
             if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
-                ui_focus_.focus = Focus::LOADING;
+                ui_focus_.focus.pop_back();
                 leave_render_loop_ = true;
             }
         }
     }
-    if (ui_focus_.focus == Focus::MENU) {
+    if (ui_focus_.focus.back() == Focus::MENU) {
         scene_selector_list_view_.render(width, height, true); // true=periodic_position
     }
 }

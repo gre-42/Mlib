@@ -14,7 +14,7 @@ KeyBindings::KeyBindings(
     ButtonPress& button_press,
     bool print_gamepad_buttons,
     SelectedCameras& selected_cameras,
-    const Focus& focus,
+    const std::list<Focus>& focus,
     const Scene& scene)
 : button_press_{button_press},
   print_gamepad_buttons_{print_gamepad_buttons},
@@ -49,7 +49,7 @@ bool KeyBindings::requires_postprocessing() const {
 }
 
 void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in) {
-    if (!burn_in && (focus_ == Focus::SCENE)) {
+    if (!burn_in && !focus_.empty() && (focus_.back() == Focus::SCENE)) {
         // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
         // }

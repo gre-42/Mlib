@@ -60,7 +60,7 @@ public:
         SkyboxLogic& skybox_logic,
         UiFocus& ui_focus,
         SubstitutionString& substitutions,
-        bool& leave_render_loop,
+        size_t& num_renderings,
         bool verbose);
 private:
     std::map<std::string, Macro> macros_;

@@ -27,7 +27,7 @@ public:
         UiFocus& ui_focus,
         size_t submenu_id,
         SubstitutionString& substitutions,
-        bool& leave_render_loop,
+        size_t& num_renderings,
         ButtonPress& button_press);
     ~ParameterSetterLogic();
 
@@ -48,7 +48,7 @@ private:
     UiFocus& ui_focus_;
     size_t submenu_id_;
     SubstitutionString& substitutions_;
-    bool& leave_render_loop_;
+    size_t& num_renderings_;
     ButtonPress& button_press_;
 };
 

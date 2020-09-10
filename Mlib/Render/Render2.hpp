@@ -19,7 +19,7 @@ class Window;
 class Render2 {
 public:
     explicit Render2(
-        bool& leave_render_loop,
+        size_t& num_renderings,
         RenderResults* render_results = nullptr,
         const RenderConfig& render_config = RenderConfig{});
     ~Render2();
@@ -51,7 +51,7 @@ public:
     bool window_should_close() const;
 
 private:
-    bool& leave_render_loop_;
+    size_t& num_renderings_;
     RenderResults* render_results_;
     const RenderConfig& render_config_;
     std::unique_ptr<Window> window_;

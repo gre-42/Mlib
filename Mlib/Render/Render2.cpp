@@ -34,10 +34,10 @@ static void error_callback(int error, const char* description)
 }*/
 
 Render2::Render2(
-    bool& leave_render_loop,
+    size_t& num_renderings,
     RenderResults* render_results,
     const RenderConfig& render_config)
-: leave_render_loop_{leave_render_loop},
+: num_renderings_{num_renderings},
   render_results_{render_results},
   render_config_{render_config}
 {
@@ -109,8 +109,11 @@ void Render2::operator () (
     size_t time_id = 0;
     // Get current keyboard inputs in case the scene was reloaded.
     GLFW_CHK(glfwPollEvents());
-    while (!glfwWindowShouldClose(window_->window()) && !leave_render_loop_)
+    while (!glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0))
     {
+        if (num_renderings_ != SIZE_MAX) {
+            --num_renderings_;
+        }
         int width, height;
 
         GLFW_CHK(glfwGetFramebufferSize(window_->window(), &width, &height));

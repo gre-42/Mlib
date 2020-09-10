@@ -12,7 +12,7 @@ public:
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
-        const Focus& focus,
+        const std::list<Focus>& focus,
         const std::string& text);
     ~LoadingTextLogic();
 
@@ -29,7 +29,7 @@ public:
     virtual bool requires_postprocessing() const override;
 
 private:
-    const Focus& focus_;
+    const std::list<Focus>& focus_;
     const std::string text_;
 };
 

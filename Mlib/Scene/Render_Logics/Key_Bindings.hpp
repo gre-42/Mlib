@@ -20,7 +20,7 @@ public:
         ButtonPress& button_press,
         bool print_gamepad_buttons,
         SelectedCameras& selected_cameras,
-        const Focus& focus,
+        const std::list<Focus>& focus,
         const Scene& scene);
 
     virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in) override;
@@ -48,7 +48,7 @@ private:
     bool print_gamepad_buttons_;
     const Scene& scene_;
     SelectedCameras& selected_cameras_;
-    const Focus& focus_;
+    const std::list<Focus>& focus_;
 };
 
 }

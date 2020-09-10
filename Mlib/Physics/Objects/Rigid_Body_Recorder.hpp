@@ -19,12 +19,12 @@ public:
         AdvanceTimes& advance_times,
         SceneNode* recorded_node,
         RigidBodyIntegrator* rbi,
-        const Focus& focus);
+        const std::list<Focus>& focus);
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
 
 private:
-    const Focus& focus_;
+    const std::list<Focus>& focus_;
     AdvanceTimes& advance_times_;
     SceneNode* recorded_node_;
     RigidBodyIntegrator* rbi_;

@@ -31,7 +31,7 @@
 using namespace Mlib;
 
 void test_physics_engine() {
-    bool leave_render_loop = false;
+    size_t num_renderings = SIZE_MAX;
     RenderResults render_results;
     RenderedSceneDescriptor rsd{external_render_pass: {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, time_id: 0, light_resource_id: 0};
     const char* interactive = std::getenv("PHYSICS_INTERACTIVE");
@@ -45,7 +45,7 @@ void test_physics_engine() {
         wire_frame: false,
         window_title: "Physics test"};
     Render2 render2{
-        leave_render_loop,
+        num_renderings,
         &render_results,
         render_config};
 
@@ -183,7 +183,7 @@ void test_physics_engine() {
     }
 
     StandardCameraLogic standard_camera_logic{scene, selected_cameras};
-    Focus focus = Focus::SCENE;
+    std::list<Focus> focus = {Focus::SCENE};
     ButtonStates button_states;
     FlyingCameraUserClass user_object{
         button_states: button_states,
