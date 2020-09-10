@@ -135,16 +135,18 @@ void HandleLineTriangleIntersection::handle()
         auto v11 = o11.velocity_at_position(intersection_point_);
         float outness = dot0d(plane.normal_, v11);
         assert_true(dist >= 0);
-        float fac = i_.cfg.outness_fac_interp(outness) * squared(std::min(0.25f, dist));
         float force_n0 = NAN;
         float force_n1 = NAN;
-        if (frac0 != 0) {
-            force_n0 = fac * frac0 * i_.o0->mass();
-        }
-        if (frac1 != 0) {
-            force_n1 = fac * frac1 * i_.o1->mass();
-            if (i_.tire_id != SIZE_MAX) {
-                i_.o1->tires_.at(i_.tire_id).shock_absorber.integrate_force(force_n1);
+        {
+            float fac = i_.cfg.outness_fac_interp(outness) * squared(std::min(0.25f, dist)) * 5;
+            if (frac0 != 0) {
+                force_n0 = fac * frac0 * i_.o0->mass();
+            }
+            if (frac1 != 0) {
+                force_n1 = fac * frac1 * i_.o1->mass();
+                if (i_.tire_id != SIZE_MAX) {
+                    i_.o1->tires_.at(i_.tire_id).shock_absorber.integrate_force(force_n1);
+                }
             }
         }
         // if (outness < -10) {
@@ -178,9 +180,9 @@ void HandleLineTriangleIntersection::handle()
                     i_.cfg.avoid_burnout);};
                 FixedArray<float, 3> target_force = sp(1, INFINITY);
                 float best_dist2 = INFINITY;
-                for(float fac = 2; fac > 0.05; fac *= 0.9) {
+                for(float tfac = 2; tfac > 0.05; tfac *= 0.9) {
                     // bool tire_sliding = o1->get_tire_sliding(tire_id);
-                    FixedArray<float, 3> mf = sp(fac, 1);
+                    FixedArray<float, 3> mf = sp(tfac, 1);
                     if (float bd2 = sum(squared(mf - target_force)); bd2 < best_dist2) {
                         motor_force = mf;
                         best_dist2 = bd2;
