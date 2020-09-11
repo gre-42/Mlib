@@ -206,7 +206,7 @@ void HandleLineTriangleIntersection::handle()
             i_.o1->integrate_force(
                 {force_n1 * plane.normal_ + motor_force, intersection_point_},
                 plane.normal_,
-                i_.cfg.damping,
+                i_.tire_id == SIZE_MAX ? i_.cfg.damping : 0,
                 i_.tire_id == SIZE_MAX ? i_.cfg.friction : 0);
         }
     } else {
