@@ -186,6 +186,9 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
     if (log_components & LOG_SPEED) {
         ostr << "v: " << std::sqrt(sum(squared(rbi_.v_))) * 3.6 << " km/h" << std::endl;
     }
+    if (log_components & LOG_ACCELERATION) {
+        ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) << " m/s^2" << std::endl;
+    }
     if (log_components & LOG_POSITION) {
         ostr << "x: " << rbi_.position_(0) << " m" << std::endl;
         ostr << "y: " << rbi_.position_(1) << " m" << std::endl;
