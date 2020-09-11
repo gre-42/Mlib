@@ -46,7 +46,7 @@ private:
     size_t submenu_id_;
     ButtonPress& button_press_;
     std::string& scene_filename_;
-    size_t& leave_render_loop_;
+    size_t& num_renderings_;
 };
 
 }

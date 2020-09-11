@@ -108,7 +108,9 @@ void Render2::operator () (
     size_t fps_i_max = 500;
     size_t time_id = 0;
     // Get current keyboard inputs in case the scene was reloaded.
+    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
     GLFW_CHK(glfwPollEvents());
+    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
     while (!glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0))
     {
         if (num_renderings_ != SIZE_MAX) {

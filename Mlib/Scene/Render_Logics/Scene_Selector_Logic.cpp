@@ -31,7 +31,7 @@ SceneSelectorLogic::SceneSelectorLogic(
   submenu_id_{submenu_id},
   button_press_{button_press},
   scene_filename_{scene_filename},
-  leave_render_loop_{num_renderings}
+  num_renderings_{num_renderings}
 {
     // Initialize the reference
     scene_filename_ = scene_selector_list_view_.selected_element().filename;
@@ -64,8 +64,8 @@ void SceneSelectorLogic::render(
                 scene_filename_ = scene_selector_list_view_.selected_element().filename;
             }
             if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
-                ui_focus_.focus.pop_back();
-                leave_render_loop_ = true;
+                // ui_focus_.focus.pop_back();
+                num_renderings_ = 0;
             }
         }
     }

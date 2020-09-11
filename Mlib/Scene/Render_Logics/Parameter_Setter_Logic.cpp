@@ -60,7 +60,7 @@ void ParameterSetterLogic::render(
                 substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
             }
             if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
-                ui_focus_.focus.pop_back();
+                // ui_focus_.focus.pop_back();
                 num_renderings_ = 0;
             }
         }

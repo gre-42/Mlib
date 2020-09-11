@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
                     scene_config.scene_graph_config);
             }
             if (!render2.window_should_close()) {
-                ui_focus.focus.push_back(Focus::LOADING);
+                ui_focus.focus = {Focus::SCENE, Focus::LOADING};
                 num_renderings = 1;
                 render2(
                     render_logics,
