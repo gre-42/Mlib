@@ -165,12 +165,12 @@ void HandleLineTriangleIntersection::handle()
             if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                 n3 /= std::sqrt(len2);
                 float P = i_.o1->consume_tire_surface_power(i_.tire_id);
-                auto sp = [&](float ft, float fn){return power_to_force_infinite_mass(
+                auto sp = [&](float fta, float fno, float fdt){return power_to_force_infinite_mass(
                     i_.cfg.break_accel,
-                    i_.cfg.tangential_accel * ft,
+                    i_.cfg.tangential_accel * fta,
                     i_.cfg.hand_break_velocity,
-                    i_.cfg.stiction_coefficient * force_n1 * fn,
-                    i_.cfg.friction_coefficient * force_n1 * fn,
+                    i_.cfg.stiction_coefficient * force_n1 * fno,
+                    i_.cfg.friction_coefficient * force_n1 * fno,
                     i_.o1->max_velocity_,
                     n3,
                     P,
@@ -178,11 +178,11 @@ void HandleLineTriangleIntersection::handle()
                     v11 - plane.normal_ * dot0d(plane.normal_, v11),
                     i_.cfg.dt,
                     i_.cfg.avoid_burnout);};
-                FixedArray<float, 3> target_force = sp(1, INFINITY);
+                FixedArray<float, 3> target_force = sp(1, INFINITY, 2);
                 float best_dist2 = INFINITY;
                 for(float tfac = 2; tfac > 0.05; tfac *= 0.9) {
                     // bool tire_sliding = o1->get_tire_sliding(tire_id);
-                    FixedArray<float, 3> mf = sp(tfac, 1);
+                    FixedArray<float, 3> mf = sp(tfac, 1, 1);
                     if (float bd2 = sum(squared(mf - target_force)); bd2 < best_dist2) {
                         motor_force = mf;
                         best_dist2 = bd2;
