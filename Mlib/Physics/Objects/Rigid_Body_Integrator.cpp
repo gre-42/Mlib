@@ -23,8 +23,8 @@ RigidBodyIntegrator::RigidBodyIntegrator(
   w_{w},
   a_{fixed_zeros<float, 3>()},
   T_{T},
-  position_{position},
   rotation_{tait_bryan_angles_2_matrix(rotation)},
+  abs_com_{dot1d(rotation_, com_) + position},
   I_is_diagonal_{I_is_diagonal}
 {}
 
@@ -57,7 +57,7 @@ void RigidBodyIntegrator::advance_time(
         L_ = 0;
         w_ = 0;
     } else {
-        position_ += dt * v_;
+        abs_com_ += dt * v_;
         rotation_ = dot2d(rodrigues(dt * w_), rotation_);
     }
 }
@@ -67,11 +67,12 @@ FixedArray<float, 3, 3> RigidBodyIntegrator::abs_I() const {
 }
 
 FixedArray<float, 3> RigidBodyIntegrator::velocity_at_position(const FixedArray<float, 3>& position) const {
-    return v_ + cross(w_, position - position_);
+    return v_ + cross(w_, position - abs_com_);
 }
 
-FixedArray<float, 3> RigidBodyIntegrator::abs_com() const {
-    return dot1d(rotation_, com_) + position_;
+FixedArray<float, 3> RigidBodyIntegrator::abs_position() const {
+    // abs_com = dot1d(rotation_, com_) + position_;
+    return abs_com_ - dot1d(rotation_, com_);
 }
 
 FixedArray<float, 3> RigidBodyIntegrator::abs_z() const {

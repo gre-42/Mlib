@@ -11,8 +11,8 @@ CollisionQuery::CollisionQuery(PhysicsEngine& physics_engine)
 {}
 
 bool CollisionQuery::can_see(const RigidBodyIntegrator& watcher, const RigidBodyIntegrator& watched) {
-    FixedArray<float, 3> start = watcher.abs_com();
-    FixedArray<float, 3> dir = watched.abs_com() - start;
+    FixedArray<float, 3> start = watcher.abs_position();
+    FixedArray<float, 3> dir = watched.abs_position() - start;
     float dist = std::sqrt(sum(squared(dir)));
     dir /= dist;
     for(float alpha = 0; alpha < dist; alpha += physics_engine_.cfg_.static_radius) {

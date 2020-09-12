@@ -138,7 +138,7 @@ void Player::move_to_waypoint() {
     }
     // Stop when distance to waypoint is small enough (break).
     {
-        FixedArray<float, 2> pos2{rb_->rbi_.position_(0), rb_->rbi_.position_(2)};
+        FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
         if (sum(squared(pos2 - waypoint_)) < squared(rest_radius)) {
             rb_->set_surface_power("main", NAN);  // NAN=break
             return;
@@ -152,7 +152,7 @@ void Player::move_to_waypoint() {
         if (p.second->rb_ == nullptr) {
             continue;
         }
-        auto d = p.second->rb_->rbi_.position_ - rb_->rbi_.position_;
+        auto d = p.second->rb_->rbi_.abs_position() - rb_->rbi_.abs_position();
         if (sum(squared(d)) < squared(collision_avoidance_radius)) {
             auto z = (z3_from_3x3(rb_->rbi_.rotation_));
             if (dot0d(d, z) < 0) {

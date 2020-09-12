@@ -96,7 +96,7 @@ float RigidBody::mass() const {
 }
 
 FixedArray<float, 3> RigidBody::abs_com() const {
-    return rbi_.abs_com();
+    return rbi_.abs_com_;
 }
 
 FixedArray<float, 3, 3> RigidBody::abs_I() const {
@@ -106,7 +106,7 @@ FixedArray<float, 3, 3> RigidBody::abs_I() const {
 VectorAtPosition<float, 3> RigidBody::abs_F(const VectorAtPosition<float, 3>& F) const {
     return {
         vector: dot1d(rbi_.rotation_, F.vector),
-        position: dot1d(rbi_.rotation_, F.position) + rbi_.position_};
+        position: dot1d(rbi_.rotation_, F.position) + rbi_.abs_com_};
 }
 
 FixedArray<float, 3> RigidBody::velocity_at_position(const FixedArray<float, 3>& position) const {
@@ -114,13 +114,13 @@ FixedArray<float, 3> RigidBody::velocity_at_position(const FixedArray<float, 3>&
 }
 
 void RigidBody::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) {
-    rbi_.position_ = t3_from_4x4(absolute_model_matrix);
     rbi_.rotation_ = R3_from_4x4(absolute_model_matrix);
+    rbi_.abs_com_ = dot1d(rbi_.rotation_, rbi_.com_) + t3_from_4x4(absolute_model_matrix);
 }
 
 FixedArray<float, 4, 4> RigidBody::get_new_absolute_model_matrix() const {
     std::lock_guard lock{advance_time_mutex_};
-    return assemble_homogeneous_4x4(rbi_.rotation_, rbi_.position_);
+    return assemble_homogeneous_4x4(rbi_.rotation_, rbi_.abs_position());
 }
 
 void RigidBody::notify_destroyed(void* obj) {
@@ -198,9 +198,10 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
         }
     }
     if (log_components & LOG_POSITION) {
-        ostr << "x: " << rbi_.position_(0) << " m" << std::endl;
-        ostr << "y: " << rbi_.position_(1) << " m" << std::endl;
-        ostr << "z: " << rbi_.position_(2) << " m" << std::endl;
+        auto pos = rbi_.abs_position();
+        ostr << "x: " << pos(0) << " m" << std::endl;
+        ostr << "y: " << pos(1) << " m" << std::endl;
+        ostr << "z: " << pos(2) << " m" << std::endl;
     }
     for(const auto& o : collision_observers_) {
         auto c = std::dynamic_pointer_cast<Loggable>(o);

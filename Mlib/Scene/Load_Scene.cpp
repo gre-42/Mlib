@@ -186,7 +186,7 @@ void LoadScene::operator()(
     const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1)$");
     const std::regex node_instance_reg("^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+) name=([\\w+-.]+) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) scale=([\\w+-.]+)(?: aggregate=(true|false))?$");
     const std::regex renderable_instance_reg("^(?:\\r?\\n|\\s)*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
-    const std::regex rigid_cuboid_reg("^(?:\\r?\\n|\\s)*rigid_cuboid node=([\\w+-.]+) hitbox=([\\w-. \\(\\)/+-]+)(?: tirelines=([\\w-. \\(\\)/+-]+))? mass=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    const std::regex rigid_cuboid_reg("^(?:\\r?\\n|\\s)*rigid_cuboid node=([\\w+-.]+) hitbox=([\\w-. \\(\\)/+-]+)(?: tirelines=([\\w-. \\(\\)/+-]+))? mass=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)(?: com=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
     const std::regex gun_reg("^(?:\\r?\\n|\\s)*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex trigger_gun_ai_reg("^(?:\\r?\\n|\\s)*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
     const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
@@ -511,7 +511,11 @@ void LoadScene::operator()(
                 FixedArray<float, 3>{
                     safe_stof(match[5].str()),
                     safe_stof(match[6].str()),
-                    safe_stof(match[7].str())});
+                    safe_stof(match[7].str())},
+                FixedArray<float, 3>{
+                    match[8].str().empty() ? 0.f : safe_stof(match[8].str()),
+                    match[9].str().empty() ? 0.f : safe_stof(match[9].str()),
+                    match[10].str().empty() ? 0.f : safe_stof(match[10].str())});
             std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_triangle_meshes(match[2].str());
             std::list<std::shared_ptr<ColoredVertexArray>> tirelines;
             if (!match[3].str().empty()) {

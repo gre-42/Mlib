@@ -61,7 +61,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const FixedArray<float, 4, 4
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         Aim aim{
             t3_from_4x4(absolute_model_matrix),
-            rbi.position_,
+            rbi.abs_position(),
             bullet_start_offset_,
             bullet_velocity_,
             gravity_,
@@ -78,7 +78,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const FixedArray<float, 4, 4
         FixedArray<float, 3> p = dehomogenized_3(
             dot1d(
                 inverted_scaled_se3(absolute_model_matrix),
-                homogenized_4(offset + rbi.position_)));
+                homogenized_4(offset + rbi.abs_position())));
         yaw_ -= std::atan2(p(0), -p(2));
     }
 }

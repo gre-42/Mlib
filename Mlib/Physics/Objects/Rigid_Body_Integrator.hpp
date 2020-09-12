@@ -17,7 +17,7 @@ struct RigidBodyIntegrator {
         bool I_is_diagonal);
 
     FixedArray<float, 3> abs_z() const;
-    FixedArray<float, 3> abs_com() const;
+    FixedArray<float, 3> abs_position() const;
     FixedArray<float, 3, 3> abs_I() const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
 
@@ -35,8 +35,8 @@ struct RigidBodyIntegrator {
 
     FixedArray<float, 3> a_;    // acceleration
     FixedArray<float, 3> T_;    // torque
-    FixedArray<float, 3> position_;
     FixedArray<float, 3, 3> rotation_;
+    FixedArray<float, 3> abs_com_;
 
     size_t I_is_diagonal_;
 };

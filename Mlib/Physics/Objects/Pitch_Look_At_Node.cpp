@@ -59,7 +59,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const FixedArray<float, 4, 4>& a
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         Aim aim{
             t3_from_4x4(absolute_model_matrix),
-            rbi.position_,
+            rbi.abs_position(),
             bullet_start_offset_,
             bullet_velocity_,
             gravity_,
@@ -76,7 +76,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const FixedArray<float, 4, 4>& a
         FixedArray<float, 3> p = dehomogenized_3(
             dot1d(
                 inverted_scaled_se3(absolute_model_matrix),
-                homogenized_4(offset + rbi.position_)));
+                homogenized_4(offset + rbi.abs_position())));
         pitch_ += std::atan2(p(1), -p(2));
     }
 }

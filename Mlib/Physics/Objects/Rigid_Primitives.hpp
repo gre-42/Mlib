@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -11,6 +11,7 @@ class RigidBodies;
 std::shared_ptr<RigidBody> rigid_cuboid(
     RigidBodies& rigid_bodies,
     float mass,
-    const FixedArray<float, 3>& size);
+    const FixedArray<float, 3>& size,
+    const FixedArray<float, 3>& com = fixed_zeros<float, 3>());
 
 }

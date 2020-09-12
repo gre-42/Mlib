@@ -123,6 +123,50 @@ void test_power_to_force_P_normal() {
 //     // assert_isclose<float>(get_force(1.2)(1), 97.0226, 1e-4);
 // }
 
+void test_com() {
+    PhysicsEngineConfig cfg;
+    cfg.damping = 0;
+    cfg.friction = 0;
+
+    RigidBodies rbs{cfg};
+    float mass = 123;
+    FixedArray<float, 3> size{2, 3, 4};
+    FixedArray<float, 3> com0{0, 0, 0};
+    FixedArray<float, 3> com1{0, 1, 0};
+    std::shared_ptr<RigidBody> r0 = rigid_cuboid(rbs, mass, size, com0);
+    std::shared_ptr<RigidBody> r1 = rigid_cuboid(rbs, mass, size, com1);
+    r0->rbi_.abs_com_ = 0;
+    r1->rbi_.abs_com_ = com1;
+    r0->rbi_.rotation_ = fixed_identity_array<float, 3>();
+    r1->rbi_.rotation_ = fixed_identity_array<float, 3>();
+    // Hack to get identical values in the following tests.
+    r1->rbi_.I_ = r0->rbi_.I_;
+    r0->integrate_gravity({0, -9.8, 0});
+    r1->integrate_gravity({0, -9.8, 0});
+    r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    
+    // std::cerr << r0->rbi_.v_ << std::endl;
+    // std::cerr << r1->rbi_.v_ << std::endl;
+    assert_allclose(r0->rbi_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
+    assert_allclose(r1->rbi_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
+    r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
+    r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
+    r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    assert_allclose(r0->rbi_.v_.to_array(), r1->rbi_.v_.to_array());
+    assert_allclose(r0->rbi_.a_.to_array(), r1->rbi_.a_.to_array());
+    assert_allclose(r0->rbi_.T_.to_array(), r1->rbi_.T_.to_array());
+    assert_allclose(
+        r0->velocity_at_position(com0).to_array(),
+        r1->velocity_at_position(com1).to_array());
+    r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    assert_allclose(
+        r0->velocity_at_position(com0).to_array(),
+        r1->velocity_at_position(com1).to_array());
+}
+
 int main(int argc, const char** argv) {
     #ifndef __MINGW32__
     feenableexcept(FE_INVALID);
@@ -133,5 +177,6 @@ int main(int argc, const char** argv) {
     test_power_to_force_stiction_normal();
     test_power_to_force_P_normal();
     // test_power_to_force_stiction_tangential();
+    test_com();
     return 0;
 }

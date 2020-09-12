@@ -33,7 +33,7 @@ void RigidBodyRecorder::advance_time(float dt) {
     auto rotation = matrix_2_tait_bryan_angles(rbi_->rotation_);
     ofstr_ <<
         std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count() << " " <<
-        rbi_->position_ << " " <<
+        rbi_->abs_position() << " " <<
         rotation << std::endl;
 }
 
