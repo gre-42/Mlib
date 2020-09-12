@@ -53,7 +53,7 @@ public:
 private:
     size_t& num_renderings_;
     RenderResults* render_results_;
-    const RenderConfig& render_config_;
+    RenderConfig render_config_;
     std::unique_ptr<Window> window_;
 };
 
