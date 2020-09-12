@@ -26,7 +26,7 @@ std::ostream& operator << (std::ostream& ostream, const Array<TData>& a);
 inline Array<bool> operator == (const ArrayShape& a, const ArrayShape& b);
 inline Array<bool> operator != (const ArrayShape& a, const ArrayShape& b);
 
-template <class TData> size_t count_nonzero(const Array<TData>& a);
+template <class TDerived, class TData> inline size_t count_nonzero(const BaseDenseArray<TDerived, TData>& a);
 template <class TDerived> inline bool any(const BaseDenseArray<TDerived, bool>& a);
 template <class TDerived> inline bool all(const BaseDenseArray<TDerived, bool>& a);
 

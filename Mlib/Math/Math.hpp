@@ -1194,12 +1194,11 @@ inline Array<bool> all(const Array<bool>& a, size_t axis) {
         });
 }
 
-template <class TData>
-size_t count_nonzero(const Array<TData>& a) {
-    Array<TData> f = a.flattened();
+template <class TDerived, class TData>
+inline size_t count_nonzero(const BaseDenseArray<TDerived, TData>& a) {
     size_t result = 0;
-    for(size_t i=0; i<f.length(); i++) {
-        result += (f(i) != 0);
+    for(const TData& value : a->flat_iterable()) {
+        result += (value != 0);
     }
     return result;
 }
