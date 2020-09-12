@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
             cameras: selected_cameras,
             focus: ui_focus.focus,
             physics_set_fps: &physics_set_fps};
+        std::map<std::string, size_t> selection_ids;
 
         while (!render2.window_should_close()) {
             num_renderings = SIZE_MAX;
@@ -239,6 +240,7 @@ int main(int argc, char** argv) {
                 ui_focus,
                 substitutions,
                 num_renderings,
+                selection_ids,
                 args.has_named("--verbose"));
             // scene.print();
 

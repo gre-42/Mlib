@@ -18,9 +18,11 @@ SceneSelectorLogic::SceneSelectorLogic(
     size_t submenu_id,
     std::string& scene_filename,
     size_t& num_renderings,
-    ButtonPress& button_press)
+    ButtonPress& button_press,
+    size_t& selection_index)
 : scene_selector_list_view_{
     button_press,
+    selection_index,
     scene_files,
     ttf_filename,
     position,

@@ -28,7 +28,8 @@ public:
         size_t submenu_id,
         SubstitutionString& substitutions,
         size_t& num_renderings,
-        ButtonPress& button_press);
+        ButtonPress& button_press,
+        size_t& selection_index);
     ~ParameterSetterLogic();
 
     virtual void render(

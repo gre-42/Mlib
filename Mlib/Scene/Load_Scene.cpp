@@ -114,6 +114,7 @@ void LoadScene::operator()(
     UiFocus& ui_focus,
     SubstitutionString& substitutions,
     size_t& num_renderings,
+    std::map<std::string, size_t>& selection_ids,
     bool verbose)
 {
     std::ifstream ifs{script_filename};
@@ -260,6 +261,7 @@ void LoadScene::operator()(
         "\\s*line_distance=([\\w+-.]+)$");
     const std::regex scene_selector_reg(
         "^(?:\\r?\\n|\\s)*scene_selector\\r?\\n"
+        "\\s*id=([\\w+-.]+)\\r?\\n"
         "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
         "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
@@ -269,6 +271,7 @@ void LoadScene::operator()(
         "^(?:\\r?\\n|\\s)*clear_parameters$");
     const std::regex parameter_setter_reg(
         "^(?:\\r?\\n|\\s)*parameter_setter\\r?\\n"
+        "\\s*id=([\\w+-.]+)\\r?\\n"
         "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
         "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
@@ -814,47 +817,49 @@ void LoadScene::operator()(
             render_logics.append(nullptr, players_stats_logic);
         } else if (std::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
-            for(const auto& e : find_all_name_values(match[6].str(), "[\\w-. \\(\\)/+-]+")) {
+            for(const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-]+")) {
                 scene_entries.push_back(SceneEntry{
                     name: e.first,
                     filename: fpath(e.second)});
             }
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
                 std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
-                fpath(match[1].str()),            // ttf_filename
+                fpath(match[2].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
-                    safe_stof(match[2].str()),
-                    safe_stof(match[3].str())},
-                safe_stof(match[4].str()),        // font_height_pixels
-                safe_stof(match[5].str()),        // line_distance_pixels
+                    safe_stof(match[3].str()),
+                    safe_stof(match[4].str())},
+                safe_stof(match[5].str()),        // font_height_pixels
+                safe_stof(match[6].str()),        // line_distance_pixels
                 ui_focus,
                 ui_focus.n_submenus++,
                 next_scene_filename,
                 num_renderings,
-                button_press);
+                button_press,
+                selection_ids[match[1].str()]);
             render_logics.append(nullptr, scene_selector_logic);
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
             substitutions.clear();
         } else if (std::regex_match(line, match, parameter_setter_reg)) {
             std::list<ReplacementParameter> rps;
-            for(const auto& e : find_all_name_values(match[6].str(), substitute_pattern)) {
+            for(const auto& e : find_all_name_values(match[7].str(), substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
                     name: e.first,
                     substitutions: SubstitutionString{e.second}});
             }
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
-                fpath(match[1].str()),            // ttf_filename
+                fpath(match[2].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
-                    safe_stof(match[2].str()),
-                    safe_stof(match[3].str())},
-                safe_stof(match[4].str()),        // font_height_pixels
-                safe_stof(match[5].str()),        // line_distance_pixels
+                    safe_stof(match[3].str()),
+                    safe_stof(match[4].str())},
+                safe_stof(match[5].str()),        // font_height_pixels
+                safe_stof(match[6].str()),        // line_distance_pixels
                 ui_focus,
                 ui_focus.n_submenus++,
                 substitutions,
                 num_renderings,
-                button_press);
+                button_press,
+                selection_ids[match[1].str()]);
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (std::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
@@ -1083,6 +1088,7 @@ void LoadScene::operator()(
                 ui_focus,
                 substitutions,
                 num_renderings,
+                selection_ids,
                 verbose);
         } else {
             throw std::runtime_error("Could not parse line: \"" + line + '"');

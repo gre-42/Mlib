@@ -15,9 +15,11 @@ ParameterSetterLogic::ParameterSetterLogic(
     size_t submenu_id,
     SubstitutionString& substitutions,
     size_t& num_renderings,
-    ButtonPress& button_press)
+    ButtonPress& button_press,
+    size_t& selection_index)
 : scene_selector_list_view_{
     button_press,
+    selection_index,
     options,
     ttf_filename,
     position,

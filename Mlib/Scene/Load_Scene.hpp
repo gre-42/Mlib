@@ -61,6 +61,7 @@ public:
         UiFocus& ui_focus,
         SubstitutionString& substitutions,
         size_t& num_renderings,
+        std::map<std::string, size_t>& selection_ids,
         bool verbose);
 private:
     std::map<std::string, Macro> macros_;

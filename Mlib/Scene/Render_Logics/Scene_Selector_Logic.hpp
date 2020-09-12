@@ -25,7 +25,8 @@ public:
         size_t submenu_id_,
         std::string& scene_filename,
         size_t& num_renderings,
-        ButtonPress& button_press);
+        ButtonPress& button_press,
+        size_t& selection_index);
     ~SceneSelectorLogic();
 
     virtual void render(

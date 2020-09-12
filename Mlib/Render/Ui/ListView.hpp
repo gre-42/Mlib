@@ -18,6 +18,7 @@ class ListView {
 public:
     ListView(
         ButtonPress& button_press,
+        size_t& selection_index,
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -36,7 +37,7 @@ private:
     FixedArray<float, 2> position_;
     float line_distance_pixels_;
     std::function<std::string(TOption)> transformation_;
-    size_t selection_index_;
+    size_t& selection_index_;
     ButtonPress& button_press_;
     GLFWwindow* window_;
 };

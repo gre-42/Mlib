@@ -8,6 +8,7 @@ namespace Mlib {
 template <class TOption>
 ListView<TOption>::ListView(
     ButtonPress& button_press,
+    size_t& selection_index,
     const std::vector<TOption>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
@@ -19,7 +20,7 @@ ListView<TOption>::ListView(
   position_{position},
   line_distance_pixels_{line_distance_pixels},
   transformation_{transformation},
-  selection_index_{0},
+  selection_index_{selection_index},
   button_press_{button_press}
 {}
 
