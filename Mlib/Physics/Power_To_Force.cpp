@@ -47,7 +47,7 @@ void Mlib::power_to_forces_finite_masses(
  * If no such x_new exists, i.e. r < |y|, do nothing (y alone is already too large).
  * If |x_new| > |x|, do nothing (do not exceed maximum power).
  */
-static float correct_x(float x, float y, float r, float safety_factor = 0.99) {
+float correct_x(float x, float y, float r, float safety_factor = 0.99) {
     if (r < std::abs(y)) {
         return x;
     }
@@ -58,6 +58,13 @@ static float correct_x(float x, float y, float r, float safety_factor = 0.99) {
     return sign(x) * xa * safety_factor;
 }
 
+FixedArray<float, 3> minl2(const FixedArray<float, 3>& v, float max_length) {
+    if (float rlen2 = sum(squared(v)); rlen2 > squared(max_length)) {
+        return v * max_length / std::sqrt(rlen2);
+    } else {
+        return v;
+    }
+}
 /**
  * solve(1/2*m*((v+F/m*t)^2-v^2) = P*t, F);
  * 
@@ -102,38 +109,39 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         float x = (F_c + F_sqrt) / dt;
         float y = tangential_accel * m;
         // std::cerr << "y / a = " << (y * std::sqrt(sum(squared(sn3T))) / max_stiction_force) << std::endl;
-        if (avoid_burnout) {
-            x = correct_x(
-                x,
-                y * std::sqrt(sum(squared(sn3T))),
-                max_stiction_force);
-        }
-        res = x * n3 - y * sn3T;
+        // if (avoid_burnout) {
+        //     x = correct_x(
+        //         x,
+        //         y * std::sqrt(sum(squared(sn3T))),
+        //         max_stiction_force);
+        // }
+        res = minl2(x * n3, max_stiction_force) - y * sn3T;
     } else if (std::abs(v) >= hand_break_velocity) {
         // Handle breaking at high velocities.
         float x = sign(v) * break_accel * m;
         float y = tangential_accel * m;
-        if (avoid_burnout) {
-            x = correct_x(
-                x,
-                y * std::sqrt(sum(squared(sn3T))),
-                max_stiction_force);
-        }
-        res = -x * n3 - y * sn3T;
+        // if (avoid_burnout) {
+        //     x = correct_x(
+        //         x,
+        //         y * std::sqrt(sum(squared(sn3T))),
+        //         max_stiction_force);
+        // }
+        res = minl2(-x * n3, max_stiction_force) - y * sn3T;
     } else {
         // Handle breaking at low velocities.
         FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + 1.f);
-        res = -break_accel * m * sn3 - tangential_accel * m * sn3T;
+        res = minl2(-break_accel * m * sn3, max_stiction_force) - tangential_accel * m * sn3T;
     }
-    if (float rlen2 = sum(squared(res)); rlen2 > squared(max_stiction_force)) {
-        res *= max_stiction_force / std::sqrt(rlen2);
-        // if (float vlen2 = sum(squared(v3)); vlen2 < 1e-12) {
-        //     res = 0;
-        // } else {
-        //     res = -v3 / std::sqrt(vlen2) * friction_force;
-        // }
-    }
-    return res;
+    return minl2(res, max_stiction_force);
+    // if (float rlen2 = sum(squared(res)); rlen2 > squared(max_stiction_force)) {
+    //     res *= max_stiction_force / std::sqrt(rlen2);
+    //     // if (float vlen2 = sum(squared(v3)); vlen2 < 1e-12) {
+    //     //     res = 0;
+    //     // } else {
+    //     //     res = -v3 / std::sqrt(vlen2) * friction_force;
+    //     // }
+    // }
+    // return res;
 }
 
 Mlib::FixedArray<float, 3> Mlib::friction_force_infinite_mass(
