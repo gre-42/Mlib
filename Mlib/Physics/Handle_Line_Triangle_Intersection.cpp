@@ -158,42 +158,52 @@ void HandleLineTriangleIntersection::handle()
         // } else {
         //     fac = 1;
         // }
-        FixedArray<float, 3> motor_force;
-        if (i_.tire_id != SIZE_MAX && i_.o0->mass() == INFINITY && i_.o1->mass() != INFINITY) {
-            FixedArray<float, 3> n3 = i_.o1->get_abs_tire_z(i_.tire_id);
-            n3 -= plane.normal_ * dot0d(plane.normal_, n3);
-            if (float len2 = sum(squared(n3)); len2 > 1e-12) {
-                n3 /= std::sqrt(len2);
-                float P = i_.o1->consume_tire_surface_power(i_.tire_id);
-                motor_force = power_to_force_infinite_mass(
-                    i_.cfg.break_accel,
+        FixedArray<float, 3> tangential_force;
+        if (i_.o0->mass() == INFINITY && i_.o1->mass() != INFINITY) {
+            FixedArray<float, 3> v3 = v11 - plane.normal_ * dot0d(plane.normal_, v11);
+            if (i_.tire_id != SIZE_MAX) {
+                FixedArray<float, 3> n3 = i_.o1->get_abs_tire_z(i_.tire_id);
+                n3 -= plane.normal_ * dot0d(plane.normal_, n3);
+                if (float len2 = sum(squared(n3)); len2 > 1e-12) {
+                    n3 /= std::sqrt(len2);
+                    float P = i_.o1->consume_tire_surface_power(i_.tire_id);
+                    tangential_force = power_to_force_infinite_mass(
+                        i_.cfg.break_accel,
+                        i_.cfg.tangential_accel,
+                        i_.cfg.hand_break_velocity,
+                        i_.cfg.stiction_coefficient * force_n1,
+                        i_.cfg.friction_coefficient * force_n1,
+                        i_.o1->max_velocity_,
+                        n3,
+                        P,
+                        i_.o1->mass(),
+                        v3,
+                        i_.cfg.dt,
+                        i_.cfg.avoid_burnout);
+                } else {
+                    tangential_force = 0;
+                }
+            } else {
+                tangential_force = friction_force_infinite_mass(
                     i_.cfg.tangential_accel,
-                    i_.cfg.hand_break_velocity,
                     i_.cfg.stiction_coefficient * force_n1,
                     i_.cfg.friction_coefficient * force_n1,
-                    i_.o1->max_velocity_,
-                    n3,
-                    P,
                     i_.o1->mass(),
-                    v11 - plane.normal_ * dot0d(plane.normal_, v11),
-                    i_.cfg.dt,
-                    i_.cfg.avoid_burnout);
-            } else {
-                motor_force = 0;
+                    v3);
             }
         } else {
-            motor_force = 0;
+            tangential_force = 0;
         }
         if (frac0 != 0) {
             i_.o0->integrate_force(
-                {-force_n0 * plane.normal_ - motor_force, intersection_point_},
+                {-force_n0 * plane.normal_ - tangential_force, intersection_point_},
                 plane.normal_,
                 i_.cfg.damping,
                 i_.cfg.friction);
         }
         if (frac1 != 0) {
             i_.o1->integrate_force(
-                {force_n1 * plane.normal_ + motor_force, intersection_point_},
+                {force_n1 * plane.normal_ + tangential_force, intersection_point_},
                 plane.normal_,
                 i_.tire_id == SIZE_MAX ? i_.cfg.damping : 0,
                 i_.tire_id == SIZE_MAX ? i_.cfg.friction : 0);

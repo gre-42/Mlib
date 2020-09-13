@@ -35,4 +35,11 @@ FixedArray<float, 3> power_to_force_infinite_mass(
     float dt,
     bool avoid_burnout);
 
+Mlib::FixedArray<float, 3> friction_force_infinite_mass(
+    float tangential_accel,
+    float max_stiction_force,
+    float friction_force,
+    float m,
+    const FixedArray<float, 3>& v3);
+
 }
