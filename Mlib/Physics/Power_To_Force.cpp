@@ -65,6 +65,11 @@ FixedArray<float, 3> minl2(const FixedArray<float, 3>& v, float max_length) {
         return v;
     }
 }
+
+float signed_min(float v, float max_length) {
+    return sign(v) * std::min(std::abs(v), max_length);
+}
+
 /**
  * solve(1/2*m*((v+F/m*t)^2-v^2) = P*t, F);
  * 
@@ -115,7 +120,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         //         y * std::sqrt(sum(squared(sn3T))),
         //         max_stiction_force);
         // }
-        res = minl2(x * n3, max_stiction_force) - y * sn3T;
+        res = signed_min(x, max_stiction_force) * n3 - y * sn3T;
     } else if (std::abs(v) >= hand_break_velocity) {
         // Handle breaking at high velocities.
         float x = sign(v) * break_accel * m;
@@ -126,7 +131,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         //         y * std::sqrt(sum(squared(sn3T))),
         //         max_stiction_force);
         // }
-        res = minl2(-x * n3, max_stiction_force) - y * sn3T;
+        res = -signed_min(x, max_stiction_force) * n3 - y * sn3T;
     } else {
         // Handle breaking at low velocities.
         FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + 1.f);
