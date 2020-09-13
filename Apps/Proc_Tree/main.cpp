@@ -21,16 +21,15 @@
     NOTE: this license covers this example only, proctree.cpp has different license
 */
 
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <chrono>
 #include <stdexcept>
 #include <string.h>
 #include "proctree.h"
-#include <Mlib/String.hpp>
+#include <Mlib/Env.hpp>
 
+using namespace Mlib;
 using namespace Proctree;
 
 void benchmark()
@@ -86,22 +85,6 @@ void draw_arrays(FILE * pFile, int vertCount, fvec3 * vert, fvec3 * normal, fvec
     }
 }
 
-float getenvf(const char* n, float deflt) {
-    const char* v = getenv(n);
-    if (v == nullptr) {
-        return deflt;
-    }
-    return Mlib::safe_stof(v);
-}
-
-int getenvi(const char* n, int deflt) {
-    const char* v = getenv(n);
-    if (v == nullptr) {
-        return deflt;
-    }
-    return Mlib::safe_stoi(v);
-}
-
 void basic_use()
 {
     // 1) Create the tree object
@@ -116,28 +99,28 @@ void basic_use()
     // etc.
     */
 
-    tree.mProperties.mSeed = getenvi("mSeed", 262);
-    tree.mProperties.mSegments = getenvi("mSegments", 6);
-    tree.mProperties.mLevels = getenvi("mLevels", 5);
-    tree.mProperties.mVMultiplier = getenvf("mVMultiplier", 0.36f);
-    tree.mProperties.mTwigScale = getenvf("mTwigScale", 0.39f);
-    tree.mProperties.mInitialBranchLength = getenvf("mInitialBranchLength", 0.49f);
-    tree.mProperties.mLengthFalloffFactor = getenvf("mLengthFalloffFactor", 0.85f);
-    tree.mProperties.mLengthFalloffPower = getenvf("mLengthFalloffPower", 0.99f);
-    tree.mProperties.mClumpMax = getenvf("mClumpMax", 0.454f);
-    tree.mProperties.mClumpMin = getenvf("mClumpMin", 0.404f);
-    tree.mProperties.mBranchFactor = getenvf("mBranchFactor", 2.45f);
-    tree.mProperties.mDropAmount = getenvf("mDropAmount", -0.1f);
-    tree.mProperties.mGrowAmount = getenvf("mGrowAmount", 0.235f);
-    tree.mProperties.mSweepAmount = getenvf("mSweepAmount", 0.01f);
-    tree.mProperties.mMaxRadius = getenvf("mMaxRadius", 0.139f);
-    tree.mProperties.mClimbRate = getenvf("mClimbRate", 0.371f);
-    tree.mProperties.mTrunkKink = getenvf("mTrunkKink", 0.093f);
-    tree.mProperties.mTreeSteps = getenvi("mTreeSteps", 5);
-    tree.mProperties.mTaperRate = getenvf("mTaperRate", 0.947f);
-    tree.mProperties.mRadiusFalloffRate = getenvf("mRadiusFalloffRate", 0.73f);
-    tree.mProperties.mTwistRate = getenvf("mTwistRate", 3.02f);
-    tree.mProperties.mTrunkLength = getenvf("mTrunkLength", 2.4f);
+    tree.mProperties.mSeed = getenv_default_int("mSeed", 262);
+    tree.mProperties.mSegments = getenv_default_int("mSegments", 6);
+    tree.mProperties.mLevels = getenv_default_int("mLevels", 5);
+    tree.mProperties.mVMultiplier = getenv_default_float("mVMultiplier", 0.36f);
+    tree.mProperties.mTwigScale = getenv_default_float("mTwigScale", 0.39f);
+    tree.mProperties.mInitialBranchLength = getenv_default_float("mInitialBranchLength", 0.49f);
+    tree.mProperties.mLengthFalloffFactor = getenv_default_float("mLengthFalloffFactor", 0.85f);
+    tree.mProperties.mLengthFalloffPower = getenv_default_float("mLengthFalloffPower", 0.99f);
+    tree.mProperties.mClumpMax = getenv_default_float("mClumpMax", 0.454f);
+    tree.mProperties.mClumpMin = getenv_default_float("mClumpMin", 0.404f);
+    tree.mProperties.mBranchFactor = getenv_default_float("mBranchFactor", 2.45f);
+    tree.mProperties.mDropAmount = getenv_default_float("mDropAmount", -0.1f);
+    tree.mProperties.mGrowAmount = getenv_default_float("mGrowAmount", 0.235f);
+    tree.mProperties.mSweepAmount = getenv_default_float("mSweepAmount", 0.01f);
+    tree.mProperties.mMaxRadius = getenv_default_float("mMaxRadius", 0.139f);
+    tree.mProperties.mClimbRate = getenv_default_float("mClimbRate", 0.371f);
+    tree.mProperties.mTrunkKink = getenv_default_float("mTrunkKink", 0.093f);
+    tree.mProperties.mTreeSteps = getenv_default_int("mTreeSteps", 5);
+    tree.mProperties.mTaperRate = getenv_default_float("mTaperRate", 0.947f);
+    tree.mProperties.mRadiusFalloffRate = getenv_default_float("mRadiusFalloffRate", 0.73f);
+    tree.mProperties.mTwistRate = getenv_default_float("mTwistRate", 3.02f);
+    tree.mProperties.mTrunkLength = getenv_default_float("mTrunkLength", 2.4f);
 
     // 3) Call generate
     tree.generate();

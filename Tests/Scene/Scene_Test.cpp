@@ -1,3 +1,4 @@
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Pi.hpp>
@@ -34,8 +35,7 @@ void test_physics_engine() {
     size_t num_renderings = SIZE_MAX;
     RenderResults render_results;
     RenderedSceneDescriptor rsd{external_render_pass: {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, time_id: 0, light_resource_id: 0};
-    const char* interactive = std::getenv("PHYSICS_INTERACTIVE");
-    bool is_interactive = (interactive != nullptr) && (std::string(interactive) == "1");
+    bool is_interactive = getenv_default_bool("PHYSICS_INTERACTIVE", false);
     if (!is_interactive) {
         render_results.outputs[rsd] = Array<float>{};
     }
@@ -129,12 +129,17 @@ void test_physics_engine() {
     scene_node_resources.instantiate_renderable("obj1", "obj1_0", *scene_node1_0, SceneNodeResourceFilter{});
     scene_node_resources.instantiate_renderable("obj1", "obj1_1", *scene_node1_1, SceneNodeResourceFilter{});
     scene_node_resources.instantiate_renderable("obj1", "obj1_2", *scene_node1_2, SceneNodeResourceFilter{});
-    scene_node0->set_rotation(FixedArray<float, 3>{0, 0, 0.001 * M_PI});
-    scene_node1_1->set_position(FixedArray<float, 3>{0.1, 4, 0.5});
-    scene_node1_2->set_position(FixedArray<float, 3>{0.1, 8, 0.5});
-    scene_node1_0->set_rotation(FixedArray<float, 3>{0, 0, 0.1 * M_PI});
-    scene_node1_1->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
-    scene_node1_2->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
+    if (getenv_default_bool("STACK", false)) {
+        scene_node1_1->set_position(FixedArray<float, 3>{0, 4, 0});
+        scene_node1_2->set_position(FixedArray<float, 3>{0, 8, 0});
+    } else {
+        scene_node0->set_rotation(FixedArray<float, 3>{0, 0, 0.001 * M_PI});
+        scene_node1_1->set_position(FixedArray<float, 3>{0.1, 4, 0.5});
+        scene_node1_2->set_position(FixedArray<float, 3>{0.1, 8, 0.5});
+        scene_node1_0->set_rotation(FixedArray<float, 3>{0, 0, 0.1 * M_PI});
+        scene_node1_1->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
+        scene_node1_2->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
+    }
 
     scene_nodeR->add_child("n0", scene_node0);
     scene_nodeR->add_child("n1_0", scene_node1_0);
@@ -177,7 +182,14 @@ void test_physics_engine() {
 
     std::shared_mutex mutex;
     SetFps physics_set_fps;
-    PhysicsLoop pl{scene_node_resources, scene, pe, mutex, physics_cfg, physics_set_fps, is_interactive ? SIZE_MAX : 20};
+    PhysicsLoop pl{
+        scene_node_resources,
+        scene,
+        pe,
+        mutex,
+        physics_cfg,
+        physics_set_fps,
+        is_interactive ? SIZE_MAX : 20};
     if (!is_interactive) {
         pl.join();
     }
