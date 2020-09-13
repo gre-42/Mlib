@@ -276,6 +276,7 @@ void LoadScene::operator()(
         "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
+        "\\s*default=([\\d]+)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     const std::regex ui_background_reg("^(?:\\r?\\n|\\s)*ui_background texture=([\\w-. \\(\\)/+-]+) target_focus=(menu|loading|countdown|scene)$");
     const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
@@ -845,10 +846,13 @@ void LoadScene::operator()(
             substitutions.clear();
         } else if (std::regex_match(line, match, parameter_setter_reg)) {
             std::list<ReplacementParameter> rps;
-            for(const auto& e : find_all_name_values(match[7].str(), substitute_pattern)) {
+            for(const auto& e : find_all_name_values(match[8].str(), substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
                     name: e.first,
                     substitutions: SubstitutionString{e.second}});
+            }
+            if (selection_ids.find(match[1].str()) == selection_ids.end()) {
+                selection_ids.insert({match[1].str(), safe_stoi(match[7].str())});
             }
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
@@ -863,7 +867,7 @@ void LoadScene::operator()(
                 substitutions,
                 num_renderings,
                 button_press,
-                selection_ids[match[1].str()]);
+                selection_ids.at(match[1].str()));
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (std::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
