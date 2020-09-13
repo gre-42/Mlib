@@ -9,6 +9,7 @@ static const unsigned int LOG_SPEED = 1 << 2;
 static const unsigned int LOG_HEALTH = 1 << 3;
 static const unsigned int LOG_ACCELERATION = 1 << 4;
 static const unsigned int LOG_DIAMETER = 1 << 5;
+static const unsigned int LOG_DIAMETER2 = 1 << 6;
 
 class Loggable {
 public:

@@ -191,10 +191,19 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
     }
     if (log_components & LOG_DIAMETER) {
         // T = 2 PI R / v, T = 2 PI / w
-        if (float w = sum(squared(rbi_.w_)); w > 1e-2) {
-            ostr << "d: " << 2 * std::sqrt(sum(squared(rbi_.v_)) / w) << " m" << std::endl;
+        if (float w2 = sum(squared(rbi_.w_)); w2 > 1e-2) {
+            ostr << "d: " << 2 * std::sqrt(sum(squared(rbi_.v_)) / w2) << " m" << std::endl;
         } else {
             ostr << "d: " << " undefined" << std::endl;
+        }
+    }
+    if (log_components & LOG_DIAMETER2) {
+        // F = m*a = mv^2/r
+        // r = v^2/a
+        if (float a2 = sum(squared(rbi_.a_)); a2 > 1e-2) {
+            ostr << "d2: " << 2 * sum(squared(rbi_.v_)) / std::sqrt(a2) << " m" << std::endl;
+        } else {
+            ostr << "d2: " << " undefined" << std::endl;
         }
     }
     if (log_components & LOG_POSITION) {
