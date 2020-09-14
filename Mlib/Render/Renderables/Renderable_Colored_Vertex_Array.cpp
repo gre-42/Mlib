@@ -306,18 +306,12 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     if (id.aggregate_mode != AggregateMode::OFF) {
         throw std::runtime_error("get_render_program called on aggregated material");
     }
-    {
-        auto it = render_programs_.find(id);
-        if (it != render_programs_.end()) {
-            return *it->second;
-        }
+    if (auto it = render_programs_.find(id); it != render_programs_.end()) {
+        return *it->second;
     }
     std::lock_guard guard{mutex_};
-    {
-        auto it = render_programs_.find(id);
-        if (it != render_programs_.end()) {
-            return *it->second;
-        }
+    if (auto it = render_programs_.find(id); it != render_programs_.end()) {
+        return *it->second;
     }
     auto rp = std::make_unique<ColoredRenderProgram>();
     OcclusionType occlusion_type;
@@ -427,8 +421,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     if (cva->material.aggregate_mode != AggregateMode::OFF) {
         throw std::runtime_error("get_vertex_array called on aggregated object");
     }
-    auto it = vertex_arrays_.find(cva);
-    if (it != vertex_arrays_.end()) {
+    if (auto it = vertex_arrays_.find(cva); it != vertex_arrays_.end()) {
         return *it->second;
     }
     std::lock_guard guard{mutex_};
