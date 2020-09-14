@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y mesa-utils
 # apt-get install nvidia-container-toolkit
 # apt-get install nvidia-docker2
 # systemctl restart docker
+# xhost local:root or -u 1000
 # docker run --rm -it -u 1000 -e NVIDIA_DRIVER_CAPABILITIES=all -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --runtime nvidia glxg
 
 # References
