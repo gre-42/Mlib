@@ -424,6 +424,9 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     if (auto it = vertex_arrays_.find(cva); it != vertex_arrays_.end()) {
         return *it->second;
     }
+    if (cva->triangles.empty()) {
+        throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array on empty array");
+    }
     std::lock_guard guard{mutex_};
     auto va = std::make_unique<VertexArray>();
     // https://stackoverflow.com/a/13405205/2292832
@@ -432,7 +435,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
 
     CHK(glGenBuffers(1, &va->vertex_buffer));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va->vertex_buffer));
-    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof((cva->triangles)[0]) * cva->triangles.size(), cva->triangles.begin()->flat_begin(), GL_STATIC_DRAW));
+    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof((cva->triangles)[0]) * cva->triangles.size(), cva->triangles.front().flat_begin(), GL_STATIC_DRAW));
 
     CHK(glEnableVertexAttribArray(0));
     CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
