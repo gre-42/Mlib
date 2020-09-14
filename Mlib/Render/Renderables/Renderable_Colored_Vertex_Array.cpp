@@ -451,7 +451,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
                             sizeof((cva->triangles)[0][0]), (void*) (sizeof(float) * 8)));
 
     CHK(glBindVertexArray(0));
-    auto& result = *va;
+    auto& result = *va;  // store data before std::move
     vertex_arrays_.insert(std::make_pair(cva, std::move(va)));
     return result;
 }
