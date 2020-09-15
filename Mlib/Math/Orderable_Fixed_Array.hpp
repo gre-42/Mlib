@@ -5,36 +5,28 @@
 
 namespace Mlib {
 
-template <class TData, size_t tlength>
-class OrderableFixedArray: public FixedArray<TData, tlength> {
+template <class TData, size_t... tshape>
+class OrderableFixedArray: public FixedArray<TData, tshape...> {
 public:
     explicit OrderableFixedArray() {}
-    explicit OrderableFixedArray(const FixedArray<TData, tlength>& rhs)
-    : FixedArray<TData, tlength>{rhs}
+    explicit OrderableFixedArray(const FixedArray<TData, tshape...>& rhs)
+    : FixedArray<TData, tshape...>{rhs}
     {}
     template<typename... Values>
     OrderableFixedArray(const TData& v0, const Values&... values)
-    : FixedArray<TData, tlength>{v0, values...}
+    : FixedArray<TData, tshape...>{v0, values...}
     {}
-    OrderableFixedArray& operator = (const FixedArray<TData, tlength>& rhs) {
-        FixedArray<TData, tlength>& f = *this;
+    OrderableFixedArray& operator = (const FixedArray<TData, tshape...>& rhs) {
+        FixedArray<TData, tshape...>& f = *this;
         f = rhs;
         return *this;
     }
     bool operator < (const OrderableFixedArray& rhs) const {
-        for(size_t i = 0; i < tlength; ++i) {
-            if ((*this)(i) < rhs(i)) {
-                return true;
-            }
-            if ((*this)(i) > rhs(i)) {
-                return false;
-            }
-        }
-        return false;
+        return this->less_than(rhs);
     }
     bool operator == (const OrderableFixedArray& rhs) const {
-        const FixedArray<TData, tlength>& lhs = *this;
-        const FixedArray<TData, tlength>& rhs2 = rhs;
+        const FixedArray<TData, tshape...>& lhs = *this;
+        const FixedArray<TData, tshape...>& rhs2 = rhs;
         return all(lhs == rhs2);
     }
     bool operator != (const OrderableFixedArray& rhs) const {
@@ -54,7 +46,7 @@ public:
         return std::strong_ordering::greater;
     }
     bool is_nonzero() const {
-        const FixedArray<TData, tlength>& a = *this;
+        const FixedArray<TData, tshape...>& a = *this;
         return any(a != TData{0});
     }
 };

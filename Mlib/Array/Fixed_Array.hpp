@@ -143,6 +143,17 @@ public:
         }
         return r;
     }
+    bool less_than(const FixedArray& rhs) const {
+        for(size_t i = 0; i < tshape0; ++i) {
+            if ((*this)[i].less_than(rhs[i])) {
+                return true;
+            }
+            if (rhs[i].less_than((*this)[i])) {
+                return false;
+            }
+        }
+        return false;
+    }
     FixedArray& operator += (const FixedArray& rhs) {
         auto v0 = flat_begin();
         auto v1 = rhs.flat_begin();
@@ -300,6 +311,9 @@ public:
     }
     constexpr const TData* flat_end() const {
         return const_cast<FixedArray*>(this)->flat_end();
+    }
+    bool less_than(const FixedArray& rhs) const {
+        return value_ < rhs.value_;
     }
 private:
     TData value_;
