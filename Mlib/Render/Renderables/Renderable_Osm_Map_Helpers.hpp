@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t tlength>
+template <class TData, size_t... tshape>
 class OrderableFixedArray;
 struct ColoredVertex;
 struct Material;

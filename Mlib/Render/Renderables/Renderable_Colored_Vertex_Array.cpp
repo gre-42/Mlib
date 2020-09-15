@@ -234,16 +234,19 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
+    std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>>* instances,
     RenderingResources* rendering_resources)
 : triangles_res_{triangles},
   rendering_resources_{rendering_resources},
-  render_textures_{rendering_resources_ != nullptr}
+  render_textures_{rendering_resources_ != nullptr},
+  instances_{instances}
 {}
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<ColoredVertexArray>& triangles,
+    std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>>* instances,
     RenderingResources* rendering_resources)
-: RenderableColoredVertexArray(std::list<std::shared_ptr<ColoredVertexArray>>{triangles}, rendering_resources)
+: RenderableColoredVertexArray(std::list<std::shared_ptr<ColoredVertexArray>>{triangles}, instances, rendering_resources)
 {}
 
 void RenderableColoredVertexArray::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)

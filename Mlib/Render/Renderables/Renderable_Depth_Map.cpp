@@ -84,6 +84,7 @@ RenderableDepthMap::RenderableDepthMap(
             Material{},
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
+        nullptr,
         nullptr);  // rendering_resources
 }
 

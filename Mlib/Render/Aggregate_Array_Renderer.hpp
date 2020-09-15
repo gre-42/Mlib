@@ -18,10 +18,11 @@ public:
     virtual void render_aggregates(const FixedArray<float, 4, 4>& vp, const FixedArray<float, 4, 4>& iv, const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, ExternalRenderPass external_render_pass) const override;
 private:
     RenderingResources* rendering_resources_;
-    mutable std::shared_ptr<RenderableColoredVertexArray> rcva_;
-    mutable std::unique_ptr<RenderableColoredVertexArrayInstance> rcvai_;
+    std::shared_ptr<RenderableColoredVertexArray> rcva_;
+    std::unique_ptr<RenderableColoredVertexArrayInstance> rcvai_;
     mutable std::mutex mutex_;
-    mutable bool is_initialized_ = false;
+    bool is_initialized_ = false;
+    std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>> cva_instances_;
 };
 
 }

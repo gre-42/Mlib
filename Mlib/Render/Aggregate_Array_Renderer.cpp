@@ -36,7 +36,7 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
             std::vector<FixedArray<ColoredVertex, 3>>{l.second.begin(), l.second.end()},
             std::vector<FixedArray<ColoredVertex, 2>>{}));
     }
-    auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, rendering_resources_);
+    auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, nullptr, rendering_resources_);
     auto rcvai = std::make_unique<RenderableColoredVertexArrayInstance>(rcva, SceneNodeResourceFilter{});
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};

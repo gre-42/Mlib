@@ -289,6 +289,10 @@ void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
     }
 }
 
+void RenderableColoredVertexArrayInstance::append_instances_to_queue(const FixedArray<float, 4, 4>& m, const SceneGraphConfig& scene_graph_config, std::list<TransformedColoredVertexArray>& aggregate_queue) const {
+    throw std::runtime_error("RenderableColoredVertexArrayInstance::append_instances_to_queue not implemented");
+}
+
 void RenderableColoredVertexArrayInstance::print_stats() const {
     std::cerr << "#triangle lists: " << triangles_res_subset_.size() << std::endl;
     size_t i = 0;

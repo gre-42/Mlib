@@ -486,7 +486,7 @@ RenderableOsmMap::RenderableOsmMap(
     for(auto& l : tls_all) {
         ts.push_back(l->triangle_array());
     }
-    rva_ = std::make_shared<RenderableColoredVertexArray>(ts, rendering_resources_);
+    rva_ = std::make_shared<RenderableColoredVertexArray>(ts, nullptr, rendering_resources_);
 }
 
 void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)

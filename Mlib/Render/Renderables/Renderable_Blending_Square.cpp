@@ -57,6 +57,7 @@ RenderableBlendingSquare::RenderableBlendingSquare(
                     specularity: {0, 0, 0}},
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
+        nullptr,
         rendering_resources);
 }
 

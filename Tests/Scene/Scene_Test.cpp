@@ -99,8 +99,8 @@ void test_physics_engine() {
     SceneNodeResources scene_node_resources;
     Scene scene;
     RenderingResources rendering_resources;
-    scene_node_resources.add_resource("obj0", std::make_shared<RenderableColoredVertexArray>(triangles0, &rendering_resources));
-    scene_node_resources.add_resource("obj1", std::make_shared<RenderableColoredVertexArray>(triangles1, &rendering_resources));
+    scene_node_resources.add_resource("obj0", std::make_shared<RenderableColoredVertexArray>(triangles0, nullptr, &rendering_resources));
+    scene_node_resources.add_resource("obj1", std::make_shared<RenderableColoredVertexArray>(triangles1, nullptr, &rendering_resources));
     scene_node_resources.add_resource("beacon", std::make_shared<RenderableObjFile>(
         "Data/box.obj",
         FixedArray<float, 3>{0, 0, 0},        // position
