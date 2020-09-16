@@ -177,7 +177,7 @@ void LoadScene::operator()(
         "\\s*occluded_type=(off|color|depth)\\r?\\n"
         "\\s*occluder_type=(off|white|black)\\r?\\n"
         "\\s*occluded_by_black=(0|1)\\r?\\n"
-        "\\s*aggregate_mode=(off|once|sorted|instances_sorted)(\\r?\\n"
+        "\\s*aggregate_mode=(off|once|sorted|instances_once|instances_sorted)(\\r?\\n"
         "\\s*no_werror)?$");
     const std::regex gen_triangle_rays_reg("^(?:\\r?\\n|\\s)*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
     const std::regex gen_ray_reg("^(?:\\r?\\n|\\s)*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
@@ -190,7 +190,7 @@ void LoadScene::operator()(
         "\\s*is_small=(0|1)\\r?\\n"
         "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*blend_mode=(off|binary|continuous)\\r?\\n"
-        "\\s*aggregate_mode=(off|once|sorted|instances_sorted)$");
+        "\\s*aggregate_mode=(off|once|sorted|instances_once|instances_sorted)$");
     const std::regex blending_x_resource_reg("^(?:\\r?\\n|\\s)*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1)$");
     const std::regex node_instance_reg("^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+) name=([\\w+-.]+) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) scale=([\\w+-.]+)(?: aggregate=(true|false))?$");
