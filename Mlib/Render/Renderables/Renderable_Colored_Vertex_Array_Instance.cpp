@@ -1,6 +1,7 @@
 #include "Renderable_Colored_Vertex_Array.hpp"
 #include "Renderable_Colored_Vertex_Array_Instance.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -289,8 +290,38 @@ void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
     }
 }
 
-void RenderableColoredVertexArrayInstance::append_instances_to_queue(const FixedArray<float, 4, 4>& m, const SceneGraphConfig& scene_graph_config, std::list<TransformedColoredVertexArray>& aggregate_queue) const {
-    throw std::runtime_error("RenderableColoredVertexArrayInstance::append_instances_to_queue not implemented");
+void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
+    const FixedArray<float, 4, 4>& mvp,
+    const FixedArray<float, 4, 4>& m,
+    const SceneGraphConfig& scene_graph_config,
+    std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
+{
+    for(const auto& cva : triangles_res_subset_) {
+        if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
+            if ((!cva->material.is_small) ||
+                (// (mvp(2, 3) > scene_graph_config.min_distance_small) && // no mvp-check to support rotations
+                 (sum(squared(t3_from_4x4(mvp))) > squared(scene_graph_config.min_distance_small)) &&
+                 (sum(squared(t3_from_4x4(mvp))) < squared(scene_graph_config.max_distance_small))))
+            {
+                float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
+                    ? -mvp(2, 3)
+                    : -INFINITY;
+                instances_queue.push_back(std::make_pair(sorting_key, TransformedColoredVertexArray{cva: cva, transformation_matrix: m}));
+            }
+        }
+    }
+}
+
+void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
+    const FixedArray<float, 4, 4>& m,
+    const SceneGraphConfig& scene_graph_config,
+    std::list<TransformedColoredVertexArray>& aggregate_queue) const
+{
+    for(const auto& cva : triangles_res_subset_) {
+        if (cva->material.aggregate_mode == AggregateMode::ONCE) {
+            aggregate_queue.push_back({cva: cva, transformation_matrix: m});
+        }
+    }
 }
 
 void RenderableColoredVertexArrayInstance::print_stats() const {

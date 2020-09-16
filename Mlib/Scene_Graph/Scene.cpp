@@ -13,11 +13,14 @@ using namespace Mlib;
 Scene::Scene(
     AggregateRenderer* small_sorted_aggregate_renderer,
     AggregateRenderer* large_aggregate_renderer,
-    InstancesRenderer* instances_renderer)
+    InstancesRenderer* small_instances_renderer,
+    InstancesRenderer* large_instances_renderer)
 : small_sorted_aggregate_renderer_{small_sorted_aggregate_renderer},
   large_aggregate_renderer_{large_aggregate_renderer},
-  instances_renderer_{instances_renderer},
+  small_instances_renderer_{small_instances_renderer},
+  large_instances_renderer_{large_instances_renderer},
   large_aggregate_renderer_initialized_{false},
+  large_instances_renderer_initialized_{false},
   uuid_{0}
 {}
 
@@ -48,6 +51,15 @@ void Scene::add_root_aggregate_node(
     std::unique_lock lock{aggregate_mutex_};
     register_node(name, scene_node);
     root_aggregate_nodes_.insert(std::make_pair(name, scene_node));
+}
+
+void Scene::add_root_instances_node(
+    const std::string& name,
+    SceneNode* scene_node)
+{
+    std::unique_lock lock{instances_mutex_};
+    register_node(name, scene_node);
+    root_instances_nodes_.insert(std::make_pair(name, scene_node));
 }
 
 void Scene::delete_root_node(const std::string& name) {
@@ -195,6 +207,31 @@ void Scene::render(
             }
             large_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
         }
+        LOG_INFO("Scene::render large_instances_renderer");
+        if (large_instances_renderer_ != nullptr) {
+            if (!large_instances_renderer_initialized_) {
+                std::list<TransformedColoredVertexArray> instances_queue;
+                {
+                    LOG_INFO("Scene::render large_instances_renderer static_mutex (0)");
+                    std::shared_lock lock{static_mutex_};
+                    LOG_INFO("Scene::render large_instances_renderer static_mutex (1)");
+                    for(const auto& n : static_root_nodes_) {
+                        n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                    }
+                }
+                {
+                    LOG_INFO("Scene::render large_instances_renderer instances_mutex (0)");
+                    std::shared_lock lock{instances_mutex_};
+                    LOG_INFO("Scene::render large_instances_renderer instances_mutex (1)");
+                    for(const auto& n : root_aggregate_nodes_) {
+                        n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                    }
+                }
+                large_instances_renderer_->update_instances(instances_queue);
+                large_instances_renderer_initialized_ = true;
+            }
+            large_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+        }
         if ((external_render_pass.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) &&
             (external_render_pass.pass != ExternalRenderPass::DIRTMAP))
         {
@@ -230,28 +267,33 @@ void Scene::render(
             }
             // Contains continuous alpha and must therefore be rendered late.
             LOG_INFO("Scene::render instances_renderer");
-            if (instances_renderer_ != nullptr) {
+            if (small_instances_renderer_ != nullptr) {
                 BackgroundTaskStatus status = instances_bg_task_.tick(scene_graph_config.aggregate_update_interval);
                 if (status == BackgroundTaskStatus::IDLE) {
                     // copy "vp" and "scene_graph_config"
                     instances_bg_task_.run([this, vp, scene_graph_config](){
-                        std::list<TransformedColoredVertexArray> instances_queue;
+                        std::list<std::pair<float, TransformedColoredVertexArray>> instances_queue;
                         {
                             std::shared_lock lock{static_mutex_};
                             for(const auto& n : static_root_nodes_) {
-                                n.second->append_instances_to_queue(vp, fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
                             }
                         }
                         {
                             std::shared_lock lock{aggregate_mutex_};
-                            for(const auto& n : root_aggregate_nodes_) {
-                                n.second->append_instances_to_queue(vp, fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                            for(const auto& n : root_instances_nodes_) {
+                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
                             }
                         }
-                        instances_renderer_->update_instances(instances_queue);
+                        instances_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
+                        std::list<TransformedColoredVertexArray> sorted_instances_queue;
+                        for(auto& e : instances_queue) {
+                            sorted_instances_queue.push_back(std::move(e.second));
+                        }
+                        small_instances_renderer_->update_instances(sorted_instances_queue);
                     });
                 }
-                instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+                small_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
             }
         }
     }

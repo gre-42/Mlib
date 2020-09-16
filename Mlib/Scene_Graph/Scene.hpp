@@ -19,7 +19,8 @@ public:
     explicit Scene(
         AggregateRenderer* small_sorted_aggregate_renderer = nullptr,
         AggregateRenderer* large_aggregate_renderer = nullptr,
-        InstancesRenderer* instances_renderer = nullptr);
+        InstancesRenderer* small_instances_renderer = nullptr,
+        InstancesRenderer* large_instances_renderer = nullptr);
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
     ~Scene();
@@ -31,6 +32,9 @@ public:
         const std::string& name,
         SceneNode* scene_node);
     void add_root_aggregate_node(
+        const std::string& name,
+        SceneNode* scene_node);
+    void add_root_instances_node(
         const std::string& name,
         SceneNode* scene_node);
     void delete_root_node(const std::string& name);
@@ -54,6 +58,7 @@ private:
     mutable std::shared_mutex dynamic_mutex_;
     mutable std::shared_mutex static_mutex_;
     mutable std::shared_mutex aggregate_mutex_;
+    mutable std::shared_mutex instances_mutex_;
     mutable std::shared_mutex registration_mutex_;
     // Must be above garbage-collected members
     // for deregistration in dtors to work.
@@ -67,10 +72,13 @@ private:
     std::map<std::string, std::unique_ptr<SceneNode>> root_nodes_;
     std::map<std::string, std::unique_ptr<SceneNode>> static_root_nodes_;
     std::map<std::string, std::unique_ptr<SceneNode>> root_aggregate_nodes_;
+    std::map<std::string, std::unique_ptr<SceneNode>> root_instances_nodes_;
     AggregateRenderer* small_sorted_aggregate_renderer_;
     AggregateRenderer* large_aggregate_renderer_;
-    InstancesRenderer* instances_renderer_;
+    InstancesRenderer* small_instances_renderer_;
+    InstancesRenderer* large_instances_renderer_;
     mutable bool large_aggregate_renderer_initialized_;
+    mutable bool large_instances_renderer_initialized_;
     mutable BackgroundTask aggregation_bg_task_;
     mutable BackgroundTask instances_bg_task_;
     std::mutex uuid_mutex_;

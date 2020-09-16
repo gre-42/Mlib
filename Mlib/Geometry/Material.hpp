@@ -18,7 +18,9 @@ enum class ClampMode {
 enum class AggregateMode {
     OFF,
     ONCE,
-    SORTED_CONTINUOUSLY
+    SORTED_CONTINUOUSLY,
+    INSTANCES_ONCE,
+    INSTANCES_SORTED_CONTINUOUSLY
 };
 
 enum class OccludedType {
@@ -51,6 +53,10 @@ inline AggregateMode aggregate_mode_from_string(const std::string& str) {
         return AggregateMode::ONCE;
     } else if (str == "sorted") {
         return AggregateMode::SORTED_CONTINUOUSLY;
+    } if (str == "instances_once") {
+        return AggregateMode::INSTANCES_ONCE;
+    } if (str == "instances_sorted") {
+        return AggregateMode::INSTANCES_SORTED_CONTINUOUSLY;
     }
     throw std::runtime_error("Unknown aggregate mode");
 }

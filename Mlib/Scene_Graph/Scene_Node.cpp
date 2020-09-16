@@ -303,22 +303,39 @@ void SceneNode::append_large_aggregates_to_queue(
     }
 }
 
-void SceneNode::append_instances_to_queue(
+void SceneNode::append_small_instances_to_queue(
     const FixedArray<float, 4, 4>& vp,
     const FixedArray<float, 4, 4>& parent_m,
-    std::list<TransformedColoredVertexArray>& instances_queue,
+    std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
     FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
     FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
     for(const auto& r : renderables_) {
-        r.second->append_instances_to_queue(m, scene_graph_config, instances_queue);
+        r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, instances_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
+        n.second.second->append_small_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
     }
     for(const auto& a : instances_children_) {
-        a.second.second->append_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
+        a.second.second->append_small_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
+    }
+}
+
+void SceneNode::append_large_instances_to_queue(
+    const FixedArray<float, 4, 4>& parent_m,
+    std::list<TransformedColoredVertexArray>& instances_queue,
+    const SceneGraphConfig& scene_graph_config) const
+{
+    FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    for(const auto& r : renderables_) {
+        r.second->append_large_instances_to_queue(m, scene_graph_config, instances_queue);
+    }
+    for(const auto& n : children_) {
+        n.second.second->append_large_instances_to_queue(m, instances_queue, scene_graph_config);
+    }
+    for(const auto& a : instances_children_) {
+        a.second.second->append_large_instances_to_queue(m, instances_queue, scene_graph_config);
     }
 }
 

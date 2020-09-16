@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
+#include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
@@ -168,14 +169,18 @@ int main(int argc, char** argv) {
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;
-            AggregateArrayRenderer aggregate_array_renderer{&rendering_resources};
-            AggregateArrayRenderer fixed_aggregate_array_renderer{&rendering_resources};
+            AggregateArrayRenderer small_aggregate_array_renderer{&rendering_resources};
+            AggregateArrayRenderer large_aggregate_array_renderer{&rendering_resources};
+            ArrayInstancesRenderer small_instances_renderer{&rendering_resources};
+            ArrayInstancesRenderer large_instances_renderer{&rendering_resources};
             // SceneNode destructors require that physics engine is destroyed after scene,
             // => Create PhysicsEngine before Scene
             PhysicsEngine physics_engine{scene_config.physics_engine_config};
             Scene scene{
-                &aggregate_array_renderer,
-                &fixed_aggregate_array_renderer};
+                &small_aggregate_array_renderer,
+                &large_aggregate_array_renderer,
+                &small_instances_renderer,
+                &large_instances_renderer};
             GravityEfp gefp{FixedArray<float, 3>{0, -9.8, 0}};
             StandardCameraLogic standard_camera_logic{
                 scene,

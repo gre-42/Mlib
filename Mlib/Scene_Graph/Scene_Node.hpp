@@ -77,8 +77,12 @@ public:
         const FixedArray<float, 4, 4>& parent_m,
         std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config) const;
-    void append_instances_to_queue(
+    void append_small_instances_to_queue(
         const FixedArray<float, 4, 4>& vp,
+        const FixedArray<float, 4, 4>& parent_m,
+        std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
+        const SceneGraphConfig& scene_graph_config) const;
+    void append_large_instances_to_queue(
         const FixedArray<float, 4, 4>& parent_m,
         std::list<TransformedColoredVertexArray>& instances_queue,
         const SceneGraphConfig& scene_graph_config) const;
