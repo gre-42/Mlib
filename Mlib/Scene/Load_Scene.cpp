@@ -37,10 +37,10 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Render/Renderables/Renderable_Binary_X.hpp>
-#include <Mlib/Render/Renderables/Renderable_Blending_Square.hpp>
 #include <Mlib/Render/Renderables/Renderable_Blending_X.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
+#include <Mlib/Render/Renderables/Renderable_Square.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -177,11 +177,20 @@ void LoadScene::operator()(
         "\\s*occluded_type=(off|color|depth)\\r?\\n"
         "\\s*occluder_type=(off|white|black)\\r?\\n"
         "\\s*occluded_by_black=(0|1)\\r?\\n"
-        "\\s*aggregate_mode=(off|once|sorted)(\\r?\\n"
+        "\\s*aggregate_mode=(off|once|sorted|instances_sorted)(\\r?\\n"
         "\\s*no_werror)?$");
     const std::regex gen_triangle_rays_reg("^(?:\\r?\\n|\\s)*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
     const std::regex gen_ray_reg("^(?:\\r?\\n|\\s)*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    const std::regex blending_square_resource_reg("^(?:\\r?\\n|\\s)*blending_square_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
+    const std::regex square_resource_reg(
+        "^(?:\\r?\\n|\\s)*square_resource\\r?\\n"
+        "\\s*name=([\\w+-.]+)\\r?\\n"
+        "\\s*texture_filename=([\\w-. \\(\\)/+-]+)\\r?\\n"
+        "\\s*min=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*max=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*is_small=(0|1)\\r?\\n"
+        "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*blend_mode=(off|binary|continuous)\\r?\\n"
+        "\\s*aggregate_mode=(off|once|sorted|instances_sorted)$");
     const std::regex blending_x_resource_reg("^(?:\\r?\\n|\\s)*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1)$");
     const std::regex node_instance_reg("^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+) name=([\\w+-.]+) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) scale=([\\w+-.]+)(?: aggregate=(true|false))?$");
@@ -441,12 +450,35 @@ void LoadScene::operator()(
                     safe_stof(match[5].str()),
                     safe_stof(match[6].str()),
                     safe_stof(match[7].str())});
-        } else if (std::regex_match(line, match, blending_square_resource_reg)) {
-            scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingSquare>(
+        } else if (std::regex_match(line, match, square_resource_reg)) {
+            // 1: name
+            // 2: texture_filename
+            // 3, 4: min
+            // 5, 6: max
+            // 7: is_small
+            // 8, 9, 10: ambience
+            // 11: blend_mode
+            // 12: aggregate_mode
+            scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableSquare>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
-                fpath(match[2].str()),
+                Material{
+                    texture: fpath(match[2].str()),
+                    occluder_type: OccluderType::OFF,
+                    blend_mode: blend_mode_from_string(match[11].str()),
+                    clamp_mode_s: ClampMode::EDGE,
+                    clamp_mode_t: ClampMode::EDGE,
+                    collide: false,
+                    aggregate_mode: aggregate_mode_from_string(match[12].str()),
+                    is_small: safe_stob(match[7].str()),
+                    cull_faces: false,
+                    ambience: {
+                        safe_stof(match[8].str()),
+                        safe_stof(match[9].str()),
+                        safe_stof(match[10].str())},
+                    diffusivity: {0, 0, 0},
+                    specularity: {0, 0, 0}},
                 &rendering_resources));
         } else if (std::regex_match(line, match, blending_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(

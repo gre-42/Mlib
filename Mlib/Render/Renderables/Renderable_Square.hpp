@@ -5,11 +5,13 @@
 
 namespace Mlib {
 
-class RenderableBlendingSquare: public SceneNodeResource{
+struct Material;
+
+class RenderableSquare: public SceneNodeResource{
 public:
-    RenderableBlendingSquare(
+    RenderableSquare(
         const FixedArray<float, 2, 2>& square,
-        const std::string& texture,
+        const Material& material,
         RenderingResources* rendering_resources);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) override;
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() override;
