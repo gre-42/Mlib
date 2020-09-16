@@ -125,6 +125,7 @@ void SceneNode::add_child(
     if (children_.find(name) != children_.end()) {
         throw std::runtime_error("Child node with name " + name + " already exists");
     }
+    // Required in SceneNonde::~SceneNode
     if (is_registered && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
@@ -139,10 +140,26 @@ void SceneNode::add_aggregate_child(
     if (aggregate_children_.find(name) != aggregate_children_.end()) {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
     }
+    // Required in SceneNonde::~SceneNode
     if (is_registered && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
     aggregate_children_.insert(std::make_pair(name, std::make_pair(is_registered, node)));
+}
+
+void SceneNode::add_instances_child(
+    const std::string& name,
+    SceneNode* node,
+    bool is_registered)
+{
+    if (instances_children_.find(name) != instances_children_.end()) {
+        throw std::runtime_error("Aggregate node with name " + name + " already exists");
+    }
+    // Required in SceneNonde::~SceneNode
+    if (is_registered && (scene_ == nullptr)) {
+        throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
+    }
+    instances_children_.insert(std::make_pair(name, std::make_pair(is_registered, node)));
 }
 
 void SceneNode::set_camera(const std::shared_ptr<Camera>& camera) {
@@ -283,6 +300,25 @@ void SceneNode::append_large_aggregates_to_queue(
     }
     for(const auto& a : aggregate_children_) {
         a.second.second->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
+    }
+}
+
+void SceneNode::append_instances_to_queue(
+    const FixedArray<float, 4, 4>& vp,
+    const FixedArray<float, 4, 4>& parent_m,
+    std::list<TransformedColoredVertexArray>& instances_queue,
+    const SceneGraphConfig& scene_graph_config) const
+{
+    FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
+    FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    for(const auto& r : renderables_) {
+        r.second->append_instances_to_queue(m, scene_graph_config, instances_queue);
+    }
+    for(const auto& n : children_) {
+        n.second.second->append_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
+    }
+    for(const auto& a : instances_children_) {
+        a.second.second->append_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
     }
 }
 

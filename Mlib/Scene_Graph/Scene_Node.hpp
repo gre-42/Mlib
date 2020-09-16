@@ -50,6 +50,10 @@ public:
         const std::string& name,
         SceneNode* node,
         bool is_registered = false);
+    void add_instances_child(
+        const std::string& name,
+        SceneNode* node,
+        bool is_registered = false);
     void set_camera(const std::shared_ptr<Camera>& camera);
     std::shared_ptr<Camera> get_camera() const;
     void add_light(Light* light);
@@ -72,6 +76,11 @@ public:
     void append_large_aggregates_to_queue(
         const FixedArray<float, 4, 4>& parent_m,
         std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue,
+        const SceneGraphConfig& scene_graph_config) const;
+    void append_instances_to_queue(
+        const FixedArray<float, 4, 4>& vp,
+        const FixedArray<float, 4, 4>& parent_m,
+        std::list<TransformedColoredVertexArray>& instances_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_lights_to_queue(
         const FixedArray<float, 4, 4>& parent_m,
@@ -102,6 +111,7 @@ private:
     std::map<std::string, std::shared_ptr<Renderable>> renderables_;
     std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> children_;
     std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> aggregate_children_;
+    std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> instances_children_;
     std::list<std::unique_ptr<Light>> lights_;
     FixedArray<float, 3> position_;
     FixedArray<float, 3> rotation_;

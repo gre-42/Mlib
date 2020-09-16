@@ -11,21 +11,13 @@ ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources* rendering_res
   rcva_{nullptr}
 {}
 
-void ArrayInstancesRenderer::update_instances(const std::list<TransformedColoredVertexArray>& sorted_aggregate_queue) {
-    //std::map<Material, size_t> material_ids;
-    //size_t ntriangles = 0;
-    //for(const auto& a : sorted_aggregate_queue) {
-    //    if (material_ids.find(a.second.material) == material_ids.end()) {
-    //        material_ids.insert(std::make_pair(a.second.material, material_ids.size()));
-    //    }
-    //    ntriangles += a.second.triangles->size();
-    //}
+void ArrayInstancesRenderer::update_instances(const std::list<TransformedColoredVertexArray>& instances_queue) {
     std::map<std::shared_ptr<ColoredVertexArray>, std::list<FixedArray<float, 4, 4>>> cva_lists;
-    for(const auto& a : sorted_aggregate_queue) {
+    for(const auto& a : instances_queue) {
         cva_lists[a.cva].push_back(a.transformation_matrix);
     }
     std::list<std::shared_ptr<ColoredVertexArray>> mat_vectors;
-    for(const auto& a : sorted_aggregate_queue) {
+    for(const auto& a : instances_queue) {
         mat_vectors.push_back(a.cva);
     }
     auto cva_instances = new std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>>;

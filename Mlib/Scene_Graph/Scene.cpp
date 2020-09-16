@@ -1,18 +1,22 @@
 #include "Scene.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 
 using namespace Mlib;
 
 Scene::Scene(
     AggregateRenderer* small_sorted_aggregate_renderer,
-    AggregateRenderer* large_aggregate_renderer)
+    AggregateRenderer* large_aggregate_renderer,
+    InstancesRenderer* instances_renderer)
 : small_sorted_aggregate_renderer_{small_sorted_aggregate_renderer},
   large_aggregate_renderer_{large_aggregate_renderer},
+  instances_renderer_{instances_renderer},
   large_aggregate_renderer_initialized_{false},
   uuid_{0}
 {}
@@ -71,11 +75,7 @@ void Scene::delete_root_nodes(const std::regex& regex) {
     unregister_nodes(regex);
 }
 
-Scene::~Scene() {
-    if (aggregation_thread_.joinable()) {
-        aggregation_thread_.join();
-    }
-}
+Scene::~Scene() {}
 
 bool Scene::contains_node(const std::string& name) const {
     return nodes_.contains(name);
@@ -195,16 +195,16 @@ void Scene::render(
             }
             large_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
         }
-        // Contains continuous alpha and must therefore be rendered late.
-        LOG_INFO("Scene::render small_sorted_aggregate_renderer");
-        if ((small_sorted_aggregate_renderer_ != nullptr) &&
-            (external_render_pass.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) &&
-            (external_render_pass.pass != ExternalRenderPass::DIRTMAP)) {
-            aggregate_small_i_ = (aggregate_small_i_ + 1) % scene_graph_config.aggregate_update_interval;
-            if (aggregate_small_i_ == 0) {
-                if (!aggregation_thread_.joinable()) {
-                    // copy "vp", "scene_graph_config" and "external_render_pass"
-                    aggregation_thread_ = std::thread{[this, vp, scene_graph_config, external_render_pass](){
+        if ((external_render_pass.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) &&
+            (external_render_pass.pass != ExternalRenderPass::DIRTMAP))
+        {
+            // Contains continuous alpha and must therefore be rendered late.
+            LOG_INFO("Scene::render small_sorted_aggregate_renderer");
+            if (small_sorted_aggregate_renderer_ != nullptr) {
+                BackgroundTaskStatus status = aggregation_bg_task_.tick(scene_graph_config.aggregate_update_interval);
+                if (status == BackgroundTaskStatus::IDLE) {
+                    // copy "vp" and "scene_graph_config"
+                    aggregation_bg_task_.run([this, vp, scene_graph_config](){
                         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>> aggregate_queue;
                         {
                             std::shared_lock lock{static_mutex_};
@@ -224,16 +224,35 @@ void Scene::render(
                             sorted_aggregate_queue.push_back(std::move(e.second));
                         }
                         small_sorted_aggregate_renderer_->update_aggregates(sorted_aggregate_queue);
-                        aggregate_small_sorted_done_ = true;
-                    }};
+                    });
                 }
-            } else {
-                if (aggregate_small_sorted_done_) {
-                    aggregation_thread_.join();
-                    aggregate_small_sorted_done_ = false;
-                }
+                small_sorted_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
             }
-            small_sorted_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+            // Contains continuous alpha and must therefore be rendered late.
+            LOG_INFO("Scene::render instances_renderer");
+            if (instances_renderer_ != nullptr) {
+                BackgroundTaskStatus status = instances_bg_task_.tick(scene_graph_config.aggregate_update_interval);
+                if (status == BackgroundTaskStatus::IDLE) {
+                    // copy "vp" and "scene_graph_config"
+                    instances_bg_task_.run([this, vp, scene_graph_config](){
+                        std::list<TransformedColoredVertexArray> instances_queue;
+                        {
+                            std::shared_lock lock{static_mutex_};
+                            for(const auto& n : static_root_nodes_) {
+                                n.second->append_instances_to_queue(vp, fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                            }
+                        }
+                        {
+                            std::shared_lock lock{aggregate_mutex_};
+                            for(const auto& n : root_aggregate_nodes_) {
+                                n.second->append_instances_to_queue(vp, fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                            }
+                        }
+                        instances_renderer_->update_instances(instances_queue);
+                    });
+                }
+                instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+            }
         }
     }
     // Contains continuous alpha and must therefore be rendered late.

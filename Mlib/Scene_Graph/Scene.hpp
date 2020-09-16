@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Thread.hpp>
 #include <atomic>
 #include <map>
 #include <memory>
@@ -10,13 +11,15 @@
 namespace Mlib {
 
 class AggregateRenderer;
+class InstancesRenderer;
 
 class Scene {
 public:
     // Noncopyable because of mutex_
     explicit Scene(
         AggregateRenderer* small_sorted_aggregate_renderer = nullptr,
-        AggregateRenderer* large_aggregate_renderer = nullptr);
+        AggregateRenderer* large_aggregate_renderer = nullptr,
+        InstancesRenderer* instances_renderer = nullptr);
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
     ~Scene();
@@ -60,15 +63,16 @@ private:
     // |Dynamic  |x     |x      |     |     |x   |
     // |Static   |x     |x      |x    |x    |    |
     // |Aggregate|      |       |x    |x    |    |
+    // |Instances|      |       |x    |x    |    |
     std::map<std::string, std::unique_ptr<SceneNode>> root_nodes_;
     std::map<std::string, std::unique_ptr<SceneNode>> static_root_nodes_;
     std::map<std::string, std::unique_ptr<SceneNode>> root_aggregate_nodes_;
     AggregateRenderer* small_sorted_aggregate_renderer_;
     AggregateRenderer* large_aggregate_renderer_;
+    InstancesRenderer* instances_renderer_;
     mutable bool large_aggregate_renderer_initialized_;
-    mutable std::thread aggregation_thread_;
-    mutable size_t aggregate_small_i_ = 0;
-    mutable std::atomic_bool aggregate_small_sorted_done_ = false;
+    mutable BackgroundTask aggregation_bg_task_;
+    mutable BackgroundTask instances_bg_task_;
     std::mutex uuid_mutex_;
     size_t uuid_;
 };
