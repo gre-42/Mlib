@@ -124,7 +124,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 ++i;
             }
         }
-        if (any(specularity != 0.f)) {
+        if (has_instances || any(specularity != 0.f)) {
             CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
         }
         LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");

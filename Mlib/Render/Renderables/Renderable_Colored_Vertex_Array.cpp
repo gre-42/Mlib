@@ -58,11 +58,24 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_diffusivity || has_specularity) {
         sstr << "out vec3 Normal;" << std::endl;
     }
+    if (has_instances) {
+        sstr << "uniform vec3 viewPos;" << std::endl;
+    }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    sstr << "    gl_Position = MVP * vec4(vPos, 1.0);" << std::endl;
     if (has_instances) {
-        sstr << "    gl_Position += vec4(vInstancePosition, 1);" << std::endl;
+        sstr << "    vec2 dxz = normalize(vInstancePosition.xz - viewPos.xz);" << std::endl;
+        sstr << "    vec3 dz = vec3(dxz.x, 0, dxz.y);" << std::endl;
+        sstr << "    vec3 dy = vec3(0, 1, 0);" << std::endl;
+        sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
+        sstr << "    mat4 lookat;" << std::endl;
+        sstr << "    lookat[0] = vec4(dx, 0);" << std::endl;
+        sstr << "    lookat[1] = vec4(dy, 0);" << std::endl;
+        sstr << "    lookat[2] = vec4(dz, 0);" << std::endl;
+        sstr << "    lookat[3] = vec4(0, 0, 0, 1);" << std::endl;
+        sstr << "    gl_Position = MVP * vec4((lookat * vec4(vPos, 1)).xyz + vInstancePosition, 1.0);" << std::endl;
+    } else {
+        sstr << "    gl_Position = MVP * vec4(vPos, 1.0);" << std::endl;
     }
     sstr << "    color = vCol;" << std::endl;
     sstr << "    tex_coord = vTexCoord;" << std::endl;
@@ -418,7 +431,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         // rp->light_dir_location = 0;
         // rp->light_color = 0;
     }
-    if (id.specularity.is_nonzero()) {
+    if (id.has_instances || id.specularity.is_nonzero()) {
         rp->view_pos = checked_glGetUniformLocation(rp->program, "viewPos");
     } else {
         rp->view_pos = 0;
