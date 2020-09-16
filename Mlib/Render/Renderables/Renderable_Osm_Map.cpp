@@ -502,7 +502,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
             if (grass_node->requires_render_pass()) {
                 scene_node.add_child(p.name + "-" + std::to_string(i++), grass_node);
             } else {
-                scene_node.add_aggregate_child(p.name + "-" + std::to_string(i++), grass_node);
+                scene_node.add_instances_child(p.name + "-" + std::to_string(i++), grass_node);
             }
         }
     }

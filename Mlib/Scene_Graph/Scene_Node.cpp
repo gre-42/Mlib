@@ -317,8 +317,8 @@ void SceneNode::append_small_instances_to_queue(
     for(const auto& n : children_) {
         n.second.second->append_small_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
     }
-    for(const auto& a : instances_children_) {
-        a.second.second->append_small_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
+    for(const auto& i : instances_children_) {
+        i.second.second->append_small_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
     }
 }
 
@@ -334,8 +334,8 @@ void SceneNode::append_large_instances_to_queue(
     for(const auto& n : children_) {
         n.second.second->append_large_instances_to_queue(m, instances_queue, scene_graph_config);
     }
-    for(const auto& a : instances_children_) {
-        a.second.second->append_large_instances_to_queue(m, instances_queue, scene_graph_config);
+    for(const auto& i : instances_children_) {
+        i.second.second->append_large_instances_to_queue(m, instances_queue, scene_graph_config);
     }
 }
 

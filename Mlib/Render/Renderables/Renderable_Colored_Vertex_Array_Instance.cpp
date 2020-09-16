@@ -37,18 +37,20 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         if (render_pass.internal == InternalRenderPass::BLENDED && cva->material.blend_mode != BlendMode::CONTINUOUS) {
             continue;
         }
-        if (cva->material.aggregate_mode != AggregateMode::OFF) {
-            continue;
-        }
         if (render_pass.external.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_type == OccluderType::OFF) {
             continue;
         }
-        if (cva->material.is_small &&
-            ((mvp(2, 3) < scene_graph_config.min_distance_small) ||
-             (sum(squared(t3_from_4x4(mvp))) < squared(scene_graph_config.min_distance_small)) ||
-             (sum(squared(t3_from_4x4(mvp))) > squared(scene_graph_config.max_distance_small))))
-        {
-            continue;
+        if (rcva_->instances_ == nullptr) {
+            if (cva->material.aggregate_mode != AggregateMode::OFF) {
+                continue;
+            }
+            if (cva->material.is_small &&
+                ((mvp(2, 3) < scene_graph_config.min_distance_small) ||
+                (sum(squared(t3_from_4x4(mvp))) < squared(scene_graph_config.min_distance_small)) ||
+                (sum(squared(t3_from_4x4(mvp))) > squared(scene_graph_config.max_distance_small))))
+            {
+                continue;
+            }
         }
 
         std::list<std::pair<FixedArray<float, 4, 4>, Light*>> filtered_lights;
@@ -61,6 +63,8 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         bool has_lightmap_color = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (cva->material.diffusivity.is_nonzero() || cva->material.specularity.is_nonzero());
         bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (cva->material.diffusivity.is_nonzero() || cva->material.specularity.is_nonzero());
         bool has_dirtmap = rcva_->render_textures_ && (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE);
+        bool has_instances = (rcva_->instances_ != nullptr);
+        assert_true(!has_instances);
         if (!has_texture && has_dirtmap) {
             std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture);
         }
@@ -79,6 +83,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 has_lightmap_color: has_lightmap_color,
                 has_lightmap_depth: has_lightmap_depth,
                 has_dirtmap: has_dirtmap,
+                has_instances: has_instances,
                 reorient_normals: reorient_normals,
                 calculate_lightmap: render_pass.external.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE,
                 ambience: OrderableFixedArray{ambience},
@@ -318,7 +323,7 @@ void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
     std::list<TransformedColoredVertexArray>& aggregate_queue) const
 {
     for(const auto& cva : triangles_res_subset_) {
-        if (cva->material.aggregate_mode == AggregateMode::ONCE) {
+        if (cva->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
             aggregate_queue.push_back({cva: cva, transformation_matrix: m});
         }
     }
