@@ -472,7 +472,7 @@ void LoadScene::operator()(
                     collide: false,
                     aggregate_mode: aggregate_mode_from_string(match[12].str()),
                     is_small: safe_stob(match[7].str()),
-                    cull_faces: false,
+                    cull_faces: true,
                     ambience: {
                         safe_stof(match[8].str()),
                         safe_stof(match[9].str()),

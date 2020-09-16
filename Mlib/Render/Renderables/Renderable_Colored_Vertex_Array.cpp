@@ -64,7 +64,7 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if (has_instances) {
-        sstr << "    vec2 dxz = normalize(vInstancePosition.xz - viewPos.xz);" << std::endl;
+        sstr << "    vec2 dxz = normalize(viewPos.xz - vInstancePosition.xz);" << std::endl;
         sstr << "    vec3 dz = vec3(dxz.x, 0, dxz.y);" << std::endl;
         sstr << "    vec3 dy = vec3(0, 1, 0);" << std::endl;
         sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
