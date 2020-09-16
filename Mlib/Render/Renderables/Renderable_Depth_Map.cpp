@@ -80,7 +80,7 @@ RenderableDepthMap::RenderableDepthMap(
     }
     rva_ = std::make_shared<RenderableColoredVertexArray>(
         std::make_shared<ColoredVertexArray>(
-            "",
+            "RenderableDepthMap",
             Material{},
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>())),

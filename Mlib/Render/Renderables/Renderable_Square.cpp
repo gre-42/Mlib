@@ -41,7 +41,7 @@ RenderableSquare::RenderableSquare(
 
     rva_ = std::make_shared<RenderableColoredVertexArray>(
         std::make_shared<ColoredVertexArray>(
-                "",
+                "RenderableSquare",
                 material,
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex, 2>>())),

@@ -12,8 +12,9 @@ class ColoredVertexArray;
 
 class TriangleList {
 public:
-    explicit TriangleList(const Material& material)
-    : material_{material}
+    explicit TriangleList(const std::string& name, const Material& material)
+    : name_{name},
+      material_{material}
     {}
     void draw_triangle_with_normals(
         const FixedArray<float, 3>& p00,

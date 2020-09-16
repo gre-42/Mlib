@@ -222,33 +222,33 @@ RenderableOsmMap::RenderableOsmMap(
             default_barrier_top);
     }
 
-    auto tl_terrain = std::make_shared<TriangleList>(Material{
+    auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
         texture: terrain_texture,
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
         dirt_texture: dirt_texture});
-    auto tl_street_crossing = std::make_shared<TriangleList>(Material{
+    auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
         texture: asphalt_texture,
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE});
-    auto tl_path_crossing = std::make_shared<TriangleList>(Material{
+    auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
         texture: path_texture,
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE});
-    auto tl_street = std::make_shared<TriangleList>(Material{
+    auto tl_street = std::make_shared<TriangleList>("street", Material{
         texture: street_texture,
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE}); // mixed_texture: terrain_texture
-    auto tl_path = std::make_shared<TriangleList>(Material{
+    auto tl_path = std::make_shared<TriangleList>("path", Material{
         texture: path_texture,
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE}); // mixed_texture: terrain_texture
-    auto tl_curb_street = std::make_shared<TriangleList>(Material{
+    auto tl_curb_street = std::make_shared<TriangleList>("curb_street", Material{
         texture: curb_street_texture,
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
         clamp_mode_s: ClampMode::EDGE}); // mixed_texture: terrain_texture
-    auto tl_curb_path = std::make_shared<TriangleList>(Material{
+    auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
         texture: curb_path_texture,
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,

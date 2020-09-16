@@ -45,7 +45,7 @@ RenderableBlendingX::RenderableBlendingX(
 
         rva_(i) = std::make_shared<RenderableColoredVertexArray>(
             std::make_shared<ColoredVertexArray>(
-                "",
+                "RenderableBlendingX",
                 Material{
                     texture: texture,
                     occluder_type: OccluderType::OFF,

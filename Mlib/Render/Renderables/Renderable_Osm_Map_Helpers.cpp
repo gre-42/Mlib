@@ -217,7 +217,7 @@ void Mlib::draw_roofs(
         if (bu.way.nd.front() != bu.way.nd.back()) {
             throw std::runtime_error("Building " + bu.id + ": outline not closed");
         }
-        tls.push_back(std::make_shared<TriangleList>(material));
+        tls.push_back(std::make_shared<TriangleList>("roofs", material));
         auto way1 = bu.way.nd;
         way1.erase(way1.begin());
         float zz0 = z0;
@@ -297,7 +297,7 @@ void Mlib::draw_ceilings(
         }
         outline = removed_duplicates(outline);
         //std::reverse(outline.begin(), outline.end());
-        tls.push_back(std::make_shared<TriangleList>(material));
+        tls.push_back(std::make_shared<TriangleList>("ceilings", material));
         triangulate_terrain_or_ceilings(
             *tls.back(),
             {},
@@ -1030,7 +1030,7 @@ void Mlib::add_binary_vegetation_old(
     size_t tid = 0;
     for(auto& t : ground_triangles.triangles_) {
         ++tid;
-        tls.push_back(std::make_shared<TriangleList>(material));
+        tls.push_back(std::make_shared<TriangleList>("binary_vegetation_old", material));
         float veg_size;
         switch (tid % 10) {
             case 0:
@@ -1136,7 +1136,7 @@ void Mlib::draw_building_walls(
     size_t bid = 0;
     for(const auto& bu : buildings) {
         ++bid;
-        tls.push_back(std::make_shared<TriangleList>(material));
+        tls.push_back(std::make_shared<TriangleList>("building_walls", material));
         switch (bid % 3) {
             case 0:
                 tls.back()->material_.texture = facade_texture;

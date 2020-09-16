@@ -31,7 +31,7 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
     std::list<std::shared_ptr<ColoredVertexArray>> mat_vectors;
     for(auto& l : mat_lists) {
         mat_vectors.push_back(std::make_shared<ColoredVertexArray>(
-            "",
+            "AggregateArrayRenderer",
             l.first,
             std::vector<FixedArray<ColoredVertex, 3>>{l.second.begin(), l.second.end()},
             std::vector<FixedArray<ColoredVertex, 2>>{}));

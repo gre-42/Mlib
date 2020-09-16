@@ -70,7 +70,7 @@ void test_physics_engine() {
             ColoredVertex{position: {+10, -2, +10}, color: {1, 0, 0}, normal: {0, 1, 0}}}
     };
     auto triangles0 = std::make_shared<ColoredVertexArray>(
-        "",
+        "test_physics_engine",
         Material{
             occluded_type: OccludedType::LIGHT_MAP_DEPTH,
             occluder_type: OccluderType::BLACK},

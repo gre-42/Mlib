@@ -31,13 +31,15 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     std::vector<FixedArray<float, 2>> obj_uvs;
     std::vector<FixedArray<float, 3>> obj_normals;
     std::list<std::shared_ptr<ColoredVertexArray>> result;
-    TriangleList tl{Material{
-        texture: "",
-        occluded_type: occluded_type,
-        occluder_type: occluder_type,
-        occluded_by_black: occluded_by_black,
-        aggregate_mode: aggregate_mode,
-        is_small: is_small}};
+    TriangleList tl{
+        filename,
+        Material{
+            texture: "",
+            occluded_type: occluded_type,
+            occluder_type: occluder_type,
+            occluded_by_black: occluded_by_black,
+            aggregate_mode: aggregate_mode,
+            is_small: is_small}};
     StaticFaceLightning sfl;
 
     std::ifstream ifs{filename};

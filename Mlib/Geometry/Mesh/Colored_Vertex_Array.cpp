@@ -13,7 +13,9 @@ ColoredVertexArray::ColoredVertexArray(
   material{material},
   triangles{std::forward<std::vector<FixedArray<ColoredVertex, 3>>>(triangles)},
   lines{std::forward<std::vector<FixedArray<ColoredVertex, 2>>>(lines)}
-{}
+{
+    assert_true(!name.empty());
+}
 
 #pragma GCC push_options
 #pragma GCC optimize ("O3")

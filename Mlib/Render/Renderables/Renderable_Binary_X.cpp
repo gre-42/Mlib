@@ -45,7 +45,7 @@ RenderableBinaryX::RenderableBinaryX(
 
     rva_ = std::make_shared<RenderableColoredVertexArray>(
         std::make_shared<ColoredVertexArray>(
-                "",
+                "RenderableBinaryX",
                 Material{
                     texture: texture,
                     occluder_type: is_small ? OccluderType::OFF : OccluderType::BLACK,
