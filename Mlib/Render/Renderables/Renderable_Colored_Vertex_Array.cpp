@@ -444,13 +444,13 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
 
 const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredVertexArray* cva) const {
     if (cva->material.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
-        throw std::runtime_error("get_vertex_array called on aggregated object");
+        throw std::runtime_error("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
     if (auto it = vertex_arrays_.find(cva); it != vertex_arrays_.end()) {
         return *it->second;
     }
     if (cva->triangles.empty()) {
-        throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array on empty array");
+        throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array on empty array \"" + cva->name + '"');
     }
     std::lock_guard guard{mutex_};
     auto va = std::make_unique<VertexArray>();
@@ -477,7 +477,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     if (instances_ != nullptr) {
         const std::vector<FixedArray<float, 4, 4>>& inst = instances_->at(cva);
         if (inst.empty()) {
-            throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array received empty instances");
+            throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array received empty instances \"" + cva->name + '"');
         }
         std::vector<FixedArray<float, 3>> positions;
         positions.reserve(inst.size());
