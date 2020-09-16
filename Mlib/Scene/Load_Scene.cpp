@@ -465,7 +465,7 @@ void LoadScene::operator()(
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 Material{
                     texture: fpath(match[2].str()),
-                    occluder_type: OccluderType::OFF,
+                    occluder_type: OccluderType::BLACK,
                     blend_mode: blend_mode_from_string(match[11].str()),
                     clamp_mode_s: ClampMode::EDGE,
                     clamp_mode_t: ClampMode::EDGE,
