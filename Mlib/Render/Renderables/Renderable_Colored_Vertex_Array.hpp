@@ -61,11 +61,11 @@ public:
     RenderableColoredVertexArray& operator = (const RenderableColoredVertexArray& other) = delete;
     explicit RenderableColoredVertexArray(
         const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
-        std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>>* instances,
+        std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
         RenderingResources* rendering_resources);
     explicit RenderableColoredVertexArray(
         const std::shared_ptr<ColoredVertexArray>& triangles,
-        std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>>* instances,
+        std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
         RenderingResources* rendering_resources);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) override;
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() override;
@@ -82,7 +82,7 @@ private:
     RenderingResources* rendering_resources_;
     bool render_textures_;
     mutable std::mutex mutex_;
-    std::unique_ptr<std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>>> instances_;
+    std::unique_ptr<std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>> instances_;
 };
 
 }

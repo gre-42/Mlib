@@ -1,4 +1,5 @@
 #include "Renderable_Colored_Vertex_Array.hpp"
+#include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
@@ -21,6 +22,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_dirtmap,
     bool has_diffusivity,
     bool has_specularity,
+    bool has_instances,
     bool reorient_normals)
 {
     assert_true(nlights == lights.size());
@@ -35,6 +37,9 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "layout (location=2) in vec2 vTexCoord;" << std::endl;
     if (has_diffusivity || has_specularity) {
         sstr << "layout (location=3) in vec3 vNormal;" << std::endl;
+    }
+    if (has_instances) {
+        sstr << "layout (location=4) in vec3 vInstancePosition;" << std::endl;
     }
     sstr << "out vec3 color;" << std::endl;
     sstr << "out vec2 tex_coord;" << std::endl;
@@ -56,6 +61,9 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     sstr << "    gl_Position = MVP * vec4(vPos, 1.0);" << std::endl;
+    if (has_instances) {
+        sstr << "    gl_Position += vec4(vInstancePosition, 1);" << std::endl;
+    }
     sstr << "    color = vCol;" << std::endl;
     sstr << "    tex_coord = vTexCoord;" << std::endl;
     if (has_lightmap_color || has_lightmap_depth) {
@@ -234,7 +242,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
-    std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>>* instances,
+    std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
     RenderingResources* rendering_resources)
 : triangles_res_{triangles},
   rendering_resources_{rendering_resources},
@@ -244,7 +252,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<ColoredVertexArray>& triangles,
-    std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>>* instances,
+    std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
     RenderingResources* rendering_resources)
 : RenderableColoredVertexArray(std::list<std::shared_ptr<ColoredVertexArray>>{triangles}, instances, rendering_resources)
 {}
@@ -306,7 +314,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const RenderProgramIdentifier& id,
     const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights) const
 {
-    if (id.aggregate_mode != AggregateMode::OFF) {
+    if (id.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
         throw std::runtime_error("get_render_program called on aggregated material");
     }
     if (auto it = render_programs_.find(id); it != render_programs_.end()) {
@@ -338,6 +346,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.has_dirtmap,
             id.diffusivity.is_nonzero(),
             id.specularity.is_nonzero(),
+            id.has_instances,
             id.reorient_normals),
         fragment_shader_text_textured_rgb_gen(
             filtered_lights,
@@ -421,7 +430,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
 }
 
 const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredVertexArray* cva) const {
-    if (cva->material.aggregate_mode != AggregateMode::OFF) {
+    if (cva->material.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
         throw std::runtime_error("get_vertex_array called on aggregated object");
     }
     if (auto it = vertex_arrays_.find(cva); it != vertex_arrays_.end()) {
@@ -438,20 +447,39 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
 
     CHK(glGenBuffers(1, &va->vertex_buffer));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va->vertex_buffer));
-    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof((cva->triangles)[0]) * cva->triangles.size(), cva->triangles.front().flat_begin(), GL_STATIC_DRAW));
+    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(cva->triangles[0]) * cva->triangles.size(), cva->triangles.front().flat_begin(), GL_STATIC_DRAW));
 
     CHK(glEnableVertexAttribArray(0));
     CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-                            sizeof((cva->triangles)[0][0]), (void*) 0));
+                              sizeof(cva->triangles[0][0]), (void*) 0));
     CHK(glEnableVertexAttribArray(1));
     CHK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,
-                            sizeof((cva->triangles)[0][0]), (void*) (sizeof(float) * 3)));
+                              sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 3)));
     CHK(glEnableVertexAttribArray(2));
     CHK(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
-                            sizeof((cva->triangles)[0][0]), (void*) (sizeof(float) * 6)));
+                              sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 6)));
     CHK(glEnableVertexAttribArray(3));
     CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE,
-                            sizeof((cva->triangles)[0][0]), (void*) (sizeof(float) * 8)));
+                              sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 8)));
+    if (instances_ != nullptr) {
+        const std::vector<FixedArray<float, 4, 4>>& inst = instances_->at(cva);
+        if (inst.empty()) {
+            throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array received empty instances");
+        }
+        std::vector<FixedArray<float, 3>> positions;
+        positions.reserve(inst.size());
+        for(const FixedArray<float, 4, 4>& m : inst) {
+            positions.push_back(t3_from_4x4(m));
+        }
+        CHK(glGenBuffers(1, &va->position_buffer));
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va->position_buffer));
+        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
+
+        CHK(glEnableVertexAttribArray(4));
+        CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE,
+                                  sizeof(positions[0]), (void*) 0));
+        CHK(glVertexAttribDivisor(4, 1));
+    }
 
     CHK(glBindVertexArray(0));
     auto& result = *va;  // store data before std::move

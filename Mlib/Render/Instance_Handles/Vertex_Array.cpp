@@ -16,4 +16,7 @@ void VertexArray::free() {
     if (vertex_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &vertex_buffer));
     }
+    if (position_buffer != (GLuint)-1) {
+        WARN(glDeleteBuffers(1, &position_buffer));
+    }
 }

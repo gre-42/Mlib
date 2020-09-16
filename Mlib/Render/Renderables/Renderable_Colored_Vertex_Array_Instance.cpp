@@ -64,7 +64,6 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (cva->material.diffusivity.is_nonzero() || cva->material.specularity.is_nonzero());
         bool has_dirtmap = rcva_->render_textures_ && (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE);
         bool has_instances = (rcva_->instances_ != nullptr);
-        assert_true(!has_instances);
         if (!has_texture && has_dirtmap) {
             std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture);
         }
@@ -232,7 +231,11 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 throw std::runtime_error("Unknown blend_mode");
         }
         LOG_INFO("RenderableColoredVertexArrayInstance::render glDrawArrays");
-        CHK(glDrawArrays(GL_TRIANGLES, 0, 3 * cva->triangles.size()));
+        if (has_instances) {
+            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * cva->triangles.size(), rcva_->instances_->at(cva.get()).size()));
+        } else {
+            CHK(glDrawArrays(GL_TRIANGLES, 0, 3 * cva->triangles.size()));
+        }
         CHK(glDisable(GL_CULL_FACE));
         CHK(glDisable(GL_BLEND));
         CHK(glDepthMask(GL_TRUE));
