@@ -17,6 +17,7 @@ add_subdirectory(Generate_Tree)
 add_subdirectory(Proc_Tree)
 
 if (glfw3_FOUND)
+add_subdirectory(Explicit_Mipmaps)
     add_subdirectory(Glfw_Tearing_Demo)
     if (Vulkan_FOUND AND glm_FOUND)
         add_subdirectory(Glfw_Vulkan_Tearing_Demo)
