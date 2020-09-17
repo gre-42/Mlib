@@ -47,7 +47,7 @@ static GenShaderText fragment_shader_text{[](
         sstr << "    float z_n = 2.0 * z_b - 1.0;" << std::endl;
         sstr << "    float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));" << std::endl;
         // sstr << "    col.b = (z_e - zNear) / (zFar - zNear);" << std::endl;
-        sstr << "    float distance_fac = clamp((z_e - 200) / 400, 0, 0.5);" << std::endl;
+        sstr << "    float distance_fac = clamp((z_e - 200) / 800, 0, 0.5);" << std::endl;
     }
     // sstr << "    if (-z_e > 100) col.b = 1;" << std::endl;
     // sstr << "    if (-z_e <= 100) col.b = 0;" << std::endl;

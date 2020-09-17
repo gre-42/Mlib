@@ -76,9 +76,9 @@ int main(int argc, char** argv) {
          "--full_screen",
          "--print_residual_time",
          "--print_fps",
-         "--vfx",
+         "--no_vfx",
          "--no_depth_fog",
-         "--no_low_pass",
+         "--low_pass",
          "--motion_interpolation",
          "--no_render",
          "--print_gamepad_buttons",
@@ -205,11 +205,11 @@ int main(int argc, char** argv) {
             auto post_processing_logic = std::make_shared<PostProcessingLogic>(
                 *skybox_logic,
                 !args.has_named("--no_depth_fog"),
-                !args.has_named("--no_low_pass"));
+                args.has_named("--low_pass"));
             RenderLogics render_logics;
             render_logics.append(nullptr, flying_camera_logic);
             render_logics.append(nullptr, dirtmap_logic);
-            render_logics.append(nullptr, args.has_named("--vfx")
+            render_logics.append(nullptr, !args.has_named("--no_vfx")
                 ? post_processing_logic
                 : (scene_config.render_config.motion_interpolation ? std::dynamic_pointer_cast<RenderLogic>(motion_interp_logic) : skybox_logic));
             render_logics.append(nullptr, key_bindings);

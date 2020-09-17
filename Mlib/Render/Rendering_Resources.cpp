@@ -1,8 +1,8 @@
 #include "Rendering_Resources.hpp"
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
-#include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <cstring>
@@ -69,14 +69,21 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
     while (true) {
         CHK(glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, cur_data));
         if ((w > 1) && (h > 1)) {
-            VectorialPixels<float, 4> vp{ArrayShape{(size_t)w, (size_t)h}};
-            std::transform(cur_data, cur_data + w * h * si.nrChannels, vp.flat_iterable().begin()->flat_begin(), [](unsigned char c){return c / 255.f;});
-            Array<float> fi = multichannel_gaussian_filter_NWE(vp.to_array(), 2.f, float(NAN));
-            // static int ii = 0;
-            // PgmImage::from_float(fi[3]).save_to_file("/tmp/alpha-" +  std::to_string(ii) + ".pgm");
-            // PgmImage::from_float(vp.to_array()[3]).save_to_file("/tmp/alph0-" +  std::to_string(ii++) + ".pgm");
-            VectorialPixels<float, 4> vpf{fi};
-            std::transform(vpf.flat_iterable().begin()->flat_begin(), vpf.flat_iterable().end()->flat_begin(), cur_data, [](float f){return std::clamp(f * 255.f, 0.f, 255.f);});
+            if (level > 2) {
+                VectorialPixels<float, 4> vp{ArrayShape{(size_t)w, (size_t)h}};
+                std::transform(cur_data, cur_data + w * h * si.nrChannels, vp.flat_iterable().begin()->flat_begin(), [](unsigned char c){return c / 255.f;});
+                Array<float> vpa = vp.to_array();
+                // vpa[3] = gaussian_filter_NWE(vpa[3], 0.5f, float(NAN));
+                // vpa[3] = (vpa[3] > 0.5f).casted<float>();
+                for(size_t i = 0; i < 3; ++i) {
+                    vpa[i] = gaussian_filter_NWE(vpa[i], 2.f, float(NAN));
+                }
+                // static int ii = 0;
+                // PgmImage::from_float(fi[3]).save_to_file("/tmp/alpha-" +  std::to_string(ii) + ".pgm");
+                // PgmImage::from_float(vpa[3]).save_to_file("/tmp/alph0-" +  std::to_string(ii++) + ".pgm");
+                VectorialPixels<float, 4> vpf{vpa};
+                std::transform(vpf.flat_iterable().begin()->flat_begin(), vpf.flat_iterable().end()->flat_begin(), cur_data, [](float f){return std::clamp(f * 255.f, 0.f, 255.f);});
+            }
             stbir_resize_uint8(
                 cur_data,
                 w,
