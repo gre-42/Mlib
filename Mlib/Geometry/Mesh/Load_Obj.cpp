@@ -212,8 +212,10 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             } else if (std::regex_match(line, match, object_reg)) {
                 // do nothing
             } else if (std::regex_match(line, match, group_reg)) {
-                result.push_back(tl.triangle_array());
-                tl.triangles_.clear();
+                if (!tl.triangles_.empty()) {
+                    result.push_back(tl.triangle_array());
+                    tl.triangles_.clear();
+                }
                 tl.name_ = match[1].str();
             } else if (std::regex_match(line, match, mtllib_reg)) {
                 std::string p = fs::path(filename).parent_path().string();
