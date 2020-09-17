@@ -17,6 +17,15 @@ bool is_power_of_two(int n) {
     return n > 0 && ((n & (n - 1)) == 0);
 }
 
+/**
+ * From: https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c
+ */
+int log2(int n) {
+    int result = 0;
+    while (n >>= 1) ++result;
+    return result;
+}
+
 static StbInfo stb_load_texture(const std::string& filename,
                                 bool rgba,
                                 bool flip_vertically,
@@ -35,6 +44,46 @@ static StbInfo stb_load_texture(const std::string& filename,
         std::cerr << filename << " size: " << result.width << 'x' << result.height << std::endl;
     }
     return result;
+}
+
+static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
+    if (!is_power_of_two(si.width) || !is_power_of_two(si.height)) {
+        throw std::runtime_error("Image size is not a power of 2");
+    }
+    assert_true(si.nrChannels == 4);
+    // assert_true(si.width > 0); // is contained in is_power_of_two
+    // assert_true(si.height > 0); // is contained in is_power_of_two
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, log2(std::min(si.width, si.height))));
+
+    int w = si.width;
+    int h = si.height;
+    int level = 0;
+    std::unique_ptr<unsigned char[]> si_resized{
+        new unsigned char[(w / 2) * (h / 2) * si.nrChannels]};
+    unsigned char* cur_data = si.data.get();
+    unsigned char* resized_data = si_resized.get();
+    while (true) {
+        CHK(glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, cur_data));
+        if ((w > 1) && (h > 1)) {
+            stbir_resize_uint8(
+                cur_data,
+                w,
+                h,
+                0,
+                resized_data,
+                w / 2,
+                h / 2,
+                0,
+                si.nrChannels);
+            std::swap(cur_data, resized_data);
+            w /= 2;
+            h /= 2;
+            ++level;
+        } else {
+            break;
+        }
+    }
+    assert_true(level == log2(std::min(si.width, si.height)));
 }
 
 RenderingResources::~RenderingResources() {
@@ -66,7 +115,7 @@ GLuint RenderingResources::get_texture(const std::string& filename,
             CHK(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
             CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
         }
-        auto si0 = stb_load_texture(
+        StbInfo si0 = stb_load_texture(
             filename, rgba, true, false); // true=flip_vertically, false=flip_horizontally
         if (mixed != "") {
             auto si1_raw = stb_load_texture(
@@ -111,7 +160,11 @@ GLuint RenderingResources::get_texture(const std::string& filename,
                          si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
                          GL_UNSIGNED_BYTE,
                          si0.data.get()));
-        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        if (rgba) {
+            generate_rgba_mipmaps_inplace(si0);
+        } else {
+            CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        }
 
         textures_.insert(
             std::make_pair(TextureNameAndMixed{alias.empty() ? filename : alias, mixed},
