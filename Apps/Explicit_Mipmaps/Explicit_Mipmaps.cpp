@@ -33,8 +33,7 @@ const GLchar* FRAGMENT_SHADER_SOURCE =
         "    color = texture(ourTexture, TexCoord);\n"
         "}                                         \n";
 
-int main()
-{
+int main() {
     // Change the value of size by 1,2,4,8,16,32,64,128 or 256 and see how the color of the triangle doesn't change. Why does it happen?
     GLint size = 128;
 
@@ -47,7 +46,7 @@ int main()
     GLFW_CHK(GLFWwindow* window = glfwCreateWindow(size, size, "", nullptr, nullptr));
     GLFW_CHK(glfwMakeContextCurrent(window));
     gladLoadGL(glfwGetProcAddress);
-    glViewport(0, 0,size, size);
+    glViewport(0, 0, size, size);
 
     GLuint texture;
     glGenTextures(1, &texture);
@@ -55,18 +54,18 @@ int main()
 
     // Our image for the mipmap with odd level and green color
     // The dimensions are 256 x 256 and is multiplied by 3 because I defined R,G and B colors
-    unsigned char imageArray[256*256*3];
-    for(int i = 0; i < 256*256*3; i++){
-        if((i+2)%3 == 0)
+    unsigned char imageArray[256 * 256 * 3];
+    for (int i = 0; i < 256 * 256 * 3; i++) {
+        if ((i + 2) % 3 == 0)
             imageArray[i] = 255;
         else
             imageArray[i] = 0;
     }
 
     // Our image for the mipmap with pair level and red color
-    unsigned char imageArray2[256*256*3];
-    for(int i = 0; i < 256*256*3; i++){
-        if(i%3 == 0)
+    unsigned char imageArray2[256 * 256 * 3];
+    for (int i = 0; i < 256 * 256 * 3; i++) {
+        if (i % 3 == 0)
             imageArray2[i] = 255;
         else
             imageArray2[i] = 0;
@@ -130,7 +129,7 @@ int main()
     // Drawing our triangle
     CHK(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
     CHK(glClear(GL_COLOR_BUFFER_BIT));
-    CHK(glDrawArrays(GL_TRIANGLES, 0,3));
+    CHK(glDrawArrays(GL_TRIANGLES, 0, 3));
     GLFW_CHK(glfwSwapBuffers(window));
     while (!glfwWindowShouldClose(window)) {
         GLFW_CHK(glfwPollEvents());
