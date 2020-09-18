@@ -35,11 +35,12 @@ int main(int argc, char** argv) {
         "[--height <height>] "
         "[--output <file.ppm>] "
         "[--apply_static_lighting] "
-        "[--min_num] <min_num>"
-        "[--regex] <regex>"
-        "[--no_werror]\n"
+        "[--min_num] <min_num> "
+        "[--regex] <regex> "
+        "[--no_werror] "
+        "[--no_shadows]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
-        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting"},
+        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows"},
         {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
                     false,                                                                // is_small
                     blend_mode_from_string(args.named_value("--blend_mode", "binary")),
                     false,                                                                // blend_cull_faces
-                    OccludedType::LIGHT_MAP_DEPTH,
+                    args.has_named("--no_shadows") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
                     OccluderType::BLACK,
                     true,                                                                 // occluded_by_black
                     aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
