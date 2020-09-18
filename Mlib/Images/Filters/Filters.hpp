@@ -253,14 +253,13 @@ Array<TData> standard_deviation(const Array<TData>& image, const ArrayShape& siz
     return w(squared(I)) - squared(w(I));
 }
 
-template <class TData>
+template <class TData, class TFilter>
 Array<TData> guided_filter(
     const Array<TData>& guidance,
     const Array<TData>& image,
-    const ArrayShape& size,
-    const TData& eps)
+    const TData& eps,
+    const TFilter& w)
 {
-    auto w = [&](const Array<TData>& x) { return box_filter_nans_as_zeros_NWE(x, size); };
     const auto& I = guidance;
     const auto& p = image;
     auto pm = w(p);
@@ -270,6 +269,20 @@ Array<TData> guided_filter(
     auto b = pm - a * mu;
     auto q = w(a) * I + w(b);
     return q;
+}
+
+template <class TData>
+Array<TData> guided_filter(
+    const Array<TData>& guidance,
+    const Array<TData>& image,
+    const ArrayShape& size,
+    const TData& eps)
+{
+    return guided_filter(
+        guidance,
+        image,
+        eps,
+        [&size](const Array<TData>& x) { return box_filter_nans_as_zeros_NWE(x, size); });
 }
 
 }
