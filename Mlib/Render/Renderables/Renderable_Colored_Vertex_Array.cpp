@@ -372,7 +372,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             OrderableFixedArray{id.diffusivity},
             OrderableFixedArray{id.specularity},
             id.blend_mode == BlendMode::BINARY
-                ? (id.calculate_lightmap ? 0.1 : 0.9)
+                ? (id.calculate_lightmap ? 0.1 : 0.5)
                 : 1,
             occlusion_type,
             id.reorient_normals));

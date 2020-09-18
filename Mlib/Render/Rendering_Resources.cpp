@@ -5,6 +5,7 @@
 #include <memory>
 #include <stb_image/stb_image_load.h>
 #include <stb_image/stb_image_resize.h>
+#include <stb_image/stb_mipmaps.h>
 #include <string>
 #include <vector>
 
@@ -46,60 +47,61 @@ static StbInfo stb_load_texture(const std::string& filename,
     return result;
 }
 
-// static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
-//     if (!is_power_of_two(si.width) || !is_power_of_two(si.height)) {
-//         throw std::runtime_error("Image size is not a power of 2");
-//     }
-//     assert_true(si.nrChannels == 4);
-//     // assert_true(si.width > 0); // is contained in is_power_of_two
-//     // assert_true(si.height > 0); // is contained in is_power_of_two
-//     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, log2(std::min(si.width, si.height))));
-// 
-//     int w = si.width;
-//     int h = si.height;
-//     int level = 0;
-//     std::unique_ptr<unsigned char[]> si_resized{
-//         new unsigned char[(w / 2) * (h / 2) * si.nrChannels]};
-//     unsigned char* cur_data = si.data.get();
-//     unsigned char* resized_data = si_resized.get();
-//     while (true) {
-//         CHK(glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, cur_data));
-//         if ((w > 1) && (h > 1)) {
-//             if (level > 2) {
-//                 VectorialPixels<float, 4> vp{ArrayShape{(size_t)w, (size_t)h}};
-//                 std::transform(cur_data, cur_data + w * h * si.nrChannels, vp.flat_iterable().begin()->flat_begin(), [](unsigned char c){return c / 255.f;});
-//                 Array<float> vpa = vp.to_array();
-//                 // vpa[3] = gaussian_filter_NWE(vpa[3], 0.5f, float(NAN));
-//                 // vpa[3] = (vpa[3] > 0.5f).casted<float>();
-//                 for(size_t i = 0; i < 3; ++i) {
-//                     vpa[i] = gaussian_filter_NWE(vpa[i], 2.f, float(NAN));
-//                 }
-//                 // static int ii = 0;
-//                 // PgmImage::from_float(fi[3]).save_to_file("/tmp/alpha-" +  std::to_string(ii) + ".pgm");
-//                 // PgmImage::from_float(vpa[3]).save_to_file("/tmp/alph0-" +  std::to_string(ii++) + ".pgm");
-//                 VectorialPixels<float, 4> vpf{vpa};
-//                 std::transform(vpf.flat_iterable().begin()->flat_begin(), vpf.flat_iterable().end()->flat_begin(), cur_data, [](float f){return std::clamp(f * 255.f, 0.f, 255.f);});
-//             }
-//             stbir_resize_uint8(
-//                 cur_data,
-//                 w,
-//                 h,
-//                 0,
-//                 resized_data,
-//                 w / 2,
-//                 h / 2,
-//                 0,
-//                 si.nrChannels);
-//             std::swap(cur_data, resized_data);
-//             w /= 2;
-//             h /= 2;
-//             ++level;
-//         } else {
-//             break;
-//         }
-//     }
-//     assert_true(level == log2(std::min(si.width, si.height)));
-// }
+static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
+    if (!is_power_of_two(si.width) || !is_power_of_two(si.height)) {
+        throw std::runtime_error("Image size is not a power of 2");
+    }
+    assert_true(si.nrChannels == 4);
+    // assert_true(si.width > 0); // is contained in is_power_of_two
+    // assert_true(si.height > 0); // is contained in is_power_of_two
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, log2(std::max(si.width, si.height))));
+
+    // int w = si.width;
+    // int h = si.height;
+    int level = 0;
+    // std::unique_ptr<unsigned char[]> si_resized{
+    //     new unsigned char[(w / 2) * (h / 2) * si.nrChannels]};
+    // unsigned char* cur_data = si.data.get();
+    // unsigned char* resized_data = si_resized.get();
+    RgbaDownsampler rds{si.data.get(), si.width, si.height};
+    for (RgbaImage im = rds.next(); im.data != nullptr; im = rds.next()) {
+        CHK(glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im.data));
+        // if ((w > 1) && (h > 1)) {
+        //     if (level > 2) {
+        //         VectorialPixels<float, 4> vp{ArrayShape{(size_t)w, (size_t)h}};
+        //         std::transform(cur_data, cur_data + w * h * si.nrChannels, vp.flat_iterable().begin()->flat_begin(), [](unsigned char c){return c / 255.f;});
+        //         Array<float> vpa = vp.to_array();
+        //         // vpa[3] = gaussian_filter_NWE(vpa[3], 0.5f, float(NAN));
+        //         // vpa[3] = (vpa[3] > 0.5f).casted<float>();
+        //         for(size_t i = 0; i < 3; ++i) {
+        //             vpa[i] = gaussian_filter_NWE(vpa[i], 2.f, float(NAN));
+        //         }
+        //         // static int ii = 0;
+        //         // PgmImage::from_float(fi[3]).save_to_file("/tmp/alpha-" +  std::to_string(ii) + ".pgm");
+        //         // PgmImage::from_float(vpa[3]).save_to_file("/tmp/alph0-" +  std::to_string(ii++) + ".pgm");
+        //         VectorialPixels<float, 4> vpf{vpa};
+        //         std::transform(vpf.flat_iterable().begin()->flat_begin(), vpf.flat_iterable().end()->flat_begin(), cur_data, [](float f){return std::clamp(f * 255.f, 0.f, 255.f);});
+        //     }
+        //     stbir_resize_uint8(
+        //         cur_data,
+        //         w,
+        //         h,
+        //         0,
+        //         resized_data,
+        //         w / 2,
+        //         h / 2,
+        //         0,
+        //         si.nrChannels);
+        //     std::swap(cur_data, resized_data);
+        //     w /= 2;
+        //     h /= 2;
+        //     ++level;
+        // } else {
+        //     break;
+        // }
+    }
+    assert_true(level - 1 == log2(std::max(si.width, si.height)));
+}
 
 RenderingResources::~RenderingResources() {
     for (const auto& t : textures_) {
@@ -175,12 +177,12 @@ GLuint RenderingResources::get_texture(const std::string& filename,
                          si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
                          GL_UNSIGNED_BYTE,
                          si0.data.get()));
-        // if (rgba) {
-        //     generate_rgba_mipmaps_inplace(si0);
-        // } else {
-        //     CHK(glGenerateMipmap(GL_TEXTURE_2D));
-        // }
-        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        if (rgba) {
+            generate_rgba_mipmaps_inplace(si0);
+        } else {
+            CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        }
+        // CHK(glGenerateMipmap(GL_TEXTURE_2D));
 
         textures_.insert(
             std::make_pair(TextureNameAndMixed{alias.empty() ? filename : alias, mixed},

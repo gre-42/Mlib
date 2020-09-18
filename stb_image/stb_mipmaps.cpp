@@ -62,8 +62,7 @@ RgbaImage RgbaDownsampler::next() {
             downsampled_data_ = buffer_.get();
         }
     } else {
-        if ((width_ == 0 && height_ == 0) ||
-            (width_ == 1 && height_ == 1)) {
+        if ((std::max(1, width_) == 1 && std::max(1, height_) == 1)) {
             return RgbaImage{
                 data: nullptr,
                 width: 0,
