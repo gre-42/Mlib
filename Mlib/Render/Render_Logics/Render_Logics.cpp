@@ -48,6 +48,10 @@ const FixedArray<float, 4, 4>& RenderLogics::vp() const {
     throw std::runtime_error("RenderLogics::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& RenderLogics::iv() const {
+    throw std::runtime_error("RenderLogics::iv not implemented");
+}
+
 bool RenderLogics::requires_postprocessing() const {
     throw std::runtime_error("RenderLogics::requires_postprocessing not implemented");
 }

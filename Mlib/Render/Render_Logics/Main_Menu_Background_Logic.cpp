@@ -42,6 +42,10 @@ const FixedArray<float, 4, 4>& MainMenuBackgroundLogic::vp() const {
     throw std::runtime_error("MainMenuBackgroundLogic::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& MainMenuBackgroundLogic::iv() const {
+    throw std::runtime_error("MainMenuBackgroundLogic::iv not implemented");
+}
+
 bool MainMenuBackgroundLogic::requires_postprocessing() const {
     throw std::runtime_error("MainMenuBackgroundLogic::requires_postprocessing not implemented");
 }

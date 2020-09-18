@@ -58,6 +58,10 @@ const FixedArray<float, 4, 4>& DirtmapLogic::vp() const {
     return child_logic_.vp();
 }
 
+const FixedArray<float, 4, 4>& DirtmapLogic::iv() const {
+    return child_logic_.iv();
+}
+
 bool DirtmapLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
 }

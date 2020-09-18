@@ -74,6 +74,10 @@ const FixedArray<float, 4, 4>& VisualMovable3rdLogger::vp() const {
     throw std::runtime_error("VisualMovable3rdLogger::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& VisualMovable3rdLogger::iv() const {
+    throw std::runtime_error("VisualMovable3rdLogger::iv not implemented");
+}
+
 bool VisualMovable3rdLogger::requires_postprocessing() const {
     throw std::runtime_error("VisualMovable3rdLogger::requires_postprocessing not implemented");
 }

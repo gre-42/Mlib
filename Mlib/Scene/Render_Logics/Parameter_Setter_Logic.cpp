@@ -84,6 +84,10 @@ const FixedArray<float, 4, 4>& ParameterSetterLogic::vp() const {
     throw std::runtime_error("ParameterSetterLogic::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& ParameterSetterLogic::iv() const {
+    throw std::runtime_error("ParameterSetterLogic::iv not implemented");
+}
+
 bool ParameterSetterLogic::requires_postprocessing() const {
     throw std::runtime_error("ParameterSetterLogic::requires_postprocessing not implemented");
 }

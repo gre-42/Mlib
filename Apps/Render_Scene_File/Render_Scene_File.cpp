@@ -15,6 +15,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
@@ -185,6 +186,8 @@ int main(int argc, char** argv) {
             StandardCameraLogic standard_camera_logic{
                 scene,
                 selected_cameras};
+            SkyboxLogic skybox_logic{standard_camera_logic, rendering_resources};
+            auto standard_render_logic = std::make_shared<StandardRenderLogic>(scene, skybox_logic);
             auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
                 render2.window(),
                 button_states,
@@ -198,12 +201,11 @@ int main(int argc, char** argv) {
                 selected_cameras,
                 ui_focus.focus,
                 scene);
-            ReadPixelsLogic read_pixels_logic{standard_camera_logic};
+            ReadPixelsLogic read_pixels_logic{*standard_render_logic};
             auto dirtmap_logic = std::make_shared<DirtmapLogic>(read_pixels_logic, rendering_resources);
-            auto skybox_logic = std::make_shared<SkyboxLogic>(read_pixels_logic, rendering_resources);
             auto motion_interp_logic = std::make_shared<MotionInterpolationLogic>(read_pixels_logic, InterpolationType::OPTICAL_FLOW);
             auto post_processing_logic = std::make_shared<PostProcessingLogic>(
-                *skybox_logic,
+                *standard_render_logic,
                 !args.has_named("--no_depth_fog"),
                 args.has_named("--low_pass"));
             RenderLogics render_logics;
@@ -211,7 +213,7 @@ int main(int argc, char** argv) {
             render_logics.append(nullptr, dirtmap_logic);
             render_logics.append(nullptr, !args.has_named("--no_vfx")
                 ? post_processing_logic
-                : (scene_config.render_config.motion_interpolation ? std::dynamic_pointer_cast<RenderLogic>(motion_interp_logic) : skybox_logic));
+                : (scene_config.render_config.motion_interpolation ? std::dynamic_pointer_cast<RenderLogic>(motion_interp_logic) : standard_render_logic));
             render_logics.append(nullptr, key_bindings);
             physics_engine.add_external_force_provider(&gefp);
             physics_engine.add_external_force_provider(key_bindings.get());
@@ -241,7 +243,7 @@ int main(int argc, char** argv) {
                 standard_camera_logic,
                 read_pixels_logic,
                 *dirtmap_logic,
-                *skybox_logic,
+                skybox_logic,
                 ui_focus,
                 substitutions,
                 num_renderings,

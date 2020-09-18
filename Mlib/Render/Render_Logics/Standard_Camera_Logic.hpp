@@ -7,7 +7,6 @@ namespace Mlib {
 
 class Scene;
 struct SelectedCameras;
-class SetFps;
 
 class StandardCameraLogic: public RenderLogic {
 public:
@@ -23,12 +22,9 @@ public:
     virtual float near_plane() const override;
     virtual float far_plane() const override;
     virtual const FixedArray<float, 4, 4>& vp() const override;
+    virtual const FixedArray<float, 4, 4>& iv() const override;
     virtual bool requires_postprocessing() const override;
 private:
-    void update_projection_and_inverse_view_matrix(
-        int width,
-        int height,
-        const RenderedSceneDescriptor& frame_id);
     const Scene& scene_;
     SelectedCameras& cameras_;
     FixedArray<float, 4, 4> vp_;

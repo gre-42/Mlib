@@ -88,6 +88,10 @@ const FixedArray<float, 4, 4>& SceneSelectorLogic::vp() const {
     throw std::runtime_error("SceneSelectorLogic::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& SceneSelectorLogic::iv() const {
+    throw std::runtime_error("SceneSelectorLogic::iv not implemented");
+}
+
 bool SceneSelectorLogic::requires_postprocessing() const {
     throw std::runtime_error("SceneSelectorLogic::requires_postprocessing not implemented");
 }

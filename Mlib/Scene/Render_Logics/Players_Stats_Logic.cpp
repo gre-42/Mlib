@@ -47,6 +47,10 @@ const FixedArray<float, 4, 4>& PlayersStatsLogic::vp() const {
     throw std::runtime_error("PlayersStatsLogic::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& PlayersStatsLogic::iv() const {
+    throw std::runtime_error("PlayersStatsLogic::iv not implemented");
+}
+
 bool PlayersStatsLogic::requires_postprocessing() const {
     throw std::runtime_error("PlayersStatsLogic::requires_postprocessing not implemented");
 }

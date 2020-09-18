@@ -202,6 +202,10 @@ const FixedArray<float, 4, 4>& PostProcessingLogic::vp() const {
     return child_logic_.vp();
 }
 
+const FixedArray<float, 4, 4>& PostProcessingLogic::iv() const {
+    return child_logic_.iv();
+}
+
 bool PostProcessingLogic::requires_postprocessing() const {
     return false;
 }

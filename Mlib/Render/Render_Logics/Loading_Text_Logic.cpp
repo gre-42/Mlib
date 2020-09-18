@@ -56,6 +56,10 @@ const FixedArray<float, 4, 4>& LoadingTextLogic::vp() const {
     throw std::runtime_error("LoadingTextLogic::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& LoadingTextLogic::iv() const {
+    throw std::runtime_error("LoadingTextLogic::iv not implemented");
+}
+
 bool LoadingTextLogic::requires_postprocessing() const {
     throw std::runtime_error("LoadingTextLogic::requires_postprocessing not implemented");
 }

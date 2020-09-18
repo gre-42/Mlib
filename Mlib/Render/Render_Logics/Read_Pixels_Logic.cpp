@@ -59,6 +59,10 @@ const FixedArray<float, 4, 4>& ReadPixelsLogic::vp() const {
     return child_logic_.vp();
 }
 
+const FixedArray<float, 4, 4>& ReadPixelsLogic::iv() const {
+    return child_logic_.iv();
+}
+
 bool ReadPixelsLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
 }

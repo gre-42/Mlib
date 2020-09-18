@@ -114,6 +114,10 @@ const FixedArray<float, 4, 4>& RotatingLogic::vp() const {
     throw std::runtime_error("RotatingLogic::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& RotatingLogic::iv() const {
+    throw std::runtime_error("RotatingLogic::iv not implemented");
+}
+
 bool RotatingLogic::requires_postprocessing() const {
     return true;
 }

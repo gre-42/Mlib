@@ -411,6 +411,10 @@ const FixedArray<float, 4, 4>& MotionInterpolationLogic::vp() const {
     return child_logic_.vp();
 }
 
+const FixedArray<float, 4, 4>& MotionInterpolationLogic::iv() const {
+    return child_logic_.iv();
+}
+
 bool MotionInterpolationLogic::requires_postprocessing() const {
     return false;
 }

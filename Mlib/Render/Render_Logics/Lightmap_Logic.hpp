@@ -44,6 +44,7 @@ public:
     virtual float near_plane() const override;
     virtual float far_plane() const override;
     virtual const FixedArray<float, 4, 4>& vp() const override;
+    virtual const FixedArray<float, 4, 4>& iv() const override;
     virtual bool requires_postprocessing() const override;
 
 private:

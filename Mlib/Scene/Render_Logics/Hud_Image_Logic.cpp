@@ -85,6 +85,10 @@ const FixedArray<float, 4, 4>& HudImageLogic::vp() const {
     throw std::runtime_error("HudImageLogic::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& HudImageLogic::iv() const {
+    throw std::runtime_error("HudImageLogic::iv not implemented");
+}
+
 bool HudImageLogic::requires_postprocessing() const {
     throw std::runtime_error("HudImageLogic::requires_postprocessing not implemented");
 }

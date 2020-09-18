@@ -44,6 +44,10 @@ const FixedArray<float, 4, 4>& KeyBindings::vp() const {
     throw std::runtime_error("KeyBindings::vp not implemented");
 }
 
+const FixedArray<float, 4, 4>& KeyBindings::iv() const {
+    throw std::runtime_error("KeyBindings::iv not implemented");
+}
+
 bool KeyBindings::requires_postprocessing() const {
     throw std::runtime_error("KeyBindings::requires_postprocessing not implemented");
 }

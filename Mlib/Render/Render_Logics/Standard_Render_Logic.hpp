@@ -1,22 +1,17 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
-#include <chrono>
-#include <memory>
 
 namespace Mlib {
 
-class CountDownLogic: public RenderLogic, public RenderTextLogic {
+class Scene;
+struct SelectedCameras;
+class SetFps;
+
+class StandardRenderLogic: public RenderLogic {
 public:
-    CountDownLogic(
-        const std::string& ttf_filename,
-        const FixedArray<float, 2>& position,
-        float font_height_pixels,
-        float line_distance_pixels,
-        std::list<Focus>& focus,
-        float nseconds);
-    ~CountDownLogic();
+    explicit StandardRenderLogic(const Scene& scene, RenderLogic& skybox_logic);
 
     virtual void render(
         int width,
@@ -30,12 +25,9 @@ public:
     virtual const FixedArray<float, 4, 4>& vp() const override;
     virtual const FixedArray<float, 4, 4>& iv() const override;
     virtual bool requires_postprocessing() const override;
-
 private:
-    std::chrono::time_point<std::chrono::steady_clock> start_time_;
-    bool timeout_started_;
-    float nseconds_;
-    std::list<Focus>& focus_;
+    const Scene& scene_;
+    RenderLogic& skybox_logic_;
 };
 
 }
