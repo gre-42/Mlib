@@ -1,4 +1,6 @@
 #include "Rendering_Resources.hpp"
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
+#include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <cstring>
@@ -65,6 +67,23 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
     // unsigned char* resized_data = si_resized.get();
     RgbaDownsampler rds{si.data.get(), si.width, si.height};
     for (RgbaImage im = rds.next(); im.data != nullptr; im = rds.next()) {
+        if (level > 2) {
+            VectorialPixels<float, 4> vp{ArrayShape{(size_t)im.width, (size_t)im.height}};
+            std::transform(im.data, im.data + im.width * im.height * si.nrChannels, vp.flat_iterable().begin()->flat_begin(), [](unsigned char c){return c / 255.f;});
+            Array<float> vpa = vp.to_array();
+            // vpa[3] = gaussian_filter_NWE(vpa[3], 0.5f, float(NAN));
+            // vpa[3] = (vpa[3] > 0.5f).casted<float>();
+            float sigma = std::min(im.width, im.height) / 10.f;
+            Array<float> m = gaussian_filter_NWE(vpa[3], sigma, float(NAN));
+            for(size_t i = 0; i < 3; ++i) {
+                vpa[i] = gaussian_filter_NWE(vpa[i] * vpa[3], sigma, float(NAN)) / m;
+            }
+            // static int ii = 0;
+            // PgmImage::from_float(fi[3]).save_to_file("/tmp/alpha-" +  std::to_string(ii) + ".pgm");
+            // PgmImage::from_float(vpa[3]).save_to_file("/tmp/alph0-" +  std::to_string(ii++) + ".pgm");
+            VectorialPixels<float, 4> vpf{vpa};
+            std::transform(vpf.flat_iterable().begin()->flat_begin(), vpf.flat_iterable().end()->flat_begin(), im.data, [](float f){return std::clamp(f * 255.f, 0.f, 255.f);});
+        }
         CHK(glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im.data));
         // if ((w > 1) && (h > 1)) {
         //     if (level > 2) {
