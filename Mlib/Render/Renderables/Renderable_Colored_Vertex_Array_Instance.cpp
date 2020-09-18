@@ -70,6 +70,10 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         FixedArray<float, 3> ambience = (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.ambience : fixed_zeros<float, 3>();
         FixedArray<float, 3> diffusivity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.diffusivity : fixed_zeros<float, 3>();
         FixedArray<float, 3> specularity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.specularity : fixed_zeros<float, 3>();
+        if (!filtered_lights.empty()) {
+            diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
+            specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
+        }
         bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
         LOG_INFO("RenderableColoredVertexArrayInstance::render get_render_program");
         const ColoredRenderProgram& rp = rcva_->get_render_program(

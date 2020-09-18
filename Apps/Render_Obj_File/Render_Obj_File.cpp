@@ -38,9 +38,9 @@ int main(int argc, char** argv) {
         "[--min_num] <min_num> "
         "[--regex] <regex> "
         "[--no_werror] "
-        "[--no_shadows]\n"
+        "[--no_light]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
-        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows"},
+        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_light"},
         {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
                     false,                                                                // is_small
                     blend_mode_from_string(args.named_value("--blend_mode", "binary")),
                     false,                                                                // blend_cull_faces
-                    args.has_named("--no_shadows") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
+                    args.has_named("--no_light") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
                     OccluderType::BLACK,
                     true,                                                                 // occluded_by_black
                     aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
@@ -112,6 +112,11 @@ int main(int argc, char** argv) {
         scene.get_node("light_node")->set_rotation({-45.f * M_PI / 180.f, 0.f, 0.f});
         SelectedCameras selected_cameras;
         Light* light = new Light{resource_index: selected_cameras.add_light_node("light_node"), only_black: false};
+        if (args.has_named("--no_light")) {
+            light->ambience = 1;
+            light->diffusivity = 0;
+            light->specularity = 0;
+        }
         scene.get_node("light_node")->add_light(light);
 
         scene.add_root_node("follower_camera", new SceneNode);
