@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 
 using namespace Mlib;
@@ -116,7 +117,7 @@ void SkyboxLogic::render(
     }
     LOG_FUNCTION("SkyboxLogic::render");
     child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
-    if (!filenames_.empty()) {
+    if (!filenames_.empty() && (frame_id.external_render_pass.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE)) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
         CHK(glUseProgram(rp_.program));

@@ -51,6 +51,11 @@ void LightmapLogic::render(
         fb_->configure({width: lightmap_width, height: lightmap_height, with_depth_texture: with_depth_texture_});
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_->frame_buffer));
         child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
+
+        // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
+        // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
+        // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
+
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         rendering_resources_.set_texture("lightmap_color" + std::to_string(light_resource_id_), fb_->texture_color_buffer);
         rendering_resources_.set_vp("lightmap_color" + std::to_string(light_resource_id_), vp());
