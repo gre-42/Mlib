@@ -305,6 +305,7 @@ void LoadScene::operator()(
         "\\s*snappiness=([\\w+-.]+)\\r?\\n"
         "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
         "\\s*y_snappiness=([\\w+-.]+)$");
+    const std::regex add_texture_mean_color_reg("^(?:\\r?\\n|\\s)*add_texture_mean_color color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) pattern=(.+)$");
     const std::regex record_track_reg("^(?:\\r?\\n|\\s)*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex playback_track_reg("^(?:\\r?\\n|\\s)*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex check_points_reg("^(?:\\r?\\n|\\s)*check_points moving-node=([\\w+-.]+) beacon_node0=([\\w+-.]+) beacon_node1=([\\w+-.]+) player=([\\w+-.]+) nth=(\\d+) radius=([\\w+-.]+) track_filename=([\\w-. \\(\\)/+-]+)$");
@@ -1034,6 +1035,13 @@ void LoadScene::operator()(
                 safe_stof(match[11].str()),        // y_adaptivity
                 safe_stof(match[12].str()));       // y_snappiness
             linker.link_absolute_movable(*follower_node, follower);
+        } else if (std::regex_match(line, match, add_texture_mean_color_reg)) {
+            rendering_resources.add_texture_mean_color(
+                FixedArray<float, 3>{
+                    safe_stof(match[1].str()),
+                    safe_stof(match[2].str()),
+                    safe_stof(match[3].str())},
+                match[4].str());
         } else if (std::regex_match(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
             auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());

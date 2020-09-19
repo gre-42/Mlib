@@ -4,6 +4,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <iostream>
 #include <memory>
+#include <stb_image/stb_histogram.hpp>
 #include <stb_image/stb_image_load.h>
 #include <stb_image/stb_image_resize.h>
 #include <stb_image/stb_mipmaps.h>
@@ -186,6 +187,18 @@ GLuint RenderingResources::get_texture(const std::string& filename,
                 }
             }
         }
+        auto mean_color = std::find_if(mean_colors_.begin(), mean_colors_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
+        if (mean_color != mean_colors_.end()) {
+            if (!stb_match_color_rgb(
+                si0.data.get(),
+                si0.width,
+                si0.height,
+                si0.nrChannels,
+                (mean_color->second * 255.f).casted<unsigned char>().flat_begin()))
+            {
+                std::cerr << "alpha = 0: " << filename << std::endl;
+            }
+        }
         CHK(glTexImage2D(GL_TEXTURE_2D,
                          0,
                          rgba ? GL_RGBA : GL_RGB,
@@ -257,6 +270,13 @@ void RenderingResources::set_texture(const std::string& name, GLuint id) {
         throw std::runtime_error("RenderingResources::set_texture: invalid texture ID");
     }
     textures_[TextureNameAndMixed{name, ""}] = TextureHandleAndNeedsGc{id, false};
+}
+
+void RenderingResources::add_texture_mean_color(
+    const FixedArray<float, 3>& mean_color,
+    const std::string& pattern)
+{
+    mean_colors_.push_back({std::regex{pattern}, mean_color});
 }
 
 const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
