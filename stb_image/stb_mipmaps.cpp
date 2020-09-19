@@ -14,7 +14,7 @@ void downsample_rgba_inplace(
 {
     for(int r = 0; r < height; ++r) {
         for(int c = 0; c < width; ++c) {
-            int i = r * width * 4 + c * 4;
+            int i = (r * width + c) * 4;
             for(int d = 0; d < 3; ++d) {
                 data[i + d] = data[i + d] * (float(data[i + 3]) / 255);
             }
