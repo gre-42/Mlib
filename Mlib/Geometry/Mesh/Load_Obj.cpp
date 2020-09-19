@@ -14,6 +14,11 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+struct ColoredVertexX {
+    FixedArray<float, 3> position;
+    FixedArray<float, 3> color;
+};
+
 std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     const std::string& filename,
     bool is_small,
@@ -27,7 +32,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     bool werror)
 {
     std::map<std::string, ObjMaterial> mtllib;
-    std::vector<FixedArray<float, 3>> obj_vertices;
+    std::vector<ColoredVertexX> obj_vertices;
     std::vector<FixedArray<float, 2>> obj_uvs;
     std::vector<FixedArray<float, 3>> obj_normals;
     std::list<std::shared_ptr<ColoredVertexArray>> result;
@@ -44,7 +49,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
 
     std::ifstream ifs{filename};
 
-    const std::regex vertex_reg("^v +(\\S+) (\\S+) (\\S+)$");
+    const std::regex vertex_reg("^v +(\\S+) (\\S+) (\\S+)(?: (\\S+) (\\S+) (\\S+) (\\S+))?$");
     const std::regex vertex_normal_reg("^vn +(\\S+) (\\S+) (\\S+)$");
     const std::regex line_reg("^l +"
                               "(\\d+) "
@@ -80,11 +85,19 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             }
             std::smatch match;
             if (std::regex_match(line, match, vertex_reg)) {
-                FixedArray<float, 3> v{
-                    safe_stof(match[1].str()),
-                    safe_stof(match[2].str()),
-                    safe_stof(match[3].str())};
-                obj_vertices.push_back(v);
+                float a = match[7].str().empty() ? 1 : safe_stof(match[7].str());
+                if (a != 1) {
+                    throw std::runtime_error("vertex a != 1");
+                }
+                obj_vertices.push_back({
+                    position: {
+                        safe_stof(match[1].str()),
+                        safe_stof(match[2].str()),
+                        safe_stof(match[3].str())},
+                    color: {
+                        match[4].str().empty() ? 1 : safe_stof(match[4].str()),
+                        match[5].str().empty() ? 1 : safe_stof(match[5].str()),
+                        match[6].str().empty() ? 1 : safe_stof(match[6].str())}});
             } else if (std::regex_match(line, match, vertex_uv_texture_reg)) {
                 FixedArray<float, 2> n{
                     safe_stof(match[1].str()),
@@ -123,9 +136,9 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 FixedArray<float, 3> n2;
                 if (match[3].str() + match[6].str() + match[9].str() == "") {
                     auto n = triangle_normal({
-                        obj_vertices.at(vertex_ids(0) - 1),
-                        obj_vertices.at(vertex_ids(1) - 1),
-                        obj_vertices.at(vertex_ids(2) - 1)});
+                        obj_vertices.at(vertex_ids(0) - 1).position,
+                        obj_vertices.at(vertex_ids(1) - 1).position,
+                        obj_vertices.at(vertex_ids(2) - 1).position});
                     n0 = n;
                     n1 = n;
                     n2 = n;
@@ -139,16 +152,19 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     n1 = obj_normals.at(normal_ids(1) - 1);
                     n2 = obj_normals.at(normal_ids(2) - 1);
                 }
+                const ColoredVertexX& v0 = obj_vertices.at(vertex_ids(0) - 1);
+                const ColoredVertexX& v1 = obj_vertices.at(vertex_ids(1) - 1);
+                const ColoredVertexX& v2 = obj_vertices.at(vertex_ids(2) - 1);
                 tl.draw_triangle_with_normals(
-                    obj_vertices.at(vertex_ids(0) - 1),
-                    obj_vertices.at(vertex_ids(1) - 1),
-                    obj_vertices.at(vertex_ids(2) - 1),
+                    v0.position,
+                    v1.position,
+                    v2.position,
                     n0,
                     n1,
                     n2,
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? FixedArray<float, 3>{1, 1, 1} : sfl.get_color(current_mtl.diffusivity, n0),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? FixedArray<float, 3>{1, 1, 1} : sfl.get_color(current_mtl.diffusivity, n1),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? FixedArray<float, 3>{1, 1, 1} : sfl.get_color(current_mtl.diffusivity, n2),
+                    current_mtl.has_alpha_texture || !apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffusivity, n0),
+                    current_mtl.has_alpha_texture || !apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffusivity, n1),
+                    current_mtl.has_alpha_texture || !apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffusivity, n2),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0, 0},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1, 0},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{0, 1});
@@ -171,9 +187,9 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 FixedArray<float, 3> n3;
                 if (match[3].str() + match[6].str() + match[9].str() == "") {
                     auto n = triangle_normal({
-                        obj_vertices.at(vertex_ids(0) - 1),
-                        obj_vertices.at(vertex_ids(1) - 1),
-                        obj_vertices.at(vertex_ids(2) - 1)});
+                        obj_vertices.at(vertex_ids(0) - 1).position,
+                        obj_vertices.at(vertex_ids(1) - 1).position,
+                        obj_vertices.at(vertex_ids(2) - 1).position});
                     n0 = n;
                     n1 = n;
                     n2 = n;
@@ -190,19 +206,23 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     n2 = obj_normals.at(normal_ids(2) - 1);
                     n3 = obj_normals.at(normal_ids(3) - 1);
                 }
+                const ColoredVertexX& v0 = obj_vertices.at(vertex_ids(0) - 1);
+                const ColoredVertexX& v1 = obj_vertices.at(vertex_ids(1) - 1);
+                const ColoredVertexX& v2 = obj_vertices.at(vertex_ids(2) - 1);
+                const ColoredVertexX& v3 = obj_vertices.at(vertex_ids(3) - 1);
                 tl.draw_rectangle_with_normals(
-                    obj_vertices.at(vertex_ids(0) - 1),
-                    obj_vertices.at(vertex_ids(1) - 1),
-                    obj_vertices.at(vertex_ids(2) - 1),
-                    obj_vertices.at(vertex_ids(3) - 1),
+                    v0.position,
+                    v1.position,
+                    v2.position,
+                    v3.position,
                     n0,
                     n1,
                     n2,
                     n3,
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? FixedArray<float, 3>{1, 1, 1} : sfl.get_color(current_mtl.diffusivity, n0),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? FixedArray<float, 3>{1, 1, 1} : sfl.get_color(current_mtl.diffusivity, n1),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? FixedArray<float, 3>{1, 1, 1} : sfl.get_color(current_mtl.diffusivity, n2),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? FixedArray<float, 3>{1, 1, 1} : sfl.get_color(current_mtl.diffusivity, n3),
+                    current_mtl.has_alpha_texture || !apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffusivity, n0),
+                    current_mtl.has_alpha_texture || !apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffusivity, n1),
+                    current_mtl.has_alpha_texture || !apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffusivity, n2),
+                    current_mtl.has_alpha_texture || !apply_static_lighting ? v3.color : sfl.get_color(current_mtl.diffusivity, n3),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0, 0},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1, 0},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{1, 1},
