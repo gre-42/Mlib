@@ -16,6 +16,7 @@ add_subdirectory(Sfm_Dtam_Pipeline)
 add_subdirectory(Sfm_Train)
 add_subdirectory(Generate_Tree)
 add_subdirectory(Proc_Tree)
+add_subdirectory(Proc_Bush)
 
 if (glfw3_FOUND)
 add_subdirectory(Explicit_Mipmaps)
