@@ -31,6 +31,8 @@ int main(int argc, char** argv) {
         "[--nsamples_msaa <nsamples>] "
         "[--blend_mode {off,continuous,binary}] "
         "[--aggregate_mode {off, once, sorted}] "
+        "[--no_cull_faces] "
+        "[--wire_frame] "
         "[--render_dt <dt>] "
         "[--width <width>] "
         "[--height <height>] "
