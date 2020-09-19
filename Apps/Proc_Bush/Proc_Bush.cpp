@@ -64,6 +64,7 @@ Bush generate_bush(size_t nplanes, unsigned int seed) {
     result.faces.reserve(nplanes);
     for(size_t i = 0; i < nplanes; ++i) {
         FixedArray<float, 3> n = fixed_random_array4<float, 3>(seed + i);
+        n(2) = 0;
         n /= std::sqrt(sum(squared(n)));
         float angle = UniformRandomNumberGenerator<float>{(unsigned int)(seed + i + 1), 0, 2 * M_PI}();
         FixedArray<float, 3, 3> r = rodrigues(n, angle);
