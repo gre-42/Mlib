@@ -22,7 +22,8 @@ public:
     PostProcessingLogic(
         RenderLogic& child_logic,
         bool depth_fog,
-        bool low_pass);
+        bool low_pass,
+        bool high_pass);
     ~PostProcessingLogic();
 
     virtual void render(

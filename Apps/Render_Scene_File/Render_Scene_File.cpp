@@ -62,7 +62,8 @@ int main(int argc, char** argv) {
         "[--print_fps] "
         "[--vfx] "
         "[--no_depth_fog] "
-        "[--no_low_pass] "
+        "[--low_pass] "
+        "[--high_pass] "
         "[--motion_interpolation] "
         "[--no_render] "
         "[--print_gamepad_buttons] "
@@ -80,6 +81,7 @@ int main(int argc, char** argv) {
          "--no_vfx",
          "--no_depth_fog",
          "--low_pass",
+         "--high_pass",
          "--motion_interpolation",
          "--no_render",
          "--print_gamepad_buttons",
@@ -207,7 +209,8 @@ int main(int argc, char** argv) {
             auto post_processing_logic = std::make_shared<PostProcessingLogic>(
                 *standard_render_logic,
                 !args.has_named("--no_depth_fog"),
-                args.has_named("--low_pass"));
+                args.has_named("--low_pass"),
+                args.has_named("--high_pass"));
             RenderLogics render_logics;
             render_logics.append(nullptr, flying_camera_logic);
             render_logics.append(nullptr, dirtmap_logic);

@@ -19,8 +19,12 @@ using namespace Mlib;
 static GenShaderText fragment_shader_text{[](
     const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     bool low_pass,
+    bool high_pass,
     bool depth_fog)
 {
+    if (low_pass && high_pass) {
+        throw std::runtime_error("Only one of low_pass and high_pass can be specified");
+    }
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
     sstr << "out vec4 FragColor;" << std::endl;
@@ -53,7 +57,7 @@ static GenShaderText fragment_shader_text{[](
     // sstr << "    if (-z_e <= 100) col.b = 0;" << std::endl;
     // sstr << "    col.b = 10 * (z_b - 0.94);" << std::endl;
     // sstr << "    FragColor = vec4(col, 1.0);" << std::endl;
-    if (low_pass) {
+    if (low_pass || high_pass) {
         sstr << "    vec2 offsets[9] = vec2[](" << std::endl;
         sstr << "        vec2(-offset,  offset), // top-left" << std::endl;
         sstr << "        vec2( 0.0f,    offset), // top-center" << std::endl;
@@ -66,8 +70,14 @@ static GenShaderText fragment_shader_text{[](
         sstr << "        vec2( offset, -offset)  // bottom-right" << std::endl;
         sstr << "    );" << std::endl;
         sstr << std::endl;
-        sstr << "    float c = 1.f / 9 * distance_fac + 1 * (1 - distance_fac);" << std::endl;
-        sstr << "    float o = 1.f / 9 * distance_fac + 0 * (1 - distance_fac);" << std::endl;
+        if (low_pass) {
+            sstr << "    float c = 1.f / 9 * distance_fac + 1 * (1 - distance_fac);" << std::endl;
+            sstr << "    float o = 1.f / 9 * distance_fac + 0 * (1 - distance_fac);" << std::endl;
+        }
+        if (high_pass) {
+            sstr << "    float c =  9 * 0.2 + 1. / 9 * 0.8;" << std::endl;
+            sstr << "    float o = -1 * 0.2 + 1. / 9 * 0.8;" << std::endl;
+        }
         sstr << "    float kernel[9] = float[](" << std::endl;
         sstr << "        o, o, o," << std::endl;
         sstr << "        o, c, o," << std::endl;
@@ -79,7 +89,7 @@ static GenShaderText fragment_shader_text{[](
         sstr << "    {" << std::endl;
         sstr << "        sampleTex[i] = vec3(texture(screenTextureColor, TexCoords.st + offsets[i]));" << std::endl;
         sstr << "    }" << std::endl;
-        sstr << "    vec3 col = vec3(0.0);" << std::endl;
+        sstr << "    vec3 col = vec3(0);" << std::endl;
         sstr << "    for(int i = 0; i < 9; i++)" << std::endl;
         sstr << "    {" << std::endl;
         sstr << "        col += sampleTex[i] * kernel[i];" << std::endl;
@@ -91,17 +101,17 @@ static GenShaderText fragment_shader_text{[](
     if (depth_fog) {
         sstr << "    col = 0.5 * distance_fac * backgroundColor + (1 - 0.5 * distance_fac) * col;" << std::endl;
     }
-    sstr << "    FragColor = vec4(col, 1.0);" << std::endl;
+    sstr << "    FragColor = vec4(col, 1);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
 
-PostProcessingLogic::PostProcessingLogic(RenderLogic& child_logic, bool depth_fog, bool low_pass)
+PostProcessingLogic::PostProcessingLogic(RenderLogic& child_logic, bool depth_fog, bool low_pass, bool high_pass)
 : child_logic_{child_logic},
   depth_fog_{depth_fog},
   low_pass_{low_pass}
 {
-    rp_.generate(vertex_shader_text, fragment_shader_text({}, low_pass_, depth_fog_));
+    rp_.generate(vertex_shader_text, fragment_shader_text({}, low_pass_, high_pass, depth_fog_));
 
     // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
     rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");
