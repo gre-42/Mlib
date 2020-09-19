@@ -14,6 +14,7 @@
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
@@ -195,6 +196,7 @@ void test_physics_engine() {
     }
 
     StandardCameraLogic standard_camera_logic{scene, selected_cameras};
+    StandardRenderLogic standard_render_logic{scene, standard_camera_logic};
     std::list<Focus> focus = {Focus::SCENE};
     ButtonStates button_states;
     FlyingCameraUserClass user_object{
@@ -209,7 +211,7 @@ void test_physics_engine() {
         user_object,
         false,
         false); // false = fly, false = rotate
-    auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_camera_logic);
+    auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
     auto lightmap_logic = std::make_shared<LightmapLogic>(
         *read_pixels_logic,
         rendering_resources,

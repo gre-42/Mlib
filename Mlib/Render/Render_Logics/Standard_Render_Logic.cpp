@@ -9,9 +9,9 @@ using namespace Mlib;
 
 StandardRenderLogic::StandardRenderLogic(
     const Scene& scene,
-    RenderLogic& skybox_logic)
+    RenderLogic& child_logic)
 : scene_{scene},
-  skybox_logic_{skybox_logic}
+  child_logic_{child_logic}
 {}
 
 void StandardRenderLogic::render(
@@ -36,31 +36,31 @@ void StandardRenderLogic::render(
     }
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    skybox_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
+    child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 
     render_config.apply();
 
-    scene_.render(skybox_logic_.vp(), skybox_logic_.iv(), render_config, scene_graph_config, frame_id.external_render_pass);
+    scene_.render(child_logic_.vp(), child_logic_.iv(), render_config, scene_graph_config, frame_id.external_render_pass);
 
     render_config.unapply();
 }
 
 float StandardRenderLogic::near_plane() const {
-    return skybox_logic_.near_plane();
+    return child_logic_.near_plane();
 }
 
 float StandardRenderLogic::far_plane() const {
-    return skybox_logic_.far_plane();
+    return child_logic_.far_plane();
 }
 
 const FixedArray<float, 4, 4>& StandardRenderLogic::vp() const {
-    return skybox_logic_.vp();
+    return child_logic_.vp();
 }
 
 const FixedArray<float, 4, 4>& StandardRenderLogic::iv() const {
-    return skybox_logic_.iv();
+    return child_logic_.iv();
 }
 
 bool StandardRenderLogic::requires_postprocessing() const {
-    return skybox_logic_.requires_postprocessing();
+    return child_logic_.requires_postprocessing();
 }

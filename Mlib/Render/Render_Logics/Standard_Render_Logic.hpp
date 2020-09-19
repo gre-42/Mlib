@@ -11,7 +11,7 @@ class SetFps;
 
 class StandardRenderLogic: public RenderLogic {
 public:
-    explicit StandardRenderLogic(const Scene& scene, RenderLogic& skybox_logic);
+    explicit StandardRenderLogic(const Scene& scene, RenderLogic& child_logic);
 
     virtual void render(
         int width,
@@ -27,7 +27,7 @@ public:
     virtual bool requires_postprocessing() const override;
 private:
     const Scene& scene_;
-    RenderLogic& skybox_logic_;
+    RenderLogic& child_logic_;
 };
 
 }

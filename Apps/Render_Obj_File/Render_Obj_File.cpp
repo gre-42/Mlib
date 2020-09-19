@@ -10,6 +10,7 @@
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -127,6 +128,7 @@ int main(int argc, char** argv) {
         std::list<Focus> focus = {Focus::SCENE};
         ButtonStates button_states;
         StandardCameraLogic standard_camera_logic{scene, selected_cameras};
+        StandardRenderLogic standard_render_logic{scene, standard_camera_logic};
         FlyingCameraUserClass user_object{
             button_states: button_states,
             cameras: selected_cameras,
@@ -139,7 +141,7 @@ int main(int argc, char** argv) {
             user_object,
             true,               // fly
             true);              // rotate
-        auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_camera_logic);
+        auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
         auto lightmap_logics = std::make_shared<LightmapLogic>(
             *read_pixels_logic,
             rendering_resources,
