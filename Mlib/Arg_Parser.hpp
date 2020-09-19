@@ -93,7 +93,9 @@ public:
                         options.begin(),
                         options.end(),
                         name) != options.end())) {
-                    result.named_.insert(name);
+                    if (!result.named_.insert(name).second) {
+                        throw CommandLineArgumentError("Multiple values for " + name);
+                    }
                 } else if (!eoopts && (
                     std::find(
                         options_with_value.begin(),
@@ -102,7 +104,9 @@ public:
                     if (i + 1 == argc) {
                         throw CommandLineArgumentError(help);
                     }
-                    result.named_values_.insert(std::make_pair(name, argv[i+1]));
+                    if (!result.named_values_.insert(std::make_pair(name, argv[i+1])).second) {
+                        throw CommandLineArgumentError("Multiple values for " + name);
+                    }
                     ++i;
                 } else {
                     if (!eoopts && name.size() > 0 && name[0] == '-') {
