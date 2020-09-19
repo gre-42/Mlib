@@ -3,23 +3,12 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/String.hpp>
+#include <stb_image/stb_array.h>
 #include <stb_image/stb_image_load.h>
 #include <stb_image/stb_image_resize.h>
 #include <vector>
 
 using namespace Mlib;
-
-Array<unsigned char> stb_image_2_array(const StbInfo& image) {
-    Array<unsigned char> result{ArrayShape{(size_t)image.nrChannels, (size_t)image.height, (size_t)image.width}};
-    for(size_t r = 0; r < (size_t)image.height; ++r) {
-        for(size_t c = 0; c < (size_t)image.width; ++c) {
-            for(size_t d = 0; d < (size_t)image.nrChannels; ++d) {
-                result(d, r, c) = image.data.get()[(r * image.width  + c) * image.nrChannels + d];
-            }
-        }
-    }
-    return result;
-}
 
 int main(int argc, char** argv) {
 
