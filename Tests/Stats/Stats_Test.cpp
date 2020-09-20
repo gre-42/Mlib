@@ -1,5 +1,6 @@
 #include <Mlib/Stats/Cdf.hpp>
 #include <Mlib/Stats/Histogram.hpp>
+#include <Mlib/Stats/Histogram_Matching.hpp>
 #include <Mlib/Stats/Incomplete_Beta_Distribution.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Logspace.hpp>
@@ -121,6 +122,21 @@ void test_cdf() {
         Array<float>{1, 2, 3, 4, 5, 6});
 }
 
+void test_histogram_matching() {
+    assert_allclose(
+        histogram_matching(
+            Array<float>{1, 2, 3, 3, 4, 5, 6},
+            Array<float>{1, 2, 3, 3, 4, 5, 6},
+            6),
+        Array<float>{1, 2, 3, 3, 4, 5, 6});
+    assert_allclose(
+        histogram_matching(
+            Array<float>{1, 2, 3, 3, 4, 5, 6},
+            Array<float>{1, 2, 3, 3, 4, 5, 6} * 10.f,
+            10),
+            Array<float>{1, 2, 3, 3, 4, 5, 6} * 10.f);
+}
+
 void test_neighbor_db_1d() {
     NeighborDb1d<float> db1d{Array<float>{1, 2, 6, 2, 4, 6}};
     assert_allclose(db1d.get_neighbors(2.5, 1).casted<float>(), Array<float>{1, 3});
@@ -207,6 +223,7 @@ int main(int argc, const char** argv) {
     test_logspace();
     test_histogram();
     test_cdf();
+    test_histogram_matching();
     test_neighbor_db_1d();
     test_neighbor_db();
     test_mean_variance_iterator();
