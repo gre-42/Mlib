@@ -1,9 +1,11 @@
 #include "Rendering_Resources.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <iostream>
 #include <memory>
+#include <stb_image/stb_array.h>
 #include <stb_image/stb_histogram.hpp>
 #include <stb_image/stb_image_load.h>
 #include <stb_image/stb_image_resize.h>
@@ -199,6 +201,16 @@ GLuint RenderingResources::get_texture(const std::string& filename,
                 std::cerr << "alpha = 0: " << filename << std::endl;
             }
         }
+        auto histogram_image = std::find_if(histogram_images_.begin(), histogram_images_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
+        if (histogram_image != histogram_images_.end()) {
+            Array<unsigned char> image = stb_image_2_array(si0);
+            Array<unsigned char> ref = stb_image_2_array(stb_load_texture(histogram_image->second, si0.nrChannels == 4, false, false));
+            Array<unsigned char> m = match_rgba_histograms(image, ref);
+            assert_true(m.shape(0) == (size_t)si0.nrChannels);
+            assert_true(m.shape(1) == (size_t)si0.height);
+            assert_true(m.shape(2) == (size_t)si0.width);
+            array_2_stb_image(m, si0.data.get());
+        }
         CHK(glTexImage2D(GL_TEXTURE_2D,
                          0,
                          rgba ? GL_RGBA : GL_RGB,
@@ -277,6 +289,13 @@ void RenderingResources::add_texture_mean_color(
     const std::string& pattern)
 {
     mean_colors_.push_back({std::regex{pattern}, mean_color});
+}
+
+void RenderingResources::add_texture_histogram(
+    const std::string& filename,
+    const std::string& pattern)
+{
+    histogram_images_.push_back({std::regex{pattern}, filename});
 }
 
 const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
