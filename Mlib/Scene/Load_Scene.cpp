@@ -155,6 +155,7 @@ void LoadScene::operator()(
         "\\s*forest_outline_tree_distance=([\\w+-.]+)\\r?\\n"
         "\\s*forest_outline_tree_inwards_distance=([\\w+-.]+)\\r?\\n"
         "\\s*much_grass_distance=([\\w+-.]+)\\r?\\n"
+        "\\s*raceway_beacon_distance=([\\w+-.]+)\\r?\\n"
         "\\s*with_terrain=(0|1)\\r?\\n"
         "\\s*with_buildings=(0|1)\\r?\\n"
         "\\s*only_raceways=(0|1)\\r?\\n"
@@ -387,25 +388,26 @@ void LoadScene::operator()(
                     safe_stof(match[23].str()),
                     safe_stof(match[24].str()),
                     safe_stof(match[25].str()),
-                    safe_stoi(match[26].str()),
-                    safe_stoi(match[27].str()),
+                    safe_stob(match[26].str()),
+                    safe_stob(match[27].str()),
                     safe_stof(match[28].str()),
                     safe_stof(match[29].str()),
                     safe_stof(match[30].str()),
-                    safe_stoi(match[31].str()),
-                    safe_stoi(match[32].str()),
+                    safe_stob(match[31].str()),
+                    safe_stob(match[32].str()),
                     safe_stof(match[33].str()),
                     safe_stof(match[34].str()),
                     safe_stof(match[35].str()),
-                    safe_stoi(match[36].str()),
-                    safe_stoi(match[37].str()),
-                    safe_stoi(match[38].str()),
-                    safe_stof(match[39].str()),
+                    safe_stof(match[36].str()),
+                    safe_stob(match[37].str()),
+                    safe_stob(match[38].str()),
+                    safe_stob(match[39].str()),
                     safe_stof(match[40].str()),
                     safe_stof(match[41].str()),
-                    safe_stoi(match[42].str()),
-                    safe_stof(match[43].str()),
-                    safe_stoi(match[44].str())));
+                    safe_stof(match[42].str()),
+                    safe_stob(match[43].str()),
+                    safe_stof(match[44].str()),
+                    safe_stob(match[45].str())));
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                 fpath(match[2].str()),

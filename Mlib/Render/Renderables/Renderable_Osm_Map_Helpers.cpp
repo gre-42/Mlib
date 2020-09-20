@@ -956,6 +956,25 @@ void Mlib::add_trees_to_forest_outlines(
     }
 }
 
+void Mlib::add_beacons_to_raceways(
+    std::list<ResourceInstanceDescriptor>& fern_positions,
+    const std::map<std::string, Node>& nodes,
+    const std::map<std::string, Way>& ways,
+    float raceway_beacon_distance,
+    float scale)
+{
+    for(const auto& w : ways) {
+        const auto& tags = w.second.tags;
+        if (tags.find("raceway") != tags.end() && tags.at("raceway") == "yes")
+        {
+            auto sw = smooth_way(nodes, w.second.nd, scale, raceway_beacon_distance);
+            for(const auto p : sw) {
+                fern_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, "raceway_beacon", 1});
+            }
+        }
+    }
+}
+
 // void Mlib::add_grass_outlines(
 //     std::list<ResourceInstanceDescriptor>& fern_positions,
 //     std::list<FixedArray<float, 2>>& steiner_points,

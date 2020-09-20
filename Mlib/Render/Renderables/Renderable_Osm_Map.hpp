@@ -12,7 +12,7 @@ class ResourceInstanceDescriptor;
 
 class RenderableOsmMap: public SceneNodeResource {
 public:
-    explicit RenderableOsmMap(
+    RenderableOsmMap(
         SceneNodeResources& scene_node_resources,
         RenderingResources* rendering_resources,
         const std::string& filename,
@@ -49,6 +49,7 @@ public:
         float forest_outline_tree_distance = 0.15,
         float forest_outline_tree_inwards_distance = 0,
         float much_grass_distance = 5,
+        float raceway_beacon_distance = INFINITY,
         bool with_terrain = true,
         bool with_buildings = true,
         bool only_raceways = false,

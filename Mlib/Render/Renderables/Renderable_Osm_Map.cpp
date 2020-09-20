@@ -51,6 +51,7 @@ RenderableOsmMap::RenderableOsmMap(
     float forest_outline_tree_distance,
     float forest_outline_tree_inwards_distance,
     float much_grass_distance,
+    float raceway_beacon_distance,
     bool with_terrain,
     bool with_buildings,
     bool only_raceways,
@@ -332,6 +333,14 @@ RenderableOsmMap::RenderableOsmMap(
         //         forest_outline_tree_inwards_distance * 5,
         //         scale);
         // }
+        if (raceway_beacon_distance != INFINITY) {
+            add_beacons_to_raceways(
+                resource_instance_positions_,
+                nodes,
+                ways,
+                raceway_beacon_distance,
+                scale);
+        }
         if (with_tree_nodes) {
             ResourceNameCycle rnc{tree_resource_names};
             add_trees_to_tree_nodes(

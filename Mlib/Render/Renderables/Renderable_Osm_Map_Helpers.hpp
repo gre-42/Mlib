@@ -213,6 +213,13 @@ void add_trees_to_forest_outlines(
     float tree_inwards_distance,
     float scale);
 
+void add_beacons_to_raceways(
+    std::list<ResourceInstanceDescriptor>& fern_positions,
+    const std::map<std::string, Node>& nodes,
+    const std::map<std::string, Way>& ways,
+    float raceway_beacon_distance,
+    float scale);
+
 // void add_grass_outlines(
 //     std::list<ResourceInstanceDescriptor>& fern_positions,
 //     std::list<FixedArray<float, 2>>& steiner_points,
