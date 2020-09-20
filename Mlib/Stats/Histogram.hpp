@@ -32,7 +32,15 @@ public:
     Array<TData> bins() {
         return linspace(mi_, ma_, hist_.length());
     }
-    size_t bin_id(const TData& data) {
+    size_t bin_id(const TData& data, bool check_bounds = false) {
+        if (check_bounds) {
+            if (data < mi_) {
+                return 0;
+            }
+            if (data > ma_) {
+                return hist_.length() - 1;
+            }
+        }
         return ((hist_.length() - 1) * (data - mi_)) / (ma_ - mi_);
     }
 private:

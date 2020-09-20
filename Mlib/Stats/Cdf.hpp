@@ -17,8 +17,8 @@ public:
             cdf_(i) = cumsum;
         }
     }
-    const TFloat& operator () (const TData& v) {
-        return cdf_(hist_.bin_id(v));
+    const TFloat& operator () (const TData& v, bool check_bounds = false) {
+        return cdf_(hist_.bin_id(v, check_bounds));
     }
     const Array<TFloat>& cdf() {
         return cdf_;
