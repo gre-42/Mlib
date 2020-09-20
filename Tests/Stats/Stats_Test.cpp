@@ -1,3 +1,4 @@
+#include <Mlib/Stats/Cdf.hpp>
 #include <Mlib/Stats/Histogram.hpp>
 #include <Mlib/Stats/Incomplete_Beta_Distribution.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -99,13 +100,25 @@ void test_logspace() {
 void test_histogram() {
     Array<size_t> hist;
     Array<float> bins;
-    histogram(Array<float>{1, 2, 3, 3, 4, 5, 6}, hist, bins);
+    histogram(Array<float>{1, 2, 3, 3, 4, 5, 6}, hist, bins, 6);
     assert_allclose(
         hist.casted<float>(),
-        Array<float>{1, 0, 1, 0, 2, 1, 0, 1, 0, 1, 0});
+        Array<float>{1, 1, 2, 1, 1, 1});
     assert_allclose(
         bins,
-        Array<float>{1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6});
+        Array<float>{1, 2, 3, 4, 5, 6});
+}
+
+void test_cdf() {
+    Array<float> ccdf;
+    Array<float> bins;
+    cdf(Array<float>{1, 2, 3, 3, 4, 5, 6}, ccdf, bins, 6);
+    assert_allclose(
+        ccdf.casted<float>(),
+        Array<float>{0.142857, 0.285714, 0.571429, 0.714286, 0.857143, 1});
+    assert_allclose(
+        bins,
+        Array<float>{1, 2, 3, 4, 5, 6});
 }
 
 void test_neighbor_db_1d() {
@@ -193,6 +206,7 @@ int main(int argc, const char** argv) {
     test_linspace();
     test_logspace();
     test_histogram();
+    test_cdf();
     test_neighbor_db_1d();
     test_neighbor_db();
     test_mean_variance_iterator();

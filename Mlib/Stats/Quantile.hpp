@@ -4,17 +4,32 @@
 
 namespace Mlib {
 
+template <class TDataX>
+class Quantiles {
+public:
+    explicit Quantiles(const Array<TDataX>& x)
+    : sx_{sorted(x)}
+    {
+        if (x.length() == 0) {
+            throw std::runtime_error("Cannot compute quantiles for an empty array");
+        }
+    }
+    template <class TDataQ>
+    TDataX operator () (const TDataQ& q) {
+        assert(q >= 0);
+        assert(q <= 1);
+        return sx_(size_t(q * (sx_.length() - 1) + TDataQ(0.5)));
+    }
+private:
+    Array<TDataX> sx_;
+};
+
 template <class TDataX, class TDataQ>
 Array<TDataX> quantiles(const Array<TDataX>& x, const Array<TDataQ>& q) {
-    if (x.length() == 0) {
-        throw std::runtime_error("Cannot compute quantiles for an empty array");
-    }
-    Array<TDataX> sx = sorted(x);
+    Quantiles<TDataX> sx{x};
     Array<TDataX> res(q.shape());
     for(size_t i = 0; i < q.length(); ++i) {
-        assert(q(i) >= 0);
-        assert(q(i) <= 1);
-        res(i) = sx(size_t(q(i) * (x.length() - 1) + TDataQ(0.5)));
+        res(i) = sx(q(i));
     }
     return res;
 }

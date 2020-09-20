@@ -14,15 +14,15 @@ void histogram(const Array<TData>& data, Array<size_t>& hist, Array<TData>& bins
     TData ma = max(fdata);
     TData h = (ma - mi) / (nbins - 1);
     Array<TData> boundaries = linspace(mi - h / 2, ma + h / 2, nbins + 1);
-    hist = zeros<size_t>(boundaries.shape());
+    hist = zeros<size_t>(ArrayShape{nbins});
     for(size_t i = 0; i < fdata.length(); ++i) {
         for(size_t j = 1; j < boundaries.length(); ++j) {
-            if (fdata(i) >= boundaries(j - 1) && fdata(i) < boundaries(j)) {
+            if (const TData& v = fdata(i); v >= boundaries(j - 1) && v < boundaries(j)) {
                 ++hist(j - 1);
             }
         }
     }
-    bins = linspace(mi, ma, nbins + 1);
+    bins = linspace(mi, ma, nbins);
 }
 
 }
