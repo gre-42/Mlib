@@ -1,0 +1,35 @@
+#include "Match_Rgba_Histograms.hpp"
+#include <Mlib/Math/Math.hpp>
+#include <Mlib/Stats/Histogram_Matching.hpp>
+
+using namespace Mlib;
+
+Array<unsigned char> Mlib::match_rgba_histograms(const Array<unsigned char>& image, const Array<unsigned char>& ref) {
+    Array<unsigned char> out{image.shape()};
+    if (image.shape(0) != ref.shape(0)) {
+        throw std::runtime_error("Images have differing number of channels");
+    }
+    if (image.shape(0) == 3) {
+        for(size_t d = 0; d < 3; ++d) {
+            out[d] = histogram_matching<unsigned char, unsigned char, float>(image[d].flattened(), ref[d].flattened(), 256);
+        }
+    } else if (image.shape(0) == 4) {
+        Array<bool> mask = (image[3] > (unsigned char)50);
+        Array<bool> mask_ref = (ref[3] > (unsigned char)50);
+        for(size_t d = 0; d < 3; ++d) {
+            HistogramMatching<unsigned char, unsigned char, float> hm{image[d][mask], ref[d][mask_ref], 256};
+            for(size_t r = 0; r < image.shape(1); ++r) {
+                for(size_t c = 0; c < image.shape(2); ++c) {
+                    out(d, r, c) = hm(image(d, r, c), true);
+                }
+            }
+        }
+        if (image.shape(0) == 4) {
+            out[3] = image[3];
+        }
+    } else {
+        throw std::runtime_error("Image does not have 3 or 4 channels");
+    }
+    out.reshape(image.shape());
+    return out;
+}

@@ -1,8 +1,8 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Images/Match_Rgba_Histograms.hpp>
+#include <stb_image/stb_array.h>
 #include <stb_image/stb_image_load.h>
 #include <stb_image/stb_image_write.h>
-#include <stb_image/stb_array.h>
-#include <Mlib/Stats/Histogram_Matching.hpp>
 
 using namespace Mlib;
 
@@ -24,32 +24,7 @@ int main(int argc, char **argv) {
     args.assert_num_unamed(0);
     Array<unsigned char> image = safe_load_rgb(args.named_value("--image"));
     Array<unsigned char> ref = safe_load_rgb(args.named_value("--ref"));
-    Array<unsigned char> out{image.shape()};
-    if (image.shape(0) != ref.shape(0)) {
-        throw std::runtime_error("Images have different number of channels");
-    }
-    if (image.shape(0) == 3) {
-        for(size_t d = 0; d < 3; ++d) {
-            out[d] = histogram_matching<unsigned char, unsigned char, float>(image[d].flattened(), ref[d].flattened(), 256);
-        }
-    } else if (image.shape(0) == 4) {
-        Array<bool> mask = (image[3] > (unsigned char)50);
-        Array<bool> mask_ref = (ref[3] > (unsigned char)50);
-        for(size_t d = 0; d < 3; ++d) {
-            HistogramMatching<unsigned char, unsigned char, float> hm{image[d][mask], ref[d][mask_ref], 256};
-            for(size_t r = 0; r < image.shape(1); ++r) {
-                for(size_t c = 0; c < image.shape(2); ++c) {
-                    out(d, r, c) = hm(image(d, r, c), true);
-                }
-            }
-        }
-        if (image.shape(0) == 4) {
-            out[3] = image[3];
-        }
-    } else {
-        assert_true(false);
-    }
-    out.reshape(image.shape());
+    Array<unsigned char> out = match_rgba_histograms(image, ref);
     std::unique_ptr<unsigned char> iout{new unsigned char[image.nelements()]};
     array_2_stb_image(out, iout.get());
     if (!stbi_write_png(
