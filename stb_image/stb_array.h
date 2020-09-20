@@ -18,9 +18,9 @@ Array<unsigned char> stb_image_2_array(const unsigned char* data, int width, int
 
 void array_2_stb_image(const Array<unsigned char>& array, unsigned char* data) {
     assert_true(array.ndim() == 3);
-    for(size_t r = 0; r < array.shape(0); ++r) {
-        for(size_t c = 0; c < array.shape(1); ++c) {
-            for(size_t d = 0; d < array.shape(2); ++d) {
+    for(size_t d = 0; d < array.shape(0); ++d) {
+        for(size_t r = 0; r < array.shape(1); ++r) {
+            for(size_t c = 0; c < array.shape(2); ++c) {
                 data[(r * array.shape(1)  + c) * array.shape(0) + d] = array(d, r, c);
             }
         }
