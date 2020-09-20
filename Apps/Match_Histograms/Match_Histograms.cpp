@@ -6,6 +6,15 @@
 
 using namespace Mlib;
 
+Array<unsigned char> safe_load_rgb(const std::string& filename) {
+    StbInfo iimage = stb_load(filename, false, false);
+    Array<unsigned char> image = stb_image_2_array(iimage);
+    if (image.shape(0) != 3 && image.shape(0) != 4) {
+        throw std::runtime_error("Dimension not 3 or 4");
+    }
+    return image;
+}
+
 int main(int argc, char **argv) {
     const ArgParser parser(
         "Usage: match_histograms --image image --ref ref --out <out>",
@@ -13,20 +22,23 @@ int main(int argc, char **argv) {
         {"--image", "--ref", "--out"});
     const auto args = parser.parsed(argc, argv);
     args.assert_num_unamed(0);
-    StbInfo iimage = stb_load(args.named_value("--image"), false, false);
-    StbInfo iref = stb_load(args.named_value("--ref"), false, false);
-    Array<unsigned char> image = stb_image_2_array(iimage);
-    Array<unsigned char> ref = stb_image_2_array(iref);
-    Array<unsigned char> out = histogram_matching<unsigned char, unsigned char, float>(image.flattened(), ref.flattened(), 256);
+    Array<unsigned char> image = safe_load_rgb(args.named_value("--image"));
+    Array<unsigned char> ref = safe_load_rgb(args.named_value("--ref"));
+    Array<unsigned char> out{image.shape()};
+    for(size_t d = 0; d < 3; ++d) {
+        out[d] = histogram_matching<unsigned char, unsigned char, float>(image[d].flattened(), ref[d].flattened(), 256);
+    }
+    if (image.shape(0) == 4) {
+        out[3] = image[3];
+    }
     out.reshape(image.shape());
     std::unique_ptr<unsigned char> iout{new unsigned char[image.nelements()]};
-    std::cerr << out[0][100].casted<float>() << std::endl;
     array_2_stb_image(out, iout.get());
     if (!stbi_write_png(
         args.named_value("--out").c_str(),
-        iimage.width,
-        iimage.height,
-        iimage.nrChannels,
+        image.shape(2),
+        image.shape(1),
+        image.shape(0),
         iout.get(),
         0))
     {
