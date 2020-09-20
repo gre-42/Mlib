@@ -134,7 +134,13 @@ void test_histogram_matching() {
             Array<float>{1, 2, 3, 3, 4, 5, 6},
             Array<float>{1, 2, 3, 3, 4, 5, 6} * 10.f,
             10),
-            Array<float>{1, 2, 3, 3, 4, 5, 6} * 10.f);
+        Array<float>{1, 2, 3, 3, 4, 5, 6} * 10.f);
+    assert_allclose(
+        histogram_matching<unsigned char, unsigned char, float>(
+            Array<unsigned char>{1, 2, 3, 3, 4, 5, 6},
+            Array<unsigned char>{1, 2, 3, 3, 4, 5, 6} * (unsigned char)1,
+            10).casted<float>(),
+        Array<float>{1, 2, 3, 3, 4, 5, 6} * 1.f);
 }
 
 void test_neighbor_db_1d() {
