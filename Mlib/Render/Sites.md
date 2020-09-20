@@ -1,5 +1,16 @@
 # Assets
 
+## Models
+
+P911GT
+
+- https://free3d.com/3d-model/porsche-911-gt-43465.html
+
+AC Cobra
+
+- https://free3d.com/3d-model/ac-cobra-269-83668.html
+
+
 ## Textures
 
 - https://cc0textures.com/
@@ -22,11 +33,19 @@ https://forums.ogre3d.org/viewtopic.php?t=88877
 
 - https://free3d.com/3d-models/bench
 
+## Terrain
 
 - https://stackoverflow.com/questions/51738224/seeking-satellite-image-api
 - https://www.programmableweb.com/category/satellites/api
 - https://api.nasa.gov/
 - https://api.nasa.gov/planetary/earth/imagery?lon=-95.33&lat=29.78&date=2018-01-01&dim=0.15&api_key=DEMO_KEY
+
+### Height maps
+
+google: world height map
+
+- https://terrain.party/
+- https://tangrams.github.io/heightmapper
 
 ## Procedural tree generator
 
