@@ -4,10 +4,15 @@
 
 namespace Mlib {
 
-struct ResourceInstanceDescriptor {
+struct ObjectResourceDescriptor {
     FixedArray<float, 3> position;
     std::string name;
     float scale = 1;
+};
+
+struct ResourceInstanceDescriptor {
+    FixedArray<float, 3> position;
+    float scale = 1;  // Currently not used
 };
 
 }

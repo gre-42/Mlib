@@ -400,7 +400,7 @@ void Mlib::draw_streets(
     TriangleList& tl_path,
     TriangleList& tl_curb_street,
     TriangleList& tl_curb_path,
-    std::list<ResourceInstanceDescriptor>& street_light_positions,
+    std::list<ObjectResourceDescriptor>& street_light_positions,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -834,7 +834,8 @@ void Mlib::triangulate_terrain_or_ceilings(
 
 void Mlib::apply_height_map(
     std::list<std::shared_ptr<TriangleList>>& triangles,
-    std::list<ResourceInstanceDescriptor>& street_light_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     const Array<float>& heightmap,
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
@@ -865,21 +866,34 @@ void Mlib::apply_height_map(
             }
         }
     }
-    for(auto it_r = street_light_positions.begin(); it_r != street_light_positions.end(); ) {
+    for(auto it_r = object_resource_descriptors.begin(); it_r != object_resource_descriptors.end(); ) {
         auto it0 = it_r++;
         FixedArray<float, 2> p = dot1d(normalization_matrix, FixedArray<float, 3>{it0->position(0), it0->position(1), 1});
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
             // std::cerr << "Height out of bounds." << std::endl;
-            street_light_positions.erase(it0);
+            object_resource_descriptors.erase(it0);
         } else {
             it0->position(2) += z * scale;
+        }
+    }
+    for(auto& slp : resource_instance_positions) {
+        for(auto it_r = slp.second.begin(); it_r != slp.second.end(); ) {
+            auto it0 = it_r++;
+            FixedArray<float, 2> p = dot1d(normalization_matrix, FixedArray<float, 3>{it0->position(0), it0->position(1), 1});
+            float z;
+            if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+                // std::cerr << "Height out of bounds." << std::endl;
+                slp.second.erase(it0);
+            } else {
+                it0->position(2) += z * scale;
+            }
         }
     }
 }
 
 void Mlib::add_grass_inside_triangles(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     ResourceNameCycle& rnc,
     const TriangleList& triangles,
     float scale,
@@ -904,14 +918,14 @@ void Mlib::add_grass_inside_triangles(
                 }
                 auto p = aa * t(0).position + bb * t(1).position + c * t(2).position;
                 ++gid;
-                fern_positions.push_back({p, rnc(), rng()});
+                fern_positions[rnc()].push_back({p, rng()});
             }
         }
     }
 }
 
 void Mlib::add_trees_to_forest_outlines(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     std::list<FixedArray<float, 2>>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
@@ -946,7 +960,7 @@ void Mlib::add_trees_to_forest_outlines(
                         continue;
                     }
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + tree_inwards_distance * scale * n * sign(area);
-                    fern_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, rnc(), rng()});
+                    fern_positions[rnc()].push_back({FixedArray<float, 3>{p(0), p(1), 0}, rng()});
                     if ((rid++) % 4 == 0) {
                         steiner_points.push_back(p);
                     }
@@ -957,7 +971,7 @@ void Mlib::add_trees_to_forest_outlines(
 }
 
 void Mlib::add_beacons_to_raceways(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float raceway_beacon_distance,
@@ -969,14 +983,14 @@ void Mlib::add_beacons_to_raceways(
         {
             auto sw = smooth_way(nodes, w.second.nd, scale, raceway_beacon_distance);
             for(const auto p : sw) {
-                fern_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, "raceway_beacon", 1});
+                fern_positions["raceway_beacon"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
             }
         }
     }
 }
 
 // void Mlib::add_grass_outlines(
-//     std::list<ResourceInstanceDescriptor>& fern_positions,
+//     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
 //     std::list<FixedArray<float, 2>>& steiner_points,
 //     const std::map<std::string, Node>& nodes,
 //     const std::map<std::string, Way>& ways,
@@ -1021,7 +1035,7 @@ void Mlib::add_beacons_to_raceways(
 // }
 
 void Mlib::add_trees_to_tree_nodes(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     std::list<FixedArray<float, 2>>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
@@ -1031,7 +1045,7 @@ void Mlib::add_trees_to_tree_nodes(
     for(const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
-            fern_positions.push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, rnc(), rng()});
+            fern_positions[rnc()].push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, rng()});
             steiner_points.push_back(n.second.position);
         }
     }

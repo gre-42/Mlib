@@ -159,7 +159,18 @@ void SceneNode::add_instances_child(
     if (is_registered && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
-    instances_children_.insert(std::make_pair(name, std::make_pair(is_registered, node)));
+    instances_children_.insert(std::make_pair(name, std::make_tuple(is_registered, node, std::list<FixedArray<float, 3>>())));
+}
+
+void SceneNode::add_instances_position(
+    const std::string& name,
+    const FixedArray<float, 3>& position)
+{
+    auto it = instances_children_.find(name);
+    if (it == instances_children_.end()) {
+        throw std::runtime_error("Could not find instance node with name " + name);
+    }
+    std::get<2>(it->second).push_back(position);
 }
 
 void SceneNode::set_camera(const std::shared_ptr<Camera>& camera) {
@@ -306,36 +317,50 @@ void SceneNode::append_large_aggregates_to_queue(
 void SceneNode::append_small_instances_to_queue(
     const FixedArray<float, 4, 4>& vp,
     const FixedArray<float, 4, 4>& parent_m,
+    const FixedArray<float, 3>& delta_position,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
-    FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    FixedArray<float, 4, 4> rel = relative_model_matrix();
+    rel(0, 3) += delta_position(0);
+    rel(1, 3) += delta_position(1);
+    rel(2, 3) += delta_position(2);
+    FixedArray<float, 4, 4> mvp = dot2d(vp, rel);
+    FixedArray<float, 4, 4> m = dot2d(parent_m, rel);
     for(const auto& r : renderables_) {
         r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, instances_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_small_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
+        n.second.second->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
     }
     for(const auto& i : instances_children_) {
-        i.second.second->append_small_instances_to_queue(mvp, m, instances_queue, scene_graph_config);
+        for(const auto& j : std::get<2>(i.second)) {
+            std::get<1>(i.second)->append_small_instances_to_queue(mvp, m, j, instances_queue, scene_graph_config);
+        }
     }
 }
 
 void SceneNode::append_large_instances_to_queue(
     const FixedArray<float, 4, 4>& parent_m,
+    const FixedArray<float, 3>& delta_position,
     std::list<TransformedColoredVertexArray>& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    FixedArray<float, 4, 4> rel = relative_model_matrix();
+    rel(0, 3) += delta_position(0);
+    rel(1, 3) += delta_position(1);
+    rel(2, 3) += delta_position(2);
+    FixedArray<float, 4, 4> m = dot2d(parent_m, rel);
     for(const auto& r : renderables_) {
         r.second->append_large_instances_to_queue(m, scene_graph_config, instances_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_large_instances_to_queue(m, instances_queue, scene_graph_config);
+        n.second.second->append_large_instances_to_queue(m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
     }
     for(const auto& i : instances_children_) {
-        i.second.second->append_large_instances_to_queue(m, instances_queue, scene_graph_config);
+        for(const auto& j : std::get<2>(i.second)) {
+            std::get<1>(i.second)->append_large_instances_to_queue(m, j, instances_queue, scene_graph_config);
+        }
     }
 }
 

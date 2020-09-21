@@ -11,6 +11,7 @@ class OrderableFixedArray;
 struct ColoredVertex;
 struct Material;
 struct ResourceInstanceDescriptor;
+struct ObjectResourceDescriptor;
 struct TriangleList;
 
 static const FixedArray<float, 3> way_color{1, 1, 1};      // replaced with texture
@@ -153,7 +154,7 @@ void draw_streets(
     TriangleList& tl_path,
     TriangleList& tl_curb_street,
     TriangleList& tl_curb_path,
-    std::list<ResourceInstanceDescriptor>& street_light_positions,
+    std::list<ObjectResourceDescriptor>& street_light_positions,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -189,7 +190,8 @@ void triangulate_terrain_or_ceilings(
 
 void apply_height_map(
     std::list<std::shared_ptr<TriangleList>>& triangles,
-    std::list<ResourceInstanceDescriptor>& street_light_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     const Array<float>& heightmap,
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
@@ -197,14 +199,14 @@ void apply_height_map(
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings);
 
 void add_grass_inside_triangles(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     ResourceNameCycle& rnc,
     const TriangleList& triangles,
     float scale,
     float distance);
 
 void add_trees_to_forest_outlines(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     std::list<FixedArray<float, 2>>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
@@ -214,14 +216,14 @@ void add_trees_to_forest_outlines(
     float scale);
 
 void add_beacons_to_raceways(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float raceway_beacon_distance,
     float scale);
 
 // void add_grass_outlines(
-//     std::list<ResourceInstanceDescriptor>& fern_positions,
+//     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
 //     std::list<FixedArray<float, 2>>& steiner_points,
 //     const std::map<std::string, Node>& nodes,
 //     const std::map<std::string, Way>& ways,
@@ -231,7 +233,7 @@ void add_beacons_to_raceways(
 //     float scale);
 
 void add_trees_to_tree_nodes(
-    std::list<ResourceInstanceDescriptor>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     std::list<FixedArray<float, 2>>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,

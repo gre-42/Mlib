@@ -216,7 +216,7 @@ void Scene::render(
                     std::shared_lock lock{static_mutex_};
                     LOG_INFO("Scene::render large_instances_renderer static_mutex (1)");
                     for(const auto& n : static_root_nodes_) {
-                        n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                        n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
                     }
                 }
                 {
@@ -224,7 +224,7 @@ void Scene::render(
                     std::shared_lock lock{instances_mutex_};
                     LOG_INFO("Scene::render large_instances_renderer instances_mutex (1)");
                     for(const auto& n : root_aggregate_nodes_) {
-                        n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                        n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
                     }
                 }
                 large_instances_renderer_->update_instances(instances_queue);
@@ -276,13 +276,13 @@ void Scene::render(
                         {
                             std::shared_lock lock{static_mutex_};
                             for(const auto& n : static_root_nodes_) {
-                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
                             }
                         }
                         {
                             std::shared_lock lock{aggregate_mutex_};
                             for(const auto& n : root_instances_nodes_) {
-                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), instances_queue, scene_graph_config);
+                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
                             }
                         }
                         instances_queue.sort([](auto& a, auto& b){ return a.first < b.first; });

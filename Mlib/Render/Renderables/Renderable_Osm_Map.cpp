@@ -283,7 +283,7 @@ RenderableOsmMap::RenderableOsmMap(
             *tl_path,
             *tl_curb_street,
             *tl_curb_path,
-            resource_instance_positions_,
+            object_resource_descriptors_,
             height_bindings,
             nodes,
             ways,
@@ -461,6 +461,7 @@ RenderableOsmMap::RenderableOsmMap(
     if (!heightmap.empty()) {
         apply_height_map(
             tls_all,
+            object_resource_descriptors_,
             resource_instance_positions_,
             PgmImage::load_from_file(heightmap).to_float() / 64.f * float(UINT16_MAX),
             normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
@@ -511,17 +512,25 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
 {
     {
         size_t i = 0;
-        for(auto& p : resource_instance_positions_) {
+        for(auto& p : object_resource_descriptors_) {
             auto grass_node = new SceneNode;
             grass_node->set_position(p.position);
             grass_node->set_scale(scale_ * p.scale);
             grass_node->set_rotation({M_PI / 2, 0, 0});
             scene_node_resources_.instantiate_renderable(p.name, p.name, *grass_node, SceneNodeResourceFilter{});
-            if (grass_node->requires_render_pass()) {
-                scene_node.add_child(p.name + "-" + std::to_string(i++), grass_node);
-            } else {
-                scene_node.add_instances_child(p.name + "-" + std::to_string(i++), grass_node);
-            }
+            scene_node.add_child(p.name + "-" + std::to_string(i++), grass_node);
+        }
+    }
+    for(auto& p : resource_instance_positions_) {
+        auto grass_node = new SceneNode;
+        grass_node->set_rotation({M_PI / 2, 0, 0});
+        scene_node_resources_.instantiate_renderable(p.first, p.first, *grass_node, SceneNodeResourceFilter{});
+        if (grass_node->requires_render_pass()) {
+            throw std::runtime_error("Object " + p.first + " requires render pass");
+        }
+        scene_node.add_instances_child(p.first, grass_node);
+        for(const auto& r : p.second) {
+            scene_node.add_instances_position(p.first, r.position);
         }
     }
     rva_->instantiate_renderable(name, scene_node, resource_filter);

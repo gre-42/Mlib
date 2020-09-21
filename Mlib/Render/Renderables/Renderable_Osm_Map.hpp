@@ -65,7 +65,8 @@ public:
 private:
     std::shared_ptr<RenderableColoredVertexArray> rva_;
     RenderingResources* rendering_resources_;
-    std::list<ResourceInstanceDescriptor> resource_instance_positions_;
+    std::list<ObjectResourceDescriptor> object_resource_descriptors_;
+    std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     SceneNodeResources& scene_node_resources_;
     float scale_;
 
