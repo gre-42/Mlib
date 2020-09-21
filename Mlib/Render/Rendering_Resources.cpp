@@ -204,7 +204,7 @@ GLuint RenderingResources::get_texture(const std::string& filename,
         auto histogram_image = std::find_if(histogram_images_.begin(), histogram_images_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
         if (histogram_image != histogram_images_.end()) {
             Array<unsigned char> image = stb_image_2_array(si0);
-            Array<unsigned char> ref = stb_image_2_array(stb_load_texture(histogram_image->second, si0.nrChannels == 4, false, false));
+            Array<unsigned char> ref = stb_image_2_array(stb_load_texture(histogram_image->second, false, false, false));
             Array<unsigned char> m = match_rgba_histograms(image, ref);
             assert_true(m.shape(0) == (size_t)si0.nrChannels);
             assert_true(m.shape(1) == (size_t)si0.height);

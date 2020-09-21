@@ -6,8 +6,11 @@ using namespace Mlib;
 
 Array<unsigned char> Mlib::match_rgba_histograms(const Array<unsigned char>& image, const Array<unsigned char>& ref) {
     Array<unsigned char> out{image.shape()};
-    if (image.shape(0) != ref.shape(0)) {
-        throw std::runtime_error("Images have differing number of channels");
+    if (image.shape(0) != 3 && image.shape(0) != 4) {
+        throw std::runtime_error("Image does not have 3 or 4 channels");
+    }
+    if (ref.shape(0) != 3 && ref.shape(0) != 4) {
+        throw std::runtime_error("Reference image does not have 3 or 4 channels");
     }
     if (image.shape(0) == 3) {
         for(size_t d = 0; d < 3; ++d) {
