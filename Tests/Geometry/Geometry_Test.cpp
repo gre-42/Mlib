@@ -1,6 +1,7 @@
 #include <Mlib/Geometry/Cross.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
@@ -135,6 +136,19 @@ void test_inverse_rodrigues() {
     }
 }
 
+void test_bvh() {
+    Bvh<float, int, 3> bvh{{3, 4, 5}, 2};
+    bvh.insert({{1, 2, 3}, {2, 3, 4}}, "int", 42);
+    bvh.insert({{1, 2, 3}, {2, 3, 4}}, "int", 43);
+    bvh.insert({{1, 20, 3}, {2, 23, 4}}, "int", 44);
+    bvh.insert({{1, 6, 3}, {2, 7, 4}}, "int", 45);
+    bvh.insert({{1, 3, 3}, {2, 4, 4}}, "int", 46);    
+    // bvh.visit({{0, 1, 2}, 4}, [](const std::string& category, const int& data){
+    //     std::cerr << category << " " << data << std::endl;
+    // });
+    // std::cerr << bvh << std::endl;
+}
+
 int main(int argc, const char** argv) {
     test_cross();
     test_contour();
@@ -143,5 +157,6 @@ int main(int argc, const char** argv) {
     test_intersect_lines();
     test_lines_to_rectangles();
     test_inverse_rodrigues();
+    test_bvh();
     return 0;
 }

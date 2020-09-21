@@ -55,6 +55,13 @@ public:
         TData dist = dot0d(plane.normal_, center_) + plane.intercept_;
         return std::abs(dist) <= radius_;
     }
+    inline const FixedArray<TData, tndim>& center() const {
+        return center_;
+    }
+    inline const TData& radius() const {
+        return radius_;
+    }
+private:
     FixedArray<TData, tndim> center_;
     TData radius_;
 };

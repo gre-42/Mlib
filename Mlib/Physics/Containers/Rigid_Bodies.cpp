@@ -28,14 +28,14 @@ std::list<std::vector<CollisionTriangle>> split_with_static_radius(
             for(const auto& t : m->transformed_triangles(tm)) {
                 bool sphere_found = false;
                 for(auto& x : centers) {
-                    if (sum(squared(t.bounding_sphere.center_ - x.first)) < squared(static_radius)) {
+                    if (sum(squared(t.bounding_sphere.center() - x.first)) < squared(static_radius)) {
                         x.second.push_back(t);
                         sphere_found = true;
                         break;
                     }
                 }
                 if (!sphere_found) {
-                    centers.push_back(std::make_pair(t.bounding_sphere.center_, std::list{t}));
+                    centers.push_back(std::make_pair(t.bounding_sphere.center(), std::list{t}));
                 }
             }
         }

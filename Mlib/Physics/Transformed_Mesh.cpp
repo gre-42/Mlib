@@ -16,8 +16,8 @@ TransformedMesh::TransformedMesh(
     const std::shared_ptr<ColoredVertexArray>& mesh)
 : transformation_matrix_{transformation_matrix},
   transformed_bounding_sphere_{
-    dehomogenized_3(dot1d(transformation_matrix, homogenized_4(bounding_sphere.center_))),
-    bounding_sphere.radius_ * std::sqrt(sum(squared(R3_from_4x4(transformation_matrix_))) / 3)},
+    dehomogenized_3(dot1d(transformation_matrix, homogenized_4(bounding_sphere.center()))),
+    bounding_sphere.radius() * std::sqrt(sum(squared(R3_from_4x4(transformation_matrix_))) / 3)},
   mesh_{mesh}
 {}
 
@@ -78,6 +78,6 @@ const std::vector<FixedArray<FixedArray<float, 3>, 2>>& TransformedMesh::get_lin
 
 void TransformedMesh::print_info() const {
     std::cerr << "TransformedMesh" << std::endl;
-    std::cerr << transformed_bounding_sphere_.center_ << std::endl;
-    std::cerr << transformed_bounding_sphere_.radius_ << std::endl;
+    std::cerr << transformed_bounding_sphere_.center() << std::endl;
+    std::cerr << transformed_bounding_sphere_.radius() << std::endl;
 }
