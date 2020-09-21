@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <list>
 #include <map>
 #include <set>
@@ -72,6 +73,7 @@ public:
 private:
     std::vector<std::string> names_;
     size_t rid_;
+    UniformRandomNumberGenerator<float> rng_;
 };
 
 std::list<Building> get_buildings_or_wall_barriers(

@@ -11,7 +11,6 @@
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/String.hpp>
 #include <fstream>
 #include <poly2tri/poly2tri.h>
@@ -1242,10 +1241,29 @@ std::list<FixedArray<float, 2>> Mlib::removed_duplicates(
 
 ResourceNameCycle::ResourceNameCycle(const std::vector<std::string>& names)
 : names_{names},
-    rid_{0}
+  rid_{0},
+  rng_{0}
 {}
 
 std::string ResourceNameCycle::operator() () {
     assert_true(names_.size() > 0);
-    return names_[rid_++ % names_.size()];
+    while(true) {
+        std::string res = names_[rid_++ % names_.size()];
+        static const std::regex re{"^(.*?)\\(([\\d+.e-]+)\\)$"};
+        std::smatch match;
+        if (std::regex_match(res, match, re)) {
+            float t = safe_stof(match[2].str());
+            if (t < 1e-7) {
+                throw std::runtime_error("ResourceNameCycle: threshold too small");
+            }
+            if (t > 1) {
+                throw std::runtime_error("ResourceNameCycle: threshold too large");
+            }
+            if (rng_() < t) {
+                return match[1].str();
+            }
+        } else {
+            return res;
+        }
+    }
 }
