@@ -6,9 +6,11 @@
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
+#include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <fenv.h>
 
 using namespace Mlib;
 
@@ -149,7 +151,73 @@ void test_bvh() {
     // std::cerr << bvh << std::endl;
 }
 
+void test_bvh_performance() {
+    {
+        Bvh<float, int, 3> bvh{{3, 4, 5}, 2};
+        bvh.insert({{1, 2, 3}, {2, 3, 4}}, "int", 42);
+        bvh.insert({{1, 2, 3}, {2, 3, 4}}, "int", 43);
+        bvh.insert({{1, 20, 3}, {2, 23, 4}}, "int", 44);
+        bvh.insert({{1, 6, 3}, {2, 7, 4}}, "int", 45);
+        bvh.insert({{1, 3, 3}, {2, 4, 4}}, "int", 46);    
+        bvh.visit({{0, 1, 2}, 4}, [](const std::string& category, int data){
+            std::cout << category << " " << data << std::endl;
+        });
+        std::cout << bvh << std::endl;
+    }
+    bool check_linear = false;
+    for(size_t o = 0; o < 1 + (size_t)check_linear; ++o) {
+        std::mt19937 gen(0); // Standard mersenne_twister_engine
+        std::uniform_real_distribution<float> dis(-1, 1);
+        Bvh<float, int, 3> bvh{{0.25f + 10.f * o, 0.2f + 10.f * o, 0.2f + 10.f * o}, 10};
+        size_t nelems = 10 * 1000;
+        bool compute_search_time = true; // is slow
+        std::vector<float> nelements;
+        std::vector<float> search_times;
+        if (compute_search_time) {
+            nelements.reserve(nelems);
+            search_times.reserve(nelems);
+        }
+        for (size_t n = 0; n < nelems; ++n) {
+            if (compute_search_time) {
+                nelements.push_back(n);
+                search_times.push_back(bvh.search_time());
+            }
+            bvh.insert({{0.01, 0.02, 0.03}, {dis(gen), dis(gen), dis(gen)}}, "int", 42);
+            // std::cout << "search time " << bvh.search_time() << std::endl;
+        }
+        if (compute_search_time) {
+            std::ofstream ostr("perf" + std::to_string(o) + ".svg");
+            Svg svg{ostr, 800, 600};
+            svg.plot(nelements, search_times);
+            svg.finish();
+        }
+        bvh.print(std::cout, BvhPrintingOptions{
+            level: false,
+            bounding_box: false});
+        if (false) {
+            FixedArray<float, 3> center{0.012, 0.023, 0.045};
+            bvh.insert({{0.01, 0.02, 0.03}, center}, "int", 4321);
+            bvh.print(std::cout, BvhPrintingOptions{
+                level: false,
+                bounding_box: false});
+            bvh.visit({center, 0.01}, [](const std::string& category, int data){
+                std::cout << category << " " << data << std::endl;
+            });
+        }
+    }
+    if (false) {
+        std::ofstream ostr("img.svg");
+        Svg svg{ostr, 800, 600};
+        svg.plot(std::vector<int>{0, 1, 2, 3, 4}, std::vector<int>{0*0, 1*1, 2*2, 3*3, 4*4});
+        svg.finish();
+    }
+}
+
 int main(int argc, const char** argv) {
+    #ifndef __MINGW32__
+    feenableexcept(FE_INVALID);
+    #endif
+
     test_cross();
     test_contour();
     // test_octree();
@@ -158,5 +226,6 @@ int main(int argc, const char** argv) {
     test_lines_to_rectangles();
     test_inverse_rodrigues();
     test_bvh();
+    test_bvh_performance();
     return 0;
 }
