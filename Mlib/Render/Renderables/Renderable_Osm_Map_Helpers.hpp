@@ -218,7 +218,7 @@ void add_trees_to_forest_outlines(
     float scale);
 
 void add_beacons_to_raceways(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& street_light_positions,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float raceway_beacon_distance,

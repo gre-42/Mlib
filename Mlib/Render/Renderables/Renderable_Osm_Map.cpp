@@ -335,7 +335,7 @@ RenderableOsmMap::RenderableOsmMap(
         // }
         if (raceway_beacon_distance != INFINITY) {
             add_beacons_to_raceways(
-                resource_instance_positions_,
+                object_resource_descriptors_,
                 nodes,
                 ways,
                 raceway_beacon_distance,

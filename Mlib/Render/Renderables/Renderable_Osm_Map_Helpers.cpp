@@ -970,7 +970,7 @@ void Mlib::add_trees_to_forest_outlines(
 }
 
 void Mlib::add_beacons_to_raceways(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& street_light_positions,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float raceway_beacon_distance,
@@ -982,7 +982,7 @@ void Mlib::add_beacons_to_raceways(
         {
             auto sw = smooth_way(nodes, w.second.nd, scale, raceway_beacon_distance);
             for(const auto p : sw) {
-                fern_positions["raceway_beacon"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
+                street_light_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, "raceway_beacon", 1});
             }
         }
     }
