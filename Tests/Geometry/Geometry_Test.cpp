@@ -182,7 +182,8 @@ void test_bvh_performance() {
                 nelements.push_back(n);
                 search_times.push_back(bvh.search_time());
             }
-            bvh.insert({{0.01, 0.02, 0.03}, {dis(gen), dis(gen), dis(gen)}}, "int", 42);
+            FixedArray<float, 3> bmin{dis(gen), dis(gen), dis(gen)};
+            bvh.insert({bmin, bmin + FixedArray<float, 3>{0.01, 0.02, 0.03}}, "int", 42);
             // std::cout << "search time " << bvh.search_time() << std::endl;
         }
         if (compute_search_time) {
@@ -226,6 +227,6 @@ int main(int argc, const char** argv) {
     test_lines_to_rectangles();
     test_inverse_rodrigues();
     test_bvh();
-    test_bvh_performance();
+    // test_bvh_performance();
     return 0;
 }
