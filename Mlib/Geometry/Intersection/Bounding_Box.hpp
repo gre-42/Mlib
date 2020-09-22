@@ -47,8 +47,7 @@ public:
     }
     void print(std::ostream& ostr, size_t rec = 0) const {
         std::string indent(rec, ' ');
-        ostr << indent << "min " << min_ << std::endl;
-        ostr << indent << "max " << max_ << std::endl;
+        ostr << indent << "bounds " << min_ << " -- " << max_ << std::endl;
     }
     inline const FixedArray<TData, tndim>& min() const {
         return min_;
