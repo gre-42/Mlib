@@ -1240,30 +1240,41 @@ std::list<FixedArray<float, 2>> Mlib::removed_duplicates(
 }
 
 ResourceNameCycle::ResourceNameCycle(const std::vector<std::string>& names)
-: names_{names},
-  rid_{0},
+: rid_{0},
   rng_{0}
-{}
+{
+    const std::regex re{"^(.*?)\\(([\\d+.e-]+)\\)$"};
+    names_.reserve(names.size());
+    for(const std::string& name : names) {
+        std::smatch match;
+        if (std::regex_match(name, match, re)) {
+            names_.push_back(ParsedResourceName{
+                name: match[1].str(),
+                probability: safe_stof(match[2].str())});
+            if (names_.back().probability < 1e-7) {
+                throw std::runtime_error("ResourceNameCycle: threshold too small");
+            }
+            if (names_.back().probability > 1) {
+                throw std::runtime_error("ResourceNameCycle: threshold too large");
+            }
+        } else {
+            names_.push_back(ParsedResourceName{
+                name: name,
+                probability: 1});
+        }
+    }
+}
 
 std::string ResourceNameCycle::operator() () {
     assert_true(names_.size() > 0);
     while(true) {
-        std::string res = names_[rid_++ % names_.size()];
-        static const std::regex re{"^(.*?)\\(([\\d+.e-]+)\\)$"};
-        std::smatch match;
-        if (std::regex_match(res, match, re)) {
-            float t = safe_stof(match[2].str());
-            if (t < 1e-7) {
-                throw std::runtime_error("ResourceNameCycle: threshold too small");
-            }
-            if (t > 1) {
-                throw std::runtime_error("ResourceNameCycle: threshold too large");
-            }
-            if (rng_() < t) {
-                return match[1].str();
+        const ParsedResourceName& prn = names_[rid_++ % names_.size()];
+        if (prn.probability != 1) {
+            if (rng_() < prn.probability) {
+                return prn.name;
             }
         } else {
-            return res;
+            return prn.name;
         }
     }
 }

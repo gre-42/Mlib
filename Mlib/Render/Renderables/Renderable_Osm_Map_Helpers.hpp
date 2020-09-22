@@ -66,12 +66,17 @@ enum class BuildingType {
     WALL_BARRIER
 };
 
+struct ParsedResourceName {
+    std::string name;
+    float probability;
+};
+
 class ResourceNameCycle {
 public:
     ResourceNameCycle(const std::vector<std::string>& names);
     std::string operator () ();
 private:
-    std::vector<std::string> names_;
+    std::vector<ParsedResourceName> names_;
     size_t rid_;
     UniformRandomNumberGenerator<float> rng_;
 };
