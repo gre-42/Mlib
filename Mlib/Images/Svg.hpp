@@ -3,19 +3,76 @@
 
 namespace Mlib {
 
+class PathDrawer {
+public:
+    explicit PathDrawer(std::ostream& ostr)
+    :ostr_{ostr}
+    {
+        ostr_ <<
+            "  <path "
+            "stroke-width=\"1.5\" "
+            "stroke=\"#000\" "
+            "fill=\"none\" "
+            "d=\"M ";
+    }
+    template <class TData>
+    void draw_point(const TData& x, const TData& y) {
+        ostr_ << x << "," << y << " ";
+    }
+    void finish() {
+        ostr_ <<
+            "\"/>\n";
+    }
+private:
+    std::ostream& ostr_;
+};
+
+template <class TData>
+struct SvgTransformationParameters {
+    TData angle = 0;
+    TData rotation_x = 0;
+    TData rotation_y = 0;
+    TData translation_x = 0;
+    TData translation_y = 0;
+};
+
+template <class TData>
+class SvgTransform {
+public:
+    explicit SvgTransform(
+        std::ostream& ostr,
+        const SvgTransformationParameters<TData>& params)
+    : ostr_{ostr},
+      params_{params}
+    {
+        ostr << "  <g transform=\""
+            "translate(" << params.translation_x
+            << " " << params.translation_y
+            << ")\n                rotate(" << params.angle
+            << " " << params.rotation_x
+            << " " << params.rotation_y
+            << ")\">\n";
+    }
+    void finish() {
+        ostr_ << "  </g>\n";
+    }
+private:
+    std::ostream& ostr_;
+    SvgTransformationParameters<TData> params_;
+};
+
+template <class TSize>
 class Svg {
 public:
-    Svg(std::ostream& ostr, size_t width, size_t height)
+    Svg(std::ostream& ostr, const TSize& width, const TSize& height)
     : ostr_{ostr},
       width_{width},
       height_{height}
     {
         ostr <<
-            "<svg width=\"" << width << "\" height=\"" << height << "\" xmlns=\"http://www.w3.org/2000/svg\">\n"
-            " <g>\n"
-            "  <title>Background</title>\n"
-            "  <rect fill=\"#fff\" height=\"" << width << "\" width=\"" << height << "\" y=\"0\" x=\"0\"/>\n"
-            " </g>\n";
+            "<svg width=\""
+            << width << "\" height=\""
+            << height << "\" xmlns=\"http://www.w3.org/2000/svg\">\n";
     }
 
     void finish() {
@@ -23,10 +80,18 @@ public:
             "</svg>\n";
     }
 
+    void draw_background() {
+        ostr_ <<
+            " <g>\n"
+            "  <title>Background</title>\n"
+            "  <rect fill=\"#fff\" height=\"" << width_ << "\" width=\"" << height_ << "\" y=\"0\" x=\"0\"/>\n"
+            " </g>\n";
+    }
+
     template <class TData>
     void draw_line(const TData& x0, const TData& y0, const TData& x1, const TData& y1) {
         ostr_ <<
-            "  <line stroke-linecap=\"undefined\" stroke-linejoin=\"undefined\" "
+            "  <line "
             "y2=\"" << y1 << "\" "
             "x2=\"" << x1 << "\" "
             "y1=\"" << y0 << "\" "
@@ -37,13 +102,33 @@ public:
     }
 
     template <class TData>
+    void draw_path(const std::vector<TData>& x, const std::vector<TData>& y, size_t down_sampling = 1) {
+        if (x.size() != y.size()) {
+            throw std::runtime_error("Size mismatch in draw_polygon");
+        }
+        PathDrawer pd{ostr_};
+        for(size_t i = 0; i < x.size(); i += down_sampling) {
+            pd.draw_point(x[i], y[i]);
+        }
+        pd.finish();
+    }
+
+    template <class TData>
     void draw_text(const TData& x, const TData& y, const std::string& text, const std::string& color = "black") {
         ostr_ <<
             "  <text x=\"" << x << "\" y=\"" << y << "\" fill=\"" << color << "\">" << text << "</text>\n";
     }
 
+    template <class TSize2>
+    void draw_image(const std::string& filename, const TSize2& width, const TSize2& height) {
+        ostr_
+            << "  <image href=\"" << filename << "\" "
+            << "width=\"" << width << "\" "
+            << "height=\"" << height << "\"/>\n";
+    }
+
     template <class TData>
-    void plot(const std::vector<TData>& x, const std::vector<TData>& y) {
+    void plot(const std::vector<TData>& x, const std::vector<TData>& y, size_t down_sampling = 1) {
         if (x.size() != y.size()) {
             throw std::runtime_error("Size mismatch in plot");
         }
@@ -58,9 +143,14 @@ public:
         const auto ypos = [&](const TData& y) {
             return height_ - ((y - *ym.first) * height_) / (*ym.second - *ym.first);
         };
-        for(size_t i = 1; i < x.size(); ++i) {
-            draw_line(xpos(x[i-1]), ypos(y[i-1]), xpos(x[i]), ypos(y[i]));
+        // for(size_t i = down_sampling; i < x.size(); i += down_sampling) {
+        //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
+        //}
+        PathDrawer pd{ostr_};
+        for(size_t i = 0; i < x.size(); i += down_sampling) {
+            pd.draw_point(xpos(x[i]), ypos(y[i]));
         }
+        pd.finish();
         for(const TData& xx : linspace(*xm.first, *xm.second, 5).flat_iterable()) {
             draw_text<TData>(xpos(xx), height_, std::to_string(xx));
         }
@@ -70,8 +160,8 @@ public:
     }
 private:
     std::ostream& ostr_;
-    size_t width_;
-    size_t height_;
+    TSize width_;
+    TSize height_;
 };
 
 }
