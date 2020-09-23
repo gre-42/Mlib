@@ -12,7 +12,7 @@ void RenderConfig::apply() const {
     }
     CHK(glEnable(GL_DEPTH_TEST));
     if (nsamples_msaa != 1) {
-        glEnable(GL_MULTISAMPLE);
+        CHK(glEnable(GL_MULTISAMPLE));
     }
 }
 
@@ -25,6 +25,6 @@ void RenderConfig::unapply() const {
     }
     CHK(glDisable(GL_DEPTH_TEST));
     if (nsamples_msaa != 1) {
-        glDisable(GL_MULTISAMPLE);
+        CHK(glDisable(GL_MULTISAMPLE));
     }
 }
