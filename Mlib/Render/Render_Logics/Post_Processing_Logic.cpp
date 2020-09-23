@@ -154,9 +154,14 @@ void PostProcessingLogic::render(
             render_results,
             frame_id);
     } else {
+        assert_true(render_config.nsamples_msaa > 0);
+
         RenderedSceneDescriptor fid{external_render_pass: {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, time_id: 0, light_resource_id: 0};
         fb_.configure({width: width, height: height, with_depth_texture: true});
-        CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_.frame_buffer));
+        if (render_config.nsamples_msaa != 1) {
+            ms_fb_.configure({width: width, height: height, with_depth_texture: true, nsamples_msaa: render_config.nsamples_msaa});
+        }
+        CHK(glBindFramebuffer(GL_FRAMEBUFFER, ms_fb_.frame_buffer));
         child_logic_.render(
             width,
             height,
@@ -165,6 +170,12 @@ void PostProcessingLogic::render(
             render_results,
             fid);
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        if (render_config.nsamples_msaa != 1) {
+            CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb_.frame_buffer));
+            CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb_.frame_buffer));
+            CHK(glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
+            CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        }
 
         // Now draw a quad plane with the attached framebuffer color texture
         // Depth test should already be disabled

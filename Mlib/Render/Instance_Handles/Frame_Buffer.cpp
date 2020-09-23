@@ -1,5 +1,6 @@
 #include "Frame_Buffer.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <cassert>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -26,31 +27,57 @@ void FrameBuffer::configure(const FrameBufferConfig& config)
 
 void FrameBuffer::allocate(const FrameBufferConfig& config)
 {
+    if (config.nsamples_msaa  <= 0) {
+        throw std::runtime_error("config.nsamples_msaa  <= 0");
+    }
+
     config_ = config;
     CHK(glGenFramebuffers(1, &frame_buffer));
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer));
 
     // create a color attachment texture
     CHK(glGenTextures(1, &texture_color_buffer));
-    CHK(glBindTexture(GL_TEXTURE_2D, texture_color_buffer));
-    CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
+    if (config.nsamples_msaa == 1) {
+        CHK(glBindTexture(GL_TEXTURE_2D, texture_color_buffer));
+        CHK(glTexImage2D(GL_TEXTURE_2D, 0, config.color_internal_format, config.width, config.height, 0, config.color_format, config.color_type, nullptr));
+    } else {
+        CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_color_buffer));
+        CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, config.color_internal_format, config.width, config.height, GL_TRUE));
+    }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
-    CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_buffer, 0));
+    if (config.nsamples_msaa == 1) {
+        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_buffer, 0));
+    } else {
+        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texture_color_buffer, 0));
+    }
 
     if (config.with_depth_texture) {
         // create a depth attachment texture
         CHK(glGenTextures(1, &texture_depth_buffer));
-        CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_buffer));
-        CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
+        if (config.nsamples_msaa == 1) {
+            CHK(glBindTexture(GL_TEXTURE_2D, texture_depth_buffer));
+            CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, config.width, config.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
+        } else {
+            CHK(glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture_depth_buffer));
+            CHK(glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, config.nsamples_msaa, GL_DEPTH_COMPONENT24, config.width, config.height, GL_TRUE));
+        }
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-        CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_buffer, 0));
+        if (config.nsamples_msaa == 1) {
+            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_buffer, 0));
+        } else {
+            CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texture_depth_buffer, 0));
+        }
     } else {
         // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
         CHK(glGenRenderbuffers(1, &render_buffer));
         CHK(glBindRenderbuffer(GL_RENDERBUFFER, render_buffer));
-        CHK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, config.width, config.height)); // use a single renderbuffer object for both a depth AND stencil buffer.
+        if (config.nsamples_msaa == 1) {
+            CHK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, config.width, config.height)); // use a single renderbuffer object for both a depth AND stencil buffer.
+        } else {
+            CHK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, config.width, config.height));
+        }
         CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer)); // now actually attach it
     }
 

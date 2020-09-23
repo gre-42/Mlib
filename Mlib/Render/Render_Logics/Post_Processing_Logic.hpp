@@ -44,6 +44,7 @@ private:
     bool depth_fog_;
     bool low_pass_;
     FrameBuffer fb_;
+    FrameBuffer ms_fb_;
 };
 
 }

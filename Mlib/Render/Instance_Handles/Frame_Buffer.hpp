@@ -14,6 +14,7 @@ struct FrameBufferConfig {
     GLenum color_type = GL_UNSIGNED_BYTE;
     GLint color_filter_type = GL_LINEAR;
     bool with_depth_texture = false;
+    int nsamples_msaa = 1;
     auto operator <=> (const FrameBufferConfig&) const = default;
 };
 
