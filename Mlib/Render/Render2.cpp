@@ -41,22 +41,22 @@ Render2::Render2(
   render_results_{render_results},
   render_config_{render_config}
 {
-    glfwSetErrorCallback(error_callback);
+    GLFW_WARN(glfwSetErrorCallback(error_callback));
 
     if (!glfwInit()) {
         throw std::runtime_error("glfwInit failed");
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    GLFW_WARN(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3));
+    GLFW_WARN(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3));
     if (render_results != nullptr && (render_results->output != nullptr || !render_results->outputs.empty())) {
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        GLFW_WARN(glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE));
     }
     if (render_config.nsamples_msaa != 1) {
-        glfwWindowHint(GLFW_SAMPLES, render_config.nsamples_msaa);
+        GLFW_WARN(glfwWindowHint(GLFW_SAMPLES, render_config.nsamples_msaa));
     }
     if (render_config.window_maximized) {
-        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+        GLFW_WARN(glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE));
     }
 #ifndef WIN32
     int fpeflags = fegetexcept();
@@ -77,7 +77,7 @@ Render2::Render2(
     if (!render_config.show_mouse_cursor) {
         GLFW_CHK(glfwSetInputMode(window_->window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
     }
-    glfwMakeContextCurrent(window_->window());
+    GLFW_WARN(glfwMakeContextCurrent(window_->window()));
     CHK(int version = gladLoadGL(glfwGetProcAddress));
     if (version == 0) {
         throw std::runtime_error("gladLoadGL failed");
