@@ -72,7 +72,7 @@ public:
         ostr <<
             "<svg width=\""
             << width << "\" height=\""
-            << height << "\" xmlns=\"http://www.w3.org/2000/svg\">\n";
+            << height << "\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n";
     }
 
     void finish() {
@@ -122,7 +122,7 @@ public:
     template <class TSize2>
     void draw_image(const std::string& filename, const TSize2& width, const TSize2& height) {
         ostr_
-            << "  <image href=\"" << filename << "\" "
+            << "  <image xlink:href=\"" << filename << "\" "
             << "width=\"" << width << "\" "
             << "height=\"" << height << "\"/>\n";
     }
