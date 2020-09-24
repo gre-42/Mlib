@@ -387,9 +387,7 @@ void Mlib::get_map_outer_contour(
 struct AngleCurb {
     float angle;
     size_t curb;
-    bool operator < (const AngleCurb& other) const {
-        return std::make_pair(angle, curb) < std::make_pair(other.angle, other.curb);
-    }
+    auto operator <=> (const AngleCurb& other) const = default;
 };
 
 void Mlib::draw_streets(
@@ -616,7 +614,7 @@ void Mlib::draw_streets(
                 FixedArray<float, 3>{hv(0)(0), hv(0)(1), 0},
                 FixedArray<float, 3>{hv(1)(0), hv(1)(1), 0},
                 FixedArray<float, 3>{hv(2)(0), hv(2)(1), 0});
-        } else {
+        } else if (nh.second.size() >= 3) {
             const FixedArray<float, 2>& center = mean(hv);
             for(size_t i = 0; i < hv.length(); ++i) {
                 size_t j = (i + 1) % hv.length();
