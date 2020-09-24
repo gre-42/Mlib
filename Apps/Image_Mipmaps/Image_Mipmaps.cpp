@@ -1,3 +1,4 @@
+#include <Mlib/Arg_Parser.hpp>
 #include <stb_image/stb_image.h>
 #include <stb_image/stb_image_write.h>
 #include <stb_image/stb_mipmaps.h>
@@ -31,7 +32,13 @@ void downsample_file(const char* in_filename, const char* out_prefix) {
     }
 }
 
-int main() {
-    downsample_file("image.png", "image-");
+int main(int argc, char** argv) {
+    const ArgParser parser(
+        "Usage: image_mipmaps image.png result_basename",
+        {},
+        {});
+    const auto args = parser.parsed(argc, argv);
+    args.assert_num_unamed(2);
+    downsample_file(args.unnamed_value(0).c_str(), args.unnamed_value(1).c_str());
     return 0;
 }
