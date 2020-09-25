@@ -122,19 +122,19 @@ void LoadScene::operator()(
         "^(?:\\r?\\n|\\s)*osm_resource\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
         "\\s*filename=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*heightmap=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*terrain_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*dirt_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*asphalt_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*street_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*path_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*curb_street_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*curb_path_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*facade_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*facade_texture_2=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*facade_texture_3=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*ceiling_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*barrier_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*heightmap=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*terrain_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*dirt_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*asphalt_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*street_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*path_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*curb_street_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*curb_path_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*facade_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*facade_texture_2=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*facade_texture_3=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*ceiling_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*barrier_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*barrier_blend_mode=(off|binary|continuous)\\r?\\n"
         "\\s*roof_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*tree_resource_names=([\\s\\w-. \\(\\)/+-]*)\\r?\\n"
@@ -185,7 +185,7 @@ void LoadScene::operator()(
     const std::regex square_resource_reg(
         "^(?:\\r?\\n|\\s)*square_resource\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
-        "\\s*texture_filename=([\\w-. \\(\\)/+-]+)\\r?\\n"
+        "\\s*texture_filename=(#?[\\w-. \\(\\)/+-]+)\\r?\\n"
         "\\s*min=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*max=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*is_small=(0|1)\\r?\\n"
@@ -306,8 +306,15 @@ void LoadScene::operator()(
         "\\s*snappiness=([\\w+-.]+)\\r?\\n"
         "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
         "\\s*y_snappiness=([\\w+-.]+)$");
-    const std::regex add_texture_mean_color_reg("^(?:\\r?\\n|\\s)*add_texture_mean_color color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) pattern=(.+)$");
-    const std::regex add_texture_histogram_reg("^(?:\\r?\\n|\\s)*add_texture_histogram filename=([\\w-. \\(\\)/+-]+) pattern=(.+)$");
+    const std::regex add_texture_descriptor_reg(
+        "^(?:\\r?\\n|\\s)*add_texture_descriptor\\r?\\n"
+        "\\s*name=([\\w+-.]+)\\r?\\n"
+        "\\s*color=([\\w-. \\(\\)/+-]+)"
+        "\\s*rgba=(0|1)"
+        "\\s*histogram=([\\w-. \\(\\)/+-]*)"
+        "\\s*mixed=([\\w-. \\(\\)/+-]*)"
+        "\\s*overlap_npixels=(\\d+)"
+        "\\s*mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex record_track_reg("^(?:\\r?\\n|\\s)*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex playback_track_reg("^(?:\\r?\\n|\\s)*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     const std::regex check_points_reg("^(?:\\r?\\n|\\s)*check_points moving-node=([\\w+-.]+) beacon_node0=([\\w+-.]+) beacon_node1=([\\w+-.]+) player=([\\w+-.]+) nth=(\\d+) radius=([\\w+-.]+) track_filename=([\\w-. \\(\\)/+-]+)$");
@@ -327,6 +334,8 @@ void LoadScene::operator()(
     auto fpath = [&](const fs::path& f) -> std::string {
         if (f.empty()) {
             return "";
+        } else if (f.string()[0] == '#') {
+            return f.string().substr(1, f.string().length() - 1);
         } else if (f.is_absolute()) {
             return f.string();
         } else {
@@ -1038,17 +1047,19 @@ void LoadScene::operator()(
                 safe_stof(match[11].str()),        // y_adaptivity
                 safe_stof(match[12].str()));       // y_snappiness
             linker.link_absolute_movable(*follower_node, follower);
-        } else if (std::regex_match(line, match, add_texture_mean_color_reg)) {
-            rendering_resources.add_texture_mean_color(
-                FixedArray<float, 3>{
-                    safe_stof(match[1].str()),
-                    safe_stof(match[2].str()),
-                    safe_stof(match[3].str())},
-                match[4].str());
-        } else if (std::regex_match(line, match, add_texture_histogram_reg)) {
-            rendering_resources.add_texture_histogram(
-                fpath(match[1].str()),
-                match[2].str());
+        } else if (std::regex_match(line, match, add_texture_descriptor_reg)) {
+            rendering_resources.add_texture_descriptor(
+                match[1].str(),
+                TextureDescriptor{
+                    color: fpath(match[2].str()),
+                    rgba: safe_stob(match[3].str()),
+                    histogram: fpath(match[4].str()),
+                    mixed: match[5].str(),
+                    overlap_npixels: (size_t)safe_stoi(match[6].str()),
+                    mean_color: FixedArray<float, 3>{
+                        safe_stof(match[7].str()),
+                        safe_stof(match[8].str()),
+                        safe_stof(match[9].str())}});
         } else if (std::regex_match(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
             auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());

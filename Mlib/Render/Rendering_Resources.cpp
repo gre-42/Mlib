@@ -1,5 +1,4 @@
 #include "Rendering_Resources.hpp"
-#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -132,20 +131,25 @@ RenderingResources::~RenderingResources() {
     }
 }
 
+GLuint RenderingResources::get_texture(const TextureDescriptor& descriptor) const {
+    return get_texture(descriptor.color, descriptor);
+}
+
 // From: https://gamedev.stackexchange.com/questions/70829/why-is-gl-texture-max-anisotropy-ext-undefined/75816#75816?newreg=a7ddca6a76bf40b794c36dbe189c64b6
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 
-GLuint RenderingResources::get_texture(const std::string& filename,
-                                       bool rgba,
-                                       const std::string& mixed,
-                                       size_t overlap_npixels,
-                                       const std::string& alias) const {
+GLuint RenderingResources::get_texture(const std::string& name, const TextureDescriptor& descriptor) const {
     std::lock_guard<std::mutex> lock_guard{mutex_};
-    if (auto it = textures_.find(TextureNameAndMixed{alias.empty() ? filename : alias, mixed}); it != textures_.end())
+    if (auto it = textures_.find(name); it != textures_.end())
     {
         return it->second.handle;
     }
+    auto dit = texture_descriptors_.find(name);
+    const TextureDescriptor& desc = dit != texture_descriptors_.end()
+        ? dit->second
+        : descriptor;
+    
     GLuint texture;
 
     CHK(glGenTextures(1, &texture));
@@ -156,10 +160,10 @@ GLuint RenderingResources::get_texture(const std::string& filename,
         CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
     }
     StbInfo si0 = stb_load_texture(
-        filename, rgba, true, false); // true=flip_vertically, false=flip_horizontally
-    if (mixed != "") {
+        desc.color, desc.rgba, true, false); // true=flip_vertically, false=flip_horizontally
+    if (!desc.mixed.empty()) {
         auto si1_raw = stb_load_texture(
-            mixed, rgba, true, false); // true=flip_vertically, false=flip_horizontally
+            desc.mixed, desc.rgba, true, false); // true=flip_vertically, false=flip_horizontally
         std::unique_ptr<unsigned char[]> si1_resized{
             new unsigned char[si0.width * si0.height * si1_raw.nrChannels]};
         stbir_resize_uint8(si1_raw.data.get(),
@@ -191,22 +195,20 @@ GLuint RenderingResources::get_texture(const std::string& filename,
             }
         }
     }
-    auto mean_color = std::find_if(mean_colors_.begin(), mean_colors_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
-    if (mean_color != mean_colors_.end()) {
+    if (!all(desc.mean_color == -1.f)) {
         if (!stb_match_color_rgb(
             si0.data.get(),
             si0.width,
             si0.height,
             si0.nrChannels,
-            (mean_color->second * 255.f).casted<unsigned char>().flat_begin()))
+            (desc.mean_color * 255.f).casted<unsigned char>().flat_begin()))
         {
-            std::cerr << "alpha = 0: " << filename << std::endl;
+            std::cerr << "alpha = 0: " << desc.color << std::endl;
         }
     }
-    auto histogram_image = std::find_if(histogram_images_.begin(), histogram_images_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
-    if (histogram_image != histogram_images_.end()) {
+    if (!desc.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
-        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(histogram_image->second, false, false, false));
+        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.histogram, false, false, false));
         Array<unsigned char> m = match_rgba_histograms(image, ref);
         assert_true(m.shape(0) == (size_t)si0.nrChannels);
         assert_true(m.shape(1) == (size_t)si0.height);
@@ -214,66 +216,64 @@ GLuint RenderingResources::get_texture(const std::string& filename,
         array_2_stb_image(m, si0.data.get());
     }
     CHK(glTexImage2D(GL_TEXTURE_2D,
-                        0,
-                        rgba ? GL_RGBA : GL_RGB,
-                        si0.width,
-                        si0.height,
-                        0,
-                        si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
-                        GL_UNSIGNED_BYTE,
-                        si0.data.get()));
-    if (rgba) {
+                     0,
+                     desc.rgba ? GL_RGBA : GL_RGB,
+                     si0.width,
+                     si0.height,
+                     0,
+                     si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     si0.data.get()));
+    if (desc.rgba) {
         generate_rgba_mipmaps_inplace(si0);
     } else {
         CHK(glGenerateMipmap(GL_TEXTURE_2D));
     }
     // CHK(glGenerateMipmap(GL_TEXTURE_2D));
 
-    textures_.insert(
-        std::make_pair(TextureNameAndMixed{alias.empty() ? filename : alias, mixed},
-                        TextureHandleAndNeedsGc{texture, true}));
+    textures_.insert({name, TextureHandleAndNeedsGc{texture, true}});
     return texture;
 }
 
-GLuint RenderingResources::get_cubemap(const std::vector<std::string>& filenames,
-                                       const std::string& alias) const {
+GLuint RenderingResources::get_cubemap(const std::string& name,
+                                       const std::vector<std::string>& filenames) const {
     std::lock_guard<std::mutex> lock_guard{mutex_};
-    auto it = textures_.find(TextureNameAndMixed{alias, ""});
-    if (it == textures_.end()) {
-        if (filenames.size() != 6) {
-            throw std::runtime_error("Cubemap filenames do not have length 6");
-        }
-        GLuint textureID;
-        CHK(glGenTextures(1, &textureID));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, textureID));
-
-        for (GLuint i = 0; i < filenames.size(); i++) {
-            StbInfo info =
-                stb_load_texture(filenames[i],
-                                 false,
-                                 false,
-                                 true); // false=rgba, false=flip_vertically, true=flip_horizontally
-            CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                             0,
-                             GL_RGB,
-                             info.width,
-                             info.height,
-                             0,
-                             GL_RGB,
-                             GL_UNSIGNED_BYTE,
-                             info.data.get()));
-        }
-        CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-        CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-        CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
-
-        textures_.insert(std::make_pair(TextureNameAndMixed{alias, ""},
-                                        TextureHandleAndNeedsGc{textureID, true}));
-        return textureID;
+    if (auto it = textures_.find(name); it != textures_.end()) {
+        return it->second.handle;
     }
-    return it->second.handle;
+    if (filenames.size() != 6) {
+        throw std::runtime_error("Cubemap filenames do not have length 6");
+    }
+    GLuint textureID;
+    CHK(glGenTextures(1, &textureID));
+    CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, textureID));
+
+    for (GLuint i = 0; i < filenames.size(); i++) {
+        StbInfo info =
+            stb_load_texture(filenames[i],
+                                false,
+                                false,
+                                true); // false=rgba, false=flip_vertically, true=flip_horizontally
+        CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                            0,
+                            GL_RGB,
+                            info.width,
+                            info.height,
+                            0,
+                            GL_RGB,
+                            GL_UNSIGNED_BYTE,
+                            info.data.get()));
+    }
+    CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+
+    if (auto it = textures_.insert({name, TextureHandleAndNeedsGc{textureID, true}}); !it.second) {
+        throw std::runtime_error("Cubemap with name " + name + " already exists");
+    }
+    return textureID;
 }
 
 void RenderingResources::set_texture(const std::string& name, GLuint id) {
@@ -281,21 +281,14 @@ void RenderingResources::set_texture(const std::string& name, GLuint id) {
     if (id == (GLuint)-1) {
         throw std::runtime_error("RenderingResources::set_texture: invalid texture ID");
     }
-    textures_[TextureNameAndMixed{name, ""}] = TextureHandleAndNeedsGc{id, false};
+    textures_[name] = TextureHandleAndNeedsGc{id, false};
 }
 
-void RenderingResources::add_texture_mean_color(
-    const FixedArray<float, 3>& mean_color,
-    const std::string& pattern)
+void RenderingResources::add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor)
 {
-    mean_colors_.push_back({std::regex{pattern}, mean_color});
-}
-
-void RenderingResources::add_texture_histogram(
-    const std::string& filename,
-    const std::string& pattern)
-{
-    histogram_images_.push_back({std::regex{pattern}, filename});
+    if (auto it = texture_descriptors_.insert({name, descriptor}); !it.second) {
+        throw std::runtime_error("Texture descriptor with name " + name + " already exists");
+    }
 }
 
 const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& name) const {

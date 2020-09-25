@@ -23,7 +23,7 @@ FillWithTextureLogic::FillWithTextureLogic(
 {
     rp_.generate(vertex_shader_text, fragment_shader_text);
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
-    rp_.texture_id_ = rendering_resources.get_texture(image_resource_name, true);  // true = rgba
+    rp_.texture_id_ = rendering_resources.get_texture({color: image_resource_name, rgba: true});  // true = rgba
 }
 
 void FillWithTextureLogic::render(

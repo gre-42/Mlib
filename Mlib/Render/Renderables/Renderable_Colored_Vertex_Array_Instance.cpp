@@ -136,11 +136,11 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture");
         if (has_texture) {
             LOG_INFO("RenderableColoredVertexArrayInstance::render get texture \"" + cva->material.texture + '"');
-            GLuint texture = rcva_->rendering_resources_->get_texture(
-                cva->material.texture,
-                cva->material.blend_mode != BlendMode::OFF,
-                cva->material.mixed_texture,
-                cva->material.overlap_npixels);
+            GLuint texture = rcva_->rendering_resources_->get_texture({
+                color: cva->material.texture,
+                rgba: cva->material.blend_mode != BlendMode::OFF,
+                mixed: cva->material.mixed_texture,
+                overlap_npixels: cva->material.overlap_npixels});
             LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture \"" + cva->material.texture + '"');
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
             LOG_INFO("RenderableColoredVertexArrayInstance::render clamp texture \"" + cva->material.texture + '"');
@@ -166,7 +166,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
                 
                 CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture(mname, false)));  // false=rgba
+                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, rgba: false})));  // false=rgba
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
                 float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
@@ -185,7 +185,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
 
                 CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture(mname, false)));  // false=rgba
+                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, rgba: false})));  // false=rgba
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
                 CHK(glActiveTexture(GL_TEXTURE0));
@@ -200,13 +200,13 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 1 + filtered_lights.size()));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture(mname, false)));  // false=rgba
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, rgba: false})));  // false=rgba
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
             CHK(glActiveTexture(GL_TEXTURE0));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 2 + filtered_lights.size()));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture(cva->material.dirt_texture, false)));  // false=rgba
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: cva->material.dirt_texture, rgba: false})));  // false=rgba
             if (cva->material.clamp_mode_s == ClampMode::REPEAT) {
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
             } else {

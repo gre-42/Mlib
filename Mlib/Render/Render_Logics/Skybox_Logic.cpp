@@ -131,7 +131,7 @@ void SkyboxLogic::render(
 
         CHK(glUniform1i(rp_.skybox_location, 0));
         CHK(glActiveTexture(GL_TEXTURE0));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_cubemap(filenames_, alias_)));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_cubemap(alias_, filenames_)));
 
         CHK(glBindVertexArray(va_.vertex_array));
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));
