@@ -142,97 +142,97 @@ GLuint RenderingResources::get_texture(const std::string& filename,
                                        size_t overlap_npixels,
                                        const std::string& alias) const {
     std::lock_guard<std::mutex> lock_guard{mutex_};
-    auto it = textures_.find(TextureNameAndMixed{alias.empty() ? filename : alias, mixed});
-    if (it == textures_.end()) {
-        GLuint texture;
+    if (auto it = textures_.find(TextureNameAndMixed{alias.empty() ? filename : alias, mixed}); it != textures_.end())
+    {
+        return it->second.handle;
+    }
+    GLuint texture;
 
-        CHK(glGenTextures(1, &texture));
-        CHK(glBindTexture(GL_TEXTURE_2D, texture));
-        {
-            float aniso = 0.0f;
-            CHK(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
-            CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
-        }
-        StbInfo si0 = stb_load_texture(
-            filename, rgba, true, false); // true=flip_vertically, false=flip_horizontally
-        if (mixed != "") {
-            auto si1_raw = stb_load_texture(
-                mixed, rgba, true, false); // true=flip_vertically, false=flip_horizontally
-            std::unique_ptr<unsigned char[]> si1_resized{
-                new unsigned char[si0.width * si0.height * si1_raw.nrChannels]};
-            stbir_resize_uint8(si1_raw.data.get(),
-                               si1_raw.width,
-                               si1_raw.height,
-                               0,
-                               si1_resized.get(),
-                               si0.width,
-                               si0.height,
-                               0,
-                               si1_raw.nrChannels);
-            //int max_dist = si0.width * overlap_npixels;
-            int max_dist = 5;
-            for (int r = 0; r < si0.height; ++r) {
-                for (int c = 0; c < si0.width; ++c) {
-                    int dist = std::min(c, si0.width - c - 1);
-                    float fac;
-                    if (dist < max_dist) {
-                        fac = float(dist) / max_dist;
-                    } else {
-                        fac = 1;
-                    }
-                    for (int d = 0; d < si0.nrChannels; ++d) {
-                        int i0 = (r * si0.width + c) * si0.nrChannels + d;
-                        int i1 = (r * si0.width + c) * si1_raw.nrChannels + d;
-                        si0.data.get()[i0] =
-                            fac * si0.data.get()[i0] + (1 - fac) * si1_resized.get()[i1];
-                    }
+    CHK(glGenTextures(1, &texture));
+    CHK(glBindTexture(GL_TEXTURE_2D, texture));
+    {
+        float aniso = 0.0f;
+        CHK(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
+        CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
+    }
+    StbInfo si0 = stb_load_texture(
+        filename, rgba, true, false); // true=flip_vertically, false=flip_horizontally
+    if (mixed != "") {
+        auto si1_raw = stb_load_texture(
+            mixed, rgba, true, false); // true=flip_vertically, false=flip_horizontally
+        std::unique_ptr<unsigned char[]> si1_resized{
+            new unsigned char[si0.width * si0.height * si1_raw.nrChannels]};
+        stbir_resize_uint8(si1_raw.data.get(),
+                            si1_raw.width,
+                            si1_raw.height,
+                            0,
+                            si1_resized.get(),
+                            si0.width,
+                            si0.height,
+                            0,
+                            si1_raw.nrChannels);
+        //int max_dist = si0.width * overlap_npixels;
+        int max_dist = 5;
+        for (int r = 0; r < si0.height; ++r) {
+            for (int c = 0; c < si0.width; ++c) {
+                int dist = std::min(c, si0.width - c - 1);
+                float fac;
+                if (dist < max_dist) {
+                    fac = float(dist) / max_dist;
+                } else {
+                    fac = 1;
+                }
+                for (int d = 0; d < si0.nrChannels; ++d) {
+                    int i0 = (r * si0.width + c) * si0.nrChannels + d;
+                    int i1 = (r * si0.width + c) * si1_raw.nrChannels + d;
+                    si0.data.get()[i0] =
+                        fac * si0.data.get()[i0] + (1 - fac) * si1_resized.get()[i1];
                 }
             }
         }
-        auto mean_color = std::find_if(mean_colors_.begin(), mean_colors_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
-        if (mean_color != mean_colors_.end()) {
-            if (!stb_match_color_rgb(
-                si0.data.get(),
-                si0.width,
-                si0.height,
-                si0.nrChannels,
-                (mean_color->second * 255.f).casted<unsigned char>().flat_begin()))
-            {
-                std::cerr << "alpha = 0: " << filename << std::endl;
-            }
-        }
-        auto histogram_image = std::find_if(histogram_images_.begin(), histogram_images_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
-        if (histogram_image != histogram_images_.end()) {
-            Array<unsigned char> image = stb_image_2_array(si0);
-            Array<unsigned char> ref = stb_image_2_array(stb_load_texture(histogram_image->second, false, false, false));
-            Array<unsigned char> m = match_rgba_histograms(image, ref);
-            assert_true(m.shape(0) == (size_t)si0.nrChannels);
-            assert_true(m.shape(1) == (size_t)si0.height);
-            assert_true(m.shape(2) == (size_t)si0.width);
-            array_2_stb_image(m, si0.data.get());
-        }
-        CHK(glTexImage2D(GL_TEXTURE_2D,
-                         0,
-                         rgba ? GL_RGBA : GL_RGB,
-                         si0.width,
-                         si0.height,
-                         0,
-                         si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         si0.data.get()));
-        if (rgba) {
-            generate_rgba_mipmaps_inplace(si0);
-        } else {
-            CHK(glGenerateMipmap(GL_TEXTURE_2D));
-        }
-        // CHK(glGenerateMipmap(GL_TEXTURE_2D));
-
-        textures_.insert(
-            std::make_pair(TextureNameAndMixed{alias.empty() ? filename : alias, mixed},
-                           TextureHandleAndNeedsGc{texture, true}));
-        return texture;
     }
-    return it->second.handle;
+    auto mean_color = std::find_if(mean_colors_.begin(), mean_colors_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
+    if (mean_color != mean_colors_.end()) {
+        if (!stb_match_color_rgb(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (mean_color->second * 255.f).casted<unsigned char>().flat_begin()))
+        {
+            std::cerr << "alpha = 0: " << filename << std::endl;
+        }
+    }
+    auto histogram_image = std::find_if(histogram_images_.begin(), histogram_images_.end(), [&filename](const auto& v) -> bool {return std::regex_match(filename, v.first);});
+    if (histogram_image != histogram_images_.end()) {
+        Array<unsigned char> image = stb_image_2_array(si0);
+        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(histogram_image->second, false, false, false));
+        Array<unsigned char> m = match_rgba_histograms(image, ref);
+        assert_true(m.shape(0) == (size_t)si0.nrChannels);
+        assert_true(m.shape(1) == (size_t)si0.height);
+        assert_true(m.shape(2) == (size_t)si0.width);
+        array_2_stb_image(m, si0.data.get());
+    }
+    CHK(glTexImage2D(GL_TEXTURE_2D,
+                        0,
+                        rgba ? GL_RGBA : GL_RGB,
+                        si0.width,
+                        si0.height,
+                        0,
+                        si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
+                        GL_UNSIGNED_BYTE,
+                        si0.data.get()));
+    if (rgba) {
+        generate_rgba_mipmaps_inplace(si0);
+    } else {
+        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    }
+    // CHK(glGenerateMipmap(GL_TEXTURE_2D));
+
+    textures_.insert(
+        std::make_pair(TextureNameAndMixed{alias.empty() ? filename : alias, mixed},
+                        TextureHandleAndNeedsGc{texture, true}));
+    return texture;
 }
 
 GLuint RenderingResources::get_cubemap(const std::vector<std::string>& filenames,
