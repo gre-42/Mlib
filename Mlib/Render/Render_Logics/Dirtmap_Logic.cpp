@@ -1,4 +1,5 @@
 #include "Dirtmap_Logic.hpp"
+#include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
@@ -39,7 +40,7 @@ void DirtmapLogic::render(
             "dirtmap",
             TextureDescriptor{
                 color: filename_,
-                rgba: false,
+                color_mode: ColorMode::RGB,
                 mixed: "",
                 overlap_npixels: 0});
         rendering_resources_.set_vp("dirtmap", vp());

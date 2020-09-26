@@ -47,7 +47,7 @@ RenderableBinaryX::RenderableBinaryX(
         std::make_shared<ColoredVertexArray>(
                 "RenderableBinaryX",
                 Material{
-                    texture: texture,
+                    texture_descriptor: {color: texture},
                     occluder_type: is_small ? OccluderType::OFF : OccluderType::BLACK,
                     blend_mode: BlendMode::BINARY,
                     clamp_mode_s: ClampMode::EDGE,
@@ -58,7 +58,7 @@ RenderableBinaryX::RenderableBinaryX(
                     cull_faces: false,
                     ambience: OrderableFixedArray{ambience},
                     diffusivity: {0, 0, 0},
-                    specularity: {0, 0, 0}},
+                    specularity: {0, 0, 0}}.compute_color_mode(),
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
         nullptr,

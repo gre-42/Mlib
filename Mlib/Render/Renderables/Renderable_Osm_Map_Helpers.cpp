@@ -1064,15 +1064,15 @@ void Mlib::add_binary_vegetation_old(
         float veg_size;
         switch (tid % 10) {
             case 0:
-                tls.back()->material_.texture = grass_texture;
+                tls.back()->material_.texture_descriptor.color = grass_texture;
                 veg_size = 1;
                 break;
             case 2:
-                tls.back()->material_.texture = tree_texture;
+                tls.back()->material_.texture_descriptor.color = tree_texture;
                 veg_size = 5;
                 break;
             case 4:
-                tls.back()->material_.texture = tree_texture_2;
+                tls.back()->material_.texture_descriptor.color = tree_texture_2;
                 veg_size = 5;
                 break;
             default:
@@ -1169,13 +1169,13 @@ void Mlib::draw_building_walls(
         tls.push_back(std::make_shared<TriangleList>("building_walls", material));
         switch (bid % 3) {
             case 0:
-                tls.back()->material_.texture = facade_texture;
+                tls.back()->material_.texture_descriptor.color = facade_texture;
                 break;
             case 1:
-                tls.back()->material_.texture = facade_texture_2;
+                tls.back()->material_.texture_descriptor.color = facade_texture_2;
                 break;
             case 2:
-                tls.back()->material_.texture = facade_texture_3;
+                tls.back()->material_.texture_descriptor.color = facade_texture_3;
                 break;
         }
         auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);

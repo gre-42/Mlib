@@ -47,7 +47,7 @@ RenderableBlendingX::RenderableBlendingX(
             std::make_shared<ColoredVertexArray>(
                 "RenderableBlendingX",
                 Material{
-                    texture: texture,
+                    texture_descriptor: {color: texture},
                     occluder_type: OccluderType::OFF,
                     blend_mode: BlendMode::CONTINUOUS,
                     clamp_mode_s: ClampMode::EDGE,
@@ -58,7 +58,7 @@ RenderableBlendingX::RenderableBlendingX(
                     cull_faces: false,
                     ambience: {2, 2, 2},
                     diffusivity: {0, 0, 0},
-                    specularity: {0, 0, 0}},
+                    specularity: {0, 0, 0}}.compute_color_mode(),
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
             nullptr,

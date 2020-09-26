@@ -1,4 +1,5 @@
 #include "Fill_With_Texture_Logic.hpp"
+#include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <sstream>
@@ -23,7 +24,7 @@ FillWithTextureLogic::FillWithTextureLogic(
 {
     rp_.generate(vertex_shader_text, fragment_shader_text);
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
-    rp_.texture_id_ = rendering_resources.get_texture({color: image_resource_name, rgba: true});  // true = rgba
+    rp_.texture_id_ = rendering_resources.get_texture({color: image_resource_name, color_mode: ColorMode::RGBA});
 }
 
 void FillWithTextureLogic::render(

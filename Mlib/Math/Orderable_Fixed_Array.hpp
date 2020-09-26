@@ -45,9 +45,9 @@ public:
         }
         return std::strong_ordering::greater;
     }
-    bool is_nonzero() const {
+    bool all_equal(const TData& d) const {
         const FixedArray<TData, tshape...>& a = *this;
-        return any(a != TData{0});
+        return all(a == d);
     }
 };
 

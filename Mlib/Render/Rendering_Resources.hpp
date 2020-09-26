@@ -3,8 +3,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Array/Array_Forward.hpp>
 #include <map>
 #include <mutex>
 #include <string>
@@ -12,15 +11,7 @@
 
 namespace Mlib {
 
-struct TextureDescriptor {
-    std::string color;
-    bool rgba;
-    std::string histogram = "";
-    std::string mixed = "";
-    size_t overlap_npixels = 5;
-    FixedArray<float, 3> mean_color = {-1, -1, -1};
-    std::strong_ordering operator <=> (const TextureDescriptor&) const = default;
-};
+struct TextureDescriptor;
 
 struct TextureHandleAndNeedsGc {
     GLuint handle;

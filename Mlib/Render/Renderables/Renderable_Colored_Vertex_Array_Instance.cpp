@@ -59,13 +59,13 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 filtered_lights.push_back(l);
             }
         }
-        bool has_texture = rcva_->render_textures_ && !cva->material.texture.empty();
-        bool has_lightmap_color = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (cva->material.diffusivity.is_nonzero() || cva->material.specularity.is_nonzero());
-        bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (cva->material.diffusivity.is_nonzero() || cva->material.specularity.is_nonzero());
+        bool has_texture = rcva_->render_textures_ && !cva->material.texture_descriptor.color.empty();
+        bool has_lightmap_color = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+        bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
         bool has_dirtmap = rcva_->render_textures_ && (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE);
         bool has_instances = (rcva_->instances_ != nullptr);
         if (!has_texture && has_dirtmap) {
-            std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture);
+            std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture_descriptor.color);
         }
         FixedArray<float, 3> ambience = (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.ambience : fixed_zeros<float, 3>();
         FixedArray<float, 3> diffusivity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.diffusivity : fixed_zeros<float, 3>();
@@ -75,6 +75,15 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
         }
         bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
+        if (cva->material.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
+            throw std::runtime_error("Material's color texture " + cva->material.texture_descriptor.color + " has undefined color mode");
+        }
+        if ((cva->material.blend_mode == BlendMode::OFF) && (cva->material.texture_descriptor.color_mode == ColorMode::RGBA)) {
+            throw std::runtime_error("Opaque material's color texture " + cva->material.texture_descriptor.color + " was loaded as RGBA");
+        }
+        if ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.texture_descriptor.color_mode == ColorMode::RGB)) {
+            throw std::runtime_error("Transparent material's color texture " + cva->material.texture_descriptor.color + " was not loaded as RGB");
+        }
         LOG_INFO("RenderableColoredVertexArrayInstance::render get_render_program");
         const ColoredRenderProgram& rp = rcva_->get_render_program(
             {
@@ -136,11 +145,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture");
         if (has_texture) {
             LOG_INFO("RenderableColoredVertexArrayInstance::render get texture \"" + cva->material.texture + '"');
-            GLuint texture = rcva_->rendering_resources_->get_texture({
-                color: cva->material.texture,
-                rgba: cva->material.blend_mode != BlendMode::OFF,
-                mixed: cva->material.mixed_texture,
-                overlap_npixels: cva->material.overlap_npixels});
+            GLuint texture = rcva_->rendering_resources_->get_texture(cva->material.texture_descriptor);
             LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture \"" + cva->material.texture + '"');
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
             LOG_INFO("RenderableColoredVertexArrayInstance::render clamp texture \"" + cva->material.texture + '"');
@@ -166,7 +171,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
                 
                 CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, rgba: false})));  // false=rgba
+                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
                 float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
@@ -185,7 +190,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
 
                 CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, rgba: false})));  // false=rgba
+                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
                 CHK(glActiveTexture(GL_TEXTURE0));
@@ -195,18 +200,18 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         LOG_INFO("RenderableColoredVertexArrayInstance::render bind dirtmap texture");
         if (has_dirtmap) {
             std::string mname = "dirtmap";
-            const auto& light_vp = rcva_->rendering_resources_->get_vp(mname);
-            auto mvp_light = dot2d(light_vp, m);
-            CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
+            const auto& dirtmap_vp = rcva_->rendering_resources_->get_vp(mname);
+            auto mvp_dirtmap = dot2d(dirtmap_vp, m);
+            CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, (const GLfloat*) mvp_dirtmap.flat_begin()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 1 + filtered_lights.size()));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, rgba: false})));  // false=rgba
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
             CHK(glActiveTexture(GL_TEXTURE0));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 2 + filtered_lights.size()));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: cva->material.dirt_texture, rgba: false})));  // false=rgba
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: cva->material.dirt_texture, color_mode: ColorMode::RGB})));
             if (cva->material.clamp_mode_s == ClampMode::REPEAT) {
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
             } else {

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/String.hpp>
 
@@ -84,13 +85,11 @@ inline OccluderType occluder_type_from_string(const std::string& str) {
 }
 
 struct Material {
-    std::string texture = "";
+    TextureDescriptor texture_descriptor;
+    std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::BLACK;
     bool occluded_by_black = true;
-    std::string mixed_texture;
-    size_t overlap_npixels = 5;
-    std::string dirt_texture;
     BlendMode blend_mode = BlendMode::OFF;
     ClampMode clamp_mode_s = ClampMode::REPEAT;
     ClampMode clamp_mode_t = ClampMode::REPEAT;
@@ -101,6 +100,12 @@ struct Material {
     OrderableFixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};
     OrderableFixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
     OrderableFixedArray<float, 3> specularity{1.f, 1.f, 1.f};
+    inline Material& compute_color_mode() {
+        texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)
+            ? ColorMode::RGB
+            : ColorMode::RGBA;
+        return *this;
+    }
     std::strong_ordering operator <=> (const Material&) const = default;
 };
 

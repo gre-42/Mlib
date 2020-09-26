@@ -1,5 +1,7 @@
 #include "Rendering_Resources.hpp"
+#include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
+#include <Mlib/Log.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <iostream>
@@ -140,6 +142,7 @@ GLuint RenderingResources::get_texture(const TextureDescriptor& descriptor) cons
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 
 GLuint RenderingResources::get_texture(const std::string& name, const TextureDescriptor& descriptor) const {
+    LOG_FUNCTION("RenderingResources::get_texture " + name);
     std::lock_guard<std::mutex> lock_guard{mutex_};
     if (auto it = textures_.find(name); it != textures_.end())
     {
@@ -160,10 +163,10 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
         CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
     }
     StbInfo si0 = stb_load_texture(
-        desc.color, desc.rgba, true, false); // true=flip_vertically, false=flip_horizontally
+        desc.color, desc.color_mode == ColorMode::RGBA, true, false); // true=flip_vertically, false=flip_horizontally
     if (!desc.mixed.empty()) {
         auto si1_raw = stb_load_texture(
-            desc.mixed, desc.rgba, true, false); // true=flip_vertically, false=flip_horizontally
+            desc.mixed, desc.color_mode == ColorMode::RGBA, true, false); // true=flip_vertically, false=flip_horizontally
         std::unique_ptr<unsigned char[]> si1_resized{
             new unsigned char[si0.width * si0.height * si1_raw.nrChannels]};
         stbir_resize_uint8(si1_raw.data.get(),
@@ -195,7 +198,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
             }
         }
     }
-    if (!all(desc.mean_color == -1.f)) {
+    if (!desc.mean_color.all_equal(-1.f)) {
         if (!stb_match_color_rgb(
             si0.data.get(),
             si0.width,
@@ -217,14 +220,14 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     }
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     desc.rgba ? GL_RGBA : GL_RGB,
+                     desc.color_mode == ColorMode::RGBA ? GL_RGBA : GL_RGB,
                      si0.width,
                      si0.height,
                      0,
                      si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
                      GL_UNSIGNED_BYTE,
                      si0.data.get()));
-    if (desc.rgba) {
+    if (desc.color_mode == ColorMode::RGBA) {
         generate_rgba_mipmaps_inplace(si0);
     } else {
         CHK(glGenerateMipmap(GL_TEXTURE_2D));
@@ -236,7 +239,9 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
 }
 
 GLuint RenderingResources::get_cubemap(const std::string& name,
-                                       const std::vector<std::string>& filenames) const {
+                                       const std::vector<std::string>& filenames) const
+{
+    LOG_FUNCTION("RenderingResources::get_cubemap " + name);
     std::lock_guard<std::mutex> lock_guard{mutex_};
     if (auto it = textures_.find(name); it != textures_.end()) {
         return it->second.handle;
@@ -277,6 +282,7 @@ GLuint RenderingResources::get_cubemap(const std::string& name,
 }
 
 void RenderingResources::set_texture(const std::string& name, GLuint id) {
+    LOG_FUNCTION("RenderingResources::set_texture " + name);
     // Old texture is deleted by frame buffer
     if (id == (GLuint)-1) {
         throw std::runtime_error("RenderingResources::set_texture: invalid texture ID");
@@ -286,12 +292,14 @@ void RenderingResources::set_texture(const std::string& name, GLuint id) {
 
 void RenderingResources::add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor)
 {
+    LOG_FUNCTION("RenderingResources::add_texture_descriptor " + name);
     if (auto it = texture_descriptors_.insert({name, descriptor}); !it.second) {
         throw std::runtime_error("Texture descriptor with name " + name + " already exists");
     }
 }
 
 const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
+    LOG_FUNCTION("RenderingResources::get_vp " + name);
     auto it = vps_.find(name);
     if (it == vps_.end()) {
         throw std::runtime_error("Could not find vp with name " + name);
@@ -300,5 +308,6 @@ const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& nam
 }
 
 void RenderingResources::set_vp(const std::string& name, const FixedArray<float, 4, 4>& vp) {
+    LOG_FUNCTION("RenderingResources::set_vp " + name);
     vps_[name] = vp;
 }

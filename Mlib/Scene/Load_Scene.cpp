@@ -310,7 +310,7 @@ void LoadScene::operator()(
         "^(?:\\r?\\n|\\s)*add_texture_descriptor\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
         "\\s*color=([\\w-. \\(\\)/+-]+)"
-        "\\s*rgba=(0|1)"
+        "\\s*color_mode=(rgb|rgba)"
         "\\s*histogram=([\\w-. \\(\\)/+-]*)"
         "\\s*mixed=([\\w-. \\(\\)/+-]*)"
         "\\s*overlap_npixels=(\\d+)"
@@ -477,7 +477,7 @@ void LoadScene::operator()(
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 Material{
-                    texture: fpath(match[2].str()),
+                    texture_descriptor: {color: fpath(match[2].str())},
                     occluder_type: OccluderType::BLACK,
                     blend_mode: blend_mode_from_string(match[11].str()),
                     clamp_mode_s: ClampMode::EDGE,
@@ -491,7 +491,7 @@ void LoadScene::operator()(
                         safe_stof(match[9].str()),
                         safe_stof(match[10].str())},
                     diffusivity: {0, 0, 0},
-                    specularity: {0, 0, 0}},
+                    specularity: {0, 0, 0}}.compute_color_mode(),
                 &rendering_resources));
         } else if (std::regex_match(line, match, blending_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(
@@ -1052,11 +1052,11 @@ void LoadScene::operator()(
                 match[1].str(),
                 TextureDescriptor{
                     color: fpath(match[2].str()),
-                    rgba: safe_stob(match[3].str()),
+                    color_mode: color_mode_from_string(match[3].str()),
                     histogram: fpath(match[4].str()),
                     mixed: match[5].str(),
                     overlap_npixels: (size_t)safe_stoi(match[6].str()),
-                    mean_color: FixedArray<float, 3>{
+                    mean_color: OrderableFixedArray<float, 3>{
                         safe_stof(match[7].str()),
                         safe_stof(match[8].str()),
                         safe_stof(match[9].str())}});

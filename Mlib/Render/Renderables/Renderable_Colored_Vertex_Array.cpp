@@ -142,14 +142,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform sampler2D texture_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirt;" << std::endl;
     }
-    if (diffusivity.is_nonzero() || specularity.is_nonzero()) {
+    if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         sstr << "in vec3 Normal;" << std::endl;
 
         // sstr << "uniform vec3 lightPos;" << std::endl;
         sstr << "uniform vec3 lightDir[" << lights.size() << "];" << std::endl;
         sstr << "uniform vec3 lightColor[" << lights.size() << "];" << std::endl;
     }
-    if (reorient_normals || specularity.is_nonzero()) {
+    if (reorient_normals || !specularity.all_equal(0)) {
         sstr << "in vec3 FragPos;" << std::endl;
         sstr << "uniform vec3 viewPos;" << std::endl;
     }
@@ -172,7 +172,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sp *= lights.front().second->specularity;
     }
     sstr << "    vec4 fragBrightness = vec4(" << am(0) << ", " << am(1) << ", " << am(2) << ", 1);" << std::endl;
-    if (diffusivity.is_nonzero() || specularity.is_nonzero()) {
+    if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         sstr << "    vec3 norm = normalize(Normal);" << std::endl;
         // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
     }
@@ -199,13 +199,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    {" << std::endl;
         sstr << "        int i = 0;" << std::endl;
     }
-    if (diffusivity.is_nonzero()) {
+    if (!diffusivity.all_equal(0)) {
         sstr << "            vec3 fragDiffusivity = vec3(" << di(0) << ", " << di(1) << ", " << di(2) << ");" << std::endl;
         sstr << "            float diff = max(dot(norm, lightDir[i]), 0.0);" << std::endl;
         sstr << "            vec3 diffuse = fragDiffusivity * diff * lightColor[i];" << std::endl;
         sstr << "            fragBrightness += vec4(diffuse, 0);" << std::endl;
     }
-    if (specularity.is_nonzero()) {
+    if (!specularity.all_equal(0)) {
         sstr << "            vec3 fragSpecularity = vec3(" << sp(0) << ", " << sp(1) << ", " << sp(2) << ");" << std::endl;
         sstr << "            vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
         sstr << "            vec3 reflectDir = reflect(-lightDir[i], norm);  " << std::endl;
@@ -357,8 +357,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.has_lightmap_color,
             id.has_lightmap_depth,
             id.has_dirtmap,
-            id.diffusivity.is_nonzero(),
-            id.specularity.is_nonzero(),
+            !id.diffusivity.all_equal(0),
+            !id.specularity.all_equal(0),
             id.has_instances,
             id.reorient_normals),
         fragment_shader_text_textured_rgb_gen(
@@ -417,7 +417,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         rp->texture_dirtmap_location = 0;
         rp->texture_dirt_location = 0;
     }
-    if (id.diffusivity.is_nonzero() || id.specularity.is_nonzero()) {
+    if (!id.diffusivity.all_equal(0) || !id.specularity.all_equal(0)) {
         rp->m_location = checked_glGetUniformLocation(rp->program, "M");
         // rp->light_position_location = checked_glGetUniformLocation(rp->program, "lightPos");
         for(size_t i = 0; i < filtered_lights.size(); ++i) {
@@ -431,7 +431,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         // rp->light_dir_location = 0;
         // rp->light_color = 0;
     }
-    if (id.has_instances || id.specularity.is_nonzero()) {
+    if (id.has_instances || !id.specularity.all_equal(0)) {
         rp->view_pos = checked_glGetUniformLocation(rp->program, "viewPos");
     } else {
         rp->view_pos = 0;

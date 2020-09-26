@@ -39,7 +39,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     TriangleList tl{
         filename,
         Material{
-            texture: "",
+            texture_descriptor: TextureDescriptor{color: ""},
             occluded_type: occluded_type,
             occluder_type: occluder_type,
             occluded_by_black: occluded_by_black,
@@ -244,7 +244,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 current_mtl = mtllib.at(match[1].str());
                 if (!current_mtl.texture.empty()) {
                     std::string p = fs::path(filename).parent_path().string();
-                    tl.material_.texture = p == "" ? current_mtl.texture : p + "/" + current_mtl.texture;
+                    tl.material_.texture_descriptor.color = p == "" ? current_mtl.texture : p + "/" + current_mtl.texture;
                 }
                 if (current_mtl.has_alpha_texture) {
                     tl.material_.blend_mode = blend_mode;
@@ -253,6 +253,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 tl.material_.ambience = current_mtl.ambience;
                 tl.material_.diffusivity = current_mtl.diffusivity;
                 tl.material_.specularity = current_mtl.specularity;
+                tl.material_.compute_color_mode();
             } else if (std::regex_match(line, match, smooth_shading_reg)) {
                 // do nothing
             } else {
