@@ -302,7 +302,7 @@ const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& nam
     LOG_FUNCTION("RenderingResources::get_vp " + name);
     auto it = vps_.find(name);
     if (it == vps_.end()) {
-        throw std::runtime_error("Could not find vp with name " + name);
+        throw std::runtime_error("Could not find vp with name " + name + ". Forgot to add a LightmapLogic for the light?");
     }
     return it->second;
 }
