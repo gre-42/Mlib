@@ -41,11 +41,15 @@ int main(int argc, char** argv) {
         "[--min_num] <min_num> "
         "[--regex] <regex> "
         "[--no_werror] "
+        "[--light_ambience <light_ambience>] "
+        "[--light_diffusivity <light_diffusivity>] "
+        "[--light_specularity <light_specularity>] "
         "[--no_shadows] "
         "[--no_light]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows", "--no_light"},
-        {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex"});
+        {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex",
+         "--light_ambience", "--light_diffusivity", "--light_specularity"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -120,6 +124,10 @@ int main(int argc, char** argv) {
             light->ambience = 1;
             light->diffusivity = 0;
             light->specularity = 0;
+        } else {
+            light->ambience = safe_stof(args.named_value("--light_ambience", "0.5"));
+            light->diffusivity = safe_stof(args.named_value("--light_diffusivity", "1"));
+            light->specularity = safe_stof(args.named_value("--light_specularity", "1"));
         }
         scene.get_node("light_node")->add_light(light);
 
