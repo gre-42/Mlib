@@ -53,9 +53,9 @@ void benchmark()
     }
 }
 
-void draw_arrays(FILE * pFile, int vertCount, fvec3 * vert, fvec3 * normal, fvec2 * uv, int faceCount, ivec3 * face, int faceOffset) {
+void draw_arrays(FILE * pFile, int vertCount, fvec3 * vert, fvec3 * normal, fvec2 * uv, int faceCount, ivec3 * face, int faceOffset, const fvec3& position) {
     for (int i = 0; i < vertCount; i++) {
-        int res = fprintf(pFile, "v %+3.3f %+3.3f %+3.3f\n", vert[i].x, vert[i].y, vert[i].z);
+        int res = fprintf(pFile, "v %+3.3f %+3.3f %+3.3f\n", vert[i].x + position.x, vert[i].y + position.y, vert[i].z + position.z);
         if (res < 0) {
             std::runtime_error(strerror(errno));
         }
@@ -121,9 +121,11 @@ void basic_use()
     tree.mProperties.mRadiusFalloffRate = getenv_default_float("mRadiusFalloffRate", 0.73f);
     tree.mProperties.mTwistRate = getenv_default_float("mTwistRate", 3.02f);
     tree.mProperties.mTrunkLength = getenv_default_float("mTrunkLength", 2.4f);
+    int ntrees = getenv_default_int("ntrees", 1);
+    float tree_distance = getenv_default_float("tree_distance", 0.2);
 
     // 3) Call generate
-    tree.generate();
+    // tree.generate();
 
     // 4) Use the data
 
@@ -133,16 +135,26 @@ void basic_use()
             throw std::runtime_error("Could not open tree.obj for write");
         }
         fprintf(pFile, "mtllib tree.mtl\n");
-        fprintf(pFile, "g Tree\n");
-        fprintf(pFile, "o Tree\n");
-        fprintf(pFile, "usemtl tree\n");
-        draw_arrays(pFile, tree.mVertCount, tree.mVert, tree.mNormal, tree.mUV, tree.mFaceCount, tree.mFace, 0);
-        fprintf(pFile, "\n");
+        int faceOffset = 0;
+        fvec3 position{-ntrees * tree_distance / 2, 0, 0};
+        for(int i = 0; i < ntrees; ++i) {
+            tree.generate();
+            fprintf(pFile, "g Tree%d\n", i);
+            fprintf(pFile, "o Tree%d\n", i);
+            fprintf(pFile, "usemtl tree\n");
+            draw_arrays(pFile, tree.mVertCount, tree.mVert, tree.mNormal, tree.mUV, tree.mFaceCount, tree.mFace, faceOffset, position);
+            faceOffset += tree.mVertCount;
+            fprintf(pFile, "\n");
 
-        fprintf(pFile, "g Twig\n");
-        fprintf(pFile, "o Twig\n");
-        fprintf(pFile, "usemtl twig\n");
-        draw_arrays(pFile, tree.mTwigVertCount, tree.mTwigVert, tree.mTwigNormal, tree.mTwigUV, tree.mTwigFaceCount, tree.mTwigFace, tree.mVertCount);
+            fprintf(pFile, "g Twig%d\n", i);
+            fprintf(pFile, "o Twig%d\n", i);
+            fprintf(pFile, "usemtl twig\n");
+            draw_arrays(pFile, tree.mTwigVertCount, tree.mTwigVert, tree.mTwigNormal, tree.mTwigUV, tree.mTwigFaceCount, tree.mTwigFace, faceOffset, position);
+            faceOffset += tree.mTwigVertCount;
+
+            ++tree.mProperties.mSeed;
+            position.x += tree_distance;
+        }
 
         // 5) Profit.
 
