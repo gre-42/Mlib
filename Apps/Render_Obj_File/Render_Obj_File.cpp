@@ -45,9 +45,10 @@ int main(int argc, char** argv) {
         "[--light_diffusivity <light_diffusivity>] "
         "[--light_specularity <light_specularity>] "
         "[--no_shadows] "
+        "[--add_light2 ] "
         "[--no_light]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
-        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows", "--no_light"},
+        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows", "--no_light", "--add_light2"},
         {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex",
          "--light_ambience", "--light_diffusivity", "--light_specularity"});
     try {
@@ -130,6 +131,15 @@ int main(int argc, char** argv) {
             light->specularity = safe_stof(args.named_value("--light_specularity", "1"));
         }
         scene.get_node("light_node")->add_light(light);
+
+        if (args.has_named("--add_light2")) {
+            scene.add_root_node("light_node2", new SceneNode);
+            scene.get_node("light_node2")->set_position({0.f, 0.f, 0.f});
+            scene.get_node("light_node2")->set_rotation({0.f, 0.f, 0.f});
+            Light* light = new Light{resource_index: selected_cameras.add_light_node("light_node2"), only_black: false};
+            light->ambience = 1;
+            scene.get_node("light_node2")->add_light(light);
+        }
 
         scene.add_root_node("follower_camera", new SceneNode);
         scene.get_node("follower_camera")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
