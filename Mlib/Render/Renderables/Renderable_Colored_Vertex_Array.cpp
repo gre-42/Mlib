@@ -159,12 +159,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
+    if ((alpha_threshold < 1) || has_texture) {
+        sstr << "    vec4 texture1_color = texture(texture1, tex_coord);" << std::endl;
+    }
     if (alpha_threshold < 1) {
         if (!has_texture) {
             throw std::runtime_error("Alpha threshold requires texture");
         }
-        sstr << "    vec4 tex_color = texture(texture1, tex_coord);" << std::endl;
-        sstr << "    if (tex_color.a < " << alpha_threshold << ")" << std::endl;
+        sstr << "    if (texture1_color.a < " << alpha_threshold << ")" << std::endl;
         sstr << "        discard;" << std::endl;
     }
     FixedArray<float, 3> am{ambience};
@@ -256,11 +258,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    dirtiness.r = clamp(0.5 + 4 * (dirtiness.r - 0.5), 0, 1);" << std::endl;
         sstr << "    dirtiness.g = clamp(0.5 + 4 * (dirtiness.g - 0.5), 0, 1);" << std::endl;
         sstr << "    dirtiness.b = clamp(0.5 + 4 * (dirtiness.b - 0.5), 0, 1);" << std::endl;
-        sstr << "    frag_color = texture(texture1, tex_coord) * (1 - dirtiness)" << std::endl;
+        sstr << "    frag_color = texture1_color * (1 - dirtiness)" << std::endl;
         sstr << "               + texture(texture_dirt, tex_coord) * dirtiness;" << std::endl;
         sstr << "    frag_color *= vec4(color, 1.0);" << std::endl;
     } else if (has_texture) {
-        sstr << "    frag_color = texture(texture1, tex_coord) * vec4(color, 1.0);" << std::endl;
+        sstr << "    frag_color = texture1_color * vec4(color, 1.0);" << std::endl;
     } else {
         sstr << "    frag_color = vec4(color, 1.0);" << std::endl;
     }
@@ -276,7 +278,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
-    std::cerr << sstr.str() << std::endl << std::endl;
     return sstr.str();
 }};
 
