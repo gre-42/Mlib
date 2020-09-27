@@ -86,7 +86,7 @@ void test_power_to_force_stiction_normal() {
         F += power_to_force_infinite_mass(10, 20, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, true);
         v3 += F / m * dt;
     }
-    assert_isclose<float>(v3(0), 97.0226, 1e-4);
+    assert_isclose<float>(v3(0), 98.0023, 1e-4);
 }
 
 void test_power_to_force_P_normal() {
