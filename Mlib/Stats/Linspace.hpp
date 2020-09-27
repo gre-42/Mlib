@@ -10,7 +10,7 @@ Array<TData> linspace(const TData& from, const TData& to, size_t count) {
         result = (from + to) / 2;
     } else {
         for(size_t i = 0; i < count; ++i) {
-            result(i) = (from * (count - i) + to * i) / (count - 1);
+            result(i) = (from * (count - i - 1) + to * i) / (count - 1);
         }
     }
     return result;
