@@ -245,10 +245,15 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 if (!current_mtl.texture.empty()) {
                     std::string p = fs::path(filename).parent_path().string();
                     tl.material_.texture_descriptor.color = p == "" ? current_mtl.texture : p + "/" + current_mtl.texture;
+                } else {
+                    tl.material_.texture_descriptor = TextureDescriptor{color: ""};
                 }
                 if (current_mtl.has_alpha_texture) {
                     tl.material_.blend_mode = blend_mode;
                     tl.material_.cull_faces = blend_cull_faces;
+                } else {
+                    tl.material_.blend_mode = BlendMode::OFF;
+                    tl.material_.cull_faces = true;
                 }
                 tl.material_.ambience = current_mtl.ambience;
                 tl.material_.diffusivity = current_mtl.diffusivity;
