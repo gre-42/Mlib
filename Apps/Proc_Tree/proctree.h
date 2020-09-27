@@ -68,8 +68,6 @@ namespace Proctree
 		float mGrowAmount;
 		float mVMultiplier;
 		float mTwigScale;
-		int mSeed;
-		int mRseed;
 
 		Properties();
 		Properties(
@@ -93,9 +91,8 @@ namespace Proctree
 			float aDropAmount,
 			float aGrowAmount,
 			float aVMultiplier,
-			float aTwigScale,
-			int aSeed);
-		float random(float aFixed);
+			float aTwigScale);
+		float random();
 	};
 
 

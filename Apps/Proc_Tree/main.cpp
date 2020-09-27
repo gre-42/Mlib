@@ -99,7 +99,6 @@ void basic_use()
     // etc.
     */
 
-    tree.mProperties.mSeed = getenv_default_int("mSeed", 262);
     tree.mProperties.mSegments = getenv_default_int("mSegments", 6);
     tree.mProperties.mLevels = getenv_default_int("mLevels", 5);
     tree.mProperties.mVMultiplier = getenv_default_float("mVMultiplier", 0.36f);
@@ -137,7 +136,12 @@ void basic_use()
         fprintf(pFile, "mtllib tree.mtl\n");
         int faceOffset = 0;
         fvec3 position{-ntrees * tree_distance / 2, 0, 0};
+        int seed0 = getenv_default_int("mSeed", 1);
+        if (seed0 == 0) {
+            throw std::runtime_error("mSeed=0 not allowed");
+        }
         for(int i = 0; i < ntrees; ++i) {
+            srand(seed0 + i);
             tree.generate();
             fprintf(pFile, "g Tree%d\n", i);
             fprintf(pFile, "o Tree%d\n", i);
@@ -152,7 +156,6 @@ void basic_use()
             draw_arrays(pFile, tree.mTwigVertCount, tree.mTwigVert, tree.mTwigNormal, tree.mTwigUV, tree.mTwigFaceCount, tree.mTwigFace, faceOffset, position);
             faceOffset += tree.mTwigVertCount;
 
-            ++tree.mProperties.mSeed;
             position.x += tree_distance;
         }
 

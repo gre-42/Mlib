@@ -146,10 +146,8 @@ namespace Proctree
 		float aDropAmount,
 		float aGrowAmount,
 		float aVMultiplier,
-		float aTwigScale,
-		int aSeed)
+		float aTwigScale)
 	{
-		mSeed = aSeed;
 		mSegments = aSegments;
 		mLevels = aLevels;
 		mVMultiplier = aVMultiplier;
@@ -175,7 +173,6 @@ namespace Proctree
 
 	Properties::Properties()
 	{
-		mSeed = 262;
 		mSegments = 6;
 		mLevels = 5;
 		mVMultiplier = 0.36f;
@@ -199,13 +196,9 @@ namespace Proctree
 		mTrunkLength = 2.4f;
 	}
 
-	float Properties::random(float aFixed)
+	float Properties::random()
 	{
-		if (!aFixed)
-		{
-			aFixed = (float)mRseed++;
-		}
-		return std::abs(std::cos(aFixed + aFixed * aFixed));
+		return rand() / float(RAND_MAX);
 	}
 
 
@@ -272,7 +265,7 @@ namespace Proctree
 		fvec3 a = { dir.z, dir.x, dir.y };
 		fvec3 normal = cross(dir, a);
 		fvec3 tangent = cross(dir, normal);
-		float r = aProperties.random(rLevel * 10 + aL1 * 5.0f + aL2 + aProperties.mSeed);
+		float r = aProperties.random();
 		//float r2 = aProperties.random(rLevel * 10 + aL1 * 5.0f + aL2 + 1 + aProperties.seed); // never used
 
 		fvec3 adj = add(scaleVec(normal, r), scaleVec(tangent, 1 - r));
@@ -422,7 +415,6 @@ namespace Proctree
 	void Tree::generate()
 	{
 		init();
-		mProperties.mRseed = mProperties.mSeed;
 		fvec3 starthead = { 0, mProperties.mTrunkLength, 0 };
 		mRoot = new Branch(starthead, 0);
 		mRoot->mLength = mProperties.mInitialBranchLength;
