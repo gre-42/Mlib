@@ -120,30 +120,33 @@ int main(int argc, char** argv) {
         scene.get_node("light_node")->set_position({0.f, 50.f, 0.f});
         scene.get_node("light_node")->set_rotation({-45.f * M_PI / 180.f, 0.f, 0.f});
         SelectedCameras selected_cameras;
-        Light* light = new Light{resource_index: selected_cameras.add_light_node("light_node"), only_black: false};
+        std::list<Light*> lights{new Light{resource_index: selected_cameras.add_light_node("light_node"), only_black: false}};
         if (args.has_named("--no_light")) {
-            light->ambience = 1;
-            light->diffusivity = 0;
-            light->specularity = 0;
+            lights.back()->ambience = 1;
+            lights.back()->diffusivity = 0;
+            lights.back()->specularity = 0;
         } else {
-            light->ambience = safe_stof(args.named_value("--light_ambience", "0.5"));
-            light->diffusivity = safe_stof(args.named_value("--light_diffusivity", "1"));
-            light->specularity = safe_stof(args.named_value("--light_specularity", "1"));
+            lights.back()->ambience = safe_stof(args.named_value("--light_ambience", "0.5"));
+            lights.back()->diffusivity = safe_stof(args.named_value("--light_diffusivity", "1"));
+            lights.back()->specularity = safe_stof(args.named_value("--light_specularity", "1"));
         }
-        scene.get_node("light_node")->add_light(light);
+        scene.get_node("light_node")->add_light(lights.back());
 
         if (args.has_named("--add_light2")) {
             scene.add_root_node("light_node2", new SceneNode);
             scene.get_node("light_node2")->set_position({0.f, 0.f, 0.f});
             scene.get_node("light_node2")->set_rotation({0.f, 0.f, 0.f});
-            Light* light = new Light{resource_index: selected_cameras.add_light_node("light_node2"), only_black: false};
-            light->ambience = 1;
-            scene.get_node("light_node2")->add_light(light);
+            lights.push_back(new Light{resource_index: selected_cameras.add_light_node("light_node2"), only_black: false});
+            lights.back()->ambience = 1;
+            scene.get_node("light_node2")->add_light(lights.back());
         }
 
         scene.add_root_node("follower_camera", new SceneNode);
         scene.get_node("follower_camera")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
         scene.get_node("light_node")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+        if (args.has_named("--add_light2")) {
+            scene.get_node("light_node2")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+        }
 
         // scene.print();
         std::list<Focus> focus = {Focus::SCENE};
@@ -163,17 +166,30 @@ int main(int argc, char** argv) {
             true,               // fly
             true);              // rotate
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
-        auto lightmap_logics = std::make_shared<LightmapLogic>(
+        std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
+        lightmap_logics.push_back(std::make_shared<LightmapLogic>(
             *read_pixels_logic,
             rendering_resources,
             LightmapUpdateCycle::ALWAYS,
-            light->resource_index,
+            lights.front()->resource_index,
             "",                           // black_node_name
-            true);                        // with_depth_texture
+            true));                       // with_depth_texture
+        if (args.has_named("--add_light2")) {
+            lightmap_logics.push_back(std::make_shared<LightmapLogic>(
+                *read_pixels_logic,
+                rendering_resources,
+                LightmapUpdateCycle::ALWAYS,
+                lights.back()->resource_index,
+                "",                           // black_node_name
+                true));                       // with_depth_texture
+        }
+
 
         RenderLogics render_logics;
         render_logics.append(nullptr, flying_camera_logic);
-        render_logics.append(nullptr, lightmap_logics);
+        for(const auto& l : lightmap_logics) {
+            render_logics.append(nullptr, l);
+        }
         render_logics.append(nullptr, read_pixels_logic);
 
         std::shared_mutex mutex;
