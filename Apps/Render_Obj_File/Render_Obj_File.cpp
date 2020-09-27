@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
                 lights.push_back(new Light{resource_index: selected_cameras.add_light_node(name), only_black: false});
                 scene.get_node(name)->add_light(lights.back());
                 scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-                lights.back()->ambience *= 2.f / n;
+                lights.back()->ambience *= 8.f / n;
                 lights.back()->diffusivity *= 2.f / n;
                 lights.back()->specularity *= 2.f / n;
             }
