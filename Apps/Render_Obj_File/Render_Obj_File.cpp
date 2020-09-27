@@ -132,10 +132,11 @@ int main(int argc, char** argv) {
             size_t n = 10;
             float r = 50;
             size_t i = 0;
+            FixedArray<float, 2> center{-50, 50};
             for (float a : linspace<float>(0, 2 * M_PI, n).flat_iterable()) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, new SceneNode);
-                scene.get_node(name)->set_position({float(r * sin(a)), 50.f, float(r * cos(a))});
+                scene.get_node(name)->set_position({float(r * cos(a)) + center(0), 50.f, float(r * sin(a)) + center(1)});
                 scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat(
                     scene.get_node(name)->position(),
                     scene.get_node("obj")->position())));
