@@ -18,6 +18,8 @@ using namespace Mlib;
  */
 static GenShaderText fragment_shader_text{[](
     const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<size_t>& light_indices,
+    const std::vector<size_t>& black_indices,
     bool low_pass,
     bool high_pass,
     bool depth_fog)
@@ -111,7 +113,7 @@ PostProcessingLogic::PostProcessingLogic(RenderLogic& child_logic, bool depth_fo
   depth_fog_{depth_fog},
   low_pass_{low_pass}
 {
-    rp_.generate(vertex_shader_text, fragment_shader_text({}, low_pass_, high_pass, depth_fog_));
+    rp_.generate(vertex_shader_text, fragment_shader_text({}, {}, {}, low_pass_, high_pass, depth_fog_));
 
     // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
     rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");

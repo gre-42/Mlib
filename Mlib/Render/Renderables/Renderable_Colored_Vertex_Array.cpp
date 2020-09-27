@@ -16,6 +16,8 @@ using namespace Mlib;
 
 static GenShaderText vertex_shader_text_gen{[](
     const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<size_t>& light_indices,
+    const std::vector<size_t>& black_indices,
     size_t nlights,
     bool has_lightmap_color,
     bool has_lightmap_depth,
@@ -106,6 +108,8 @@ enum class OcclusionType {
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<size_t>& light_indices,
+    const std::vector<size_t>& black_indices,
     size_t nlights,
     bool has_texture,
     bool has_lightmap_color,
@@ -181,23 +185,45 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_lightmap_color) {
         sstr << "    vec4 color_fac = vec4(1, 1, 1, 1);" << std::endl;
+        sstr << "    int light_indices[" << light_indices.size() << "] = int[](" << std::endl;
+        for(size_t i : light_indices) {
+            sstr << "        " << i << ((i != light_indices.back()) ? "," : "") << std::endl;
+        }
+        sstr << "    );" << std::endl;
+        if (!black_indices.empty()) {
+            sstr << "    int black_indices[" << black_indices.size() << "] = int[](" << std::endl;
+            for(size_t i : black_indices) {
+                sstr << "        " << i << ((i != black_indices.back()) ? "," : "") << std::endl;
+            }
+            sstr << "    );" << std::endl;
+        }
     }
-    if (has_lightmap_color || has_lightmap_depth) {
+    assert_true(!(has_lightmap_color && has_lightmap_depth));
+    if (has_lightmap_color && !black_indices.empty()) {
+        sstr << "    for(int j = 0; j < " << black_indices.size() << "; ++j) {" << std::endl;
+        sstr << "        int i = black_indices[j];" << std::endl;
+    }
+    if (has_lightmap_depth) {
         sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
+    }
+    if ((has_lightmap_color && !black_indices.empty()) || has_lightmap_depth) {
         sstr << "        vec3 proj_coords11 = FragPosLightSpace[i].xyz / FragPosLightSpace[i].w;" << std::endl;
         sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
     }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
-    if (has_lightmap_color) {
+    if (has_lightmap_color && !black_indices.empty()) {
         sstr << "        color_fac *= texture(texture_light_color[i], proj_coords01.xy);" << std::endl;
         sstr << "    }" << std::endl;
     }
     if (has_lightmap_depth) {
         sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[i], proj_coords01.xy).r) {" << std::endl;
     }
-    if (!has_lightmap_depth && !lights.empty()) {
-        sstr << "    {" << std::endl;
-        sstr << "        int i = 0;" << std::endl;
+    if (has_lightmap_color && !light_indices.empty()) {
+        sstr << "    for(int j = 0; j < " << light_indices.size() << "; ++j) {" << std::endl;
+        sstr << "        int i = light_indices[j];" << std::endl;
+    }
+    if (!has_lightmap_color && !has_lightmap_depth && !lights.empty()) {
+        sstr << "    for(int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
     }
     if (!diffusivity.all_equal(0)) {
         sstr << "            vec3 fragDiffusivity = vec3(" << di(0) << ", " << di(1) << ", " << di(2) << ");" << std::endl;
@@ -219,7 +245,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_lightmap_color || has_lightmap_depth || !lights.empty()) {
         sstr << "    }" << std::endl;
     }
-    if (has_lightmap_color) {
+    if (has_lightmap_color && !black_indices.empty()) {
         sstr << "    fragBrightness *= color_fac;" << std::endl;
     }
     if (!has_texture && has_dirtmap) {
@@ -238,7 +264,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else {
         sstr << "    frag_color = vec4(color, 1.0);" << std::endl;
     }
-    sstr << "    frag_color = frag_color * fragBrightness;" << std::endl;
+    sstr << "    frag_color *= fragBrightness;" << std::endl;
     if (occlusion_type == OcclusionType::OCCLUDED) {
         sstr << "    frag_color.r = 1;" << std::endl;
         sstr << "    frag_color.g = 1;" << std::endl;
@@ -325,7 +351,9 @@ void RenderableColoredVertexArray::generate_ray(const FixedArray<float, 3>& from
 
 const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const RenderProgramIdentifier& id,
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights) const
+    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights,
+    const std::vector<size_t>& light_indices,
+    const std::vector<size_t>& black_indices) const
 {
     if (id.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
         throw std::runtime_error("get_render_program called on aggregated material");
@@ -353,6 +381,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     rp->generate(
         vertex_shader_text_gen(
             filtered_lights,
+            light_indices,
+            black_indices,
             filtered_lights.size(),
             id.has_lightmap_color,
             id.has_lightmap_depth,
@@ -363,6 +393,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.reorient_normals),
         fragment_shader_text_textured_rgb_gen(
             filtered_lights,
+            light_indices,
+            black_indices,
             filtered_lights.size(),
             id.has_texture,
             id.has_lightmap_color,
@@ -393,7 +425,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     }
     assert(!(id.has_lightmap_color && id.has_lightmap_depth));
     if (id.has_lightmap_color) {
-        for(size_t i = 0; i < filtered_lights.size(); ++i) {
+        for(size_t i : black_indices) {
             rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color[" + std::to_string(i) + "]").c_str());
         }
     } else {

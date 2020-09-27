@@ -59,6 +59,20 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 filtered_lights.push_back(l);
             }
         }
+        std::vector<size_t> light_indices;
+        std::vector<size_t> black_indices;
+        light_indices.reserve(filtered_lights.size());
+        black_indices.reserve(filtered_lights.size());
+        {
+            size_t i = 0;
+            for(const auto& l : filtered_lights) {
+                if (!l.second->only_black) {
+                    light_indices.push_back(i++);
+                } else {
+                    black_indices.push_back(i++);
+                }
+            }
+        }
         bool has_texture = rcva_->render_textures_ && !cva->material.texture_descriptor.color.empty();
         bool has_lightmap_color = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
         bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
@@ -75,14 +89,16 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
         }
         bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
-        if (cva->material.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
-            throw std::runtime_error("Material's color texture " + cva->material.texture_descriptor.color + " has undefined color mode");
-        }
-        if ((cva->material.blend_mode == BlendMode::OFF) && (cva->material.texture_descriptor.color_mode == ColorMode::RGBA)) {
-            throw std::runtime_error("Opaque material's color texture " + cva->material.texture_descriptor.color + " was loaded as RGBA");
-        }
-        if ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.texture_descriptor.color_mode == ColorMode::RGB)) {
-            throw std::runtime_error("Transparent material's color texture " + cva->material.texture_descriptor.color + " was not loaded as RGB");
+        if (!cva->material.texture_descriptor.color.empty()) {
+            if (cva->material.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
+                throw std::runtime_error("Material's color texture \"" + cva->material.texture_descriptor.color + "\" has undefined color mode");
+            }
+            if ((cva->material.blend_mode == BlendMode::OFF) && (cva->material.texture_descriptor.color_mode == ColorMode::RGBA)) {
+                throw std::runtime_error("Opaque material's color texture \"" + cva->material.texture_descriptor.color + "\" was loaded as RGBA");
+            }
+            if ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.texture_descriptor.color_mode == ColorMode::RGB)) {
+                throw std::runtime_error("Transparent material's color texture \"" + cva->material.texture_descriptor.color + "\" was not loaded as RGB");
+            }
         }
         LOG_INFO("RenderableColoredVertexArrayInstance::render get_render_program");
         const ColoredRenderProgram& rp = rcva_->get_render_program(
@@ -101,7 +117,9 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 ambience: OrderableFixedArray{ambience},
                 diffusivity: OrderableFixedArray{diffusivity},
                 specularity: OrderableFixedArray{specularity}},
-            filtered_lights);
+            filtered_lights,
+            light_indices,
+            black_indices);
         const VertexArray& va = rcva_->get_vertex_array(cva.get());
         LOG_INFO("RenderableColoredVertexArrayInstance::render glUseProgram");
         CHK(glUseProgram(rp.program));
@@ -113,7 +131,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         }
         assert_true(!(has_lightmap_color && has_lightmap_depth));
         if (has_lightmap_color) {
-            for(size_t i = 0; i < filtered_lights.size(); ++i) {
+            for(size_t i : black_indices) {
                 CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), 1 + i));
             }
         }
