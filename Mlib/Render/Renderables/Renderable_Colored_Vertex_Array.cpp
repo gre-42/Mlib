@@ -186,13 +186,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_lightmap_color) {
         sstr << "    vec4 color_fac = vec4(1, 1, 1, 1);" << std::endl;
         sstr << "    int light_indices[" << light_indices.size() << "] = int[](" << std::endl;
-        for(size_t i : light_indices) {
+        for (size_t i : light_indices) {
             sstr << "        " << i << ((i != light_indices.back()) ? "," : "") << std::endl;
         }
         sstr << "    );" << std::endl;
         if (!black_indices.empty()) {
             sstr << "    int black_indices[" << black_indices.size() << "] = int[](" << std::endl;
-            for(size_t i : black_indices) {
+            for (size_t i : black_indices) {
                 sstr << "        " << i << ((i != black_indices.back()) ? "," : "") << std::endl;
             }
             sstr << "    );" << std::endl;
@@ -200,7 +200,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
     if (has_lightmap_color && !black_indices.empty()) {
-        sstr << "    for(int j = 0; j < " << black_indices.size() << "; ++j) {" << std::endl;
+        sstr << "    for (int j = 0; j < " << black_indices.size() << "; ++j) {" << std::endl;
         sstr << "        int i = black_indices[j];" << std::endl;
     }
     if (has_lightmap_depth) {
@@ -219,11 +219,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[i], proj_coords01.xy).r) {" << std::endl;
     }
     if (has_lightmap_color && !light_indices.empty()) {
-        sstr << "    for(int j = 0; j < " << light_indices.size() << "; ++j) {" << std::endl;
+        sstr << "    for (int j = 0; j < " << light_indices.size() << "; ++j) {" << std::endl;
         sstr << "        int i = light_indices[j];" << std::endl;
     }
     if (!has_lightmap_color && !has_lightmap_depth && !lights.empty()) {
-        sstr << "    for(int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
+        sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
     }
     if (!diffusivity.all_equal(0)) {
         sstr << "            vec3 fragDiffusivity = vec3(" << di(0) << ", " << di(1) << ", " << di(2) << ");" << std::endl;
@@ -276,6 +276,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
+    std::cerr << sstr.str() << std::endl << std::endl;
     return sstr.str();
 }};
 
@@ -308,10 +309,10 @@ std::list<std::shared_ptr<ColoredVertexArray>> RenderableColoredVertexArray::get
 }
 
 void RenderableColoredVertexArray::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
-    for(auto& t : triangles_res_) {
+    for (auto& t : triangles_res_) {
         auto r = Mlib::generate_triangle_rays(t->triangles, npoints, lengths);
         t->lines.reserve(t->lines.size() + r.size());
-        for(const auto& l : r) {
+        for (const auto& l : r) {
             t->lines.push_back({
                 ColoredVertex{
                     position: l(0),
@@ -416,7 +417,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         rp->texture1_location = 0;
     }
     if (id.has_lightmap_color || id.has_lightmap_depth) {
-        for(size_t i = 0; i < filtered_lights.size(); ++i) {
+        for (size_t i = 0; i < filtered_lights.size(); ++i) {
             rp->mvp_light_locations[i] = checked_glGetUniformLocation(rp->program, ("MVP_light[" + std::to_string(i) + "]").c_str());
         }
     } else {
@@ -425,7 +426,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     }
     assert(!(id.has_lightmap_color && id.has_lightmap_depth));
     if (id.has_lightmap_color) {
-        for(size_t i : black_indices) {
+        for (size_t i : black_indices) {
             rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color[" + std::to_string(i) + "]").c_str());
         }
     } else {
@@ -433,7 +434,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         // rp->texture_lightmap_color_location = 0;
     }
     if (id.has_lightmap_depth) {
-        for(size_t i = 0; i < filtered_lights.size(); ++i) {
+        for (size_t i = 0; i < filtered_lights.size(); ++i) {
             rp->texture_lightmap_depth_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_depth[" + std::to_string(i) + "]").c_str());
         }
     } else {
@@ -452,7 +453,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     if (!id.diffusivity.all_equal(0) || !id.specularity.all_equal(0)) {
         rp->m_location = checked_glGetUniformLocation(rp->program, "M");
         // rp->light_position_location = checked_glGetUniformLocation(rp->program, "lightPos");
-        for(size_t i = 0; i < filtered_lights.size(); ++i) {
+        for (size_t i = 0; i < filtered_lights.size(); ++i) {
             rp->light_dir_locations[i] = checked_glGetUniformLocation(rp->program, ("lightDir[" + std::to_string(i) + "]").c_str());
             rp->light_colors[i] = checked_glGetUniformLocation(rp->program, ("lightColor[" + std::to_string(i) + "]").c_str());
         }
@@ -513,7 +514,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
         }
         std::vector<FixedArray<float, 3>> positions;
         positions.reserve(inst.size());
-        for(const FixedArray<float, 4, 4>& m : inst) {
+        for (const FixedArray<float, 4, 4>& m : inst) {
             positions.push_back(t3_from_4x4(m));
         }
         CHK(glGenBuffers(1, &va->position_buffer));
