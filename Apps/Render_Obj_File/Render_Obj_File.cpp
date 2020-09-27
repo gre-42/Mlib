@@ -1,6 +1,8 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geometry/Look_At.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
@@ -18,6 +20,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/String.hpp>
 #include <vector>
 
@@ -45,12 +48,11 @@ int main(int argc, char** argv) {
         "[--light_diffusivity <light_diffusivity>] "
         "[--light_specularity <light_specularity>] "
         "[--no_shadows] "
-        "[--add_light2 ] "
-        "[--no_light]\n"
+        "[--light_configuration {none, one, circle}]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
-        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows", "--no_light", "--add_light2"},
+        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows"},
         {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex",
-         "--light_ambience", "--light_diffusivity", "--light_specularity"});
+         "--light_ambience", "--light_diffusivity", "--light_specularity", "--light_configuration"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -84,6 +86,7 @@ int main(int argc, char** argv) {
         Scene scene{
             &small_sorted_aggregate_renderer,
             &large_aggregate_renderer};
+        std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = new SceneNode;
         {
             size_t i = 0;
@@ -98,7 +101,7 @@ int main(int argc, char** argv) {
                     false,                                                                // is_small
                     blend_mode_from_string(args.named_value("--blend_mode", "binary")),
                     false,                                                                // blend_cull_faces
-                    args.has_named("--no_shadows") || args.has_named("--no_light") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
+                    args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
                     OccluderType::BLACK,
                     true,                                                                 // occluded_by_black
                     aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
@@ -116,38 +119,40 @@ int main(int argc, char** argv) {
         }
         scene.add_root_node("obj", scene_node);
 
-        scene.add_root_node("light_node", new SceneNode);
-        scene.get_node("light_node")->set_position({0.f, 50.f, 0.f});
-        scene.get_node("light_node")->set_rotation({-45.f * M_PI / 180.f, 0.f, 0.f});
+        std::list<Light*> lights;
         SelectedCameras selected_cameras;
-        std::list<Light*> lights{new Light{resource_index: selected_cameras.add_light_node("light_node"), only_black: false}};
-        if (args.has_named("--no_light")) {
-            lights.back()->ambience = 1;
-            lights.back()->diffusivity = 0;
-            lights.back()->specularity = 0;
-        } else {
-            lights.back()->ambience = safe_stof(args.named_value("--light_ambience", "0.5"));
-            lights.back()->diffusivity = safe_stof(args.named_value("--light_diffusivity", "1"));
-            lights.back()->specularity = safe_stof(args.named_value("--light_specularity", "1"));
+        if (light_configuration == "one") {
+            scene.add_root_node("light_node0", new SceneNode);
+            scene.get_node("light_node0")->set_position({0.f, 50.f, 0.f});
+            scene.get_node("light_node0")->set_rotation({-45.f * M_PI / 180.f, 0.f, 0.f});
+            lights.push_back(new Light{resource_index: selected_cameras.add_light_node("light_node0"), only_black: false});
+            scene.get_node("light_node0")->add_light(lights.back());
+            scene.get_node("light_node0")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+        } else if (light_configuration == "circle") {
+            size_t n = 10;
+            float r = 50;
+            size_t i = 0;
+            for (float a : linspace<float>(0, 2 * M_PI, n).flat_iterable()) {
+                std::string name = "light" + std::to_string(i++);
+                scene.add_root_node(name, new SceneNode);
+                scene.get_node(name)->set_position({float(r * sin(a)), 50.f, float(r * cos(a))});
+                scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat(
+                    scene.get_node(name)->position(),
+                    scene.get_node("obj")->position())));
+                lights.push_back(new Light{resource_index: selected_cameras.add_light_node(name), only_black: false});
+                scene.get_node(name)->add_light(lights.back());
+                scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+                lights.back()->ambience *= 2.f / n;
+                lights.back()->diffusivity *= 2.f / n;
+                lights.back()->specularity *= 2.f / n;
+            }
+        } else if (light_configuration != "none") {
+            throw std::runtime_error("Unknown light configuration");
         }
-        scene.get_node("light_node")->add_light(lights.back());
-
-        if (args.has_named("--add_light2")) {
-            scene.add_root_node("light_node2", new SceneNode);
-            scene.get_node("light_node2")->set_position({0.f, 0.f, 0.f});
-            scene.get_node("light_node2")->set_rotation({0.f, 0.f, 0.f});
-            lights.push_back(new Light{resource_index: selected_cameras.add_light_node("light_node2"), only_black: false});
-            lights.back()->ambience = 1;
-            scene.get_node("light_node2")->add_light(lights.back());
-        }
-
+        
         scene.add_root_node("follower_camera", new SceneNode);
         scene.get_node("follower_camera")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-        scene.get_node("light_node")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-        if (args.has_named("--add_light2")) {
-            scene.get_node("light_node2")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-        }
-
+        
         // scene.print();
         std::list<Focus> focus = {Focus::SCENE};
         ButtonStates button_states;
@@ -167,23 +172,15 @@ int main(int argc, char** argv) {
             true);              // rotate
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
         std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
-        lightmap_logics.push_back(std::make_shared<LightmapLogic>(
-            *read_pixels_logic,
-            rendering_resources,
-            LightmapUpdateCycle::ALWAYS,
-            lights.front()->resource_index,
-            "",                           // black_node_name
-            true));                       // with_depth_texture
-        if (args.has_named("--add_light2")) {
+        for(const Light* l : lights) {
             lightmap_logics.push_back(std::make_shared<LightmapLogic>(
                 *read_pixels_logic,
                 rendering_resources,
                 LightmapUpdateCycle::ALWAYS,
-                lights.back()->resource_index,
+                l->resource_index,
                 "",                           // black_node_name
                 true));                       // with_depth_texture
         }
-
 
         RenderLogics render_logics;
         render_logics.append(nullptr, flying_camera_logic);
