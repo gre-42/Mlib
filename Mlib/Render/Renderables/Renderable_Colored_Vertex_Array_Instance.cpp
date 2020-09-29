@@ -85,6 +85,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         FixedArray<float, 3> diffusivity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.diffusivity : fixed_zeros<float, 3>();
         FixedArray<float, 3> specularity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.specularity : fixed_zeros<float, 3>();
         if (!filtered_lights.empty()) {
+            ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
             diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
             specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
         }
@@ -150,9 +151,12 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             // CHK(glUniform3fv(rp.light_position_location, 1, (const GLfloat*) t3_from_4x4(filtered_lights.front().first).flat_begin()));
             size_t i = 0;
             for(const auto& l : filtered_lights) {
-                CHK(glUniform3fv(rp.light_dir_locations.at(i), 1, (const GLfloat*) z3_from_4x4(l.first).flat_begin()));
+                CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, (const GLfloat*) z3_from_4x4(l.first).flat_begin()));
+            }
+        }
+        if (any(diffusivity != 0.f) || any(specularity != 0.f) || (!has_lightmap_color && any(ambience != 0.f))) {
+            for(size_t i = 0; i < filtered_lights.size(); ++i) {
                 CHK(glUniform3fv(rp.light_colors.at(i), 1, (const GLfloat*) FixedArray<float, 3>{1, 1, 1}.flat_begin()));
-                ++i;
             }
         }
         if (has_instances || any(specularity != 0.f)) {
