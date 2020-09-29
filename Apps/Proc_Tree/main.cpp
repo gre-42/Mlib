@@ -53,9 +53,12 @@ void benchmark()
     }
 }
 
-void draw_arrays(FILE * pFile, int vertCount, fvec3 * vert, fvec3 * normal, fvec2 * uv, int faceCount, ivec3 * face, int faceOffset, const fvec3& position) {
+void draw_arrays(FILE * pFile, int vertCount, fvec3 * vert, fvec3 * normal, fvec2 * uv, int faceCount, ivec3 * face, int faceOffset, const fvec3& position, bool rotate90) {
     for (int i = 0; i < vertCount; i++) {
-        int res = fprintf(pFile, "v %+3.3f %+3.3f %+3.3f\n", vert[i].x + position.x, vert[i].y + position.y, vert[i].z + position.z);
+        int res = fprintf(pFile, "v %+3.3f %+3.3f %+3.3f\n",
+            (rotate90 ? -vert[i].z : vert[i].x) + position.x,
+            vert[i].y + position.y,
+            (rotate90 ? vert[i].x : vert[i].z) + position.z);
         if (res < 0) {
             std::runtime_error(strerror(errno));
         }
@@ -146,14 +149,14 @@ void basic_use()
             fprintf(pFile, "g Tree%d\n", i);
             fprintf(pFile, "o Tree%d\n", i);
             fprintf(pFile, "usemtl tree\n");
-            draw_arrays(pFile, tree.mVertCount, tree.mVert, tree.mNormal, tree.mUV, tree.mFaceCount, tree.mFace, faceOffset, position);
+            draw_arrays(pFile, tree.mVertCount, tree.mVert, tree.mNormal, tree.mUV, tree.mFaceCount, tree.mFace, faceOffset, position, i % 2);
             faceOffset += tree.mVertCount;
             fprintf(pFile, "\n");
 
             fprintf(pFile, "g Twig%d\n", i);
             fprintf(pFile, "o Twig%d\n", i);
             fprintf(pFile, "usemtl twig\n");
-            draw_arrays(pFile, tree.mTwigVertCount, tree.mTwigVert, tree.mTwigNormal, tree.mTwigUV, tree.mTwigFaceCount, tree.mTwigFace, faceOffset, position);
+            draw_arrays(pFile, tree.mTwigVertCount, tree.mTwigVert, tree.mTwigNormal, tree.mTwigUV, tree.mTwigFaceCount, tree.mTwigFace, faceOffset, position, i % 2);
             faceOffset += tree.mTwigVertCount;
 
             position.x += tree_distance;

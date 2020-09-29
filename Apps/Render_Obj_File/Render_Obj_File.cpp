@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
                 screen_width: safe_stoi(args.named_value("--width", "640")),
                 screen_height: safe_stoi(args.named_value("--height", "480")),
                 show_mouse_cursor: true,
+                background_color: {1.f, 0.f, 1.f},
                 dt: safe_stof(args.named_value("--render_dt", "0.01667"))}};
 
         render2.print_hardware_info();
@@ -132,11 +133,11 @@ int main(int argc, char** argv) {
             size_t n = 10;
             float r = 50;
             size_t i = 0;
-            FixedArray<float, 2> center{-50, 50};
+            FixedArray<float, 3> center{-50, 50, -20};
             for (float a : linspace<float>(0, 2 * M_PI, n).flat_iterable()) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, new SceneNode);
-                scene.get_node(name)->set_position({float(r * cos(a)) + center(0), 50.f, float(r * sin(a)) + center(1)});
+                scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
                 scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat(
                     scene.get_node(name)->position(),
                     scene.get_node("obj")->position())));
