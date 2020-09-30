@@ -9,7 +9,7 @@ void SceneNodeResources::add_resource(
 {
     std::lock_guard<std::recursive_mutex> lock_guard{mutex_};
     if (resources_.find(name) != resources_.end()) {
-        throw std::runtime_error("SceneNodeResource with name " + name + " already exists");
+        throw std::runtime_error("SceneNodeResource with name \"" + name + "\" already exists\"");
     }
     resources_.insert(std::make_pair(name, resource));
 }
