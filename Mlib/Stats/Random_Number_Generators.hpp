@@ -25,6 +25,24 @@ private:
 };
 
 template <class TData>
+class UniformIntRandomNumberGenerator {
+public:
+    explicit UniformIntRandomNumberGenerator(unsigned int seed, const TData& low, const TData& high)
+    : e_(seed),
+      d_(low, high)
+    {
+        assert(seed != 0); // seed 0 is identical to seed 1
+        e_(); // skip first element, it is close to zero
+    }
+    TData operator () () {
+        return d_(e_);
+    }
+private:
+    std::default_random_engine e_;
+    std::uniform_int_distribution<TData> d_;
+};
+
+template <class TData>
 class NormalRandomNumberGenerator {
 public:
     typedef typename FloatType<TData>::value_type float_type;
