@@ -77,7 +77,7 @@ public:
     std::string operator () ();
 private:
     std::vector<ParsedResourceName> names_;
-    size_t rid_;
+    UniformIntRandomNumberGenerator<size_t> rng0_;
     UniformRandomNumberGenerator<float> rng_;
 };
 

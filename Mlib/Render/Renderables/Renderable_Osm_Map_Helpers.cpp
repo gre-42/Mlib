@@ -958,6 +958,10 @@ void Mlib::add_trees_to_forest_outlines(
                     }
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + tree_inwards_distance * scale * n * sign(area);
                     fern_positions[rnc()].push_back({FixedArray<float, 3>{p(0), p(1), 0}, rng()});
+                    // object_resource_descriptors.push_back({
+                    //     position: FixedArray<float, 3>{p(0), p(1), 0},
+                    //     name: rnc(),
+                    //     scale: rng()});
                     if ((rid++) % 4 == 0) {
                         steiner_points.push_back(p);
                     }
@@ -1238,7 +1242,7 @@ std::list<FixedArray<float, 2>> Mlib::removed_duplicates(
 }
 
 ResourceNameCycle::ResourceNameCycle(const std::vector<std::string>& names)
-: rid_{0},
+: rng0_{0, 0, names.size() - 1},
   rng_{0}
 {
     const std::regex re{"^(.*?)\\(([\\d+.e-]+)\\)$"};
@@ -1264,9 +1268,9 @@ ResourceNameCycle::ResourceNameCycle(const std::vector<std::string>& names)
 }
 
 std::string ResourceNameCycle::operator() () {
-    assert_true(names_.size() > 0);
+    assert_true(!names_.empty());
     while(true) {
-        const ParsedResourceName& prn = names_[rid_++ % names_.size()];
+        const ParsedResourceName& prn = names_[rng0_()];
         if (prn.probability != 1) {
             if (rng_() < prn.probability) {
                 return prn.name;
