@@ -61,7 +61,7 @@ RenderableBinaryX::RenderableBinaryX(
                     specularity: {0, 0, 0}}.compute_color_mode(),
                 std::move(triangles),
                 std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
-        nullptr,
+        nullptr,  // instances
         rendering_resources);
 }
 
