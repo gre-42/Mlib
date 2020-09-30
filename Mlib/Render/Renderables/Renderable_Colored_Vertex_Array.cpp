@@ -159,6 +159,36 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "in vec3 FragPos;" << std::endl;
         sstr << "uniform vec3 viewPos;" << std::endl;
     }
+    FixedArray<float, 3> am{ambience};
+    FixedArray<float, 3> di{diffusivity};
+    FixedArray<float, 3> sp{specularity};
+    if (!lights.empty()) {
+        am *= lights.front().second->ambience;
+        di *= lights.front().second->diffusivity;
+        sp *= lights.front().second->specularity;
+        if (!ambience.all_equal(0)) {
+            sstr << "vec3 phong_ambient(in int i) {" << std::endl;
+            sstr << "    vec3 fragAmbience = vec3(" << am(0) << ", " << am(1) << ", " << am(2) << ");" << std::endl;
+            sstr << "    return fragAmbience * lightColor[i];" << std::endl;
+            sstr << "}" << std::endl;
+        }
+        if (!diffusivity.all_equal(0)) {
+            sstr << "vec3 phong_diffuse(in int i, in vec3 norm) {" << std::endl;
+            sstr << "    vec3 fragDiffusivity = vec3(" << di(0) << ", " << di(1) << ", " << di(2) << ");" << std::endl;
+            sstr << "    float diff = max(dot(norm, lightDir[i]), 0.0);" << std::endl;
+            sstr << "    return fragDiffusivity * diff * lightColor[i];" << std::endl;
+            sstr << "}" << std::endl;
+        }
+        if (!specularity.all_equal(0)) {
+            sstr << "vec3 phong_specular(in int i, in vec3 norm) {" << std::endl;
+            sstr << "    vec3 fragSpecularity = vec3(" << sp(0) << ", " << sp(1) << ", " << sp(2) << ");" << std::endl;
+            sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
+            sstr << "    vec3 reflectDir = reflect(-lightDir[i], norm);  " << std::endl;
+            sstr << "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 4);" << std::endl;
+            sstr << "    return fragSpecularity * spec * lightColor[i];" << std::endl;
+            sstr << "}" << std::endl;
+        }
+    }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if ((alpha_threshold < 1) || has_texture) {
@@ -171,15 +201,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    if (texture1_color.a < " << alpha_threshold << ")" << std::endl;
         sstr << "        discard;" << std::endl;
     }
-    FixedArray<float, 3> am{ambience};
-    FixedArray<float, 3> di{diffusivity};
-    FixedArray<float, 3> sp{specularity};
-    if (!lights.empty()) {
-        am *= lights.front().second->ambience;
-        di *= lights.front().second->diffusivity;
-        sp *= lights.front().second->specularity;
-    }
-    sstr << "    vec4 fragBrightness = vec4(0, 0, 0, 1);" << std::endl;
+    sstr << "    vec3 fragBrightness = vec3(0, 0, 0);" << std::endl;
     if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         sstr << "    vec3 norm = normalize(Normal);" << std::endl;
         // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
@@ -188,7 +210,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    norm *= sign(dot(norm, viewPos - FragPos));" << std::endl;
     }
     if (has_lightmap_color || (!has_lightmap_depth && !light_indices.empty())) {
-        sstr << "    vec4 color_fac = vec4(1, 1, 1, 1);" << std::endl;
+        sstr << "    vec3 color_fac = vec3(1, 1, 1);" << std::endl;
         sstr << "    int light_indices[" << light_indices.size() << "] = int[](" << std::endl;
         for (size_t i : light_indices) {
             sstr << "        " << i << ((i != light_indices.back()) ? "," : "") << std::endl;
@@ -202,54 +224,46 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         sstr << "    );" << std::endl;
     }
-    assert_true(!(has_lightmap_color && has_lightmap_depth));
-    if (has_lightmap_color && !black_indices.empty()) {
-        sstr << "    for (int j = 0; j < " << black_indices.size() << "; ++j) {" << std::endl;
-        sstr << "        int i = black_indices[j];" << std::endl;
-    }
-    if (has_lightmap_depth) {
-        sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
-    }
-    if ((has_lightmap_color && !black_indices.empty()) || has_lightmap_depth) {
-        sstr << "        vec3 proj_coords11 = FragPosLightSpace[i].xyz / FragPosLightSpace[i].w;" << std::endl;
-        sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-    }
-    assert_true(!(has_lightmap_color && has_lightmap_depth));
-    if (has_lightmap_color && !black_indices.empty()) {
-        sstr << "        color_fac *= texture(texture_light_color[i], proj_coords01.xy);" << std::endl;
-        sstr << "    }" << std::endl;
-    }
-    if (has_lightmap_depth) {
-        sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[i], proj_coords01.xy).r) {" << std::endl;
-    }
-    if (!has_lightmap_depth && !light_indices.empty()) {
-        sstr << "    for (int j = 0; j < " << light_indices.size() << "; ++j) {" << std::endl;
-        sstr << "        int i = light_indices[j];" << std::endl;
-    }
-    if (!ambience.all_equal(0)) {
-        sstr << "            vec3 fragAmbience = vec3(" << am(0) << ", " << am(1) << ", " << am(2) << ");" << std::endl;
-        sstr << "            vec3 ambient = fragAmbience * lightColor[i];" << std::endl;
-        sstr << "            fragBrightness += vec4(ambient, 0);" << std::endl;
-    }
-    if (!diffusivity.all_equal(0)) {
-        sstr << "            vec3 fragDiffusivity = vec3(" << di(0) << ", " << di(1) << ", " << di(2) << ");" << std::endl;
-        sstr << "            float diff = max(dot(norm, lightDir[i]), 0.0);" << std::endl;
-        sstr << "            vec3 diffuse = fragDiffusivity * diff * lightColor[i];" << std::endl;
-        sstr << "            fragBrightness += vec4(diffuse, 0);" << std::endl;
-    }
-    if (!specularity.all_equal(0)) {
-        sstr << "            vec3 fragSpecularity = vec3(" << sp(0) << ", " << sp(1) << ", " << sp(2) << ");" << std::endl;
-        sstr << "            vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
-        sstr << "            vec3 reflectDir = reflect(-lightDir[i], norm);  " << std::endl;
-        sstr << "            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 4);" << std::endl;
-        sstr << "            vec3 specular = fragSpecularity * spec * lightColor[i];" << std::endl;
-        sstr << "            fragBrightness += vec4(specular, 0);" << std::endl;
-    }
-    if (has_lightmap_depth) {
-        sstr << "        }" << std::endl;
-    }
-    if (has_lightmap_depth || !light_indices.empty()) {
-        sstr << "    }" << std::endl;
+    if (!ambience.all_equal(0) || !diffusivity.all_equal(0) || !specularity.all_equal(0)) {
+        assert_true(!(has_lightmap_color && has_lightmap_depth));
+        if (has_lightmap_color && !black_indices.empty()) {
+            sstr << "    for (int j = 0; j < " << black_indices.size() << "; ++j) {" << std::endl;
+            sstr << "        int i = black_indices[j];" << std::endl;
+        }
+        if (has_lightmap_depth) {
+            sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
+        }
+        if ((has_lightmap_color && !black_indices.empty()) || has_lightmap_depth) {
+            sstr << "        vec3 proj_coords11 = FragPosLightSpace[i].xyz / FragPosLightSpace[i].w;" << std::endl;
+            sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+        }
+        assert_true(!(has_lightmap_color && has_lightmap_depth));
+        if (has_lightmap_color && !black_indices.empty()) {
+            sstr << "        color_fac *= texture(texture_light_color[i], proj_coords01.xy).rgb;" << std::endl;
+            sstr << "    }" << std::endl;
+        }
+        if (has_lightmap_depth) {
+            sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[i], proj_coords01.xy).r) {" << std::endl;
+        }
+        if (!has_lightmap_depth && !light_indices.empty()) {
+            sstr << "    for (int j = 0; j < " << light_indices.size() << "; ++j) {" << std::endl;
+            sstr << "        int i = light_indices[j];" << std::endl;
+        }
+        if (!ambience.all_equal(0)) {
+            sstr << "                fragBrightness += phong_ambient(i);" << std::endl;
+        }
+        if (!diffusivity.all_equal(0)) {
+            sstr << "                fragBrightness += phong_diffuse(i, norm);" << std::endl;
+        }
+        if (!specularity.all_equal(0)) {
+            sstr << "                fragBrightness += phong_specular(i, norm);" << std::endl;
+        }
+        if (has_lightmap_depth) {
+            sstr << "        }" << std::endl;
+        }
+        if (has_lightmap_depth || !light_indices.empty()) {
+            sstr << "    }" << std::endl;
+        }
     }
     if (has_lightmap_color && !black_indices.empty()) {
         sstr << "    fragBrightness *= color_fac;" << std::endl;
@@ -270,7 +284,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else {
         sstr << "    frag_color = vec4(color, 1.0);" << std::endl;
     }
-    sstr << "    frag_color *= fragBrightness;" << std::endl;
+    sstr << "    frag_color.rgb *= fragBrightness;" << std::endl;
     if (occlusion_type == OcclusionType::OCCLUDED) {
         sstr << "    frag_color.r = 1;" << std::endl;
         sstr << "    frag_color.g = 1;" << std::endl;
@@ -282,6 +296,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
+    std::cerr << sstr.str() << std::endl << std::endl;
     return sstr.str();
 }};
 
