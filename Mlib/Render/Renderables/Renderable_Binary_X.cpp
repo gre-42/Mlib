@@ -20,47 +20,47 @@ RenderableBinaryX::RenderableBinaryX(
     triangles.reserve(2);
 
     ColoredVertex v00{ // min(x), min(y)
-            {square(0, 0), square(0, 1), 0},
-            fixed_ones<float, 3>(),
-            {0, 0},
-            {0, 0, 1}};
+        {square(0, 0), square(0, 1), 0},
+        fixed_ones<float, 3>(),
+        {0, 0},
+        {0, 0, 1}};
     ColoredVertex v01{ // min(x), max(y)
-            {square(0, 0), square(1, 1), 0},
-            fixed_ones<float, 3>(),
-            {0, 1},
-            {0, 0, 1}};
+        {square(0, 0), square(1, 1), 0},
+        fixed_ones<float, 3>(),
+        {0, 1},
+        {0, 0, 1}};
     ColoredVertex v10{ // max(x), min(y)
-            {square(1, 0), square(0, 1), 0},
-            fixed_ones<float, 3>(),
-            {1,0},
-            {0, 0, 1}};
+        {square(1, 0), square(0, 1), 0},
+        fixed_ones<float, 3>(),
+        {1,0},
+        {0, 0, 1}};
     ColoredVertex v11{ // max(x), max(y)
-            {square(1, 0), square(1, 1), 0},
-            fixed_ones<float, 3>(),
-            {1, 1},
-            {0, 0, 1}};
+        {square(1, 0), square(1, 1), 0},
+        fixed_ones<float, 3>(),
+        {1, 1},
+        {0, 0, 1}};
 
     triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
 
     rva_ = std::make_shared<RenderableColoredVertexArray>(
         std::make_shared<ColoredVertexArray>(
-                "RenderableBinaryX",
-                Material{
-                    texture_descriptor: {color: texture},
-                    occluder_type: is_small ? OccluderType::OFF : OccluderType::BLACK,
-                    blend_mode: BlendMode::BINARY,
-                    clamp_mode_s: ClampMode::EDGE,
-                    clamp_mode_t: ClampMode::EDGE,
-                    collide: false,
-                    aggregate_mode: is_small ? AggregateMode::SORTED_CONTINUOUSLY : AggregateMode::ONCE,
-                    is_small: is_small,
-                    cull_faces: false,
-                    ambience: OrderableFixedArray{ambience},
-                    diffusivity: {0, 0, 0},
-                    specularity: {0, 0, 0}}.compute_color_mode(),
-                std::move(triangles),
-                std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
+            "RenderableBinaryX",
+            Material{
+                texture_descriptor: {color: texture},
+                occluder_type: is_small ? OccluderType::OFF : OccluderType::BLACK,
+                blend_mode: BlendMode::BINARY,
+                clamp_mode_s: ClampMode::EDGE,
+                clamp_mode_t: ClampMode::EDGE,
+                collide: false,
+                aggregate_mode: is_small ? AggregateMode::SORTED_CONTINUOUSLY : AggregateMode::ONCE,
+                is_small: is_small,
+                cull_faces: false,
+                ambience: OrderableFixedArray{ambience},
+                diffusivity: {0, 0, 0},
+                specularity: {0, 0, 0}}.compute_color_mode(),
+            std::move(triangles),
+            std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
         nullptr,  // instances
         rendering_resources);
 }
