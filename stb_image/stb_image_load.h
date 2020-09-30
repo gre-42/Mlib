@@ -32,6 +32,9 @@ static StbInfo stb_load(const std::string& filename, bool flip_vertically, bool 
             &result.height,
             &result.nrChannels,
             0));
+    if (result.data == nullptr) {
+        throw std::runtime_error("Could not load \"" + filename + '"');
+    }
     if (flip_horizontally) {
         stb_image_flip_horizontally(result);
     }
