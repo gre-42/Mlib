@@ -406,9 +406,9 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.has_lightmap_color,
             id.has_lightmap_depth,
             id.has_dirtmap,
-            OrderableFixedArray{id.ambience},
-            OrderableFixedArray{id.diffusivity},
-            OrderableFixedArray{id.specularity},
+            id.ambience,
+            id.diffusivity,
+            id.specularity,
             id.blend_mode == BlendMode::BINARY
                 ? (id.calculate_lightmap ? 0.1 : 0.5)
                 : 1,
