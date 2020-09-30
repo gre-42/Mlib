@@ -83,8 +83,8 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             }
         }
         bool has_texture = rcva_->render_textures_ && !cva->material.texture_descriptor.color.empty() && ((render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) || (cva->material.blend_mode != BlendMode::OFF));
-        bool has_lightmap_color = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
-        bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+        bool has_lightmap_color = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
+        bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
         bool has_dirtmap = rcva_->render_textures_ && (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE);
         bool has_instances = (rcva_->instances_ != nullptr);
         if (!has_texture && has_dirtmap) {
