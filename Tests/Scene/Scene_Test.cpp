@@ -154,7 +154,7 @@ void test_physics_engine() {
     scene_nodeL->set_position({0.f, 50.f, -40.f});
     scene_nodeL->set_rotation({-90.f * M_PI / 180.f, 0.f, 0.f});
     SelectedCameras selected_cameras;
-    Light* light = new Light{resource_index: selected_cameras.add_light_node("light_node"), only_black: false};
+    Light* light = new Light{resource_index: selected_cameras.add_light_node("light_node"), only_black: false, shadow: true};
     scene_nodeL->add_light(light);
 
     scene.add_root_node("obj", scene_nodeR);

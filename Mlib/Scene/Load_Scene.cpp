@@ -292,7 +292,7 @@ void LoadScene::operator()(
     const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     const std::regex ortho_camera_reg("^(?:\\r?\\n|\\s)*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
-    const std::regex light_reg("^(?:\\r?\\n|\\s)*light node=([\\w+-.]+) black_node=([\\w+-.]*) update=(once|always) with_depth_texture=(0|1) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    const std::regex light_reg("^(?:\\r?\\n|\\s)*light node=([\\w+-.]+) black_node=([\\w+-.]*) update=(once|always) with_depth_texture=(0|1) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) shadow=(0|1)$");
     const std::regex look_at_node_reg("^(?:\\r?\\n|\\s)*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
     const std::regex keep_offset_reg("^(?:\\r?\\n|\\s)*keep-offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     const std::regex yaw_pitch_look_at_nodes_reg("^(?:\\r?\\n|\\s)*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
@@ -977,7 +977,8 @@ void LoadScene::operator()(
                     safe_stof(match[12].str()),
                     safe_stof(match[13].str())},
                 resource_index: resource_index,
-                only_black: !match[2].str().empty()});
+                only_black: !match[2].str().empty(),
+                shadow: safe_stob(match[14].str())});
         } else if (std::regex_match(line, match, look_at_node_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());

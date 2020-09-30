@@ -44,15 +44,13 @@ int main(int argc, char** argv) {
         "[--min_num] <min_num> "
         "[--regex] <regex> "
         "[--no_werror] "
-        "[--light_ambience <light_ambience>] "
-        "[--light_diffusivity <light_diffusivity>] "
-        "[--light_specularity <light_specularity>] "
+        "[--background_light_ambience <background_light_ambience>] "
         "[--no_shadows] "
         "[--light_configuration {none, one, circle}]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows"},
         {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex",
-         "--light_ambience", "--light_diffusivity", "--light_specularity", "--light_configuration"});
+         "--background_light_ambience", "--light_configuration"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -126,7 +124,7 @@ int main(int argc, char** argv) {
             scene.add_root_node("light_node0", new SceneNode);
             scene.get_node("light_node0")->set_position({0.f, 50.f, 0.f});
             scene.get_node("light_node0")->set_rotation({-45.f * M_PI / 180.f, 0.f, 0.f});
-            lights.push_back(new Light{resource_index: selected_cameras.add_light_node("light_node0"), only_black: false});
+            lights.push_back(new Light{resource_index: selected_cameras.add_light_node("light_node0"), only_black: false, shadow: true});
             scene.get_node("light_node0")->add_light(lights.back());
             scene.get_node("light_node0")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
         } else if (light_configuration == "circle") {
@@ -141,7 +139,7 @@ int main(int argc, char** argv) {
                 scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat(
                     scene.get_node(name)->position(),
                     scene.get_node("obj")->position())));
-                lights.push_back(new Light{resource_index: selected_cameras.add_light_node(name), only_black: false});
+                lights.push_back(new Light{resource_index: selected_cameras.add_light_node(name), only_black: false, shadow: true});
                 scene.get_node(name)->add_light(lights.back());
                 scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
                 lights.back()->ambience *= 2.f / n;
@@ -150,6 +148,16 @@ int main(int argc, char** argv) {
             }
         } else if (light_configuration != "none") {
             throw std::runtime_error("Unknown light configuration");
+        }
+        if (args.has_named_value("--background_light_ambience")) {
+            std::string name = "background_light";
+            scene.add_root_node(name, new SceneNode);
+            lights.push_back(new Light{resource_index: selected_cameras.add_light_node(name), only_black: false, shadow: false});
+            scene.get_node(name)->add_light(lights.back());
+            scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+            lights.back()->ambience = FixedArray<float, 3>{1, 1, 1} * safe_stof(args.named_value("--background_light_ambience"));
+            lights.back()->diffusivity = 0;
+            lights.back()->specularity = 0;
         }
         
         scene.add_root_node("follower_camera", new SceneNode);

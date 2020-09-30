@@ -59,17 +59,26 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 filtered_lights.push_back(l);
             }
         }
-        std::vector<size_t> light_indices;
-        std::vector<size_t> black_indices;
-        light_indices.reserve(filtered_lights.size());
-        black_indices.reserve(filtered_lights.size());
+        std::vector<size_t> light_noshadow_indices;
+        std::vector<size_t> light_shadow_indices;
+        std::vector<size_t> black_shadow_indices;
+        light_noshadow_indices.reserve(filtered_lights.size());
+        light_shadow_indices.reserve(filtered_lights.size());
+        black_shadow_indices.reserve(filtered_lights.size());
         {
             size_t i = 0;
             for(const auto& l : filtered_lights) {
                 if (!l.second->only_black) {
-                    light_indices.push_back(i++);
+                    if (l.second->shadow) {
+                        light_shadow_indices.push_back(i++);
+                    } else {
+                        light_noshadow_indices.push_back(i++);
+                    }
                 } else {
-                    black_indices.push_back(i++);
+                    if (!l.second->shadow) {
+                        throw std::runtime_error("Only-black light marked as not shadowed");
+                    }
+                    black_shadow_indices.push_back(i++);
                 }
             }
         }
@@ -84,7 +93,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         FixedArray<float, 3> ambience = (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.ambience : fixed_zeros<float, 3>();
         FixedArray<float, 3> diffusivity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.diffusivity : fixed_zeros<float, 3>();
         FixedArray<float, 3> specularity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.specularity : fixed_zeros<float, 3>();
-        if (!filtered_lights.empty()) {
+        if (filtered_lights.size() == 1) {
             ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
             diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
             specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
@@ -119,8 +128,9 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 diffusivity: OrderableFixedArray{diffusivity},
                 specularity: OrderableFixedArray{specularity}},
             filtered_lights,
-            light_indices,
-            black_indices);
+            light_noshadow_indices,
+            light_shadow_indices,
+            black_shadow_indices);
         const VertexArray& va = rcva_->get_vertex_array(cva.get());
         LOG_INFO("RenderableColoredVertexArrayInstance::render glUseProgram");
         CHK(glUseProgram(rp.program));
@@ -132,7 +142,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         }
         assert_true(!(has_lightmap_color && has_lightmap_depth));
         if (has_lightmap_color) {
-            for(size_t i : black_indices) {
+            for(size_t i : black_shadow_indices) {
                 CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), 1 + i));
             }
         }
@@ -154,9 +164,19 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, (const GLfloat*) z3_from_4x4(l.first).flat_begin()));
             }
         }
-        if (any(diffusivity != 0.f) || any(specularity != 0.f) || (!has_lightmap_color && any(ambience != 0.f))) {
-            for(size_t i = 0; i < filtered_lights.size(); ++i) {
-                CHK(glUniform3fv(rp.light_colors.at(i), 1, (const GLfloat*) FixedArray<float, 3>{1, 1, 1}.flat_begin()));
+        {
+            size_t i = 0;
+            for(const auto& l : filtered_lights) {
+                if (any(ambience != 0.f)) {
+                    CHK(glUniform3fv(rp.light_ambiences.at(i), 1, (const GLfloat*) l.second->ambience.flat_begin()));
+                }
+                if (any(diffusivity != 0.f)) {
+                    CHK(glUniform3fv(rp.light_diffusivities.at(i), 1, (const GLfloat*) l.second->diffusivity.flat_begin()));
+                }
+                if (any(specularity != 0.f)) {
+                    CHK(glUniform3fv(rp.light_specularities.at(i), 1, (const GLfloat*) l.second->specularity.flat_begin()));
+                }
+                ++i;
             }
         }
         if (has_instances || any(specularity != 0.f)) {

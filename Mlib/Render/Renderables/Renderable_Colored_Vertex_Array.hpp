@@ -25,7 +25,9 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> light_dir_locations;
     // GLint light_pos;
     GLint view_pos;
-    std::map<size_t, GLint> light_colors;
+    std::map<size_t, GLint> light_ambiences;
+    std::map<size_t, GLint> light_diffusivities;
+    std::map<size_t, GLint> light_specularities;
     GLint texture1_location;
     std::map<size_t, GLint> texture_lightmap_color_locations;
     std::map<size_t, GLint> texture_lightmap_depth_locations;
@@ -75,8 +77,9 @@ private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
         const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights,
-        const std::vector<size_t>& light_indices,
-        const std::vector<size_t>& black_indices) const;
+        const std::vector<size_t>& light_noshadow_indices,
+        const std::vector<size_t>& light_shadow_indices,
+        const std::vector<size_t>& black_shadow_indices) const;
     const VertexArray& get_vertex_array(const ColoredVertexArray* cva) const;
     std::list<std::shared_ptr<ColoredVertexArray>> triangles_res_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
