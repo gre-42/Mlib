@@ -26,7 +26,8 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_diffusivity,
     bool has_specularity,
     bool has_instances,
-    bool reorient_normals)
+    bool reorient_normals,
+    bool orthographic)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
@@ -62,12 +63,20 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec3 Normal;" << std::endl;
     }
     if (has_instances) {
-        sstr << "uniform vec3 viewPos;" << std::endl;
+        if (orthographic) {
+            sstr << "uniform vec3 viewDir;" << std::endl;
+        } else {
+            sstr << "uniform vec3 viewPos;" << std::endl;
+        }
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if (has_instances) {
-        sstr << "    vec2 dxz = normalize(viewPos.xz - vInstancePosition.xz);" << std::endl;
+        if (orthographic) {
+            sstr << "    vec2 dxz = viewDir.xz;" << std::endl;
+        } else {
+            sstr << "    vec2 dxz = normalize(viewPos.xz - vInstancePosition.xz);" << std::endl;
+        }
         sstr << "    vec3 dz = vec3(dxz.x, 0, dxz.y);" << std::endl;
         sstr << "    vec3 dy = vec3(0, 1, 0);" << std::endl;
         sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
@@ -122,7 +131,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& specularity,
     float alpha_threshold,
     OcclusionType occlusion_type,
-    bool reorient_normals)
+    bool reorient_normals,
+    bool orthographic)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
@@ -165,7 +175,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (reorient_normals || !specularity.all_equal(0)) {
         sstr << "in vec3 FragPos;" << std::endl;
-        sstr << "uniform vec3 viewPos;" << std::endl;
+        if (orthographic) {
+            sstr << "uniform vec3 viewDir;" << std::endl;
+        } else {
+            sstr << "uniform vec3 viewPos;" << std::endl;
+        }
     }
     if (!lights.empty()) {
         if (!ambience.all_equal(0)) {
@@ -184,7 +198,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!specularity.all_equal(0)) {
             sstr << "vec3 phong_specular(in int i, in vec3 norm) {" << std::endl;
             sstr << "    vec3 fragSpecularity = vec3(" << specularity(0) << ", " << specularity(1) << ", " << specularity(2) << ");" << std::endl;
-            sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
+            if (!orthographic) {
+                sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
+            }
             sstr << "    vec3 reflectDir = reflect(-lightDir[i], norm);  " << std::endl;
             sstr << "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 4);" << std::endl;
             sstr << "    return fragSpecularity * spec * lightSpecularity[i];" << std::endl;
@@ -209,7 +225,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
     }
     if (reorient_normals) {
-        sstr << "    norm *= sign(dot(norm, viewPos - FragPos));" << std::endl;
+        if (orthographic) {
+            sstr << "    norm *= sign(dot(norm, viewDir));" << std::endl;
+        } else {
+            sstr << "    norm *= sign(dot(norm, viewPos - FragPos));" << std::endl;
+        }
     }
     if (!ambience.all_equal(0) || !diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         if (!light_noshadow_indices.empty()) {
@@ -450,7 +470,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             !id.diffusivity.all_equal(0),
             !id.specularity.all_equal(0),
             id.has_instances,
-            id.reorient_normals),
+            id.reorient_normals,
+            id.orthographic),
         fragment_shader_text_textured_rgb_gen(
             filtered_lights,
             light_noshadow_indices,
@@ -468,7 +489,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
                 ? (id.calculate_lightmap ? 0.1 : 0.5)
                 : 1,
             occlusion_type,
-            id.reorient_normals));
+            id.reorient_normals,
+            id.orthographic));
 
     rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");
     if (id.has_texture) {
@@ -534,9 +556,16 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
         }
     }
-    if (id.has_instances || !id.specularity.all_equal(0)) {
-        rp->view_pos = checked_glGetUniformLocation(rp->program, "viewPos");
+    if (id.has_instances || !id.specularity.all_equal(0) || id.reorient_normals) {
+        if (id.orthographic) {
+            rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
+            rp->view_pos = 0;
+        } else {
+            rp->view_dir = 0;
+            rp->view_pos = checked_glGetUniformLocation(rp->program, "viewPos");
+        }
     } else {
+        rp->view_dir = 0;
         rp->view_pos = 0;
     }
 

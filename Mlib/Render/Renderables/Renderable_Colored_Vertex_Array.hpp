@@ -24,6 +24,7 @@ struct ColoredRenderProgram: public RenderProgram {
     GLint m_location;
     std::map<size_t, GLint> light_dir_locations;
     // GLint light_pos;
+    GLint view_dir;
     GLint view_pos;
     std::map<size_t, GLint> light_ambiences;
     std::map<size_t, GLint> light_diffusivities;
@@ -50,6 +51,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> ambience;
     OrderableFixedArray<float, 3> diffusivity;
     OrderableFixedArray<float, 3> specularity;
+    bool orthographic;
     std::strong_ordering operator <=> (const RenderProgramIdentifier&) const = default;
 };
 

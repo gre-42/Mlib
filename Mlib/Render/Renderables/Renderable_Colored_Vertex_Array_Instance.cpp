@@ -87,6 +87,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
         bool has_dirtmap = rcva_->render_textures_ && (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE);
         bool has_instances = (rcva_->instances_ != nullptr);
+        bool orthographic = (mvp(3, 0) == 0 && mvp(3, 1) == 0 && mvp(3, 2) == 0 && mvp(3, 3) == 1);
         if (!has_texture && has_dirtmap) {
             std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture_descriptor.color);
         }
@@ -126,7 +127,8 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 calculate_lightmap: render_pass.external.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE,
                 ambience: OrderableFixedArray{ambience},
                 diffusivity: OrderableFixedArray{diffusivity},
-                specularity: OrderableFixedArray{specularity}},
+                specularity: OrderableFixedArray{specularity},
+                orthographic: orthographic},
             filtered_lights,
             light_noshadow_indices,
             light_shadow_indices,
@@ -184,7 +186,13 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             }
         }
         if (has_instances || any(specularity != 0.f)) {
-            CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
+            if (orthographic) {
+                auto d = z3_from_4x4(iv);
+                d /= std::sqrt(sum(squared(d)));
+                CHK(glUniform3fv(rp.view_dir, 1, (const GLfloat*) d.flat_begin()));
+            } else {
+                CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
+            }
         }
         LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");
         CHK(glBindVertexArray(va.vertex_array));
