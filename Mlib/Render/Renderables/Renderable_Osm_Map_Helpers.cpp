@@ -1271,7 +1271,8 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
         if (std::regex_match(name, match, re)) {
             names_.push_back(ParsedResourceName{
                 name: match[1].str(),
-                probability: safe_stof(match[2].str())});
+                probability: safe_stof(match[2].str()),
+                aggregate_mode: resources.aggregate_mode(match[1].str())});
             if (names_.back().probability < 1e-7) {
                 throw std::runtime_error("ResourceNameCycle: threshold too small");
             }
