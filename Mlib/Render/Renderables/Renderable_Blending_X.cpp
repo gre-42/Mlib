@@ -66,7 +66,7 @@ RenderableBlendingX::RenderableBlendingX(
     }
 }
 
-void RenderableBlendingX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
+void RenderableBlendingX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     // std::unique_lock lock_guard0{scene.dynamic_mutex_};
     // std::unique_lock lock_guard1{scene.static_mutex_};

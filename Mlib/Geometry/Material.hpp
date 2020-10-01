@@ -1,88 +1,13 @@
 #pragma once
+#include <Mlib/Geometry/Material/Blend_Mode.hpp>
+#include <Mlib/Geometry/Material/Clamp_Mode.hpp>
+#include <Mlib/Geometry/Material/Occluded_Type.hpp>
+#include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 
 namespace Mlib {
-
-enum class BlendMode {
-    OFF,
-    BINARY,
-    CONTINUOUS
-};
-
-enum class ClampMode {
-    EDGE,
-    REPEAT
-};
-
-enum class AggregateMode {
-    OFF,
-    ONCE,
-    SORTED_CONTINUOUSLY,
-    INSTANCES_ONCE,
-    INSTANCES_SORTED_CONTINUOUSLY
-};
-
-enum class OccludedType {
-    OFF,
-    LIGHT_MAP_COLOR,
-    LIGHT_MAP_DEPTH
-};
-
-enum class OccluderType {
-    OFF,
-    WHITE,
-    BLACK
-};
-
-inline BlendMode blend_mode_from_string(const std::string& str) {
-    if (str == "off") {
-        return BlendMode::OFF;
-    } else if (str == "binary") {
-        return BlendMode::BINARY;
-    } else if (str == "continuous") {
-        return BlendMode::CONTINUOUS;
-    }
-    throw std::runtime_error("Unknown blend mode");
-}
-
-inline AggregateMode aggregate_mode_from_string(const std::string& str) {
-    if (str == "off") {
-        return AggregateMode::OFF;
-    } else if (str == "once") {
-        return AggregateMode::ONCE;
-    } else if (str == "sorted") {
-        return AggregateMode::SORTED_CONTINUOUSLY;
-    } if (str == "instances_once") {
-        return AggregateMode::INSTANCES_ONCE;
-    } if (str == "instances_sorted") {
-        return AggregateMode::INSTANCES_SORTED_CONTINUOUSLY;
-    }
-    throw std::runtime_error("Unknown aggregate mode");
-}
-
-inline OccludedType occluded_type_from_string(const std::string& str) {
-    if (str == "off") {
-        return OccludedType::OFF;
-    } else if (str == "color") {
-        return OccludedType::LIGHT_MAP_COLOR;
-    } else if (str == "depth") {
-        return OccludedType::LIGHT_MAP_DEPTH;
-    }
-    throw std::runtime_error("Unknown occluded type");
-}
-
-inline OccluderType occluder_type_from_string(const std::string& str) {
-    if (str == "off") {
-        return OccluderType::OFF;
-    } else if (str == "white") {
-        return OccluderType::WHITE;
-    } else if (str == "black") {
-        return OccluderType::BLACK;
-    }
-    throw std::runtime_error("Unknown occluder type");
-}
 
 struct Material {
     TextureDescriptor texture_descriptor;

@@ -45,12 +45,12 @@ RenderableObjFile::RenderableObjFile(
     rva_ = std::make_shared<RenderableColoredVertexArray>(triangles, nullptr, rendering_resources);
 }
 
-void RenderableObjFile::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
+void RenderableObjFile::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> RenderableObjFile::get_triangle_meshes() {
+std::list<std::shared_ptr<ColoredVertexArray>> RenderableObjFile::get_triangle_meshes() const {
     return rva_->get_triangle_meshes();
 }
 

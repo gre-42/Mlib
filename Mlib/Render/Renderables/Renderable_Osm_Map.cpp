@@ -296,9 +296,10 @@ RenderableOsmMap::RenderableOsmMap(
             with_height_bindings);
 
         if (forest_outline_tree_distance != INFINITY) {
-            ResourceNameCycle rnc{tree_resource_names};
+            ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
             add_trees_to_forest_outlines(
                 resource_instance_positions_,
+                object_resource_descriptors_,
                 steiner_points,
                 rnc,
                 nodes,
@@ -342,9 +343,10 @@ RenderableOsmMap::RenderableOsmMap(
                 scale);
         }
         if (with_tree_nodes) {
-            ResourceNameCycle rnc{tree_resource_names};
+            ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
             add_trees_to_tree_nodes(
                 resource_instance_positions_,
+                object_resource_descriptors_,
                 steiner_points,
                 rnc,
                 nodes,
@@ -490,9 +492,10 @@ RenderableOsmMap::RenderableOsmMap(
     // }
 
     if (much_grass_distance != INFINITY) {
-        ResourceNameCycle rnc{grass_resource_names};
+        ResourceNameCycle rnc{scene_node_resources, grass_resource_names};
         add_grass_inside_triangles(
             resource_instance_positions_,
+            object_resource_descriptors_,
             rnc,
             *tl_terrain,
             scale,
@@ -508,7 +511,7 @@ RenderableOsmMap::RenderableOsmMap(
     rva_ = std::make_shared<RenderableColoredVertexArray>(ts, nullptr, rendering_resources_);
 }
 
-void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
+void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     {
         size_t i = 0;
@@ -536,7 +539,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> RenderableOsmMap::get_triangle_meshes() {
+std::list<std::shared_ptr<ColoredVertexArray>> RenderableOsmMap::get_triangle_meshes() const {
     return rva_->get_triangle_meshes();
 }
 

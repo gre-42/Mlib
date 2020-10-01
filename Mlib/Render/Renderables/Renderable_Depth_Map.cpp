@@ -88,12 +88,12 @@ RenderableDepthMap::RenderableDepthMap(
         nullptr);  // rendering_resources
 }
 
-void RenderableDepthMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
+void RenderableDepthMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> RenderableDepthMap::get_triangle_meshes()
+std::list<std::shared_ptr<ColoredVertexArray>> RenderableDepthMap::get_triangle_meshes() const
 {
     return rva_->get_triangle_meshes();
 }

@@ -21,7 +21,7 @@ class Scene;
 struct Blended {
     FixedArray<float, 4, 4> mvp;
     FixedArray<float, 4, 4> m;
-    Renderable* renderable;
+    const Renderable* renderable;
 };
 
 class SceneNode {
@@ -41,7 +41,7 @@ public:
     void remove_destruction_observer(DestructionObserver* destruction_observer);
     void add_renderable(
         const std::string& name,
-        const std::shared_ptr<Renderable>& renderable);
+        const std::shared_ptr<const Renderable>& renderable);
     void add_child(
         const std::string& name,
         SceneNode* node,
@@ -117,7 +117,7 @@ private:
     AbsoluteObserver* absolute_observer_;
     std::set<DestructionObserver*> destruction_observers_;
     std::shared_ptr<Camera> camera_;
-    std::map<std::string, std::shared_ptr<Renderable>> renderables_;
+    std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
     std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> children_;
     std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> aggregate_children_;
     std::map<std::string, std::tuple<bool, std::unique_ptr<SceneNode>, std::list<FixedArray<float, 3>>>> instances_children_;

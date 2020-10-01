@@ -39,7 +39,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> SceneNodeResources::get_triangle_
     try {
         return it->second->get_triangle_meshes();
     } catch(const std::runtime_error& e) {
-        throw std::runtime_error("get_triangle_meshes for resource " + name + " failed: " + e.what());
+        throw std::runtime_error("get_triangle_meshes for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
@@ -51,7 +51,7 @@ void SceneNodeResources::generate_triangle_rays(const std::string& name, size_t 
     try {
         it->second->generate_triangle_rays(npoints, lengths, delete_triangles);
     } catch(const std::runtime_error& e) {
-        throw std::runtime_error("generate_triangle_rays for resource " + name + " failed: " + e.what());
+        throw std::runtime_error("generate_triangle_rays for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
@@ -63,6 +63,18 @@ void SceneNodeResources::generate_ray(const std::string& name, const FixedArray<
     try {
         it->second->generate_ray(from, to);
     } catch(const std::runtime_error& e) {
-        throw std::runtime_error("generate_ray for resource " + name + " failed: " + e.what());
+        throw std::runtime_error("generate_ray for resource \"" + name + "\" failed: " + e.what());
+    }
+}
+
+AggregateMode SceneNodeResources::aggregate_mode(const std::string& name) const {
+    auto it = resources_.find(name);
+    if (it == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + name + '"');
+    }
+    try {
+        return it->second->aggregate_mode();
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("aggregate_mode for resource \"" + name + "\" failed: " + e.what());
     }
 }

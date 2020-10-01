@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <list>
 #include <map>
@@ -9,6 +10,7 @@ namespace Mlib {
 
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
+class SceneNodeResources;
 struct ColoredVertex;
 struct Material;
 struct ResourceInstanceDescriptor;
@@ -69,12 +71,13 @@ enum class BuildingType {
 struct ParsedResourceName {
     std::string name;
     float probability;
+    AggregateMode aggregate_mode;
 };
 
 class ResourceNameCycle {
 public:
-    ResourceNameCycle(const std::vector<std::string>& names);
-    std::string operator () ();
+    ResourceNameCycle(const SceneNodeResources& resources, const std::vector<std::string>& names);
+    const ParsedResourceName& operator () ();
 private:
     std::vector<ParsedResourceName> names_;
     UniformIntRandomNumberGenerator<size_t> rng0_;
@@ -207,6 +210,7 @@ void apply_height_map(
 
 void add_grass_inside_triangles(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     ResourceNameCycle& rnc,
     const TriangleList& triangles,
     float scale,
@@ -214,6 +218,7 @@ void add_grass_inside_triangles(
 
 void add_trees_to_forest_outlines(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::list<FixedArray<float, 2>>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
@@ -241,6 +246,7 @@ void add_beacons_to_raceways(
 
 void add_trees_to_tree_nodes(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::list<FixedArray<float, 2>>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,

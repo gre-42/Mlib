@@ -339,14 +339,14 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 : RenderableColoredVertexArray(std::list<std::shared_ptr<ColoredVertexArray>>{triangles}, instances, rendering_resources)
 {}
 
-void RenderableColoredVertexArray::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
+void RenderableColoredVertexArray::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     scene_node.add_renderable(name, std::make_shared<RenderableColoredVertexArrayInstance>(
         shared_from_this(),
         resource_filter));
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> RenderableColoredVertexArray::get_triangle_meshes() {
+std::list<std::shared_ptr<ColoredVertexArray>> RenderableColoredVertexArray::get_triangle_meshes() const {
     return triangles_res_;
 }
 
@@ -390,6 +390,13 @@ void RenderableColoredVertexArray::generate_ray(const FixedArray<float, 3>& from
             uv: {0, 1}
         }
     });
+}
+
+AggregateMode RenderableColoredVertexArray::aggregate_mode() const {
+    if (triangles_res_.size() != 1) {
+        throw std::runtime_error("aggregate_mode requires exactly one triangle mesh");
+    }
+    return triangles_res_.front()->material.aggregate_mode;
 }
 
 const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(

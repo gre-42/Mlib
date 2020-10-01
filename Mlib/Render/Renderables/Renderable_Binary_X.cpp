@@ -65,7 +65,7 @@ RenderableBinaryX::RenderableBinaryX(
         rendering_resources);
 }
 
-void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)
+void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     // std::unique_lock lock_guard0{scene.dynamic_mutex_};
     // std::unique_lock lock_guard1{scene.static_mutex_};
@@ -77,4 +77,8 @@ void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNod
     node90->set_rotation({0, -M_PI / 2, 0});
     rva_->instantiate_renderable("plane", *node90, SceneNodeResourceFilter{});
     scene_node.add_aggregate_child("node90", node90);
+}
+
+AggregateMode RenderableBinaryX::aggregate_mode() const {
+    return rva_->aggregate_mode();
 }

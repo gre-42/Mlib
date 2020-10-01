@@ -13,7 +13,7 @@
 using namespace Mlib;
 
 RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
-    const std::shared_ptr<RenderableColoredVertexArray>& rcva,
+    const std::shared_ptr<const RenderableColoredVertexArray>& rcva,
     const SceneNodeResourceFilter& resource_filter)
 : rcva_{rcva}
 {
@@ -25,7 +25,7 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     }
 }
 
-void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>& mvp, const FixedArray<float, 4, 4>& m, const FixedArray<float, 4, 4>& iv, const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const RenderPass& render_pass) {
+void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>& mvp, const FixedArray<float, 4, 4>& m, const FixedArray<float, 4, 4>& iv, const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const RenderPass& render_pass) const {
     LOG_FUNCTION("RenderableColoredVertexArrayInstance::render");
     if (render_pass.external.pass == ExternalRenderPass::DIRTMAP) {
         return;

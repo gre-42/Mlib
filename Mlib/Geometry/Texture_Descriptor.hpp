@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/String.hpp>
 #include <iosfwd>
 #include <string>
 

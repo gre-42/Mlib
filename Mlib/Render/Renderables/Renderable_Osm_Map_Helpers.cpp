@@ -8,6 +8,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map_Rectangle.hpp>
 #include <Mlib/Render/Renderables/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -891,6 +892,7 @@ void Mlib::apply_height_map(
 
 void Mlib::add_grass_inside_triangles(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     ResourceNameCycle& rnc,
     const TriangleList& triangles,
     float scale,
@@ -915,7 +917,12 @@ void Mlib::add_grass_inside_triangles(
                 }
                 auto p = aa * t(0).position + bb * t(1).position + c * t(2).position;
                 ++gid;
-                fern_positions[rnc()].push_back({p, rng()});
+                const ParsedResourceName& prn = rnc();
+                if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
+                    fern_positions[prn.name].push_back({p, rng()});
+                } else {
+                    object_resource_descriptors.push_back({p, prn.name, rng()});
+                }
             }
         }
     }
@@ -923,6 +930,7 @@ void Mlib::add_grass_inside_triangles(
 
 void Mlib::add_trees_to_forest_outlines(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::list<FixedArray<float, 2>>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
@@ -957,7 +965,12 @@ void Mlib::add_trees_to_forest_outlines(
                         continue;
                     }
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + tree_inwards_distance * scale * n * sign(area);
-                    fern_positions[rnc()].push_back({FixedArray<float, 3>{p(0), p(1), 0}, rng()});
+                    const ParsedResourceName& prn = rnc();
+                    if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
+                        fern_positions[prn.name].push_back({FixedArray<float, 3>{p(0), p(1), 0}, rng()});
+                    } else {
+                        object_resource_descriptors.push_back({FixedArray<float, 3>{p(0), p(1), 0}, prn.name, rng()});
+                    }
                     // object_resource_descriptors.push_back({
                     //     position: FixedArray<float, 3>{p(0), p(1), 0},
                     //     name: rnc(),
@@ -1037,6 +1050,7 @@ void Mlib::add_beacons_to_raceways(
 
 void Mlib::add_trees_to_tree_nodes(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::list<FixedArray<float, 2>>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
@@ -1046,7 +1060,12 @@ void Mlib::add_trees_to_tree_nodes(
     for(const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
-            fern_positions[rnc()].push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, rng()});
+            const ParsedResourceName& prn = rnc();
+            if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
+                fern_positions[prn.name].push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, rng()});
+            } else {
+                object_resource_descriptors.push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, prn.name, rng()});
+            }
             steiner_points.push_back(n.second.position);
         }
     }
@@ -1241,7 +1260,7 @@ std::list<FixedArray<float, 2>> Mlib::removed_duplicates(
     return std::list(res.begin(), res.end());
 }
 
-ResourceNameCycle::ResourceNameCycle(const std::vector<std::string>& names)
+ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const std::vector<std::string>& names)
 : rng0_{0, 0, names.size() - 1},
   rng_{0}
 {
@@ -1262,21 +1281,22 @@ ResourceNameCycle::ResourceNameCycle(const std::vector<std::string>& names)
         } else {
             names_.push_back(ParsedResourceName{
                 name: name,
-                probability: 1});
+                probability: 1,
+                aggregate_mode: resources.aggregate_mode(name)});
         }
     }
 }
 
-std::string ResourceNameCycle::operator() () {
+const ParsedResourceName& ResourceNameCycle::operator() () {
     assert_true(!names_.empty());
     while(true) {
         const ParsedResourceName& prn = names_[rng0_()];
         if (prn.probability != 1) {
             if (rng_() < prn.probability) {
-                return prn.name;
+                return prn;
             }
         } else {
-            return prn.name;
+            return prn;
         }
     }
 }

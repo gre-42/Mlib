@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <list>
 #include <memory>
 #include <regex>
@@ -22,17 +23,20 @@ struct SceneNodeResourceFilter {
 
 class SceneNodeResource {
 public:
-    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter)  {
+    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const {
         throw std::runtime_error("instantiate_renderable not implemented");
     }
-    virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes()  {
+    virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const {
         throw std::runtime_error("get_triangle_meshes not implemented");
     }
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) {
         throw std::runtime_error("generate_triangle_rays not implemented");
     }
-    virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to)  {
+    virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
         throw std::runtime_error("generate_ray not implemented");
+    }
+    virtual AggregateMode aggregate_mode() const {
+        throw std::runtime_error("aggregate_mode not implemented");
     }
 };
 

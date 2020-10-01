@@ -109,7 +109,7 @@ void SceneNode::remove_destruction_observer(DestructionObserver* destruction_obs
 
 void SceneNode::add_renderable(
     const std::string& name,
-    const std::shared_ptr<Renderable>& renderable)
+    const std::shared_ptr<const Renderable>& renderable)
 {
     if (renderables_.find(name) != renderables_.end()) {
         throw std::runtime_error("Renderable with name " + name + " already exists");
