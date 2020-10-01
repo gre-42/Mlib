@@ -142,8 +142,12 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         }
         assert_true(!(has_lightmap_color && has_lightmap_depth));
         if (has_lightmap_color) {
-            for(size_t i : black_shadow_indices) {
-                CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), 1 + i));
+            size_t i = 0;
+            for(const auto& l : filtered_lights) {
+                if (l.second->shadow) {
+                    CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), 1 + i));
+                }
+                ++i;
             }
         }
         if (has_lightmap_depth) {
@@ -207,18 +211,20 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         if (has_lightmap_color) {
             size_t i = 0;
             for(const auto& l : filtered_lights) {
-                std::string mname = "lightmap_color" + std::to_string(l.second->resource_index);
-                const auto& light_vp = rcva_->rendering_resources_->get_vp(mname);
-                auto mvp_light = dot2d(light_vp, m);
-                CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
-                
-                CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
-                float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
-                CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor)); 
-                CHK(glActiveTexture(GL_TEXTURE0));
+                if (l.second->shadow) {
+                    std::string mname = "lightmap_color" + std::to_string(l.second->resource_index);
+                    const auto& light_vp = rcva_->rendering_resources_->get_vp(mname);
+                    auto mvp_light = dot2d(light_vp, m);
+                    CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
+                    
+                    CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
+                    CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
+                    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+                    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+                    float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
+                    CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor)); 
+                    CHK(glActiveTexture(GL_TEXTURE0));
+                }
                 ++i;
             }
         }
