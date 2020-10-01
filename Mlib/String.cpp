@@ -85,3 +85,14 @@ std::vector<std::string> Mlib::string_to_vector(const std::string& str) {
     auto res = string_to_list(str);
     return std::vector<std::string>{res.begin(), res.end()};
 }
+
+std::string Mlib::join(const std::string& delimiter, const std::list<std::string>& lst) {
+    std::string res;
+    int i = 0;
+    for(const std::string& s : lst) {
+        res += (i++ == 0)
+            ? s
+            : delimiter + s;
+    }
+    return res;
+}
