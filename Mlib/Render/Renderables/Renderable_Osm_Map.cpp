@@ -516,22 +516,27 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
     {
         size_t i = 0;
         for(auto& p : object_resource_descriptors_) {
-            auto grass_node = new SceneNode;
-            grass_node->set_position(p.position);
-            grass_node->set_scale(scale_ * p.scale);
-            grass_node->set_rotation({M_PI / 2, 0, 0});
-            scene_node_resources_.instantiate_renderable(p.name, p.name, *grass_node, SceneNodeResourceFilter{});
-            scene_node.add_child(p.name + "-" + std::to_string(i++), grass_node);
+            auto node = new SceneNode;
+            node->set_position(p.position);
+            node->set_scale(scale_ * p.scale);
+            node->set_rotation({M_PI / 2, 0, 0});
+            scene_node_resources_.instantiate_renderable(p.name, p.name, *node, SceneNodeResourceFilter{});
+            if (node->requires_render_pass()) {
+                scene_node.add_child(p.name + "-" + std::to_string(i++), node);
+            } else {
+                std::cerr << "Adding aggregate " << p.name << std::endl;
+                scene_node.add_aggregate_child(p.name + "-" + std::to_string(i++), node);
+            }
         }
     }
     for(auto& p : resource_instance_positions_) {
-        auto grass_node = new SceneNode;
-        grass_node->set_rotation({M_PI / 2, 0, 0});
-        scene_node_resources_.instantiate_renderable(p.first, p.first, *grass_node, SceneNodeResourceFilter{});
-        if (grass_node->requires_render_pass()) {
+        auto node = new SceneNode;
+        node->set_rotation({M_PI / 2, 0, 0});
+        scene_node_resources_.instantiate_renderable(p.first, p.first, *node, SceneNodeResourceFilter{});
+        if (node->requires_render_pass()) {
             throw std::runtime_error("Object " + p.first + " requires render pass");
         }
-        scene_node.add_instances_child(p.first, grass_node);
+        scene_node.add_instances_child(p.first, node);
         for(const auto& r : p.second) {
             scene_node.add_instances_position(p.first, r.position);
         }
