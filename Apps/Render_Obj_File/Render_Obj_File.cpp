@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         "[--no_werror] "
         "[--background_light_ambience <background_light_ambience>] "
         "[--no_shadows] "
-        "[--light_configuration {none, one, circle}]\n"
+        "[--light_configuration {none, one, shifted_circle, circle}]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows"},
         {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex",
@@ -127,11 +127,18 @@ int main(int argc, char** argv) {
             lights.push_back(new Light{resource_index: selected_cameras.add_light_node("light_node0"), only_black: false, shadow: true});
             scene.get_node("light_node0")->add_light(lights.back());
             scene.get_node("light_node0")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-        } else if (light_configuration == "circle") {
+        } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
             size_t i = 0;
-            FixedArray<float, 3> center{-50, 50, -20};
+            FixedArray<float, 3> center;
+            if (light_configuration == "circle") {
+                center = {0, 10, 0};
+            } else if (light_configuration == "shifted_circle") {
+                center = {-50, 50, -20};
+            } else {
+                throw std::runtime_error("Unknown light configuration");
+            }
             for (float a : linspace<float>(0, 2 * M_PI, n).flat_iterable()) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, new SceneNode);
