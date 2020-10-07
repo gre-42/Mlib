@@ -131,6 +131,7 @@ int main(int argc, char** argv) {
             size_t n = 10;
             float r = 50;
             size_t i = 0;
+            bool with_diffusivity = true;
             FixedArray<float, 3> center;
             if (light_configuration == "circle") {
                 center = {0, 10, 0};
@@ -149,9 +150,25 @@ int main(int argc, char** argv) {
                 lights.push_back(new Light{resource_index: selected_cameras.add_light_node(name), only_black: false, shadow: true});
                 scene.get_node(name)->add_light(lights.back());
                 scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-                lights.back()->ambience *= 2.f / n;
-                lights.back()->diffusivity *= 0;
-                lights.back()->specularity *= 0;
+                lights.back()->ambience *= 2.f / (n * (1 + with_diffusivity));
+                lights.back()->diffusivity = 0;
+                lights.back()->specularity = 0;
+            }
+            if (with_diffusivity) {
+                for (float a : linspace<float>(0, 2 * M_PI, n).flat_iterable()) {
+                    std::string name = "light_s" + std::to_string(i++);
+                    scene.add_root_node(name, new SceneNode);
+                    scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
+                    scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat(
+                        scene.get_node(name)->position(),
+                        scene.get_node("obj")->position())));
+                    lights.push_back(new Light{resource_index: selected_cameras.add_light_node(name), shadow: false});
+                    scene.get_node(name)->add_light(lights.back());
+                    scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+                    lights.back()->ambience = 0;
+                    lights.back()->diffusivity /= 2 * n;
+                    lights.back()->specularity = 0;
+                }
             }
         } else if (light_configuration != "none") {
             throw std::runtime_error("Unknown light configuration");
