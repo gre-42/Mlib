@@ -3,6 +3,7 @@
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
@@ -44,13 +45,31 @@ int main(int argc, char** argv) {
         "[--min_num] <min_num> "
         "[--regex] <regex> "
         "[--no_werror] "
+        "[--color_gradient_min_x] "
+        "[--color_gradient_max_x] "
+        "[--color_gradient_min_c] "
+        "[--color_gradient_max_c] "
         "[--background_light_ambience <background_light_ambience>] "
         "[--no_shadows] "
         "[--light_configuration {none, one, shifted_circle, circle}]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows"},
-        {"--scale", "--y", "--nsamples_msaa", "--blend_mode", "--aggregate_mode", "--render_dt", "--width", "--height", "--output", "--min_num", "--regex",
-         "--background_light_ambience", "--light_configuration"});
+        {"--scale", "--y",
+        "--nsamples_msaa",
+        "--blend_mode",
+        "--aggregate_mode",
+        "--render_dt",
+        "--width",
+        "--height",
+        "--output",
+        "--min_num",
+        "--regex",
+         "--background_light_ambience",
+         "--light_configuration",
+         "--color_gradient_min_x",
+         "--color_gradient_max_x",
+         "--color_gradient_min_c",
+         "--color_gradient_max_c"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -114,6 +133,23 @@ int main(int argc, char** argv) {
                     SceneNodeResourceFilter{
                         min_num: (size_t)safe_stoi(args.named_value("--min_num", "0")),
                         regex: std::regex{args.named_value("--regex", "")}});
+                if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
+                    Interp<float> interp{
+                        {safe_stof(args.named_value("--color_gradient_min_x")),
+                         safe_stof(args.named_value("--color_gradient_max_x"))},
+                        {safe_stof(args.named_value("--color_gradient_min_c")),
+                         safe_stof(args.named_value("--color_gradient_max_c"))},
+                        false,
+                        safe_stof(args.named_value("--color_gradient_min_c")),
+                        safe_stof(args.named_value("--color_gradient_max_c"))};
+                    for(auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                        for(auto& t : m->triangles) {
+                            for(auto& v : t.flat_iterable()) {
+                                v.color = interp(v.position(0));
+                            }
+                        }
+                    }
+                }
             }
         }
         scene.add_root_node("obj", scene_node);
