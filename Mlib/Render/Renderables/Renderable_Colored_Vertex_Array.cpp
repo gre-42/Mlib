@@ -485,7 +485,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.ambience,
             id.diffusivity,
             id.specularity,
-            id.blend_mode == BlendMode::BINARY
+            (id.blend_mode == BlendMode::BINARY) || (id.blend_mode == BlendMode::BINARY_ADD)
                 ? (id.calculate_lightmap ? 0.1 : 0.5)
                 : 1,
             occlusion_type,

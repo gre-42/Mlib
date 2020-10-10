@@ -22,6 +22,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/String.hpp>
 #include <vector>
 
@@ -33,7 +34,7 @@ int main(int argc, char** argv) {
         "Usage: render_obj_file <filename ...> "
         "[--scale <scale>] "
         "[--nsamples_msaa <nsamples>] "
-        "[--blend_mode {off,continuous,binary}] "
+        "[--blend_mode {off,continuous,binary,binary_add}] "
         "[--aggregate_mode {off, once, sorted}] "
         "[--no_cull_faces] "
         "[--wire_frame] "
@@ -45,15 +46,25 @@ int main(int argc, char** argv) {
         "[--min_num] <min_num> "
         "[--regex] <regex> "
         "[--no_werror] "
-        "[--color_gradient_min_x] "
-        "[--color_gradient_max_x] "
-        "[--color_gradient_min_c] "
-        "[--color_gradient_max_c] "
+        "[--color_gradient_min_x] <value> "
+        "[--color_gradient_max_x] <value> "
+        "[--color_gradient_min_c] <value> "
+        "[--color_gradient_max_c] <value> "
+        "[--color_r] <value> "
+        "[--color_g] <value> "
+        "[--color_b] <value> "
+        "[--background_r] <value> "
+        "[--background_g] <value> "
+        "[--background_b] <value> "
         "[--background_light_ambience <background_light_ambience>] "
         "[--no_shadows] "
         "[--light_configuration {none, one, shifted_circle, circle}]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
-        {"--no_cull_faces", "--wire_frame", "--no_werror", "--apply_static_lighting", "--no_shadows"},
+        {"--no_cull_faces",
+         "--wire_frame",
+         "--no_werror",
+         "--apply_static_lighting",
+         "--no_shadows"},
         {"--scale", "--y",
         "--nsamples_msaa",
         "--blend_mode",
@@ -69,7 +80,13 @@ int main(int argc, char** argv) {
          "--color_gradient_min_x",
          "--color_gradient_max_x",
          "--color_gradient_min_c",
-         "--color_gradient_max_c"});
+         "--color_gradient_max_c",
+         "--color_r",
+         "--color_g",
+         "--color_b",
+         "--background_r",
+         "--background_g",
+         "--background_b"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -92,7 +109,10 @@ int main(int argc, char** argv) {
                 screen_width: safe_stoi(args.named_value("--width", "640")),
                 screen_height: safe_stoi(args.named_value("--height", "480")),
                 show_mouse_cursor: true,
-                background_color: {1.f, 0.f, 1.f},
+                background_color: {
+                    safe_stof(args.named_value("--background_r", "1")),
+                    safe_stof(args.named_value("--background_g", "0")),
+                    safe_stof(args.named_value("--background_b", "1"))},
                 dt: safe_stof(args.named_value("--render_dt", "0.01667"))}};
 
         render2.print_hardware_info();
@@ -146,6 +166,19 @@ int main(int argc, char** argv) {
                         for(auto& t : m->triangles) {
                             for(auto& v : t.flat_iterable()) {
                                 v.color = interp(v.position(0));
+                            }
+                        }
+                    }
+                }
+                FixedArray<float, 3> color{
+                    safe_stof(args.named_value("--color_r", "-1")),
+                    safe_stof(args.named_value("--color_g", "-1")),
+                    safe_stof(args.named_value("--color_b", "-1"))};
+                if (any(color != -1.f)) {
+                    for(auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                        for(auto& t : m->triangles) {
+                            for(auto& v : t.flat_iterable()) {
+                                v.color = maximum(color, 0.f);
                             }
                         }
                     }

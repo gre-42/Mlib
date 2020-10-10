@@ -287,6 +287,11 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             case BlendMode::OFF:
             case BlendMode::BINARY:
                 break;
+            case BlendMode::BINARY_ADD:
+                CHK(glEnable(GL_BLEND));
+                CHK(glBlendFunc(GL_ONE, GL_ONE));
+                CHK(glDepthMask(GL_FALSE));
+                break;
             case BlendMode::CONTINUOUS:
                 CHK(glEnable(GL_BLEND));
                 CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -303,6 +308,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         }
         CHK(glDisable(GL_CULL_FACE));
         CHK(glDisable(GL_BLEND));
+        CHK(glBlendFunc(GL_ONE, GL_ZERO));
         CHK(glDepthMask(GL_TRUE));
         LOG_INFO("RenderableColoredVertexArrayInstance::render glDrawArrays finished");
     }
