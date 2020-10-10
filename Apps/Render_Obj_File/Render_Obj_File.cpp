@@ -33,6 +33,8 @@ int main(int argc, char** argv) {
     const ArgParser parser(
         "Usage: render_obj_file <filename ...> "
         "[--scale <scale>] "
+        "[--y <y>] "
+        "[--angle_y <angle_y>] "
         "[--nsamples_msaa <nsamples>] "
         "[--blend_mode {off,continuous,binary,binary_add}] "
         "[--aggregate_mode {off, once, sorted}] "
@@ -65,7 +67,9 @@ int main(int argc, char** argv) {
          "--no_werror",
          "--apply_static_lighting",
          "--no_shadows"},
-        {"--scale", "--y",
+        {"--scale",
+         "--y",
+         "--angle_y",
         "--nsamples_msaa",
         "--blend_mode",
         "--aggregate_mode",
@@ -145,7 +149,8 @@ int main(int argc, char** argv) {
                     aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
                     args.has_named("--apply_static_lighting"),
                     !args.has_named("--no_werror")));
-                scene_node->set_position({0.f, safe_stoi(args.named_value("--y", "0")), -40.f});
+                scene_node->set_position({0.f, safe_stof(args.named_value("--y", "0")), -40.f});
+                scene_node->set_rotation({0.f, safe_stof(args.named_value("--angle_y", "0")) / 180 * M_PI, 0.f});
                 scene_node_resources.instantiate_renderable(
                     name,
                     name,
