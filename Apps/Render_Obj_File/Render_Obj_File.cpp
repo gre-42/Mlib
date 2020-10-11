@@ -52,6 +52,13 @@ int main(int argc, char** argv) {
         "[--color_gradient_max_x] <value> "
         "[--color_gradient_min_c] <value> "
         "[--color_gradient_max_c] <value> "
+        "[--radial_center_x] <value> "
+        "[--radial_center_y] <value> "
+        "[--radial_center_z] <value> "
+        "[--color_radial_min_r] <value> "
+        "[--color_radial_max_r] <value> "
+        "[--color_radial_min_c] <value> "
+        "[--color_radial_max_c] <value> "
         "[--color_r] <value> "
         "[--color_g] <value> "
         "[--color_b] <value> "
@@ -85,6 +92,13 @@ int main(int argc, char** argv) {
          "--color_gradient_max_x",
          "--color_gradient_min_c",
          "--color_gradient_max_c",
+         "--radial_center_x",
+         "--radial_center_y",
+         "--radial_center_z",
+         "--color_radial_min_r",
+         "--color_radial_max_r",
+         "--color_radial_min_c",
+         "--color_radial_max_c",
          "--color_r",
          "--color_g",
          "--color_b",
@@ -171,6 +185,27 @@ int main(int argc, char** argv) {
                         for(auto& t : m->triangles) {
                             for(auto& v : t.flat_iterable()) {
                                 v.color = interp(v.position(0));
+                            }
+                        }
+                    }
+                }
+                if (args.has_named_value("--color_radial_min_r") || args.has_named_value("--color_radial_max_r")) {
+                    Interp<float> interp{
+                        {safe_stof(args.named_value("--color_radial_min_r")),
+                         safe_stof(args.named_value("--color_radial_max_r"))},
+                        {safe_stof(args.named_value("--color_radial_min_c")),
+                         safe_stof(args.named_value("--color_radial_max_c"))},
+                        false,
+                        safe_stof(args.named_value("--color_radial_min_c")),
+                        safe_stof(args.named_value("--color_radial_max_c"))};
+                    FixedArray<float, 3> center{
+                        safe_stof(args.named_value("--radial_center_x", "0")),
+                        safe_stof(args.named_value("--radial_center_y", "0")),
+                        safe_stof(args.named_value("--radial_center_z", "0"))};
+                    for(auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                        for(auto& t : m->triangles) {
+                            for(auto& v : t.flat_iterable()) {
+                                v.color = interp(std::sqrt(sum(squared(v.position - center))));
                             }
                         }
                     }
