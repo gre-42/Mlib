@@ -1,8 +1,6 @@
 #pragma once
+#include <Mlib/Macro_Executor.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <list>
-#include <map>
-#include <string>
 #include <vector>
 
 namespace Mlib {
@@ -27,11 +25,6 @@ class SkyboxLogic;
 struct SelectedCameras;
 class SubstitutionString;
 class ButtonPress;
-
-struct Macro {
-    std::string filename;
-    std::list<std::string> lines;
-};
 
 class LoadScene {
 public:
@@ -64,7 +57,7 @@ public:
         std::map<std::string, size_t>& selection_ids,
         bool verbose);
 private:
-    std::map<std::string, Macro> macros_;
+    MacroExecutor macro_executor_;
 };
 
 }
