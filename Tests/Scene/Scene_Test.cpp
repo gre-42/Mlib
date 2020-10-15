@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Objects/Rigid_Body.hpp>
 #include <Mlib/Physics/Objects/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Physics/Power_To_Force.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -21,7 +22,6 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
-#include <Mlib/Scene/Physics_Loop.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>

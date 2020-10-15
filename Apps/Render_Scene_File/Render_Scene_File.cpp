@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Objects/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
@@ -21,7 +22,6 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
-#include <Mlib/Scene/Physics_Loop.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
