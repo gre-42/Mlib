@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <iosfwd>
 #include <stdexcept>
 #include <vector>
 
@@ -12,7 +13,14 @@ enum class OutOfRangeBehavior {
 };
 
 template <class TData>
+class Interp;
+
+template <class TData>
+std::ostream& operator << (std::ostream& ostr, const Interp<TData>& interp);
+
+template <class TData>
 class Interp {
+    friend std::ostream& operator << <TData>(std::ostream& ostr, const Interp<TData>& interp);
 public:
     Interp(
         const std::vector<TData>& x,
@@ -25,11 +33,12 @@ public:
       out_of_range_behavior_{out_of_range_behavior},
       low_{low},
       high_{high}
-    {}
-    TData operator () (TData vx) const {
+    {
         if (x_.size() != y_.size()) {
             throw std::runtime_error("size mismatch");
         }
+    }
+    TData operator () (const TData& vx) const {
         if (x_.size() < 1) {
             throw std::runtime_error("size must be >= 1");
         }
@@ -72,5 +81,13 @@ private:
     TData low_;
     TData high_;
 };
+
+template <class TData>
+std::ostream& operator << (std::ostream& ostr, const Interp<TData>& interp) {
+    for(size_t i = 0; i < interp.x_.size(); ++i) {
+        ostr << interp.x_[i] << " -> " << interp.y_[i] << std::endl;
+    }
+    return ostr;
+}
 
 }

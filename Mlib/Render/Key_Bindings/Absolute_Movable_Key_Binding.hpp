@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Math/Interp.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <string>
@@ -15,7 +16,7 @@ struct AbsoluteMovableKeyBinding {
     float surface_power;
     float max_velocity;
     size_t tire_id;
-    float tire_angle;
+    Interp<float> tire_angle_interp;
     FixedArray<float, 3> tires_z;
 };
 

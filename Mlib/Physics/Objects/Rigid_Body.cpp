@@ -139,7 +139,7 @@ FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
     auto t = tires_.find(id);
     FixedArray<float, 3> z{tires_z_};
     if (t != tires_.end()) {
-        z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle / 180.f * float(M_PI)), z);
+        z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle), z);
     }
     z = dot1d(rbi_.rotation_, z);
     return z;

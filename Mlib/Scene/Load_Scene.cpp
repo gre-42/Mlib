@@ -228,7 +228,8 @@ void LoadScene::operator()(
         "(?:\\r?\\n\\s*surface_power=([\\w+-.]+))?"
         "(?:\\r?\\n\\s*max_velocity=([\\w+-.]+))?"
         "(?:\\r?\\n\\s*tire_id=(\\d+)\\r?\\n"
-        "\\s*tire_angle=([\\w+-.]+))?"
+        "\\s*tire_angle_velocities=([ \\w+-.]+)\\r?\\n"
+        "\\s*tire_angles=([ \\w+-.]+))?"
         "(?:\\r?\\n\\s*tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
     const std::regex rel_key_binding_reg(
         "^(?:\\r?\\n|\\s)*rel_key_binding\\r?\\n"
@@ -666,9 +667,9 @@ void LoadScene::operator()(
                 safe_stof(match[3].str()));
         } else if (std::regex_match(line, match, player_set_tire_angle_reg)) {
             players.get_player(match[1].str()).set_tire_angle(
-                safe_stoi(match[2].str()),
-                safe_stof(match[3].str()),
-                safe_stof(match[4].str()));
+                M_PI / 180.f * safe_stoi(match[2].str()),
+                M_PI / 180.f * safe_stof(match[3].str()),
+                M_PI / 180.f * safe_stof(match[4].str()));
         } else if (std::regex_match(line, match, player_set_waypoint_reg)) {
             players.get_player(match[1].str()).set_waypoint({
                 safe_stof(match[2].str()),
@@ -716,11 +717,14 @@ void LoadScene::operator()(
                 surface_power: match[15].str().empty() ? 0 : safe_stof(match[15].str()),
                 max_velocity: match[16].str().empty() ? INFINITY : safe_stof(match[16].str()),
                 tire_id: match[17].str().empty() ? SIZE_MAX : safe_stoi(match[17].str()),
-                tire_angle: match[18].str().empty() ? NAN : safe_stof(match[18].str()),
+                tire_angle_interp: Interp<float>{
+                    string_to_vector(match[18].str(), safe_stof),
+                    string_to_vector(match[19].str(), safe_stof),
+                    OutOfRangeBehavior::CLAMP},
                 tires_z: {
-                    match[19].str().empty() ? 0 : safe_stof(match[19].str()),
                     match[20].str().empty() ? 0 : safe_stof(match[20].str()),
-                    match[21].str().empty() ? 0 : safe_stof(match[21].str())}});
+                    match[21].str().empty() ? 0 : safe_stof(match[21].str()),
+                    match[22].str().empty() ? 0 : safe_stof(match[22].str())}});
         } else if (std::regex_match(line, match, rel_key_binding_reg)) {
             relative_movable_key_bindings.push_back(RelativeMovableKeyBinding{
                 base_key: {

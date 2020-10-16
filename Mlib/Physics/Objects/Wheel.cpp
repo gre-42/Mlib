@@ -42,7 +42,7 @@ FixedArray<float, 4, 4> Wheel::get_new_relative_model_matrix() const
 void Wheel::advance_time(float dt) {
     FixedArray<float, 3> tire_angles{fixed_zeros<float, 3>()};
     if (auto it = rigid_body_.tires_.find(tire_id_); it != rigid_body_.tires_.end()) {
-        tire_angles(1) = it->second.angle / 180.f * M_PI;
+        tire_angles(1) = it->second.angle;
         position_(1) = y0_ + it->second.shock_absorber.position();
     }
     angle_x_ += dot0d(rigid_body_.rbi_.v_, rigid_body_.rbi_.abs_z()) * dt * radius_;
