@@ -357,7 +357,7 @@ void test_fixed_cholesky() {
 }
 
 void test_interp() {
-    Interp<float> interp{{0, 0.1, 2, 3}, {4.123, 2.567, 3.89, 4.2}, false, -10, 20};
+    Interp<float> interp{{0, 0.1, 2, 3}, {4.123, 2.567, 3.89, 4.2}, OutOfRangeBehavior::EXPLICIT, -10, 20};
     assert_allclose(
         Array<float>{interp(-1), interp(4.3)},
         Array<float>{-10, 20});

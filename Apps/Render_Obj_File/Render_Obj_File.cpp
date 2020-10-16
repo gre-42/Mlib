@@ -194,9 +194,7 @@ int main(int argc, char** argv) {
                          safe_stof(args.named_value("--color_gradient_max_x"))},
                         {safe_stof(args.named_value("--color_gradient_min_c")),
                          safe_stof(args.named_value("--color_gradient_max_c"))},
-                        false,
-                        safe_stof(args.named_value("--color_gradient_min_c")),
-                        safe_stof(args.named_value("--color_gradient_max_c"))};
+                        OutOfRangeBehavior::CLAMP};
                     for(auto& m : scene_node_resources.get_triangle_meshes(name)) {
                         for(auto& t : m->triangles) {
                             for(auto& v : t.flat_iterable()) {
@@ -211,9 +209,7 @@ int main(int argc, char** argv) {
                          safe_stof(args.named_value("--color_radial_max_r"))},
                         {safe_stof(args.named_value("--color_radial_min_c")),
                          safe_stof(args.named_value("--color_radial_max_c"))},
-                        false,
-                        safe_stof(args.named_value("--color_radial_min_c")),
-                        safe_stof(args.named_value("--color_radial_max_c"))};
+                        OutOfRangeBehavior::CLAMP};
                     FixedArray<float, 3> center{
                         safe_stof(args.named_value("--color_radial_center_x", "0")),
                         safe_stof(args.named_value("--color_radial_center_y", "0")),
@@ -232,9 +228,7 @@ int main(int argc, char** argv) {
                          safe_stof(args.named_value("--color_cone_max_r"))},
                         {safe_stof(args.named_value("--color_cone_min_c")),
                          safe_stof(args.named_value("--color_cone_max_c"))},
-                        false,
-                        safe_stof(args.named_value("--color_cone_min_c")),
-                        safe_stof(args.named_value("--color_cone_max_c"))};
+                        OutOfRangeBehavior::CLAMP};
                     float bottom = safe_stof(args.named_value("--color_cone_bottom", "0"));
                     float top = safe_stof(args.named_value("--color_cone_top"));
                     float cx = safe_stof(args.named_value("--color_cone_x", "0"));
