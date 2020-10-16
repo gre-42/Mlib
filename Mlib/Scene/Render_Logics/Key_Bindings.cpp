@@ -98,7 +98,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             rb->tires_z_ = k.tires_z;
         }
         for(const auto& k : absolute_movable_key_bindings_) {
-            float alpha = button_press_.key_alpha(k.base_key);
+            float alpha = button_press_.key_alpha(k.base_key, 0.05);
             if (!std::isnan(alpha)) {
                 auto m = scene_.get_node(k.node)->get_absolute_movable();
                 auto rb = dynamic_cast<RigidBody*>(m);
@@ -107,13 +107,13 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 }
                 rb->integrate_force(rb->abs_F(k.force));
                 if (any(k.rotate != 0.f)) {
-                    rb->rbi_.rotation_ = dot2d(rb->rbi_.rotation_, rodrigues((1 - alpha) * k.rotate));
+                    rb->rbi_.rotation_ = dot2d(rb->rbi_.rotation_, rodrigues(alpha * k.rotate));
                 }
                 rb->set_surface_power("main", k.surface_power);
                 rb->set_surface_power("breaks", k.surface_power);
                 rb->set_max_velocity(k.max_velocity);
                 if (k.tire_id != SIZE_MAX) {
-                    rb->set_tire_angle(k.tire_id, M_PI / 180.f * k.tire_angle_interp(std::sqrt(sum(squared(rb->rbi_.v_))) * 3.6f));
+                    rb->set_tire_angle(k.tire_id, alpha * M_PI / 180.f * k.tire_angle_interp(std::sqrt(sum(squared(rb->rbi_.v_))) * 3.6f));
                 }
                 rb->tires_z_ += k.tires_z;
             }
@@ -148,7 +148,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (rt == nullptr) {
                     throw std::runtime_error("Relative movable is not a relative transformer");
                 }
-                rt->w_ = alpha * k.angular_velocity_press + (1 - alpha) * k.angular_velocity_repeat;
+                rt->w_ = (1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat;
             }
         }
         for(const auto& k : gun_key_bindings_) {

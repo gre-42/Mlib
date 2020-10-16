@@ -50,10 +50,10 @@ bool ButtonPress::key_down(const BaseKeyBinding& k) const {
 
 bool ButtonPress::key_pressed(const BaseKeyBinding& k) {
     float alpha = key_alpha(k);
-    return !std::isnan(alpha) && (alpha == 1);
+    return !std::isnan(alpha) && (alpha == 0);
 }
 
-float ButtonPress::key_alpha(const BaseKeyBinding& k) {
+float ButtonPress::key_alpha(const BaseKeyBinding& k, float max_duration) {
     auto default_time = std::chrono::time_point<std::chrono::steady_clock>();
     std::string key_id = k.key + "-" + k.gamepad_button;
     if (key_down(k)) {
@@ -64,8 +64,7 @@ float ButtonPress::key_alpha(const BaseKeyBinding& k) {
         } else {
             duration = std::chrono::steady_clock::now() - key_down_time_[key_id];
         }
-        float max_duration = 1;
-        return (max_duration - std::min(duration.count(), max_duration)) / max_duration;
+        return std::min(duration.count(), max_duration) / max_duration;
     } else {
         key_down_time_[key_id] = default_time;
         return NAN;
