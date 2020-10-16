@@ -169,7 +169,6 @@ void HandleLineTriangleIntersection::handle()
                     float P = i_.o1->consume_tire_surface_power(i_.tire_id);
                     tangential_force = power_to_force_infinite_mass(
                         i_.cfg.break_accel,
-                        i_.cfg.tangential_accel,
                         i_.cfg.hand_break_velocity,
                         i_.cfg.stiction_coefficient * force_n1,
                         i_.cfg.friction_coefficient * force_n1,
@@ -185,7 +184,6 @@ void HandleLineTriangleIntersection::handle()
                 }
             } else {
                 tangential_force = friction_force_infinite_mass(
-                    i_.cfg.tangential_accel,
                     i_.cfg.stiction_coefficient * force_n1,
                     i_.cfg.friction_coefficient * force_n1,
                     i_.o1->mass(),

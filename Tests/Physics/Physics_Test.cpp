@@ -60,13 +60,13 @@ void test_power_to_force_negative() {
     float dt = 0.1;
     float m = 1000;
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(10, 20, 1e-1, 5e4, 5e4, INFINITY, n3, P, m, v3, dt, false);
+        auto F = power_to_force_infinite_mass(10, 1e-1, 5e4, 5e4, INFINITY, n3, P, m, v3, dt, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
     assert_isclose<float>(v3(0), 32.0889, 1e-4);
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(10, 20, 1e-1, 5e4, 5e4, INFINITY, n3, -P, m, v3, dt, false);
+        auto F = power_to_force_infinite_mass(10, 1e-1, 5e4, 5e4, INFINITY, n3, -P, m, v3, dt, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
@@ -82,26 +82,27 @@ void test_power_to_force_stiction_normal() {
     float m = 1000;
     float stiction_coefficient = 1;
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(10, 20, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, true);
-        F += power_to_force_infinite_mass(10, 20, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, true);
+        auto F = power_to_force_infinite_mass(10, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, true);
+        F += power_to_force_infinite_mass(10, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, true);
         v3 += F / m * dt;
     }
     assert_isclose<float>(v3(0), 98.0023, 1e-4);
 }
-
-void test_power_to_force_P_normal() {
-    FixedArray<float, 3> n3{1, 0, 0};
-    float P = 51484.9; // Watt, 70 PS
-    FixedArray<float, 3> v3{0, 0, 0};
-    float dt = 0.016667;
-    float m = 1000;
-    for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(10, 20, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
-        F += power_to_force_infinite_mass(10, 20, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
-        v3 += F / m * dt;
-    }
-    assert_isclose<float>(v3(0), 44.819, 1e-4);
-}
+// Infinite max_stiction_force no longer supported
+//
+// void test_power_to_force_P_normal() {
+//     FixedArray<float, 3> n3{1, 0, 0};
+//     float P = 51484.9; // Watt, 70 PS
+//     FixedArray<float, 3> v3{0, 0, 0};
+//     float dt = 0.016667;
+//     float m = 1000;
+//     for(float t = 0; t < 10; t += dt) {
+//         auto F = power_to_force_infinite_mass(10, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
+//         F += power_to_force_infinite_mass(10, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
+//         v3 += F / m * dt;
+//     }
+//     assert_isclose<float>(v3(0), 44.819, 1e-4);
+// }
 
 // void test_power_to_force_stiction_tangential() {
 //     FixedArray<float, 3> n3{1, 0, 0};
@@ -175,7 +176,7 @@ int main(int argc, const char** argv) {
     test_aim();
     test_power_to_force_negative();
     test_power_to_force_stiction_normal();
-    test_power_to_force_P_normal();
+    // test_power_to_force_P_normal();
     // test_power_to_force_stiction_tangential();
     test_com();
     return 0;

@@ -77,7 +77,6 @@ float signed_min(float v, float max_length) {
  */
 Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     float break_accel,
-    float tangential_accel,
     float hand_break_velocity,
     float max_stiction_force,
     float friction_force,
@@ -97,7 +96,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         if (float vT_sq = sum(squared(v3T)); vT_sq < 1e-12) {
             sn3T = 0;
         } else {
-            sn3T = v3T / (std::sqrt(vT_sq) + 1.f);
+            sn3T = v3T / (0.1f * std::sqrt(vT_sq) + 1.f);
         }
     }
 
@@ -105,14 +104,13 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     if (!std::isnan(P) && (std::abs(v) > std::abs(max_velocity)) && (sign(P) * v > 0)) {
         P = 0;
     }
-    Mlib::FixedArray<float, 3> res;
+    Mlib::FixedArray<float, 3> normal_force;
     // if (!std::isnan(P) && !(sign(P) * v < 0 && std::abs(v) > hand_break_velocity) && !(P == 0 && std::abs(v) < roll_velocity)) {
     if (!std::isnan(P) && (sign(P) * v > 0 || ((P != 0) == (std::abs(v) < hand_break_velocity)))) {
         // Handle acceleration and rolling.
         float F_sqrt = sign(P) * std::sqrt(squared(m * v) + 2 * std::abs(P) * m * dt);
         float F_c = (P != 0) * (-m * v);
         float x = (F_c + F_sqrt) / dt;
-        float y = tangential_accel * m;
         // std::cerr << "y / a = " << (y * std::sqrt(sum(squared(sn3T))) / max_stiction_force) << std::endl;
         // if (avoid_burnout) {
         //     x = correct_x(
@@ -120,24 +118,23 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         //         y * std::sqrt(sum(squared(sn3T))),
         //         max_stiction_force);
         // }
-        res = signed_min(x, max_stiction_force) * n3 - y * sn3T;
+        normal_force = signed_min(x, max_stiction_force) * n3;
     } else if (std::abs(v) >= hand_break_velocity) {
         // Handle breaking at high velocities.
         float x = sign(v) * break_accel * m;
-        float y = tangential_accel * m;
         // if (avoid_burnout) {
         //     x = correct_x(
         //         x,
         //         y * std::sqrt(sum(squared(sn3T))),
         //         max_stiction_force);
         // }
-        res = -signed_min(x, max_stiction_force) * n3 - y * sn3T;
+        normal_force = -signed_min(x, max_stiction_force) * n3;
     } else {
         // Handle breaking at low velocities.
         FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + 1.f);
-        res = minl2(-break_accel * m * sn3, max_stiction_force) - tangential_accel * m * sn3T;
+        normal_force = minl2(-break_accel * m * sn3, max_stiction_force);
     }
-    return minl2(res, max_stiction_force);
+    return minl2(normal_force - max_stiction_force * sn3T, max_stiction_force);
     // if (float rlen2 = sum(squared(res)); rlen2 > squared(max_stiction_force)) {
     //     res *= max_stiction_force / std::sqrt(rlen2);
     //     // if (float vlen2 = sum(squared(v3)); vlen2 < 1e-12) {
@@ -150,7 +147,6 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
 }
 
 Mlib::FixedArray<float, 3> Mlib::friction_force_infinite_mass(
-    float tangential_accel,
     float max_stiction_force,
     float friction_force,
     float m,
@@ -161,23 +157,19 @@ Mlib::FixedArray<float, 3> Mlib::friction_force_infinite_mass(
         if (float v_sq = sum(squared(v3)); v_sq < 1e-12) {
             sn3 = 0;
         } else {
-            sn3 = v3 / (std::sqrt(v_sq) + 1.f);
+            sn3 = v3 / (0.1f * std::sqrt(v_sq) + 1.f);
         }
     }
 
-    float y = tangential_accel * m;
-
-    FixedArray<float, 3> res = - y * sn3;
-
-    if (float rlen2 = sum(squared(res)); rlen2 > squared(max_stiction_force)) {
-        res *= max_stiction_force / std::sqrt(rlen2);
-        // if (float vlen2 = sum(squared(v3)); vlen2 < 1e-12) {
-        //     res = 0;
-        // } else {
-        //     res = -v3 / std::sqrt(vlen2) * friction_force;
-        // }
-    }
-    return res;
+    return minl2(-max_stiction_force * sn3, max_stiction_force);
+    // if (float rlen2 = sum(squared(res)); rlen2 > squared(friction_force)) {
+    //     res *= max_stiction_force / std::sqrt(rlen2);
+    //     if (float vlen2 = sum(squared(v3)); vlen2 < 1e-12) {
+    //         res = 0;
+    //     } else {
+    //         res = -v3 / std::sqrt(vlen2) * friction_force;
+    //     }
+    // }
 }
 
 // Mlib::FixedArray<float, 3> F;
