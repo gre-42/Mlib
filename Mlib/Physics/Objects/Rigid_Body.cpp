@@ -165,6 +165,11 @@ void RigidBody::set_surface_power(const std::string& engine_name, float surface_
     e->second.set_surface_power(surface_power);
 }
 
+float RigidBody::energy() const {
+    // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
+    return 0.5f * (mass_ * sum(squared(rbi_.v_)) + dot0d(rbi_.w_, dot1d(rbi_.abs_I(), rbi_.w_)));
+}
+
 // void RigidBody::set_tire_sliding(size_t id, bool value) {
 //     tire_sliding_[id] = value;
 // }
@@ -215,6 +220,9 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
         ostr << "x: " << pos(0) << " m" << std::endl;
         ostr << "y: " << pos(1) << " m" << std::endl;
         ostr << "z: " << pos(2) << " m" << std::endl;
+    }
+    if (log_components & LOG_ENERGY) {
+        ostr << "E: " << energy() / 1e3 << " kJ" << std::endl;
     }
     for(const auto& o : collision_observers_) {
         auto c = std::dynamic_pointer_cast<Loggable>(o);
