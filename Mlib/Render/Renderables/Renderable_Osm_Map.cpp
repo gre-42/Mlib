@@ -71,7 +71,7 @@ RenderableOsmMap::RenderableOsmMap(
     const std::regex way_end_reg("^ +</way>$");
     const std::regex node_ref_reg("^  +<nd ref=[\"'](-?\\w+)[\"'] */>$");
     const std::regex bounds_reg(" +<bounds minlat=[\"']([\\w.-]+)[\"'] minlon=[\"']([\\w.-]+)[\"'] maxlat=[\"']([\\w.-]+)[\"'] maxlon=[\"']([\\w.-]+)[\"'](?: origin=[\"'].*[\"'])? */>$");
-    const std::regex tag_reg("  +<tag k=[\"']([\\w:.-]+)[\"'] v=[\"'](.*)[\"'] */>$");
+    const std::regex tag_reg("  +<tag k=[\"']([\\w:;.&|*=-]+)[\"'] v=[\"'](.*)[\"'] */>$");
     const std::regex ignored_reg(
         "^(?:"
         "<\\?xml .*|"
