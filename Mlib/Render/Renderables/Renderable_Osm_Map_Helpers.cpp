@@ -1261,8 +1261,8 @@ std::list<FixedArray<float, 2>> Mlib::removed_duplicates(
 }
 
 ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const std::vector<std::string>& names)
-: rng0_{0, 0, names.size() - 1},
-  rng_{0}
+: rng0_{1, 0, names.size() - 1},
+  rng_{2}
 {
     const std::regex re{"^(.*?)\\(([\\d+.e-]+)\\)$"};
     names_.reserve(names.size());
