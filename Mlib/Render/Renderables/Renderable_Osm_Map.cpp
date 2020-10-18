@@ -55,6 +55,7 @@ RenderableOsmMap::RenderableOsmMap(
     bool with_terrain,
     bool with_buildings,
     bool only_raceways,
+    const std::string& highway_name_pattern,
     float steiner_point_distance,
     float curb_alpha,
     float raise_streets_amount,
@@ -291,6 +292,7 @@ RenderableOsmMap::RenderableOsmMap(
             uv_scale,
             default_street_width,
             only_raceways,
+            highway_name_pattern,
             curb_alpha,
             add_street_lights,
             with_height_bindings);

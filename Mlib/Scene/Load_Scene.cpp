@@ -159,6 +159,7 @@ void LoadScene::operator()(
         "\\s*with_terrain=(0|1)\\r?\\n"
         "\\s*with_buildings=(0|1)\\r?\\n"
         "\\s*only_raceways=(0|1)\\r?\\n"
+        "\\s*highway_name_pattern=(.*)\\r?\\n"
         "\\s*steiner_point_distance=([\\w+-.]+)\\r?\\n"
         "\\s*curb_alpha=([\\w+-.]+)\\r?\\n"
         "\\s*raise_streets_amount=([\\w+-.]+)\\r?\\n"
@@ -335,54 +336,55 @@ void LoadScene::operator()(
         std::smatch match;
         if (std::regex_match(line, match, osm_resource_reg)) {
             scene_node_resources.add_resource(
-                match[1].str(),
+                match[1].str(),                                                   // name
                 std::make_shared<RenderableOsmMap>(
                     scene_node_resources,
                     &rendering_resources,
-                    fpath(match[2].str()),
-                    fpath(match[3].str()),
-                    fpath(match[4].str()),
-                    fpath(match[5].str()),
-                    fpath(match[6].str()),
-                    fpath(match[7].str()),
-                    fpath(match[8].str()),
-                    fpath(match[9].str()),
-                    fpath(match[10].str()),
-                    fpath(match[11].str()),
-                    fpath(match[12].str()),
-                    fpath(match[13].str()),
-                    fpath(match[14].str()),
-                    fpath(match[15].str()),
-                    blend_mode_from_string(match[16].str()),
-                    fpath(match[17].str()),
-                    string_to_vector(match[18].str()),
-                    string_to_vector(match[19].str()),
-                    safe_stof(match[20].str()),
-                    safe_stof(match[21].str()),
-                    safe_stof(match[22].str()),
-                    safe_stof(match[23].str()),
-                    safe_stof(match[24].str()),
-                    safe_stof(match[25].str()),
-                    safe_stob(match[26].str()),
-                    safe_stob(match[27].str()),
-                    safe_stof(match[28].str()),
-                    safe_stof(match[29].str()),
-                    safe_stof(match[30].str()),
-                    safe_stob(match[31].str()),
-                    safe_stob(match[32].str()),
-                    safe_stof(match[33].str()),
-                    safe_stof(match[34].str()),
-                    safe_stof(match[35].str()),
-                    safe_stof(match[36].str()),
-                    safe_stob(match[37].str()),
-                    safe_stob(match[38].str()),
-                    safe_stob(match[39].str()),
-                    safe_stof(match[40].str()),
-                    safe_stof(match[41].str()),
-                    safe_stof(match[42].str()),
-                    safe_stob(match[43].str()),
-                    safe_stof(match[44].str()),
-                    safe_stob(match[45].str())));
+                    fpath(match[2].str()),                                        // filename
+                    fpath(match[3].str()),                                        // heightmap
+                    fpath(match[4].str()),                                        // terrain_texture
+                    fpath(match[5].str()),                                        // dirt_texture
+                    fpath(match[6].str()),                                        // asphalt_texture
+                    fpath(match[7].str()),                                        // street_texture
+                    fpath(match[8].str()),                                        // path_texture
+                    fpath(match[9].str()),                                        // curb_street_texture
+                    fpath(match[10].str()),                                       // curb_path_texture
+                    fpath(match[11].str()),                                       // facade_texture
+                    fpath(match[12].str()),                                       // facade_texture_2
+                    fpath(match[13].str()),                                       // facade_texture_3
+                    fpath(match[14].str()),                                       // ceiling_texture
+                    fpath(match[15].str()),                                       // barrier_texture
+                    blend_mode_from_string(match[16].str()),                      // barrier_blend_mode
+                    fpath(match[17].str()),                                       // roof_texture
+                    string_to_vector(match[18].str()),                            // tree_resource_names
+                    string_to_vector(match[19].str()),                            // grass_resource_names
+                    safe_stof(match[20].str()),                                   // default_street_width
+                    safe_stof(match[21].str()),                                   // roof_width
+                    safe_stof(match[22].str()),                                   // scale
+                    safe_stof(match[23].str()),                                   // uv_scale
+                    safe_stof(match[24].str()),                                   // uv_scale_facade
+                    safe_stof(match[25].str()),                                   // uv_scale_barrier_wall
+                    safe_stob(match[26].str()),                                   // with_roofs
+                    safe_stob(match[27].str()),                                   // with_ceilings
+                    safe_stof(match[28].str()),                                   // building_bottom
+                    safe_stof(match[29].str()),                                   // default_building_top
+                    safe_stof(match[30].str()),                                   // default_barrier_top
+                    safe_stob(match[31].str()),                                   // remove_backfacing_triangles
+                    safe_stob(match[32].str()),                                   // with_tree_nodes
+                    safe_stof(match[33].str()),                                   // forest_outline_tree_distance
+                    safe_stof(match[34].str()),                                   // forest_outline_tree_inwards_distance
+                    safe_stof(match[35].str()),                                   // much_grass_distance
+                    safe_stof(match[36].str()),                                   // raceway_beacon_distance
+                    safe_stob(match[37].str()),                                   // with_terrain
+                    safe_stob(match[38].str()),                                   // with_buildings
+                    safe_stob(match[39].str()),                                   // only_raceways
+                    match[40].str(),                                              // highway_name_pattern
+                    safe_stof(match[41].str()),                                   // steiner_point_distance
+                    safe_stof(match[42].str()),                                   // curb_alpha
+                    safe_stof(match[43].str()),                                   // raise_streets_amount
+                    safe_stob(match[44].str()),                                   // add_street_lights
+                    safe_stof(match[45].str()),                                   // max_wall_width
+                    safe_stob(match[46].str())));                                 // with_height_bindings
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                 fpath(match[2].str()),

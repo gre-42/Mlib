@@ -172,6 +172,7 @@ void draw_streets(
     float uv_scale,
     float default_street_width,
     bool only_raceways,
+    const std::string& name_pattern,
     float curb_alpha,
     bool add_street_lights,
     bool with_height_bindings);

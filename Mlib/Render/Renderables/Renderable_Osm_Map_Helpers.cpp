@@ -406,10 +406,12 @@ void Mlib::draw_streets(
     float uv_scale,
     float default_street_width,
     bool only_raceways,
+    const std::string& name_pattern,
     float curb_alpha,
     bool add_street_lights,
     bool with_height_bindings)
 {
+    std::regex name_re{name_pattern};
     std::map<std::string, std::map<float, AngleWay>> node_angles;
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;
     std::map<std::string, std::map<AngleCurb, FixedArray<float, 2>>> node_hole_contours;
@@ -449,6 +451,9 @@ void Mlib::draw_streets(
         }
         if (tags.find("highway") != tags.end() && (!excluded_highways.contains(tags.at("highway")))) {
             if (only_raceways && (tags.at("highway") != "raceway")) {
+                continue;
+            }
+            if (!name_pattern.empty() && ((tags.find("name") == tags.end()) || !std::regex_match(tags.at("name"), name_re))) {
                 continue;
             }
             float width = scale * parse_meters(tags, "width", default_street_width);
