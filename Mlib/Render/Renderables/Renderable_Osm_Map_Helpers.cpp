@@ -407,6 +407,7 @@ void Mlib::draw_streets(
     float default_street_width,
     bool only_raceways,
     const std::string& name_pattern,
+    const std::set<std::string>& path_tags,
     float curb_alpha,
     bool add_street_lights,
     bool with_height_bindings)

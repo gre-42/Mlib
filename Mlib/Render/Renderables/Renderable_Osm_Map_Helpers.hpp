@@ -25,7 +25,7 @@ static const float roof_height0 = 5;
 static const float roof_height1 = 9;
 // grep highway map.osm | grep -v pedestrian | grep -v path | grep -v footway | grep -v cycleway
 static const std::set<std::string> excluded_highways = {"pedestrian", "path", "footway", "cycleway", "steps"};
-static const std::set<std::string> path_tags = {"track", "tertiary"};
+// static const std::set<std::string> path_tags = {"track", "tertiary"};
 static const std::set<std::string> excluded_highway_tags = {"layer"};
 static const std::set<std::string> included_barriers = {"wall", "guard_rail"};
 
@@ -173,6 +173,7 @@ void draw_streets(
     float default_street_width,
     bool only_raceways,
     const std::string& name_pattern,
+    const std::set<std::string>& path_tags,
     float curb_alpha,
     bool add_street_lights,
     bool with_height_bindings);

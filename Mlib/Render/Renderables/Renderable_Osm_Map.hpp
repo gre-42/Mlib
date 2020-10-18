@@ -54,6 +54,7 @@ public:
         bool with_buildings = true,
         bool only_raceways = false,
         const std::string& highway_name_pattern = "",
+        const std::set<std::string>& path_tags = {"track", "tertiary"},
         float steiner_point_distance = 0.3,
         float curb_alpha = 0.9,
         float raise_streets_amount = 0.2,

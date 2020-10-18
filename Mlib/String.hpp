@@ -1,6 +1,7 @@
 #pragma once
 #include <compare>
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,7 @@ bool safe_stob(const std::string& s);
 std::strong_ordering operator <=> (const std::string& a, const std::string& b);
 std::list<std::string> string_to_list(const std::string& str);
 std::vector<std::string> string_to_vector(const std::string& str);
+std::set<std::string> string_to_set(const std::string& str);
 std::string join(const std::string& delimiter, const std::list<std::string>& lst);
 
 template <class TOperation>
