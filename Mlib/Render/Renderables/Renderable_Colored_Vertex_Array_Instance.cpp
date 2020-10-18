@@ -9,6 +9,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Light.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Visibility_Check.hpp>
 
 using namespace Mlib;
 
@@ -40,14 +41,12 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         if (render_pass.external.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE && render_pass.external.black_node_name.empty() && cva->material.occluder_type == OccluderType::OFF) {
             continue;
         }
+        VisibilityCheck vc{mvp};
         if (rcva_->instances_ == nullptr) {
             if (cva->material.aggregate_mode != AggregateMode::OFF) {
                 continue;
             }
-            if (cva->material.is_small &&
-                ((mvp(2, 3) < scene_graph_config.min_distance_small) ||
-                (sum(squared(t3_from_4x4(mvp))) < squared(scene_graph_config.min_distance_small)) ||
-                (sum(squared(t3_from_4x4(mvp))) > squared(scene_graph_config.max_distance_small))))
+            if (!vc.is_visible(cva->material, scene_graph_config))
             {
                 continue;
             }
@@ -87,7 +86,6 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         bool has_lightmap_depth = rcva_->render_textures_ && (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
         bool has_dirtmap = rcva_->render_textures_ && (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE);
         bool has_instances = (rcva_->instances_ != nullptr);
-        bool orthographic = (mvp(3, 0) == 0 && mvp(3, 1) == 0 && mvp(3, 2) == 0 && mvp(3, 3) == 1);
         if (!has_texture && has_dirtmap) {
             std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture_descriptor.color);
         }
@@ -128,7 +126,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 ambience: OrderableFixedArray{ambience},
                 diffusivity: OrderableFixedArray{diffusivity},
                 specularity: OrderableFixedArray{specularity},
-                orthographic: orthographic},
+                orthographic: vc.orthographic()},
             filtered_lights,
             light_noshadow_indices,
             light_shadow_indices,
@@ -186,7 +184,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             }
         }
         if (has_instances || any(specularity != 0.f)) {
-            if (orthographic) {
+            if (vc.orthographic()) {
                 auto d = z3_from_4x4(iv);
                 d /= std::sqrt(sum(squared(d)));
                 CHK(glUniform3fv(rp.view_dir, 1, (const GLfloat*) d.flat_begin()));
@@ -343,10 +341,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
 {
     for(const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
-            if ((!cva->material.is_small) ||
-                (// (mvp(2, 3) > scene_graph_config.min_distance_small) && // no mvp-check to support rotations
-                 (sum(squared(t3_from_4x4(mvp))) > squared(scene_graph_config.min_distance_small)) &&
-                 (sum(squared(t3_from_4x4(mvp))) < squared(scene_graph_config.max_distance_small))))
+            if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config))
             {
                 float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
                     ? -mvp(2, 3)
@@ -377,10 +372,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
 {
     for(const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
-            if ((!cva->material.is_small) ||
-                (// (mvp(2, 3) > scene_graph_config.min_distance_small) && // no mvp-check to support rotations
-                 (sum(squared(t3_from_4x4(mvp))) > squared(scene_graph_config.min_distance_small)) &&
-                 (sum(squared(t3_from_4x4(mvp))) < squared(scene_graph_config.max_distance_small))))
+            if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config))
             {
                 float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
                     ? -mvp(2, 3)
