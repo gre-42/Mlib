@@ -671,7 +671,7 @@ void LoadScene::operator()(
                 safe_stof(match[3].str()));
         } else if (std::regex_match(line, match, player_set_tire_angle_reg)) {
             players.get_player(match[1].str()).set_tire_angle(
-                M_PI / 180.f * safe_stoi(match[2].str()),
+                safe_stoi(match[2].str()),
                 M_PI / 180.f * safe_stof(match[3].str()),
                 M_PI / 180.f * safe_stof(match[4].str()));
         } else if (std::regex_match(line, match, player_set_waypoint_reg)) {
