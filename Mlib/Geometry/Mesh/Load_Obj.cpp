@@ -243,8 +243,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             } else if (std::regex_match(line, match, usemtl_reg)) {
                 current_mtl = mtllib.at(match[1].str());
                 if (!current_mtl.texture.empty()) {
-                    std::string p = fs::path(filename).parent_path().string();
-                    tl.material_.texture_descriptor.color = p == "" ? current_mtl.texture : p + "/" + current_mtl.texture;
+                    fs::path p = fs::path(filename).parent_path();
+                    tl.material_.texture_descriptor.color = p.empty() ? current_mtl.texture : fs::weakly_canonical(p / current_mtl.texture).string();
                 } else {
                     tl.material_.texture_descriptor = TextureDescriptor{color: ""};
                 }
