@@ -89,7 +89,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         if (!has_texture && has_dirtmap) {
             std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture_descriptor.color);
         }
-        FixedArray<float, 3> ambience = (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.ambience : fixed_zeros<float, 3>();
+        FixedArray<float, 3> ambience = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.ambience : fixed_zeros<float, 3>();
         FixedArray<float, 3> diffusivity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.diffusivity : fixed_zeros<float, 3>();
         FixedArray<float, 3> specularity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.specularity : fixed_zeros<float, 3>();
         if (filtered_lights.size() == 1) {
