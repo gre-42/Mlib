@@ -61,3 +61,7 @@ void RenderableObjFile::generate_triangle_rays(size_t npoints, const FixedArray<
 void RenderableObjFile::generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
     return rva_->generate_ray(from, to);
 }
+
+AggregateMode RenderableObjFile::aggregate_mode() const {
+    return rva_->aggregate_mode();
+}

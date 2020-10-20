@@ -26,6 +26,7 @@ public:
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
+    virtual AggregateMode aggregate_mode() const override;
 private:
     std::shared_ptr<RenderableColoredVertexArray> rva_;
 
