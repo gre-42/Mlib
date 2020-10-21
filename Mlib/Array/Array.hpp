@@ -33,9 +33,6 @@ template <class TDerived> inline bool all(const BaseDenseArray<TDerived, bool>& 
 template <class TData>
 Array<TData> full(const ArrayShape& shape, const TData& value);
 
-template <class TData, class TBinop>
-Array<TData> array_array_binop(const Array<TData>& a, const Array<TData>& b, const TBinop &binop);
-
 template <class TData>
 class ArrayIterator {
 public:
