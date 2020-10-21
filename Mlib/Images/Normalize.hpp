@@ -9,7 +9,7 @@ TData clipped_element(const TData& v, const TData& low, const TData& high) {
     if (std::isnan(v)) {
         return v;
     } else {
-        return std::min(std::max(low, v), high);
+        return std::clamp(v, low, high);
     }
 }
 
