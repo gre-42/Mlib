@@ -10,6 +10,8 @@
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
+#include <stb_image/stb_image_write.h>
+#include <Mlib/String.hpp>
 
 using namespace Mlib;
 
@@ -46,23 +48,34 @@ Array<float> gaussian_random_field(const TPk& Pk = [](float k){return std::pow(k
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: proc_terrain --heightmap <heightmap.pgm> --result <result.ppm> --seed <seed>",
+        "Usage: proc_terrain --heightmap <heightmap.pgm> --grf <grf.pgm> --blended <blended.ppm> --alpha <alpha> --seed <seed>",
         {},
-        {"--heightmap", "--result", "--seed"});
+        {"--heightmap", "--grf", "--blended", "--alpha", "--seed"});
 
     const auto args = parser.parsed(argc, argv);
 
-    Array<float> heightmap = PgmImage::load_from_file(args.named_value("--heightmap")).to_float();
-    Array<float> noise = normal_random_array<float>(heightmap.shape(), 1);
-    noise = lowpass_filter_NWE(noise, std::pow(3.f, 2.f) - Mlib::pow(linspace(-3.f, 3.f, 10), 2.f), NAN);
+    // Array<float> heightmap = PgmImage::load_from_file(args.named_value("--heightmap")).to_float();
+    // Array<float> noise = normal_random_array<float>(heightmap.shape(), 1);
+    // noise = lowpass_filter_NWE(noise, std::pow(3.f, 2.f) - Mlib::pow(linspace(-3.f, 3.f, 10), 2.f), NAN);
     // PgmImage res = PgmImage::from_float(maximum(0.f, gaussian_filter_NWE(100.f * laplace_filter(heightmap, NAN), 1.f, NAN)));
     // PgmImage res = PgmImage::from_float(heightmap);
-    PgmImage res = PgmImage::from_float(noise);
-    res.save_to_file(args.named_value("--result"));
-    for (float alpha : Array<float>{-4.0, -3.0, -2.0}.flat_iterable()) {
-        Array<float> out = gaussian_random_field([alpha](float k){return std::pow(k, alpha);}, 256);
-        out = normalized_and_clipped(out);
-        PgmImage::from_float(out).save_to_file("/tmp/grf-" + std::to_string(alpha) + ".pgm");
+    // PgmImage res = PgmImage::from_float(noise);
+    // res.save_to_file(args.named_value("--result"));
+    float alpha = safe_stof(args.named_value("--alpha"));
+    Array<float> grf = gaussian_random_field([alpha](float k){return std::pow(k, alpha);}, 1024);
+    // std::cerr << min(grf) << " " << max(grf) << std::endl;
+    grf = normalized_and_clipped(grf, -0.004f, 0.004f);
+    if (args.has_named_value("--grf")) {
+        PgmImage::from_float(grf).save_to_file(args.named_value("--grf"));
+    }
+    if (args.has_named_value("--blended")) {
+        Array<float> green = PpmImage{grf.shape(), Rgb24{100, 106, 32}}.to_float_rgb();
+        Array<float> brown = PpmImage{grf.shape(), Rgb24{175, 146, 105}}.to_float_rgb();
+        Array<float> res{ArrayShape{3}.concatenated(grf.shape())};
+        for(size_t h = 0; h < 3; ++h) {
+            res[h] = green[h] * grf + brown[h] * (1.f - grf);
+        }
+        PpmImage::from_float_rgb(res).save_to_file(args.named_value("--blended"));
     }
     // Array<std::complex<float>> d = normal_random_complex_array<float>(ArrayShape{10, 3}, 1);
     // std::cerr << d << std::endl;
