@@ -117,11 +117,11 @@ void test_lstsq_chol() {
 }
 
 void test_lstsq_chol_complex() {
-    auto a = random_complex_array<float>(ArrayShape{5, 3}, 1);
+    auto a = uniform_random_complex_array<float>(ArrayShape{5, 3}, 1);
     assert_allclose(lstsq_chol(a, a), identity_array<std::complex<float>>(3));
 
-    auto as = random_complex_array<float>(ArrayShape{5, 5}, 1);
-    auto b = random_complex_array<float>(ArrayShape{5, 2}, 3);
+    auto as = uniform_random_complex_array<float>(ArrayShape{5, 5}, 1);
+    auto b = uniform_random_complex_array<float>(ArrayShape{5, 2}, 3);
     assert_allclose(dot(as, lstsq_chol(as, b)), b, 1e-2);
 }
 
