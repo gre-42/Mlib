@@ -16,9 +16,9 @@ using namespace Mlib;
 /**
  * From: https://andrewwalker.github.io/statefultransitions/post/gaussian-fields/
  */
-Array<size_t> fft_indgen(size_t n) {
-    Array<size_t> a = arange<size_t>(n / 2 + 1);
-    Array<size_t> b = n - arange<size_t, size_t>(1, n / 2);
+Array<float> fft_indgen(size_t n) {
+    Array<float> a = arange<float>(n / 2 + 1);
+    Array<float> b = -arange<float, size_t>(1, n / 2);
     return a.appended(b.reversed());
 }
 
@@ -33,9 +33,9 @@ Array<float> gaussian_random_field(const TPk& Pk = [](float k){return std::pow(k
     Array<std::complex<float>> noise = fft(normal_random_array<float>(ArrayShape{size, size}, seed).casted<std::complex<float>>());
     Array<float> amplitude{ArrayShape{size, size}};
     size_t i = 0;
-    for (size_t kx : fft_indgen(size).flat_iterable()) {
+    for (float kx : fft_indgen(size).flat_iterable()) {
         size_t j = 0;
-        for (size_t ky : fft_indgen(size).flat_iterable()) {
+        for (float ky : fft_indgen(size).flat_iterable()) {
             amplitude(i, j) = Pk2(kx, ky);
             ++j;
         }
@@ -64,5 +64,15 @@ int main(int argc, char** argv) {
         out = normalized_and_clipped(out);
         PgmImage::from_float(out).save_to_file("/tmp/grf-" + std::to_string(alpha) + ".pgm");
     }
+    // Array<std::complex<float>> d = normal_random_complex_array<float>(ArrayShape{10, 3}, 1);
+    // std::cerr << d << std::endl;
+    // std::cerr << ifft(fft(d)) << std::endl;
+    // fft_inplace(d);
+    // ifft_inplace(d);
+    // std::cerr << d << std::endl;
+
+    // auto dd = Array<std::complex<float>>{{1, 2, 3, 4}, {6, 2, 8, 9}}; //real(d).casted<std::complex<float>>();
+    // std::cerr << real(dd) << std::endl;
+    // std::cerr << fft(dd) << std::endl;
     return 0;
 }
