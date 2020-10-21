@@ -616,22 +616,6 @@ Array<TData> nans(const ArrayShape& shape) {
 }
 
 template <class TData>
-Array<TData> arange(size_t length) {
-    Array<TData> a{ArrayShape{length}};
-    for(size_t i = 0; i < length; ++i) {
-        a(i) = i;
-    }
-    return a;
-}
-
-template <class TFloat>
-Array<std::complex<TFloat>> random_complex_array(const ArrayShape& shape, size_t seed) {
-    auto ar = random_array<std::complex<TFloat>>(shape, seed);
-    auto ai = random_array<std::complex<TFloat>>(shape, seed + 1);
-    return ar + std::complex<TFloat>(0, 1) * ai;
-}
-
-template <class TData>
 void identity_array(Array<TData>& a) {
     if (a.ndim() == 2) {
         for(size_t r = 0; r < a.shape(0); ++r){

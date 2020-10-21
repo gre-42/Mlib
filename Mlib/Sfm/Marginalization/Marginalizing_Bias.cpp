@@ -6,6 +6,7 @@
 #include <Mlib/Math/Set_Difference.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Sfm/Marginalization/Regrid_Array.hpp>
+#include <Mlib/Stats/Arange.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 
 using namespace Mlib;

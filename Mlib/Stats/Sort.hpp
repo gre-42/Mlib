@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Stats/Arange.hpp>
 
 namespace Mlib {
 

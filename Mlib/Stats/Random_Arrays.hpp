@@ -1,7 +1,15 @@
 #pragma once
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <complex>
 
 namespace Mlib {
+
+template <class TFloat>
+Array<std::complex<TFloat>> uniform_random_complex_array(const ArrayShape& shape, size_t seed) {
+    auto ar = random_array<std::complex<TFloat>>(shape, seed);
+    auto ai = random_array<std::complex<TFloat>>(shape, seed + 1);
+    return ar + std::complex<TFloat>(0, 1) * ai;
+}
 
 /*
  * Uniformly random array
