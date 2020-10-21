@@ -74,9 +74,8 @@ template <class TDerived, class TData> auto isnan(const BaseDenseArray<TDerived,
 template <class TDerived, class TData> auto isinf(const BaseDenseArray<TDerived, TData>& a);
 template <class TDerived, class TData> auto isfinite(const BaseDenseArray<TDerived, TData>& a);
 
-template <class TDerived, class TData>
-auto abs(const BaseDenseArray<TDerived, TData>& a);
-template <class TFloat> Array<TFloat> abs(const Array<std::complex<TFloat>>& a);
+template <class TDerived, class TData> auto abs(const BaseDenseArray<TDerived, TData>& a);
+template <class TDerived, class TFloat> auto abs(const BaseDenseArray<TDerived, std::complex<TFloat>>& a);
 
 template <class TDerived> inline bool any(const BaseDenseArray<TDerived, bool>& a);
 Array<bool> any(const Array<bool>& a, size_t axis);
