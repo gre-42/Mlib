@@ -2,8 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Rvalue_Address.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
-#include <ostream>
+#include <random>
 #include <sstream>
 
 //#define MM_DEBG(x) std::cerr << x << std::endl;
@@ -591,24 +590,6 @@ template <class TData>
 Array<TData> random_array3(const ArrayShape& shape, unsigned int seed) {
     Array<TData> a(shape);
     randomize_array3(a, seed);
-    return a;
-}
-
-/*
- * Uniformly random array
- */
-template <class TDerived, class TData>
-void randomize_array4(BaseDenseArray<TDerived, TData>& a, unsigned int seed) {
-    UniformRandomNumberGenerator<TData> r{seed};
-    for(TData& v : a->flat_iterable()) {
-        v = r();
-    }
-}
-
-template <class TData>
-Array<TData> random_array4(const ArrayShape& shape, unsigned int seed) {
-    Array<TData> a(shape);
-    randomize_array4(a, seed);
     return a;
 }
 

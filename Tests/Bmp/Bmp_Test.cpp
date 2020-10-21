@@ -3,6 +3,7 @@
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -50,7 +51,7 @@ void ppm_test() {
 }
 
 void pgm_test() {
-    auto im = PgmImage::from_float(random_array4<float>(ArrayShape{5, 6}, 1));
+    auto im = PgmImage::from_float(uniform_random_array<float>(ArrayShape{5, 6}, 1));
     im.save_to_file("TestOut/rpgm.pgm");
     auto ld = PgmImage::load_from_file("TestOut/rpgm.pgm");
     assert_allequal(im, ld);

@@ -1,6 +1,7 @@
 #include "Synthetic_Scene.hpp"
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Sfm/Marginalization/UUID.hpp>
+#include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <chrono>
 
 using namespace Mlib;

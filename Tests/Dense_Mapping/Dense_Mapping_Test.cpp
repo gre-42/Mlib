@@ -1,6 +1,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>
 
@@ -17,14 +18,14 @@ static float xsum(const Array<float>& v) {
 }
 
 void test_numerical_differentiation() {
-    Array<float> g = random_array4<float>(ArrayShape{6, 8}, 5);
+    Array<float> g = uniform_random_array<float>(ArrayShape{6, 8}, 5);
     float theta = 5;
     float lambda = 0.1;
     float epsilon = 1.1;
-    Array<float> dsi = 1.f + random_array4<float>(ArrayShape{3}.concatenated(g.shape()), 1);
-    Array<float> d = 1.f + random_array4<float>(g.shape(), 2);
-    Array<float> a = 1.f + random_array4<float>(g.shape(), 3);
-    Array<float> q = random_array4<float>(
+    Array<float> dsi = 1.f + uniform_random_array<float>(ArrayShape{3}.concatenated(g.shape()), 1);
+    Array<float> d = 1.f + uniform_random_array<float>(g.shape(), 2);
+    Array<float> a = 1.f + uniform_random_array<float>(g.shape(), 3);
+    Array<float> q = uniform_random_array<float>(
         Dm::regularizer == Dm::Regularizer::DIFFERENCE_OF_BOXES
             ? g.shape()
             : ArrayShape{2}.concatenated(g.shape()),
@@ -118,8 +119,8 @@ void test_boundary_and_nan() {
     size_t nR = 5;
     size_t nH = 5;
     size_t nC = 4;
-    Array<float> dsi = random_array4<float>(ArrayShape{nH, nR, nC}, 1);
-    Array<float> g = random_array4<float>(ArrayShape{nR, nC}, 1);
+    Array<float> dsi = uniform_random_array<float>(ArrayShape{nH, nR, nC}, 1);
+    Array<float> g = uniform_random_array<float>(ArrayShape{nR, nC}, 1);
     Dm::DtamParameters p;
     p.nsteps_ = 20;
     Array<float> a = Dm::dense_mapping(dsi, g, p);

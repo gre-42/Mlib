@@ -12,6 +12,7 @@
 #include <Mlib/Math/Sort_Svd.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 
 using namespace Mlib;
 
@@ -154,9 +155,9 @@ void test_solve_svd() {
 
 void test_solve_svd_complex() {
     Array<std::complex<float>> a = (
-        random_array4<std::complex<float>>(ArrayShape{5, 3}, 1) +
+        uniform_random_array<std::complex<float>>(ArrayShape{5, 3}, 1) +
         std::complex<float>(0, 1) *
-        random_array4<std::complex<float>>(ArrayShape{5, 3}, 2));
+        uniform_random_array<std::complex<float>>(ArrayShape{5, 3}, 2));
     Array<std::complex<float>> uT;
     Array<float> s;
     Array<std::complex<float>> vT;
@@ -173,15 +174,15 @@ void test_cond() {
 
 void test_approximate_rank() {
     Array<double> a = dot(
-        random_array4<double>(ArrayShape{6, 2}, 1),
-        random_array4<double>(ArrayShape{2, 5}, 2));
+        uniform_random_array<double>(ArrayShape{6, 2}, 1),
+        uniform_random_array<double>(ArrayShape{2, 5}, 2));
     assert_allclose(approximate_rank(a, 2), a);
     assert_isclose(approximate_rank(a, 1)(0, 0), 0.728259);
 }
 
 void test_batch_dot() {
-    Array<float> a = random_array4<float>(ArrayShape{3, 4}, 1);
-    Array<float> b = random_array4<float>(ArrayShape{4, 5}, 2);
+    Array<float> a = uniform_random_array<float>(ArrayShape{3, 4}, 1);
+    Array<float> b = uniform_random_array<float>(ArrayShape{4, 5}, 2);
     assert_allclose(dot(a, b), batch_dot(a, b));
 }
 
@@ -210,7 +211,7 @@ void test_sum_axis() {
     assert_allclose<float>(sum(b, 0), Array<float>{0, 5, 10});
     assert_allclose<float>(sum(b, 1), Array<float>{3, 12});
 
-    Array<float> c = random_array4<float>(ArrayShape{2, 4, 5}, 1);
+    Array<float> c = uniform_random_array<float>(ArrayShape{2, 4, 5}, 1);
     assert_allclose<float>(sum(c, 0), c[0] + c[1]);
 }
 
@@ -254,7 +255,7 @@ void test_power() {
 }
 
 void test_fixed_shape() {
-    Array<float> ad = random_array4<float>(ArrayShape{3, 4}, 1);
+    Array<float> ad = uniform_random_array<float>(ArrayShape{3, 4}, 1);
     FixedArray<float, 3, 4> a{ad};
     // auto x = rm_last(a);
     FasUtils::reshape_fixed(a, FasUtils::make_shape(a).erased_first().concatenated(FixedArrayShape<3>()));
@@ -262,7 +263,7 @@ void test_fixed_shape() {
     FasUtils::rows_as_1D(FasUtils::make_shape(a));
     FasUtils::columns_as_1D(FasUtils::make_shape(a));
 
-    Array<float> bd = random_array4<float>(ArrayShape{4, 5, 6}, 2);
+    Array<float> bd = uniform_random_array<float>(ArrayShape{4, 5, 6}, 2);
     FixedArray<float, 4, 5, 6> b{bd};
     assert_isequal(dot(a, b).ndim(), dot(ad, bd).ndim());
     assert_isclose(
@@ -271,8 +272,8 @@ void test_fixed_shape() {
 }
 
 void test_fixed_outer() {
-    Array<float> ad = random_array4<float>(ArrayShape{3, 4}, 1);
-    Array<float> bd = random_array4<float>(ArrayShape{6, 5, 4}, 2);
+    Array<float> ad = uniform_random_array<float>(ArrayShape{3, 4}, 1);
+    Array<float> bd = uniform_random_array<float>(ArrayShape{6, 5, 4}, 2);
     FixedArray<float, 3, 4> a{ad};
     FixedArray<float, 6, 5, 4> b{bd};
 
@@ -283,9 +284,9 @@ void test_fixed_outer() {
 }
 
 void test_regularization() {
-    auto Jg = random_array4<float>(ArrayShape{6, 3}, 1);
-    auto residual = random_array4<float>(ArrayShape{6}, 2);
-    auto x0 = random_array4<float>(ArrayShape{3}, 3);
+    auto Jg = uniform_random_array<float>(ArrayShape{6, 3}, 1);
+    auto residual = uniform_random_array<float>(ArrayShape{6}, 2);
+    auto x0 = uniform_random_array<float>(ArrayShape{3}, 3);
     auto ATA = dot2d(Jg.vH(), Jg);
     auto ATr = dot1d(Jg.vH(), residual);
 
@@ -298,8 +299,8 @@ void test_regularization() {
 }
 
 void test_gaussian_elimination() {
-    Array<float> a = random_array4<float>(ArrayShape{5, 5}, 2);
-    Array<float> b = random_array4<float>(ArrayShape{5}, 2);
+    Array<float> a = uniform_random_array<float>(ArrayShape{5, 5}, 2);
+    Array<float> b = uniform_random_array<float>(ArrayShape{5}, 2);
     Array<float> x = gaussian_elimination_1d(a, b);
     assert_allclose(dot(a, x), b);
 
@@ -310,11 +311,11 @@ void test_gaussian_elimination() {
 }
 
 void test_cg() {
-    Array<float> a = random_array4<float>(ArrayShape{5, 5}, 1);
+    Array<float> a = uniform_random_array<float>(ArrayShape{5, 5}, 1);
     Array<float> A = dot2d(a.vH(), a);
-    Array<float> b = random_array4<float>(ArrayShape{A.shape(0)}, 2);
+    Array<float> b = uniform_random_array<float>(ArrayShape{A.shape(0)}, 2);
     Array<float> x = solve_symm_1d(A, b);
-    Array<float> x0 = x + 10.f * random_array4<float>(x.shape(), 3);
+    Array<float> x0 = x + 10.f * uniform_random_array<float>(x.shape(), 3);
     Array<float> x1 = cg_simple(A, x0, b, 100, float(1e-6));
     assert_allclose(x, x1, 1e-2);
 }
@@ -341,13 +342,13 @@ void test_nonzero_ids() {
 }
 
 void test_fixed_transposed() {
-    FixedArray<float, 3, 4> a{random_array4<float>(ArrayShape{3, 4}, 1)};
+    FixedArray<float, 3, 4> a{uniform_random_array<float>(ArrayShape{3, 4}, 1)};
     assert_allclose(a.to_array().T(), a.T().to_array());
 }
 
 void test_fixed_cholesky() {
-    Array<float> a_ = random_array4<float>(ArrayShape{5, 5}, 1);
-    Array<float> b = random_array4<float>(ArrayShape{5}, 2);
+    Array<float> a_ = uniform_random_array<float>(ArrayShape{5, 5}, 1);
+    Array<float> b = uniform_random_array<float>(ArrayShape{5}, 2);
     Array<float> a = dot2d(a_.vH(), a_);
     FixedArray<float, 5, 5> fa{a};
     FixedArray<float, 5> fb{b};

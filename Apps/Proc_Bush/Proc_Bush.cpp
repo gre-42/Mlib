@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Stats/Fixed_Random_Arrays.hpp>
 #include <Mlib/String.cpp>
 #include <stdexcept>
 #include <stdio.h>
@@ -63,7 +64,7 @@ Bush generate_bush(size_t nplanes, unsigned int seed) {
     result.vertices.reserve(4 * nplanes);
     result.faces.reserve(nplanes);
     for(size_t i = 0; i < nplanes; ++i) {
-        FixedArray<float, 3> n = fixed_random_array4<float, 3>(seed + i);
+        FixedArray<float, 3> n = fixed_random_uniform_array<float, 3>(seed + i);
         n(2) = 0;
         n /= std::sqrt(sum(squared(n)));
         float angle = UniformRandomNumberGenerator<float>{(unsigned int)(seed + i + 1), 0, 2 * M_PI}();

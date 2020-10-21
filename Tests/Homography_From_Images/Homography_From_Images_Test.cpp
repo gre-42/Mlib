@@ -2,6 +2,7 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Sfm/Homography/Homography_From_Images.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>
 
@@ -15,8 +16,8 @@ void test_jacobian() {
         {0.5, 0, 0.9},
         {0, 0.7, 0.2},
         {0, 0, 1}};
-    Array<float> theta = random_array4<float>(ArrayShape{3}, 3);
-    Array<float> x = random_array4<float>(ArrayShape{2}, 2);
+    Array<float> theta = uniform_random_array<float>(ArrayShape{3}, 3);
+    Array<float> x = uniform_random_array<float>(ArrayShape{2}, 2);
     Array<float> num = numerical_differentiation([&](const Array<float>& ttheta){
             return transform_coordinates(tait_bryan_angles_2_matrix(ttheta), x, intrinsic_matrix);
         }, theta);
@@ -30,8 +31,8 @@ void test_intensity_jacobian() {
         {0, 0.7, 0.2},
         {0, 0, 1}};
     Array<float> theta{0.2, 0.1, 0.4};
-    Array<float> im_r = random_array4<float>(ArrayShape{4, 5}, 1);
-    Array<float> im_l = random_array4<float>(ArrayShape{4, 5}, 2);
+    Array<float> im_r = uniform_random_array<float>(ArrayShape{4, 5}, 1);
+    Array<float> im_l = uniform_random_array<float>(ArrayShape{4, 5}, 2);
     Array<float> im_r_f = central_gradient_filter(im_r);
     Array<float> im_l_f = central_gradient_filter(im_l);
     Array<float> ij = intensity_jacobian(im_r_f, im_l_f, intrinsic_matrix, theta);

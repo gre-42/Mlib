@@ -15,6 +15,7 @@
 #include <Mlib/Images/Quantize.hpp>
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 #include <fenv.h>
 
 using namespace Mlib;
@@ -36,7 +37,7 @@ void test_differences() {
             {NAN, 0, 0, 0.25, 0, 0, NAN},
             {NAN, NAN, NAN, NAN, NAN, NAN, NAN}});
     {
-        Array<float> y = random_array4<float>(ArrayShape{4, 5}, 1);
+        Array<float> y = uniform_random_array<float>(ArrayShape{4, 5}, 1);
         assert_allclose(
             difference_filter_1d(y, NAN, 0),
             gradient_filter(y, NAN)[0]);
@@ -205,7 +206,7 @@ void test_lowpass() {
 }
 
 void test_color_spaces() {
-    Array<float> a = random_array4<float>(ArrayShape{3, 4, 5}, 1);
+    Array<float> a = uniform_random_array<float>(ArrayShape{3, 4, 5}, 1);
     assert_allclose(yuv2rgb(rgb2yuv(a)), a, 1e-5);
 }
 
@@ -265,7 +266,7 @@ void test_division_by_brightness() {
 }
 
 void test_down_sample_average() {
-    Array<float> a = random_array4<float>(ArrayShape{3, 4}, 1);
+    Array<float> a = uniform_random_array<float>(ArrayShape{3, 4}, 1);
     Array<float> b = down_sample_average_1d(a, 1);
     assert_true(all(b.shape() == ArrayShape{3, 2}));
     assert_isclose(b(0, 0), (a(0, 0) + a(0, 1)) / 2);

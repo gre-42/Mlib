@@ -6,6 +6,7 @@
 #include <Mlib/Sfm/Marginalization/Synthetic_Scene.hpp>
 #include <Mlib/Sfm/Marginalization/UUID.hpp>
 #include <Mlib/Stats/Mean.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 #include <chrono>
 #include <set>
 
@@ -119,10 +120,10 @@ void test_schur_complement3() {
     float alpha = 1e-2;
     float beta = 1e-2;
 
-    Array<float> G = random_array4<float>(ArrayShape{10, 5}, 1);
+    Array<float> G = uniform_random_array<float>(ArrayShape{10, 5}, 1);
     SparseArrayCcs<float> J{G};
     Array<float> A = dot2d(G.vH(), G);
-    Array<float> y = random_array4<float>(ArrayShape{10}, 2);
+    Array<float> y = uniform_random_array<float>(ArrayShape{10}, 2);
     Array<float> b = dot(G.T(), y);
 
     Array<float> x_exact = solve_symm_1d(A, b);
@@ -264,9 +265,9 @@ void test_schur_complement3() {
 }
 
 void test_schur_solver() {
-    Array<float> g = random_array4<float>(ArrayShape{5, 5}, 1);
+    Array<float> g = uniform_random_array<float>(ArrayShape{5, 5}, 1);
     Array<float> a = dot2d(g.vH(), g) + 2.f * identity_array<float>(g.shape(1));
-    Array<float> b = random_array4<float>(ArrayShape{5}, 2);
+    Array<float> b = uniform_random_array<float>(ArrayShape{5}, 2);
     Array<size_t> ids_a{0, 2, 3};
     Array<size_t> ids_b{1, 4};
     SchurComplement sc{a, b, ids_a, ids_b};
@@ -284,7 +285,7 @@ void test_fill_in() {
     {
         MarginalizingBias bsolver{0, 0};
         bsolver.update_indices(m.predictor_uuids());
-        Array<float> x0 = random_array4<float>(ArrayShape{m.jacobian().shape(1)}, 1);
+        Array<float> x0 = uniform_random_array<float>(ArrayShape{m.jacobian().shape(1)}, 1);
         Array<size_t> ids_k{
             m.column_id_feature_point(FeaturePointVariable{1}),
             m.column_id_feature_point(FeaturePointVariable{2}),
@@ -314,7 +315,7 @@ void test_fill_in() {
     {
         MarginalizingBias bsolver{0, 0};
         bsolver.update_indices(m.predictor_uuids());
-        Array<float> x0 = random_array4<float>(ArrayShape{m.jacobian().shape(1)}, 1);
+        Array<float> x0 = uniform_random_array<float>(ArrayShape{m.jacobian().shape(1)}, 1);
         Array<size_t> ids_k{
             m.column_id_feature_point(FeaturePointVariable{2}),
             m.column_id_feature_point(FeaturePointVariable{3}),

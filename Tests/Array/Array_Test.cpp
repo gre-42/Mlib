@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -64,13 +65,13 @@ void test_row_range() {
 
 void test_vH() {
     Array<std::complex<float>> a = (
-        random_array4<std::complex<float>>(ArrayShape{5, 3}, 1) +
+        uniform_random_array<std::complex<float>>(ArrayShape{5, 3}, 1) +
         std::complex<float>(0, 1) *
-        random_array4<std::complex<float>>(ArrayShape{5, 3}, 2));
+        uniform_random_array<std::complex<float>>(ArrayShape{5, 3}, 2));
     Array<std::complex<float>> b = (
-        random_array4<std::complex<float>>(ArrayShape{5, 3}, 3) +
+        uniform_random_array<std::complex<float>>(ArrayShape{5, 3}, 3) +
         std::complex<float>(0, 1) *
-        random_array4<std::complex<float>>(ArrayShape{5, 3}, 4));
+        uniform_random_array<std::complex<float>>(ArrayShape{5, 3}, 4));
 
     assert_allclose(
         lstsq_chol(a, b),
@@ -111,8 +112,8 @@ void test_sparse_array() {
     assert_allclose(r1, r3);
     {
         SparseArrayCcs<float> a{ArrayShape{6, 5}};
-        Array<float> ad = random_array4<float>(a.shape(), 2);
-        Array<float> b = random_array4<float>(ArrayShape{6, 4}, 1);
+        Array<float> ad = uniform_random_array<float>(a.shape(), 2);
+        Array<float> b = uniform_random_array<float>(ArrayShape{6, 4}, 1);
         for(size_t r = 0; r < a.shape(0); ++r) {
             for(size_t c = 0; c < a.shape(1); ++c) {
                 a(r, c) = ad(r, c);
@@ -148,7 +149,7 @@ void test_save_binary() {
         fs::remove("binary.array");
     }
     {
-        Array<float> a = random_array4<float>(ArrayShape{4, 5, 6}, 1);
+        Array<float> a = uniform_random_array<float>(ArrayShape{4, 5, 6}, 1);
         a.save_binary("binary.array");
         assert_allclose(a, Array<float>::load_binary("binary.array"));
         fs::remove("binary.array");

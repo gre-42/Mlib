@@ -5,14 +5,15 @@
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Stats/Fixed_Random_Arrays.hpp>
 #include <fenv.h>
 
 using namespace Mlib;
 
 void test_scene_node() {
     SceneNode node;
-    node.set_position(fixed_random_array4<float, 3>(1));
-    node.set_rotation(fixed_random_array4<float, 3>(2));
+    node.set_position(fixed_random_uniform_array<float, 3>(1));
+    node.set_rotation(fixed_random_uniform_array<float, 3>(2));
     node.set_scale(5);
     assert_allclose(
         node.relative_model_matrix().to_array(),

@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>
 
@@ -45,7 +46,7 @@ void test_tait_bryan_angles_jacobian() {
     {
         // Test gradient with a single angle.
         float theta = 0.3;
-        Array<float> x = random_array4<float>(ArrayShape{3}, 3);
+        Array<float> x = uniform_random_array<float>(ArrayShape{3}, 3);
         assert_allclose(
             numerical_differentiation([&](
                 const Array<float>& ttheta){ return dot1d(tait_bryan_angles_2_matrix(Array<float>{ttheta(0), 0.f, 0.f}), x); },
@@ -57,8 +58,8 @@ void test_tait_bryan_angles_jacobian() {
 
     {
         // Test jacobian with 3 angles.
-        Array<float> theta = random_array4<float>(ArrayShape{3}, 1);
-        Array<float> x = random_array4<float>(ArrayShape{3}, 2);
+        Array<float> theta = uniform_random_array<float>(ArrayShape{3}, 1);
+        Array<float> x = uniform_random_array<float>(ArrayShape{3}, 2);
 
         assert_allclose(
             numerical_differentiation([&](
@@ -99,10 +100,10 @@ void test_projection_jacobian_ke() {
 }
 
 void test_projection_jacobian_ki() {
-    Array<float> ke = k_external(random_array4<float>(ArrayShape{6}, 1));
-    Array<float> t = random_array4<float>(ArrayShape{3}, 2);
-    Array<float> x = random_array4<float>(ArrayShape{3}, 3);
-    Array<float> kip = random_array4<float>(ArrayShape{4}, 4);
+    Array<float> ke = k_external(uniform_random_array<float>(ArrayShape{6}, 1));
+    Array<float> t = uniform_random_array<float>(ArrayShape{3}, 2);
+    Array<float> x = uniform_random_array<float>(ArrayShape{3}, 3);
+    Array<float> kip = uniform_random_array<float>(ArrayShape{4}, 4);
     assert_allclose(
         numerical_differentiation([&](const Array<float>& kkip){
             return projected_points_1p_1ke(
@@ -125,7 +126,7 @@ void test_projection_jacobian_ki() {
 }
 
 void test_inverse_tait_bryan_angles() {
-    Array<float> kep = random_array4<float>(ArrayShape{3}, 1);
+    Array<float> kep = uniform_random_array<float>(ArrayShape{3}, 1);
     assert_allclose(kep, matrix_2_tait_bryan_angles(tait_bryan_angles_2_matrix(kep)));
     assert_allclose(
         Array<float>{kep(0), kep(1), 0},
@@ -135,7 +136,7 @@ void test_inverse_tait_bryan_angles() {
 }
 
 void test_rodrigues_fixed() {
-    Array<float> k = random_array4<float>(ArrayShape{3}, 1);
+    Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
     auto kf = FixedArray<float, 3>{k};
     FixedArray<float, 3, 3> rf = rodrigues(kf);
     Array<float> r = rodrigues(k);
@@ -143,7 +144,7 @@ void test_rodrigues_fixed() {
 }
 
 void test_fixed_tait_bryan_angles_2_matrix() {
-    Array<float> k = random_array4<float>(ArrayShape{3}, 1);
+    Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
     auto kf = FixedArray<float, 3>{k};
     auto rf = tait_bryan_angles_2_matrix(kf);
     auto r = tait_bryan_angles_2_matrix(k);

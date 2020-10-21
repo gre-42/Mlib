@@ -9,6 +9,7 @@
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Robust.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>
 
@@ -22,8 +23,8 @@ void test_jacobian() {
         {0.5, 0, 0.9},
         {0, 0.7, 0.2},
         {0, 0, 1}};
-    Array<float> kep = random_array4<float>(ArrayShape{6}, 3);
-    Array<float> x = random_array4<float>(ArrayShape{2}, 2);
+    Array<float> kep = uniform_random_array<float>(ArrayShape{6}, 3);
+    Array<float> x = uniform_random_array<float>(ArrayShape{2}, 2);
     float depth = 2.345;
     Array<float> num = numerical_differentiation([&](const Array<float>& kkep){
             return transform_coordinates(intrinsic_matrix, k_external(kkep), x, depth);
@@ -38,9 +39,9 @@ void test_intensity_jacobian() {
         {0, 0.7, 0.2},
         {0, 0, 1}};
     Array<float> kep{0.2, 0.1, 0.4, 0.12, 0.34, 0.56};
-    Array<float> im_r = random_array4<float>(ArrayShape{4, 5}, 1);
-    Array<float> im_l = random_array4<float>(ArrayShape{4, 5}, 2);
-    Array<float> im_r_depth = random_array4<float>(ArrayShape{4, 5}, 1) * 0.2f + 2.f;
+    Array<float> im_r = uniform_random_array<float>(ArrayShape{4, 5}, 1);
+    Array<float> im_l = uniform_random_array<float>(ArrayShape{4, 5}, 2);
+    Array<float> im_r_depth = uniform_random_array<float>(ArrayShape{4, 5}, 1) * 0.2f + 2.f;
     Array<float> im_r_f = central_gradient_filter(im_r);
     Array<float> im_l_f = central_gradient_filter(im_l);
     Array<float> ij = intensity_jacobian(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, kep);

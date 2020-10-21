@@ -6,6 +6,8 @@
 #include <Mlib/Sfm/Marginalization/Synthetic_Scene.hpp>
 #include <Mlib/Sfm/Marginalization/UUID.hpp>
 #include <Mlib/Stats/Mean.hpp>
+#include <Mlib/Stats/Random_Arrays.hpp>
+
 using namespace Mlib;
 
 /*
@@ -40,7 +42,7 @@ void schur_complement_test0() {
 
     Array<float> rhs_orig{m.rhs()};
     SparseArrayCcs<float> J{m.jacobian()};
-    Array<float> x0 = random_array4<float>(ArrayShape{J.shape(1)}, 1);
+    Array<float> x0 = uniform_random_array<float>(ArrayShape{J.shape(1)}, 1);
     Array<float> residual = rhs_orig - dot1d(J.to_dense_array(), x0);
     if (true) {
         std::cerr << "\n\nSolve only" << std::endl;
@@ -87,7 +89,7 @@ void schur_complement_test0() {
             std::cerr << "\n\nMarginalize & recompute" << std::endl;
             SparseArrayCcs<float> J1 = m1.jacobian();
             Array<float> rhs_orig1{m1.rhs()};
-            Array<float> x01 = random_array4<float>(ArrayShape{J1.shape(1)}, 2);
+            Array<float> x01 = uniform_random_array<float>(ArrayShape{J1.shape(1)}, 2);
             Array<float> residual1 = rhs_orig1 - dot1d(J1.to_dense_array(), x01);
             //Array<float> residual1 = residual;
             //Array<float> x01 = lstsq_chol_1d(J1, residual1, alpha, beta);
@@ -140,7 +142,7 @@ void schur_complement_test0() {
             Array<size_t> i1_ids_ka = i1_ids_k.appended(i1_ids_a);
 
             SparseArrayCcs<float> J2 = m2.jacobian();
-            Array<float> x02 = random_array4<float>(ArrayShape{J2.shape(1)}, 3);
+            Array<float> x02 = uniform_random_array<float>(ArrayShape{J2.shape(1)}, 3);
             ms.marginalize(J1, residual1, x01, i1_ids_k, i1_ids_a, i1_ids_b, i1_ids_ka);
             ms.solve();
             {
@@ -187,7 +189,7 @@ void schur_complement_test1() {
         Array<float> x = lstsq_chol_1d(J, rhs_orig, 1e-6);
         m.print_x(x);
     }
-    Array<float> x0 = random_array4<float>(ArrayShape{J.shape(1)}, 1);
+    Array<float> x0 = uniform_random_array<float>(ArrayShape{J.shape(1)}, 1);
     Array<float> residual = rhs_orig - dot1d(J.to_dense_array(), x0);
     const auto c2i = [&](size_t i){ return m.column_id_camera(CameraVariable(std::chrono::milliseconds(i))); };
     const auto p2i = [&](size_t i){ return m.column_id_feature_point(FeaturePointVariable(i)); };
@@ -259,7 +261,7 @@ void schur_complement_test1() {
             std::cerr << std::endl;
             SparseArrayCcs<float> J1 = m1.jacobian();
             Array<float> rhs_orig1{m1.rhs()};
-            Array<float> x01 = random_array4<float>(ArrayShape{J1.shape(1)}, 1);
+            Array<float> x01 = uniform_random_array<float>(ArrayShape{J1.shape(1)}, 1);
             Array<float> residual1 = rhs_orig1 - dot1d(J1.to_dense_array(), x01);
 
             {
