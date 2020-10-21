@@ -48,9 +48,9 @@ Array<float> gaussian_random_field(const TPk& Pk = [](float k){return std::pow(k
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: proc_terrain --heightmap <heightmap.pgm> --grf <grf.pgm> --blended <blended.ppm> --alpha <alpha> --seed <seed>",
+        "Usage: proc_terrain --heightmap <heightmap.pgm> --grf <grf.pgm> --blended <blended.ppm> --size <size> --alpha <alpha> --seed <seed>",
         {},
-        {"--heightmap", "--grf", "--blended", "--alpha", "--seed"});
+        {"--heightmap", "--grf", "--blended", "--size", "--alpha", "--seed"});
 
     const auto args = parser.parsed(argc, argv);
 
@@ -62,9 +62,11 @@ int main(int argc, char** argv) {
     // PgmImage res = PgmImage::from_float(noise);
     // res.save_to_file(args.named_value("--result"));
     float alpha = safe_stof(args.named_value("--alpha"));
-    Array<float> grf = gaussian_random_field([alpha](float k){return std::pow(k, alpha);}, 1024);
+    Array<float> grf = gaussian_random_field([alpha](float k){return std::pow(k, alpha);}, safe_stoi(args.named_value("--size")));
+    grf *= std::sqrt(grf.nelements());
     // std::cerr << min(grf) << " " << max(grf) << std::endl;
-    grf = normalized_and_clipped(grf, -0.004f, 0.004f);
+    grf = normalized_and_clipped(grf, -6.f, 6.f);
+    // grf = normalized_and_clipped(grf);
     if (args.has_named_value("--grf")) {
         PgmImage::from_float(grf).save_to_file(args.named_value("--grf"));
     }
