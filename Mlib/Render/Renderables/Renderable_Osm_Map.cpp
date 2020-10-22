@@ -38,8 +38,10 @@ RenderableOsmMap::RenderableOsmMap(
     float default_street_width,
     float roof_width,
     float scale,
-    float uv_scale,
+    float uv_scale_terrain,
+    float uv_scale_street,
     float uv_scale_facade,
+    float uv_scale_ceiling,
     float uv_scale_barrier_wall,
     bool with_roofs,
     bool with_ceilings,
@@ -290,7 +292,7 @@ RenderableOsmMap::RenderableOsmMap(
             nodes,
             ways,
             scale,
-            uv_scale,
+            uv_scale_street,
             default_street_width,
             only_raceways,
             highway_name_pattern,
@@ -411,7 +413,7 @@ RenderableOsmMap::RenderableOsmMap(
                 hole_triangles,
                 nodes,
                 scale,
-                uv_scale,
+                uv_scale_terrain,
                 0,
                 steiner_point_distance);
         }
@@ -450,7 +452,7 @@ RenderableOsmMap::RenderableOsmMap(
                 buildings,
                 nodes,
                 scale,
-                uv_scale,
+                uv_scale_ceiling,
                 max_wall_width);
         }
         if (remove_backfacing_triangles) {
