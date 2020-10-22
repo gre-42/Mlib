@@ -781,8 +781,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     }
     std::list<p2t::Point> p2t_grid_nodes;
     if (steiner_point_distance != INFINITY) {
-        for(float x = boundary_min(0) + border_width / 2; x < boundary_max(0) - border_width / 2; x += steiner_point_distance) {
-            for(float y = boundary_min(1) + border_width / 2; y < boundary_max(1) - border_width / 2; y += steiner_point_distance) {
+        for(float x = boundary_min(0) + border_width / 2; x < boundary_max(0) - border_width / 2; x += steiner_point_distance * scale) {
+            for(float y = boundary_min(1) + border_width / 2; y < boundary_max(1) - border_width / 2; y += steiner_point_distance * scale) {
                 p2t_grid_nodes.push_back(p2t::Point{x, y});
                 cdt.AddPoint(&p2t_grid_nodes.back());
             }
