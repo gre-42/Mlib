@@ -132,6 +132,15 @@ Array<TData> laplace_filter(const Array<TData>& image, const TData& boundary_val
 }
 
 template <class TData>
+Array<TData> multichannel_laplace_filter(const Array<TData>& image, const TData& boundary_value) {
+    Array<TData> result{image.shape()};
+    for(size_t h = 0; h < image.shape(0); ++h) {
+        result[h] = laplace_filter(image[h], boundary_value);
+    }
+    return result;
+}
+
+template <class TData>
 Array<bool> find_local_maxima_1d(const Array<TData>& image, bool boundary_value, size_t axis) {
     Array<bool> result{image.shape()};
     image.shape().apply_over_axis(axis, [&](const ArrayShape& index0) {
