@@ -219,7 +219,8 @@ void Mlib::render(
     Array<float>* output)
 {
     FixedArray<float, 3, 3> iim{inv(intrinsic_matrix)};
-    std::vector<ColoredVertex> vertices{3 * rgb_picture.nelements()};
+    std::vector<ColoredVertex> vertices;
+    vertices.reserve(3 * rgb_picture.nelements());
     assert(rgb_picture.ndim() == 3);
     assert(rgb_picture.shape(0) == 3);
     Array<float> R = rgb_picture[0];
@@ -237,8 +238,8 @@ void Mlib::render(
             }
             FixedArray<size_t, 2> id0{r, c};
             FixedArray<size_t, 2> id1{r + 1, c + 1};
-            FixedArray<float, 3> pos0 = dot(iim, homogenized_3(i2a(id0)));
-            FixedArray<float, 3> pos1 = dot(iim, homogenized_3(i2a(id1)));
+            FixedArray<float, 3> pos0 = dot1d(iim, homogenized_3(i2a(id0)));
+            FixedArray<float, 3> pos1 = dot1d(iim, homogenized_3(i2a(id1)));
             pos0 /= pos0(2);
             pos1 /= pos1(2);
             float z_offset = 1;
