@@ -7,7 +7,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
-#include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <fenv.h>
@@ -211,10 +211,11 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
     glfwTerminate();
 }
 
-void Mlib::render(
+void Mlib::render_depth_map(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const Array<float>& intrinsic_matrix,
+    const FixedArray<float, 3, 3>& intrinsic_matrix,
+    float z_offset,
     bool rotate,
     Array<float>* output)
 {
@@ -242,7 +243,6 @@ void Mlib::render(
             FixedArray<float, 3> pos1 = dot1d(iim, homogenized_3(i2a(id1)));
             pos0 /= pos0(2);
             pos1 /= pos1(2);
-            float z_offset = 1;
             ColoredVertex v00{
                 FixedArray<float, 3>{
                     pos0(0) * Z(r, c),
@@ -275,6 +275,83 @@ void Mlib::render(
                     pos1(0) * Z(r + 1, c + 1),
                     -pos1(1) * Z(r + 1, c + 1),
                     -Z(r + 1, c + 1) + z_offset},
+                FixedArray<float, 3>{
+                    R(r + 1, c + 1),
+                    G(r + 1, c + 1),
+                    B(r + 1, c + 1)}};
+
+            vertices.push_back(v00);
+            vertices.push_back(v11);
+            vertices.push_back(v01);
+
+            vertices.push_back(v11);
+            vertices.push_back(v00);
+            vertices.push_back(v10);
+        }
+    }
+    render(vertices, rotate, output);
+}
+
+void Mlib::render_height_map(
+    const Array<float>& rgb_picture,
+    const Array<float>& height_picture,
+    const FixedArray<float, 2, 3>& normalization_matrix,
+    bool rotate,
+    Array<float>* output)
+{
+    std::vector<ColoredVertex> vertices;
+    vertices.reserve(3 * rgb_picture.nelements());
+    assert(rgb_picture.ndim() == 3);
+    assert(rgb_picture.shape(0) == 3);
+    Array<float> R = rgb_picture[0];
+    Array<float> G = rgb_picture[1];
+    Array<float> B = rgb_picture[2];
+    const Array<float>& Z = height_picture;
+    for(size_t r = 0; r < rgb_picture.shape(1) - 1; ++r) {
+        for(size_t c = 0; c < rgb_picture.shape(2) - 1; ++c) {
+            if (std::isnan(Z(r, c)) ||
+                std::isnan(Z(r, c + 1)) ||
+                std::isnan(Z(r + 1, c)) ||
+                std::isnan(Z(r + 1, c + 1)))
+            {
+                continue;
+            }
+            FixedArray<size_t, 2> id0{r, c};
+            FixedArray<size_t, 2> id1{r + 1, c + 1};
+            FixedArray<float, 2> pos0 = dot1d(normalization_matrix, homogenized_3(i2a(id0)));
+            FixedArray<float, 2> pos1 = dot1d(normalization_matrix, homogenized_3(i2a(id1)));
+            ColoredVertex v00{
+                FixedArray<float, 3>{
+                    pos0(0),
+                    -pos0(1),
+                    Z(r, c)},
+                FixedArray<float, 3>{
+                    R(r, c),
+                    G(r, c),
+                    B(r, c)}};
+            ColoredVertex v01{
+                FixedArray<float, 3>{
+                    pos1(0),
+                    -pos0(1),
+                    Z(r, c + 1)},
+                FixedArray<float, 3>{
+                    R(r, c + 1),
+                    G(r, c + 1),
+                    B(r, c + 1)}};
+            ColoredVertex v10{
+                FixedArray<float, 3>{
+                    pos0(0),
+                    -pos1(1),
+                    Z(r + 1, c)},
+                FixedArray<float, 3>{
+                    R(r + 1, c),
+                    G(r + 1, c),
+                    B(r + 1, c)}};
+            ColoredVertex v11{
+                FixedArray<float, 3>{
+                    pos1(0),
+                    -pos1(1),
+                    Z(r + 1, c + 1)},
                 FixedArray<float, 3>{
                     R(r + 1, c + 1),
                     G(r + 1, c + 1),

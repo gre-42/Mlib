@@ -242,6 +242,28 @@ public:
     constexpr const auto& columns_as_1D() const {
         return reshaped(shape().columns_as_1D());
     }
+    constexpr auto& as_row_vector() {
+        static_assert(ndim() == 1);
+        return reshaped(FixedArrayShape<1, tshape0>());
+    }
+    constexpr auto& as_column_vector() {
+        static_assert(ndim() == 1);
+        return reshaped(FixedArrayShape<tshape0, 1>());
+    }
+    constexpr const auto& as_row_vector() const {
+        static_assert(ndim() == 1);
+        return reshaped(FixedArrayShape<1, tshape0>());
+    }
+    constexpr const auto& as_column_vector() const {
+        static_assert(ndim() == 1);
+        return reshaped(FixedArrayShape<tshape0, 1>());
+    }
+    constexpr auto& flattened() {
+        return reshaped(FixedArrayShape<nelements()>());
+    }
+    constexpr const auto& flattened() const {
+        return reshaped(FixedArrayShape<nelements()>());
+    }
     Array<TData> to_array() const {
         Array<TData> result{ArrayShape{tshape0, tshape...}};
         memcpy(result.flat_iterable().begin(), flat_iterable().begin(), nbytes());

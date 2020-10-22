@@ -32,10 +32,11 @@ void test_render() {
     }
     {
         Array<float> output;
-        ::Mlib::render(
+        ::Mlib::render_depth_map(
             img.to_float_rgb(),
             depth,
-            intrinsic_matrix,
+            FixedArray<float, 3, 3>{intrinsic_matrix},
+            1,      // z_offset
             false,  // rotate
             &output);
         draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered.ppm");

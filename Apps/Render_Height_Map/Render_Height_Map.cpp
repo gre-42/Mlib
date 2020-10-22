@@ -1,4 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geometry/Normalized_Points_Fixed.cpp>
+#include <Mlib/Images/Coordinates.hpp>
+#include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/String.hpp>
@@ -15,9 +18,9 @@ static const std::vector<ColoredVertex> vertices{
 int main(int argc, char** argv) {
 
     const ArgParser parser(
-        "Usage: render_depth_map --rgb <filename> --depth <filename> --ki <intrinsic_matrix> [--z_offset <z_offset>] [--rotate]",
+        "Usage: render_depth_map --rgb <filename.ppm> --height <filename.pgm> [--xy_scale <scale>] [--z_scale <scale>] [--rotate]",
         {"--rotate"},
-        {"--rgb", "--depth", "--ki", "--z_offset"});
+        {"--rgb", "--height", "--xy_scale", "--z_scale"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -26,19 +29,17 @@ int main(int argc, char** argv) {
         // render(vertices);
 
         PpmImage img = PpmImage::load_from_file(args.named_value("--rgb"));
-        Array<float> depth = Array<float>::load_binary(args.named_value("--depth"));
-        Array<float> intrinsic_matrix = Array<float>::load_txt_2d(args.named_value("--ki"));
-        if (!all(intrinsic_matrix.shape() == ArrayShape{3, 3})) {
-            throw std::runtime_error("Intrinsic matrix has incorrect shape");
-        }
-        if (!all(depth.shape() == img.shape())) {
+        PgmImage height = PgmImage::load_from_file(args.named_value("--height"));
+        if (!all(height.shape() == img.shape())) {
             throw std::runtime_error("Depth and image shape differ");
         }
-        ::Mlib::render_depth_map(
+        NormalizedPointsFixed np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::CENTERED};
+        np.add_point({0.f, 0.f});
+        np.add_point({float(img.shape(id1)) - 1, float(img.shape(id0)) - 1});
+        ::Mlib::render_height_map(
             img.to_float_rgb(),
-            depth,
-            FixedArray<float, 3, 3>{intrinsic_matrix},
-            safe_stof(args.named_value("--z_offset", "1")),
+            height.to_float() * safe_stof(args.named_value("--z_scale", "1")),
+            np.normalization_matrix() * safe_stof(args.named_value("--xy_scale", "1")),
             args.has_named("--rotate"));
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;

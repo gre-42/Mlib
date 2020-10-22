@@ -10,8 +10,8 @@
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
-#include <stb_image/stb_image_write.h>
 #include <Mlib/String.hpp>
+#include <stb_image/stb_image_write.h>
 
 using namespace Mlib;
 
