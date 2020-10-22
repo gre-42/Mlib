@@ -199,6 +199,14 @@ void Render2::operator () (
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
+    scene.add_root_node("light", new SceneNode);
+    scene.get_node("light")->add_light(new Light{
+        .ambience = {1, 1, 1},
+        .diffusivity = {0, 0, 0},
+        .specularity = {0, 0, 0},
+        .resource_index = 1234,
+        .only_black = false,
+        .shadow = false});
     (*this)(scene, rotate, scale, scene_graph_config);
 }
 
