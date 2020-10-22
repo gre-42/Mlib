@@ -37,9 +37,6 @@ static StbInfo stb_load_texture(const std::string& filename,
                                 bool flip_vertically,
                                 bool flip_horizontally) {
     StbInfo result = stb_load(filename, flip_vertically, flip_horizontally);
-    if (result.data == nullptr) {
-        throw std::runtime_error("Could not load \"" + filename + '"');
-    }
     if (result.nrChannels != 3 && result.nrChannels != 4) {
         throw std::runtime_error(filename + " does not have 3 or 4 channels");
     }
