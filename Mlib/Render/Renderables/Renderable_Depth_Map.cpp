@@ -75,8 +75,15 @@ RenderableDepthMap::RenderableDepthMap(
                         G(r + 1, c + 1),
                         B(r + 1, c + 1)}};
 
-            triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
-            triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
+            auto add_triangle = [&triangles](const ColoredVertex& a, const ColoredVertex& b, const ColoredVertex& c) {
+                triangles.push_back(FixedArray<ColoredVertex, 3>{a, b, c});
+                FixedArray<float, 3> normal = triangle_normal({a.position, b.position, c.position});
+                triangles.back()(0).normal = normal;
+                triangles.back()(1).normal = normal;
+                triangles.back()(2).normal = normal;
+            };
+            add_triangle(v00, v11, v01);
+            add_triangle(v11, v00, v10);
         }
     }
     rva_ = std::make_shared<RenderableColoredVertexArray>(
