@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
         NormalizedPointsFixed np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::CENTERED};
         np.add_point({0.f, 0.f});
         np.add_point({float(img.shape(id1)) - 1, float(img.shape(id0)) - 1});
-        size_t num_renderings;
+        size_t num_renderings = SIZE_MAX;
         Render2{num_renderings}.render_height_map(
             img.to_float_rgb(),
             height.to_float() * safe_stof(args.named_value("--z_scale", "1")),
