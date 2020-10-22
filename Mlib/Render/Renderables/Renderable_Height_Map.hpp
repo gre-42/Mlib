@@ -5,12 +5,12 @@
 
 namespace Mlib {
 
-class RenderableDepthMap: public SceneNodeResource {
+class RenderableHeightMap: public SceneNodeResource {
 public:
-    RenderableDepthMap(
+    RenderableHeightMap(
         const Array<float>& rgb_picture,
-        const Array<float>& depth_picture,
-        const FixedArray<float, 3, 3>& intrinsic_matrix);
+        const Array<float>& height_picture,
+        const FixedArray<float, 2, 3>& normalization_matrix);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;

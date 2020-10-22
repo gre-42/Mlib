@@ -45,10 +45,10 @@ void test_render() {
         Array<float> output;
         RenderResults render_results{output: &output};
         size_t num_renderings = SIZE_MAX;
-        Render2{num_renderings, &render_results, RenderConfig{}}(
+        Render2{num_renderings, &render_results, RenderConfig{}}.render_depth_map(
             img.to_float_rgb(),
             depth,
-            intrinsic_matrix,
+            FixedArray<float, 3, 3>{intrinsic_matrix},
             false,  // rotate
             1,      // scale
             SceneGraphConfig{},

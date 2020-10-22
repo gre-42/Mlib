@@ -8,6 +8,7 @@
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderables/Renderable_Depth_Map.hpp>
+#include <Mlib/Render/Renderables/Renderable_Height_Map.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -181,10 +182,10 @@ void Render2::operator () (
         scene_graph_config);
 }
 
-void Render2::operator () (
+void Render2::render_depth_map(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const Array<float>& intrinsic_matrix,
+    const FixedArray<float, 3, 3>& intrinsic_matrix,
     bool rotate,
     float scale,
     const SceneGraphConfig& scene_graph_config,
@@ -204,6 +205,35 @@ void Render2::operator () (
         .ambience = {1, 1, 1},
         .diffusivity = {0, 0, 0},
         .specularity = {0, 0, 0},
+        .resource_index = 1234,
+        .only_black = false,
+        .shadow = false});
+    (*this)(scene, rotate, scale, scene_graph_config);
+}
+
+void Render2::render_height_map(
+    const Array<float>& rgb_picture,
+    const Array<float>& height_picture,
+    const FixedArray<float, 2, 3>& normalization_matrix,
+    bool rotate,
+    float scale,
+    const SceneGraphConfig& scene_graph_config,
+    const CameraConfig& camera_config)
+{
+    const auto r = std::make_shared<RenderableHeightMap>(rgb_picture, height_picture, normalization_matrix);
+    SceneNodeResources scene_node_resources;
+    Scene scene;
+    scene_node_resources.add_resource("DenderableHeightMap", r);
+    auto on = new SceneNode;
+    scene_node_resources.instantiate_renderable("DenderableHeightMap", "DenderableHeightMap", *on, SceneNodeResourceFilter{});
+    scene.add_root_node("obj", on);
+    scene.add_root_node("camera", new SceneNode);
+    scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
+    scene.add_root_node("light", new SceneNode);
+    scene.get_node("light")->add_light(new Light{
+        .ambience = {0.5, 0.5, 0.5},
+        .diffusivity = {1, 1, 1},
+        .specularity = {1, 1, 1},
         .resource_index = 1234,
         .only_black = false,
         .shadow = false});

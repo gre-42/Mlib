@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
@@ -10,7 +11,7 @@ using namespace Mlib;
 RenderableDepthMap::RenderableDepthMap(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const Array<float>& intrinsic_matrix)
+    const FixedArray<float, 3, 3>& intrinsic_matrix)
 {
     FixedArray<float, 3, 3> iim{inv(intrinsic_matrix)};
     std::vector<FixedArray<ColoredVertex, 3>> triangles;

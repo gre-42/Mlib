@@ -300,7 +300,7 @@ void Mlib::render_height_map(
     Array<float>* output)
 {
     std::vector<ColoredVertex> vertices;
-    vertices.reserve(3 * rgb_picture.nelements());
+    vertices.reserve(6 * height_picture.nelements());
     assert(rgb_picture.ndim() == 3);
     assert(rgb_picture.shape(0) == 3);
     Array<float> R = rgb_picture[0];

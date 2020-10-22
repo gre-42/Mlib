@@ -3,17 +3,11 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/PpmImage.hpp>
-#include <Mlib/Render/Render.hpp>
+#include <Mlib/Render/Render2.hpp>
 #include <Mlib/String.hpp>
 #include <vector>
 
 using namespace Mlib;
-
-static const std::vector<ColoredVertex> vertices{
-    { FixedArray<float, 3>{-0.6f, -0.4f, 0.f}, FixedArray<float, 3>{1.f, 0.f, 0.f}},
-    { FixedArray<float, 3>{0.6f, -0.4f, 0.f}, FixedArray<float, 3>{0.f, 1.f, 0.f}},
-    { FixedArray<float, 3>{0.f,  0.6f, 0.f}, FixedArray<float, 3>{0.f, 0.f, 1.f}}
-};
 
 int main(int argc, char** argv) {
 
@@ -26,8 +20,6 @@ int main(int argc, char** argv) {
 
         args.assert_num_unamed(0);
 
-        // render(vertices);
-
         PpmImage img = PpmImage::load_from_file(args.named_value("--rgb"));
         PgmImage height = PgmImage::load_from_file(args.named_value("--height"));
         if (!all(height.shape() == img.shape())) {
@@ -36,7 +28,8 @@ int main(int argc, char** argv) {
         NormalizedPointsFixed np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::CENTERED};
         np.add_point({0.f, 0.f});
         np.add_point({float(img.shape(id1)) - 1, float(img.shape(id0)) - 1});
-        ::Mlib::render_height_map(
+        size_t num_renderings;
+        Render2{num_renderings}.render_height_map(
             img.to_float_rgb(),
             height.to_float() * safe_stof(args.named_value("--z_scale", "1")),
             np.normalization_matrix() * safe_stof(args.named_value("--xy_scale", "1")),
