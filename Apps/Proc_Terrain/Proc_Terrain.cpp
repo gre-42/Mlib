@@ -48,9 +48,9 @@ Array<float> gaussian_random_field(const TPk& Pk = [](float k){return std::pow(k
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: proc_terrain --heightmap <heightmap.pgm> --grf <grf.pgm> --blended <blended.ppm> --size <size> --alpha <alpha> --min <min> --max <max> --seed <seed>",
+        "Usage: proc_terrain --heightmap <heightmap.pgm> --grf <grf.pgm> --binary_grf <binary_grf.array> --blended <blended.ppm> --size <size> --alpha <alpha> --min <min> --max <max> --seed <seed>",
         {},
-        {"--heightmap", "--grf", "--blended", "--size", "--alpha", "--min", "--max", "--seed"});
+        {"--heightmap", "--grf", "--binary_grf", "--blended", "--size", "--alpha", "--min", "--max", "--seed"});
 
     const auto args = parser.parsed(argc, argv);
 
@@ -69,6 +69,9 @@ int main(int argc, char** argv) {
     // grf = normalized_and_clipped(grf);
     if (args.has_named_value("--grf")) {
         PgmImage::from_float(grf).save_to_file(args.named_value("--grf"));
+    }
+    if (args.has_named_value("--binary_grf")) {
+        grf.save_binary(args.named_value("--binary_grf"));
     }
     if (args.has_named_value("--blended")) {
         Array<float> green = PpmImage{grf.shape(), Rgb24{100, 106, 32}}.to_float_rgb();
