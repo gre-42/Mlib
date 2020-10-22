@@ -44,4 +44,14 @@ Array<TData> central_sad_filter(const Array<TData>& image) {
     return result / TData(image.ndim());
 }
 
+template <class TData>
+Array<TData> multichannel_central_sad_filter(const Array<TData>& image)
+{
+    Array<TData> result{image.shape()};
+    for(size_t h = 0; h < image.shape(0); ++h) {
+        result[h] = central_sad_filter(image[h]);
+    }
+    return result;
+}
+
 }
