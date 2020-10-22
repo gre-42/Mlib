@@ -154,8 +154,15 @@ void test_physics_engine() {
     scene_nodeL->set_position({0.f, 50.f, -40.f});
     scene_nodeL->set_rotation({-90.f * M_PI / 180.f, 0.f, 0.f});
     SelectedCameras selected_cameras;
-    Light* light = new Light{resource_index: selected_cameras.add_light_node("light_node"), only_black: false, shadow: true};
-    scene_nodeL->add_light(light);
+    Light* shadow_light = new Light{
+        resource_index: selected_cameras.add_light_node("light_node"),
+        only_black: false,
+        shadow: true};
+    scene_nodeL->add_light(shadow_light);
+    scene_nodeL->add_light(new Light{
+        resource_index: 1234,
+        only_black: false,
+        shadow: false});
 
     scene.add_root_node("obj", scene_nodeR);
     scene.add_root_node("follower_camera", new SceneNode);
@@ -216,7 +223,7 @@ void test_physics_engine() {
         *read_pixels_logic,
         rendering_resources,
         LightmapUpdateCycle::ALWAYS,
-        light->resource_index,
+        shadow_light->resource_index,
         "",    // black_node_name
         true); // with_depth_texture
 
