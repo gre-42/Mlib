@@ -323,7 +323,7 @@ void RenderingResources::set_discreteness(const std::string& name, float value) 
     discreteness_[name] = value;
 }
 
-ClampMode RenderingResources::get_texture_wrap(const std::string& name) const {
+WrapMode RenderingResources::get_texture_wrap(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_texture_wrap " + name);
     auto it = texture_wrap_.find(name);
     if (it == texture_wrap_.end()) {
@@ -332,7 +332,7 @@ ClampMode RenderingResources::get_texture_wrap(const std::string& name) const {
     return it->second;
 }
 
-void RenderingResources::set_texture_wrap(const std::string& name, ClampMode mode) {
+void RenderingResources::set_texture_wrap(const std::string& name, WrapMode mode) {
     LOG_FUNCTION("RenderingResources::set_texture_wrap " + name);
     texture_wrap_[name] = mode;
 }

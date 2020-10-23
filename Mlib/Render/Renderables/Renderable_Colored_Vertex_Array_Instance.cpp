@@ -26,13 +26,13 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     }
 }
 
-GLint get_wrap_param(ClampMode mode) {
+GLint get_wrap_param(WrapMode mode) {
     switch(mode) {
-    case ClampMode::REPEAT:
+    case WrapMode::REPEAT:
         return GL_REPEAT;
-    case ClampMode::EDGE:
+    case WrapMode::CLAMP_TO_EDGE:
         return GL_CLAMP_TO_EDGE;
-    case ClampMode::BORDER:
+    case WrapMode::CLAMP_TO_BORDER:
         return GL_CLAMP_TO_BORDER;
     default:
         throw std::runtime_error("Unknown clamp mode");
@@ -215,12 +215,12 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture \"" + cva->material.texture + '"');
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
             LOG_INFO("RenderableColoredVertexArrayInstance::render clamp texture \"" + cva->material.texture + '"');
-            if (cva->material.clamp_mode_s == ClampMode::REPEAT) {
+            if (cva->material.wrap_mode_s == WrapMode::REPEAT) {
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
             } else {
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
             }
-            if (cva->material.clamp_mode_t == ClampMode::REPEAT) {
+            if (cva->material.wrap_mode_t == WrapMode::REPEAT) {
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
             } else {
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
@@ -285,8 +285,8 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
 
             CHK(glActiveTexture(GL_TEXTURE0 + 2 + filtered_lights.size()));
             CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: cva->material.dirt_texture, color_mode: ColorMode::RGB})));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.clamp_mode_s)));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.clamp_mode_t)));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
             CHK(glActiveTexture(GL_TEXTURE0));
         }
         if (render_config.cull_faces && cva->material.cull_faces) {

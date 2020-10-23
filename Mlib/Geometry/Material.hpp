@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
-#include <Mlib/Geometry/Material/Clamp_Mode.hpp>
 #include <Mlib/Geometry/Material/Occluded_Type.hpp>
 #include <Mlib/Geometry/Material/Occluder_Type.hpp>
+#include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
@@ -16,8 +16,8 @@ struct Material {
     OccluderType occluder_type = OccluderType::BLACK;
     bool occluded_by_black = true;
     BlendMode blend_mode = BlendMode::OFF;
-    ClampMode clamp_mode_s = ClampMode::REPEAT;
-    ClampMode clamp_mode_t = ClampMode::REPEAT;
+    WrapMode wrap_mode_s = WrapMode::REPEAT;
+    WrapMode wrap_mode_t = WrapMode::REPEAT;
     bool collide = true;
     AggregateMode aggregate_mode = AggregateMode::OFF;
     bool is_small = false;

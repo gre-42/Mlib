@@ -257,13 +257,13 @@ RenderableOsmMap::RenderableOsmMap(
         texture_descriptor: {color: curb_street_texture},
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
-        clamp_mode_s: ClampMode::EDGE,
+        wrap_mode_s: WrapMode::CLAMP_TO_EDGE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
         texture_descriptor: {color: curb_path_texture},
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
-        clamp_mode_s: ClampMode::EDGE,
+        wrap_mode_s: WrapMode::CLAMP_TO_EDGE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     std::list<std::shared_ptr<TriangleList>> tls_ground{tl_terrain, tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
@@ -320,7 +320,7 @@ RenderableOsmMap::RenderableOsmMap(
             //         mixed_texture: "",
             //         overlap_npixels: 0,
             //         blend_mode: BlendMode::BINARY,
-            //         clamp_mode: ClampMode::EDGE,
+            //         clamp_mode: WrapMode::CLAMP_TO_EDGE,
             //         collide: false,
             //         aggregate_mode: AggregateMode::ONCE},
             //     grass_texture,
