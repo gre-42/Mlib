@@ -1,4 +1,5 @@
 #include "Renderable_Osm_Map_Helpers.hpp"
+#include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
@@ -861,7 +862,7 @@ void Mlib::apply_height_map(
                 } else {
                     vc = {v.position(0), v.position(1)};
                 }
-                FixedArray<float, 2> p = dot1d(normalization_matrix, FixedArray<float, 3>{vc(0), vc(1), 1});
+                FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(vc));
                 float z;
                 if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
                     // std::cerr << "Height out of bounds." << std::endl;
