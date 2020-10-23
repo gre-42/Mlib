@@ -178,6 +178,7 @@ void HandleLineTriangleIntersection::handle()
                         i_.o1->mass(),
                         v3,
                         i_.cfg.dt,
+                        i_.cfg.alpha0,
                         i_.cfg.avoid_burnout);
                 } else {
                     tangential_force = 0;
@@ -187,7 +188,8 @@ void HandleLineTriangleIntersection::handle()
                     i_.cfg.stiction_coefficient * force_n1,
                     i_.cfg.friction_coefficient * force_n1,
                     i_.o1->mass(),
-                    v3);
+                    v3,
+                    i_.cfg.alpha0);
             }
         } else {
             tangential_force = 0;

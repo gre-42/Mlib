@@ -86,6 +86,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     float m,
     const FixedArray<float, 3>& v3,
     float dt,
+    float alpha0,
     bool avoid_burnout)
 {
     float v = dot0d(v3, n3);
@@ -96,7 +97,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         if (float vT_sq = sum(squared(v3T)); vT_sq < 1e-12) {
             sn3T = 0;
         } else {
-            sn3T = v3T / (0.1f * std::sqrt(vT_sq) + 1.f);
+            sn3T = v3T / (std::sqrt(vT_sq) + alpha0);
         }
     }
 
@@ -131,7 +132,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         normal_force = -signed_min(x, max_stiction_force) * n3;
     } else {
         // Handle breaking at low velocities.
-        FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + 1.f);
+        FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + alpha0);
         normal_force = minl2(-break_accel * m * sn3, max_stiction_force);
     }
     return minl2(normal_force - max_stiction_force * sn3T, max_stiction_force);
@@ -150,14 +151,15 @@ Mlib::FixedArray<float, 3> Mlib::friction_force_infinite_mass(
     float max_stiction_force,
     float friction_force,
     float m,
-    const FixedArray<float, 3>& v3)
+    const FixedArray<float, 3>& v3,
+    float alpha0)
 {
     FixedArray<float, 3> sn3;
     {
         if (float v_sq = sum(squared(v3)); v_sq < 1e-12) {
             sn3 = 0;
         } else {
-            sn3 = v3 / (0.1f * std::sqrt(v_sq) + 1.f);
+            sn3 = v3 / (std::sqrt(v_sq) + alpha0);
         }
     }
 
