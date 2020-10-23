@@ -457,6 +457,9 @@ void Mlib::draw_streets(
             if (!name_pattern.empty() && ((tags.find("name") == tags.end()) || !std::regex_match(tags.at("name"), name_re))) {
                 continue;
             }
+            if (tags.find("area") != tags.end() && tags.at("area") == "yes") {
+                continue;
+            }
             float width = scale * parse_meters(tags, "width", default_street_width);
             RoadType road_type = path_tags.contains(tags.at("highway")) ? RoadType::PATH : RoadType::STREET;
             float way_length = 0;
