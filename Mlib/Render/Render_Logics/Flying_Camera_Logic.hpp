@@ -6,8 +6,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 
 namespace Mlib {
 
@@ -22,13 +22,10 @@ public:
     SelectedCameras& cameras;
     std::list<Focus>& focus;
     SetFps* physics_set_fps;
-    float position_y;
-    float position_z;
-    float angle_x;
-    float angle_y;
-    float obj_angle_x;
-    float obj_angle_y;
+    FixedArray<float, 3> position;
+    FixedArray<float, 3> angles;
     FixedArray<float, 3> obj_position;
+    FixedArray<float, 3> obj_angles;
     std::string obj_node_name = "obj";
 };
 

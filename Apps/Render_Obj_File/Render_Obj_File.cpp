@@ -34,7 +34,9 @@ int main(int argc, char** argv) {
         "Usage: render_obj_file <filename ...> "
         "[--scale <scale>] "
         "[--y <y>] "
+        "[--angle_x <angle_x>] "
         "[--angle_y <angle_y>] "
+        "[--angle_z <angle_z>] "
         "[--nsamples_msaa <nsamples>] "
         "[--blend_mode {off,continuous,binary,binary_add}] "
         "[--aggregate_mode {off, once, sorted}] "
@@ -84,7 +86,9 @@ int main(int argc, char** argv) {
          "--no_shadows"},
         {"--scale",
          "--y",
+         "--angle_x",
          "--angle_y",
+         "--angle_z",
         "--nsamples_msaa",
         "--blend_mode",
         "--aggregate_mode",
@@ -180,7 +184,10 @@ int main(int argc, char** argv) {
                     args.has_named("--apply_static_lighting"),
                     !args.has_named("--no_werror")));
                 scene_node->set_position({0.f, safe_stof(args.named_value("--y", "0")), -40.f});
-                scene_node->set_rotation({0.f, safe_stof(args.named_value("--angle_y", "0")) / 180 * M_PI, 0.f});
+                scene_node->set_rotation({
+                    safe_stof(args.named_value("--angle_x", "0")) / 180.f * float(M_PI),
+                    safe_stof(args.named_value("--angle_y", "0")) / 180.f * float(M_PI),
+                    safe_stof(args.named_value("--angle_z", "0")) / 180.f * float(M_PI)});
                 scene_node_resources.instantiate_renderable(
                     name,
                     name,

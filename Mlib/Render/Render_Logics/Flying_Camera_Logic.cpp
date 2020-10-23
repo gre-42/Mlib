@@ -23,16 +23,16 @@ static void flying_key_callback(GLFWwindow* window, int key, int scancode, int a
         if (mods & GLFW_MOD_CONTROL) {
             switch(key) {
                 case GLFW_KEY_LEFT:
-                    user_object->obj_angle_y += 0.01;
+                    user_object->obj_angles(1) += 0.01;
                     break;
                 case GLFW_KEY_RIGHT:
-                    user_object->obj_angle_y -= 0.01;
+                    user_object->obj_angles(1) -= 0.01;
                     break;
                 case GLFW_KEY_PAGE_UP:
-                    user_object->obj_angle_x += 0.01;
+                    user_object->obj_angles(0) += 0.01;
                     break;
                 case GLFW_KEY_PAGE_DOWN:
-                    user_object->obj_angle_x -= 0.01;
+                    user_object->obj_angles(0) -= 0.01;
                     break;
                 case GLFW_KEY_KP_ADD:
                     user_object->obj_position(1) += 0.04;
@@ -44,28 +44,28 @@ static void flying_key_callback(GLFWwindow* window, int key, int scancode, int a
         } else {
             switch(key) {
                 case GLFW_KEY_UP:
-                    user_object->position_z -= 0.04;
+                    user_object->position(2) -= 0.04;
                     break;
                 case GLFW_KEY_DOWN:
-                    user_object->position_z += 0.04;
+                    user_object->position(2) += 0.04;
                     break;
                 case GLFW_KEY_LEFT:
-                    user_object->angle_y += 0.01;
+                    user_object->angles(1) += 0.01;
                     break;
                 case GLFW_KEY_RIGHT:
-                    user_object->angle_y -= 0.01;
+                    user_object->angles(1) -= 0.01;
                     break;
                 case GLFW_KEY_PAGE_UP:
-                    user_object->angle_x += 0.01;
+                    user_object->angles(0) += 0.01;
                     break;
                 case GLFW_KEY_PAGE_DOWN:
-                    user_object->angle_x -= 0.01;
+                    user_object->angles(0) -= 0.01;
                     break;
                 case GLFW_KEY_KP_ADD:
-                    user_object->position_y += 0.04;
+                    user_object->position(1) += 0.04;
                     break;
                 case GLFW_KEY_KP_SUBTRACT:
-                    user_object->position_y -= 0.04;
+                    user_object->position(1) -= 0.04;
                     break;
             }
         }
@@ -127,16 +127,13 @@ FlyingCameraLogic::FlyingCameraLogic(
 
         if (fly_) {
             auto cn = scene_.get_node(user_object_.cameras.camera_node_name);
-            user_object_.position_y = cn->position()(1);
-            user_object_.position_z = cn->position()(2);
-            user_object_.angle_x = cn->rotation()(0);
-            user_object_.angle_y = cn->rotation()(1);
+            user_object_.position = cn->position();
+            user_object_.angles = cn->rotation();
         }
         if (rotate_) {
             auto on = scene_.get_node("obj");
-            user_object_.obj_angle_x = on->rotation()(0);
-            user_object_.obj_angle_y = on->rotation()(1);
             user_object_.obj_position = on->position();
+            user_object_.obj_angles = on->rotation();
         }
     } else {
         glfwSetKeyCallback(window, nofly_key_callback);
@@ -167,13 +164,13 @@ void FlyingCameraLogic::render(
     LOG_FUNCTION("FlyingCameraLogic::render");
     SceneNode* cn = scene_.get_node(user_object_.cameras.camera_node_name);
     if (fly_) {
-        cn->set_position({0, user_object_.position_y, user_object_.position_z});
-        cn->set_rotation({user_object_.angle_x, user_object_.angle_y, 0});
+        cn->set_position(user_object_.position);
+        cn->set_rotation(user_object_.angles);
     }
     if (rotate_) {
         SceneNode* on = scene_.get_node(user_object_.obj_node_name);
-        on->set_rotation({user_object_.obj_angle_x, user_object_.obj_angle_y, 0});
         on->set_position(user_object_.obj_position);
+        on->set_rotation(user_object_.obj_angles);
     }
 }
 
