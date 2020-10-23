@@ -35,7 +35,7 @@ GLint get_wrap_param(WrapMode mode) {
     case WrapMode::CLAMP_TO_BORDER:
         return GL_CLAMP_TO_BORDER;
     default:
-        throw std::runtime_error("Unknown clamp mode");
+        throw std::runtime_error("Unknown wrap mode");
     }
 }
 

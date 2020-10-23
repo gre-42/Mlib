@@ -18,7 +18,7 @@ inline WrapMode clamp_mode_from_string(const std::string& str) {
     } else if (str == "clamp_to_border") {
         return WrapMode::CLAMP_TO_BORDER;
     }
-    throw std::runtime_error("Unknown clamp mode");
+    throw std::runtime_error("Unknown wrap mode: " + str);
 }
 
 }

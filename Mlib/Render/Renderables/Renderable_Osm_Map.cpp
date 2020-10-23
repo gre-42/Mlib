@@ -320,7 +320,7 @@ RenderableOsmMap::RenderableOsmMap(
             //         mixed_texture: "",
             //         overlap_npixels: 0,
             //         blend_mode: BlendMode::BINARY,
-            //         clamp_mode: WrapMode::CLAMP_TO_EDGE,
+            //         wrap_mode: WrapMode::CLAMP_TO_EDGE,
             //         collide: false,
             //         aggregate_mode: AggregateMode::ONCE},
             //     grass_texture,
