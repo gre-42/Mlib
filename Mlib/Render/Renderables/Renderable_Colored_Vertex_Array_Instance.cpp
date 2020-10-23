@@ -140,7 +140,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 diffusivity: OrderableFixedArray{diffusivity},
                 specularity: OrderableFixedArray{specularity},
                 orthographic: vc.orthographic(),
-                dirtmap_discreteness: rcva_->rendering_resources_->get_discreteness("dirtmap")},
+                dirtmap_discreteness: has_dirtmap ? rcva_->rendering_resources_->get_discreteness("dirtmap") : NAN},
             filtered_lights,
             light_noshadow_indices,
             light_shadow_indices,
