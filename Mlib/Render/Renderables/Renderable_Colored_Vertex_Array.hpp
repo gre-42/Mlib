@@ -52,6 +52,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> diffusivity;
     OrderableFixedArray<float, 3> specularity;
     bool orthographic;
+    float dirtmap_discreteness;
     std::strong_ordering operator <=> (const RenderProgramIdentifier&) const = default;
 };
 

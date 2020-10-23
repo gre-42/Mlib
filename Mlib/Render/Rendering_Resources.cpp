@@ -308,3 +308,31 @@ void RenderingResources::set_vp(const std::string& name, const FixedArray<float,
     LOG_FUNCTION("RenderingResources::set_vp " + name);
     vps_[name] = vp;
 }
+
+float RenderingResources::get_discreteness(const std::string& name) const {
+    LOG_FUNCTION("RenderingResources::get_discreteness " + name);
+    auto it = discreteness_.find(name);
+    if (it == discreteness_.end()) {
+        throw std::runtime_error("Could not find discreteness with name " + name);
+    }
+    return it->second;
+}
+
+void RenderingResources::set_discreteness(const std::string& name, float value) {
+    LOG_FUNCTION("RenderingResources::set_discreteness " + name);
+    discreteness_[name] = value;
+}
+
+ClampMode RenderingResources::get_texture_wrap(const std::string& name) const {
+    LOG_FUNCTION("RenderingResources::get_texture_wrap " + name);
+    auto it = texture_wrap_.find(name);
+    if (it == texture_wrap_.end()) {
+        throw std::runtime_error("Could not find texture_wrap with name " + name);
+    }
+    return it->second;
+}
+
+void RenderingResources::set_texture_wrap(const std::string& name, ClampMode mode) {
+    LOG_FUNCTION("RenderingResources::set_texture_wrap " + name);
+    texture_wrap_[name] = mode;
+}

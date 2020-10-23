@@ -132,7 +132,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float alpha_threshold,
     OcclusionType occlusion_type,
     bool reorient_normals,
-    bool orthographic)
+    bool orthographic,
+    float dirtmap_discreteness)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
@@ -324,9 +325,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    vec4 dirtiness = texture(texture_dirtmap, tex_coord_dirtmap);" << std::endl;
-        sstr << "    dirtiness.r = clamp(0.5 + 4 * (dirtiness.r - 0.5), 0, 1);" << std::endl;
-        sstr << "    dirtiness.g = clamp(0.5 + 4 * (dirtiness.g - 0.5), 0, 1);" << std::endl;
-        sstr << "    dirtiness.b = clamp(0.5 + 4 * (dirtiness.b - 0.5), 0, 1);" << std::endl;
+        sstr << "    dirtiness.r = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.r - 0.5), 0, 1);" << std::endl;
+        sstr << "    dirtiness.g = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.g - 0.5), 0, 1);" << std::endl;
+        sstr << "    dirtiness.b = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.b - 0.5), 0, 1);" << std::endl;
         // sstr << "    dirtiness.r += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
         // sstr << "    dirtiness.g += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
         // sstr << "    dirtiness.b += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
@@ -493,7 +494,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
                 : 1,
             occlusion_type,
             id.reorient_normals,
-            id.orthographic));
+            id.orthographic,
+            id.dirtmap_discreteness));
 
     rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");
     if (id.has_texture) {

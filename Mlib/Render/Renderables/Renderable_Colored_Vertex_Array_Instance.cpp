@@ -26,6 +26,19 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     }
 }
 
+GLint get_wrap_param(ClampMode mode) {
+    switch(mode) {
+    case ClampMode::REPEAT:
+        return GL_REPEAT;
+    case ClampMode::EDGE:
+        return GL_CLAMP_TO_EDGE;
+    case ClampMode::BORDER:
+        return GL_CLAMP_TO_BORDER;
+    default:
+        throw std::runtime_error("Unknown clamp mode");
+    }
+}
+
 void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>& mvp, const FixedArray<float, 4, 4>& m, const FixedArray<float, 4, 4>& iv, const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const RenderPass& render_pass) const {
     LOG_FUNCTION("RenderableColoredVertexArrayInstance::render");
     if (render_pass.external.pass == ExternalRenderPass::DIRTMAP) {
@@ -126,7 +139,8 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 ambience: OrderableFixedArray{ambience},
                 diffusivity: OrderableFixedArray{diffusivity},
                 specularity: OrderableFixedArray{specularity},
-                orthographic: vc.orthographic()},
+                orthographic: vc.orthographic(),
+                dirtmap_discreteness: rcva_->rendering_resources_->get_discreteness("dirtmap")},
             filtered_lights,
             light_noshadow_indices,
             light_shadow_indices,
@@ -262,22 +276,17 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
 
             CHK(glActiveTexture(GL_TEXTURE0 + 1 + filtered_lights.size()));
             CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+            {
+                GLint p = get_wrap_param(rcva_->rendering_resources_->get_texture_wrap(mname));
+                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, p));
+                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, p));
+            }
             CHK(glActiveTexture(GL_TEXTURE0));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 2 + filtered_lights.size()));
             CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: cva->material.dirt_texture, color_mode: ColorMode::RGB})));
-            if (cva->material.clamp_mode_s == ClampMode::REPEAT) {
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-            } else {
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-            }
-            if (cva->material.clamp_mode_t == ClampMode::REPEAT) {
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
-            } else {
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-            }
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.clamp_mode_s)));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.clamp_mode_t)));
             CHK(glActiveTexture(GL_TEXTURE0));
         }
         if (render_config.cull_faces && cva->material.cull_faces) {
