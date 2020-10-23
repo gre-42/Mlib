@@ -17,6 +17,9 @@ struct BvhPrintingOptions {
     bool children = true;
 };
 
+/**
+ * Bounding volume hierarchy
+ */
 template <class TData, class TPayload, size_t tndim>
 class Bvh {
 public:
