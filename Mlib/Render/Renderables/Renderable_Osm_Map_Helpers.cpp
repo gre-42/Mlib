@@ -634,6 +634,12 @@ void Mlib::draw_streets(
                     FixedArray<float, 3>{hv(j)(0), hv(j)(1), 0},
                     FixedArray<float, 3>{center(0), center(1), 0});
             }
+            if (with_height_bindings) {
+                auto& tags = nodes.at(nh.first).tags;
+                if (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes") {
+                    height_bindings[OrderableFixedArray{center}].insert(nh.first);
+                }
+            }
         }
     }
 
@@ -840,6 +846,11 @@ void Mlib::triangulate_terrain_or_ceilings(
     }
 }
 
+struct NodeHeight {
+    float height;
+    float smooth_height;
+};
+
 void Mlib::apply_height_map(
     std::list<std::shared_ptr<TriangleList>>& triangles,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
@@ -848,8 +859,50 @@ void Mlib::apply_height_map(
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
     const std::map<std::string, Node>& nodes,
+    const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings)
 {
+    std::map<std::string, NodeHeight> node_height;
+    std::map<std::string, std::list<std::string>> node_neighbors;
+    for(const auto& w : ways) {
+        for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
+            auto s = it;
+            ++s;
+            if (s != w.second.nd.end()) {
+                node_neighbors[*s].push_back(*it);
+                node_neighbors[*it].push_back(*s);
+            }
+        }
+    }
+    for(const auto& n : node_neighbors) {
+        FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(nodes.at(n.first).position));
+        float z;
+        if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+            node_height[n.first] = {z, z};
+        }
+    }
+    for(size_t i = 0; i < 50; ++i) {
+        // std::cerr << i << " " << node_neighbors.size() << std::endl;
+        for(const auto& n : node_neighbors) {
+            auto hit = node_height.find(n.first);
+            if (hit != node_height.end()) {
+                float mean_height = 0;
+                size_t nn = 0;
+                for(const auto& b : n.second) {
+                    auto it = node_height.find(b);
+                    if (it != node_height.end()) {
+                        mean_height += node_height.at(b).smooth_height;
+                        ++nn;
+                    }
+                }
+                if (nn > 0) {
+                    mean_height /= nn;
+                    float alpha = 0.9;
+                    hit->second.smooth_height = alpha * mean_height + (1 - alpha) * hit->second.height;
+                }
+            }
+        }
+    }
     for(auto& tl : triangles) {
         for(auto ti = tl->triangles_.begin(); ti != tl->triangles_.end(); ) {
             auto ti0 = ti;
@@ -858,6 +911,10 @@ void Mlib::apply_height_map(
                 FixedArray<float, 2> vc;
                 auto it = height_bindings.find(OrderableFixedArray{FixedArray<float, 2>{v.position(0), v.position(1)}});
                 if ((it != height_bindings.end()) && (it->second.size() == 1)) {
+                    if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
+                        v.position(2) += hit->second.smooth_height * scale;
+                        continue;
+                    }
                     vc = nodes.at(*it->second.begin()).position;
                 } else {
                     vc = {v.position(0), v.position(1)};

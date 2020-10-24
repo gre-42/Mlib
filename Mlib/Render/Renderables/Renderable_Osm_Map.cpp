@@ -475,6 +475,7 @@ RenderableOsmMap::RenderableOsmMap(
             normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
             scale,
             nodes,
+            ways,
             height_bindings);
     }
 

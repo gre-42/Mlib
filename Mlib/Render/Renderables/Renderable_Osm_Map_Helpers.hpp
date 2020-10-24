@@ -208,6 +208,7 @@ void apply_height_map(
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
     const std::map<std::string, Node>& nodes,
+    const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings);
 
 void add_grass_inside_triangles(
