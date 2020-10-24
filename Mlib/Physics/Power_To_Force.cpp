@@ -87,19 +87,26 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     const FixedArray<float, 3>& v3,
     float dt,
     float alpha0,
+    float remaining_force_fraction,
     bool avoid_burnout)
 {
     float v = dot0d(v3, n3);
 
-    FixedArray<float, 3> sn3T;
+    FixedArray<float, 3> f3T;
+    float fT;
     {
+        FixedArray<float, 3> sn3T;
         FixedArray<float, 3> v3T = v3 - n3 * v;
-        if (float vT_sq = sum(squared(v3T)); vT_sq < 1e-12) {
+        float vT_sq = sum(squared(v3T));
+        if (vT_sq < 1e-12) {
             sn3T = 0;
         } else {
             sn3T = v3T / (std::sqrt(vT_sq) + alpha0);
         }
+        f3T = -max_stiction_force * sn3T;
+        fT = std::sqrt(sum(squared(f3T)));
     }
+    float remaining_force = std::max(max_stiction_force * remaining_force_fraction, max_stiction_force - fT);
 
     // Ensure maximum velocity is not exceeded.
     if (!std::isnan(P) && (std::abs(v) > std::abs(max_velocity)) && (sign(P) * v > 0)) {
@@ -119,7 +126,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         //         y * std::sqrt(sum(squared(sn3T))),
         //         max_stiction_force);
         // }
-        normal_force = signed_min(x, max_stiction_force) * n3;
+        normal_force = signed_min(x, remaining_force) * n3;
     } else if (std::abs(v) >= hand_break_velocity) {
         // Handle breaking at high velocities.
         float x = sign(v) * break_accel * m;
@@ -129,13 +136,13 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         //         y * std::sqrt(sum(squared(sn3T))),
         //         max_stiction_force);
         // }
-        normal_force = -signed_min(x, max_stiction_force) * n3;
+        normal_force = -signed_min(x, remaining_force) * n3;
     } else {
         // Handle breaking at low velocities.
         FixedArray<float, 3> sn3 = n3 * v / (std::abs(v) + alpha0);
-        normal_force = minl2(-break_accel * m * sn3, max_stiction_force);
+        normal_force = minl2(-break_accel * m * sn3, remaining_force);
     }
-    return minl2(normal_force - max_stiction_force * sn3T, max_stiction_force);
+    return minl2(normal_force + f3T, max_stiction_force);
     // if (float rlen2 = sum(squared(res)); rlen2 > squared(max_stiction_force)) {
     //     res *= max_stiction_force / std::sqrt(rlen2);
     //     // if (float vlen2 = sum(squared(v3)); vlen2 < 1e-12) {
