@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Objects/Rigid_Body.hpp>
 #include <Mlib/Physics/Sat_Normals.hpp>
 #include <Mlib/Physics/Transformed_Mesh.hpp>
+#include <Mlib/Reverse_Iterator.hpp>
 
 using namespace Mlib;
 
@@ -192,18 +193,6 @@ static void collide_objects(
         }
     }
 }
-
-template <typename T>
-struct reversion_wrapper { T& iterable; };
-
-template <typename T>
-auto begin (reversion_wrapper<T> w) { return std::rbegin(w.iterable); }
-
-template <typename T>
-auto end (reversion_wrapper<T> w) { return std::rend(w.iterable); }
-
-template <typename T>
-reversion_wrapper<T> reverse (T&& iterable) { return { iterable }; }
 
 void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool burn_in)
 {
