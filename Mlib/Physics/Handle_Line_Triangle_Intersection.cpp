@@ -179,7 +179,6 @@ void HandleLineTriangleIntersection::handle()
                         v3,
                         i_.cfg.dt,
                         i_.cfg.alpha0,
-                        i_.cfg.remaining_force_fraction,
                         i_.cfg.avoid_burnout);
                 } else {
                     tangential_force = 0;
