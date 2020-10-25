@@ -47,7 +47,7 @@ void Mlib::power_to_forces_finite_masses(
  * If no such x_new exists, i.e. r < |y|, do nothing (y alone is already too large).
  * If |x_new| > |x|, do nothing (do not exceed maximum power).
  */
-float correct_x(float x, float y, float r, float safety_factor = 0.99) {
+float correct_x_ortho(float x, float y, float r, float safety_factor = 0.99) {
     if (r < std::abs(y)) {
         return x;
     }
@@ -58,16 +58,40 @@ float correct_x(float x, float y, float r, float safety_factor = 0.99) {
     return sign(x) * xa * safety_factor;
 }
 
+float signed_min(float v, float max_length) {
+    return sign(v) * std::min(std::abs(v), max_length);
+}
+
+/**
+ * ||x+a*n|| = r
+ * solve(tt+2*tn*a+a^2=r^2, a)
+ * a1/2 = +-sqrt(-tt+tn^2+r^2*nn)+tn
+ */
+float correct_x_non_ortho(
+    float x,
+    const FixedArray<float, 3>& n,
+    const FixedArray<float, 3>& t,
+    float r,
+    float safety_factor = 0.99)
+{
+    float tt = sum(squared(t));
+    if (squared(r) < tt) {
+        return 0;
+    }
+    float tn = dot0d(t, n);
+    float v = -tt + squared(tn) + squared(r);
+    if (v <= 0) {
+        return 0;
+    }
+    return signed_min(x, (-sign(x) * std::sqrt(v) + tn) * safety_factor);
+}
+
 FixedArray<float, 3> minl2(const FixedArray<float, 3>& v, float max_length) {
     if (float rlen2 = sum(squared(v)); rlen2 > squared(max_length)) {
         return v * max_length / std::sqrt(rlen2);
     } else {
         return v;
     }
-}
-
-float signed_min(float v, float max_length) {
-    return sign(v) * std::min(std::abs(v), max_length);
 }
 
 /**
@@ -119,21 +143,22 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         float x = (F_c + F_sqrt) / dt;
         // std::cerr << "y / a = " << (y * std::sqrt(sum(squared(sn3T))) / max_stiction_force) << std::endl;
         if (avoid_burnout) {
-            x = correct_x(x, fT, max_stiction_force);
+            x = correct_x_ortho(x, fT, max_stiction_force);
         }
         normal_force = x * n3;
     } else if (std::abs(v) >= hand_break_velocity) {
         // Handle breaking at high velocities.
-        float x = sign(v) * break_accel * m;
+        float x = -sign(v) * break_accel * m;
+        FixedArray<float, 3> v3n = v3 / std::sqrt(sum(squared(v3)));
         if (avoid_burnout) {
-            x = correct_x(x, fT, max_stiction_force);
+            x = correct_x_non_ortho(x, v3n, f3T, max_stiction_force);
         }
-        normal_force = -x * n3;
+        normal_force = x * v3n;
     } else {
         // Handle breaking at low velocities.
         float x = -break_accel * m * v / (std::abs(v) + alpha0);
         if (avoid_burnout) {
-            x = correct_x(x, fT, max_stiction_force);
+            x = correct_x_ortho(x, fT, max_stiction_force);
         }
         normal_force = x * n3;
     }
