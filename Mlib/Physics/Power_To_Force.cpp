@@ -65,7 +65,7 @@ float signed_min(float v, float max_length) {
 /**
  * ||x+a*n|| = r
  * solve(tt+2*tn*a+a^2=r^2, a)
- * a1/2 = +-sqrt(-tt+tn^2+r^2*nn)+tn
+ * a1/2 = +-sqrt(-tt+tn^2+r^2)+tn
  */
 float correct_x_non_ortho(
     float x,
