@@ -851,6 +851,11 @@ struct NodeHeight {
     float smooth_height;
 };
 
+struct NeighborWeight {
+    std::string id;
+    float weight;
+};
+
 void Mlib::apply_height_map(
     std::list<std::shared_ptr<TriangleList>>& triangles,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
@@ -865,14 +870,15 @@ void Mlib::apply_height_map(
 {
     std::map<std::string, NodeHeight> node_height;
     if (street_smoothness != 0) {
-        std::map<std::string, std::list<std::string>> node_neighbors;
+        std::map<std::string, std::list<NeighborWeight>> node_neighbors;
         for(const auto& w : ways) {
             for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s != w.second.nd.end()) {
-                    node_neighbors[*s].push_back(*it);
-                    node_neighbors[*it].push_back(*s);
+                    float weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
+                    node_neighbors[*s].push_back({.id = *it, .weight = weight});
+                    node_neighbors[*it].push_back({.id = *s, .weight = weight});
                 }
             }
         }
@@ -889,16 +895,16 @@ void Mlib::apply_height_map(
                 auto hit = node_height.find(n.first);
                 if (hit != node_height.end()) {
                     float mean_height = 0;
-                    size_t nn = 0;
+                    float sum_weights = 0;
                     for(const auto& b : n.second) {
-                        auto it = node_height.find(b);
+                        auto it = node_height.find(b.id);
                         if (it != node_height.end()) {
-                            mean_height += node_height.at(b).smooth_height;
-                            ++nn;
+                            mean_height += b.weight * node_height.at(b.id).smooth_height;
+                            sum_weights += b.weight;
                         }
                     }
-                    if (nn > 0) {
-                        mean_height /= nn;
+                    if (sum_weights > 0) {
+                        mean_height /= sum_weights;
                         hit->second.smooth_height = street_smoothness * mean_height + (1 - street_smoothness) * hit->second.height;
                     }
                 }
