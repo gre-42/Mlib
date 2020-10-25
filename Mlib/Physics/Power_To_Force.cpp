@@ -58,14 +58,10 @@ float correct_x_ortho(float x, float y, float r, float safety_factor = 0.99) {
     return sign(x) * xa * safety_factor;
 }
 
-float signed_min(float v, float max_length) {
-    return sign(v) * std::min(std::abs(v), max_length);
-}
-
 /**
- * ||t+a*n|| = r
- * solve(tt+2*tn*a+a^2=r^2, a)
- * a1/2 = +-sqrt(-tt+tn^2+r^2)-tn
+ * ||t-a*n|| = r
+ * solve(tt-2*tn*a+a^2=r^2, a)
+ * a1/2 = +-sqrt(-tt+tn^2+r^2)+tn
  */
 float correct_x_non_ortho(
     float x,
@@ -76,11 +72,16 @@ float correct_x_non_ortho(
 {
     float tt = sum(squared(t));
     float tn = dot0d(t, n);
-    float v = -tt + squared(tn) + squared(r);
+    float v = squared(r) - tt + squared(tn);
     if (v <= 0) {
         return 0;
     }
-    return signed_min(x, (-sign(x) * std::sqrt(v) - tn) * safety_factor);
+    float xa = std::sqrt(v) + tn;
+    assert_true(xa >= 0);
+    if (xa > std::abs(x)) {
+        return x;
+    }
+    return xa * safety_factor;
 }
 
 FixedArray<float, 3> minl2(const FixedArray<float, 3>& v, float max_length) {
@@ -89,6 +90,10 @@ FixedArray<float, 3> minl2(const FixedArray<float, 3>& v, float max_length) {
     } else {
         return v;
     }
+}
+
+float signed_min(float v, float max_length) {
+    return sign(v) * std::min(std::abs(v), max_length);
 }
 
 /**
@@ -145,12 +150,13 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         normal_force = x * n3;
     } else if (std::abs(v) >= hand_break_velocity) {
         // Handle breaking at high velocities.
-        float x = -sign(v) * break_accel * m;
+        float x = std::abs(v) * break_accel * m;
         FixedArray<float, 3> v3n = v3 / std::sqrt(sum(squared(v3)));
         if (avoid_burnout) {
             x = correct_x_non_ortho(x, v3n, f3T, max_stiction_force);
         }
-        normal_force = x * v3n;
+        normal_force = -x * v3n;
+        // std::cerr << std::sqrt(sum(squared(normal_force + f3T))) << " " << max_stiction_force << " " << std::sqrt(sum(squared(f3T))) << std::endl;
     } else {
         // Handle breaking at low velocities.
         float x = -break_accel * m * v / (std::abs(v) + alpha0);
