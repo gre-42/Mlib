@@ -860,45 +860,47 @@ void Mlib::apply_height_map(
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings)
+    const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
+    float street_smoothness)
 {
     std::map<std::string, NodeHeight> node_height;
-    std::map<std::string, std::list<std::string>> node_neighbors;
-    for(const auto& w : ways) {
-        for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
-            auto s = it;
-            ++s;
-            if (s != w.second.nd.end()) {
-                node_neighbors[*s].push_back(*it);
-                node_neighbors[*it].push_back(*s);
+    if (street_smoothness != 0) {
+        std::map<std::string, std::list<std::string>> node_neighbors;
+        for(const auto& w : ways) {
+            for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
+                auto s = it;
+                ++s;
+                if (s != w.second.nd.end()) {
+                    node_neighbors[*s].push_back(*it);
+                    node_neighbors[*it].push_back(*s);
+                }
             }
         }
-    }
-    for(const auto& n : node_neighbors) {
-        FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(nodes.at(n.first).position));
-        float z;
-        if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
-            node_height[n.first] = {z, z};
-        }
-    }
-    for(size_t i = 0; i < 50; ++i) {
-        // std::cerr << i << " " << node_neighbors.size() << std::endl;
         for(const auto& n : node_neighbors) {
-            auto hit = node_height.find(n.first);
-            if (hit != node_height.end()) {
-                float mean_height = 0;
-                size_t nn = 0;
-                for(const auto& b : n.second) {
-                    auto it = node_height.find(b);
-                    if (it != node_height.end()) {
-                        mean_height += node_height.at(b).smooth_height;
-                        ++nn;
+            FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(nodes.at(n.first).position));
+            float z;
+            if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+                node_height[n.first] = {z, z};
+            }
+        }
+        for(size_t i = 0; i < 50; ++i) {
+            // std::cerr << i << " " << node_neighbors.size() << std::endl;
+            for(const auto& n : node_neighbors) {
+                auto hit = node_height.find(n.first);
+                if (hit != node_height.end()) {
+                    float mean_height = 0;
+                    size_t nn = 0;
+                    for(const auto& b : n.second) {
+                        auto it = node_height.find(b);
+                        if (it != node_height.end()) {
+                            mean_height += node_height.at(b).smooth_height;
+                            ++nn;
+                        }
                     }
-                }
-                if (nn > 0) {
-                    mean_height /= nn;
-                    float alpha = 0.9;
-                    hit->second.smooth_height = alpha * mean_height + (1 - alpha) * hit->second.height;
+                    if (nn > 0) {
+                        mean_height /= nn;
+                        hit->second.smooth_height = street_smoothness * mean_height + (1 - street_smoothness) * hit->second.height;
+                    }
                 }
             }
         }

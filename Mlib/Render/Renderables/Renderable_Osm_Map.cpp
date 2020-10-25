@@ -64,7 +64,8 @@ RenderableOsmMap::RenderableOsmMap(
     float raise_streets_amount,
     bool add_street_lights,
     float max_wall_width,
-    bool with_height_bindings)
+    bool with_height_bindings,
+    float street_smoothness)
 : rendering_resources_{rendering_resources},
   scene_node_resources_{scene_node_resources},
   scale_{scale}
@@ -476,7 +477,8 @@ RenderableOsmMap::RenderableOsmMap(
             scale,
             nodes,
             ways,
-            height_bindings);
+            height_bindings,
+            street_smoothness);
     }
 
     // for(auto& l : tls_buildings) {
