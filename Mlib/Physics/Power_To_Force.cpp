@@ -65,7 +65,7 @@ float signed_min(float v, float max_length) {
 /**
  * ||t+a*n|| = r
  * solve(tt+2*tn*a+a^2=r^2, a)
- * a1/2 = +-sqrt(-tt+tn^2+r^2)+tn
+ * a1/2 = +-sqrt(-tt+tn^2+r^2)-tn
  */
 float correct_x_non_ortho(
     float x,
@@ -80,7 +80,7 @@ float correct_x_non_ortho(
     if (v <= 0) {
         return 0;
     }
-    return signed_min(x, (-sign(x) * std::sqrt(v) + tn) * safety_factor);
+    return signed_min(x, (-sign(x) * std::sqrt(v) - tn) * safety_factor);
 }
 
 FixedArray<float, 3> minl2(const FixedArray<float, 3>& v, float max_length) {
