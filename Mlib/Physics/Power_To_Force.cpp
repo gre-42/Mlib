@@ -75,9 +75,6 @@ float correct_x_non_ortho(
     float safety_factor = 0.99)
 {
     float tt = sum(squared(t));
-    if (squared(r) < tt) {
-        return 0;
-    }
     float tn = dot0d(t, n);
     float v = -tt + squared(tn) + squared(r);
     if (v <= 0) {
