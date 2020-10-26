@@ -54,6 +54,8 @@ static void handle_triangle_triangle_intersection(
         if (!t1.bounding_sphere.intersects(t0.plane)) {
             continue;
         }
+        // Closed, triangulated surfaces contain every edge twice.
+        // => Remove duplicates by checking the order.
         if (OrderableFixedArray{t1.triangle(1)} < OrderableFixedArray{t1.triangle(2)}) {
             HandleLineTriangleIntersection::handle({
                 o0: o0,
