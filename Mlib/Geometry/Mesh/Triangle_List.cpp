@@ -84,11 +84,11 @@ void TriangleList::delete_backfacing_triangles() {
     for(auto it = triangles_.begin(); it != triangles_.end(); ) {
         auto it0 = it++;
         const auto& t = *it0;
-        if (dot(scaled_triangle_normal({
+        if (dot0d(scaled_triangle_normal({
                 t(0).position,
                 t(1).position,
                 t(2).position}),
-            FixedArray<float, 3>{0, 0, 1})() <= 0)
+            FixedArray<float, 3>{0, 0, 1}) <= 0)
         {
             // std::cerr << "Triangle at has negative normal direction" << std::endl;
             triangles_.erase(it0);
