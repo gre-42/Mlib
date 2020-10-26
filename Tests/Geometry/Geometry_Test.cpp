@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
+#include <Mlib/Geometry/Roundness_Estimator.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -214,6 +215,30 @@ void test_bvh_performance() {
     }
 }
 
+void test_roundness_estimator() {
+    RoundnessEstimator rm;
+    rm.add_direction({0, 1});
+    assert_isclose(rm.roundness(), 0.f);
+    rm.add_direction({0, -1});
+    assert_isclose(rm.roundness(), 0.f);
+    rm.add_direction({1, 0});
+    assert_isclose(rm.roundness(), 4 * 0.2222222222f);
+    rm.add_direction({-1, 0});
+    assert_isclose(rm.roundness(), 4 * 0.25f);
+
+    rm.add_direction({0, 1});
+    assert_isclose(rm.roundness(), 4 * 0.24f);
+    rm.add_direction({0, -1});
+    assert_isclose(rm.roundness(), 4 * 0.2222222222f);
+    rm.add_direction({1, 0});
+    assert_isclose(rm.roundness(), 4 * 0.244898f);
+    rm.add_direction({-1, 0});
+    assert_isclose(rm.roundness(), 4 * 0.25f);
+
+    rm.add_direction({-2, 2.1});
+    assert_isclose(rm.roundness(), 0.737352f);
+}
+
 int main(int argc, const char** argv) {
     #ifndef __MINGW32__
     feenableexcept(FE_INVALID);
@@ -228,5 +253,6 @@ int main(int argc, const char** argv) {
     test_inverse_rodrigues();
     test_bvh();
     // test_bvh_performance();
+    test_roundness_estimator();
     return 0;
 }
