@@ -886,7 +886,9 @@ void Mlib::apply_height_map(
             FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(nodes.at(n.first).position));
             float z;
             if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
-                node_height[n.first] = {z, z};
+                node_height[n.first] = {
+                    .height = z,
+                    .smooth_height = z};
             }
         }
         for(size_t i = 0; i < 50; ++i) {
@@ -899,7 +901,7 @@ void Mlib::apply_height_map(
                     for(const auto& b : n.second) {
                         auto it = node_height.find(b.id);
                         if (it != node_height.end()) {
-                            mean_height += b.weight * node_height.at(b.id).smooth_height;
+                            mean_height += b.weight * it->second.smooth_height;
                             sum_weights += b.weight;
                         }
                     }
