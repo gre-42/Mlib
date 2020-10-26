@@ -81,22 +81,20 @@ void TriangleList::draw_rectangle_wo_normals(
     draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11);
 }
 void TriangleList::delete_backfacing_triangles() {
-    for(auto it = triangles_.begin(); it != triangles_.end(); ) {
-        auto it0 = it++;
-        const auto& t = *it0;
-        if (dot0d(scaled_triangle_normal({
+    std::erase_if(triangles_, [](const FixedArray<ColoredVertex, 3>& t) -> bool{
+        bool erase = dot0d(scaled_triangle_normal({
                 t(0).position,
                 t(1).position,
                 t(2).position}),
-            FixedArray<float, 3>{0, 0, 1}) <= 0)
-        {
+            FixedArray<float, 3>{0, 0, 1}) <= 0;
+        if (erase) {
             // std::cerr << "Triangle at has negative normal direction" << std::endl;
-            triangles_.erase(it0);
             // draw_node(*triangles, {t(0).position(0), t(0).position(1)}, scale * 5);
             // draw_node(*triangles, {t(1).position(0), t(1).position(1)}, scale * 5);
             // draw_node(*triangles, {t(2).position(0), t(2).position(1)}, scale * 5);
         }
-    }
+        return erase;
+    });
 }
 void TriangleList::calculate_triangle_normals() {
     for(auto& t : triangles_) {
