@@ -54,7 +54,7 @@ static void handle_triangle_triangle_intersection(
         if (!t1.bounding_sphere.intersects(t0.plane)) {
             continue;
         }
-        if (OrderableFixedArray{t1.triangle(1)} < OrderableFixedArray(t1.triangle(2))) {
+        if (OrderableFixedArray{t1.triangle(1)} < OrderableFixedArray{t1.triangle(2)}) {
             HandleLineTriangleIntersection::handle({
                 o0: o0,
                 o1: o1,
@@ -70,7 +70,7 @@ static void handle_triangle_triangle_intersection(
                 mesh0_two_sided: t0.two_sided,
                 lines_are_normals: false});
         }
-        if (OrderableFixedArray{t1.triangle(2)} < OrderableFixedArray(t1.triangle(0))) {
+        if (OrderableFixedArray{t1.triangle(2)} < OrderableFixedArray{t1.triangle(0)}) {
             HandleLineTriangleIntersection::handle({
                 o0: o0,
                 o1: o1,
@@ -86,7 +86,7 @@ static void handle_triangle_triangle_intersection(
                 mesh0_two_sided: t0.two_sided,
                 lines_are_normals: false});
         }
-        if (OrderableFixedArray{t1.triangle(0)} < OrderableFixedArray(t1.triangle(1))) {
+        if (OrderableFixedArray{t1.triangle(0)} < OrderableFixedArray{t1.triangle(1)}) {
             HandleLineTriangleIntersection::handle({
                 o0: o0,
                 o1: o1,
