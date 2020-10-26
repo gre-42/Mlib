@@ -30,6 +30,7 @@
  */
 #include "shapes.h"
 #include <iostream>
+#include <sstream>
 
 namespace p2t {
 
@@ -347,12 +348,20 @@ void Triangle::SetDelunayEdgeCW(Point& p, bool e)
 // The neighbor across to given point
 Triangle& Triangle::NeighborAcross(Point& opoint)
 {
+  Triangle* res;
   if (&opoint == points_[0]) {
-    return *neighbors_[0];
+    res = neighbors_[0];
   } else if (&opoint == points_[1]) {
-    return *neighbors_[1];
+    res = neighbors_[1];
+  } else {
+    res = neighbors_[2];
   }
-  return *neighbors_[2];
+  if (res == nullptr) {
+    std::stringstream sstr;
+    sstr << opoint.x << " " << opoint.y;
+    throw std::runtime_error("Could not find neightbor accross at point " + sstr.str());
+  }
+  return *res;
 }
 
 void Triangle::DebugPrint()

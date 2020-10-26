@@ -165,6 +165,10 @@ RenderableOsmMap::RenderableOsmMap(
                     ordered_node_positions.insert(std::make_pair(opos, match[1].str()));
                 }
                 nodes.insert(std::make_pair(match[1].str(), Node{position: pos}));
+                // float dist = sum(squared(pos - FixedArray<float, 2>{-0.801262, 0.0782831}));
+                // if (dist < 1e-3) {
+                //     std::cerr << "err: " << dist << " " << match[1].str() << std::endl;
+                // }
             }
         } else if (std::regex_match(line, match, way_reg)) {
             current_node = "<none>";

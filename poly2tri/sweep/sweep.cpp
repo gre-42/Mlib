@@ -33,6 +33,8 @@
 #include "sweep_context.h"
 #include "advancing_front.h"
 #include "../common/utils.h"
+#include <sstream>
+#include <iostream>
 
 namespace p2t {
 
@@ -121,8 +123,7 @@ void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangl
       triangle = &triangle->NeighborAcross(point);
       EdgeEvent( tcx, ep, *p1, triangle, *p1 );
     } else {
-      std::runtime_error("EdgeEvent - collinear points not supported");
-      assert(0);
+      throw std::runtime_error("EdgeEvent - collinear points not supported");
     }
     return;
   }
@@ -138,8 +139,7 @@ void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangl
       triangle = &triangle->NeighborAcross(point);
       EdgeEvent( tcx, ep, *p2, triangle, *p2 );
     } else {
-      std::runtime_error("EdgeEvent - collinear points not supported");
-      assert(0);
+      throw std::runtime_error("EdgeEvent - collinear points not supported");
     }
     return;
   }
@@ -764,6 +764,11 @@ Point& Sweep::NextFlipPoint(Point& ep, Point& eq, Triangle& ot, Point& op)
     return *ot.PointCCW(op);
   } else {
     // Left
+    if (o2d != CCW) {
+      std::stringstream sstr;
+      sstr << ep.x << " " << ep.y << " | " << eq.x << " " << eq.y << " | " << op.x << " " << op.y;
+      throw std::runtime_error("NextFlipPoint detected an error at point " + sstr.str());
+    }
     assert(o2d == CCW);
     return *ot.PointCW(op);
   }
