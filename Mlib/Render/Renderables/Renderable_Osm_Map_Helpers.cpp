@@ -915,11 +915,10 @@ void Mlib::apply_height_map(
     }
     for(auto& tl : triangles) {
         for(auto ti = tl->triangles_.begin(); ti != tl->triangles_.end(); ) {
-            auto ti0 = ti;
-            auto& t = *ti++;
-            for(auto& v : t.flat_iterable()) {
+            auto ti0 = ti++;
+            for(auto& v : ti0->flat_iterable()) {
                 FixedArray<float, 2> vc;
-                auto it = height_bindings.find(OrderableFixedArray{FixedArray<float, 2>{v.position(0), v.position(1)}});
+                auto it = height_bindings.find(OrderableFixedArray<float, 2>{v.position(0), v.position(1)});
                 if ((it != height_bindings.end()) && (it->second.size() == 1)) {
                     if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
                         v.position(2) += hit->second.smooth_height * scale;
