@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Roundness_Estimator.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -239,6 +240,20 @@ void test_roundness_estimator() {
     assert_isclose(rm.roundness(), 0.737352f);
 }
 
+// void test_smoothen_edges() {
+//     std::list<std::shared_ptr<TriangleList>> triangle_lists;
+//     triangle_lists.push_back(std::make_shared<TriangleList>("", Material{}));
+//     triangle_lists.back()->draw_triangle_wo_normals({0.f, 0.f, 0.f}, {1.f, 0.f, 0.f}, {0.5f, 1.f, 0.f});
+//     triangle_lists.back()->draw_triangle_wo_normals({0.f, 0.f, 0.f}, {0.5f, -1.f, 0.4f}, {1.f, 0.f, 0.f});
+//     TriangleList::smoothen_edges(triangle_lists, triangle_lists);
+//     for(const auto& t : triangle_lists.back()->triangles_) {
+//         std::cerr << std::endl;
+//         for(const auto& v : t.flat_iterable()) {
+//             std::cerr << v.position << std::endl;
+//         }
+//     }
+// }
+
 int main(int argc, const char** argv) {
     #ifndef __MINGW32__
     feenableexcept(FE_INVALID);
@@ -254,5 +269,6 @@ int main(int argc, const char** argv) {
     test_bvh();
     // test_bvh_performance();
     test_roundness_estimator();
+    // test_smoothen_edges();
     return 0;
 }

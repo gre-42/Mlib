@@ -493,6 +493,10 @@ RenderableOsmMap::RenderableOsmMap(
     //     colorize_height_map(l->triangles_);
     // }
 
+    {
+        std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path};
+        TriangleList::smoothen_edges(tls_street, tls_ground);
+    }
     // Normals are invalid after "apply_height_map"
     for(auto& l : tls_ground) {
         l->calculate_triangle_normals();

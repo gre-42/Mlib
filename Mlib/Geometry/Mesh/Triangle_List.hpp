@@ -72,7 +72,7 @@ public:
     void delete_backfacing_triangles();
     void calculate_triangle_normals();
     static void convert_triangle_to_vertex_normals(std::list<std::shared_ptr<TriangleList>>& triangle_lists);
-    void smoothen_edges();
+    static void smoothen_edges(const std::list<std::shared_ptr<TriangleList>>& triangle_lists0, std::list<std::shared_ptr<TriangleList>>& triangle_lists1);
     std::list<FixedArray<ColoredVertex, 3>> get_triangles_around(const FixedArray<float, 2>& pt, float radius) const;
     std::shared_ptr<ColoredVertexArray> triangle_array() const;
     std::string name_;

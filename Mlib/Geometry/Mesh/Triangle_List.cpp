@@ -127,40 +127,49 @@ void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<
     }
 }
 
-void TriangleList::smoothen_edges() {
-    typedef OrderableFixedArray<OrderableFixedArray<float, 3>, 2> Edge;
-    std::map<Edge, OrderableFixedArray<float, 3>> edge_neighbors;
-    std::map<OrderableFixedArray<float, 3>, FixedArray<float, 3>> vertex_movement;
-    for(const auto& t : triangles_) {
-        auto insert_edge = [&](size_t i, size_t j, size_t n){
-            OrderableFixedArray<float, 3> ei{t(i).position};
-            OrderableFixedArray<float, 3> ej{t(j).position};
-            OrderableFixedArray<float, 3> nn{t(n).position};
-            auto it = edge_neighbors.find(Edge{ej, ei});
-            if (it == edge_neighbors.end()) {
-                edge_neighbors.insert({Edge{ei, ej}, nn});
-            } else {
-                FixedArray<float, 3> n0 = triangle_normal({ej, ei, it->second});
-                FixedArray<float, 3> n1 = triangle_normal({ei, ej, nn});
-                FixedArray<float, 3> cn = (it->second + nn) / 2.f;
-                FixedArray<float, 3> ce = (ei + ej) / 2.f;
-                FixedArray<float, 3> v = cn - ce;
-                FixedArray<float, 3> n01 = (n0 + n1) / 2.f;
-                n01 /= std::sqrt(sum(squared(n01)));
-                float angle = (1 - dot0d(n0, n1)) * sign(dot0d(v, n01));
-                //vertex_movement[ei] = 0.2f*float(rand()) / RAND_MAX; //n01 * angle;
-                //vertex_movement[ej] = 0.2f*float(rand()) / RAND_MAX; //n01 * angle;
+void TriangleList::smoothen_edges(
+    const std::list<std::shared_ptr<TriangleList>>& triangle_lists0,
+    std::list<std::shared_ptr<TriangleList>>& triangle_lists1)
+{
+    for(size_t i = 0; i < 100; ++i) {
+        typedef OrderableFixedArray<OrderableFixedArray<float, 3>, 2> Edge;
+        std::map<Edge, OrderableFixedArray<float, 3>> edge_neighbors;
+        std::map<OrderableFixedArray<float, 3>, FixedArray<float, 3>> vertex_movement;
+        for(const auto& l : triangle_lists0) {
+            for(const auto& t : l->triangles_) {
+                auto insert_edge = [&](size_t i, size_t j, size_t n){
+                    OrderableFixedArray<float, 3> ei{t(i).position};
+                    OrderableFixedArray<float, 3> ej{t(j).position};
+                    OrderableFixedArray<float, 3> nn{t(n).position};
+                    auto it = edge_neighbors.find(Edge{ej, ei});
+                    if (it == edge_neighbors.end()) {
+                        edge_neighbors.insert({Edge{ei, ej}, nn});
+                    } else {
+                        FixedArray<float, 3> n0 = triangle_normal({ej, ei, it->second});
+                        FixedArray<float, 3> n1 = triangle_normal({ei, ej, nn});
+                        FixedArray<float, 3> cn = (it->second + nn) / 2.f;
+                        FixedArray<float, 3> ce = (ei + ej) / 2.f;
+                        FixedArray<float, 3> v = cn - ce;
+                        FixedArray<float, 3> n01 = (n0 + n1) / 2.f;
+                        n01 /= std::sqrt(sum(squared(n01)));
+                        float shift = (1 - dot0d(n0, n1)) * sign(dot0d(v, n01));
+                        vertex_movement[ei] += 0.001f * n01 * shift;
+                        vertex_movement[ej] += 0.001f * n01 * shift;
+                    }
+                };
+                insert_edge(0, 1, 2);
+                insert_edge(1, 2, 0);
+                insert_edge(2, 0, 1);
             }
-        };
-        insert_edge(0, 1, 2);
-        insert_edge(1, 2, 0);
-        insert_edge(2, 0, 1);
-    }
-    for(auto& t : triangles_) {
-        for(auto& v : t.flat_iterable()) {
-            auto it = vertex_movement.find(OrderableFixedArray{v.position});
-            if (it != vertex_movement.end()) {
-                v.position += 0.01f * it->second;
+        }
+        for(const auto& l : triangle_lists1) {
+            for(auto& t : l->triangles_) {
+                for(auto& v : t.flat_iterable()) {
+                    auto it = vertex_movement.find(OrderableFixedArray{v.position});
+                    if (it != vertex_movement.end()) {
+                        v.position += it->second;
+                    }
+                }
             }
         }
     }
