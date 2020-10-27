@@ -32,7 +32,7 @@ public:
       P_{P},
       xhat_{xhat}
     {}
-    TData operator () (TData z) {
+    TData operator () (const TData& z) {
         if (std::isnan(xhat_)) {
             xhat_ = z;  // a posteri estimate of x
         } else {
