@@ -169,7 +169,8 @@ void LoadScene::operator()(
         "\\s*add_street_lights=(0|1)\\r?\\n"
         "\\s*max_wall_width=([\\w+-.]+)\\r?\\n"
         "\\s*with_height_bindings=(0|1)\\r?\\n"
-        "\\s*street_smoothness=([\\w+-.]+)$");
+        "\\s*street_node_smoothness=([\\w+-.]+)\\r?\\n"
+        "\\s*street_edge_smoothness=([\\w+-.]+)$");
     const std::regex obj_resource_reg(
         "^(?:\\r?\\n|\\s)*obj_resource\\r?\\n"
         "\\s*name=([\\w-. \\(\\)/+-]+)\\r?\\n"
@@ -392,7 +393,8 @@ void LoadScene::operator()(
                     safe_stob(match[47].str()),                                   // add_street_lights
                     safe_stof(match[48].str()),                                   // max_wall_width
                     safe_stob(match[49].str()),                                   // with_height_bindings
-                    safe_stof(match[50].str())));                                 // street_smoothness
+                    safe_stof(match[50].str()),                                   // street_node_smoothness
+                    safe_stof(match[51].str())));                                 // street_edge_smoothness
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                 fpath(match[2].str()),

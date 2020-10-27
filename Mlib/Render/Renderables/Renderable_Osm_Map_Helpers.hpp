@@ -210,7 +210,7 @@ void apply_height_map(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
-    float street_smoothness);
+    float street_node_smoothness);
 
 void add_grass_inside_triangles(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,

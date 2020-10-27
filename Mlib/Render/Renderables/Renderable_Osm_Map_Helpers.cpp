@@ -866,10 +866,10 @@ void Mlib::apply_height_map(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
-    float street_smoothness)
+    float street_node_smoothness)
 {
     std::map<std::string, NodeHeight> node_height;
-    if (street_smoothness != 0) {
+    if (street_node_smoothness != 0) {
         std::map<std::string, std::list<NeighborWeight>> node_neighbors;
         for(const auto& w : ways) {
             for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
@@ -907,7 +907,7 @@ void Mlib::apply_height_map(
                     }
                     if (sum_weights > 0) {
                         mean_height /= sum_weights;
-                        hit->second.smooth_height = street_smoothness * mean_height + (1 - street_smoothness) * hit->second.height;
+                        hit->second.smooth_height = street_node_smoothness * mean_height + (1 - street_node_smoothness) * hit->second.height;
                     }
                 }
             }

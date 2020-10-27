@@ -129,7 +129,8 @@ void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<
 
 void TriangleList::smoothen_edges(
     const std::list<std::shared_ptr<TriangleList>>& triangle_lists0,
-    std::list<std::shared_ptr<TriangleList>>& triangle_lists1)
+    std::list<std::shared_ptr<TriangleList>>& triangle_lists1,
+    float smoothness)
 {
     for(size_t i = 0; i < 100; ++i) {
         typedef OrderableFixedArray<OrderableFixedArray<float, 3>, 2> Edge;
@@ -155,8 +156,8 @@ void TriangleList::smoothen_edges(
                         float n0n1 = dot0d(n0, n1);
                         if (n0n1 >=0 && n0n1 < 1) {
                             float shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
-                            vertex_movement[ei] += 0.0001f * n01 * shift;
-                            vertex_movement[ej] += 0.0001f * n01 * shift;
+                            vertex_movement[ei] += smoothness * 0.0001f * n01 * shift;
+                            vertex_movement[ej] += smoothness * 0.0001f * n01 * shift;
                         }
                     }
                 };

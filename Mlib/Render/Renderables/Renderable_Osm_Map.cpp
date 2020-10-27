@@ -65,7 +65,8 @@ RenderableOsmMap::RenderableOsmMap(
     bool add_street_lights,
     float max_wall_width,
     bool with_height_bindings,
-    float street_smoothness)
+    float street_node_smoothness,
+    float street_edge_smoothness)
 : rendering_resources_{rendering_resources},
   scene_node_resources_{scene_node_resources},
   scale_{scale}
@@ -482,7 +483,7 @@ RenderableOsmMap::RenderableOsmMap(
             nodes,
             ways,
             height_bindings,
-            street_smoothness);
+            street_node_smoothness);
     }
 
     // for(auto& l : tls_buildings) {
@@ -493,9 +494,9 @@ RenderableOsmMap::RenderableOsmMap(
     //     colorize_height_map(l->triangles_);
     // }
 
-    {
+    if (street_edge_smoothness > 0) {
         std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path};
-        TriangleList::smoothen_edges(tls_street, tls_ground);
+        TriangleList::smoothen_edges(tls_street, tls_ground, street_edge_smoothness);
     }
     // Normals are invalid after "apply_height_map"
     for(auto& l : tls_ground) {
