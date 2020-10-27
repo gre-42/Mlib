@@ -21,7 +21,7 @@ public:
         const FixedArray<float, 3>& position,
         const FixedArray<float, 3>& normal)
     {
-        vertices_[OrderableFixedArray<float, 3>{position}] += normal;
+        vertices_[OrderableFixedArray{position}] += normal;
     }
     inline void compute_vertex_normals() {
         for(auto& v : vertices_) {
@@ -31,7 +31,7 @@ public:
     inline const FixedArray<float, 3>& get_normal(const FixedArray<float, 3>& position) {
         return vertices_.at(OrderableFixedArray{position});
     }
-    const std::map<OrderableFixedArray<float, 3>, FixedArray<float, 3>>& vertices() {
+    inline const std::map<OrderableFixedArray<float, 3>, FixedArray<float, 3>>& vertices() {
         return vertices_;
     }
 private:
