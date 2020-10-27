@@ -28,6 +28,7 @@ void TriangleList::draw_triangle_with_normals(
 
     triangles_.push_back(FixedArray<ColoredVertex, 3>{v00, v10, v01});
 }
+
 void TriangleList::draw_triangle_wo_normals(
     const FixedArray<float, 3>& p00,
     const FixedArray<float, 3>& p10,
@@ -42,6 +43,7 @@ void TriangleList::draw_triangle_wo_normals(
     auto n = triangle_normal({p00, p10, p01});
     draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01);
 }
+
 void TriangleList::draw_rectangle_with_normals(
     const FixedArray<float, 3>& p00,
     const FixedArray<float, 3>& p10,
@@ -63,6 +65,7 @@ void TriangleList::draw_rectangle_with_normals(
     draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01);
     draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11);
 }
+
 void TriangleList::draw_rectangle_wo_normals(
     const FixedArray<float, 3>& p00,
     const FixedArray<float, 3>& p10,
@@ -80,6 +83,7 @@ void TriangleList::draw_rectangle_wo_normals(
     draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01);
     draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11);
 }
+
 void TriangleList::delete_backfacing_triangles() {
     std::erase_if(triangles_, [](const FixedArray<ColoredVertex, 3>& t) -> bool{
         bool erase = dot0d(scaled_triangle_normal({
@@ -96,6 +100,7 @@ void TriangleList::delete_backfacing_triangles() {
         return erase;
     });
 }
+
 void TriangleList::calculate_triangle_normals() {
     for(auto& t : triangles_) {
         auto n = triangle_normal({t(0).position, t(1).position, t(2).position});
@@ -104,15 +109,16 @@ void TriangleList::calculate_triangle_normals() {
         t(2).normal = n;
     }
 }
+
 void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<TriangleList>>& triangle_lists) {
     VertexNormals vertex_normals;
-    for(auto l : triangle_lists) {
+    for(const auto& l : triangle_lists) {
         vertex_normals.add_triangles(
             l->triangles_.begin(),
             l->triangles_.end());
     }
     vertex_normals.compute_vertex_normals();
-    for(auto l : triangle_lists) {
+    for(const auto& l : triangle_lists) {
         for(auto& it : l->triangles_) {
             for(auto& v : it.flat_iterable()) {
                 v.normal = vertex_normals.get_normal(v.position);
@@ -120,6 +126,46 @@ void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<
         }
     }
 }
+
+void TriangleList::smoothen_edges() {
+    typedef OrderableFixedArray<OrderableFixedArray<float, 3>, 2> Edge;
+    std::map<Edge, OrderableFixedArray<float, 3>> edge_neighbors;
+    std::map<OrderableFixedArray<float, 3>, FixedArray<float, 3>> vertex_movement;
+    for(const auto& t : triangles_) {
+        auto insert_edge = [&](size_t i, size_t j, size_t n){
+            OrderableFixedArray<float, 3> ei{t(i).position};
+            OrderableFixedArray<float, 3> ej{t(j).position};
+            OrderableFixedArray<float, 3> nn{t(n).position};
+            auto it = edge_neighbors.find(Edge{ej, ei});
+            if (it == edge_neighbors.end()) {
+                edge_neighbors.insert({Edge{ei, ej}, nn});
+            } else {
+                FixedArray<float, 3> n0 = triangle_normal({ej, ei, it->second});
+                FixedArray<float, 3> n1 = triangle_normal({ei, ej, nn});
+                FixedArray<float, 3> cn = (it->second + nn) / 2.f;
+                FixedArray<float, 3> ce = (ei + ej) / 2.f;
+                FixedArray<float, 3> v = cn - ce;
+                FixedArray<float, 3> n01 = (n0 + n1) / 2.f;
+                n01 /= std::sqrt(sum(squared(n01)));
+                float angle = (1 - dot0d(n0, n1)) * sign(dot0d(v, n01));
+                //vertex_movement[ei] = 0.2f*float(rand()) / RAND_MAX; //n01 * angle;
+                //vertex_movement[ej] = 0.2f*float(rand()) / RAND_MAX; //n01 * angle;
+            }
+        };
+        insert_edge(0, 1, 2);
+        insert_edge(1, 2, 0);
+        insert_edge(2, 0, 1);
+    }
+    for(auto& t : triangles_) {
+        for(auto& v : t.flat_iterable()) {
+            auto it = vertex_movement.find(OrderableFixedArray{v.position});
+            if (it != vertex_movement.end()) {
+                v.position += 0.01f * it->second;
+            }
+        }
+    }
+}
+
 std::list<FixedArray<ColoredVertex, 3>> TriangleList::get_triangles_around(const FixedArray<float, 2>& pt, float radius) const {
     std::list<FixedArray<ColoredVertex, 3>> tf;
     for(const auto& t : triangles_) {
@@ -135,6 +181,7 @@ std::list<FixedArray<ColoredVertex, 3>> TriangleList::get_triangles_around(const
     }
     return tf;
 }
+
 std::shared_ptr<ColoredVertexArray> TriangleList::triangle_array() const {
     return std::make_shared<ColoredVertexArray>(
         name_,
