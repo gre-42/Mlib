@@ -152,9 +152,12 @@ void TriangleList::smoothen_edges(
                         FixedArray<float, 3> v = cn - ce;
                         FixedArray<float, 3> n01 = (n0 + n1) / 2.f;
                         n01 /= std::sqrt(sum(squared(n01)));
-                        float shift = (1 - dot0d(n0, n1)) * sign(dot0d(v, n01));
-                        vertex_movement[ei] += 0.001f * n01 * shift;
-                        vertex_movement[ej] += 0.001f * n01 * shift;
+                        float n0n1 = dot0d(n0, n1);
+                        if (n0n1 >=0 && n0n1 < 1) {
+                            float shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
+                            vertex_movement[ei] += 0.0001f * n01 * shift;
+                            vertex_movement[ej] += 0.0001f * n01 * shift;
+                        }
                     }
                 };
                 insert_edge(0, 1, 2);
