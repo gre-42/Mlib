@@ -423,16 +423,6 @@ RenderableOsmMap::RenderableOsmMap(
                 0,
                 steiner_point_distance);
         }
-        raise_streets(
-            *tl_street_crossing,
-            *tl_path_crossing,
-            *tl_street,
-            *tl_path,
-            *tl_curb_street,
-            *tl_curb_path,
-            *tl_terrain,
-            scale,
-            raise_streets_amount);
         if (with_roofs) {
             draw_roofs(
                 tls_buildings,
@@ -495,9 +485,19 @@ RenderableOsmMap::RenderableOsmMap(
     // }
 
     if (street_edge_smoothness > 0) {
-        std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path};
+        std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
         TriangleList::smoothen_edges(tls_street, tls_ground, street_edge_smoothness);
     }
+    raise_streets(
+        *tl_street_crossing,
+        *tl_path_crossing,
+        *tl_street,
+        *tl_path,
+        *tl_curb_street,
+        *tl_curb_path,
+        *tl_terrain,
+        scale,
+        raise_streets_amount);
     // Normals are invalid after "apply_height_map"
     for(auto& l : tls_ground) {
         l->calculate_triangle_normals();
