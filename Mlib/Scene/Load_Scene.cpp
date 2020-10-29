@@ -208,7 +208,7 @@ void LoadScene::operator()(
     const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
     const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
     const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]+) radius=([\\w+-.]+) tire_id=(\\d+)$");
-    const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+) tires=([\\d\\s]*)$");
+    const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+) break_force=([\\w+-.]+) tires=([\\d\\s]*)$");
     const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+)$");
     const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player-name=([\\w+-.]+) node=([\\w+-.]+)$");
     const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
@@ -629,19 +629,26 @@ void LoadScene::operator()(
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            auto ep = rb->engines_.insert(
-                std::make_pair(match[2].str(),
-                RigidBodyEngine{safe_stof(match[3].str())}));
+            auto ep = rb->engines_.insert({
+                match[2].str(),
+                RigidBodyEngine{safe_stof(match[3].str())}});
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }
-            for(const std::string& t : string_to_list(match[4].str())) {
+            for(const std::string& t : string_to_list(match[5].str())) {
                 ep.first->second.increment_ntires();
                 // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
                 // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
 
                 // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-                auto tp = rb->tires_.insert(std::make_pair(safe_stoi(t), Tire{match[2].str(), 1e5, 2e3, 0}));
+                auto tp = rb->tires_.insert({
+                    safe_stoi(t),
+                    Tire{
+                        match[2].str(),
+                        safe_stof(match[4].str()),
+                        1e5,
+                        2e3,
+                        0}});
                 if (!tp.second) {
                     throw std::runtime_error("Tire with ID \"" + t + "\" already exists");
                 }

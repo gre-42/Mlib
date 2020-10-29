@@ -165,6 +165,10 @@ void RigidBody::set_surface_power(const std::string& engine_name, float surface_
     e->second.set_surface_power(surface_power);
 }
 
+float RigidBody::get_tire_break_force(size_t id) const {
+    return tires_.at(id).break_force;
+}
+
 float RigidBody::energy() const {
     // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
     return 0.5f * (mass_ * sum(squared(rbi_.v_)) + dot0d(rbi_.w_, dot1d(rbi_.abs_I(), rbi_.w_)));

@@ -5,11 +5,12 @@
 namespace Mlib {
 
 struct Tire {
-    Tire(const std::string& engine, float Ks, float Ka, float angle);
+    Tire(const std::string& engine, float break_force, float Ks, float Ka, float angle);
     void advance_time(float dt);
     ShockAbsorber shock_absorber;
     float angle;
     std::string engine;
+    float break_force;
 };
 
 }
