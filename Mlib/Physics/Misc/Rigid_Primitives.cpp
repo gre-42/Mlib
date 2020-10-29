@@ -1,7 +1,7 @@
 #include "Rigid_Primitives.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 
 using namespace Mlib;
 

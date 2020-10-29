@@ -3,7 +3,7 @@
 #include <Mlib/Physics/Advance_Time.hpp>
 #include <Mlib/Physics/External_Force_Provider.hpp>
 #include <Mlib/Physics/Handle_Line_Triangle_Intersection.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Sat_Normals.hpp>
 #include <Mlib/Physics/Transformed_Mesh.hpp>
 #include <Mlib/Reverse_Iterator.hpp>

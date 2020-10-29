@@ -1,9 +1,9 @@
 #include "Key_Bindings.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/Physics/Objects/Gun.hpp>
-#include <Mlib/Physics/Objects/Relative_Transformer.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
+#include <Mlib/Physics/Advance_Times/Gun.hpp>
+#include <Mlib/Physics/Advance_Times/Relative_Transformer.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>

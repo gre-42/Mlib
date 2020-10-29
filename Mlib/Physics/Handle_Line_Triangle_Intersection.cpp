@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Collision_Observer.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Power_To_Force.hpp>
 #include <Mlib/Physics/Sat_Normals.hpp>

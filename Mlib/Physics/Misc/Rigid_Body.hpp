@@ -4,9 +4,9 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Collision_Observer.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body_Engine.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body_Integrator.hpp>
-#include <Mlib/Physics/Objects/Tire.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
+#include <Mlib/Physics/Misc/Tire.hpp>
 #include <Mlib/Scene_Graph/Loggable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Physics/Objects/Shock_Absorber.hpp>
+#include <Mlib/Physics/Misc/Shock_Absorber.hpp>
 #include <string>
 
 namespace Mlib {

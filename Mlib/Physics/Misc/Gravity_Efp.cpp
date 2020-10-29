@@ -1,6 +1,6 @@
 #include "Gravity_Efp.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 
 using namespace Mlib;
 

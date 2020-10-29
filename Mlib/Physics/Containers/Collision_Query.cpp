@@ -1,6 +1,6 @@
 #include "Collision_Query.hpp"
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Transformed_Mesh.hpp>
 

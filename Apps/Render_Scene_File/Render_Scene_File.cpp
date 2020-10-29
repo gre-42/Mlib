@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
-#include <Mlib/Physics/Objects/Gravity_Efp.hpp>
+#include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Regex.hpp>

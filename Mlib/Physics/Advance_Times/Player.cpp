@@ -2,11 +2,11 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Advance_Times/Gun.hpp>
+#include <Mlib/Physics/Advance_Times/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
-#include <Mlib/Physics/Objects/Gun.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
-#include <Mlib/Physics/Objects/Yaw_Pitch_Look_At_Nodes.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
 static const float rest_radius = 30;

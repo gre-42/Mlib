@@ -1,8 +1,8 @@
 #include "Bullet.hpp"
 #include <Mlib/Geometry/Look_At.hpp>
+#include <Mlib/Physics/Advance_Times/Damageable.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Objects/Damageable.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;

@@ -2,9 +2,9 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Aim.hpp>
-#include <Mlib/Physics/Objects/Gravity_Efp.hpp>
-#include <Mlib/Physics/Objects/Rigid_Body.hpp>
-#include <Mlib/Physics/Objects/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Misc/Gravity_Efp.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Power_To_Force.hpp>
 #include <Mlib/Stats/Linspace.hpp>
