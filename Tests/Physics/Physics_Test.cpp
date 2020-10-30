@@ -185,7 +185,7 @@ void test_sticky_wheel() {
         FixedArray<float, 3, 3> rotation = rodrigues<float>({0, 1, 0}, 0.f);
         FixedArray<float, 3> translation = {0.f, 0.f, 0.f};
         sw.accelerate(1.23);
-        sw.notify_intersection(rotation, translation, {0, -1, 0});
+        sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0});
         FixedArray<float, 3> f = sw.update_position(rotation, translation, spring_constant, stiction_force, dt);
         assert_allclose(f.to_array(), Array<float>{0, 0.000630319, -0.0614957});
     }

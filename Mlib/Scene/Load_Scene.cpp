@@ -648,7 +648,7 @@ void LoadScene::operator()(
 
                 // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
                 size_t nsprings = 10;
-                float max_dist = 0.05;
+                float max_dist = 0.1;
                 auto tp = rb->tires_.insert({
                     tire_id,
                     Tire{

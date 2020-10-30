@@ -172,12 +172,13 @@ void HandleLineTriangleIntersection::handle()
                         sw.notify_intersection(
                             i_.o1->get_abs_tire_rotation_matrix(i_.tire_id),
                             i_.o1->get_abs_tire_position(i_.tire_id),
-                            intersection_point_);
+                            intersection_point_,
+                            plane.normal_);
                         if (!std::isnan(P)) {
                             if (P > 0) {
-                                sw.accelerate(2);
+                                sw.accelerate(0.1);
                             } else if (P < 0) {
-                                sw.accelerate(-2);
+                                sw.accelerate(-0.1);
                             }
                         }
                         tangential_force = 0;
