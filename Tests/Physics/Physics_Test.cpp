@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Misc/Sticky_Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Power_To_Force.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -61,13 +62,13 @@ void test_power_to_force_negative() {
     float m = 1000;
     float alpha0 = 0.2;
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(10, 1e-1, 5e4, 5e4, INFINITY, n3, P, m, v3, dt, alpha0, false);
+        auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, P, m, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
     assert_isclose<float>(v3(0), 32.0889, 1e-4);
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(10, 1e-1, 5e4, 5e4, INFINITY, n3, -P, m, v3, dt, alpha0, false);
+        auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, -P, m, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
@@ -84,11 +85,11 @@ void test_power_to_force_stiction_normal() {
     float stiction_coefficient = 1;
     float alpha0 = 0.2;
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(10, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, alpha0, true);
-        F += power_to_force_infinite_mass(10, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, alpha0, true);
+        auto F = power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, alpha0, true);
+        F += power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, alpha0, true);
         v3 += F / m * dt;
     }
-    assert_isclose<float>(v3(0), 98.0023, 1e-4);
+    assert_isclose<float>(v3(0), 97.0226, 1e-4);
 }
 // Infinite max_stiction_force no longer supported
 //
@@ -170,6 +171,25 @@ void test_com() {
         r1->velocity_at_position(com1).to_array());
 }
 
+void test_sticky_wheel() {
+    FixedArray<float, 3> rotation_axis{1, 0, 0};
+    float radius = 1.2;
+    size_t ntires = 10;
+    float max_dist = 0.1;
+    StickyWheel sw{rotation_axis, radius, ntires, max_dist};
+    float spring_constant = 3;
+    float stiction_force = 100;
+    float dt = 1.f / 60;
+    {
+        FixedArray<float, 3, 3> rotation = rodrigues<float>({0, 1, 0}, 0.f);
+        FixedArray<float, 3> translation = {0.f, 0.f, 0.f};
+        sw.accelerate(1.23);
+        sw.notify_intersection(rotation, translation, {0, -1, 0});
+        FixedArray<float, 3> f = sw.update_position(rotation, translation, spring_constant, stiction_force, dt);
+        assert_allclose(f.to_array(), Array<float>{0, 0.000630319, -0.0614957});
+    }
+}
+
 int main(int argc, const char** argv) {
     #ifndef __MINGW32__
     feenableexcept(FE_INVALID);
@@ -181,5 +201,6 @@ int main(int argc, const char** argv) {
     // test_power_to_force_P_normal();
     // test_power_to_force_stiction_tangential();
     test_com();
+    test_sticky_wheel();
     return 0;
 }
