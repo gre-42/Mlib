@@ -2,8 +2,14 @@
 
 using namespace Mlib;
 
-Tire::Tire(const std::string& engine, float break_force, float Ks, float Ka, float angle)
-: shock_absorber{Ks, Ka},
+Tire::Tire(
+    const std::string& engine,
+    float break_force,
+    const ShockAbsorber& shock_absorber,
+    const StickyWheel& sticky_wheel,
+    float angle)
+: shock_absorber{shock_absorber},
+  sticky_wheel{sticky_wheel},
   angle{angle},
   engine{engine},
   break_force{break_force}

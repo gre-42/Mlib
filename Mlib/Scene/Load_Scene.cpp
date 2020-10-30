@@ -207,8 +207,8 @@ void LoadScene::operator()(
     const std::regex trigger_gun_ai_reg("^(?:\\r?\\n|\\s)*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
     const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
     const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
-    const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]+) radius=([\\w+-.]+) tire_id=(\\d+)$");
-    const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+) break_force=([\\w+-.]+) tires=([\\d\\s]*)$");
+    const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) tire_id=(\\d+)$");
+    const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+)$");
     const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+)$");
     const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player-name=([\\w+-.]+) node=([\\w+-.]+)$");
     const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
@@ -618,12 +618,38 @@ void LoadScene::operator()(
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            std::shared_ptr<Wheel> wheel = std::make_shared<Wheel>(
-                *rb,
-                physics_engine.advance_times_,
-                (size_t)safe_stoi(match[4].str()),
-                safe_stof(match[3].str()));
-            linker.link_relative_movable(*scene.get_node(match[2].str()), wheel);
+            {
+                std::shared_ptr<Wheel> wheel = std::make_shared<Wheel>(
+                    *rb,
+                    physics_engine.advance_times_,
+                    (size_t)safe_stoi(match[6].str()),
+                    safe_stof(match[3].str()));
+                linker.link_relative_movable(*scene.get_node(match[2].str()), wheel);
+            }
+            {
+                auto ep = rb->engines_.find(match[4].str());
+                if (ep == rb->engines_.end()) {
+                    throw std::runtime_error("Could not find engine with name " + match[4].str());
+                }
+                ep->second.increment_ntires();
+                // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
+                // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
+
+                // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
+                size_t nsprings = 10;
+                float max_dist = 0.05;
+                auto tp = rb->tires_.insert({
+                    (size_t)safe_stoi(match[6].str()),
+                    Tire{
+                        match[4].str(),
+                        safe_stof(match[5].str()),
+                        ShockAbsorber{1e5, 2e3},
+                        StickyWheel{{1.f, 0.f, 0.f}, safe_stof(match[3].str()), nsprings, max_dist},
+                        0}});
+                if (!tp.second) {
+                    throw std::runtime_error("Tire with ID \"" + match[6].str() + "\" already exists");
+                }
+            }
         } else if (std::regex_match(line, match, create_engine_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
@@ -634,24 +660,6 @@ void LoadScene::operator()(
                 RigidBodyEngine{safe_stof(match[3].str())}});
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
-            }
-            for(const std::string& t : string_to_list(match[5].str())) {
-                ep.first->second.increment_ntires();
-                // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
-                // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
-
-                // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-                auto tp = rb->tires_.insert({
-                    safe_stoi(t),
-                    Tire{
-                        match[2].str(),
-                        safe_stof(match[4].str()),
-                        1e5,
-                        2e3,
-                        0}});
-                if (!tp.second) {
-                    throw std::runtime_error("Tire with ID \"" + t + "\" already exists");
-                }
             }
         } else if (std::regex_match(line, match, player_create_reg)) {
             auto player = std::make_shared<Player>(physics_engine.collision_query_, players, match[1].str(), match[2].str());

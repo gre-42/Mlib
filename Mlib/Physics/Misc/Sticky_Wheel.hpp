@@ -38,7 +38,7 @@ public:
         for(auto& s : springs_) {
             if (!any(isnan(s.first))) {
                 s.first = dot1d(dr, s.first);
-                f += s.second.update_position(dot1d(rotation, s.first) + translation, spring_constant, stiction_force);
+                f += s.second.update_position(dot1d(rotation, s.first) + translation, spring_constant, stiction_force / springs_.size());
             }
         }
         return f;
