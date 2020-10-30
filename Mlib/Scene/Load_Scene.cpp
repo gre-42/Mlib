@@ -207,7 +207,7 @@ void LoadScene::operator()(
     const std::regex trigger_gun_ai_reg("^(?:\\r?\\n|\\s)*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
     const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
     const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
-    const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) tire_id=(\\d+)$");
+    const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) tire_id=(\\d+)$");
     const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+)$");
     const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+)$");
     const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player-name=([\\w+-.]+) node=([\\w+-.]+)$");
@@ -614,22 +614,33 @@ void LoadScene::operator()(
             std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(physics_engine.advance_times_);
             linker.link_relative_movable(*scene.get_node(match[1].str()), rt);
         } else if (std::regex_match(line, match, wheel_reg)) {
-            auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
+            std::string rigid_body = match[1].str();
+            std::string node = match[2].str();
+            FixedArray<float, 3> position{
+                safe_stof(match[3].str()),
+                safe_stof(match[4].str()),
+                safe_stof(match[5].str())};
+            float radius = safe_stof(match[6].str());
+            std::string engine = match[7].str();
+            float break_force = safe_stof(match[8].str());
+            size_t tire_id = safe_stoi(match[9].str());
+
+            auto rb = dynamic_cast<RigidBody*>(scene.get_node(rigid_body)->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            if (!match[2].str().empty()) {
+            if (!node.empty()) {
                 std::shared_ptr<Wheel> wheel = std::make_shared<Wheel>(
                     *rb,
                     physics_engine.advance_times_,
-                    (size_t)safe_stoi(match[6].str()),
-                    safe_stof(match[3].str()));
-                linker.link_relative_movable(*scene.get_node(match[2].str()), wheel);
+                    tire_id,
+                    radius);
+                linker.link_relative_movable(*scene.get_node(node), wheel);
             }
             {
-                auto ep = rb->engines_.find(match[4].str());
+                auto ep = rb->engines_.find(engine);
                 if (ep == rb->engines_.end()) {
-                    throw std::runtime_error("Could not find engine with name " + match[4].str());
+                    throw std::runtime_error("Could not find engine with name " + engine);
                 }
                 ep->second.increment_ntires();
                 // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
@@ -639,15 +650,16 @@ void LoadScene::operator()(
                 size_t nsprings = 10;
                 float max_dist = 0.05;
                 auto tp = rb->tires_.insert({
-                    (size_t)safe_stoi(match[6].str()),
+                    tire_id,
                     Tire{
-                        match[4].str(),
-                        safe_stof(match[5].str()),
+                        engine,
+                        break_force,
                         ShockAbsorber{1e5, 2e3},
-                        StickyWheel{{1.f, 0.f, 0.f}, safe_stof(match[3].str()), nsprings, max_dist},
-                        0}});
+                        StickyWheel{{1.f, 0.f, 0.f}, radius, nsprings, max_dist},
+                        0,  // angle
+                        position}});
                 if (!tp.second) {
-                    throw std::runtime_error("Tire with ID \"" + match[6].str() + "\" already exists");
+                    throw std::runtime_error("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
                 }
             }
         } else if (std::regex_match(line, match, create_engine_reg)) {

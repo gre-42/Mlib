@@ -56,10 +56,13 @@ public:
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
     void set_max_velocity(float max_velocity);
     void set_tire_angle(size_t id, float angle);
+    FixedArray<float, 3, 3> get_abs_tire_rotation_matrix(size_t id) const;
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float consume_tire_surface_power(size_t id);
     void set_surface_power(const std::string& engine_name, float surface_power);
     float get_tire_break_force(size_t id) const;
+    StickyWheel& get_tire_sticky_wheel(size_t id);
+    FixedArray<float, 3> get_abs_tire_position(size_t id) const;
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;
     float energy() const;

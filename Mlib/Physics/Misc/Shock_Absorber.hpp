@@ -16,8 +16,8 @@ public:
         return position_;
     }
 private:
-    float Ks_;
-    float Ka_;
+    float Ks_;  // K_spring
+    float Ka_;  // K_absorber
     float position_;
     float F_;
 };

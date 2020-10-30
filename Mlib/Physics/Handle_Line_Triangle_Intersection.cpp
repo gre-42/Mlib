@@ -167,19 +167,35 @@ void HandleLineTriangleIntersection::handle()
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
                     float P = i_.o1->consume_tire_surface_power(i_.tire_id);
-                    tangential_force = power_to_force_infinite_mass(
-                        i_.o1->get_tire_break_force(i_.tire_id),
-                        i_.cfg.hand_break_velocity,
-                        i_.cfg.stiction_coefficient * force_n1,
-                        i_.cfg.friction_coefficient * force_n1,
-                        i_.o1->max_velocity_,
-                        n3,
-                        P,
-                        i_.o1->mass(),
-                        v3,
-                        i_.cfg.dt,
-                        i_.cfg.alpha0,
-                        i_.cfg.avoid_burnout);
+                    if (true) {
+                        StickyWheel& sw = i_.o1->get_tire_sticky_wheel(i_.tire_id);
+                        sw.notify_intersection(
+                            i_.o1->get_abs_tire_rotation_matrix(i_.tire_id),
+                            i_.o1->get_abs_tire_position(i_.tire_id),
+                            intersection_point_);
+                        if (!std::isnan(P)) {
+                            if (P > 0) {
+                                sw.accelerate(2);
+                            } else if (P < 0) {
+                                sw.accelerate(-2);
+                            }
+                        }
+                        tangential_force = 0;
+                    } else {
+                        tangential_force = power_to_force_infinite_mass(
+                            i_.o1->get_tire_break_force(i_.tire_id),
+                            i_.cfg.hand_break_velocity,
+                            i_.cfg.stiction_coefficient * force_n1,
+                            i_.cfg.friction_coefficient * force_n1,
+                            i_.o1->max_velocity_,
+                            n3,
+                            P,
+                            i_.o1->mass(),
+                            v3,
+                            i_.cfg.dt,
+                            i_.cfg.alpha0,
+                            i_.cfg.avoid_burnout);
+                    }
                 } else {
                     tangential_force = 0;
                 }

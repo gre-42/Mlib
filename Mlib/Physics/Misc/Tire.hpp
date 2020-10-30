@@ -11,13 +11,15 @@ struct Tire {
         float break_force,
         const ShockAbsorber& shock_absorber,
         const StickyWheel& sticky_wheel,
-        float angle);
+        float angle,
+        const FixedArray<float, 3>& position);
     void advance_time(float dt);
     ShockAbsorber shock_absorber;
     StickyWheel sticky_wheel;
     float angle;
     std::string engine;
     float break_force;
+    FixedArray<float, 3> position;
 };
 
 }

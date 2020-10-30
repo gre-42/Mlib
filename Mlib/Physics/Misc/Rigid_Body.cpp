@@ -85,6 +85,17 @@ void RigidBody::advance_time(
     float min_angular_velocity)
 {
     std::lock_guard lock{advance_time_mutex_};
+    for(auto& t : tires_) {
+        FixedArray<float, 3, 3> r = get_abs_tire_rotation_matrix(t.first);
+        FixedArray<float, 3> p = rbi_.abs_position() + dot1d(rbi_.rotation_, t.second.position);
+        float spring_constant = 1e5;
+        float stiction_force = 5e3;
+        FixedArray<float, 3> f = t.second.sticky_wheel.update_position(r, p, spring_constant, stiction_force, dt);
+        // std::cerr << f << std::endl;
+        integrate_force({
+            vector: f,
+            position: p});
+    }
     rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);
     for(auto& t : tires_) {
         t.second.advance_time(dt);
@@ -135,10 +146,17 @@ void RigidBody::set_tire_angle(size_t id, float angle) {
     tires_.at(id).angle = angle;
 }
 
+FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const {
+    if (auto t = tires_.find(id); t != tires_.end()) {
+        return dot2d(rbi_.rotation_, rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle));
+    } else {
+        return rbi_.rotation_;
+    }
+}
+
 FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
-    auto t = tires_.find(id);
     FixedArray<float, 3> z{tires_z_};
-    if (t != tires_.end()) {
+    if (auto t = tires_.find(id); t != tires_.end()) {
         z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle), z);
     }
     z = dot1d(rbi_.rotation_, z);
@@ -167,6 +185,14 @@ void RigidBody::set_surface_power(const std::string& engine_name, float surface_
 
 float RigidBody::get_tire_break_force(size_t id) const {
     return tires_.at(id).break_force;
+}
+
+StickyWheel& RigidBody::get_tire_sticky_wheel(size_t id) {
+    return tires_.at(id).sticky_wheel;
+}
+
+FixedArray<float, 3> RigidBody::get_abs_tire_position(size_t id) const {
+    return rbi_.abs_position() + dot1d(rbi_.rotation_, tires_.at(id).position);
 }
 
 float RigidBody::energy() const {
