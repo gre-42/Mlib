@@ -16,6 +16,7 @@ StickyWheel::StickyWheel(
     next_spring_{0},
     w_{0}
 {}
+
 void StickyWheel::notify_intersection(
     const FixedArray<float, 3, 3>& rotation,
     const FixedArray<float, 3>& translation,
@@ -26,6 +27,7 @@ void StickyWheel::notify_intersection(
     s.second.point_of_contact = pt_absolute;
     next_spring_ = (next_spring_ + 1) % springs_.size();
 }
+
 FixedArray<float, 3> StickyWheel::update_position(
     const FixedArray<float, 3, 3>& rotation,
     const FixedArray<float, 3>& translation,
@@ -46,6 +48,7 @@ FixedArray<float, 3> StickyWheel::update_position(
     }
     return f;
 }
+
 void StickyWheel::accelerate(float amount) {
     w_ += amount;
 }
