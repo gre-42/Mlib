@@ -36,7 +36,8 @@ FixedArray<float, 3> StickyWheel::update_position(
     const FixedArray<float, 3>& translation,
     float spring_constant,
     float stiction_force,
-    float dt)
+    float dt,
+    std::vector<FixedArray<float, 3>>& beacons)
 {
     angle_x_ += w_ * dt;
     angle_x_ = std::fmod(angle_x_, 2 * M_PI);
@@ -50,6 +51,7 @@ FixedArray<float, 3> StickyWheel::update_position(
             if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
                 s.position = NAN;
             } else {
+                beacons.push_back(abs_position);
                 FixedArray<float, 3> ff = s.spring.update_position(
                     abs_position,
                     spring_constant / springs_.size(),

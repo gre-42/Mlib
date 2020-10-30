@@ -18,7 +18,7 @@ public:
     ~PhysicsEngine();
     void add_external_force_provider(ExternalForceProvider* efp);
     void collide(std::vector<FixedArray<float, 3>>& beacons, bool burn_in);
-    void move_rigid_bodies();
+    void move_rigid_bodies(std::vector<FixedArray<float, 3>>& beacons);
     void move_advance_times();
     void burn_in(float seconds);
 

@@ -148,8 +148,14 @@ void test_com() {
     r1->rbi_.I_ = r0->rbi_.I_;
     r0->integrate_gravity({0, -9.8, 0});
     r1->integrate_gravity({0, -9.8, 0});
-    r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
-    r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    {
+        std::vector<FixedArray<float, 3>> beacons;
+        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, beacons);
+    }
+    {
+        std::vector<FixedArray<float, 3>> beacons;
+        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, beacons);
+    }
     
     // std::cerr << r0->rbi_.v_ << std::endl;
     // std::cerr << r1->rbi_.v_ << std::endl;
@@ -157,16 +163,28 @@ void test_com() {
     assert_allclose(r1->rbi_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
     r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
-    r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
-    r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    {
+        std::vector<FixedArray<float, 3>> beacons;
+        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, beacons);
+    }
+    {
+        std::vector<FixedArray<float, 3>> beacons;
+        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, beacons);
+    }
     assert_allclose(r0->rbi_.v_.to_array(), r1->rbi_.v_.to_array());
     assert_allclose(r0->rbi_.a_.to_array(), r1->rbi_.a_.to_array());
     assert_allclose(r0->rbi_.T_.to_array(), r1->rbi_.T_.to_array());
     assert_allclose(
         r0->velocity_at_position(com0).to_array(),
         r1->velocity_at_position(com1).to_array());
-    r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
-    r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity);
+    {
+        std::vector<FixedArray<float, 3>> beacons;
+        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, beacons);
+    }
+    {
+        std::vector<FixedArray<float, 3>> beacons;
+        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, beacons);
+    }
     assert_allclose(
         r0->velocity_at_position(com0).to_array(),
         r1->velocity_at_position(com1).to_array());
@@ -186,8 +204,11 @@ void test_sticky_wheel() {
         FixedArray<float, 3> translation = {0.f, 0.f, 0.f};
         sw.accelerate(1.23);
         sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0});
-        FixedArray<float, 3> f = sw.update_position(rotation, translation, spring_constant, stiction_force, dt);
-        assert_allclose(f.to_array(), Array<float>{0, 0.000630319, -0.0614957});
+        {
+            std::vector<FixedArray<float, 3>> beacons;
+            FixedArray<float, 3> f = sw.update_position(rotation, translation, spring_constant, stiction_force, dt, beacons);
+            assert_allclose(f.to_array(), Array<float>{0, 0.000630319, -0.0614957});
+        }
     }
 }
 

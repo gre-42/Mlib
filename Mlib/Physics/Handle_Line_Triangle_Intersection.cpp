@@ -176,9 +176,9 @@ void HandleLineTriangleIntersection::handle()
                             plane.normal_);
                         if (!std::isnan(P)) {
                             if (P > 0) {
-                                sw.accelerate(0.1);
-                            } else if (P < 0) {
                                 sw.accelerate(-0.1);
+                            } else if (P < 0) {
+                                sw.accelerate(0.1);
                             }
                         }
                         tangential_force = 0;

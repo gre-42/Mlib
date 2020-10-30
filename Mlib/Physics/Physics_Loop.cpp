@@ -30,6 +30,7 @@ PhysicsLoop::PhysicsLoop(
         }
         std::vector<FixedArray<float, 3>> beacons;
         physics_engine.collide(beacons, false);  // false=burn_in
+        physics_engine.move_rigid_bodies(beacons);
         {
             scene.delete_root_nodes(std::regex{"^beacon.*"});
             for(size_t i = 0; i < beacons.size(); ++i) {
@@ -39,7 +40,6 @@ PhysicsLoop::PhysicsLoop(
                 // scene.get_node("beacon" + std::to_string(i))->set_scale(0.05);
             }
         }
-        physics_engine.move_rigid_bodies();
         {
             std::lock_guard lock{mutex};
             scene.move();

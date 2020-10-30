@@ -255,7 +255,7 @@ void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool bur
     }
 }
 
-void PhysicsEngine::move_rigid_bodies() {
+void PhysicsEngine::move_rigid_bodies(std::vector<FixedArray<float, 3>>& beacons) {
     for(auto it = rigid_bodies_.objects_.begin(); it != rigid_bodies_.objects_.end(); ) {
         auto& o = *it++;
         if (o.rigid_body->mass() != INFINITY) {
@@ -263,7 +263,8 @@ void PhysicsEngine::move_rigid_bodies() {
                 cfg_.dt,
                 cfg_.min_acceleration,
                 cfg_.min_velocity,
-                cfg_.min_angular_velocity);
+                cfg_.min_angular_velocity,
+                beacons);
         }
     }
 }
@@ -281,14 +282,19 @@ void PhysicsEngine::burn_in(float seconds) {
         }
     }
     for(float time = 0; time < seconds; time += cfg_.dt) {
-        std::vector<FixedArray<float, 3>> beacons;
-        collide(beacons, true);  // true = burn_in
+        {
+            std::vector<FixedArray<float, 3>> beacons;
+            collide(beacons, true);  // true = burn_in
+        }
         if (time < seconds / 2) {
             for(const auto& o : rigid_bodies_.objects_) {
                 o.rigid_body->rbi_.T_ = 0;
             }
         }
-        move_rigid_bodies();
+        {
+            std::vector<FixedArray<float, 3>> beacons;
+            move_rigid_bodies(beacons);
+        }
     }
 }
 

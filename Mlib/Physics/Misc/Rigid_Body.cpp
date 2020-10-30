@@ -82,7 +82,8 @@ void RigidBody::advance_time(
     float dt,
     float min_acceleration,
     float min_velocity,
-    float min_angular_velocity)
+    float min_angular_velocity,
+    std::vector<FixedArray<float, 3>>& beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
     for(auto& t : tires_) {
@@ -90,7 +91,7 @@ void RigidBody::advance_time(
         FixedArray<float, 3> p = get_abs_tire_position(t.first);
         float spring_constant = 1e5;
         float stiction_force = 5e3;
-        FixedArray<float, 3> f = t.second.sticky_wheel.update_position(r, p, spring_constant, stiction_force, dt);
+        FixedArray<float, 3> f = t.second.sticky_wheel.update_position(r, p, spring_constant, stiction_force, dt, beacons);
         // std::cerr << f << std::endl;
         integrate_force({vector: f, position: p});
     }

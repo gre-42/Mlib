@@ -27,7 +27,8 @@ public:
         const FixedArray<float, 3>& translation,
         float spring_constant,
         float stiction_force,
-        float dt);
+        float dt,
+        std::vector<FixedArray<float, 3>>& beacons);
     void accelerate(float amount);
     float angle_x() const;
 private:
