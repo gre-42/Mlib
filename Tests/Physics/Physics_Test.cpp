@@ -1,7 +1,7 @@
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Pi.hpp>
-#include <Mlib/Physics/Aim.hpp>
+#include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
