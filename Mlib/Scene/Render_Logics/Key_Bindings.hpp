@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Physics/External_Force_Provider.hpp>
+#include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Advance_Time.hpp>
-#include <Mlib/Physics/Collision_Observer.hpp>
+#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Scene_Graph/Loggable.hpp>
 #include <string>
 

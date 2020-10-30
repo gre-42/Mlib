@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <chrono>
 #include <fstream>
