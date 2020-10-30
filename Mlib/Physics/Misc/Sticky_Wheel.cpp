@@ -6,11 +6,9 @@ using namespace Mlib;
 
 StickyWheel::StickyWheel(
     const FixedArray<float, 3>& rotation_axis,
-    float radius,
     size_t nsprings,
     float max_dist)
 : rotation_axis_{rotation_axis},
-    radius_{radius},
     springs_(nsprings, SpringExt{position: FixedArray<float, 3>(NAN), spring: StickySpring{}}),
     max_dist_{max_dist},
     next_spring_{0},

@@ -14,7 +14,6 @@ class StickyWheel {
 public:
     explicit StickyWheel(
         const FixedArray<float, 3>& rotation_axis,
-        float radius,
         size_t nsprings,
         float max_dist);
     void notify_intersection(

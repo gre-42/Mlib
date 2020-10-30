@@ -192,10 +192,9 @@ void test_com() {
 
 void test_sticky_wheel() {
     FixedArray<float, 3> rotation_axis{1, 0, 0};
-    float radius = 1.2;
     size_t ntires = 10;
     float max_dist = 0.1;
-    StickyWheel sw{rotation_axis, radius, ntires, max_dist};
+    StickyWheel sw{rotation_axis, ntires, max_dist};
     float spring_constant = 3;
     float stiction_force = 100;
     float dt = 1.f / 60;
