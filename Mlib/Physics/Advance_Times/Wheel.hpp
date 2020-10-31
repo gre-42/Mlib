@@ -11,7 +11,7 @@ class RigidBody;
 
 class Wheel: public DestructionObserver, public RelativeMovable, public AdvanceTime {
 public:
-    explicit Wheel(RigidBody& rigid_body, AdvanceTimes& advance_times, size_t tire_id, float radius);
+    explicit Wheel(RigidBody& rigid_body, AdvanceTimes& advance_times, size_t tire_id, float radius, bool sticky_physics);
     virtual void set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) override;
     virtual void set_updated_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) override;
     virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
@@ -26,6 +26,7 @@ public:
     float angle_x_;
     float radius_;
     float y0_;
+    bool sticky_physics_;
 };
 
 }

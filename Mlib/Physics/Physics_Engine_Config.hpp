@@ -25,6 +25,7 @@ struct PhysicsEngineConfig {
     float wheel_penetration_depth = 0.15;  // (penetration depth) + (shock absorber) = 0.2
     float static_radius = 200;
     Interp<float> outness_fac_interp{{-0.5, 1}, {200, 0}, OutOfRangeBehavior::CLAMP};
+    bool sticky = false;
 };
 
 }

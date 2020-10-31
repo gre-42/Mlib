@@ -30,21 +30,25 @@ void StickyWheel::notify_intersection(
     next_spring_ = (next_spring_ + 1) % springs_.size();
 }
 
-FixedArray<float, 3> StickyWheel::update_position(
+void StickyWheel::update_position(
     const FixedArray<float, 3, 3>& rotation,
     const FixedArray<float, 3>& translation,
+    const FixedArray<float, 3>& power_axis,
     float spring_constant,
     float stiction_force,
     float dt,
+    FixedArray<float, 3>& force,
+    float& power,
     std::vector<FixedArray<float, 3>>& beacons)
 {
     angle_x_ += w_ * dt;
     angle_x_ = std::fmod(angle_x_, 2 * M_PI);
     FixedArray<float, 3, 3> dr = rodrigues(rotation_axis_, w_ * dt);
-    FixedArray<float, 3> f(0);
+    force = 0;
+    power = 0;
     for(auto& s : springs_) {
         if (s.active) {
-            std::cerr << "v " << std::sqrt(sum(squared(s.position))) * w_ * 3.6 << std::endl;
+            // std::cerr << "v " << std::sqrt(sum(squared(s.position))) * w_ * 3.6 << std::endl;
             FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
             // std::cerr << "d " << abs_position << " | " << s.spring.point_of_contact << " | " << (abs_position - s.spring.point_of_contact) << std::endl;
             if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
@@ -52,16 +56,18 @@ FixedArray<float, 3> StickyWheel::update_position(
             } else {
                 beacons.push_back(abs_position);
                 // beacons.push_back(s.spring.point_of_contact);
-                f += s.spring.update_position(
+                FixedArray<float, 3> f = s.spring.update_position(
                     abs_position,
                     spring_constant / springs_.size(),
                     stiction_force / springs_.size(),
                     &s.normal);
+                force += f;
+                power += dot0d(power_axis, f) * std::sqrt(sum(squared(s.position))) * w_;
                 s.position = dot1d(dr, s.position);
             }
         }
     }
-    return f;
+    // std::cerr << 0.00135962 * power << " PS " << " F " << std::sqrt(sum(squared(force))) << std::endl;
 }
 
 void StickyWheel::accelerate(float amount) {

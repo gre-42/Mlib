@@ -166,23 +166,16 @@ void HandleLineTriangleIntersection::handle()
                 n3 -= plane.normal_ * dot0d(plane.normal_, n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
-                    float P = i_.o1->consume_tire_surface_power(i_.tire_id);
-                    if (true) {
+                    if (i_.cfg.sticky) {
                         StickyWheel& sw = i_.o1->get_tire_sticky_wheel(i_.tire_id);
                         sw.notify_intersection(
                             i_.o1->get_abs_tire_rotation_matrix(i_.tire_id),
                             i_.o1->get_abs_tire_position(i_.tire_id),
                             intersection_point_,
                             plane.normal_);
-                        if (!std::isnan(P)) {
-                            if (P > 0) {
-                                sw.accelerate(-0.1);
-                            } else if (P < 0) {
-                                sw.accelerate(0.1);
-                            }
-                        }
                         tangential_force = 0;
                     } else {
+                        float P = i_.o1->consume_tire_surface_power(i_.tire_id);
                         tangential_force = power_to_force_infinite_mass(
                             i_.o1->get_tire_break_force(i_.tire_id),
                             i_.cfg.hand_break_velocity,

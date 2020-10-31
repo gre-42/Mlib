@@ -83,17 +83,35 @@ void RigidBody::advance_time(
     float min_acceleration,
     float min_velocity,
     float min_angular_velocity,
+    bool sticky_physics,
     std::vector<FixedArray<float, 3>>& beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
-    for(auto& t : tires_) {
-        FixedArray<float, 3, 3> r = get_abs_tire_rotation_matrix(t.first);
-        FixedArray<float, 3> p = get_abs_tire_position(t.first);
-        float spring_constant = 1e5;
-        float stiction_force = 5e3;
-        FixedArray<float, 3> f = t.second.sticky_wheel.update_position(r, p, spring_constant, stiction_force, dt, beacons);
-        // std::cerr << f << std::endl;
-        integrate_force({vector: f, position: p});
+    if (sticky_physics) {
+        for(auto& t : tires_) {
+            FixedArray<float, 3, 3> r = get_abs_tire_rotation_matrix(t.first);
+            FixedArray<float, 3> pos = get_abs_tire_position(t.first);
+            FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
+            float spring_constant = 1e7;
+            float stiction_force = 5e3;
+            FixedArray<float, 3> force;
+            float power;
+            t.second.sticky_wheel.update_position(r, pos, power_axis, spring_constant, stiction_force, dt, force, power, beacons);
+            // static float spower = 0;
+            // spower = 0.99 * spower + 0.01 * power;
+            std::cerr << "rb force " << force << std::endl;
+            integrate_force({vector: force, position: pos});
+            float P = consume_tire_surface_power(t.first);
+            std::cerr << "P " << P << " " << -power << " " << (P > -power) << std::endl;
+            if (!std::isnan(P)) {
+                if (P > -power) {
+                    t.second.sticky_wheel.accelerate(-0.1);
+                } else if (P < -power) {
+                    t.second.sticky_wheel.accelerate(0.1);
+                }
+            }
+
+        }
     }
     rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);
     for(auto& t : tires_) {

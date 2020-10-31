@@ -22,12 +22,15 @@ public:
         const FixedArray<float, 3>& translation,
         const FixedArray<float, 3>& pt_absolute,
         const FixedArray<float, 3>& normal);
-    FixedArray<float, 3> update_position(
+    void update_position(
         const FixedArray<float, 3, 3>& rotation,
         const FixedArray<float, 3>& translation,
+        const FixedArray<float, 3>& power_axis,
         float spring_constant,
         float stiction_force,
         float dt,
+        FixedArray<float, 3>& force,
+        float& power,
         std::vector<FixedArray<float, 3>>& beacons);
     void accelerate(float amount);
     float angle_x() const;
