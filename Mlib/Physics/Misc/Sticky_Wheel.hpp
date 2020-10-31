@@ -5,6 +5,7 @@
 namespace Mlib {
 
 struct SpringExt {
+    bool active;
     FixedArray<float, 3> position;
     FixedArray<float, 3> normal;
     StickySpring spring;

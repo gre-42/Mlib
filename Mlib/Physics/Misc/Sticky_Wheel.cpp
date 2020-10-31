@@ -23,6 +23,7 @@ void StickyWheel::notify_intersection(
     const FixedArray<float, 3>& normal)
 {
     auto& s = springs_[next_spring_];
+    s.active = true;
     s.position = dot1d(rotation.T(), pt_absolute - translation);
     s.normal = normal;
     s.spring.point_of_contact = pt_absolute;
@@ -42,13 +43,12 @@ FixedArray<float, 3> StickyWheel::update_position(
     FixedArray<float, 3, 3> dr = rodrigues(rotation_axis_, w_ * dt);
     FixedArray<float, 3> f(0);
     for(auto& s : springs_) {
-        if (!any(isnan(s.position))) {
-            s.position = dot1d(dr, s.position);
+        if (s.active) {
             std::cerr << "v " << std::sqrt(sum(squared(s.position))) * w_ * 3.6 << std::endl;
             FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
             // std::cerr << "d " << abs_position << " | " << s.spring.point_of_contact << " | " << (abs_position - s.spring.point_of_contact) << std::endl;
             if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
-                s.position = NAN;
+                s.active = false;
             } else {
                 beacons.push_back(abs_position);
                 // beacons.push_back(s.spring.point_of_contact);
@@ -57,6 +57,7 @@ FixedArray<float, 3> StickyWheel::update_position(
                     spring_constant / springs_.size(),
                     stiction_force / springs_.size(),
                     &s.normal);
+                s.position = dot1d(dr, s.position);
             }
         }
     }
