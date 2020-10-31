@@ -46,18 +46,17 @@ FixedArray<float, 3> StickyWheel::update_position(
             s.position = dot1d(dr, s.position);
             std::cerr << "v " << std::sqrt(sum(squared(s.position))) * w_ * 3.6 << std::endl;
             FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
-            std::cerr << "d " << (abs_position - s.spring.point_of_contact) << std::endl;
+            // std::cerr << "d " << abs_position << " | " << s.spring.point_of_contact << " | " << (abs_position - s.spring.point_of_contact) << std::endl;
             if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
                 s.position = NAN;
             } else {
                 beacons.push_back(abs_position);
                 // beacons.push_back(s.spring.point_of_contact);
-                FixedArray<float, 3> ff = s.spring.update_position(
+                f += s.spring.update_position(
                     abs_position,
                     spring_constant / springs_.size(),
                     stiction_force / springs_.size(),
                     &s.normal);
-                f += ff - s.normal * dot0d(ff, s.normal);
             }
         }
     }
