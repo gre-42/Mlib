@@ -55,7 +55,7 @@ void Wheel::advance_time(float dt) {
         }
     }
     if (!sticky_physics_) {
-        angle_x_ += dot0d(rigid_body_.rbi_.v_, rigid_body_.rbi_.abs_z()) * dt * radius_;
+        angle_x_ += dot0d(rigid_body_.rbi_.v_, rigid_body_.rbi_.abs_z()) * dt / radius_;
         angle_x_ = std::fmod(angle_x_, 2 * M_PI);
     }
     tire_angles(0) = angle_x_;
