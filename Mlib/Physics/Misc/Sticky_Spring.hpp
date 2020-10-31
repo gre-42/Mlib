@@ -6,7 +6,11 @@ namespace Mlib {
 
 class StickySpring {
 public:
-    FixedArray<float, 3> update_position(const FixedArray<float, 3>& position, float spring_constant, float stiction_force);
+    FixedArray<float, 3> update_position(
+        const FixedArray<float, 3>& position,
+        float spring_constant,
+        float stiction_force,
+        const FixedArray<float, 3>* normal);
     FixedArray<float, 3> point_of_contact;
 };
 
