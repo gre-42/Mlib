@@ -99,15 +99,21 @@ void RigidBody::advance_time(
             t.second.sticky_wheel.update_position(r, pos, power_axis, spring_constant, stiction_force, dt, force, power, beacons);
             // static float spower = 0;
             // spower = 0.99 * spower + 0.01 * power;
-            std::cerr << "rb force " << force << std::endl;
+            // std::cerr << "rb force " << force << std::endl;
             integrate_force({vector: force, position: pos});
             float P = consume_tire_surface_power(t.first);
-            std::cerr << "P " << P << " " << -power << " " << (P > -power) << std::endl;
+            // std::cerr << "P " << P << " " << -power << " " << (P > -power) << std::endl;
             if (!std::isnan(P)) {
+                float dx = t.second.sticky_wheel.w() * t.second.sticky_wheel.radius() * dt;
+                // std::cerr << "-dx " << -dx << std::endl;
                 if (P > -power) {
-                    t.second.sticky_wheel.accelerate(-0.1);
+                    if (-dx < 0.1) {
+                        t.second.sticky_wheel.accelerate(-0.1);
+                    }
                 } else if (P < -power) {
-                    t.second.sticky_wheel.accelerate(0.1);
+                    if (-dx > -0.1) {
+                        t.second.sticky_wheel.accelerate(0.1);
+                    }
                 }
             }
 

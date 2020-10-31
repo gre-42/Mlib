@@ -15,6 +15,7 @@ class StickyWheel {
 public:
     explicit StickyWheel(
         const FixedArray<float, 3>& rotation_axis,
+        float radius,
         size_t nsprings,
         float max_dist);
     void notify_intersection(
@@ -33,6 +34,8 @@ public:
         float& power,
         std::vector<FixedArray<float, 3>>& beacons);
     void accelerate(float amount);
+    float radius() const;
+    float w() const;
     float angle_x() const;
 private:
     FixedArray<float, 3> rotation_axis_;

@@ -6,14 +6,16 @@ using namespace Mlib;
 
 StickyWheel::StickyWheel(
     const FixedArray<float, 3>& rotation_axis,
+    float radius,
     size_t nsprings,
     float max_dist)
 : rotation_axis_{rotation_axis},
-    springs_(nsprings, SpringExt{position: FixedArray<float, 3>(NAN), spring: StickySpring{}}),
-    max_dist_{max_dist},
-    next_spring_{0},
-    w_{0},
-    angle_x_{0}
+  radius_{radius},
+  springs_(nsprings, SpringExt{position: FixedArray<float, 3>(NAN), spring: StickySpring{}}),
+  max_dist_{max_dist},
+  next_spring_{0},
+  w_{0},
+  angle_x_{0}
 {}
 
 void StickyWheel::notify_intersection(
@@ -72,6 +74,14 @@ void StickyWheel::update_position(
 
 void StickyWheel::accelerate(float amount) {
     w_ += amount;
+}
+
+float StickyWheel::radius() const {
+    return radius_;
+}
+
+float StickyWheel::w() const {
+    return w_;
 }
 
 float StickyWheel::angle_x() const {
