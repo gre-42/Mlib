@@ -7,7 +7,8 @@ FixedArray<float, 3> StickySpring::update_position(
     const FixedArray<float, 3>& position,
     float spring_constant,
     float stiction_force,
-    const FixedArray<float, 3>* normal) {
+    const FixedArray<float, 3>* normal)
+{
     FixedArray<float, 3> force = (point_of_contact - position) * spring_constant;
     if (normal != nullptr) {
         force -= (*normal) * dot0d(force, *normal);
@@ -17,7 +18,14 @@ FixedArray<float, 3> StickySpring::update_position(
         // stiction_force = ||p-c||*k
         // => ||p-c|| = stiction_force/k
         FixedArray<float, 3> f = force / std::sqrt(f2) * stiction_force;
-        point_of_contact = position - f / spring_constant;
+        FixedArray<float, 3> new_point_of_contact = position - f / spring_constant;
+        if (normal != nullptr) {
+            float off = dot0d(*normal, point_of_contact);
+            float alpha = off - dot0d(*normal, new_point_of_contact);
+            point_of_contact = new_point_of_contact + alpha * (*normal);
+        } else {
+            point_of_contact = new_point_of_contact;
+        }
         return f;
     }
     return force;

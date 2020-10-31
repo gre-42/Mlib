@@ -190,6 +190,20 @@ void test_com() {
         r1->velocity_at_position(com1).to_array());
 }
 
+void test_sticky_spring() {
+    FixedArray<float, 3> position{5, 3, 2.6};
+    float spring_constant = 2;
+    float stiction_force = 1.23;
+    StickySpring s{
+        .point_of_contact = {1, 2, 3}
+    };
+    s.update_position(position, spring_constant, stiction_force, nullptr);
+    assert_allclose(
+        s.point_of_contact.to_array(),
+        Array<float>{5.59385, 3.14846, 2.54061},
+        1e-5);
+}
+
 void test_sticky_wheel() {
     FixedArray<float, 3> rotation_axis{1, 0, 0};
     FixedArray<float, 3> power_axis{0, 0, 1};
@@ -209,7 +223,9 @@ void test_sticky_wheel() {
             FixedArray<float, 3> force;
             float power;
             sw.update_position(rotation, translation, power_axis, spring_constant, stiction_force, dt, force, power, beacons);
-            assert_allclose(force.to_array(), Array<float>{0, 0.000630319, -0.0614957});
+            assert_allclose(force.to_array(), Array<float>{0, 0, 0});
+            sw.update_position(rotation, translation, power_axis, spring_constant, stiction_force, dt, force, power, beacons);
+            assert_allclose(force.to_array(), Array<float>{0, -6.30319e-05, 0.00614957});
         }
     }
 }
@@ -225,6 +241,7 @@ int main(int argc, const char** argv) {
     // test_power_to_force_P_normal();
     // test_power_to_force_stiction_tangential();
     test_com();
+    test_sticky_spring();
     test_sticky_wheel();
     return 0;
 }
