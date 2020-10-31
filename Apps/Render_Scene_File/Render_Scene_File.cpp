@@ -68,6 +68,7 @@ int main(int argc, char** argv) {
         "[--no_render] "
         "[--print_gamepad_buttons] "
         "[--show_mouse_cursor] "
+        "[--sticky_physics] "
         "[--verbose]",
         {"--wire_frame",
          "--no_cull_faces",
@@ -86,6 +87,7 @@ int main(int argc, char** argv) {
          "--no_render",
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
+         "--sticky_physics",
          "--verbose"},
         {"--swap_interval",
          "--nsamples_msaa",
@@ -110,24 +112,24 @@ int main(int argc, char** argv) {
 
         size_t num_renderings;
         RenderConfig render_config{
-            nsamples_msaa: safe_stoi(args.named_value("--nsamples_msaa", "2")),
-            cull_faces: !args.has_named("--no_cull_faces"),
-            wire_frame: args.has_named("--wire_frame"),
-            window_title: main_scene_filename,
-            screen_width: safe_stoi(args.named_value("--screen_width", "640")),
-            screen_height: safe_stoi(args.named_value("--screen_height", "480")),
-            scene_lightmap_width: safe_stoi(args.named_value("--scene_lightmap_width", "2048")),
-            scene_lightmap_height: safe_stoi(args.named_value("--scene_lightmap_height", "2048")),
-            black_lightmap_width: safe_stoi(args.named_value("--black_lightmap_width", "1024")),
-            black_lightmap_height: safe_stoi(args.named_value("--black_lightmap_height", "1024")),
-            motion_interpolation: args.has_named("--motion_interpolation"),
-            full_screen: args.has_named("--full_screen"),
-            window_maximized: args.has_named("--window_maximized"),
-            show_mouse_cursor: args.has_named("--show_mouse_cursor"),
-            swap_interval: safe_stoi(args.named_value("--swap_interval", "1")),
-            background_color: {0.68, 0.85, 1},
-            print_fps: args.has_named("--print_fps"),
-            dt: safe_stof(args.named_value("--render_dt", "0.01667")) };
+            .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
+            .cull_faces = !args.has_named("--no_cull_faces"),
+            .wire_frame = args.has_named("--wire_frame"),
+            .window_title = main_scene_filename,
+            .screen_width = safe_stoi(args.named_value("--screen_width", "640")),
+            .screen_height = safe_stoi(args.named_value("--screen_height", "480")),
+            .scene_lightmap_width = safe_stoi(args.named_value("--scene_lightmap_width", "2048")),
+            .scene_lightmap_height = safe_stoi(args.named_value("--scene_lightmap_height", "2048")),
+            .black_lightmap_width = safe_stoi(args.named_value("--black_lightmap_width", "1024")),
+            .black_lightmap_height = safe_stoi(args.named_value("--black_lightmap_height", "1024")),
+            .motion_interpolation = args.has_named("--motion_interpolation"),
+            .full_screen = args.has_named("--full_screen"),
+            .window_maximized = args.has_named("--window_maximized"),
+            .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
+            .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
+            .background_color = {0.68, 0.85, 1},
+            .print_fps = args.has_named("--print_fps"),
+            .dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
             num_renderings,
@@ -164,11 +166,12 @@ int main(int argc, char** argv) {
                 aggregate_update_interval: (size_t)std::stoi(args.named_value("--aggregate_update_interval", "100"))};
 
             scene_config.physics_engine_config = PhysicsEngineConfig{
-                dt: safe_stof(args.named_value("--physics_dt", "0.01667")),
-                print_residual_time: args.has_named("--print_residual_time"),
-                damping: safe_stof(args.named_value("--damping", "0.00091188")),
-                stiction_coefficient: safe_stof(args.named_value("--stiction_coefficient", "2")),
-                friction_coefficient: safe_stof(args.named_value("--friction_coefficient", "1.6"))};
+                .dt = safe_stof(args.named_value("--physics_dt", "0.01667")),
+                .print_residual_time = args.has_named("--print_residual_time"),
+                .damping = safe_stof(args.named_value("--damping", "0.00091188")),
+                .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "2")),
+                .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
+                .sticky = args.has_named("--sticky_physics")};
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;
