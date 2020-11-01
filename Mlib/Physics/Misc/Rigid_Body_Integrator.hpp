@@ -3,9 +3,13 @@
 
 namespace Mlib {
 
+template <class TData, size_t tsize>
+class VectorAtPosition;
+
 struct RigidBodyIntegrator {
 
     RigidBodyIntegrator(
+        float mass,
         const FixedArray<float, 3>& L,    // angular momentum
         const FixedArray<float, 3, 3>& I, // inertia tensor
         const FixedArray<float, 3>& com,  // center of mass
@@ -20,6 +24,9 @@ struct RigidBodyIntegrator {
     FixedArray<float, 3> abs_position() const;
     FixedArray<float, 3, 3> abs_I() const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
+    void integrate_force(const VectorAtPosition<float, 3>& F);
+    void integrate_gravity(const FixedArray<float, 3>& g);
+    float energy() const;
 
     void advance_time(
         float dt,
@@ -27,6 +34,7 @@ struct RigidBodyIntegrator {
         float min_velocity,
         float min_angular_velocity);
 
+    float mass_;
     FixedArray<float, 3> L_;    // angular momentum
     FixedArray<float, 3, 3> I_; // inertia tensor
     FixedArray<float, 3> com_;  // center of mass

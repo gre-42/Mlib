@@ -1,6 +1,8 @@
 #include "Sticky_Wheel.hpp"
+#include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
 
 using namespace Mlib;
 
@@ -40,7 +42,7 @@ void StickyWheel::update_position(
     float spring_constant,
     float stiction_force,
     float dt,
-    FixedArray<float, 3>& force,
+    RigidBodyIntegrator& rbi,
     float& power_internal,
     float& power_external,
     float& moment,
@@ -49,7 +51,6 @@ void StickyWheel::update_position(
     angle_x_ += w_ * dt;
     angle_x_ = std::fmod(angle_x_, 2 * M_PI);
     FixedArray<float, 3, 3> dr = rodrigues(rotation_axis_, w_ * dt);
-    force = 0;
     power_internal = 0;
     power_external = 0;
     moment = 0;
@@ -63,19 +64,19 @@ void StickyWheel::update_position(
             } else {
                 beacons.push_back(abs_position);
                 // beacons.push_back(s.spring.point_of_contact);
-                FixedArray<float, 3> f = s.spring.update_position(
+                FixedArray<float, 3> force = s.spring.update_position(
                     abs_position,
                     spring_constant / springs_.size(),
                     stiction_force / springs_.size(),
                     &s.normal);
-                force += f;
+                rbi.integrate_force({vector: force, position: abs_position});
                 // W = F * s
                 // dW/dt = F * ds/dt
                 // P = F * v
-                float cmoment = dot0d(f, power_axis) * std::sqrt(sum(squared(s.position)));
+                float cmoment = dot0d(force, power_axis) * std::sqrt(sum(squared(s.position)));
                 moment += cmoment;
                 power_internal += cmoment * w_;
-                power_external -= dot0d(f, velocity);
+                power_external -= dot0d(force, velocity);
                 s.position = dot1d(dr, s.position);
             }
         }

@@ -9,31 +9,11 @@
 
 using namespace Mlib;
 
-RigidBody::RigidBody(
-    RigidBodies& rigid_bodies,
-    float mass,
-    const FixedArray<float, 3>& L,    // angular momentum
-    const FixedArray<float, 3, 3>& I, // inertia tensor
-    const FixedArray<float, 3>& com,  // center of mass
-    const FixedArray<float, 3>& v,    // velocity
-    const FixedArray<float, 3>& w,    // angular velocity
-    const FixedArray<float, 3>& T,    // torque
-    const FixedArray<float, 3>& position,
-    const FixedArray<float, 3>& rotation,
-    bool I_is_diagonal)
+RigidBody::RigidBody(RigidBodies& rigid_bodies, const RigidBodyIntegrator& rbi)
 : rigid_bodies_{rigid_bodies},
   max_velocity_{INFINITY},
   tires_z_{0, 0, -1},
-  mass_{mass},
-  rbi_{L,
-       I,
-       com,
-       v,
-       w,
-       T,
-       position,
-       rotation,
-       I_is_diagonal}
+  rbi_{rbi}
 {}
 
 RigidBody::~RigidBody()
@@ -49,8 +29,7 @@ void RigidBody::reset_forces() {
 
 void RigidBody::integrate_force(const VectorAtPosition<float, 3>& F)
 {
-    rbi_.a_ += F.vector / mass_;
-    rbi_.T_ += cross(F.position - abs_com(), F.vector);
+    rbi_.integrate_force(F);
 }
 
 void RigidBody::integrate_force(
@@ -75,7 +54,7 @@ void RigidBody::integrate_force(
 }
 
 void RigidBody::integrate_gravity(const FixedArray<float, 3>& g) {
-    rbi_.a_ += g;
+    rbi_.integrate_gravity(g);
 }
 
 void RigidBody::advance_time(
@@ -95,7 +74,6 @@ void RigidBody::advance_time(
             FixedArray<float, 3> velocity = velocity_at_position(position);
             float spring_constant = 1e7;
             float stiction_force = 5e3;
-            FixedArray<float, 3> force;
             float power_internal;
             float power_external;
             float moment;
@@ -107,7 +85,7 @@ void RigidBody::advance_time(
                 spring_constant,
                 stiction_force,
                 dt,
-                force,
+                rbi_,
                 power_internal,
                 power_external,
                 moment,
@@ -115,7 +93,6 @@ void RigidBody::advance_time(
             // static float spower = 0;
             // spower = 0.99 * spower + 0.01 * power;
             // std::cerr << "rb force " << force << std::endl;
-            integrate_force({vector: force, position: position});
             float P = consume_tire_surface_power(t.first);
             std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
             if (!std::isnan(P)) {
@@ -153,7 +130,7 @@ void RigidBody::advance_time(
 }
 
 float RigidBody::mass() const {
-    return mass_;
+    return rbi_.mass_;
 }
 
 FixedArray<float, 3> RigidBody::abs_com() const {
@@ -246,8 +223,7 @@ FixedArray<float, 3> RigidBody::get_abs_tire_position(size_t id) const {
 }
 
 float RigidBody::energy() const {
-    // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
-    return 0.5f * (mass_ * sum(squared(rbi_.v_)) + dot0d(rbi_.w_, dot1d(rbi_.abs_I(), rbi_.w_)));
+    return rbi_.energy();
 }
 
 // void RigidBody::set_tire_sliding(size_t id, bool value) {

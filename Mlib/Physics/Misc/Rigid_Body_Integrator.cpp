@@ -1,5 +1,6 @@
 #include "Rigid_Body_Integrator.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -7,6 +8,7 @@
 using namespace Mlib;
 
 RigidBodyIntegrator::RigidBodyIntegrator(
+    float mass,
     const FixedArray<float, 3>& L,    // angular momentum
     const FixedArray<float, 3, 3>& I, // inertia tensor
     const FixedArray<float, 3>& com,  // center of mass
@@ -16,7 +18,8 @@ RigidBodyIntegrator::RigidBodyIntegrator(
     const FixedArray<float, 3>& position,
     const FixedArray<float, 3>& rotation,
     bool I_is_diagonal)
-: L_{L},
+: mass_{mass},
+  L_{L},
   I_{I},
   com_{com},
   v_{v},
@@ -77,4 +80,19 @@ FixedArray<float, 3> RigidBodyIntegrator::abs_position() const {
 
 FixedArray<float, 3> RigidBodyIntegrator::abs_z() const {
     return z3_from_3x3(rotation_);
+}
+
+void RigidBodyIntegrator::integrate_force(const VectorAtPosition<float, 3>& F)
+{
+    a_ += F.vector / mass_;
+    T_ += cross(F.position - abs_com_, F.vector);
+}
+
+void RigidBodyIntegrator::integrate_gravity(const FixedArray<float, 3>& g) {
+    a_ += g;
+}
+
+float RigidBodyIntegrator::energy() const {
+    // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
+    return 0.5f * (mass_ * sum(squared(v_)) + dot0d(w_, dot1d(abs_I(), w_)));
 }

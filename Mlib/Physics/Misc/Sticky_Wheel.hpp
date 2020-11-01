@@ -11,6 +11,8 @@ struct SpringExt {
     StickySpring spring;
 };
 
+struct RigidBodyIntegrator;
+
 class StickyWheel {
 public:
     explicit StickyWheel(
@@ -31,7 +33,7 @@ public:
         float spring_constant,
         float stiction_force,
         float dt,
-        FixedArray<float, 3>& force,
+        RigidBodyIntegrator& rbi,
         float& power_internal,
         float& power_external,
         float& moment,

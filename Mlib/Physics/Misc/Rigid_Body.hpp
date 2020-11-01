@@ -23,18 +23,7 @@ class RigidBodyEngine;
  */
 class RigidBody: public DestructionObserver, public AbsoluteMovable, public Loggable {
 public:
-    RigidBody(
-        RigidBodies& rigid_bodies,
-        float mass,
-        const FixedArray<float, 3>& L,    // angular momentum
-        const FixedArray<float, 3, 3>& I, // inertia tensor
-        const FixedArray<float, 3>& com,  // center of mass
-        const FixedArray<float, 3>& v,    // velocity
-        const FixedArray<float, 3>& w,    // angular velocity
-        const FixedArray<float, 3>& T,    // torque
-        const FixedArray<float, 3>& position,
-        const FixedArray<float, 3>& rotation,
-        bool I_is_diagonal);
+    RigidBody(RigidBodies& rigid_bodies, const RigidBodyIntegrator& rbi);
     ~RigidBody();
     void reset_forces();
     void integrate_force(const VectorAtPosition<float, 3>& F);
@@ -81,7 +70,6 @@ public:
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
 
-    float mass_;
     RigidBodyIntegrator rbi_;
     std::list<std::shared_ptr<CollisionObserver>> collision_observers_;
     mutable std::mutex advance_time_mutex_;

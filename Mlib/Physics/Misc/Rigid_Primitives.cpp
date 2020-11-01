@@ -5,8 +5,7 @@
 
 using namespace Mlib;
 
-std::shared_ptr<RigidBody> Mlib::rigid_cuboid(
-    RigidBodies& rigid_bodies,
+RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
     float mass,
     const FixedArray<float, 3>& size,
     const FixedArray<float, 3>& com)
@@ -22,8 +21,7 @@ std::shared_ptr<RigidBody> Mlib::rigid_cuboid(
         I += mass * dot2d(a.T(), a);
     }
 
-    return std::make_shared<RigidBody>(
-        rigid_bodies,
+    return RigidBodyIntegrator{
         mass,
         fixed_zeros<float, 3>(),            // L
         I,                                  // I
@@ -33,5 +31,17 @@ std::shared_ptr<RigidBody> Mlib::rigid_cuboid(
         fixed_zeros<float, 3>(),            // M
         fixed_nans<float, 3>(),             // position
         fixed_nans<float, 3>(),             // rotation
-        count_nonzero(com != 0.f) <= 1);    // I_is_diagonal
+        count_nonzero(com != 0.f) <= 1      // I_is_diagonal
+    };
+}
+
+std::shared_ptr<RigidBody> Mlib::rigid_cuboid(
+    RigidBodies& rigid_bodies,
+    float mass,
+    const FixedArray<float, 3>& size,
+    const FixedArray<float, 3>& com)
+{
+    return std::make_shared<RigidBody>(
+        rigid_bodies,
+        rigid_cuboid_integrator(mass, size, com));
 }
