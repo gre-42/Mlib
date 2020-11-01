@@ -20,7 +20,9 @@ FollowMovable::FollowMovable(
     const FixedArray<float, 3>& look_at_displacement,
     float snappiness,
     float y_adaptivity,
-    float y_snappiness)
+    float y_snappiness,
+    float dt,
+    float dt_ref)
 : advance_times_{advance_times},
   followed_node_{followed_node},
   followed_{followed},
@@ -31,8 +33,9 @@ FollowMovable::FollowMovable(
   snappiness_{snappiness},
   y_adaptivity_{y_adaptivity},
   y_adapt_{0},
+  dt_dt_ref_{dt / dt_ref},
   kalman_filter_{1e-5, 1e-2,  1, 0},
-  exponential_smoother_{y_snappiness, 0}
+  exponential_smoother_{1 - std::pow(1 - y_snappiness, dt_dt_ref_), 0}
 {
     auto dmat = followed_->get_new_absolute_model_matrix();
     dpos_old_ = t3_from_4x4(dmat);
@@ -60,7 +63,7 @@ void FollowMovable::advance_time(float dt) {
     FixedArray<float, 2> dx2{dp(0), dp(2)};
     float dy = dp(1);
     float dx2_len2 = sum(squared(dx2));
-    if ((dx2_len2 > 1e-3) && (dot0d(residual2, dx2) < 0)) {
+    if ((dx2_len2 > 1e-3 * dt_dt_ref_) && (dot0d(residual2, dx2) < 0)) {
         y_adapt_ = y_adaptivity_ * exponential_smoother_(kalman_filter_(std::clamp(-dy / std::sqrt(dx2_len2), 0.f, 0.5f)));
     }
     position_(1) += y_adapt_;

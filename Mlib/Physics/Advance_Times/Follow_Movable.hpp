@@ -23,7 +23,9 @@ public:
         const FixedArray<float, 3>& look_at_displacement,
         float snappiness = 2,
         float y_adaptivity = 15,
-        float y_snappiness = 0.05);
+        float y_snappiness = 0.05,
+        float dt = 1.f/60,
+        float dt_ref = 1.f/60);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
     virtual FixedArray<float, 4, 4> get_new_absolute_model_matrix() const override;
@@ -43,6 +45,7 @@ private:
     float snappiness_;
     float y_adaptivity_;
     float y_adapt_;
+    float dt_dt_ref_;
     KalmanFilter<float> kalman_filter_;
     ExponentialSmoother<float> exponential_smoother_;
 };
