@@ -73,7 +73,6 @@ void RigidBody::advance_time(
             FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
             FixedArray<float, 3> velocity = velocity_at_position(position);
             float spring_constant = 1e7;
-            float stiction_force = 5e3;
             float power_internal;
             float power_external;
             float moment;
@@ -83,7 +82,6 @@ void RigidBody::advance_time(
                 power_axis,
                 velocity,
                 spring_constant,
-                stiction_force,
                 dt,
                 rbi_,
                 power_internal,
@@ -94,10 +92,10 @@ void RigidBody::advance_time(
             // spower = 0.99 * spower + 0.01 * power;
             // std::cerr << "rb force " << force << std::endl;
             float P = consume_tire_surface_power(t.first);
-            std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
+            // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
             if (!std::isnan(P)) {
                 float dx = t.second.sticky_wheel.w() * t.second.sticky_wheel.radius() * dt;
-                std::cerr << "dx " << dx << std::endl;
+                // std::cerr << "dx " << dx << std::endl;
                 if ((P != 0) && (std::abs(P) > power_internal)) {
                     if (P > 0) {
                         if (dx > -0.1) {

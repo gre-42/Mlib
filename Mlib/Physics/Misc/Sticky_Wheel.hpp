@@ -24,14 +24,14 @@ public:
         const FixedArray<float, 3, 3>& rotation,
         const FixedArray<float, 3>& translation,
         const FixedArray<float, 3>& pt_absolute,
-        const FixedArray<float, 3>& normal);
+        const FixedArray<float, 3>& normal,
+        float stiction_force);
     void update_position(
         const FixedArray<float, 3, 3>& rotation,
         const FixedArray<float, 3>& translation,
         const FixedArray<float, 3>& power_axis,
         const FixedArray<float, 3>& velocity,
         float spring_constant,
-        float stiction_force,
         float dt,
         RigidBodyIntegrator& rbi,
         float& power_internal,
@@ -50,6 +50,7 @@ private:
     size_t next_spring_;
     float w_;    // angular velocity
     float angle_x_;
+    float sum_stiction_force_;
 };
 
 }
