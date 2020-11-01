@@ -9,16 +9,16 @@ FixedArray<float, 3> StickySpring::update_position(
     float stiction_force,
     const FixedArray<float, 3>* normal)
 {
-    FixedArray<float, 3> force = (point_of_contact - position) * spring_constant;
+    FixedArray<float, 3> dir = point_of_contact - position;
     if (normal != nullptr) {
-        force -= (*normal) * dot0d(force, *normal);
+        dir -= (*normal) * dot0d(dir, *normal);
     }
     // std::cerr << position << " | " << point_of_contact << " | " << (point_of_contact - position) << std::endl;
-    if (float f2 = sum(squared(force)); f2 > squared(stiction_force)) {
+    if (float d2 = sum(squared(dir)); d2 > squared(stiction_force / spring_constant)) {
         // stiction_force = ||p-c||*k
         // => ||p-c|| = stiction_force/k
-        FixedArray<float, 3> f = force / std::sqrt(f2) * stiction_force;
-        FixedArray<float, 3> new_point_of_contact = position - f / spring_constant;
+        FixedArray<float, 3> d = dir / std::sqrt(d2);
+        FixedArray<float, 3> new_point_of_contact = position - d * (stiction_force / spring_constant);
         if (normal != nullptr) {
             float off = dot0d(*normal, point_of_contact);
             float alpha = off - dot0d(*normal, new_point_of_contact);
@@ -26,7 +26,15 @@ FixedArray<float, 3> StickySpring::update_position(
         } else {
             point_of_contact = new_point_of_contact;
         }
-        return f;
+        // auto vv = point_of_contact - position;
+        // vv -= (*normal) * dot0d(vv, *normal);
+        // std::cerr << "-- " <<
+        //     std::sqrt(sum(squared(vv))) * spring_constant << " " <<
+        //     stiction_force << " | " <<
+        //     std::sqrt(sum(squared(new_point_of_contact - position))) * spring_constant << " | " <<
+        //     stiction_force << " | " <<
+        //     d2 << std::endl;
+        return d * stiction_force;
     }
-    return force;
+    return dir * spring_constant;
 }

@@ -212,8 +212,8 @@ void test_sticky_wheel() {
     float max_dist = 0.1;
     float radius = 2;
     StickyWheel sw{rotation_axis, radius, ntires, max_dist};
-    float spring_constant = 3;
-    float stiction_force = 100;
+    float spring_constant = 3e4;
+    float stiction_force = 1e3;
     float dt = 1.f / 60;
     {
         FixedArray<float, 3, 3> rotation = rodrigues<float>({0, 1, 0}, 0.f);
@@ -228,8 +228,9 @@ void test_sticky_wheel() {
             float moment;
             sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, beacons);
             assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, 0});
+            sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force);
             sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, beacons);
-            assert_allclose(rbi.a_.to_array(), Array<float>{0, -6.30319e-05, 0.00614957});
+            assert_allclose(rbi.a_.to_array(), Array<float>{0, -0.000700355, 0.0683285});
         }
     }
 }
