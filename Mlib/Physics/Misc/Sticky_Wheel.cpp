@@ -36,18 +36,23 @@ void StickyWheel::update_position(
     const FixedArray<float, 3, 3>& rotation,
     const FixedArray<float, 3>& translation,
     const FixedArray<float, 3>& power_axis,
+    const FixedArray<float, 3>& velocity,
     float spring_constant,
     float stiction_force,
     float dt,
     FixedArray<float, 3>& force,
-    float& power,
+    float& power_internal,
+    float& power_external,
+    float& moment,
     std::vector<FixedArray<float, 3>>& beacons)
 {
     angle_x_ += w_ * dt;
     angle_x_ = std::fmod(angle_x_, 2 * M_PI);
     FixedArray<float, 3, 3> dr = rodrigues(rotation_axis_, w_ * dt);
     force = 0;
-    power = 0;
+    power_internal = 0;
+    power_external = 0;
+    moment = 0;
     for(auto& s : springs_) {
         if (s.active) {
             // std::cerr << "v " << std::sqrt(sum(squared(s.position))) * w_ * 3.6 << std::endl;
@@ -64,7 +69,13 @@ void StickyWheel::update_position(
                     stiction_force / springs_.size(),
                     &s.normal);
                 force += f;
-                power += dot0d(power_axis, f) * std::sqrt(sum(squared(s.position))) * w_;
+                // W = F * s
+                // dW/dt = F * ds/dt
+                // P = F * v
+                float cmoment = dot0d(f, power_axis) * std::sqrt(sum(squared(s.position)));
+                moment += cmoment;
+                power_internal += cmoment * w_;
+                power_external -= dot0d(f, velocity);
                 s.position = dot1d(dr, s.position);
             }
         }

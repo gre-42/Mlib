@@ -207,6 +207,7 @@ void test_sticky_spring() {
 void test_sticky_wheel() {
     FixedArray<float, 3> rotation_axis{1, 0, 0};
     FixedArray<float, 3> power_axis{0, 0, 1};
+    FixedArray<float, 3> velocity{0, 0, 1.2};
     size_t ntires = 10;
     float max_dist = 0.1;
     float radius = 2;
@@ -222,10 +223,12 @@ void test_sticky_wheel() {
         {
             std::vector<FixedArray<float, 3>> beacons;
             FixedArray<float, 3> force;
-            float power;
-            sw.update_position(rotation, translation, power_axis, spring_constant, stiction_force, dt, force, power, beacons);
+            float power_internal;
+            float power_external;
+            float moment;
+            sw.update_position(rotation, translation, power_axis, velocity, spring_constant, stiction_force, dt, force, power_internal, power_external, moment, beacons);
             assert_allclose(force.to_array(), Array<float>{0, 0, 0});
-            sw.update_position(rotation, translation, power_axis, spring_constant, stiction_force, dt, force, power, beacons);
+            sw.update_position(rotation, translation, power_axis, velocity, spring_constant, stiction_force, dt, force, power_internal, power_external, moment, beacons);
             assert_allclose(force.to_array(), Array<float>{0, -6.30319e-05, 0.00614957});
         }
     }

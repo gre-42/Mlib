@@ -89,30 +89,57 @@ void RigidBody::advance_time(
     std::lock_guard lock{advance_time_mutex_};
     if (sticky_physics) {
         for(auto& t : tires_) {
-            FixedArray<float, 3, 3> r = get_abs_tire_rotation_matrix(t.first);
-            FixedArray<float, 3> pos = get_abs_tire_position(t.first);
+            FixedArray<float, 3, 3> rotation = get_abs_tire_rotation_matrix(t.first);
+            FixedArray<float, 3> position = get_abs_tire_position(t.first);
             FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
+            FixedArray<float, 3> velocity = velocity_at_position(position);
             float spring_constant = 1e7;
             float stiction_force = 5e3;
             FixedArray<float, 3> force;
-            float power;
-            t.second.sticky_wheel.update_position(r, pos, power_axis, spring_constant, stiction_force, dt, force, power, beacons);
+            float power_internal;
+            float power_external;
+            float moment;
+            t.second.sticky_wheel.update_position(
+                rotation,
+                position,
+                power_axis,
+                velocity,
+                spring_constant,
+                stiction_force,
+                dt,
+                force,
+                power_internal,
+                power_external,
+                moment,
+                beacons);
             // static float spower = 0;
             // spower = 0.99 * spower + 0.01 * power;
             // std::cerr << "rb force " << force << std::endl;
-            integrate_force({vector: force, position: pos});
+            integrate_force({vector: force, position: position});
             float P = consume_tire_surface_power(t.first);
-            // std::cerr << "P " << P << " " << -power << " " << (P > -power) << std::endl;
+            std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
             if (!std::isnan(P)) {
                 float dx = t.second.sticky_wheel.w() * t.second.sticky_wheel.radius() * dt;
-                // std::cerr << "-dx " << -dx << std::endl;
-                if (P > -power) {
-                    if (-dx < 0.1) {
-                        t.second.sticky_wheel.accelerate(-0.1);
+                std::cerr << "dx " << dx << std::endl;
+                if (P == 0) {
+                    if (moment < 0) {
+                        if (dx > -0.1) {
+                            t.second.sticky_wheel.accelerate(-0.1);
+                        }
+                    } else if (moment > 0) {
+                        if (dx < 0.1) {
+                            t.second.sticky_wheel.accelerate(0.1);
+                        }
                     }
-                } else if (P < -power) {
-                    if (-dx > -0.1) {
-                        t.second.sticky_wheel.accelerate(0.1);
+                } else if (std::abs(P) > power_internal) {
+                    if (P > 0) {
+                        if (dx > -0.1) {
+                            t.second.sticky_wheel.accelerate(-0.1);
+                        }
+                    } else if (P < 0) {
+                        if (dx < 0.1) {
+                            t.second.sticky_wheel.accelerate(0.1);
+                        }
                     }
                 }
             }
