@@ -52,6 +52,7 @@ void StickyWheel::update_position(
     float& power_internal,
     float& power_external,
     float& moment,
+    bool& slipping,
     std::vector<FixedArray<float, 3>>& beacons)
 {
     angle_x_ += w_ * dt;
@@ -61,6 +62,7 @@ void StickyWheel::update_position(
     power_external = 0;
     moment = 0;
     // size_t nactive = 0;
+    size_t nslipping = 0;
     for(auto& s : springs_) {
         if (s.active) {
             // std::cerr << "v " << std::sqrt(sum(squared(s.position))) * w_ * 3.6 << std::endl;
@@ -72,11 +74,16 @@ void StickyWheel::update_position(
                 // ++nactive;
                 beacons.push_back(abs_position);
                 // beacons.push_back(s.spring.point_of_contact);
-                FixedArray<float, 3> force = s.spring.update_position(
+                FixedArray<float, 3> force;
+                bool slip;
+                s.spring.update_position(
                     abs_position,
                     spring_constant / (springs_.size() - 1),
                     sum_stiction_force_ / (springs_.size() - 1),
-                    &s.normal);
+                    &s.normal,
+                    force,
+                    slip);
+                nslipping += slip;
                 rbi.integrate_force({vector: force, position: s.spring.point_of_contact});
                 // W = F * s
                 // dW/dt = F * ds/dt
@@ -89,6 +96,8 @@ void StickyWheel::update_position(
             }
         }
     }
+    slipping = (nslipping > springs_.size() / 2);
+    // std::cerr << nslipping << " " << int(slipping) << std::endl;
     // std::cerr << "nactive " << nactive << std::endl;
     sum_stiction_force_ = 0;
     // std::cerr << 0.00135962 * power << " PS " << " F " << std::sqrt(sum(squared(force))) << std::endl;

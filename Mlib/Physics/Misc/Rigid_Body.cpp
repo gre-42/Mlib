@@ -73,10 +73,11 @@ void RigidBody::advance_time(
             FixedArray<float, 3> position = get_abs_tire_position(t.first);
             FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
             FixedArray<float, 3> velocity = velocity_at_position(position);
-            float spring_constant = 1e7;
+            float spring_constant = 1e6;
             float power_internal;
             float power_external;
             float moment;
+            bool slipping;
             t.second.sticky_wheel.update_position(
                 rotation,
                 position,
@@ -88,6 +89,7 @@ void RigidBody::advance_time(
                 power_internal,
                 power_external,
                 moment,
+                slipping,
                 beacons);
             // static float spower = 0;
             // spower = 0.99 * spower + 0.01 * power;
@@ -98,7 +100,7 @@ void RigidBody::advance_time(
                 float dx_max = 0.1;
                 float w_max = dx_max / (t.second.sticky_wheel.radius() * dt);
                 // std::cerr << "dx " << dx << std::endl;
-                if ((P != 0) && (std::abs(P) > power_internal)) {
+                if ((P != 0) && (std::abs(P) > power_internal) && !slipping) {
                     float v = dot0d(velocity, power_axis);
                     if (sign(P) != sign(v) && std::abs(v) > hand_break_velocity) {
                         t.second.sticky_wheel.set_w(0);

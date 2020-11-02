@@ -194,10 +194,12 @@ void test_sticky_spring() {
     FixedArray<float, 3> position{5, 3, 2.6};
     float spring_constant = 2;
     float stiction_force = 1.23;
+    FixedArray<float, 3> force;
+    bool slipping;
     StickySpring s{
         .point_of_contact = {1, 2, 3}
     };
-    s.update_position(position, spring_constant, stiction_force, nullptr);
+    s.update_position(position, spring_constant, stiction_force, nullptr, force, slipping);
     assert_allclose(
         s.point_of_contact.to_array(),
         Array<float>{5.59385, 3.14846, 2.54061},
@@ -226,10 +228,11 @@ void test_sticky_wheel() {
             float power_internal;
             float power_external;
             float moment;
-            sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, beacons);
+            bool slipping;
+            sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
             assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, 0});
             sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force);
-            sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, beacons);
+            sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
             assert_allclose(rbi.a_.to_array(), Array<float>{0, -0.000700355, 0.0683285});
         }
     }

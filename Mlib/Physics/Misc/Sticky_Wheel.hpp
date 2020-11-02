@@ -37,6 +37,7 @@ public:
         float& power_internal,
         float& power_external,
         float& moment,
+        bool& slipping,
         std::vector<FixedArray<float, 3>>& beacons);
     float radius() const;
     float w() const;

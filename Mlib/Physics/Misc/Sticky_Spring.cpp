@@ -3,11 +3,13 @@
 
 using namespace Mlib;
 
-FixedArray<float, 3> StickySpring::update_position(
+void StickySpring::update_position(
     const FixedArray<float, 3>& position,
     float spring_constant,
     float stiction_force,
-    const FixedArray<float, 3>* normal)
+    const FixedArray<float, 3>* normal,
+    FixedArray<float, 3>& force,
+    bool& slipping)
 {
     FixedArray<float, 3> dir = point_of_contact - position;
     if (normal != nullptr) {
@@ -15,6 +17,7 @@ FixedArray<float, 3> StickySpring::update_position(
     }
     // std::cerr << position << " | " << point_of_contact << " | " << (point_of_contact - position) << std::endl;
     if (float d2 = sum(squared(dir)); d2 > squared(stiction_force / spring_constant)) {
+        slipping = true;
         // stiction_force = ||p-c||*k
         // => ||p-c|| = stiction_force/k
         FixedArray<float, 3> d = dir / std::sqrt(d2);
@@ -35,8 +38,10 @@ FixedArray<float, 3> StickySpring::update_position(
         //     stiction_force << " | " <<
         //     d2 << std::endl;
         // std::cerr << "y " << std::sqrt(sum(squared(d * stiction_force))) << " | " << d * stiction_force << std::endl;
-        return d * stiction_force;
+        force = d * stiction_force;
+    } else {
+        slipping = false;
+        // std::cerr << "x " << std::sqrt(sum(squared(dir * spring_constant))) << " | " << dir * spring_constant << std::endl;
+        force = dir * spring_constant;
     }
-    // std::cerr << "x " << std::sqrt(sum(squared(dir * spring_constant))) << " | " << dir * spring_constant << std::endl;
-    return dir * spring_constant;
 }
