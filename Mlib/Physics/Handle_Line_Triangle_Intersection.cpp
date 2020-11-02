@@ -206,18 +206,10 @@ void HandleLineTriangleIntersection::handle()
             tangential_force = 0;
         }
         if (frac0 != 0) {
-            i_.o0->integrate_force(
-                {-force_n0 * plane.normal_ - tangential_force, intersection_point_},
-                plane.normal_,
-                i_.cfg.damping,
-                i_.cfg.friction);
+            i_.o0->integrate_force({-force_n0 * plane.normal_ - tangential_force, intersection_point_});
         }
         if (frac1 != 0) {
-            i_.o1->integrate_force(
-                {force_n1 * plane.normal_ + tangential_force, intersection_point_},
-                plane.normal_,
-                i_.tire_id == SIZE_MAX ? i_.cfg.damping : 0,
-                i_.tire_id == SIZE_MAX ? i_.cfg.friction : 0);
+            i_.o1->integrate_force({force_n1 * plane.normal_ + tangential_force, intersection_point_});
         }
     } else {
         throw std::runtime_error("Unknown collision type");
