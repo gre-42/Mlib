@@ -268,20 +268,23 @@ void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool bur
         }
     }
     if (cfg_.bvh) {
-        RigidBodyAndTransformedMeshes o0{
-            .rigid_body = std::make_shared<RigidBody>(rigid_bodies_, RigidBodyIntegrator{
-                INFINITY,                   // mass
-                fixed_nans<float, 3>(),     // L    // angular momentum
-                fixed_nans<float, 3, 3>(),  // I    // inertia tensor
-                fixed_nans<float, 3>(),     // com  // center of mass
-                fixed_nans<float, 3>(),     // v    // velocity
-                fixed_nans<float, 3>(),     // w    // angular velocity
-                fixed_nans<float, 3>(),     // T    // torque
-                fixed_nans<float, 3>(),     // position
-                fixed_nans<float, 3>(),     // rotation
-                false// I_is_diagonal
-            })};
-        o0.meshes.push_back(TypedMesh<std::shared_ptr<TransformedMesh>>{});
+        static RigidBodyAndTransformedMeshes& o0 = [this]() -> RigidBodyAndTransformedMeshes& {
+            static RigidBodyAndTransformedMeshes o0{
+                .rigid_body = std::make_shared<RigidBody>(rigid_bodies_, RigidBodyIntegrator{
+                    INFINITY,                   // mass
+                    fixed_nans<float, 3>(),     // L    // angular momentum
+                    fixed_nans<float, 3, 3>(),  // I    // inertia tensor
+                    fixed_nans<float, 3>(),     // com  // center of mass
+                    fixed_nans<float, 3>(),     // v    // velocity
+                    fixed_nans<float, 3>(),     // w    // angular velocity
+                    fixed_nans<float, 3>(),     // T    // torque
+                    fixed_nans<float, 3>(),     // position
+                    fixed_nans<float, 3>(),     // rotation
+                    false// I_is_diagonal
+                })};
+            o0.meshes.push_back(TypedMesh<std::shared_ptr<TransformedMesh>>{});
+            return o0;
+        }();
         for(const auto& o1 : rigid_bodies_.transformed_objects_) {
             if (o1.rigid_body->mass() == INFINITY) {
                 return;

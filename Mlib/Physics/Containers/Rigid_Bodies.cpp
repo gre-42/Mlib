@@ -66,6 +66,7 @@ void RigidBodies::add_rigid_body(
                     }
                 }
             }
+            static_rigid_bodies_.push_back(rigid_body);
         } else {
             auto xx = split_with_static_radius(hitbox, rigid_body->get_new_absolute_model_matrix(), cfg_.static_radius);
             RigidBodyAndTransformedMeshes rbtm;
@@ -86,7 +87,6 @@ void RigidBodies::add_rigid_body(
                         mesh: std::make_shared<TransformedMesh>(bs, p)});
                 }
             }
-
             transformed_objects_.push_back(rbtm);
         }
     } else {
@@ -113,21 +113,23 @@ void RigidBodies::add_rigid_body(
 
 void RigidBodies::delete_rigid_body(const RigidBody* rigid_body) {
     if (rigid_body->mass() == INFINITY) {
-        auto it = std::find_if(transformed_objects_.begin(), transformed_objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
         if (cfg_.bvh) {
-            if (it != transformed_objects_.end()) {
-                throw std::runtime_error("Found rigid body despite bvh");
+            auto it = std::find_if(static_rigid_bodies_.begin(), static_rigid_bodies_.end(), [rigid_body](const auto& e){ return e.get() == rigid_body; });
+            if (it == static_rigid_bodies_.end()) {
+                throw std::runtime_error("Could not delete static rigid body (0)");
             }
+            static_rigid_bodies_.erase(it);
         } else {
+            auto it = std::find_if(transformed_objects_.begin(), transformed_objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
             if (it == transformed_objects_.end()) {
-                throw std::runtime_error("Could not delete rigid body");
+                throw std::runtime_error("Could not delete static rigid body (1)");
             }
             transformed_objects_.erase(it);
         }
     } else {
         auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
         if (it == objects_.end()) {
-            throw std::runtime_error("Could not delete rigid body");
+            throw std::runtime_error("Could not delete dynamic rigid body");
         }
         objects_.erase(it);
     }

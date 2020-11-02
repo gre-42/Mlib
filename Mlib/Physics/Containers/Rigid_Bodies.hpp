@@ -34,6 +34,7 @@ public:
         const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines);
     void delete_rigid_body(const RigidBody* rigid_body);
 private:
+    std::list<std::shared_ptr<RigidBody>> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndTransformedMeshes> transformed_objects_;
     Bvh<float, CollisionTriangleSphere, 3> bvh_;
