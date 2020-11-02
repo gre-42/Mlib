@@ -23,7 +23,7 @@ TransformedMesh::TransformedMesh(
 
 TransformedMesh::TransformedMesh(
     const BoundingSphere<float, 3>& transformed_bounding_sphere,
-    const std::vector<CollisionTriangle>& transformed_triangles)
+    const std::vector<CollisionTriangleSphere>& transformed_triangles)
 : transformation_matrix_{fixed_nans<float, 4, 4>()},
   transformed_bounding_sphere_{transformed_bounding_sphere},
   transformed_triangles_{transformed_triangles},
@@ -42,7 +42,7 @@ bool TransformedMesh::intersects(const PlaneNd<float, 3>& plane) const {
     return transformed_bounding_sphere_.intersects(plane);
 }
 
-const std::vector<CollisionTriangle>& TransformedMesh::get_triangles() const {
+const std::vector<CollisionTriangleSphere>& TransformedMesh::get_triangles_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    std::cerr << "Skipping mesh without triangles" << std::endl;
     //}
@@ -50,7 +50,7 @@ const std::vector<CollisionTriangle>& TransformedMesh::get_triangles() const {
         {
             std::lock_guard<std::mutex> lock{mutex_};
             if (!triangles_calculated_) {
-                transformed_triangles_ = mesh_->transformed_triangles(transformation_matrix_);
+                transformed_triangles_ = mesh_->transformed_triangles_sphere(transformation_matrix_);
             }
         }
         triangles_calculated_ = true;

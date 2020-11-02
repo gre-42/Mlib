@@ -79,19 +79,38 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const FixedA
     return res;
 }
 
-std::vector<CollisionTriangle> ColoredVertexArray::transformed_triangles(const FixedArray<float, 4, 4>& m) const {
-    std::vector<CollisionTriangle> res;
+std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(const FixedArray<float, 4, 4>& m) const {
+    std::vector<CollisionTriangleSphere> res;
     res.reserve(triangles.size());
     for(const auto& t : triangles) {
         FixedArray<FixedArray<float, 3>, 3> pt{
             dehomogenized_3(dot1d(m, homogenized_4(t(0).position))),
             dehomogenized_3(dot1d(m, homogenized_4(t(1).position))),
             dehomogenized_3(dot1d(m, homogenized_4(t(2).position)))};
-        res.push_back(CollisionTriangle{
-            bounding_sphere: BoundingSphere{pt},
-            plane: PlaneNd<float, 3>{pt},
-            two_sided: !material.cull_faces,
-            triangle: pt});
+        res.push_back(CollisionTriangleSphere{
+            .bounding_sphere = BoundingSphere<float, 3>{pt},
+            .plane = PlaneNd<float, 3>{pt},
+            .two_sided = !material.cull_faces,
+            .triangle = pt});
+    }
+    return res;
+}
+
+std::vector<CollisionTriangleBbox> ColoredVertexArray::transformed_triangles_bbox(const FixedArray<float, 4, 4>& m) const {
+    std::vector<CollisionTriangleBbox> res;
+    res.reserve(triangles.size());
+    for(const auto& t : triangles) {
+        FixedArray<FixedArray<float, 3>, 3> pt{
+            dehomogenized_3(dot1d(m, homogenized_4(t(0).position))),
+            dehomogenized_3(dot1d(m, homogenized_4(t(1).position))),
+            dehomogenized_3(dot1d(m, homogenized_4(t(2).position)))};
+        res.push_back(CollisionTriangleBbox{
+            .base = CollisionTriangleBboxBase{
+                .plane = PlaneNd<float, 3>{pt},
+                .two_sided = !material.cull_faces,
+                .triangle = pt
+            },
+            .bounding_box = BoundingBox<float, 3>{pt}});
     }
     return res;
 }

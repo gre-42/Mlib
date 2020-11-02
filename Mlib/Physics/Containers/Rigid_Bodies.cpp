@@ -8,10 +8,11 @@
 using namespace Mlib;
 
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
-: cfg_{cfg}
+: bvh_{{cfg.static_radius, cfg.static_radius, cfg.static_radius}, 10},
+  cfg_{cfg}
 {}
 
-std::list<std::vector<CollisionTriangle>> split_with_static_radius(
+std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
     const std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
     const FixedArray<float, 4, 4>& tm,
     float static_radius)
@@ -22,10 +23,10 @@ std::list<std::vector<CollisionTriangle>> split_with_static_radius(
     if (any(isnan(tm))) {
         throw std::runtime_error("Transformation matrix contains NAN values. Forgot to add rigid body to scene node?");
     }
-    std::list<std::pair<FixedArray<float, 3>, std::list<CollisionTriangle>>> centers;
+    std::list<std::pair<FixedArray<float, 3>, std::list<CollisionTriangleSphere>>> centers;
     for(auto& m : cvas) {
         if (m->material.collide) {
-            for(const auto& t : m->transformed_triangles(tm)) {
+            for(const auto& t : m->transformed_triangles_sphere(tm)) {
                 bool sphere_found = false;
                 for(auto& x : centers) {
                     if (sum(squared(t.bounding_sphere.center() - x.first)) < squared(static_radius)) {
@@ -40,9 +41,9 @@ std::list<std::vector<CollisionTriangle>> split_with_static_radius(
             }
         }
     }
-    std::list<std::vector<CollisionTriangle>> result;
+    std::list<std::vector<CollisionTriangleSphere>> result;
     for(const auto& x : centers) {
-        std::vector<CollisionTriangle> res{x.second.begin(), x.second.end()};
+        std::vector<CollisionTriangleSphere> res{x.second.begin(), x.second.end()};
         result.push_back(std::move(res));
     }
     return result;
@@ -51,33 +52,44 @@ std::list<std::vector<CollisionTriangle>> split_with_static_radius(
 void RigidBodies::add_rigid_body(
     const std::shared_ptr<RigidBody>& rigid_body,
     const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
-    const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines)
+    const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
+    bool bvh)
 {
     if (rigid_body->mass() == INFINITY) {
         if (!tirelines.empty()) {
             throw std::runtime_error("static rigid body has tirelines");
         }
-        auto xx = split_with_static_radius(hitbox, rigid_body->get_new_absolute_model_matrix(), cfg_.static_radius);
-        RigidBodyAndTransformedMeshes rbtm;
-        rbtm.rigid_body = rigid_body;
-        
-        for(const auto& p : xx) {
-            std::vector<FixedArray<float, 3>> vertices;
-            vertices.reserve(p.size() * 3);
-            for(const auto& t : p) {
-                vertices.push_back(t.triangle(0));
-                vertices.push_back(t.triangle(1));
-                vertices.push_back(t.triangle(2));
+        if (bvh) {
+            for(auto& m : hitbox) {
+                if (m->material.collide) {
+                    for(const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
+                        bvh_.insert(t.bounding_box, "", t.base);
+                    }
+                }
             }
-            if (!vertices.empty()) {
-                BoundingSphere<float, 3> bs{vertices.begin(), vertices.end()};
-                rbtm.meshes.push_back({
-                    mesh_type: MeshType::CHASSIS,
-                    mesh: std::make_shared<TransformedMesh>(bs, p)});
+        } else {
+            auto xx = split_with_static_radius(hitbox, rigid_body->get_new_absolute_model_matrix(), cfg_.static_radius);
+            RigidBodyAndTransformedMeshes rbtm;
+            rbtm.rigid_body = rigid_body;
+            
+            for(const auto& p : xx) {
+                std::vector<FixedArray<float, 3>> vertices;
+                vertices.reserve(p.size() * 3);
+                for(const auto& t : p) {
+                    vertices.push_back(t.triangle(0));
+                    vertices.push_back(t.triangle(1));
+                    vertices.push_back(t.triangle(2));
+                }
+                if (!vertices.empty()) {
+                    BoundingSphere<float, 3> bs{vertices.begin(), vertices.end()};
+                    rbtm.meshes.push_back({
+                        mesh_type: MeshType::CHASSIS,
+                        mesh: std::make_shared<TransformedMesh>(bs, p)});
+                }
             }
+
+            transformed_objects_.push_back(rbtm);
         }
-        
-        transformed_objects_.push_back(rbtm);
     } else {
         RigidBodyAndMeshes rbm;
         rbm.rigid_body = rigid_body;

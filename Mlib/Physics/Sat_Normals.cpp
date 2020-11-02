@@ -9,8 +9,8 @@ using namespace Mlib;
 
 static float sat_overlap(
     const FixedArray<float, 3>& n,
-    const std::vector<CollisionTriangle>& triangles0,
-    const std::vector<CollisionTriangle>& triangles1)
+    const std::vector<CollisionTriangleSphere>& triangles0,
+    const std::vector<CollisionTriangleSphere>& triangles1)
 {
     float max0 = -INFINITY;
     float min1 = INFINITY;
@@ -76,14 +76,14 @@ void SatTracker::get_collision_plane(
         #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         PlaneNd<float, 3> best_plane;
         #pragma GCC diagnostic pop
-        for(const auto& t0 : mesh0->get_triangles()) {
+        for(const auto& t0 : mesh0->get_triangles_sphere()) {
             //if (dot(n.normal_, o1.first->abs_com() - o0.first->abs_com())() < 0) {
             //    continue;
             //}
             float sat_overl = sat_overlap(
                 t0.plane.normal_,
-                mesh0->get_triangles(),
-                mesh1->get_triangles());
+                mesh0->get_triangles_sphere(),
+                mesh1->get_triangles_sphere());
             if ((sat_overl > 0) && (sat_overl < min_overlap)) {
                 min_overlap = sat_overl;
                 best_plane = t0.plane;

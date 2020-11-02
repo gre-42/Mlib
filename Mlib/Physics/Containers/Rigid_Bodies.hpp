@@ -1,5 +1,6 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Typed_Mesh.hpp>
 #include <map>
@@ -30,11 +31,13 @@ public:
     void add_rigid_body(
         const std::shared_ptr<RigidBody>& rigid_body,
         const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines);
+        const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
+        bool bvh = false);
     void delete_rigid_body(const RigidBody* rigid_body);
 private:
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndTransformedMeshes> transformed_objects_;
+    Bvh<float, CollisionTriangleBboxBase, 3> bvh_;
     PhysicsEngineConfig cfg_;
 };
 

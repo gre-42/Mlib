@@ -40,14 +40,14 @@ PhysicsEngine::~PhysicsEngine() {
 static void handle_triangle_triangle_intersection(
     const std::shared_ptr<RigidBody>& o0,
     const std::shared_ptr<RigidBody>& o1,
-    const CollisionTriangle& t0,
+    const CollisionTriangleSphere& t0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
     std::vector<FixedArray<float, 3>>& beacons,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st)
 {
-    for(const auto& t1 : msh1.mesh->get_triangles()) {
+    for(const auto& t1 : msh1.mesh->get_triangles_sphere()) {
         if (!t1.bounding_sphere.intersects(t0.bounding_sphere)) {
             continue;
         }
@@ -131,7 +131,7 @@ static void collide_objects(
             if (!msh0.mesh->intersects(*msh1.mesh)) {
                 continue;
             }
-            for(const auto& t0 : msh0.mesh->get_triangles()) {
+            for(const auto& t0 : msh0.mesh->get_triangles_sphere()) {
                 // Mesh-sphere <-> triangle-sphere intersection
                 if (!msh1.mesh->intersects(t0.bounding_sphere)) {
                     continue;
@@ -198,13 +198,9 @@ static void collide_objects(
 
 void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool burn_in)
 {
-    for(auto it = rigid_bodies_.transformed_objects_.begin(); it != rigid_bodies_.transformed_objects_.end(); ) {
-        if (it->rigid_body->mass() != INFINITY) {
-            it = rigid_bodies_.transformed_objects_.erase(it);
-        } else {
-            ++it;
-        }
-    }
+    std::erase_if(rigid_bodies_.transformed_objects_, [](const RigidBodyAndTransformedMeshes& rbtm){
+        return (rbtm.rigid_body->mass() != INFINITY);
+    });
     {
         std::list<std::shared_ptr<RigidBody>> olist;
         for(const auto& o : rigid_bodies_.objects_) {

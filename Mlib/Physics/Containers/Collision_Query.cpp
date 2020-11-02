@@ -33,7 +33,7 @@ bool CollisionQuery::can_see(const RigidBodyIntegrator& watcher, const RigidBody
                 if (!msh0.mesh->intersects(bs)) {
                     continue;
                 }
-                for(const auto& t0 : msh0.mesh->get_triangles()) {
+                for(const auto& t0 : msh0.mesh->get_triangles_sphere()) {
                     if (!t0.bounding_sphere.intersects(bs)) {
                         continue;
                     }
