@@ -25,6 +25,7 @@ public:
     const std::vector<CollisionTriangleSphere>& get_triangles_sphere() const;
     const std::vector<FixedArray<FixedArray<float, 3>, 2>>& get_lines() const;
     void print_info() const;
+    const BoundingSphere<float, 3>& transformed_bounding_sphere() const;
 private:
     const FixedArray<float, 4, 4> transformation_matrix_;
     BoundingSphere<float, 3> transformed_bounding_sphere_;

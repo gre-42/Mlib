@@ -74,6 +74,10 @@ const std::vector<FixedArray<FixedArray<float, 3>, 2>>& TransformedMesh::get_lin
     return transformed_lines_;
 }
 
+const BoundingSphere<float, 3>& TransformedMesh::transformed_bounding_sphere() const {
+    return transformed_bounding_sphere_;
+}
+
 #pragma GCC pop_options
 
 void TransformedMesh::print_info() const {

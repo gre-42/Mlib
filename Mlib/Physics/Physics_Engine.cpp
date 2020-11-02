@@ -246,6 +246,40 @@ void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool bur
             }
         }
     }
+    // {
+    //     RigidBodyAndTransformedMeshes o0{
+    //         .rigid_body = std::make_shared<RigidBody>(rigid_bodies_, RigidBodyIntegrator{
+    //             INFINITY,                   // mass
+    //             fixed_nans<float, 3>(),     // L    // angular momentum
+    //             fixed_nans<float, 3, 3>(),  // I    // inertia tensor
+    //             fixed_nans<float, 3>(),     // com  // center of mass
+    //             fixed_nans<float, 3>(),     // v    // velocity
+    //             fixed_nans<float, 3>(),     // w    // angular velocity
+    //             fixed_nans<float, 3>(),     // T    // torque
+    //             fixed_nans<float, 3>(),     // position
+    //             fixed_nans<float, 3>(),     // rotation
+    //             false// I_is_diagonal
+    //         })};
+    //     o0.meshes.push_back({
+    //         .mesh_type = MeshType::CHASSIS,
+    //         .mesh = std::make_shared<TransformedMesh>(bs, p);
+    //     });
+    //     for(const auto& o1 : rigid_bodies_.transformed_objects_) {
+    //         if (o1.rigid_body->mass() == INFINITY) {
+    //             return;
+    //         }
+    //         for(const auto& msh1 : o1.meshes) {
+    //             o0.meshes.clear();
+    //             rigid_bodies_.bvh_.visit(
+    //                 msh1.mesh->transformed_bounding_sphere(),
+    //                 [&o0](const std::string& category, const CollisionTriangleBboxBase& bbox){
+    //                     o0.meshes.push_back({
+    //                         .mesh_type = MeshType::CHASSIS
+    //                     });
+    //                 });
+    //         }
+    //     }
+    // }
 }
 
 void PhysicsEngine::move_rigid_bodies(std::vector<FixedArray<float, 3>>& beacons) {
