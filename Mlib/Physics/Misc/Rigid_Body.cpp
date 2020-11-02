@@ -98,21 +98,21 @@ void RigidBody::advance_time(
                 // std::cerr << "dx " << dx << std::endl;
                 if ((P != 0) && (std::abs(P) > power_internal)) {
                     if (P > 0) {
-                        if (dx > -0.1) {
+                        if (dx > -0.05) {
                             t.second.sticky_wheel.accelerate(-0.1);
                         }
                     } else if (P < 0) {
-                        if (dx < 0.1) {
+                        if (dx < 0.05) {
                             t.second.sticky_wheel.accelerate(0.1);
                         }
                     }
                 } else {
                     if (moment < 0) {
-                        if (dx > -0.1) {
+                        if (dx > -0.05) {
                             t.second.sticky_wheel.accelerate(-0.1);
                         }
                     } else if (moment > 0) {
-                        if (dx < 0.1) {
+                        if (dx < 0.05) {
                             t.second.sticky_wheel.accelerate(0.1);
                         }
                     }

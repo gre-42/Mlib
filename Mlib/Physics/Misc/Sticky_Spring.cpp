@@ -34,7 +34,9 @@ FixedArray<float, 3> StickySpring::update_position(
         //     std::sqrt(sum(squared(new_point_of_contact - position))) * spring_constant << " | " <<
         //     stiction_force << " | " <<
         //     d2 << std::endl;
+        // std::cerr << "y " << std::sqrt(sum(squared(d * stiction_force))) << " | " << d * stiction_force << std::endl;
         return d * stiction_force;
     }
+    // std::cerr << "x " << std::sqrt(sum(squared(dir * spring_constant))) << " | " << dir * spring_constant << std::endl;
     return dir * spring_constant;
 }

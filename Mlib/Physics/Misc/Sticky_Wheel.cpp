@@ -60,6 +60,7 @@ void StickyWheel::update_position(
     power_internal = 0;
     power_external = 0;
     moment = 0;
+    // size_t nactive = 0;
     for(auto& s : springs_) {
         if (s.active) {
             // std::cerr << "v " << std::sqrt(sum(squared(s.position))) * w_ * 3.6 << std::endl;
@@ -68,6 +69,7 @@ void StickyWheel::update_position(
             if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
                 s.active = false;
             } else {
+                // ++nactive;
                 beacons.push_back(abs_position);
                 // beacons.push_back(s.spring.point_of_contact);
                 FixedArray<float, 3> force = s.spring.update_position(
@@ -87,6 +89,7 @@ void StickyWheel::update_position(
             }
         }
     }
+    // std::cerr << "nactive " << nactive << std::endl;
     sum_stiction_force_ = 0;
     // std::cerr << 0.00135962 * power << " PS " << " F " << std::sqrt(sum(squared(force))) << std::endl;
 }
