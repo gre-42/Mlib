@@ -63,6 +63,7 @@ void RigidBody::advance_time(
     float min_velocity,
     float min_angular_velocity,
     bool sticky_physics,
+    float hand_break_velocity,
     std::vector<FixedArray<float, 3>>& beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
@@ -98,7 +99,10 @@ void RigidBody::advance_time(
                 float w_max = dx_max / (t.second.sticky_wheel.radius() * dt);
                 // std::cerr << "dx " << dx << std::endl;
                 if ((P != 0) && (std::abs(P) > power_internal)) {
-                    if (P > 0) {
+                    float v = dot0d(velocity, power_axis);
+                    if (sign(P) != sign(v) && std::abs(v) > hand_break_velocity) {
+                        t.second.sticky_wheel.set_w(0);
+                    } else if (P > 0) {
                         t.second.sticky_wheel.set_w(std::max(-w_max, t.second.sticky_wheel.w() - 0.5f));
                     } else if (P < 0) {
                         t.second.sticky_wheel.set_w(std::min(w_max, t.second.sticky_wheel.w() + 0.5f));
