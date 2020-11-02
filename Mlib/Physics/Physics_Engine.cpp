@@ -107,6 +107,77 @@ static void handle_triangle_triangle_intersection(
     }
 }
 
+static void collide_triangle(
+    const RigidBodyAndTransformedMeshes& o0,
+    const RigidBodyAndTransformedMeshes& o1,
+    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
+    const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
+    const CollisionTriangleSphere& t0,
+    const PhysicsEngineConfig& cfg,
+    const SatTracker& st,
+    std::vector<FixedArray<float, 3>>& beacons)
+{
+    // Mesh-sphere <-> triangle-sphere intersection
+    if (!msh1.mesh->intersects(t0.bounding_sphere)) {
+        return;
+    }
+    // Mesh-sphere <-> triangle-plane intersection
+    if (!msh1.mesh->intersects(t0.plane)) {
+        return;
+    }
+    if (!cfg.collide_only_normals && (o0.rigid_body->mass() != INFINITY)) {
+        handle_triangle_triangle_intersection(
+            o0.rigid_body,
+            o1.rigid_body,
+            t0,
+            msh0,
+            msh1,
+            beacons,
+            cfg,
+            st);
+    }
+    const auto& lines = msh1.mesh->get_lines();
+    if (msh1.mesh_type == MeshType::CHASSIS) {
+        for(const auto& l1 : lines) {
+            HandleLineTriangleIntersection::handle({
+                o0: o0.rigid_body,
+                o1: o1.rigid_body,
+                mesh0: msh0.mesh,
+                mesh1: msh1.mesh,
+                l1: l1,
+                t0: t0.triangle,
+                p0: t0.plane,
+                cfg: cfg,
+                st: st,
+                beacons: beacons,
+                tire_id: SIZE_MAX,
+                mesh0_two_sided: t0.two_sided,
+                lines_are_normals: true});
+        }
+    } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
+        size_t tire_id = 0;
+        for(const auto& l1 : lines) {
+            HandleLineTriangleIntersection::handle({
+                o0: o0.rigid_body,
+                o1: o1.rigid_body,
+                mesh0: msh0.mesh,
+                mesh1: msh1.mesh,
+                l1: l1,
+                t0: t0.triangle,
+                p0: t0.plane,
+                cfg: cfg,
+                st: st,
+                beacons: beacons,
+                tire_id: tire_id,
+                mesh0_two_sided: t0.two_sided,
+                lines_are_normals: true});
+            ++tire_id;
+        }
+    } else {
+        throw std::runtime_error("Unknown mesh type");
+    }
+}
+
 static void collide_objects(
     const RigidBodyAndTransformedMeshes& o0,
     const RigidBodyAndTransformedMeshes& o1,
@@ -132,65 +203,15 @@ static void collide_objects(
                 continue;
             }
             for(const auto& t0 : msh0.mesh->get_triangles_sphere()) {
-                // Mesh-sphere <-> triangle-sphere intersection
-                if (!msh1.mesh->intersects(t0.bounding_sphere)) {
-                    continue;
-                }
-                // Mesh-sphere <-> triangle-plane intersection
-                if (!msh1.mesh->intersects(t0.plane)) {
-                    continue;
-                }
-                if (!cfg.collide_only_normals && (o0.rigid_body->mass() != INFINITY)) {
-                    handle_triangle_triangle_intersection(
-                        o0.rigid_body,
-                        o1.rigid_body,
-                        t0,
-                        msh0,
-                        msh1,
-                        beacons,
-                        cfg,
-                        st);
-                }
-                const auto& lines = msh1.mesh->get_lines();
-                if (msh1.mesh_type == MeshType::CHASSIS) {
-                    for(const auto& l1 : lines) {
-                        HandleLineTriangleIntersection::handle({
-                            o0: o0.rigid_body,
-                            o1: o1.rigid_body,
-                            mesh0: msh0.mesh,
-                            mesh1: msh1.mesh,
-                            l1: l1,
-                            t0: t0.triangle,
-                            p0: t0.plane,
-                            cfg: cfg,
-                            st: st,
-                            beacons: beacons,
-                            tire_id: SIZE_MAX,
-                            mesh0_two_sided: t0.two_sided,
-                            lines_are_normals: true});
-                    }
-                } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
-                    size_t tire_id = 0;
-                    for(const auto& l1 : lines) {
-                        HandleLineTriangleIntersection::handle({
-                            o0: o0.rigid_body,
-                            o1: o1.rigid_body,
-                            mesh0: msh0.mesh,
-                            mesh1: msh1.mesh,
-                            l1: l1,
-                            t0: t0.triangle,
-                            p0: t0.plane,
-                            cfg: cfg,
-                            st: st,
-                            beacons: beacons,
-                            tire_id: tire_id,
-                            mesh0_two_sided: t0.two_sided,
-                            lines_are_normals: true});
-                        ++tire_id;
-                    }
-                } else {
-                    throw std::runtime_error("Unknown mesh type");
-                }
+                collide_triangle(
+                    o0,
+                    o1,
+                    msh0,
+                    msh1,
+                    t0,
+                    cfg,
+                    st,
+                    beacons);
             }
         }
     }
@@ -246,40 +267,42 @@ void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool bur
             }
         }
     }
-    // {
-    //     RigidBodyAndTransformedMeshes o0{
-    //         .rigid_body = std::make_shared<RigidBody>(rigid_bodies_, RigidBodyIntegrator{
-    //             INFINITY,                   // mass
-    //             fixed_nans<float, 3>(),     // L    // angular momentum
-    //             fixed_nans<float, 3, 3>(),  // I    // inertia tensor
-    //             fixed_nans<float, 3>(),     // com  // center of mass
-    //             fixed_nans<float, 3>(),     // v    // velocity
-    //             fixed_nans<float, 3>(),     // w    // angular velocity
-    //             fixed_nans<float, 3>(),     // T    // torque
-    //             fixed_nans<float, 3>(),     // position
-    //             fixed_nans<float, 3>(),     // rotation
-    //             false// I_is_diagonal
-    //         })};
-    //     o0.meshes.push_back({
-    //         .mesh_type = MeshType::CHASSIS,
-    //         .mesh = std::make_shared<TransformedMesh>(bs, p);
-    //     });
-    //     for(const auto& o1 : rigid_bodies_.transformed_objects_) {
-    //         if (o1.rigid_body->mass() == INFINITY) {
-    //             return;
-    //         }
-    //         for(const auto& msh1 : o1.meshes) {
-    //             o0.meshes.clear();
-    //             rigid_bodies_.bvh_.visit(
-    //                 msh1.mesh->transformed_bounding_sphere(),
-    //                 [&o0](const std::string& category, const CollisionTriangleBboxBase& bbox){
-    //                     o0.meshes.push_back({
-    //                         .mesh_type = MeshType::CHASSIS
-    //                     });
-    //                 });
-    //         }
-    //     }
-    // }
+    if (cfg_.bvh) {
+        RigidBodyAndTransformedMeshes o0{
+            .rigid_body = std::make_shared<RigidBody>(rigid_bodies_, RigidBodyIntegrator{
+                INFINITY,                   // mass
+                fixed_nans<float, 3>(),     // L    // angular momentum
+                fixed_nans<float, 3, 3>(),  // I    // inertia tensor
+                fixed_nans<float, 3>(),     // com  // center of mass
+                fixed_nans<float, 3>(),     // v    // velocity
+                fixed_nans<float, 3>(),     // w    // angular velocity
+                fixed_nans<float, 3>(),     // T    // torque
+                fixed_nans<float, 3>(),     // position
+                fixed_nans<float, 3>(),     // rotation
+                false// I_is_diagonal
+            })};
+        o0.meshes.push_back(TypedMesh<std::shared_ptr<TransformedMesh>>{});
+        for(const auto& o1 : rigid_bodies_.transformed_objects_) {
+            if (o1.rigid_body->mass() == INFINITY) {
+                return;
+            }
+            for(const auto& msh1 : o1.meshes) {
+                rigid_bodies_.bvh_.visit(
+                    msh1.mesh->transformed_bounding_sphere(),
+                    [&](const std::string& category, const CollisionTriangleSphere& t0){
+                        collide_triangle(
+                            o0,
+                            o1,
+                            o0.meshes.front(),
+                            msh1,
+                            t0,
+                            cfg_,
+                            st,
+                            beacons);
+                    });
+            }
+        }
+    }
 }
 
 void PhysicsEngine::move_rigid_bodies(std::vector<FixedArray<float, 3>>& beacons) {

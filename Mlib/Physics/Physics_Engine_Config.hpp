@@ -26,6 +26,7 @@ struct PhysicsEngineConfig {
     float static_radius = 200;
     Interp<float> outness_fac_interp{{-0.5, 1}, {200, 0}, OutOfRangeBehavior::CLAMP};
     bool sticky = false;
+    bool bvh = true;
 };
 
 }

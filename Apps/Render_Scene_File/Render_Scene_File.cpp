@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
         "[--print_gamepad_buttons] "
         "[--show_mouse_cursor] "
         "[--sticky_physics] "
+        "[--no_bvh] "
         "[--verbose]",
         {"--wire_frame",
          "--no_cull_faces",
@@ -88,6 +89,7 @@ int main(int argc, char** argv) {
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
          "--sticky_physics",
+         "--no_bvh",
          "--verbose"},
         {"--swap_interval",
          "--nsamples_msaa",
@@ -171,7 +173,8 @@ int main(int argc, char** argv) {
                 .damping = safe_stof(args.named_value("--damping", "0.00091188")),
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "2")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
-                .sticky = args.has_named("--sticky_physics")};
+                .sticky = args.has_named("--sticky_physics"),
+                .bvh = !args.has_named("--no_bvh")};
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;

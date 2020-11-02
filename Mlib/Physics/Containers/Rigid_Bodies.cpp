@@ -52,14 +52,13 @@ std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
 void RigidBodies::add_rigid_body(
     const std::shared_ptr<RigidBody>& rigid_body,
     const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
-    const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
-    bool bvh)
+    const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines)
 {
     if (rigid_body->mass() == INFINITY) {
         if (!tirelines.empty()) {
             throw std::runtime_error("static rigid body has tirelines");
         }
-        if (bvh) {
+        if (cfg_.bvh) {
             for(auto& m : hitbox) {
                 if (m->material.collide) {
                     for(const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
@@ -115,10 +114,16 @@ void RigidBodies::add_rigid_body(
 void RigidBodies::delete_rigid_body(const RigidBody* rigid_body) {
     if (rigid_body->mass() == INFINITY) {
         auto it = std::find_if(transformed_objects_.begin(), transformed_objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
-        if (it == transformed_objects_.end()) {
-            throw std::runtime_error("Could not delete rigid body");
+        if (cfg_.bvh) {
+            if (it != transformed_objects_.end()) {
+                throw std::runtime_error("Found rigid body despite bvh");
+            }
+        } else {
+            if (it == transformed_objects_.end()) {
+                throw std::runtime_error("Could not delete rigid body");
+            }
+            transformed_objects_.erase(it);
         }
-        transformed_objects_.erase(it);
     } else {
         auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
         if (it == objects_.end()) {

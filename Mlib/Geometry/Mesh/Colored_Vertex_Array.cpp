@@ -105,7 +105,8 @@ std::vector<CollisionTriangleBbox> ColoredVertexArray::transformed_triangles_bbo
             dehomogenized_3(dot1d(m, homogenized_4(t(1).position))),
             dehomogenized_3(dot1d(m, homogenized_4(t(2).position)))};
         res.push_back(CollisionTriangleBbox{
-            .base = CollisionTriangleBboxBase{
+            .base = CollisionTriangleSphere{
+                .bounding_sphere = BoundingSphere<float, 3>{pt},
                 .plane = PlaneNd<float, 3>{pt},
                 .two_sided = !material.cull_faces,
                 .triangle = pt

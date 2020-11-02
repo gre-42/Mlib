@@ -5,23 +5,16 @@
 
 namespace Mlib {
 
-struct CollisionTriangleBboxBase {
+struct CollisionTriangleSphere {
+    BoundingSphere<float, 3> bounding_sphere;
     PlaneNd<float, 3> plane;
     bool two_sided;
     FixedArray<FixedArray<float, 3>, 3> triangle;
 };
 
 struct CollisionTriangleBbox {
-    CollisionTriangleBboxBase base;
+    CollisionTriangleSphere base;
     BoundingBox<float, 3> bounding_box;
-};
-
-
-struct CollisionTriangleSphere {
-    BoundingSphere<float, 3> bounding_sphere;
-    PlaneNd<float, 3> plane;
-    bool two_sided;
-    FixedArray<FixedArray<float, 3>, 3> triangle;
 };
 
 }
