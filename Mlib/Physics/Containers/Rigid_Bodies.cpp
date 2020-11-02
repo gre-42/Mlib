@@ -69,7 +69,7 @@ void RigidBodies::add_rigid_body(
                 vertices.push_back(t.triangle(1));
                 vertices.push_back(t.triangle(2));
             }
-            if (vertices.size() > 0) {
+            if (!vertices.empty()) {
                 BoundingSphere<float, 3> bs{vertices.begin(), vertices.end()};
                 rbtm.meshes.push_back({
                     mesh_type: MeshType::CHASSIS,
