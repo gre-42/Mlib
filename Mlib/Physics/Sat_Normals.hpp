@@ -23,7 +23,6 @@ public:
         const std::shared_ptr<TransformedMesh>& mesh1,
         float& min_overlap,
         PlaneNd<float, 3>& plane) const;
-    void clear();
 private:
     mutable std::map<
         std::shared_ptr<RigidBody>,

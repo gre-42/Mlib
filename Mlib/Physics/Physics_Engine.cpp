@@ -236,9 +236,6 @@ void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool bur
             meshes: std::move(transformed_meshes)});
     }
     SatTracker st;
-    if (cfg_.sat) {
-        st.clear();
-    }
     collide_forward_ = !collide_forward_;
     if (collide_forward_) {
         for(const auto& o0 : rigid_bodies_.transformed_objects_) {

@@ -103,7 +103,3 @@ void SatTracker::get_collision_plane(
     // res /= std::sqrt(sum(squared(res)));
     // return res;
 }
-
-void SatTracker::clear() {
-    collision_planes_.clear();
-}
