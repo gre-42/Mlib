@@ -38,9 +38,9 @@ public:
         float& power_external,
         float& moment,
         std::vector<FixedArray<float, 3>>& beacons);
-    void accelerate(float amount);
     float radius() const;
     float w() const;
+    void set_w(float w);
     float angle_x() const;
 private:
     FixedArray<float, 3> rotation_axis_;

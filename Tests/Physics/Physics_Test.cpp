@@ -218,7 +218,7 @@ void test_sticky_wheel() {
     {
         FixedArray<float, 3, 3> rotation = rodrigues<float>({0, 1, 0}, 0.f);
         FixedArray<float, 3> translation = {0.f, 0.f, 0.f};
-        sw.accelerate(1.23);
+        sw.set_w(1.23);
         sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force);
         {
             std::vector<FixedArray<float, 3>> beacons;

@@ -94,31 +94,23 @@ void RigidBody::advance_time(
             float P = consume_tire_surface_power(t.first);
             // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
             if (!std::isnan(P)) {
-                float dx = t.second.sticky_wheel.w() * t.second.sticky_wheel.radius() * dt;
+                float dx_max = 0.1;
+                float w_max = dx_max / (t.second.sticky_wheel.radius() * dt);
                 // std::cerr << "dx " << dx << std::endl;
                 if ((P != 0) && (std::abs(P) > power_internal)) {
                     if (P > 0) {
-                        if (dx > -0.05) {
-                            t.second.sticky_wheel.accelerate(-0.1);
-                        }
+                        t.second.sticky_wheel.set_w(std::max(-w_max, t.second.sticky_wheel.w() - 0.5f));
                     } else if (P < 0) {
-                        if (dx < 0.05) {
-                            t.second.sticky_wheel.accelerate(0.1);
-                        }
+                        t.second.sticky_wheel.set_w(std::min(w_max, t.second.sticky_wheel.w() + 0.5f));
                     }
                 } else {
                     if (moment < 0) {
-                        if (dx > -0.05) {
-                            t.second.sticky_wheel.accelerate(-0.1);
-                        }
+                        t.second.sticky_wheel.set_w(std::max(-w_max, t.second.sticky_wheel.w() - 0.5f));
                     } else if (moment > 0) {
-                        if (dx < 0.05) {
-                            t.second.sticky_wheel.accelerate(0.1);
-                        }
+                        t.second.sticky_wheel.set_w(std::min(w_max, t.second.sticky_wheel.w() + 0.5f));
                     }
                 }
             }
-
         }
     }
     rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);

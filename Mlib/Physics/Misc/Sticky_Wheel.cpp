@@ -94,16 +94,16 @@ void StickyWheel::update_position(
     // std::cerr << 0.00135962 * power << " PS " << " F " << std::sqrt(sum(squared(force))) << std::endl;
 }
 
-void StickyWheel::accelerate(float amount) {
-    w_ += amount;
-}
-
 float StickyWheel::radius() const {
     return radius_;
 }
 
 float StickyWheel::w() const {
     return w_;
+}
+
+void StickyWheel::set_w(float w) {
+    w_ = w;
 }
 
 float StickyWheel::angle_x() const {
