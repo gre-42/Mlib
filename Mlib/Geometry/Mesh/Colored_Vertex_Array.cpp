@@ -22,7 +22,7 @@ ColoredVertexArray::ColoredVertexArray(
 
 std::vector<FixedArray<float, 3>> ColoredVertexArray::vertices() const {
     std::vector<FixedArray<float, 3>> res;
-    res.reserve(triangles.size() * 3);
+    res.reserve(triangles.size() * 3 + lines.size() * 2);
     for(auto& v : triangles) {
         res.push_back(v(0).position);
         res.push_back(v(1).position);
