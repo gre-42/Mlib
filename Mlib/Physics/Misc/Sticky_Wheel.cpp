@@ -13,7 +13,7 @@ StickyWheel::StickyWheel(
     float max_dist)
 : rotation_axis_{rotation_axis},
   radius_{radius},
-  springs_(nsprings, SpringExt{position: FixedArray<float, 3>(NAN), spring: StickySpring{}}),
+  springs_(nsprings, SpringExt{active: false}),
   max_dist_{max_dist},
   next_spring_{0},
   w_{0},
@@ -97,6 +97,9 @@ void StickyWheel::update_position(
                 power_internal += cmoment * w_;
                 power_external -= dot0d(force, velocity);
                 s.position = dot1d(dr, s.position);
+                // if (slip) {
+                //     beacons.push_back(abs_position);
+                // }
             }
         }
     }
