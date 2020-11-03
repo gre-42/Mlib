@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
                 .sticky = args.has_named("--sticky_physics"),
                 .bvh = !args.has_named("--no_bvh"),
-                .oversampling = safe_stoz(args.named_value("--oversampling", "10"))};
+                .oversampling = safe_stoz(args.named_value("--oversampling", "20"))};
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;
