@@ -25,7 +25,8 @@ public:
         const FixedArray<float, 3>& translation,
         const FixedArray<float, 3>& pt_absolute,
         const FixedArray<float, 3>& normal,
-        float stiction_force);
+        float stiction_force,
+        float friction_force);
     void update_position(
         const FixedArray<float, 3, 3>& rotation,
         const FixedArray<float, 3>& translation,
@@ -52,6 +53,7 @@ private:
     float w_;    // angular velocity
     float angle_x_;
     float sum_stiction_force_;
+    float sum_friction_force_;
 };
 
 }

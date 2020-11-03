@@ -194,12 +194,13 @@ void test_sticky_spring() {
     FixedArray<float, 3> position{5, 3, 2.6};
     float spring_constant = 2;
     float stiction_force = 1.23;
+    float friction_force = 1.12;
     FixedArray<float, 3> force;
     bool slipping;
     StickySpring s{
         .point_of_contact = {1, 2, 3}
     };
-    s.update_position(position, spring_constant, stiction_force, nullptr, force, slipping);
+    s.update_position(position, spring_constant, stiction_force, friction_force, nullptr, force, slipping);
     assert_allclose(
         s.point_of_contact.to_array(),
         Array<float>{5.59385, 3.14846, 2.54061},
@@ -216,12 +217,13 @@ void test_sticky_wheel() {
     StickyWheel sw{rotation_axis, radius, ntires, max_dist};
     float spring_constant = 3e4;
     float stiction_force = 1e3;
+    float friction_force = 1e2;
     float dt = 1.f / 60;
     {
         FixedArray<float, 3, 3> rotation = rodrigues<float>({0, 1, 0}, 0.f);
         FixedArray<float, 3> translation = {0.f, 0.f, 0.f};
         sw.set_w(1.23);
-        sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force);
+        sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
         {
             std::vector<FixedArray<float, 3>> beacons;
             RigidBodyIntegrator rbi = rigid_cuboid_integrator(1e3, {1.f, 2.f, 3.f}, {0.f, 0.f, 0.5f});
@@ -231,7 +233,7 @@ void test_sticky_wheel() {
             bool slipping;
             sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
             assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, 0});
-            sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force);
+            sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
             sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
             assert_allclose(rbi.a_.to_array(), Array<float>{0, -0.000700355, 0.0683285});
         }

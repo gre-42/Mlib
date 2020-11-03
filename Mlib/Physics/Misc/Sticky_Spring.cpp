@@ -7,6 +7,7 @@ void StickySpring::update_position(
     const FixedArray<float, 3>& position,
     float spring_constant,
     float stiction_force,
+    float friction_force,
     const FixedArray<float, 3>* normal,
     FixedArray<float, 3>& force,
     bool& slipping)
@@ -38,7 +39,7 @@ void StickySpring::update_position(
         //     stiction_force << " | " <<
         //     d2 << std::endl;
         // std::cerr << "y " << std::sqrt(sum(squared(d * stiction_force))) << " | " << d * stiction_force << std::endl;
-        force = d * stiction_force;
+        force = d * friction_force;
     } else {
         slipping = false;
         // std::cerr << "x " << std::sqrt(sum(squared(dir * spring_constant))) << " | " << dir * spring_constant << std::endl;

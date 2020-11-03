@@ -10,6 +10,7 @@ public:
         const FixedArray<float, 3>& position,
         float spring_constant,
         float stiction_force,
+        float friction_force,
         const FixedArray<float, 3>* normal,
         FixedArray<float, 3>& force,
         bool& slipping);

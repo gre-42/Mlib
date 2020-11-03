@@ -18,7 +18,8 @@ StickyWheel::StickyWheel(
   next_spring_{0},
   w_{0},
   angle_x_{0},
-  sum_stiction_force_{0}
+  sum_stiction_force_{0},
+  sum_friction_force_{0}
 {
     if (springs_.size() < 2) {
         throw std::runtime_error("Need at least 2 springs");
@@ -30,7 +31,8 @@ void StickyWheel::notify_intersection(
     const FixedArray<float, 3>& translation,
     const FixedArray<float, 3>& pt_absolute,
     const FixedArray<float, 3>& normal,
-    float stiction_force)
+    float stiction_force,
+    float friction_force)
 {
     auto& s = springs_[next_spring_];
     s.active = true;
@@ -39,6 +41,7 @@ void StickyWheel::notify_intersection(
     s.spring.point_of_contact = pt_absolute;
     next_spring_ = (next_spring_ + 1) % springs_.size();
     sum_stiction_force_ += stiction_force;
+    sum_friction_force_ += friction_force;
 }
 
 void StickyWheel::update_position(
@@ -80,6 +83,7 @@ void StickyWheel::update_position(
                     abs_position,
                     spring_constant / (springs_.size() - 1),
                     sum_stiction_force_ / (springs_.size() - 1),
+                    sum_friction_force_ / (springs_.size() - 1),
                     &s.normal,
                     force,
                     slip);
@@ -100,6 +104,7 @@ void StickyWheel::update_position(
     // std::cerr << nslipping << " " << int(slipping) << std::endl;
     // std::cerr << "nactive " << nactive << std::endl;
     sum_stiction_force_ = 0;
+    sum_friction_force_ = 0;
     // std::cerr << 0.00135962 * power << " PS " << " F " << std::sqrt(sum(squared(force))) << std::endl;
 }
 

@@ -173,7 +173,8 @@ void HandleLineTriangleIntersection::handle()
                             i_.o1->get_abs_tire_position(i_.tire_id),
                             intersection_point_,
                             plane.normal_,
-                            i_.cfg.stiction_coefficient * force_n1);
+                            i_.cfg.stiction_coefficient * force_n1,
+                            i_.cfg.friction_coefficient * force_n1);
                         tangential_force = 0;
                     } else {
                         float P = i_.o1->consume_tire_surface_power(i_.tire_id);
