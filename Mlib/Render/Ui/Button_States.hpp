@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 #include <set>
 
 namespace Mlib {
@@ -10,6 +11,7 @@ public:
     void update_gamepad_state();
     GLFWgamepadstate gamepad_state;
     bool has_gamepad = false;
+    mutable std::mutex update_gamepad_state_mutex;
 private:
     std::set<int> keys_down_;
 };

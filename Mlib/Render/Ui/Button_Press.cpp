@@ -15,6 +15,7 @@ ButtonPress::ButtonPress(const ButtonStates& button_states)
 {}
 
 void ButtonPress::print(bool physical) const {
+    std::lock_guard lock{button_states_.update_gamepad_state_mutex};
     if (button_states_.has_gamepad) {
         std::cerr << std::endl;
         std::cerr << std::endl;
@@ -42,6 +43,7 @@ void ButtonPress::print(bool physical) const {
 }
 
 bool ButtonPress::key_down(const BaseKeyBinding& k) const {
+    std::lock_guard lock{button_states_.update_gamepad_state_mutex};
     return
         (!k.key.empty() && button_states_.get_key_down(glfw_keys.at(k.key))) ||
         (button_states_.has_gamepad && !k.gamepad_button.empty() && button_states_.gamepad_state.buttons[glfw_gamepad_buttons.at(k.gamepad_button)]) ||
@@ -72,6 +74,7 @@ float ButtonPress::key_alpha(const BaseKeyBinding& k, float max_duration) {
 }
 
 float ButtonPress::axis_beta(const BaseAxisBinding& k) {
+    std::lock_guard lock{button_states_.update_gamepad_state_mutex};
     if (!k.joystick_axis.empty()) {
         return button_states_.gamepad_state.axes[glfw_joystick_axes.at(k.joystick_axis)] * k.joystick_axis_sign;
     } else {
