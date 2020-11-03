@@ -46,6 +46,24 @@ int Mlib::safe_stoi(const std::string& s) {
     return res;
 }
 
+size_t Mlib::safe_stoz(const std::string& s) {
+    std::size_t idx;
+    size_t res;
+    try {
+        unsigned long ul = std::stoul(s, &idx);
+        res = ul;
+        if (res != ul) {
+            throw std::invalid_argument(s);
+        }
+    } catch (const std::invalid_argument&) {
+        throw std::invalid_argument("safe_stoz: \"" + s + '"');
+    }
+    if (idx != s.length()) {
+        throw std::invalid_argument("safe_stoz: \"" + s + '"');
+    }
+    return res;
+}
+
 bool Mlib::safe_stob(const std::string& s) {
     if (s == "0") {
         return false;
