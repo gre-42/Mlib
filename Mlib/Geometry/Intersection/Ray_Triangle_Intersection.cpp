@@ -9,10 +9,10 @@ using namespace Mlib;
  * Source: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
  */
 bool Mlib::ray_intersects_triangle(const FixedArray<float, 3>& ray_origin,
-                             const FixedArray<float, 3>& ray_vector,
-                             const FixedArray<FixedArray<float, 3>, 3>& triangle,
-                             FixedArray<float, 3>& intersection_point,
-                             float t_max)
+                                   const FixedArray<float, 3>& ray_vector,
+                                   const FixedArray<FixedArray<float, 3>, 3>& triangle,
+                                   FixedArray<float, 3>& intersection_point,
+                                   float t_max)
 {
     const float EPSILON = 0.0000001;
     const FixedArray<float, 3>& vertex0 = triangle(0);
