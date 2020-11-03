@@ -29,8 +29,11 @@ PhysicsLoop::PhysicsLoop(
             }
         }
         std::vector<FixedArray<float, 3>> beacons;
-        physics_engine.collide(beacons, false);  // false=burn_in
-        physics_engine.move_rigid_bodies(beacons);
+        for(size_t i = 0; i < physics_cfg.oversampling; ++i) {
+            beacons.clear();
+            physics_engine.collide(beacons, false);  // false=burn_in
+            physics_engine.move_rigid_bodies(beacons);
+        }
         {
             scene.delete_root_nodes(std::regex{"^beacon.*"});
             for(size_t i = 0; i < beacons.size(); ++i) {

@@ -313,7 +313,7 @@ void PhysicsEngine::move_rigid_bodies(std::vector<FixedArray<float, 3>>& beacons
         auto& o = *it++;
         if (o.rigid_body->mass() != INFINITY) {
             o.rigid_body->advance_time(
-                cfg_.dt,
+                cfg_.dt / cfg_.oversampling,
                 cfg_.min_acceleration,
                 cfg_.min_velocity,
                 cfg_.min_angular_velocity,
@@ -336,7 +336,7 @@ void PhysicsEngine::burn_in(float seconds) {
             e.second.set_surface_power(NAN);
         }
     }
-    for(float time = 0; time < seconds; time += cfg_.dt) {
+    for(float time = 0; time < seconds; time += cfg_.dt / cfg_.oversampling) {
         {
             std::vector<FixedArray<float, 3>> beacons;
             collide(beacons, true);  // true = burn_in

@@ -46,8 +46,8 @@ void HandleLineTriangleIntersection::handle()
         } else {
             v = (i_.o0->rbi_.v_ * i_.o0->mass() + i_.o1->rbi_.v_ * i_.o1->mass()) / (i_.o0->mass() + i_.o1->mass());
         }
-        auto a0 = (v - i_.o0->rbi_.v_) / i_.cfg.dt;
-        auto a1 = (v - i_.o1->rbi_.v_) / i_.cfg.dt;
+        auto a0 = (v - i_.o0->rbi_.v_) / (i_.cfg.dt / i_.cfg.oversampling);
+        auto a1 = (v - i_.o1->rbi_.v_) / (i_.cfg.dt / i_.cfg.oversampling);
         if (i_.o0->mass() != INFINITY) {
             i_.o0->integrate_force({i_.o0->mass() * a0, intersection_point_});
         }
@@ -128,7 +128,7 @@ void HandleLineTriangleIntersection::handle()
         }
         auto o11 = i_.o1->rbi_;
         o11.advance_time(
-            i_.cfg.dt,
+            i_.cfg.dt / i_.cfg.oversampling,
             i_.cfg.min_acceleration,
             i_.cfg.min_velocity,
             i_.cfg.min_angular_velocity);
@@ -187,7 +187,7 @@ void HandleLineTriangleIntersection::handle()
                             P,
                             i_.o1->mass(),
                             v3,
-                            i_.cfg.dt,
+                            i_.cfg.dt / i_.cfg.oversampling,
                             i_.cfg.alpha0,
                             i_.cfg.avoid_burnout);
                     }

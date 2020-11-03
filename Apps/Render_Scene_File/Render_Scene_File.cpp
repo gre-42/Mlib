@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
         "[--show_mouse_cursor] "
         "[--sticky_physics] "
         "[--no_bvh] "
+        "[--oversampling] "
         "[--verbose]",
         {"--wire_frame",
          "--no_cull_faces",
@@ -90,6 +91,7 @@ int main(int argc, char** argv) {
          "--show_mouse_cursor",
          "--sticky_physics",
          "--no_bvh",
+         "--oversampling",
          "--verbose"},
         {"--swap_interval",
          "--nsamples_msaa",
@@ -165,7 +167,7 @@ int main(int argc, char** argv) {
             scene_config.scene_graph_config = SceneGraphConfig{
                 min_distance_small: 1,
                 max_distance_small: safe_stof(args.named_value("--max_distance_small", "1000")),
-                aggregate_update_interval: (size_t)std::stoi(args.named_value("--aggregate_update_interval", "100"))};
+                aggregate_update_interval: safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
 
             scene_config.physics_engine_config = PhysicsEngineConfig{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")),
@@ -174,7 +176,8 @@ int main(int argc, char** argv) {
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "2")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
                 .sticky = args.has_named("--sticky_physics"),
-                .bvh = !args.has_named("--no_bvh")};
+                .bvh = !args.has_named("--no_bvh"),
+                .oversampling = safe_stoz(args.named_value("--oversampling", "10"))};
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;
