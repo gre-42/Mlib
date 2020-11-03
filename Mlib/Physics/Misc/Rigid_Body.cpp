@@ -100,7 +100,7 @@ void RigidBody::advance_time(
                 float dx_max = 0.1;
                 float w_max = dx_max / (t.second.sticky_wheel.radius() * dt);
                 // std::cerr << "dx " << dx << std::endl;
-                if ((P != 0) && (std::abs(P) > power_internal) && !slipping) {
+                if ((P != 0) && (std::abs(P) > -power_internal) && !slipping) {
                     float v = dot0d(velocity, power_axis);
                     if (sign(P) != sign(v) && std::abs(v) > hand_break_velocity) {
                         t.second.sticky_wheel.set_w(0);
