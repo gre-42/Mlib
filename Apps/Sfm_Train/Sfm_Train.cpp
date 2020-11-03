@@ -70,16 +70,16 @@ int main(int argc, char **argv) {
         const std::string cache_dir = args.named_value("--cache");
         const std::string image_dir = args.named_value("--source");
         ArrayShape chessboard_shape({
-            (size_t)safe_stoi(args.named_value("--chess_r")),
-            (size_t)safe_stoi(args.named_value("--chess_c"))});
+            safe_stoz(args.named_value("--chess_r")),
+            safe_stoz(args.named_value("--chess_c"))});
         run_reconstruction_pipeline(
             sfm_pipeline,
             cache_dir,
             image_dir,
             args.has_named("--load_cameras"),
             chessboard_shape,
-            args.has_named_value("--nimages") ? (size_t)safe_stoi(args.named_value("--nimages")) : SIZE_MAX,
-            args.has_named_value("--ncameras") ? (size_t)safe_stoi(args.named_value("--ncameras")) : SIZE_MAX,
+            args.has_named_value("--nimages") ? safe_stoz(args.named_value("--nimages")) : SIZE_MAX,
+            args.has_named_value("--ncameras") ? safe_stoz(args.named_value("--ncameras")) : SIZE_MAX,
             TemplatePatchPipelineConfig{
                 enable_dtam: !args.has_named("--no-dtam"),
                 track_using_dtam: !args.has_named("--no-dtam-tracking")});

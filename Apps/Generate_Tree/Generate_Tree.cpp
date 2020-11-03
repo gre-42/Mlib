@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error("Images do not have identical sizes");
         }
         auto filt = mask_gray;
-        for(size_t i = 0; i < (size_t)safe_stoi(args.named_value("--niter")); ++i) {
+        for(size_t i = 0; i < safe_stoz(args.named_value("--niter")); ++i) {
             filt = guided_filter(guidance_gray, filt, ArrayShape{b, b}, float(safe_stof(args.named_value("--eps"))));
         }
         PpmImage::from_float_rgb(clipped(Array<float>({filt, filt, filt}), 0.f, 1.f)).save_to_file(args.named_value("--output"));

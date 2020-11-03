@@ -1066,7 +1066,7 @@ void LoadScene::operator()(
                     color_mode: color_mode_from_string(match[3].str()),
                     histogram: fpath(match[4].str()),
                     mixed: match[5].str(),
-                    overlap_npixels: (size_t)safe_stoi(match[6].str()),
+                    overlap_npixels: safe_stoz(match[6].str()),
                     mean_color: OrderableFixedArray<float, 3>{
                         safe_stof(match[7].str()),
                         safe_stof(match[8].str()),

@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
                     name,
                     *scene_node,
                     SceneNodeResourceFilter{
-                        min_num: (size_t)safe_stoi(args.named_value("--min_num", "0")),
+                        min_num: safe_stoz(args.named_value("--min_num", "0")),
                         regex: std::regex{args.named_value("--regex", "")}});
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     Interp<float> interp{

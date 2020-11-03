@@ -117,18 +117,18 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 obj_normals.push_back(n);
             } else if (std::regex_match(line, match, line_reg)) {
                 // FixedArray<size_t, 3> vertex_ids{
-                //     (size_t)safe_stoi(match[1].str()),
-                //     (size_t)safe_stoi(match[2].str())};
+                //     safe_stoz(match[1].str()),
+                //     safe_stoz(match[2].str())};
                 // do nothing
             } else if (std::regex_match(line, match, face3_reg)) {
                 FixedArray<size_t, 3> vertex_ids{
-                    (size_t)safe_stoi(match[1].str()),
-                    (size_t)safe_stoi(match[4].str()),
-                    (size_t)safe_stoi(match[7].str())};
+                    safe_stoz(match[1].str()),
+                    safe_stoz(match[4].str()),
+                    safe_stoz(match[7].str())};
                 FixedArray<size_t, 3> uv_ids;
-                uv_ids(0) = (match[2].str() != "") ? (size_t)safe_stoi(match[2].str()) : SIZE_MAX;
-                uv_ids(1) = (match[5].str() != "") ? (size_t)safe_stoi(match[5].str()) : SIZE_MAX;
-                uv_ids(2) = (match[8].str() != "") ? (size_t)safe_stoi(match[8].str()) : SIZE_MAX;
+                uv_ids(0) = (match[2].str() != "") ? safe_stoz(match[2].str()) : SIZE_MAX;
+                uv_ids(1) = (match[5].str() != "") ? safe_stoz(match[5].str()) : SIZE_MAX;
+                uv_ids(2) = (match[8].str() != "") ? safe_stoz(match[8].str()) : SIZE_MAX;
                 assert_true(all(vertex_ids > size_t(0)));
                 assert_true(all(uv_ids > size_t(0)));
                 FixedArray<float, 3> n0;
@@ -144,9 +144,9 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     n2 = n;
                 } else {
                     FixedArray<size_t, 3> normal_ids{
-                        (size_t)safe_stoi(match[3].str()),
-                        (size_t)safe_stoi(match[6].str()),
-                        (size_t)safe_stoi(match[9].str())};
+                        safe_stoz(match[3].str()),
+                        safe_stoz(match[6].str()),
+                        safe_stoz(match[9].str())};
                     assert_true(all(normal_ids > size_t(0)));
                     n0 = obj_normals.at(normal_ids(0) - 1);
                     n1 = obj_normals.at(normal_ids(1) - 1);
@@ -170,15 +170,15 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{0, 1});
             } else if (std::regex_match(line, match, face4_reg)) {
                 FixedArray<size_t, 4> vertex_ids{
-                    (size_t)safe_stoi(match[1].str()),
-                    (size_t)safe_stoi(match[4].str()),
-                    (size_t)safe_stoi(match[7].str()),
-                    (size_t)safe_stoi(match[10].str())};
+                    safe_stoz(match[1].str()),
+                    safe_stoz(match[4].str()),
+                    safe_stoz(match[7].str()),
+                    safe_stoz(match[10].str())};
                 FixedArray<size_t, 4> uv_ids;
-                uv_ids(0) = (match[2].str() != "") ? (size_t)safe_stoi(match[2].str()) : SIZE_MAX;
-                uv_ids(1) = (match[5].str() != "") ? (size_t)safe_stoi(match[5].str()) : SIZE_MAX;
-                uv_ids(2) = (match[8].str() != "") ? (size_t)safe_stoi(match[8].str()) : SIZE_MAX;
-                uv_ids(3) = (match[11].str() != "") ? (size_t)safe_stoi(match[11].str()) : SIZE_MAX;
+                uv_ids(0) = (match[2].str() != "") ? safe_stoz(match[2].str()) : SIZE_MAX;
+                uv_ids(1) = (match[5].str() != "") ? safe_stoz(match[5].str()) : SIZE_MAX;
+                uv_ids(2) = (match[8].str() != "") ? safe_stoz(match[8].str()) : SIZE_MAX;
+                uv_ids(3) = (match[11].str() != "") ? safe_stoz(match[11].str()) : SIZE_MAX;
                 assert_true(all(vertex_ids > size_t(0)));
                 assert_true(all(uv_ids > size_t(0)));
                 FixedArray<float, 3> n0;
@@ -196,10 +196,10 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     n3 = n;
                 } else {
                     FixedArray<size_t, 4> normal_ids{
-                        (size_t)safe_stoi(match[3].str()),
-                        (size_t)safe_stoi(match[6].str()),
-                        (size_t)safe_stoi(match[9].str()),
-                        (size_t)safe_stoi(match[12].str())};
+                        safe_stoz(match[3].str()),
+                        safe_stoz(match[6].str()),
+                        safe_stoz(match[9].str()),
+                        safe_stoz(match[12].str())};
                     assert_true(all(normal_ids > size_t(0)));
                     n0 = obj_normals.at(normal_ids(0) - 1);
                     n1 = obj_normals.at(normal_ids(1) - 1);

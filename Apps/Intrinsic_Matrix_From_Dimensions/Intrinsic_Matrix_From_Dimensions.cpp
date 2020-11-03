@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
         (float)safe_stod(args.named_value("--sensor_size_y"))};
 
     ArrayShape image_shape{
-        (size_t)safe_stoi(args.named_value("--picture_rows")),
-        (size_t)safe_stoi(args.named_value("--picture_cols"))};
+        safe_stoz(args.named_value("--picture_rows")),
+        safe_stoz(args.named_value("--picture_cols"))};
 
     std::cout << intrinsic_matrix_from_dimensions(
         safe_stoi(args.named_value("--focal_length")),

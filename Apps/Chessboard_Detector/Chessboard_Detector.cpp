@@ -21,8 +21,8 @@ int main(int argc, char** argv) {
     detect_chessboard(
         image,
         ArrayShape{
-            (size_t)safe_stoi(args.named_value("--nrows")),
-            (size_t)safe_stoi(args.named_value("--ncols"))},
+            safe_stoz(args.named_value("--nrows")),
+            safe_stoz(args.named_value("--ncols"))},
         p_x,
         p_y,
         bmp);
