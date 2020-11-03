@@ -72,7 +72,7 @@ void StickyWheel::update_position(
                 s.active = false;
             } else {
                 // ++nactive;
-                beacons.push_back(abs_position);
+                // beacons.push_back(abs_position);
                 // beacons.push_back(s.spring.point_of_contact);
                 FixedArray<float, 3> force;
                 bool slip;
