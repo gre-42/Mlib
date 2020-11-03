@@ -109,6 +109,6 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyIntegrator& 
     ostr << "T " << rbi.T_ << std::endl;
     ostr << "rotation " << rbi.rotation_ << std::endl;
     ostr << "abs_com " << rbi.abs_com_ << std::endl;
-    ostr << "I_is_diagonal " << rbi.I_is_diagonal_ << std::endl;
+    ostr << "I_is_diagonal " << int(rbi.I_is_diagonal_) << std::endl;
     return ostr;
 }

@@ -47,7 +47,7 @@ struct RigidBodyIntegrator {
     FixedArray<float, 3, 3> rotation_;
     FixedArray<float, 3> abs_com_;
 
-    size_t I_is_diagonal_;
+    bool I_is_diagonal_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RigidBodyIntegrator& rbi);
