@@ -24,7 +24,7 @@ struct IntersectionScene {
     const PlaneNd<float, 3>& p0;
     const PhysicsEngineConfig& cfg;
     const SatTracker& st;
-    std::vector<FixedArray<float, 3>>& beacons;
+    std::list<FixedArray<float, 3>>& beacons;
     size_t tire_id;
     bool mesh0_two_sided;
     bool lines_are_normals;

@@ -149,11 +149,11 @@ void test_com() {
     r0->integrate_gravity({0, -9.8, 0});
     r1->integrate_gravity({0, -9.8, 0});
     {
-        std::vector<FixedArray<float, 3>> beacons;
+        std::list<FixedArray<float, 3>> beacons;
         r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.sticky, cfg.hand_break_velocity, beacons);
     }
     {
-        std::vector<FixedArray<float, 3>> beacons;
+        std::list<FixedArray<float, 3>> beacons;
         r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.sticky, cfg.hand_break_velocity, beacons);
     }
     
@@ -164,11 +164,11 @@ void test_com() {
     r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     {
-        std::vector<FixedArray<float, 3>> beacons;
+        std::list<FixedArray<float, 3>> beacons;
         r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.sticky, cfg.hand_break_velocity, beacons);
     }
     {
-        std::vector<FixedArray<float, 3>> beacons;
+        std::list<FixedArray<float, 3>> beacons;
         r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.sticky, cfg.hand_break_velocity, beacons);
     }
     assert_allclose(r0->rbi_.v_.to_array(), r1->rbi_.v_.to_array());
@@ -178,11 +178,11 @@ void test_com() {
         r0->velocity_at_position(com0).to_array(),
         r1->velocity_at_position(com1).to_array());
     {
-        std::vector<FixedArray<float, 3>> beacons;
+        std::list<FixedArray<float, 3>> beacons;
         r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.sticky, cfg.hand_break_velocity, beacons);
     }
     {
-        std::vector<FixedArray<float, 3>> beacons;
+        std::list<FixedArray<float, 3>> beacons;
         r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.sticky, cfg.hand_break_velocity, beacons);
     }
     assert_allclose(
@@ -225,7 +225,7 @@ void test_sticky_wheel() {
         sw.set_w(1.23);
         sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
         {
-            std::vector<FixedArray<float, 3>> beacons;
+            std::list<FixedArray<float, 3>> beacons;
             RigidBodyIntegrator rbi = rigid_cuboid_integrator(1e3, {1.f, 2.f, 3.f}, {0.f, 0.f, 0.5f});
             float power_internal;
             float power_external;

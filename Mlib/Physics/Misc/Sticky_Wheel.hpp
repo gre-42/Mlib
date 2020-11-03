@@ -39,7 +39,7 @@ public:
         float& power_external,
         float& moment,
         bool& slipping,
-        std::vector<FixedArray<float, 3>>& beacons);
+        std::list<FixedArray<float, 3>>& beacons);
     float radius() const;
     float w() const;
     void set_w(float w);

@@ -56,7 +56,7 @@ void StickyWheel::update_position(
     float& power_external,
     float& moment,
     bool& slipping,
-    std::vector<FixedArray<float, 3>>& beacons)
+    std::list<FixedArray<float, 3>>& beacons)
 {
     angle_x_ += w_ * dt;
     angle_x_ = std::fmod(angle_x_, 2 * M_PI);

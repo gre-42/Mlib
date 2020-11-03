@@ -40,7 +40,7 @@ public:
         float min_angular_velocity,
         bool sticky_physics,
         float hand_break_velocity,
-        std::vector<FixedArray<float, 3>>& beacons);
+        std::list<FixedArray<float, 3>>& beacons);
     float mass() const;
     FixedArray<float, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;

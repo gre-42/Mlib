@@ -45,7 +45,7 @@ static void handle_triangle_triangle_intersection(
     const CollisionTriangleSphere& t0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
-    std::vector<FixedArray<float, 3>>& beacons,
+    std::list<FixedArray<float, 3>>& beacons,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st)
 {
@@ -117,7 +117,7 @@ static void collide_triangle(
     const CollisionTriangleSphere& t0,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st,
-    std::vector<FixedArray<float, 3>>& beacons)
+    std::list<FixedArray<float, 3>>& beacons)
 {
     // Mesh-sphere <-> triangle-sphere intersection
     if (!msh1.mesh->intersects(t0.bounding_sphere)) {
@@ -185,7 +185,7 @@ static void collide_objects(
     const RigidBodyAndTransformedMeshes& o1,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st,
-    std::vector<FixedArray<float, 3>>& beacons)
+    std::list<FixedArray<float, 3>>& beacons)
 {
     if (o0.rigid_body == o1.rigid_body) {
         return;
@@ -219,7 +219,7 @@ static void collide_objects(
     }
 }
 
-void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool burn_in)
+void PhysicsEngine::collide(std::list<FixedArray<float, 3>>& beacons, bool burn_in)
 {
     std::erase_if(rigid_bodies_.transformed_objects_, [](const RigidBodyAndTransformedMeshes& rbtm){
         return (rbtm.rigid_body->mass() != INFINITY);
@@ -310,7 +310,7 @@ void PhysicsEngine::collide(std::vector<FixedArray<float, 3>>& beacons, bool bur
     }
 }
 
-void PhysicsEngine::move_rigid_bodies(std::vector<FixedArray<float, 3>>& beacons) {
+void PhysicsEngine::move_rigid_bodies(std::list<FixedArray<float, 3>>& beacons) {
     for(auto it = rigid_bodies_.objects_.begin(); it != rigid_bodies_.objects_.end(); ) {
         auto& o = *it++;
         if (o.rigid_body->mass() != INFINITY) {
@@ -340,7 +340,7 @@ void PhysicsEngine::burn_in(float seconds) {
     }
     for(float time = 0; time < seconds; time += cfg_.dt / cfg_.oversampling) {
         {
-            std::vector<FixedArray<float, 3>> beacons;
+            std::list<FixedArray<float, 3>> beacons;
             collide(beacons, true);  // true = burn_in
         }
         if (time < seconds / 2) {
@@ -349,7 +349,7 @@ void PhysicsEngine::burn_in(float seconds) {
             }
         }
         {
-            std::vector<FixedArray<float, 3>> beacons;
+            std::list<FixedArray<float, 3>> beacons;
             move_rigid_bodies(beacons);
         }
     }

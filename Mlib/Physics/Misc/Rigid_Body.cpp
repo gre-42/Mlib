@@ -64,7 +64,7 @@ void RigidBody::advance_time(
     float min_angular_velocity,
     bool sticky_physics,
     float hand_break_velocity,
-    std::vector<FixedArray<float, 3>>& beacons)
+    std::list<FixedArray<float, 3>>& beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
     if (sticky_physics) {

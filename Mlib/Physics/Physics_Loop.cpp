@@ -28,7 +28,7 @@ PhysicsLoop::PhysicsLoop(
                 break;
             }
         }
-        std::vector<FixedArray<float, 3>> beacons;
+        std::list<FixedArray<float, 3>> beacons;
         for(size_t i = 0; i < physics_cfg.oversampling; ++i) {
             beacons.clear();
             physics_engine.collide(beacons, false);  // false=burn_in
@@ -36,11 +36,13 @@ PhysicsLoop::PhysicsLoop(
         }
         {
             scene.delete_root_nodes(std::regex{"^beacon.*"});
-            for(size_t i = 0; i < beacons.size(); ++i) {
+            size_t i = 0;
+            for(const auto& beacon : beacons) {
                 scene.add_root_node("beacon" + std::to_string(i), new SceneNode);
                 scene_node_resources.instantiate_renderable("beacon", "box", *scene.get_node("beacon" + std::to_string(i)), SceneNodeResourceFilter{});
-                scene.get_node("beacon" + std::to_string(i))->set_position(beacons[i]);
+                scene.get_node("beacon" + std::to_string(i))->set_position(beacon);
                 // scene.get_node("beacon" + std::to_string(i))->set_scale(0.05);
+                ++i;
             }
         }
         {
