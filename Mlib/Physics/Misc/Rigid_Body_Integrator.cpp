@@ -96,3 +96,19 @@ float RigidBodyIntegrator::energy() const {
     // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
     return 0.5f * (mass_ * sum(squared(v_)) + dot0d(w_, dot1d(abs_I(), w_)));
 }
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyIntegrator& rbi) {
+    ostr << "RigidBodyIntegrator" << std::endl;
+    ostr << "mass " << rbi.mass_ << std::endl;
+    ostr << "L " << rbi.L_ << std::endl;
+    ostr << "I " << rbi.I_ << std::endl;
+    ostr << "com " << rbi.com_ << std::endl;
+    ostr << "v " << rbi.v_ << std::endl;
+    ostr << "w " << rbi.w_ << std::endl;
+    ostr << "a " << rbi.a_ << std::endl;
+    ostr << "T " << rbi.T_ << std::endl;
+    ostr << "rotation " << rbi.rotation_ << std::endl;
+    ostr << "abs_com " << rbi.abs_com_ << std::endl;
+    ostr << "I_is_diagonal " << rbi.I_is_diagonal_ << std::endl;
+    return ostr;
+}

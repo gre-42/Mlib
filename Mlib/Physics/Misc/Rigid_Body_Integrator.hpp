@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <iosfwd>
 
 namespace Mlib {
 
@@ -48,5 +49,7 @@ struct RigidBodyIntegrator {
 
     size_t I_is_diagonal_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const RigidBodyIntegrator& rbi);
 
 }
