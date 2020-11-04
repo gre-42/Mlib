@@ -101,7 +101,7 @@ void StickyWheel::update_position(
             bool slip;
             s.spring.update_position(
                 abs_position,
-                spring_constant,
+                spring_constant / springs_.size(),
                 sum_stiction_force_ / nactive,
                 sum_friction_force_ / nactive,
                 &s.normal,
@@ -126,7 +126,7 @@ void StickyWheel::update_position(
     // std::cerr << nslipping << " " << nactive << std::endl;
     slipping = (nslipping >= nactive / 2);
     if (slipping) {
-        // beacons.push_back(translation);
+        beacons.push_back(translation);
         if (false) {
             static size_t ct = 0;
             ++ct;
