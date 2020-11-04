@@ -104,7 +104,7 @@ public:
     template <class TData>
     void draw_path(const std::vector<TData>& x, const std::vector<TData>& y, size_t down_sampling = 1) {
         if (x.size() != y.size()) {
-            throw std::runtime_error("Size mismatch in draw_polygon");
+            throw std::runtime_error("Size mismatch in draw_path");
         }
         PathDrawer pd{ostr_};
         for(size_t i = 0; i < x.size(); i += down_sampling) {
