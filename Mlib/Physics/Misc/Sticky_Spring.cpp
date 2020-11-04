@@ -32,6 +32,7 @@ void StickySpring::update_position(
         }
         // auto vv = point_of_contact - position;
         // vv -= (*normal) * dot0d(vv, *normal);
+        // std::cerr << "-- " << std::sqrt(sum(squared(vv))) << " " << stiction_force / spring_constant << std::endl;
         // std::cerr << "-- " <<
         //     std::sqrt(sum(squared(vv))) * spring_constant << " " <<
         //     stiction_force << " | " <<

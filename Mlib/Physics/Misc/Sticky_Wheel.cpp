@@ -35,14 +35,26 @@ void StickyWheel::notify_intersection(
     float stiction_force,
     float friction_force)
 {
-    auto& s = springs_[next_spring_];
-    s.active = true;
-    s.position = dot1d(rotation.T(), pt_absolute - translation);
-    s.normal = normal;
-    s.spring.point_of_contact = pt_absolute;
-    next_spring_ = (next_spring_ + 1) % springs_.size();
     sum_stiction_force_ += stiction_force;
     sum_friction_force_ += friction_force;
+    SpringExt* ps;
+    auto sit = std::find_if(springs_.begin(), springs_.end(), [](SpringExt& s){return !s.active;});
+    if (sit == springs_.end()) {
+        for(auto& s : springs_) {
+            FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
+            if (sum(squared(abs_position - pt_absolute)) < squared(0.02)) {
+                return;
+            }
+        }
+        ps = &springs_[next_spring_];
+        next_spring_ = (next_spring_ + 1) % springs_.size();
+    } else {
+        ps = &*sit;
+    }
+    ps->active = true;
+    ps->position = dot1d(rotation.T(), pt_absolute - translation);
+    ps->normal = normal;
+    ps->spring.point_of_contact = pt_absolute;
 }
 
 void StickyWheel::update_position(
@@ -65,7 +77,17 @@ void StickyWheel::update_position(
     power_internal = 0;
     power_external = 0;
     moment = 0;
-    // size_t nactive = 0;
+    size_t nactive = 0;
+    for(auto& s : springs_) {
+        if (s.active) {
+            FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
+            if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
+                s.active = false;
+            } else {
+                ++nactive;
+            }
+        }
+    }
     size_t nslipping = 0;
     for(auto& s : springs_) {
         if (s.active) {
@@ -73,18 +95,18 @@ void StickyWheel::update_position(
             FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
             // std::cerr << "d " << abs_position << " | " << s.spring.point_of_contact << " | " << (abs_position - s.spring.point_of_contact) << std::endl;
             if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
+                // std::cerr << abs_position << " | " << s.spring.point_of_contact << std::endl;
                 s.active = false;
             } else {
-                // ++nactive;
                 // beacons.push_back(abs_position);
                 // beacons.push_back(s.spring.point_of_contact);
                 FixedArray<float, 3> force;
                 bool slip;
                 s.spring.update_position(
                     abs_position,
-                    spring_constant / (springs_.size() - 1),
-                    sum_stiction_force_ / (springs_.size() - 1),
-                    sum_friction_force_ / (springs_.size() - 1),
+                    spring_constant,
+                    sum_stiction_force_ / nactive,
+                    sum_friction_force_ / nactive,
                     &s.normal,
                     force,
                     slip);
@@ -98,15 +120,17 @@ void StickyWheel::update_position(
                 power_internal += cmoment * w_;
                 power_external -= dot0d(force, velocity);
                 s.position = dot1d(dr, s.position);
-                // if (slip) {
-                //     beacons.push_back(abs_position);
-                // }
+                if (slip) {
+                    beacons.push_back(abs_position);
+                    beacons.push_back(s.spring.point_of_contact);
+                }
             }
         }
     }
-    slipping = (nslipping >= springs_.size() / 2);
+    // std::cerr << nslipping << " " << nactive << std::endl;
+    slipping = (nslipping >= nactive / 2);
     if (slipping) {
-        beacons.push_back(translation);
+        // beacons.push_back(translation);
         if (false) {
             static size_t ct = 0;
             ++ct;
