@@ -82,6 +82,7 @@ void StickyWheel::update_position(
         if (s.active) {
             FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
             if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
+                // std::cerr << abs_position << " | " << s.spring.point_of_contact << std::endl;
                 s.active = false;
             } else {
                 ++nactive;
@@ -94,36 +95,31 @@ void StickyWheel::update_position(
             // std::cerr << "v " << std::sqrt(sum(squared(s.position))) * w_ * 3.6 << std::endl;
             FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
             // std::cerr << "d " << abs_position << " | " << s.spring.point_of_contact << " | " << (abs_position - s.spring.point_of_contact) << std::endl;
-            if (sum(squared(abs_position - s.spring.point_of_contact)) > squared(max_dist_)) {
-                // std::cerr << abs_position << " | " << s.spring.point_of_contact << std::endl;
-                s.active = false;
-            } else {
-                // beacons.push_back(abs_position);
-                // beacons.push_back(s.spring.point_of_contact);
-                FixedArray<float, 3> force;
-                bool slip;
-                s.spring.update_position(
-                    abs_position,
-                    spring_constant,
-                    sum_stiction_force_ / nactive,
-                    sum_friction_force_ / nactive,
-                    &s.normal,
-                    force,
-                    slip);
-                nslipping += slip;
-                rbi.integrate_force({vector: force, position: s.spring.point_of_contact});
-                // W = F * s
-                // dW/dt = F * ds/dt
-                // P = F * v
-                float cmoment = dot0d(force, power_axis) * std::sqrt(sum(squared(s.position)));
-                moment += cmoment;
-                power_internal += cmoment * w_;
-                power_external -= dot0d(force, velocity);
-                s.position = dot1d(dr, s.position);
-                if (slip) {
-                    beacons.push_back(abs_position);
-                    beacons.push_back(s.spring.point_of_contact);
-                }
+            // beacons.push_back(abs_position);
+            // beacons.push_back(s.spring.point_of_contact);
+            FixedArray<float, 3> force;
+            bool slip;
+            s.spring.update_position(
+                abs_position,
+                spring_constant,
+                sum_stiction_force_ / nactive,
+                sum_friction_force_ / nactive,
+                &s.normal,
+                force,
+                slip);
+            nslipping += slip;
+            rbi.integrate_force({vector: force, position: s.spring.point_of_contact});
+            // W = F * s
+            // dW/dt = F * ds/dt
+            // P = F * v
+            float cmoment = dot0d(force, power_axis) * std::sqrt(sum(squared(s.position)));
+            moment += cmoment;
+            power_internal += cmoment * w_;
+            power_external -= dot0d(force, velocity);
+            s.position = dot1d(dr, s.position);
+            if (slip) {
+                beacons.push_back(abs_position);
+                beacons.push_back(s.spring.point_of_contact);
             }
         }
     }
