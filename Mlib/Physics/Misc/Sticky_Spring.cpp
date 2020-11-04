@@ -22,17 +22,14 @@ void StickySpring::update_position(
         // stiction_force = ||p-c||*k
         // => ||p-c|| = stiction_force/k
         FixedArray<float, 3> d = dir / std::sqrt(d2);
-        FixedArray<float, 3> new_point_of_contact = position - d * (stiction_force / spring_constant);
         if (normal != nullptr) {
-            float off = dot0d(*normal, point_of_contact);
-            float alpha = off - dot0d(*normal, new_point_of_contact);
-            point_of_contact = new_point_of_contact + alpha * (*normal);
+            point_of_contact -= dir + d * (stiction_force / spring_constant);
         } else {
-            point_of_contact = new_point_of_contact;
+            point_of_contact = position - d * (stiction_force / spring_constant);
         }
         // auto vv = point_of_contact - position;
         // vv -= (*normal) * dot0d(vv, *normal);
-        // std::cerr << "-- " << std::sqrt(sum(squared(vv))) << " " << stiction_force / spring_constant << std::endl;
+        // std::cerr << "-- " << std::sqrt(sum(squared(vv))) << " " << stiction_force / spring_constant << " | " << d * friction_force << std::endl;
         // std::cerr << "-- " <<
         //     std::sqrt(sum(squared(vv))) * spring_constant << " " <<
         //     stiction_force << " | " <<
