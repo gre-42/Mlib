@@ -1,5 +1,6 @@
 #include "Sticky_Wheel.hpp"
 #include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
@@ -103,7 +104,44 @@ void StickyWheel::update_position(
             }
         }
     }
-    slipping = (nslipping > springs_.size() / 2);
+    slipping = (nslipping >= springs_.size() / 2);
+    if (slipping) {
+        beacons.push_back(translation);
+        if (false) {
+            static size_t ct = 0;
+            ++ct;
+            std::cerr << "ct " << ct << std::endl;
+            if (ct > 14000) {
+                std::ofstream svg_file{"/tmp/springs.svg"};
+                Svg svg{svg_file, 500, 500};
+                std::vector<float> x;
+                std::vector<float> y;
+                for(auto& s : springs_) {
+                    if (s.active) {
+                        FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
+                        x.push_back(abs_position(0));
+                        y.push_back(abs_position(2));
+                    }
+                }
+                svg.plot(x, y);
+                svg.finish();
+            }
+            if (ct > 14000) {
+                std::ofstream svg_file{"/tmp/springs2.svg"};
+                Svg svg{svg_file, 500, 500};
+                std::vector<float> x;
+                std::vector<float> y;
+                for(auto& s : springs_) {
+                    if (s.active) {
+                        x.push_back(s.spring.point_of_contact(0));
+                        y.push_back(s.spring.point_of_contact(2));
+                    }
+                }
+                svg.plot(x, y);
+                svg.finish();
+            }
+        }
+    }
     // std::cerr << nslipping << " " << int(slipping) << std::endl;
     // std::cerr << "nactive " << nactive << std::endl;
     sum_stiction_force_ = 0;
