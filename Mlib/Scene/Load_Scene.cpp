@@ -639,11 +639,11 @@ void LoadScene::operator()(
                 linker.link_relative_movable(*scene.get_node(node), wheel);
             }
             {
-                auto ep = rb->engines_.find(engine);
-                if (ep == rb->engines_.end()) {
+                if (auto ep = rb->engines_.find(engine); ep == rb->engines_.end()) {
                     throw std::runtime_error("Could not find engine with name " + engine);
+                } else {
+                    ep->second.increment_ntires();
                 }
-                ep->second.increment_ntires();
                 // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
                 // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
 
