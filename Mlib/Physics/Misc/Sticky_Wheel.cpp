@@ -73,7 +73,7 @@ void StickyWheel::update_position(
 {
     angle_x_ += w_ * dt;
     angle_x_ = std::fmod(angle_x_, 2 * M_PI);
-    FixedArray<float, 3, 3> dr = rodrigues(rotation_axis_, w_ * dt);
+    // FixedArray<float, 3, 3> dr = rodrigues(rotation_axis_, w_ * dt);
     power_internal = 0;
     power_external = 0;
     moment = 0;
@@ -116,8 +116,8 @@ void StickyWheel::update_position(
             moment += cmoment;
             power_internal += cmoment * w_;
             power_external -= dot0d(force, velocity);
-            s.position = dot1d(dr, s.position);
-            // s.position -= FixedArray<float, 3>{0, 0, 1} * w_ * radius_ * dt;
+            // s.position = dot1d(dr, s.position);
+            s.position -= FixedArray<float, 3>{0, 0, 1} * w_ * radius_ * dt;
             if (slip) {
                 beacons.push_back(abs_position);
                 beacons.push_back(s.spring.point_of_contact);
