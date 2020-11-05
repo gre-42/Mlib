@@ -10,12 +10,15 @@ public:
     : alpha_{alpha},
       s_{x0}
     {}
-    TData operator () (const TData& x) {
+    const TData& operator () (const TData& x) {
         if (std::isnan(s_)) {
             s_ = x;
         } else {
             s_ = (1 - alpha_) * s_ + alpha_ * x;
         }
+        return s_;
+    }
+    const TData& xhat() const {
         return s_;
     }
 private:

@@ -26,13 +26,13 @@ public:
      * ----------
      *     http://wiki.scipy.org/Cookbook/KalmanFiltering
      */
-    KalmanFilter(const TData& Q=1e-5, const TData& R=1e-2, const TData& P=1, const TData& xhat=NAN)
+    explicit KalmanFilter(const TData& Q=1e-5, const TData& R=1e-2, const TData& P=1, const TData& xhat=NAN)
     : Q_{Q},
       R_{R},
       P_{P},
       xhat_{xhat}
     {}
-    TData operator () (const TData& z) {
+    const TData& operator () (const TData& z) {
         if (std::isnan(xhat_)) {
             xhat_ = z;  // a posteri estimate of x
         } else {
@@ -45,6 +45,9 @@ public:
             xhat_ = xhatminus + K * (z - xhatminus);
             P_ = (1 - K) * Pminus;
         }
+        return xhat_;
+    }
+    const TData& xhat() const {
         return xhat_;
     }
 private:
