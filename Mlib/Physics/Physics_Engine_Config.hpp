@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Physics/Physics_Type.hpp>
 #include <cmath>
 
 namespace Mlib {
@@ -25,7 +26,7 @@ struct PhysicsEngineConfig {
     float wheel_penetration_depth = 0.25;  // (penetration depth) + (shock absorber) = 0.2
     float static_radius = 200;
     Interp<float> outness_fac_interp{{-0.5, 1}, {2000, 0}, OutOfRangeBehavior::CLAMP};
-    bool sticky = false;
+    PhysicsType physics_type = PhysicsType::VERSION1;
     bool bvh = true;
     size_t oversampling = 20;
 };

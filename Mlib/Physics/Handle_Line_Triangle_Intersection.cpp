@@ -166,7 +166,7 @@ void HandleLineTriangleIntersection::handle()
                 n3 -= plane.normal_ * dot0d(plane.normal_, n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
-                    if (i_.cfg.sticky) {
+                    if (i_.cfg.physics_type == PhysicsType::N_SPRINGS) {
                         StickyWheel& sw = i_.o1->get_tire_sticky_wheel(i_.tire_id);
                         sw.notify_intersection(
                             i_.o1->get_abs_tire_rotation_matrix(i_.tire_id),
@@ -176,7 +176,7 @@ void HandleLineTriangleIntersection::handle()
                             i_.cfg.stiction_coefficient * force_n1,
                             i_.cfg.friction_coefficient * force_n1);
                         tangential_force = 0;
-                    } else {
+                    } else if (i_.cfg.physics_type == PhysicsType::VERSION1) {
                         float P = i_.o1->consume_tire_surface_power(i_.tire_id);
                         tangential_force = power_to_force_infinite_mass(
                             i_.o1->get_tire_break_force(i_.tire_id),
@@ -191,6 +191,10 @@ void HandleLineTriangleIntersection::handle()
                             i_.cfg.dt / i_.cfg.oversampling,
                             i_.cfg.alpha0,
                             i_.cfg.avoid_burnout);
+                    } else if (i_.cfg.physics_type == PhysicsType::TWO_SPRINGS) {
+                        throw std::runtime_error("Not yet implemented");
+                    } else {
+                        throw std::runtime_error("Unknown physics type");
                     }
                 } else {
                     tangential_force = 0;

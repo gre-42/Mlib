@@ -11,7 +11,7 @@ Wheel::Wheel(
     AdvanceTimes& advance_times,
     size_t tire_id,
     float radius,
-    bool sticky_physics)
+    PhysicsType physics_type)
 : rigid_body_{rigid_body},
   advance_times_{advance_times},
   position_{fixed_nans<float, 3>()},
@@ -20,7 +20,7 @@ Wheel::Wheel(
   angle_x_{0},
   radius_{radius},
   y0_{NAN},
-  sticky_physics_{sticky_physics}
+  physics_type_{physics_type}
 {}
 
 void Wheel::set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix)
@@ -50,11 +50,11 @@ void Wheel::advance_time(float dt) {
     if (auto it = rigid_body_.tires_.find(tire_id_); it != rigid_body_.tires_.end()) {
         tire_angles(1) = it->second.angle;
         position_(1) = y0_ + it->second.shock_absorber.position();
-        if (sticky_physics_) {
+        if (physics_type_ == PhysicsType::N_SPRINGS) {
             angle_x_ = it->second.sticky_wheel.angle_x();
         }
     }
-    if (!sticky_physics_) {
+    if (physics_type_ == PhysicsType::VERSION1) {
         angle_x_ += dot0d(rigid_body_.rbi_.v_, rigid_body_.rbi_.abs_z()) * dt / radius_;
         angle_x_ = std::fmod(angle_x_, 2 * M_PI);
     }

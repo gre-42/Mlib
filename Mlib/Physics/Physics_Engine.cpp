@@ -319,7 +319,7 @@ void PhysicsEngine::move_rigid_bodies(std::list<FixedArray<float, 3>>& beacons) 
                 cfg_.min_acceleration,
                 cfg_.min_velocity,
                 cfg_.min_angular_velocity,
-                cfg_.sticky,
+                cfg_.physics_type,
                 cfg_.hand_break_velocity,
                 beacons);
         }

@@ -62,12 +62,12 @@ void RigidBody::advance_time(
     float min_acceleration,
     float min_velocity,
     float min_angular_velocity,
-    bool sticky_physics,
+    PhysicsType physics_type,
     float hand_break_velocity,
     std::list<FixedArray<float, 3>>& beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
-    if (sticky_physics) {
+    if (physics_type == PhysicsType::N_SPRINGS) {
         for(auto& t : tires_) {
             FixedArray<float, 3, 3> rotation = get_abs_tire_rotation_matrix(t.first);
             FixedArray<float, 3> position = get_abs_tire_position(t.first);

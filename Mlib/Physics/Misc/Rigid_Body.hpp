@@ -38,7 +38,7 @@ public:
         float min_acceleration,
         float min_velocity,
         float min_angular_velocity,
-        bool sticky_physics,
+        PhysicsType physics_type,
         float hand_break_velocity,
         std::list<FixedArray<float, 3>>& beacons);
     float mass() const;

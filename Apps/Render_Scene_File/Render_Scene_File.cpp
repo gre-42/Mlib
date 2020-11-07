@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
         "[--no_render] "
         "[--print_gamepad_buttons] "
         "[--show_mouse_cursor] "
-        "[--sticky_physics] "
+        "[--physics_type {version1, n_springs, two_springs}] "
         "[--no_bvh] "
         "[--oversampling] "
         "[--verbose]",
@@ -89,7 +89,6 @@ int main(int argc, char** argv) {
          "--no_render",
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
-         "--sticky_physics",
          "--no_bvh",
          "--verbose"},
         {"--swap_interval",
@@ -103,6 +102,7 @@ int main(int argc, char** argv) {
          "--black_lightmap_width",
          "--black_lightmap_height",
          "--physics_dt",
+         "--physics_type",
          "--oversampling",
          "--render_dt",
          "--damping",
@@ -175,7 +175,7 @@ int main(int argc, char** argv) {
                 .damping = safe_stof(args.named_value("--damping", "0.00091188")),
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "2")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
-                .sticky = args.has_named("--sticky_physics"),
+                .physics_type = physics_type_from_string(args.named_value("--physics_type", "version1")),
                 .bvh = !args.has_named("--no_bvh"),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "20"))};
 

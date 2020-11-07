@@ -635,7 +635,7 @@ void LoadScene::operator()(
                     physics_engine.advance_times_,
                     tire_id,
                     radius,
-                    physics_engine_config.sticky);
+                    physics_engine_config.physics_type);
                 linker.link_relative_movable(*scene.get_node(node), wheel);
             }
             {
