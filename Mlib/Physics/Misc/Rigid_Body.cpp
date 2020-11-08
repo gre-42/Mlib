@@ -67,7 +67,7 @@ void RigidBody::advance_time(
     std::list<FixedArray<float, 3>>& beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
-    if (physics_type == PhysicsType::N_SPRINGS) {
+    if (physics_type == PhysicsType::STICKY_SPRINGS) {
         for(auto& t : tires_) {
             FixedArray<float, 3, 3> rotation = get_abs_tire_rotation_matrix(t.first);
             FixedArray<float, 3> position = get_abs_tire_position(t.first);
@@ -114,6 +114,58 @@ void RigidBody::advance_time(
                         t.second.sticky_wheel.set_w(std::max(-w_max, t.second.sticky_wheel.w() - 0.5f));
                     } else if (moment > 0) {
                         t.second.sticky_wheel.set_w(std::min(w_max, t.second.sticky_wheel.w() + 0.5f));
+                    }
+                }
+            }
+        }
+    }
+    if (physics_type == PhysicsType::TRACKING_SPRINGS) {
+        for(auto& t : tires_) {
+            FixedArray<float, 3, 3> rotation = get_abs_tire_rotation_matrix(t.first);
+            FixedArray<float, 3> position = get_abs_tire_position(t.first);
+            FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
+            FixedArray<float, 3> velocity = velocity_at_position(position);
+            float spring_constant = 1e6;
+            float power_internal;
+            float power_external;
+            float moment;
+            bool slipping;
+            t.second.tracking_wheel.update_position(
+                rotation,
+                position,
+                power_axis,
+                velocity,
+                spring_constant,
+                dt,
+                rbi_,
+                power_internal,
+                power_external,
+                moment,
+                slipping,
+                beacons);
+            // static float spower = 0;
+            // spower = 0.99 * spower + 0.01 * power;
+            // std::cerr << "rb force " << force << std::endl;
+            float P = consume_tire_surface_power(t.first);
+            // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
+            if (!std::isnan(P)) {
+                float dx_max = 0.1;
+                float w_max = dx_max / (t.second.tracking_wheel.radius() * dt);
+                // std::cerr << "dx " << dx << std::endl;
+                if ((P != 0) && (std::abs(P) > -power_internal) && !slipping) {
+                    float v = dot0d(velocity, power_axis);
+                    if (sign(P) != sign(v) && std::abs(v) > hand_break_velocity) {
+                        t.second.tracking_wheel.set_w(0);
+                    } else if (P > 0) {
+                        t.second.tracking_wheel.set_w(std::max(-w_max, t.second.tracking_wheel.w() - 0.5f));
+                    } else if (P < 0) {
+                        t.second.tracking_wheel.set_w(std::min(w_max, t.second.tracking_wheel.w() + 0.5f));
+                    }
+                } else {
+                    if (moment < 0) {
+                        t.second.tracking_wheel.set_w(std::max(-w_max, t.second.tracking_wheel.w() - 0.5f));
+                    } else if (moment > 0) {
+                        t.second.tracking_wheel.set_w(std::min(w_max, t.second.tracking_wheel.w() + 0.5f));
                     }
                 }
             }
@@ -212,6 +264,10 @@ float RigidBody::get_tire_break_force(size_t id) const {
 
 StickyWheel& RigidBody::get_tire_sticky_wheel(size_t id) {
     return tires_.at(id).sticky_wheel;
+}
+
+TrackingWheel& RigidBody::get_tire_tracking_wheel(size_t id) {
+    return tires_.at(id).tracking_wheel;
 }
 
 FixedArray<float, 3> RigidBody::get_abs_tire_position(size_t id) const {

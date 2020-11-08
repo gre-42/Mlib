@@ -657,6 +657,7 @@ void LoadScene::operator()(
                         break_force,
                         ShockAbsorber{1e5, 2e3},
                         StickyWheel{{1.f, 0.f, 0.f}, radius, nsprings, max_dist},
+                        TrackingWheel{{1.f, 0.f, 0.f}, radius, nsprings, max_dist},
                         0,  // angle
                         position}});
                 if (!tp.second) {

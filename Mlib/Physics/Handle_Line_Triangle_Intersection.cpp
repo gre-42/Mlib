@@ -166,9 +166,19 @@ void HandleLineTriangleIntersection::handle()
                 n3 -= plane.normal_ * dot0d(plane.normal_, n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
-                    if (i_.cfg.physics_type == PhysicsType::N_SPRINGS) {
+                    if (i_.cfg.physics_type == PhysicsType::STICKY_SPRINGS) {
                         StickyWheel& sw = i_.o1->get_tire_sticky_wheel(i_.tire_id);
                         sw.notify_intersection(
+                            i_.o1->get_abs_tire_rotation_matrix(i_.tire_id),
+                            i_.o1->get_abs_tire_position(i_.tire_id),
+                            intersection_point_,
+                            plane.normal_,
+                            i_.cfg.stiction_coefficient * force_n1,
+                            i_.cfg.friction_coefficient * force_n1);
+                        tangential_force = 0;
+                    } else if (i_.cfg.physics_type == PhysicsType::TRACKING_SPRINGS) {
+                        TrackingWheel& tw = i_.o1->get_tire_tracking_wheel(i_.tire_id);
+                        tw.notify_intersection(
                             i_.o1->get_abs_tire_rotation_matrix(i_.tire_id),
                             i_.o1->get_abs_tire_position(i_.tire_id),
                             intersection_point_,
@@ -191,8 +201,6 @@ void HandleLineTriangleIntersection::handle()
                             i_.cfg.dt / i_.cfg.oversampling,
                             i_.cfg.alpha0,
                             i_.cfg.avoid_burnout);
-                    } else if (i_.cfg.physics_type == PhysicsType::TWO_SPRINGS) {
-                        throw std::runtime_error("Not yet implemented");
                     } else {
                         throw std::runtime_error("Unknown physics type");
                     }
