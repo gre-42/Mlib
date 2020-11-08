@@ -112,8 +112,7 @@ void TrackingWheel::update_position(
                 FixedArray<float, 3> abs_point_of_contact = dot1d(old_rotation_, s.spring.point_of_contact) + old_translation_;
                 FixedArray<float, 3> new_point_of_contact = dot1d(rotation.T(), abs_point_of_contact - translation);
                 FixedArray<float, 3> dir = new_point_of_contact - s.spring.point_of_contact;
-                FixedArray<float, 3> n = dot1d(rotation.T(), s.normal);
-                dir -= n * dot0d(dir, n);
+                dir -= s.normal * dot0d(dir, s.normal);
                 s.spring.point_of_contact += dir;
             }
             // std::cerr << "new " << s.spring.point_of_contact << std::endl;
@@ -148,7 +147,7 @@ void TrackingWheel::update_position(
             auto np = dot1d(rotation.T(), power_axis);
             np -= s.normal * dot0d(s.normal, np);
             if (float l2 = sum(squared(np)); l2 > 1e-9) {
-                np /= std::sqrt(sum(squared(np)));
+                np /= std::sqrt(l2);
                 s.spring.point_of_contact -= np * w_ * radius_ * dt;
             }
             // std::cerr << "new3 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
