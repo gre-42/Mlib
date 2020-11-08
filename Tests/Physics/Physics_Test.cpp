@@ -6,7 +6,7 @@
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
-#include <Mlib/Physics/Misc/Sticky_Wheel.hpp>
+#include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Power_To_Force.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -208,23 +208,23 @@ void test_sticky_spring() {
         1e-5);
 }
 
-void test_sticky_wheel() {
+void test_tracking_wheel() {
     FixedArray<float, 3> rotation_axis{1, 0, 0};
     FixedArray<float, 3> power_axis{0, 0, 1};
     FixedArray<float, 3> velocity{0, 0, 1.2};
     size_t ntires = 10;
     float max_dist = 0.1;
     float radius = 2;
-    StickyWheel sw{rotation_axis, radius, ntires, max_dist};
+    float dt = 1.f / 60;
+    TrackingWheel tw{rotation_axis, radius, ntires, max_dist, dt};
     float spring_constant = 3e4;
     float stiction_force = 1e3;
     float friction_force = 1e2;
-    float dt = 1.f / 60;
     {
         FixedArray<float, 3, 3> rotation = rodrigues<float>({0, 1, 0}, 0.f);
         FixedArray<float, 3> translation = {0.f, 0.f, 0.f};
-        sw.set_w(1.23);
-        sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
+        tw.set_w(1.23);
+        tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
         {
             std::list<FixedArray<float, 3>> beacons;
             RigidBodyIntegrator rbi = rigid_cuboid_integrator(1e3, {1.f, 2.f, 3.f}, {0.f, 0.f, 0.5f});
@@ -232,11 +232,11 @@ void test_sticky_wheel() {
             float power_external;
             float moment;
             bool slipping;
-            sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
+            tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
             assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, 0});
-            sw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
-            sw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
-            assert_allclose(rbi.a_.to_array(), Array<float>{0, -0.000700355, 0.0683285});
+            tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
+            tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
+            assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, -0.738615});
         }
     }
 }
@@ -253,6 +253,6 @@ int main(int argc, const char** argv) {
     // test_power_to_force_stiction_tangential();
     test_com();
     test_sticky_spring();
-    test_sticky_wheel();
+    test_tracking_wheel();
     return 0;
 }

@@ -648,8 +648,7 @@ void LoadScene::operator()(
                 // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
 
                 // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-                size_t nsprings_sticky = 10;
-                size_t nsprings_track = 1;
+                size_t nsprings_tracking = 1;
                 float max_dist = 0.1;
                 auto tp = rb->tires_.insert({
                     tire_id,
@@ -657,15 +656,10 @@ void LoadScene::operator()(
                         engine,
                         break_force,
                         ShockAbsorber{1e5, 2e3},
-                        StickyWheel{
-                            {1.f, 0.f, 0.f},
-                            radius,
-                            nsprings_sticky,
-                            max_dist},
                         TrackingWheel{
                             {1.f, 0.f, 0.f},
                             radius,
-                            nsprings_track,
+                            nsprings_tracking,
                             max_dist,
                             physics_engine_config.dt / physics_engine_config.oversampling},
                         0,  // angle

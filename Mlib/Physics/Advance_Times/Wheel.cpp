@@ -50,9 +50,7 @@ void Wheel::advance_time(float dt) {
     if (auto it = rigid_body_.tires_.find(tire_id_); it != rigid_body_.tires_.end()) {
         tire_angles(1) = it->second.angle;
         position_(1) = y0_ + it->second.shock_absorber.position();
-        if (physics_type_ == PhysicsType::STICKY_SPRINGS) {
-            angle_x_ = it->second.sticky_wheel.angle_x();
-        } else if (physics_type_ == PhysicsType::TRACKING_SPRINGS) {
+        if (physics_type_ == PhysicsType::TRACKING_SPRINGS) {
             angle_x_ = it->second.tracking_wheel.angle_x();
         }
     }
