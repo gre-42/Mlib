@@ -125,7 +125,7 @@ void RigidBody::advance_time(
             FixedArray<float, 3> position = get_abs_tire_position(t.first);
             FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
             FixedArray<float, 3> velocity = velocity_at_position(position);
-            float spring_constant = 1e6;
+            float spring_constant = 1e4;
             float power_internal;
             float power_external;
             float moment;

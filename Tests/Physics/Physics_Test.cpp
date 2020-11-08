@@ -198,7 +198,8 @@ void test_sticky_spring() {
     FixedArray<float, 3> force;
     bool slipping;
     StickySpring s{
-        .point_of_contact = {1, 2, 3}
+        .point_of_contact = {1, 2, 3},
+        .pid = {1, 0, 0, 0}
     };
     s.update_position(position, spring_constant, stiction_force, friction_force, nullptr, force, slipping);
     assert_allclose(

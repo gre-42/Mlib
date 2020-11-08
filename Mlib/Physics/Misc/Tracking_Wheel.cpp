@@ -14,7 +14,7 @@ TrackingWheel::TrackingWheel(
     float max_dist)
 : rotation_axis_{rotation_axis},
   radius_{radius},
-  springs_(nsprings, TrackingSpring{.active = false}),
+  springs_(nsprings, TrackingSpring{.active = false, .spring{.pid{1, 0, 0, 0}}}),
   max_dist_{max_dist},
   next_spring_{0},
   w_{0},
@@ -36,14 +36,14 @@ void TrackingWheel::notify_intersection(
     sum_friction_force_ += friction_force;
     for(TrackingSpring& s : springs_) {
         if (s.active) {
-            if (sum(squared(s.position - s.spring.point_of_contact)) > squared(max_dist_)) {
+            if (false && sum(squared(s.position - s.spring.point_of_contact)) > squared(max_dist_)) {
                 s.active = false;
             } else if (
                 FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
-                sum(squared(abs_position - pt_absolute)) < squared(0.02))
+                true || sum(squared(abs_position - pt_absolute)) < squared(0.02))
             {
                 s.found = true;
-                s.position = dot1d(rotation.T(), pt_absolute - translation);
+                s.position = FixedArray<float, 3>{0, -radius_, 0};//dot1d(rotation.T(), pt_absolute - translation);
                 s.normal = dot1d(rotation.T(), normal);
                 return;
             }
@@ -53,7 +53,7 @@ void TrackingWheel::notify_intersection(
     if (sit != springs_.end()) {
         sit->active = true;
         sit->found = true;
-        sit->position = dot1d(rotation.T(), pt_absolute - translation);
+        sit->position = FixedArray<float, 3>{0, -radius_, 0};// dot1d(rotation.T(), pt_absolute - translation);
         sit->normal = dot1d(rotation.T(), normal);
         sit->spring.point_of_contact = sit->position;
     }
@@ -102,13 +102,22 @@ void TrackingWheel::update_position(
             // std::cerr << old_translation_ << std::endl;
             // std::cerr << "rotation" << std::endl;
             // std::cerr << rotation << std::endl;
+            // std::cerr << "translation" << std::endl;
+            // std::cerr << translation << std::endl;
             // std::cerr << "old " << s.spring.point_of_contact << std::endl;
-            FixedArray<float, 3> abs_point_of_contact = dot1d(old_rotation_, s.spring.point_of_contact) + old_translation_;
-            s.spring.point_of_contact = dot1d(rotation.T(), abs_point_of_contact - translation);
+            {
+                FixedArray<float, 3> abs_point_of_contact = dot1d(old_rotation_, s.spring.point_of_contact) + old_translation_;
+                FixedArray<float, 3> new_point_of_contact = dot1d(rotation.T(), abs_point_of_contact - translation);
+                FixedArray<float, 3> dir = new_point_of_contact - s.spring.point_of_contact;
+                FixedArray<float, 3> n = dot1d(rotation.T(), s.normal);
+                dir -= n * dot0d(dir, n);
+                s.spring.point_of_contact += dir;
+            }
             // std::cerr << "new " << s.spring.point_of_contact << std::endl;
             // std::cerr << "normal " << s.normal << std::endl;
             FixedArray<float, 3> force;
             bool slip;
+            // std::cerr << "old2 " << s.spring.point_of_contact << " | " << s.normal << " | " << s.position << std::endl;
             s.spring.update_position(
                 s.position,
                 spring_constant / springs_.size(),
@@ -117,7 +126,8 @@ void TrackingWheel::update_position(
                 &s.normal,
                 force,
                 slip);
-            std::cerr << "new2 " << s.spring.point_of_contact << std::endl;
+            // std::cerr << "new2 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
+            // assert_true(s.spring.point_of_contact(1) < 0);
             nslipping += slip;
             FixedArray<float, 3> abs_pos = dot1d(rotation, s.position) + translation;
             FixedArray<float, 3> abs_force = dot1d(rotation, force);
@@ -131,9 +141,15 @@ void TrackingWheel::update_position(
             power_external -= dot0d(abs_force, velocity);
             // std::cerr << "abs_poc1 " << dot1d(rotation, s.spring.point_of_contact) << std::endl;
             // std::cerr << "abs_poc2 " << dot1d(rotation, s.spring.point_of_contact - FixedArray<float, 3>{0, 0, 1} * w_ * radius_ * dt * 1000.f) << std::endl;
-            s.spring.point_of_contact -= FixedArray<float, 3>{0, 0, 1} * w_ * radius_ * dt;
+            auto np = dot1d(rotation.T(), power_axis);
+            np -= s.normal * dot0d(s.normal, np);
+            if (float l2 = sum(squared(np)); l2 > 1e-9 && false) {
+                np /= std::sqrt(sum(squared(np)));
+                s.spring.point_of_contact -= np * w_ * radius_ * dt;
+            }
+            // std::cerr << "new3 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
             if (slip) {
-                beacons.push_back(abs_point_of_contact);
+                beacons.push_back(dot1d(rotation, s.spring.point_of_contact) + translation);
                 beacons.push_back(abs_pos);
             }
         }

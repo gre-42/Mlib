@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Signal/Pid_Controller.hpp>
 
 
 namespace Mlib {
@@ -15,6 +16,7 @@ public:
         FixedArray<float, 3>& force,
         bool& slipping);
     FixedArray<float, 3> point_of_contact;
+    PidController<FixedArray<float, 3>, float> pid;
 };
 
 }

@@ -16,6 +16,7 @@ void StickySpring::update_position(
     if (normal != nullptr) {
         dir -= (*normal) * dot0d(dir, *normal);
     }
+    dir = pid(dir);
     // std::cerr << position << " | " << point_of_contact << " | " << (point_of_contact - position) << std::endl;
     if (float d2 = sum(squared(dir)); d2 > squared(stiction_force / spring_constant)) {
         slipping = true;
@@ -23,7 +24,7 @@ void StickySpring::update_position(
         // => ||p-c|| = stiction_force/k
         FixedArray<float, 3> d = dir / std::sqrt(d2);
         if (normal != nullptr) {
-            point_of_contact -= dir + d * (stiction_force / spring_constant);
+            // point_of_contact -= dir + d * (stiction_force / spring_constant);
         } else {
             point_of_contact = position - d * (stiction_force / spring_constant);
         }
