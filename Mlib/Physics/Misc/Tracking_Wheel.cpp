@@ -15,7 +15,7 @@ TrackingWheel::TrackingWheel(
     float dt)
 : rotation_axis_{rotation_axis},
   radius_{radius},
-  springs_(nsprings, TrackingSpring{.active = false, .spring = {.pid{0, 0.5, float(1e-1) / dt, 0.01}}}),
+  springs_(nsprings, TrackingSpring{.active = false, .spring = {.pid{1, 0, float(1e-1) / dt, 0}}}),
   max_dist_{max_dist},
   next_spring_{0},
   w_{0},
