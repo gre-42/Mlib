@@ -13,15 +13,14 @@ public:
       a_{a},
       I_(0)
     {}
-    const TData& operator () (const TData& e) {
+    TData operator () (const TData& e) {
         I_ = (1 - a_) * I_ + a_ * e;
-        if (!initialized_) {
-            e_old_ = e;
-            initialized_ = true;
-        } else {
-            e_old_ = p_ * e + i_ * I_ + d_ * (e - e_old_);
-        }
-        return e_old_;
+        TData result = initialized_
+            ? p_ * e + i_ * I_ + d_ * (e - e_old_)
+            : p_ * e + i_ * I_;
+        e_old_ = e;
+        initialized_ = true;
+        return result;
     }
 private:
     bool initialized_;
