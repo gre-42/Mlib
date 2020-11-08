@@ -41,7 +41,7 @@ void TrackingWheel::notify_intersection(
                 s.active = false;
             } else if (
                 FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
-                sum(squared(abs_position - pt_absolute)) < squared(0.02))
+                sum(squared(abs_position - pt_absolute)) < squared(max_dist_))
             {
                 s.found = true;
                 // s.position = FixedArray<float, 3>{0, -radius_, 0};
