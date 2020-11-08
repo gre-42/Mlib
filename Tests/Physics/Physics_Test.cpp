@@ -201,7 +201,15 @@ void test_sticky_spring() {
         .point_of_contact = {1, 2, 3},
         .pid = {1, 0, 0, 0}
     };
-    s.update_position(position, spring_constant, stiction_force, friction_force, nullptr, force, slipping);
+    s.update_position(
+        position,
+        spring_constant,
+        stiction_force,
+        friction_force,
+        nullptr,
+        false,  // move_point_of_contact
+        force,
+        slipping);
     assert_allclose(
         s.point_of_contact.to_array(),
         Array<float>{5.59385, 3.14846, 2.54061},

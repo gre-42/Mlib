@@ -13,6 +13,7 @@ public:
         float stiction_force,
         float friction_force,
         const FixedArray<float, 3>* normal,
+        bool move_point_of_contact,
         FixedArray<float, 3>& force,
         bool& slipping);
     FixedArray<float, 3> point_of_contact;

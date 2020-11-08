@@ -127,6 +127,7 @@ void TrackingWheel::update_position(
                 sum_stiction_force_ / nactive,
                 sum_friction_force_ / nactive,
                 &s.normal,
+                false,  // move_point_of_contact
                 force,
                 slip);
             // std::cerr << "new2 " << s.spring.point_of_contact << " | " << s.normal << std::endl;

@@ -9,6 +9,7 @@ void StickySpring::update_position(
     float stiction_force,
     float friction_force,
     const FixedArray<float, 3>* normal,
+    bool move_point_of_contact,
     FixedArray<float, 3>& force,
     bool& slipping)
 {
@@ -23,10 +24,12 @@ void StickySpring::update_position(
         // stiction_force = ||p-c||*k
         // => ||p-c|| = stiction_force/k
         FixedArray<float, 3> d = dir / std::sqrt(d2);
-        if (normal != nullptr) {
-            // point_of_contact -= dir + d * (stiction_force / spring_constant);
-        } else {
-            point_of_contact = position - d * (stiction_force / spring_constant);
+        if (move_point_of_contact) {
+            if (normal != nullptr) {
+                point_of_contact -= dir + d * (stiction_force / spring_constant);
+            } else {
+                point_of_contact = position - d * (stiction_force / spring_constant);
+            }
         }
         // auto vv = point_of_contact - position;
         // vv -= (*normal) * dot0d(vv, *normal);
