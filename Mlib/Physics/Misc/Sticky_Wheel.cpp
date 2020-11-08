@@ -14,7 +14,7 @@ StickyWheel::StickyWheel(
     float max_dist)
 : rotation_axis_{rotation_axis},
   radius_{radius},
-  springs_(nsprings, SpringExt{.active = false}),
+  springs_(nsprings, SpringExt{.active = false, .spring = {.pid = {1, 0, 0, 0}}}),
   max_dist_{max_dist},
   next_spring_{0},
   w_{0},

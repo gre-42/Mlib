@@ -657,8 +657,17 @@ void LoadScene::operator()(
                         engine,
                         break_force,
                         ShockAbsorber{1e5, 2e3},
-                        StickyWheel{{1.f, 0.f, 0.f}, radius, nsprings_sticky, max_dist},
-                        TrackingWheel{{1.f, 0.f, 0.f}, radius, nsprings_track, max_dist},
+                        StickyWheel{
+                            {1.f, 0.f, 0.f},
+                            radius,
+                            nsprings_sticky,
+                            max_dist},
+                        TrackingWheel{
+                            {1.f, 0.f, 0.f},
+                            radius,
+                            nsprings_track,
+                            max_dist,
+                            physics_engine_config.dt / physics_engine_config.oversampling},
                         0,  // angle
                         position}});
                 if (!tp.second) {

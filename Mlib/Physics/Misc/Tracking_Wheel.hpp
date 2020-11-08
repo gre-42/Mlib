@@ -20,7 +20,8 @@ public:
         const FixedArray<float, 3>& rotation_axis,
         float radius,
         size_t nsprings,
-        float max_dist);
+        float max_dist,
+        float dt);
     void notify_intersection(
         const FixedArray<float, 3, 3>& rotation,
         const FixedArray<float, 3>& translation,

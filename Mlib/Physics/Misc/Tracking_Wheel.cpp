@@ -11,10 +11,11 @@ TrackingWheel::TrackingWheel(
     const FixedArray<float, 3>& rotation_axis,
     float radius,
     size_t nsprings,
-    float max_dist)
+    float max_dist,
+    float dt)
 : rotation_axis_{rotation_axis},
   radius_{radius},
-  springs_(nsprings, TrackingSpring{.active = false, .spring{.pid{1, 0, 0, 0}}}),
+  springs_(nsprings, TrackingSpring{.active = false, .spring = {.pid{0, 0.5, float(1e-1) / dt, 0.01}}}),
   max_dist_{max_dist},
   next_spring_{0},
   w_{0},
@@ -36,14 +37,15 @@ void TrackingWheel::notify_intersection(
     sum_friction_force_ += friction_force;
     for(TrackingSpring& s : springs_) {
         if (s.active) {
-            if (false && sum(squared(s.position - s.spring.point_of_contact)) > squared(max_dist_)) {
+            if (sum(squared(s.position - s.spring.point_of_contact)) > squared(max_dist_)) {
                 s.active = false;
             } else if (
                 FixedArray<float, 3> abs_position = dot1d(rotation, s.position) + translation;
-                true || sum(squared(abs_position - pt_absolute)) < squared(0.02))
+                sum(squared(abs_position - pt_absolute)) < squared(0.02))
             {
                 s.found = true;
-                s.position = FixedArray<float, 3>{0, -radius_, 0};//dot1d(rotation.T(), pt_absolute - translation);
+                // s.position = FixedArray<float, 3>{0, -radius_, 0};
+                s.position = dot1d(rotation.T(), pt_absolute - translation);
                 s.normal = dot1d(rotation.T(), normal);
                 return;
             }
@@ -53,7 +55,8 @@ void TrackingWheel::notify_intersection(
     if (sit != springs_.end()) {
         sit->active = true;
         sit->found = true;
-        sit->position = FixedArray<float, 3>{0, -radius_, 0};// dot1d(rotation.T(), pt_absolute - translation);
+        // sit->position = FixedArray<float, 3>{0, -radius_, 0};
+        sit->position = dot1d(rotation.T(), pt_absolute - translation);
         sit->normal = dot1d(rotation.T(), normal);
         sit->spring.point_of_contact = sit->position;
     }
@@ -143,7 +146,7 @@ void TrackingWheel::update_position(
             // std::cerr << "abs_poc2 " << dot1d(rotation, s.spring.point_of_contact - FixedArray<float, 3>{0, 0, 1} * w_ * radius_ * dt * 1000.f) << std::endl;
             auto np = dot1d(rotation.T(), power_axis);
             np -= s.normal * dot0d(s.normal, np);
-            if (float l2 = sum(squared(np)); l2 > 1e-9 && false) {
+            if (float l2 = sum(squared(np)); l2 > 1e-9) {
                 np /= std::sqrt(sum(squared(np)));
                 s.spring.point_of_contact -= np * w_ * radius_ * dt;
             }
