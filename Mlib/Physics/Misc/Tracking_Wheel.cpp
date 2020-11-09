@@ -112,9 +112,7 @@ void TrackingWheel::update_position(
             // std::cerr << translation << std::endl;
             // std::cerr << "old " << s.spring.point_of_contact << std::endl;
             {
-                FixedArray<float, 3> abs_point_of_contact = dot1d(old_rotation_, s.spring.point_of_contact) + old_translation_;
-                FixedArray<float, 3> new_point_of_contact = dot1d(rotation.T(), abs_point_of_contact - translation);
-                FixedArray<float, 3> dir = new_point_of_contact - s.spring.point_of_contact;
+                FixedArray<float, 3> dir = dot1d(rotation.T(), old_translation_ - translation);
                 dir -= s.normal * dot0d(dir, s.normal);
                 s.spring.point_of_contact += dir;
             }
@@ -129,7 +127,7 @@ void TrackingWheel::update_position(
                 sum_stiction_force_ / nactive,
                 sum_friction_force_ / nactive,
                 &s.normal,
-                false,  // move_point_of_contact
+                true,  // move_point_of_contact
                 force,
                 slip);
             // std::cerr << "new2 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
@@ -147,17 +145,20 @@ void TrackingWheel::update_position(
             power_external -= dot0d(abs_force, velocity);
             // std::cerr << "abs_poc1 " << dot1d(rotation, s.spring.point_of_contact) << std::endl;
             // std::cerr << "abs_poc2 " << dot1d(rotation, s.spring.point_of_contact - FixedArray<float, 3>{0, 0, 1} * w_ * radius_ * dt * 1000.f) << std::endl;
-            auto np = dot1d(rotation.T(), power_axis);
-            np -= s.normal * dot0d(s.normal, np);
-            if (float l2 = sum(squared(np)); l2 > 1e-9) {
-                np /= std::sqrt(l2);
-                s.spring.point_of_contact -= np * w_ * radius_ * dt;
+            {
+                auto np = dot1d(rotation.T(), power_axis);
+                np -= s.normal * dot0d(s.normal, np);
+                if (float l2 = sum(squared(np)); l2 > 1e-9) {
+                    np /= std::sqrt(l2);
+                    s.spring.point_of_contact -= np * w_ * radius_ * dt;
+                    // std::cerr << "np " << np << std::endl;
+                }
             }
             // std::cerr << "new3 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
-            beacons.push_back({dot1d(rotation, s.spring.point_of_contact) + translation});
-            //if (slip) {
+            if (slip) {
+                beacons.push_back({dot1d(rotation, s.spring.point_of_contact) + translation});
                 beacons.push_back({position: abs_pos, resource_name: "beacon1"});
-            //}
+            }
         }
     }
     slipping = (nslipping > nactive / 2);
