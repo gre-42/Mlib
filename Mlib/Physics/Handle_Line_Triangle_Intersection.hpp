@@ -13,6 +13,7 @@ template <class TData, size_t n>
 class PlaneNd;
 struct PhysicsEngineConfig;
 class SatTracker;
+struct Beacon;
 
 struct IntersectionScene {
     const std::shared_ptr<RigidBody>& o0;
@@ -24,7 +25,7 @@ struct IntersectionScene {
     const PlaneNd<float, 3>& p0;
     const PhysicsEngineConfig& cfg;
     const SatTracker& st;
-    std::list<FixedArray<float, 3>>& beacons;
+    std::list<Beacon>& beacons;
     size_t tire_id;
     bool mesh0_two_sided;
     bool lines_are_normals;

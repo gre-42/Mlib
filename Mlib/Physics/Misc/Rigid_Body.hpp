@@ -17,6 +17,7 @@ namespace Mlib {
 
 class RigidBodies;
 class RigidBodyEngine;
+struct Beacon;
 
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
@@ -40,7 +41,7 @@ public:
         float min_angular_velocity,
         PhysicsType physics_type,
         float hand_break_velocity,
-        std::list<FixedArray<float, 3>>& beacons);
+        std::list<Beacon>& beacons);
     float mass() const;
     FixedArray<float, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;

@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
+#include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
@@ -149,11 +150,11 @@ void test_com() {
     r0->integrate_gravity({0, -9.8, 0});
     r1->integrate_gravity({0, -9.8, 0});
     {
-        std::list<FixedArray<float, 3>> beacons;
+        std::list<Beacon> beacons;
         r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.hand_break_velocity, beacons);
     }
     {
-        std::list<FixedArray<float, 3>> beacons;
+        std::list<Beacon> beacons;
         r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.hand_break_velocity, beacons);
     }
     
@@ -164,11 +165,11 @@ void test_com() {
     r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     {
-        std::list<FixedArray<float, 3>> beacons;
+        std::list<Beacon> beacons;
         r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.hand_break_velocity, beacons);
     }
     {
-        std::list<FixedArray<float, 3>> beacons;
+        std::list<Beacon> beacons;
         r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.hand_break_velocity, beacons);
     }
     assert_allclose(r0->rbi_.v_.to_array(), r1->rbi_.v_.to_array());
@@ -178,11 +179,11 @@ void test_com() {
         r0->velocity_at_position(com0).to_array(),
         r1->velocity_at_position(com1).to_array());
     {
-        std::list<FixedArray<float, 3>> beacons;
+        std::list<Beacon> beacons;
         r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.hand_break_velocity, beacons);
     }
     {
-        std::list<FixedArray<float, 3>> beacons;
+        std::list<Beacon> beacons;
         r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.hand_break_velocity, beacons);
     }
     assert_allclose(
@@ -234,7 +235,7 @@ void test_tracking_wheel() {
         tw.set_w(1.23);
         tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
         {
-            std::list<FixedArray<float, 3>> beacons;
+            std::list<Beacon> beacons;
             RigidBodyIntegrator rbi = rigid_cuboid_integrator(1e3, {1.f, 2.f, 3.f}, {0.f, 0.f, 0.5f});
             float power_internal;
             float power_external;

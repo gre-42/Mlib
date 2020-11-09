@@ -13,6 +13,7 @@ struct TrackingSpring {
 };
 
 struct RigidBodyIntegrator;
+struct Beacon;
 
 class TrackingWheel {
 public:
@@ -41,7 +42,7 @@ public:
         float& power_external,
         float& moment,
         bool& slipping,
-        std::list<FixedArray<float, 3>>& beacons);
+        std::list<Beacon>& beacons);
     float radius() const;
     float w() const;
     void set_w(float w);

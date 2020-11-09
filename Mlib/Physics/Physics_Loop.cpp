@@ -1,5 +1,6 @@
 #include "Physics_Loop.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -28,7 +29,7 @@ PhysicsLoop::PhysicsLoop(
                 break;
             }
         }
-        std::list<FixedArray<float, 3>> beacons;
+        std::list<Beacon> beacons;
         for(size_t i = 0; i < physics_cfg.oversampling; ++i) {
             beacons.clear();
             physics_engine.collide(beacons, false);  // false=burn_in
@@ -39,8 +40,8 @@ PhysicsLoop::PhysicsLoop(
             size_t i = 0;
             for(const auto& beacon : beacons) {
                 scene.add_root_node("beacon" + std::to_string(i), new SceneNode);
-                scene_node_resources.instantiate_renderable("beacon", "box", *scene.get_node("beacon" + std::to_string(i)), SceneNodeResourceFilter{});
-                scene.get_node("beacon" + std::to_string(i))->set_position(beacon);
+                scene_node_resources.instantiate_renderable(beacon.resource_name, "box", *scene.get_node("beacon" + std::to_string(i)), SceneNodeResourceFilter{});
+                scene.get_node("beacon" + std::to_string(i))->set_position(beacon.position);
                 // scene.get_node("beacon" + std::to_string(i))->set_scale(0.05);
                 ++i;
             }

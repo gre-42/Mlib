@@ -64,7 +64,7 @@ void RigidBody::advance_time(
     float min_angular_velocity,
     PhysicsType physics_type,
     float hand_break_velocity,
-    std::list<FixedArray<float, 3>>& beacons)
+    std::list<Beacon>& beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
     if (physics_type == PhysicsType::TRACKING_SPRINGS) {

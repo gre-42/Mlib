@@ -3,6 +3,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
 
 using namespace Mlib;
@@ -47,6 +48,8 @@ void TrackingWheel::notify_intersection(
                 // s.position = FixedArray<float, 3>{0, -radius_, 0};
                 s.position = dot1d(rotation.T(), pt_absolute - translation);
                 s.normal = dot1d(rotation.T(), normal);
+                s.spring.point_of_contact += s.normal * dot0d(s.normal, s.position - s.spring.point_of_contact);
+                // std::cerr << s.position << " | " << s.spring.point_of_contact << std::endl;
                 return;
             }
         }
@@ -74,7 +77,7 @@ void TrackingWheel::update_position(
     float& power_external,
     float& moment,
     bool& slipping,
-    std::list<FixedArray<float, 3>>& beacons)
+    std::list<Beacon>& beacons)
 {
     if (!pose_initialized_) {
         old_rotation_ = rotation;
@@ -151,10 +154,10 @@ void TrackingWheel::update_position(
                 s.spring.point_of_contact -= np * w_ * radius_ * dt;
             }
             // std::cerr << "new3 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
-            if (slip) {
-                beacons.push_back(dot1d(rotation, s.spring.point_of_contact) + translation);
-                beacons.push_back(abs_pos);
-            }
+            beacons.push_back({dot1d(rotation, s.spring.point_of_contact) + translation});
+            //if (slip) {
+                beacons.push_back({position: abs_pos, resource_name: "beacon1"});
+            //}
         }
     }
     slipping = (nslipping > nactive / 2);
