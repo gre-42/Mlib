@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
         "[--no_render] "
         "[--print_gamepad_buttons] "
         "[--show_mouse_cursor] "
-        "[--physics_type {version1, tracking_springs}] "
+        "[--physics_type {version1, tracking_springs, builtin}] "
         "[--no_bvh] "
         "[--oversampling] "
         "[--verbose]",

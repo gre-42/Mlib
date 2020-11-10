@@ -93,7 +93,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             rb->set_surface_power("breaks", 0);
             rb->set_max_velocity(INFINITY);
             for(auto& t : rb->tires_) {
-                t.second.angle = 0;
+                t.second.angle_y = 0;
             }
             rb->tires_z_ = k.tires_z;
         }
@@ -113,7 +113,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 rb->set_surface_power("breaks", k.surface_power);
                 rb->set_max_velocity(k.max_velocity);
                 if (k.tire_id != SIZE_MAX) {
-                    rb->set_tire_angle(k.tire_id, alpha * M_PI / 180.f * k.tire_angle_interp(std::sqrt(sum(squared(rb->rbi_.v_))) * 3.6f));
+                    rb->set_tire_angle_y(k.tire_id, alpha * M_PI / 180.f * k.tire_angle_interp(std::sqrt(sum(squared(rb->rbi_.v_))) * 3.6f));
                 }
                 rb->tires_z_ += k.tires_z;
             }

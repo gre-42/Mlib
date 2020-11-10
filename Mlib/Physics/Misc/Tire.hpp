@@ -11,15 +11,18 @@ struct Tire {
         float break_force,
         const ShockAbsorber& shock_absorber,
         const TrackingWheel& tracking_wheel,
-        float angle,
-        const FixedArray<float, 3>& position);
+        const FixedArray<float, 3>& position,
+        float radius);
     void advance_time(float dt);
     ShockAbsorber shock_absorber;
     TrackingWheel tracking_wheel;
-    float angle;
+    float angle_x;
+    float angle_y;
+    float angular_velocity;
     std::string engine;
     float break_force;
     FixedArray<float, 3> position;
+    float radius;
 };
 
 }

@@ -7,16 +7,20 @@ Tire::Tire(
     float break_force,
     const ShockAbsorber& shock_absorber,
     const TrackingWheel& tracking_wheel,
-    float angle,
-    const FixedArray<float, 3>& position)
+    const FixedArray<float, 3>& position,
+    float radius)
 : shock_absorber{shock_absorber},
   tracking_wheel{tracking_wheel},
-  angle{angle},
+  angle_x{0},
+  angle_y{0},
+  angular_velocity{0},
   engine{engine},
   break_force{break_force},
-  position{position}
+  position{position},
+  radius{radius}
 {}
 
 void Tire::advance_time(float dt) {
     shock_absorber.advance_time(dt);
+    angle_x = std::fmod(angle_x + dt * angular_velocity, 2 * M_PI);
 }

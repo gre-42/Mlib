@@ -48,10 +48,13 @@ FixedArray<float, 4, 4> Wheel::get_new_relative_model_matrix() const
 void Wheel::advance_time(float dt) {
     FixedArray<float, 3> tire_angles{fixed_zeros<float, 3>()};
     if (auto it = rigid_body_.tires_.find(tire_id_); it != rigid_body_.tires_.end()) {
-        tire_angles(1) = it->second.angle;
+        tire_angles(1) = it->second.angle_y;
         position_(1) = y0_ + it->second.shock_absorber.position();
         if (physics_type_ == PhysicsType::TRACKING_SPRINGS) {
             angle_x_ = it->second.tracking_wheel.angle_x();
+        }
+        if (physics_type_ == PhysicsType::BUILTIN) {
+            angle_x_ = it->second.angle_x;
         }
     }
     if (physics_type_ == PhysicsType::VERSION1) {

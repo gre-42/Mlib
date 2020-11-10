@@ -28,7 +28,7 @@ public:
     void set_rigid_body(SceneNode& scene_node, RigidBody& rb);
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
     void set_surface_power(float forward, float backward);
-    void set_tire_angle(size_t tire_id, float angle_left, float angle_right);
+    void set_tire_angle_y(size_t tire_id, float angle_left, float angle_right);
     void set_waypoint(const FixedArray<float, 2>& waypoint);
 
     virtual void notify_destroyed(void* destroyed_object) override;

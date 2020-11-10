@@ -165,13 +165,13 @@ void RigidBody::set_max_velocity(float max_velocity) {
     max_velocity_ = max_velocity;
 }
 
-void RigidBody::set_tire_angle(size_t id, float angle) {
-    tires_.at(id).angle = angle;
+void RigidBody::set_tire_angle_y(size_t id, float angle_y) {
+    tires_.at(id).angle_y = angle_y;
 }
 
 FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
-        return dot2d(rbi_.rotation_, rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle));
+        return dot2d(rbi_.rotation_, rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle_y));
     } else {
         return rbi_.rotation_;
     }
@@ -180,10 +180,22 @@ FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const
 FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
     FixedArray<float, 3> z{tires_z_};
     if (auto t = tires_.find(id); t != tires_.end()) {
-        z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle), z);
+        z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle_y), z);
     }
     z = dot1d(rbi_.rotation_, z);
     return z;
+}
+
+float RigidBody::get_tire_angular_velocity(size_t id) const {
+    return tires_.at(id).angular_velocity;
+}
+
+void RigidBody::set_tire_angular_velocity(size_t id, float w) {
+    tires_.at(id).angular_velocity = w;
+}
+
+float RigidBody::get_tire_radius(size_t id) const {
+    return tires_.at(id).radius;
 }
 
 float RigidBody::consume_tire_surface_power(size_t id) {

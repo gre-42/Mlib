@@ -64,7 +64,7 @@ void Player::set_surface_power(float forward, float backward) {
     surface_power_backward_ = backward;
 }
 
-void Player::set_tire_angle(size_t tire_id, float angle_left, float angle_right) {
+void Player::set_tire_angle_y(size_t tire_id, float angle_left, float angle_right) {
     {
         auto it = tire_angles_left_.insert(std::make_pair(tire_id, angle_left));
         if (!it.second) {
@@ -180,11 +180,11 @@ void Player::move_to_waypoint() {
     if (wpt(2) > 0) {
         if (wpt(0) < 0) {
             for(const auto& x : tire_angles_left_) {
-                rb_->set_tire_angle(x.first, x.second);
+                rb_->set_tire_angle_y(x.first, x.second);
             }
         } else {
             for(const auto& x : tire_angles_right_) {
-                rb_->set_tire_angle(x.first, x.second);
+                rb_->set_tire_angle_y(x.first, x.second);
             }
         }
     } else {
@@ -192,12 +192,12 @@ void Player::move_to_waypoint() {
         if (wpt(0) < 0) {
             for(const auto& x : tire_angles_left_) {
                 float ang = sign(x.second) * std::min(angle, std::abs(x.second));
-                rb_->set_tire_angle(x.first, ang);
+                rb_->set_tire_angle_y(x.first, ang);
             }
         } else {
             for(const auto& x : tire_angles_right_) {
                 float ang = sign(x.second) * std::min(angle, std::abs(x.second));
-                rb_->set_tire_angle(x.first, ang);
+                rb_->set_tire_angle_y(x.first, ang);
             }
         }
     }

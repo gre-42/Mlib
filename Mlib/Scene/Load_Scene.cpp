@@ -662,8 +662,8 @@ void LoadScene::operator()(
                             nsprings_tracking,
                             max_dist,
                             physics_engine_config.dt / physics_engine_config.oversampling},
-                        0,  // angle
-                        position}});
+                        position,
+                        radius}});
                 if (!tp.second) {
                     throw std::runtime_error("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
                 }
@@ -711,7 +711,7 @@ void LoadScene::operator()(
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str()));
         } else if (std::regex_match(line, match, player_set_tire_angle_reg)) {
-            players.get_player(match[1].str()).set_tire_angle(
+            players.get_player(match[1].str()).set_tire_angle_y(
                 safe_stoi(match[2].str()),
                 M_PI / 180.f * safe_stof(match[3].str()),
                 M_PI / 180.f * safe_stof(match[4].str()));
