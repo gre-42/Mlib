@@ -176,7 +176,7 @@ void HandleLineTriangleIntersection::handle()
                         float P = i_.o1->consume_tire_surface_power(i_.tire_id);
                         // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
                         if (!std::isnan(P)) {
-                            float dx_max = 0.1;
+                            float dx_max = 20;
                             float w_max = dx_max / (i_.o1->get_tire_radius(i_.tire_id) * i_.cfg.dt / i_.cfg.oversampling);
                             // std::cerr << "dx " << dx << std::endl;
                             bool slipping = false;
