@@ -194,12 +194,6 @@ void HandleLineTriangleIntersection::handle()
                                 } else if (P < 0) {
                                     i_.o1->set_tire_angular_velocity(i_.tire_id, std::min(w_max, i_.o1->get_tire_angular_velocity(i_.tire_id) + 0.5f));
                                 }
-                            } else {
-                                if (moment < 0) {
-                                    i_.o1->set_tire_angular_velocity(i_.tire_id, std::max(-w_max, i_.o1->get_tire_angular_velocity(i_.tire_id) - 0.5f));
-                                } else if (moment > 0) {
-                                    i_.o1->set_tire_angular_velocity(i_.tire_id, std::min(w_max, i_.o1->get_tire_angular_velocity(i_.tire_id) + 0.5f));
-                                }
                             }
                         }
                     } else if (i_.cfg.physics_type == PhysicsType::TRACKING_SPRINGS) {
