@@ -194,6 +194,12 @@ void RigidBody::set_tire_angular_velocity(size_t id, float w) {
     tires_.at(id).angular_velocity = w;
 }
 
+float RigidBody::get_angular_velocity_at_tire(size_t id) const {
+    auto z = get_abs_tire_z(id);
+    auto v = velocity_at_position(get_abs_tire_position(id));
+    return -dot0d(v, z) / get_tire_radius(id);
+}
+
 float RigidBody::get_tire_radius(size_t id) const {
     return tires_.at(id).radius;
 }
