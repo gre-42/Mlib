@@ -168,7 +168,7 @@ void HandleLineTriangleIntersection::handle()
                     n3 /= std::sqrt(len2);
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
                         float P = i_.o1->consume_tire_surface_power(i_.tire_id);
-                        if (P == 0) {
+                        if (!std::isnan(P) && (P == 0)) {
                             i_.o1->set_tire_angular_velocity(i_.tire_id, i_.o1->get_angular_velocity_at_tire(i_.tire_id));
                         }
                         tangential_force = friction_force_infinite_mass(
