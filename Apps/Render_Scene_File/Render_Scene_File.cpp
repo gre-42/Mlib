@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
         "[--damping <x>]"
         "[--stiction_coefficient <x>] "
         "[--friction_coefficient <x>] "
+        "[--no_avoid_burnout] "
         "[--print_fps] "
         "[--vfx] "
         "[--no_depth_fog] "
@@ -90,6 +91,7 @@ int main(int argc, char** argv) {
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
          "--no_bvh",
+         "--no_avoid_burnout",
          "--verbose"},
         {"--swap_interval",
          "--nsamples_msaa",
@@ -175,6 +177,7 @@ int main(int argc, char** argv) {
                 .damping = safe_stof(args.named_value("--damping", "0.00091188")),
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "2")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
+                .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "version1")),
                 .bvh = !args.has_named("--no_bvh"),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "20"))};

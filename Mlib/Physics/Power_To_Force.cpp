@@ -150,12 +150,12 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         normal_force = x * n3;
     } else if (std::abs(v) >= hand_break_velocity) {
         // Handle breaking at high velocities.
-        float x = sign(v) * break_force;
+        float x = break_force;
         FixedArray<float, 3> v3n = v3 / std::sqrt(sum(squared(v3)));
         if (avoid_burnout) {
             x = correct_x_non_ortho(x, v3n, f3T, max_stiction_force);
         }
-        normal_force = -x * v3n;
+        normal_force = x * (-v3n);
         // std::cerr << std::sqrt(sum(squared(normal_force + f3T))) << " " << max_stiction_force << " " << std::sqrt(sum(squared(f3T))) << std::endl;
     } else {
         // Handle breaking at low velocities.
