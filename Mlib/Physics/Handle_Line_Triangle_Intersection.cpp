@@ -186,18 +186,18 @@ void HandleLineTriangleIntersection::handle()
                                             f = std::clamp<float>(std::sqrt(vt / vc), 1e-1, 1e1);
                                         }
                                     }
-                                    float v;
-                                    for (v = 0; v >= -v_max; v -= 0.1) {
+                                    float vv;
+                                    for (vv = 0; vv >= -v_max; vv -= 0.1) {
                                         FixedArray<float, 3> tf = friction_force_infinite_mass(
                                             i_.cfg.stiction_coefficient * force_n1,
                                             i_.cfg.friction_coefficient * force_n1,
-                                            v3 + n3 * v,
+                                            v3 + n3 * vv,
                                             i_.cfg.alpha0 / i_.cfg.oversampling);
-                                        if (dot0d(tf, n3) > std::abs(P / v) * f) {
+                                        if (dot0d(tf, n3) > std::abs(P / vv) * f) {
                                             break;
                                         }
                                     }
-                                    i_.o1->set_tire_angular_velocity(i_.tire_id, v / r);
+                                    i_.o1->set_tire_angular_velocity(i_.tire_id, vv / r);
                                 } else if (P < 0) {
                                     // r = v / w
                                     float f = 1;
@@ -206,18 +206,18 @@ void HandleLineTriangleIntersection::handle()
                                             f = std::clamp<float>(std::sqrt(vt / vc), 1e-1, 1e1);
                                         }
                                     }
-                                    float v;
-                                    for (v = 0; v <= v_max; v += 0.1) {
+                                    float vv;
+                                    for (vv = 0; vv <= v_max; vv += 0.1) {
                                         FixedArray<float, 3> tf = friction_force_infinite_mass(
                                             i_.cfg.stiction_coefficient * force_n1,
                                             i_.cfg.friction_coefficient * force_n1,
-                                            v3 + n3 * v,
+                                            v3 + n3 * vv,
                                             i_.cfg.alpha0 / i_.cfg.oversampling);
-                                        if (-dot0d(tf, n3) > std::abs(P / v) * f) {
+                                        if (-dot0d(tf, n3) > std::abs(P / vv) * f) {
                                             break;
                                         }
                                     }
-                                    i_.o1->set_tire_angular_velocity(i_.tire_id, v / r);
+                                    i_.o1->set_tire_angular_velocity(i_.tire_id, vv / r);
                                 }
                             } else if (P == 0) {
                                 i_.o1->set_tire_angular_velocity(i_.tire_id, i_.o1->get_angular_velocity_at_tire(i_.tire_id));
