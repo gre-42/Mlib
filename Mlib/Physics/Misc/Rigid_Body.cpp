@@ -295,6 +295,8 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
         } else {
             ostr << "d2: " << " undefined" << std::endl;
         }
+        // Not implemented: https://de.wikipedia.org/wiki/Wendekreis_(Fahrzeug)
+        // D = 2 L / sin(alpha)
     }
     if (log_components & LOG_POSITION) {
         auto pos = rbi_.abs_position();
