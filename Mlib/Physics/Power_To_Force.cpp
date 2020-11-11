@@ -180,7 +180,6 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
 Mlib::FixedArray<float, 3> Mlib::friction_force_infinite_mass(
     float max_stiction_force,
     float friction_force,
-    float m,
     const FixedArray<float, 3>& v3,
     float alpha0)
 {

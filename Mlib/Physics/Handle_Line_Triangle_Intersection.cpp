@@ -184,7 +184,6 @@ void HandleLineTriangleIntersection::handle()
                                         tangential_force = friction_force_infinite_mass(
                                             i_.cfg.stiction_coefficient * force_n1,
                                             i_.cfg.friction_coefficient * force_n1,
-                                            i_.o1->mass(),
                                             v3 + n3 * v,
                                             i_.cfg.alpha0 / i_.cfg.oversampling);
                                         if (dot0d(tangential_force, n3) > std::abs(P / v)) {
@@ -198,7 +197,6 @@ void HandleLineTriangleIntersection::handle()
                                         tangential_force = friction_force_infinite_mass(
                                             i_.cfg.stiction_coefficient * force_n1,
                                             i_.cfg.friction_coefficient * force_n1,
-                                            i_.o1->mass(),
                                             v3 + n3 * v,
                                             i_.cfg.alpha0 / i_.cfg.oversampling);
                                         if (-dot0d(tangential_force, n3) > std::abs(P / v)) {
@@ -215,7 +213,6 @@ void HandleLineTriangleIntersection::handle()
                         tangential_force = friction_force_infinite_mass(
                             i_.cfg.stiction_coefficient * force_n1,
                             i_.cfg.friction_coefficient * force_n1,
-                            i_.o1->mass(),
                             v3 + n3 * v1,
                             i_.cfg.alpha0 / i_.cfg.oversampling);
                         // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
@@ -253,7 +250,6 @@ void HandleLineTriangleIntersection::handle()
                 tangential_force = friction_force_infinite_mass(
                     i_.cfg.stiction_coefficient * force_n1,
                     i_.cfg.friction_coefficient * force_n1,
-                    i_.o1->mass(),
                     v3,
                     i_.cfg.alpha0);
             }

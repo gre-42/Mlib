@@ -37,7 +37,6 @@ FixedArray<float, 3> power_to_force_infinite_mass(
 Mlib::FixedArray<float, 3> friction_force_infinite_mass(
     float max_stiction_force,
     float friction_force,
-    float m,
     const FixedArray<float, 3>& v3,
     float alpha0);
 
