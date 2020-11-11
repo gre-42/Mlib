@@ -179,6 +179,13 @@ void HandleLineTriangleIntersection::handle()
                                 if (sign(P) != sign(v) && std::abs(v) > i_.cfg.hand_break_velocity) {
                                     i_.o1->set_tire_angular_velocity(i_.tire_id, 0);
                                 } else if (P > 0) {
+                                    // r = v / w
+                                    float f = 1;
+                                    if (float vc = sum(squared(i_.o1->rbi_.v_)); vc > 1e-12) {
+                                        if (float vt = sum(squared(i_.o1->get_velocity_at_tire(i_.tire_id))); vt > 1e-12) {
+                                            f = std::clamp<float>(std::sqrt(vt / vc), 1e-1, 1e1);
+                                        }
+                                    }
                                     float v;
                                     for (v = 0; v >= -v_max; v -= 0.1) {
                                         FixedArray<float, 3> tf = friction_force_infinite_mass(
@@ -186,12 +193,19 @@ void HandleLineTriangleIntersection::handle()
                                             i_.cfg.friction_coefficient * force_n1,
                                             v3 + n3 * v,
                                             i_.cfg.alpha0 / i_.cfg.oversampling);
-                                        if (dot0d(tf, n3) > std::abs(P / v)) {
+                                        if (dot0d(tf, n3) > std::abs(P / v) * f) {
                                             break;
                                         }
                                     }
                                     i_.o1->set_tire_angular_velocity(i_.tire_id, v / r);
                                 } else if (P < 0) {
+                                    // r = v / w
+                                    float f = 1;
+                                    if (float vc = sum(squared(i_.o1->rbi_.v_)); vc > 1e-12) {
+                                        if (float vt = sum(squared(i_.o1->get_velocity_at_tire(i_.tire_id))); vt > 1e-12) {
+                                            f = std::clamp<float>(std::sqrt(vt / vc), 1e-1, 1e1);
+                                        }
+                                    }
                                     float v;
                                     for (v = 0; v <= v_max; v += 0.1) {
                                         FixedArray<float, 3> tf = friction_force_infinite_mass(
@@ -199,7 +213,7 @@ void HandleLineTriangleIntersection::handle()
                                             i_.cfg.friction_coefficient * force_n1,
                                             v3 + n3 * v,
                                             i_.cfg.alpha0 / i_.cfg.oversampling);
-                                        if (-dot0d(tf, n3) > std::abs(P / v)) {
+                                        if (-dot0d(tf, n3) > std::abs(P / v) * f) {
                                             break;
                                         }
                                     }

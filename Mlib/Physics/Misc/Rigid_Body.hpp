@@ -53,6 +53,7 @@ public:
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;
     void set_tire_angular_velocity(size_t id, float w);
+    FixedArray<float, 3> get_velocity_at_tire(size_t id) const;
     float get_angular_velocity_at_tire(size_t id) const;
     float get_tire_radius(size_t id) const;
     float consume_tire_surface_power(size_t id);
