@@ -168,34 +168,35 @@ void HandleLineTriangleIntersection::handle()
                     n3 /= std::sqrt(len2);
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
                         float P = i_.o1->consume_tire_surface_power(i_.tire_id);
-                        if (!std::isnan(P) && (P == 0)) {
-                            i_.o1->set_tire_angular_velocity(i_.tire_id, i_.o1->get_angular_velocity_at_tire(i_.tire_id));
-                        }
-                        tangential_force = friction_force_infinite_mass(
-                            i_.cfg.stiction_coefficient * force_n1,
-                            i_.cfg.friction_coefficient * force_n1,
-                            i_.o1->mass(),
-                            v3 + n3 * i_.o1->get_tire_angular_velocity(i_.tire_id) * i_.o1->get_tire_radius(i_.tire_id),
-                            i_.cfg.alpha0);
-                        // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
+                        float r = i_.o1->get_tire_radius(i_.tire_id);
+                        // solve(1/2*m*(v1^2-v0^2) = P*t, v1)
                         if (!std::isnan(P)) {
+                            float odt = i_.cfg.dt / i_.cfg.oversampling;
                             float dx_max = 20;
-                            float w_max = dx_max / (i_.o1->get_tire_radius(i_.tire_id) * i_.cfg.dt / i_.cfg.oversampling);
+                            float w_max = dx_max / (i_.o1->get_tire_radius(i_.tire_id) * odt);
                             // std::cerr << "dx " << dx << std::endl;
                             bool slipping = false;
-                            float moment = dot0d(tangential_force, n3) * i_.o1->get_tire_radius(i_.tire_id);
-                            float power_internal = moment * i_.o1->get_tire_angular_velocity(i_.tire_id);
-                            if ((P != 0) && (std::abs(P) > -power_internal) && !slipping) {
+                            if ((P != 0) && !slipping) {
                                 float v = dot0d(v3, n3);
                                 if (sign(P) != sign(v) && std::abs(v) > i_.cfg.hand_break_velocity) {
                                     i_.o1->set_tire_angular_velocity(i_.tire_id, 0);
                                 } else if (P > 0) {
-                                    i_.o1->set_tire_angular_velocity(i_.tire_id, std::max(-w_max, i_.o1->get_tire_angular_velocity(i_.tire_id) - 0.5f));
+                                    i_.o1->set_tire_angular_velocity(i_.tire_id, std::max(-w_max, -std::sqrt(squared(v) + 2 * std::abs(P) * odt / i_.o1->mass()) / r));
                                 } else if (P < 0) {
-                                    i_.o1->set_tire_angular_velocity(i_.tire_id, std::min(w_max, i_.o1->get_tire_angular_velocity(i_.tire_id) + 0.5f));
+                                    i_.o1->set_tire_angular_velocity(i_.tire_id, std::min(w_max, std::sqrt(squared(v) + 2 * std::abs(P) * odt / i_.o1->mass()) / r));
                                 }
+                            } else if (P == 0) {
+                                i_.o1->set_tire_angular_velocity(i_.tire_id, i_.o1->get_angular_velocity_at_tire(i_.tire_id));
                             }
                         }
+                        float v1 = i_.o1->get_tire_angular_velocity(i_.tire_id) * r;
+                        tangential_force = friction_force_infinite_mass(
+                            i_.cfg.stiction_coefficient * force_n1,
+                            i_.cfg.friction_coefficient * force_n1,
+                            i_.o1->mass(),
+                            v3 + n3 * v1,
+                            i_.cfg.alpha0 / i_.cfg.oversampling);
+                        // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
                     } else if (i_.cfg.physics_type == PhysicsType::TRACKING_SPRINGS) {
                         TrackingWheel& tw = i_.o1->get_tire_tracking_wheel(i_.tire_id);
                         tw.notify_intersection(
