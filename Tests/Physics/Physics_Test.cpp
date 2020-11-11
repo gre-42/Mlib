@@ -64,13 +64,13 @@ void test_power_to_force_negative() {
     float m = 1000;
     float alpha0 = 0.2;
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, P, m, v3, dt, alpha0, false);
+        auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, P, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
     assert_isclose<float>(v3(0), 32.0889, 1e-4);
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, -P, m, v3, dt, alpha0, false);
+        auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, -P, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
@@ -87,8 +87,8 @@ void test_power_to_force_stiction_normal() {
     float stiction_coefficient = 1;
     float alpha0 = 0.2;
     for(float t = 0; t < 10; t += dt) {
-        auto F = power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, alpha0, true);
-        F += power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, 4321, v3, dt, alpha0, true);
+        auto F = power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, v3, dt, alpha0, true);
+        F += power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, v3, dt, alpha0, true);
         v3 += F / m * dt;
     }
     assert_isclose<float>(v3(0), 97.0226, 1e-4);

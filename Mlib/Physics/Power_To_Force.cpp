@@ -97,7 +97,10 @@ float signed_min(float v, float max_length) {
 }
 
 /**
- * solve(1/2*m*((v+F/m*t)^2-v^2) = P*t, F);
+ * W = F * s
+ * W = P * t
+ * s = v * t
+ * F = W / s = W / v / t = P / v
  * 
  * P == NAN => brake
  */
@@ -109,7 +112,6 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     float max_velocity,
     const FixedArray<float, 3>& n3,
     float P,
-    float m,
     const FixedArray<float, 3>& v3,
     float dt,
     float alpha0,
@@ -140,9 +142,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     // if (!std::isnan(P) && !(sign(P) * v < 0 && std::abs(v) > hand_break_velocity) && !(P == 0 && std::abs(v) < roll_velocity)) {
     if (!std::isnan(P) && (sign(P) * v > 0 || ((P != 0) == (std::abs(v) < hand_break_velocity)))) {
         // Handle acceleration and rolling.
-        float F_sqrt = sign(P) * std::sqrt(squared(m * v) + 2 * std::abs(P) * m * dt);
-        float F_c = (P != 0) * (-m * v);
-        float x = (F_c + F_sqrt) / dt;
+        float x = P / (std::abs(v) + 1e-6);
         // std::cerr << "y / a = " << (y * std::sqrt(sum(squared(sn3T))) / max_stiction_force) << std::endl;
         if (avoid_burnout) {
             x = correct_x_ortho(x, fT, max_stiction_force);

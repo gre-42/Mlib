@@ -29,7 +29,6 @@ FixedArray<float, 3> power_to_force_infinite_mass(
     float max_velocity,
     const FixedArray<float, 3>& n3,
     float P,
-    float m,
     const FixedArray<float, 3>& v3,
     float dt,
     float alpha0,

@@ -217,7 +217,6 @@ void HandleLineTriangleIntersection::handle()
                             i_.o1->max_velocity_,
                             n3,
                             P,
-                            i_.o1->mass(),
                             v3,
                             i_.cfg.dt / i_.cfg.oversampling,
                             i_.cfg.alpha0,
