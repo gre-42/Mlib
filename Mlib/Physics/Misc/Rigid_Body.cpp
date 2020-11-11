@@ -12,6 +12,10 @@ using namespace Mlib;
 RigidBody::RigidBody(RigidBodies& rigid_bodies, const RigidBodyIntegrator& rbi)
 : rigid_bodies_{rigid_bodies},
   max_velocity_{INFINITY},
+#ifdef COMPUTE_POWER
+  power_{NAN},
+  energy_old_{NAN},
+#endif
   tires_z_{0, 0, -1},
   rbi_{rbi}
 {}
@@ -123,6 +127,13 @@ void RigidBody::advance_time(
     for(auto& t : tires_) {
         t.second.advance_time(dt);
     }
+#ifdef COMPUTE_POWER
+    float nrg = energy();
+    if (!std::isnan(energy_old_)) {
+        power_ = (nrg - energy_old_) / dt;
+    }
+    energy_old_ = nrg;
+#endif
 }
 
 float RigidBody::mass() const {
@@ -293,6 +304,12 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
     }
     if (log_components & LOG_ENERGY) {
         ostr << "E: " << energy() / 1e3 << " kJ" << std::endl;
+#ifdef COMPUTE_POWER
+        // ostr << "P: " << power_ / 1e3 << " W" << std::endl;
+        if (!std::isnan(power_)) {
+            ostr << "P: " << power_ * 0.00135962 << " PS" << std::endl;
+        }
+#endif
     }
     for(const auto& o : collision_observers_) {
         auto c = std::dynamic_pointer_cast<Loggable>(o);

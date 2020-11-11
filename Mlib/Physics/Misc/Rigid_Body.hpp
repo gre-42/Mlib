@@ -71,6 +71,10 @@ public:
     RigidBodies& rigid_bodies_;
 
     float max_velocity_;
+#ifdef COMPUTE_POWER
+    float power_;
+    float energy_old_;
+#endif
     std::map<size_t, Tire> tires_;
     std::map<std::string, RigidBodyEngine> engines_;
     // std::map<size_t, bool> tire_sliding_;
