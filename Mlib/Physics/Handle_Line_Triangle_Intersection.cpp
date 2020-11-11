@@ -169,11 +169,9 @@ void HandleLineTriangleIntersection::handle()
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
                         float P = i_.o1->consume_tire_surface_power(i_.tire_id);
                         float r = i_.o1->get_tire_radius(i_.tire_id);
-                        // solve(1/2*m*(v1^2-v0^2) = P*t, v1)
+                        // F = W / s = W / v / t = P / v
                         if (!std::isnan(P)) {
-                            float odt = i_.cfg.dt / i_.cfg.oversampling;
-                            float dx_max = 20;
-                            float w_max = dx_max / (i_.o1->get_tire_radius(i_.tire_id) * odt);
+                            float v_max = 400.f;
                             // std::cerr << "dx " << dx << std::endl;
                             bool slipping = false;
                             if ((P != 0) && !slipping) {
@@ -181,9 +179,33 @@ void HandleLineTriangleIntersection::handle()
                                 if (sign(P) != sign(v) && std::abs(v) > i_.cfg.hand_break_velocity) {
                                     i_.o1->set_tire_angular_velocity(i_.tire_id, 0);
                                 } else if (P > 0) {
-                                    i_.o1->set_tire_angular_velocity(i_.tire_id, std::max(-w_max, -std::sqrt(squared(v) + 2 * std::abs(P) * odt / i_.o1->mass()) / r));
+                                    float v;
+                                    for (v = 0; v >= -v_max; v -= 0.1) {
+                                        tangential_force = friction_force_infinite_mass(
+                                            i_.cfg.stiction_coefficient * force_n1,
+                                            i_.cfg.friction_coefficient * force_n1,
+                                            i_.o1->mass(),
+                                            v3 + n3 * v,
+                                            i_.cfg.alpha0 / i_.cfg.oversampling);
+                                        if (dot0d(tangential_force, n3) > std::abs(P / v)) {
+                                            break;
+                                        }
+                                    }
+                                    i_.o1->set_tire_angular_velocity(i_.tire_id, v / r);
                                 } else if (P < 0) {
-                                    i_.o1->set_tire_angular_velocity(i_.tire_id, std::min(w_max, std::sqrt(squared(v) + 2 * std::abs(P) * odt / i_.o1->mass()) / r));
+                                    float v;
+                                    for (v = 0; v <= v_max; v += 0.1) {
+                                        tangential_force = friction_force_infinite_mass(
+                                            i_.cfg.stiction_coefficient * force_n1,
+                                            i_.cfg.friction_coefficient * force_n1,
+                                            i_.o1->mass(),
+                                            v3 + n3 * v,
+                                            i_.cfg.alpha0 / i_.cfg.oversampling);
+                                        if (-dot0d(tangential_force, n3) > std::abs(P / v)) {
+                                            break;
+                                        }
+                                    }
+                                    i_.o1->set_tire_angular_velocity(i_.tire_id, v / r);
                                 }
                             } else if (P == 0) {
                                 i_.o1->set_tire_angular_velocity(i_.tire_id, i_.o1->get_angular_velocity_at_tire(i_.tire_id));
