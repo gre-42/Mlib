@@ -171,7 +171,7 @@ void HandleLineTriangleIntersection::handle()
                         float r = i_.o1->get_tire_radius(i_.tire_id);
                         // F = W / s = W / v / t = P / v
                         if (!std::isnan(P)) {
-                            float v_max = 400.f;
+                            float v_max = 400.f / 3.6f;
                             // std::cerr << "dx " << dx << std::endl;
                             bool slipping = false;
                             if ((P != 0) && !slipping) {
@@ -181,12 +181,12 @@ void HandleLineTriangleIntersection::handle()
                                 } else if (P > 0) {
                                     float v;
                                     for (v = 0; v >= -v_max; v -= 0.1) {
-                                        tangential_force = friction_force_infinite_mass(
+                                        FixedArray<float, 3> tf = friction_force_infinite_mass(
                                             i_.cfg.stiction_coefficient * force_n1,
                                             i_.cfg.friction_coefficient * force_n1,
                                             v3 + n3 * v,
                                             i_.cfg.alpha0 / i_.cfg.oversampling);
-                                        if (dot0d(tangential_force, n3) > std::abs(P / v)) {
+                                        if (dot0d(tf, n3) > std::abs(P / v)) {
                                             break;
                                         }
                                     }
@@ -194,12 +194,12 @@ void HandleLineTriangleIntersection::handle()
                                 } else if (P < 0) {
                                     float v;
                                     for (v = 0; v <= v_max; v += 0.1) {
-                                        tangential_force = friction_force_infinite_mass(
+                                        FixedArray<float, 3> tf = friction_force_infinite_mass(
                                             i_.cfg.stiction_coefficient * force_n1,
                                             i_.cfg.friction_coefficient * force_n1,
                                             v3 + n3 * v,
                                             i_.cfg.alpha0 / i_.cfg.oversampling);
-                                        if (-dot0d(tangential_force, n3) > std::abs(P / v)) {
+                                        if (-dot0d(tf, n3) > std::abs(P / v)) {
                                             break;
                                         }
                                     }
