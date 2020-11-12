@@ -98,7 +98,7 @@ void RigidBody::advance_time(
             // static float spower = 0;
             // spower = 0.99 * spower + 0.01 * power;
             // std::cerr << "rb force " << force << std::endl;
-            float P = consume_tire_surface_power(t.first);
+            float P = consume_tire_surface_power(t.first).power;
             // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
             if (!std::isnan(P)) {
                 float dx_max = 0.1;
@@ -219,10 +219,10 @@ float RigidBody::get_tire_radius(size_t id) const {
     return tires_.at(id).radius;
 }
 
-float RigidBody::consume_tire_surface_power(size_t id) {
+PowerIntent RigidBody::consume_tire_surface_power(size_t id) {
     auto en = tires_.find(id);
     if (en == tires_.end()) {
-        return 0;
+        return PowerIntent{.power = 0, .type = PowerIntentType::ALWAYS_IDLE};
     }
     auto e = engines_.find(en->second.engine);
     if (e == engines_.end()) {

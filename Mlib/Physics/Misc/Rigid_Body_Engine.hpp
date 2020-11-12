@@ -4,11 +4,23 @@
 
 namespace Mlib {
 
+enum class PowerIntentType {
+    ACCELERATE_OR_BREAK,
+    ALWAYS_IDLE,
+    ALWAYS_BREAK,
+    BREAK_OR_IDLE
+};
+
+struct PowerIntent {
+    float power;
+    PowerIntentType type;
+};
+
 class RigidBodyEngine {
 public:
     explicit RigidBodyEngine(float max_surface_power);
     void set_surface_power(float surface_power);
-    float consume_abs_surface_power();
+    PowerIntent consume_abs_surface_power();
     void increment_ntires();
     void reset_forces();
 

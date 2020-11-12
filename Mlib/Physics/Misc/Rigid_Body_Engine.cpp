@@ -15,19 +15,24 @@ void RigidBodyEngine::reset_forces() {
     surface_power_nconsumed_ = 0;
 }
 
-float RigidBodyEngine::consume_abs_surface_power() {
+PowerIntent RigidBodyEngine::consume_abs_surface_power() {
+    if (max_surface_power_ == 0) {
+        return PowerIntent{.power = surface_power_, .type = PowerIntentType::BREAK_OR_IDLE};
+    }
     if (std::isnan(surface_power_)) {
-        return NAN;
+        return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
     }
     if (surface_power_nconsumed_ >= ntires_) {
-        return 0;
+        return PowerIntent{.power = sign(surface_power_), .type=PowerIntentType::BREAK_OR_IDLE};
     }
     ++surface_power_nconsumed_;
-    return surface_power_ / float(ntires_);
+    return PowerIntent{.power = surface_power_ / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
 }
 
 void RigidBodyEngine::set_surface_power(float surface_power) {
-    if (std::isnan(surface_power)) {
+    if (max_surface_power_ == 0) {
+        surface_power_ = sign(surface_power);
+    } else if (std::isnan(surface_power)) {
         surface_power_ = NAN;
     } else {
         surface_power_ = sign(surface_power) * std::min(max_surface_power_, std::abs(surface_power));

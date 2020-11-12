@@ -56,7 +56,7 @@ public:
     FixedArray<float, 3> get_velocity_at_tire(size_t id) const;
     float get_angular_velocity_at_tire(size_t id) const;
     float get_tire_radius(size_t id) const;
-    float consume_tire_surface_power(size_t id);
+    PowerIntent consume_tire_surface_power(size_t id);
     void set_surface_power(const std::string& engine_name, float surface_power);
     float get_tire_break_force(size_t id) const;
     TrackingWheel& get_tire_tracking_wheel(size_t id);
