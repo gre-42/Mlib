@@ -66,6 +66,34 @@ void accelerate_negative(
     rb.set_tire_angular_velocity(tire_id, vv / rb.get_tire_radius(tire_id));
 }
 
+void break_positive(
+    RigidBody& rb,
+    const FixedArray<float, 3>& v3,
+    const FixedArray<float, 3>& n3,
+    float force_n1,
+    const PhysicsEngineConfig& cfg,
+    size_t tire_id)
+{
+    float w = rb.get_angular_velocity_at_tire(tire_id);
+    rb.set_tire_angular_velocity(
+        tire_id,
+        std::max(w - 500.f * cfg.dt / cfg.oversampling, 0.f));
+}
+
+void break_negative(
+    RigidBody& rb,
+    const FixedArray<float, 3>& v3,
+    const FixedArray<float, 3>& n3,
+    float force_n1,
+    const PhysicsEngineConfig& cfg,
+    size_t tire_id)
+{
+    float w = rb.get_angular_velocity_at_tire(tire_id);
+    rb.set_tire_angular_velocity(
+        tire_id,
+        std::min(w + 500.f * cfg.dt / cfg.oversampling, 0.f));
+}
+
 void idle(RigidBody& rb, size_t tire_id) {
     rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(tire_id));
 }
@@ -84,9 +112,13 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
         // std::cerr << "dx " << dx << std::endl;
         bool slipping = false;
         if ((P.power != 0) && !slipping) {
-            float v = dot0d(v3, n3);
+            float v = dot0d(rb.rbi_.v_, n3);
             if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_break_velocity) {
-                rb.set_tire_angular_velocity(tire_id, 0);
+                if (P.power > 0) {
+                    break_positive(rb, v3, n3, force_n1, cfg, tire_id);
+                } else if (P.power < 0) {
+                    break_negative(rb, v3, n3, force_n1, cfg, tire_id);
+                }
             } else if (P.power > 0) {
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
                     idle(rb, tire_id);
