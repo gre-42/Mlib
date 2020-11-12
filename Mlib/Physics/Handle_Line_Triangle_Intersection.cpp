@@ -126,14 +126,17 @@ void HandleLineTriangleIntersection::handle()
             frac0 = i_.o1->mass() / (i_.o0->mass() + i_.o1->mass());
             frac1 = 1 - frac0;
         }
-        auto o11 = i_.o1->rbi_;
-        o11.advance_time(
-            i_.cfg.dt / i_.cfg.oversampling,
-            i_.cfg.min_acceleration,
-            i_.cfg.min_velocity,
-            i_.cfg.min_angular_velocity);
-        auto v11 = o11.velocity_at_position(intersection_point_);
-        float outness = dot0d(plane.normal_, v11);
+        float outness;
+        {
+            auto o11 = i_.o1->rbi_;
+            o11.advance_time(
+                i_.cfg.dt / i_.cfg.oversampling,
+                i_.cfg.min_acceleration,
+                i_.cfg.min_velocity,
+                i_.cfg.min_angular_velocity);
+            auto v11 = o11.velocity_at_position(intersection_point_);
+            outness = dot0d(plane.normal_, v11);
+        }
         assert_true(dist >= 0);
         float force_n0 = NAN;
         float force_n1 = NAN;
@@ -160,7 +163,8 @@ void HandleLineTriangleIntersection::handle()
         // }
         FixedArray<float, 3> tangential_force;
         if (i_.o0->mass() == INFINITY && i_.o1->mass() != INFINITY) {
-            FixedArray<float, 3> v3 = v11 - plane.normal_ * dot0d(plane.normal_, v11);
+            FixedArray<float, 3> v10 = i_.o1->velocity_at_position(intersection_point_);
+            FixedArray<float, 3> v3 = v10 - plane.normal_ * dot0d(plane.normal_, v10);
             if (i_.tire_id != SIZE_MAX) {
                 FixedArray<float, 3> n3 = i_.o1->get_abs_tire_z(i_.tire_id);
                 n3 -= plane.normal_ * dot0d(plane.normal_, n3);
