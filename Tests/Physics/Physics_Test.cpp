@@ -68,13 +68,13 @@ void test_power_to_force_negative() {
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
-    assert_isclose<float>(v3(0), 32.0889, 1e-4);
+    assert_isclose<float>(v3(0), 32.4703, 1e-4);
     for(float t = 0; t < 10; t += dt) {
         auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, -P, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
-    assert_isclose<float>(v3(0), -26.4613, 1e-4);
+    assert_isclose<float>(v3(0), -26.8054, 1e-4);
 }
 
 void test_power_to_force_stiction_normal() {
@@ -208,12 +208,12 @@ void test_sticky_spring() {
         stiction_force,
         friction_force,
         nullptr,
-        false,  // move_point_of_contact
+        true,  // move_point_of_contact
         force,
         slipping);
     assert_allclose(
         s.point_of_contact.to_array(),
-        Array<float>{5.59385, 3.14846, 2.54061},
+        Array<float>{4.40615, 2.85154, 2.65938},
         1e-5);
 }
 
@@ -245,7 +245,7 @@ void test_tracking_wheel() {
             assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, 0});
             tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
             tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
-            assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, -0.738615});
+            assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, -0.861});
         }
     }
 }
