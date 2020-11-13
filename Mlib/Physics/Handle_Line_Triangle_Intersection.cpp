@@ -220,6 +220,9 @@ void HandleLineTriangleIntersection::handle()
         } else {
             tangential_force = 0;
         }
+        // if (float lr = i_.cfg.stiction_coefficient * force_n1; lr > 1e-12) {
+        //     std::cerr << "f " << i_.tire_id << " " << std::sqrt(sum(squared(tangential_force))) / lr << std::endl;
+        // }
         if (frac0 != 0) {
             i_.o0->integrate_force({-force_n0 * plane.normal_ - tangential_force, intersection_point_});
         }
