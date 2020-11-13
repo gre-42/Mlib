@@ -27,7 +27,7 @@ void accelerate_positive(
             cfg.stiction_coefficient * force_n1,
             cfg.friction_coefficient * force_n1,
             v3 + n3 * vv,
-            cfg.alpha0 / cfg.oversampling);
+            cfg.alpha0);
         if (dot0d(tf, n3) > std::abs(power / vv) * f) {
             break;
         }
@@ -58,7 +58,7 @@ void accelerate_negative(
             cfg.stiction_coefficient * force_n1,
             cfg.friction_coefficient * force_n1,
             v3 + n3 * vv,
-            cfg.alpha0 / cfg.oversampling);
+            cfg.alpha0);
         if (-dot0d(tf, n3) > std::abs(power / vv) * f) {
             break;
         }
@@ -77,7 +77,7 @@ void break_positive(
     float w = rb.get_angular_velocity_at_tire(tire_id);
     rb.set_tire_angular_velocity(
         tire_id,
-        std::max(w - 500.f * cfg.dt / cfg.oversampling, 0.f));
+        std::max(w - 10.f, 0.f));
 }
 
 void break_negative(
@@ -91,7 +91,7 @@ void break_negative(
     float w = rb.get_angular_velocity_at_tire(tire_id);
     rb.set_tire_angular_velocity(
         tire_id,
-        std::min(w + 500.f * cfg.dt / cfg.oversampling, 0.f));
+        std::min(w + 10.f, 0.f));
 }
 
 void idle(RigidBody& rb, size_t tire_id) {
@@ -141,5 +141,5 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
         cfg.stiction_coefficient * force_n1,
         cfg.friction_coefficient * force_n1,
         v3 + n3 * v1,
-        cfg.alpha0 / cfg.oversampling);
+        cfg.alpha0);
 }
