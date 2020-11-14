@@ -154,7 +154,7 @@ void Player::move_to_waypoint() {
         }
         auto d = p.second->rb_->rbi_.abs_position() - rb_->rbi_.abs_position();
         if (sum(squared(d)) < squared(collision_avoidance_radius)) {
-            auto z = (z3_from_3x3(rb_->rbi_.rotation_));
+            auto z = rb_->rbi_.abs_z();
             if (dot0d(d, z) < 0) {
                 rb_->set_surface_power("main", NAN);  // NAN=break
                 return;
