@@ -78,6 +78,25 @@ void break_positive(
     rb.set_tire_angular_velocity(
         tire_id,
         std::max(w - 10.f, 0.f));
+    // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
+    //     cfg.stiction_coefficient * force_n1,
+    //     cfg.friction_coefficient * force_n1,
+    //     v3,
+    //     cfg.alpha0);
+    // float f0 = dot0d(tf0, z3);
+    // float v_max = 400.f / 3.6f;
+    // float vv;
+    // for (vv = v_max; vv >= 0; vv -= 0.1) {
+    //     FixedArray<float, 3> tf = friction_force_infinite_mass(
+    //         cfg.stiction_coefficient * force_n1,
+    //         cfg.friction_coefficient * force_n1,
+    //         v3 + n3 * vv,
+    //         cfg.alpha0);
+    //     if (dot0d(tf, z3) > f0 * 0.5f) {
+    //         break;
+    //     }
+    // }
+    // rb.set_tire_angular_velocity(tire_id, vv / rb.get_tire_radius(tire_id));
 }
 
 void break_negative(
@@ -92,6 +111,25 @@ void break_negative(
     rb.set_tire_angular_velocity(
         tire_id,
         std::min(w + 10.f, 0.f));
+    // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
+    //     cfg.stiction_coefficient * force_n1,
+    //     cfg.friction_coefficient * force_n1,
+    //     v3,
+    //     cfg.alpha0);
+    // float f0 = dot0d(tf0, n3);
+    // float v_max = 400.f / 3.6f;
+    // float vv;
+    // for (vv = -v_max; vv <= 0; vv += 0.1) {
+    //     FixedArray<float, 3> tf = friction_force_infinite_mass(
+    //         cfg.stiction_coefficient * force_n1,
+    //         cfg.friction_coefficient * force_n1,
+    //         v3 + n3 * vv,
+    //         cfg.alpha0);
+    //     if (-dot0d(tf, n3) > -f0 * 0.5f) {
+    //         break;
+    //     }
+    // }
+    // rb.set_tire_angular_velocity(tire_id, vv / rb.get_tire_radius(tire_id));
 }
 
 void idle(RigidBody& rb, size_t tire_id) {
