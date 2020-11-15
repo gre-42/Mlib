@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Stats/Linspace.hpp>
+#include <list>
 
 namespace Mlib {
 
@@ -157,6 +158,11 @@ public:
         for(const TData& yy : linspace(*ym.first, *ym.second, 5).flat_iterable()) {
             draw_text<TData>(0, ypos(yy), std::to_string(yy));
         }
+    }
+
+    template <class TData>
+    void plot(const std::list<TData>& x, const std::list<TData>& y, size_t down_sampling = 1) {
+        plot(std::vector(x.begin(), x.end()), std::vector(y.begin(), y.end()), down_sampling);
     }
 private:
     std::ostream& ostr_;

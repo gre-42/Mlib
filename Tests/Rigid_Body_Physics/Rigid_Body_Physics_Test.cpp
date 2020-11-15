@@ -1,4 +1,5 @@
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <fenv.h>
@@ -75,20 +76,28 @@ void test_rigid_body_physics_2() {
     PlaneConstraint pc{.J = {0, -1, 0}, .b = 0, .slop = 0.01};
     float h = 1. / 60.;
     float beta = 0.5;
-    float beta2 = 0.5;
+    float beta2 = 0.2;
     FixedArray<float, 3> g = {0, -9.8, 0};
+    // std::list<float> xs;
+    // std::list<float> ys;
     for(size_t i = 0; i < 100; ++i) {
         p.v += h * g;
         if (pc.active(p.x)) {
             for(size_t j = 0; j < 100; ++j) {
-                float lambda = - (dot0d(pc.J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) + beta2 * pc.bias(p.x))) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
+                float lambda = - (dot0d(pc.J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) - beta2 * pc.bias(p.x))) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
                 p.v += solve_symm_1d(p.mass, pc.J * lambda);
                 // p.v2b = p.v2;
             }
         }
         p.x += h * p.v;
-        std::cerr << p.x << " | " << p.v << " | " << pc.active(p.x) << " | " << pc.overlap(p.x) << " | " << pc.bias(p.x) << std::endl;
+        // std::cerr << p.x << " | " << p.v << " | " << pc.active(p.x) << " | " << pc.overlap(p.x) << " | " << pc.bias(p.x) << std::endl;
+        // xs.push_back(i);
+        // ys.push_back(p.x(1));
     }
+    // std::ofstream f{"/tmp/plot.svg"};
+    // Svg svg{f, 600, 500};
+    // svg.plot(xs, ys);
+    // svg.finish();
 }
 
 // void test_rigid_body_physics_1() {
