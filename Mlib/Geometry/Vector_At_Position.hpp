@@ -4,8 +4,7 @@
 namespace Mlib {
 
 template <class TData, size_t tsize>
-class VectorAtPosition {
-public:
+struct VectorAtPosition {
     FixedArray<TData, tsize> vector;
     FixedArray<TData, tsize> position;
 };

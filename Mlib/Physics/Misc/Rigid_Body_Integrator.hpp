@@ -5,7 +5,7 @@
 namespace Mlib {
 
 template <class TData, size_t tsize>
-class VectorAtPosition;
+struct VectorAtPosition;
 
 struct RigidBodyIntegrator {
 
