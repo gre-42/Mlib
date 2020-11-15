@@ -24,8 +24,7 @@ RigidBody::~RigidBody()
 {}
 
 void RigidBody::reset_forces() {
-    rbi_.a_ = 0.f;
-    rbi_.T_ = 0.f;
+    rbi_.reset_forces();
     for(auto& e : engines_) {
         e.second.reset_forces();
     }

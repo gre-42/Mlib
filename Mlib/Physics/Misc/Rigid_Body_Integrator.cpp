@@ -92,6 +92,11 @@ void RigidBodyIntegrator::integrate_gravity(const FixedArray<float, 3>& g) {
     a_ += g;
 }
 
+void RigidBodyIntegrator::reset_forces() {
+    a_ = 0.f;
+    T_ = 0.f;
+}
+
 float RigidBodyIntegrator::energy() const {
     // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
     return 0.5f * (mass_ * sum(squared(v_)) + dot0d(w_, dot1d(abs_I(), w_)));
