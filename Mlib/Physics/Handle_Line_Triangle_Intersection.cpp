@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Physics/Constraints.hpp>
 #include <Mlib/Physics/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
@@ -171,6 +172,21 @@ void HandleLineTriangleIntersection::handle()
                 n3 -= plane.normal_ * dot0d(plane.normal_, n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
+                    if (false) {
+                        auto rbp = i_.o1->rbi_.rbp_;
+                        auto t = cross(n3, plane.normal_);
+                        t /= std::sqrt(sum(squared(t)));
+                        ContactInfo ci{
+                            .rbp = rbp,
+                            .pc = {
+                                .plane = {t, intersection_point_ + 0.01f * t},
+                                .b = 0,
+                                .slop = 0},
+                            .p = intersection_point_};
+                        float lambda_total = 0;
+                        ci.solve(i_.cfg.dt, 0.5, 0.2, &lambda_total);
+                        std::cerr << i_.tire_id << " lambda_total " << lambda_total << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
+                    }
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
                         tangential_force = handle_tire_triangle_intersection(
                             *i_.o1,
