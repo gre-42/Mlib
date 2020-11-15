@@ -200,11 +200,11 @@ void test_rigid_body_physics_rbi_multiple() {
             {
                 rbp: rbp,
                 pc: pc,
-                p: rbp.abs_position() - FixedArray<float, 3>{-0.2, 0.1, 0}
+                p: dot1d(rbp.rotation_, {-0.2, -0.1, 0}) + rbp.abs_position()
             }, {
                 rbp: rbp,
                 pc: pc,
-                p: rbp.abs_position() - FixedArray<float, 3>{0.2, 0.1, 0}
+                p: dot1d(rbp.rotation_, {0.2, -0.1, 0}) + rbp.abs_position()
             }
         };
         // std::cerr << rbp.abs_position() << std::endl;
@@ -218,7 +218,7 @@ void test_rigid_body_physics_rbi_multiple() {
         // ys.push_back(rbp.abs_position()(1));
         ys.push_back(rbp.w_(2));
     }
-    if (true) {
+    if (false) {
         std::ofstream f{"/tmp/plot.svg"};
         Svg svg{f, 600, 500};
         svg.plot(xs, ys);
