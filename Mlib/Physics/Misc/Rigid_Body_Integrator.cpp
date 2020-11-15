@@ -40,15 +40,7 @@ void RigidBodyIntegrator::advance_time(
 {
     rbp_.v_ += dt * a_;
     L_ += dt * T_;
-    if (rbp_.I_is_diagonal_) {
-        // R I R^T w = L
-        // => w = R I^{-1} R^T L
-        // This enables support for INFINITY inside I.
-        FixedArray<float, 3> Iv{rbp_.I_(0, 0), rbp_.I_(1, 1), rbp_.I_(2, 2)};
-        rbp_.w_ = dot1d(rbp_.rotation_, dot1d(rbp_.rotation_.T(), L_) / Iv);
-    } else {
-        rbp_.w_ = solve_symm_1d(abs_I(), L_);
-    }
+    rbp_.w_ = rbp_.solve_abs_I(L_);
     // std::cerr << std::endl;
     // std::cerr << std::sqrt(sum(squared(v_))) << " "  << (sum(squared(v_)) < squared(min_velocity)) << std::endl;
     // std::cerr << std::sqrt(sum(squared(w_))) << " "  << (sum(squared(w_)) < squared(min_angular_velocity)) << std::endl;
