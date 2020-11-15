@@ -24,7 +24,7 @@ struct PlaneConstraint {
     float b;
     float slop;
     float C(const FixedArray<float, 3>& x) const {
-        return std::sqrt(squared(dot0d(J, x) + b));
+        return dot0d(J, x) + b;
     }
     float overlap(const FixedArray<float, 3>& x) const {
         // std::cerr << dot0d(J, x) + b << std::endl;
@@ -34,7 +34,7 @@ struct PlaneConstraint {
     float active(const FixedArray<float, 3>& x) const {
         return overlap(x) > 0;
     }
-    float offset(const FixedArray<float, 3>& x) const {
+    float bias(const FixedArray<float, 3>& x) const {
         return std::max(0.f, overlap(x) - slop);
     }
 };
@@ -81,13 +81,13 @@ void test_rigid_body_physics_2() {
         p.v += h * g;
         if (pc.active(p.x)) {
             for(size_t j = 0; j < 100; ++j) {
-                float lambda = - (dot0d(pc.J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) + beta2 * pc.offset(p.x))) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
+                float lambda = - (dot0d(pc.J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) + beta2 * pc.bias(p.x))) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
                 p.v += solve_symm_1d(p.mass, pc.J * lambda);
                 // p.v2b = p.v2;
             }
         }
         p.x += h * p.v;
-        std::cerr << p.x << " | " << p.v << " | " << pc.active(p.x) << " | " << pc.overlap(p.x) << " | " << pc.offset(p.x) << std::endl;
+        std::cerr << p.x << " | " << p.v << " | " << pc.active(p.x) << " | " << pc.overlap(p.x) << " | " << pc.bias(p.x) << std::endl;
     }
 }
 
