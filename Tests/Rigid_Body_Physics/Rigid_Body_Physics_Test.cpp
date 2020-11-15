@@ -128,18 +128,18 @@ void test_rigid_body_physics_rbi() {
     // std::list<float> ys;
     for(size_t i = 0; i < 100; ++i) {
         rbp.v_ += h * g;
-        FixedArray<float, 3> x = rbp.abs_position() - FixedArray<float, 3>{0, 0.1, 0};
+        FixedArray<float, 3> p = rbp.abs_position() - FixedArray<float, 3>{0, 0.1, 0};
         // std::cerr << x << std::endl;
         // std::cerr << rbp.rotation_ << std::endl;
         // std::cerr << rbp.abs_com_ << std::endl;
         // std::cerr << rbp.com_ << std::endl;
-        if (pc.active(x)) {
+        if (pc.active(p)) {
             for(size_t j = 0; j < 100; ++j) {
-                float v = dot0d(rbp.velocity_at_position(x), pc.plane.normal_);
-                float mc = rbp.effective_mass({.vector = pc.plane.normal_, .position = x});
-                float lambda = - mc * (-v + pc.b + 1.f / h * (beta * pc.C(x) - beta2 * pc.bias(x)));
+                float v = dot0d(rbp.velocity_at_position(p), pc.plane.normal_);
+                float mc = rbp.effective_mass({.vector = pc.plane.normal_, .position = p});
+                float lambda = - mc * (-v + pc.b + 1.f / h * (beta * pc.C(p) - beta2 * pc.bias(p)));
                 rbp.v_ -= pc.plane.normal_ / rbp.mass_ * lambda;
-                rbp.w_ -= rbp.solve_abs_I(pc.plane.normal_ * lambda);
+                rbp.w_ -= rbp.solve_abs_I(cross(p - rbp.abs_com_, pc.plane.normal_)) * lambda;
                 // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
             }
         }
