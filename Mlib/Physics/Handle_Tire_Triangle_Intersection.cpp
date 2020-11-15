@@ -16,7 +16,7 @@ void accelerate_positive(
     float v_max = 400.f / 3.6f;
     // r = v / w
     float f = 1;
-    if (float vc = sum(squared(rb.rbi_.v_)); vc > 1e-12) {
+    if (float vc = sum(squared(rb.rbi_.rbp_.v_)); vc > 1e-12) {
         if (float vt = sum(squared(rb.get_velocity_at_tire(tire_id))); vt > 1e-12) {
             f = std::clamp<float>(std::sqrt(vt / vc), 1e-1, 1e1);
         }
@@ -47,7 +47,7 @@ void accelerate_negative(
     float v_max = 400.f / 3.6f;
     // r = v / w
     float f = 1;
-    if (float vc = sum(squared(rb.rbi_.v_)); vc > 1e-12) {
+    if (float vc = sum(squared(rb.rbi_.rbp_.v_)); vc > 1e-12) {
         if (float vt = sum(squared(rb.get_velocity_at_tire(tire_id))); vt > 1e-12) {
             f = std::clamp<float>(std::sqrt(vt / vc), 1e-1, 1e1);
         }
@@ -150,7 +150,7 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
         // std::cerr << "dx " << dx << std::endl;
         bool slipping = false;
         if ((P.power != 0) && !slipping) {
-            float v = dot0d(rb.rbi_.v_, n3);
+            float v = dot0d(rb.rbi_.rbp_.v_, n3);
             if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_break_velocity) {
                 if (P.power > 0) {
                     break_positive(rb, v3, n3, force_n1, cfg, tire_id);

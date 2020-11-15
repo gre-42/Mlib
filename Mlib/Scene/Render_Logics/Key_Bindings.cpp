@@ -107,13 +107,13 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 }
                 rb->integrate_force(rb->abs_F(k.force));
                 if (any(k.rotate != 0.f)) {
-                    rb->rbi_.rotation_ = dot2d(rb->rbi_.rotation_, rodrigues(alpha * k.rotate));
+                    rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues(alpha * k.rotate));
                 }
                 rb->set_surface_power("main", k.surface_power);
                 rb->set_surface_power("breaks", k.surface_power);
                 rb->set_max_velocity(k.max_velocity);
                 if (k.tire_id != SIZE_MAX) {
-                    rb->set_tire_angle_y(k.tire_id, alpha * M_PI / 180.f * k.tire_angle_interp(std::sqrt(sum(squared(rb->rbi_.v_))) * 3.6f));
+                    rb->set_tire_angle_y(k.tire_id, alpha * M_PI / 180.f * k.tire_angle_interp(std::sqrt(sum(squared(rb->rbi_.rbp_.v_))) * 3.6f));
                 }
                 rb->tires_z_ += k.tires_z;
             }

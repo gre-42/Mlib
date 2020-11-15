@@ -58,9 +58,9 @@ void Gun::advance_time(float dt) {
         node->set_position(t);
         node->set_rotation(r);
         node->set_absolute_movable(rc.get());
-        rc->rbi_.v_ =
+        rc->rbi_.rbp_.v_ =
             - bullet_velocity_ * z3_from_4x4(absolute_model_matrix_)
-            + parent_rbi_.v_;
+            + parent_rbi_.rbp_.v_;
         scene_node_resources_.instantiate_renderable(bullet_renderable_resource_name_, "bullet", *node, SceneNodeResourceFilter{});
         rigid_bodies_.add_rigid_body(rc, scene_node_resources_.get_triangle_meshes(bullet_hitbox_resource_name_), {});
         std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());

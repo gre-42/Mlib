@@ -141,12 +141,12 @@ void test_com() {
     FixedArray<float, 3> com1{0, 1, 0};
     std::shared_ptr<RigidBody> r0 = rigid_cuboid(rbs, mass, size, com0);
     std::shared_ptr<RigidBody> r1 = rigid_cuboid(rbs, mass, size, com1);
-    r0->rbi_.abs_com_ = 0;
-    r1->rbi_.abs_com_ = com1;
-    r0->rbi_.rotation_ = fixed_identity_array<float, 3>();
-    r1->rbi_.rotation_ = fixed_identity_array<float, 3>();
+    r0->rbi_.rbp_.abs_com_ = 0;
+    r1->rbi_.rbp_.abs_com_ = com1;
+    r0->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
+    r1->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
     // Hack to get identical values in the following tests.
-    r1->rbi_.I_ = r0->rbi_.I_;
+    r1->rbi_.rbp_.I_ = r0->rbi_.rbp_.I_;
     r0->integrate_gravity({0, -9.8, 0});
     r1->integrate_gravity({0, -9.8, 0});
     {
@@ -158,10 +158,10 @@ void test_com() {
         r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.hand_break_velocity, beacons);
     }
     
-    // std::cerr << r0->rbi_.v_ << std::endl;
-    // std::cerr << r1->rbi_.v_ << std::endl;
-    assert_allclose(r0->rbi_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
-    assert_allclose(r1->rbi_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
+    // std::cerr << r0->rbi_.rbp_.v_ << std::endl;
+    // std::cerr << r1->rbi_.rbp_.v_ << std::endl;
+    assert_allclose(r0->rbi_.rbp_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
+    assert_allclose(r1->rbi_.rbp_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
     r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     {
@@ -172,7 +172,7 @@ void test_com() {
         std::list<Beacon> beacons;
         r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.hand_break_velocity, beacons);
     }
-    assert_allclose(r0->rbi_.v_.to_array(), r1->rbi_.v_.to_array());
+    assert_allclose(r0->rbi_.rbp_.v_.to_array(), r1->rbi_.rbp_.v_.to_array());
     assert_allclose(r0->rbi_.a_.to_array(), r1->rbi_.a_.to_array());
     assert_allclose(r0->rbi_.T_.to_array(), r1->rbi_.T_.to_array());
     assert_allclose(

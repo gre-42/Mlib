@@ -43,9 +43,9 @@ void RigidBody::integrate_force(
 {
     integrate_force(F);
     if (damping != 0) {
-        auto vn = n * dot0d(rbi_.v_, n);
-        auto vt = rbi_.v_ - vn;
-        rbi_.v_ = (1 - damping) * vn + vt * (1 - friction);
+        auto vn = n * dot0d(rbi_.rbp_.v_, n);
+        auto vt = rbi_.rbp_.v_ - vn;
+        rbi_.rbp_.v_ = (1 - damping) * vn + vt * (1 - friction);
         rbi_.L_ *= 1 - damping;
     }
     if (damping != 0) {
@@ -136,11 +136,11 @@ void RigidBody::advance_time(
 }
 
 float RigidBody::mass() const {
-    return rbi_.mass_;
+    return rbi_.rbp_.mass_;
 }
 
 FixedArray<float, 3> RigidBody::abs_com() const {
-    return rbi_.abs_com_;
+    return rbi_.rbp_.abs_com_;
 }
 
 FixedArray<float, 3, 3> RigidBody::abs_I() const {
@@ -149,8 +149,8 @@ FixedArray<float, 3, 3> RigidBody::abs_I() const {
 
 VectorAtPosition<float, 3> RigidBody::abs_F(const VectorAtPosition<float, 3>& F) const {
     return {
-        vector: dot1d(rbi_.rotation_, F.vector),
-        position: dot1d(rbi_.rotation_, F.position) + rbi_.abs_com_};
+        vector: dot1d(rbi_.rbp_.rotation_, F.vector),
+        position: dot1d(rbi_.rbp_.rotation_, F.position) + rbi_.rbp_.abs_com_};
 }
 
 FixedArray<float, 3> RigidBody::velocity_at_position(const FixedArray<float, 3>& position) const {
@@ -165,7 +165,7 @@ void RigidBody::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolut
 
 FixedArray<float, 4, 4> RigidBody::get_new_absolute_model_matrix() const {
     std::lock_guard lock{advance_time_mutex_};
-    return assemble_homogeneous_4x4(rbi_.rotation_, rbi_.abs_position());
+    return assemble_homogeneous_4x4(rbi_.rbp_.rotation_, rbi_.abs_position());
 }
 
 void RigidBody::notify_destroyed(void* obj) {
@@ -182,9 +182,9 @@ void RigidBody::set_tire_angle_y(size_t id, float angle_y) {
 
 FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
-        return dot2d(rbi_.rotation_, rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle_y));
+        return dot2d(rbi_.rbp_.rotation_, rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle_y));
     } else {
-        return rbi_.rotation_;
+        return rbi_.rbp_.rotation_;
     }
 }
 
@@ -193,7 +193,7 @@ FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
         z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle_y), z);
     }
-    z = dot1d(rbi_.rotation_, z);
+    z = dot1d(rbi_.rbp_.rotation_, z);
     return z;
 }
 
@@ -248,7 +248,7 @@ TrackingWheel& RigidBody::get_tire_tracking_wheel(size_t id) {
 }
 
 FixedArray<float, 3> RigidBody::get_abs_tire_position(size_t id) const {
-    return rbi_.abs_position() + dot1d(rbi_.rotation_, tires_.at(id).position);
+    return rbi_.abs_position() + dot1d(rbi_.rbp_.rotation_, tires_.at(id).position);
 }
 
 float RigidBody::energy() const {
@@ -274,7 +274,7 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
         ostr << "t: " << milliseconds << " ms" << std::endl;
     }
     if (log_components & LOG_SPEED) {
-        ostr << "v: " << std::sqrt(sum(squared(rbi_.v_))) * 3.6 << " km/h" << std::endl;
+        ostr << "v: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) * 3.6 << " km/h" << std::endl;
     }
     if (log_components & LOG_ACCELERATION) {
         ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) << " m/s^2" << std::endl;
@@ -283,9 +283,9 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
         // T = 2 PI r / v, T = 2 PI / w
         // r = v / w
         // r / r2 = v * a / (w * v^2) = a / (w * v)
-        if (float w2 = sum(squared(rbi_.w_)); w2 > 1e-2) {
-            ostr << "d: " << 2 * std::sqrt(sum(squared(rbi_.v_)) / w2) << " m" << std::endl;
-            ostr << "d / d2(9.8): " << 9.8 / std::sqrt(w2 * sum(squared(rbi_.v_))) << std::endl;
+        if (float w2 = sum(squared(rbi_.rbp_.w_)); w2 > 1e-2) {
+            ostr << "d: " << 2 * std::sqrt(sum(squared(rbi_.rbp_.v_)) / w2) << " m" << std::endl;
+            ostr << "d / d2(9.8): " << 9.8 / std::sqrt(w2 * sum(squared(rbi_.rbp_.v_))) << std::endl;
         } else {
             ostr << "d: " << " undefined" << std::endl;
             ostr << "d / d2(9.8): undefined" << std::endl;
@@ -295,7 +295,7 @@ void RigidBody::log(std::ostream& ostr, unsigned int log_components) const {
         // F = m * a = m v^2 / r
         // r = v^2 / a
         if (float a2 = sum(squared(rbi_.a_)); a2 > 1e-2) {
-            ostr << "d2: " << 2 * sum(squared(rbi_.v_)) / std::sqrt(a2) << " m" << std::endl;
+            ostr << "d2: " << 2 * sum(squared(rbi_.rbp_.v_)) / std::sqrt(a2) << " m" << std::endl;
         } else {
             ostr << "d2: " << " undefined" << std::endl;
         }

@@ -58,7 +58,7 @@ void Wheel::advance_time(float dt) {
         }
     }
     if (physics_type_ == PhysicsType::VERSION1) {
-        // angle_x_ += dot0d(rigid_body_.rbi_.v_, rigid_body_.rbi_.abs_z()) * dt / radius_;
+        // angle_x_ += dot0d(rigid_body_.rbi_.rbp_.v_, rigid_body_.rbi_.abs_z()) * dt / radius_;
         angle_x_ += rigid_body_.get_angular_velocity_at_tire(tire_id_) * dt;
         angle_x_ = std::fmod(angle_x_, 2 * M_PI);
     }

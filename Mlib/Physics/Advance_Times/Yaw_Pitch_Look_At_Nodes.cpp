@@ -57,7 +57,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const FixedArray<float, 4, 4
     for(size_t i = 0; i < 10; ++i) {
         RigidBodyIntegrator rbi = *followed_;
         rbi.a_ = 0;
-        rbi.v_ -= follower_.v_;
+        rbi.rbp_.v_ -= follower_.rbp_.v_;
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         Aim aim{
             t3_from_4x4(absolute_model_matrix),
@@ -73,7 +73,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const FixedArray<float, 4, 4
     if (!std::isnan(offset(1))) {
         RigidBodyIntegrator rbi = *followed_;
         rbi.a_ = 0;
-        rbi.v_ -= follower_.v_;
+        rbi.rbp_.v_ -= follower_.rbp_.v_;
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         FixedArray<float, 3> p = dehomogenized_3(
             dot1d(

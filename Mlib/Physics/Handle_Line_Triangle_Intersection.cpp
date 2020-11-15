@@ -45,10 +45,10 @@ void HandleLineTriangleIntersection::handle()
         if (i_.o0->mass() == INFINITY || i_.o1->mass() == INFINITY) {
             v = 0;
         } else {
-            v = (i_.o0->rbi_.v_ * i_.o0->mass() + i_.o1->rbi_.v_ * i_.o1->mass()) / (i_.o0->mass() + i_.o1->mass());
+            v = (i_.o0->rbi_.rbp_.v_ * i_.o0->mass() + i_.o1->rbi_.rbp_.v_ * i_.o1->mass()) / (i_.o0->mass() + i_.o1->mass());
         }
-        auto a0 = (v - i_.o0->rbi_.v_) / (i_.cfg.dt / i_.cfg.oversampling);
-        auto a1 = (v - i_.o1->rbi_.v_) / (i_.cfg.dt / i_.cfg.oversampling);
+        auto a0 = (v - i_.o0->rbi_.rbp_.v_) / (i_.cfg.dt / i_.cfg.oversampling);
+        auto a1 = (v - i_.o1->rbi_.rbp_.v_) / (i_.cfg.dt / i_.cfg.oversampling);
         if (i_.o0->mass() != INFINITY) {
             i_.o0->integrate_force({i_.o0->mass() * a0, intersection_point_});
         }

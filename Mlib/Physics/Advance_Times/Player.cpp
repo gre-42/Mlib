@@ -163,7 +163,7 @@ void Player::move_to_waypoint() {
     }
     // Keep velocity within the specified range.
     {
-        float dvel = sum(squared(rb_->rbi_.v_)) - squared(max_velocity);
+        float dvel = sum(squared(rb_->rbi_.rbp_.v_)) - squared(max_velocity);
         if (dvel < 0) {
             rb_->set_surface_power("main", surface_power_forward_);
         } else if (dvel < squared(max_velocity_break)) {

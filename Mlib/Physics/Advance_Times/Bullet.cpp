@@ -35,7 +35,7 @@ void Bullet::advance_time(float dt) {
     if (lifetime_ > max_lifetime_) {
         scene_.delete_root_node(bullet_node_name_);
     } else {
-        rigid_body_integrator_.rotation_ = lookat(rigid_body_integrator_.v_ / std::sqrt(sum(squared(rigid_body_integrator_.v_))));
+        rigid_body_integrator_.rbp_.rotation_ = lookat(rigid_body_integrator_.rbp_.v_ / std::sqrt(sum(squared(rigid_body_integrator_.rbp_.v_))));
     }
 }
 

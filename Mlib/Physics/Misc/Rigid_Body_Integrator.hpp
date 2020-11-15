@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
 #include <iosfwd>
 
 namespace Mlib {
@@ -37,19 +38,10 @@ struct RigidBodyIntegrator {
         float min_velocity,
         float min_angular_velocity);
 
-    float mass_;
+    RigidBodyPulses rbp_;
     FixedArray<float, 3> L_;    // angular momentum
-    FixedArray<float, 3, 3> I_; // inertia tensor
-    FixedArray<float, 3> com_;  // center of mass
-    FixedArray<float, 3> v_;    // velocity
-    FixedArray<float, 3> w_;    // angular velocity
-
     FixedArray<float, 3> a_;    // acceleration
     FixedArray<float, 3> T_;    // torque
-    FixedArray<float, 3, 3> rotation_;
-    FixedArray<float, 3> abs_com_;
-
-    bool I_is_diagonal_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RigidBodyIntegrator& rbi);
