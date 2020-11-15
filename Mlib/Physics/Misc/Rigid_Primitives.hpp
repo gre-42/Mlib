@@ -4,9 +4,16 @@
 
 namespace Mlib {
 
-class RigidBody;
+class RigidBodyPulses;
 class RigidBodyIntegrator;
+class RigidBody;
 class RigidBodies;
+
+// Source: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
+RigidBodyPulses rigid_cuboid_pulses(
+    float mass,
+    const FixedArray<float, 3>& size,
+    const FixedArray<float, 3>& com = fixed_zeros<float, 3>());
 
 // Source: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
 RigidBodyIntegrator rigid_cuboid_integrator(
