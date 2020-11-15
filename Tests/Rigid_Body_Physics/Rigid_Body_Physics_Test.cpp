@@ -200,11 +200,11 @@ void test_rigid_body_physics_rbi_multiple() {
             {
                 rbp: rbp,
                 pc: pc,
-                p: dot1d(rbp.rotation_, {-0.2, -0.1, 0}) + rbp.abs_position()
+                p: rbp.transform_to_world_coordinates({-0.2, -0.1, 0})
             }, {
                 rbp: rbp,
                 pc: pc,
-                p: dot1d(rbp.rotation_, {0.2, -0.1, 0}) + rbp.abs_position()
+                p: rbp.transform_to_world_coordinates({0.2, -0.1, 0})
             }
         };
         // std::cerr << rbp.abs_position() << std::endl;

@@ -59,6 +59,11 @@ FixedArray<float, 3> RigidBodyPulses::abs_position() const {
     return abs_com_ - dot1d(rotation_, com_);
 }
 
+FixedArray<float, 3> RigidBodyPulses::transform_to_world_coordinates(const FixedArray<float, 3>& v) const {
+    // return dot1d(rbp.rotation_, v) + rbp.abs_position()
+    return dot1d(rotation_, v - com_) + abs_com_;
+}
+
 FixedArray<float, 3> RigidBodyPulses::abs_z() const {
     return z3_from_3x3(rotation_);
 }

@@ -248,7 +248,7 @@ TrackingWheel& RigidBody::get_tire_tracking_wheel(size_t id) {
 }
 
 FixedArray<float, 3> RigidBody::get_abs_tire_position(size_t id) const {
-    return rbi_.abs_position() + dot1d(rbi_.rbp_.rotation_, tires_.at(id).position);
+    return rbi_.rbp_.transform_to_world_coordinates(tires_.at(id).position);
 }
 
 float RigidBody::energy() const {
