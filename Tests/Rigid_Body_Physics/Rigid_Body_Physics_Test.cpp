@@ -3,6 +3,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Physics/Constraints.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <fenv.h>
@@ -21,25 +22,6 @@ struct Particle {
     FixedArray<float, 3> x;
     FixedArray<float, 3> v;
     FixedArray<float, 3, 3> mass;
-};
-
-struct PlaneConstraint {
-    PlaneNd<float, 3> plane;
-    float b;
-    float slop;
-    float C(const FixedArray<float, 3>& x) const {
-        return -(dot0d(plane.normal_, x) + plane.intercept_);
-    }
-    float overlap(const FixedArray<float, 3>& x) const {
-        // std::cerr << plane.normal_ << " | " << x << " | " << plane.intercept_ << std::endl;
-        return -(dot0d(plane.normal_, x) + plane.intercept_);
-    }
-    float active(const FixedArray<float, 3>& x) const {
-        return overlap(x) > 0;
-    }
-    float bias(const FixedArray<float, 3>& x) const {
-        return std::max(0.f, overlap(x) - slop);
-    }
 };
 
 void test_rigid_body_physics_particle0() {
@@ -152,32 +134,6 @@ void test_rigid_body_physics_rbi() {
     // Svg svg{f, 600, 500};
     // svg.plot(xs, ys);
     // svg.finish();
-}
-
-struct ContactInfo {
-    RigidBodyPulses& rbp;
-    PlaneConstraint pc;
-    FixedArray<float, 3> p;
-    void solve(float dt, float beta, float beta2) {
-        if (pc.active(p)) {
-            for(size_t j = 0; j < 1; ++j) {
-                float v = dot0d(rbp.velocity_at_position(p), pc.plane.normal_);
-                float mc = rbp.effective_mass({.vector = pc.plane.normal_, .position = p});
-                float lambda = - mc * (-v + pc.b + 1.f / dt * (beta * pc.C(p) - beta2 * pc.bias(p)));
-                rbp.v_ -= pc.plane.normal_ / rbp.mass_ * lambda;
-                rbp.w_ -= rbp.solve_abs_I(cross(p - rbp.abs_com_, pc.plane.normal_)) * lambda;
-                // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
-            }
-        }
-    }
-};
-
-void solve_contacts(std::list<ContactInfo>& cis, float dt, float beta, float beta2) {
-    for(size_t i = 0; i < 100; ++i) {
-        for(ContactInfo& ci : cis) {
-            ci.solve(dt, beta, beta2);
-        }
-    }
 }
 
 void test_rigid_body_physics_rbi_multiple() {
