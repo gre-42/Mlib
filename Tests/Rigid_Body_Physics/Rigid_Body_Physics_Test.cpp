@@ -23,13 +23,23 @@ struct PlaneConstraint {
     FixedArray<float, 3> J;
     float b;
     float slop;
-    float C(const FixedArray<float, 3>& x) {
+    float C(const FixedArray<float, 3>& x) const {
         return 0.5f * squared(dot0d(J, x) + b);
     }
-    bool active(const FixedArray<float, 3>& x) {
+    float overlap(const FixedArray<float, 3>& x) const {
         // std::cerr << dot0d(J, x) + b << std::endl;
         // std::cerr << x << std::endl;
-        return dot0d(J, x) + b > slop;
+        return dot0d(J, x) + b;
+    }
+    float active(const FixedArray<float, 3>& x) const {
+        return overlap(x) > 0;
+    }
+    float offset(const FixedArray<float, 3>& x) const {
+        if (overlap(x) > slop) {
+            return -slop;
+        } else {
+            return 0;
+        }
     }
 };
 
@@ -66,21 +76,22 @@ void test_rigid_body_physics_1() {
 
 void test_rigid_body_physics_2() {
     Particle p{.x = {0, 0.2, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.J = {0, -1, 0}, .b = 0, .slop = 0.1};
+    PlaneConstraint pc{.J = {0, -1, 0}, .b = 0, .slop = 0.01};
     float h = 1. / 60.;
     float beta = 0.5;
+    float beta2 = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
     for(size_t i = 0; i < 100; ++i) {
         p.v += h * g;
         if (pc.active(p.x)) {
             for(size_t j = 0; j < 100; ++j) {
-                float lambda = - (dot0d(pc.J, p.v) + pc.b + beta / h * pc.C(p.x)) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
+                float lambda = - (dot0d(pc.J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) + beta2 * pc.offset(p.x))) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
                 p.v += solve_symm_1d(p.mass, pc.J * lambda);
                 // p.v2b = p.v2;
             }
         }
         p.x += h * p.v;
-        std::cerr << p.x << " | " << p.v << std::endl;
+        std::cerr << p.x << " | " << p.v << " | " << pc.active(p.x) << " | " << pc.overlap(p.x) << " | " << pc.offset(p.x) << std::endl;
     }
 }
 
