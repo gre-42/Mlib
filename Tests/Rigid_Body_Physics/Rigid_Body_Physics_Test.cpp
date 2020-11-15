@@ -154,6 +154,78 @@ void test_rigid_body_physics_rbi() {
     // svg.finish();
 }
 
+struct ContactInfo {
+    RigidBodyPulses& rbp;
+    PlaneConstraint pc;
+    FixedArray<float, 3> p;
+    void solve(float dt, float beta, float beta2) {
+        if (pc.active(p)) {
+            for(size_t j = 0; j < 1; ++j) {
+                float v = dot0d(rbp.velocity_at_position(p), pc.plane.normal_);
+                float mc = rbp.effective_mass({.vector = pc.plane.normal_, .position = p});
+                float lambda = - mc * (-v + pc.b + 1.f / dt * (beta * pc.C(p) - beta2 * pc.bias(p)));
+                rbp.v_ -= pc.plane.normal_ / rbp.mass_ * lambda;
+                rbp.w_ -= rbp.solve_abs_I(cross(p - rbp.abs_com_, pc.plane.normal_)) * lambda;
+                // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
+            }
+        }
+    }
+};
+
+void solve_contacts(std::list<ContactInfo>& cis, float dt, float beta, float beta2) {
+    for(size_t i = 0; i < 100; ++i) {
+        for(ContactInfo& ci : cis) {
+            ci.solve(dt, beta, beta2);
+        }
+    }
+}
+
+void test_rigid_body_physics_rbi_multiple() {
+    RigidBodyPulses rbp = rigid_cuboid_pulses(10, {1, 2, 3}, {0, 0, 0});
+    rbp.set_pose(fixed_identity_array<float, 3>(), {0, 0.2, 0});
+    rbp.v_(1) = -1;
+    PlaneConstraint pc{
+        .plane = {{0, 1, 0}, {0, 0, 0}},
+        .b = 0,
+        .slop = 0.01};
+    float h = 1. / 60.;
+    float beta = 0.5;
+    float beta2 = 0.2;
+    FixedArray<float, 3> g = {0, -9.8, 0};
+    std::list<float> xs;
+    std::list<float> ys;
+    for(size_t i = 0; i < 100; ++i) {
+        rbp.v_ += h * g;
+        std::list<ContactInfo> cis{
+            {
+                rbp: rbp,
+                pc: pc,
+                p: rbp.abs_position() - FixedArray<float, 3>{-0.2, 0.1, 0}
+            }, {
+                rbp: rbp,
+                pc: pc,
+                p: rbp.abs_position() - FixedArray<float, 3>{0.2, 0.1, 0}
+            }
+        };
+        // std::cerr << rbp.abs_position() << std::endl;
+        // std::cerr << rbp.rotation_ << std::endl;
+        // std::cerr << rbp.abs_com_ << std::endl;
+        // std::cerr << rbp.com_ << std::endl;
+        solve_contacts(cis, h, beta, beta2);
+        rbp.advance_time(h, 0, 0);
+        // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
+        xs.push_back(i);
+        // ys.push_back(rbp.abs_position()(1));
+        ys.push_back(rbp.w_(2));
+    }
+    if (true) {
+        std::ofstream f{"/tmp/plot.svg"};
+        Svg svg{f, 600, 500};
+        svg.plot(xs, ys);
+        svg.finish();
+    }
+}
+
 // void test_rigid_body_physics_1() {
 //     Particle p{.x = {0, -0.1, 0}, .v1 = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
 //     float alpha0 = 5 * M_PI / 4;
@@ -188,5 +260,6 @@ int main(int argc, const char** argv) {
     test_rigid_body_physics_particle();
     test_rigid_body_physics_timestep();
     test_rigid_body_physics_rbi();
+    test_rigid_body_physics_rbi_multiple();
     return 0;
 }
