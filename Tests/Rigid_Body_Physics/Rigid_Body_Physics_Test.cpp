@@ -35,11 +35,7 @@ struct PlaneConstraint {
         return overlap(x) > 0;
     }
     float offset(const FixedArray<float, 3>& x) const {
-        if (overlap(x) > slop) {
-            return -slop;
-        } else {
-            return 0;
-        }
+        return std::max(0.f, overlap(x) - slop);
     }
 };
 
