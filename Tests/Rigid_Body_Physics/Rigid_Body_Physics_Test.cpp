@@ -24,7 +24,7 @@ struct PlaneConstraint {
     float b;
     float slop;
     float C(const FixedArray<float, 3>& x) const {
-        return 0.5f * squared(dot0d(J, x) + b);
+        return std::sqrt(squared(dot0d(J, x) + b));
     }
     float overlap(const FixedArray<float, 3>& x) const {
         // std::cerr << dot0d(J, x) + b << std::endl;
