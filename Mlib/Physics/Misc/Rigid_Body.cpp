@@ -158,8 +158,9 @@ FixedArray<float, 3> RigidBody::velocity_at_position(const FixedArray<float, 3>&
 }
 
 void RigidBody::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) {
-    rbi_.rotation_ = R3_from_4x4(absolute_model_matrix);
-    rbi_.abs_com_ = dot1d(rbi_.rotation_, rbi_.com_) + t3_from_4x4(absolute_model_matrix);
+    rbi_.set_pose(
+        R3_from_4x4(absolute_model_matrix),
+        t3_from_4x4(absolute_model_matrix));
 }
 
 FixedArray<float, 4, 4> RigidBody::get_new_absolute_model_matrix() const {

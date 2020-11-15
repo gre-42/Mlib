@@ -63,6 +63,11 @@ FixedArray<float, 3> RigidBodyPulses::abs_z() const {
     return z3_from_3x3(rotation_);
 }
 
+void RigidBodyPulses::set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position) {
+    rotation_ = rotation;
+    abs_com_ = dot1d(rotation_, com_) + position;
+}
+
 FixedArray<float, 3> RigidBodyPulses::solve_abs_I(const FixedArray<float, 3>& x) const
 {
     if (I_is_diagonal_) {

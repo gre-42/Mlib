@@ -82,6 +82,11 @@ FixedArray<float, 3> RigidBodyIntegrator::abs_z() const {
     return z3_from_3x3(rotation_);
 }
 
+void RigidBodyIntegrator::set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position) {
+    rotation_ = rotation;
+    abs_com_ = dot1d(rotation_, com_) + position;
+}
+
 void RigidBodyIntegrator::integrate_force(const VectorAtPosition<float, 3>& F)
 {
     a_ += F.vector / mass_;

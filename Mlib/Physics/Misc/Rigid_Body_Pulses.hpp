@@ -24,6 +24,7 @@ struct RigidBodyPulses {
     FixedArray<float, 3, 3> abs_I() const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
     FixedArray<float, 3> solve_abs_I(const FixedArray<float, 3>& x) const;
+    void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position);
     void integrate_gravity(const FixedArray<float, 3>& g, float dt);
     float energy() const;
     float effective_mass(const VectorAtPosition<float, 3>& vp) const;

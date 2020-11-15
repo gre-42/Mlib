@@ -129,8 +129,7 @@ void test_rigid_body_physics_timestep() {
  */
 void test_rigid_body_physics_rbi() {
     RigidBodyPulses rbp = rigid_cuboid_pulses(10, {1, 2, 3}, {0, 0, 0});
-    rbp.rotation_ = fixed_identity_array<float, 3>();
-    rbp.abs_com_ = dot1d(rbp.rotation_, rbp.com_) + FixedArray<float, 3>{0, 0.2, 0};
+    rbp.set_pose(fixed_identity_array<float, 3>(), {0, 0.2, 0});
     rbp.v_(1) = -1;
     RigidBodyPlaneConstraint pc{
         .plane = {{0, 1, 0}, {0, 0, 0}},
