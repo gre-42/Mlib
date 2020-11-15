@@ -121,6 +121,12 @@ void test_rigid_body_physics_timestep() {
     // svg.finish();
 }
 
+/**
+ * From: Erin Catto, Modeling and Solving Constraints
+ *       Erin Catto, Fast and Simple Physics using Sequential Impulses
+ *       Marijn Tamis, Giuseppe Maggiore, Constraint based physics solver
+ *       Marijn Tamis, Sequential Impulse Solver for Rigid Body Dynamics
+ */
 void test_rigid_body_physics_rbi() {
     RigidBodyPulses rbp = rigid_cuboid_pulses(10, {1, 2, 3}, {0, 0, 0});
     rbp.rotation_ = fixed_identity_array<float, 3>();
