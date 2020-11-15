@@ -1,7 +1,10 @@
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <fenv.h>
 
 using namespace Mlib;
@@ -20,7 +23,7 @@ struct Particle {
     FixedArray<float, 3, 3> mass;
 };
 
-struct PlaneConstraint {
+struct ParticlePlaneConstraint {
     FixedArray<float, 3> J;
     float b;
     float slop;
@@ -40,9 +43,28 @@ struct PlaneConstraint {
     }
 };
 
-void test_rigid_body_physics_0() {
+struct RigidBodyPlaneConstraint {
+    PlaneNd<float, 3> plane;
+    float b;
+    float slop;
+    float C(const FixedArray<float, 3>& x) const {
+        return -(dot0d(plane.normal_, x) + plane.intercept_);
+    }
+    float overlap(const FixedArray<float, 3>& x) const {
+        // std::cerr << plane.normal_ << " | " << x << " | " << plane.intercept_ << std::endl;
+        return -(dot0d(plane.normal_, x) + plane.intercept_);
+    }
+    float active(const FixedArray<float, 3>& x) const {
+        return overlap(x) > 0;
+    }
+    float bias(const FixedArray<float, 3>& x) const {
+        return std::max(0.f, overlap(x) - slop);
+    }
+};
+
+void test_rigid_body_physics_particle0() {
     Particle0 p{.x = {0, -0.1, 0}, .v1 = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.J = {0, -1, 0}, .b = 0};
+    ParticlePlaneConstraint pc{.J = {0, -1, 0}, .b = 0};
     float h = 1. / 60.;
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
@@ -56,9 +78,9 @@ void test_rigid_body_physics_0() {
     p.x += h * p.v2;
 }
 
-void test_rigid_body_physics_1() {
+void test_rigid_body_physics_particle() {
     Particle p{.x = {0, -0.1, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.J = {0, -1, 0}, .b = 0};
+    ParticlePlaneConstraint pc{.J = {0, -1, 0}, .b = 0};
     float h = 1. / 60.;
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
@@ -71,9 +93,9 @@ void test_rigid_body_physics_1() {
     p.x += h * p.v;
 }
 
-void test_rigid_body_physics_2() {
+void test_rigid_body_physics_timestep() {
     Particle p{.x = {0, 0.2, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.J = {0, -1, 0}, .b = 0, .slop = 0.01};
+    ParticlePlaneConstraint pc{.J = {0, -1, 0}, .b = 0, .slop = 0.01};
     float h = 1. / 60.;
     float beta = 0.5;
     float beta2 = 0.2;
@@ -86,11 +108,53 @@ void test_rigid_body_physics_2() {
             for(size_t j = 0; j < 100; ++j) {
                 float lambda = - (dot0d(pc.J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) - beta2 * pc.bias(p.x))) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
                 p.v += solve_symm_1d(p.mass, pc.J * lambda);
-                // p.v2b = p.v2;
             }
         }
         p.x += h * p.v;
         // std::cerr << p.x << " | " << p.v << " | " << pc.active(p.x) << " | " << pc.overlap(p.x) << " | " << pc.bias(p.x) << std::endl;
+        // xs.push_back(i);
+        // ys.push_back(p.x(1));
+    }
+    // std::ofstream f{"/tmp/plot.svg"};
+    // Svg svg{f, 600, 500};
+    // svg.plot(xs, ys);
+    // svg.finish();
+}
+
+void test_rigid_body_physics_rbi() {
+    RigidBodyPulses rbp = rigid_cuboid_pulses(10, {1, 2, 3}, {0, 0, 0});
+    rbp.rotation_ = fixed_identity_array<float, 3>();
+    rbp.abs_com_ = dot1d(rbp.rotation_, rbp.com_) + FixedArray<float, 3>{0, 0.2, 0};
+    rbp.v_(1) = -1;
+    RigidBodyPlaneConstraint pc{
+        .plane = {{0, 1, 0}, {0, 0, 0}},
+        .b = 0,
+        .slop = 0.01};
+    float h = 1. / 60.;
+    float beta = 0.5;
+    float beta2 = 0.2;
+    FixedArray<float, 3> g = {0, -9.8, 0};
+    // std::list<float> xs;
+    // std::list<float> ys;
+    for(size_t i = 0; i < 100; ++i) {
+        rbp.v_ += h * g;
+        FixedArray<float, 3> x = rbp.abs_position() - FixedArray<float, 3>{0, 0.1, 0};
+        // std::cerr << x << std::endl;
+        // std::cerr << rbp.rotation_ << std::endl;
+        // std::cerr << rbp.abs_com_ << std::endl;
+        // std::cerr << rbp.com_ << std::endl;
+        if (pc.active(x)) {
+            for(size_t j = 0; j < 100; ++j) {
+                float v = dot0d(rbp.velocity_at_position(x), pc.plane.normal_);
+                float mc = rbp.effective_mass({.vector = pc.plane.normal_, .position = x});
+                float lambda = - mc * (-v + pc.b + 1.f / h * (beta * pc.C(x) - beta2 * pc.bias(x)));
+                rbp.v_ -= pc.plane.normal_ / rbp.mass_ * lambda;
+                rbp.w_ -= rbp.solve_abs_I(pc.plane.normal_ * lambda);
+                // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
+            }
+        }
+        rbp.advance_time(h, 0, 0);
+        // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
         // xs.push_back(i);
         // ys.push_back(p.x(1));
     }
@@ -130,8 +194,9 @@ int main(int argc, const char** argv) {
     feenableexcept(FE_INVALID);
     #endif
 
-    test_rigid_body_physics_0();
-    test_rigid_body_physics_1();
-    test_rigid_body_physics_2();
+    test_rigid_body_physics_particle0();
+    test_rigid_body_physics_particle();
+    test_rigid_body_physics_timestep();
+    test_rigid_body_physics_rbi();
     return 0;
 }

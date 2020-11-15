@@ -24,7 +24,6 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
 
     return RigidBodyPulses{
         mass,
-        fixed_zeros<float, 3>(),            // L
         I,                                  // I
         com,                                // com
         fixed_zeros<float, 3>(),            // v

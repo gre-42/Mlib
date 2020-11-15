@@ -5,13 +5,12 @@
 namespace Mlib {
 
 template <class TData, size_t tsize>
-class VectorAtPosition;
+struct VectorAtPosition;
 
 struct RigidBodyPulses {
 
     RigidBodyPulses(
         float mass,
-        const FixedArray<float, 3>& L,    // angular momentum
         const FixedArray<float, 3, 3>& I, // inertia tensor
         const FixedArray<float, 3>& com,  // center of mass
         const FixedArray<float, 3>& v,    // velocity
@@ -24,18 +23,17 @@ struct RigidBodyPulses {
     FixedArray<float, 3> abs_position() const;
     FixedArray<float, 3, 3> abs_I() const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
-    void integrate_force(const VectorAtPosition<float, 3>& F, float dt);
+    FixedArray<float, 3> solve_abs_I(const FixedArray<float, 3>& x) const;
     void integrate_gravity(const FixedArray<float, 3>& g, float dt);
     float energy() const;
+    float effective_mass(const VectorAtPosition<float, 3>& vp) const;
 
     void advance_time(
         float dt,
-        float min_acceleration,
         float min_velocity,
         float min_angular_velocity);
 
     float mass_;
-    FixedArray<float, 3> L_;    // angular momentum
     FixedArray<float, 3, 3> I_; // inertia tensor
     FixedArray<float, 3> com_;  // center of mass
     FixedArray<float, 3> v_;    // velocity
