@@ -36,7 +36,7 @@ PhysicsLoop::PhysicsLoop(
             std::list<ContactInfo> contact_infos;
             physics_engine.collide(beacons, contact_infos, false);  // false=burn_in
             if (physics_cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                solve_contacts(contact_infos, physics_cfg.dt, physics_cfg.contact_beta, physics_cfg.contact_beta2);
+                solve_contacts(contact_infos, physics_cfg.dt / physics_cfg.oversampling, physics_cfg.contact_beta, physics_cfg.contact_beta2);
             }
             physics_engine.move_rigid_bodies(beacons);
         }

@@ -361,7 +361,7 @@ void PhysicsEngine::burn_in(float seconds) {
             std::list<ContactInfo> contact_infos;
             collide(beacons, contact_infos, true);  // true = burn_in
             if (cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                solve_contacts(contact_infos, cfg_.dt, cfg_.contact_beta, cfg_.contact_beta2);
+                solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling, cfg_.contact_beta, cfg_.contact_beta2);
             }
         }
         if (time < seconds / 2) {
