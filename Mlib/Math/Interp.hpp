@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <cmath>
 #include <iosfwd>
 #include <stdexcept>
 #include <vector>
@@ -85,7 +86,7 @@ private:
 template <class TData>
 std::ostream& operator << (std::ostream& ostr, const Interp<TData>& interp) {
     for(size_t i = 0; i < interp.x_.size(); ++i) {
-        ostr << interp.x_[i] << " -> " << interp.y_[i] << std::endl;
+        ostr << interp.x_[i] << " -> " << interp.y_[i] << '\n';
     }
     return ostr;
 }

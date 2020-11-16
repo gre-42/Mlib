@@ -50,7 +50,10 @@ void test_physics_engine() {
         &render_results,
         render_config};
 
-    PhysicsEngineConfig physics_cfg;
+    PhysicsEngineConfig physics_cfg{
+        .resolve_collision_type = getenv_default_bool("SEQUENTIAL_PULSES", false)
+            ? ResolveCollisionType::SEQUENTIAL_PULSES
+            : ResolveCollisionType::PENALTY};
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};

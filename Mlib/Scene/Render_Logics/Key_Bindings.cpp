@@ -52,7 +52,7 @@ bool KeyBindings::requires_postprocessing() const {
     throw std::runtime_error("KeyBindings::requires_postprocessing not implemented");
 }
 
-void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in) {
+void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in && !focus_.empty() && (focus_.back() == Focus::SCENE)) {
         // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         //     glfwSetWindowShouldClose(window_, GLFW_TRUE);

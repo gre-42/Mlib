@@ -10,7 +10,7 @@ class RigidBody;
 class GravityEfp: public ExternalForceProvider {
 public:
     explicit GravityEfp(const FixedArray<float, 3>& gravity);
-    virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in) override;
+    virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
 private:
     FixedArray<float, 3> gravity_;
 };

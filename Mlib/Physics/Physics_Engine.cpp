@@ -247,7 +247,7 @@ void PhysicsEngine::collide(
             olist.push_back(o.rigid_body);
         }
         for(const auto& efp : external_force_providers_) {
-            efp->increment_external_forces(olist, burn_in);
+            efp->increment_external_forces(olist, burn_in, cfg_);
         }
     }
     for(const auto& o : rigid_bodies_.objects_) {

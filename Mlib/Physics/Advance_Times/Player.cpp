@@ -99,7 +99,7 @@ void Player::advance_time(float dt) {
     aim_and_shoot();
 }
 
-void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in) {
+void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in) {
         move_to_waypoint();
     }
