@@ -34,7 +34,7 @@ void ContactInfo2::solve(float dt, float* lambda_total) const {
         float v1 = dot0d(rbp1.velocity_at_position(cp.p), pc.plane.normal_);
         float mc0 = rbp0.effective_mass({.vector = pc.plane.normal_, .position = cp.p});
         float mc1 = rbp1.effective_mass({.vector = pc.plane.normal_, .position = cp.p});
-        float lambda = - 0.5f * (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + cp.v(pc, dt));
+        float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + cp.v(pc, dt));
         lambda = std::clamp(lt + lambda, pc.lambda_min, pc.lambda_max) - lt;
         rbp0.integrate_impulse({
             .vector = -pc.plane.normal_ * lambda,
