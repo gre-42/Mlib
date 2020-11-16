@@ -13,6 +13,7 @@ struct PlaneConstraint {
     float slop;
     float lambda_min = -INFINITY;
     float lambda_max = INFINITY;
+    bool always_active = false;
     inline float C(const FixedArray<float, 3>& x) const {
         return -(dot0d(plane.normal_, x) + plane.intercept_);
     }
@@ -21,7 +22,7 @@ struct PlaneConstraint {
         return -(dot0d(plane.normal_, x) + plane.intercept_);
     }
     inline float active(const FixedArray<float, 3>& x) const {
-        return overlap(x) > 0;
+        return always_active || (overlap(x) > 0);
     }
     inline float bias(const FixedArray<float, 3>& x) const {
         return std::max(0.f, overlap(x) - slop);

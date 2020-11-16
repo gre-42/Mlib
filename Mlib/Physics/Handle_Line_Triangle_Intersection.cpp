@@ -281,10 +281,11 @@ void HandleLineTriangleIntersection::handle()
                         i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo1{
                             i_.o1->rbi_.rbp_,
                             PlaneConstraint{
-                                .plane = {-vp, i_.l1(penetrating_id) + float(1e-3) * -vp},
+                                .plane = {-vp, i_.l1(penetrating_id)},
                                 .b = 0,
                                 .slop = 0,
-                                .lambda_max = 0},
+                                .lambda_max = 0,
+                                .always_active = true},
                             ContactPoint{
                                 .beta = i_.cfg.contact_beta,
                                 .beta2 = i_.cfg.contact_beta2,
