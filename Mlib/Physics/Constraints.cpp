@@ -4,6 +4,12 @@
 
 using namespace Mlib;
 
+/**
+ * From: Erin Catto, Modeling and Solving Constraints
+ *       Erin Catto, Fast and Simple Physics using Sequential Impulses
+ *       Marijn Tamis, Giuseppe Maggiore, Constraint based physics solver
+ *       Marijn Tamis, Sequential Impulse Solver for Rigid Body Dynamics
+ */
 void ContactInfo::solve(float dt, float beta, float beta2, float* lambda_total) {
     if (pc.active(p)) {
         for(size_t j = 0; j < 1; ++j) {
