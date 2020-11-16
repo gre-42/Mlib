@@ -33,10 +33,10 @@ PhysicsLoop::PhysicsLoop(
         std::list<Beacon> beacons;
         for(size_t i = 0; i < physics_cfg.oversampling; ++i) {
             beacons.clear();
-            std::list<ContactInfo> contact_infos;
+            std::list<std::unique_ptr<ContactInfo>> contact_infos;
             physics_engine.collide(beacons, contact_infos, false);  // false=burn_in
             if (physics_cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                solve_contacts(contact_infos, physics_cfg.dt / physics_cfg.oversampling, physics_cfg.contact_beta, physics_cfg.contact_beta2);
+                solve_contacts(contact_infos, physics_cfg.dt / physics_cfg.oversampling);
             }
             physics_engine.move_rigid_bodies(beacons);
         }

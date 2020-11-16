@@ -152,22 +152,32 @@ void test_rigid_body_physics_rbi_multiple() {
     std::list<float> ys;
     for(size_t i = 0; i < 100; ++i) {
         rbp.v_ += h * g;
-        std::list<ContactInfo> cis{
-            {
-                rbp: rbp,
-                pc: pc,
-                p: rbp.transform_to_world_coordinates({-0.2, -0.1, 0})
-            }, {
-                rbp: rbp,
-                pc: pc,
-                p: rbp.transform_to_world_coordinates({0.2, -0.1, 0})
-            }
-        };
+        std::list<std::unique_ptr<ContactInfo>> cis;
+        cis.push_back(
+            std::unique_ptr<ContactInfo>(
+                new ContactInfo1{
+                    rbp,
+                    pc,
+                    ContactPoint{
+                        .beta = beta,
+                        .beta2 = beta2,
+                        .p = rbp.transform_to_world_coordinates({-0.2, -0.1, 0})
+                    }}));
+        cis.push_back(
+            std::unique_ptr<ContactInfo>(
+                new ContactInfo1{
+                    rbp,
+                    pc,
+                    ContactPoint{
+                        .beta = beta,
+                        .beta2 = beta2,
+                        .p = rbp.transform_to_world_coordinates({0.2, -0.1, 0})
+                    }}));
         // std::cerr << rbp.abs_position() << std::endl;
         // std::cerr << rbp.rotation_ << std::endl;
         // std::cerr << rbp.abs_com_ << std::endl;
         // std::cerr << rbp.com_ << std::endl;
-        solve_contacts(cis, h, beta, beta2);
+        solve_contacts(cis, h);
         rbp.advance_time(h);
         // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
         xs.push_back(i);

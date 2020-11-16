@@ -140,14 +140,32 @@ void HandleLineTriangleIntersection::handle()
         float force_n0 = NAN;
         float force_n1 = NAN;
         if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-            i_.contact_infos.push_back({
-                .rbp = i_.o1->rbi_.rbp_,
-                .pc = {
-                    .plane = plane,
-                    .b = 0,
-                    .slop = 0,
-                    .lambda_max = 0},
-                .p = i_.l1(penetrating_id)});
+            if (i_.o0->mass() != INFINITY) {
+                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo2{
+                    i_.o1->rbi_.rbp_,
+                    i_.o0->rbi_.rbp_,
+                    PlaneConstraint{
+                        .plane = plane,
+                        .b = 0,
+                        .slop = 0,
+                        .lambda_max = 0},
+                    ContactPoint{
+                        .beta = i_.cfg.contact_beta,
+                        .beta2 = i_.cfg.contact_beta2,
+                        .p = i_.l1(penetrating_id)}}));
+            } else {
+                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo1{
+                    i_.o1->rbi_.rbp_,
+                    PlaneConstraint{
+                        .plane = plane,
+                        .b = 0,
+                        .slop = 0,
+                        .lambda_max = 0},
+                    ContactPoint{
+                        .beta = i_.cfg.contact_beta,
+                        .beta2 = i_.cfg.contact_beta2,
+                        .p = i_.l1(penetrating_id)}}));
+            }
         } else {
             float outness;
             {
@@ -196,15 +214,18 @@ void HandleLineTriangleIntersection::handle()
                         auto rbp = i_.o1->rbi_.rbp_;
                         auto t = cross(n3, plane.normal_);
                         t /= std::sqrt(sum(squared(t)));
-                        ContactInfo ci{
-                            .rbp = rbp,
-                            .pc = {
+                        ContactInfo1 ci{
+                            rbp,
+                            PlaneConstraint{
                                 .plane = {t, intersection_point_ + 0.01f * t},
                                 .b = 0,
                                 .slop = 0},
-                            .p = intersection_point_};
+                            ContactPoint{
+                                .beta = i_.cfg.contact_beta,
+                                .beta2 = i_.cfg.contact_beta2,
+                                .p = intersection_point_}};
                         float lambda_total = 0;
-                        ci.solve(i_.cfg.dt, 0.5, 0.2, &lambda_total);
+                        ci.solve(i_.cfg.dt, &lambda_total);
                         std::cerr << i_.tire_id << " lambda_total " << lambda_total << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
                     }
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
