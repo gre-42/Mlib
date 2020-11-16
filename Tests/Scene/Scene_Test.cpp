@@ -51,9 +51,11 @@ void test_physics_engine() {
         render_config};
 
     PhysicsEngineConfig physics_cfg{
+        .dt = getenv_default_float("DT", 0.01667),
         .resolve_collision_type = getenv_default_bool("SEQUENTIAL_PULSES", false)
             ? ResolveCollisionType::SEQUENTIAL_PULSES
-            : ResolveCollisionType::PENALTY};
+            : ResolveCollisionType::PENALTY,
+        .oversampling = getenv_default_size_t("OVERSAMPLING", 20)};
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};

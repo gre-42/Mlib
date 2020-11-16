@@ -29,6 +29,14 @@ int Mlib::getenv_default_int(const char* n, int deflt) {
     return Mlib::safe_stoi(v);
 }
 
+size_t Mlib::getenv_default_size_t(const char* n, size_t deflt) {
+    const char* v = getenv(n);
+    if (v == nullptr) {
+        return deflt;
+    }
+    return Mlib::safe_stoz(v);
+}
+
 bool Mlib::getenv_default_bool(const char* n, bool deflt) {
     const char* v = getenv(n);
     if (v == nullptr) {
