@@ -14,6 +14,8 @@ struct PlaneConstraint {
     float lambda_min = -INFINITY;
     float lambda_max = INFINITY;
     bool always_active = false;
+    float beta;
+    float beta2;
     inline float C(const FixedArray<float, 3>& x) const {
         return -(dot0d(plane.normal_, x) + plane.intercept_);
     }
@@ -27,14 +29,8 @@ struct PlaneConstraint {
     inline float bias(const FixedArray<float, 3>& x) const {
         return std::max(0.f, overlap(x) - slop);
     }
-};
-
-struct ContactPoint {
-    float beta;
-    float beta2;
-    FixedArray<float, 3> p;
-    inline float v(const PlaneConstraint& pc, float dt) const {
-        return pc.b + 1.f / dt * (beta * pc.C(p) - beta2 * pc.bias(p));
+    inline float v(const FixedArray<float, 3>& p, float dt) const {
+        return b + 1.f / dt * (beta * C(p) - beta2 * bias(p));
     }
 };
 
@@ -49,16 +45,16 @@ public:
     ContactInfo1(
         RigidBodyPulses& rbp,
         const PlaneConstraint& pc,
-        const ContactPoint& cp)
+        const FixedArray<float, 3>& p)
     : rbp{rbp},
       pc{pc},
-      cp{cp}
+      p{p}
     {}
     void solve(float dt, float* lambda_total = nullptr) const override;
 private:
     RigidBodyPulses& rbp;
     PlaneConstraint pc;
-    ContactPoint cp;
+    FixedArray<float, 3> p;
 };
 
 class ContactInfo2: public ContactInfo {
@@ -67,18 +63,18 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const PlaneConstraint& pc,
-        const ContactPoint& cp)
+        const FixedArray<float, 3>& p)
     : rbp0{rbp0},
       rbp1{rbp1},
       pc{pc},
-      cp{cp}
+      p{p}
     {}
     void solve(float dt, float* lambda_total = nullptr) const override;
 private:
     RigidBodyPulses& rbp0;
     RigidBodyPulses& rbp1;
     PlaneConstraint pc;
-    ContactPoint cp;
+    FixedArray<float, 3> p;
 };
 
 void solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt);

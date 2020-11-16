@@ -143,10 +143,10 @@ void test_rigid_body_physics_rbi_multiple() {
     PlaneConstraint pc{
         .plane = {{0, 1, 0}, {0, 0, 0}},
         .b = 0,
-        .slop = 0.01};
+        .slop = 0.01,
+        .beta = 0.5,
+        .beta2 = 0.2};
     float h = 1. / 60.;
-    float beta = 0.5;
-    float beta2 = 0.2;
     FixedArray<float, 3> g = {0, -9.8, 0};
     std::list<float> xs;
     std::list<float> ys;
@@ -158,21 +158,13 @@ void test_rigid_body_physics_rbi_multiple() {
                 new ContactInfo1{
                     rbp,
                     pc,
-                    ContactPoint{
-                        .beta = beta,
-                        .beta2 = beta2,
-                        .p = rbp.transform_to_world_coordinates({-0.2, -0.1, 0})
-                    }}));
+                    rbp.transform_to_world_coordinates({-0.2, -0.1, 0})}));
         cis.push_back(
             std::unique_ptr<ContactInfo>(
                 new ContactInfo1{
                     rbp,
                     pc,
-                    ContactPoint{
-                        .beta = beta,
-                        .beta2 = beta2,
-                        .p = rbp.transform_to_world_coordinates({0.2, -0.1, 0})
-                    }}));
+                    rbp.transform_to_world_coordinates({0.2, -0.1, 0})}));
         // std::cerr << rbp.abs_position() << std::endl;
         // std::cerr << rbp.rotation_ << std::endl;
         // std::cerr << rbp.abs_com_ << std::endl;

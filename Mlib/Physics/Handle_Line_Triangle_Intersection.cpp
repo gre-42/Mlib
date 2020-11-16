@@ -148,11 +148,10 @@ void HandleLineTriangleIntersection::handle()
                         .plane = plane,
                         .b = 0,
                         .slop = 0,
-                        .lambda_max = 0},
-                    ContactPoint{
+                        .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
-                        .beta2 = i_.cfg.contact_beta2,
-                        .p = i_.l1(penetrating_id)}}));
+                        .beta2 = i_.cfg.contact_beta2},
+                    i_.l1(penetrating_id)}));
             } else {
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo1{
                     i_.o1->rbi_.rbp_,
@@ -160,11 +159,10 @@ void HandleLineTriangleIntersection::handle()
                         .plane = plane,
                         .b = 0,
                         .slop = 0,
-                        .lambda_max = 0},
-                    ContactPoint{
+                        .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
-                        .beta2 = i_.cfg.contact_beta2,
-                        .p = i_.l1(penetrating_id)}}));
+                        .beta2 = i_.cfg.contact_beta2},
+                    i_.l1(penetrating_id)}));
             }
         } else {
             float outness;
@@ -219,11 +217,10 @@ void HandleLineTriangleIntersection::handle()
                             PlaneConstraint{
                                 .plane = {t, intersection_point_ + 0.01f * t},
                                 .b = 0,
-                                .slop = 0},
-                            ContactPoint{
+                                .slop = 0,
                                 .beta = i_.cfg.contact_beta,
-                                .beta2 = i_.cfg.contact_beta2,
-                                .p = intersection_point_}};
+                                .beta2 = i_.cfg.contact_beta2},
+                            intersection_point_};
                         float lambda_total = 0;
                         ci.solve(i_.cfg.dt, &lambda_total);
                         std::cerr << i_.tire_id << " lambda_total " << lambda_total << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
@@ -285,11 +282,10 @@ void HandleLineTriangleIntersection::handle()
                                 .b = 0,
                                 .slop = 0,
                                 .lambda_max = 0,
-                                .always_active = true},
-                            ContactPoint{
+                                .always_active = true,
                                 .beta = i_.cfg.contact_beta,
-                                .beta2 = i_.cfg.contact_beta2,
-                                .p = i_.l1(penetrating_id)}}));
+                                .beta2 = i_.cfg.contact_beta2},
+                            i_.l1(penetrating_id)}));
                     }
                 }
             }
