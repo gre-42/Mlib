@@ -11,6 +11,8 @@ struct PlaneConstraint {
     PlaneNd<float, 3> plane;
     float b;
     float slop;
+    float lambda_min = -INFINITY;
+    float lambda_max = INFINITY;
     inline float C(const FixedArray<float, 3>& x) const {
         return -(dot0d(plane.normal_, x) + plane.intercept_);
     }

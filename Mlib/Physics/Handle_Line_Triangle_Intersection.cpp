@@ -88,7 +88,9 @@ void HandleLineTriangleIntersection::handle()
             plane = i_.p0;
         }
         float dist;
+        size_t penetrating_id;
         if (i_.lines_are_normals) {
+            penetrating_id = 1;
             dist = -(dot0d(i_.l1(1), plane.normal_) + plane.intercept_);
             if (dist < 0) {
                 if (i_.mesh0_two_sided) {
@@ -107,7 +109,14 @@ void HandleLineTriangleIntersection::handle()
             float dist_0 = dot0d(i_.l1(0), plane.normal_) + plane.intercept_;
             float dist_1 = dot0d(i_.l1(1), plane.normal_) + plane.intercept_;
             // smallest negative distance
-            dist = -std::min(dist_0, dist_1);
+            // dist = -std::min(dist_0, dist_1);
+            if (dist_0 < dist_1) {
+                penetrating_id = 0;
+                dist = -dist_0;
+            } else {
+                penetrating_id = 1;
+                dist = -dist_1;
+            }
         }
         assert_true((dist >= 0) || (std::abs(dist) < 1e-3));
         if (i_.tire_id != SIZE_MAX) {
@@ -128,29 +137,40 @@ void HandleLineTriangleIntersection::handle()
             frac0 = i_.o1->mass() / (i_.o0->mass() + i_.o1->mass());
             frac1 = 1 - frac0;
         }
-        float outness;
-        {
-            auto o11 = i_.o1->rbi_;
-            o11.advance_time(
-                i_.cfg.dt / i_.cfg.oversampling,
-                i_.cfg.min_acceleration,
-                i_.cfg.min_velocity,
-                i_.cfg.min_angular_velocity);
-            auto v11 = o11.velocity_at_position(intersection_point_);
-            outness = dot0d(plane.normal_, v11);
-        }
-        assert_true(dist >= 0);
         float force_n0 = NAN;
         float force_n1 = NAN;
-        {
-            float fac = i_.cfg.outness_fac_interp(outness) * squared(std::min(0.25f, dist));
-            if (frac0 != 0) {
-                force_n0 = fac * frac0 * i_.o0->mass();
+        if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+            i_.contact_infos.push_back({
+                .rbp = i_.o1->rbi_.rbp_,
+                .pc = {
+                    .plane = plane,
+                    .b = 0,
+                    .slop = 0,
+                    .lambda_max = 0},
+                .p = i_.l1(penetrating_id)});
+        } else {
+            float outness;
+            {
+                auto o11 = i_.o1->rbi_;
+                o11.advance_time(
+                    i_.cfg.dt / i_.cfg.oversampling,
+                    i_.cfg.min_acceleration,
+                    i_.cfg.min_velocity,
+                    i_.cfg.min_angular_velocity);
+                auto v11 = o11.velocity_at_position(intersection_point_);
+                outness = dot0d(plane.normal_, v11);
             }
-            if (frac1 != 0) {
-                force_n1 = fac * frac1 * i_.o1->mass();
-                if (i_.tire_id != SIZE_MAX) {
-                    i_.o1->tires_.at(i_.tire_id).shock_absorber.integrate_force(force_n1);
+            assert_true(dist >= 0);
+            {
+                float fac = i_.cfg.outness_fac_interp(outness) * squared(std::min(0.25f, dist));
+                if (frac0 != 0) {
+                    force_n0 = fac * frac0 * i_.o0->mass();
+                }
+                if (frac1 != 0) {
+                    force_n1 = fac * frac1 * i_.o1->mass();
+                    if (i_.tire_id != SIZE_MAX) {
+                        i_.o1->tires_.at(i_.tire_id).shock_absorber.integrate_force(force_n1);
+                    }
                 }
             }
         }
@@ -227,11 +247,13 @@ void HandleLineTriangleIntersection::handle()
                     tangential_force = 0;
                 }
             } else {
-                tangential_force = friction_force_infinite_mass(
-                    i_.cfg.stiction_coefficient * force_n1,
-                    i_.cfg.friction_coefficient * force_n1,
-                    v3,
-                    i_.cfg.alpha0);
+                if (i_.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
+                    tangential_force = friction_force_infinite_mass(
+                        i_.cfg.stiction_coefficient * force_n1,
+                        i_.cfg.friction_coefficient * force_n1,
+                        v3,
+                        i_.cfg.alpha0);
+                }
             }
         } else {
             tangential_force = 0;
@@ -239,11 +261,13 @@ void HandleLineTriangleIntersection::handle()
         // if (float lr = i_.cfg.stiction_coefficient * force_n1; lr > 1e-12) {
         //     std::cerr << "f " << i_.tire_id << " " << std::sqrt(sum(squared(tangential_force))) / lr << std::endl;
         // }
-        if (frac0 != 0) {
-            i_.o0->integrate_force({-force_n0 * plane.normal_ - tangential_force, intersection_point_});
-        }
-        if (frac1 != 0) {
-            i_.o1->integrate_force({force_n1 * plane.normal_ + tangential_force, intersection_point_});
+        if (i_.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
+            if (frac0 != 0) {
+                i_.o0->integrate_force({-force_n0 * plane.normal_ - tangential_force, intersection_point_});
+            }
+            if (frac1 != 0) {
+                i_.o1->integrate_force({force_n1 * plane.normal_ + tangential_force, intersection_point_});
+            }
         }
     } else {
         throw std::runtime_error("Unknown collision type");
