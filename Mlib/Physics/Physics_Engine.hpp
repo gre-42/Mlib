@@ -9,6 +9,7 @@ namespace Mlib {
 
 class ExternalForceProvider;
 struct Beacon;
+struct ContactInfo;
 
 class PhysicsEngine {
     friend CollisionQuery;
@@ -18,7 +19,10 @@ public:
         bool check_objects_deleted_on_destruction = true);
     ~PhysicsEngine();
     void add_external_force_provider(ExternalForceProvider* efp);
-    void collide(std::list<Beacon>& beacons, bool burn_in);
+    void collide(
+        std::list<Beacon>& beacons,
+        std::list<ContactInfo>& contact_infos,
+        bool burn_in);
     void move_rigid_bodies(std::list<Beacon>& beacons);
     void move_advance_times();
     void burn_in(float seconds);

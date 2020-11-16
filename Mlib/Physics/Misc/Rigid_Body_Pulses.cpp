@@ -26,24 +26,23 @@ RigidBodyPulses::RigidBodyPulses(
   I_is_diagonal_{I_is_diagonal}
 {}
 
-void RigidBodyPulses::advance_time(
-    float dt,
-    float min_velocity,
-    float min_angular_velocity)
+void RigidBodyPulses::advance_time(float dt)
 {
+    abs_com_ += dt * v_;
+    rotation_ = dot2d(rodrigues(dt * w_), rotation_);
     // std::cerr << std::endl;
     // std::cerr << std::sqrt(sum(squared(v_))) << " "  << (sum(squared(v_)) < squared(min_velocity)) << std::endl;
     // std::cerr << std::sqrt(sum(squared(w_))) << " "  << (sum(squared(w_)) < squared(min_angular_velocity)) << std::endl;
     // std::cerr << std::sqrt(sum(squared(a_))) << " "  << (sum(squared(a_)) < squared(min_acceleration)) << std::endl;
-    if ((sum(squared(v_)) < squared(min_velocity)) &&
-        (sum(squared(w_)) < squared(min_angular_velocity)))
-    {
-        v_ = 0;
-        w_ = 0;
-    } else {
-        abs_com_ += dt * v_;
-        rotation_ = dot2d(rodrigues(dt * w_), rotation_);
-    }
+    // if ((sum(squared(v_)) < squared(min_velocity)) &&
+    //     (sum(squared(w_)) < squared(min_angular_velocity)))
+    // {
+    //     v_ = 0;
+    //     w_ = 0;
+    // } else {
+    //     abs_com_ += dt * v_;
+    //     rotation_ = dot2d(rodrigues(dt * w_), rotation_);
+    // }
 }
 
 FixedArray<float, 3, 3> RigidBodyPulses::abs_I() const {

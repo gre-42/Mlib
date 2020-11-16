@@ -14,6 +14,7 @@ class PlaneNd;
 struct PhysicsEngineConfig;
 class SatTracker;
 struct Beacon;
+struct ContactInfo;
 
 struct IntersectionScene {
     const std::shared_ptr<RigidBody>& o0;
@@ -26,6 +27,7 @@ struct IntersectionScene {
     const PhysicsEngineConfig& cfg;
     const SatTracker& st;
     std::list<Beacon>& beacons;
+    std::list<ContactInfo>& contact_infos;
     size_t tire_id;
     bool mesh0_two_sided;
     bool lines_are_normals;

@@ -66,6 +66,7 @@ void RigidBody::advance_time(
     float min_velocity,
     float min_angular_velocity,
     PhysicsType physics_type,
+    ResolveCollisionType resolve_collision_type,
     float hand_break_velocity,
     std::list<Beacon>& beacons)
 {
@@ -122,7 +123,11 @@ void RigidBody::advance_time(
             }
         }
     }
-    rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);
+    if (resolve_collision_type == ResolveCollisionType::PENALTY) {
+        rbi_.advance_time(dt, min_acceleration, min_velocity, min_angular_velocity);
+    } else {
+        rbi_.rbp_.advance_time(dt);
+    }
     for(auto& t : tires_) {
         t.second.advance_time(dt);
     }

@@ -125,7 +125,7 @@ void test_rigid_body_physics_rbi() {
                 // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
             }
         }
-        rbp.advance_time(h, 0, 0);
+        rbp.advance_time(h);
         // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
         // xs.push_back(i);
         // ys.push_back(p.x(1));
@@ -168,7 +168,7 @@ void test_rigid_body_physics_rbi_multiple() {
         // std::cerr << rbp.abs_com_ << std::endl;
         // std::cerr << rbp.com_ << std::endl;
         solve_contacts(cis, h, beta, beta2);
-        rbp.advance_time(h, 0, 0);
+        rbp.advance_time(h);
         // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
         xs.push_back(i);
         // ys.push_back(rbp.abs_position()(1));

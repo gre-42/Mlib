@@ -31,10 +31,7 @@ struct RigidBodyPulses {
     float energy() const;
     float effective_mass(const VectorAtPosition<float, 3>& vp) const;
 
-    void advance_time(
-        float dt,
-        float min_velocity,
-        float min_angular_velocity);
+    void advance_time(float dt);
 
     float mass_;
     FixedArray<float, 3, 3> I_; // inertia tensor

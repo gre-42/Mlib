@@ -1,5 +1,6 @@
 #include "Physics_Loop.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Constraints.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
@@ -32,7 +33,11 @@ PhysicsLoop::PhysicsLoop(
         std::list<Beacon> beacons;
         for(size_t i = 0; i < physics_cfg.oversampling; ++i) {
             beacons.clear();
-            physics_engine.collide(beacons, false);  // false=burn_in
+            std::list<ContactInfo> contact_infos;
+            physics_engine.collide(beacons, contact_infos, false);  // false=burn_in
+            if (physics_cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+                solve_contacts(contact_infos, physics_cfg.dt, physics_cfg.contact_beta, physics_cfg.contact_beta2);
+            }
             physics_engine.move_rigid_bodies(beacons);
         }
         {

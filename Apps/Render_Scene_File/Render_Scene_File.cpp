@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
         "[--print_gamepad_buttons] "
         "[--show_mouse_cursor] "
         "[--physics_type {version1, tracking_springs, builtin}] "
+        "[--resolve_collisions_type {penalty, sequential_pulses}] "
         "[--no_bvh] "
         "[--oversampling] "
         "[--verbose]",
@@ -105,6 +106,7 @@ int main(int argc, char** argv) {
          "--black_lightmap_height",
          "--physics_dt",
          "--physics_type",
+         "--resolve_collisions_type",
          "--oversampling",
          "--render_dt",
          "--damping",
@@ -179,6 +181,7 @@ int main(int argc, char** argv) {
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "version1")),
+                .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collisions_type", "penalty")),
                 .bvh = !args.has_named("--no_bvh"),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "20"))};
 

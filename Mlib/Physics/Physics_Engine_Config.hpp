@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Physics_Type.hpp>
+#include <Mlib/Physics/Resolve_Collision_Type.hpp>
 #include <cmath>
 
 namespace Mlib {
@@ -27,6 +28,9 @@ struct PhysicsEngineConfig {
     float static_radius = 200;
     Interp<float> outness_fac_interp{{-0.5, 1}, {2000, 0}, OutOfRangeBehavior::CLAMP};
     PhysicsType physics_type = PhysicsType::VERSION1;
+    ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;
+    float contact_beta = 0.5;
+    float contact_beta2 = 0.2;
     bool bvh = true;
     size_t oversampling = 20;
 };

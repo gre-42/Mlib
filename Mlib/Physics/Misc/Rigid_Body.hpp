@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
 #include <Mlib/Physics/Misc/Tire.hpp>
+#include <Mlib/Physics/Resolve_Collision_Type.hpp>
 #include <Mlib/Scene_Graph/Loggable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>
@@ -40,6 +41,7 @@ public:
         float min_velocity,
         float min_angular_velocity,
         PhysicsType physics_type,
+        ResolveCollisionType resolve_collision_type,
         float hand_break_velocity,
         std::list<Beacon>& beacons);
     float mass() const;
