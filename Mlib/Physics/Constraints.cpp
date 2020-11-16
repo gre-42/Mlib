@@ -19,8 +19,9 @@ void ContactInfo::solve(float dt, float beta, float beta2, float* lambda_total) 
             if (lambda_total != nullptr) {
                 *lambda_total += lambda;
             }
-            rbp.v_ -= pc.plane.normal_ / rbp.mass_ * lambda;
-            rbp.w_ -= rbp.solve_abs_I(cross(p - rbp.abs_com_, pc.plane.normal_)) * lambda;
+            rbp.integrate_impulse({
+                .vector = -pc.plane.normal_ * lambda,
+                .position = p});
             // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
         }
     }

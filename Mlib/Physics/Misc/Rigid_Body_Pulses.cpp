@@ -90,6 +90,12 @@ void RigidBodyPulses::integrate_gravity(const FixedArray<float, 3>& g, float dt)
     v_ += dt * g;
 }
 
+void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, 3>& J)
+{
+    v_ += J.vector / mass_;
+    w_ += solve_abs_I(cross(J.position - abs_com_, J.vector));
+}
+
 float RigidBodyPulses::energy() const {
     // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
     return 0.5f * (mass_ * sum(squared(v_)) + dot0d(w_, dot1d(abs_I(), w_)));
