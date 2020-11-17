@@ -139,9 +139,10 @@ void HandleLineTriangleIntersection::handle()
         }
         float force_n0 = NAN;
         float force_n1 = NAN;
+        float impulse_n = NAN;
         if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
             if (i_.o0->mass() != INFINITY) {
-                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo2{
+                ContactInfo2* ci = new ContactInfo2{
                     i_.o1->rbi_.rbp_,
                     i_.o0->rbi_.rbp_,
                     PlaneConstraint{
@@ -151,9 +152,12 @@ void HandleLineTriangleIntersection::handle()
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
                         .beta2 = i_.cfg.contact_beta2},
-                    i_.l1(penetrating_id)}));
+                    i_.l1(penetrating_id)};
+                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                ci->solve(i_.cfg.dt / i_.cfg.oversampling);
+                impulse_n = ci->pc().lambda_total;
             } else {
-                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo1{
+                ContactInfo1* ci = new ContactInfo1{
                     i_.o1->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
@@ -162,7 +166,10 @@ void HandleLineTriangleIntersection::handle()
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
                         .beta2 = i_.cfg.contact_beta2},
-                    i_.l1(penetrating_id)}));
+                    i_.l1(penetrating_id)};
+                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                ci->solve(i_.cfg.dt / i_.cfg.oversampling);
+                impulse_n = ci->pc().lambda_total;
             }
         } else {
             float outness;
@@ -208,22 +215,23 @@ void HandleLineTriangleIntersection::handle()
                 n3 -= plane.normal_ * dot0d(plane.normal_, n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
-                    if (false) {
-                        auto rbp = i_.o1->rbi_.rbp_;
+                    if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                         auto t = cross(n3, plane.normal_);
                         t /= std::sqrt(sum(squared(t)));
-                        ContactInfo1 ci{
-                            rbp,
+                        i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo1{
+                            i_.o1->rbi_.rbp_,
                             PlaneConstraint{
-                                .plane = {t, intersection_point_},
+                                .plane = {t, i_.l1(penetrating_id)},
                                 .b = 0,
                                 .slop = 0,
+                                .lambda_min = i_.cfg.stiction_coefficient * impulse_n,
+                                .lambda_max = -i_.cfg.stiction_coefficient * impulse_n,
                                 .always_active = true,
                                 .beta = i_.cfg.contact_beta,
                                 .beta2 = i_.cfg.contact_beta2},
-                            intersection_point_};
-                        ci.solve(i_.cfg.dt / i_.cfg.oversampling);
-                        std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total / (i_.cfg.dt / i_.cfg.oversampling) << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
+                            i_.l1(penetrating_id)}));
+                        // ci.solve(i_.cfg.dt / i_.cfg.oversampling);
+                        // std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total / (i_.cfg.dt / i_.cfg.oversampling) << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
                     }
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
                         tangential_force = handle_tire_triangle_intersection(
