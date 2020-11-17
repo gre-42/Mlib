@@ -215,14 +215,15 @@ void HandleLineTriangleIntersection::handle()
                         ContactInfo1 ci{
                             rbp,
                             PlaneConstraint{
-                                .plane = {t, intersection_point_ + 0.01f * t},
+                                .plane = {t, intersection_point_},
                                 .b = 0,
                                 .slop = 0,
+                                .always_active = true,
                                 .beta = i_.cfg.contact_beta,
                                 .beta2 = i_.cfg.contact_beta2},
                             intersection_point_};
-                        ci.solve(i_.cfg.dt);
-                        std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
+                        ci.solve(i_.cfg.dt / i_.cfg.oversampling);
+                        std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total / (i_.cfg.dt / i_.cfg.oversampling) << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
                     }
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
                         tangential_force = handle_tire_triangle_intersection(
