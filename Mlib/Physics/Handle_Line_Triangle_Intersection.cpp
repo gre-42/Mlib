@@ -290,7 +290,26 @@ void HandleLineTriangleIntersection::handle()
                 }
             }
         } else {
-            tangential_force = 0;
+            if (i_.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
+                tangential_force = 0;
+            } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+                FixedArray<float, 3> vp = i_.o1->velocity_at_position(i_.l1(penetrating_id)) - i_.o0->velocity_at_position(i_.l1(penetrating_id));
+                if (float vp2 = sum(squared(vp)); vp2 > 1e-12) {
+                    vp /= std::sqrt(vp2);
+                    i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo2{
+                        i_.o1->rbi_.rbp_,
+                        i_.o0->rbi_.rbp_,
+                        PlaneConstraint{
+                            .plane = {-vp, i_.l1(penetrating_id)},
+                            .b = 0,
+                            .slop = 0,
+                            .lambda_max = 0,
+                            .always_active = true,
+                            .beta = i_.cfg.contact_beta,
+                            .beta2 = i_.cfg.contact_beta2},
+                        i_.l1(penetrating_id)}));
+                }
+            }
         }
         // if (float lr = i_.cfg.stiction_coefficient * force_n1; lr > 1e-12) {
         //     std::cerr << "f " << i_.tire_id << " " << std::sqrt(sum(squared(tangential_force))) / lr << std::endl;
