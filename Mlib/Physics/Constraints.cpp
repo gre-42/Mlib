@@ -10,44 +10,34 @@ using namespace Mlib;
  *       Marijn Tamis, Giuseppe Maggiore, Constraint based physics solver
  *       Marijn Tamis, Sequential Impulse Solver for Rigid Body Dynamics
  */
-void ContactInfo1::solve(float dt, float* lambda_total) const {
-    float lt = 0;
-    if (pc.active(p)) {
-        float v = dot0d(rbp.velocity_at_position(p), pc.plane.normal_);
-        float mc = rbp.effective_mass({.vector = pc.plane.normal_, .position = p});
-        float lambda = - mc * (-v + pc.v(p, dt));
-        lambda = std::clamp(lt + lambda, pc.lambda_min, pc.lambda_max) - lt;
-        lt += lambda;
-        rbp.integrate_impulse({
-            .vector = -pc.plane.normal_ * lambda,
-            .position = p});
+void ContactInfo1::solve(float dt) {
+    if (pc_.active(p_)) {
+        float v = dot0d(rbp_.velocity_at_position(p_), pc_.plane.normal_);
+        float mc = rbp_.effective_mass({.vector = pc_.plane.normal_, .position = p_});
+        float lambda = - mc * (-v + pc_.v(p_, dt));
+        lambda = pc_.clamped_lambda(lambda);
+        rbp_.integrate_impulse({
+            .vector = -pc_.plane.normal_ * lambda,
+            .position = p_});
         // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
-    }
-    if (lambda_total != nullptr) {
-        *lambda_total = lt;
     }
 }
 
-void ContactInfo2::solve(float dt, float* lambda_total) const {
-    float lt = 0;
-    if (pc.active(p)) {
-        float v0 = dot0d(rbp0.velocity_at_position(p), pc.plane.normal_);
-        float v1 = dot0d(rbp1.velocity_at_position(p), pc.plane.normal_);
-        float mc0 = rbp0.effective_mass({.vector = pc.plane.normal_, .position = p});
-        float mc1 = rbp1.effective_mass({.vector = pc.plane.normal_, .position = p});
-        float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(p, dt));
-        lambda = std::clamp(lt + lambda, pc.lambda_min, pc.lambda_max) - lt;
-        lt += lambda;
-        rbp0.integrate_impulse({
-            .vector = -pc.plane.normal_ * lambda,
-            .position = p});
-        rbp1.integrate_impulse({
-            .vector = pc.plane.normal_ * lambda,
-            .position = p});
+void ContactInfo2::solve(float dt) {
+    if (pc_.active(p_)) {
+        float v0 = dot0d(rbp0_.velocity_at_position(p_), pc_.plane.normal_);
+        float v1 = dot0d(rbp1_.velocity_at_position(p_), pc_.plane.normal_);
+        float mc0 = rbp0_.effective_mass({.vector = pc_.plane.normal_, .position = p_});
+        float mc1 = rbp1_.effective_mass({.vector = pc_.plane.normal_, .position = p_});
+        float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc_.v(p_, dt));
+        lambda = pc_.clamped_lambda(lambda);
+        rbp0_.integrate_impulse({
+            .vector = -pc_.plane.normal_ * lambda,
+            .position = p_});
+        rbp1_.integrate_impulse({
+            .vector = pc_.plane.normal_ * lambda,
+            .position = p_});
         // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
-    }
-    if (lambda_total != nullptr) {
-        *lambda_total = lt;
     }
 }
 

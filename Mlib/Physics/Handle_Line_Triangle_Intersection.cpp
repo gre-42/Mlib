@@ -221,9 +221,8 @@ void HandleLineTriangleIntersection::handle()
                                 .beta = i_.cfg.contact_beta,
                                 .beta2 = i_.cfg.contact_beta2},
                             intersection_point_};
-                        float lambda_total = 0;
-                        ci.solve(i_.cfg.dt, &lambda_total);
-                        std::cerr << i_.tire_id << " lambda_total " << lambda_total << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
+                        ci.solve(i_.cfg.dt);
+                        std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
                     }
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
                         tangential_force = handle_tire_triangle_intersection(

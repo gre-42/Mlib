@@ -13,6 +13,7 @@ struct PlaneConstraint {
     float slop;
     float lambda_min = -INFINITY;
     float lambda_max = INFINITY;
+    float lambda_total = 0;
     bool always_active = false;
     float beta;
     float beta2;
@@ -32,11 +33,16 @@ struct PlaneConstraint {
     inline float v(const FixedArray<float, 3>& p, float dt) const {
         return b + 1.f / dt * (beta * C(p) - beta2 * bias(p));
     }
+    inline float clamped_lambda(float lambda) {
+        lambda = std::clamp(lambda_total + lambda, lambda_min, lambda_max) - lambda_total;
+        lambda_total += lambda;
+        return lambda;
+    }
 };
 
 class ContactInfo {
 public:
-    virtual void solve(float dt, float* lambda_total = nullptr) const = 0;
+    virtual void solve(float dt) = 0;
     virtual ~ContactInfo() = default;
 };
 
@@ -46,15 +52,18 @@ public:
         RigidBodyPulses& rbp,
         const PlaneConstraint& pc,
         const FixedArray<float, 3>& p)
-    : rbp{rbp},
-      pc{pc},
-      p{p}
+    : rbp_{rbp},
+      pc_{pc},
+      p_{p}
     {}
-    void solve(float dt, float* lambda_total = nullptr) const override;
+    void solve(float dt) override;
+    const PlaneConstraint& pc() const {
+        return pc_;
+    }
 private:
-    RigidBodyPulses& rbp;
-    PlaneConstraint pc;
-    FixedArray<float, 3> p;
+    RigidBodyPulses& rbp_;
+    PlaneConstraint pc_;
+    FixedArray<float, 3> p_;
 };
 
 class ContactInfo2: public ContactInfo {
@@ -64,17 +73,20 @@ public:
         RigidBodyPulses& rbp1,
         const PlaneConstraint& pc,
         const FixedArray<float, 3>& p)
-    : rbp0{rbp0},
-      rbp1{rbp1},
-      pc{pc},
-      p{p}
+    : rbp0_{rbp0},
+      rbp1_{rbp1},
+      pc_{pc},
+      p_{p}
     {}
-    void solve(float dt, float* lambda_total = nullptr) const override;
+    void solve(float dt) override;
+    const PlaneConstraint& pc() const {
+        return pc_;
+    }
 private:
-    RigidBodyPulses& rbp0;
-    RigidBodyPulses& rbp1;
-    PlaneConstraint pc;
-    FixedArray<float, 3> p;
+    RigidBodyPulses& rbp0_;
+    RigidBodyPulses& rbp1_;
+    PlaneConstraint pc_;
+    FixedArray<float, 3> p_;
 };
 
 void solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt);
