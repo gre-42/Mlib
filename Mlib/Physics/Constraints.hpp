@@ -9,14 +9,14 @@ struct RigidBodyPulses;
 
 struct PlaneConstraint {
     PlaneNd<float, 3> plane;
-    float b;
-    float slop;
+    float b = 0;
+    float slop = 0;
     float lambda_min = -INFINITY;
     float lambda_max = INFINITY;
     float lambda_total = 0;
-    bool always_active = false;
-    float beta;
-    float beta2;
+    bool always_active = true;
+    float beta = 0.5;
+    float beta2 = 0.2;
     inline float C(const FixedArray<float, 3>& x) const {
         return -(dot0d(plane.normal_, x) + plane.intercept_);
     }
@@ -51,11 +51,7 @@ public:
     ContactInfo1(
         RigidBodyPulses& rbp,
         const PlaneConstraint& pc,
-        const FixedArray<float, 3>& p)
-    : rbp_{rbp},
-      pc_{pc},
-      p_{p}
-    {}
+        const FixedArray<float, 3>& p);
     void solve(float dt) override;
     const PlaneConstraint& pc() const {
         return pc_;
@@ -72,12 +68,7 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const PlaneConstraint& pc,
-        const FixedArray<float, 3>& p)
-    : rbp0_{rbp0},
-      rbp1_{rbp1},
-      pc_{pc},
-      p_{p}
-    {}
+        const FixedArray<float, 3>& p);
     void solve(float dt) override;
     const PlaneConstraint& pc() const {
         return pc_;
@@ -86,6 +77,36 @@ private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     PlaneConstraint pc_;
+    FixedArray<float, 3> p_;
+};
+
+class FrictionContactInfo1: public ContactInfo {
+public:
+    FrictionContactInfo1(
+        RigidBodyPulses& rbp,
+        const PlaneConstraint& normal_constraint,
+        const FixedArray<float, 3>& p);
+    void solve(float dt) override;
+private:
+    RigidBodyPulses& rbp_;
+    const PlaneConstraint& normal_constraint_;
+    PlaneConstraint pcs_[2];
+    FixedArray<float, 3> p_;
+};
+
+class FrictionContactInfo2: public ContactInfo {
+public:
+    FrictionContactInfo2(
+        RigidBodyPulses& rbp0,
+        RigidBodyPulses& rbp1,
+        const PlaneConstraint& normal_constraint,
+        const FixedArray<float, 3>& p);
+    void solve(float dt) override;
+private:
+    RigidBodyPulses& rbp0_;
+    RigidBodyPulses& rbp1_;
+    const PlaneConstraint& normal_constraint_;
+    PlaneConstraint pcs_[2];
     FixedArray<float, 3> p_;
 };
 

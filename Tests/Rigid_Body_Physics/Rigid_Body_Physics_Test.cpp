@@ -43,7 +43,7 @@ void test_rigid_body_physics_particle0() {
 
 void test_rigid_body_physics_particle() {
     Particle p{.x = {0, -0.1, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.plane = {{0, 1, 0}, {0, 0, 0}}, .b = 0};
+    PlaneConstraint pc{.plane = {{0, 1, 0}, {0, 0, 0}}, .b = 0, .always_active = false};
     float h = 1. / 60.;
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
@@ -59,7 +59,7 @@ void test_rigid_body_physics_particle() {
 
 void test_rigid_body_physics_timestep() {
     Particle p{.x = {0, 0.2, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.plane = {{0, 1, 0}, {0, 0, 0}}, .b = 0, .slop = 0.01};
+    PlaneConstraint pc{.plane = {{0, 1, 0}, {0, 0, 0}}, .b = 0, .slop = 0.01, .always_active = false};
     float h = 1. / 60.;
     float beta = 0.5;
     float beta2 = 0.2;
@@ -100,8 +100,8 @@ void test_rigid_body_physics_rbi() {
     rbp.v_(1) = -1;
     PlaneConstraint pc{
         .plane = {{0, 1, 0}, {0, 0, 0}},
-        .b = 0,
-        .slop = 0.01};
+        .slop = 0.01,
+        .always_active = false};
     float h = 1. / 60.;
     float beta = 0.5;
     float beta2 = 0.2;
@@ -142,10 +142,8 @@ void test_rigid_body_physics_rbi_multiple() {
     rbp.v_(1) = -1;
     PlaneConstraint pc{
         .plane = {{0, 1, 0}, {0, 0, 0}},
-        .b = 0,
         .slop = 0.01,
-        .beta = 0.5,
-        .beta2 = 0.2};
+        .always_active = false};
     float h = 1. / 60.;
     FixedArray<float, 3> g = {0, -9.8, 0};
     std::list<float> xs;

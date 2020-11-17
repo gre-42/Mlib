@@ -139,7 +139,7 @@ void HandleLineTriangleIntersection::handle()
         }
         float force_n0 = NAN;
         float force_n1 = NAN;
-        float impulse_n = NAN;
+        const PlaneConstraint* normal_constraint = nullptr;
         if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
             if (i_.o0->mass() != INFINITY) {
                 ContactInfo2* ci = new ContactInfo2{
@@ -147,29 +147,23 @@ void HandleLineTriangleIntersection::handle()
                     i_.o0->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
-                        .b = 0,
-                        .slop = 0,
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
                         .beta2 = i_.cfg.contact_beta2},
                     i_.l1(penetrating_id)};
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
-                ci->solve(i_.cfg.dt / i_.cfg.oversampling);
-                impulse_n = ci->pc().lambda_total;
+                normal_constraint = &ci->pc();
             } else {
                 ContactInfo1* ci = new ContactInfo1{
                     i_.o1->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
-                        .b = 0,
-                        .slop = 0,
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
                         .beta2 = i_.cfg.contact_beta2},
                     i_.l1(penetrating_id)};
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
-                ci->solve(i_.cfg.dt / i_.cfg.oversampling);
-                impulse_n = ci->pc().lambda_total;
+                normal_constraint = &ci->pc();
             }
         } else {
             float outness;
@@ -218,17 +212,9 @@ void HandleLineTriangleIntersection::handle()
                     if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                         auto t = cross(n3, plane.normal_);
                         t /= std::sqrt(sum(squared(t)));
-                        i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo1{
+                        i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                             i_.o1->rbi_.rbp_,
-                            PlaneConstraint{
-                                .plane = {t, i_.l1(penetrating_id)},
-                                .b = 0,
-                                .slop = 0,
-                                .lambda_min = i_.cfg.stiction_coefficient * impulse_n,
-                                .lambda_max = -i_.cfg.stiction_coefficient * impulse_n,
-                                .always_active = true,
-                                .beta = i_.cfg.contact_beta,
-                                .beta2 = i_.cfg.contact_beta2},
+                            *normal_constraint,
                             i_.l1(penetrating_id)}));
                         // ci.solve(i_.cfg.dt / i_.cfg.oversampling);
                         // std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total / (i_.cfg.dt / i_.cfg.oversampling) << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
@@ -280,43 +266,21 @@ void HandleLineTriangleIntersection::handle()
                         v3,
                         i_.cfg.alpha0);
                 } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                    FixedArray<float, 3> vp = i_.o1->velocity_at_position(i_.l1(penetrating_id));
-                    if (float vp2 = sum(squared(vp)); vp2 > 1e-12) {
-                        vp /= std::sqrt(vp2);
-                        i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo1{
-                            i_.o1->rbi_.rbp_,
-                            PlaneConstraint{
-                                .plane = {-vp, i_.l1(penetrating_id)},
-                                .b = 0,
-                                .slop = 0,
-                                .lambda_max = 0,
-                                .always_active = true,
-                                .beta = i_.cfg.contact_beta,
-                                .beta2 = i_.cfg.contact_beta2},
-                            i_.l1(penetrating_id)}));
-                    }
+                    i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
+                        i_.o1->rbi_.rbp_,
+                        *normal_constraint,
+                        i_.l1(penetrating_id)}));
                 }
             }
         } else {
             if (i_.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
                 tangential_force = 0;
             } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                FixedArray<float, 3> vp = i_.o1->velocity_at_position(i_.l1(penetrating_id)) - i_.o0->velocity_at_position(i_.l1(penetrating_id));
-                if (float vp2 = sum(squared(vp)); vp2 > 1e-12) {
-                    vp /= std::sqrt(vp2);
-                    i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new ContactInfo2{
-                        i_.o1->rbi_.rbp_,
-                        i_.o0->rbi_.rbp_,
-                        PlaneConstraint{
-                            .plane = {-vp, i_.l1(penetrating_id)},
-                            .b = 0,
-                            .slop = 0,
-                            .lambda_max = 0,
-                            .always_active = true,
-                            .beta = i_.cfg.contact_beta,
-                            .beta2 = i_.cfg.contact_beta2},
-                        i_.l1(penetrating_id)}));
-                }
+                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo2{
+                    i_.o1->rbi_.rbp_,
+                    i_.o0->rbi_.rbp_,
+                    *normal_constraint,
+                    i_.l1(penetrating_id)}));
             }
         }
         // if (float lr = i_.cfg.stiction_coefficient * force_n1; lr > 1e-12) {
