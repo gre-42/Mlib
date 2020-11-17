@@ -41,10 +41,11 @@ void test_physics_engine() {
         render_results.outputs[rsd] = Array<float>{};
     }
     RenderConfig render_config{
-        nsamples_msaa: 1,
-        cull_faces: true,
-        wire_frame: false,
-        window_title: "Physics test"};
+        .nsamples_msaa = 1,
+        .cull_faces = true,
+        .wire_frame = false,
+        .window_title = "Physics test",
+        .show_mouse_cursor = true};
     Render2 render2{
         num_renderings,
         &render_results,
