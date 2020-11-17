@@ -17,6 +17,7 @@ void ContactInfo1::solve(float dt, float* lambda_total) const {
         float mc = rbp.effective_mass({.vector = pc.plane.normal_, .position = p});
         float lambda = - mc * (-v + pc.v(p, dt));
         lambda = std::clamp(lt + lambda, pc.lambda_min, pc.lambda_max) - lt;
+        lt += lambda;
         rbp.integrate_impulse({
             .vector = -pc.plane.normal_ * lambda,
             .position = p});
@@ -36,6 +37,7 @@ void ContactInfo2::solve(float dt, float* lambda_total) const {
         float mc1 = rbp1.effective_mass({.vector = pc.plane.normal_, .position = p});
         float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(p, dt));
         lambda = std::clamp(lt + lambda, pc.lambda_min, pc.lambda_max) - lt;
+        lt += lambda;
         rbp0.integrate_impulse({
             .vector = -pc.plane.normal_ * lambda,
             .position = p});
