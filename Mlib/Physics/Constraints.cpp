@@ -20,12 +20,12 @@ ContactInfo1::ContactInfo1(
  *       Marijn Tamis, Giuseppe Maggiore, Constraint based physics solver
  *       Marijn Tamis, Sequential Impulse Solver for Rigid Body Dynamics
  */
-void ContactInfo1::solve(float dt) {
+void ContactInfo1::solve(float dt, float relaxation) {
     if (pc_.active(p_)) {
         float v = dot0d(rbp_.velocity_at_position(p_), pc_.plane.normal_);
         float mc = rbp_.effective_mass({.vector = pc_.plane.normal_, .position = p_});
         float lambda = - mc * (-v + pc_.v(p_, dt));
-        lambda = pc_.clamped_lambda(lambda);
+        lambda = pc_.clamped_lambda(relaxation * lambda);
         rbp_.integrate_impulse({
             .vector = -pc_.plane.normal_ * lambda,
             .position = p_});
@@ -44,14 +44,14 @@ ContactInfo2::ContactInfo2(
   p_{p}
 {}
 
-void ContactInfo2::solve(float dt) {
+void ContactInfo2::solve(float dt, float relaxation) {
     if (pc_.active(p_)) {
         float v0 = dot0d(rbp0_.velocity_at_position(p_), pc_.plane.normal_);
         float v1 = dot0d(rbp1_.velocity_at_position(p_), pc_.plane.normal_);
         float mc0 = rbp0_.effective_mass({.vector = pc_.plane.normal_, .position = p_});
         float mc1 = rbp1_.effective_mass({.vector = pc_.plane.normal_, .position = p_});
         float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc_.v(p_, dt));
-        lambda = pc_.clamped_lambda(lambda);
+        lambda = pc_.clamped_lambda(relaxation * lambda);
         rbp0_.integrate_impulse({
             .vector = -pc_.plane.normal_ * lambda,
             .position = p_});
@@ -80,7 +80,7 @@ FrictionContactInfo1::FrictionContactInfo1(
     pcs_[1].plane = PlaneNd<float, 3>{t1, p};
 }
 
-void FrictionContactInfo1::solve(float dt) {
+void FrictionContactInfo1::solve(float dt, float relaxation) {
     for (PlaneConstraint& pc : pcs_) {
         if (pc.active(p_)) {
             pc.lambda_min = std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
@@ -88,7 +88,7 @@ void FrictionContactInfo1::solve(float dt) {
             float v = dot0d(rbp_.velocity_at_position(p_), pc.plane.normal_);
             float mc = rbp_.effective_mass({.vector = pc.plane.normal_, .position = p_});
             float lambda = - mc * (-v + pc.v(p_, dt));
-            lambda = pc.clamped_lambda(lambda);
+            lambda = pc.clamped_lambda(relaxation * lambda);
             rbp_.integrate_impulse({
                 .vector = -pc.plane.normal_ * lambda,
                 .position = p_});
@@ -117,7 +117,7 @@ FrictionContactInfo2::FrictionContactInfo2(
     pcs_[1].plane = PlaneNd<float, 3>{t1, p};
 }
 
-void FrictionContactInfo2::solve(float dt) {
+void FrictionContactInfo2::solve(float dt, float relaxation) {
     for (PlaneConstraint& pc : pcs_) {
         if (pc.active(p_)) {
             pc.lambda_min = std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
@@ -127,7 +127,7 @@ void FrictionContactInfo2::solve(float dt) {
             float mc0 = rbp0_.effective_mass({.vector = pc.plane.normal_, .position = p_});
             float mc1 = rbp1_.effective_mass({.vector = pc.plane.normal_, .position = p_});
             float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(p_, dt));
-            lambda = pc.clamped_lambda(lambda);
+            lambda = pc.clamped_lambda(relaxation * lambda);
             rbp0_.integrate_impulse({
                 .vector = -pcs_[0].plane.normal_ * lambda,
                 .position = p_});
@@ -139,9 +139,9 @@ void FrictionContactInfo2::solve(float dt) {
 }
 
 void Mlib::solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt) {
-    for(size_t i = 0; i < 100; ++i) {
+    for(size_t i = 0; i < 10; ++i) {
         for(const std::unique_ptr<ContactInfo>& ci : cis) {
-            ci->solve(dt);
+            ci->solve(dt, i < 1 ? 0.2 : 1);
         }
     }
 }

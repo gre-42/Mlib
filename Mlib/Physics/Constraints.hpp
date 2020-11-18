@@ -42,7 +42,7 @@ struct PlaneConstraint {
 
 class ContactInfo {
 public:
-    virtual void solve(float dt) = 0;
+    virtual void solve(float dt, float relaxation) = 0;
     virtual ~ContactInfo() = default;
 };
 
@@ -52,7 +52,7 @@ public:
         RigidBodyPulses& rbp,
         const PlaneConstraint& pc,
         const FixedArray<float, 3>& p);
-    void solve(float dt) override;
+    void solve(float dt, float relaxation) override;
     const PlaneConstraint& pc() const {
         return pc_;
     }
@@ -69,7 +69,7 @@ public:
         RigidBodyPulses& rbp1,
         const PlaneConstraint& pc,
         const FixedArray<float, 3>& p);
-    void solve(float dt) override;
+    void solve(float dt, float relaxation) override;
     const PlaneConstraint& pc() const {
         return pc_;
     }
@@ -88,7 +88,7 @@ public:
         const FixedArray<float, 3>& p,
         float stiction_coefficient,
         float friction_coefficient);
-    void solve(float dt) override;
+    void solve(float dt, float relaxation) override;
 private:
     RigidBodyPulses& rbp_;
     const PlaneConstraint& normal_constraint_;
@@ -107,7 +107,7 @@ public:
         const FixedArray<float, 3>& p,
         float stiction_coefficient,
         float friction_coefficient);
-    void solve(float dt) override;
+    void solve(float dt, float relaxation) override;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
