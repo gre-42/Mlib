@@ -148,6 +148,9 @@ void HandleLineTriangleIntersection::handle()
                     i_.o0->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
+                        .slop = (i_.tire_id != SIZE_MAX)
+                            ? -i_.cfg.wheel_penetration_depth
+                            : 0,
                         .lambda_min = (i_.o0->rbi_.rbp_.mass_ * i_.o1->rbi_.rbp_.mass_) / (i_.o0->rbi_.rbp_.mass_ + i_.o1->rbi_.rbp_.mass_) * i_.cfg.lambda_min / i_.cfg.oversampling,
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
@@ -160,6 +163,9 @@ void HandleLineTriangleIntersection::handle()
                     i_.o1->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
+                        .slop = (i_.tire_id != SIZE_MAX)
+                            ? -i_.cfg.wheel_penetration_depth
+                            : 0,
                         .lambda_min = i_.o1->rbi_.rbp_.mass_ * i_.cfg.lambda_min / i_.cfg.oversampling,
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
