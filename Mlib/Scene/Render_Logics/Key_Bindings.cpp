@@ -105,7 +105,15 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (rb == nullptr) {
                     throw std::runtime_error("Absolute movable is not a rigid body");
                 }
-                rb->integrate_force(rb->abs_F(k.force));
+                if (cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
+                    rb->integrate_force(rb->abs_F(k.force));
+                } else if (cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+                    rb->rbi_.rbp_.integrate_impulse(rb->abs_F({
+                        vector: k.force.vector * (cfg.dt / cfg.oversampling),
+                        position: k.force.position}));
+                } else {
+                    throw std::runtime_error("Unknown resolve collision type");
+                }
                 if (any(k.rotate != 0.f)) {
                     rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues(alpha * k.rotate));
                 }
