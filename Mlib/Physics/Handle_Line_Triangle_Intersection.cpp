@@ -221,7 +221,6 @@ void HandleLineTriangleIntersection::handle()
                             i_.l1(penetrating_id),
                             i_.cfg.stiction_coefficient,
                             i_.cfg.friction_coefficient,
-                            fixed_zeros<float, 3>(),
                             fixed_zeros<float, 3>()}));
                         // ci.solve(i_.cfg.dt / i_.cfg.oversampling);
                         // std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total / (i_.cfg.dt / i_.cfg.oversampling) << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
@@ -279,7 +278,6 @@ void HandleLineTriangleIntersection::handle()
                         i_.l1(penetrating_id),
                         i_.cfg.stiction_coefficient,
                         i_.cfg.friction_coefficient,
-                        fixed_zeros<float, 3>(),
                         fixed_zeros<float, 3>()}));
                 }
             }
@@ -294,7 +292,6 @@ void HandleLineTriangleIntersection::handle()
                     i_.l1(penetrating_id),
                     i_.cfg.stiction_coefficient,
                     i_.cfg.friction_coefficient,
-                    fixed_zeros<float, 3>(),
                     fixed_zeros<float, 3>()}));
             }
         }
