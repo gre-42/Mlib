@@ -14,8 +14,6 @@ struct PlaneConstraint {
     PlaneNd<float, 3> plane;
     float b = 0;
     float slop = 0;
-    float lambda_min = -INFINITY;
-    float lambda_max = INFINITY;
     float lambda_total = 0;
     bool always_active = true;
     float beta = 0.5;
@@ -36,9 +34,15 @@ struct PlaneConstraint {
     inline float v(const FixedArray<float, 3>& p, float dt) const {
         return b + 1.f / dt * (beta * C(p) - beta2 * bias(p));
     }
+};
+
+struct BoundedPlaneConstraint {
+    PlaneConstraint plane_constraint;
+    float lambda_min = -INFINITY;
+    float lambda_max = INFINITY;
     inline float clamped_lambda(float lambda) {
-        lambda = std::clamp(lambda_total + lambda, lambda_min, lambda_max) - lambda_total;
-        lambda_total += lambda;
+        lambda = std::clamp(plane_constraint.lambda_total + lambda, lambda_min, lambda_max) - plane_constraint.lambda_total;
+        plane_constraint.lambda_total += lambda;
         return lambda;
     }
 };
@@ -53,15 +57,15 @@ class ContactInfo1: public ContactInfo {
 public:
     ContactInfo1(
         RigidBodyPulses& rbp,
-        const PlaneConstraint& pc,
+        const BoundedPlaneConstraint& pc,
         const FixedArray<float, 3>& p);
     void solve(float dt, float relaxation) override;
     const PlaneConstraint& pc() const {
-        return pc_;
+        return pc_.plane_constraint;
     }
 private:
     RigidBodyPulses& rbp_;
-    PlaneConstraint pc_;
+    BoundedPlaneConstraint pc_;
     FixedArray<float, 3> p_;
 };
 
@@ -70,16 +74,16 @@ public:
     ContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
-        const PlaneConstraint& pc,
+        const BoundedPlaneConstraint& pc,
         const FixedArray<float, 3>& p);
     void solve(float dt, float relaxation) override;
     const PlaneConstraint& pc() const {
-        return pc_;
+        return pc_.plane_constraint;
     }
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
-    PlaneConstraint pc_;
+    BoundedPlaneConstraint pc_;
     FixedArray<float, 3> p_;
 };
 

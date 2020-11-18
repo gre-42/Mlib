@@ -146,30 +146,34 @@ void HandleLineTriangleIntersection::handle()
                 ContactInfo2* ci = new ContactInfo2{
                     i_.o1->rbi_.rbp_,
                     i_.o0->rbi_.rbp_,
-                    PlaneConstraint{
-                        .plane = plane,
-                        .slop = (i_.tire_id != SIZE_MAX)
-                            ? -i_.cfg.wheel_penetration_depth
-                            : 0,
+                    BoundedPlaneConstraint{
+                        .plane_constraint{
+                            .plane = plane,
+                            .slop = (i_.tire_id != SIZE_MAX)
+                                ? -i_.cfg.wheel_penetration_depth
+                                : 0,
+                            .beta = i_.cfg.contact_beta,
+                            .beta2 = i_.cfg.contact_beta2
+                        },
                         .lambda_min = (i_.o0->rbi_.rbp_.mass_ * i_.o1->rbi_.rbp_.mass_) / (i_.o0->rbi_.rbp_.mass_ + i_.o1->rbi_.rbp_.mass_) * i_.cfg.lambda_min / i_.cfg.oversampling,
-                        .lambda_max = 0,
-                        .beta = i_.cfg.contact_beta,
-                        .beta2 = i_.cfg.contact_beta2},
+                        .lambda_max = 0},
                     i_.l1(penetrating_id)};
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                 normal_constraint = &ci->pc();
             } else {
                 ContactInfo1* ci = new ContactInfo1{
                     i_.o1->rbi_.rbp_,
-                    PlaneConstraint{
-                        .plane = plane,
-                        .slop = (i_.tire_id != SIZE_MAX)
-                            ? -i_.cfg.wheel_penetration_depth
-                            : 0,
+                    BoundedPlaneConstraint{
+                        .plane_constraint{
+                            .plane = plane,
+                            .slop = (i_.tire_id != SIZE_MAX)
+                                ? -i_.cfg.wheel_penetration_depth
+                                : 0,
+                            .beta = i_.cfg.contact_beta,
+                            .beta2 = i_.cfg.contact_beta2
+                        },
                         .lambda_min = i_.o1->rbi_.rbp_.mass_ * i_.cfg.lambda_min / i_.cfg.oversampling,
-                        .lambda_max = 0,
-                        .beta = i_.cfg.contact_beta,
-                        .beta2 = i_.cfg.contact_beta2},
+                        .lambda_max = 0},
                     i_.l1(penetrating_id)};
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                 normal_constraint = &ci->pc();

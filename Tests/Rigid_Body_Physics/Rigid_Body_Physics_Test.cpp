@@ -140,10 +140,11 @@ void test_rigid_body_physics_rbi_multiple() {
     RigidBodyPulses rbp = rigid_cuboid_pulses(10, {1, 2, 3}, {0, 0, 0});
     rbp.set_pose(fixed_identity_array<float, 3>(), {0, 0.2, 0});
     rbp.v_(1) = -1;
-    PlaneConstraint pc{
-        .plane = {{0, 1, 0}, {0, 0, 0}},
-        .slop = 0.01,
-        .always_active = false};
+    BoundedPlaneConstraint pc{
+        .plane_constraint{
+            .plane = {{0, 1, 0}, {0, 0, 0}},
+            .slop = 0.01,
+            .always_active = false}};
     float h = 1. / 60.;
     FixedArray<float, 3> g = {0, -9.8, 0};
     std::list<float> xs;
