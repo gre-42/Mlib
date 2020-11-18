@@ -125,6 +125,10 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
     apply_lambda(pcs_[1], lambda_total_new(1) - lambda_total_old(1));
 }
 
+float FrictionContactInfo1::max_impulse() const {
+    return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
+}
+
 FrictionContactInfo2::FrictionContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
@@ -173,6 +177,10 @@ void FrictionContactInfo2::solve(float dt, float relaxation) {
     };
     apply_lambda(pcs_[0], lambda_total_new(0) - lambda_total_old(0));
     apply_lambda(pcs_[1], lambda_total_new(1) - lambda_total_old(1));
+}
+
+float FrictionContactInfo2::max_impulse() const {
+    return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
 }
 
 TireContactInfo1::TireContactInfo1(

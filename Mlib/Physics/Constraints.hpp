@@ -104,9 +104,7 @@ public:
         float friction_coefficient,
         const FixedArray<float, 3>& b);
     void solve(float dt, float relaxation) override;
-    float max_impulse() const {
-        return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
-    }
+    float max_impulse() const;
 private:
     RigidBodyPulses& rbp_;
     const PlaneConstraint& normal_constraint_;
@@ -126,9 +124,7 @@ public:
         float friction_coefficient,
         const FixedArray<float, 3>& b);
     void solve(float dt, float relaxation) override;
-    float max_impulse() const {
-        return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
-    }
+    float max_impulse() const;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
