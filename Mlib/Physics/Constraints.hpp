@@ -83,7 +83,18 @@ private:
     FixedArray<float, 3> p_;
 };
 
-class FrictionContactInfo1: public ContactInfo {
+class OrthoPlaneConstraints {
+public:
+    explicit OrthoPlaneConstraints(
+        const FixedArray<float, 3>& normal,
+        const FixedArray<float, 3>& point_on_plane,
+        const FixedArray<float, 3>& b);
+    void set_b(const FixedArray<float, 3>& b);
+protected:
+    PlaneConstraint pcs_[2];
+};
+
+class FrictionContactInfo1: public OrthoPlaneConstraints, public ContactInfo {
 public:
     FrictionContactInfo1(
         RigidBodyPulses& rbp,
@@ -96,20 +107,15 @@ public:
     float max_impulse() const {
         return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
     }
-    void set_b(const FixedArray<float, 3>& b) {
-        pcs_[0].b = dot0d(pcs_[0].plane.normal_, b);
-        pcs_[1].b = dot0d(pcs_[1].plane.normal_, b);
-    }
 private:
     RigidBodyPulses& rbp_;
     const PlaneConstraint& normal_constraint_;
-    PlaneConstraint pcs_[2];
     FixedArray<float, 3> p_;
     float stiction_coefficient_;
     float friction_coefficient_;
 };
 
-class FrictionContactInfo2: public ContactInfo {
+class FrictionContactInfo2: public OrthoPlaneConstraints, public ContactInfo {
 public:
     FrictionContactInfo2(
         RigidBodyPulses& rbp0,
@@ -123,15 +129,10 @@ public:
     float max_impulse() const {
         return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
     }
-    void set_b(const FixedArray<float, 3>& b) {
-        pcs_[0].b = dot0d(pcs_[0].plane.normal_, b);
-        pcs_[1].b = dot0d(pcs_[1].plane.normal_, b);
-    }
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     const PlaneConstraint& normal_constraint_;
-    PlaneConstraint pcs_[2];
     FixedArray<float, 3> p_;
     float stiction_coefficient_;
     float friction_coefficient_;

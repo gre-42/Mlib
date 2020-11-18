@@ -64,6 +64,24 @@ void ContactInfo2::solve(float dt, float relaxation) {
     }
 }
 
+OrthoPlaneConstraints::OrthoPlaneConstraints(
+    const FixedArray<float, 3>& normal,
+    const FixedArray<float, 3>& point_on_plane,
+    const FixedArray<float, 3>& b)
+{
+    FixedArray<float, 3> t0 = arbitrary_orthogonal(normal);
+    t0 /= std::sqrt(sum(squared(t0)));
+    FixedArray<float, 3> t1 = cross(t0, normal);
+    pcs_[0].plane = PlaneNd<float, 3>{t0, point_on_plane};
+    pcs_[1].plane = PlaneNd<float, 3>{t1, point_on_plane};
+    set_b(b);
+}
+
+void OrthoPlaneConstraints::set_b(const FixedArray<float, 3>& b) {
+    pcs_[0].b = dot0d(pcs_[0].plane.normal_, b);
+    pcs_[1].b = dot0d(pcs_[1].plane.normal_, b);
+}
+
 FrictionContactInfo1::FrictionContactInfo1(
     RigidBodyPulses& rbp,
     const PlaneConstraint& normal_constraint,
@@ -71,19 +89,13 @@ FrictionContactInfo1::FrictionContactInfo1(
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b)
-: rbp_{rbp},
+: OrthoPlaneConstraints{normal_constraint.plane.normal_, p, b},
+  rbp_{rbp},
   normal_constraint_{normal_constraint},
   p_{p},
   stiction_coefficient_{stiction_coefficient},
   friction_coefficient_{friction_coefficient}
-{
-    FixedArray<float, 3> t0 = arbitrary_orthogonal(normal_constraint.plane.normal_);
-    t0 /= std::sqrt(sum(squared(t0)));
-    FixedArray<float, 3> t1 = cross(t0, normal_constraint.plane.normal_);
-    pcs_[0].plane = PlaneNd<float, 3>{t0, p};
-    pcs_[1].plane = PlaneNd<float, 3>{t1, p};
-    set_b(b);
-}
+{}
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
     for (PlaneConstraint& pc : pcs_) {
@@ -109,20 +121,14 @@ FrictionContactInfo2::FrictionContactInfo2(
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b)
-: rbp0_{rbp0},
+: OrthoPlaneConstraints{normal_constraint.plane.normal_, p, b},
+  rbp0_{rbp0},
   rbp1_{rbp1},
   normal_constraint_{normal_constraint},
   p_{p},
   stiction_coefficient_{stiction_coefficient},
   friction_coefficient_{friction_coefficient}
-{
-    FixedArray<float, 3> t0 = arbitrary_orthogonal(normal_constraint.plane.normal_);
-    t0 /= std::sqrt(sum(squared(t0)));
-    FixedArray<float, 3> t1 = cross(t0, normal_constraint.plane.normal_);
-    pcs_[0].plane = PlaneNd<float, 3>{t0, p};
-    pcs_[1].plane = PlaneNd<float, 3>{t1, p};
-    set_b(b);
-}
+{}
 
 void FrictionContactInfo2::solve(float dt, float relaxation) {
     for (PlaneConstraint& pc : pcs_) {
