@@ -155,7 +155,7 @@ void HandleLineTriangleIntersection::handle()
                             .beta = i_.cfg.contact_beta,
                             .beta2 = i_.cfg.contact_beta2
                         },
-                        .lambda_min = (i_.o0->rbi_.rbp_.mass_ * i_.o1->rbi_.rbp_.mass_) / (i_.o0->rbi_.rbp_.mass_ + i_.o1->rbi_.rbp_.mass_) * i_.cfg.lambda_min / i_.cfg.oversampling,
+                        .lambda_min = (i_.o0->mass() * i_.o1->mass()) / (i_.o0->mass() + i_.o1->mass()) * i_.cfg.lambda_min / i_.cfg.oversampling,
                         .lambda_max = 0},
                     i_.l1(penetrating_id)};
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
@@ -172,7 +172,7 @@ void HandleLineTriangleIntersection::handle()
                             .beta = i_.cfg.contact_beta,
                             .beta2 = i_.cfg.contact_beta2
                         },
-                        .lambda_min = i_.o1->rbi_.rbp_.mass_ * i_.cfg.lambda_min / i_.cfg.oversampling,
+                        .lambda_min = i_.o1->mass() * i_.cfg.lambda_min / i_.cfg.oversampling,
                         .lambda_max = 0},
                     i_.l1(penetrating_id)};
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
