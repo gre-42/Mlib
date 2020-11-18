@@ -75,6 +75,7 @@ FrictionContactInfo1::FrictionContactInfo1(
   friction_coefficient_{friction_coefficient}
 {
     FixedArray<float, 3> t0 = arbitrary_orthogonal(normal_constraint.plane.normal_);
+    t0 /= std::sqrt(sum(squared(t0)));
     FixedArray<float, 3> t1 = cross(t0, normal_constraint.plane.normal_);
     pcs_[0].plane = PlaneNd<float, 3>{t0, p};
     pcs_[1].plane = PlaneNd<float, 3>{t1, p};
