@@ -148,7 +148,7 @@ void HandleLineTriangleIntersection::handle()
                     i_.o0->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
-                        .lambda_min = i_.cfg.lambda_min / i_.cfg.oversampling,
+                        .lambda_min = (i_.o0->rbi_.rbp_.mass_ * i_.o1->rbi_.rbp_.mass_) / (i_.o0->rbi_.rbp_.mass_ + i_.o1->rbi_.rbp_.mass_) * i_.cfg.lambda_min / i_.cfg.oversampling,
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
                         .beta2 = i_.cfg.contact_beta2},
@@ -160,7 +160,7 @@ void HandleLineTriangleIntersection::handle()
                     i_.o1->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
-                        .lambda_min = i_.cfg.lambda_min / i_.cfg.oversampling,
+                        .lambda_min = i_.o1->rbi_.rbp_.mass_ * i_.cfg.lambda_min / i_.cfg.oversampling,
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
                         .beta2 = i_.cfg.contact_beta2},
