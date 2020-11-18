@@ -99,17 +99,7 @@ private:
     FixedArray<float, 3> p_;
 };
 
-class OrthoVelocityConstraints {
-public:
-    explicit OrthoVelocityConstraints(
-        const FixedArray<float, 3>& normal,
-        const FixedArray<float, 3>& b);
-    void set_b(const FixedArray<float, 3>& b);
-protected:
-    VelocityConstraint pcs_[2];
-};
-
-class FrictionContactInfo1: public OrthoVelocityConstraints, public ContactInfo {
+class FrictionContactInfo1: public ContactInfo {
 public:
     FrictionContactInfo1(
         RigidBodyPulses& rbp,
@@ -120,7 +110,10 @@ public:
         const FixedArray<float, 3>& b);
     void solve(float dt, float relaxation) override;
     float max_impulse() const;
+    void set_b(const FixedArray<float, 3>& b);
 private:
+    FixedArray<float, 3> lambda_total_;
+    FixedArray<float, 3> b_;
     RigidBodyPulses& rbp_;
     const PlaneConstraint& normal_constraint_;
     FixedArray<float, 3> p_;
@@ -128,7 +121,7 @@ private:
     float friction_coefficient_;
 };
 
-class FrictionContactInfo2: public OrthoVelocityConstraints, public ContactInfo {
+class FrictionContactInfo2: public ContactInfo {
 public:
     FrictionContactInfo2(
         RigidBodyPulses& rbp0,
@@ -140,7 +133,10 @@ public:
         const FixedArray<float, 3>& b);
     void solve(float dt, float relaxation) override;
     float max_impulse() const;
+    void set_b(const FixedArray<float, 3>& b);
 private:
+    FixedArray<float, 3> lambda_total_;
+    FixedArray<float, 3> b_;
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     const PlaneConstraint& normal_constraint_;

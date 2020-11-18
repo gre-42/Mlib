@@ -66,23 +66,6 @@ void ContactInfo2::solve(float dt, float relaxation) {
     }
 }
 
-OrthoVelocityConstraints::OrthoVelocityConstraints(
-    const FixedArray<float, 3>& normal,
-    const FixedArray<float, 3>& b)
-{
-    FixedArray<float, 3> t0 = arbitrary_orthogonal(normal);
-    t0 /= std::sqrt(sum(squared(t0)));
-    FixedArray<float, 3> t1 = cross(t0, normal);
-    pcs_[0].normal = t0;
-    pcs_[1].normal = t1;
-    set_b(b);
-}
-
-void OrthoVelocityConstraints::set_b(const FixedArray<float, 3>& b) {
-    pcs_[0].b = dot0d(pcs_[0].normal, b);
-    pcs_[1].b = dot0d(pcs_[1].normal, b);
-}
-
 FrictionContactInfo1::FrictionContactInfo1(
     RigidBodyPulses& rbp,
     const PlaneConstraint& normal_constraint,
@@ -90,7 +73,8 @@ FrictionContactInfo1::FrictionContactInfo1(
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b)
-: OrthoVelocityConstraints{normal_constraint.plane.normal_, b},
+: lambda_total_(0),
+  b_{b},
   rbp_{rbp},
   normal_constraint_{normal_constraint},
   p_{p},
@@ -99,29 +83,31 @@ FrictionContactInfo1::FrictionContactInfo1(
 {}
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
-    auto get_lambda = [this, dt](const VelocityConstraint& pc) {
-        float v = dot0d(rbp_.velocity_at_position(p_), pc.normal);
-        float mc = rbp_.effective_mass({.vector = pc.normal, .position = p_});
-        return - mc * (-v + pc.v());
-    };
-    FixedArray<float, 2> lambda_total_old = {pcs_[0].lambda_total, pcs_[1].lambda_total};
-    FixedArray<float, 2> lambda = {get_lambda(pcs_[0]), get_lambda(pcs_[1])};
-    FixedArray<float, 2> lambda_total_new = lambda_total_old + lambda;
-    if (float l2 = sum(squared(lambda_total_new)); l2 > squared(max_impulse())) {
-        lambda_total_new *= max_impulse() / std::sqrt(l2);
-    }
-    auto apply_lambda = [this](VelocityConstraint& pc, float lambda) {
-        pc.lambda_total += lambda;
+    FixedArray<float, 3> v3 = rbp_.velocity_at_position(p_) - b_;
+    v3 -= normal_constraint_.plane.normal_ * dot0d(v3, normal_constraint_.plane.normal_);
+    if (float vl2 = sum(squared(v3)); vl2 > 1e-12) {
+        float v = std::sqrt(vl2);
+        FixedArray<float, 3> n3 = v3 / v;
+        float mc = rbp_.effective_mass({.vector = n3, .position = p_});
+        FixedArray<float, 3> lambda = mc * v * n3;
+        FixedArray<float, 3> lambda_total_old = lambda_total_;
+        lambda_total_ += lambda;
+        if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse())) {
+            lambda_total_ *= max_impulse() / std::sqrt(ll2);
+        }
+        lambda = lambda_total_ - lambda_total_old;
         rbp_.integrate_impulse({
-            .vector = -pc.normal * lambda,
+            .vector = -lambda,
             .position = p_});
-    };
-    apply_lambda(pcs_[0], lambda_total_new(0) - lambda_total_old(0));
-    apply_lambda(pcs_[1], lambda_total_new(1) - lambda_total_old(1));
+    }
 }
 
 float FrictionContactInfo1::max_impulse() const {
     return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
+}
+
+void FrictionContactInfo1::set_b(const FixedArray<float, 3>& b) {
+    b_ = b;
 }
 
 FrictionContactInfo2::FrictionContactInfo2(
@@ -132,7 +118,8 @@ FrictionContactInfo2::FrictionContactInfo2(
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b)
-: OrthoVelocityConstraints{normal_constraint.plane.normal_, b},
+: lambda_total_(0),
+  b_{b},
   rbp0_{rbp0},
   rbp1_{rbp1},
   normal_constraint_{normal_constraint},
@@ -142,30 +129,27 @@ FrictionContactInfo2::FrictionContactInfo2(
 {}
 
 void FrictionContactInfo2::solve(float dt, float relaxation) {
-    auto get_lambda = [this, dt](const VelocityConstraint& pc) {
-        float v0 = dot0d(rbp0_.velocity_at_position(p_), pc.normal);
-        float v1 = dot0d(rbp1_.velocity_at_position(p_), pc.normal);
-        float mc0 = rbp0_.effective_mass({.vector = pc.normal, .position = p_});
-        float mc1 = rbp1_.effective_mass({.vector = pc.normal, .position = p_});
-        return - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v());
-    };
-    FixedArray<float, 2> lambda_total_old = {pcs_[0].lambda_total, pcs_[1].lambda_total};
-    FixedArray<float, 2> lambda = {get_lambda(pcs_[0]), get_lambda(pcs_[1])};
-    FixedArray<float, 2> lambda_total_new = lambda_total_old + lambda;
-    if (float l2 = sum(squared(lambda_total_new)); l2 > squared(max_impulse())) {
-        lambda_total_new *= max_impulse() / std::sqrt(l2);
-    }
-    auto apply_lambda = [this](VelocityConstraint& pc, float lambda) {
-        pc.lambda_total += lambda;
+    FixedArray<float, 3> v3 = rbp0_.velocity_at_position(p_) - rbp1_.velocity_at_position(p_) - b_;
+    v3 -= normal_constraint_.plane.normal_ * dot0d(v3, normal_constraint_.plane.normal_);
+    if (float vl2 = sum(squared(v3)); vl2 > 1e-12) {
+        float v = std::sqrt(vl2);
+        FixedArray<float, 3> n3 = v3 / v;
+        float mc0 = rbp0_.effective_mass({.vector = n3, .position = p_});
+        float mc1 = rbp1_.effective_mass({.vector = n3, .position = p_});
+        FixedArray<float, 3> lambda = (mc0 * mc1 / (mc0 + mc1)) * v * n3;
+        FixedArray<float, 3> lambda_total_old = lambda_total_;
+        lambda_total_ += lambda;
+        if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse())) {
+            lambda_total_ *= max_impulse() / std::sqrt(ll2);
+        }
+        lambda = lambda_total_ - lambda_total_old;
         rbp0_.integrate_impulse({
-            .vector = -pc.normal * lambda,
+            .vector = -lambda,
             .position = p_});
         rbp1_.integrate_impulse({
-            .vector = pc.normal * lambda,
+            .vector = lambda,
             .position = p_});
-    };
-    apply_lambda(pcs_[0], lambda_total_new(0) - lambda_total_old(0));
-    apply_lambda(pcs_[1], lambda_total_new(1) - lambda_total_old(1));
+    }
 }
 
 float FrictionContactInfo2::max_impulse() const {
