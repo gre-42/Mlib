@@ -57,7 +57,7 @@ void HandleLineTriangleIntersection::handle()
             i_.o1->integrate_force({i_.o1->mass() * a1, intersection_point_});
         }
     } else if (collision_type == CollisionType::REFLECT) {
-        // beacons.push_back(intersection_point);
+        // i_.beacons.push_back({.position = intersection_point_});
         PlaneNd<float, 3> plane;
         if (!i_.lines_are_normals && i_.o0->mass() != INFINITY && i_.o1->mass() != INFINITY) {
             if (!i_.cfg.sat) {
@@ -118,6 +118,7 @@ void HandleLineTriangleIntersection::handle()
                 dist = -dist_1;
             }
         }
+        // i_.beacons.push_back({.position = i_.l1(penetrating_id)});
         assert_true((dist >= 0) || (std::abs(dist) < 1e-3));
         if (i_.tire_id != SIZE_MAX) {
             dist = std::max(0.f, dist - i_.cfg.wheel_penetration_depth - i_.o1->tires_.at(i_.tire_id).shock_absorber.position());
@@ -147,6 +148,7 @@ void HandleLineTriangleIntersection::handle()
                     i_.o0->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
+                        .lambda_min = i_.cfg.lambda_min / i_.cfg.oversampling,
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
                         .beta2 = i_.cfg.contact_beta2},
@@ -158,6 +160,7 @@ void HandleLineTriangleIntersection::handle()
                     i_.o1->rbi_.rbp_,
                     PlaneConstraint{
                         .plane = plane,
+                        .lambda_min = i_.cfg.lambda_min / i_.cfg.oversampling,
                         .lambda_max = 0,
                         .beta = i_.cfg.contact_beta,
                         .beta2 = i_.cfg.contact_beta2},
@@ -213,9 +216,11 @@ void HandleLineTriangleIntersection::handle()
                         auto t = cross(n3, plane.normal_);
                         t /= std::sqrt(sum(squared(t)));
                         i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
-                            i_.o1->rbi_.rbp_,
-                            *normal_constraint,
-                            i_.l1(penetrating_id)}));
+                           i_.o1->rbi_.rbp_,
+                           *normal_constraint,
+                           i_.l1(penetrating_id),
+                           i_.cfg.stiction_coefficient,
+                           i_.cfg.friction_coefficient}));
                         // ci.solve(i_.cfg.dt / i_.cfg.oversampling);
                         // std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total / (i_.cfg.dt / i_.cfg.oversampling) << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
                     }
@@ -269,7 +274,9 @@ void HandleLineTriangleIntersection::handle()
                     i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                         i_.o1->rbi_.rbp_,
                         *normal_constraint,
-                        i_.l1(penetrating_id)}));
+                        i_.l1(penetrating_id),
+                        i_.cfg.stiction_coefficient,
+                        i_.cfg.friction_coefficient}));
                 }
             }
         } else {
@@ -280,7 +287,9 @@ void HandleLineTriangleIntersection::handle()
                     i_.o1->rbi_.rbp_,
                     i_.o0->rbi_.rbp_,
                     *normal_constraint,
-                    i_.l1(penetrating_id)}));
+                    i_.l1(penetrating_id),
+                    i_.cfg.stiction_coefficient,
+                    i_.cfg.friction_coefficient}));
             }
         }
         // if (float lr = i_.cfg.stiction_coefficient * force_n1; lr > 1e-12) {

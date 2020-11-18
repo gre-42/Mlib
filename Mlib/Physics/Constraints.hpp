@@ -85,13 +85,17 @@ public:
     FrictionContactInfo1(
         RigidBodyPulses& rbp,
         const PlaneConstraint& normal_constraint,
-        const FixedArray<float, 3>& p);
+        const FixedArray<float, 3>& p,
+        float stiction_coefficient,
+        float friction_coefficient);
     void solve(float dt) override;
 private:
     RigidBodyPulses& rbp_;
     const PlaneConstraint& normal_constraint_;
     PlaneConstraint pcs_[2];
     FixedArray<float, 3> p_;
+    float stiction_coefficient_;
+    float friction_coefficient_;
 };
 
 class FrictionContactInfo2: public ContactInfo {
@@ -100,7 +104,9 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const PlaneConstraint& normal_constraint,
-        const FixedArray<float, 3>& p);
+        const FixedArray<float, 3>& p,
+        float stiction_coefficient,
+        float friction_coefficient);
     void solve(float dt) override;
 private:
     RigidBodyPulses& rbp0_;
@@ -108,6 +114,8 @@ private:
     const PlaneConstraint& normal_constraint_;
     PlaneConstraint pcs_[2];
     FixedArray<float, 3> p_;
+    float stiction_coefficient_;
+    float friction_coefficient_;
 };
 
 void solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt);

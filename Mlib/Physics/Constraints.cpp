@@ -65,10 +65,14 @@ void ContactInfo2::solve(float dt) {
 FrictionContactInfo1::FrictionContactInfo1(
     RigidBodyPulses& rbp,
     const PlaneConstraint& normal_constraint,
-    const FixedArray<float, 3>& p)
+    const FixedArray<float, 3>& p,
+    float stiction_coefficient,
+    float friction_coefficient)
 : rbp_{rbp},
   normal_constraint_{normal_constraint},
-  p_{p}
+  p_{p},
+  stiction_coefficient_{stiction_coefficient},
+  friction_coefficient_{friction_coefficient}
 {
     FixedArray<float, 3> t0 = arbitrary_orthogonal(normal_constraint.plane.normal_);
     FixedArray<float, 3> t1 = cross(t0, normal_constraint.plane.normal_);
@@ -79,8 +83,8 @@ FrictionContactInfo1::FrictionContactInfo1(
 void FrictionContactInfo1::solve(float dt) {
     for (PlaneConstraint& pc : pcs_) {
         if (pc.active(p_)) {
-            pc.lambda_min = std::min(0.f, normal_constraint_.lambda_total);
-            pc.lambda_max = -std::min(0.f, normal_constraint_.lambda_total);
+            pc.lambda_min = std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
+            pc.lambda_max = -std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
             float v = dot0d(rbp_.velocity_at_position(p_), pc.plane.normal_);
             float mc = rbp_.effective_mass({.vector = pc.plane.normal_, .position = p_});
             float lambda = - mc * (-v + pc.v(p_, dt));
@@ -96,11 +100,15 @@ FrictionContactInfo2::FrictionContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const PlaneConstraint& normal_constraint,
-    const FixedArray<float, 3>& p)
+    const FixedArray<float, 3>& p,
+    float stiction_coefficient,
+    float friction_coefficient)
 : rbp0_{rbp0},
   rbp1_{rbp1},
   normal_constraint_{normal_constraint},
-  p_{p}
+  p_{p},
+  stiction_coefficient_{stiction_coefficient},
+  friction_coefficient_{friction_coefficient}
 {
     FixedArray<float, 3> t0 = arbitrary_orthogonal(normal_constraint.plane.normal_);
     t0 /= std::sqrt(sum(squared(t0)));
@@ -112,8 +120,8 @@ FrictionContactInfo2::FrictionContactInfo2(
 void FrictionContactInfo2::solve(float dt) {
     for (PlaneConstraint& pc : pcs_) {
         if (pc.active(p_)) {
-            pc.lambda_min = std::min(0.f, normal_constraint_.lambda_total);
-            pc.lambda_max = -std::min(0.f, normal_constraint_.lambda_total);
+            pc.lambda_min = std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
+            pc.lambda_max = -std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
             float v0 = dot0d(rbp0_.velocity_at_position(p_), pc.plane.normal_);
             float v1 = dot0d(rbp1_.velocity_at_position(p_), pc.plane.normal_);
             float mc0 = rbp0_.effective_mass({.vector = pc.plane.normal_, .position = p_});

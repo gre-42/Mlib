@@ -29,6 +29,7 @@ struct PhysicsEngineConfig {
     Interp<float> outness_fac_interp{{-0.5, 1}, {2000, 0}, OutOfRangeBehavior::CLAMP};
     PhysicsType physics_type = PhysicsType::VERSION1;
     ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;
+    float lambda_min = -10.f;
     float contact_beta = 0.5;
     float contact_beta2 = 0.2;
     bool bvh = true;
