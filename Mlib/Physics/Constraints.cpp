@@ -67,7 +67,9 @@ FrictionContactInfo1::FrictionContactInfo1(
     const PlaneConstraint& normal_constraint,
     const FixedArray<float, 3>& p,
     float stiction_coefficient,
-    float friction_coefficient)
+    float friction_coefficient,
+    const FixedArray<float, 3>& b0,
+    const FixedArray<float, 3>& b1)
 : rbp_{rbp},
   normal_constraint_{normal_constraint},
   p_{p},
@@ -79,6 +81,8 @@ FrictionContactInfo1::FrictionContactInfo1(
     FixedArray<float, 3> t1 = cross(t0, normal_constraint.plane.normal_);
     pcs_[0].plane = PlaneNd<float, 3>{t0, p};
     pcs_[1].plane = PlaneNd<float, 3>{t1, p};
+    pcs_[0].b = dot0d(t0, b0);
+    pcs_[1].b = dot0d(t1, b1);
 }
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
@@ -103,7 +107,9 @@ FrictionContactInfo2::FrictionContactInfo2(
     const PlaneConstraint& normal_constraint,
     const FixedArray<float, 3>& p,
     float stiction_coefficient,
-    float friction_coefficient)
+    float friction_coefficient,
+    const FixedArray<float, 3>& b0,
+    const FixedArray<float, 3>& b1)
 : rbp0_{rbp0},
   rbp1_{rbp1},
   normal_constraint_{normal_constraint},
@@ -116,6 +122,8 @@ FrictionContactInfo2::FrictionContactInfo2(
     FixedArray<float, 3> t1 = cross(t0, normal_constraint.plane.normal_);
     pcs_[0].plane = PlaneNd<float, 3>{t0, p};
     pcs_[1].plane = PlaneNd<float, 3>{t1, p};
+    pcs_[0].b = dot0d(t0, b0);
+    pcs_[1].b = dot0d(t1, b1);
 }
 
 void FrictionContactInfo2::solve(float dt, float relaxation) {

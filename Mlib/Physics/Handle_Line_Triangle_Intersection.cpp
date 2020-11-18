@@ -216,11 +216,13 @@ void HandleLineTriangleIntersection::handle()
                         auto t = cross(n3, plane.normal_);
                         t /= std::sqrt(sum(squared(t)));
                         i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
-                           i_.o1->rbi_.rbp_,
-                           *normal_constraint,
-                           i_.l1(penetrating_id),
-                           i_.cfg.stiction_coefficient,
-                           i_.cfg.friction_coefficient}));
+                            i_.o1->rbi_.rbp_,
+                            *normal_constraint,
+                            i_.l1(penetrating_id),
+                            i_.cfg.stiction_coefficient,
+                            i_.cfg.friction_coefficient,
+                            fixed_zeros<float, 3>(),
+                            fixed_zeros<float, 3>()}));
                         // ci.solve(i_.cfg.dt / i_.cfg.oversampling);
                         // std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total / (i_.cfg.dt / i_.cfg.oversampling) << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
                     }
@@ -276,7 +278,9 @@ void HandleLineTriangleIntersection::handle()
                         *normal_constraint,
                         i_.l1(penetrating_id),
                         i_.cfg.stiction_coefficient,
-                        i_.cfg.friction_coefficient}));
+                        i_.cfg.friction_coefficient,
+                        fixed_zeros<float, 3>(),
+                        fixed_zeros<float, 3>()}));
                 }
             }
         } else {
@@ -289,7 +293,9 @@ void HandleLineTriangleIntersection::handle()
                     *normal_constraint,
                     i_.l1(penetrating_id),
                     i_.cfg.stiction_coefficient,
-                    i_.cfg.friction_coefficient}));
+                    i_.cfg.friction_coefficient,
+                    fixed_zeros<float, 3>(),
+                    fixed_zeros<float, 3>()}));
             }
         }
         // if (float lr = i_.cfg.stiction_coefficient * force_n1; lr > 1e-12) {

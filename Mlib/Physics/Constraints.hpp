@@ -87,7 +87,9 @@ public:
         const PlaneConstraint& normal_constraint,
         const FixedArray<float, 3>& p,
         float stiction_coefficient,
-        float friction_coefficient);
+        float friction_coefficient,
+        const FixedArray<float, 3>& b0,
+        const FixedArray<float, 3>& b1);
     void solve(float dt, float relaxation) override;
 private:
     RigidBodyPulses& rbp_;
@@ -106,7 +108,9 @@ public:
         const PlaneConstraint& normal_constraint,
         const FixedArray<float, 3>& p,
         float stiction_coefficient,
-        float friction_coefficient);
+        float friction_coefficient,
+        const FixedArray<float, 3>& b0,
+        const FixedArray<float, 3>& b1);
     void solve(float dt, float relaxation) override;
 private:
     RigidBodyPulses& rbp0_;
