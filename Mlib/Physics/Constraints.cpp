@@ -136,10 +136,10 @@ void FrictionContactInfo2::solve(float dt, float relaxation) {
             float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(p_, dt));
             lambda = pc.clamped_lambda(relaxation * lambda);
             rbp0_.integrate_impulse({
-                .vector = -pcs_[0].plane.normal_ * lambda,
+                .vector = -pc.plane.normal_ * lambda,
                 .position = p_});
             rbp1_.integrate_impulse({
-                .vector = pcs_[1].plane.normal_ * lambda,
+                .vector = pc.plane.normal_ * lambda,
                 .position = p_});
         }
     }
