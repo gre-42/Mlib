@@ -10,6 +10,18 @@ class RigidBody;
 struct RigidBodyPulses;
 struct PhysicsEngineConfig;
 
+struct VelocityConstraint {
+    FixedArray<float, 3> normal;
+    float b;
+    float lambda_total = 0;
+    inline float C(const FixedArray<float, 3>& x) const {
+        return -dot0d(normal, x);
+    }
+    inline float v() const {
+        return b;
+    }
+};
+
 struct PlaneConstraint {
     PlaneNd<float, 3> plane;
     float b = 0;
@@ -87,18 +99,17 @@ private:
     FixedArray<float, 3> p_;
 };
 
-class OrthoPlaneConstraints {
+class OrthoVelocityConstraints {
 public:
-    explicit OrthoPlaneConstraints(
+    explicit OrthoVelocityConstraints(
         const FixedArray<float, 3>& normal,
-        const FixedArray<float, 3>& point_on_plane,
         const FixedArray<float, 3>& b);
     void set_b(const FixedArray<float, 3>& b);
 protected:
-    PlaneConstraint pcs_[2];
+    VelocityConstraint pcs_[2];
 };
 
-class FrictionContactInfo1: public OrthoPlaneConstraints, public ContactInfo {
+class FrictionContactInfo1: public OrthoVelocityConstraints, public ContactInfo {
 public:
     FrictionContactInfo1(
         RigidBodyPulses& rbp,
@@ -117,7 +128,7 @@ private:
     float friction_coefficient_;
 };
 
-class FrictionContactInfo2: public OrthoPlaneConstraints, public ContactInfo {
+class FrictionContactInfo2: public OrthoVelocityConstraints, public ContactInfo {
 public:
     FrictionContactInfo2(
         RigidBodyPulses& rbp0,
