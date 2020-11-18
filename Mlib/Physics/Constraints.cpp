@@ -98,19 +98,31 @@ FrictionContactInfo1::FrictionContactInfo1(
 {}
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
-    for (PlaneConstraint& pc : pcs_) {
+    auto get_lambda = [this, dt](const PlaneConstraint& pc) {
         if (pc.active(p_)) {
-            pc.lambda_min = -max_impulse();
-            pc.lambda_max = max_impulse();
             float v = dot0d(rbp_.velocity_at_position(p_), pc.plane.normal_);
             float mc = rbp_.effective_mass({.vector = pc.plane.normal_, .position = p_});
-            float lambda = - mc * (-v + pc.v(p_, dt));
-            lambda = pc.clamped_lambda(relaxation * lambda);
+            return - mc * (-v + pc.v(p_, dt));
+        } else {
+            return 0.f;
+        }
+    };
+    FixedArray<float, 2> lambda_total_old = {pcs_[0].lambda_total, pcs_[1].lambda_total};
+    FixedArray<float, 2> lambda = {get_lambda(pcs_[0]), get_lambda(pcs_[1])};
+    FixedArray<float, 2> lambda_total_new = lambda_total_old + lambda;
+    if (float l2 = sum(squared(lambda_total_new)); l2 > squared(max_impulse())) {
+        lambda_total_new *= max_impulse() / std::sqrt(l2);
+    }
+    auto apply_lambda = [this](PlaneConstraint& pc, float lambda) {
+        if (pc.active(p_)) {
+            pc.lambda_total += lambda;
             rbp_.integrate_impulse({
                 .vector = -pc.plane.normal_ * lambda,
                 .position = p_});
         }
-    }
+    };
+    apply_lambda(pcs_[0], lambda_total_new(0) - lambda_total_old(0));
+    apply_lambda(pcs_[1], lambda_total_new(1) - lambda_total_old(1));
 }
 
 FrictionContactInfo2::FrictionContactInfo2(
@@ -131,16 +143,26 @@ FrictionContactInfo2::FrictionContactInfo2(
 {}
 
 void FrictionContactInfo2::solve(float dt, float relaxation) {
-    for (PlaneConstraint& pc : pcs_) {
+    auto get_lambda = [this, dt](const PlaneConstraint& pc) {
         if (pc.active(p_)) {
-            pc.lambda_min = -max_impulse();
-            pc.lambda_max = max_impulse();
             float v0 = dot0d(rbp0_.velocity_at_position(p_), pc.plane.normal_);
             float v1 = dot0d(rbp1_.velocity_at_position(p_), pc.plane.normal_);
             float mc0 = rbp0_.effective_mass({.vector = pc.plane.normal_, .position = p_});
             float mc1 = rbp1_.effective_mass({.vector = pc.plane.normal_, .position = p_});
-            float lambda = - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(p_, dt));
-            lambda = pc.clamped_lambda(relaxation * lambda);
+            return - (mc0 * mc1 / (mc0 + mc1)) * (-v0 + v1 + pc.v(p_, dt));
+        } else {
+            return 0.f;
+        }
+    };
+    FixedArray<float, 2> lambda_total_old = {pcs_[0].lambda_total, pcs_[1].lambda_total};
+    FixedArray<float, 2> lambda = {get_lambda(pcs_[0]), get_lambda(pcs_[1])};
+    FixedArray<float, 2> lambda_total_new = lambda_total_old + lambda;
+    if (float l2 = sum(squared(lambda_total_new)); l2 > squared(max_impulse())) {
+        lambda_total_new *= max_impulse() / std::sqrt(l2);
+    }
+    auto apply_lambda = [this](PlaneConstraint& pc, float lambda) {
+        if (pc.active(p_)) {
+            pc.lambda_total += lambda;
             rbp0_.integrate_impulse({
                 .vector = -pc.plane.normal_ * lambda,
                 .position = p_});
@@ -148,7 +170,9 @@ void FrictionContactInfo2::solve(float dt, float relaxation) {
                 .vector = pc.plane.normal_ * lambda,
                 .position = p_});
         }
-    }
+    };
+    apply_lambda(pcs_[0], lambda_total_new(0) - lambda_total_old(0));
+    apply_lambda(pcs_[1], lambda_total_new(1) - lambda_total_old(1));
 }
 
 TireContactInfo1::TireContactInfo1(
