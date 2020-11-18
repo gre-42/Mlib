@@ -1,6 +1,8 @@
 #include "Constraints.hpp"
 #include <Mlib/Geometry/Arbitrary_Orthogonal.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Physics/Handle_Tire_Triangle_Intersection.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
 
 using namespace Mlib;
@@ -80,15 +82,14 @@ FrictionContactInfo1::FrictionContactInfo1(
     FixedArray<float, 3> t1 = cross(t0, normal_constraint.plane.normal_);
     pcs_[0].plane = PlaneNd<float, 3>{t0, p};
     pcs_[1].plane = PlaneNd<float, 3>{t1, p};
-    pcs_[0].b = dot0d(t0, b);
-    pcs_[1].b = dot0d(t1, b);
+    set_b(b);
 }
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
     for (PlaneConstraint& pc : pcs_) {
         if (pc.active(p_)) {
-            pc.lambda_min = std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
-            pc.lambda_max = -std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
+            pc.lambda_min = -max_impulse();
+            pc.lambda_max = max_impulse();
             float v = dot0d(rbp_.velocity_at_position(p_), pc.plane.normal_);
             float mc = rbp_.effective_mass({.vector = pc.plane.normal_, .position = p_});
             float lambda = - mc * (-v + pc.v(p_, dt));
@@ -120,15 +121,14 @@ FrictionContactInfo2::FrictionContactInfo2(
     FixedArray<float, 3> t1 = cross(t0, normal_constraint.plane.normal_);
     pcs_[0].plane = PlaneNd<float, 3>{t0, p};
     pcs_[1].plane = PlaneNd<float, 3>{t1, p};
-    pcs_[0].b = dot0d(t0, b);
-    pcs_[1].b = dot0d(t1, b);
+    set_b(b);
 }
 
 void FrictionContactInfo2::solve(float dt, float relaxation) {
     for (PlaneConstraint& pc : pcs_) {
         if (pc.active(p_)) {
-            pc.lambda_min = std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
-            pc.lambda_max = -std::min(0.f, stiction_coefficient_ * normal_constraint_.lambda_total);
+            pc.lambda_min = -max_impulse();
+            pc.lambda_max = max_impulse();
             float v0 = dot0d(rbp0_.velocity_at_position(p_), pc.plane.normal_);
             float v1 = dot0d(rbp1_.velocity_at_position(p_), pc.plane.normal_);
             float mc0 = rbp0_.effective_mass({.vector = pc.plane.normal_, .position = p_});
@@ -143,6 +143,29 @@ void FrictionContactInfo2::solve(float dt, float relaxation) {
                 .position = p_});
         }
     }
+}
+
+TireContactInfo1::TireContactInfo1(
+    const FrictionContactInfo1& fci,
+    RigidBody& rb,
+    size_t tire_id,
+    const FixedArray<float, 3>& v3,
+    const FixedArray<float, 3>& n3,
+    const PhysicsEngineConfig& cfg)
+: fci_{fci},
+  rb_{rb},
+  P_{rb.consume_tire_surface_power(tire_id)},
+  tire_id_{tire_id},
+  v3_{v3},
+  n3_{n3},
+  cfg_{cfg}
+{}
+
+void TireContactInfo1::solve(float dt, float relaxation) {
+    float force_n1 = -fci_.max_impulse() / dt;
+    FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, v3_, n3_, force_n1, cfg_, tire_id_);
+    fci_.set_b(v);
+    fci_.solve(dt, relaxation);
 }
 
 void Mlib::solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt) {

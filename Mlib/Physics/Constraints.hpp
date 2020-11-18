@@ -1,11 +1,14 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <list>
 
 namespace Mlib {
 
+class RigidBody;
 struct RigidBodyPulses;
+struct PhysicsEngineConfig;
 
 struct PlaneConstraint {
     PlaneNd<float, 3> plane;
@@ -90,6 +93,13 @@ public:
         float friction_coefficient,
         const FixedArray<float, 3>& b);
     void solve(float dt, float relaxation) override;
+    float max_impulse() const {
+        return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
+    }
+    void set_b(const FixedArray<float, 3>& b) {
+        pcs_[0].b = dot0d(pcs_[0].plane.normal_, b);
+        pcs_[1].b = dot0d(pcs_[1].plane.normal_, b);
+    }
 private:
     RigidBodyPulses& rbp_;
     const PlaneConstraint& normal_constraint_;
@@ -110,6 +120,13 @@ public:
         float friction_coefficient,
         const FixedArray<float, 3>& b);
     void solve(float dt, float relaxation) override;
+    float max_impulse() const {
+        return std::max(0.f, -stiction_coefficient_ * normal_constraint_.lambda_total);
+    }
+    void set_b(const FixedArray<float, 3>& b) {
+        pcs_[0].b = dot0d(pcs_[0].plane.normal_, b);
+        pcs_[1].b = dot0d(pcs_[1].plane.normal_, b);
+    }
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
@@ -118,6 +135,26 @@ private:
     FixedArray<float, 3> p_;
     float stiction_coefficient_;
     float friction_coefficient_;
+};
+
+class TireContactInfo1: public ContactInfo {
+public:
+    TireContactInfo1(
+        const FrictionContactInfo1& fci,
+        RigidBody& rb,
+        size_t tire_id,
+        const FixedArray<float, 3>& v3,
+        const FixedArray<float, 3>& n3,
+        const PhysicsEngineConfig& cfg);
+    void solve(float dt, float relaxation) override;
+private:
+    FrictionContactInfo1 fci_;
+    RigidBody& rb_;
+    PowerIntent P_;
+    size_t tire_id_;
+    FixedArray<float, 3> v3_;
+    FixedArray<float, 3> n3_;
+    const PhysicsEngineConfig& cfg_;
 };
 
 void solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt);

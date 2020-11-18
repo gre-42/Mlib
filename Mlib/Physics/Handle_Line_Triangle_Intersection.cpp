@@ -212,7 +212,7 @@ void HandleLineTriangleIntersection::handle()
                 n3 -= plane.normal_ * dot0d(plane.normal_, n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
-                    if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+                    if (false && (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES)) {
                         auto t = cross(n3, plane.normal_);
                         t /= std::sqrt(sum(squared(t)));
                         i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
@@ -221,18 +221,36 @@ void HandleLineTriangleIntersection::handle()
                             i_.l1(penetrating_id),
                             i_.cfg.stiction_coefficient,
                             i_.cfg.friction_coefficient,
-                            fixed_zeros<float, 3>()}));
+                            30.f / 3.6f * n3}));
                         // ci.solve(i_.cfg.dt / i_.cfg.oversampling);
                         // std::cerr << i_.tire_id << " lambda_total " << ci.pc().lambda_total / (i_.cfg.dt / i_.cfg.oversampling) << " " << i_.cfg.stiction_coefficient * force_n1 << std::endl;
                     }
                     if (i_.cfg.physics_type == PhysicsType::BUILTIN) {
-                        tangential_force = handle_tire_triangle_intersection(
-                            *i_.o1,
-                            v3,
-                            n3,
-                            force_n1,
-                            i_.cfg,
-                            i_.tire_id);
+                        if (i_.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
+                            tangential_force = handle_tire_triangle_intersection(
+                                *i_.o1,
+                                v3,
+                                n3,
+                                force_n1,
+                                i_.cfg,
+                                i_.tire_id);
+                        } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+                            i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
+                                FrictionContactInfo1{
+                                    i_.o1->rbi_.rbp_,
+                                    *normal_constraint,
+                                    i_.l1(penetrating_id),
+                                    i_.cfg.stiction_coefficient,
+                                    i_.cfg.friction_coefficient,
+                                    fixed_nans<float, 3>()},
+                                *i_.o1,
+                                i_.tire_id,
+                                v3,
+                                n3,
+                                i_.cfg}));
+                        } else {
+                            throw std::runtime_error("Unknown collision type");
+                        }
                         // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
                     } else if (i_.cfg.physics_type == PhysicsType::TRACKING_SPRINGS) {
                         TrackingWheel& tw = i_.o1->get_tire_tracking_wheel(i_.tire_id);

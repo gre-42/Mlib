@@ -136,7 +136,8 @@ void idle(RigidBody& rb, size_t tire_id) {
     rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(tire_id));
 }
 
-FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
+FixedArray<float, 3> Mlib::updated_tire_speed(
+    const PowerIntent& P,
     RigidBody& rb,
     const FixedArray<float, 3>& v3,
     const FixedArray<float, 3>& n3,
@@ -144,7 +145,6 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
     const PhysicsEngineConfig& cfg,
     size_t tire_id)
 {
-    PowerIntent P = rb.consume_tire_surface_power(tire_id);
     // F = W / s = W / v / t = P / v
     if (!std::isnan(P.power)) {
         // std::cerr << "dx " << dx << std::endl;
@@ -175,9 +175,27 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
         }
     }
     float v1 = rb.get_tire_angular_velocity(tire_id) * rb.get_tire_radius(tire_id);
+    return n3 * v1;
+}
+
+FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
+    RigidBody& rb,
+    const FixedArray<float, 3>& v3,
+    const FixedArray<float, 3>& n3,
+    float force_n1,
+    const PhysicsEngineConfig& cfg,
+    size_t tire_id)
+{
     return friction_force_infinite_mass(
         cfg.stiction_coefficient * force_n1,
         cfg.friction_coefficient * force_n1,
-        v3 + n3 * v1,
+        v3 + updated_tire_speed(
+            rb.consume_tire_surface_power(tire_id),
+            rb,
+            v3,
+            n3,
+            force_n1,
+            cfg,
+            tire_id),
         cfg.alpha0);
 }
