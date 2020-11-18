@@ -150,7 +150,7 @@ void HandleLineTriangleIntersection::handle()
                         .plane_constraint{
                             .plane = plane,
                             .slop = (i_.tire_id != SIZE_MAX)
-                                ? -i_.cfg.wheel_penetration_depth
+                                ? -i_.cfg.wheel_penetration_depth - i_.o1->tires_.at(i_.tire_id).shock_absorber.position()
                                 : 0,
                             .beta = i_.cfg.contact_beta,
                             .beta2 = i_.cfg.contact_beta2
@@ -167,7 +167,7 @@ void HandleLineTriangleIntersection::handle()
                         .plane_constraint{
                             .plane = plane,
                             .slop = (i_.tire_id != SIZE_MAX)
-                                ? -i_.cfg.wheel_penetration_depth
+                                ? -i_.cfg.wheel_penetration_depth - i_.o1->tires_.at(i_.tire_id).shock_absorber.position()
                                 : 0,
                             .beta = i_.cfg.contact_beta,
                             .beta2 = i_.cfg.contact_beta2
