@@ -173,7 +173,7 @@ TireContactInfo1::TireContactInfo1(
 {}
 
 void TireContactInfo1::solve(float dt, float relaxation) {
-    float force_n1 = -fci_.max_impulse() / dt;
+    float force_n1 = fci_.max_impulse() / dt;
     FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, v3_, n3_, force_n1, cfg_, tire_id_);
     fci_.set_b(v);
     fci_.solve(dt, relaxation);
