@@ -11,6 +11,7 @@ Tire::Tire(
     float radius)
 : shock_absorber{shock_absorber},
   tracking_wheel{tracking_wheel},
+  shock_absorber_position{0},
   angle_x{0},
   angle_y{0},
   angular_velocity{0},

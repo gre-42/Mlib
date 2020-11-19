@@ -11,7 +11,8 @@ Wheel::Wheel(
     AdvanceTimes& advance_times,
     size_t tire_id,
     float radius,
-    PhysicsType physics_type)
+    PhysicsType physics_type,
+    ResolveCollisionType resolve_collision_type)
 : rigid_body_{rigid_body},
   advance_times_{advance_times},
   position_{fixed_nans<float, 3>()},
@@ -20,7 +21,8 @@ Wheel::Wheel(
   angle_x_{0},
   radius_{radius},
   y0_{NAN},
-  physics_type_{physics_type}
+  physics_type_{physics_type},
+  resolve_collision_type_{resolve_collision_type}
 {}
 
 void Wheel::set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix)
@@ -49,7 +51,13 @@ void Wheel::advance_time(float dt) {
     FixedArray<float, 3> tire_angles{fixed_zeros<float, 3>()};
     if (auto it = rigid_body_.tires_.find(tire_id_); it != rigid_body_.tires_.end()) {
         tire_angles(1) = it->second.angle_y;
-        position_(1) = y0_ + it->second.shock_absorber.position();
+        if (resolve_collision_type_ == ResolveCollisionType::PENALTY) {
+            position_(1) = y0_ + it->second.shock_absorber.position();
+        } else if (resolve_collision_type_ == ResolveCollisionType::SEQUENTIAL_PULSES) {
+            position_(1) = y0_ + it->second.shock_absorber_position;
+        } else {
+            throw std::runtime_error("Unknown resolve collision type");
+        }
         if (physics_type_ == PhysicsType::TRACKING_SPRINGS) {
             angle_x_ = it->second.tracking_wheel.angle_x();
         }

@@ -16,6 +16,7 @@ struct Tire {
     void advance_time(float dt);
     ShockAbsorber shock_absorber;
     TrackingWheel tracking_wheel;
+    float shock_absorber_position;
     float angle_x;
     float angle_y;
     float angular_velocity;

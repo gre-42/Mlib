@@ -181,20 +181,24 @@ void HandleLineTriangleIntersection::handle()
                     i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                     normal_impulse = &ci->normal_impulse();
                 } else {
-                    ShockAbsorberContactInfo1* ci = new ShockAbsorberContactInfo1{
-                        i_.o1->rbi_.rbp_,
-                        BoundedShockAbsorberConstraint{
-                            .constraint{
-                                .normal_impulse{.normal = plane.normal_},
-                                .distance = i_.cfg.wheel_penetration_depth + dot0d(i_.l1(penetrating_id) - intersection_point_, plane.normal_),
-                                .Ks = 1e5,
-                                .Ka = 2e3
-                            },
-                            .lambda_min = i_.o1->mass() * i_.cfg.lambda_min / i_.cfg.oversampling,
-                            .lambda_max = 0},
-                        intersection_point_};
-                    i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
-                    normal_impulse = &ci->normal_impulse();
+                    float sap = i_.cfg.wheel_penetration_depth + dot0d(i_.l1(penetrating_id) - intersection_point_, plane.normal_);
+                    i_.o1->tires_.at(i_.tire_id).shock_absorber_position = -std::min(0.f, sap);
+                    if (sap < 0) {
+                        ShockAbsorberContactInfo1* ci = new ShockAbsorberContactInfo1{
+                            i_.o1->rbi_.rbp_,
+                            BoundedShockAbsorberConstraint{
+                                .constraint{
+                                    .normal_impulse{.normal = plane.normal_},
+                                    .distance = sap,
+                                    .Ks = 1e5,
+                                    .Ka = 2e3
+                                },
+                                .lambda_min = i_.o1->mass() * i_.cfg.lambda_min / i_.cfg.oversampling,
+                                .lambda_max = 0},
+                            intersection_point_};
+                        i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                        normal_impulse = &ci->normal_impulse();
+                    }
                 }
             }
         } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
@@ -266,19 +270,21 @@ void HandleLineTriangleIntersection::handle()
                                 i_.cfg,
                                 i_.tire_id);
                         } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                            i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
-                                FrictionContactInfo1{
-                                    i_.o1->rbi_.rbp_,
-                                    *normal_impulse,
-                                    intersection_point_,
-                                    i_.cfg.stiction_coefficient,
-                                    i_.cfg.friction_coefficient,
-                                    fixed_nans<float, 3>()},
-                                *i_.o1,
-                                i_.tire_id,
-                                v3,
-                                n3,
-                                i_.cfg}));
+                            if (normal_impulse != nullptr) {
+                                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
+                                    FrictionContactInfo1{
+                                        i_.o1->rbi_.rbp_,
+                                        *normal_impulse,
+                                        intersection_point_,
+                                        i_.cfg.stiction_coefficient,
+                                        i_.cfg.friction_coefficient,
+                                        fixed_nans<float, 3>()},
+                                    *i_.o1,
+                                    i_.tire_id,
+                                    v3,
+                                    n3,
+                                    i_.cfg}));
+                            }
                         } else {
                             throw std::runtime_error("Unknown collision type");
                         }
