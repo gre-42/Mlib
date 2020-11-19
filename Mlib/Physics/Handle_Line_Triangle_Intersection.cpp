@@ -261,6 +261,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 *c.o1,
                                 v3,
                                 n3,
+                                plane.normal,
                                 force_n1,
                                 c.cfg,
                                 c.tire_id);

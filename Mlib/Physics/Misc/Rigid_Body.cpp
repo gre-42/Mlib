@@ -210,13 +210,15 @@ void RigidBody::set_tire_angular_velocity(size_t id, float w) {
     tires_.at(id).angular_velocity = w;
 }
 
-FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(size_t id) const {
-    return velocity_at_position(get_abs_tire_contact_position(id));
+FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(const FixedArray<float, 3>& surface_normal, size_t id) const {
+    FixedArray<float, 3> v = velocity_at_position(get_abs_tire_contact_position(id));
+    v -= surface_normal * dot0d(v, surface_normal);
+    return v;
 }
 
-float RigidBody::get_angular_velocity_at_tire(size_t id) const {
+float RigidBody::get_angular_velocity_at_tire(const FixedArray<float, 3>& surface_normal, size_t id) const {
     auto z = get_abs_tire_z(id);
-    auto v = get_velocity_at_tire_contact(id);
+    auto v = get_velocity_at_tire_contact(surface_normal, id);
     return -dot0d(v, z) / get_tire_radius(id);
 }
 

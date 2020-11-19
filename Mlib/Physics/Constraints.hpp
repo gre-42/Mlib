@@ -145,6 +145,9 @@ public:
     void solve(float dt, float relaxation) override;
     float max_impulse() const;
     void set_b(const FixedArray<float, 3>& b);
+    const NormalImpulse& normal_impulse() {
+        return normal_impulse_;
+    }
 private:
     FixedArray<float, 3> lambda_total_;
     FixedArray<float, 3> b_;
