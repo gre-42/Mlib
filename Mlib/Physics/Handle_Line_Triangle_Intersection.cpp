@@ -169,9 +169,6 @@ void HandleLineTriangleIntersection::handle()
                             .constraint{
                                 .normal_impulse{.normal = plane.normal_},
                                 .intercept = plane.intercept_,
-                                .slop = (i_.tire_id != SIZE_MAX)
-                                    ? -i_.cfg.wheel_penetration_depth
-                                    : 0,
                                 .beta = i_.cfg.contact_beta,
                                 .beta2 = i_.cfg.contact_beta2
                             },
