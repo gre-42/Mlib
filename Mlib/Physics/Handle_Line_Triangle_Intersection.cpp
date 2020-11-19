@@ -185,8 +185,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 .constraint{
                                     .normal_impulse{.normal = plane.normal},
                                     .distance = sap,
-                                    .Ks = 1e5,
-                                    .Ka = 2e3
+                                    .Ks = c.o1->tires_.at(c.tire_id).sKs,
+                                    .Ka = c.o1->tires_.at(c.tire_id).sKa
                                 },
                                 .lambda_min = c.o1->mass() * c.cfg.lambda_min / c.cfg.oversampling,
                                 .lambda_max = 0},

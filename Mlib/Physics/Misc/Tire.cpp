@@ -5,6 +5,8 @@ using namespace Mlib;
 Tire::Tire(
     const std::string& engine,
     float break_force,
+    float sKs,
+    float sKa,
     const ShockAbsorber& shock_absorber,
     const TrackingWheel& tracking_wheel,
     const FixedArray<float, 3>& position,
@@ -17,6 +19,8 @@ Tire::Tire(
   angular_velocity{0},
   engine{engine},
   break_force{break_force},
+  sKs{sKs},
+  sKa{sKa},
   position{position},
   radius{radius}
 {}

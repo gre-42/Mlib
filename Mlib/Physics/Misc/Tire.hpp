@@ -9,6 +9,8 @@ struct Tire {
     Tire(
         const std::string& engine,
         float break_force,
+        float sKs,
+        float sKa,
         const ShockAbsorber& shock_absorber,
         const TrackingWheel& tracking_wheel,
         const FixedArray<float, 3>& position,
@@ -22,6 +24,8 @@ struct Tire {
     float angular_velocity;
     std::string engine;
     float break_force;
+    float sKs;
+    float sKa;
     FixedArray<float, 3> position;
     float radius;
 };
