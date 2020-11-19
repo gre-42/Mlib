@@ -186,7 +186,7 @@ void HandleLineTriangleIntersection::handle()
                         BoundedShockAbsorberConstraint{
                             .constraint{
                                 .normal_impulse{.normal = plane.normal_},
-                                .distance = std::sqrt(sum(squared(i_.l1(penetrating_id) - intersection_point_))),
+                                .distance = dot0d(i_.l1(penetrating_id) - intersection_point_, plane.normal_),
                                 .Ks = 1e5,
                                 .Ka = 2e3
                             },

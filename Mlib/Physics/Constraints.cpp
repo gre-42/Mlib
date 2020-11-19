@@ -190,8 +190,8 @@ ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
 
 void ShockAbsorberContactInfo1::solve(float dt, float relaxation) {
     ShockAbsorberConstraint& sc = sc_.constraint;
-    float F = sc.Ks * sc.distance - sc.Ka * dot0d(rbp_.velocity_at_position(p_), sc.normal_impulse.normal);
-    float J = sc_.clamped_lambda(-F * dt);
+    float F = sc.Ks * sc.distance + sc.Ka * dot0d(rbp_.velocity_at_position(p_), sc.normal_impulse.normal);
+    float J = sc_.clamped_lambda(F * dt);
     rbp_.integrate_impulse({vector: -sc.normal_impulse.normal * J, position: p_});
 }
 
