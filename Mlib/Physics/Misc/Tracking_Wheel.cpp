@@ -135,7 +135,7 @@ void TrackingWheel::update_position(
             nslipping += slip;
             FixedArray<float, 3> abs_pos = dot1d(rotation, s.position) + translation;
             FixedArray<float, 3> abs_force = dot1d(rotation, force);
-            rbi.integrate_force({vector: abs_force, position: abs_pos});
+            rbi.integrate_force({.vector = abs_force, .position = abs_pos});
             // W = F * s
             // dW/dt = F * ds/dt
             // P = F * v
