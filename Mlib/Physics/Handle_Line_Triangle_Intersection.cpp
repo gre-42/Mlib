@@ -270,7 +270,7 @@ void HandleLineTriangleIntersection::handle()
                                 FrictionContactInfo1{
                                     i_.o1->rbi_.rbp_,
                                     *normal_impulse,
-                                    i_.l1(penetrating_id),
+                                    intersection_point_,
                                     i_.cfg.stiction_coefficient,
                                     i_.cfg.friction_coefficient,
                                     fixed_nans<float, 3>()},
