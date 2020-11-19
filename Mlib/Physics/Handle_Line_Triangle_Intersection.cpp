@@ -270,7 +270,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                     FrictionContactInfo1{
                                         c.o1->rbi_.rbp_,
                                         *normal_impulse,
-                                        intersection_point,
+                                        c.o1->get_abs_tire_contact_position(c.tire_id),
                                         c.cfg.stiction_coefficient,
                                         c.cfg.friction_coefficient,
                                         fixed_nans<float, 3>()},
@@ -288,7 +288,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         TrackingWheel& tw = c.o1->get_tire_tracking_wheel(c.tire_id);
                         tw.notify_intersection(
                             c.o1->get_abs_tire_rotation_matrix(c.tire_id),
-                            c.o1->get_abs_tire_position(c.tire_id),
+                            c.o1->get_abs_tire_contact_position(c.tire_id),
                             intersection_point,
                             plane.normal,
                             c.cfg.stiction_coefficient * force_n1,
@@ -353,7 +353,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 c.o0->integrate_force({-force_n0 * plane.normal - tangential_force, intersection_point});
             }
             if (frac1 != 0) {
-                c.o1->integrate_force({force_n1 * plane.normal + tangential_force, intersection_point});
+                if (c.tire_id != SIZE_MAX) {
+                    c.o1->integrate_force({force_n1 * plane.normal + tangential_force, c.o1->get_abs_tire_contact_position(c.tire_id)});
+                } else {
+                    c.o1->integrate_force({force_n1 * plane.normal + tangential_force, intersection_point});
+                }
             }
         }
     } else {

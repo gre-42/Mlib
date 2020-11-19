@@ -74,7 +74,7 @@ void RigidBody::advance_time(
     if (physics_type == PhysicsType::TRACKING_SPRINGS) {
         for(auto& t : tires_) {
             FixedArray<float, 3, 3> rotation = get_abs_tire_rotation_matrix(t.first);
-            FixedArray<float, 3> position = get_abs_tire_position(t.first);
+            FixedArray<float, 3> position = get_abs_tire_contact_position(t.first);
             FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
             FixedArray<float, 3> velocity = velocity_at_position(position);
             float spring_constant = 1e4;
@@ -210,13 +210,13 @@ void RigidBody::set_tire_angular_velocity(size_t id, float w) {
     tires_.at(id).angular_velocity = w;
 }
 
-FixedArray<float, 3> RigidBody::get_velocity_at_tire(size_t id) const {
-    return velocity_at_position(get_abs_tire_position(id));
+FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(size_t id) const {
+    return velocity_at_position(get_abs_tire_contact_position(id));
 }
 
 float RigidBody::get_angular_velocity_at_tire(size_t id) const {
     auto z = get_abs_tire_z(id);
-    auto v = get_velocity_at_tire(id);
+    auto v = get_velocity_at_tire_contact(id);
     return -dot0d(v, z) / get_tire_radius(id);
 }
 
@@ -252,8 +252,8 @@ TrackingWheel& RigidBody::get_tire_tracking_wheel(size_t id) {
     return tires_.at(id).tracking_wheel;
 }
 
-FixedArray<float, 3> RigidBody::get_abs_tire_position(size_t id) const {
-    return rbi_.rbp_.transform_to_world_coordinates(tires_.at(id).position);
+FixedArray<float, 3> RigidBody::get_abs_tire_contact_position(size_t id) const {
+    return rbi_.rbp_.transform_to_world_coordinates(tires_.at(id).position - FixedArray<float, 3>{0, -tires_.at(id).radius, 0});
 }
 
 float RigidBody::energy() const {

@@ -17,7 +17,7 @@ void accelerate_positive(
     // r = v / w
     float f = 1;
     if (float vc = sum(squared(rb.rbi_.rbp_.v_)); vc > 1e-12) {
-        if (float vt = sum(squared(rb.get_velocity_at_tire(tire_id))); vt > 1e-12) {
+        if (float vt = sum(squared(rb.get_velocity_at_tire_contact(tire_id))); vt > 1e-12) {
             f = std::clamp<float>(std::sqrt(vt / vc), 1e-1, 1e1);
         }
     }
@@ -48,7 +48,7 @@ void accelerate_negative(
     // r = v / w
     float f = 1;
     if (float vc = sum(squared(rb.rbi_.rbp_.v_)); vc > 1e-12) {
-        if (float vt = sum(squared(rb.get_velocity_at_tire(tire_id))); vt > 1e-12) {
+        if (float vt = sum(squared(rb.get_velocity_at_tire_contact(tire_id))); vt > 1e-12) {
             f = std::clamp<float>(std::sqrt(vt / vc), 1e-1, 1e1);
         }
     }

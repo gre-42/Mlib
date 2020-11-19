@@ -55,14 +55,14 @@ public:
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;
     void set_tire_angular_velocity(size_t id, float w);
-    FixedArray<float, 3> get_velocity_at_tire(size_t id) const;
+    FixedArray<float, 3> get_velocity_at_tire_contact(size_t id) const;
     float get_angular_velocity_at_tire(size_t id) const;
     float get_tire_radius(size_t id) const;
     PowerIntent consume_tire_surface_power(size_t id);
     void set_surface_power(const std::string& engine_name, float surface_power);
     float get_tire_break_force(size_t id) const;
     TrackingWheel& get_tire_tracking_wheel(size_t id);
-    FixedArray<float, 3> get_abs_tire_position(size_t id) const;
+    FixedArray<float, 3> get_abs_tire_contact_position(size_t id) const;
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
