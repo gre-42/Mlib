@@ -62,7 +62,7 @@ static void handle_triangle_triangle_intersection(
         // Closed, triangulated surfaces contain every edge twice.
         // => Remove duplicates by checking the order.
         if (OrderableFixedArray{t1.triangle(1)} < OrderableFixedArray{t1.triangle(2)}) {
-            HandleLineTriangleIntersection::handle({
+            handle_line_triangle_intersection({
                 .o0 = o0,
                 .o1 = o1,
                 .mesh0 = msh0.mesh,
@@ -79,7 +79,7 @@ static void handle_triangle_triangle_intersection(
                 .lines_are_normals = false});
         }
         if (OrderableFixedArray{t1.triangle(2)} < OrderableFixedArray{t1.triangle(0)}) {
-            HandleLineTriangleIntersection::handle({
+            handle_line_triangle_intersection({
                 .o0 = o0,
                 .o1 = o1,
                 .mesh0 = msh0.mesh,
@@ -96,7 +96,7 @@ static void handle_triangle_triangle_intersection(
                 .lines_are_normals = false});
         }
         if (OrderableFixedArray{t1.triangle(0)} < OrderableFixedArray{t1.triangle(1)}) {
-            HandleLineTriangleIntersection::handle({
+            handle_line_triangle_intersection({
                 .o0 = o0,
                 .o1 = o1,
                 .mesh0 = msh0.mesh,
@@ -149,7 +149,7 @@ static void collide_triangle(
     const auto& lines = msh1.mesh->get_lines();
     if (msh1.mesh_type == MeshType::CHASSIS) {
         for(const auto& l1 : lines) {
-            HandleLineTriangleIntersection::handle({
+            handle_line_triangle_intersection({
                 .o0 = o0.rigid_body,
                 .o1 = o1.rigid_body,
                 .mesh0 = msh0.mesh,
@@ -168,7 +168,7 @@ static void collide_triangle(
     } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
         size_t tire_id = 0;
         for(const auto& l1 : lines) {
-            HandleLineTriangleIntersection::handle({
+            handle_line_triangle_intersection({
                 .o0 = o0.rigid_body,
                 .o1 = o1.rigid_body,
                 .mesh0 = msh0.mesh,

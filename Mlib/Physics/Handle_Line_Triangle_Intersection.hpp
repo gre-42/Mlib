@@ -33,16 +33,7 @@ struct IntersectionScene {
     bool lines_are_normals;
 };
 
-class HandleLineTriangleIntersection {
-public:
-    HandleLineTriangleIntersection(const IntersectionScene& i);
-    void handle();
-    static void handle(const IntersectionScene& i);
-    bool intersects_;
-    FixedArray<float, 3> intersection_point_;
-private:
-    IntersectionScene i_;
-};
+void handle_line_triangle_intersection(const IntersectionScene& i);
 
 }
 
