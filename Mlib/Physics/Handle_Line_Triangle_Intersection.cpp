@@ -162,23 +162,40 @@ void HandleLineTriangleIntersection::handle()
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                 normal_impulse = &ci->normal_impulse();
             } else {
-                ContactInfo1* ci = new ContactInfo1{
-                    i_.o1->rbi_.rbp_,
-                    BoundedPlaneConstraint{
-                        .constraint{
-                            .normal_impulse{.normal = plane.normal_},
-                            .intercept = plane.intercept_,
-                            .slop = (i_.tire_id != SIZE_MAX)
-                                ? -i_.cfg.wheel_penetration_depth
-                                : 0,
-                            .beta = i_.cfg.contact_beta,
-                            .beta2 = i_.cfg.contact_beta2
-                        },
-                        .lambda_min = i_.o1->mass() * i_.cfg.lambda_min / i_.cfg.oversampling,
-                        .lambda_max = 0},
-                    i_.l1(penetrating_id)};
-                i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
-                normal_impulse = &ci->normal_impulse();
+                if (i_.tire_id == SIZE_MAX) {
+                    ContactInfo1* ci = new ContactInfo1{
+                        i_.o1->rbi_.rbp_,
+                        BoundedPlaneConstraint{
+                            .constraint{
+                                .normal_impulse{.normal = plane.normal_},
+                                .intercept = plane.intercept_,
+                                .slop = (i_.tire_id != SIZE_MAX)
+                                    ? -i_.cfg.wheel_penetration_depth
+                                    : 0,
+                                .beta = i_.cfg.contact_beta,
+                                .beta2 = i_.cfg.contact_beta2
+                            },
+                            .lambda_min = i_.o1->mass() * i_.cfg.lambda_min / i_.cfg.oversampling,
+                            .lambda_max = 0},
+                        i_.l1(penetrating_id)};
+                    i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                    normal_impulse = &ci->normal_impulse();
+                } else {
+                    ShockAbsorberContactInfo1* ci = new ShockAbsorberContactInfo1{
+                        i_.o1->rbi_.rbp_,
+                        BoundedShockAbsorberConstraint{
+                            .constraint{
+                                .normal_impulse{.normal = plane.normal_},
+                                .distance = std::sqrt(sum(squared(i_.l1(penetrating_id) - intersection_point_))),
+                                .Ks = 1e5,
+                                .Ka = 2e3
+                            },
+                            .lambda_min = i_.o1->mass() * i_.cfg.lambda_min / i_.cfg.oversampling,
+                            .lambda_max = 0},
+                        i_.l1(penetrating_id)};
+                    i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                    normal_impulse = &ci->normal_impulse();
+                }
             }
         } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
             float outness;

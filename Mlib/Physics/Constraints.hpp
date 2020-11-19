@@ -68,7 +68,6 @@ struct BoundedConstraint1D {
 
 struct ShockAbsorberConstraint {
     NormalImpulse normal_impulse;
-    FixedArray<float, 3> position;
     float distance;
     float Ks;  // K_spring
     float Ka;  // K_absorber
