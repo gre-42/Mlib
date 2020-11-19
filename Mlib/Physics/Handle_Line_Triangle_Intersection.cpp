@@ -192,7 +192,7 @@ void HandleLineTriangleIntersection::handle()
                             },
                             .lambda_min = i_.o1->mass() * i_.cfg.lambda_min / i_.cfg.oversampling,
                             .lambda_max = 0},
-                        i_.l1(penetrating_id)};
+                        intersection_point_};
                     i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                     normal_impulse = &ci->normal_impulse();
                 }
