@@ -11,8 +11,8 @@ class PlaneNd {
 public:
     PlaneNd() = default;
     PlaneNd(const FixedArray<TData, tndim>& normal, const FixedArray<TData, tndim>& point_on_plane)
-    : normal_{normal},
-      intercept_{-dot0d(normal, point_on_plane)}
+    : normal{normal},
+      intercept{-dot0d(normal, point_on_plane)}
     {}
     explicit PlaneNd(const FixedArray<FixedArray<TData, 2>, 2>& line, bool compute_center = false)
     : PlaneNd{line_normal(line), compute_center ? mean(line) : line(0)}
@@ -20,8 +20,8 @@ public:
     explicit PlaneNd(const FixedArray<FixedArray<TData, 3>, 3>& triangle, bool compute_center = false)
     : PlaneNd{triangle_normal(triangle), compute_center ? mean(triangle) : triangle(0)}
     {}
-    FixedArray<TData, tndim> normal_;
-    TData intercept_;
+    FixedArray<TData, tndim> normal;
+    TData intercept;
 };
 
 }

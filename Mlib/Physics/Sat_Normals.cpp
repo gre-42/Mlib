@@ -77,11 +77,11 @@ void SatTracker::get_collision_plane(
         PlaneNd<float, 3> best_plane;
         #pragma GCC diagnostic pop
         for(const auto& t0 : mesh0->get_triangles_sphere()) {
-            //if (dot(n.normal_, o1.first->abs_com() - o0.first->abs_com())() < 0) {
+            //if (dot(n.normal, o1.first->abs_com() - o0.first->abs_com())() < 0) {
             //    continue;
             //}
             float sat_overl = sat_overlap(
-                t0.plane.normal_,
+                t0.plane.normal,
                 mesh0->get_triangles_sphere(),
                 mesh1->get_triangles_sphere());
             if ((sat_overl > 0) && (sat_overl < min_overlap)) {

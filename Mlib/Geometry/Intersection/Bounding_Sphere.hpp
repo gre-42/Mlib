@@ -52,7 +52,7 @@ public:
         return sum(squared(other.center_ - center_)) <= squared(other.radius_ + radius_);
     }
     bool intersects(const PlaneNd<TData, tndim>& plane) const {
-        TData dist = dot0d(plane.normal_, center_) + plane.intercept_;
+        TData dist = dot0d(plane.normal, center_) + plane.intercept;
         return std::abs(dist) <= radius_;
     }
     inline const FixedArray<TData, tndim>& center() const {

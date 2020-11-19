@@ -40,7 +40,7 @@ struct PlaneConstraint {
         return -(dot0d(normal_impulse.normal, x) + intercept);
     }
     inline float overlap(const FixedArray<float, 3>& x) const {
-        // std::cerr << plane.normal_ << " | " << x << " | " << plane.intercept_ << std::endl;
+        // std::cerr << plane.normal << " | " << x << " | " << plane.intercept << std::endl;
         return -(dot0d(normal_impulse.normal, x) + intercept);
     }
     inline float active(const FixedArray<float, 3>& x) const {

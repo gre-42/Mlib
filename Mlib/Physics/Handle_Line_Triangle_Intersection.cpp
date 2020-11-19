@@ -89,23 +89,23 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         size_t penetrating_id;
         if (c.lines_are_normals) {
             penetrating_id = 1;
-            dist = -(dot0d(c.l1(1), plane.normal_) + plane.intercept_);
+            dist = -(dot0d(c.l1(1), plane.normal) + plane.intercept);
             if (dist < 0) {
                 if (c.mesh0_two_sided) {
-                    plane.intercept_ *= -1;
-                    plane.normal_ *= -1;
+                    plane.intercept *= -1;
+                    plane.normal *= -1;
                     dist *= -1;
                 } else {
                     return;
                 }
             }
         } else {
-            if (c.mesh0_two_sided && (dot0d(c.o1->abs_com(), plane.normal_) + plane.intercept_ < 0)) {
-                plane.intercept_ *= -1;
-                plane.normal_ *= -1;
+            if (c.mesh0_two_sided && (dot0d(c.o1->abs_com(), plane.normal) + plane.intercept < 0)) {
+                plane.intercept *= -1;
+                plane.normal *= -1;
             }
-            float dist_0 = dot0d(c.l1(0), plane.normal_) + plane.intercept_;
-            float dist_1 = dot0d(c.l1(1), plane.normal_) + plane.intercept_;
+            float dist_0 = dot0d(c.l1(0), plane.normal) + plane.intercept;
+            float dist_1 = dot0d(c.l1(1), plane.normal) + plane.intercept;
             // smallest negative distance
             // dist = -std::min(dist_0, dist_1);
             if (dist_0 < dist_1) {
@@ -146,8 +146,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     c.o0->rbi_.rbp_,
                     BoundedPlaneConstraint{
                         .constraint{
-                            .normal_impulse{.normal = plane.normal_},
-                            .intercept = plane.intercept_,
+                            .normal_impulse{.normal = plane.normal},
+                            .intercept = plane.intercept,
                             .slop = (c.tire_id != SIZE_MAX)
                                 ? -c.cfg.wheel_penetration_depth
                                 : 0,
@@ -165,8 +165,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         c.o1->rbi_.rbp_,
                         BoundedPlaneConstraint{
                             .constraint{
-                                .normal_impulse{.normal = plane.normal_},
-                                .intercept = plane.intercept_,
+                                .normal_impulse{.normal = plane.normal},
+                                .intercept = plane.intercept,
                                 .beta = c.cfg.contact_beta,
                                 .beta2 = c.cfg.contact_beta2
                             },
@@ -176,14 +176,14 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                     normal_impulse = &ci->normal_impulse();
                 } else {
-                    float sap = c.cfg.wheel_penetration_depth + dot0d(c.l1(penetrating_id) - intersection_point, plane.normal_);
+                    float sap = c.cfg.wheel_penetration_depth + dot0d(c.l1(penetrating_id) - intersection_point, plane.normal);
                     c.o1->tires_.at(c.tire_id).shock_absorber_position = -std::min(0.f, sap);
                     if (sap < 0) {
                         ShockAbsorberContactInfo1* ci = new ShockAbsorberContactInfo1{
                             c.o1->rbi_.rbp_,
                             BoundedShockAbsorberConstraint{
                                 .constraint{
-                                    .normal_impulse{.normal = plane.normal_},
+                                    .normal_impulse{.normal = plane.normal},
                                     .distance = sap,
                                     .Ks = 1e5,
                                     .Ka = 2e3
@@ -206,7 +206,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     c.cfg.min_velocity,
                     c.cfg.min_angular_velocity);
                 auto v11 = o11.velocity_at_position(intersection_point);
-                outness = dot0d(plane.normal_, v11);
+                outness = dot0d(plane.normal, v11);
             }
             assert_true(dist >= 0);
             {
@@ -236,14 +236,14 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         FixedArray<float, 3> tangential_force;
         if (c.o0->mass() == INFINITY && c.o1->mass() != INFINITY) {
             FixedArray<float, 3> v10 = c.o1->velocity_at_position(intersection_point);
-            FixedArray<float, 3> v3 = v10 - plane.normal_ * dot0d(plane.normal_, v10);
+            FixedArray<float, 3> v3 = v10 - plane.normal * dot0d(plane.normal, v10);
             if (c.tire_id != SIZE_MAX) {
                 FixedArray<float, 3> n3 = c.o1->get_abs_tire_z(c.tire_id);
-                n3 -= plane.normal_ * dot0d(plane.normal_, n3);
+                n3 -= plane.normal * dot0d(plane.normal, n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
                     if (false && (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES)) {
-                        auto t = cross(n3, plane.normal_);
+                        auto t = cross(n3, plane.normal);
                         t /= std::sqrt(sum(squared(t)));
                         c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                             c.o1->rbi_.rbp_,
@@ -290,7 +290,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                             c.o1->get_abs_tire_rotation_matrix(c.tire_id),
                             c.o1->get_abs_tire_position(c.tire_id),
                             intersection_point,
-                            plane.normal_,
+                            plane.normal,
                             c.cfg.stiction_coefficient * force_n1,
                             c.cfg.friction_coefficient * force_n1);
                         tangential_force = 0;
@@ -350,10 +350,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         // }
         if (c.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
             if (frac0 != 0) {
-                c.o0->integrate_force({-force_n0 * plane.normal_ - tangential_force, intersection_point});
+                c.o0->integrate_force({-force_n0 * plane.normal - tangential_force, intersection_point});
             }
             if (frac1 != 0) {
-                c.o1->integrate_force({force_n1 * plane.normal_ + tangential_force, intersection_point});
+                c.o1->integrate_force({force_n1 * plane.normal + tangential_force, intersection_point});
             }
         }
     } else {

@@ -16,8 +16,8 @@ FixedArray<TData, 2> intersect_lines(
 {
     PlaneNd<TData, 2> pl0{l0, compute_center};
     PlaneNd<TData, 2> pl1{l1, compute_center};
-    FixedArray<TData, 3> ppl0{pl0.normal_(0), pl0.normal_(1), pl0.intercept_ + width0 / 2};
-    FixedArray<TData, 3> ppl1{pl1.normal_(0), pl1.normal_(1), pl1.intercept_ + width1 / 2};
+    FixedArray<TData, 3> ppl0{pl0.normal(0), pl0.normal(1), pl0.intercept + width0 / 2};
+    FixedArray<TData, 3> ppl1{pl1.normal(0), pl1.normal(1), pl1.intercept + width1 / 2};
     auto res = cross(ppl0, ppl1);
     if (std::abs(res(2)) < 1e-7) {
         throw std::runtime_error("Lines do not intersect");
