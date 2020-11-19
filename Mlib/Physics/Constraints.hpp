@@ -22,8 +22,14 @@ struct VelocityConstraint {
     }
 };
 
+struct NormalImpulse {
+    FixedArray<float, 3> normal;
+    float lambda_total;
+};
+
 struct PlaneConstraint {
-    PlaneNd<float, 3> plane;
+    NormalImpulse normal_impulse;
+    float intercept;
     float b = 0;
     float slop = 0;
     float lambda_total = 0;
@@ -31,11 +37,11 @@ struct PlaneConstraint {
     float beta = 0.5;
     float beta2 = 0.2;
     inline float C(const FixedArray<float, 3>& x) const {
-        return -(dot0d(plane.normal_, x) + plane.intercept_);
+        return -(dot0d(normal_impulse.normal, x) + intercept);
     }
     inline float overlap(const FixedArray<float, 3>& x) const {
         // std::cerr << plane.normal_ << " | " << x << " | " << plane.intercept_ << std::endl;
-        return -(dot0d(plane.normal_, x) + plane.intercept_);
+        return -(dot0d(normal_impulse.normal, x) + intercept);
     }
     inline float active(const FixedArray<float, 3>& x) const {
         return always_active || (overlap(x) > 0);
@@ -48,20 +54,33 @@ struct PlaneConstraint {
     }
 };
 
-struct BoundedPlaneConstraint {
-    PlaneConstraint plane_constraint;
+template <class TConstraint>
+struct BoundedConstraint1D {
+    TConstraint constraint;
     float lambda_min = -INFINITY;
     float lambda_max = INFINITY;
     inline float clamped_lambda(float lambda) {
-        lambda = std::clamp(plane_constraint.lambda_total + lambda, lambda_min, lambda_max) - plane_constraint.lambda_total;
-        plane_constraint.lambda_total += lambda;
+        lambda = std::clamp(constraint.normal_impulse.lambda_total + lambda, lambda_min, lambda_max) - constraint.normal_impulse.lambda_total;
+        constraint.normal_impulse.lambda_total += lambda;
         return lambda;
     }
 };
 
+struct ShockAbsorberConstraint {
+    NormalImpulse normal_impulse;
+    FixedArray<float, 3> position;
+    float distance;
+    float Ks;  // K_spring
+    float Ka;  // K_absorber
+};
+
+typedef BoundedConstraint1D<PlaneConstraint> BoundedPlaneConstraint;
+typedef BoundedConstraint1D<ShockAbsorberConstraint> BoundedShockAbsorberConstraint;
+
 class ContactInfo {
 public:
     virtual void solve(float dt, float relaxation) = 0;
+    virtual void finalize() {}
     virtual ~ContactInfo() = default;
 };
 
@@ -72,8 +91,8 @@ public:
         const BoundedPlaneConstraint& pc,
         const FixedArray<float, 3>& p);
     void solve(float dt, float relaxation) override;
-    const PlaneConstraint& pc() const {
-        return pc_.plane_constraint;
+    const NormalImpulse& normal_impulse() const {
+        return pc_.constraint.normal_impulse;
     }
 private:
     RigidBodyPulses& rbp_;
@@ -89,8 +108,8 @@ public:
         const BoundedPlaneConstraint& pc,
         const FixedArray<float, 3>& p);
     void solve(float dt, float relaxation) override;
-    const PlaneConstraint& pc() const {
-        return pc_.plane_constraint;
+    const NormalImpulse& normal_impulse() const {
+        return pc_.constraint.normal_impulse;
     }
 private:
     RigidBodyPulses& rbp0_;
@@ -99,11 +118,27 @@ private:
     FixedArray<float, 3> p_;
 };
 
+class ShockAbsorberContactInfo1: public ContactInfo {
+public:
+    ShockAbsorberContactInfo1(
+        RigidBodyPulses& rbp,
+        const BoundedShockAbsorberConstraint& sc,
+        const FixedArray<float, 3>& p);
+    void solve(float dt, float relaxation) override;
+    const NormalImpulse& normal_impulse() const {
+        return sc_.constraint.normal_impulse;
+    }
+private:
+    RigidBodyPulses& rbp_;
+    BoundedShockAbsorberConstraint sc_;
+    FixedArray<float, 3> p_;
+};
+
 class FrictionContactInfo1: public ContactInfo {
 public:
     FrictionContactInfo1(
         RigidBodyPulses& rbp,
-        const PlaneConstraint& normal_constraint,
+        const NormalImpulse& normal_impulse,
         const FixedArray<float, 3>& p,
         float stiction_coefficient,
         float friction_coefficient,
@@ -115,7 +150,7 @@ private:
     FixedArray<float, 3> lambda_total_;
     FixedArray<float, 3> b_;
     RigidBodyPulses& rbp_;
-    const PlaneConstraint& normal_constraint_;
+    const NormalImpulse& normal_impulse_;
     FixedArray<float, 3> p_;
     float stiction_coefficient_;
     float friction_coefficient_;
@@ -126,7 +161,7 @@ public:
     FrictionContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
-        const PlaneConstraint& normal_constraint,
+        const NormalImpulse& normal_impulse,
         const FixedArray<float, 3>& p,
         float stiction_coefficient,
         float friction_coefficient,
@@ -139,7 +174,7 @@ private:
     FixedArray<float, 3> b_;
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
-    const PlaneConstraint& normal_constraint_;
+    const NormalImpulse& normal_impulse_;
     FixedArray<float, 3> p_;
     float stiction_coefficient_;
     float friction_coefficient_;

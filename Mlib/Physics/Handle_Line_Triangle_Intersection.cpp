@@ -140,17 +140,18 @@ void HandleLineTriangleIntersection::handle()
         }
         float force_n0 = NAN;
         float force_n1 = NAN;
-        const PlaneConstraint* normal_constraint = nullptr;
+        const NormalImpulse* normal_impulse = nullptr;
         if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
             if (i_.o0->mass() != INFINITY) {
                 ContactInfo2* ci = new ContactInfo2{
                     i_.o1->rbi_.rbp_,
                     i_.o0->rbi_.rbp_,
                     BoundedPlaneConstraint{
-                        .plane_constraint{
-                            .plane = plane,
+                        .constraint{
+                            .normal_impulse{.normal = plane.normal_},
+                            .intercept = plane.intercept_,
                             .slop = (i_.tire_id != SIZE_MAX)
-                                ? -i_.cfg.wheel_penetration_depth - i_.o1->tires_.at(i_.tire_id).shock_absorber.position()
+                                ? -i_.cfg.wheel_penetration_depth
                                 : 0,
                             .beta = i_.cfg.contact_beta,
                             .beta2 = i_.cfg.contact_beta2
@@ -159,15 +160,16 @@ void HandleLineTriangleIntersection::handle()
                         .lambda_max = 0},
                     i_.l1(penetrating_id)};
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
-                normal_constraint = &ci->pc();
+                normal_impulse = &ci->normal_impulse();
             } else {
                 ContactInfo1* ci = new ContactInfo1{
                     i_.o1->rbi_.rbp_,
                     BoundedPlaneConstraint{
-                        .plane_constraint{
-                            .plane = plane,
+                        .constraint{
+                            .normal_impulse{.normal = plane.normal_},
+                            .intercept = plane.intercept_,
                             .slop = (i_.tire_id != SIZE_MAX)
-                                ? -i_.cfg.wheel_penetration_depth - i_.o1->tires_.at(i_.tire_id).shock_absorber.position()
+                                ? -i_.cfg.wheel_penetration_depth
                                 : 0,
                             .beta = i_.cfg.contact_beta,
                             .beta2 = i_.cfg.contact_beta2
@@ -176,9 +178,9 @@ void HandleLineTriangleIntersection::handle()
                         .lambda_max = 0},
                     i_.l1(penetrating_id)};
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
-                normal_constraint = &ci->pc();
+                normal_impulse = &ci->normal_impulse();
             }
-        } else {
+        } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
             float outness;
             {
                 auto o11 = i_.o1->rbi_;
@@ -203,6 +205,8 @@ void HandleLineTriangleIntersection::handle()
                     }
                 }
             }
+        } else {
+            throw std::runtime_error("Unknown resolve collision type");
         }
         // if (outness < -10) {
         //     fac = 1.5e3;
@@ -227,7 +231,7 @@ void HandleLineTriangleIntersection::handle()
                         t /= std::sqrt(sum(squared(t)));
                         i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                             i_.o1->rbi_.rbp_,
-                            *normal_constraint,
+                            *normal_impulse,
                             i_.l1(penetrating_id),
                             i_.cfg.stiction_coefficient,
                             i_.cfg.friction_coefficient,
@@ -248,7 +252,7 @@ void HandleLineTriangleIntersection::handle()
                             i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
                                 FrictionContactInfo1{
                                     i_.o1->rbi_.rbp_,
-                                    *normal_constraint,
+                                    *normal_impulse,
                                     i_.l1(penetrating_id),
                                     i_.cfg.stiction_coefficient,
                                     i_.cfg.friction_coefficient,
@@ -302,7 +306,7 @@ void HandleLineTriangleIntersection::handle()
                 } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                     i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                         i_.o1->rbi_.rbp_,
-                        *normal_constraint,
+                        *normal_impulse,
                         i_.l1(penetrating_id),
                         i_.cfg.stiction_coefficient,
                         i_.cfg.friction_coefficient,
@@ -316,7 +320,7 @@ void HandleLineTriangleIntersection::handle()
                 i_.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo2{
                     i_.o1->rbi_.rbp_,
                     i_.o0->rbi_.rbp_,
-                    *normal_constraint,
+                    *normal_impulse,
                     i_.l1(penetrating_id),
                     i_.cfg.stiction_coefficient,
                     i_.cfg.friction_coefficient,

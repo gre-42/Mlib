@@ -26,13 +26,13 @@ struct Particle {
 
 void test_rigid_body_physics_particle0() {
     Particle0 p{.x = {0, -0.1, 0}, .v1 = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.plane = {{0, 1, 0}, {0, 0, 0}}, .b = 0};
+    PlaneConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0};
     float h = 1. / 60.;
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
     p.v2b = p.v1 + h * g;
     for(size_t i = 0; i < 100; ++i) {
-        FixedArray<float, 3> J = -pc.plane.normal_;
+        FixedArray<float, 3> J = -pc.normal_impulse.normal;
         float lambda = - (dot0d(J, p.v2b) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J));
         p.v2 = p.v2b + solve_symm_1d(p.mass, J * lambda);
         // std::cerr << p.x << " | " << lambda << " | " << p.v2b << " | " << p.v2 << std::endl;
@@ -43,13 +43,13 @@ void test_rigid_body_physics_particle0() {
 
 void test_rigid_body_physics_particle() {
     Particle p{.x = {0, -0.1, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.plane = {{0, 1, 0}, {0, 0, 0}}, .b = 0, .always_active = false};
+    PlaneConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0, .always_active = false};
     float h = 1. / 60.;
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
     p.v += h * g;
     for(size_t i = 0; i < 100; ++i) {
-        FixedArray<float, 3> J = -pc.plane.normal_;
+        FixedArray<float, 3> J = -pc.normal_impulse.normal;
         float lambda = - (dot0d(J, p.v) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J));
         p.v += solve_symm_1d(p.mass, J * lambda);
         // std::cerr << p.x << " | " << lambda << " | " << p.v << std::endl;
@@ -59,7 +59,7 @@ void test_rigid_body_physics_particle() {
 
 void test_rigid_body_physics_timestep() {
     Particle p{.x = {0, 0.2, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.plane = {{0, 1, 0}, {0, 0, 0}}, .b = 0, .slop = 0.01, .always_active = false};
+    PlaneConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0, .slop = 0.01, .always_active = false};
     float h = 1. / 60.;
     float beta = 0.5;
     float beta2 = 0.2;
@@ -70,7 +70,7 @@ void test_rigid_body_physics_timestep() {
         p.v += h * g;
         if (pc.active(p.x)) {
             for(size_t j = 0; j < 100; ++j) {
-                FixedArray<float, 3> J = -pc.plane.normal_;
+                FixedArray<float, 3> J = -pc.normal_impulse.normal;
                 float lambda = - (dot0d(J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) - beta2 * pc.bias(p.x))) / dot0d(J, solve_symm_1d(p.mass, J));
                 p.v += solve_symm_1d(p.mass, J * lambda);
             }
@@ -99,7 +99,8 @@ void test_rigid_body_physics_rbi() {
     rbp.set_pose(fixed_identity_array<float, 3>(), {0, 0.2, 0});
     rbp.v_(1) = -1;
     PlaneConstraint pc{
-        .plane = {{0, 1, 0}, {0, 0, 0}},
+        .normal_impulse{.normal = {0, 1, 0}},
+        .intercept = 0,
         .slop = 0.01,
         .always_active = false};
     float h = 1. / 60.;
@@ -117,11 +118,11 @@ void test_rigid_body_physics_rbi() {
         // std::cerr << rbp.com_ << std::endl;
         if (pc.active(p)) {
             for(size_t j = 0; j < 100; ++j) {
-                float v = dot0d(rbp.velocity_at_position(p), pc.plane.normal_);
-                float mc = rbp.effective_mass({.vector = pc.plane.normal_, .position = p});
+                float v = dot0d(rbp.velocity_at_position(p), pc.normal_impulse.normal);
+                float mc = rbp.effective_mass({.vector = pc.normal_impulse.normal, .position = p});
                 float lambda = - mc * (-v + pc.b + 1.f / h * (beta * pc.C(p) - beta2 * pc.bias(p)));
-                rbp.v_ -= pc.plane.normal_ / rbp.mass_ * lambda;
-                rbp.w_ -= rbp.solve_abs_I(cross(p - rbp.abs_com_, pc.plane.normal_)) * lambda;
+                rbp.v_ -= pc.normal_impulse.normal / rbp.mass_ * lambda;
+                rbp.w_ -= rbp.solve_abs_I(cross(p - rbp.abs_com_, pc.normal_impulse.normal)) * lambda;
                 // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
             }
         }
@@ -141,8 +142,9 @@ void test_rigid_body_physics_rbi_multiple() {
     rbp.set_pose(fixed_identity_array<float, 3>(), {0, 0.2, 0});
     rbp.v_(1) = -1;
     BoundedPlaneConstraint pc{
-        .plane_constraint{
-            .plane = {{0, 1, 0}, {0, 0, 0}},
+        .constraint{
+            .normal_impulse{.normal={0, 1, 0}},
+            .intercept = 0,
             .slop = 0.01,
             .always_active = false}};
     float h = 1. / 60.;
