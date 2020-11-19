@@ -15,7 +15,7 @@ inline ResolveCollisionType resolve_collission_type_from_string(const std::strin
     } else if (resolve_collission_type == "sequential_pulses") {
         return ResolveCollisionType::SEQUENTIAL_PULSES;
     } else {
-        throw std::runtime_error("Unknown resolve collision type");
+        throw std::runtime_error("Unknown resolve collision type: " + resolve_collission_type);
     }
 }
 

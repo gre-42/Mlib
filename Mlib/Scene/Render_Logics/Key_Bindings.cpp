@@ -112,7 +112,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                         vector: k.force.vector * (cfg.dt / cfg.oversampling),
                         position: k.force.position}));
                 } else {
-                    throw std::runtime_error("Unknown resolve collision type");
+                    throw std::runtime_error("Unknown resolve collision type in key_bindings");
                 }
                 if (any(k.rotate != 0.f)) {
                     rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues(alpha * k.rotate));

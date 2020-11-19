@@ -16,7 +16,7 @@ void GravityEfp::increment_external_forces(const std::list<std::shared_ptr<Rigid
             } else if (cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                 rb->rbi_.rbp_.integrate_gravity(gravity_, cfg.dt / cfg.oversampling);
             } else {
-                throw std::runtime_error("Unknown resolve collision type");
+                throw std::runtime_error("Unknown resolve collision type in increment_external_forces");
             }
         }
     }

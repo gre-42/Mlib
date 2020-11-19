@@ -197,7 +197,7 @@ void HandleLineTriangleIntersection::handle()
                     normal_impulse = &ci->normal_impulse();
                 }
             }
-        } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+        } else if (i_.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
             float outness;
             {
                 auto o11 = i_.o1->rbi_;
@@ -223,7 +223,7 @@ void HandleLineTriangleIntersection::handle()
                 }
             }
         } else {
-            throw std::runtime_error("Unknown resolve collision type");
+            throw std::runtime_error("Unknown resolve collision type in HandleLineTriangleIntersection::handle: " + std::to_string(int(i_.cfg.resolve_collision_type)));
         }
         // if (outness < -10) {
         //     fac = 1.5e3;
