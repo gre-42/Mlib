@@ -31,7 +31,7 @@ void accelerate_positive(
     float m = rb.rbi_.rbp_.effective_mass({.vector = n3, .position = rb.get_abs_tire_contact_position(tire_id)});
     float dt = cfg.dt / cfg.oversampling;
 
-    float v10 = -std::sqrt(squared(v0) + (2 * P * dt) / m);
+    float v10 = -std::sqrt(squared(v0) + 2 * P * dt / m);
     float v11 = v0 - cfg.stiction_coefficient * force_n1 / m * dt;
 
     float vv = u * std::max(v10, v11);
@@ -66,7 +66,7 @@ void accelerate_negative(
     float m = rb.rbi_.rbp_.effective_mass({.vector = n3, .position = rb.get_abs_tire_contact_position(tire_id)});
     float dt = cfg.dt / cfg.oversampling;
 
-    float v10 = std::sqrt(squared(v0) + (2 * -P * dt) / m);
+    float v10 = std::sqrt(squared(v0) - 2 * P * dt / m);
     float v11 = v0 + cfg.stiction_coefficient * force_n1 / m * dt;
 
     float vv = u * std::min(v10, v11);
