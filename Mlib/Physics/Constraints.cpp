@@ -7,7 +7,7 @@
 
 using namespace Mlib;
 
-ContactInfo1::ContactInfo1(
+NormalContactInfo1::NormalContactInfo1(
     RigidBodyPulses& rbp,
     const BoundedPlaneConstraint& pc,
     const FixedArray<float, 3>& p)
@@ -22,7 +22,7 @@ ContactInfo1::ContactInfo1(
  *       Marijn Tamis, Giuseppe Maggiore, Constraint based physics solver
  *       Marijn Tamis, Sequential Impulse Solver for Rigid Body Dynamics
  */
-void ContactInfo1::solve(float dt, float relaxation) {
+void NormalContactInfo1::solve(float dt, float relaxation) {
     PlaneConstraint& pc = pc_.constraint;
     if (pc.active(p_)) {
         float v = dot0d(rbp_.velocity_at_position(p_), pc.normal_impulse.normal);
@@ -36,7 +36,7 @@ void ContactInfo1::solve(float dt, float relaxation) {
     }
 }
 
-ContactInfo2::ContactInfo2(
+NormalContactInfo2::NormalContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const BoundedPlaneConstraint& pc,
@@ -47,7 +47,7 @@ ContactInfo2::ContactInfo2(
   p_{p}
 {}
 
-void ContactInfo2::solve(float dt, float relaxation) {
+void NormalContactInfo2::solve(float dt, float relaxation) {
     PlaneConstraint& pc = pc_.constraint;
     if (pc.active(p_)) {
         float v0 = dot0d(rbp0_.velocity_at_position(p_), pc.normal_impulse.normal);

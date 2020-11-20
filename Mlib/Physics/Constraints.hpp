@@ -10,18 +10,6 @@ class RigidBody;
 struct RigidBodyPulses;
 struct PhysicsEngineConfig;
 
-struct VelocityConstraint {
-    FixedArray<float, 3> normal;
-    float b;
-    float lambda_total = 0;
-    inline float C(const FixedArray<float, 3>& x) const {
-        return -dot0d(normal, x);
-    }
-    inline float v() const {
-        return b;
-    }
-};
-
 struct NormalImpulse {
     FixedArray<float, 3> normal;
     float lambda_total;
@@ -83,9 +71,9 @@ public:
     virtual ~ContactInfo() = default;
 };
 
-class ContactInfo1: public ContactInfo {
+class NormalContactInfo1: public ContactInfo {
 public:
-    ContactInfo1(
+    NormalContactInfo1(
         RigidBodyPulses& rbp,
         const BoundedPlaneConstraint& pc,
         const FixedArray<float, 3>& p);
@@ -99,9 +87,9 @@ private:
     FixedArray<float, 3> p_;
 };
 
-class ContactInfo2: public ContactInfo {
+class NormalContactInfo2: public ContactInfo {
 public:
-    ContactInfo2(
+    NormalContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const BoundedPlaneConstraint& pc,

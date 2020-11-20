@@ -141,7 +141,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         const NormalImpulse* normal_impulse = nullptr;
         if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
             if (c.o0->mass() != INFINITY) {
-                ContactInfo2* ci = new ContactInfo2{
+                NormalContactInfo2* ci = new NormalContactInfo2{
                     c.o1->rbi_.rbp_,
                     c.o0->rbi_.rbp_,
                     BoundedPlaneConstraint{
@@ -161,7 +161,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 normal_impulse = &ci->normal_impulse();
             } else {
                 if (c.tire_id == SIZE_MAX) {
-                    ContactInfo1* ci = new ContactInfo1{
+                    NormalContactInfo1* ci = new NormalContactInfo1{
                         c.o1->rbi_.rbp_,
                         BoundedPlaneConstraint{
                             .constraint{

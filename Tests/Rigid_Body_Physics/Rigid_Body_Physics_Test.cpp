@@ -156,13 +156,13 @@ void test_rigid_body_physics_rbi_multiple() {
         std::list<std::unique_ptr<ContactInfo>> cis;
         cis.push_back(
             std::unique_ptr<ContactInfo>(
-                new ContactInfo1{
+                new NormalContactInfo1{
                     rbp,
                     pc,
                     rbp.transform_to_world_coordinates({-0.2, -0.1, 0})}));
         cis.push_back(
             std::unique_ptr<ContactInfo>(
-                new ContactInfo1{
+                new NormalContactInfo1{
                     rbp,
                     pc,
                     rbp.transform_to_world_coordinates({0.2, -0.1, 0})}));
