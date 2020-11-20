@@ -52,11 +52,7 @@ void accelerate_negative(
 
 void break_positive(
     RigidBody& rb,
-    const FixedArray<float, 3>& v3,
-    const FixedArray<float, 3>& n3,
     const FixedArray<float, 3>& surface_normal,
-    float force_n1,
-    const PhysicsEngineConfig& cfg,
     size_t tire_id)
 {
     float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
@@ -86,11 +82,7 @@ void break_positive(
 
 void break_negative(
     RigidBody& rb,
-    const FixedArray<float, 3>& v3,
-    const FixedArray<float, 3>& n3,
     const FixedArray<float, 3>& surface_normal,
-    float force_n1,
-    const PhysicsEngineConfig& cfg,
     size_t tire_id)
 {
     float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
@@ -128,9 +120,7 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
     const FixedArray<float, 3>& v3,
     const FixedArray<float, 3>& n3,
     float v0,
-    float w0,
     const FixedArray<float, 3>& surface_normal,
-    float force_n1,
     const PhysicsEngineConfig& cfg,
     size_t tire_id,
     float& force_min,
@@ -144,9 +134,9 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
             float v = dot0d(rb.rbi_.rbp_.v_, n3);
             if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_break_velocity) {
                 if (P.power > 0) {
-                    break_positive(rb, v3, n3, surface_normal, force_n1, cfg, tire_id);
+                    break_positive(rb, surface_normal, tire_id);
                 } else if (P.power < 0) {
-                    break_negative(rb, v3, n3, surface_normal, force_n1, cfg, tire_id);
+                    break_negative(rb, surface_normal, tire_id);
                 }
             } else if (P.power > 0) {
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
@@ -189,9 +179,7 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
             v3,
             n3,
             -dot0d(rb.get_velocity_at_tire_contact(surface_normal, tire_id), n3),
-            rb.get_angular_velocity_at_tire(surface_normal, tire_id),
             surface_normal,
-            force_n1,
             cfg,
             tire_id,
             force_min,

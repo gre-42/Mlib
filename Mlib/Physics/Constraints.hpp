@@ -189,7 +189,6 @@ public:
         const FixedArray<float, 3>& v3,
         const FixedArray<float, 3>& n3,
         float v0,
-        float w0,
         const PhysicsEngineConfig& cfg);
     void solve(float dt, float relaxation) override;
 private:
