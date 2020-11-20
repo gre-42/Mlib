@@ -190,6 +190,7 @@ public:
         size_t tire_id,
         const FixedArray<float, 3>& v3,
         const FixedArray<float, 3>& n3,
+        float w0,
         const PhysicsEngineConfig& cfg);
     void solve(float dt, float relaxation) override;
 private:
@@ -199,6 +200,7 @@ private:
     size_t tire_id_;
     FixedArray<float, 3> v3_;
     FixedArray<float, 3> n3_;
+    float w0_;
     const PhysicsEngineConfig& cfg_;
 };
 

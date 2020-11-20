@@ -9,6 +9,7 @@ void accelerate_positive(
     float power,
     const FixedArray<float, 3>& v3,
     const FixedArray<float, 3>& n3,
+    float w0,
     const FixedArray<float, 3>& surface_normal,
     float force_n1,
     const PhysicsEngineConfig& cfg,
@@ -33,7 +34,7 @@ void accelerate_positive(
             break;
         }
     }
-    rb.set_tire_angular_velocity(tire_id, vv / rb.get_tire_radius(tire_id));
+    rb.set_tire_angular_velocity(tire_id, std::max(vv / rb.get_tire_radius(tire_id), w0 - 2.f / float(cfg.oversampling)));
 }
 
 void accelerate_negative(
@@ -41,6 +42,7 @@ void accelerate_negative(
     float power,
     const FixedArray<float, 3>& v3,
     const FixedArray<float, 3>& n3,
+    float w0,
     const FixedArray<float, 3>& surface_normal,
     float force_n1,
     const PhysicsEngineConfig& cfg,
@@ -65,7 +67,7 @@ void accelerate_negative(
             break;
         }
     }
-    rb.set_tire_angular_velocity(tire_id, vv / rb.get_tire_radius(tire_id));
+    rb.set_tire_angular_velocity(tire_id, std::min(vv / rb.get_tire_radius(tire_id), w0 + 2.f / float(cfg.oversampling)));
 }
 
 void break_positive(
@@ -145,6 +147,7 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
     RigidBody& rb,
     const FixedArray<float, 3>& v3,
     const FixedArray<float, 3>& n3,
+    float w0,
     const FixedArray<float, 3>& surface_normal,
     float force_n1,
     const PhysicsEngineConfig& cfg,
@@ -166,13 +169,13 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
                     idle(rb, surface_normal, tire_id);
                 } else {
-                    accelerate_positive(rb, P.power, v3, n3, surface_normal, force_n1, cfg, tire_id);
+                    accelerate_positive(rb, P.power, v3, n3, w0, surface_normal, force_n1, cfg, tire_id);
                 }
             } else if (P.power < 0) {
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
                     idle(rb, surface_normal, tire_id);
                 } else {
-                    accelerate_negative(rb, P.power, v3, n3, surface_normal, force_n1, cfg, tire_id);
+                    accelerate_negative(rb, P.power, v3, n3, w0, surface_normal, force_n1, cfg, tire_id);
                 }
             }
         } else if (P.power == 0) {
@@ -200,6 +203,7 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
             rb,
             v3,
             n3,
+            rb.get_angular_velocity_at_tire(surface_normal, tire_id),
             surface_normal,
             force_n1,
             cfg,

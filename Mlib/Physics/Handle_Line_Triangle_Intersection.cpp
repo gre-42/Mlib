@@ -279,6 +279,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                     c.tire_id,
                                     v3,
                                     n3,
+                                    c.o1->get_angular_velocity_at_tire(plane.normal, c.tire_id),
                                     c.cfg}));
                             }
                         } else {
