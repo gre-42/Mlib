@@ -4,21 +4,15 @@
 
 using namespace Mlib;
 
-/**
- * solve(1/2*m*(v1^2-v0^2) = P*t, v1);
- * 
- * P == NAN => brake
- */
 void accelerate_positive(
     RigidBody& rb,
     float power,
     const FixedArray<float, 3>& v3,
-    const FixedArray<float, 3>& n3,
     float v0,
     const FixedArray<float, 3>& surface_normal,
-    float force_n1,
-    const PhysicsEngineConfig& cfg,
-    size_t tire_id)
+    size_t tire_id,
+    float& force_min,
+    float& force_max)
 {
     // r = v / w
     float u = 1;
@@ -27,33 +21,21 @@ void accelerate_positive(
             u = std::clamp<float>(-v0 / std::sqrt(vc2), 1e-1, 1e1);
         }
     }
-    float P = power;
-    float m = rb.rbi_.rbp_.effective_mass({.vector = n3, .position = rb.get_abs_tire_contact_position(tire_id)});
-    float dt = cfg.dt / cfg.oversampling;
-
-    float v10 = -std::sqrt(squared(v0) + 2 * P * dt / m);
-    float v11 = v0 - cfg.stiction_coefficient * force_n1 / m * dt;
-
-    float vv = u * std::max(v10, v11);
-    // std::cerr << P << " " << v10 << " " << v11 << " " << v0 << " " << force_n1 << " " << vv << std::endl;
-    rb.set_tire_angular_velocity(tire_id, vv / rb.get_tire_radius(tire_id));
+    float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
+    rb.set_tire_angular_velocity(tire_id, w - 10.f);
+    force_min = u * power / std::min(-0.001f, w * rb.get_tire_radius(tire_id));
+    force_max = 0;
 }
 
-/**
- * solve(1/2*m*(v1^2-v0^2) = P*t, v1);
- * 
- * P == NAN => brake
- */
 void accelerate_negative(
     RigidBody& rb,
     float power,
     const FixedArray<float, 3>& v3,
-    const FixedArray<float, 3>& n3,
     float v0,
     const FixedArray<float, 3>& surface_normal,
-    float force_n1,
-    const PhysicsEngineConfig& cfg,
-    size_t tire_id)
+    size_t tire_id,
+    float& force_min,
+    float& force_max)
 {
     // r = v / w
     float u = 1;
@@ -62,15 +44,10 @@ void accelerate_negative(
             u = std::clamp<float>(v0 / std::sqrt(vc2), 1e-1, 1e1);
         }
     }
-    float P = power;
-    float m = rb.rbi_.rbp_.effective_mass({.vector = n3, .position = rb.get_abs_tire_contact_position(tire_id)});
-    float dt = cfg.dt / cfg.oversampling;
-
-    float v10 = std::sqrt(squared(v0) - 2 * P * dt / m);
-    float v11 = v0 + cfg.stiction_coefficient * force_n1 / m * dt;
-
-    float vv = u * std::min(v10, v11);
-    rb.set_tire_angular_velocity(tire_id, vv / rb.get_tire_radius(tire_id));
+    float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
+    rb.set_tire_angular_velocity(tire_id, w + 10.f);
+    force_min = 0;
+    force_max = -u * power / std::max(0.001f, w * rb.get_tire_radius(tire_id));
 }
 
 void break_positive(
@@ -155,7 +132,9 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
     const FixedArray<float, 3>& surface_normal,
     float force_n1,
     const PhysicsEngineConfig& cfg,
-    size_t tire_id)
+    size_t tire_id,
+    float& force_min,
+    float& force_max)
 {
     // F = W / s = W / v / t = P / v
     if (!std::isnan(P.power)) {
@@ -173,13 +152,13 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
                     idle(rb, surface_normal, tire_id);
                 } else {
-                    accelerate_positive(rb, P.power, v3, n3, v0, surface_normal, force_n1, cfg, tire_id);
+                    accelerate_positive(rb, P.power, v3, v0, surface_normal, tire_id, force_min, force_max);
                 }
             } else if (P.power < 0) {
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
                     idle(rb, surface_normal, tire_id);
                 } else {
-                    accelerate_negative(rb, P.power, v3, n3, v0, surface_normal, force_n1, cfg, tire_id);
+                    accelerate_negative(rb, P.power, v3, v0, surface_normal, tire_id, force_min, force_max);
                 }
             }
         } else if (P.power == 0) {
@@ -199,6 +178,8 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
     const PhysicsEngineConfig& cfg,
     size_t tire_id)
 {
+    float force_min;
+    float force_max;
     return friction_force_infinite_mass(
         cfg.stiction_coefficient * force_n1,
         cfg.friction_coefficient * force_n1,
@@ -212,6 +193,8 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
             surface_normal,
             force_n1,
             cfg,
-            tire_id),
+            tire_id,
+            force_min,
+            force_max),
         cfg.alpha0);
 }

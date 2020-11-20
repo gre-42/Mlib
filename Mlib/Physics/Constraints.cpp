@@ -72,14 +72,20 @@ FrictionContactInfo1::FrictionContactInfo1(
     const FixedArray<float, 3>& p,
     float stiction_coefficient,
     float friction_coefficient,
-    const FixedArray<float, 3>& b)
+    const FixedArray<float, 3>& b,
+    const FixedArray<float, 3>& clamping_direction,
+    float clamping_min,
+    float clamping_max)
 : lambda_total_(0),
   b_{b},
   rbp_{rbp},
   normal_impulse_{normal_impulse},
   p_{p},
   stiction_coefficient_{stiction_coefficient},
-  friction_coefficient_{friction_coefficient}
+  friction_coefficient_{friction_coefficient},
+  clamping_direction_{clamping_direction},
+  clamping_min_{clamping_min},
+  clamping_max_{clamping_max}
 {}
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
@@ -92,6 +98,11 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
         FixedArray<float, 3> lambda = mc * v * n3;
         FixedArray<float, 3> lambda_total_old = lambda_total_;
         lambda_total_ += lambda;
+        if (!any(isnan(clamping_direction_))) {
+            float ld = dot0d(lambda_total_, clamping_direction_);
+            FixedArray<float, 3> lt = lambda_total_ - ld * clamping_direction_;
+            lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
+        }
         if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse())) {
             lambda_total_ *= max_impulse() / std::sqrt(ll2);
         }
@@ -108,6 +119,16 @@ float FrictionContactInfo1::max_impulse() const {
 
 void FrictionContactInfo1::set_b(const FixedArray<float, 3>& b) {
     b_ = b;
+}
+
+void FrictionContactInfo1::set_clamping(
+    const FixedArray<float, 3>& clamping_direction,
+    float clamping_min,
+    float clamping_max)
+{
+    clamping_direction_ = clamping_direction;
+    clamping_min_ = clamping_min;
+    clamping_max_ = clamping_max;
 }
 
 FrictionContactInfo2::FrictionContactInfo2(
@@ -178,8 +199,14 @@ TireContactInfo1::TireContactInfo1(
 
 void TireContactInfo1::solve(float dt, float relaxation) {
     float force_n1 = fci_.max_impulse() / dt;
-    FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, v3_, n3_, v0_, w0_, fci_.normal_impulse().normal, force_n1, cfg_, tire_id_);
+    float force_min = -INFINITY;
+    float force_max = INFINITY;
+    FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, v3_, n3_, v0_, w0_, fci_.normal_impulse().normal, force_n1, cfg_, tire_id_, force_min, force_max);
     fci_.set_b(v);
+    fci_.set_clamping(
+        n3_,
+        force_min * cfg_.dt / cfg_.oversampling,
+        force_max * cfg_.dt / cfg_.oversampling);
     fci_.solve(dt, relaxation);
 }
 

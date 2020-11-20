@@ -129,10 +129,17 @@ public:
         const FixedArray<float, 3>& p,
         float stiction_coefficient,
         float friction_coefficient,
-        const FixedArray<float, 3>& b);
+        const FixedArray<float, 3>& b,
+        const FixedArray<float, 3>& clamping_direction = fixed_nans<float, 3>(),
+        float clamping_min = NAN,
+        float clamping_max = NAN);
     void solve(float dt, float relaxation) override;
     float max_impulse() const;
     void set_b(const FixedArray<float, 3>& b);
+    void set_clamping(
+        const FixedArray<float, 3>& clamping_direction,
+        float clamping_min,
+        float clamping_max);
     const NormalImpulse& normal_impulse() {
         return normal_impulse_;
     }
@@ -144,6 +151,9 @@ private:
     FixedArray<float, 3> p_;
     float stiction_coefficient_;
     float friction_coefficient_;
+    FixedArray<float, 3> clamping_direction_;
+    float clamping_min_;
+    float clamping_max_;
 };
 
 class FrictionContactInfo2: public ContactInfo {

@@ -17,7 +17,9 @@ FixedArray<float, 3> updated_tire_speed(
     const FixedArray<float, 3>& surface_normal,
     float force_n1,
     const PhysicsEngineConfig& cfg,
-    size_t tire_id);
+    size_t tire_id,
+    float& force_min,
+    float& force_max);
 
 FixedArray<float, 3> handle_tire_triangle_intersection(
     RigidBody& rb,
