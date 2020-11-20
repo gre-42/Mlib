@@ -12,6 +12,7 @@ FixedArray<float, 3> updated_tire_speed(
     RigidBody& rb,
     const FixedArray<float, 3>& v3,
     const FixedArray<float, 3>& n3,
+    float v0,
     float w0,
     const FixedArray<float, 3>& surface_normal,
     float force_n1,
