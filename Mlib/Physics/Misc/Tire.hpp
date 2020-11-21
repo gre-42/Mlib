@@ -11,6 +11,8 @@ struct Tire {
         float break_force,
         float sKs,
         float sKa,
+        float stiction_coefficient,
+        float friction_coefficient,
         const ShockAbsorber& shock_absorber,
         const TrackingWheel& tracking_wheel,
         const FixedArray<float, 3>& position,
@@ -26,6 +28,8 @@ struct Tire {
     float break_force;
     float sKs;
     float sKa;
+    float stiction_coefficient;
+    float friction_coefficient;
     FixedArray<float, 3> position;
     float radius;
 };

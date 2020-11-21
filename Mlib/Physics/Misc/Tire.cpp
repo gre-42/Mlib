@@ -7,6 +7,8 @@ Tire::Tire(
     float break_force,
     float sKs,
     float sKa,
+    float stiction_coefficient,
+    float friction_coefficient,
     const ShockAbsorber& shock_absorber,
     const TrackingWheel& tracking_wheel,
     const FixedArray<float, 3>& position,
@@ -21,6 +23,8 @@ Tire::Tire(
   break_force{break_force},
   sKs{sKs},
   sKa{sKa},
+  stiction_coefficient{stiction_coefficient},
+  friction_coefficient{friction_coefficient},
   position{position},
   radius{radius}
 {}
