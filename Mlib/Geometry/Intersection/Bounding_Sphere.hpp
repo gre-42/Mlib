@@ -24,8 +24,9 @@ public:
     explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, 2>& line)
     : BoundingSphere{line.flat_begin(), line.flat_end()}
     {}
-    explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, tndim>& triangle)
-    : BoundingSphere{triangle.flat_begin(), triangle.flat_end()}
+    template <size_t tnpoints>
+    explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
+    : BoundingSphere{points.flat_begin(), points.flat_end()}
     {}
     template <class TIterable>
     explicit BoundingSphere(

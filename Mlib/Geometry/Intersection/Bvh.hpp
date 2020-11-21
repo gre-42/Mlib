@@ -8,6 +8,9 @@
 #include <regex>
 #include <vector>
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+
 namespace Mlib {
 
 struct BvhPrintingOptions {
@@ -128,3 +131,5 @@ std::ostream& operator << (std::ostream& ostr, const Bvh<TData, TPayload, tndim>
 }
 
 }
+
+#pragma GCC pop_options

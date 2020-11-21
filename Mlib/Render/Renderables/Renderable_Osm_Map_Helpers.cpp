@@ -1,5 +1,7 @@
 #include "Renderable_Osm_Map_Helpers.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
@@ -791,10 +793,40 @@ void Mlib::triangulate_terrain_or_ceilings(
     }
     std::list<p2t::Point> p2t_grid_nodes;
     if (steiner_point_distance != INFINITY) {
+        typedef FixedArray<FixedArray<float, 2>, 3> Triangle2d;
+        // for(float f = 0.01; f < 2; f += 0.01) {
+        //     Bvh<float, Triangle2d, 2> bvh{{f, f}, 10};
+        //     for(const auto& t : hole_triangles) {
+        //         Triangle2d tri{
+        //             FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
+        //             FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
+        //             FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
+        //         bvh.insert(tri, "", tri);
+        //     }
+        //     std::cerr << "f " << f << " search_time " << bvh.search_time() << std::endl;
+        // }
+        Bvh<float, Triangle2d, 2> bvh{{0.1, 0.1}, 10};
+        for(const auto& t : hole_triangles) {
+            Triangle2d tri{
+                FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
+                FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
+                FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
+            bvh.insert(tri, "", tri);
+        }
+        // std::cerr << "search_time " << bvh.search_time() << std::endl;
         for(float x = boundary_min(0) + border_width / 2; x < boundary_max(0) - border_width / 2; x += steiner_point_distance * scale) {
             for(float y = boundary_min(1) + border_width / 2; y < boundary_max(1) - border_width / 2; y += steiner_point_distance * scale) {
-                p2t_grid_nodes.push_back(p2t::Point{x, y});
-                cdt.AddPoint(&p2t_grid_nodes.back());
+                bool found = false;
+                FixedArray<float, 2> pt{x, y};
+                bvh.visit(BoundingSphere<float, 2>(pt, 0.f), [&found, &pt](const std::string& category, const Triangle2d& tri) {
+                    if (!found && point_is_in_triangle(pt, tri(0), tri(1), tri(2))) {
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    p2t_grid_nodes.push_back(p2t::Point{x, y});
+                    cdt.AddPoint(&p2t_grid_nodes.back());
+                }
             }
         }
     }

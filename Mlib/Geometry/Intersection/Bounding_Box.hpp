@@ -4,6 +4,9 @@
 #include <iosfwd>
 #include <string>
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+
 namespace Mlib {
 
 template <class TData, size_t tndim>
@@ -24,11 +27,18 @@ public:
     : min_{point},
       max_{point}
     {}
-    BoundingBox(const FixedArray<FixedArray<TData, tndim>, tndim>& triangle)
+    template <size_t tnpoints>
+    BoundingBox(const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
+    : BoundingBox{points.flat_begin(), points.flat_end()}
+    {}
+    template <class TIterable>
+    explicit BoundingBox(
+        const TIterable& iterable_begin,
+        const TIterable& iterable_end)
     : BoundingBox()
     {
-        for(size_t i = 0; i < tndim; ++i) {
-            extend(triangle(i));
+        for(auto it = iterable_begin; it != iterable_end; ++it) {
+            extend(*it);
         }
     }
     bool intersects(const BoundingBox& other) const {
@@ -67,3 +77,5 @@ std::ostream& operator << (std::ostream& ostr, const BoundingBox<TData, tndim>& 
 }
 
 }
+
+#pragma GCC pop_options
