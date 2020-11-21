@@ -198,7 +198,8 @@ void triangulate_terrain_or_ceilings(
     float scale,
     float uv_scale,
     float z,
-    float steiner_point_distance);
+    float steiner_point_distance,
+    float steiner_point_margin);
 
 void apply_height_map(
     std::list<std::shared_ptr<TriangleList>>& triangles,

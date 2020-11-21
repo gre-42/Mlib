@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
+#include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -254,6 +255,14 @@ void test_roundness_estimator() {
 //     }
 // }
 
+void test_distance_point_triangle() {
+    assert_isclose(distance_point_to_triangle<float>({0, 0}, {0, 0}, {1, 0}, {1, 1}), 0.f);
+    assert_isclose(distance_point_to_triangle<float>({0, -2}, {0, 0}, {1, 0}, {1, 1}), 2.f);
+    assert_isclose(distance_point_to_triangle<float>({3.1, 0}, {0, 0}, {1, 0}, {1, 1}), 2.1f);
+
+    assert_isclose(distance_point_to_triangle<float>({0.5, 0.2}, {0, 0}, {1, 0}, {1, 1}), -0.2f);
+}
+
 int main(int argc, const char** argv) {
     #ifndef __MINGW32__
     feenableexcept(FE_INVALID);
@@ -270,5 +279,6 @@ int main(int argc, const char** argv) {
     // test_bvh_performance();
     test_roundness_estimator();
     // test_smoothen_edges();
+    test_distance_point_triangle();
     return 0;
 }

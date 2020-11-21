@@ -60,6 +60,7 @@ RenderableOsmMap::RenderableOsmMap(
     const std::string& highway_name_pattern,
     const std::set<std::string>& path_tags,
     float steiner_point_distance,
+    float steiner_point_margin,
     float curb_alpha,
     float raise_streets_amount,
     bool add_street_lights,
@@ -421,7 +422,8 @@ RenderableOsmMap::RenderableOsmMap(
                 scale,
                 uv_scale_terrain,
                 0,
-                steiner_point_distance);
+                steiner_point_distance,
+                steiner_point_margin);
         }
         if (with_roofs) {
             draw_roofs(

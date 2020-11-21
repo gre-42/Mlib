@@ -310,7 +310,8 @@ void Mlib::draw_ceilings(
             scale,
             uv_scale,
             bu.building_top,
-            INFINITY);  //steiner_point_distance
+            INFINITY,  // steiner_point_distance
+            NAN);      // steiner_point_margin
     }
 }
 
@@ -719,7 +720,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     float scale,
     float uv_scale,
     float z,
-    float steiner_point_distance)
+    float steiner_point_distance,
+    float steiner_point_margin)
 {
     FixedArray<float, 2> boundary_min = fixed_full<float, 2>(INFINITY);
     FixedArray<float, 2> boundary_max = fixed_full<float, 2>(-INFINITY);
@@ -818,8 +820,9 @@ void Mlib::triangulate_terrain_or_ceilings(
             for(float y = boundary_min(1) + border_width / 2; y < boundary_max(1) - border_width / 2; y += steiner_point_distance * scale) {
                 bool found = false;
                 FixedArray<float, 2> pt{x, y};
-                bvh.visit(BoundingSphere<float, 2>(pt, 0.f), [&found, &pt](const std::string& category, const Triangle2d& tri) {
-                    if (!found && point_is_in_triangle(pt, tri(0), tri(1), tri(2))) {
+                float dist = steiner_point_margin * scale;
+                bvh.visit(BoundingSphere<float, 2>(pt, dist), [&found, &pt, &dist](const std::string& category, const Triangle2d& tri) {
+                    if ((!found) && (distance_point_to_triangle(pt, tri(0), tri(1), tri(2)) < dist)) {
                         found = true;
                     }
                 });
