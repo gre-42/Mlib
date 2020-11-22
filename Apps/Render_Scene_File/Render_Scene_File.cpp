@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
         "[--damping <x>]"
         "[--stiction_coefficient <x>] "
         "[--friction_coefficient <x>] "
+        "[--alpha0 <x>] "
         "[--no_avoid_burnout] "
         "[--print_fps] "
         "[--vfx] "
@@ -111,7 +112,8 @@ int main(int argc, char** argv) {
          "--render_dt",
          "--damping",
          "--stiction_coefficient",
-         "--friction_coefficient"});
+         "--friction_coefficient",
+         "--alpha0"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -179,6 +181,7 @@ int main(int argc, char** argv) {
                 .damping = safe_stof(args.named_value("--damping", "0")),
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "2")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
+                .alpha0 = safe_stof(args.named_value("--alpha0", "0.1")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "version1")),
                 .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collisions_type", "penalty")),
