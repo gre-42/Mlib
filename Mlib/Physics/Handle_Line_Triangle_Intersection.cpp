@@ -262,9 +262,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 v3,
                                 n3,
                                 plane.normal,
-                                force_n1,
-                                c.o1->tires_.at(c.tire_id).stiction_coefficient,
-                                c.o1->tires_.at(c.tire_id).friction_coefficient,
+                                c.o1->tires_.at(c.tire_id).stiction_coefficient * force_n1,
+                                c.o1->tires_.at(c.tire_id).friction_coefficient * force_n1,
                                 c.cfg,
                                 c.tire_id);
                         } else if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {

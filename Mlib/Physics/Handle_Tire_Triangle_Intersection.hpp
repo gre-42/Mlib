@@ -24,9 +24,8 @@ FixedArray<float, 3> handle_tire_triangle_intersection(
     const FixedArray<float, 3>& v3,
     const FixedArray<float, 3>& n3,
     const FixedArray<float, 3>& surface_normal,
-    float force_n1,
-    float stiction_coefficient,
-    float friction_coefficient,
+    float stiction_force,
+    float friction_force,
     const PhysicsEngineConfig& cfg,
     size_t tire_id);
 

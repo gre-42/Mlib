@@ -164,9 +164,8 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
     const FixedArray<float, 3>& v3,
     const FixedArray<float, 3>& n3,
     const FixedArray<float, 3>& surface_normal,
-    float force_n1,
-    float stiction_coefficient,
-    float friction_coefficient,
+    float stiction_force,
+    float friction_force,
     const PhysicsEngineConfig& cfg,
     size_t tire_id)
 {
@@ -174,8 +173,8 @@ FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
     float force_max;
     FixedArray<float, 3> v_at_tire = rb.get_velocity_at_tire_contact(surface_normal, tire_id);
     return friction_force_infinite_mass(
-        stiction_coefficient * force_n1,
-        friction_coefficient * force_n1,
+        stiction_force,
+        friction_force,
         v_at_tire + updated_tire_speed(
             rb.consume_tire_surface_power(tire_id),
             rb,
