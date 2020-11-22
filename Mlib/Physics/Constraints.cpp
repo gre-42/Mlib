@@ -103,8 +103,8 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
             FixedArray<float, 3> lt = lambda_total_ - ld * clamping_direction_;
             lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
         }
-        if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse())) {
-            lambda_total_ *= max_impulse() / std::sqrt(ll2);
+        if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
+            lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
         }
         lambda = lambda_total_ - lambda_total_old;
         rbp_.integrate_impulse({
@@ -113,8 +113,12 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
     }
 }
 
-float FrictionContactInfo1::max_impulse() const {
+float FrictionContactInfo1::max_impulse_stiction() const {
     return std::max(0.f, -stiction_coefficient_ * normal_impulse_.lambda_total);
+}
+
+float FrictionContactInfo1::max_impulse_friction() const {
+    return std::max(0.f, -friction_coefficient_ * normal_impulse_.lambda_total);
 }
 
 void FrictionContactInfo1::set_b(const FixedArray<float, 3>& b) {
@@ -164,8 +168,8 @@ void FrictionContactInfo2::solve(float dt, float relaxation) {
         FixedArray<float, 3> lambda = relaxation * (mc0 * mc1 / (mc0 + mc1)) * v * n3;
         FixedArray<float, 3> lambda_total_old = lambda_total_;
         lambda_total_ += lambda;
-        if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse())) {
-            lambda_total_ *= max_impulse() / std::sqrt(ll2);
+        if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
+            lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
         }
         lambda = lambda_total_ - lambda_total_old;
         rbp0_.integrate_impulse({
@@ -177,8 +181,12 @@ void FrictionContactInfo2::solve(float dt, float relaxation) {
     }
 }
 
-float FrictionContactInfo2::max_impulse() const {
+float FrictionContactInfo2::max_impulse_stiction() const {
     return std::max(0.f, -stiction_coefficient_ * normal_impulse_.lambda_total);
+}
+
+float FrictionContactInfo2::max_impulse_friction() const {
+    return std::max(0.f, -friction_coefficient_ * normal_impulse_.lambda_total);
 }
 
 TireContactInfo1::TireContactInfo1(

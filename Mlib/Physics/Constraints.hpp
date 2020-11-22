@@ -135,7 +135,8 @@ public:
         float clamping_min = NAN,
         float clamping_max = NAN);
     void solve(float dt, float relaxation) override;
-    float max_impulse() const;
+    float max_impulse_stiction() const;
+    float max_impulse_friction() const;
     void set_b(const FixedArray<float, 3>& b);
     void set_clamping(
         const FixedArray<float, 3>& clamping_direction,
@@ -170,7 +171,8 @@ public:
         float friction_coefficient,
         const FixedArray<float, 3>& b);
     void solve(float dt, float relaxation) override;
-    float max_impulse() const;
+    float max_impulse_stiction() const;
+    float max_impulse_friction() const;
     void set_b(const FixedArray<float, 3>& b);
 private:
     FixedArray<float, 3> lambda_total_;
