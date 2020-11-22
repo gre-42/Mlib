@@ -177,24 +177,22 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                     normal_impulse = &ci->normal_impulse();
                 } else {
-                    float sap = c.cfg.wheel_penetration_depth + dot0d(c.l1(penetrating_id) - intersection_point, plane.normal);
-                    c.o1->tires_.at(c.tire_id).shock_absorber_position = -std::min(0.f, sap);
-                    if (sap < 0) {
-                        ShockAbsorberContactInfo1* ci = new ShockAbsorberContactInfo1{
-                            c.o1->rbi_.rbp_,
-                            BoundedShockAbsorberConstraint{
-                                .constraint{
-                                    .normal_impulse{.normal = plane.normal},
-                                    .distance = sap,
-                                    .Ks = c.o1->tires_.at(c.tire_id).sKs,
-                                    .Ka = c.o1->tires_.at(c.tire_id).sKa
-                                },
-                                .lambda_min = c.o1->mass() * c.cfg.lambda_min / c.cfg.oversampling,
-                                .lambda_max = 0},
-                            intersection_point};
-                        c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
-                        normal_impulse = &ci->normal_impulse();
-                    }
+                    float sap = std::min(0.05f, c.cfg.wheel_penetration_depth + dot0d(c.l1(penetrating_id) - intersection_point, plane.normal));
+                    c.o1->tires_.at(c.tire_id).shock_absorber_position = -sap;
+                    ShockAbsorberContactInfo1* ci = new ShockAbsorberContactInfo1{
+                        c.o1->rbi_.rbp_,
+                        BoundedShockAbsorberConstraint{
+                            .constraint{
+                                .normal_impulse{.normal = plane.normal},
+                                .distance = sap,
+                                .Ks = c.o1->tires_.at(c.tire_id).sKs,
+                                .Ka = c.o1->tires_.at(c.tire_id).sKa
+                            },
+                            .lambda_min = c.o1->mass() * c.cfg.lambda_min / c.cfg.oversampling,
+                            .lambda_max = 0},
+                        intersection_point};
+                    c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                    normal_impulse = &ci->normal_impulse();
                 }
             }
         } else if (c.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
