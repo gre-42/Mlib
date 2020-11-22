@@ -13,7 +13,7 @@ struct PhysicsEngineConfig;
 
 struct NormalImpulse {
     FixedArray<float, 3> normal;
-    float lambda_total;
+    float lambda_total = 0;
 };
 
 struct PlaneConstraint {
@@ -21,7 +21,6 @@ struct PlaneConstraint {
     float intercept;
     float b = 0;
     float slop = 0;
-    float lambda_total = 0;
     bool always_active = true;
     float beta = 0.5;
     float beta2 = 0.2;
