@@ -148,15 +148,16 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         .constraint{
                             .normal_impulse{.normal = plane.normal},
                             .intercept = plane.intercept,
-                            .slop = (c.tire_id != SIZE_MAX)
-                                ? -c.cfg.wheel_penetration_depth
-                                : 0,
+                            // .slop = (c.tire_id != SIZE_MAX)
+                            //     ? -c.cfg.wheel_penetration_depth
+                            //     : 0,
                             .beta = c.cfg.contact_beta,
                             .beta2 = c.cfg.contact_beta2
                         },
                         .lambda_min = (c.o0->mass() * c.o1->mass()) / (c.o0->mass() + c.o1->mass()) * c.cfg.lambda_min / c.cfg.oversampling,
                         .lambda_max = 0},
-                    c.l1(penetrating_id)};
+                    // c.l1(penetrating_id)};
+                    c.tire_id != SIZE_MAX ? c.o1->get_abs_tire_contact_position(c.tire_id) : c.l1(penetrating_id)};
                 c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                 normal_impulse = &ci->normal_impulse();
             } else {
