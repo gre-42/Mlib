@@ -28,6 +28,7 @@ struct RigidBodyIntegrator {
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
     void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position);
     void integrate_force(const VectorAtPosition<float, 3>& F);
+    void integrate_impulse(const VectorAtPosition<float, 3>& J);
     void integrate_gravity(const FixedArray<float, 3>& g);
     void reset_forces();
     float energy() const;
