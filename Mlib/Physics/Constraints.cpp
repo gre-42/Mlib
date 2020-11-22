@@ -95,7 +95,7 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
         float v = std::sqrt(vl2);
         FixedArray<float, 3> n3 = v3 / v;
         float mc = rbp_.effective_mass({.vector = n3, .position = p_});
-        FixedArray<float, 3> lambda = mc * v * n3;
+        FixedArray<float, 3> lambda = relaxation * mc * v * n3;
         FixedArray<float, 3> lambda_total_old = lambda_total_;
         lambda_total_ += lambda;
         if (!any(isnan(clamping_direction_))) {
@@ -131,6 +131,10 @@ void FrictionContactInfo1::set_clamping(
     clamping_max_ = clamping_max;
 }
 
+std::ostream& Mlib::operator << (std::ostream& ostr, const FrictionContactInfo1& fci1) {
+    return ostr << "lambda_total " << std::sqrt(sum(squared(fci1.lambda_total_))) << " | " << fci1.lambda_total_;
+}
+
 FrictionContactInfo2::FrictionContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
@@ -157,7 +161,7 @@ void FrictionContactInfo2::solve(float dt, float relaxation) {
         FixedArray<float, 3> n3 = v3 / v;
         float mc0 = rbp0_.effective_mass({.vector = n3, .position = p_});
         float mc1 = rbp1_.effective_mass({.vector = n3, .position = p_});
-        FixedArray<float, 3> lambda = (mc0 * mc1 / (mc0 + mc1)) * v * n3;
+        FixedArray<float, 3> lambda = relaxation * (mc0 * mc1 / (mc0 + mc1)) * v * n3;
         FixedArray<float, 3> lambda_total_old = lambda_total_;
         lambda_total_ += lambda;
         if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse())) {
@@ -207,6 +211,10 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     fci_.solve(dt, relaxation);
 }
 
+void TireContactInfo1::finalize() {
+    // std::cerr << "tire id " << tire_id_ << " | " << fci_ << " normal " << fci_.normal_impulse().normal << std::endl;
+}
+
 ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
     RigidBodyPulses& rbp,
     const BoundedShockAbsorberConstraint& sc,
@@ -219,7 +227,7 @@ ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
 void ShockAbsorberContactInfo1::solve(float dt, float relaxation) {
     ShockAbsorberConstraint& sc = sc_.constraint;
     float F = sc.Ks * sc.distance + sc.Ka * dot0d(rbp_.velocity_at_position(p_), sc.normal_impulse.normal);
-    float J = sc_.clamped_lambda(F * dt);
+    float J = sc_.clamped_lambda(relaxation * F * dt);
     rbp_.integrate_impulse({.vector = -sc.normal_impulse.normal * J, .position = p_});
 }
 
@@ -228,5 +236,8 @@ void Mlib::solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt
         for(const std::unique_ptr<ContactInfo>& ci : cis) {
             ci->solve(dt, i < 1 ? 0.2 : 1);
         }
+    }
+    for(const std::unique_ptr<ContactInfo>& ci : cis) {
+        ci->finalize();
     }
 }

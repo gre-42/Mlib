@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
+#include <iosfwd>
 #include <list>
 
 namespace Mlib {
@@ -122,6 +123,7 @@ private:
 };
 
 class FrictionContactInfo1: public ContactInfo {
+    friend std::ostream& operator << (std::ostream& ostr, const FrictionContactInfo1& fci1);
 public:
     FrictionContactInfo1(
         RigidBodyPulses& rbp,
@@ -155,6 +157,8 @@ private:
     float clamping_min_;
     float clamping_max_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const FrictionContactInfo1& fci1);
 
 class FrictionContactInfo2: public ContactInfo {
 public:
@@ -191,6 +195,7 @@ public:
         float v0,
         const PhysicsEngineConfig& cfg);
     void solve(float dt, float relaxation) override;
+    void finalize() override;
 private:
     FrictionContactInfo1 fci_;
     RigidBody& rb_;
