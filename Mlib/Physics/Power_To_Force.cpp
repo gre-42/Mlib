@@ -84,7 +84,7 @@ float correct_x_non_ortho(
     return xa * safety_factor;
 }
 
-FixedArray<float, 3> minl2(const FixedArray<float, 3>& v, float max_length) {
+FixedArray<float, 3> Mlib::min_l2(const FixedArray<float, 3>& v, float max_length) {
     if (float rlen2 = sum(squared(v)); rlen2 > squared(max_length)) {
         return v * max_length / std::sqrt(rlen2);
     } else {
@@ -165,7 +165,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
         }
         normal_force = x * n3;
     }
-    return minl2(normal_force + f3T, max_stiction_force);
+    return min_l2(normal_force + f3T, max_stiction_force);
     // if (float rlen2 = sum(squared(res)); rlen2 > squared(max_stiction_force)) {
     //     res *= max_stiction_force / std::sqrt(rlen2);
     //     // if (float vlen2 = sum(squared(v3)); vlen2 < 1e-12) {
@@ -192,7 +192,7 @@ Mlib::FixedArray<float, 3> Mlib::friction_force_infinite_mass(
         }
     }
 
-    return minl2(-max_stiction_force * sn3, max_stiction_force);
+    return min_l2(-max_stiction_force * sn3, max_stiction_force);
     // if (float rlen2 = sum(squared(res)); rlen2 > squared(friction_force)) {
     //     res *= max_stiction_force / std::sqrt(rlen2);
     //     if (float vlen2 = sum(squared(v3)); vlen2 < 1e-12) {

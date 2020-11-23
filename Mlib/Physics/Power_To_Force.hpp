@@ -3,6 +3,8 @@
 
 namespace Mlib {
 
+FixedArray<float, 3> min_l2(const FixedArray<float, 3>& v, float max_length);
+
 /**
  * solve([1/2*m*((v+F/m*t)^2-v^2) + 1/2*M*((V-F/M*t)^2-V^2)=P*t, m*v + M*V = m*(v+F/m*t) + M*(V-F/M*t)], F);
  */
