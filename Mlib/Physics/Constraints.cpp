@@ -77,7 +77,9 @@ FrictionContactInfo1::FrictionContactInfo1(
     float lateral_stability,
     const FixedArray<float, 3>& clamping_direction,
     float clamping_min,
-    float clamping_max)
+    float clamping_max,
+    float extra_stiction,
+    float extra_friction)
 : lambda_total_(0),
   b_{b},
   rbp_{rbp},
@@ -88,7 +90,9 @@ FrictionContactInfo1::FrictionContactInfo1(
   clamping_direction_{clamping_direction},
   clamping_min_{clamping_min},
   clamping_max_{clamping_max},
-  lateral_stability_{lateral_stability}
+  lateral_stability_{lateral_stability},
+  extra_stiction_{extra_stiction},
+  extra_friction_{extra_friction}
 {}
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
@@ -104,13 +108,13 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
         if (!any(isnan(clamping_direction_))) {
             float ld = dot0d(lambda_total_, clamping_direction_);
             FixedArray<float, 3> lt = lambda_total_ - ld * clamping_direction_;
-            // lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
-            lambda_total_ =
-                std::clamp(
-                    ld,
-                    std::max(clamping_min_, -max_impulse_stiction()),
-                    std::min(clamping_max_, max_impulse_stiction())) * clamping_direction_ +
-                min_l2(lt, lateral_stability_ * max_impulse_stiction());
+            lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
+            // lambda_total_ =
+            //     std::clamp(
+            //         ld,
+            //         std::max(clamping_min_, -max_impulse_stiction()),
+            //         std::min(clamping_max_, max_impulse_stiction())) * clamping_direction_ +
+            //     min_l2(lt, lateral_stability_ * max_impulse_stiction());
         }
         if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
             lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
@@ -123,11 +127,11 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
 }
 
 float FrictionContactInfo1::max_impulse_stiction() const {
-    return std::max(0.f, -stiction_coefficient_ * normal_impulse_.lambda_total);
+    return std::max(0.f, -(stiction_coefficient_ * (1 + extra_stiction_)) * normal_impulse_.lambda_total);
 }
 
 float FrictionContactInfo1::max_impulse_friction() const {
-    return std::max(0.f, -friction_coefficient_ * normal_impulse_.lambda_total);
+    return std::max(0.f, -(friction_coefficient_ * (1 + extra_friction_)) * normal_impulse_.lambda_total);
 }
 
 void FrictionContactInfo1::set_b(const FixedArray<float, 3>& b) {
@@ -144,6 +148,14 @@ void FrictionContactInfo1::set_clamping(
     clamping_max_ = clamping_max;
 }
 
+void FrictionContactInfo1::set_extra_friction(
+    float extra_stiction,
+    float extra_friction)
+{
+    extra_stiction_ = extra_stiction;
+    extra_friction_ = extra_friction;
+}
+    
 std::ostream& Mlib::operator << (std::ostream& ostr, const FrictionContactInfo1& fci1) {
     return ostr << "lambda_total " << std::sqrt(sum(squared(fci1.lambda_total_))) << " | " << fci1.lambda_total_;
 }
@@ -221,6 +233,14 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     float force_max = INFINITY;
     FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, v3_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
     fci_.set_b(v);
+    FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
+    if (float vvl = sum(squared(vv)); vvl > 1e-12) {
+        float ef = std::sqrt(1 - squared(dot0d(vv / std::sqrt(vvl), n3_)));
+        ef = std::min(cfg_.max_extra_friction, ef);
+        fci_.set_extra_friction(ef, ef);
+    } else {
+        fci_.set_extra_friction(0, 0);
+    }
     fci_.set_clamping(
         n3_,
         force_min * cfg_.dt / cfg_.oversampling,
