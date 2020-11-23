@@ -53,12 +53,16 @@ void accelerate_negative(
 void break_positive(
     RigidBody& rb,
     const FixedArray<float, 3>& surface_normal,
-    size_t tire_id)
+    size_t tire_id,
+    float& force_min,
+    float& force_max)
 {
     float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
     rb.set_tire_angular_velocity(
         tire_id,
         std::max(w - 10.f, 0.f));
+    force_min = -rb.tires_.at(tire_id).break_force;
+    force_max = 0;
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
     //     cfg.stiction_coefficient * force_n1,
     //     cfg.friction_coefficient * force_n1,
@@ -83,12 +87,16 @@ void break_positive(
 void break_negative(
     RigidBody& rb,
     const FixedArray<float, 3>& surface_normal,
-    size_t tire_id)
+    size_t tire_id,
+    float& force_min,
+    float& force_max)
 {
     float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
     rb.set_tire_angular_velocity(
         tire_id,
         std::min(w + 10.f, 0.f));
+    force_min = 0;
+    force_max = rb.tires_.at(tire_id).break_force;
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
     //     cfg.stiction_coefficient * force_n1,
     //     cfg.friction_coefficient * force_n1,
@@ -134,9 +142,9 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
             float v = dot0d(rb.rbi_.rbp_.v_, n3);
             if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_break_velocity) {
                 if (P.power > 0) {
-                    break_positive(rb, surface_normal, tire_id);
+                    break_positive(rb, surface_normal, tire_id, force_min, force_max);
                 } else if (P.power < 0) {
-                    break_negative(rb, surface_normal, tire_id);
+                    break_negative(rb, surface_normal, tire_id, force_min, force_max);
                 }
             } else if (P.power > 0) {
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
