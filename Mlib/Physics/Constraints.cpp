@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Power_To_Force.hpp>
 
 using namespace Mlib;
 
@@ -73,6 +74,7 @@ FrictionContactInfo1::FrictionContactInfo1(
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b,
+    float lateral_stability,
     const FixedArray<float, 3>& clamping_direction,
     float clamping_min,
     float clamping_max)
@@ -85,7 +87,8 @@ FrictionContactInfo1::FrictionContactInfo1(
   friction_coefficient_{friction_coefficient},
   clamping_direction_{clamping_direction},
   clamping_min_{clamping_min},
-  clamping_max_{clamping_max}
+  clamping_max_{clamping_max},
+  lateral_stability_{lateral_stability}
 {}
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
@@ -101,7 +104,13 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
         if (!any(isnan(clamping_direction_))) {
             float ld = dot0d(lambda_total_, clamping_direction_);
             FixedArray<float, 3> lt = lambda_total_ - ld * clamping_direction_;
-            lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
+            // lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
+            lambda_total_ =
+                std::clamp(
+                    ld,
+                    std::max(clamping_min_, -max_impulse_stiction()),
+                    std::min(clamping_max_, max_impulse_stiction())) * clamping_direction_ +
+                min_l2(lt, lateral_stability_ * max_impulse_stiction());
         }
         if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
             lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
