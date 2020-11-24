@@ -136,7 +136,8 @@ public:
         float clamping_min = NAN,
         float clamping_max = NAN,
         float extra_stiction = 0,
-        float extra_friction = 0);
+        float extra_friction = 0,
+        float extra_w = 0);
     void solve(float dt, float relaxation) override;
     float max_impulse_stiction() const;
     float max_impulse_friction() const;
@@ -145,9 +146,10 @@ public:
         const FixedArray<float, 3>& clamping_direction,
         float clamping_min,
         float clamping_max);
-    void set_extra_friction(
+    void set_extras(
         float extra_stiction,
-        float extra_friction);
+        float extra_friction,
+        float extra_w);
     const NormalImpulse& normal_impulse() {
         return normal_impulse_;
     }
@@ -168,6 +170,7 @@ private:
     float lateral_stability_;
     float extra_stiction_;
     float extra_friction_;
+    float extra_w_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const FrictionContactInfo1& fci1);

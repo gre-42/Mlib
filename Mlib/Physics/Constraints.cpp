@@ -79,7 +79,8 @@ FrictionContactInfo1::FrictionContactInfo1(
     float clamping_min,
     float clamping_max,
     float extra_stiction,
-    float extra_friction)
+    float extra_friction,
+    float extra_w)
 : lambda_total_(0),
   b_{b},
   rbp_{rbp},
@@ -92,7 +93,8 @@ FrictionContactInfo1::FrictionContactInfo1(
   clamping_max_{clamping_max},
   lateral_stability_{lateral_stability},
   extra_stiction_{extra_stiction},
-  extra_friction_{extra_friction}
+  extra_friction_{extra_friction},
+  extra_w_{extra_w}
 {}
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
@@ -125,7 +127,8 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
         lambda = lambda_total_ - lambda_total_old;
         rbp_.integrate_impulse({
             .vector = -lambda,
-            .position = p_});
+            .position = p_},
+            extra_w_);
     }
 }
 
@@ -151,12 +154,14 @@ void FrictionContactInfo1::set_clamping(
     clamping_max_ = clamping_max;
 }
 
-void FrictionContactInfo1::set_extra_friction(
+void FrictionContactInfo1::set_extras(
     float extra_stiction,
-    float extra_friction)
+    float extra_friction,
+    float extra_w)
 {
     extra_stiction_ = extra_stiction;
     extra_friction_ = extra_friction;
+    extra_w_ = extra_w;
 }
     
 std::ostream& Mlib::operator << (std::ostream& ostr, const FrictionContactInfo1& fci1) {
@@ -238,11 +243,12 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     fci_.set_b(v);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
     if (float vvl = sum(squared(vv)); vvl > 1e-12) {
-        float ef = std::sqrt(1 - squared(dot0d(vv / std::sqrt(vvl), n3_)));
-        ef = std::min(cfg_.max_extra_friction, ef);
-        fci_.set_extra_friction(ef, ef);
+        float ex = std::sqrt(1 - squared(dot0d(vv / std::sqrt(vvl), n3_)));
+        float ef = std::min(cfg_.max_extra_friction, ex);
+        float ew = std::min(cfg_.max_extra_w, ex);
+        fci_.set_extras(ef, ef, ew);
     } else {
-        fci_.set_extra_friction(0, 0);
+        fci_.set_extras(0, 0, 0);
     }
     fci_.set_clamping(
         n3_,

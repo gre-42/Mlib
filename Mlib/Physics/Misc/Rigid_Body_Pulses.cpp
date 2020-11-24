@@ -89,10 +89,10 @@ void RigidBodyPulses::integrate_gravity(const FixedArray<float, 3>& g, float dt)
     v_ += dt * g;
 }
 
-void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, 3>& J)
+void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, 3>& J, float extra_w)
 {
     v_ += J.vector / mass_;
-    w_ += solve_abs_I(cross(J.position - abs_com_, J.vector));
+    w_ += (1 + extra_w) * solve_abs_I(cross(J.position - abs_com_, J.vector));
 }
 
 float RigidBodyPulses::energy() const {

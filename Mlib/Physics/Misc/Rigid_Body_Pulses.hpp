@@ -27,7 +27,7 @@ struct RigidBodyPulses {
     FixedArray<float, 3> transform_to_world_coordinates(const FixedArray<float, 3>& v) const;
     void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position);
     void integrate_gravity(const FixedArray<float, 3>& g, float dt);
-    void integrate_impulse(const VectorAtPosition<float, 3>& J);
+    void integrate_impulse(const VectorAtPosition<float, 3>& J, float extra_w = 0);
     float energy() const;
     float effective_mass(const VectorAtPosition<float, 3>& vp) const;
 
