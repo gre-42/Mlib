@@ -108,13 +108,16 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
         if (!any(isnan(clamping_direction_))) {
             float ld = dot0d(lambda_total_, clamping_direction_);
             FixedArray<float, 3> lt = lambda_total_ - ld * clamping_direction_;
-            // lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
-            lambda_total_ =
-                std::clamp(
-                    ld,
-                    std::max(clamping_min_, -max_impulse_stiction()),
-                    std::min(clamping_max_, max_impulse_stiction())) * clamping_direction_ +
-                min_l2(lt, lateral_stability_ * max_impulse_stiction());
+            if (lateral_stability_ == 0) {
+                lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
+            } else {
+                lambda_total_ =
+                    std::clamp(
+                        ld,
+                        std::max(clamping_min_, -max_impulse_stiction()),
+                        std::min(clamping_max_, max_impulse_stiction())) * clamping_direction_ +
+                    min_l2(lt, lateral_stability_ * max_impulse_stiction());
+            }
         }
         if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
             lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
