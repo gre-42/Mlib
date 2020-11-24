@@ -24,14 +24,14 @@ struct PhysicsEngineConfig {
     float friction_coefficient = 1.6;
     float alpha0 = 0.1;
     bool avoid_burnout = true;
-    float lateral_stability = 2;
-    float max_extra_friction = 0.3f;
+    float lateral_stability = 0;
+    float max_extra_friction = 1;
     float wheel_penetration_depth = 0.25;  // (penetration depth) + (shock absorber) = 0.2
     float static_radius = 200;
     Interp<float> outness_fac_interp{{-0.5, 1}, {2000, 0}, OutOfRangeBehavior::CLAMP};
     PhysicsType physics_type = PhysicsType::VERSION1;
     ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;
-    float lambda_min = -10.f;
+    float lambda_min = -10;
     float contact_beta = 0.5;
     float contact_beta2 = 0.2;
     bool bvh = true;
