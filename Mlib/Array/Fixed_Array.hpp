@@ -208,6 +208,14 @@ public:
         }
         return result;
     }
+    FixedArray<TData, tshape0> column(size_t c, size_t r_begin = 0, size_t r_end = tshape0) const {
+        static_assert(ndim() == 2);
+        FixedArray<TData, tshape0> result;
+        for(size_t r = r_begin; r < r_end; ++r) {
+            result(r) = (*this)(r, c);
+        }
+        return result;
+    }
     template <size_t... tnew_shape>
     constexpr FixedArray<TData, tnew_shape...>& reshaped() {
         FixedArray<TData, tnew_shape...>& result = *reinterpret_cast<FixedArray<TData, tnew_shape...>*>(this);

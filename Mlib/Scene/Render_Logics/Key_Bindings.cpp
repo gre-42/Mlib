@@ -129,7 +129,11 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                         float angle = std::asin(std::clamp(l / r, 0.f, 1.f));
                         rb->set_tire_angle_y(k.tire_id, angle * alpha * sign(k.tire_angle_interp(0)));
                     }
-                    rb->set_tire_angle_y(k.tire_id, alpha * M_PI / 180.f * k.tire_angle_interp(std::sqrt(sum(squared(rb->rbi_.rbp_.v_))) * 3.6f));
+                    // float v = std::sqrt(sum(squared(rb->rbi_.rbp_.v_)));
+                    float v = std::abs(dot0d(
+                        rb->rbi_.rbp_.v_,
+                        rb->rbi_.rbp_.rotation_.column(2)));
+                    rb->set_tire_angle_y(k.tire_id, alpha * M_PI / 180.f * k.tire_angle_interp(v * 3.6f));
                     // rb->set_tire_accel_x(k.tire_id, alpha * sign(k.tire_angle_interp(0)));
                 }
                 rb->tires_z_ += k.tires_z;
