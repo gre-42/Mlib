@@ -185,6 +185,10 @@ void RigidBody::set_tire_angle_y(size_t id, float angle_y) {
     tires_.at(id).angle_y = angle_y;
 }
 
+// void RigidBody::set_tire_accel_x(size_t id, float accel_x) {
+//     tires_.at(id).accel_x = accel_x;
+// }
+
 FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
         return dot2d(rbi_.rbp_.rotation_, rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle_y));

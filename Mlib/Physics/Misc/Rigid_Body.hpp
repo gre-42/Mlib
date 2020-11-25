@@ -51,6 +51,7 @@ public:
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
     void set_max_velocity(float max_velocity);
     void set_tire_angle_y(size_t id, float angle_y);
+    // void set_tire_accel_x(size_t id, float accel_x);
     FixedArray<float, 3, 3> get_abs_tire_rotation_matrix(size_t id) const;
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;

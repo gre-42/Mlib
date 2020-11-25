@@ -24,6 +24,7 @@ struct Tire {
     float angle_x;
     float angle_y;
     float angular_velocity;
+    // float accel_x;
     std::string engine;
     float break_force;
     float sKs;

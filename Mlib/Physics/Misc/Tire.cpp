@@ -19,6 +19,7 @@ Tire::Tire(
   angle_x{0},
   angle_y{0},
   angular_velocity{0},
+  // accel_x{0},
   engine{engine},
   break_force{break_force},
   sKs{sKs},

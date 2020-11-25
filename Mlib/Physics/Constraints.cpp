@@ -240,6 +240,13 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     float force_min = -INFINITY;
     float force_max = INFINITY;
     FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
+    // FixedArray<float, 3> x3{
+    //     rb_.rbi_.rbp_.rotation_(0, 0),
+    //     rb_.rbi_.rbp_.rotation_(1, 0),
+    //     rb_.rbi_.rbp_.rotation_(2, 0)};
+    // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
+    // x3 /= std::sqrt(sum(squared(x3)));
+    // fci_.set_b(v - 1000.f * x3 * rb_.tires_.at(tire_id_).accel_x * (cfg_.dt / cfg_.oversampling));
     fci_.set_b(v);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
     if (float vvl = sum(squared(vv)); vvl > 1e-12) {
