@@ -24,7 +24,7 @@ struct PhysicsEngineConfig {
     float friction_coefficient = 1.6;
     float alpha0 = 0.1;
     bool avoid_burnout = true;
-    float lateral_stability = 0;
+    float lateral_stability = 2;
     float max_extra_friction = 0.2;
     float max_extra_w = 0;
     float wheel_penetration_depth = 0.25;  // (penetration depth) + (shock absorber) = 0.2
