@@ -222,7 +222,7 @@ TireContactInfo1::TireContactInfo1(
     const FrictionContactInfo1& fci,
     RigidBody& rb,
     size_t tire_id,
-    const FixedArray<float, 3>& v3,
+    const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,
     float v0,
     const PhysicsEngineConfig& cfg)
@@ -230,7 +230,7 @@ TireContactInfo1::TireContactInfo1(
   rb_{rb},
   P_{rb.consume_tire_surface_power(tire_id)},
   tire_id_{tire_id},
-  v3_{v3},
+  vc_{vc},
   n3_{n3},
   v0_{v0},
   cfg_{cfg}
@@ -239,7 +239,7 @@ TireContactInfo1::TireContactInfo1(
 void TireContactInfo1::solve(float dt, float relaxation) {
     float force_min = -INFINITY;
     float force_max = INFINITY;
-    FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, v3_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
+    FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
     fci_.set_b(v);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
     if (float vvl = sum(squared(vv)); vvl > 1e-12) {

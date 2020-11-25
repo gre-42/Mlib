@@ -267,6 +267,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 c.tire_id);
                         } else if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                             if (normal_impulse != nullptr) {
+                                FixedArray<float, 3> vc = c.o1->rbi_.rbp_.v_;
+                                vc -= plane.normal * dot0d(plane.normal, vc);
                                 c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
                                     FrictionContactInfo1{
                                         c.o1->rbi_.rbp_,
@@ -278,7 +280,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                         c.cfg.lateral_stability},
                                     *c.o1,
                                     c.tire_id,
-                                    v3,
+                                    vc,
                                     n3,
                                     -dot0d(c.o1->get_velocity_at_tire_contact(plane.normal, c.tire_id), n3),
                                     c.cfg}));
