@@ -135,6 +135,7 @@ public:
         const FixedArray<float, 3>& clamping_direction = fixed_nans<float, 3>(),
         float clamping_min = NAN,
         float clamping_max = NAN,
+        float ortho_clamping_max_l2_ = NAN,
         float extra_stiction = 0,
         float extra_friction = 0,
         float extra_w = 0);
@@ -145,7 +146,8 @@ public:
     void set_clamping(
         const FixedArray<float, 3>& clamping_direction,
         float clamping_min,
-        float clamping_max);
+        float clamping_max,
+        float ortho_clamping_max_l2_);
     void set_extras(
         float extra_stiction,
         float extra_friction,
@@ -167,6 +169,7 @@ private:
     FixedArray<float, 3> clamping_direction_;
     float clamping_min_;
     float clamping_max_;
+    float ortho_clamping_max_l2_;
     float lateral_stability_;
     float extra_stiction_;
     float extra_friction_;
