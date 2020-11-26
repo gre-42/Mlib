@@ -249,8 +249,8 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     // fci_.set_b(v - 1000.f * x3 * rb_.tires_.at(tire_id_).accel_x * (cfg_.dt / cfg_.oversampling));
     fci_.set_b(v);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
-    if (float vvl = sum(squared(vv)); vvl > 1e-12) {
-        float ex = std::sqrt(1 - squared(dot0d(vv / std::sqrt(vvl), n3_)));
+    if (float vvl2 = sum(squared(vv)); vvl2 > 1e-12) {
+        float ex = std::sqrt(1 - squared(dot0d(vv / std::sqrt(vvl2), n3_)));
         float ef = std::min(cfg_.max_extra_friction, ex);
         float ew = std::min(cfg_.max_extra_w, ex);
         fci_.set_extras(ef, ef, ew);
