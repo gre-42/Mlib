@@ -3,7 +3,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Physics/Constraints.hpp>
+#include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <fenv.h>

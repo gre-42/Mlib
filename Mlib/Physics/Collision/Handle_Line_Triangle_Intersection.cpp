@@ -2,13 +2,13 @@
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/Physics/Constraints.hpp>
-#include <Mlib/Physics/Handle_Tire_Triangle_Intersection.hpp>
+#include <Mlib/Physics/Collision/Constraints.hpp>
+#include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
+#include <Mlib/Physics/Collision/Power_To_Force.hpp>
+#include <Mlib/Physics/Collision/Sat_Normals.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
-#include <Mlib/Physics/Power_To_Force.hpp>
-#include <Mlib/Physics/Sat_Normals.hpp>
 
 using namespace Mlib;
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Physics/Typed_Mesh.hpp>
+#include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <list>
 #include <map>
 #include <memory>

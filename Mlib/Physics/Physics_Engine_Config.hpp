@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Physics_Type.hpp>
-#include <Mlib/Physics/Resolve_Collision_Type.hpp>
 #include <cmath>
 
 namespace Mlib {

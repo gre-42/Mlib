@@ -1,13 +1,13 @@
 #include "Physics_Engine.hpp"
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Physics/Constraints.hpp>
-#include <Mlib/Physics/Handle_Line_Triangle_Intersection.hpp>
+#include <Mlib/Physics/Collision/Constraints.hpp>
+#include <Mlib/Physics/Collision/Handle_Line_Triangle_Intersection.hpp>
+#include <Mlib/Physics/Collision/Sat_Normals.hpp>
+#include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
-#include <Mlib/Physics/Sat_Normals.hpp>
-#include <Mlib/Physics/Transformed_Mesh.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 
 using namespace Mlib;

@@ -2,6 +2,7 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
@@ -9,7 +10,6 @@
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
-#include <Mlib/Physics/Power_To_Force.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <fenv.h>
 

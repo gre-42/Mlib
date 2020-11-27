@@ -1,10 +1,10 @@
 #include "Constraints.hpp"
 #include <Mlib/Geometry/Arbitrary_Orthogonal.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
-#include <Mlib/Physics/Handle_Tire_Triangle_Intersection.hpp>
+#include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
+#include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
-#include <Mlib/Physics/Power_To_Force.hpp>
 
 using namespace Mlib;
 

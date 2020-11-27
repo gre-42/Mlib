@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
-#include <Mlib/Physics/Typed_Mesh.hpp>
 #include <map>
 #include <memory>
 #include <set>

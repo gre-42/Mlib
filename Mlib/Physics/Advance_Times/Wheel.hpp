@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Physics_Type.hpp>
-#include <Mlib/Physics/Resolve_Collision_Type.hpp>
 #include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
 
 namespace Mlib {

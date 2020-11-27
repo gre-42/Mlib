@@ -1,6 +1,6 @@
 #include "Physics_Loop.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Physics/Constraints.hpp>
+#include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>

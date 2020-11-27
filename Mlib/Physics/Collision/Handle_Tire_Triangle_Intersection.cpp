@@ -1,6 +1,6 @@
 #include "Handle_Tire_Triangle_Intersection.hpp"
+#include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
-#include <Mlib/Physics/Power_To_Force.hpp>
 
 using namespace Mlib;
 

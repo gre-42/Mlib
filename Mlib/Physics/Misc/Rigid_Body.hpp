@@ -2,12 +2,12 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
 #include <Mlib/Physics/Misc/Tire.hpp>
-#include <Mlib/Physics/Resolve_Collision_Type.hpp>
 #include <Mlib/Scene_Graph/Loggable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>
