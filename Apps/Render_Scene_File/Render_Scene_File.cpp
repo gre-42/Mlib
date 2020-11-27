@@ -35,51 +35,51 @@ using namespace Mlib;
 int main(int argc, char** argv) {
 
     const ArgParser parser(
-        "Usage: render_scene_file scene.scn "
-        "[--wire_frame] "
-        "[--no_cull_faces] "
-        "[--fly] "
-        "[--rotate] "
-        "[--swap_interval <interval>] "
-        "[--nsamples_msaa <nsamples>] "
-        "[--window_maximized] "
-        "[--max_distance_small <distance>] "
-        "[--aggregate_update_interval <interval>] "
-        "[--screen_width <width>] "
-        "[--screen_height <height>] "
-        "[--scene_lightmap_width <width>] "
-        "[--scene_lightmap_height <height>] "
-        "[--black_lightmap_width <width>] "
-        "[--black_lightmap_height <height>] "
-        "[--full_screen] "
-        "[--no_physics ] "
-        "[--physics_dt <dt> ] "
-        "[--render_dt <dt> ] "
-        "[--print_residual_time] "
-        "[--damping <x>]"
-        "[--stiction_coefficient <x>] "
-        "[--friction_coefficient <x>] "
-        "[--alpha0 <x>] "
-        "[--lateral_stability <x>] "
-        "[--max_extra_friction <x>] "
-        "[--max_extra_w <x>] "
-        "[--lateral_friction_steepness <x>]"
-        "[--no_avoid_burnout] "
-        "[--wheel_penetration_depth <x>]"
-        "[--print_fps] "
-        "[--vfx] "
-        "[--no_depth_fog] "
-        "[--low_pass] "
-        "[--high_pass] "
-        "[--motion_interpolation] "
-        "[--no_render] "
-        "[--print_gamepad_buttons] "
-        "[--show_mouse_cursor] "
-        "[--physics_type {version1, tracking_springs, builtin}] "
-        "[--resolve_collisions_type {penalty, sequential_pulses}] "
-        "[--no_bvh] "
-        "[--oversampling] "
-        "[--verbose]",
+        "Usage: render_scene_file scene.scn\n"
+        "    [--wire_frame]\n"
+        "    [--no_cull_faces]\n"
+        "    [--fly]\n"
+        "    [--rotate]\n"
+        "    [--swap_interval <interval>]\n"
+        "    [--nsamples_msaa <nsamples>]\n"
+        "    [--window_maximized]\n"
+        "    [--max_distance_small <distance>]\n"
+        "    [--aggregate_update_interval <interval>]\n"
+        "    [--screen_width <width>]\n"
+        "    [--screen_height <height>]\n"
+        "    [--scene_lightmap_width <width>]\n"
+        "    [--scene_lightmap_height <height>]\n"
+        "    [--black_lightmap_width <width>]\n"
+        "    [--black_lightmap_height <height>]\n"
+        "    [--full_screen]\n"
+        "    [--no_physics ]\n"
+        "    [--physics_dt <dt> ]\n"
+        "    [--render_dt <dt> ]\n"
+        "    [--print_residual_time]\n"
+        "    [--damping <x>]\n"
+        "    [--stiction_coefficient <x>]\n"
+        "    [--friction_coefficient <x>]\n"
+        "    [--alpha0 <x>]\n"
+        "    [--lateral_stability <x>]\n"
+        "    [--max_extra_friction <x>]\n"
+        "    [--max_extra_w <x>]\n"
+        "    [--lateral_friction_steepness <x>]\n"
+        "    [--no_avoid_burnout]\n"
+        "    [--wheel_penetration_depth <x>]\n"
+        "    [--print_fps]\n"
+        "    [--vfx]\n"
+        "    [--no_depth_fog]\n"
+        "    [--low_pass]\n"
+        "    [--high_pass]\n"
+        "    [--motion_interpolation]\n"
+        "    [--no_render]\n"
+        "    [--print_gamepad_buttons]\n"
+        "    [--show_mouse_cursor]\n"
+        "    [--physics_type {version1, tracking_springs, builtin}]\n"
+        "    [--resolve_collisions_type {penalty, sequential_pulses}]\n"
+        "    [--no_bvh]\n"
+        "    [--oversampling]\n"
+        "    [--verbose]",
         {"--wire_frame",
          "--no_cull_faces",
          "--fly",
@@ -122,6 +122,7 @@ int main(int argc, char** argv) {
          "--lateral_stability",
          "--max_extra_w",
          "--max_extra_friction",
+         "--lateral_friction_steepness",
          "--wheel_penetration_depth"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -195,7 +196,7 @@ int main(int argc, char** argv) {
                 .lateral_stability = safe_stof(args.named_value("--lateral_stability", "2")),
                 .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
-                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "14")),
+                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "6")),  // 14
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "version1")),
                 .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collisions_type", "penalty")),
