@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Arbitrary_Orthogonal.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
+#include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
@@ -265,12 +266,12 @@ void TireContactInfo1::solve(float dt, float relaxation) {
         fci_.set_extras(ef, ef, ew);
         if (vvl2 > squared(cfg_.hand_break_velocity)) {
             // 1 / sin(4 / 180 * pi) = 14.336
-            ortho_clamping_max_l2 =
-                cfg_.lateral_friction_steepness *
-                ex *
+            float lambda_max =
                 (-fci_.normal_impulse().lambda_total) *
                 rb_.tires_.at(tire_id_).stiction_coefficient(
                     -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
+            ortho_clamping_max_l2 = cfg_.lateral_friction_steepness * ex * lambda_max;
+            // ortho_clamping_max_l2 = std::abs(magic_formula(ex, 41.f * 0.044f * cfg_.lateral_friction_steepness)) * lambda_max;
         } else {
             ortho_clamping_max_l2 = INFINITY;
         }
