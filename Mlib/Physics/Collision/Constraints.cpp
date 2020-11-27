@@ -264,7 +264,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
         float ef = std::min(cfg_.max_extra_friction, ex);
         float ew = std::min(cfg_.max_extra_w, ex);
         fci_.set_extras(ef, ef, ew);
-        if (vvl2 > squared(cfg_.hand_break_velocity)) {
+        if ((cfg_.lateral_friction_steepness != 0) && (vvl2 > squared(cfg_.hand_break_velocity))) {
             // 1 / sin(4 / 180 * pi) = 14.336
             float lambda_max =
                 (-fci_.normal_impulse().lambda_total) *
@@ -272,6 +272,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
                     -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
             ortho_clamping_max_l2 = cfg_.lateral_friction_steepness * ex * lambda_max;
             // ortho_clamping_max_l2 = std::abs(magic_formula(ex, 41.f * 0.044f * cfg_.lateral_friction_steepness)) * lambda_max;
+            // ortho_clamping_max_l2 = std::abs(magic_formula(std::min(ex, 0.17f))) * lambda_max;
         } else {
             ortho_clamping_max_l2 = INFINITY;
         }
