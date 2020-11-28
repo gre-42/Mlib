@@ -249,6 +249,11 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     float force_min = -INFINITY;
     float force_max = INFINITY;
     FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
+    // {
+    //     FixedArray<float, 3> v3 = rb_.rbi_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
+    //     v3 -= fci_.normal_impulse().normal * dot0d(v3, fci_.normal_impulse().normal);
+    //     std::cerr << tire_id_ << " v " << std::sqrt(sum(squared(v))) << " " << dot0d(n3_, v3) << std::endl;
+    // }
     // FixedArray<float, 3> x3{
     //     rb_.rbi_.rbp_.rotation_(0, 0),
     //     rb_.rbi_.rbp_.rotation_(1, 0),
@@ -311,6 +316,7 @@ void ShockAbsorberContactInfo1::solve(float dt, float relaxation) {
 
 void Mlib::solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt) {
     for(size_t i = 0; i < 10; ++i) {
+        // std::cerr << "solve_contacts " << i << std::endl;
         for(const std::unique_ptr<ContactInfo>& ci : cis) {
             ci->solve(dt, i < 1 ? 0.2 : 1);
         }
