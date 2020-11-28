@@ -194,9 +194,9 @@ int main(int argc, char** argv) {
                 .alpha0 = safe_stof(args.named_value("--alpha0", "0.1")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .lateral_stability = safe_stof(args.named_value("--lateral_stability", "2")),
-                .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
+                .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0.2")),
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
-                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "0")),  // 14
+                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "20")),
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "version1")),
                 .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collisions_type", "penalty")),

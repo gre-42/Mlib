@@ -276,8 +276,8 @@ void TireContactInfo1::solve(float dt, float relaxation) {
                 rb_.tires_.at(tire_id_).stiction_coefficient(
                     -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
             float aex = std::asin(ex);
-            ortho_clamping_max_l2 = cfg_.lateral_friction_steepness * aex * lambda_max;
-            // ortho_clamping_max_l2 = std::abs(magic_formula(aex, 41.f * 0.044f * cfg_.lateral_friction_steepness)) * lambda_max;
+            // ortho_clamping_max_l2 = cfg_.lateral_friction_steepness * aex * lambda_max;
+            ortho_clamping_max_l2 = std::abs(magic_formula_positive(aex, 41.f * 0.044f * cfg_.lateral_friction_steepness)) * lambda_max;
             // ortho_clamping_max_l2 = std::abs(magic_formula(std::min(aex, 0.17f))) * lambda_max;
         } else {
             ortho_clamping_max_l2 = INFINITY;

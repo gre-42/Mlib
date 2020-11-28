@@ -25,9 +25,9 @@ struct PhysicsEngineConfig {
     float alpha0 = 0.1;
     bool avoid_burnout = true;
     float lateral_stability = 2;
-    float max_extra_friction = 0; // 0.2;
+    float max_extra_friction = 0.2;
     float max_extra_w = 0;
-    float lateral_friction_steepness = 0;  // 1 / sin(4 / 180 * pi) = 14.336
+    float lateral_friction_steepness = 20;  // 1 / sin(4 / 180 * pi) = 14.336
     float wheel_penetration_depth = 0.25;  // (penetration depth) + (shock absorber) = 0.2
     float static_radius = 200;
     Interp<float> outness_fac_interp{{-0.5, 1}, {2000, 0}, OutOfRangeBehavior::CLAMP};
