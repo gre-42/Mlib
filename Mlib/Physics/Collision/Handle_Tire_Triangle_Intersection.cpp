@@ -118,8 +118,16 @@ void break_negative(
     // rb.set_tire_angular_velocity(tire_id, vv / rb.get_tire_radius(tire_id));
 }
 
-void idle(RigidBody& rb, const FixedArray<float, 3>& surface_normal, size_t tire_id) {
+void idle(
+    RigidBody& rb,
+    const FixedArray<float, 3>& surface_normal,
+    size_t tire_id,
+    float& force_min,
+    float& force_max)
+{
     rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(surface_normal, tire_id));
+    force_min = 0;
+    force_max = 0;
 }
 
 FixedArray<float, 3> Mlib::updated_tire_speed(
@@ -148,19 +156,19 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
                 }
             } else if (P.power > 0) {
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
-                    idle(rb, surface_normal, tire_id);
+                    idle(rb, surface_normal, tire_id, force_min, force_max);
                 } else {
                     accelerate_positive(rb, P.power, vc, v0, surface_normal, tire_id, force_min, force_max);
                 }
             } else if (P.power < 0) {
                 if (P.type == PowerIntentType::BREAK_OR_IDLE) {
-                    idle(rb, surface_normal, tire_id);
+                    idle(rb, surface_normal, tire_id, force_min, force_max);
                 } else {
                     accelerate_negative(rb, P.power, vc, v0, surface_normal, tire_id, force_min, force_max);
                 }
             }
         } else if (P.power == 0) {
-            idle(rb, surface_normal, tire_id);
+            idle(rb, surface_normal, tire_id, force_min, force_max);
         }
     }
     float v1 = rb.get_tire_angular_velocity(tire_id) * rb.get_tire_radius(tire_id);
