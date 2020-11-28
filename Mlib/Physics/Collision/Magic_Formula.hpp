@@ -16,6 +16,9 @@ struct MagicFormula {
     TData argmax() const {
         return 1 / (B * std::sqrt(E - 1));
     }
+    TData call_positive(const TData& x) const {
+        return x >= argmax() ? D : (*this)(x);
+    }
 };
 
 /**
@@ -50,6 +53,17 @@ TData magic_formula(
     const TData& E = -0.2)
 {
     return MagicFormula<TData>{.B = B, .C = C, .D = D, .E = E}(x);
+}
+
+template <class TData>
+TData magic_formula_positive(
+    const TData& x,
+    const TData& B = 41,
+    const TData& C = 1.4,
+    const TData& D = 1,
+    const TData& E = -0.2)
+{
+    return MagicFormula<TData>{.B = B, .C = C, .D = D, .E = E}.call_positive(x);
 }
 
 }
