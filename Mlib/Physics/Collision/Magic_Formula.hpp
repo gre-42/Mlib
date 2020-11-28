@@ -1,6 +1,6 @@
 #pragma once
-#include <cmath>
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <cmath>
 
 namespace Mlib {
 
