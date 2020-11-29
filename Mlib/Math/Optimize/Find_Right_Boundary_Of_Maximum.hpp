@@ -3,9 +3,9 @@
 namespace Mlib {
 
 template <class TData, class TFunc>
-TData find_maximum_right_boundary(const TFunc& f, const TData& left_boundary, const TData& step_size) {
-    TData x = 0;
-    TData f_old = f(0);
+TData find_right_boundary_of_maximum(const TFunc& f, const TData& left_boundary, const TData& step_size) {
+    TData x = left_boundary;
+    TData f_old = f(x);
     while(true) {
         x += 0.01;
         TData f_x = f(x);

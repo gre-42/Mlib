@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Math/Optimize/Find_Maximum_Right_Boundary.hpp>
+#include <Mlib/Math/Optimize/Find_Right_Boundary_Of_Maximum.hpp>
 #include <Mlib/Math/Optimize/Newton_1D.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <cmath>
@@ -35,7 +35,7 @@ struct MagicFormulaArgmax {
         auto f = [&mf2](const TData& x){return mf2(x);};
         auto df = [&f](const TData& x){return (f(x + 1e-3) - f(x - 1e-3)) / 2e-3;};
         auto df2 = [&df](const TData& x){return (df(x + 1e-3) - df(x - 1e-3)) / 2e-3;};
-        double x0 = find_maximum_right_boundary<double>(f, 0, 1e-2);
+        double x0 = find_right_boundary_of_maximum<double>(f, 0, 1e-2);
         argmax = newton_1d(df, df2, x0);
         // return 1 / (B * std::sqrt(E - 1));
     }
