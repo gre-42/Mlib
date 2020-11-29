@@ -170,6 +170,13 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
         } else if (P.power == 0) {
             idle(rb, surface_normal, tire_id, force_min, force_max);
         }
+    } else {
+        float v = dot0d(rb.rbi_.rbp_.v_, n3);
+        if (v < 0) {
+            break_positive(rb, surface_normal, tire_id, force_min, force_max);
+        } else {
+            break_negative(rb, surface_normal, tire_id, force_min, force_max);
+        }
     }
     float v1 = rb.get_tire_angular_velocity(tire_id) * rb.get_tire_radius(tire_id);
     return n3 * v1;
