@@ -145,8 +145,7 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
     // F = W / s = W / v / t = P / v
     if (!std::isnan(P.power)) {
         // std::cerr << "dx " << dx << std::endl;
-        bool slipping = false;
-        if ((P.power != 0) && !slipping) {
+        if (P.power != 0) {
             float v = dot0d(rb.rbi_.rbp_.v_, n3);
             if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_break_velocity) {
                 if (P.power > 0) {
@@ -167,7 +166,7 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
                     accelerate_negative(rb, P.power, vc, v0, surface_normal, tire_id, force_min, force_max);
                 }
             }
-        } else if (P.power == 0) {
+        } else {
             idle(rb, surface_normal, tire_id, force_min, force_max);
         }
     } else {
