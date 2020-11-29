@@ -240,7 +240,7 @@ TireContactInfo1::TireContactInfo1(
 void TireContactInfo1::solve(float dt, float relaxation) {
     float force_min;
     float force_max;
-    FixedArray<float, 3> v = updated_tire_speed(P_, rb_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
+    FixedArray<float, 3> tv = updated_tire_speed(P_, rb_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
     // {
     //     FixedArray<float, 3> v3 = rb_.rbi_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
     //     v3 -= fci_.normal_impulse().normal * dot0d(v3, fci_.normal_impulse().normal);
@@ -253,9 +253,14 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
     // x3 /= std::sqrt(sum(squared(x3)));
     // fci_.set_b(v - 1000.f * x3 * rb_.tires_.at(tire_id_).accel_x * (cfg_.dt / cfg_.oversampling));
-    fci_.set_b(-v);
+    fci_.set_b(-tv);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
-    float dw = dot0d(vv + v, n3_) / rb_.get_tire_radius(tire_id_);
+    float slip;
+    {
+        float vvx = dot0d(vv, n3_);
+        float tvx = dot0d(tv, n3_);
+        slip = (vvx + tvx) / std::max(cfg_.hand_break_velocity, std::abs(vvx));
+    }
     float sin_lateral_slip_angle;
     if (float vvl2 = sum(squared(vv)); vvl2 > 1e-12) {
         sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - squared(dot0d(vv / std::sqrt(vvl2), n3_))));
@@ -271,7 +276,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
         rb_.tires_.at(tire_id_).stiction_coefficient(
             -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
     FixedArray<float, 2> r = rb_.tires_.at(tire_id_).magic_formula({
-        dw,
+        slip,
         std::asin(sin_lateral_slip_angle)}) * lambda_max;
     // std::cerr << tire_id_ << " | " << r << " | " << dwdt << " | " << vv << " | " << v << std::endl;
     fci_.set_clamping(
