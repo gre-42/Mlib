@@ -22,7 +22,7 @@ void accelerate_positive(
         }
     }
     float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
-    rb.set_tire_angular_velocity(tire_id, w - 10.f);
+    rb.set_tire_angular_velocity(tire_id, w - rb.tires_.at(tire_id).magic_formula.longitudinal().argmax);
     force_min = u * power / std::min(-0.001f, w * rb.get_tire_radius(tire_id));
     force_max = 0;
 }
@@ -45,7 +45,7 @@ void accelerate_negative(
         }
     }
     float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
-    rb.set_tire_angular_velocity(tire_id, w + 10.f);
+    rb.set_tire_angular_velocity(tire_id, w + rb.tires_.at(tire_id).magic_formula.longitudinal().argmax);
     force_min = 0;
     force_max = -u * power / std::max(0.001f, w * rb.get_tire_radius(tire_id));
 }
@@ -60,7 +60,7 @@ void break_positive(
     float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
     rb.set_tire_angular_velocity(
         tire_id,
-        std::max(w - 10.f, 0.f));
+        std::max(w - rb.tires_.at(tire_id).magic_formula.longitudinal().argmax, 0.f));
     force_min = -rb.tires_.at(tire_id).break_force;
     force_max = 0;
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
@@ -94,7 +94,7 @@ void break_negative(
     float w = rb.get_angular_velocity_at_tire(surface_normal, tire_id);
     rb.set_tire_angular_velocity(
         tire_id,
-        std::min(w + 10.f, 0.f));
+        std::min(w + rb.tires_.at(tire_id).magic_formula.longitudinal().argmax, 0.f));
     force_min = 0;
     force_max = rb.tires_.at(tire_id).break_force;
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(

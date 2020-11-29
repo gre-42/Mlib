@@ -75,7 +75,6 @@ FrictionContactInfo1::FrictionContactInfo1(
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b,
-    float lateral_stability,
     const FixedArray<float, 3>& clamping_direction,
     float clamping_min,
     float clamping_max,
@@ -94,7 +93,6 @@ FrictionContactInfo1::FrictionContactInfo1(
   clamping_min_{clamping_min},
   clamping_max_{clamping_max},
   ortho_clamping_max_l2_{ortho_clamping_max_l2},
-  lateral_stability_{lateral_stability},
   extra_stiction_{extra_stiction},
   extra_friction_{extra_friction},
   extra_w_{extra_w}
@@ -113,20 +111,14 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
         if (!any(isnan(clamping_direction_))) {
             float ld = dot0d(lambda_total_, clamping_direction_);
             FixedArray<float, 3> lt = lambda_total_ - ld * clamping_direction_;
-            if (lateral_stability_ == 0) {
-                lambda_total_ = std::clamp(ld, clamping_min_, clamping_max_) * clamping_direction_ + lt;
-            } else {
-                lambda_total_ =
-                    std::clamp(
-                        ld,
-                        std::max(clamping_min_, -max_impulse_stiction()),
-                        std::min(clamping_max_, max_impulse_stiction())) * clamping_direction_ +
-                    min_l2(
-                        lt,
-                        lateral_stability_ * std::min(
-                            max_impulse_stiction(),
-                            ortho_clamping_max_l2_));
-            }
+            lambda_total_ =
+                std::clamp(
+                    ld,
+                    clamping_min_,
+                    clamping_max_) * clamping_direction_ +
+                min_l2(
+                    lt,
+                    ortho_clamping_max_l2_);
         }
         if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
             lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
@@ -248,7 +240,7 @@ TireContactInfo1::TireContactInfo1(
 void TireContactInfo1::solve(float dt, float relaxation) {
     float force_min;
     float force_max;
-    FixedArray<float, 3> v = -updated_tire_speed(P_, rb_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
+    FixedArray<float, 3> v = updated_tire_speed(P_, rb_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
     // {
     //     FixedArray<float, 3> v3 = rb_.rbi_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
     //     v3 -= fci_.normal_impulse().normal * dot0d(v3, fci_.normal_impulse().normal);
@@ -261,39 +253,32 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
     // x3 /= std::sqrt(sum(squared(x3)));
     // fci_.set_b(v - 1000.f * x3 * rb_.tires_.at(tire_id_).accel_x * (cfg_.dt / cfg_.oversampling));
-    fci_.set_b(v);
-    float ortho_clamping_max_l2;
+    fci_.set_b(-v);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
+    float dw = dot0d(vv + v, n3_) / rb_.get_tire_radius(tire_id_);
+    float sin_lateral_slip_angle;
     if (float vvl2 = sum(squared(vv)); vvl2 > 1e-12) {
-        float ex = std::sqrt(std::max(0.f, 1 - squared(dot0d(vv / std::sqrt(vvl2), n3_))));
-        float ef = std::min(cfg_.max_extra_friction, ex);
-        float ew = std::min(cfg_.max_extra_w, ex);
+        sin_lateral_slip_angle = std::sqrt(std::max(0.f, 1 - squared(dot0d(vv / std::sqrt(vvl2), n3_))));
+        float ef = std::min(cfg_.max_extra_friction, sin_lateral_slip_angle);
+        float ew = std::min(cfg_.max_extra_w, sin_lateral_slip_angle);
         fci_.set_extras(ef, ef, ew);
-        if ((cfg_.lateral_friction_steepness != 0) && (vvl2 > squared(cfg_.hand_break_velocity))) {
-            // 1 / sin(4 / 180 * pi) = 14.336
-            float lambda_max =
-                (-fci_.normal_impulse().lambda_total) *
-                rb_.tires_.at(tire_id_).stiction_coefficient(
-                    -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
-            float aex = std::asin(ex);
-            // ortho_clamping_max_l2 = cfg_.lateral_friction_steepness * aex * lambda_max;
-            const MagicFormulaArgmax<float>& mf = rb_.tires_.at(tire_id_).magic_formula.lateral();
-            ortho_clamping_max_l2 = std::abs(mf.call_noslip(aex)) * lambda_max;
-            // std::cerr << "tire " << tire_id_ << " argmax " << mf.argmax * 180 / M_PI << " angle " << aex * 180 / M_PI << " f_noslip " << std::abs(mf.call_noslip(aex)) << " f_slip " << mf(aex) << std::endl;
-            // ortho_clamping_max_l2 = std::abs(magic_formula(std::min(aex, 0.17f))) * lambda_max;
-            // std::cerr << tire_id_ << " " << mf.argmax * 180 / M_PI << " ex " << ex << " aex " << aex * 180 / M_PI << " " << ortho_clamping_max_l2 << std::endl;
-        } else {
-            ortho_clamping_max_l2 = INFINITY;
-        }
     } else {
         fci_.set_extras(0, 0, 0);
-        ortho_clamping_max_l2 = INFINITY;
+        sin_lateral_slip_angle = 0;
     }
+    float lambda_max =
+        (-fci_.normal_impulse().lambda_total) *
+        rb_.tires_.at(tire_id_).stiction_coefficient(
+            -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
+    FixedArray<float, 2> r = rb_.tires_.at(tire_id_).magic_formula({
+        dw,
+        std::asin(sin_lateral_slip_angle)}) * lambda_max;
+    // std::cerr << tire_id_ << " | " << r << " | " << dwdt << " | " << vv << " | " << v << std::endl;
     fci_.set_clamping(
         n3_,
-        force_min * cfg_.dt / cfg_.oversampling,
-        force_max * cfg_.dt / cfg_.oversampling,
-        ortho_clamping_max_l2);
+        std::max(force_min * cfg_.dt / cfg_.oversampling, -std::abs(r(0))),
+        std::min(force_max * cfg_.dt / cfg_.oversampling, std::abs(r(0))),
+        std::abs(r(1)));
     fci_.solve(dt, relaxation);
 }
 

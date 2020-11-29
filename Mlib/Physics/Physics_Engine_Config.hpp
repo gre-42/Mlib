@@ -27,6 +27,7 @@ struct PhysicsEngineConfig {
     float lateral_stability = 1;
     float max_extra_friction = 0;
     float max_extra_w = 0;
+    float longitudinal_friction_steepness = 5;
     float lateral_friction_steepness = 7;  // 1 / sin(4 / 180 * pi) = 14.336
     float wheel_penetration_depth = 0.25;  // (penetration depth) + (shock absorber) = 0.2
     float static_radius = 200;

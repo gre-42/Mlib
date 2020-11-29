@@ -131,7 +131,6 @@ public:
         float stiction_coefficient,
         float friction_coefficient,
         const FixedArray<float, 3>& b,
-        float lateral_stability = 1,
         const FixedArray<float, 3>& clamping_direction = fixed_nans<float, 3>(),
         float clamping_min = NAN,
         float clamping_max = NAN,
@@ -170,7 +169,6 @@ private:
     float clamping_min_;
     float clamping_max_;
     float ortho_clamping_max_l2_;
-    float lateral_stability_;
     float extra_stiction_;
     float extra_friction_;
     float extra_w_;

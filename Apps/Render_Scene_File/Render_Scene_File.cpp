@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
         "    [--lateral_stability <x>]\n"
         "    [--max_extra_friction <x>]\n"
         "    [--max_extra_w <x>]\n"
+        "    [--longitudinal_friction_steepness <x>]\n"
         "    [--lateral_friction_steepness <x>]\n"
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
@@ -122,6 +123,7 @@ int main(int argc, char** argv) {
          "--lateral_stability",
          "--max_extra_w",
          "--max_extra_friction",
+         "--longitudinal_friction_steepness",
          "--lateral_friction_steepness",
          "--wheel_penetration_depth"});
     try {
@@ -196,6 +198,7 @@ int main(int argc, char** argv) {
                 .lateral_stability = safe_stof(args.named_value("--lateral_stability", "1")),
                 .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
+                .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "version1")),

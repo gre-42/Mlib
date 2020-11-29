@@ -677,7 +677,7 @@ void LoadScene::operator()(
                             physics_engine_config.dt / physics_engine_config.oversampling},
                         CombinedMagicFormula<float>{
                             .f = FixedArray<MagicFormulaArgmax<float>, 2>{
-                                MagicFormulaArgmax<float>{MagicFormula<float>{}},
+                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * physics_engine_config.longitudinal_friction_steepness}},
                                 MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * physics_engine_config.lateral_friction_steepness}}
                             }
                         },

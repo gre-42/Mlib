@@ -62,8 +62,8 @@ struct CombinedMagicFormula {
             x(1) / f(1).argmax};
         TData p = std::sqrt(sum(squared(s)));
         return {
-            s(0) / p * f(0)(x(0) * p * f(0).argmax),
-            s(1) / p * f(1)(x(1) * p * f(1).argmax)};
+            s(0) / p * f(0)(p * f(0).argmax),
+            s(1) / p * f(1)(p * f(1).argmax)};
     }
     MagicFormulaArgmax<TData>& longitudinal() const {
         return f(0);
