@@ -265,7 +265,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     float ortho_clamping_max_l2;
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
     if (float vvl2 = sum(squared(vv)); vvl2 > 1e-12) {
-        float ex = std::sqrt(1 - squared(dot0d(vv / std::sqrt(vvl2), n3_)));
+        float ex = std::sqrt(std::max(0.f, 1 - squared(dot0d(vv / std::sqrt(vvl2), n3_))));
         float ef = std::min(cfg_.max_extra_friction, ex);
         float ew = std::min(cfg_.max_extra_w, ex);
         fci_.set_extras(ef, ef, ew);
@@ -276,9 +276,11 @@ void TireContactInfo1::solve(float dt, float relaxation) {
                 rb_.tires_.at(tire_id_).stiction_coefficient(
                     -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
             float aex = std::asin(ex);
+            MagicFormulaArgmax<float> mf{MagicFormula<float>{.B = 41.f * 0.044f * cfg_.lateral_friction_steepness}};
             // ortho_clamping_max_l2 = cfg_.lateral_friction_steepness * aex * lambda_max;
-            ortho_clamping_max_l2 = std::abs(magic_formula_positive(aex, 41.f * 0.044f * cfg_.lateral_friction_steepness)) * lambda_max;
+            ortho_clamping_max_l2 = std::abs(mf.call_positive(aex)) * lambda_max;
             // ortho_clamping_max_l2 = std::abs(magic_formula(std::min(aex, 0.17f))) * lambda_max;
+            // std::cerr << tire_id_ << " " << mf.argmax * 180 / M_PI << " ex " << ex << " aex " << aex * 180 / M_PI << " " << ortho_clamping_max_l2 << std::endl;
         } else {
             ortho_clamping_max_l2 = INFINITY;
         }
