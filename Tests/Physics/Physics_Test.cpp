@@ -257,10 +257,10 @@ void test_magic_formula() {
         assert_isclose(mf.argmax, 0.04665f);
         assert_isclose(mf(mf.argmax), 1.f);
         assert_isclose(mf(-mf.argmax), -1.f);
-        assert_isclose(mf.call_noslip(2 * mf.argmax), 1.f);
-        assert_isclose(mf.call_noslip(-2 * mf.argmax), -1.f);
-        assert_isclose(mf.call_noslip(0.9f * mf.argmax), 0.997996f);
-        assert_isclose(mf.call_noslip(-0.9f * mf.argmax), -0.997996f);
+        assert_isclose(mf(2 * mf.argmax, MagicFormulaMode::NO_SLIP), 1.f);
+        assert_isclose(mf(-2 * mf.argmax, MagicFormulaMode::NO_SLIP), -1.f);
+        assert_isclose(mf(0.9f * mf.argmax, MagicFormulaMode::NO_SLIP), 0.997996f);
+        assert_isclose(mf(-0.9f * mf.argmax, MagicFormulaMode::NO_SLIP), -0.997996f);
         assert_isclose(mf(2 * mf.argmax), 0.952219f);
     }
     {

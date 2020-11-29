@@ -7,6 +7,11 @@
 
 namespace Mlib {
 
+enum class MagicFormulaMode {
+    STANDARD,
+    NO_SLIP
+};
+
 template <class TData>
 struct MagicFormula {
     TData B = 41;
@@ -40,11 +45,15 @@ struct MagicFormulaArgmax {
         argmax = newton_1d(df, df2, x0);
         // return 1 / (B * std::sqrt(E - 1));
     }
-    TData operator () (const TData& x) const {
-        return mf(x);
-    }
-    TData call_noslip(const TData& x) const {
-        return std::abs(x) >= argmax ? sign(x) * mf.D : (*this)(x);
+    TData operator () (const TData& x, MagicFormulaMode mode = MagicFormulaMode::STANDARD) const {
+        switch (mode) {
+        case MagicFormulaMode::STANDARD:
+            return mf(x);
+        case MagicFormulaMode::NO_SLIP:
+            return std::abs(x) >= argmax ? sign(x) * mf.D : (*this)(x);
+        default:
+            throw std::runtime_error("Unknown magic formula mode");
+        }
     }
     MagicFormula<TData> mf;
     TData argmax;
@@ -56,14 +65,14 @@ struct MagicFormulaArgmax {
 template <class TData>
 struct CombinedMagicFormula {
     FixedArray<MagicFormulaArgmax<TData>, 2> f;
-    FixedArray<TData, 2> operator () (const FixedArray<TData, 2>& x) const {
+    FixedArray<TData, 2> operator () (const FixedArray<TData, 2>& x, MagicFormulaMode mode = MagicFormulaMode::STANDARD) const {
         FixedArray<TData, 2> s{
             x(0) / f(0).argmax,
             x(1) / f(1).argmax};
         TData p = std::sqrt(sum(squared(s)));
         return {
-            s(0) / p * f(0)(p * f(0).argmax),
-            s(1) / p * f(1)(p * f(1).argmax)};
+            s(0) / p * f(0)(p * f(0).argmax, mode),
+            s(1) / p * f(1)(p * f(1).argmax, mode)};
     }
     MagicFormulaArgmax<TData>& longitudinal() const {
         return f(0);
