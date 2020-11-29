@@ -277,8 +277,9 @@ void TireContactInfo1::solve(float dt, float relaxation) {
                     -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
             float aex = std::asin(ex);
             // ortho_clamping_max_l2 = cfg_.lateral_friction_steepness * aex * lambda_max;
-            ortho_clamping_max_l2 = std::abs(rb_.tires_.at(tire_id_).magic_formula.f(0).call_noslip(aex)) * lambda_max;
-            // std::cerr << tire_id_ << " " << mf.argmax << " " << aex << " " << std::abs(mf.call_positive(aex)) << " " << mf(aex) << std::endl;
+            const MagicFormulaArgmax<float>& mf = rb_.tires_.at(tire_id_).magic_formula.lateral();
+            ortho_clamping_max_l2 = std::abs(mf.call_noslip(aex)) * lambda_max;
+            // std::cerr << tire_id_ << " " << mf.argmax << " " << aex << " " << std::abs(mf.call_noslip(aex)) << " " << mf(aex) << std::endl;
             // ortho_clamping_max_l2 = std::abs(magic_formula(std::min(aex, 0.17f))) * lambda_max;
             // std::cerr << tire_id_ << " " << mf.argmax * 180 / M_PI << " ex " << ex << " aex " << aex * 180 / M_PI << " " << ortho_clamping_max_l2 << std::endl;
         } else {
