@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
+#include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <fenv.h>
@@ -250,6 +251,11 @@ void test_tracking_wheel() {
     }
 }
 
+void test_magic_formula() {
+    MagicFormulaArgmax<float> mf{MagicFormula<float>{}};
+    assert_isclose(mf.argmax, 0.04665f);
+}
+
 int main(int argc, const char** argv) {
     #ifndef __MINGW32__
     feenableexcept(FE_INVALID);
@@ -263,5 +269,6 @@ int main(int argc, const char** argv) {
     test_com();
     test_sticky_spring();
     test_tracking_wheel();
+    test_magic_formula();
     return 0;
 }
