@@ -10,5 +10,5 @@ for f = logspace(-0.6, 0.6, 5)
     D = 1;
     E = -0.2;
     x = linspace(-1, 1, 100) * 20 / 180 * pi;
-    plot(x, D * sin(C * atan(B * x - E * (B * x - atan(B * x)))));
+    plot(x * 180 / pi, D * sin(C * atan(B * x - E * (B * x - atan(B * x)))));
 end

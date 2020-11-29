@@ -279,7 +279,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
             // ortho_clamping_max_l2 = cfg_.lateral_friction_steepness * aex * lambda_max;
             const MagicFormulaArgmax<float>& mf = rb_.tires_.at(tire_id_).magic_formula.lateral();
             ortho_clamping_max_l2 = std::abs(mf.call_noslip(aex)) * lambda_max;
-            // std::cerr << tire_id_ << " " << mf.argmax << " " << aex << " " << std::abs(mf.call_noslip(aex)) << " " << mf(aex) << std::endl;
+            // std::cerr << "tire " << tire_id_ << " argmax " << mf.argmax * 180 / M_PI << " angle " << aex * 180 / M_PI << " f_noslip " << std::abs(mf.call_noslip(aex)) << " f_slip " << mf(aex) << std::endl;
             // ortho_clamping_max_l2 = std::abs(magic_formula(std::min(aex, 0.17f))) * lambda_max;
             // std::cerr << tire_id_ << " " << mf.argmax * 180 / M_PI << " ex " << ex << " aex " << aex * 180 / M_PI << " " << ortho_clamping_max_l2 << std::endl;
         } else {
