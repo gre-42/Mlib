@@ -28,8 +28,10 @@ struct MagicFormula {
 
 template <class TData>
 struct MagicFormulaArgmax {
-    explicit MagicFormulaArgmax(const MagicFormula<TData>& mf) {
-        MagicFormula<double> mf2 = mf.template casted<double>();
+    explicit MagicFormulaArgmax(const MagicFormula<TData>& magic_formula)
+    : mf{magic_formula}
+    {
+        MagicFormula<double> mf2 = magic_formula.template casted<double>();
         auto f = [&mf2](const TData& x){return mf2(x);};
         auto df = [&f](const TData& x){return (f(x + 1e-3) - f(x - 1e-3)) / 2e-3;};
         auto df2 = [&df](const TData& x){return (df(x + 1e-3) - df(x - 1e-3)) / 2e-3;};
@@ -40,7 +42,7 @@ struct MagicFormulaArgmax {
     TData operator () (const TData& x) const {
         return mf(x);
     }
-    TData call_positive(const TData& x) const {
+    TData call_noslip(const TData& x) const {
         return std::abs(x) >= argmax ? sign(x) * mf.D : (*this)(x);
     }
     MagicFormula<TData> mf;
