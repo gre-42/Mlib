@@ -11,10 +11,12 @@ Tire::Tire(
     const Interp<float>& friction_coefficient,
     const ShockAbsorber& shock_absorber,
     const TrackingWheel& tracking_wheel,
+    const CombinedMagicFormula<float>& magic_formula,
     const FixedArray<float, 3>& position,
     float radius)
 : shock_absorber{shock_absorber},
   tracking_wheel{tracking_wheel},
+  magic_formula{magic_formula},
   shock_absorber_position{0},
   angle_x{0},
   angle_y{0},

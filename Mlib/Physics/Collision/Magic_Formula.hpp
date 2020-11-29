@@ -28,6 +28,7 @@ struct MagicFormula {
 
 template <class TData>
 struct MagicFormulaArgmax {
+    MagicFormulaArgmax() = default;
     explicit MagicFormulaArgmax(const MagicFormula<TData>& magic_formula)
     : mf{magic_formula}
     {
