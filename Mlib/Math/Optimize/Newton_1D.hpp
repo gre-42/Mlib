@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-template <class TFunction, class TDerivative, class TFloat>
+template <class TFloat, class TFunction, class TDerivative>
 TFloat newton_1d(
     const TFunction& function,
     const TDerivative& derivative,

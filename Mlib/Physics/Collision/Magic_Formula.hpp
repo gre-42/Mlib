@@ -15,15 +15,24 @@ struct MagicFormula {
     TData operator () (const TData& x) const {
         return D * std::sin(C * std::atan(B * x - E * (B * x - std::atan(B * x))));
     }
+    template <class TData2>
+    MagicFormula<TData2> casted() const {
+        return MagicFormula<TData2>{
+            .B = B,
+            .C = C,
+            .D = D,
+            .E = E};
+    }
 };
 
 template <class TData>
 struct MagicFormulaArgmax {
     explicit MagicFormulaArgmax(const MagicFormula<TData>& mf) {
-        auto f = [&mf](const TData& x){return mf(x);};
+        MagicFormula<double> mf2 = mf.template casted<double>();
+        auto f = [&mf2](const TData& x){return mf2(x);};
         auto df = [&f](const TData& x){return (f(x + 1e-3) - f(x - 1e-3)) / 2e-3;};
         auto df2 = [&df](const TData& x){return (df(x + 1e-3) - df(x - 1e-3)) / 2e-3;};
-        argmax = newton_1d(df, df2, TData(1e-2));
+        argmax = newton_1d<TData>(df, df2, 1e-2);
         // return 1 / (B * std::sqrt(E - 1));
     }
     TData operator () (const TData& x) const {
