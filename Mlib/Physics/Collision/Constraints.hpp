@@ -16,14 +16,27 @@ struct NormalImpulse {
     float lambda_total = 0;
 };
 
-struct PlaneConstraint {
+struct PlaneEqualityConstraint {
+    NormalImpulse normal_impulse;
+    float intercept;
+    float b = 0;
+    bool always_active = true;
+    float beta = 0.2;
+    inline float C(const FixedArray<float, 3>& x) const {
+        return -(dot0d(normal_impulse.normal, x) + intercept);
+    }
+    inline float v(const FixedArray<float, 3>& p, float dt) const {
+        return b + beta / dt * C(p);
+    }
+};
+
+struct PlaneInequalityConstraint {
     NormalImpulse normal_impulse;
     float intercept;
     float b = 0;
     float slop = 0;
     bool always_active = true;
     float beta = 0.5;
-    float beta2 = 0.2;
     inline float C(const FixedArray<float, 3>& x) const {
         return -(dot0d(normal_impulse.normal, x) + intercept);
     }
@@ -38,7 +51,7 @@ struct PlaneConstraint {
         return std::max(0.f, overlap(x) - slop);
     }
     inline float v(const FixedArray<float, 3>& p, float dt) const {
-        return b + 1.f / dt * (beta * C(p) - beta2 * bias(p));
+        return b - beta / dt * bias(p);
     }
 };
 
@@ -61,7 +74,7 @@ struct ShockAbsorberConstraint {
     float Ka;  // K_absorber
 };
 
-typedef BoundedConstraint1D<PlaneConstraint> BoundedPlaneConstraint;
+typedef BoundedConstraint1D<PlaneInequalityConstraint> BoundedPlaneInequalityConstraint;
 typedef BoundedConstraint1D<ShockAbsorberConstraint> BoundedShockAbsorberConstraint;
 
 class ContactInfo {
@@ -75,7 +88,7 @@ class NormalContactInfo1: public ContactInfo {
 public:
     NormalContactInfo1(
         RigidBodyPulses& rbp,
-        const BoundedPlaneConstraint& pc,
+        const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<float, 3>& p);
     void solve(float dt, float relaxation) override;
     const NormalImpulse& normal_impulse() const {
@@ -83,7 +96,7 @@ public:
     }
 private:
     RigidBodyPulses& rbp_;
-    BoundedPlaneConstraint pc_;
+    BoundedPlaneInequalityConstraint pc_;
     FixedArray<float, 3> p_;
 };
 
@@ -92,7 +105,7 @@ public:
     NormalContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
-        const BoundedPlaneConstraint& pc,
+        const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<float, 3>& p);
     void solve(float dt, float relaxation) override;
     const NormalImpulse& normal_impulse() const {
@@ -101,7 +114,7 @@ public:
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
-    BoundedPlaneConstraint pc_;
+    BoundedPlaneInequalityConstraint pc_;
     FixedArray<float, 3> p_;
 };
 

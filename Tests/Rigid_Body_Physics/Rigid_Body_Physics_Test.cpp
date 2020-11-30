@@ -26,7 +26,7 @@ struct Particle {
 
 void test_rigid_body_physics_particle0() {
     Particle0 p{.x = {0, -0.1, 0}, .v1 = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0};
+    PlaneInequalityConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0};
     float h = 1. / 60.;
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
@@ -43,7 +43,7 @@ void test_rigid_body_physics_particle0() {
 
 void test_rigid_body_physics_particle() {
     Particle p{.x = {0, -0.1, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0, .always_active = false};
+    PlaneInequalityConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0, .always_active = false};
     float h = 1. / 60.;
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
@@ -59,7 +59,7 @@ void test_rigid_body_physics_particle() {
 
 void test_rigid_body_physics_timestep() {
     Particle p{.x = {0, 0.2, 0}, .v = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
-    PlaneConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0, .slop = 0.01, .always_active = false};
+    PlaneInequalityConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0, .slop = 0.01, .always_active = false};
     float h = 1. / 60.;
     float beta = 0.5;
     float beta2 = 0.2;
@@ -98,7 +98,7 @@ void test_rigid_body_physics_rbi() {
     RigidBodyPulses rbp = rigid_cuboid_pulses(10, {1, 2, 3}, {0, 0, 0});
     rbp.set_pose(fixed_identity_array<float, 3>(), {0, 0.2, 0});
     rbp.v_(1) = -1;
-    PlaneConstraint pc{
+    PlaneInequalityConstraint pc{
         .normal_impulse{.normal = {0, 1, 0}},
         .intercept = 0,
         .slop = 0.01,
@@ -141,7 +141,7 @@ void test_rigid_body_physics_rbi_multiple() {
     RigidBodyPulses rbp = rigid_cuboid_pulses(10, {1, 2, 3}, {0, 0, 0});
     rbp.set_pose(fixed_identity_array<float, 3>(), {0, 0.2, 0});
     rbp.v_(1) = -1;
-    BoundedPlaneConstraint pc{
+    BoundedPlaneInequalityConstraint pc{
         .constraint{
             .normal_impulse{.normal={0, 1, 0}},
             .intercept = 0,
@@ -189,7 +189,7 @@ void test_rigid_body_physics_rbi_multiple() {
 //     Particle p{.x = {0, -0.1, 0}, .v1 = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
 //     float alpha0 = 5 * M_PI / 4;
 //     float alpha1 = 7 * M_PI / 4;
-//     std::list<PlaneConstraint> pcs{
+//     std::list<PlaneInequalityConstraint> pcs{
 //         {.J = {std::cos(alpha0), std::sin(alpha0), 0}, .b = 0},
 //         {.J = {std::cos(alpha1), std::sin(alpha1), 0}, .b = 0}};
 //     float h = 1. / 60.;
@@ -198,7 +198,7 @@ void test_rigid_body_physics_rbi_multiple() {
 //     for(size_t i = 0; i < 10; ++i) {
 //         p.v2b = p.v1 + h * g;
 //         for(size_t j = 0; j < 100; ++j) {
-//             for(PlaneConstraint& pc: pcs) {
+//             for(PlaneInequalityConstraint& pc: pcs) {
 //                 // std::cerr << pc.J << std::endl;
 //                 float lambda = - (dot0d(pc.J, p.v2b) + pc.b + beta / h * pc.C(p.x)) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
 //                 p.v2 = p.v2b + solve_symm_1d(p.mass, pc.J * lambda);

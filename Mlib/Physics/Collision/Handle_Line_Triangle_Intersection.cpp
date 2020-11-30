@@ -144,15 +144,14 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 NormalContactInfo2* ci = new NormalContactInfo2{
                     c.o1->rbi_.rbp_,
                     c.o0->rbi_.rbp_,
-                    BoundedPlaneConstraint{
+                    BoundedPlaneInequalityConstraint{
                         .constraint{
                             .normal_impulse{.normal = plane.normal},
                             .intercept = plane.intercept,
                             // .slop = (c.tire_id != SIZE_MAX)
                             //     ? -c.cfg.wheel_penetration_depth
                             //     : 0,
-                            .beta = c.cfg.contact_beta,
-                            .beta2 = c.cfg.contact_beta2
+                            .beta = c.cfg.plane_inequality_beta
                         },
                         .lambda_min = (c.o0->mass() * c.o1->mass()) / (c.o0->mass() + c.o1->mass()) * c.cfg.lambda_min / c.cfg.oversampling,
                         .lambda_max = 0},
@@ -164,12 +163,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 if (c.tire_id == SIZE_MAX) {
                     NormalContactInfo1* ci = new NormalContactInfo1{
                         c.o1->rbi_.rbp_,
-                        BoundedPlaneConstraint{
+                        BoundedPlaneInequalityConstraint{
                             .constraint{
                                 .normal_impulse{.normal = plane.normal},
                                 .intercept = plane.intercept,
-                                .beta = c.cfg.contact_beta,
-                                .beta2 = c.cfg.contact_beta2
+                                .beta = c.cfg.plane_inequality_beta
                             },
                             .lambda_min = c.o1->mass() * c.cfg.lambda_min / c.cfg.oversampling,
                             .lambda_max = 0},

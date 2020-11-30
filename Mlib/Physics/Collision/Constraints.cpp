@@ -11,7 +11,7 @@ using namespace Mlib;
 
 NormalContactInfo1::NormalContactInfo1(
     RigidBodyPulses& rbp,
-    const BoundedPlaneConstraint& pc,
+    const BoundedPlaneInequalityConstraint& pc,
     const FixedArray<float, 3>& p)
 : rbp_{rbp},
   pc_{pc},
@@ -25,7 +25,7 @@ NormalContactInfo1::NormalContactInfo1(
  *       Marijn Tamis, Sequential Impulse Solver for Rigid Body Dynamics
  */
 void NormalContactInfo1::solve(float dt, float relaxation) {
-    PlaneConstraint& pc = pc_.constraint;
+    PlaneInequalityConstraint& pc = pc_.constraint;
     if (pc.active(p_)) {
         float v = dot0d(rbp_.velocity_at_position(p_), pc.normal_impulse.normal);
         float mc = rbp_.effective_mass({.vector = pc.normal_impulse.normal, .position = p_});
@@ -41,7 +41,7 @@ void NormalContactInfo1::solve(float dt, float relaxation) {
 NormalContactInfo2::NormalContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
-    const BoundedPlaneConstraint& pc,
+    const BoundedPlaneInequalityConstraint& pc,
     const FixedArray<float, 3>& p)
 : rbp0_{rbp0},
   rbp1_{rbp1},
@@ -50,7 +50,7 @@ NormalContactInfo2::NormalContactInfo2(
 {}
 
 void NormalContactInfo2::solve(float dt, float relaxation) {
-    PlaneConstraint& pc = pc_.constraint;
+    PlaneInequalityConstraint& pc = pc_.constraint;
     if (pc.active(p_)) {
         float v0 = dot0d(rbp0_.velocity_at_position(p_), pc.normal_impulse.normal);
         float v1 = dot0d(rbp1_.velocity_at_position(p_), pc.normal_impulse.normal);
