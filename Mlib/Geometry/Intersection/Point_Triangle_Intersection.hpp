@@ -34,24 +34,32 @@ TData distance_point_to_triangle (
     const FixedArray<TData, 2>& v2,
     const FixedArray<TData, 2>& v3)
 {
-    TData dl1 = distance_point_to_line(pt, v1, v2, true);
-    TData dl2 = distance_point_to_line(pt, v2, v3, true);
-    TData dl3 = distance_point_to_line(pt, v3, v1, true);
-    TData dl = std::max(std::max(dl1, dl2), dl3);
-
-    if (dl <= 0) {
+    bool is_inside = true;
+    TData result_edge = NAN;
+    auto include_edge = [&pt, &is_inside, &result_edge](
+        const FixedArray<TData, 2>& a,
+        const FixedArray<TData, 2>& b)
+    {
+        FixedArray<TData, 2> dl = transform_to_line_coordinates(pt, a, b);
+        if (dl(1) >= 0) {
+            is_inside = false;
+            if ((dl(0) >= 0) && (dl(0) <= 1)) {
+                result_edge = dl(1);
+            }
+        }
+    };
+    include_edge(v1, v2);
+    include_edge(v2, v3);
+    include_edge(v3, v1);
+    if (is_inside) {
         return 0;
-    }
-
-    TData sp1 = sum(squared(v1 - pt));
-    TData sp2 = sum(squared(v2 - pt));
-    TData sp3 = sum(squared(v3 - pt));
-    TData sp = std::min(std::min(sp1, sp2), sp3);
-
-    if (squared(dl) >= sp) {
-        return dl;
+    } else if (!std::isnan(result_edge)) {
+        return result_edge;
     } else {
-        return std::sqrt(sp);
+        TData sp1 = sum(squared(v1 - pt));
+        TData sp2 = sum(squared(v2 - pt));
+        TData sp3 = sum(squared(v3 - pt));
+        return std::sqrt(std::min(std::min(sp1, sp2), sp3));
     }
 }
 

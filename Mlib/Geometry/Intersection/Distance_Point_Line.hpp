@@ -20,7 +20,22 @@ TData distance_point_to_line(
     if (normalize) {
         n /= std::sqrt(sum(squared(n)));
     }
-    return dot0d(p - l1, n);
+    return dot0d(p - l0, n);
+}
+
+template <class TData>
+FixedArray<TData, 2> transform_to_line_coordinates(
+    const FixedArray<TData, 2>& p,
+    const FixedArray<TData, 2>& l0,
+    const FixedArray<TData, 2>& l1)
+{
+    FixedArray<TData, 2> d = l1 - l0;
+    TData dist = std::sqrt(sum(squared(d)));
+    d /= dist;
+    FixedArray<TData, 2> n = {d(1), -d(0)};
+    return FixedArray<TData, 2>{
+        dot0d(p - l0, d) / dist,
+        dot0d(p - l0, n)};
 }
 
 }
