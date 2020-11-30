@@ -68,7 +68,8 @@ RenderableOsmMap::RenderableOsmMap(
     float max_wall_width,
     bool with_height_bindings,
     float street_node_smoothness,
-    float street_edge_smoothness)
+    float street_edge_smoothness,
+    float terrain_edge_smoothness)
 : rendering_resources_{rendering_resources},
   scene_node_resources_{scene_node_resources},
   scale_{scale}
@@ -488,11 +489,15 @@ RenderableOsmMap::RenderableOsmMap(
     //     colorize_height_map(l->triangles_);
     // }
 
-    if (street_edge_smoothness > 0) {
+    if (street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
         std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
-        std::list<std::shared_ptr<TriangleList>> tls_terrain{tl_terrain};
-        TriangleList::smoothen_edges(tls_street, {}, tls_ground, street_edge_smoothness, 100);
-        TriangleList::smoothen_edges(tls_terrain, tls_street, tls_ground, street_edge_smoothness, 10);
+        if (street_edge_smoothness > 0) {
+            TriangleList::smoothen_edges(tls_street, {}, tls_ground, street_edge_smoothness, 100);
+        }
+        if (terrain_edge_smoothness > 0) {
+            std::list<std::shared_ptr<TriangleList>> tls_terrain{tl_terrain};
+            TriangleList::smoothen_edges(tls_terrain, tls_street, tls_ground, street_edge_smoothness, 10);
+        }
     }
     raise_streets(
         *tl_street_crossing,

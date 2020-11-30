@@ -66,7 +66,8 @@ public:
         float max_wall_width = 5,
         bool with_height_bindings = false,
         float street_node_smoothness = 0,
-        float street_edge_smoothness = 0);
+        float street_edge_smoothness = 0,
+        float terrain_edge_smoothness = 0);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
