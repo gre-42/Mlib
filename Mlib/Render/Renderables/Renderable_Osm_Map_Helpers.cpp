@@ -301,18 +301,17 @@ void Mlib::draw_ceilings(
         outline = removed_duplicates(outline);
         //std::reverse(outline.begin(), outline.end());
         tls.push_back(std::make_shared<TriangleList>("ceilings", material));
+        BoundingInfo bounding_info{outline, {}, 0.1};
         triangulate_terrain_or_ceilings(
             *tls.back(),
+            bounding_info,
             {},
             outline,
             {},
             {},
             scale,
             uv_scale,
-            bu.building_top,
-            INFINITY,  // steiner_point_distance
-            NAN,       // steiner_point_coarse_margin
-            0);        // steiner_point_refinement
+            bu.building_top);
     }
 }
 
@@ -712,21 +711,14 @@ private:
     p2t::Triangle* v;
 };
 
-void Mlib::triangulate_terrain_or_ceilings(
-    TriangleList& tl_terrain,
-    const std::list<FixedArray<float, 2>>& steiner_points,
+BoundingInfo::BoundingInfo(
     const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
     const std::map<std::string, Node>& nodes,
-    float scale,
-    float uv_scale,
-    float z,
-    float steiner_point_distance,
-    float steiner_point_coarse_margin,
-    size_t steiner_point_refinement)
+    float border_width)
+: border_width{border_width}
 {
-    FixedArray<float, 2> boundary_min = fixed_full<float, 2>(INFINITY);
-    FixedArray<float, 2> boundary_max = fixed_full<float, 2>(-INFINITY);
+    boundary_min = fixed_full<float, 2>(INFINITY);
+    boundary_max = fixed_full<float, 2>(-INFINITY);
     if (bounding_contour.empty()) {
         for(const auto& n : nodes) {
             boundary_min = minimum(boundary_min, n.second.position);
@@ -738,11 +730,79 @@ void Mlib::triangulate_terrain_or_ceilings(
             boundary_max = maximum(boundary_max, p);
         }
     }
-    float border_width = 0.1;
-    p2t::Point p00{boundary_min(0) - border_width, boundary_min(1) - border_width};
-    p2t::Point p01{boundary_min(0) - border_width, boundary_max(1) + border_width};
-    p2t::Point p10{boundary_max(0) + border_width, boundary_min(1) - border_width};
-    p2t::Point p11{boundary_max(0) + border_width, boundary_max(1) + border_width};
+}
+
+void Mlib::add_street_steiner_points(
+    std::list<FixedArray<float, 2>>& steiner_points,
+    const std::list<FixedArray<ColoredVertex, 3>>& triangles,
+    const BoundingInfo& bounding_info,
+    float scale,
+    float steiner_point_distance,
+    float steiner_point_coarse_margin,
+    size_t steiner_point_refinement)
+{
+    if (steiner_point_distance != INFINITY) {
+        typedef FixedArray<FixedArray<float, 2>, 3> Triangle2d;
+        // for(float f = 0.01; f < 2; f += 0.01) {
+        //     Bvh<float, Triangle2d, 2> bvh{{f, f}, 10};
+        //     for(const auto& t : triangles) {
+        //         Triangle2d tri{
+        //             FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
+        //             FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
+        //             FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
+        //         bvh.insert(tri, "", tri);
+        //     }
+        //     std::cerr << "f " << f << " search_time " << bvh.search_time() << std::endl;
+        // }
+        Bvh<float, Triangle2d, 2> bvh{{0.1, 0.1}, 10};
+        for(const auto& t : triangles) {
+            Triangle2d tri{
+                FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
+                FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
+                FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
+            bvh.insert(tri, "", tri);
+        }
+        // std::cerr << "search_time " << bvh.search_time() << std::endl;
+        float dist0 = steiner_point_distance * scale / steiner_point_refinement;
+        float dist1 = steiner_point_coarse_margin * scale;
+        size_t ix = 0;
+        for(float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
+            size_t iy = 0;
+            for(float y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
+                float min_distance = INFINITY;
+                FixedArray<float, 2> pt{x, y};
+                bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt, &dist1](const std::string& category, const Triangle2d& tri) {
+                    min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
+                });
+                bool is_coarse = (ix % steiner_point_refinement == 0) && (iy % steiner_point_refinement == 0);
+                // 0 ... dist / steiner_point_refinement ... dist ...
+                bool insert_fine = (min_distance > dist0 / 2) && (min_distance < dist1);
+                bool insert_coarse = is_coarse && (min_distance >= dist1);
+                if (insert_fine || insert_coarse) {
+                    steiner_points.push_back(FixedArray<float, 2>{x, y});
+                }
+                ++iy;
+            }
+            ++ix;
+        }
+    }
+}
+
+void Mlib::triangulate_terrain_or_ceilings(
+    TriangleList& tl_terrain,
+    const BoundingInfo& bounding_info,
+    const std::list<FixedArray<float, 2>>& steiner_points,
+    const std::vector<FixedArray<float, 2>>& bounding_contour,
+    const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
+    const std::map<std::string, Node>& nodes,
+    float scale,
+    float uv_scale,
+    float z)
+{
+    p2t::Point p00{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width};
+    p2t::Point p01{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width};
+    p2t::Point p10{bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width};
+    p2t::Point p11{bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width};
     std::vector<p2t::Point> p2t_bounding_nodes;
     p2t_bounding_nodes.reserve(bounding_contour.size());
     std::vector<p2t::Point*> p2t_bounding_contour;
@@ -796,52 +856,6 @@ void Mlib::triangulate_terrain_or_ceilings(
         cdt.AddHole(hole_contour);
     }
     std::list<p2t::Point> p2t_grid_nodes;
-    if (steiner_point_distance != INFINITY) {
-        typedef FixedArray<FixedArray<float, 2>, 3> Triangle2d;
-        // for(float f = 0.01; f < 2; f += 0.01) {
-        //     Bvh<float, Triangle2d, 2> bvh{{f, f}, 10};
-        //     for(const auto& t : hole_triangles) {
-        //         Triangle2d tri{
-        //             FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
-        //             FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
-        //             FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
-        //         bvh.insert(tri, "", tri);
-        //     }
-        //     std::cerr << "f " << f << " search_time " << bvh.search_time() << std::endl;
-        // }
-        Bvh<float, Triangle2d, 2> bvh{{0.1, 0.1}, 10};
-        for(const auto& t : hole_triangles) {
-            Triangle2d tri{
-                FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
-                FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
-                FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
-            bvh.insert(tri, "", tri);
-        }
-        // std::cerr << "search_time " << bvh.search_time() << std::endl;
-        float dist0 = steiner_point_distance * scale / steiner_point_refinement;
-        float dist1 = steiner_point_coarse_margin * scale;
-        size_t ix = 0;
-        for(float x = boundary_min(0) + border_width / 2; x < boundary_max(0) - border_width / 2; x += dist0) {
-            size_t iy = 0;
-            for(float y = boundary_min(1) + border_width / 2; y < boundary_max(1) - border_width / 2; y += dist0) {
-                float min_distance = INFINITY;
-                FixedArray<float, 2> pt{x, y};
-                bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt, &dist1](const std::string& category, const Triangle2d& tri) {
-                    min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
-                });
-                bool is_coarse = (ix % steiner_point_refinement == 0) && (iy % steiner_point_refinement == 0);
-                // 0 ... dist / steiner_point_refinement ... dist ...
-                bool insert_fine = (min_distance > dist0 / 2) && (min_distance < dist1);
-                bool insert_coarse = is_coarse && (min_distance >= dist1);
-                if (insert_fine || insert_coarse) {
-                    p2t_grid_nodes.push_back(p2t::Point{x, y});
-                    cdt.AddPoint(&p2t_grid_nodes.back());
-                }
-                ++iy;
-            }
-            ++ix;
-        }
-    }
     for(const auto& p : steiner_points) {
         p2t_grid_nodes.push_back(p2t::Point{p(0), p(1)});
         cdt.AddPoint(&p2t_grid_nodes.back());

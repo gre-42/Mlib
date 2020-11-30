@@ -189,18 +189,35 @@ void raise_streets(
     float scale,
     float amount);
 
+struct BoundingInfo {
+    BoundingInfo(
+        const std::vector<FixedArray<float, 2>>& bounding_contour,
+        const std::map<std::string, Node>& nodes,
+        float border_width);
+    FixedArray<float, 2> boundary_min;
+    FixedArray<float, 2> boundary_max;
+    float border_width;
+};
+
+void add_street_steiner_points(
+    std::list<FixedArray<float, 2>>& steiner_points,
+    const std::list<FixedArray<ColoredVertex, 3>>& triangles,
+    const BoundingInfo& bounding_info,
+    float scale,
+    float steiner_point_distance,
+    float steiner_point_coarse_margin,
+    size_t steiner_point_refinement);
+
 void triangulate_terrain_or_ceilings(
     TriangleList& tl_terrain,
+    const BoundingInfo& bounding_info,
     const std::list<FixedArray<float, 2>>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
     const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
     const std::map<std::string, Node>& nodes,
     float scale,
     float uv_scale,
-    float z,
-    float steiner_point_distance,
-    float steiner_point_coarse_margin,
-    size_t steiner_point_refinement);
+    float z);
 
 void apply_height_map(
     std::list<std::shared_ptr<TriangleList>>& triangles,
