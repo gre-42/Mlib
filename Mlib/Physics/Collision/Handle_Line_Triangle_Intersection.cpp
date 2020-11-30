@@ -148,9 +148,9 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         .constraint{
                             .normal_impulse{.normal = plane.normal},
                             .intercept = plane.intercept,
-                            // .slop = (c.tire_id != SIZE_MAX)
-                            //     ? -c.cfg.wheel_penetration_depth
-                            //     : 0,
+                            .slop = (c.tire_id != SIZE_MAX)
+                                ? 0.001f
+                                : 0.f,
                             .beta = c.cfg.plane_inequality_beta
                         },
                         .lambda_min = (c.o0->mass() * c.o1->mass()) / (c.o0->mass() + c.o1->mass()) * c.cfg.lambda_min / c.cfg.oversampling,
@@ -167,6 +167,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                             .constraint{
                                 .normal_impulse{.normal = plane.normal},
                                 .intercept = plane.intercept,
+                                .slop = 0.001f,
                                 .beta = c.cfg.plane_inequality_beta
                             },
                             .lambda_min = c.o1->mass() * c.cfg.lambda_min / c.cfg.oversampling,
