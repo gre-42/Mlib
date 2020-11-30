@@ -260,7 +260,7 @@ void test_distance_point_triangle() {
     assert_isclose(distance_point_to_triangle<float>({0, -2}, {0, 0}, {1, 0}, {1, 1}), 2.f);
     assert_isclose(distance_point_to_triangle<float>({3.1, 0}, {0, 0}, {1, 0}, {1, 1}), 2.1f);
 
-    assert_isclose(distance_point_to_triangle<float>({0.5, 0.2}, {0, 0}, {1, 0}, {1, 1}), -0.2f);
+    assert_isclose(distance_point_to_triangle<float>({0.5, 0.2}, {0, 0}, {1, 0}, {1, 1}), 0.f);
 }
 
 int main(int argc, const char** argv) {
