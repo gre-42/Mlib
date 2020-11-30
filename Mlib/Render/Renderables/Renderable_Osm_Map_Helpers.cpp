@@ -816,21 +816,29 @@ void Mlib::triangulate_terrain_or_ceilings(
             bvh.insert(tri, "", tri);
         }
         // std::cerr << "search_time " << bvh.search_time() << std::endl;
-        for(float x = boundary_min(0) + border_width / 2; x < boundary_max(0) - border_width / 2; x += steiner_point_distance * scale) {
-            for(float y = boundary_min(1) + border_width / 2; y < boundary_max(1) - border_width / 2; y += steiner_point_distance * scale) {
-                bool found = false;
+        size_t nfine = 2;
+        float dist0 = steiner_point_distance * scale / nfine;
+        float dist1 = steiner_point_margin * scale;
+        size_t ix = 0;
+        for(float x = boundary_min(0) + border_width / 2; x < boundary_max(0) - border_width / 2; x += dist0) {
+            size_t iy = 0;
+            for(float y = boundary_min(1) + border_width / 2; y < boundary_max(1) - border_width / 2; y += dist0) {
+                float min_distance = INFINITY;
                 FixedArray<float, 2> pt{x, y};
-                float dist = steiner_point_margin * scale;
-                bvh.visit(BoundingSphere<float, 2>(pt, dist), [&found, &pt, &dist](const std::string& category, const Triangle2d& tri) {
-                    if ((!found) && (distance_point_to_triangle(pt, tri(0), tri(1), tri(2)) < dist)) {
-                        found = true;
-                    }
+                bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt, &dist1](const std::string& category, const Triangle2d& tri) {
+                    min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
                 });
-                if (!found) {
+                bool is_coarse = (ix % nfine == 0) && (iy % nfine == 0);
+                // 0 ... dist / nfine ... dist ...
+                bool insert_fine = (min_distance > dist0 / 2) && (min_distance < dist1);
+                bool insert_coarse = is_coarse && (min_distance >= dist1);
+                if (insert_fine || insert_coarse) {
                     p2t_grid_nodes.push_back(p2t::Point{x, y});
                     cdt.AddPoint(&p2t_grid_nodes.back());
                 }
+                ++iy;
             }
+            ++ix;
         }
     }
     for(const auto& p : steiner_points) {
