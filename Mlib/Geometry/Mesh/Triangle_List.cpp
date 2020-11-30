@@ -128,15 +128,25 @@ void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<
 }
 
 void TriangleList::smoothen_edges(
-    const std::list<std::shared_ptr<TriangleList>>& triangle_lists0,
-    std::list<std::shared_ptr<TriangleList>>& triangle_lists1,
-    float smoothness)
+    const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
+    const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
+    std::list<std::shared_ptr<TriangleList>>& smoothed_triangle_lists,
+    float smoothness,
+    size_t niterations)
 {
-    for(size_t i = 0; i < 100; ++i) {
+    std::set<OrderableFixedArray<float, 3>> excluded_vertices;
+    for(const auto& tl : excluded_triangle_lists) {
+        for(const auto& t : tl->triangles_) {
+            for(const auto& v : t.flat_iterable()) {
+                excluded_vertices.insert(OrderableFixedArray{v.position});
+            }
+        }
+    }
+    for(size_t i = 0; i < niterations; ++i) {
         typedef OrderableFixedArray<OrderableFixedArray<float, 3>, 2> Edge;
         std::map<Edge, OrderableFixedArray<float, 3>> edge_neighbors;
         std::map<OrderableFixedArray<float, 3>, FixedArray<float, 3>> vertex_movement;
-        for(const auto& l : triangle_lists0) {
+        for(const auto& l : edge_triangle_lists) {
             for(const auto& t : l->triangles_) {
                 auto insert_edge = [&](size_t i, size_t j, size_t n){
                     OrderableFixedArray<float, 3> ei{t(i).position};
@@ -156,8 +166,12 @@ void TriangleList::smoothen_edges(
                         float n0n1 = dot0d(n0, n1);
                         if (n0n1 >=0 && n0n1 < 1) {
                             float shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
-                            vertex_movement[ei] += smoothness * 0.0001f * n01 * shift;
-                            vertex_movement[ej] += smoothness * 0.0001f * n01 * shift;
+                            if (!excluded_vertices.contains(ei)) {
+                                vertex_movement[ei] += smoothness * 0.0001f * n01 * shift;
+                            }
+                            if (!excluded_vertices.contains(ej)) {
+                                vertex_movement[ej] += smoothness * 0.0001f * n01 * shift;
+                            }
                         }
                     }
                 };
@@ -166,7 +180,7 @@ void TriangleList::smoothen_edges(
                 insert_edge(2, 0, 1);
             }
         }
-        for(const auto& l : triangle_lists1) {
+        for(const auto& l : smoothed_triangle_lists) {
             for(auto& t : l->triangles_) {
                 for(auto& v : t.flat_iterable()) {
                     auto it = vertex_movement.find(OrderableFixedArray{v.position});
