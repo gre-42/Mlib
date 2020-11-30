@@ -35,8 +35,8 @@ struct PhysicsEngineConfig {
     PhysicsType physics_type = PhysicsType::VERSION1;
     ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;
     float lambda_min = -10;
-    float plane_inequality_beta = 0.5;
-    float plane_equality_beta = 0.2;
+    float plane_equality_beta = 0.5;
+    float plane_inequality_beta = 0.02;
     bool bvh = true;
     size_t oversampling = 20;
 };

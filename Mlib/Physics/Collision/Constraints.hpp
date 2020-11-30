@@ -36,7 +36,7 @@ struct PlaneInequalityConstraint {
     float b = 0;
     float slop = 0;
     bool always_active = true;
-    float beta = 0.5;
+    float beta = 0.02;
     inline float C(const FixedArray<float, 3>& x) const {
         return -(dot0d(normal_impulse.normal, x) + intercept);
     }
