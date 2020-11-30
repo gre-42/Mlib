@@ -311,7 +311,8 @@ void Mlib::draw_ceilings(
             uv_scale,
             bu.building_top,
             INFINITY,  // steiner_point_distance
-            NAN);      // steiner_point_margin
+            NAN,       // steiner_point_coarse_margin
+            0);        // steiner_point_refinement
     }
 }
 
@@ -721,7 +722,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     float uv_scale,
     float z,
     float steiner_point_distance,
-    float steiner_point_margin)
+    float steiner_point_coarse_margin,
+    size_t steiner_point_refinement)
 {
     FixedArray<float, 2> boundary_min = fixed_full<float, 2>(INFINITY);
     FixedArray<float, 2> boundary_max = fixed_full<float, 2>(-INFINITY);
@@ -816,9 +818,8 @@ void Mlib::triangulate_terrain_or_ceilings(
             bvh.insert(tri, "", tri);
         }
         // std::cerr << "search_time " << bvh.search_time() << std::endl;
-        size_t nfine = 2;
-        float dist0 = steiner_point_distance * scale / nfine;
-        float dist1 = steiner_point_margin * scale;
+        float dist0 = steiner_point_distance * scale / steiner_point_refinement;
+        float dist1 = steiner_point_coarse_margin * scale;
         size_t ix = 0;
         for(float x = boundary_min(0) + border_width / 2; x < boundary_max(0) - border_width / 2; x += dist0) {
             size_t iy = 0;
@@ -828,8 +829,8 @@ void Mlib::triangulate_terrain_or_ceilings(
                 bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt, &dist1](const std::string& category, const Triangle2d& tri) {
                     min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
                 });
-                bool is_coarse = (ix % nfine == 0) && (iy % nfine == 0);
-                // 0 ... dist / nfine ... dist ...
+                bool is_coarse = (ix % steiner_point_refinement == 0) && (iy % steiner_point_refinement == 0);
+                // 0 ... dist / steiner_point_refinement ... dist ...
                 bool insert_fine = (min_distance > dist0 / 2) && (min_distance < dist1);
                 bool insert_coarse = is_coarse && (min_distance >= dist1);
                 if (insert_fine || insert_coarse) {
