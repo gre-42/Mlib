@@ -21,7 +21,7 @@ struct PlaneEqualityConstraint {
     float intercept;
     float b = 0;
     bool always_active = true;
-    float beta = 0.2;
+    float beta = 0.5;
     inline float C(const FixedArray<float, 3>& x) const {
         return -(dot0d(normal_impulse.normal, x) + intercept);
     }
@@ -51,7 +51,7 @@ struct PlaneInequalityConstraint {
         return std::max(0.f, overlap(x) - slop);
     }
     inline float v(const FixedArray<float, 3>& p, float dt) const {
-        return b - beta / dt * bias(p);
+        return b + beta / dt * bias(p);
     }
 };
 
