@@ -787,11 +787,12 @@ void Mlib::add_street_steiner_points(
         float dist0 = steiner_point_distance * scale / steiner_point_refinement;
         float dist1 = steiner_point_coarse_margin * scale;
         size_t ix = 0;
+        NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
         for(float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
             size_t iy = 0;
             for(float y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
                 float min_distance = INFINITY;
-                FixedArray<float, 2> pt{x, y};
+                FixedArray<float, 2> pt{x + rng2() * scale, y + rng2() * scale};
                 bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt, &dist1](const std::string& category, const Triangle2d& tri) {
                     min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
                 });
@@ -801,7 +802,7 @@ void Mlib::add_street_steiner_points(
                 bool insert_coarse = is_coarse && (min_distance >= dist1);
                 if (insert_fine || insert_coarse) {
                     steiner_points.push_back(SteinerPointInfo{
-                        .position = {x, y, 0},
+                        .position = {pt(0), pt(1), 0},
                         .type = SteinerPointType::STREET_NEIGHBOR,
                         .distance_to_road = min_distance});
                 }
