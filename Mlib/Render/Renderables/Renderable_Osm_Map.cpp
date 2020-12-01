@@ -540,7 +540,7 @@ RenderableOsmMap::RenderableOsmMap(
     //     colorize_height_map(l->triangles_);
     // }
 
-    {
+    if (!tree_resource_names.empty()) {
         ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
         add_grass_on_steiner_points(
             resource_instance_positions_,
@@ -551,7 +551,7 @@ RenderableOsmMap::RenderableOsmMap(
             10,
             30);
     }
-    {
+    if (!wayside_resource_names.empty()) {
         ResourceNameCycle rnc{scene_node_resources, wayside_resource_names};
         add_grass_on_steiner_points(
             resource_instance_positions_,
@@ -562,7 +562,7 @@ RenderableOsmMap::RenderableOsmMap(
             0,
             10);
     }
-    if (much_grass_distance != INFINITY) {
+    if (!grass_resource_names.empty()) {
         ResourceNameCycle rnc{scene_node_resources, grass_resource_names};
         add_grass_inside_triangles(
             resource_instance_positions_,
