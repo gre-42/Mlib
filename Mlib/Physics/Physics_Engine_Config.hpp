@@ -24,6 +24,7 @@ struct PhysicsEngineConfig {
     float friction_coefficient = 1.6;
     float alpha0 = 0.1;
     bool avoid_burnout = true;
+    bool no_slip = false;
     float lateral_stability = 1;
     float max_extra_friction = 0;
     float max_extra_w = 0;

@@ -275,9 +275,11 @@ void TireContactInfo1::solve(float dt, float relaxation) {
         (-fci_.normal_impulse().lambda_total) *
         rb_.tires_.at(tire_id_).stiction_coefficient(
             -fci_.normal_impulse().lambda_total / cfg_.dt * cfg_.oversampling);
-    FixedArray<float, 2> r = rb_.tires_.at(tire_id_).magic_formula({
-        slip,
-        std::asin(sin_lateral_slip_angle)}) * lambda_max;
+    FixedArray<float, 2> r = rb_.tires_.at(tire_id_).magic_formula(
+        {
+            slip,
+            std::asin(sin_lateral_slip_angle)},
+        cfg_.no_slip ? MagicFormulaMode::NO_SLIP : MagicFormulaMode::STANDARD) * lambda_max;
     // std::cerr << tire_id_ << " | " << r << " | " << dwdt << " | " << vv << " | " << v << std::endl;
     fci_.set_clamping(
         n3_,

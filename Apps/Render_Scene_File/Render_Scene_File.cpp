@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
         "    [--max_extra_w <x>]\n"
         "    [--longitudinal_friction_steepness <x>]\n"
         "    [--lateral_friction_steepness <x>]\n"
+        "    [--no_slip <x>]\n"
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
         "    [--print_fps]\n"
@@ -99,6 +100,7 @@ int main(int argc, char** argv) {
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
          "--no_bvh",
+         "--no_slip",
          "--no_avoid_burnout",
          "--verbose"},
         {"--swap_interval",
@@ -195,6 +197,7 @@ int main(int argc, char** argv) {
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
                 .alpha0 = safe_stof(args.named_value("--alpha0", "0.1")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
+                .no_slip = args.has_named("--no_slip"),
                 .lateral_stability = safe_stof(args.named_value("--lateral_stability", "1")),
                 .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
