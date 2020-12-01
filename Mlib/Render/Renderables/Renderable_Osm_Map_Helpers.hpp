@@ -253,7 +253,9 @@ void add_grass_on_steiner_points(
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     ResourceNameCycle& rnc,
     const std::list<SteinerPointInfo>& steiner_points,
-    float scale);
+    float scale,
+    float dmin,
+    float dmax);
 
 void add_grass_inside_triangles(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,

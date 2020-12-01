@@ -33,6 +33,7 @@ public:
         const std::string& roof_texture,
         const std::vector<std::string>& tree_resource_names,
         const std::vector<std::string>& grass_resource_names,
+        const std::vector<std::string>& wayside_resource_names,
         float default_street_width = 2,
         float roof_width = 2,
         float scale = 1,
