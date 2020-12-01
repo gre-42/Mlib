@@ -39,6 +39,22 @@ struct Way {
     std::map<std::string, std::string> tags;
 };
 
+enum class SteinerPointType {
+    STREET_NEIGHBOR,
+    FOREST_OUTLINE,
+    WALL,
+    TREE_NODE
+};
+
+struct SteinerPointInfo {
+    FixedArray<float, 3> position;
+    SteinerPointType type;
+    float distance_to_road;
+};
+
+std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points);
+std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> gen_const_steiner_point_map(const std::list<SteinerPointInfo>& steiner_points);
+
 void draw_node(
     std::vector<FixedArray<ColoredVertex, 3>>& triangles,
     const FixedArray<float, 2>& pos2d,
@@ -200,7 +216,7 @@ struct BoundingInfo {
 };
 
 void add_street_steiner_points(
-    std::list<FixedArray<float, 2>>& steiner_points,
+    std::list<SteinerPointInfo>& steiner_points,
     const std::list<FixedArray<ColoredVertex, 3>>& triangles,
     const BoundingInfo& bounding_info,
     float scale,
@@ -211,7 +227,7 @@ void add_street_steiner_points(
 void triangulate_terrain_or_ceilings(
     TriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
-    const std::list<FixedArray<float, 2>>& steiner_points,
+    const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
     const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
     const std::map<std::string, Node>& nodes,
@@ -223,6 +239,7 @@ void apply_height_map(
     std::list<std::shared_ptr<TriangleList>>& triangles,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
+    std::list<SteinerPointInfo>& steiner_points,
     const Array<float>& heightmap,
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
@@ -230,6 +247,13 @@ void apply_height_map(
     const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     float street_node_smoothness);
+
+void add_grass_on_steiner_points(
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
+    ResourceNameCycle& rnc,
+    const std::list<SteinerPointInfo>& steiner_points,
+    float scale);
 
 void add_grass_inside_triangles(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
@@ -242,7 +266,7 @@ void add_grass_inside_triangles(
 void add_trees_to_forest_outlines(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::list<FixedArray<float, 2>>& steiner_points,
+    std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -270,7 +294,7 @@ void add_beacons_to_raceways(
 void add_trees_to_tree_nodes(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::list<FixedArray<float, 2>>& steiner_points,
+    std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
     float scale);
@@ -324,7 +348,7 @@ void compute_building_area(
 
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
-    std::list<FixedArray<float, 2>>& steiner_points,
+    std::list<SteinerPointInfo>& steiner_points,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,

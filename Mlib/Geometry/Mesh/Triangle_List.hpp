@@ -75,7 +75,7 @@ public:
     static void smoothen_edges(
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
-        std::list<std::shared_ptr<TriangleList>>& smoothed_triangle_lists,
+        const std::list<FixedArray<float, 3>*>& smoothed_vertices,
         float smoothness,
         size_t niterations);
     std::list<FixedArray<ColoredVertex, 3>> get_triangles_around(const FixedArray<float, 2>& pt, float radius) const;

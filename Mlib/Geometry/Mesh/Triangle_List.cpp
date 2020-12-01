@@ -130,7 +130,7 @@ void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<
 void TriangleList::smoothen_edges(
     const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
-    std::list<std::shared_ptr<TriangleList>>& smoothed_triangle_lists,
+    const std::list<FixedArray<float, 3>*>& smoothed_vertices,
     float smoothness,
     size_t niterations)
 {
@@ -180,14 +180,10 @@ void TriangleList::smoothen_edges(
                 insert_edge(2, 0, 1);
             }
         }
-        for(const auto& l : smoothed_triangle_lists) {
-            for(auto& t : l->triangles_) {
-                for(auto& v : t.flat_iterable()) {
-                    auto it = vertex_movement.find(OrderableFixedArray{v.position});
-                    if (it != vertex_movement.end()) {
-                        v.position += it->second;
-                    }
-                }
+        for(const auto& s : smoothed_vertices) {
+            auto it = vertex_movement.find(OrderableFixedArray{*s});
+            if (it != vertex_movement.end()) {
+                *s += it->second;
             }
         }
     }

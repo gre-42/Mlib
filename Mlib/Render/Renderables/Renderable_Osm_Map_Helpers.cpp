@@ -69,6 +69,27 @@ static float compute_area(
     return area2 / 2 / squared(scale);
 }
 
+std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> Mlib::gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points) {
+    std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map;
+    for(auto& p : steiner_points) {
+        if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
+            throw std::runtime_error("Could not generate steiner point map");
+        }
+    }
+    return steiner_point_map;
+}
+
+std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> Mlib::gen_const_steiner_point_map(const std::list<SteinerPointInfo>& steiner_points) {
+    std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> steiner_point_map;
+    for(auto& p : steiner_points) {
+        if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
+            throw std::runtime_error("Could not generate const steiner point map");
+        }
+    }
+    return steiner_point_map;
+}
+
+
 void Mlib::draw_node(
     std::vector<FixedArray<ColoredVertex, 3>>& triangles,
     const FixedArray<float, 2>& pos2d,
@@ -733,7 +754,7 @@ BoundingInfo::BoundingInfo(
 }
 
 void Mlib::add_street_steiner_points(
-    std::list<FixedArray<float, 2>>& steiner_points,
+    std::list<SteinerPointInfo>& steiner_points,
     const std::list<FixedArray<ColoredVertex, 3>>& triangles,
     const BoundingInfo& bounding_info,
     float scale,
@@ -779,7 +800,10 @@ void Mlib::add_street_steiner_points(
                 bool insert_fine = (min_distance > dist0 / 2) && (min_distance < dist1);
                 bool insert_coarse = is_coarse && (min_distance >= dist1);
                 if (insert_fine || insert_coarse) {
-                    steiner_points.push_back(FixedArray<float, 2>{x, y});
+                    steiner_points.push_back(SteinerPointInfo{
+                        .position = {x, y, 0},
+                        .type = SteinerPointType::STREET_NEIGHBOR,
+                        .distance_to_road = min_distance});
                 }
                 ++iy;
             }
@@ -791,7 +815,7 @@ void Mlib::add_street_steiner_points(
 void Mlib::triangulate_terrain_or_ceilings(
     TriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
-    const std::list<FixedArray<float, 2>>& steiner_points,
+    const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
     const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
     const std::map<std::string, Node>& nodes,
@@ -857,7 +881,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     }
     std::list<p2t::Point> p2t_grid_nodes;
     for(const auto& p : steiner_points) {
-        p2t_grid_nodes.push_back(p2t::Point{p(0), p(1)});
+        p2t_grid_nodes.push_back(p2t::Point{p.position(0), p.position(1)});
         cdt.AddPoint(&p2t_grid_nodes.back());
     }
     std::vector<p2t::Point> p2t_triangle_centers;
@@ -918,6 +942,7 @@ void Mlib::apply_height_map(
     std::list<std::shared_ptr<TriangleList>>& triangles,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
+    std::list<SteinerPointInfo>& steiner_points,
     const Array<float>& heightmap,
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
@@ -971,6 +996,7 @@ void Mlib::apply_height_map(
             }
         }
     }
+    std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map = gen_steiner_point_map(steiner_points);
     for(auto& tl : triangles) {
         for(auto ti = tl->triangles_.begin(); ti != tl->triangles_.end(); ) {
             auto ti0 = ti++;
@@ -994,6 +1020,10 @@ void Mlib::apply_height_map(
                     break;
                 } else {
                     v.position(2) += z * scale;
+                    auto sit = steiner_point_map.find(OrderableFixedArray<float, 3>{v.position(0), v.position(1), 0});
+                    if (sit != steiner_point_map.end()) {
+                        const_cast<float&>(sit->second->position(2)) = v.position(2);
+                    }
                 }
             }
         }
@@ -1019,6 +1049,33 @@ void Mlib::apply_height_map(
                 slp.second.erase(it0);
             } else {
                 it0->position(2) += z * scale;
+            }
+        }
+    }
+}
+
+void Mlib::add_grass_on_steiner_points(
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
+    ResourceNameCycle& rnc,
+    const std::list<SteinerPointInfo>& steiner_points,
+    float scale)
+{
+    NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
+    for(const auto& p : steiner_points) {
+        if (std::isfinite(p.distance_to_road)) {
+            std::cerr << p.distance_to_road << std::endl;
+        }
+        if ((p.type == SteinerPointType::STREET_NEIGHBOR) &&
+            !std::isnan(p.distance_to_road) &&
+            ((p.distance_to_road > 10 * scale) &&
+             (p.distance_to_road < 30 * scale)))
+        {
+            const ParsedResourceName& prn = rnc();
+            if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
+                fern_positions[prn.name].push_back({p.position, rng()});
+            } else {
+                object_resource_descriptors.push_back({p.position, prn.name, rng()});
             }
         }
     }
@@ -1065,7 +1122,7 @@ void Mlib::add_grass_inside_triangles(
 void Mlib::add_trees_to_forest_outlines(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::list<FixedArray<float, 2>>& steiner_points,
+    std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -1110,7 +1167,10 @@ void Mlib::add_trees_to_forest_outlines(
                     //     name: rnc(),
                     //     scale: rng()});
                     if ((rid++) % 4 == 0) {
-                        steiner_points.push_back(p);
+                        steiner_points.push_back({
+                            .position = {p(0), p(1), 0},
+                            .type = SteinerPointType::FOREST_OUTLINE,
+                            .distance_to_road = NAN});
                     }
                 }
             }
@@ -1185,7 +1245,7 @@ void Mlib::add_beacons_to_raceways(
 void Mlib::add_trees_to_tree_nodes(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::list<FixedArray<float, 2>>& steiner_points,
+    std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     const std::map<std::string, Node>& nodes,
     float scale)
@@ -1200,7 +1260,11 @@ void Mlib::add_trees_to_tree_nodes(
             } else {
                 object_resource_descriptors.push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, prn.name, rng()});
             }
-            steiner_points.push_back(n.second.position);
+            const auto& p = n.second.position;
+            steiner_points.push_back({
+                .position = {p(0), p(1), 0},
+                .type = SteinerPointType::TREE_NODE,
+                .distance_to_road = NAN});
         }
     }
 }
@@ -1309,7 +1373,7 @@ void Mlib::compute_building_area(
 
 void Mlib::draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
-    std::list<FixedArray<float, 2>>& steiner_points,
+    std::list<SteinerPointInfo>& steiner_points,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
@@ -1344,7 +1408,10 @@ void Mlib::draw_building_walls(
                 const auto& p1 = bu.area > 0 ? *it : *s;
                 float width = std::sqrt(sum(squared(p0 - p1)));
                 float height = (bu.building_top - bu.building_bottom) * scale;
-                steiner_points.push_back(p0);
+                steiner_points.push_back({
+                    .position = {p0(0), p0(1), 0},
+                    .type = SteinerPointType::WALL,
+                    .distance_to_road = NAN});
                 // some buildings are clock-wise, others counter-clock-wise
                 tls.back()->draw_rectangle_wo_normals(
                     {p1(0), p1(1), bu.building_bottom * scale},
