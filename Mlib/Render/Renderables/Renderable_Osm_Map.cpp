@@ -35,7 +35,7 @@ RenderableOsmMap::RenderableOsmMap(
     const std::string& roof_texture,
     const std::vector<std::string>& tree_resource_names,
     const std::vector<std::string>& grass_resource_names,
-    const std::vector<std::string>& wayside_resource_names,
+    const std::list<WaysideResourceNames>& waysides,
     float default_street_width,
     float roof_width,
     float scale,
@@ -540,27 +540,16 @@ RenderableOsmMap::RenderableOsmMap(
     //     colorize_height_map(l->triangles_);
     // }
 
-    if (!tree_resource_names.empty()) {
-        ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
+    for(const WaysideResourceNames& ws : waysides) {
+        ResourceNameCycle rnc{scene_node_resources, ws.resource_names};
         add_grass_on_steiner_points(
             resource_instance_positions_,
             object_resource_descriptors_,
             rnc,
             steiner_points,
             scale,
-            10,
-            30);
-    }
-    if (!wayside_resource_names.empty()) {
-        ResourceNameCycle rnc{scene_node_resources, wayside_resource_names};
-        add_grass_on_steiner_points(
-            resource_instance_positions_,
-            object_resource_descriptors_,
-            rnc,
-            steiner_points,
-            scale,
-            0,
-            10);
+            ws.min_dist,
+            ws.max_dist);
     }
     if (!grass_resource_names.empty()) {
         ResourceNameCycle rnc{scene_node_resources, grass_resource_names};

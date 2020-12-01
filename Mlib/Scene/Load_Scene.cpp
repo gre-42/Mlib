@@ -139,7 +139,7 @@ void LoadScene::operator()(
         "\\s*roof_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*tree_resource_names=([\\s\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*grass_resource_names=([\\s\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*wayside_resource_names=([\\s\\w-. \\(\\)/+-]*)\\r?\\n"
+        "(\\s*wayside_resource_names=(?:[=\\s\\w-. \\(\\)/+-]*)\\r?\\n)*"
         "\\s*default_street_width=([\\w+-.]+)\\r?\\n"
         "\\s*roof_width=([\\w+-.]+)\\r?\\n"
         "\\s*scale=([\\w+-.]+)\\r?\\n"
@@ -335,6 +335,11 @@ void LoadScene::operator()(
     const std::regex set_skybox_reg("^(?:\\r?\\n|\\s)*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
     const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
     const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
+    const std::regex wayside_resource_names_reg(
+        "\\s*wayside_resource_names=\\r?\\n"
+        "\\s*min_dist=([\\w+-.]+)\\r?\\n"
+        "\\s*max_dist=([\\w+-.]+)\\r?\\n"
+        "([\\s\\w-. \\(\\)/+-]*)\\r?\\n");
 
     Linker linker{physics_engine.advance_times_};
 
@@ -344,6 +349,16 @@ void LoadScene::operator()(
     {
         std::smatch match;
         if (std::regex_match(line, match, osm_resource_reg)) {
+            std::list<WaysideResourceNames> waysides;
+            findall(
+                match[20].str(),
+                wayside_resource_names_reg,
+                [&waysides](const std::smatch& m){
+                    waysides.push_back(WaysideResourceNames{
+                        .min_dist = safe_stof(m[1].str()),
+                        .max_dist = safe_stof(m[2].str()),
+                        .resource_names = string_to_vector(m[3].str())});
+                    });
             scene_node_resources.add_resource(
                 match[1].str(),                                                   // name
                 std::make_shared<RenderableOsmMap>(
@@ -367,7 +382,7 @@ void LoadScene::operator()(
                     fpath(match[17].str()),                                       // roof_texture
                     string_to_vector(match[18].str()),                            // tree_resource_names
                     string_to_vector(match[19].str()),                            // grass_resource_names
-                    string_to_vector(match[20].str()),                            // wayside_resource_names
+                    waysides,                                                     // wayside_resource_names
                     safe_stof(match[21].str()),                                   // default_street_width
                     safe_stof(match[22].str()),                                   // roof_width
                     safe_stof(match[23].str()),                                   // scale
