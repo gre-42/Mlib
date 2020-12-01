@@ -1431,24 +1431,39 @@ void Mlib::draw_building_walls(
     }
 }
 
-std::vector<FixedArray<float, 2>> Mlib::removed_duplicates(
-    const std::vector<FixedArray<float, 2>>& nodes,
-    bool verbose)
+template <class TContainer, class TGetOrderableFixedArray>
+void to_orderable_fixed_array(
+    TContainer& result,
+    const TContainer& nodes,
+    bool verbose,
+    const TGetOrderableFixedArray& get_orderable_fixed_array)
 {
-    std::vector<FixedArray<float, 2>> result;
-    result.reserve(nodes.size());
-    std::set<OrderableFixedArray<float, 2>> pts;
+    typedef decltype(get_orderable_fixed_array(nodes.front())) Key;
+    std::set<Key> pts;
     for(const auto& p : nodes) {
-        auto o = OrderableFixedArray<float, 2>{p};
+        auto o = get_orderable_fixed_array(p);
         if (pts.find(o) != pts.end()) {
             if (verbose) {
-                std::cerr << "Removing duplicate point " << p << std::endl;
+                std::cerr << "Removing duplicate point " << o << std::endl;
             }
         } else {
             pts.insert(o);
             result.push_back(p);
         }
     }
+}
+
+std::vector<FixedArray<float, 2>> Mlib::removed_duplicates(
+    const std::vector<FixedArray<float, 2>>& nodes,
+    bool verbose)
+{
+    std::vector<FixedArray<float, 2>> result;
+    result.reserve(nodes.size());
+    to_orderable_fixed_array(
+        result,
+        nodes,
+        verbose,
+        [](const FixedArray<float, 2>& p){return OrderableFixedArray<float, 2>{p};});
     return result;
 }
 
@@ -1456,9 +1471,26 @@ std::list<FixedArray<float, 2>> Mlib::removed_duplicates(
     const std::list<FixedArray<float, 2>>& nodes,
     bool verbose)
 {
-    std::vector<FixedArray<float, 2>> n{nodes.begin(), nodes.end()};
-    std::vector<FixedArray<float, 2>> res{removed_duplicates(n, verbose)};
-    return std::list(res.begin(), res.end());
+    std::list<FixedArray<float, 2>> result;
+    to_orderable_fixed_array(
+        result,
+        nodes,
+        verbose,
+        [](const FixedArray<float, 2>& p){return OrderableFixedArray<float, 2>{p};});
+    return result;
+}
+
+std::list<SteinerPointInfo> Mlib::removed_duplicates(
+    const std::list<SteinerPointInfo>& nodes,
+    bool verbose)
+{
+    std::list<SteinerPointInfo> result;
+    to_orderable_fixed_array(
+        result,
+        nodes,
+        verbose,
+        [](const SteinerPointInfo& p){return OrderableFixedArray<float, 3>{p.position};});
+    return result;
 }
 
 ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const std::vector<std::string>& names)
