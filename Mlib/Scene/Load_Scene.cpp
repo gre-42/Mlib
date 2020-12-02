@@ -480,21 +480,21 @@ void LoadScene::operator()(
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 Material{
-                    texture_descriptor: {color: fpath(match[2].str())},
-                    occluder_type: occluder_type_from_string(match[8].str()),
-                    blend_mode: blend_mode_from_string(match[12].str()),
-                    wrap_mode_s: WrapMode::CLAMP_TO_EDGE,
-                    wrap_mode_t: WrapMode::CLAMP_TO_EDGE,
-                    collide: false,
-                    aggregate_mode: aggregate_mode_from_string(match[13].str()),
-                    is_small: safe_stob(match[7].str()),
-                    cull_faces: true,
-                    ambience: {
+                    .texture_descriptor = {color: fpath(match[2].str())},
+                    .occluder_type = occluder_type_from_string(match[8].str()),
+                    .blend_mode = blend_mode_from_string(match[12].str()),
+                    .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
+                    .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
+                    .collide = false,
+                    .aggregate_mode = aggregate_mode_from_string(match[13].str()),
+                    .is_small = safe_stob(match[7].str()),
+                    .cull_faces = true,
+                    .ambience = {
                         safe_stof(match[9].str()),
                         safe_stof(match[10].str()),
                         safe_stof(match[11].str())},
-                    diffusivity: {0, 0, 0},
-                    specularity: {0, 0, 0}}.compute_color_mode(),
+                    .diffusivity = {0, 0, 0},
+                    .specularity = {0, 0, 0}}.compute_color_mode(),
                 &rendering_resources));
         } else if (std::regex_match(line, match, blending_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(
