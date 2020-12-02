@@ -1522,7 +1522,9 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
 }
 
 const ParsedResourceName& ResourceNameCycle::operator() () {
-    assert_true(!names_.empty());
+    if (names_.empty()) {
+        throw std::runtime_error("ResourceNameCycle called with empty names");
+    }
     while(true) {
         const ParsedResourceName& prn = names_[rng0_()];
         if (prn.probability != 1) {

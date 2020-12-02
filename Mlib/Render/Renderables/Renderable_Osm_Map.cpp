@@ -311,7 +311,7 @@ RenderableOsmMap::RenderableOsmMap(
             add_street_lights,
             with_height_bindings);
 
-        if (forest_outline_tree_distance != INFINITY) {
+        if (forest_outline_tree_distance != INFINITY && !tree_resource_names.empty()) {
             ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
             add_trees_to_forest_outlines(
                 resource_instance_positions_,
@@ -358,7 +358,7 @@ RenderableOsmMap::RenderableOsmMap(
                 raceway_beacon_distance,
                 scale);
         }
-        if (with_tree_nodes) {
+        if (with_tree_nodes && !tree_resource_names.empty()) {
             ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
             add_trees_to_tree_nodes(
                 resource_instance_positions_,
