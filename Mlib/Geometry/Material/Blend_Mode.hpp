@@ -4,11 +4,14 @@
 
 namespace Mlib {
 
+/**
+ * Explicit numbers to facilitate sorting for rendering.
+ */
 enum class BlendMode {
-    OFF,
-    BINARY,
-    CONTINUOUS,
-    BINARY_ADD
+    OFF = 0,
+    BINARY = 1,
+    CONTINUOUS = 2,
+    BINARY_ADD = 3
 };
 
 inline BlendMode blend_mode_from_string(const std::string& str) {

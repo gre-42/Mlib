@@ -127,4 +127,13 @@ std::vector<FixedArray<FixedArray<float, 3>, 2>> ColoredVertexArray::transformed
     return res;
 }
 
+void Mlib::sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& colored_vertex_arrays) {
+    colored_vertex_arrays.sort([](
+        const std::shared_ptr<ColoredVertexArray>& a,
+        const std::shared_ptr<ColoredVertexArray>& b)
+        {
+            return a->material.blend_mode < b->material.blend_mode;
+        });
+}
+
 #pragma GCC pop_options
