@@ -5,6 +5,12 @@
 
 namespace Mlib {
 
+template <class TData, size_t... tshape>
+class OrderableFixedArray;
+
+std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
+    find_contour_edges(const std::list<FixedArray<ColoredVertex, 3>>& triangles);
+
 std::list<std::list<FixedArray<float, 3>>> find_contours(
     const std::list<FixedArray<ColoredVertex, 3>>& triangles);
 

@@ -1,5 +1,6 @@
 #include "Triangle_List.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
@@ -82,6 +83,42 @@ void TriangleList::draw_rectangle_wo_normals(
 {
     draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01);
     draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11);
+}
+
+void TriangleList::extrude(float height) {
+    using O = OrderableFixedArray<float, 3>;
+
+    std::set<std::pair<O, O>> edges = find_contour_edges(triangles_);
+    size_t i = 0;
+    size_t size0 = triangles_.size();
+    for(auto& t : triangles_) {
+        if (i == size0) {
+            break;
+        }
+        FixedArray<ColoredVertex, 3> t_old = t;
+        auto connect_extruded = [this, &t_old, &height, &edges, &t](size_t a, size_t b){
+            auto edge = std::make_pair(O(t_old(a).position), O(t_old(b).position));
+            if (edges.contains(edge)) {
+                draw_rectangle_wo_normals(
+                    edge.first,
+                    edge.second,
+                    t(b).position,
+                    t(a).position,
+                    {1, 1, 1},
+                    {1, 1, 1},
+                    {1, 1, 1},
+                    {1, 1, 1});
+            }
+        };
+        t(0).position(2) += height;
+        t(1).position(2) += height;
+        t(2).position(2) += height;
+
+        connect_extruded(0, 1);
+        connect_extruded(1, 2);
+        connect_extruded(2, 0);
+        ++i;
+    }
 }
 
 void TriangleList::delete_backfacing_triangles() {
