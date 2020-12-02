@@ -14,10 +14,9 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
     for(const auto& t : triangles) {
         auto safe_insert_edge = [&edges, &t](size_t a, size_t b){
             auto v = std::make_pair(O(t(a).position), O(t(b).position));
-            if (edges.contains(v)) {
+            if (!edges.insert(v).second) {
                 throw std::runtime_error("Detected duplicate edge");
             }
-            edges.insert(v);
         };
         safe_insert_edge(0, 1);
         safe_insert_edge(1, 2);
@@ -32,10 +31,9 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
         auto safe_insert_neighbor = [&edges, &neighbors, &t](size_t a, size_t b) {
             auto v = std::make_pair(O(t(a).position), O(t(b).position));
             if (edges.find(v) != edges.end()) {
-                if (neighbors.find(O(t(a).position)) != neighbors.end()) {
+                if (!neighbors.insert(v).second) {
                     throw std::runtime_error("Contour neighbor already set");
                 }
-                neighbors.insert(v);
             }
         };
         safe_insert_neighbor(0, 1);
