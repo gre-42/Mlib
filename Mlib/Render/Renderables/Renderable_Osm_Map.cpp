@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -11,6 +12,11 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/String.hpp>
 #include <regex>
+
+// #undef LOG_FUNCTION
+// #undef LOG_INFO
+// #define LOG_FUNCTION(msg) ::Mlib::Log log(msg)
+// #define LOG_INFO(msg) log.info(msg)
 
 using namespace Mlib;
 
@@ -75,6 +81,7 @@ RenderableOsmMap::RenderableOsmMap(
   scene_node_resources_{scene_node_resources},
   scale_{scale}
 {
+    LOG_FUNCTION("RenderableOsmMap::RenderableOsmMap");
     std::ifstream ifs{filename};
     const std::regex node_reg("^ +<node id=[\"'](-?\\w+)[\"'] .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
     const std::regex way_reg("^ +<way id=[\"'](-?\\w+)[\"'].* visible=[\"'](true|false)[\"'].*>$");
@@ -313,6 +320,7 @@ RenderableOsmMap::RenderableOsmMap(
 
         if (forest_outline_tree_distance != INFINITY && !tree_resource_names.empty()) {
             ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
+            LOG_INFO("add_trees_to_forest_outlines");
             add_trees_to_forest_outlines(
                 resource_instance_positions_,
                 object_resource_descriptors_,
@@ -351,6 +359,7 @@ RenderableOsmMap::RenderableOsmMap(
         //         scale);
         // }
         if (raceway_beacon_distance != INFINITY) {
+            LOG_INFO("add_beacons_to_raceways");
             add_beacons_to_raceways(
                 object_resource_descriptors_,
                 nodes,
@@ -360,6 +369,7 @@ RenderableOsmMap::RenderableOsmMap(
         }
         if (with_tree_nodes && !tree_resource_names.empty()) {
             ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
+            LOG_INFO("add_trees_to_tree_nodes");
             add_trees_to_tree_nodes(
                 resource_instance_positions_,
                 object_resource_descriptors_,
@@ -370,6 +380,7 @@ RenderableOsmMap::RenderableOsmMap(
         }
 
         if (with_buildings) {
+            LOG_INFO("draw_building_walls (facade)");
             draw_building_walls(
                 tls_buildings,
                 steiner_points,
@@ -387,6 +398,7 @@ RenderableOsmMap::RenderableOsmMap(
                 facade_texture_3);
         }
         {
+            LOG_INFO("draw_building_walls (barrier)");
             draw_building_walls(
                 tls_wall_barriers,
                 steiner_points,
@@ -417,6 +429,7 @@ RenderableOsmMap::RenderableOsmMap(
             // plot_mesh(ArrayShape{2000, 2000}, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
             steiner_points = removed_duplicates(steiner_points, false);  // false = verbose
             BoundingInfo bounding_info{map_outer_contour, nodes, 0.1};
+            LOG_INFO("add_street_steiner_points");
             add_street_steiner_points(
                 steiner_points,
                 hole_triangles,
@@ -425,6 +438,7 @@ RenderableOsmMap::RenderableOsmMap(
                 steiner_point_distance,
                 steiner_point_coarse_margin,
                 steiner_point_refinement);
+            LOG_INFO("triangulate_terrain_or_ceilings");
             triangulate_terrain_or_ceilings(
                 *tl_terrain,
                 bounding_info,
@@ -437,6 +451,7 @@ RenderableOsmMap::RenderableOsmMap(
                 0);
         }
         if (with_roofs) {
+            LOG_INFO("draw_roofs");
             draw_roofs(
                 tls_buildings,
                 Material{
@@ -452,6 +467,7 @@ RenderableOsmMap::RenderableOsmMap(
                 roof_height1);
         }
         if (with_ceilings) {
+            LOG_INFO("draw_ceilings");
             draw_ceilings(
                 tls_buildings,
                 Material{
@@ -476,6 +492,7 @@ RenderableOsmMap::RenderableOsmMap(
     tls_all.insert(tls_all.end(), tls_wall_barriers.begin(), tls_wall_barriers.end());
 
     if (!heightmap.empty()) {
+        LOG_INFO("apply_height_map");
         apply_height_map(
             tls_all,
             object_resource_descriptors_,
@@ -512,10 +529,12 @@ RenderableOsmMap::RenderableOsmMap(
             smoothed_vertices.push_back(&p.position);
         }
         if (street_edge_smoothness > 0) {
+            LOG_INFO("smoothen_edges (street)");
             TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, street_edge_smoothness, 100);
         }
         if (terrain_edge_smoothness > 0) {
             std::list<std::shared_ptr<TriangleList>> tls_terrain{tl_terrain};
+            LOG_INFO("smoothen_edges (terrain)");
             TriangleList::smoothen_edges(tls_terrain, tls_street, smoothed_vertices, street_edge_smoothness, 10);
         }
     }
@@ -541,6 +560,7 @@ RenderableOsmMap::RenderableOsmMap(
     // }
 
     for(const WaysideResourceNames& ws : waysides) {
+        LOG_INFO("add_grass_on_steiner_points");
         ResourceNameCycle rnc{scene_node_resources, ws.resource_names};
         add_grass_on_steiner_points(
             resource_instance_positions_,
@@ -553,6 +573,7 @@ RenderableOsmMap::RenderableOsmMap(
     }
     if (!grass_resource_names.empty()) {
         ResourceNameCycle rnc{scene_node_resources, grass_resource_names};
+        LOG_INFO("add_grass_inside_triangles");
         add_grass_inside_triangles(
             resource_instance_positions_,
             object_resource_descriptors_,
