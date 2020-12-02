@@ -275,15 +275,16 @@ RenderableOsmMap::RenderableOsmMap(
         texture_descriptor: {color: curb_street_texture},
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
-        wrap_mode_s: WrapMode::CLAMP_TO_EDGE,
+        wrap_mode_s: extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
         texture_descriptor: {color: curb_path_texture},
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
-        wrap_mode_s: WrapMode::CLAMP_TO_EDGE,
+        wrap_mode_s: extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     std::list<std::shared_ptr<TriangleList>> tls_ground{tl_terrain, tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
+    std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb{tl_terrain, tl_street_crossing, tl_path_crossing, tl_street, tl_path};
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;
@@ -550,15 +551,15 @@ RenderableOsmMap::RenderableOsmMap(
         scale,
         raise_streets_amount);
     if (extrude_curb_amount != 0) {
-        tl_curb_street->extrude(extrude_curb_amount * scale);
-        tl_curb_path->extrude(extrude_curb_amount * scale);
+        tl_curb_street->extrude(extrude_curb_amount * scale, scale, uv_scale_street);
+        tl_curb_path->extrude(extrude_curb_amount * scale, scale, uv_scale_street);
     }
     // Normals are invalid after "apply_height_map"
     for(auto& l : tls_ground) {
         l->calculate_triangle_normals();
     }
 
-    TriangleList::convert_triangle_to_vertex_normals(tls_ground);
+    TriangleList::convert_triangle_to_vertex_normals(tls_ground_wo_curb);
 
     // for(auto& l : tls_ground) {
     //     colorize_height_map(l->triangles_);

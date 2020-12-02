@@ -69,7 +69,7 @@ public:
         const FixedArray<float, 2>& u10 = {1.f, 0.f},
         const FixedArray<float, 2>& u11 = {1.f, 1.f},
         const FixedArray<float, 2>& u01 = {0.f, 1.f});
-    void extrude(float height);
+    void extrude(float height, float scale, float uv_scale);
     void delete_backfacing_triangles();
     void calculate_triangle_normals();
     static void convert_triangle_to_vertex_normals(std::list<std::shared_ptr<TriangleList>>& triangle_lists);
