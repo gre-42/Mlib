@@ -37,3 +37,7 @@ void BackgroundTask::run(const std::function<void()>& task) {
         done_ = true;
     }};
 }
+
+bool BackgroundTask::done() const {
+    return done_;
+}

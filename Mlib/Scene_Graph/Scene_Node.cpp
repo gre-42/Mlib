@@ -277,7 +277,8 @@ void SceneNode::append_sorted_aggregates_to_queue(
     const FixedArray<float, 4, 4>& vp,
     const FixedArray<float, 4, 4>& parent_m,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue,
-    const SceneGraphConfig& scene_graph_config) const
+    const SceneGraphConfig& scene_graph_config,
+    ExternalRenderPass external_render_pass) const
 {
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.
@@ -287,13 +288,13 @@ void SceneNode::append_sorted_aggregates_to_queue(
     FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
     FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
     for(const auto& r : renderables_) {
-        r.second->append_sorted_aggregates_to_queue(mvp, m, scene_graph_config, aggregate_queue);
+        r.second->append_sorted_aggregates_to_queue(mvp, m, scene_graph_config, external_render_pass, aggregate_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config);
+        n.second.second->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
     }
     for(const auto& a : aggregate_children_) {
-        a.second.second->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config);
+        a.second.second->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
     }
 }
 
@@ -319,7 +320,8 @@ void SceneNode::append_small_instances_to_queue(
     const FixedArray<float, 4, 4>& parent_m,
     const FixedArray<float, 3>& delta_position,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
-    const SceneGraphConfig& scene_graph_config) const
+    const SceneGraphConfig& scene_graph_config,
+    ExternalRenderPass external_render_pass) const
 {
     FixedArray<float, 4, 4> rel = relative_model_matrix();
     rel(0, 3) += delta_position(0);
@@ -328,14 +330,14 @@ void SceneNode::append_small_instances_to_queue(
     FixedArray<float, 4, 4> mvp = dot2d(vp, rel);
     FixedArray<float, 4, 4> m = dot2d(parent_m, rel);
     for(const auto& r : renderables_) {
-        r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, instances_queue);
+        r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, external_render_pass, instances_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
+        n.second.second->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
     }
     for(const auto& i : instances_children_) {
         for(const auto& j : std::get<2>(i.second)) {
-            std::get<1>(i.second)->append_small_instances_to_queue(mvp, m, j, instances_queue, scene_graph_config);
+            std::get<1>(i.second)->append_small_instances_to_queue(mvp, m, j, instances_queue, scene_graph_config, external_render_pass);
         }
     }
 }

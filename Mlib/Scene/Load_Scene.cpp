@@ -199,11 +199,12 @@ void LoadScene::operator()(
         "\\s*min=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*max=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*is_small=(0|1)\\r?\\n"
+        "\\s*occluder_type=(off|white|black)\\r?\\n"
         "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*blend_mode=(off|binary|continuous)\\r?\\n"
         "\\s*aggregate_mode=(off|once|sorted|instances_once|instances_sorted)$");
     const std::regex blending_x_resource_reg("^(?:\\r?\\n|\\s)*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
-    const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1)$");
+    const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
     const std::regex node_instance_reg("^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+) name=([\\w+-.]+) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) scale=([\\w+-.]+)(?: aggregate=(true|false))?$");
     const std::regex renderable_instance_reg("^(?:\\r?\\n|\\s)*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
     const std::regex rigid_cuboid_reg("^(?:\\r?\\n|\\s)*rigid_cuboid node=([\\w+-.]+) hitbox=([\\w-. \\(\\)/+-]+)(?: tirelines=([\\w-. \\(\\)/+-]+))? mass=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)(?: com=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
@@ -470,27 +471,28 @@ void LoadScene::operator()(
             // 3, 4: min
             // 5, 6: max
             // 7: is_small
-            // 8, 9, 10: ambience
-            // 11: blend_mode
-            // 12: aggregate_mode
+            // 8: occluder_type
+            // 9, 10, 11: ambience
+            // 12: blend_mode
+            // 13: aggregate_mode
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableSquare>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 Material{
                     texture_descriptor: {color: fpath(match[2].str())},
-                    occluder_type: OccluderType::BLACK,
-                    blend_mode: blend_mode_from_string(match[11].str()),
+                    occluder_type: occluder_type_from_string(match[8].str()),
+                    blend_mode: blend_mode_from_string(match[12].str()),
                     wrap_mode_s: WrapMode::CLAMP_TO_EDGE,
                     wrap_mode_t: WrapMode::CLAMP_TO_EDGE,
                     collide: false,
-                    aggregate_mode: aggregate_mode_from_string(match[12].str()),
+                    aggregate_mode: aggregate_mode_from_string(match[13].str()),
                     is_small: safe_stob(match[7].str()),
                     cull_faces: true,
                     ambience: {
-                        safe_stof(match[8].str()),
                         safe_stof(match[9].str()),
-                        safe_stof(match[10].str())},
+                        safe_stof(match[10].str()),
+                        safe_stof(match[11].str())},
                     diffusivity: {0, 0, 0},
                     specularity: {0, 0, 0}}.compute_color_mode(),
                 &rendering_resources));
@@ -509,6 +511,7 @@ void LoadScene::operator()(
                 fpath(match[2].str()),
                 &rendering_resources,
                 safe_stob(match[10].str()),
+                occluder_type_from_string(match[11].str()),
                 FixedArray<float, 3>{
                     safe_stof(match[7].str()),
                     safe_stof(match[8].str()),

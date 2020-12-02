@@ -13,7 +13,7 @@ struct Material {
     TextureDescriptor texture_descriptor;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
-    OccluderType occluder_type = OccluderType::BLACK;
+    OccluderType occluder_type = OccluderType::OFF;
     bool occluded_by_black = true;
     BlendMode blend_mode = BlendMode::OFF;
     WrapMode wrap_mode_s = WrapMode::REPEAT;

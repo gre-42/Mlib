@@ -14,6 +14,7 @@ RenderableBinaryX::RenderableBinaryX(
     const std::string& texture,
     RenderingResources* rendering_resources,
     bool is_small,
+    OccluderType occluder_type,
     const FixedArray<float, 3>& ambience)
 {
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
@@ -47,18 +48,18 @@ RenderableBinaryX::RenderableBinaryX(
         std::make_shared<ColoredVertexArray>(
             "RenderableBinaryX",
             Material{
-                texture_descriptor: {color: texture},
-                occluder_type: is_small ? OccluderType::OFF : OccluderType::BLACK,
-                blend_mode: BlendMode::BINARY,
-                wrap_mode_s: WrapMode::CLAMP_TO_EDGE,
-                wrap_mode_t: WrapMode::CLAMP_TO_EDGE,
-                collide: false,
-                aggregate_mode: is_small ? AggregateMode::SORTED_CONTINUOUSLY : AggregateMode::ONCE,
-                is_small: is_small,
-                cull_faces: false,
-                ambience: OrderableFixedArray{ambience},
-                diffusivity: {0, 0, 0},
-                specularity: {0, 0, 0}}.compute_color_mode(),
+                .texture_descriptor = {.color = texture},
+                .occluder_type = occluder_type,
+                .blend_mode = BlendMode::BINARY,
+                .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
+                .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
+                .collide = false,
+                .aggregate_mode = is_small ? AggregateMode::SORTED_CONTINUOUSLY : AggregateMode::ONCE,
+                .is_small = is_small,
+                .cull_faces = false,
+                .ambience = OrderableFixedArray{ambience},
+                .diffusivity = {0, 0, 0},
+                .specularity = {0, 0, 0}}.compute_color_mode(),
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
         nullptr,  // instances

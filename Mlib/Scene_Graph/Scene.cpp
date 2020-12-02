@@ -232,27 +232,28 @@ void Scene::render(
             }
             large_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
         }
-        if ((external_render_pass.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) &&
-            (external_render_pass.pass != ExternalRenderPass::DIRTMAP))
-        {
+        if (external_render_pass.black_node_name.empty()) {
             // Contains continuous alpha and must therefore be rendered late.
             LOG_INFO("Scene::render small_sorted_aggregate_renderer");
+            bool is_foreground_task =
+                (external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ||
+                (external_render_pass.pass == ExternalRenderPass::DIRTMAP);
             if (small_sorted_aggregate_renderer_ != nullptr) {
                 BackgroundTaskStatus status = aggregation_bg_task_.tick(scene_graph_config.aggregate_update_interval);
-                if (status == BackgroundTaskStatus::IDLE) {
+                if (aggregation_bg_task_.done()) {
                     // copy "vp" and "scene_graph_config"
-                    aggregation_bg_task_.run([this, vp, scene_graph_config](){
+                    auto func = [this, vp, scene_graph_config, external_render_pass](){
                         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>> aggregate_queue;
                         {
                             std::shared_lock lock{static_mutex_};
                             for(const auto& n : static_root_nodes_) {
-                                n.second->append_sorted_aggregates_to_queue(vp, fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config);
+                                n.second->append_sorted_aggregates_to_queue(vp, fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         {
                             std::shared_lock lock{aggregate_mutex_};
                             for(const auto& n : root_aggregate_nodes_) {
-                                n.second->append_sorted_aggregates_to_queue(vp, fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config);
+                                n.second->append_sorted_aggregates_to_queue(vp, fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         aggregate_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
@@ -261,7 +262,16 @@ void Scene::render(
                             sorted_aggregate_queue.push_back(std::move(e.second));
                         }
                         small_sorted_aggregate_renderer_->update_aggregates(sorted_aggregate_queue);
-                    });
+                    };
+                    if (is_foreground_task) {
+                        func();
+                    } else {
+                        if (status == BackgroundTaskStatus::IDLE) {
+                            aggregation_bg_task_.run(func);
+                        }
+                    }
+                } else if (is_foreground_task) {
+                    throw std::runtime_error("Small sorted aggregate background task is running despite one-shot");
                 }
                 small_sorted_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
             }
@@ -269,20 +279,20 @@ void Scene::render(
             LOG_INFO("Scene::render instances_renderer");
             if (small_instances_renderer_ != nullptr) {
                 BackgroundTaskStatus status = instances_bg_task_.tick(scene_graph_config.aggregate_update_interval);
-                if (status == BackgroundTaskStatus::IDLE) {
+                if (instances_bg_task_.done()) {
                     // copy "vp" and "scene_graph_config"
-                    instances_bg_task_.run([this, vp, scene_graph_config](){
+                    auto func = [this, vp, scene_graph_config, external_render_pass](){
                         std::list<std::pair<float, TransformedColoredVertexArray>> instances_queue;
                         {
                             std::shared_lock lock{static_mutex_};
                             for(const auto& n : static_root_nodes_) {
-                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
+                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         {
                             std::shared_lock lock{aggregate_mutex_};
                             for(const auto& n : root_instances_nodes_) {
-                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
+                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         instances_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
@@ -291,7 +301,16 @@ void Scene::render(
                             sorted_instances_queue.push_back(std::move(e.second));
                         }
                         small_instances_renderer_->update_instances(sorted_instances_queue);
-                    });
+                    };
+                    if (is_foreground_task) {
+                        func();
+                    } else {
+                        if (status == BackgroundTaskStatus::IDLE) {
+                            instances_bg_task_.run(func);
+                        }
+                    }
+                } else if (is_foreground_task) {
+                    throw std::runtime_error("Small sorted instances background task is running despite one-shot");
                 }
                 small_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
             }

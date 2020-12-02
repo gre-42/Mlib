@@ -14,6 +14,7 @@ public:
     ~BackgroundTask();
     BackgroundTaskStatus tick(size_t update_interval);
     void run(const std::function<void()>& task);
+    bool done() const;
 private:
     std::thread thread_;
     std::function<void()> task_;

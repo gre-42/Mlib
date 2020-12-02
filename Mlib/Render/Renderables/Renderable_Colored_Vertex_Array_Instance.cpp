@@ -59,7 +59,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             if (cva->material.aggregate_mode != AggregateMode::OFF) {
                 continue;
             }
-            if (!vc.is_visible(cva->material, scene_graph_config))
+            if (!vc.is_visible(cva->material, scene_graph_config, render_pass.external))
             {
                 continue;
             }
@@ -349,11 +349,12 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
     const FixedArray<float, 4, 4>& mvp,
     const FixedArray<float, 4, 4>& m,
     const SceneGraphConfig& scene_graph_config,
+    ExternalRenderPass external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
 {
     for(const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
-            if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config))
+            if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
                 float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
                     ? -mvp(2, 3)
@@ -380,11 +381,12 @@ void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
     const FixedArray<float, 4, 4>& mvp,
     const FixedArray<float, 4, 4>& m,
     const SceneGraphConfig& scene_graph_config,
+    ExternalRenderPass external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
 {
     for(const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
-            if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config))
+            if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
                 float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
                     ? -mvp(2, 3)

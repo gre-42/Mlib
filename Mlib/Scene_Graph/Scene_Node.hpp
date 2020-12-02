@@ -75,7 +75,8 @@ public:
         const FixedArray<float, 4, 4>& vp,
         const FixedArray<float, 4, 4>& parent_m,
         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue,
-        const SceneGraphConfig& scene_graph_config) const;
+        const SceneGraphConfig& scene_graph_config,
+        ExternalRenderPass external_render_pass) const;
     void append_large_aggregates_to_queue(
         const FixedArray<float, 4, 4>& parent_m,
         std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue,
@@ -85,7 +86,8 @@ public:
         const FixedArray<float, 4, 4>& parent_m,
         const FixedArray<float, 3>& delta_position,
         std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
-        const SceneGraphConfig& scene_graph_config) const;
+        const SceneGraphConfig& scene_graph_config,
+        ExternalRenderPass external_render_pass) const;
     void append_large_instances_to_queue(
         const FixedArray<float, 4, 4>& parent_m,
         const FixedArray<float, 3>& delta_position,
