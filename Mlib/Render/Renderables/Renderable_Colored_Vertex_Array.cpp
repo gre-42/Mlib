@@ -43,7 +43,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "layout (location=3) in vec3 vNormal;" << std::endl;
     }
     if (has_instances) {
-        sstr << "layout (location=4) in vec3 vInstancePosition;" << std::endl;
+        sstr << "layout (location=4) in vec3 instancePosition;" << std::endl;
     }
     sstr << "out vec3 color;" << std::endl;
     sstr << "out vec2 tex_coord;" << std::endl;
@@ -71,11 +71,12 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
+    sstr << "vec3 vPosInstance;" << std::endl;
     if (has_instances) {
         if (orthographic) {
             sstr << "    vec2 dxz = viewDir.xz;" << std::endl;
         } else {
-            sstr << "    vec2 dxz = normalize(viewPos.xz - vInstancePosition.xz);" << std::endl;
+            sstr << "    vec2 dxz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
         }
         sstr << "    vec3 dz = vec3(dxz.x, 0, dxz.y);" << std::endl;
         sstr << "    vec3 dy = vec3(0, 1, 0);" << std::endl;
@@ -85,23 +86,24 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    lookat[1] = vec4(dy, 0);" << std::endl;
         sstr << "    lookat[2] = vec4(dz, 0);" << std::endl;
         sstr << "    lookat[3] = vec4(0, 0, 0, 1);" << std::endl;
-        sstr << "    gl_Position = MVP * vec4((lookat * vec4(vPos, 1)).xyz + vInstancePosition, 1.0);" << std::endl;
+        sstr << "    vPosInstance = (lookat * vec4(vPos, 1)).xyz + instancePosition;" << std::endl;
     } else {
-        sstr << "    gl_Position = MVP * vec4(vPos, 1.0);" << std::endl;
+        sstr << "    vPosInstance = vPos;" << std::endl;
     }
+    sstr << "    gl_Position = MVP * vec4(vPosInstance, 1.0);" << std::endl;
     sstr << "    color = vCol;" << std::endl;
     sstr << "    tex_coord = vTexCoord;" << std::endl;
     if (has_lightmap_color || has_lightmap_depth) {
         sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
-        sstr << "        FragPosLightSpace[i] = MVP_light[i] * vec4(vPos, 1.0);" << std::endl;
+        sstr << "        FragPosLightSpace[i] = MVP_light[i] * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    }" << std::endl;
     }
     if (has_dirtmap) {
-        sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPos, 1.0);" << std::endl;
+        sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
     if (reorient_normals || has_specularity) {
-        sstr << "    FragPos = vec3(M * vec4(vPos, 1.0));" << std::endl;
+        sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
         sstr << "    Normal = mat3(M) * vNormal;" << std::endl;

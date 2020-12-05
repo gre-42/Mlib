@@ -200,6 +200,7 @@ void LoadScene::operator()(
         "\\s*min=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*max=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*is_small=(0|1)\\r?\\n"
+        "\\s*occluded_type=(off|color|depth)\\r?\\n"
         "\\s*occluder_type=(off|white|black)\\r?\\n"
         "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*blend_mode=(off|binary|continuous)\\r?\\n"
@@ -483,18 +484,19 @@ void LoadScene::operator()(
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 Material{
                     .texture_descriptor = {color: fpath(match[2].str())},
-                    .occluder_type = occluder_type_from_string(match[8].str()),
-                    .blend_mode = blend_mode_from_string(match[12].str()),
+                    .occluded_type =  occluded_type_from_string(match[8].str()),
+                    .occluder_type = occluder_type_from_string(match[9].str()),
+                    .blend_mode = blend_mode_from_string(match[13].str()),
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .collide = false,
-                    .aggregate_mode = aggregate_mode_from_string(match[13].str()),
+                    .aggregate_mode = aggregate_mode_from_string(match[14].str()),
                     .is_small = safe_stob(match[7].str()),
                     .cull_faces = true,
                     .ambience = {
-                        safe_stof(match[9].str()),
                         safe_stof(match[10].str()),
-                        safe_stof(match[11].str())},
+                        safe_stof(match[11].str()),
+                        safe_stof(match[12].str())},
                     .diffusivity = {0, 0, 0},
                     .specularity = {0, 0, 0}}.compute_color_mode(),
                 &rendering_resources));
