@@ -22,6 +22,7 @@ static GenShaderText vertex_shader_text_gen{[](
     size_t nlights,
     bool has_lightmap_color,
     bool has_lightmap_depth,
+    bool has_normalmap,
     bool has_dirtmap,
     bool has_diffusivity,
     bool has_specularity,
@@ -127,6 +128,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_texture,
     bool has_lightmap_color,
     bool has_lightmap_depth,
+    bool has_normalmap,
     bool has_dirtmap,
     const OrderableFixedArray<float, 3>& ambience,
     const OrderableFixedArray<float, 3>& diffusivity,
@@ -472,6 +474,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             filtered_lights.size(),
             id.has_lightmap_color,
             id.has_lightmap_depth,
+            id.has_normalmap,
             id.has_dirtmap,
             !id.diffusivity.all_equal(0),
             !id.specularity.all_equal(0),
@@ -487,6 +490,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.has_texture,
             id.has_lightmap_color,
             id.has_lightmap_depth,
+            id.has_normalmap,
             id.has_dirtmap,
             id.ambience,
             id.diffusivity,
@@ -533,6 +537,11 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     } else {
         // Do nothing
         // rp->texture_lightmap_depth_location = 0;
+    }
+    if (id.has_normalmap) {
+        rp->texture_normalmap_location = checked_glGetUniformLocation(rp->program, "texture_normalmap");
+    } else {
+        rp->texture_normalmap_location = 0;
     }
     if (id.has_dirtmap) {
         rp->mvp_dirtmap_location = checked_glGetUniformLocation(rp->program, "MVP_dirtmap");
@@ -581,7 +590,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     return result;
 }
 
-const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredVertexArray* cva) const {
+const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredVertexArray* cva, bool has_normalmap) const {
     if (cva->material.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
         throw std::runtime_error("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
@@ -613,6 +622,11 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     CHK(glEnableVertexAttribArray(3));
     CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE,
                               sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 8)));
+    if (has_normalmap) {
+        CHK(glEnableVertexAttribArray(4));
+        CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE,
+                                sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 11)));
+    }
     if (instances_ != nullptr) {
         const std::vector<FixedArray<float, 4, 4>>& inst = instances_->at(cva);
         if (inst.empty()) {

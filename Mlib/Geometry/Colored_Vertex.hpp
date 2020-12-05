@@ -9,6 +9,7 @@ struct ColoredVertex {
     FixedArray<float, 3> color;
     FixedArray<float, 2> uv;
     FixedArray<float, 3> normal;
+    FixedArray<float, 3> tangent;
 };
 
 inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex& v) {

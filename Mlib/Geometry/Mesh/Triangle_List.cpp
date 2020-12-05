@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
+#include <Mlib/Geometry/Triangle_Tangent.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <map>
 
@@ -26,6 +27,17 @@ void TriangleList::draw_triangle_with_normals(
     ColoredVertex v00{p00, c00, u00, n00};
     ColoredVertex v10{p10, c10, u10, n10};
     ColoredVertex v01{p01, c01, u01, n01};
+
+    FixedArray<float, 3> tangent = triangle_tangent(
+        v00.position,
+        v10.position,
+        v01.position,
+        v00.uv,
+        v10.uv,
+        v01.uv);
+    v00.tangent = tangent;
+    v10.tangent = tangent;
+    v01.tangent = tangent;
 
     triangles_.push_back(FixedArray<ColoredVertex, 3>{v00, v10, v01});
 }

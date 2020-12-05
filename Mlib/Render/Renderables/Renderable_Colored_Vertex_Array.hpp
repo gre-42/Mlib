@@ -32,6 +32,7 @@ struct ColoredRenderProgram: public RenderProgram {
     GLint texture1_location;
     std::map<size_t, GLint> texture_lightmap_color_locations;
     std::map<size_t, GLint> texture_lightmap_depth_locations;
+    GLint texture_normalmap_location;
     GLint texture_dirtmap_location;
     GLint texture_dirt_location;
 };
@@ -44,6 +45,7 @@ struct RenderProgramIdentifier {
     bool has_texture;
     bool has_lightmap_color;
     bool has_lightmap_depth;
+    bool has_normalmap;
     bool has_dirtmap;
     bool has_instances;
     bool reorient_normals;
@@ -84,7 +86,7 @@ private:
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices) const;
-    const VertexArray& get_vertex_array(const ColoredVertexArray* cva) const;
+    const VertexArray& get_vertex_array(const ColoredVertexArray* cva, bool has_normalmap) const;
     std::list<std::shared_ptr<ColoredVertexArray>> triangles_res_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<VertexArray>> vertex_arrays_;
