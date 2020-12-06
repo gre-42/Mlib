@@ -247,7 +247,7 @@ RenderableOsmMap::RenderableOsmMap(
     }
 
     auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
-        texture_descriptor: {color: terrain_texture},
+        texture_descriptor: {.color = terrain_texture, .normal = rendering_resources->get_normalmap(terrain_texture)},
         dirt_texture: dirt_texture,
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
