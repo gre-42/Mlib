@@ -86,7 +86,7 @@ private:
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices) const;
-    const VertexArray& get_vertex_array(const ColoredVertexArray* cva, bool has_normalmap) const;
+    const VertexArray& get_vertex_array(const ColoredVertexArray* cva) const;
     std::list<std::shared_ptr<ColoredVertexArray>> triangles_res_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<VertexArray>> vertex_arrays_;

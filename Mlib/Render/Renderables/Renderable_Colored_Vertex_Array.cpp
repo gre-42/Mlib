@@ -43,8 +43,11 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_diffusivity || has_specularity) {
         sstr << "layout (location=3) in vec3 vNormal;" << std::endl;
     }
+    if (has_normalmap) {
+        sstr << "layout (location=4) in vec3 vTangent;" << std::endl;
+    }
     if (has_instances) {
-        sstr << "layout (location=4) in vec3 instancePosition;" << std::endl;
+        sstr << "layout (location=5) in vec3 instancePosition;" << std::endl;
     }
     sstr << "out vec3 color;" << std::endl;
     sstr << "out vec2 tex_coord;" << std::endl;
@@ -52,6 +55,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform mat4 MVP_light[" << lights.size() << "];" << std::endl;
         // vec4 to avoid clipping problems
         sstr << "out vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
+    }
+    if (has_normalmap) {
+        sstr << "out vec2 tangent;" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
@@ -109,6 +115,9 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_diffusivity || has_specularity) {
         sstr << "    Normal = mat3(M) * vNormal;" << std::endl;
     }
+    if (has_normalmap) {
+        sstr << "    tangent = mat3(M) * vTangent;" << std::endl;
+    }
     sstr << "}" << std::endl;
     return sstr.str();
 }};
@@ -157,6 +166,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_lightmap_depth) {
         sstr << "uniform sampler2D texture_light_depth[" << lights.size() << "];" << std::endl;
+    }
+    if (has_normalmap) {
+        sstr << "in vec2 tangent;" << std::endl;
+        sstr << "uniform sampler2D texture_normalmap;" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "in vec2 tex_coord_dirtmap;" << std::endl;
@@ -228,6 +241,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         sstr << "    vec3 norm = normalize(Normal);" << std::endl;
         // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
+    }
+    if (has_normalmap) {
+        sstr << "    vec3 tang = normalize(tangent);" << std::endl;
+        sstr << "    vec3 bitangent = normalize(cross(norm, tang));" << std::endl;
+        sstr << "    mat3 TBN = mat3(tang, bitangent, norm);" << std::endl;
+        sstr << "    norm = normalize(2 * (TBN * texture(texture_normalmap, tex_coord).rgb) - 1);" << std::endl;
     }
     if (reorient_normals) {
         if (orthographic) {
@@ -590,7 +609,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     return result;
 }
 
-const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredVertexArray* cva, bool has_normalmap) const {
+const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredVertexArray* cva) const {
     if (cva->material.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
         throw std::runtime_error("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
@@ -619,10 +638,14 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     CHK(glEnableVertexAttribArray(2));
     CHK(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
                               sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 6)));
-    CHK(glEnableVertexAttribArray(3));
-    CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE,
-                              sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 8)));
-    if (has_normalmap) {
+    // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
+    if (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0)) {
+        CHK(glEnableVertexAttribArray(3));
+        CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE,
+                                sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 8)));
+    }
+    // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
+    if (!cva->material.normal_texture.empty()) {
         CHK(glEnableVertexAttribArray(4));
         CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE,
                                 sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 11)));
@@ -641,10 +664,10 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va->position_buffer));
         CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
 
-        CHK(glEnableVertexAttribArray(4));
-        CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE,
+        CHK(glEnableVertexAttribArray(5));
+        CHK(glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE,
                                   sizeof(positions[0]), (void*) 0));
-        CHK(glVertexAttribDivisor(4, 1));
+        CHK(glVertexAttribDivisor(5, 1));
     }
 
     CHK(glBindVertexArray(0));
