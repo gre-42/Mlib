@@ -253,7 +253,7 @@ RenderableOsmMap::RenderableOsmMap(
         .occluder_type = OccluderType::WHITE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode());
     auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
-        .texture_descriptor = {.color = asphalt_texture},
+        .texture_descriptor = {.color = asphalt_texture, .normal = rendering_resources->get_normalmap(asphalt_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode());
@@ -273,13 +273,13 @@ RenderableOsmMap::RenderableOsmMap(
         .occluder_type = OccluderType::WHITE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_street = std::make_shared<TriangleList>("curb_street", Material{
-        .texture_descriptor = {.color = curb_street_texture},
+        .texture_descriptor = {.color = curb_street_texture, .normal = rendering_resources->get_normalmap(curb_street_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
-        .texture_descriptor = {.color = curb_path_texture},
+        .texture_descriptor = {.color = curb_path_texture, .normal = rendering_resources->get_normalmap(curb_path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
