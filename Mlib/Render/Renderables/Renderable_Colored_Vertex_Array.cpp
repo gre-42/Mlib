@@ -246,7 +246,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 tang = normalize(tangent);" << std::endl;
         sstr << "    vec3 bitangent = normalize(cross(norm, tang));" << std::endl;
         sstr << "    mat3 TBN = mat3(tang, bitangent, norm);" << std::endl;
-        sstr << "    norm = normalize(2 * (TBN * texture(texture_normalmap, tex_coord).rgb) - 1);" << std::endl;
+        sstr << "    vec3 tnorm = 2 * texture(texture_normalmap, tex_coord).rgb - 1;" << std::endl;
+        sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
     }
     if (reorient_normals) {
         if (orthographic) {
