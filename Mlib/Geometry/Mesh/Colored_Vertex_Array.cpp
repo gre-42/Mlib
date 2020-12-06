@@ -42,38 +42,43 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const FixedA
     for(const auto& tri : triangles) {
         res->triangles.push_back({
             ColoredVertex{
-                position: dehomogenized_3(dot1d(m, homogenized_4(tri(0).position))),
-                color: tri(0).color,
-                uv: tri(0).uv,
-                normal: dot1d(R3_from_4x4(m), tri(0).normal)
+                .position = dehomogenized_3(dot1d(m, homogenized_4(tri(0).position))),
+                .color = tri(0).color,
+                .uv = tri(0).uv,
+                .normal = dot1d(R3_from_4x4(m), tri(0).normal),
+                .tangent = dot1d(R3_from_4x4(m), tri(0).tangent)
             },
             ColoredVertex{
-                position: dehomogenized_3(dot1d(m, homogenized_4(tri(1).position))),
-                color: tri(1).color,
-                uv: tri(1).uv,
-                normal: dot1d(R3_from_4x4(m), tri(1).normal)
+                .position = dehomogenized_3(dot1d(m, homogenized_4(tri(1).position))),
+                .color = tri(1).color,
+                .uv = tri(1).uv,
+                .normal = dot1d(R3_from_4x4(m), tri(1).normal),
+                .tangent = dot1d(R3_from_4x4(m), tri(1).tangent)
             },
             ColoredVertex{
-                position: dehomogenized_3(dot1d(m, homogenized_4(tri(2).position))),
-                color: tri(2).color,
-                uv: tri(2).uv,
-                normal: dot1d(R3_from_4x4(m), tri(2).normal)
+                .position = dehomogenized_3(dot1d(m, homogenized_4(tri(2).position))),
+                .color = tri(2).color,
+                .uv = tri(2).uv,
+                .normal = dot1d(R3_from_4x4(m), tri(2).normal),
+                .tangent = dot1d(R3_from_4x4(m), tri(2).tangent)
             }});
     }
     res->lines.reserve(lines.size());
     for(const auto& li : lines) {
         res->lines.push_back({
             ColoredVertex{
-                position: dehomogenized_3(dot1d(m, homogenized_4(li(0).position))),
-                color: li(0).color,
-                uv: li(0).uv,
-                normal: dot1d(R3_from_4x4(m), li(0).normal)
+                .position = dehomogenized_3(dot1d(m, homogenized_4(li(0).position))),
+                .color = li(0).color,
+                .uv = li(0).uv,
+                .normal = dot1d(R3_from_4x4(m), li(0).normal),
+                .tangent = dot1d(R3_from_4x4(m), li(0).tangent)
             },
             ColoredVertex{
-                position: dehomogenized_3(dot1d(m, homogenized_4(li(1).position))),
-                color: li(1).color,
-                uv: li(1).uv,
-                normal: dot1d(R3_from_4x4(m), li(1).normal)
+                .position = dehomogenized_3(dot1d(m, homogenized_4(li(1).position))),
+                .color = li(1).color,
+                .uv = li(1).uv,
+                .normal = dot1d(R3_from_4x4(m), li(1).normal),
+                .tangent = dot1d(R3_from_4x4(m), li(1).tangent)
             }});
     }
     return res;
