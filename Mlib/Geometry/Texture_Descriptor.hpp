@@ -36,6 +36,7 @@ inline std::string color_mode_to_string(const ColorMode& mode) {
 
 struct TextureDescriptor {
     std::string color;
+    std::string normal;
     ColorMode color_mode = ColorMode::UNDEFINED;
     std::string histogram = "";
     std::string mixed = "";
@@ -47,6 +48,7 @@ struct TextureDescriptor {
 inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t) {
     ostr <<
         "color: " << t.color << std::endl <<
+        "normal: " << t.normal << std::endl <<
         "color_mode: " << color_mode_to_string(t.color_mode) << std::endl <<
         "histogram: " << t.histogram << std::endl <<
         "mixed: " << t.mixed << std::endl <<

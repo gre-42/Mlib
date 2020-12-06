@@ -27,6 +27,7 @@ public:
     GLuint get_cubemap(const std::string& name, const std::vector<std::string>& filenames) const;
     void set_texture(const std::string& name, GLuint id);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
+    std::string get_normalmap(const std::string& name) const;
 
     const FixedArray<float, 4, 4>& get_vp(const std::string& name) const;
     void set_vp(const std::string& name, const FixedArray<float, 4, 4>& vp);

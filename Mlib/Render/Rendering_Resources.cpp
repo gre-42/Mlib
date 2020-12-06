@@ -295,6 +295,15 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
     }
 }
 
+std::string RenderingResources::get_normalmap(const std::string& name) const {
+    LOG_FUNCTION("RenderingResources::has_normalmap " + name);
+    if (auto it = texture_descriptors_.find(name); it == texture_descriptors_.end()) {
+        return "";
+    } else {
+        return it->second.normal;
+    }
+}
+
 const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_vp " + name);
     auto it = vps_.find(name);

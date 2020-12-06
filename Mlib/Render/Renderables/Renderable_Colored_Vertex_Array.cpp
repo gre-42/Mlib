@@ -57,7 +57,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
     }
     if (has_normalmap) {
-        sstr << "out vec2 tangent;" << std::endl;
+        sstr << "out vec3 tangent;" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
@@ -168,7 +168,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform sampler2D texture_light_depth[" << lights.size() << "];" << std::endl;
     }
     if (has_normalmap) {
-        sstr << "in vec2 tangent;" << std::endl;
+        sstr << "in vec3 tangent;" << std::endl;
         sstr << "uniform sampler2D texture_normalmap;" << std::endl;
     }
     if (has_dirtmap) {
@@ -645,7 +645,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
                                 sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 8)));
     }
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
-    if (!cva->material.normal_texture.empty()) {
+    if (!cva->material.texture_descriptor.normal.empty()) {
         CHK(glEnableVertexAttribArray(4));
         CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE,
                                 sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 11)));

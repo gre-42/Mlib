@@ -324,6 +324,7 @@ void LoadScene::operator()(
         "^(?:\\r?\\n|\\s)*add_texture_descriptor\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
         "\\s*color=([\\w-. \\(\\)/+-]+)"
+        "\\s*normal=([\\w-. \\(\\)/+-]*)"
         "\\s*color_mode=(rgb|rgba)"
         "\\s*histogram=([\\w-. \\(\\)/+-]*)"
         "\\s*mixed=([\\w-. \\(\\)/+-]*)"
@@ -1114,15 +1115,16 @@ void LoadScene::operator()(
             rendering_resources.add_texture_descriptor(
                 match[1].str(),
                 TextureDescriptor{
-                    color: fpath(match[2].str()),
-                    color_mode: color_mode_from_string(match[3].str()),
-                    histogram: fpath(match[4].str()),
-                    mixed: match[5].str(),
-                    overlap_npixels: safe_stoz(match[6].str()),
-                    mean_color: OrderableFixedArray<float, 3>{
-                        safe_stof(match[7].str()),
+                    .color = fpath(match[2].str()),
+                    .normal = fpath(match[3].str()),
+                    .color_mode = color_mode_from_string(match[4].str()),
+                    .histogram = fpath(match[5].str()),
+                    .mixed = match[6].str(),
+                    .overlap_npixels = safe_stoz(match[7].str()),
+                    .mean_color = OrderableFixedArray<float, 3>{
                         safe_stof(match[8].str()),
-                        safe_stof(match[9].str())}});
+                        safe_stof(match[9].str()),
+                        safe_stof(match[10].str())}});
         } else if (std::regex_match(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
             auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());

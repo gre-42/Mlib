@@ -11,7 +11,6 @@ namespace Mlib {
 
 struct Material {
     TextureDescriptor texture_descriptor;
-    std::string normal_texture;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::OFF;

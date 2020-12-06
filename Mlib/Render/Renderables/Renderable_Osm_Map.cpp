@@ -8,6 +8,7 @@
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map_Helpers.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/String.hpp>
@@ -257,7 +258,7 @@ RenderableOsmMap::RenderableOsmMap(
         occluder_type: OccluderType::WHITE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode());
     auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
-        texture_descriptor: {color: path_texture},
+        texture_descriptor: {.color = path_texture, .normal = rendering_resources->get_normalmap(path_texture)},
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode());
@@ -267,7 +268,7 @@ RenderableOsmMap::RenderableOsmMap(
         occluder_type: OccluderType::WHITE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_path = std::make_shared<TriangleList>("path", Material{
-        texture_descriptor: {color: path_texture},
+        texture_descriptor: {.color = path_texture, .normal = rendering_resources->get_normalmap(path_texture)},
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
