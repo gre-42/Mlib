@@ -247,43 +247,43 @@ RenderableOsmMap::RenderableOsmMap(
     }
 
     auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
-        texture_descriptor: {.color = terrain_texture, .normal = rendering_resources->get_normalmap(terrain_texture)},
-        dirt_texture: dirt_texture,
-        occluded_type: OccludedType::LIGHT_MAP_COLOR,
-        occluder_type: OccluderType::WHITE,
-        specularity: {0.2, 0.2, 0.2}}.compute_color_mode());
+        .texture_descriptor = {.color = terrain_texture, .normal = rendering_resources->get_normalmap(terrain_texture)},
+        .dirt_texture = dirt_texture,
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .specularity = {0.2, 0.2, 0.2}}.compute_color_mode());
     auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
-        texture_descriptor: {color: asphalt_texture},
-        occluded_type: OccludedType::LIGHT_MAP_COLOR,
-        occluder_type: OccluderType::WHITE,
-        specularity: {0.2, 0.2, 0.2}}.compute_color_mode());
+        .texture_descriptor = {.color = asphalt_texture},
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .specularity = {0.2, 0.2, 0.2}}.compute_color_mode());
     auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
-        texture_descriptor: {.color = path_texture, .normal = rendering_resources->get_normalmap(path_texture)},
-        occluded_type: OccludedType::LIGHT_MAP_COLOR,
-        occluder_type: OccluderType::WHITE,
-        specularity: {0.2, 0.2, 0.2}}.compute_color_mode());
+        .texture_descriptor = {.color = path_texture, .normal = rendering_resources->get_normalmap(path_texture)},
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .specularity = {0.2, 0.2, 0.2}}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
-        texture_descriptor: {.color = street_texture, .normal = rendering_resources->get_normalmap(street_texture)},
-        occluded_type: OccludedType::LIGHT_MAP_COLOR,
-        occluder_type: OccluderType::WHITE,
-        specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
+        .texture_descriptor = {.color = street_texture, .normal = rendering_resources->get_normalmap(street_texture)},
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_path = std::make_shared<TriangleList>("path", Material{
-        texture_descriptor: {.color = path_texture, .normal = rendering_resources->get_normalmap(path_texture)},
-        occluded_type: OccludedType::LIGHT_MAP_COLOR,
-        occluder_type: OccluderType::WHITE,
-        specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
+        .texture_descriptor = {.color = path_texture, .normal = rendering_resources->get_normalmap(path_texture)},
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_street = std::make_shared<TriangleList>("curb_street", Material{
-        texture_descriptor: {color: curb_street_texture},
-        occluded_type: OccludedType::LIGHT_MAP_COLOR,
-        occluder_type: OccluderType::WHITE,
-        wrap_mode_s: extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
-        specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
+        .texture_descriptor = {.color = curb_street_texture},
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .wrap_mode_s = extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
+        .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
-        texture_descriptor: {color: curb_path_texture},
-        occluded_type: OccludedType::LIGHT_MAP_COLOR,
-        occluder_type: OccluderType::WHITE,
-        wrap_mode_s: extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
-        specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
+        .texture_descriptor = {.color = curb_path_texture},
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .wrap_mode_s = extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
+        .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     std::list<std::shared_ptr<TriangleList>> tls_ground{tl_terrain, tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
     std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb{tl_terrain, tl_street_crossing, tl_path_crossing, tl_street, tl_path};
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
