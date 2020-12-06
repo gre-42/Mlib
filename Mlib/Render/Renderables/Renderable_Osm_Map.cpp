@@ -263,7 +263,7 @@ RenderableOsmMap::RenderableOsmMap(
         occluder_type: OccluderType::WHITE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
-        texture_descriptor: {color: street_texture},
+        texture_descriptor: {.color = street_texture, .normal = rendering_resources->get_normalmap(street_texture)},
         occluded_type: OccludedType::LIGHT_MAP_COLOR,
         occluder_type: OccluderType::WHITE,
         specularity: {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
