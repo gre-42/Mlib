@@ -24,6 +24,12 @@ struct Blended {
     const Renderable* renderable;
 };
 
+struct SceneNodeInstances {
+    bool is_registered;
+    std::unique_ptr<SceneNode> scene_node;
+    std::list<FixedArray<float, 3>> instances;
+};
+
 class SceneNode {
 public:
     explicit SceneNode(Scene* scene = nullptr);
@@ -122,7 +128,7 @@ private:
     std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
     std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> children_;
     std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> aggregate_children_;
-    std::map<std::string, std::tuple<bool, std::unique_ptr<SceneNode>, std::list<FixedArray<float, 3>>>> instances_children_;
+    std::map<std::string, SceneNodeInstances> instances_children_;
     std::list<std::unique_ptr<Light>> lights_;
     FixedArray<float, 3> position_;
     FixedArray<float, 3> rotation_;

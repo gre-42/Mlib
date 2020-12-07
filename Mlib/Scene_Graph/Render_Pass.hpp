@@ -1,5 +1,5 @@
 #pragma once
-#include <string>
+#include <Mlib/String.hpp>
 
 namespace Mlib {
 
@@ -12,14 +12,7 @@ struct ExternalRenderPass {
         DIRTMAP
     } pass;
     const std::string black_node_name;
-    inline bool operator < (const ExternalRenderPass& other) const {
-        return std::make_pair(
-            pass,
-            black_node_name) <
-            std::make_pair(
-                other.pass,
-                other.black_node_name);
-    }
+    std::strong_ordering operator <=> (const ExternalRenderPass&) const = default;
 };
 
 enum class InternalRenderPass {

@@ -159,7 +159,10 @@ void SceneNode::add_instances_child(
     if (is_registered && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
-    instances_children_.insert(std::make_pair(name, std::make_tuple(is_registered, node, std::list<FixedArray<float, 3>>())));
+    instances_children_.insert(std::make_pair(name, SceneNodeInstances{
+        .is_registered = is_registered,
+        .scene_node = std::move(std::unique_ptr<SceneNode>{node}),
+        .instances = std::move(std::list<FixedArray<float, 3>>())}));
 }
 
 void SceneNode::add_instances_position(
@@ -170,7 +173,7 @@ void SceneNode::add_instances_position(
     if (it == instances_children_.end()) {
         throw std::runtime_error("Could not find instance node with name " + name);
     }
-    std::get<2>(it->second).push_back(position);
+    it->second.instances.push_back(position);
 }
 
 void SceneNode::set_camera(const std::shared_ptr<Camera>& camera) {
@@ -336,8 +339,8 @@ void SceneNode::append_small_instances_to_queue(
         n.second.second->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
     }
     for(const auto& i : instances_children_) {
-        for(const auto& j : std::get<2>(i.second)) {
-            std::get<1>(i.second)->append_small_instances_to_queue(mvp, m, j, instances_queue, scene_graph_config, external_render_pass);
+        for(const auto& j : i.second.instances) {
+            i.second.scene_node->append_small_instances_to_queue(mvp, m, j, instances_queue, scene_graph_config, external_render_pass);
         }
     }
 }
@@ -360,8 +363,8 @@ void SceneNode::append_large_instances_to_queue(
         n.second.second->append_large_instances_to_queue(m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
     }
     for(const auto& i : instances_children_) {
-        for(const auto& j : std::get<2>(i.second)) {
-            std::get<1>(i.second)->append_large_instances_to_queue(m, j, instances_queue, scene_graph_config);
+        for(const auto& j : i.second.instances) {
+            i.second.scene_node->append_large_instances_to_queue(m, j, instances_queue, scene_graph_config);
         }
     }
 }
