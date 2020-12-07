@@ -43,7 +43,7 @@ public:
         PhysicsType physics_type,
         ResolveCollisionType resolve_collision_type,
         float hand_break_velocity,
-        std::list<Beacon>& beacons);
+        std::list<Beacon>* beacons);
     float mass() const;
     FixedArray<float, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;

@@ -26,7 +26,7 @@ struct IntersectionScene {
     const PlaneNd<float, 3>& p0;
     const PhysicsEngineConfig& cfg;
     const SatTracker& st;
-    std::list<Beacon>& beacons;
+    std::list<Beacon>* beacons;
     std::list<std::unique_ptr<ContactInfo>>& contact_infos;
     size_t tire_id;
     bool mesh0_two_sided;

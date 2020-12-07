@@ -68,7 +68,7 @@ void RigidBody::advance_time(
     PhysicsType physics_type,
     ResolveCollisionType resolve_collision_type,
     float hand_break_velocity,
-    std::list<Beacon>& beacons)
+    std::list<Beacon>* beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
     if (physics_type == PhysicsType::TRACKING_SPRINGS) {

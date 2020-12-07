@@ -42,7 +42,7 @@ public:
         float& power_external,
         float& moment,
         bool& slipping,
-        std::list<Beacon>& beacons);
+        std::list<Beacon>* beacons);
     float radius() const;
     float w() const;
     void set_w(float w);

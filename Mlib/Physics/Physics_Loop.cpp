@@ -32,27 +32,29 @@ PhysicsLoop::PhysicsLoop(
         }
         std::list<Beacon> beacons;
         for(size_t i = 0; i < physics_cfg.oversampling; ++i) {
-            beacons.clear();
+            std::list<Beacon>* bcns = (i == physics_cfg.oversampling - 1)
+                ? &beacons
+                : nullptr;
             std::list<std::unique_ptr<ContactInfo>> contact_infos;
-            physics_engine.collide(beacons, contact_infos, false);  // false=burn_in
+            physics_engine.collide(bcns, contact_infos, false);  // false=burn_in
             if (physics_cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                 solve_contacts(contact_infos, physics_cfg.dt / physics_cfg.oversampling);
             }
-            physics_engine.move_rigid_bodies(beacons);
-        }
-        {
-            scene.delete_root_nodes(std::regex{"^beacon.*"});
-            size_t i = 0;
-            for(const auto& beacon : beacons) {
-                scene.add_root_node("beacon" + std::to_string(i), new SceneNode);
-                scene_node_resources.instantiate_renderable(beacon.resource_name, "box", *scene.get_node("beacon" + std::to_string(i)), SceneNodeResourceFilter{});
-                scene.get_node("beacon" + std::to_string(i))->set_position(beacon.position);
-                // scene.get_node("beacon" + std::to_string(i))->set_scale(0.05);
-                ++i;
-            }
+            physics_engine.move_rigid_bodies(bcns);
         }
         {
             std::lock_guard lock{mutex};
+            {
+                scene.delete_root_nodes(std::regex{"^beacon.*"});
+                size_t i = 0;
+                for(const auto& beacon : beacons) {
+                    scene.add_root_node("beacon" + std::to_string(i), new SceneNode);
+                    scene_node_resources.instantiate_renderable(beacon.resource_name, "box", *scene.get_node("beacon" + std::to_string(i)), SceneNodeResourceFilter{});
+                    scene.get_node("beacon" + std::to_string(i))->set_position(beacon.position);
+                    // scene.get_node("beacon" + std::to_string(i))->set_scale(0.05);
+                    ++i;
+                }
+            }
             scene.move();
         }
         physics_engine.move_advance_times();

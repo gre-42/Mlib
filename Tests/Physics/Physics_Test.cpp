@@ -151,12 +151,10 @@ void test_com() {
     r0->integrate_gravity({0, -9.8, 0});
     r1->integrate_gravity({0, -9.8, 0});
     {
-        std::list<Beacon> beacons;
-        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, beacons);
+        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, nullptr);
     }
     {
-        std::list<Beacon> beacons;
-        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, beacons);
+        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, nullptr);
     }
     
     // std::cerr << r0->rbi_.rbp_.v_ << std::endl;
@@ -166,12 +164,10 @@ void test_com() {
     r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
     {
-        std::list<Beacon> beacons;
-        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, beacons);
+        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, nullptr);
     }
     {
-        std::list<Beacon> beacons;
-        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, beacons);
+        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, nullptr);
     }
     assert_allclose(r0->rbi_.rbp_.v_.to_array(), r1->rbi_.rbp_.v_.to_array());
     assert_allclose(r0->rbi_.a_.to_array(), r1->rbi_.a_.to_array());
@@ -180,12 +176,10 @@ void test_com() {
         r0->velocity_at_position(com0).to_array(),
         r1->velocity_at_position(com1).to_array());
     {
-        std::list<Beacon> beacons;
-        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, beacons);
+        r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, nullptr);
     }
     {
-        std::list<Beacon> beacons;
-        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, beacons);
+        r1->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_break_velocity, nullptr);
     }
     assert_allclose(
         r0->velocity_at_position(com0).to_array(),
@@ -236,16 +230,15 @@ void test_tracking_wheel() {
         tw.set_w(1.23);
         tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
         {
-            std::list<Beacon> beacons;
             RigidBodyIntegrator rbi = rigid_cuboid_integrator(1e3, {1.f, 2.f, 3.f}, {0.f, 0.f, 0.5f});
             float power_internal;
             float power_external;
             float moment;
             bool slipping;
-            tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
+            tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, nullptr);
             assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, 0});
             tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);
-            tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, beacons);
+            tw.update_position(rotation, translation, power_axis, velocity, spring_constant, dt, rbi, power_internal, power_external, moment, slipping, nullptr);
             assert_allclose(rbi.a_.to_array(), Array<float>{0, 0, -0.861});
         }
     }

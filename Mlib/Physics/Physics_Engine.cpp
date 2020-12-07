@@ -47,7 +47,7 @@ static void handle_triangle_triangle_intersection(
     const CollisionTriangleSphere& t0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
-    std::list<Beacon>& beacons,
+    std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st)
@@ -123,7 +123,7 @@ static void collide_triangle(
     const CollisionTriangleSphere& t0,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st,
-    std::list<Beacon>& beacons,
+    std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos)
 {
     // Mesh-sphere <-> triangle-sphere intersection
@@ -195,7 +195,7 @@ static void collide_objects(
     const RigidBodyAndTransformedMeshes& o1,
     const PhysicsEngineConfig& cfg,
     const SatTracker& st,
-    std::list<Beacon>& beacons,
+    std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos)
 {
     if (o0.rigid_body == o1.rigid_body) {
@@ -232,7 +232,7 @@ static void collide_objects(
 }
 
 void PhysicsEngine::collide(
-    std::list<Beacon>& beacons,
+    std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
     bool burn_in)
 {
@@ -326,7 +326,7 @@ void PhysicsEngine::collide(
     }
 }
 
-void PhysicsEngine::move_rigid_bodies(std::list<Beacon>& beacons) {
+void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
     for(auto it = rigid_bodies_.objects_.begin(); it != rigid_bodies_.objects_.end(); ) {
         auto& o = *it++;
         if (o.rigid_body->mass() != INFINITY) {
@@ -357,9 +357,8 @@ void PhysicsEngine::burn_in(float seconds) {
     }
     for(float time = 0; time < seconds; time += cfg_.dt / cfg_.oversampling) {
         {
-            std::list<Beacon> beacons;
             std::list<std::unique_ptr<ContactInfo>> contact_infos;
-            collide(beacons, contact_infos, true);  // true = burn_in
+            collide(nullptr, contact_infos, true);  // true = burn_in
             if (cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                 solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling);
             }
@@ -373,8 +372,7 @@ void PhysicsEngine::burn_in(float seconds) {
             }
         }
         {
-            std::list<Beacon> beacons;
-            move_rigid_bodies(beacons);
+            move_rigid_bodies(nullptr);
         }
     }
 }

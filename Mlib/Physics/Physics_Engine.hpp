@@ -20,10 +20,10 @@ public:
     ~PhysicsEngine();
     void add_external_force_provider(ExternalForceProvider* efp);
     void collide(
-        std::list<Beacon>& beacons,
+        std::list<Beacon>* beacons,
         std::list<std::unique_ptr<ContactInfo>>& contact_infos,
         bool burn_in);
-    void move_rigid_bodies(std::list<Beacon>& beacons);
+    void move_rigid_bodies(std::list<Beacon>* beacons);
     void move_advance_times();
     void burn_in(float seconds);
 

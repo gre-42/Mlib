@@ -77,7 +77,7 @@ void TrackingWheel::update_position(
     float& power_external,
     float& moment,
     bool& slipping,
-    std::list<Beacon>& beacons)
+    std::list<Beacon>* beacons)
 {
     if (!pose_initialized_) {
         old_rotation_ = rotation;
@@ -155,9 +155,9 @@ void TrackingWheel::update_position(
                 }
             }
             // std::cerr << "new3 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
-            if (slip) {
-                beacons.push_back({dot1d(rotation, s.spring.point_of_contact) + translation});
-                beacons.push_back({position: abs_pos, resource_name: "beacon1"});
+            if (slip && (beacons != nullptr)) {
+                beacons->push_back({dot1d(rotation, s.spring.point_of_contact) + translation});
+                beacons->push_back({position: abs_pos, resource_name: "beacon1"});
             }
         }
     }
