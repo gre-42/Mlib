@@ -48,10 +48,11 @@ PhysicsLoop::PhysicsLoop(
                 scene.delete_root_nodes(std::regex{"^beacon.*"});
                 size_t i = 0;
                 for(const auto& beacon : beacons) {
+                    SceneNode* node = new SceneNode;
                     scene.add_root_node("beacon" + std::to_string(i), new SceneNode);
-                    scene_node_resources.instantiate_renderable(beacon.resource_name, "box", *scene.get_node("beacon" + std::to_string(i)), SceneNodeResourceFilter{});
-                    scene.get_node("beacon" + std::to_string(i))->set_position(beacon.position);
-                    // scene.get_node("beacon" + std::to_string(i))->set_scale(0.05);
+                    scene_node_resources.instantiate_renderable(beacon.resource_name, "box", *node, SceneNodeResourceFilter{});
+                    node->set_position(beacon.position);
+                    // node->set_scale(0.05);
                     ++i;
                 }
             }
