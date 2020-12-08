@@ -789,7 +789,12 @@ void Mlib::add_street_steiner_points(
         Interp<float> interp{steiner_point_distances_road, steiner_point_distances_steiner, OutOfRangeBehavior::CLAMP};
         // std::cerr << "search_time " << bvh.search_time() << std::endl;
         float dist0 = (*std::min_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale;
-        float dist1 = (*std::max_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale;
+        float dist1 = 0;
+        for(float v : steiner_point_distances_steiner) {
+            if (v != INFINITY) {
+                dist1 = std::max(dist1, v * scale);
+            }
+        }
         size_t ix = 0;
         NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
         for(float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
@@ -801,13 +806,16 @@ void Mlib::add_street_steiner_points(
                     min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
                 });
                 if (min_distance > 0) {
-                    size_t refinement = std::max<size_t>(1, (interp(min_distance / scale) * scale) / dist0);
-                    bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
-                    if (is_included) {
-                        steiner_points.push_back(SteinerPointInfo{
-                            .position = {pt(0), pt(1), 0},
-                            .type = SteinerPointType::STREET_NEIGHBOR,
-                            .distance_to_road = min_distance});
+                    float dist = interp(min_distance / scale);
+                    if (dist != INFINITY) {
+                        size_t refinement = std::max<size_t>(1, (dist * scale) / dist0);
+                        bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
+                        if (is_included) {
+                            steiner_points.push_back(SteinerPointInfo{
+                                .position = {pt(0), pt(1), 0},
+                                .type = SteinerPointType::STREET_NEIGHBOR,
+                                .distance_to_road = min_distance});
+                        }
                     }
                 }
                 ++iy;
