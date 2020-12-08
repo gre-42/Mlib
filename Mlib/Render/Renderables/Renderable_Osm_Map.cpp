@@ -67,9 +67,8 @@ RenderableOsmMap::RenderableOsmMap(
     bool only_raceways,
     const std::string& highway_name_pattern,
     const std::set<std::string>& path_tags,
-    float steiner_point_distance,
-    float steiner_point_coarse_margin,
-    size_t steiner_point_refinement,
+    const std::vector<float>& steiner_point_distances_road,
+    const std::vector<float>& steiner_point_distances_steiner,
     float curb_alpha,
     float raise_streets_amount,
     float extrude_curb_amount,
@@ -438,9 +437,8 @@ RenderableOsmMap::RenderableOsmMap(
                 hole_triangles,
                 bounding_info,
                 scale,
-                steiner_point_distance,
-                steiner_point_coarse_margin,
-                steiner_point_refinement);
+                steiner_point_distances_road,
+                steiner_point_distances_steiner);
             LOG_INFO("triangulate_terrain_or_ceilings");
             triangulate_terrain_or_ceilings(
                 *tl_terrain,

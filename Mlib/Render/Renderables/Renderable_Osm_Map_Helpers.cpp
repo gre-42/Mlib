@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map_Rectangle.hpp>
 #include <Mlib/Render/Renderables/Resource_Instance_Descriptor.hpp>
@@ -759,11 +760,10 @@ void Mlib::add_street_steiner_points(
     const std::list<FixedArray<ColoredVertex, 3>>& triangles,
     const BoundingInfo& bounding_info,
     float scale,
-    float steiner_point_distance,
-    float steiner_point_coarse_margin,
-    size_t steiner_point_refinement)
+    const std::vector<float>& steiner_point_distances_road,
+    const std::vector<float>& steiner_point_distances_steiner)
 {
-    if (steiner_point_distance != INFINITY) {
+    if (!steiner_point_distances_road.empty()) {
         typedef FixedArray<FixedArray<float, 2>, 3> Triangle2d;
         // for(float f = 0.01; f < 2; f += 0.01) {
         //     Bvh<float, Triangle2d, 2> bvh{{f, f}, 10};
@@ -786,9 +786,10 @@ void Mlib::add_street_steiner_points(
                 bvh.insert(tri, "", tri);
             }
         }
+        Interp<float> interp{steiner_point_distances_road, steiner_point_distances_steiner, OutOfRangeBehavior::CLAMP};
         // std::cerr << "search_time " << bvh.search_time() << std::endl;
-        float dist0 = steiner_point_distance * scale / steiner_point_refinement;
-        float dist1 = steiner_point_coarse_margin * scale;
+        float dist0 = interp(0) * scale;
+        float dist1 = interp(INFINITY) * scale;
         size_t ix = 0;
         NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
         for(float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
@@ -799,15 +800,15 @@ void Mlib::add_street_steiner_points(
                 bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt](const std::string& category, const Triangle2d& tri) {
                     min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
                 });
-                bool is_coarse = (ix % steiner_point_refinement == 0) && (iy % steiner_point_refinement == 0);
-                // 0 ... dist / steiner_point_refinement ... dist ...
-                bool insert_fine = (min_distance > dist0 / 2) && (min_distance < dist1);
-                bool insert_coarse = is_coarse && (min_distance >= dist1);
-                if (insert_fine || insert_coarse) {
-                    steiner_points.push_back(SteinerPointInfo{
-                        .position = {pt(0), pt(1), 0},
-                        .type = SteinerPointType::STREET_NEIGHBOR,
-                        .distance_to_road = min_distance});
+                if (min_distance > 0) {
+                    size_t refinement = std::max<size_t>(1, (interp(min_distance / scale) * scale) / dist0);
+                    bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
+                    if (is_included) {
+                        steiner_points.push_back(SteinerPointInfo{
+                            .position = {pt(0), pt(1), 0},
+                            .type = SteinerPointType::STREET_NEIGHBOR,
+                            .distance_to_road = min_distance});
+                    }
                 }
                 ++iy;
             }

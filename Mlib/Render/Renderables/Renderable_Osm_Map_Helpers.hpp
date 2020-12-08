@@ -220,9 +220,8 @@ void add_street_steiner_points(
     const std::list<FixedArray<ColoredVertex, 3>>& triangles,
     const BoundingInfo& bounding_info,
     float scale,
-    float steiner_point_distance,
-    float steiner_point_coarse_margin,
-    size_t steiner_point_refinement);
+    const std::vector<float>& steiner_point_distances_road,
+    const std::vector<float>& steiner_point_distances_steiner);
 
 void triangulate_terrain_or_ceilings(
     TriangleList& tl_terrain,
