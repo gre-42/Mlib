@@ -44,6 +44,9 @@ TData distance_point_to_triangle (
         if (dl(1) >= 0) {
             is_inside = false;
             if ((dl(0) >= 0) && (dl(0) <= 1)) {
+                if (!std::isnan(result_edge)) {
+                    throw std::runtime_error("distance_point_to_triangle detected left-handed triangle");
+                }
                 result_edge = dl(1);
             }
         }
