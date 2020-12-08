@@ -519,7 +519,7 @@ RenderableOsmMap::RenderableOsmMap(
     if (street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
         std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
         std::list<FixedArray<float, 3>*> smoothed_vertices;
-        for(auto& l : tls_ground) {
+        for(auto& l : tls_all) {
             for(auto& t : l->triangles_) {
                 for(auto& v : t.flat_iterable()) {
                     smoothed_vertices.push_back(&v.position);
