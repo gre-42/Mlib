@@ -788,8 +788,8 @@ void Mlib::add_street_steiner_points(
         }
         Interp<float> interp{steiner_point_distances_road, steiner_point_distances_steiner, OutOfRangeBehavior::CLAMP};
         // std::cerr << "search_time " << bvh.search_time() << std::endl;
-        float dist0 = interp(0) * scale;
-        float dist1 = interp(INFINITY) * scale;
+        float dist0 = (*std::min_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale;
+        float dist1 = (*std::max_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale;
         size_t ix = 0;
         NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
         for(float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
