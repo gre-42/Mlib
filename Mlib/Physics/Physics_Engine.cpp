@@ -371,9 +371,7 @@ void PhysicsEngine::burn_in(float seconds) {
                 }
             }
         }
-        {
-            move_rigid_bodies(nullptr);
-        }
+        move_rigid_bodies(nullptr);
     }
 }
 
