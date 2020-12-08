@@ -534,9 +534,8 @@ RenderableOsmMap::RenderableOsmMap(
             TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, street_edge_smoothness, 100);
         }
         if (terrain_edge_smoothness > 0) {
-            std::list<std::shared_ptr<TriangleList>> tls_terrain{tl_terrain};
-            LOG_INFO("smoothen_edges (terrain)");
-            TriangleList::smoothen_edges(tls_terrain, tls_street, smoothed_vertices, street_edge_smoothness, 10);
+            LOG_INFO("smoothen_edges (ground)");
+            TriangleList::smoothen_edges(tls_ground, tls_street, smoothed_vertices, terrain_edge_smoothness, 10);
         }
     }
     raise_streets(
