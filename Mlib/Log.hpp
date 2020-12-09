@@ -1,15 +1,18 @@
 #pragma once
+#include <iostream>
 #include <string>
 
 namespace Mlib {
 
 class Log {
 public:
-    Log(const std::string& message);
+    Log(const std::string& message, std::ostream* ostr = &std::cerr);
+    Log(const std::string& message, const std::string& env_var);
     ~Log();
-    static void info(const std::string& message);
+    void info(const std::string& message);
 private:
     static thread_local size_t level_;
+    std::ostream* ostr_;
 };
 
 #ifdef MLIB_ENABLE_LOG

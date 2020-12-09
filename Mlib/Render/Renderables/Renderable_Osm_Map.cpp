@@ -14,10 +14,10 @@
 #include <Mlib/String.hpp>
 #include <regex>
 
-// #undef LOG_FUNCTION
-// #undef LOG_INFO
-// #define LOG_FUNCTION(msg) ::Mlib::Log log(msg)
-// #define LOG_INFO(msg) log.info(msg)
+#undef LOG_FUNCTION
+#undef LOG_INFO
+#define LOG_FUNCTION(msg) ::Mlib::Log log(msg, "LOG_OSM_MAP")
+#define LOG_INFO(msg) log.info(msg)
 
 using namespace Mlib;
 
