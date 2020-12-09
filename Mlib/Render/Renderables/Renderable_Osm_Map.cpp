@@ -526,6 +526,14 @@ RenderableOsmMap::RenderableOsmMap(
                 }
             }
         }
+        for(auto& d : object_resource_descriptors_) {
+            smoothed_vertices.push_back(&d.position);
+        }
+        for(auto& i : resource_instance_positions_) {
+            for(auto& d : i.second) {
+                smoothed_vertices.push_back(&d.position);
+            }
+        }
         for(SteinerPointInfo& p : steiner_points) {
             smoothed_vertices.push_back(&p.position);
         }

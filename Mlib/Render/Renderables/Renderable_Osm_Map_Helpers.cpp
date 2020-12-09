@@ -1144,7 +1144,7 @@ void Mlib::add_trees_to_forest_outlines(
 {
     NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
-    size_t rid = 0;
+    // size_t rid = 0;
     for(const auto& w : ways) {
         const auto& tags = w.second.tags;
         if ((tags.find("landuse") != tags.end() && tags.at("landuse") == "forest") ||
@@ -1178,12 +1178,12 @@ void Mlib::add_trees_to_forest_outlines(
                     //     position: FixedArray<float, 3>{p(0), p(1), 0},
                     //     name: rnc(),
                     //     scale: rng()});
-                    if ((rid++) % 4 == 0) {
-                        steiner_points.push_back({
-                            .position = {p(0), p(1), 0},
-                            .type = SteinerPointType::FOREST_OUTLINE,
-                            .distance_to_road = NAN});
-                    }
+                    // if ((rid++) % 4 == 0) {
+                    steiner_points.push_back({
+                        .position = {p(0), p(1), 0},
+                        .type = SteinerPointType::FOREST_OUTLINE,
+                        .distance_to_road = NAN});
+                    // }
                 }
             }
         }
