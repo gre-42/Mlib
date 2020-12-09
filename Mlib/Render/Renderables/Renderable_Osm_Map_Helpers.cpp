@@ -71,25 +71,25 @@ static float compute_area(
     return area2 / 2 / squared(scale);
 }
 
-std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> Mlib::gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points) {
-    std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map;
-    for(auto& p : steiner_points) {
-        if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
-            throw std::runtime_error("Could not generate steiner point map");
-        }
-    }
-    return steiner_point_map;
-}
-
-std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> Mlib::gen_const_steiner_point_map(const std::list<SteinerPointInfo>& steiner_points) {
-    std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> steiner_point_map;
-    for(auto& p : steiner_points) {
-        if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
-            throw std::runtime_error("Could not generate const steiner point map");
-        }
-    }
-    return steiner_point_map;
-}
+// std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> Mlib::gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points) {
+//     std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map;
+//     for(auto& p : steiner_points) {
+//         if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
+//             throw std::runtime_error("Could not generate steiner point map");
+//         }
+//     }
+//     return steiner_point_map;
+// }
+// 
+// std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> Mlib::gen_const_steiner_point_map(const std::list<SteinerPointInfo>& steiner_points) {
+//     std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> steiner_point_map;
+//     for(auto& p : steiner_points) {
+//         if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
+//             throw std::runtime_error("Could not generate const steiner point map");
+//         }
+//     }
+//     return steiner_point_map;
+// }
 
 
 void Mlib::draw_node(
@@ -425,7 +425,7 @@ void Mlib::draw_streets(
     TriangleList& tl_path,
     TriangleList& tl_curb_street,
     TriangleList& tl_curb_path,
-    std::list<ObjectResourceDescriptor>& street_light_positions,
+    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -610,8 +610,8 @@ void Mlib::draw_streets(
                         switch (sid % 10) {
                             case 0:
                             case 3:
-                                street_light_positions.push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, "street-light"});
-                                street_light_positions.push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, "street-light"});
+                                object_resource_descriptors.push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, "street-light"});
+                                object_resource_descriptors.push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, "street-light"});
                                 break;
                             //case 8:
                             //    street_light_positions.push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, "bgrass"});
@@ -952,10 +952,8 @@ struct NeighborWeight {
 };
 
 void Mlib::apply_height_map(
-    std::list<std::shared_ptr<TriangleList>>& triangles,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<SteinerPointInfo>& steiner_points,
+    std::list<FixedArray<float, 3>*>& in_vertices,
+    std::set<OrderableFixedArray<float, 2>>& vertices_to_delete,
     const Array<float>& heightmap,
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
@@ -1009,59 +1007,34 @@ void Mlib::apply_height_map(
             }
         }
     }
-    std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map = gen_steiner_point_map(steiner_points);
-    for(auto& tl : triangles) {
-        for(auto ti = tl->triangles_.begin(); ti != tl->triangles_.end(); ) {
-            auto ti0 = ti++;
-            for(auto& v : ti0->flat_iterable()) {
-                FixedArray<float, 2> vc;
-                auto it = height_bindings.find(OrderableFixedArray<float, 2>{v.position(0), v.position(1)});
-                if ((it != height_bindings.end()) && (it->second.size() == 1)) {
-                    if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
-                        v.position(2) += hit->second.smooth_height * scale;
-                        continue;
-                    }
-                    vc = nodes.at(*it->second.begin()).position;
-                } else {
-                    vc = {v.position(0), v.position(1)};
-                }
-                FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(vc));
-                float z;
-                if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
-                    // std::cerr << "Height out of bounds." << std::endl;
-                    tl->triangles_.erase(ti0);
-                    break;
-                } else {
-                    v.position(2) += z * scale;
-                    auto sit = steiner_point_map.find(OrderableFixedArray<float, 3>{v.position(0), v.position(1), 0});
-                    if (sit != steiner_point_map.end()) {
-                        const_cast<float&>(sit->second->position(2)) = v.position(2);
-                    }
-                }
-            }
-        }
+    std::map<OrderableFixedArray<float, 2>, std::list<FixedArray<float, 3>*>> vertex_instances_map;
+    for (FixedArray<float, 3>* iv : in_vertices) {
+        vertex_instances_map[OrderableFixedArray<float, 2>{(*iv)(0), (*iv)(1)}].push_back(iv);
     }
-    for(auto it_r = object_resource_descriptors.begin(); it_r != object_resource_descriptors.end(); ) {
-        auto it0 = it_r++;
-        FixedArray<float, 2> p = dot1d(normalization_matrix, FixedArray<float, 3>{it0->position(0), it0->position(1), 1});
+    for(auto& position : vertex_instances_map) {
+        FixedArray<float, 2> vc;
+        auto it = height_bindings.find(OrderableFixedArray<float, 2>{position.first(0), position.first(1)});
+        if ((it != height_bindings.end()) && (it->second.size() == 1)) {
+            if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
+                for(auto& pc : position.second) {
+                    (*pc)(2) += hit->second.smooth_height * scale;
+                }
+                continue;
+            }
+            vc = nodes.at(*it->second.begin()).position;
+        } else {
+            vc = {position.first(0), position.first(1)};
+        }
+        FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(vc));
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
             // std::cerr << "Height out of bounds." << std::endl;
-            object_resource_descriptors.erase(it0);
+            if (!vertices_to_delete.insert(position.first).second) {
+                throw std::runtime_error("Could not insert vertex to delete");
+            }
         } else {
-            it0->position(2) += z * scale;
-        }
-    }
-    for(auto& slp : resource_instance_positions) {
-        for(auto it_r = slp.second.begin(); it_r != slp.second.end(); ) {
-            auto it0 = it_r++;
-            FixedArray<float, 2> p = dot1d(normalization_matrix, FixedArray<float, 3>{it0->position(0), it0->position(1), 1});
-            float z;
-            if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
-                // std::cerr << "Height out of bounds." << std::endl;
-                slp.second.erase(it0);
-            } else {
-                it0->position(2) += z * scale;
+            for(auto& pc : position.second) {
+                (*pc)(2) += z * scale;
             }
         }
     }

@@ -492,32 +492,7 @@ RenderableOsmMap::RenderableOsmMap(
     tls_all.insert(tls_all.end(), tls_buildings.begin(), tls_buildings.end());
     tls_all.insert(tls_all.end(), tls_wall_barriers.begin(), tls_wall_barriers.end());
 
-    if (!heightmap.empty()) {
-        LOG_INFO("apply_height_map");
-        apply_height_map(
-            tls_all,
-            object_resource_descriptors_,
-            resource_instance_positions_,
-            steiner_points,
-            PgmImage::load_from_file(heightmap).to_float() / 64.f * float(UINT16_MAX),
-            normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
-            scale,
-            nodes,
-            ways,
-            height_bindings,
-            street_node_smoothness);
-    }
-
-    // for(auto& l : tls_buildings) {
-    //     colorize_height_map(l->triangles_);
-    // }
-    TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
-    // for(auto& l : tls_wall_barriers) {
-    //     colorize_height_map(l->triangles_);
-    // }
-
-    if (street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
-        std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
+    if (!heightmap.empty() || street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
         std::list<FixedArray<float, 3>*> smoothed_vertices;
         for(auto& l : tls_all) {
             for(auto& t : l->triangles_) {
@@ -537,13 +512,46 @@ RenderableOsmMap::RenderableOsmMap(
         for(SteinerPointInfo& p : steiner_points) {
             smoothed_vertices.push_back(&p.position);
         }
-        if (street_edge_smoothness > 0) {
-            LOG_INFO("smoothen_edges (street)");
-            TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, street_edge_smoothness, 100);
+        if (!heightmap.empty()) {
+            LOG_INFO("apply_height_map");
+            std::set<OrderableFixedArray<float, 2>> vertices_to_delete;
+            apply_height_map(
+                smoothed_vertices,
+                vertices_to_delete,
+                PgmImage::load_from_file(heightmap).to_float() / 64.f * float(UINT16_MAX),
+                normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
+                scale,
+                nodes,
+                ways,
+                height_bindings,
+                street_node_smoothness);
+            for(auto& l : tls_all) {
+                std::remove_if(l->triangles_.begin(), l->triangles_.end(), [&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
+                    return
+                        vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(0).position(0), v(0).position(1)}) ||
+                        vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(1).position(0), v(1).position(1)}) ||
+                        vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(2).position(0), v(2).position(1)});
+                });
+            }
+            std::remove_if(object_resource_descriptors_.begin(), object_resource_descriptors_.end(), [&vertices_to_delete](const ObjectResourceDescriptor& d){
+                return vertices_to_delete.contains(OrderableFixedArray<float, 2>{d.position(0), d.position(1)});
+            });
+            for(auto& i : resource_instance_positions_) {
+                std::remove_if(i.second.begin(), i.second.end(), [&vertices_to_delete](const ResourceInstanceDescriptor& d){
+                    return vertices_to_delete.contains(OrderableFixedArray<float, 2>{d.position(0), d.position(1)});
+                });
+            }
         }
-        if (terrain_edge_smoothness > 0) {
-            LOG_INFO("smoothen_edges (ground)");
-            TriangleList::smoothen_edges(tls_ground, tls_street, smoothed_vertices, terrain_edge_smoothness, 10);
+        if (street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
+            std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
+            if (street_edge_smoothness > 0) {
+                LOG_INFO("smoothen_edges (street)");
+                TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, street_edge_smoothness, 100);
+            }
+            if (terrain_edge_smoothness > 0) {
+                LOG_INFO("smoothen_edges (ground)");
+                TriangleList::smoothen_edges(tls_ground, tls_street, smoothed_vertices, terrain_edge_smoothness, 10);
+            }
         }
     }
     raise_streets(
@@ -565,6 +573,7 @@ RenderableOsmMap::RenderableOsmMap(
         l->calculate_triangle_normals();
     }
 
+    TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
     TriangleList::convert_triangle_to_vertex_normals(tls_ground_wo_curb);
 
     // for(auto& l : tls_ground) {

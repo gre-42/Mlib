@@ -52,9 +52,6 @@ struct SteinerPointInfo {
     float distance_to_road;
 };
 
-std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points);
-std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> gen_const_steiner_point_map(const std::list<SteinerPointInfo>& steiner_points);
-
 void draw_node(
     std::vector<FixedArray<ColoredVertex, 3>>& triangles,
     const FixedArray<float, 2>& pos2d,
@@ -235,10 +232,8 @@ void triangulate_terrain_or_ceilings(
     float z);
 
 void apply_height_map(
-    std::list<std::shared_ptr<TriangleList>>& triangles,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<SteinerPointInfo>& steiner_points,
+    std::list<FixedArray<float, 3>*>& in_vertices,
+    std::set<OrderableFixedArray<float, 2>>& vertices_to_delete,
     const Array<float>& heightmap,
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
