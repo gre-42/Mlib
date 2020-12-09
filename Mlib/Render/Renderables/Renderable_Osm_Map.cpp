@@ -541,6 +541,8 @@ RenderableOsmMap::RenderableOsmMap(
                     return vertices_to_delete.contains(OrderableFixedArray<float, 2>{d.position(0), d.position(1)});
                 });
             }
+            std::remove_if(steiner_points.begin(), steiner_points.end(), [&vertices_to_delete](const SteinerPointInfo& p){
+                return vertices_to_delete.contains(OrderableFixedArray<float, 2>{p.position(0), p.position(1)});});
         }
         if (street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
             std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
