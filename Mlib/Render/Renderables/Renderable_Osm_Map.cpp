@@ -526,22 +526,22 @@ RenderableOsmMap::RenderableOsmMap(
                 height_bindings,
                 street_node_smoothness);
             for(auto& l : tls_all) {
-                std::remove_if(l->triangles_.begin(), l->triangles_.end(), [&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
+                l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
                     return
                         vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(0).position(0), v(0).position(1)}) ||
                         vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(1).position(0), v(1).position(1)}) ||
                         vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(2).position(0), v(2).position(1)});
                 });
             }
-            std::remove_if(object_resource_descriptors_.begin(), object_resource_descriptors_.end(), [&vertices_to_delete](const ObjectResourceDescriptor& d){
+            object_resource_descriptors_.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
                 return vertices_to_delete.contains(OrderableFixedArray<float, 2>{d.position(0), d.position(1)});
             });
             for(auto& i : resource_instance_positions_) {
-                std::remove_if(i.second.begin(), i.second.end(), [&vertices_to_delete](const ResourceInstanceDescriptor& d){
+                i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
                     return vertices_to_delete.contains(OrderableFixedArray<float, 2>{d.position(0), d.position(1)});
                 });
             }
-            std::remove_if(steiner_points.begin(), steiner_points.end(), [&vertices_to_delete](const SteinerPointInfo& p){
+            steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
                 return vertices_to_delete.contains(OrderableFixedArray<float, 2>{p.position(0), p.position(1)});});
         }
         if (street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
