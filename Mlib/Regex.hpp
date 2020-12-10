@@ -21,6 +21,7 @@ void findall(
 
 std::list<std::pair<std::string, std::string>> find_all_name_values(
     const std::string& str,
+    const std::string& name_pattern,
     const std::string& value_pattern);
 
 class SubstitutionString {

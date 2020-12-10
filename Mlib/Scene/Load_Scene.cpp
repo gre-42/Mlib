@@ -927,7 +927,7 @@ void LoadScene::operator()(
             render_logics.append(nullptr, players_stats_logic);
         } else if (std::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
-            for(const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-]+")) {
+            for(const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
                 scene_entries.push_back(SceneEntry{
                     name: e.first,
                     filename: fpath(e.second)});
@@ -951,7 +951,7 @@ void LoadScene::operator()(
             substitutions.clear();
         } else if (std::regex_match(line, match, parameter_setter_reg)) {
             std::list<ReplacementParameter> rps;
-            for(const auto& e : find_all_name_values(match[8].str(), substitute_pattern)) {
+            for(const auto& e : find_all_name_values(match[8].str(), "[\\w+-. ]+", substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
                     name: e.first,
                     substitutions: SubstitutionString{e.second}});
