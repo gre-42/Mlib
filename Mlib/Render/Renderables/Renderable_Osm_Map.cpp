@@ -388,6 +388,7 @@ RenderableOsmMap::RenderableOsmMap(
                 steiner_points,
                 Material{
                     .texture_descriptor = {color: "<tbd>"},
+                    .occluder_type = OccluderType::BLACK,
                     .aggregate_mode = AggregateMode::ONCE,
                     .ambience = {1, 1, 1}}.compute_color_mode(),
                 buildings,
@@ -406,7 +407,7 @@ RenderableOsmMap::RenderableOsmMap(
                 steiner_points,
                 Material{
                     .texture_descriptor = {color: "<tbd>"},
-                    .occluder_type = OccluderType::OFF,
+                    .occluder_type = OccluderType::BLACK,
                     .blend_mode = barrier_blend_mode,
                     .aggregate_mode = AggregateMode::ONCE,
                     .is_small = false,
@@ -456,9 +457,10 @@ RenderableOsmMap::RenderableOsmMap(
             draw_roofs(
                 tls_buildings,
                 Material{
-                    texture_descriptor: {color: roof_texture},
-                    aggregate_mode: AggregateMode::ONCE,
-                    ambience: {1, 1, 1}}.compute_color_mode(),
+                    .texture_descriptor = {color: roof_texture},
+                    .occluder_type = OccluderType::BLACK,
+                    .aggregate_mode = AggregateMode::ONCE,
+                    .ambience = {1, 1, 1}}.compute_color_mode(),
                 roof_color,
                 buildings,
                 nodes,
@@ -472,9 +474,10 @@ RenderableOsmMap::RenderableOsmMap(
             draw_ceilings(
                 tls_buildings,
                 Material{
-                    texture_descriptor: {color: ceiling_texture},
-                    aggregate_mode: AggregateMode::ONCE,
-                    ambience: {1, 1, 1}}.compute_color_mode(),
+                    .texture_descriptor = {color: ceiling_texture},
+                    .occluder_type = OccluderType::BLACK,
+                    .aggregate_mode = AggregateMode::ONCE,
+                    .ambience = {1, 1, 1}}.compute_color_mode(),
                 buildings,
                 nodes,
                 scale,
