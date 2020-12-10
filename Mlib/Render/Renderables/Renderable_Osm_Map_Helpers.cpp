@@ -953,7 +953,7 @@ struct NeighborWeight {
 
 void Mlib::apply_height_map(
     std::list<FixedArray<float, 3>*>& in_vertices,
-    std::set<OrderableFixedArray<float, 2>>& vertices_to_delete,
+    std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
@@ -1029,8 +1029,10 @@ void Mlib::apply_height_map(
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
             // std::cerr << "Height out of bounds." << std::endl;
-            if (!vertices_to_delete.insert(position.first).second) {
-                throw std::runtime_error("Could not insert vertex to delete");
+            for(auto& pc : position.second) {
+                if (!vertices_to_delete.insert(pc).second) {
+                    throw std::runtime_error("Could not insert vertex to delete");
+                }
             }
         } else {
             for(auto& pc : position.second) {

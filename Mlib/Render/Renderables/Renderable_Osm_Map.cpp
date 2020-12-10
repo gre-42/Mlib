@@ -520,7 +520,7 @@ RenderableOsmMap::RenderableOsmMap(
         }
         if (!heightmap.empty()) {
             LOG_INFO("apply_height_map");
-            std::set<OrderableFixedArray<float, 2>> vertices_to_delete;
+            std::set<const FixedArray<float, 3>*> vertices_to_delete;
             apply_height_map(
                 smoothed_vertices,
                 vertices_to_delete,
@@ -533,24 +533,30 @@ RenderableOsmMap::RenderableOsmMap(
                 street_node_smoothness);
             for(auto& l : tls_all) {
                 l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
-                    return
-                        vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(0).position(0), v(0).position(1)}) ||
-                        vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(1).position(0), v(1).position(1)}) ||
-                        vertices_to_delete.contains(OrderableFixedArray<float, 2>{v(2).position(0), v(2).position(1)});
+                    bool del =
+                        vertices_to_delete.contains(&v(0).position) ||
+                        vertices_to_delete.contains(&v(1).position) ||
+                        vertices_to_delete.contains(&v(2).position);
+                    if (del) {
+                        vertices_to_delete.insert(&v(0).position);
+                        vertices_to_delete.insert(&v(1).position);
+                        vertices_to_delete.insert(&v(2).position);
+                    }
+                    return del;
                 });
             }
             object_resource_descriptors_.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
-                return vertices_to_delete.contains(OrderableFixedArray<float, 2>{d.position(0), d.position(1)});
+                return vertices_to_delete.contains(&d.position);
             });
             for(auto& i : resource_instance_positions_) {
                 i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
-                    return vertices_to_delete.contains(OrderableFixedArray<float, 2>{d.position(0), d.position(1)});
+                    return vertices_to_delete.contains(&d.position);
                 });
             }
             steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
-                return vertices_to_delete.contains(OrderableFixedArray<float, 2>{p.position(0), p.position(1)});});
+                return vertices_to_delete.contains(&p.position);});
             smoothed_vertices.remove_if([&vertices_to_delete](const FixedArray<float, 3>* p){
-                return vertices_to_delete.contains(OrderableFixedArray<float, 2>{(*p)(0), (*p)(1)});});
+                return vertices_to_delete.contains(p);});
         }
         if (street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
             std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};

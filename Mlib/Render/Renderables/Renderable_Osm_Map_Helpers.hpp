@@ -233,7 +233,7 @@ void triangulate_terrain_or_ceilings(
 
 void apply_height_map(
     std::list<FixedArray<float, 3>*>& in_vertices,
-    std::set<OrderableFixedArray<float, 2>>& vertices_to_delete,
+    std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
     const FixedArray<float, 2, 3>& normalization_matrix,
     float scale,
