@@ -512,6 +512,12 @@ RenderableOsmMap::RenderableOsmMap(
         for(SteinerPointInfo& p : steiner_points) {
             smoothed_vertices.push_back(&p.position);
         }
+        {
+            std::set<FixedArray<float, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
+            if (svs.size() != smoothed_vertices.size()) {
+                throw std::runtime_error("Found duplicate smoothed vertices");
+            }
+        }
         if (!heightmap.empty()) {
             LOG_INFO("apply_height_map");
             std::set<OrderableFixedArray<float, 2>> vertices_to_delete;
@@ -543,6 +549,8 @@ RenderableOsmMap::RenderableOsmMap(
             }
             steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
                 return vertices_to_delete.contains(OrderableFixedArray<float, 2>{p.position(0), p.position(1)});});
+            smoothed_vertices.remove_if([&vertices_to_delete](const FixedArray<float, 3>* p){
+                return vertices_to_delete.contains(OrderableFixedArray<float, 2>{(*p)(0), (*p)(1)});});
         }
         if (street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
             std::list<std::shared_ptr<TriangleList>> tls_street{tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
