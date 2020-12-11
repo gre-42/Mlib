@@ -53,3 +53,11 @@ std::string Players::get_score_board() const {
     }
     return sstr.str();
 }
+
+std::map<std::string, Player*>& Players::players() {
+    return players_;
+}
+
+const std::map<std::string, Player*>& Players::players() const {
+    return players_;
+}

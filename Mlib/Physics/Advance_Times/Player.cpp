@@ -145,14 +145,14 @@ void Player::move_to_waypoint() {
         }
     }
     // Avoid collisions with other players (break).
-    for (const auto& p : players_.players_) {
+    for (const auto& p : players_.players()) {
         if (p.second == this) {
             continue;
         }
         if (p.second->rb_ == nullptr) {
             continue;
         }
-        auto d = p.second->rb_->rbi_.abs_position() - rb_->rbi_.abs_position();
+        FixedArray<float, 3> d = p.second->rb_->rbi_.abs_position() - rb_->rbi_.abs_position();
         if (sum(squared(d)) < squared(collision_avoidance_radius)) {
             auto z = rb_->rbi_.abs_z();
             if (dot0d(d, z) < 0) {
@@ -213,7 +213,7 @@ void Player::select_opponent() {
         target_scene_node_ = nullptr;
         target_rbi_ = nullptr;
     }
-    for (const auto& p : players_.players_) {
+    for (const auto& p : players_.players()) {
         if (p.second->team_ != team_) {
             assert_true(!p.second->scene_node_ == !p.second->rb_);
             if (p.second->rb_ == nullptr) {
