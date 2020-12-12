@@ -10,9 +10,9 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
-void MacroFileExecutor::operator()(const MacroLineExecutor& lp)
+void MacroFileExecutor::operator()(const MacroLineExecutor& macro_line_executor)
 {
-    std::ifstream ifs{lp.script_filename_};
+    std::ifstream ifs{macro_line_executor.script_filename_};
     const std::regex macro_begin_reg("^(?:\\r?\\n|\\s)*macro_begin ([\\w+-.]+)$");
     const std::regex macro_end_reg("^(?:\\r?\\n|\\s)*macro_end$");
 
@@ -25,7 +25,7 @@ void MacroFileExecutor::operator()(const MacroLineExecutor& lp)
         std::smatch match;
 
         if (std::regex_match(line, match, macro_begin_reg)) {
-            recording_macros.push_back(std::make_pair(match[1].str(), Macro{filename: lp.script_filename_}));
+            recording_macros.push_back(std::make_pair(match[1].str(), Macro{filename: macro_line_executor.script_filename_}));
         } else if (std::regex_match(line, match, macro_end_reg)) {
             if (recording_macros.empty()) {
                 throw std::runtime_error("Macro-end despite no active macro");
@@ -38,12 +38,12 @@ void MacroFileExecutor::operator()(const MacroLineExecutor& lp)
         } else if (!recording_macros.empty()) {
             recording_macros.back().second.lines.push_back(line);
         } else {
-            lp(lp.substitutions_.substitute(line));
+            macro_line_executor(macro_line_executor.substitutions_.substitute(line));
         }
     }
 
     if (!ifs.eof() && ifs.fail()) {
-        throw std::runtime_error("Error reading from file: \"" + lp.script_filename_ + '"');
+        throw std::runtime_error("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
     }
 }
 
@@ -51,8 +51,8 @@ MacroLineExecutor::MacroLineExecutor(
     MacroFileExecutor& macro_file_executor,
     const std::string& script_filename,
     const std::string& working_directory,
-    MacroFileExecutor::UserFunction& execute_user_function,
-    SubstitutionString& substitutions,
+    const MacroFileExecutor::UserFunction& execute_user_function,
+    const SubstitutionString& substitutions,
     bool verbose)
 : macro_file_executor_{macro_file_executor},
   script_filename_{script_filename},
@@ -104,7 +104,7 @@ void MacroLineExecutor::operator () (const std::string& line) const
         if (macro_it == macro_file_executor_.macros_.end()) {
             throw std::runtime_error("No macro with name " + match[1].str() + " exists");
         }
-        MacroLineExecutor lp2{
+        MacroLineExecutor mle2{
             macro_file_executor_,
             macro_it->second.filename,
             working_directory_,
@@ -112,17 +112,17 @@ void MacroLineExecutor::operator () (const std::string& line) const
             substitutions_,
             verbose_};
         for(const std::string& l : macro_it->second.lines) {
-            lp2(substitute(l, match[2].str()));
+            mle2(substitute(l, match[2].str()));
         }
     } else if (std::regex_match(line, match, include_reg)) {
-        MacroLineExecutor lp2{
+        MacroLineExecutor mle2{
             macro_file_executor_,
             spath(match[1].str()),
             working_directory_,
             execute_user_function_,
             substitutions_,
             verbose_};
-        macro_file_executor_(lp2);
+        macro_file_executor_(mle2);
     } else if (!execute_user_function_(fpath, *this, line)) {
         throw std::runtime_error("Could not parse line: \"" + line + '"');
     }

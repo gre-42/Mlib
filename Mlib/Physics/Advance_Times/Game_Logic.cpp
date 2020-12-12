@@ -33,7 +33,7 @@ void GameLogic::advance_time(float dt) {
     }
     if ((nwinners <= 1) &&
         (players_.players().size() > 1) &&
-        (spawn_points_->size() > 1))
+        ((spawn_points_ != nullptr) && (spawn_points_->size() > 1)))
     {
         if (winner != nullptr) {
             ++winner->stats().nwins;

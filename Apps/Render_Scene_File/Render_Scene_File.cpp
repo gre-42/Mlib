@@ -1,10 +1,10 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
-#include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
@@ -262,8 +262,9 @@ int main(int argc, char** argv) {
             physics_engine.add_external_force_provider(key_bindings.get());
 
             Players players{physics_engine.advance_times_};
+            auto game_logic = std::make_shared<GameLogic>(scene, players, ui_focus.focus);
+            physics_engine.advance_times_.add_advance_time(game_logic);
 
-            GameLogic game_logic{scene, players, ui_focus.focus};
             std::string next_scene_filename;
             LoadScene{}(
                 main_scene_filename,
@@ -288,7 +289,7 @@ int main(int argc, char** argv) {
                 read_pixels_logic,
                 *dirtmap_logic,
                 skybox_logic,
-                game_logic,
+                *game_logic,
                 ui_focus,
                 substitutions,
                 num_renderings,
