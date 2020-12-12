@@ -2,6 +2,7 @@
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -9,12 +10,11 @@ using namespace Mlib;
 GameLogic::GameLogic(Scene& scene, Players& players, const std::list<Focus>& focus)
 : scene_{scene},
   players_{players},
-  focus_{focus},
-  spawn_points_{nullptr}
+  focus_{focus}
 {}
 
 void GameLogic::set_spawn_points(const std::list<SpawnPoint>& spawn_points) {
-    spawn_points_ = &spawn_points;
+    spawn_points_ = spawn_points;
 }
 
 void GameLogic::set_preferred_car_spawner(Player& player, const std::function<void(const SpawnPoint&)>& preferred_car_spawner) {
@@ -33,7 +33,7 @@ void GameLogic::advance_time(float dt) {
     }
     if ((nwinners <= 1) &&
         (players_.players().size() > 1) &&
-        ((spawn_points_ != nullptr) && (spawn_points_->size() > 1)))
+        (spawn_points_.size() > 1))
     {
         if (winner != nullptr) {
             ++winner->stats().nwins;
@@ -44,9 +44,9 @@ void GameLogic::advance_time(float dt) {
                 scene_.delete_root_node(node_name);
             }
         }
-        auto sit = spawn_points_->begin();
+        auto sit = spawn_points_.begin();
         auto pit = players_.players().begin();
-        for(; sit != spawn_points_->end() && pit != players_.players().end(); ++sit, ++pit) {
+        for(; sit != spawn_points_.end() && pit != players_.players().end(); ++sit, ++pit) {
             auto it = preferred_car_spawners_.find(pit->second);
             if (it == preferred_car_spawners_.end()) {
                 throw std::runtime_error("Player " + pit->second->name() + " has no preferred car spawner");

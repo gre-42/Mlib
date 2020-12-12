@@ -266,7 +266,8 @@ int main(int argc, char** argv) {
             physics_engine.advance_times_.add_advance_time(game_logic);
 
             std::string next_scene_filename;
-            LoadScene{}(
+            LoadScene load_scene;
+            load_scene(
                 main_scene_filename,
                 main_scene_filename,
                 next_scene_filename,

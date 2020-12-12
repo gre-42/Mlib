@@ -23,7 +23,7 @@ private:
     Scene& scene_;
     Players& players_;
     const std::list<Focus>& focus_;
-    const std::list<SpawnPoint>* spawn_points_;
+    std::list<SpawnPoint> spawn_points_;
     std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
 };
 
