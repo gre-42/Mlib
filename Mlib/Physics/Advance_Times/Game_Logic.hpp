@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <list>
 #include <map>
 #include <string>
@@ -11,11 +12,6 @@ class Player;
 class Players;
 enum class Focus;
 class Scene;
-
-struct SpawnPoint {
-    FixedArray<float, 3> position;
-    FixedArray<float, 3> rotation;
-};
 
 class GameLogic: public AdvanceTime {
 public:
