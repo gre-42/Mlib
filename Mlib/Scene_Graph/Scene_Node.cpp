@@ -24,13 +24,13 @@ SceneNode::~SceneNode() {
         o->notify_destroyed(this);
     }
     for(auto& c : children_) {
-        if (c.second.first) {
+        if (c.second.is_registered) {
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(c.first);
         }
     }
     for(auto& c : aggregate_children_) {
-        if (c.second.first) {
+        if (c.second.is_registered) {
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(c.first);
         }
@@ -111,10 +111,12 @@ void SceneNode::add_renderable(
     const std::string& name,
     const std::shared_ptr<const Renderable>& renderable)
 {
-    if (renderables_.find(name) != renderables_.end()) {
+    if (name.empty()) {
+        throw std::runtime_error("Renderable has no name");
+    }
+    if (!renderables_.insert(std::make_pair(name, renderable)).second) {
         throw std::runtime_error("Renderable with name " + name + " already exists");
     }
-    renderables_.insert(std::make_pair(name, renderable));
 }
 
 void SceneNode::add_child(
@@ -122,14 +124,19 @@ void SceneNode::add_child(
     SceneNode* node,
     bool is_registered)
 {
-    if (children_.find(name) != children_.end()) {
-        throw std::runtime_error("Child node with name " + name + " already exists");
-    }
     // Required in SceneNonde::~SceneNode
     if (is_registered && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
-    children_.insert(std::make_pair(name, std::make_pair(is_registered, node)));
+    if (name.empty()) {
+        throw std::runtime_error("Child node has no name");
+    }
+    if (!children_.insert(std::make_pair(name, SceneNodeChild{
+        .is_registered = is_registered,
+        .scene_node = std::unique_ptr<SceneNode>(node)})).second)
+    {
+        throw std::runtime_error("Child node with name " + name + " already exists");
+    }
 }
 
 void SceneNode::add_aggregate_child(
@@ -137,14 +144,19 @@ void SceneNode::add_aggregate_child(
     SceneNode* node,
     bool is_registered)
 {
-    if (aggregate_children_.find(name) != aggregate_children_.end()) {
-        throw std::runtime_error("Aggregate node with name " + name + " already exists");
-    }
     // Required in SceneNonde::~SceneNode
     if (is_registered && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
-    aggregate_children_.insert(std::make_pair(name, std::make_pair(is_registered, node)));
+    if (name.empty()) {
+        throw std::runtime_error("Child node has no name");
+    }
+    if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
+        .is_registered = is_registered,
+        .scene_node = std::unique_ptr<SceneNode>(node)})).second)
+    {
+        throw std::runtime_error("Aggregate node with name " + name + " already exists");
+    }
 }
 
 void SceneNode::add_instances_child(
@@ -152,17 +164,20 @@ void SceneNode::add_instances_child(
     SceneNode* node,
     bool is_registered)
 {
-    if (instances_children_.find(name) != instances_children_.end()) {
-        throw std::runtime_error("Aggregate node with name " + name + " already exists");
-    }
     // Required in SceneNonde::~SceneNode
     if (is_registered && (scene_ == nullptr)) {
         throw std::runtime_error("Parent of registered node " + name + " does not have a scene");
     }
-    instances_children_.insert(std::make_pair(name, SceneNodeInstances{
+    if (name.empty()) {
+        throw std::runtime_error("Child node has no name");
+    }
+    if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = is_registered,
         .scene_node = std::move(std::unique_ptr<SceneNode>{node}),
-        .instances = std::move(std::list<FixedArray<float, 3>>())}));
+        .instances = std::move(std::list<FixedArray<float, 3>>())})).second)
+    {
+        throw std::runtime_error("Aggregate node with name " + name + " already exists");
+    }
 }
 
 void SceneNode::add_instances_position(
@@ -223,7 +238,7 @@ void SceneNode::move(const FixedArray<float, 4, 4>& v) {
         absolute_observer_->set_absolute_model_matrix(inverted_scaled_se3(v2));
     }
     for(const auto& n : children_) {
-        n.second.second->move(v2);
+        n.second.scene_node->move(v2);
     }
 }
 
@@ -234,7 +249,7 @@ bool SceneNode::requires_render_pass() const {
         }
     }
     for(const auto& n : children_) {
-        if (n.second.second->requires_render_pass()) {
+        if (n.second.scene_node->requires_render_pass()) {
             return true;
         }
     }
@@ -272,7 +287,7 @@ void SceneNode::render(
         r.second->render(mvp, m, iv, lights, scene_graph_config, render_config, {external_render_pass, InternalRenderPass::INITIAL});
     }
     for(const auto& n : children_) {
-        n.second.second->render(mvp, m, iv, lights, blended, render_config, scene_graph_config, external_render_pass);
+        n.second.scene_node->render(mvp, m, iv, lights, blended, render_config, scene_graph_config, external_render_pass);
     }
 }
 
@@ -294,10 +309,10 @@ void SceneNode::append_sorted_aggregates_to_queue(
         r.second->append_sorted_aggregates_to_queue(mvp, m, scene_graph_config, external_render_pass, aggregate_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
+        n.second.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
     }
     for(const auto& a : aggregate_children_) {
-        a.second.second->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
+        a.second.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
     }
 }
 
@@ -311,10 +326,10 @@ void SceneNode::append_large_aggregates_to_queue(
         r.second->append_large_aggregates_to_queue(m, scene_graph_config, aggregate_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
+        n.second.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
     }
     for(const auto& a : aggregate_children_) {
-        a.second.second->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
+        a.second.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
     }
 }
 
@@ -336,7 +351,7 @@ void SceneNode::append_small_instances_to_queue(
         r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, external_render_pass, instances_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
+        n.second.scene_node->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
     }
     for(const auto& i : instances_children_) {
         for(const auto& j : i.second.instances) {
@@ -360,7 +375,7 @@ void SceneNode::append_large_instances_to_queue(
         r.second->append_large_instances_to_queue(m, scene_graph_config, instances_queue);
     }
     for(const auto& n : children_) {
-        n.second.second->append_large_instances_to_queue(m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
+        n.second.scene_node->append_large_instances_to_queue(m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
     }
     for(const auto& i : instances_children_) {
         for(const auto& j : i.second.instances) {
@@ -378,7 +393,7 @@ void SceneNode::append_lights_to_queue(
         lights.push_back(std::make_pair(m, l.get()));
     }
     for(const auto& n : children_) {
-        n.second.second->append_lights_to_queue(m, lights);
+        n.second.scene_node->append_lights_to_queue(m, lights);
     }
 }
 
@@ -463,11 +478,11 @@ void SceneNode::print(size_t recursion_depth) const {
     std::cout << rec << " Children" << std::endl;
     for(const auto& x : children_) {
         std::cerr << rec2 << " " << x.first << std::endl;
-        x.second.second->print(recursion_depth + 1);
+        x.second.scene_node->print(recursion_depth + 1);
     }
     std::cout << rec << " Aggregate children" << std::endl;
     for(const auto& x : aggregate_children_) {
         std::cerr << rec2 << " " << x.first << std::endl;
-        x.second.second->print(recursion_depth + 1);
+        x.second.scene_node->print(recursion_depth + 1);
     }
 }

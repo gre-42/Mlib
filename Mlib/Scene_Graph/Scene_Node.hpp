@@ -9,7 +9,6 @@
 #include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <set>
 
 namespace Mlib {
@@ -28,6 +27,11 @@ struct SceneNodeInstances {
     bool is_registered;
     std::unique_ptr<SceneNode> scene_node;
     std::list<FixedArray<float, 3>> instances;
+};
+
+struct SceneNodeChild {
+    bool is_registered;
+    std::unique_ptr<SceneNode> scene_node;
 };
 
 class SceneNode {
@@ -126,8 +130,8 @@ private:
     std::set<DestructionObserver*> destruction_observers_;
     std::shared_ptr<Camera> camera_;
     std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
-    std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> children_;
-    std::map<std::string, std::pair<bool, std::unique_ptr<SceneNode>>> aggregate_children_;
+    std::map<std::string, SceneNodeChild> children_;
+    std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;
     std::list<std::unique_ptr<Light>> lights_;
     FixedArray<float, 3> position_;

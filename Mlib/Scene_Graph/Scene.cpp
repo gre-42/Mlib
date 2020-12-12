@@ -32,7 +32,9 @@ void Scene::add_root_node(
     std::unique_lock lock{dynamic_mutex_};
     LOG_INFO("Lock acquired");
     register_node(name, scene_node);
-    root_nodes_.insert(std::make_pair(name, scene_node));
+    if (!root_nodes_.insert(std::make_pair(name, scene_node)).second) {
+        throw std::runtime_error("add_root_node could not insert node");
+    };
 }
 
 void Scene::add_static_root_node(
@@ -41,7 +43,9 @@ void Scene::add_static_root_node(
 {
     std::unique_lock lock{static_mutex_};
     register_node(name, scene_node);
-    static_root_nodes_.insert(std::make_pair(name, scene_node));
+    if (!static_root_nodes_.insert(std::make_pair(name, scene_node)).second) {
+        throw std::runtime_error("add_static_root_node could not insert node");
+    }
 }
 
 void Scene::add_root_aggregate_node(
@@ -50,7 +54,9 @@ void Scene::add_root_aggregate_node(
 {
     std::unique_lock lock{aggregate_mutex_};
     register_node(name, scene_node);
-    root_aggregate_nodes_.insert(std::make_pair(name, scene_node));
+    if (!root_aggregate_nodes_.insert(std::make_pair(name, scene_node)).second) {
+        throw std::runtime_error("add_root_aggregate_node could not insert node");
+    }
 }
 
 void Scene::add_root_instances_node(
@@ -59,18 +65,18 @@ void Scene::add_root_instances_node(
 {
     std::unique_lock lock{instances_mutex_};
     register_node(name, scene_node);
-    root_instances_nodes_.insert(std::make_pair(name, scene_node));
+    if (!root_instances_nodes_.insert(std::make_pair(name, scene_node)).second) {
+        throw std::runtime_error("add_root_instances_node could not insert node");
+    }
 }
 
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
     std::unique_lock lock{dynamic_mutex_};
     LOG_INFO("Lock acquired");
-    auto it = root_nodes_.find(name);
-    if (it == root_nodes_.end()) {
+    if (root_nodes_.erase(name) != 1) {
         throw std::runtime_error("Could not find root node with name " + name);
     }
-    root_nodes_.erase(it);
     unregister_node(name);
 }
 
@@ -97,20 +103,20 @@ void Scene::register_node(
     const std::string& name,
     SceneNode* scene_node)
 {
+    if (name.empty()) {
+        throw std::runtime_error("register_node received empty name");
+    }
     std::unique_lock lock{registration_mutex_};
-    if (nodes_.find(name) != nodes_.end()) {
+    if (!nodes_.insert(std::make_pair(name, scene_node)).second) {
         throw std::runtime_error("Scene node with name \"" + name + "\" already exists");
     }
-    nodes_.insert(std::make_pair(name, scene_node));
 }
 
 void Scene::unregister_node(const std::string& name) {
     std::unique_lock lock{registration_mutex_};
-    auto it = nodes_.find(name);
-    if (it == nodes_.end()) {
+    if (nodes_.erase(name) != 1) {
         throw std::runtime_error("Could not find node with name \"" + name + '"');
     }
-    nodes_.erase(it);
 }
 
 void Scene::unregister_nodes(const std::regex& regex) {
@@ -118,7 +124,9 @@ void Scene::unregister_nodes(const std::regex& regex) {
     for(auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (std::regex_match(n.first, regex)) {
-            nodes_.erase(n.first);
+            if (nodes_.erase(n.first) != 1) {
+                throw std::runtime_error("Could not find node with name \"" + n.first + '"');
+            }
         }
     }
 }
