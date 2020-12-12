@@ -29,8 +29,10 @@ Log::~Log() {
 }
 
 void Log::info(const std::string& message) {
-    (*ostr_) <<
-        std::this_thread::get_id() << " " <<
-        std::string(level_ * 4, ' ') <<
-        message << std::endl;
+    if (ostr_ != nullptr) {
+        (*ostr_) <<
+            std::this_thread::get_id() << " " <<
+            std::string(level_ * 4, ' ') <<
+            message << std::endl;
+    }
 }
