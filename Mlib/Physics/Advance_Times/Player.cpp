@@ -36,13 +36,21 @@ Player::Player(
   waypoint_{fixed_nans<float, 2>()}
 {}
 
-void Player::set_rigid_body(SceneNode& scene_node, RigidBody& rb) {
+void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
     if (scene_node_ != nullptr || rb_ != nullptr) {
         throw std::runtime_error("Player rb already set");
     }
+    if (scene_node_name.empty()) {
+        throw std::runtime_error("Player received empty node name");
+    }
+    scene_node_name_ = scene_node_name;
     scene_node_ = &scene_node;
     rb_ = &rb;
     scene_node.add_destruction_observer(this);
+}
+
+const std::string& Player::scene_node_name() const {
+    return scene_node_name_;
 }
 
 void Player::set_ypln(YawPitchLookAtNodes& ypln, Gun* gun) {
@@ -83,8 +91,25 @@ void Player::set_waypoint(const FixedArray<float, 2>& waypoint) {
     waypoint_ = waypoint;
 }
 
+const std::string& Player::name() const {
+    return name_;
+}
+
+const std::string& Player::team() const {
+    return team_;
+}
+
+PlayerStats& Player::stats() {
+    return stats_;
+}
+
+const PlayerStats& Player::stats() const {
+    return stats_;
+}
+
 void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == scene_node_) {
+        scene_node_name_.clear();
         scene_node_ = nullptr;
         rb_ = nullptr;
         ypln_ = nullptr;

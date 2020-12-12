@@ -17,19 +17,27 @@ class CollisionQuery;
 class YawPitchLookAtNodes;
 class Gun;
 
+struct PlayerStats {
+    size_t nwins = 0;
+};
+
 class Player: public DestructionObserver, public AdvanceTime, public ExternalForceProvider {
-    friend class Players;
 public:
     Player(
         CollisionQuery& collision_query,
         Players& players,
         const std::string& name,
         const std::string& team);
-    void set_rigid_body(SceneNode& scene_node, RigidBody& rb);
+    void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
+    const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
     void set_surface_power(float forward, float backward);
     void set_tire_angle_y(size_t tire_id, float angle_left, float angle_right);
     void set_waypoint(const FixedArray<float, 2>& waypoint);
+    const std::string& name() const;
+    const std::string& team() const;
+    PlayerStats& stats();
+    const PlayerStats& stats() const;
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;
@@ -42,6 +50,7 @@ private:
     Players& players_;
     std::string name_;
     std::string team_;
+    std::string scene_node_name_;
     SceneNode* scene_node_;
     SceneNode* target_scene_node_;
     RigidBody* rb_;
@@ -53,6 +62,7 @@ private:
     std::map<size_t, float> tire_angles_left_;
     std::map<size_t, float> tire_angles_right_;
     FixedArray<float, 2> waypoint_;
+    PlayerStats stats_;
 };
 
 };

@@ -17,8 +17,8 @@ Players::~Players()
 }
 
 void Players::add_player(Player& player) {
-    if (!players_.insert(std::make_pair(player.name_, &player)).second) {
-        throw std::runtime_error("Player with name \"" + player.name_ + "\" already exists");
+    if (!players_.insert(std::make_pair(player.name(), &player)).second) {
+        throw std::runtime_error("Player with name \"" + player.name() + "\" already exists");
     }
     if (!best_lap_time_.insert({&player, INFINITY}).second) {
         throw std::runtime_error("Can not set lap time, player already exists");
@@ -35,7 +35,7 @@ Player& Players::get_player(const std::string& name) {
 
 void Players::set_team_waypoint(const std::string& team_name, const FixedArray<float, 2>& waypoint) {
     for(auto& p : players_) {
-        if (p.second->team_ == team_name) {
+        if (p.second->team() == team_name) {
             p.second->set_waypoint(waypoint);
         }
     }

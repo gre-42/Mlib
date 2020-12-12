@@ -736,7 +736,7 @@ void LoadScene::operator()(
             if (rb == nullptr) {
                 throw std::runtime_error("Follower movable is not a rigid body");
             }
-            players.get_player(match[1].str()).set_rigid_body(*node, *rb);
+            players.get_player(match[1].str()).set_rigid_body(match[2].str(), *node, *rb);
         } else if (std::regex_match(line, match, player_set_aiming_gun_reg)) {
             auto ypln_node = scene.get_node(match[2].str());
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(ypln_node->get_relative_movable());
