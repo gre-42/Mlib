@@ -11,6 +11,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/String.hpp>
 #include <regex>
 
@@ -243,6 +244,31 @@ RenderableOsmMap::RenderableOsmMap(
             ways,
             building_bottom,
             default_barrier_top);
+    }
+    {
+        std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
+            BuildingType::SPAWN_LINE,
+            ways,
+            building_bottom,
+            NAN);
+        for(const Building& bu : spawn_lines) {
+            for(auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+                auto s = it;
+                ++s;
+                if (s != bu.way.nd.end()) {
+                    FixedArray<float, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.f;
+                    FixedArray<float, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
+                    float len2 = sum(squared(dir));
+                    if (len2 < 1e-12) {
+                        throw std::runtime_error("Spawn direction too small");
+                    }
+                    dir /= std::sqrt(len2);
+                    spawn_points_.push_back(SpawnPoint{
+                        .position = {p(0), p(1), 0},
+                        .rotation = {0, 0, std::atan2(dir(0), dir(1))}});
+                }
+            }
+        }
     }
 
     auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
@@ -671,4 +697,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> RenderableOsmMap::get_triangle_me
 
 void RenderableOsmMap::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
     return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
+}
+
+std::list<SpawnPoint> RenderableOsmMap::spawn_points() {
+    return spawn_points_;
 }

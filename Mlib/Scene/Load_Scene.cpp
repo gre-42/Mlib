@@ -346,6 +346,7 @@ void LoadScene::operator()(
         "\\s*min_dist=([\\w+-.]+)\\r?\\n"
         "\\s*max_dist=([\\w+-.]+)\\r?\\n"
         "([\\s\\w-. \\(\\)/+-]*)\\r?\\n");
+    const std::regex set_spawn_points_reg("^(?:\\r?\\n|\\s)*set_spawn_points resource=([\\w+-.]+)$");
 
     Linker linker{physics_engine.advance_times_};
 
@@ -1194,6 +1195,8 @@ void LoadScene::operator()(
                     macro_line_executor(macro);
                 }
             );
+        } else if (std::regex_match(line, match, set_spawn_points_reg)) {
+            game_logic.set_spawn_points(scene_node_resources.spawn_points(match[1].str()));
         } else if (std::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
         } else if (std::regex_match(line, match, append_focus_reg)) {

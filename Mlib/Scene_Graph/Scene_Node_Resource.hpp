@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
+#include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <list>
 #include <memory>
 #include <regex>
@@ -37,6 +38,9 @@ public:
     }
     virtual AggregateMode aggregate_mode() const {
         throw std::runtime_error("aggregate_mode not implemented");
+    }
+    virtual std::list<SpawnPoint> spawn_points() {
+        throw std::runtime_error("spawn_points not implemented");
     }
 };
 

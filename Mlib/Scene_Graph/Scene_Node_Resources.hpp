@@ -19,6 +19,7 @@ public:
     void generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) const;
     void generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) const;
     AggregateMode aggregate_mode(const std::string& name) const;
+    std::list<SpawnPoint> spawn_points(const std::string& name) const;
 private:
     std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
     std::recursive_mutex mutex_;

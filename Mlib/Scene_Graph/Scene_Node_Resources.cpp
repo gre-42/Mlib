@@ -78,3 +78,15 @@ AggregateMode SceneNodeResources::aggregate_mode(const std::string& name) const 
         throw std::runtime_error("aggregate_mode for resource \"" + name + "\" failed: " + e.what());
     }
 }
+
+std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) const {
+    auto it = resources_.find(name);
+    if (it == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + name + '"');
+    }
+    try {
+        return it->second->spawn_points();
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("spawn_points for resource \"" + name + "\" failed: " + e.what());
+    }
+}

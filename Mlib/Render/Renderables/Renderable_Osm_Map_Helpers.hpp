@@ -78,7 +78,8 @@ struct Building {
 
 enum class BuildingType {
     BUILDING,
-    WALL_BARRIER
+    WALL_BARRIER,
+    SPAWN_LINE
 };
 
 struct ParsedResourceName {

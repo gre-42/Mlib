@@ -209,6 +209,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             if (building_type != BuildingType::WALL_BARRIER) {
                 continue;
             }
+        } else if ((tags.find("spawn_line") != tags.end()) && (tags.at("spawn_line") == "yes")) {
+            if (building_type != BuildingType::SPAWN_LINE) {
+                continue;
+            }
         } else {
             continue;
         }
