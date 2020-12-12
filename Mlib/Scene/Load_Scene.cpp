@@ -3,6 +3,7 @@
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Physics/Advance_Times/Damageable.hpp>
+#include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movable_Logger.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Follow_Movable.hpp>
@@ -111,6 +112,7 @@ void LoadScene::operator()(
     ReadPixelsLogic& read_pixels_logic,
     DirtmapLogic& dirtmap_logic,
     SkyboxLogic& skybox_logic,
+    GameLogic& game_logic,
     UiFocus& ui_focus,
     SubstitutionString& substitutions,
     size_t& num_renderings,
@@ -336,6 +338,7 @@ void LoadScene::operator()(
     const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
     const std::regex set_dirtmap_reg("^(?:\\r?\\n|\\s)*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
     const std::regex set_skybox_reg("^(?:\\r?\\n|\\s)*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
+    const std::regex set_preferred_car_spawner_reg("set_preferred_car_spawner macro=(\\w+) player=you car=([\\w+-.]+)");
     const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
     const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
     const std::regex wayside_resource_names_reg(
@@ -346,8 +349,9 @@ void LoadScene::operator()(
 
     Linker linker{physics_engine.advance_times_};
 
-    MacroExecutor::UserFunction execute_user_function = [&](
+    MacroFileExecutor::UserFunction execute_user_function = [&](
         const std::function<std::string(const std::string&)>& fpath,
+        const MacroLineExecutor& macro_line_executor,
         const std::string& line) -> bool
     {
         std::smatch match;
@@ -1180,6 +1184,13 @@ void LoadScene::operator()(
                 fpath(match[6].str()),
                 fpath(match[7].str())},
                 match[1].str());
+        } else if (std::regex_match(line, match, set_preferred_car_spawner_reg)) {
+            game_logic.set_preferred_car_spawner(
+                players.get_player(match[1].str()),
+                [macro_line_executor, match](const SpawnPoint& p){
+                    macro_line_executor(match[2].str());
+                }
+            );
         } else if (std::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
         } else if (std::regex_match(line, match, append_focus_reg)) {
@@ -1189,10 +1200,12 @@ void LoadScene::operator()(
         }
         return true;
     };
-    macro_executor_(
+    MacroLineExecutor lp2{
+        macro_file_executor_,
         script_filename,
         fs::path(scene_filename).parent_path().string(),
         execute_user_function,
         substitutions,
-        verbose);
+        verbose};
+    macro_file_executor_(lp2);
 }

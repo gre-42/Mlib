@@ -25,6 +25,7 @@ class SkyboxLogic;
 struct SelectedCameras;
 class SubstitutionString;
 class ButtonPress;
+class GameLogic;
 
 class LoadScene {
 public:
@@ -51,13 +52,14 @@ public:
         ReadPixelsLogic& read_pixels_logic,
         DirtmapLogic& dirtmap_logic,
         SkyboxLogic& skybox_logic,
+        GameLogic& game_logic,
         UiFocus& ui_focus,
         SubstitutionString& substitutions,
         size_t& num_renderings,
         std::map<std::string, size_t>& selection_ids,
         bool verbose);
 private:
-    MacroExecutor macro_executor_;
+    MacroFileExecutor macro_file_executor_;
 };
 
 }
