@@ -3,6 +3,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <list>
 #include <memory>
+#include <shared_mutex>
 
 namespace Mlib {
 
@@ -10,6 +11,7 @@ class SceneNode;
 
 class RenderLogics: public RenderLogic, public DestructionObserver {
 public:
+    explicit RenderLogics(std::shared_mutex &mutex);
     ~RenderLogics();
     virtual void render(
         int width,
@@ -31,6 +33,7 @@ public:
 private:
     void insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
     std::list<std::pair<SceneNode*, std::shared_ptr<RenderLogic>>> render_logics_;
+    std::shared_mutex &mutex_;
 };
 
 }

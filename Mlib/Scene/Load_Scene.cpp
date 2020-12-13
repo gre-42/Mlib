@@ -312,7 +312,7 @@ void LoadScene::operator()(
     static const std::regex ortho_camera_reg("^(?:\\r?\\n|\\s)*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     static const std::regex light_reg("^(?:\\r?\\n|\\s)*light node=([\\w+-.]+) black_node=([\\w+-.]*) update=(once|always) with_depth_texture=(0|1) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) shadow=(0|1)$");
     static const std::regex look_at_node_reg("^(?:\\r?\\n|\\s)*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
-    static const std::regex keep_offset_reg("^(?:\\r?\\n|\\s)*keep-offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const std::regex keep_offset_reg("^(?:\\r?\\n|\\s)*keep_offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex yaw_pitch_look_at_nodes_reg("^(?:\\r?\\n|\\s)*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
     static const std::regex follow_node_reg(
         "^(?:\\r?\\n|\\s)*follow_node\\r?\\n"
@@ -1030,7 +1030,7 @@ void LoadScene::operator()(
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[8].str()));
         } else if (std::regex_match(line, match, light_reg)) {
             std::lock_guard lock_guard{mutex};
-            auto node = scene.get_node(match[1].str());
+            SceneNode* node = scene.get_node(match[1].str());
             std::string resource_id = selected_cameras.add_light_node(match[1].str());
             render_logics.prepend(node, std::make_shared<LightmapLogic>(
                 read_pixels_logic,
@@ -1068,6 +1068,8 @@ void LoadScene::operator()(
             auto followed_node = scene.get_node(match[2].str());
             auto follower = std::make_shared<KeepOffsetMovable>(
                 physics_engine.advance_times_,
+                scene,
+                match[1].str(),
                 followed_node,
                 followed_node->get_absolute_movable(),
                 FixedArray<float, 3>{

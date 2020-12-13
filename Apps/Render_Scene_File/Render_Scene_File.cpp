@@ -251,7 +251,8 @@ int main(int argc, char** argv) {
                 !args.has_named("--no_depth_fog"),
                 args.has_named("--low_pass"),
                 args.has_named("--high_pass"));
-            RenderLogics render_logics;
+            std::shared_mutex mutex;
+            RenderLogics render_logics{mutex};
             render_logics.append(nullptr, flying_camera_logic);
             render_logics.append(nullptr, dirtmap_logic);
             render_logics.append(nullptr, !args.has_named("--no_vfx")
@@ -266,7 +267,6 @@ int main(int argc, char** argv) {
             physics_engine.advance_times_.add_advance_time(game_logic);
 
             std::string next_scene_filename;
-            std::shared_mutex mutex;
             LoadScene load_scene;
             load_scene(
                 main_scene_filename,

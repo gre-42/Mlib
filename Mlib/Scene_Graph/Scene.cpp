@@ -72,11 +72,16 @@ void Scene::add_root_instances_node(
 
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
+    // Temporary unique_ptr to allow recursive calls to delete_root_node.
+    std::unique_ptr<SceneNode> to_delete;
     std::unique_lock lock{dynamic_mutex_};
     LOG_INFO("Lock acquired");
-    if (root_nodes_.erase(name) != 1) {
+    auto it = root_nodes_.find(name);
+    if (it == root_nodes_.end()) {
         throw std::runtime_error("Could not find root node with name " + name);
     }
+    to_delete = std::move(it->second);
+    root_nodes_.erase(it);
     unregister_node(name);
 }
 

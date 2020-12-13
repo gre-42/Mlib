@@ -233,7 +233,7 @@ void test_physics_engine() {
         "",    // black_node_name
         true); // with_depth_texture
 
-    RenderLogics render_logics;
+    RenderLogics render_logics{mutex};
     render_logics.append(nullptr, flying_camera_logic);
     render_logics.append(nullptr, lightmap_logic);
     render_logics.append(nullptr, read_pixels_logic);

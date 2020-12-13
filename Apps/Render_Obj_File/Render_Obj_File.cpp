@@ -365,14 +365,14 @@ int main(int argc, char** argv) {
                 true));                       // with_depth_texture
         }
 
-        RenderLogics render_logics;
+        std::shared_mutex mutex;
+        RenderLogics render_logics{mutex};
         render_logics.append(nullptr, flying_camera_logic);
         for(const auto& l : lightmap_logics) {
             render_logics.append(nullptr, l);
         }
         render_logics.append(nullptr, read_pixels_logic);
 
-        std::shared_mutex mutex;
         render2(
             render_logics,
             mutex,

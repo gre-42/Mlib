@@ -9,11 +9,14 @@ namespace Mlib {
 
 class AdvanceTimes;
 class SceneNode;
+class Scene;
 
 class KeepOffsetMovable: public DestructionObserver, public AbsoluteMovable, public AdvanceTime {
 public:
     KeepOffsetMovable(
         AdvanceTimes& advance_times,
+        Scene& scene,
+        const std::string& follower_name,
         SceneNode* followed_node,
         AbsoluteMovable* followed,
         const FixedArray<float, 3>& offset);
@@ -24,6 +27,8 @@ public:
 
 private:
     AdvanceTimes& advance_times_;
+    Scene& scene_;
+    std::string follower_name_;
     SceneNode* followed_node_;
     AbsoluteMovable* followed_;
     FixedArray<float, 3> offset_;

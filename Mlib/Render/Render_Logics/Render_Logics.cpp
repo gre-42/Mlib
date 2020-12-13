@@ -12,6 +12,10 @@ static std::list<std::pair<SceneNode*, std::shared_ptr<RenderLogic>>>::iterator 
         [node](const auto& v){ return v.first == node; });
 }
 
+RenderLogics::RenderLogics(std::shared_mutex &mutex)
+: mutex_{mutex}
+{}
+
 RenderLogics::~RenderLogics() {
     std::set<SceneNode*> visited_nodes;
     for(const auto& n : render_logics_) {
@@ -78,6 +82,7 @@ void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLog
 }
 
 void RenderLogics::notify_destroyed(void* destroyed_object) {
+    std::lock_guard lock{mutex_};
     size_t nfound = 0;
     while(true) {
         auto del = [this, destroyed_object](std::list<std::pair<SceneNode*, std::shared_ptr<RenderLogic>>>& lst) {
