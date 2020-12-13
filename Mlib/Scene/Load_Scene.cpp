@@ -1208,7 +1208,8 @@ void LoadScene::operator()(
                         " -SUFFIX:_" << player <<
                         " IF_WITH_PHYSICS:" << 
                         " IF_RACING:#" << 
-                        " IF_RALLY:";
+                        " IF_RALLY:" <<
+                        " PLAYER_NAME:" << player;
                     macro_line_executor(sstr.str());
                 }
             );
