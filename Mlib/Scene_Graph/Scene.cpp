@@ -155,7 +155,11 @@ void Scene::render(
     std::list<Blended> blended;
     if ((external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && !external_render_pass.black_node_name.empty()) {
         std::shared_lock lock{dynamic_mutex_};
-        root_nodes_.at(external_render_pass.black_node_name)->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass);
+        auto it = root_nodes_.find(external_render_pass.black_node_name);
+        if (it == root_nodes_.end()) {
+            throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
+        }
+        it->second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass);
     } else {
         // |         |Lights|Blended|Large|Small|Move|
         // |---------|------|-------|-----|-----|----|
