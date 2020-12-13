@@ -1,4 +1,7 @@
 #include "Game_Logic.hpp"
+#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -13,8 +16,14 @@ GameLogic::GameLogic(Scene& scene, Players& players, const std::list<Focus>& foc
   focus_{focus}
 {}
 
-void GameLogic::set_spawn_points(const std::list<SpawnPoint>& spawn_points) {
+void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {
     spawn_points_ = spawn_points;
+    FixedArray<float, 4, 4> m = node.absolute_model_matrix();
+    FixedArray<float, 3, 3> r = R3_from_4x4(m) / node.scale();
+    for(SpawnPoint& p : spawn_points_) {
+        p.position = dehomogenized_3(dot1d(m, homogenized_4(p.position)));
+        p.rotation = matrix_2_tait_bryan_angles(dot2d(r, tait_bryan_angles_2_matrix(p.rotation)));
+    }
 }
 
 void GameLogic::set_preferred_car_spawner(Player& player, const std::function<void(const SpawnPoint&)>& preferred_car_spawner) {

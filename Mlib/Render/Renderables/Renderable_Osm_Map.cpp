@@ -249,8 +249,8 @@ RenderableOsmMap::RenderableOsmMap(
         std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
             BuildingType::SPAWN_LINE,
             ways,
-            building_bottom,
-            NAN);
+            0,  // building_bottom
+            0); // default_building_top
         for(const Building& bu : spawn_lines) {
             for(auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
                 auto s = it;
@@ -264,7 +264,7 @@ RenderableOsmMap::RenderableOsmMap(
                     }
                     dir /= std::sqrt(len2);
                     spawn_points_.push_back(SpawnPoint{
-                        .position = {p(0), p(1), 0},
+                        .position = {p(0), p(1), bu.building_top * scale},
                         .rotation = {0, 0, std::atan2(dir(0), dir(1))}});
                 }
             }

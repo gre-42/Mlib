@@ -176,7 +176,7 @@ float Mlib::parse_meters(const std::map<std::string, std::string>& tags, const s
     if (it == tags.end()) {
         return default_value;
     }
-    std::regex re{"^([\\d.]+) *(m|')?"};
+    std::regex re{"^([\\d.-]+) *(m|')?"};
     std::smatch match;
     if (std::regex_match(it->second, match, re)) {
         float res = safe_stof(match[1].str());
