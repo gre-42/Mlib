@@ -1,4 +1,5 @@
 #include "Regex.hpp"
+#include <iostream>
 #include <map>
 #include <regex>
 
@@ -30,12 +31,15 @@ std::string Mlib::substitute(const std::string& str, const std::string& replacem
     std::string new_line = str;
     iterate_replacements(replacements, [&new_line](const std::string& key, const std::string& value){
         try {
+            // Substitute expressions with default value.
             new_line = std::regex_replace(new_line, std::regex{":" + key + "=\\S*"}, ':' + value);
-            new_line = std::regex_replace(new_line, std::regex{"\\b" + key + "\\b(?!:)"}, value);
+            // Substitute expressions without default value, and simple expressions.
+            new_line = std::regex_replace(new_line, std::regex{"(\\b|:)" + key + "\\b(?!:)"}, "$01" + value);
         } catch (const std::regex_error&) {
             throw std::runtime_error("Error in regex " + key);
         }
     });
+    // Assign default values to remainders.
     new_line = std::regex_replace(new_line, std::regex{"(\\S+:)\\S+="}, "$1");
     return new_line;
 }
