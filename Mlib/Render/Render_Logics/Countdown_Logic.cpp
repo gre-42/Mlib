@@ -40,7 +40,7 @@ void CountDownLogic::render(
         if (elapsed_time.count() >= nseconds_) {
             focus_.erase(it);
         } else {
-            renderable_text_->render(
+            renderable_text().render(
                 position_,
                 std::to_string((unsigned int)std::ceil(nseconds_ - elapsed_time.count())),
                 width,

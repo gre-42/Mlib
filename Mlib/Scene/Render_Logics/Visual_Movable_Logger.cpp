@@ -49,7 +49,7 @@ void VisualMovableLogger::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    renderable_text_->render(position_, text_, width, height, line_distance_pixels_);
+    renderable_text().render(position_, text_, width, height, line_distance_pixels_);
 }
 
 float VisualMovableLogger::near_plane() const {

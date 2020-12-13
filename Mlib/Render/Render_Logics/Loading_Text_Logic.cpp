@@ -34,7 +34,7 @@ void LoadingTextLogic::render(
         return;
     }
     if (focus_.back() == Focus::LOADING) {
-        renderable_text_->render(
+        renderable_text().render(
             position_,
             text_,
             width,

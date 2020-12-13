@@ -8,10 +8,18 @@ RenderTextLogic::RenderTextLogic(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels)
-: renderable_text_{new RenderableText{ttf_filename, font_height_pixels}},
-  position_{position},
-  line_distance_pixels_{line_distance_pixels}
+: position_{position},
+  line_distance_pixels_{line_distance_pixels},
+  ttf_filename_{ttf_filename},
+  font_height_pixels_{font_height_pixels}
 {}
 
 RenderTextLogic::~RenderTextLogic()
 {}
+
+RenderableText& RenderTextLogic::renderable_text() const {
+    if (renderable_text_ == nullptr) {
+        renderable_text_.reset(new RenderableText{ttf_filename_, font_height_pixels_});
+    }
+    return *renderable_text_;
+}
