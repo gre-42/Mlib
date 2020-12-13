@@ -20,7 +20,7 @@ void Crash::notify_impact(
         auto d = dynamic_cast<Damageable*>(v.get());
         if (d != nullptr) {
             float fac = dot0d(rbp.abs_z(), normal);
-            fac = std::sqrt(1 - squared(fac));
+            fac = std::sqrt(1 - std::min(1.f, squared(fac)));
             d->damage(damage_ * squared(std::max(0.f, -lambda_final)) * fac);
         }
     }
