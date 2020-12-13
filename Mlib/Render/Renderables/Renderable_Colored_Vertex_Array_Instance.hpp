@@ -7,6 +7,7 @@
 namespace Mlib {
 
 class RenderableColoredVertexArray;
+struct SceneNodeResourceFilter;
 
 class RenderableColoredVertexArrayInstance: public Renderable
 {
