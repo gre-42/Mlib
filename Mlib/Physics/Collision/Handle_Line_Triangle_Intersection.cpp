@@ -157,12 +157,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         .lambda_max = 0},
                     // c.l1(penetrating_id)};
                     c.tire_id != SIZE_MAX ? c.o1->get_abs_tire_contact_position(c.tire_id) : c.l1(penetrating_id),
-                    [c](float lambda_final){
+                    [c, plane](float lambda_final){
                         for(auto& c0 : c.o0->collision_observers_) {
-                            c0->notify_impact(c.o1->collision_observers_, lambda_final);
+                            c0->notify_impact(c.o1->rbi_.rbp_, c.o1->collision_observers_, plane.normal, lambda_final);
                         }
                         for(auto& c1 : c.o1->collision_observers_) {
-                            c1->notify_impact(c.o0->collision_observers_, lambda_final);
+                            c1->notify_impact(c.o0->rbi_.rbp_, c.o0->collision_observers_, plane.normal, lambda_final);
                         }
                     }};
                 c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));

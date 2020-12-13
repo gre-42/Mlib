@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Physics/Collision_Type.hpp>
 #include <list>
 #include <memory>
@@ -16,7 +17,9 @@ public:
         CollisionType& collision_type,
         bool& abort) {};
     virtual void notify_impact(
+        const RigidBodyPulses& rbp,
         const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+        const FixedArray<float, 3>& normal,
         float lambda_final) {};
 };
 
