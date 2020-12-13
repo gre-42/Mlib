@@ -18,14 +18,15 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     const FixedArray<float, 2>& offset,
     float font_height_pixels,
     float line_distance_pixels)
-: renderable_text_{new RenderableText{ttf_filename, font_height_pixels}},
-  scene_logic_{scene_logic},
+: scene_logic_{scene_logic},
   scene_node_{scene_node},
   advance_times_{advance_times},
   logged_{logged},
   log_components_{log_components},
   offset_{offset},
-  line_distance_pixels_{line_distance_pixels}
+  line_distance_pixels_{line_distance_pixels},
+  ttf_filename_{ttf_filename},
+  font_height_pixels_{font_height_pixels}
 {
     scene_node.add_destruction_observer(this);
 }
@@ -51,6 +52,9 @@ void VisualMovable3rdLogger::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    if (renderable_text_ == nullptr) {
+        renderable_text_.reset(new RenderableText{ttf_filename_, font_height_pixels_});
+    }
     FixedArray<float, 3> node_pos = t3_from_4x4(scene_node_.absolute_model_matrix());
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));
     if (position4(2) > scene_logic_.near_plane()) {

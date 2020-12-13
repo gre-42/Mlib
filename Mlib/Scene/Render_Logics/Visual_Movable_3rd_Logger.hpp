@@ -53,7 +53,8 @@ private:
     std::string text_;
     FixedArray<float, 2> offset_;
     float line_distance_pixels_;
-
+    std::string ttf_filename_;
+    float font_height_pixels_;
 };
 
 }
