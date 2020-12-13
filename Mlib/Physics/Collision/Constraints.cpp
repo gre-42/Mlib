@@ -42,11 +42,13 @@ NormalContactInfo2::NormalContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const BoundedPlaneInequalityConstraint& pc,
-    const FixedArray<float, 3>& p)
+    const FixedArray<float, 3>& p,
+    std::function<void(float)> notify_lambda_final)
 : rbp0_{rbp0},
   rbp1_{rbp1},
   pc_{pc},
-  p_{p}
+  p_{p},
+  notify_lambda_final_{notify_lambda_final}
 {}
 
 void NormalContactInfo2::solve(float dt, float relaxation) {
@@ -66,6 +68,10 @@ void NormalContactInfo2::solve(float dt, float relaxation) {
             .position = p_});
         // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
     }
+}
+
+void NormalContactInfo2::finalize() {
+    notify_lambda_final_(pc_.constraint.normal_impulse.lambda_total);
 }
 
 FrictionContactInfo1::FrictionContactInfo1(

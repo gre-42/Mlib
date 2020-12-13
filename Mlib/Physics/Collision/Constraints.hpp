@@ -106,8 +106,10 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const BoundedPlaneInequalityConstraint& pc,
-        const FixedArray<float, 3>& p);
+        const FixedArray<float, 3>& p,
+        std::function<void(float)> notify_lambda_final = [](float){});
     void solve(float dt, float relaxation) override;
+    void finalize() override;
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
     }
@@ -116,6 +118,7 @@ private:
     RigidBodyPulses& rbp1_;
     BoundedPlaneInequalityConstraint pc_;
     FixedArray<float, 3> p_;
+    std::function<void(float)> notify_lambda_final_;
 };
 
 class ShockAbsorberContactInfo1: public ContactInfo {

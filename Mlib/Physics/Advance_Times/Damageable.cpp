@@ -17,12 +17,6 @@ Damageable::Damageable(
     scene_.get_node(root_node_name_)->add_destruction_observer(this);
 }
 
-void Damageable::notify_collided(
-    const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
-    CollisionType& collision_type,
-    bool& abort)
-{}
-
 void Damageable::notify_destroyed(void* obj) {
     advance_times_.schedule_delete_advance_time(this);
 }

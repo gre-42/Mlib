@@ -17,10 +17,6 @@ public:
         AdvanceTimes& advance_times,
         const std::string& root_node_name,
         float health);
-    virtual void notify_collided(
-        const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
-        CollisionType& collision_type,
-        bool& abort);
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     virtual void log(std::ostream& ostr, unsigned int log_components) const override;
