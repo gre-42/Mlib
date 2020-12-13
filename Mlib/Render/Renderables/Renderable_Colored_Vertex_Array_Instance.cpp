@@ -239,7 +239,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             size_t i = 0;
             for(const auto& l : filtered_lights) {
                 if (l.second->shadow) {
-                    std::string mname = "lightmap_color" + std::to_string(l.second->resource_index);
+                    std::string mname = "lightmap_color" + l.second->resource_id;
                     const auto& light_vp = rcva_->rendering_resources_->get_vp(mname);
                     auto mvp_light = dot2d(light_vp, m);
                     CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
@@ -260,7 +260,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             size_t i = 0;
             for(const auto& l : filtered_lights) {
                 if (l.second->shadow) {
-                    std::string mname = "lightmap_depth" + std::to_string(l.second->resource_index);
+                    std::string mname = "lightmap_depth" + l.second->resource_id;
                     const auto& light_vp = rcva_->rendering_resources_->get_vp(mname);
                     auto mvp_light = dot2d(light_vp, m);
                     CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));

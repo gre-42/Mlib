@@ -1031,30 +1031,30 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, light_reg)) {
             std::lock_guard lock_guard{mutex};
             auto node = scene.get_node(match[1].str());
-            size_t resource_index = selected_cameras.add_light_node(match[1].str());
+            std::string resource_id = selected_cameras.add_light_node(match[1].str());
             render_logics.prepend(node, std::make_shared<LightmapLogic>(
                 read_pixels_logic,
                 rendering_resources,
                 lightmap_update_cycle_from_string(match[3].str()),
-                resource_index,
+                resource_id,
                 match[2].str(),               // black_node_name
                 safe_stob(match[4].str())));  // with_depth_texture
             node->add_light(new Light{
-                ambience: {
+                .ambience = {
                     safe_stof(match[5].str()),
                     safe_stof(match[6].str()),
                     safe_stof(match[7].str())},
-                diffusivity: {
+                .diffusivity = {
                     safe_stof(match[8].str()),
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str())},
-                specularity: {
+                .specularity = {
                     safe_stof(match[11].str()),
                     safe_stof(match[12].str()),
                     safe_stof(match[13].str())},
-                resource_index: resource_index,
-                only_black: !match[2].str().empty(),
-                shadow: safe_stob(match[14].str())});
+                .resource_id = resource_id,
+                .only_black = !match[2].str().empty(),
+                .shadow = safe_stob(match[14].str())});
         } else if (std::regex_match(line, match, look_at_node_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());

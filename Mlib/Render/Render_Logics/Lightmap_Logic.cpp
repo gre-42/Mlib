@@ -11,7 +11,7 @@ LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
     RenderingResources& rendering_resources,
     LightmapUpdateCycle update_cycle,
-    size_t light_resource_id,
+    std::string light_resource_id,
     const std::string& black_node_name,
     bool with_depth_texture)
 : child_logic_{child_logic},
@@ -57,11 +57,11 @@ void LightmapLogic::render(
         // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
 
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-        rendering_resources_.set_texture("lightmap_color" + std::to_string(light_resource_id_), fb_->texture_color_buffer);
-        rendering_resources_.set_vp("lightmap_color" + std::to_string(light_resource_id_), vp());
+        rendering_resources_.set_texture("lightmap_color" + light_resource_id_, fb_->texture_color_buffer);
+        rendering_resources_.set_vp("lightmap_color" + light_resource_id_, vp());
         if (with_depth_texture_) {
-            rendering_resources_.set_texture("lightmap_depth" + std::to_string(light_resource_id_), fb_->texture_depth_buffer);
-            rendering_resources_.set_vp("lightmap_depth" + std::to_string(light_resource_id_), vp());
+            rendering_resources_.set_texture("lightmap_depth" + light_resource_id_, fb_->texture_depth_buffer);
+            rendering_resources_.set_vp("lightmap_depth" + light_resource_id_, vp());
         }
         CHK(glViewport(0, 0, width, height));
     }

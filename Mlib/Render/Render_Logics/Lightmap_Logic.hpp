@@ -29,7 +29,7 @@ public:
         RenderLogic& child_logic,
         RenderingResources& rendering_resources,
         LightmapUpdateCycle update_cycle,
-        size_t light_resource_id,
+        std::string light_resource_id,
         const std::string& black_node_name,
         bool with_depth_texture);
     ~LightmapLogic();
@@ -52,7 +52,7 @@ private:
     RenderingResources& rendering_resources_;
     std::unique_ptr<FrameBuffer> fb_;
     LightmapUpdateCycle update_cycle_;
-    size_t light_resource_id_;
+    std::string light_resource_id_;
     const std::string black_node_name_;
     bool with_depth_texture_;
 };
