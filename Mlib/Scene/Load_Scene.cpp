@@ -117,7 +117,8 @@ void LoadScene::operator()(
     SubstitutionString& substitutions,
     size_t& num_renderings,
     std::map<std::string, size_t>& selection_ids,
-    bool verbose)
+    bool verbose,
+    std::shared_mutex& mutex)
 {
     std::ifstream ifs{script_filename};
     static const std::regex osm_resource_reg(
@@ -1019,6 +1020,7 @@ void LoadScene::operator()(
             node->get_camera()->set_top_plane(safe_stof(match[7].str()));
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[8].str()));
         } else if (std::regex_match(line, match, light_reg)) {
+            std::lock_guard lock_guard{mutex};
             auto node = scene.get_node(match[1].str());
             size_t resource_index = selected_cameras.add_light_node(match[1].str());
             render_logics.prepend(node, std::make_shared<LightmapLogic>(

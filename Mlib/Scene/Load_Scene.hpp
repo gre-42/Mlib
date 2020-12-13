@@ -57,7 +57,8 @@ public:
         SubstitutionString& substitutions,
         size_t& num_renderings,
         std::map<std::string, size_t>& selection_ids,
-        bool verbose);
+        bool verbose,
+        std::shared_mutex& mutex);
 private:
     MacroFileExecutor macro_file_executor_;
 };

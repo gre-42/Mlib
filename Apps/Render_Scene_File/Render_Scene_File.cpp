@@ -266,6 +266,7 @@ int main(int argc, char** argv) {
             physics_engine.advance_times_.add_advance_time(game_logic);
 
             std::string next_scene_filename;
+            std::shared_mutex mutex;
             LoadScene load_scene;
             load_scene(
                 main_scene_filename,
@@ -295,10 +296,9 @@ int main(int argc, char** argv) {
                 substitutions,
                 num_renderings,
                 selection_ids,
-                args.has_named("--verbose"));
+                args.has_named("--verbose"),
+                mutex);
             // scene.print();
-
-            std::shared_mutex mutex;
 
             std::unique_ptr<PhysicsLoop> pl{args.has_named("--no_physics")
                 ? nullptr
