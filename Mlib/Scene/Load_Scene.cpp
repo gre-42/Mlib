@@ -644,7 +644,8 @@ void LoadScene::operator()(
                 scene,
                 physics_engine.advance_times_,
                 match[1].str(),
-                safe_stof(match[2].str()));
+                safe_stof(match[2].str()),
+                mutex);
             rb->collision_observers_.push_back(d);
             physics_engine.advance_times_.add_advance_time(d);
         } else if (std::regex_match(line, match, crash_reg)) {
