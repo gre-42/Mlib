@@ -268,7 +268,7 @@ int main(int argc, char** argv) {
         scene.add_root_node("obj", scene_node);
 
         std::list<Light*> lights;
-        SelectedCameras selected_cameras;
+        SelectedCameras selected_cameras{scene};
         if (light_configuration == "one") {
             scene.add_root_node("light_node0", new SceneNode);
             scene.get_node("light_node0")->set_position({0.f, 50.f, 0.f});

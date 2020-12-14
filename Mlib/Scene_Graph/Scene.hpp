@@ -54,6 +54,7 @@ public:
     void move();
     size_t get_uuid();
     void print() const;
+    bool shutting_down() const;
 private:
     mutable std::shared_mutex dynamic_mutex_;
     mutable std::shared_mutex static_mutex_;
@@ -83,6 +84,7 @@ private:
     mutable BackgroundTask instances_bg_task_;
     std::mutex uuid_mutex_;
     size_t uuid_;
+    bool shutting_down_;
 };
 
 }

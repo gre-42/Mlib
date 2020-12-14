@@ -87,11 +87,11 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
                 if (cams.empty()) {
                     throw std::runtime_error("Far camera cycle is empty");
                 }
-                auto it = std::find(cams.begin(), cams.end(), user_object->cameras.camera_node_name);
+                auto it = std::find(cams.begin(), cams.end(), user_object->cameras.camera_node_name());
                 if (it == cams.end() || ++it == cams.end()) {
                     it = cams.begin();
                 }
-                user_object->cameras.camera_node_name = *it;
+                user_object->cameras.set_camera_node_name(*it);
                 break;
             }
             case GLFW_KEY_P:
@@ -126,7 +126,7 @@ FlyingCameraLogic::FlyingCameraLogic(
         glfwSetKeyCallback(window, flying_key_callback);
 
         if (fly_) {
-            auto cn = scene_.get_node(user_object_.cameras.camera_node_name);
+            auto cn = scene_.get_node(user_object_.cameras.camera_node_name());
             user_object_.position = cn->position();
             user_object_.angles = cn->rotation();
         }
@@ -162,7 +162,7 @@ void FlyingCameraLogic::render(
     }
 
     LOG_FUNCTION("FlyingCameraLogic::render");
-    SceneNode* cn = scene_.get_node(user_object_.cameras.camera_node_name);
+    SceneNode* cn = scene_.get_node(user_object_.cameras.camera_node_name());
     if (fly_) {
         cn->set_position(user_object_.position);
         cn->set_rotation(user_object_.angles);

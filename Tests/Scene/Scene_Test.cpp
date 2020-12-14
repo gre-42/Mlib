@@ -159,7 +159,7 @@ void test_physics_engine() {
     scene_nodeR->set_position({0.f, -1.f, -40.f});
     scene_nodeL->set_position({0.f, 50.f, -40.f});
     scene_nodeL->set_rotation({-90.f * M_PI / 180.f, 0.f, 0.f});
-    SelectedCameras selected_cameras;
+    SelectedCameras selected_cameras{scene};
     Light* shadow_light = new Light{
         .node_name = "light_node",
         .only_black = false,

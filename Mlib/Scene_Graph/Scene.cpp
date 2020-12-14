@@ -21,7 +21,8 @@ Scene::Scene(
   large_instances_renderer_{large_instances_renderer},
   large_aggregate_renderer_initialized_{false},
   large_instances_renderer_initialized_{false},
-  uuid_{0}
+  uuid_{0},
+  shutting_down_{false}
 {}
 
 void Scene::add_root_node(
@@ -98,7 +99,9 @@ void Scene::delete_root_nodes(const std::regex& regex) {
     unregister_nodes(regex);
 }
 
-Scene::~Scene() {}
+Scene::~Scene() {
+    shutting_down_ = true;
+}
 
 bool Scene::contains_node(const std::string& name) const {
     return nodes_.contains(name);
@@ -372,4 +375,8 @@ void Scene::print() const {
         std::cout << rec << " " << x.first << std::endl;
         x.second->print(2);
     }
+}
+
+bool Scene::shutting_down() const {
+    return shutting_down_;
 }

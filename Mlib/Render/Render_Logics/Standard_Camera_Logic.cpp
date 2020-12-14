@@ -34,7 +34,7 @@ void StandardCameraLogic::render(
     } else if (frame_id.external_render_pass.pass == ExternalRenderPass::DIRTMAP) {
         cn = scene_.get_node(cameras_.dirtmap_node_name);
     } else {
-        cn = scene_.get_node(cameras_.camera_node_name);
+        cn = scene_.get_node(cameras_.camera_node_name());
     }
     auto co = cn->get_camera()->copy();
     co->set_aspect_ratio(aspect_ratio);
@@ -45,11 +45,11 @@ void StandardCameraLogic::render(
 }
 
 float StandardCameraLogic::near_plane() const {
-    return scene_.get_node(cameras_.camera_node_name)->get_camera()->get_near_plane();
+    return scene_.get_node(cameras_.camera_node_name())->get_camera()->get_near_plane();
 }
 
 float StandardCameraLogic::far_plane() const {
-    return scene_.get_node(cameras_.camera_node_name)->get_camera()->get_far_plane();
+    return scene_.get_node(cameras_.camera_node_name())->get_camera()->get_far_plane();
 }
 
 const FixedArray<float, 4, 4>& StandardCameraLogic::vp() const {
@@ -61,5 +61,5 @@ const FixedArray<float, 4, 4>& StandardCameraLogic::iv() const {
 }
 
 bool StandardCameraLogic::requires_postprocessing() const {
-    return scene_.get_node(cameras_.camera_node_name)->get_camera()->get_requires_postprocessing();
+    return scene_.get_node(cameras_.camera_node_name())->get_camera()->get_requires_postprocessing();
 }

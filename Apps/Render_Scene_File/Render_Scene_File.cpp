@@ -165,15 +165,9 @@ int main(int argc, char** argv) {
 
         ButtonStates button_states;
         ButtonPress button_press{button_states};
-        SelectedCameras selected_cameras;
         UiFocus ui_focus = UiFocus{focus: {Focus::SCENE}};
         SubstitutionString substitutions;
         SetFps physics_set_fps;
-        FlyingCameraUserClass user_object{
-            button_states: button_states,
-            cameras: selected_cameras,
-            focus: ui_focus.focus,
-            physics_set_fps: &physics_set_fps};
         std::map<std::string, size_t> selection_ids;
 
         while (!render2.window_should_close()) {
@@ -223,6 +217,12 @@ int main(int argc, char** argv) {
                 &large_aggregate_array_renderer,
                 &small_instances_renderer,
                 &large_instances_renderer};
+            SelectedCameras selected_cameras{scene};
+            FlyingCameraUserClass user_object{
+                button_states: button_states,
+                cameras: selected_cameras,
+                focus: ui_focus.focus,
+                physics_set_fps: &physics_set_fps};
             GravityEfp gefp{FixedArray<float, 3>{0, -9.8, 0}};
             StandardCameraLogic standard_camera_logic{
                 scene,
@@ -262,11 +262,11 @@ int main(int argc, char** argv) {
             physics_engine.add_external_force_provider(key_bindings.get());
 
             Players players{physics_engine.advance_times_};
-            auto game_logic = std::make_shared<GameLogic>(
+            GameLogic game_logic{
                 scene,
                 players,
                 ui_focus.focus,
-                mutex);
+                mutex};
             physics_engine.advance_times_.add_advance_time(game_logic);
 
             std::string next_scene_filename;
@@ -290,7 +290,7 @@ int main(int argc, char** argv) {
                 read_pixels_logic,
                 *dirtmap_logic,
                 skybox_logic,
-                *game_logic,
+                game_logic,
                 ui_focus,
                 substitutions,
                 num_renderings,

@@ -1179,7 +1179,7 @@ void LoadScene::operator()(
                 : selected_cameras.camera_cycle_far;
             cycle = string_to_vector(cameras);
         } else if (std::regex_match(line, match, set_camera_reg)) {
-            selected_cameras.camera_node_name = match[1].str();
+            selected_cameras.set_camera_node_name(match[1].str());
         } else if (std::regex_match(line, match, set_dirtmap_reg)) {
             dirtmap_logic.set_filename(fpath(match[1].str()));
             rendering_resources.set_discreteness("dirtmap", safe_stof(match[2].str()));

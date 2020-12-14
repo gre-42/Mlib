@@ -35,8 +35,8 @@ PhysicsEngine::~PhysicsEngine() {
         if (!advance_times_.advance_times_to_delete_.empty()) {
             std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_to_delete_.size() << " advance_times_to_delete still exist." << std::endl;
         }
-        if (!advance_times_.advance_times_.empty()) {
-            std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_.size() << " advance_times still exist." << std::endl;
+        if (!advance_times_.advance_times_shared_.empty()) {
+            std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times still exist." << std::endl;
         }
     }
 }
@@ -344,7 +344,10 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
 }
 
 void PhysicsEngine::move_advance_times() {
-    for(auto a : advance_times_.advance_times_) {
+    for(auto a : advance_times_.advance_times_shared_) {
+        a->advance_time(cfg_.dt);
+    }
+    for(auto a : advance_times_.advance_times_ptr_) {
         a->advance_time(cfg_.dt);
     }
 }
