@@ -4,8 +4,10 @@
 
 namespace Mlib {
 
+class SceneNode;
+
 struct AbsoluteMovableIdleBinding {
-    std::string node;
+    SceneNode* node;
     FixedArray<float, 3> tires_z;
 };
 

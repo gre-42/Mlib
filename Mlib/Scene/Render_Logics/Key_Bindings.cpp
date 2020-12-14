@@ -23,6 +23,17 @@ KeyBindings::KeyBindings(
   focus_{focus}
 {}
 
+KeyBindings::~KeyBindings() {
+    std::set<SceneNode*> nodes;
+    for (auto& b : absolute_movable_idle_bindings_) { nodes.insert(b.node); }
+    for (auto& b : absolute_movable_key_bindings_) { nodes.insert(b.node); }
+    for (auto& b : relative_movable_key_bindings_) { nodes.insert(b.node); }
+    for (auto& b : gun_key_bindings_) { nodes.insert(b.node); }
+    for (auto& node : nodes) {
+        node->remove_destruction_observer(this);
+    }
+}
+
 void KeyBindings::render(
     int width,
     int height,
@@ -50,6 +61,37 @@ const FixedArray<float, 4, 4>& KeyBindings::iv() const {
 
 bool KeyBindings::requires_postprocessing() const {
     throw std::runtime_error("KeyBindings::requires_postprocessing not implemented");
+}
+
+void KeyBindings::notify_destroyed(void* destroyed_object) {
+    absolute_movable_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    absolute_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    relative_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    gun_key_bindings_.remove_if([this, destroyed_object](const auto& b){return b.node == destroyed_object;});
+}
+
+void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
+    camera_key_bindings_.push_back(b);
+}
+
+void KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    absolute_movable_idle_bindings_.push_back(b);
+}
+
+void KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    absolute_movable_key_bindings_.push_back(b);
+}
+
+void KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    relative_movable_key_bindings_.push_back(b);
+}
+
+void KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    gun_key_bindings_.push_back(b);
 }
 
 void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
@@ -84,7 +126,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             }
         }
         for(const auto& k : absolute_movable_idle_bindings_) {
-            auto m = scene_.get_node(k.node)->get_absolute_movable();
+            auto m = k.node->get_absolute_movable();
             auto rb = dynamic_cast<RigidBody*>(m);
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
@@ -101,7 +143,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         for(const auto& k : absolute_movable_key_bindings_) {
             float alpha = button_press_.key_alpha(k.base_key, 0.05);
             if (!std::isnan(alpha)) {
-                auto m = scene_.get_node(k.node)->get_absolute_movable();
+                auto m = k.node->get_absolute_movable();
                 auto rb = dynamic_cast<RigidBody*>(m);
                 if (rb == nullptr) {
                     throw std::runtime_error("Absolute movable is not a rigid body");
@@ -140,7 +182,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             }
         }
         for(const auto& k : absolute_movable_idle_bindings_) {
-            auto m = scene_.get_node(k.node)->get_absolute_movable();
+            auto m = k.node->get_absolute_movable();
             auto rb = dynamic_cast<RigidBody*>(m);
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
@@ -154,7 +196,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             }
         }
         for(const auto& k : relative_movable_key_bindings_) {
-            auto m = scene_.get_node(k.node)->get_relative_movable();
+            auto m = k.node->get_relative_movable();
             auto rt = dynamic_cast<RelativeTransformer*>(m);
             if (rt == nullptr) {
                 throw std::runtime_error("Relative movable is not a relative transformer");
@@ -164,7 +206,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         for(const auto& k : relative_movable_key_bindings_) {
             float alpha = button_press_.key_alpha(k.base_key);
             if (!std::isnan(alpha)) {
-                auto m = scene_.get_node(k.node)->get_relative_movable();
+                auto m = k.node->get_relative_movable();
                 auto rt = dynamic_cast<RelativeTransformer*>(m);
                 if (rt == nullptr) {
                     throw std::runtime_error("Relative movable is not a relative transformer");
@@ -174,7 +216,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         }
         for(const auto& k : gun_key_bindings_) {
             if (button_press_.key_down(k.base)) {
-                auto m = scene_.get_node(k.node)->get_absolute_observer();
+                auto m = k.node->get_absolute_observer();
                 auto gun = dynamic_cast<Gun*>(m);
                 if (gun == nullptr) {
                     throw std::runtime_error("Absolute observer is not a gun");

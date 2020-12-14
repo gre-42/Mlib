@@ -7,10 +7,12 @@
 
 namespace Mlib {
 
+class SceneNode;
+
 struct AbsoluteMovableKeyBinding {
     BaseKeyBinding base_key;
     BaseAxisBinding base_axis;
-    std::string node;
+    SceneNode* node;
     VectorAtPosition<float, 3> force;
     FixedArray<float, 3> rotate;
     float surface_power;

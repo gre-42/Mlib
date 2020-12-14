@@ -25,11 +25,6 @@
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
@@ -47,6 +42,7 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
+#include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
@@ -100,11 +96,7 @@ void LoadScene::operator()(
     Scene& scene,
     PhysicsEngine& physics_engine,
     ButtonPress& button_press,
-    std::vector<CameraKeyBinding>& camera_key_bindings,
-    std::vector<AbsoluteMovableIdleBinding>& absolute_movable_idle_bindings,
-    std::vector<AbsoluteMovableKeyBinding>& absolute_movable_key_bindings,
-    std::vector<RelativeMovableKeyBinding>& relative_movable_key_bindings,
-    std::vector<GunKeyBinding>& gun_key_bindings,
+    KeyBindings& key_bindings,
     SelectedCameras& selected_cameras,
     const CameraConfig& camera_config,
     const PhysicsEngineConfig& physics_engine_config,
@@ -787,27 +779,27 @@ void LoadScene::operator()(
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())});
         } else if (std::regex_match(line, match, camera_key_binding_reg)) {
-            camera_key_bindings.push_back(CameraKeyBinding{
+            key_bindings.add_camera_key_binding(CameraKeyBinding{
                 base: {
                     key: match[1].str(),
                     gamepad_button: match[2].str(),
                     joystick_axis: match[3].str(),
                     joystick_axis_sign: safe_stof(match[4].str())}});
         } else if (std::regex_match(line, match, abs_idle_binding_reg)) {
-            absolute_movable_idle_bindings.push_back(AbsoluteMovableIdleBinding{
-                node: match[1].str(),
+            key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
+                node: scene.get_node(match[1].str()),
                 tires_z: {
                     match[2].str().empty() ? 0 : safe_stof(match[2].str()),
                     match[3].str().empty() ? 0 : safe_stof(match[3].str()),
                     match[4].str().empty() ? 1 : safe_stof(match[4].str())}});
         } else if (std::regex_match(line, match, abs_key_binding_reg)) {
-            absolute_movable_key_bindings.push_back(AbsoluteMovableKeyBinding{
+            key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
                 base_key: {
                     key: match[2].str(),
                     gamepad_button: match[3].str(),
                     joystick_axis: match[4].str(),
                     joystick_axis_sign: match[5].str().empty() ? 0 : safe_stof(match[5].str())},
-                node: match[1].str(),
+                node: scene.get_node(match[1].str()),
                 force: {
                     vector: {
                         match[6].str().empty() ? 0 : safe_stof(match[6].str()),
@@ -833,13 +825,13 @@ void LoadScene::operator()(
                     match[21].str().empty() ? 0 : safe_stof(match[21].str()),
                     match[22].str().empty() ? 0 : safe_stof(match[22].str())}});
         } else if (std::regex_match(line, match, rel_key_binding_reg)) {
-            relative_movable_key_bindings.push_back(RelativeMovableKeyBinding{
+            key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
                 base_key: {
                     key: match[2].str(),
                     gamepad_button: match[3].str(),
                     joystick_axis: match[4].str(),
                     joystick_axis_sign: safe_stof(match[5].str())},
-                node: match[1].str(),
+                node: scene.get_node(match[1].str()),
                 angular_velocity_press: {
                     safe_stof(match[6].str()),
                     safe_stof(match[7].str()),
@@ -849,13 +841,13 @@ void LoadScene::operator()(
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())}});
         } else if (std::regex_match(line, match, gun_key_binding_reg)) {
-            gun_key_bindings.push_back(GunKeyBinding{
+            key_bindings.add_gun_key_binding(GunKeyBinding{
                 base: {
                     key: match[2].str(),
                     gamepad_button: match[3].str(),
                     joystick_axis: match[4].str(),
                     joystick_axis_sign: match[5].str().empty() ? 0 : safe_stof(match[5].str())},
-                node: match[1].str()});
+                node: scene.get_node(match[1].str())});
         } else if (std::regex_match(line, match, console_log_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();

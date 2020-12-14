@@ -4,9 +4,11 @@
 
 namespace Mlib {
 
+class SceneNode;
+
 struct GunKeyBinding {
     BaseKeyBinding base;
-    std::string node;
+    SceneNode* node;
 };
 
 }

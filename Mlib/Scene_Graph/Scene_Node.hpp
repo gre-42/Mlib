@@ -47,7 +47,7 @@ public:
     void set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable);
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
     void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
-    void add_destruction_observer(DestructionObserver* destruction_observer);
+    void add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists = false);
     void remove_destruction_observer(DestructionObserver* destruction_observer);
     void add_renderable(
         const std::string& name,

@@ -27,6 +27,7 @@ struct SelectedCameras;
 class SubstitutionString;
 class ButtonPress;
 class GameLogic;
+class KeyBindings;
 
 class LoadScene {
 public:
@@ -40,11 +41,7 @@ public:
         Scene& scene,
         PhysicsEngine& physics_engine,
         ButtonPress& button_press,
-        std::vector<CameraKeyBinding>& camera_key_bindings,
-        std::vector<AbsoluteMovableIdleBinding>& absolute_movable_idle_bindings,
-        std::vector<AbsoluteMovableKeyBinding>& absolute_movable_key_bindings,
-        std::vector<RelativeMovableKeyBinding>& relative_movable_key_bindings,
-        std::vector<GunKeyBinding>& gun_key_bindings,
+        KeyBindings& key_bindings,
         SelectedCameras& selected_cameras,
         const CameraConfig& camera_config,
         const PhysicsEngineConfig& physics_engine_config,

@@ -6,10 +6,12 @@
 
 namespace Mlib {
 
+class SceneNode;
+
 struct RelativeMovableKeyBinding {
     BaseKeyBinding base_key;
     BaseAxisBinding base_axis;
-    std::string node;
+    SceneNode* node;
     FixedArray<float, 3> angular_velocity_press;
     FixedArray<float, 3> angular_velocity_repeat;
 };

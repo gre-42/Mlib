@@ -93,9 +93,9 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
     add_destruction_observer(absolute_observer.observer());
 }
 
-void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer) {
+void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
     auto r = destruction_observers_.insert(destruction_observer);
-    if (!r.second) {
+    if (!r.second && !ignore_exists) {
         throw std::runtime_error("Destruction observer already registered");
     }
 }
