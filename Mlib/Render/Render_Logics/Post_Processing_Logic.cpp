@@ -159,7 +159,7 @@ void PostProcessingLogic::render(
     } else {
         assert_true(render_config.nsamples_msaa > 0);
 
-        RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_resource_id = ""};
+        RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
         fb_.configure({width: width, height: height, with_depth_texture: true});
         if (render_config.nsamples_msaa != 1) {
             ms_fb_.configure({width: width, height: height, with_depth_texture: true, nsamples_msaa: render_config.nsamples_msaa});

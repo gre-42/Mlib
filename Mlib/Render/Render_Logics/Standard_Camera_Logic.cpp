@@ -30,7 +30,7 @@ void StandardCameraLogic::render(
 
     SceneNode* cn;
     if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
-        cn = scene_.get_node(cameras_.light_node_names.at(frame_id.light_resource_id));
+        cn = scene_.get_node(frame_id.light_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPass::DIRTMAP) {
         cn = scene_.get_node(cameras_.dirtmap_node_name);
     } else {

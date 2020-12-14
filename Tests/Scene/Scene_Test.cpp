@@ -35,7 +35,7 @@ using namespace Mlib;
 void test_physics_engine() {
     size_t num_renderings = SIZE_MAX;
     RenderResults render_results;
-    RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_resource_id = ""};
+    RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
     bool is_interactive = getenv_default_bool("PHYSICS_INTERACTIVE", false);
     if (!is_interactive) {
         render_results.outputs[rsd] = Array<float>{};
@@ -161,12 +161,12 @@ void test_physics_engine() {
     scene_nodeL->set_rotation({-90.f * M_PI / 180.f, 0.f, 0.f});
     SelectedCameras selected_cameras;
     Light* shadow_light = new Light{
-        .resource_id = selected_cameras.add_light_node("light_node"),
+        .node_name = "light_node",
         .only_black = false,
         .shadow = true};
     scene_nodeL->add_light(shadow_light);
     scene_nodeL->add_light(new Light{
-        .resource_id = "1234",
+        .node_name = "1234",
         .only_black = false,
         .shadow = false});
 
@@ -229,7 +229,7 @@ void test_physics_engine() {
         *read_pixels_logic,
         rendering_resources,
         LightmapUpdateCycle::ALWAYS,
-        shadow_light->resource_id,
+        shadow_light->node_name,
         "",    // black_node_name
         true); // with_depth_texture
 

@@ -11,13 +11,13 @@ LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
     RenderingResources& rendering_resources,
     LightmapUpdateCycle update_cycle,
-    std::string light_resource_id,
+    const std::string& light_node_name,
     const std::string& black_node_name,
     bool with_depth_texture)
 : child_logic_{child_logic},
   rendering_resources_{rendering_resources},
   update_cycle_{update_cycle},
-  light_resource_id_{light_resource_id},
+  light_node_name_{light_node_name},
   black_node_name_{black_node_name},
   with_depth_texture_{with_depth_texture}
 {}
@@ -44,7 +44,7 @@ void LightmapLogic::render(
             ? render_config.scene_lightmap_height
             : render_config.black_lightmap_height;
         CHK(glViewport(0, 0, lightmap_width, lightmap_height));
-        RenderedSceneDescriptor light_rsd{external_render_pass: {ExternalRenderPass::LIGHTMAP_TO_TEXTURE, black_node_name_}, time_id: 0, light_resource_id: light_resource_id_};
+        RenderedSceneDescriptor light_rsd{external_render_pass: {ExternalRenderPass::LIGHTMAP_TO_TEXTURE, black_node_name_}, time_id: 0, light_node_name: light_node_name_};
         if (fb_ == nullptr) {
             fb_ = std::make_unique<FrameBuffer>();
         }
@@ -57,11 +57,11 @@ void LightmapLogic::render(
         // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
 
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-        rendering_resources_.set_texture("lightmap_color" + light_resource_id_, fb_->texture_color_buffer);
-        rendering_resources_.set_vp("lightmap_color" + light_resource_id_, vp());
+        rendering_resources_.set_texture("lightmap_color" + light_node_name_, fb_->texture_color_buffer);
+        rendering_resources_.set_vp("lightmap_color" + light_node_name_, vp());
         if (with_depth_texture_) {
-            rendering_resources_.set_texture("lightmap_depth" + light_resource_id_, fb_->texture_depth_buffer);
-            rendering_resources_.set_vp("lightmap_depth" + light_resource_id_, vp());
+            rendering_resources_.set_texture("lightmap_depth" + light_node_name_, fb_->texture_depth_buffer);
+            rendering_resources_.set_vp("lightmap_depth" + light_node_name_, vp());
         }
         CHK(glViewport(0, 0, width, height));
     }

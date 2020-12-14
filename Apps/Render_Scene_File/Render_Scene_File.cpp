@@ -178,7 +178,6 @@ int main(int argc, char** argv) {
 
         while (!render2.window_should_close()) {
             num_renderings = SIZE_MAX;
-            selected_cameras.light_node_names.clear();
             ui_focus.n_submenus = 0;
 
             SceneConfig scene_config;

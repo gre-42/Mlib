@@ -133,8 +133,8 @@ void Render2::operator () (
                 scene_graph_config,
                 render_results_,
                 (render_results_ != nullptr) && (!render_results_->outputs.empty())
-                    ? RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_resource_id = ""}
-                    : RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::UNDEFINED, ""}, .time_id = time_id, .light_resource_id = ""});
+                    ? RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = ""}
+                    : RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::UNDEFINED, ""}, .time_id = time_id, .light_node_name = ""});
         }
 
         if (render_results_ != nullptr && render_results_->output != nullptr) {
@@ -205,7 +205,7 @@ void Render2::render_depth_map(
         .ambience = {0.5, 0.5, 0.5},
         .diffusivity = {1, 1, 1},
         .specularity = {1, 1, 1},
-        .resource_id = "1234",
+        .node_name = "1234",
         .only_black = false,
         .shadow = false});
     (*this)(scene, rotate, scale, scene_graph_config);
@@ -234,7 +234,7 @@ void Render2::render_height_map(
         .ambience = {0.5, 0.5, 0.5},
         .diffusivity = {1, 1, 1},
         .specularity = {1, 1, 1},
-        .resource_id = "1234",
+        .node_name = "1234",
         .only_black = false,
         .shadow = false});
     (*this)(scene, rotate, scale, scene_graph_config);
