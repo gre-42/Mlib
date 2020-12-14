@@ -8,12 +8,15 @@
 namespace Mlib {
 
 class AdvanceTimes;
+class Scene;
 class SceneNode;
 
 class LookAtMovable: public DestructionObserver, public AbsoluteMovable, public AdvanceTime {
 public:
     LookAtMovable(
         AdvanceTimes& advance_times,
+        Scene& scene,
+        const std::string& follower_name,
         SceneNode* followed_node,
         AbsoluteMovable* followed);
     virtual void advance_time(float dt) override;
@@ -23,6 +26,8 @@ public:
 
 private:
     AdvanceTimes& advance_times_;
+    Scene& scene_;
+    std::string follower_name_;
     SceneNode* followed_node_;
     AbsoluteMovable* followed_;
     FixedArray<float, 3> position_;

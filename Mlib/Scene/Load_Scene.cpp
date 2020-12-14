@@ -1060,6 +1060,8 @@ void LoadScene::operator()(
             auto followed_node = scene.get_node(match[2].str());
             auto follower = std::make_shared<LookAtMovable>(
                 physics_engine.advance_times_,
+                scene,
+                match[1].str(),
                 followed_node,
                 followed_node->get_absolute_movable());
             linker.link_absolute_movable(*follower_node, follower);
