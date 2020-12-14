@@ -1,5 +1,6 @@
 #include "Frame_Buffer.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <cassert>
 #include <stdexcept>
 
@@ -11,6 +12,8 @@ FrameBuffer::FrameBuffer()
 FrameBuffer::~FrameBuffer() {
     if (glfwGetCurrentContext() != nullptr) {
         deallocate();
+    } else {
+        gc_deallocate();
     }
 }
 
@@ -103,6 +106,25 @@ void FrameBuffer::deallocate() {
     }
     if (render_buffer != (GLuint)-1) {
         WARN(glDeleteRenderbuffers(1, &render_buffer));
+        render_buffer = (GLuint)-1;
+    }
+}
+
+void FrameBuffer::gc_deallocate() {
+    if (frame_buffer != (GLuint)-1) {
+        gc_frame_buffers.push_back(frame_buffer);
+        frame_buffer = (GLuint)-1;
+    }
+    if (texture_color_buffer != (GLuint)-1) {
+        gc_texture_color_buffers.push_back(texture_color_buffer);
+        texture_color_buffer = (GLuint)-1;
+    }
+    if (texture_depth_buffer != (GLuint)-1) {
+        gc_texture_depth_buffers.push_back(texture_depth_buffer);
+        texture_depth_buffer = (GLuint)-1;
+    }
+    if (render_buffer != (GLuint)-1) {
+        gc_render_buffers.push_back(render_buffer);
         render_buffer = (GLuint)-1;
     }
 }

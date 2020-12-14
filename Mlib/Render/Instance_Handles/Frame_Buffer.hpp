@@ -30,6 +30,7 @@ struct FrameBuffer {
     void configure(const FrameBufferConfig& config = FrameBufferConfig{});
     void deallocate();
 private:
+    void gc_deallocate();
     void allocate(const FrameBufferConfig& config);
     FrameBufferConfig config_;
 };

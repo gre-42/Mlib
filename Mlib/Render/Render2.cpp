@@ -5,6 +5,7 @@
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderables/Renderable_Depth_Map.hpp>
@@ -161,6 +162,7 @@ void Render2::operator () (
 
         GLFW_CHK(glfwSwapBuffers(window_->window()));
         GLFW_CHK(glfwPollEvents());
+        execute_gc_render();
 
         if (render_config_.motion_interpolation) {
             time_id = (time_id + 1) % 4;
