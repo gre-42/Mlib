@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Executor.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <mutex>
 #include <vector>
 
 namespace Mlib {
@@ -58,7 +59,7 @@ public:
         size_t& num_renderings,
         std::map<std::string, size_t>& selection_ids,
         bool verbose,
-        std::shared_mutex& mutex);
+        std::recursive_mutex& mutex);
 private:
     MacroFileExecutor macro_file_executor_;
 };

@@ -194,7 +194,7 @@ void test_physics_engine() {
     GravityEfp gefp({0, -9.8, 0});
     pe.add_external_force_provider(&gefp);
 
-    std::shared_mutex mutex;
+    std::recursive_mutex mutex;
     SetFps physics_set_fps;
     PhysicsLoop pl{
         scene_node_resources,

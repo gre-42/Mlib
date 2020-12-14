@@ -12,7 +12,7 @@ static std::list<std::pair<SceneNode*, std::shared_ptr<RenderLogic>>>::iterator 
         [node](const auto& v){ return v.first == node; });
 }
 
-RenderLogics::RenderLogics(std::shared_mutex &mutex)
+RenderLogics::RenderLogics(std::recursive_mutex &mutex)
 : mutex_{mutex}
 {}
 

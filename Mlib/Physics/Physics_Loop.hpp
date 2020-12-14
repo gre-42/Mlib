@@ -1,6 +1,6 @@
 #pragma once
 #include <atomic>
-#include <shared_mutex>
+#include <mutex>
 #include <thread>
 
 namespace Mlib {
@@ -17,7 +17,7 @@ public:
         SceneNodeResources& scene_node_resources,
         Scene& scene,
         PhysicsEngine& physics_engine,
-        std::shared_mutex& mutex,
+        std::recursive_mutex& mutex,
         const PhysicsEngineConfig& physics_cfg,
         SetFps& set_fps,
         size_t nframes = SIZE_MAX);

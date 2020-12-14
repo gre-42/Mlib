@@ -10,10 +10,15 @@
 
 using namespace Mlib;
 
-GameLogic::GameLogic(Scene& scene, Players& players, const std::list<Focus>& focus)
+GameLogic::GameLogic(
+    Scene& scene,
+    Players& players,
+    const std::list<Focus>& focus,
+    std::recursive_mutex& mutex)
 : scene_{scene},
   players_{players},
-  focus_{focus}
+  focus_{focus},
+  mutex_{mutex}
 {}
 
 void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {
@@ -44,6 +49,7 @@ void GameLogic::advance_time(float dt) {
         (players_.players().size() > 1) &&
         (spawn_points_.size() > 1))
     {
+        std::lock_guard lock_guard{mutex_};
         if (winner != nullptr) {
             ++winner->stats().nwins;
         }

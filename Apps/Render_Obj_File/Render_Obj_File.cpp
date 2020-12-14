@@ -365,7 +365,7 @@ int main(int argc, char** argv) {
                 true));                       // with_depth_texture
         }
 
-        std::shared_mutex mutex;
+        std::recursive_mutex mutex;
         RenderLogics render_logics{mutex};
         render_logics.append(nullptr, flying_camera_logic);
         for(const auto& l : lightmap_logics) {

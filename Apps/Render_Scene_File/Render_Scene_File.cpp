@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
                 !args.has_named("--no_depth_fog"),
                 args.has_named("--low_pass"),
                 args.has_named("--high_pass"));
-            std::shared_mutex mutex;
+            std::recursive_mutex mutex;
             RenderLogics render_logics{mutex};
             render_logics.append(nullptr, flying_camera_logic);
             render_logics.append(nullptr, dirtmap_logic);
@@ -263,7 +263,11 @@ int main(int argc, char** argv) {
             physics_engine.add_external_force_provider(key_bindings.get());
 
             Players players{physics_engine.advance_times_};
-            auto game_logic = std::make_shared<GameLogic>(scene, players, ui_focus.focus);
+            auto game_logic = std::make_shared<GameLogic>(
+                scene,
+                players,
+                ui_focus.focus,
+                mutex);
             physics_engine.advance_times_.add_advance_time(game_logic);
 
             std::string next_scene_filename;

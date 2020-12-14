@@ -119,7 +119,7 @@ void LoadScene::operator()(
     size_t& num_renderings,
     std::map<std::string, size_t>& selection_ids,
     bool verbose,
-    std::shared_mutex& mutex)
+    std::recursive_mutex& mutex)
 {
     std::ifstream ifs{script_filename};
     static const std::regex osm_resource_reg(

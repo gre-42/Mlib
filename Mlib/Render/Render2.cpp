@@ -100,7 +100,7 @@ void Render2::print_hardware_info() const {
 
 void Render2::operator () (
     RenderLogic& logic,
-    std::shared_mutex& mutex,
+    std::recursive_mutex& mutex,
     const SceneGraphConfig& scene_graph_config)
 {
     SetFps set_fps;
@@ -124,7 +124,7 @@ void Render2::operator () (
         CHK(glViewport(0, 0, width, height));
 
         {
-            std::shared_lock lock{mutex};
+            std::lock_guard lock{mutex}; // formerly shared_lock
 
             logic.render(
                 width,
@@ -175,7 +175,7 @@ void Render2::operator () (
     const SceneGraphConfig& scene_graph_config)
 {
     RotatingLogic rotating_logic{window_->window(), scene, rotate, scale};
-    std::shared_mutex mutex;
+    std::recursive_mutex mutex;
     (*this)(
         rotating_logic,
         mutex,

@@ -6,7 +6,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
-#include <shared_mutex>
+#include <mutex>
 
 namespace Mlib {
 
@@ -28,7 +28,7 @@ public:
 
     void operator () (
         RenderLogic& logic,
-        std::shared_mutex& mutex,
+        std::recursive_mutex& mutex,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig{});
 
     void operator () (
