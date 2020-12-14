@@ -345,3 +345,14 @@ void RenderingResources::set_texture_wrap(const std::string& name, WrapMode mode
     LOG_FUNCTION("RenderingResources::set_texture_wrap " + name);
     texture_wrap_[name] = mode;
 }
+
+void RenderingResources::delete_vp(const std::string& name) {
+    if (vps_.erase(name) != 1) {
+        throw std::runtime_error("Could not delete VP " + name);
+    }
+}
+void RenderingResources::delete_texture(const std::string& name) {
+    if (textures_.erase(name) != 1) {
+        throw std::runtime_error("Could not delete texture " + name);
+    }
+}

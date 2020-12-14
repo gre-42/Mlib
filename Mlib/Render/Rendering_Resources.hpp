@@ -35,6 +35,9 @@ public:
     void set_discreteness(const std::string& name, float value);
     WrapMode get_texture_wrap(const std::string& name) const;
     void set_texture_wrap(const std::string& name, WrapMode mode);
+
+    void delete_vp(const std::string& name);
+    void delete_texture(const std::string& name);
 private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;

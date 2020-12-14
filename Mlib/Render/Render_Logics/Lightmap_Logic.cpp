@@ -22,7 +22,16 @@ LightmapLogic::LightmapLogic(
   with_depth_texture_{with_depth_texture}
 {}
 
-LightmapLogic::~LightmapLogic() {}
+LightmapLogic::~LightmapLogic() {
+    if (fb_ != nullptr) {
+        rendering_resources_.delete_texture("lightmap_color" + light_node_name_);
+        rendering_resources_.delete_vp("lightmap_color" + light_node_name_);
+        if (with_depth_texture_) {
+            rendering_resources_.delete_texture("lightmap_depth" + light_node_name_);
+            rendering_resources_.delete_vp("lightmap_depth" + light_node_name_);
+        }
+    }
+}
 
 void LightmapLogic::render(
     int width,
