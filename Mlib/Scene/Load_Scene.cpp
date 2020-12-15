@@ -1207,9 +1207,9 @@ void LoadScene::operator()(
                         " CAR_NODE_X:" << p.position(0) <<
                         " CAR_NODE_Y:" << p.position(1) <<
                         " CAR_NODE_Z:" << p.position(2) <<
-                        " CAR_NODE_ANGLE_X:" << p.rotation(0) <<
-                        " CAR_NODE_ANGLE_Y:" << p.rotation(1) <<
-                        " CAR_NODE_ANGLE_Z:" << p.rotation(2) <<
+                        " CAR_NODE_ANGLE_X:" << 180.f / M_PI * p.rotation(0) <<
+                        " CAR_NODE_ANGLE_Y:" << 180.f / M_PI * p.rotation(1) <<
+                        " CAR_NODE_ANGLE_Z:" << 180.f / M_PI * p.rotation(2) <<
                         " -CAR_NAME:_" << car <<
                         " -SUFFIX:_" << player <<
                         " IF_WITH_PHYSICS:" << 
