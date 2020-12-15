@@ -88,6 +88,7 @@ Render2::Render2(
 }
 
 Render2::~Render2() {
+    execute_gc_render();
     window_.release();
     GLFW_WARN(glfwTerminate());
 }
