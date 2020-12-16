@@ -25,7 +25,8 @@ Player::Player(
     CollisionQuery& collision_query,
     Players& players,
     const std::string& name,
-    const std::string& team)
+    const std::string& team,
+    GameMode game_mode)
 : collision_query_{collision_query},
   players_{players},
   name_{name},
@@ -40,7 +41,8 @@ Player::Player(
   surface_power_backward_{NAN},
   waypoint_{fixed_nans<float, 2>()},
   waypoint_id_{SIZE_MAX},
-  waypoint_reached_{false}
+  waypoint_reached_{false},
+  game_mode_{game_mode}
 {}
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
@@ -154,7 +156,12 @@ void Player::advance_time(float dt) {
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in) {
-        select_next_waypoint();
+        if (ramming()) {
+            auto tpos = target_rbi_->abs_position();
+            set_waypoint({tpos(0), tpos(2)});
+        } else {
+            select_next_waypoint();
+        }
         move_to_waypoint();
     }
 }
@@ -222,6 +229,10 @@ void Player::select_next_waypoint() {
     }
 }
 
+bool Player::ramming() const {
+    return (game_mode_ == GameMode::RAMMING) && (target_rbi_ != nullptr);
+}
+
 void Player::move_to_waypoint() {
     if (any(isnan(waypoint_))) {
         return;
@@ -236,7 +247,7 @@ void Player::move_to_waypoint() {
         return;
     }
     // Stop when distance to waypoint is small enough (break).
-    {
+    if (!ramming()) {
         FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
         if (sum(squared(pos2 - waypoint_)) < squared(rest_radius)) {
             rb_->set_surface_power("main", NAN);  // NAN=break
@@ -254,6 +265,11 @@ void Player::move_to_waypoint() {
             continue;
         }
         if (p.second->rb_ == nullptr) {
+            continue;
+        }
+        if (ramming() &&
+            (&p.second->rb_->rbi_ == target_rbi_))
+        {
             continue;
         }
         FixedArray<float, 3> d = p.second->rb_->rbi_.abs_position() - rb_->rbi_.abs_position();

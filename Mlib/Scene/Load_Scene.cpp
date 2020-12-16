@@ -212,7 +212,7 @@ void LoadScene::operator()(
     static const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
     static const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
     static const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+)$");
-    static const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+)$");
+    static const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+) mode=(ramming|racing)$");
     static const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player-name=([\\w+-.]+) node=([\\w+-.]+)$");
     static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
     static const std::regex player_set_surface_power_reg("^(?:\\r?\\n|\\s)*player_set_surface_power player-name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
@@ -735,7 +735,12 @@ void LoadScene::operator()(
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }
         } else if (std::regex_match(line, match, player_create_reg)) {
-            auto player = std::make_shared<Player>(physics_engine.collision_query_, players, match[1].str(), match[2].str());
+            auto player = std::make_shared<Player>(
+                physics_engine.collision_query_,
+                players,
+                match[1].str(),
+                match[2].str(),
+                game_mode_from_string(match[3].str()));
             players.add_player(*player);
             physics_engine.advance_times_.add_advance_time(player);
             physics_engine.add_external_force_provider(player.get());

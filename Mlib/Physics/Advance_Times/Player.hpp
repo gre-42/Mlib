@@ -23,13 +23,29 @@ struct PlayerStats {
     size_t nwins = 0;
 };
 
+enum class GameMode {
+    RAMMING,
+    RACING
+};
+
+inline GameMode game_mode_from_string(const std::string& game_mode) {
+    if (game_mode == "ramming") {
+        return GameMode::RAMMING;
+    } else if (game_mode == "racing") {
+        return GameMode::RACING;
+    } else {
+        throw std::runtime_error("Unknown game mode: " + game_mode);
+    }
+}
+
 class Player: public DestructionObserver, public AdvanceTime, public ExternalForceProvider {
 public:
     Player(
         CollisionQuery& collision_query,
         Players& players,
         const std::string& name,
-        const std::string& team);
+        const std::string& team,
+        GameMode game_mode);
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
@@ -51,6 +67,7 @@ private:
     void aim_and_shoot();
     void move_to_waypoint();
     void select_next_waypoint();
+    bool ramming() const;
     CollisionQuery& collision_query_;
     Players& players_;
     std::string name_;
@@ -72,6 +89,7 @@ private:
     size_t waypoint_id_;
     bool waypoint_reached_;
     PlayerStats stats_;
+    GameMode game_mode_;
 };
 
 };
