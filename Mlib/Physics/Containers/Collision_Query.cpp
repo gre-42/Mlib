@@ -48,6 +48,24 @@ bool CollisionQuery::can_see(const RigidBodyIntegrator& watcher, const RigidBody
                     }
                 }
             }
+            if (physics_engine_.cfg_.bvh && o0.rigid_body->mass() != INFINITY) {
+                bool intersects = false;
+                physics_engine_.rigid_bodies_.bvh_.visit(
+                    bs,
+                    [&](const std::string& category, const CollisionTriangleSphere& t0){
+                        FixedArray<float, 3> intersection_point;
+                        if (!intersects) {
+                            intersects = (line_intersects_triangle(
+                                l(0),
+                                l(1),
+                                t0.triangle,
+                                intersection_point));
+                        }
+                    });
+                if (intersects) {
+                    return false;
+                }
+            }
         }
     }
     return true;
