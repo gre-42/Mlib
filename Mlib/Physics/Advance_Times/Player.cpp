@@ -18,6 +18,9 @@ static const float collision_avoidance_radius_break = 20;
 static const float collision_avoidance_radius_correct = 100;
 static const float collision_avoidance_cos = 0.6;
 static const float collision_avoidance_delta = 0.5;
+static const float stuck_velocity = 2 / 3.6;
+static const float stuck_seconds = 3;
+static const float unstuck_seconds = 5;
 
 using namespace Mlib;
 
@@ -42,8 +45,13 @@ Player::Player(
   waypoint_{fixed_nans<float, 2>()},
   waypoint_id_{SIZE_MAX},
   waypoint_reached_{false},
-  game_mode_{game_mode}
+  game_mode_{game_mode},
+  enable_unstuck_{false}
 {}
+
+void Player::enable_unstuck() {
+    enable_unstuck_ = true;
+}
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
     if (scene_node_ != nullptr || rb_ != nullptr) {
@@ -156,14 +164,44 @@ void Player::advance_time(float dt) {
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in) {
-        if (ramming()) {
-            auto tpos = target_rbi_->abs_position();
-            set_waypoint({tpos(0), tpos(2)});
-        } else {
-            select_next_waypoint();
+        if (!enable_unstuck_ || !unstuck()) {
+            if (ramming()) {
+                auto tpos = target_rbi_->abs_position();
+                set_waypoint({tpos(0), tpos(2)});
+            } else {
+                select_next_waypoint();
+            }
+            move_to_waypoint();
         }
-        move_to_waypoint();
     }
+}
+
+bool Player::unstuck() {
+    if (rb_ == nullptr) {
+        return false;
+    }
+    if (sum(squared(rb_->rbi_.rbp_.v_)) > squared(stuck_velocity)) {
+        stuck_start_ = std::chrono::steady_clock::now();
+    } else if (
+        (stuck_start_ != std::chrono::steady_clock::time_point()) &&
+        (unstuck_start_ == std::chrono::steady_clock::time_point()) &&
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - stuck_start_).count() > stuck_seconds * 1000)
+    {
+        unstuck_start_ = std::chrono::steady_clock::now();
+    }
+    if (unstuck_start_ != std::chrono::steady_clock::time_point()) {
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - unstuck_start_).count() > unstuck_seconds * 1000)
+        {
+            unstuck_start_ = std::chrono::steady_clock::time_point();
+        } else {
+            rb_->set_surface_power("main", surface_power_backward_);
+            for(auto &tire : rb_->tires_) {
+                rb_->set_tire_angle_y(tire.first, 0);
+            }
+            return true;
+        }
+    }
+    return false;
 }
 
 void Player::aim_and_shoot() {

@@ -54,6 +54,7 @@ public:
     void set_waypoint(const FixedArray<float, 2>& waypoint);
     void set_waypoint(size_t waypoint_id);
     void set_waypoints(const SceneNode& node, const PointsAndAdjacency<float, 2>& waypoints);
+    void enable_unstuck();
     const std::string& name() const;
     const std::string& team() const;
     PlayerStats& stats();
@@ -68,6 +69,7 @@ private:
     void move_to_waypoint();
     void select_next_waypoint();
     bool ramming() const;
+    bool unstuck();
     CollisionQuery& collision_query_;
     Players& players_;
     std::string name_;
@@ -90,6 +92,9 @@ private:
     bool waypoint_reached_;
     PlayerStats stats_;
     GameMode game_mode_;
+    std::chrono::time_point<std::chrono::steady_clock> stuck_start_;
+    std::chrono::time_point<std::chrono::steady_clock> unstuck_start_;
+    bool enable_unstuck_;
 };
 
 };
