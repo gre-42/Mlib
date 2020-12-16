@@ -78,7 +78,8 @@ public:
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
-    virtual std::list<SpawnPoint> spawn_points() override;
+    virtual std::list<SpawnPoint> spawn_points() const override;
+    virtual PointsAndAdjacency<float, 2> way_points() const override;
 private:
     std::shared_ptr<RenderableColoredVertexArray> rva_;
     RenderingResources* rendering_resources_;
@@ -87,6 +88,7 @@ private:
     SceneNodeResources& scene_node_resources_;
     float scale_;
     std::list<SpawnPoint> spawn_points_;
+    PointsAndAdjacency<float, 2> way_points_;
 };
 
 }

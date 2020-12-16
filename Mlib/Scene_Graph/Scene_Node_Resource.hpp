@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <list>
@@ -39,8 +40,11 @@ public:
     virtual AggregateMode aggregate_mode() const {
         throw std::runtime_error("aggregate_mode not implemented");
     }
-    virtual std::list<SpawnPoint> spawn_points() {
+    virtual std::list<SpawnPoint> spawn_points() const {
         throw std::runtime_error("spawn_points not implemented");
+    }
+    virtual PointsAndAdjacency<float, 2> way_points() const {
+        throw std::runtime_error("way_points not implemented");
     }
 };
 

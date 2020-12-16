@@ -342,6 +342,7 @@ void LoadScene::operator()(
         "\\s*max_dist=([\\w+-.]+)\\r?\\n"
         "([\\s\\w-. \\(\\)/+-]*)\\r?\\n");
     static const std::regex set_spawn_points_reg("^(?:\\r?\\n|\\s)*set_spawn_points node=([\\w+-.]+) resource=([\\w+-.]+)$");
+    static const std::regex set_way_points_reg("^(?:\\r?\\n|\\s)*set_way_points player=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w+-.]+)$");
 
     Linker linker{physics_engine.advance_times_};
 
@@ -1223,6 +1224,11 @@ void LoadScene::operator()(
             SceneNode* node = scene.get_node(match[1].str());
             std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[2].str());
             game_logic.set_spawn_points(*node, spawn_points);
+        } else if (std::regex_match(line, match, set_way_points_reg)) {
+            Player& player = players.get_player(match[1].str());
+            SceneNode* node = scene.get_node(match[2].str());
+            PointsAndAdjacency<float, 2> way_points = scene_node_resources.way_points(match[3].str());
+            player.set_waypoints(*node, way_points);
         } else if (std::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
         } else if (std::regex_match(line, match, append_focus_reg)) {

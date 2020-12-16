@@ -33,6 +33,12 @@ public:
         }
     }
 
+    SparseArrayCcs copy() const {
+        SparseArrayCcs result{shape()};
+        *result.data_ = *data_;
+        return result;
+    }
+
     const ArrayShape& shape() const {
         assert(shape_ != nullptr);
         return *shape_;
@@ -222,6 +228,16 @@ std::ostream& operator << (std::ostream& ostr, const SparseArrayCcs<TData>& ar) 
         ostr << std::endl;
     }
     return ostr;
+}
+
+template <class TData>
+SparseArrayCcs<TData> operator * (const SparseArrayCcs<TData>& a, const TData& b) {
+    return a.apply_to_defined([&b](const TData& x){ return x * b; });
+}
+
+template <class TData>
+SparseArrayCcs<TData> operator / (const SparseArrayCcs<TData>& a, const TData& b) {
+    return a.apply_to_defined([&b](const TData& x){ return x / b; });
 }
 
 }

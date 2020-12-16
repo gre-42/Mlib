@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
@@ -33,7 +34,9 @@ Player::Player(
   gun_{nullptr},
   surface_power_forward_{NAN},
   surface_power_backward_{NAN},
-  waypoint_{fixed_nans<float, 2>()}
+  waypoint_{fixed_nans<float, 2>()},
+  waypoint_id_{SIZE_MAX},
+  waypoint_reached_{false}
 {}
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
@@ -89,6 +92,27 @@ void Player::set_tire_angle_y(size_t tire_id, float angle_left, float angle_righ
 
 void Player::set_waypoint(const FixedArray<float, 2>& waypoint) {
     waypoint_ = waypoint;
+    waypoint_id_ = SIZE_MAX;
+    waypoint_reached_ = false;
+}
+
+void Player::set_waypoint(size_t waypoint_id) {
+    waypoint_ = waypoints_.points.at(waypoint_id);
+    waypoint_id_ = waypoint_id;
+    waypoint_reached_ = false;
+}
+
+void Player::set_waypoints(const SceneNode& node, const PointsAndAdjacency<float, 2>& waypoints) {
+    waypoints_ = waypoints;
+    waypoints_.adjacency = waypoints_.adjacency / node.scale();
+    FixedArray<float, 4, 4> m = node.absolute_model_matrix();
+    FixedArray<float, 2, 3> m2{
+        m(0, 0), m(0, 1), m(0, 3),
+        m(2, 0), m(2, 1), m(2, 3)};
+    for(FixedArray<float, 2>& p : waypoints_.points) {
+        p = dot1d(m2, homogenized_3(p));
+    }
+    last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints_.points.size());
 }
 
 const std::string& Player::name() const {
@@ -126,6 +150,7 @@ void Player::advance_time(float dt) {
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in) {
+        select_next_waypoint();
         move_to_waypoint();
     }
 }
@@ -148,6 +173,67 @@ void Player::aim_and_shoot() {
     }
 }
 
+void Player::select_next_waypoint() {
+    std::cerr << "a" << std::endl;
+    if (!waypoints_.adjacency.initialized()) {
+        return;
+    }
+    std::cerr << "a1" << std::endl;
+    if (rb_ == nullptr) {
+        return;
+    }
+    std::cerr << "a2" << std::endl;
+    FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
+    std::cerr << "a3" << std::endl;
+    if (waypoint_id_ == SIZE_MAX) {
+        std::cerr << "a4" << std::endl;
+        size_t closest_id = SIZE_MAX;
+        float closest_distance2 = INFINITY;
+        size_t i = 0;
+        std::cerr << "a5" << std::endl;
+        for(const FixedArray<float, 2>& rs : waypoints_.points) {
+            std::cerr << "a6" << std::endl;
+            float dist2 = sum(squared(rs - pos2));
+            if (dist2 < closest_distance2) {
+                closest_distance2 = dist2;
+                closest_id = i;
+            }
+            ++i;
+        }
+        std::cerr << "a7" << std::endl;
+        if (closest_id != SIZE_MAX) {
+            std::cerr << "ax" << std::endl;
+            set_waypoint(closest_id);
+        }
+        std::cerr << "a8" << std::endl;
+    } else {
+        std::cerr << "1a9" << std::endl;
+        if (waypoint_reached_) {
+            std::cerr << "2a9" << std::endl;
+            size_t best_id = SIZE_MAX;
+            std::chrono::time_point<std::chrono::steady_clock> best_time;
+            std::cerr << "3a9" << std::endl;
+            auto deflt = std::chrono::time_point<std::chrono::steady_clock>();
+            for(const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
+                if ((best_id == SIZE_MAX) ||
+                    (last_visited_.at(rs.first) == deflt) ||
+                    ((best_time != deflt) && (last_visited_.at(rs.first) > best_time)))
+                {
+                    best_id = rs.first;
+                    best_time = last_visited_.at(rs.first);
+                    std::cerr << "4a9 " << best_id << " " << best_time.time_since_epoch().count() << std::endl;
+                }
+            }
+            std::cerr << "5a9" << std::endl;
+            if (best_id == SIZE_MAX) {
+                throw std::runtime_error("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
+            }
+            set_waypoint(best_id);
+        }
+        std::cerr << "a10" << std::endl;
+    }
+}
+
 void Player::move_to_waypoint() {
     if (any(isnan(waypoint_))) {
         return;
@@ -166,6 +252,10 @@ void Player::move_to_waypoint() {
         FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
         if (sum(squared(pos2 - waypoint_)) < squared(rest_radius)) {
             rb_->set_surface_power("main", NAN);  // NAN=break
+            if (waypoint_id_ != SIZE_MAX) {
+                last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
+            }
+            waypoint_reached_ = true;
             return;
         }
     }

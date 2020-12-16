@@ -90,3 +90,16 @@ std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) 
         throw std::runtime_error("spawn_points for resource \"" + name + "\" failed: " + e.what());
     }
 }
+
+PointsAndAdjacency<float, 2> SceneNodeResources::way_points(const std::string& name) const
+{
+    auto it = resources_.find(name);
+    if (it == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + name + '"');
+    }
+    try {
+        return it->second->way_points();
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("way_points for resource \"" + name + "\" failed: " + e.what());
+    }
+}

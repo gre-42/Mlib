@@ -1,8 +1,10 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
+#include <chrono>
 #include <list>
 #include <map>
 #include <string>
@@ -34,6 +36,8 @@ public:
     void set_surface_power(float forward, float backward);
     void set_tire_angle_y(size_t tire_id, float angle_left, float angle_right);
     void set_waypoint(const FixedArray<float, 2>& waypoint);
+    void set_waypoint(size_t waypoint_id);
+    void set_waypoints(const SceneNode& node, const PointsAndAdjacency<float, 2>& waypoints);
     const std::string& name() const;
     const std::string& team() const;
     PlayerStats& stats();
@@ -46,6 +50,7 @@ private:
     void select_opponent();
     void aim_and_shoot();
     void move_to_waypoint();
+    void select_next_waypoint();
     CollisionQuery& collision_query_;
     Players& players_;
     std::string name_;
@@ -62,6 +67,10 @@ private:
     std::map<size_t, float> tire_angles_left_;
     std::map<size_t, float> tire_angles_right_;
     FixedArray<float, 2> waypoint_;
+    PointsAndAdjacency<float, 2> waypoints_;
+    std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;
+    size_t waypoint_id_;
+    bool waypoint_reached_;
     PlayerStats stats_;
 };
 

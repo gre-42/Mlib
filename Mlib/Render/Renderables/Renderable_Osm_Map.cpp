@@ -270,6 +270,46 @@ RenderableOsmMap::RenderableOsmMap(
             }
         }
     }
+    {
+        std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
+            BuildingType::WAYPOINTS,
+            ways,
+            0,  // building_bottom
+            0); // default_building_top
+        std::set<std::string> points;
+        for(const Building& bu : way_point_lines) {
+            points.insert(bu.way.nd.begin(), bu.way.nd.end());
+        }
+        std::map<std::string, size_t> indices;
+        for(const std::string& id : points) {
+            indices[id] = indices.size();
+        }
+        way_points_.points.reserve(points.size());
+        for(const std::string& p : points) {
+            way_points_.points.push_back(nodes.at(p).position);
+        }
+        way_points_.adjacency = SparseArrayCcs<float>{ArrayShape{points.size(), points.size()}};
+        for(const Building& bu : way_point_lines) {
+            for(auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+                auto s = it;
+                ++s;
+                if (s != bu.way.nd.end()) {
+                    float dist = std::sqrt(sum(squared(nodes.at(*s).position - nodes.at(*it).position)));
+                    if (!way_points_.adjacency.column(indices.at(*s)).insert({indices.at(*it), dist}).second) {
+                        throw std::runtime_error("Could not insert waypoint (0)");
+                    }
+                    if (!way_points_.adjacency.column(indices.at(*it)).insert({indices.at(*s), dist}).second) {
+                        throw std::runtime_error("Could not insert waypoint (1)");
+                    }
+                }
+            }
+        }
+        for(size_t i = 0; i < points.size(); ++i) {
+            if (!way_points_.adjacency.column(i).insert({i, 0}).second) {
+                throw std::runtime_error("Could not insert waypoint (2)");
+            }
+        }
+    }
 
     auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
         .texture_descriptor = {.color = terrain_texture, .normal = rendering_resources->get_normalmap(terrain_texture)},
@@ -701,6 +741,10 @@ void RenderableOsmMap::generate_triangle_rays(size_t npoints, const FixedArray<f
     return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
 }
 
-std::list<SpawnPoint> RenderableOsmMap::spawn_points() {
+std::list<SpawnPoint> RenderableOsmMap::spawn_points() const {
     return spawn_points_;
+}
+
+PointsAndAdjacency<float, 2> RenderableOsmMap::way_points() const {
+    return way_points_;
 }
