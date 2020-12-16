@@ -287,7 +287,7 @@ void Player::move_to_waypoint() {
             }
         }
     } else {
-        float angle = std::atan(std::abs(wpt(0) / wpt(2))) * 180 / M_PI;
+        float angle = std::atan(std::abs(wpt(0) / wpt(2)));
         if (wpt(0) < 0) {
             for(const auto& x : tire_angles_left_) {
                 float ang = sign(x.second) * std::min(angle, std::abs(x.second));
