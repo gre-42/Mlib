@@ -11,7 +11,7 @@
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
 static const float rest_radius = 30;
-static const float max_velocity = 10;
+static const float max_velocity = 70 / 3.6;
 static const float max_velocity_break = 2;
 static const float collision_avoidance_radius = 20;
 
@@ -217,7 +217,7 @@ void Player::select_next_waypoint() {
             for(const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
                 if ((best_id == SIZE_MAX) ||
                     (last_visited_.at(rs.first) == deflt) ||
-                    ((best_time != deflt) && (last_visited_.at(rs.first) > best_time)))
+                    ((best_time != deflt) && (last_visited_.at(rs.first) < best_time)))
                 {
                     best_id = rs.first;
                     best_time = last_visited_.at(rs.first);
