@@ -174,25 +174,18 @@ void Player::aim_and_shoot() {
 }
 
 void Player::select_next_waypoint() {
-    std::cerr << "a" << std::endl;
     if (!waypoints_.adjacency.initialized()) {
         return;
     }
-    std::cerr << "a1" << std::endl;
     if (rb_ == nullptr) {
         return;
     }
-    std::cerr << "a2" << std::endl;
     FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
-    std::cerr << "a3" << std::endl;
     if (waypoint_id_ == SIZE_MAX) {
-        std::cerr << "a4" << std::endl;
         size_t closest_id = SIZE_MAX;
         float closest_distance2 = INFINITY;
         size_t i = 0;
-        std::cerr << "a5" << std::endl;
         for(const FixedArray<float, 2>& rs : waypoints_.points) {
-            std::cerr << "a6" << std::endl;
             float dist2 = sum(squared(rs - pos2));
             if (dist2 < closest_distance2) {
                 closest_distance2 = dist2;
@@ -200,19 +193,13 @@ void Player::select_next_waypoint() {
             }
             ++i;
         }
-        std::cerr << "a7" << std::endl;
         if (closest_id != SIZE_MAX) {
-            std::cerr << "ax" << std::endl;
             set_waypoint(closest_id);
         }
-        std::cerr << "a8" << std::endl;
     } else {
-        std::cerr << "1a9" << std::endl;
         if (waypoint_reached_) {
-            std::cerr << "2a9" << std::endl;
             size_t best_id = SIZE_MAX;
             std::chrono::time_point<std::chrono::steady_clock> best_time;
-            std::cerr << "3a9" << std::endl;
             auto deflt = std::chrono::time_point<std::chrono::steady_clock>();
             for(const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
                 if ((best_id == SIZE_MAX) ||
@@ -221,16 +208,13 @@ void Player::select_next_waypoint() {
                 {
                     best_id = rs.first;
                     best_time = last_visited_.at(rs.first);
-                    std::cerr << "4a9 " << best_id << " " << best_time.time_since_epoch().count() << std::endl;
                 }
             }
-            std::cerr << "5a9" << std::endl;
             if (best_id == SIZE_MAX) {
                 throw std::runtime_error("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
             }
             set_waypoint(best_id);
         }
-        std::cerr << "a10" << std::endl;
     }
 }
 
