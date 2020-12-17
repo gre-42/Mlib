@@ -180,7 +180,9 @@ bool Player::unstuck() {
     if (rb_ == nullptr) {
         return false;
     }
-    if (sum(squared(rb_->rbi_.rbp_.v_)) > squared(stuck_velocity)) {
+    if ((sum(squared(rb_->rbi_.rbp_.v_)) > squared(stuck_velocity)) ||
+        (unstuck_start_ != std::chrono::steady_clock::time_point()))
+    {
         stuck_start_ = std::chrono::steady_clock::now();
     } else if (
         (stuck_start_ != std::chrono::steady_clock::time_point()) &&
