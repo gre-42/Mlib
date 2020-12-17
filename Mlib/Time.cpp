@@ -11,7 +11,7 @@ std::string Mlib::format_minutes_seconds(float seconds) {
     } else {
         int minutes = seconds / 60;
         float residual_seconds = seconds - 60 * minutes;
-        sstr << minutes << " m, " << residual_seconds << " s" << std::endl;
+        sstr << minutes << " m, " << residual_seconds << " s";
     }
     return sstr.str();
 }
