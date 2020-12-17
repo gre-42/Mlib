@@ -233,6 +233,7 @@ void Player::select_next_waypoint() {
     }
     FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
     if (waypoint_id_ == SIZE_MAX) {
+        // If we have no current waypoint, find closest point in waypoints array.
         size_t closest_id = SIZE_MAX;
         float closest_distance2 = INFINITY;
         size_t i = 0;
@@ -248,6 +249,7 @@ void Player::select_next_waypoint() {
             set_waypoint(closest_id);
         }
     } else {
+        // If we already have a waypoint, pick oldest neighbor.
         if (waypoint_reached_) {
             size_t best_id = SIZE_MAX;
             std::chrono::time_point<std::chrono::steady_clock> best_time;
@@ -341,36 +343,48 @@ void Player::move_to_waypoint() {
         }
     }
     // Steer towards waypoint.
-    FixedArray<float, 3> wp{waypoint_(0), 0, waypoint_(1)};
-    auto m = rb_->get_new_absolute_model_matrix();
-    auto v = inverted_scaled_se3(m);
-    auto wpt = dehomogenized_3(dot1d(v, homogenized_4(wp)));
-    float wptl2 = sum(squared(wpt));
-    if (wptl2 > 1e-12) {
-        wpt += cross(wpt, FixedArray<float, 3>{0, 1, 0}) * d_wpt;
-        if (wpt(2) > 0) {
-            // The waypoint is behind us => full, inverted steering.
-            if (wpt(0) < 0) {
-                for(const auto& x : tire_angles_left_) {
-                    rb_->set_tire_angle_y(x.first, x.second);
+    // FixedArray<float, 3> wp{waypoint_(0), 0, waypoint_(1)};
+    // auto m = rb_->get_new_absolute_model_matrix();
+    // auto v = inverted_scaled_se3(m);
+    // auto wpt = dehomogenized_3(dot1d(v, homogenized_4(wp)));
+    auto z3 = rb_->rbi_.rbp_.abs_z();
+    FixedArray<float, 2> z{z3(0), z3(2)};
+    float zl2 = sum(squared(z));
+    if (zl2 > 1e-12) {
+        z /= std::sqrt(zl2);
+        auto p = rb_->rbi_.rbp_.abs_position();
+        auto wpt = waypoint_ - FixedArray<float, 2>(p(0), p(2));
+        FixedArray<float, 2, 2> m{
+            z(1), -z(0),
+            z(0), z(1)};
+        wpt = dot1d(m, wpt);
+        float wptl2 = sum(squared(wpt));
+        if (wptl2 > 1e-12) {
+            wpt += FixedArray<float, 2>(wpt(1), -wpt(0)) * d_wpt;
+            if (wpt(1) > 0) {
+                // The waypoint is behind us => full, inverted steering.
+                if (wpt(0) < 0) {
+                    for(const auto& x : tire_angles_left_) {
+                        rb_->set_tire_angle_y(x.first, x.second);
+                    }
+                } else {
+                    for(const auto& x : tire_angles_right_) {
+                        rb_->set_tire_angle_y(x.first, x.second);
+                    }
                 }
             } else {
-                for(const auto& x : tire_angles_right_) {
-                    rb_->set_tire_angle_y(x.first, x.second);
-                }
-            }
-        } else {
-            // The waypoint is in front of us => full, inverted steering.
-            float angle = std::atan(std::abs(wpt(0) / wpt(2)));
-            if (wpt(0) < 0) {
-                for(const auto& x : tire_angles_left_) {
-                    float ang = sign(x.second) * std::min(angle, std::abs(x.second));
-                    rb_->set_tire_angle_y(x.first, ang);
-                }
-            } else {
-                for(const auto& x : tire_angles_right_) {
-                    float ang = sign(x.second) * std::min(angle, std::abs(x.second));
-                    rb_->set_tire_angle_y(x.first, ang);
+                // The waypoint is in front of us => full, inverted steering.
+                float angle = std::atan(std::abs(wpt(0) / wpt(1)));
+                if (wpt(0) < 0) {
+                    for(const auto& x : tire_angles_left_) {
+                        float ang = sign(x.second) * std::min(angle, std::abs(x.second));
+                        rb_->set_tire_angle_y(x.first, ang);
+                    }
+                } else {
+                    for(const auto& x : tire_angles_right_) {
+                        float ang = sign(x.second) * std::min(angle, std::abs(x.second));
+                        rb_->set_tire_angle_y(x.first, ang);
+                    }
                 }
             }
         }
