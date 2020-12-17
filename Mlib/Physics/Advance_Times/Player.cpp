@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Advance_Times/Damageable.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
@@ -143,6 +144,18 @@ PlayerStats& Player::stats() {
 
 const PlayerStats& Player::stats() const {
     return stats_;
+}
+
+float Player::car_health() const {
+    if (rb_ != nullptr) {
+        for(auto& v : rb_->collision_observers_) {
+            auto d = dynamic_cast<Damageable*>(v.get());
+            if (d != nullptr) {
+                return d->health();
+            }
+        }
+    }
+    return NAN;
 }
 
 void Player::notify_destroyed(void* destroyed_object) {

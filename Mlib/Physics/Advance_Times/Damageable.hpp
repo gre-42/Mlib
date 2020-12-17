@@ -22,6 +22,7 @@ public:
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     virtual void log(std::ostream& ostr, unsigned int log_components) const override;
+    virtual float health() const;
     void damage(float amount);
 protected:
     Scene& scene_;

@@ -59,6 +59,7 @@ public:
     const std::string& team() const;
     PlayerStats& stats();
     const PlayerStats& stats() const;
+    float car_health() const;
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;

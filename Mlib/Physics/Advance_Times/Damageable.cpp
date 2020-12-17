@@ -36,6 +36,10 @@ void Damageable::log(std::ostream& ostr, unsigned int log_components) const {
     }
 }
 
+float Damageable::health() const {
+    return health_;
+}
+
 void Damageable::damage(float amount) {
     health_ -= amount;
 }
