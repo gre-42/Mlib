@@ -258,7 +258,14 @@ void LoadScene::operator()(
         "(?:\\r?\\n\\s*joystick_digital_axis=([\\w+-.]+)\\r?\\n"
         "\\s*joystick_digital_axis_sign=([\\w+-.]+))?$");
     static const std::regex console_log_reg("^(?:\\r?\\n|\\s)*console_log node=([\\w+-.]+) format=(\\d+)$");
-    static const std::regex visual_log_reg("^(?:\\r?\\n|\\s)*visual_log node=([\\w+-.]+) format=(\\d+) ttf_file=([\\w-. \\(\\)/+-]+) position=([\\w+-.]+) ([\\w+-.]+) font_height=([\\w+-.]+) line_distance=([\\w+-.]+)$");
+    static const std::regex visual_log_reg(
+        "^(?:\\r?\\n|\\s)*visual_log\\r?\\n"
+        "\\s*node=([\\w+-.]+)\\r?\\n"
+        "\\s*format=(\\d+)\\r?\\n"
+        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
+        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*font_height=([\\w+-.]+)\\r?\\n"
+        "\\s*line_distance=([\\w+-.]+)$");
     static const std::regex visual_log_3rd_reg("^(?:\\r?\\n|\\s)*visual_log_3rd node=([\\w+-.]+) format=(\\d+) ttf_file=([\\w-. \\(\\)/+-]+) offset=([\\w+-.]+) ([\\w+-.]+) font_height=([\\w+-.]+) line_distance=([\\w+-.]+)$");
     static const std::regex loading_reg(
         "^(?:\\r?\\n|\\s)*loading"
