@@ -41,6 +41,7 @@ void Bullet::advance_time(float dt) {
 
 void Bullet::notify_collided(
     const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+    CollisionRole collision_role,
     CollisionType& collision_type,
     bool& abort)
 {

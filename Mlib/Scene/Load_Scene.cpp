@@ -654,7 +654,10 @@ void LoadScene::operator()(
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            auto d = std::make_shared<Crash>(safe_stof(match[2].str()));
+            auto d = std::make_shared<Crash>(
+                rb->rbi_.rbp_,
+                rb->collision_observers_,
+                safe_stof(match[2].str()));
             rb->collision_observers_.push_back(d);
         } else if (std::regex_match(line, match, relative_transformer_reg)) {
             std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(physics_engine.advance_times_);

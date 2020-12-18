@@ -25,6 +25,7 @@ public:
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
         const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+        CollisionRole collision_role,
         CollisionType& collision_type,
         bool& abort) override;
 private:

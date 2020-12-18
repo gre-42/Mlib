@@ -6,22 +6,61 @@
 
 using namespace Mlib;
 
-Crash::Crash(float damage)
-: damage_{damage}
+Crash::Crash(
+    const RigidBodyPulses& rbp,
+    const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+    float damage)
+: rbp_{rbp},
+  collision_observers_{collision_observers},
+  damage_{damage}
 {}
+
+float calculate_damage(
+    const RigidBodyPulses& rbp,
+    float damage_raw,
+    const FixedArray<float, 3>& normal,
+    float lambda_final)
+{
+    float fac = dot0d(rbp.abs_z(), normal);
+    fac = std::sqrt(1 - std::min(1.f, squared(fac)));
+    return damage_raw * squared(std::max(0.f, -lambda_final)) * fac;
+}
 
 void Crash::notify_impact(
     const RigidBodyPulses& rbp,
     const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+    CollisionRole collision_role,
     const FixedArray<float, 3>& normal,
     float lambda_final)
 {
-    for(auto& v : collision_observers) {
-        auto d = dynamic_cast<Damageable*>(v.get());
-        if (d != nullptr) {
-            float fac = dot0d(rbp.abs_z(), normal);
-            fac = std::sqrt(1 - std::min(1.f, squared(fac)));
-            d->damage(damage_ * squared(std::max(0.f, -lambda_final)) * fac);
+    if (collision_role == CollisionRole::PRIMARY) {
+        float damage0 = NAN;
+        for(auto& v : collision_observers) {
+            auto d = dynamic_cast<Crash*>(v.get());
+            if (d != nullptr) {
+                if (!std::isnan(damage0)) {
+                    throw std::runtime_error("List contains multiple crashes");
+                }
+                damage0 = calculate_damage(rbp_, d->damage_, normal, lambda_final);
+            }
+        }
+        if (!std::isnan(damage0)) {
+            float damage1 = calculate_damage(rbp, damage_, normal, lambda_final);
+            float min_damage = std::min(damage0, damage1);
+            damage0 -= min_damage;
+            damage1 -= min_damage;
+            for(auto& v : collision_observers) {
+                auto d = dynamic_cast<Damageable*>(v.get());
+                if (d != nullptr) {
+                    d->damage(damage1);
+                }
+            }
+            for(auto& v : collision_observers_) {
+                auto d = dynamic_cast<Damageable*>(v.get());
+                if (d != nullptr) {
+                    d->damage(damage0);
+                }
+            }
         }
     }
 }
