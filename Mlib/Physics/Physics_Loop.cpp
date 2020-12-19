@@ -23,7 +23,7 @@ PhysicsLoop::PhysicsLoop(
     BaseLog* base_log)
 : exit_physics_{false},
   set_fps_{set_fps},
-  physics_thread_{[&, nframes](){
+  physics_thread_{[&, nframes, base_log](){
     size_t nframes2 = nframes;
     while(!exit_physics_) {
         if (nframes2 != SIZE_MAX) {
