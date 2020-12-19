@@ -19,6 +19,8 @@ namespace Mlib {
 class RigidBodies;
 class RigidBodyEngine;
 struct Beacon;
+class Damageable;
+class Player;
 
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
@@ -86,6 +88,11 @@ public:
 
     RigidBodyIntegrator rbi_;
     std::list<std::shared_ptr<CollisionObserver>> collision_observers_;
+
+    Damageable* damageable_;
+
+    Player* driver_;
+
     mutable std::mutex advance_time_mutex_;
 };
 

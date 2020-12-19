@@ -1,7 +1,7 @@
 #include "Bullet.hpp"
 #include <Mlib/Geometry/Look_At.hpp>
-#include <Mlib/Physics/Advance_Times/Damageable.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
@@ -40,7 +40,7 @@ void Bullet::advance_time(float dt) {
 }
 
 void Bullet::notify_collided(
-    const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+    RigidBody& rigid_body,
     CollisionRole collision_role,
     CollisionType& collision_type,
     bool& abort)
@@ -51,10 +51,7 @@ void Bullet::notify_collided(
     }
     lifetime_ = INFINITY;
     collision_type = CollisionType::GO_THROUGH;
-    for(auto& v : collision_observers) {
-        auto d = dynamic_cast<Damageable*>(v.get());
-        if (d != nullptr) {
-            d->damage(damage_);
-        }
+    if (rigid_body.damageable_ != nullptr) {
+        rigid_body.damageable_->damage(damage_);
     }
 }

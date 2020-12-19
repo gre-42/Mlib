@@ -4,11 +4,11 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
-#include <Mlib/Physics/Advance_Times/Damageable.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
@@ -63,7 +63,14 @@ void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene
     }
     scene_node_name_ = scene_node_name;
     scene_node_ = &scene_node;
+    if (rb_ != nullptr) {
+        if (rb_->driver_ != this) {
+            throw std::runtime_error("Old rigid body has unexpected driver");
+        }
+        rb_->driver_ = nullptr;
+    }
     rb_ = &rb;
+    rb.driver_ = this;
     scene_node.add_destruction_observer(this);
 }
 
@@ -147,15 +154,11 @@ const PlayerStats& Player::stats() const {
 }
 
 float Player::car_health() const {
-    if (rb_ != nullptr) {
-        for(auto& v : rb_->collision_observers_) {
-            auto d = dynamic_cast<Damageable*>(v.get());
-            if (d != nullptr) {
-                return d->health();
-            }
-        }
+    if (rb_ != nullptr && rb_->damageable_ != nullptr) {
+        return rb_->damageable_->health();
+    } else {
+        return NAN;
     }
-    return NAN;
 }
 
 void Player::notify_destroyed(void* destroyed_object) {

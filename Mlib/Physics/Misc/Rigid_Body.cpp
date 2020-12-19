@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <chrono>
 
@@ -17,7 +18,9 @@ RigidBody::RigidBody(RigidBodies& rigid_bodies, const RigidBodyIntegrator& rbi)
   energy_old_{NAN},
 #endif
   tires_z_{0, 0, -1},
-  rbi_{rbi}
+  rbi_{rbi},
+  damageable_{nullptr},
+  driver_{nullptr}
 {}
 
 RigidBody::~RigidBody()
@@ -330,6 +333,12 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
     }
     for(const auto& o : collision_observers_) {
         auto c = std::dynamic_pointer_cast<StatusWriter>(o);
+        if (c != nullptr) {
+            c->write_status(ostr, log_components);
+        }
+    }
+    {
+        auto c = dynamic_cast<StatusWriter*>(damageable_);
         if (c != nullptr) {
             c->write_status(ostr, log_components);
         }

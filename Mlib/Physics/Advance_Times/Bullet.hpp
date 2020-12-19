@@ -24,7 +24,7 @@ public:
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
-        const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+        RigidBody& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,
         bool& abort) override;

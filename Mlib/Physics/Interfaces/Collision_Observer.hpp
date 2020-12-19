@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-struct RigidBodyPulses;
+class RigidBody;
 class BaseLog;
 
 enum class CollisionRole {
@@ -19,13 +19,12 @@ public:
     // Called by rigid body's destructor
     virtual ~CollisionObserver() = default;
     virtual void notify_collided(
-        const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+        RigidBody& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,
         bool& abort) {};
     virtual void notify_impact(
-        const RigidBodyPulses& rbp,
-        const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
+        RigidBody& rigid_body,
         CollisionRole collision_role,
         const FixedArray<float, 3>& normal,
         float lambda_final,

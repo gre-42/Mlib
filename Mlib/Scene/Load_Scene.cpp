@@ -3,7 +3,7 @@
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Physics/Advance_Times/Crash.hpp>
-#include <Mlib/Physics/Advance_Times/Damageable.hpp>
+#include <Mlib/Physics/Advance_Times/Deleting_Damageable.hpp>
 #include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movable_Logger.hpp>
@@ -660,13 +660,16 @@ void LoadScene::operator()(
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            auto d = std::make_shared<Damageable>(
+            auto d = std::make_shared<DeletingDamageable>(
                 scene,
                 physics_engine.advance_times_,
                 match[1].str(),
                 safe_stof(match[2].str()),
                 mutex);
-            rb->collision_observers_.push_back(d);
+            if (rb->damageable_ != nullptr) {
+                throw std::runtime_error("Rigid body already has a damageable");
+            }
+            rb->damageable_ = d.get();
             physics_engine.advance_times_.add_advance_time(d);
         } else if (std::regex_match(line, match, crash_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
@@ -674,9 +677,8 @@ void LoadScene::operator()(
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
             auto d = std::make_shared<Crash>(
-                rb->rbi_.rbp_,
-                rb->collision_observers_,
-                safe_stof(match[2].str()));
+                *rb,
+                safe_stof(match[2].str()));  // damage
             rb->collision_observers_.push_back(d);
         } else if (std::regex_match(line, match, relative_transformer_reg)) {
             std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(physics_engine.advance_times_);
