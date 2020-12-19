@@ -8,6 +8,9 @@ FifoLog::FifoLog(size_t max_log_size)
 {}
 
 void FifoLog::log(const std::string& message) {
+    if (max_log_size_ == 0) {
+        return;
+    }
     std::lock_guard lock{mutex_};
     if (entries_.size() > max_log_size_) {
         throw std::runtime_error("Log race condition");
@@ -21,13 +24,11 @@ void FifoLog::log(const std::string& message) {
 void FifoLog::get_messages(std::ostream& ostr, size_t nentries) const
 {
     std::lock_guard lock{mutex_};
-    if (!entries_.empty()) {
-        auto it = entries_.end();
-        for(size_t i = 0; i < std::min(nentries, entries_.size()); ++i) {
-            --it;
-        }
-        for(; it != entries_.end(); ++it) {
-            ostr << *it << std::endl;
-        }
+    auto it = entries_.end();
+    for(size_t i = 0; i < std::min(nentries, entries_.size()); ++i) {
+        --it;
+    }
+    for(; it != entries_.end(); ++it) {
+        ostr << *it << std::endl;
     }
 }
