@@ -36,22 +36,24 @@ void GameLogic::set_preferred_car_spawner(Player& player, const std::function<vo
 }
 
 void GameLogic::advance_time(float dt) {
-    size_t nwinners = 0;
-    Player* winner = nullptr;
+    std::set<std::string> all_teams;
+    std::set<std::string> winner_teams;
     for(auto& p : players_.players()) {
         const std::string& node_name = p.second->scene_node_name();
+        all_teams.insert(p.second->team());
         if (!node_name.empty()) {
-            ++nwinners;
-            winner = p.second;
+            winner_teams.insert(p.second->team());
         }
     }
-    if ((nwinners <= 1) &&
-        (players_.players().size() > 1) &&
+    if ((winner_teams.size() <= 1) &&
+        (all_teams.size() > 1) &&
         (spawn_points_.size() > 1))
     {
         std::lock_guard lock_guard{mutex_};
-        if (winner != nullptr) {
-            ++winner->stats().nwins;
+        for(auto& p : players_.players()) {
+            if (p.second->team() == *winner_teams.begin()) {
+                ++p.second->stats().nwins;
+            }
         }
         for(auto& p : players_.players()) {
             const std::string& node_name = p.second->scene_node_name();
