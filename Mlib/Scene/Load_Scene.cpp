@@ -46,8 +46,10 @@
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
+#include <Mlib/Scene/Render_Logics/Visual_Global_Log.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
+#include <Mlib/Scene_Graph/Base_Log.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/String.hpp>
@@ -106,6 +108,7 @@ void LoadScene::operator()(
     DirtmapLogic& dirtmap_logic,
     SkyboxLogic& skybox_logic,
     GameLogic& game_logic,
+    BaseLog& base_log,
     UiFocus& ui_focus,
     SubstitutionString& substitutions,
     size_t& num_renderings,
@@ -258,15 +261,29 @@ void LoadScene::operator()(
         "(?:\\r?\\n\\s*joystick_digital_axis=([\\w+-.]+)\\r?\\n"
         "\\s*joystick_digital_axis_sign=([\\w+-.]+))?$");
     static const std::regex console_log_reg("^(?:\\r?\\n|\\s)*console_log node=([\\w+-.]+) format=(\\d+)$");
-    static const std::regex visual_log_reg(
-        "^(?:\\r?\\n|\\s)*visual_log\\r?\\n"
+    static const std::regex visual_global_log_reg(
+        "^(?:\\r?\\n|\\s)*visual_global_log\\r?\\n"
+        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
+        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*font_height=([\\w+-.]+)\\r?\\n"
+        "\\s*line_distance=([\\w+-.]+)\\r?\\n"
+        "\\s*nentries=([\\d+]+)$");
+    static const std::regex visual_node_status_reg(
+        "^(?:\\r?\\n|\\s)*visual_node_status\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*format=(\\d+)\\r?\\n"
         "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
         "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)$");
-    static const std::regex visual_log_3rd_reg("^(?:\\r?\\n|\\s)*visual_log_3rd node=([\\w+-.]+) format=(\\d+) ttf_file=([\\w-. \\(\\)/+-]+) offset=([\\w+-.]+) ([\\w+-.]+) font_height=([\\w+-.]+) line_distance=([\\w+-.]+)$");
+    static const std::regex visual_node_status_3rd_reg(
+        "^(?:\\r?\\n|\\s)*visual_node_status_3rd\\r?\\n"
+        "\\s*node=([\\w+-.]+)\\r?\\n"
+        "\\s*format=(\\d+)\\r?\\n"
+        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
+        "\\s*offset=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*font_height=([\\w+-.]+)\\r?\\n"
+        "\\s*line_distance=([\\w+-.]+)$");
     static const std::regex loading_reg(
         "^(?:\\r?\\n|\\s)*loading"
         "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
@@ -877,7 +894,18 @@ void LoadScene::operator()(
             unsigned int log_components = safe_stoi(match[2].str());
             auto logger = std::make_shared<MovableLogger>(*node, physics_engine.advance_times_, lo, log_components);
             physics_engine.advance_times_.add_advance_time(logger);
-        } else if (std::regex_match(line, match, visual_log_reg)) {
+        } else if (std::regex_match(line, match, visual_global_log_reg)) {
+            auto logger = std::make_shared<VisualGlobalLog>(
+                base_log,
+                fpath(match[1].str()),
+                FixedArray<float, 2>{
+                    safe_stof(match[2].str()),
+                    safe_stof(match[3].str())},
+                safe_stof(match[4].str()),
+                safe_stof(match[5].str()),
+                safe_stoz(match[6].str()));
+            render_logics.append(nullptr, logger);
+        } else if (std::regex_match(line, match, visual_node_status_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
             auto lo = dynamic_cast<StatusWriter*>(mv);
@@ -898,7 +926,7 @@ void LoadScene::operator()(
                 safe_stof(match[7].str()));
             render_logics.append(node, logger);
             physics_engine.advance_times_.add_advance_time(logger);
-        } else if (std::regex_match(line, match, visual_log_3rd_reg)) {
+        } else if (std::regex_match(line, match, visual_node_status_3rd_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
             auto lo = dynamic_cast<StatusWriter*>(mv);

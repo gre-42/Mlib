@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Advance_Times/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
+#include <Mlib/Scene_Graph/Base_Log.hpp>
 
 using namespace Mlib;
 
@@ -50,6 +51,11 @@ void Crash::notify_impact(
             float min_damage = std::min(damage0, damage1);
             damage0 -= min_damage;
             damage1 -= min_damage;
+            if (base_log != nullptr) {
+                std::stringstream sstr;
+                sstr << "Damage: " << damage0 << " " << damage1;
+                base_log->log(sstr.str());
+            }
             for(auto& v : collision_observers) {
                 auto d = dynamic_cast<Damageable*>(v.get());
                 if (d != nullptr) {

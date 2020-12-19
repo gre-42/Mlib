@@ -25,7 +25,7 @@
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
-#include <Mlib/Scene_Graph/Fifo_Loggable.hpp>
+#include <Mlib/Scene_Graph/Fifo_Log.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
         SubstitutionString substitutions;
         SetFps physics_set_fps;
         std::map<std::string, size_t> selection_ids;
-        FifoLoggable fifo_log{10 * 1000};
+        FifoLog fifo_log{10 * 1000};
 
         while (!render2.window_should_close()) {
             num_renderings = SIZE_MAX;
@@ -293,6 +293,7 @@ int main(int argc, char** argv) {
                 *dirtmap_logic,
                 skybox_logic,
                 game_logic,
+                fifo_log,
                 ui_focus,
                 substitutions,
                 num_renderings,

@@ -28,6 +28,7 @@ class SubstitutionString;
 class ButtonPress;
 class GameLogic;
 class KeyBindings;
+class BaseLog;
 
 class LoadScene {
 public:
@@ -51,6 +52,7 @@ public:
         DirtmapLogic& dirtmap_logic,
         SkyboxLogic& skybox_logic,
         GameLogic& game_logic,
+        BaseLog& base_log,
         UiFocus& ui_focus,
         SubstitutionString& substitutions,
         size_t& num_renderings,
