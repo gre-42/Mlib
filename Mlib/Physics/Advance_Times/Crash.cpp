@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Advance_Times/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
+#include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 
 using namespace Mlib;
 
@@ -54,7 +55,11 @@ void Crash::notify_impact(
             if (base_log != nullptr) {
                 std::stringstream sstr;
                 sstr << "Damage: " << damage0 << " " << damage1;
-                base_log->log(sstr.str());
+                if (damage0 < 1 && damage1 < 1) {
+                    base_log->log(sstr.str(), LogEntrySeverity::INFO);
+                } else {
+                    base_log->log(sstr.str(), LogEntrySeverity::CRITICAL);
+                }
             }
             for(auto& v : collision_observers) {
                 auto d = dynamic_cast<Damageable*>(v.get());

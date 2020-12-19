@@ -14,14 +14,16 @@ VisualGlobalLog::VisualGlobalLog(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
-    size_t nentries)
+    size_t nentries,
+    LogEntrySeverity severity)
 : RenderTextLogic{
     ttf_filename,
     position,
     font_height_pixels,
     line_distance_pixels},
   base_log_{base_log},
-  nentries_{nentries}
+  nentries_{nentries},
+  severity_{severity}
 {}
 
 VisualGlobalLog::~VisualGlobalLog()
@@ -36,7 +38,7 @@ void VisualGlobalLog::render(
     const RenderedSceneDescriptor& frame_id)
 {
     std::stringstream sstr;
-    base_log_.get_messages(sstr, nentries_);
+    base_log_.get_messages(sstr, nentries_, severity_);
     renderable_text().render(position_, sstr.str(), width, height, line_distance_pixels_, true);  // true=periodic_position
 }
 

@@ -50,6 +50,7 @@
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
+#include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/String.hpp>
@@ -267,7 +268,8 @@ void LoadScene::operator()(
         "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
-        "\\s*nentries=([\\d+]+)$");
+        "\\s*nentries=([\\d+]+)\\r?\\n"
+        "\\s*severity=(info|critical)$");
     static const std::regex visual_node_status_reg(
         "^(?:\\r?\\n|\\s)*visual_node_status\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
@@ -903,7 +905,8 @@ void LoadScene::operator()(
                     safe_stof(match[3].str())},
                 safe_stof(match[4].str()),
                 safe_stof(match[5].str()),
-                safe_stoz(match[6].str()));
+                safe_stoz(match[6].str()),
+                log_entry_severity_from_string(match[7].str()));
             render_logics.append(nullptr, logger);
         } else if (std::regex_match(line, match, visual_node_status_reg)) {
             auto node = scene.get_node(match[1].str());

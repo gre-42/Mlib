@@ -7,6 +7,7 @@ namespace Mlib {
 
 class RenderableText;
 class BaseLog;
+enum class LogEntrySeverity;
 
 class VisualGlobalLog: public RenderLogic, public RenderTextLogic {
 public:
@@ -16,7 +17,8 @@ public:
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
-        size_t nentries);
+        size_t nentries,
+        LogEntrySeverity severity);
     virtual ~VisualGlobalLog();
 
     virtual void render(
@@ -35,6 +37,7 @@ public:
 private:
     BaseLog& base_log_;
     size_t nentries_;
+    LogEntrySeverity severity_;
 };
 
 }
