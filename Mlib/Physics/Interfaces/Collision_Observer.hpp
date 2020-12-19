@@ -7,6 +7,7 @@
 namespace Mlib {
 
 struct RigidBodyPulses;
+class BaseLog;
 
 enum class CollisionRole {
     PRIMARY,
@@ -27,7 +28,8 @@ public:
         const std::list<std::shared_ptr<CollisionObserver>>& collision_observers,
         CollisionRole collision_role,
         const FixedArray<float, 3>& normal,
-        float lambda_final) {};
+        float lambda_final,
+        BaseLog* base_log) {};
 };
 
 }

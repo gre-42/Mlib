@@ -30,8 +30,8 @@ void Damageable::advance_time(float dt) {
     }
 }
 
-void Damageable::log(std::ostream& ostr, unsigned int log_components) const {
-    if (log_components & LOG_HEALTH) {
+void Damageable::write_status(std::ostream& ostr, unsigned int log_components) const {
+    if (log_components & STATUS_HEALTH) {
         ostr << "HP: " << health_ << std::endl;
     }
 }

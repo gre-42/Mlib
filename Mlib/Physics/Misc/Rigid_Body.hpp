@@ -8,7 +8,7 @@
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
 #include <Mlib/Physics/Misc/Tire.hpp>
-#include <Mlib/Scene_Graph/Loggable.hpp>
+#include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>
 #include <memory>
@@ -23,7 +23,7 @@ struct Beacon;
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBody: public DestructionObserver, public AbsoluteMovable, public Loggable {
+class RigidBody: public DestructionObserver, public AbsoluteMovable, public StatusWriter {
 public:
     RigidBody(RigidBodies& rigid_bodies, const RigidBodyIntegrator& rbi);
     ~RigidBody();
@@ -70,7 +70,7 @@ public:
     virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
     virtual FixedArray<float, 4, 4> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
-    virtual void log(std::ostream& ostr, unsigned int log_components) const override;
+    virtual void write_status(std::ostream& ostr, unsigned int log_components) const override;
 
     RigidBodies& rigid_bodies_;
 

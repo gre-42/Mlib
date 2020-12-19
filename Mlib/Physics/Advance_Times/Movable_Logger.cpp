@@ -7,11 +7,11 @@ using namespace Mlib;
 MovableLogger::MovableLogger(
     SceneNode& scene_node,
     AdvanceTimes& advance_times,
-    Loggable* logged,
+    StatusWriter* status_writer,
     unsigned int log_components)
 : scene_node_{scene_node},
   advance_times_{advance_times},
-  logged_{logged},
+  status_writer_{status_writer},
   log_components_{log_components}
 {
     scene_node.add_destruction_observer(this);
@@ -22,5 +22,5 @@ void MovableLogger::notify_destroyed(void* destroyed_object) {
 }
 
 void MovableLogger::advance_time(float dt) {
-    logged_->log(std::cerr, log_components_);
+    status_writer_->write_status(std::cerr, log_components_);
 }

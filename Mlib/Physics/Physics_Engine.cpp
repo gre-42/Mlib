@@ -50,7 +50,8 @@ static void handle_triangle_triangle_intersection(
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
     const PhysicsEngineConfig& cfg,
-    const SatTracker& st)
+    const SatTracker& st,
+    BaseLog* base_log)
 {
     for(const auto& t1 : msh1.mesh->get_triangles_sphere()) {
         if (!t1.bounding_sphere.intersects(t0.bounding_sphere)) {
@@ -76,7 +77,8 @@ static void handle_triangle_triangle_intersection(
                 .contact_infos = contact_infos,
                 .tire_id = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = false});
+                .lines_are_normals = false,
+                .base_log = base_log});
         }
         if (OrderableFixedArray{t1.triangle(2)} < OrderableFixedArray{t1.triangle(0)}) {
             handle_line_triangle_intersection({
@@ -93,7 +95,8 @@ static void handle_triangle_triangle_intersection(
                 .contact_infos = contact_infos,
                 .tire_id = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = false});
+                .lines_are_normals = false,
+                .base_log = base_log});
         }
         if (OrderableFixedArray{t1.triangle(0)} < OrderableFixedArray{t1.triangle(1)}) {
             handle_line_triangle_intersection({
@@ -110,7 +113,8 @@ static void handle_triangle_triangle_intersection(
                 .contact_infos = contact_infos,
                 .tire_id = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = false});
+                .lines_are_normals = false,
+                .base_log = base_log});
         }
     }
 }
@@ -124,7 +128,8 @@ static void collide_triangle(
     const PhysicsEngineConfig& cfg,
     const SatTracker& st,
     std::list<Beacon>* beacons,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos)
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    BaseLog* base_log)
 {
     // Mesh-sphere <-> triangle-sphere intersection
     if (!msh1.mesh->intersects(t0.bounding_sphere)) {
@@ -144,7 +149,8 @@ static void collide_triangle(
             beacons,
             contact_infos,
             cfg,
-            st);
+            st,
+            base_log);
     }
     const auto& lines = msh1.mesh->get_lines();
     if (msh1.mesh_type == MeshType::CHASSIS) {
@@ -163,7 +169,8 @@ static void collide_triangle(
                 .contact_infos = contact_infos,
                 .tire_id = SIZE_MAX,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = true});
+                .lines_are_normals = true,
+                .base_log = base_log});
         }
     } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
         size_t tire_id = 0;
@@ -182,7 +189,8 @@ static void collide_triangle(
                 .contact_infos = contact_infos,
                 .tire_id = tire_id,
                 .mesh0_two_sided = t0.two_sided,
-                .lines_are_normals = true});
+                .lines_are_normals = true,
+                .base_log = base_log});
             ++tire_id;
         }
     } else {
@@ -196,7 +204,8 @@ static void collide_objects(
     const PhysicsEngineConfig& cfg,
     const SatTracker& st,
     std::list<Beacon>* beacons,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos)
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    BaseLog* base_log)
 {
     if (o0.rigid_body == o1.rigid_body) {
         return;
@@ -225,7 +234,8 @@ static void collide_objects(
                     cfg,
                     st,
                     beacons,
-                    contact_infos);
+                    contact_infos,
+                    base_log);
             }
         }
     }
@@ -234,7 +244,8 @@ static void collide_objects(
 void PhysicsEngine::collide(
     std::list<Beacon>* beacons,
     std::list<std::unique_ptr<ContactInfo>>& contact_infos,
-    bool burn_in)
+    bool burn_in,
+    BaseLog* base_log)
 {
     std::erase_if(rigid_bodies_.transformed_objects_, [](const RigidBodyAndTransformedMeshes& rbtm){
         return (rbtm.rigid_body->mass() != INFINITY);
@@ -274,13 +285,13 @@ void PhysicsEngine::collide(
     if (collide_forward_) {
         for(const auto& o0 : rigid_bodies_.transformed_objects_) {
             for(const auto& o1 : rigid_bodies_.transformed_objects_) {
-                collide_objects(o0, o1, cfg_, st, beacons, contact_infos);
+                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, base_log);
             }
         }
     } else {
         for(const auto& o0 : reverse(rigid_bodies_.transformed_objects_)) {
             for(const auto& o1 : reverse(rigid_bodies_.transformed_objects_)) {
-                collide_objects(o0, o1, cfg_, st, beacons, contact_infos);
+                collide_objects(o0, o1, cfg_, st, beacons, contact_infos, base_log);
             }
         }
     }
@@ -319,7 +330,8 @@ void PhysicsEngine::collide(
                             cfg_,
                             st,
                             beacons,
-                            contact_infos);
+                            contact_infos,
+                            base_log);
                     });
             }
         }
@@ -361,7 +373,11 @@ void PhysicsEngine::burn_in(float seconds) {
     for(float time = 0; time < seconds; time += cfg_.dt / cfg_.oversampling) {
         {
             std::list<std::unique_ptr<ContactInfo>> contact_infos;
-            collide(nullptr, contact_infos, true);  // true = burn_in
+            collide(
+                nullptr,        // beacons
+                contact_infos,
+                true,           // true = burn_in
+                nullptr);       // base_log
             if (cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                 solve_contacts(contact_infos, cfg_.dt / cfg_.oversampling);
             }

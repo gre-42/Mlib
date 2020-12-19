@@ -25,6 +25,7 @@
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Graph/Fifo_Loggable.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
@@ -169,6 +170,7 @@ int main(int argc, char** argv) {
         SubstitutionString substitutions;
         SetFps physics_set_fps;
         std::map<std::string, size_t> selection_ids;
+        FifoLoggable fifo_log{10 * 1000};
 
         while (!render2.window_should_close()) {
             num_renderings = SIZE_MAX;
@@ -307,7 +309,9 @@ int main(int argc, char** argv) {
                     physics_engine,
                     mutex,
                     scene_config.physics_engine_config,
-                    physics_set_fps}};
+                    physics_set_fps,
+                    SIZE_MAX,  // nframes
+                    &fifo_log}};
 
             if (args.has_named("--no_render")) {
                 std::cout << "Press enter to exit" << std::endl;

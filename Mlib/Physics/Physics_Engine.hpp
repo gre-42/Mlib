@@ -10,6 +10,7 @@ namespace Mlib {
 class ExternalForceProvider;
 struct Beacon;
 struct ContactInfo;
+class BaseLog;
 
 class PhysicsEngine {
     friend CollisionQuery;
@@ -22,7 +23,8 @@ public:
     void collide(
         std::list<Beacon>* beacons,
         std::list<std::unique_ptr<ContactInfo>>& contact_infos,
-        bool burn_in);
+        bool burn_in,
+        BaseLog* base_log);
     void move_rigid_bodies(std::list<Beacon>* beacons);
     void move_advance_times();
     void burn_in(float seconds);

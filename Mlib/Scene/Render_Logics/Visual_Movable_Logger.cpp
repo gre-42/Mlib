@@ -1,8 +1,8 @@
 #include "Visual_Movable_Logger.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Scene_Graph/Loggable.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <sstream>
 
 using namespace Mlib;
@@ -10,7 +10,7 @@ using namespace Mlib;
 VisualMovableLogger::VisualMovableLogger(
     SceneNode& scene_node,
     AdvanceTimes& advance_times,
-    Loggable* logged,
+    StatusWriter* status_writer,
     unsigned int log_components,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
@@ -22,7 +22,7 @@ VisualMovableLogger::VisualMovableLogger(
     font_height_pixels,
     line_distance_pixels},
   advance_times_{advance_times},
-  logged_{logged},
+  status_writer_{status_writer},
   log_components_{log_components}
 {
     scene_node.add_destruction_observer(this);
@@ -37,7 +37,7 @@ void VisualMovableLogger::notify_destroyed(void* destroyed_object) {
 
 void VisualMovableLogger::advance_time(float dt) {
     std::stringstream sstr;
-    logged_->log(sstr, log_components_);
+    status_writer_->write_status(sstr, log_components_);
     text_ = sstr.str();
 }
 

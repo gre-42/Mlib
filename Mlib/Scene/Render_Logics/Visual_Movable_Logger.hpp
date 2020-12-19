@@ -10,14 +10,14 @@ namespace Mlib {
 class AdvanceTimes;
 class SceneNode;
 class RenderableText;
-class Loggable;
+class StatusWriter;
 
 class VisualMovableLogger: public RenderLogic, public DestructionObserver, public RenderTextLogic, public AdvanceTime {
 public:
     VisualMovableLogger(
         SceneNode& scene_node,
         AdvanceTimes& advance_times,
-        Loggable* logged,
+        StatusWriter* status_writer,
         unsigned int log_components,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -44,7 +44,7 @@ public:
 
 private:
     AdvanceTimes& advance_times_;
-    Loggable* logged_;
+    StatusWriter* status_writer_;
     unsigned int log_components_;
     std::string text_;
 };

@@ -870,7 +870,7 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, console_log_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
-            auto lo = dynamic_cast<Loggable*>(mv);
+            auto lo = dynamic_cast<StatusWriter*>(mv);
             if (lo == nullptr) {
                 throw std::runtime_error("Could not find loggable");
             }
@@ -880,7 +880,7 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, visual_log_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
-            auto lo = dynamic_cast<Loggable*>(mv);
+            auto lo = dynamic_cast<StatusWriter*>(mv);
             if (lo == nullptr) {
                 throw std::runtime_error("Could not find loggable");
             }
@@ -901,7 +901,7 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, visual_log_3rd_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
-            auto lo = dynamic_cast<Loggable*>(mv);
+            auto lo = dynamic_cast<StatusWriter*>(mv);
             if (lo == nullptr) {
                 throw std::runtime_error("Could not find loggable");
             }

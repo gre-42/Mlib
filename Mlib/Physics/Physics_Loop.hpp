@@ -10,6 +10,7 @@ class Scene;
 class PhysicsEngine;
 struct PhysicsEngineConfig;
 class SetFps;
+class BaseLog;
 
 class PhysicsLoop {
 public:
@@ -20,7 +21,8 @@ public:
         std::recursive_mutex& mutex,
         const PhysicsEngineConfig& physics_cfg,
         SetFps& set_fps,
-        size_t nframes = SIZE_MAX);
+        size_t nframes = SIZE_MAX,
+        BaseLog* base_log = nullptr);
     void stop_and_join();
     void join();
 private:

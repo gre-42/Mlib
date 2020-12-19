@@ -19,7 +19,8 @@ PhysicsLoop::PhysicsLoop(
     std::recursive_mutex& mutex,
     const PhysicsEngineConfig& physics_cfg,
     SetFps& set_fps,
-    size_t nframes)
+    size_t nframes,
+    BaseLog* base_log)
 : exit_physics_{false},
   set_fps_{set_fps},
   physics_thread_{[&, nframes](){
@@ -36,7 +37,7 @@ PhysicsLoop::PhysicsLoop(
                 ? &beacons
                 : nullptr;
             std::list<std::unique_ptr<ContactInfo>> contact_infos;
-            physics_engine.collide(bcns, contact_infos, false);  // false=burn_in
+            physics_engine.collide(bcns, contact_infos, false, base_log);  // false=burn_in
             if (physics_cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                 solve_contacts(contact_infos, physics_cfg.dt / physics_cfg.oversampling);
             }

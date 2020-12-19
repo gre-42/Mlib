@@ -12,7 +12,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     RenderLogic& scene_logic,
     SceneNode& scene_node,
     AdvanceTimes& advance_times,
-    Loggable* logged,
+    StatusWriter* status_writer,
     unsigned int log_components,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& offset,
@@ -21,7 +21,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
 : scene_logic_{scene_logic},
   scene_node_{scene_node},
   advance_times_{advance_times},
-  logged_{logged},
+  status_writer_{status_writer},
   log_components_{log_components},
   offset_{offset},
   line_distance_pixels_{line_distance_pixels},
@@ -40,7 +40,7 @@ void VisualMovable3rdLogger::notify_destroyed(void* destroyed_object) {
 
 void VisualMovable3rdLogger::advance_time(float dt) {
     std::stringstream sstr;
-    logged_->log(sstr, log_components_);
+    status_writer_->write_status(sstr, log_components_);
     text_ = sstr.str();
 }
 

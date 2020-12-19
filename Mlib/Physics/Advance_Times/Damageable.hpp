@@ -2,7 +2,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
-#include <Mlib/Scene_Graph/Loggable.hpp>
+#include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <mutex>
 #include <string>
 
@@ -11,7 +11,7 @@ namespace Mlib {
 class AdvanceTimes;
 class Scene;
 
-class Damageable: public CollisionObserver, public DestructionObserver, public AdvanceTime, public Loggable {
+class Damageable: public CollisionObserver, public DestructionObserver, public AdvanceTime, public StatusWriter {
 public:
     explicit Damageable(
         Scene& scene,
@@ -21,7 +21,7 @@ public:
         std::recursive_mutex& mutex);
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
-    virtual void log(std::ostream& ostr, unsigned int log_components) const override;
+    virtual void write_status(std::ostream& ostr, unsigned int log_components) const override;
     virtual float health() const;
     void damage(float amount);
 protected:

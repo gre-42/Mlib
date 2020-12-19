@@ -15,6 +15,7 @@ struct PhysicsEngineConfig;
 class SatTracker;
 struct Beacon;
 struct ContactInfo;
+class BaseLog;
 
 struct IntersectionScene {
     const std::shared_ptr<RigidBody>& o0;
@@ -31,6 +32,7 @@ struct IntersectionScene {
     size_t tire_id;
     bool mesh0_two_sided;
     bool lines_are_normals;
+    BaseLog* base_log;
 };
 
 void handle_line_triangle_intersection(const IntersectionScene& i);

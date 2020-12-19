@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Scene_Graph/Loggable.hpp>
+#include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -18,7 +18,7 @@ public:
         RenderLogic& scene_logic,
         SceneNode& scene_node,
         AdvanceTimes& advance_times,
-        Loggable* logged,
+        StatusWriter* status_writer,
         unsigned int log_components,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& offset,
@@ -48,7 +48,7 @@ private:
     RenderLogic& scene_logic_;
     SceneNode& scene_node_;
     AdvanceTimes& advance_times_;
-    Loggable* logged_;
+    StatusWriter* status_writer_;
     unsigned int log_components_;
     std::string text_;
     FixedArray<float, 2> offset_;
