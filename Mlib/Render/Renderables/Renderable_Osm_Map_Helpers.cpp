@@ -433,6 +433,7 @@ void Mlib::draw_streets(
     TriangleList& tl_path,
     TriangleList& tl_curb_street,
     TriangleList& tl_curb_path,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
@@ -616,11 +617,15 @@ void Mlib::draw_streets(
                     }
                     if (add_street_lights) {
                         switch (sid % 10) {
-                            case 0:
                             case 3:
-                                object_resource_descriptors.push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, "street-light"});
-                                object_resource_descriptors.push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, "street-light"});
+                                // object_resource_descriptors.push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, "street_light"});
+                                // object_resource_descriptors.push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, "street_light"});
+                                resource_instance_positions["street_light"].push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, 1});
+                                resource_instance_positions["street_light"].push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, 1});
                                 break;
+                            default:
+                                resource_instance_positions["road_obstacle"].push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, 1});
+                                resource_instance_positions["road_obstacle"].push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, 1});
                             //case 8:
                             //    street_light_positions.push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, "bgrass"});
                             //    street_light_positions.push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, "bgrass"});
@@ -1051,7 +1056,7 @@ void Mlib::apply_height_map(
 }
 
 void Mlib::add_grass_on_steiner_points(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     ResourceNameCycle& rnc,
     const std::list<SteinerPointInfo>& steiner_points,
@@ -1068,7 +1073,7 @@ void Mlib::add_grass_on_steiner_points(
         {
             const ParsedResourceName& prn = rnc();
             if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
-                fern_positions[prn.name].push_back({p.position, rng()});
+                resource_instance_positions[prn.name].push_back({p.position, rng()});
             } else {
                 object_resource_descriptors.push_back({p.position, prn.name, rng()});
             }
@@ -1077,7 +1082,7 @@ void Mlib::add_grass_on_steiner_points(
 }
 
 void Mlib::add_grass_inside_triangles(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     ResourceNameCycle& rnc,
     const TriangleList& triangles,
@@ -1105,7 +1110,7 @@ void Mlib::add_grass_inside_triangles(
                 ++gid;
                 const ParsedResourceName& prn = rnc();
                 if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
-                    fern_positions[prn.name].push_back({p, rng()});
+                    resource_instance_positions[prn.name].push_back({p, rng()});
                 } else {
                     object_resource_descriptors.push_back({p, prn.name, rng()});
                 }
@@ -1115,7 +1120,7 @@ void Mlib::add_grass_inside_triangles(
 }
 
 void Mlib::add_trees_to_forest_outlines(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
@@ -1153,7 +1158,7 @@ void Mlib::add_trees_to_forest_outlines(
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + tree_inwards_distance * scale * n * sign(area);
                     const ParsedResourceName& prn = rnc();
                     if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
-                        fern_positions[prn.name].push_back({FixedArray<float, 3>{p(0), p(1), 0}, rng()});
+                        resource_instance_positions[prn.name].push_back({FixedArray<float, 3>{p(0), p(1), 0}, rng()});
                     } else {
                         object_resource_descriptors.push_back({FixedArray<float, 3>{p(0), p(1), 0}, prn.name, rng()});
                     }
@@ -1193,7 +1198,7 @@ void Mlib::add_beacons_to_raceways(
 }
 
 // void Mlib::add_grass_outlines(
-//     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+//     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
 //     std::list<FixedArray<float, 2>>& steiner_points,
 //     const std::map<std::string, Node>& nodes,
 //     const std::map<std::string, Way>& ways,
@@ -1229,7 +1234,7 @@ void Mlib::add_beacons_to_raceways(
 //                             continue;
 //                         }
 //                         FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + (f + rng3()) * scale * n * sign(area);
-//                         fern_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, ntrn(), rng()});
+//                         resource_instance_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, ntrn(), rng()});
 //                     }
 //                 }
 //             }
@@ -1238,7 +1243,7 @@ void Mlib::add_beacons_to_raceways(
 // }
 
 void Mlib::add_trees_to_tree_nodes(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
@@ -1251,7 +1256,7 @@ void Mlib::add_trees_to_tree_nodes(
         if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
             const ParsedResourceName& prn = rnc();
             if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
-                fern_positions[prn.name].push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, rng()});
+                resource_instance_positions[prn.name].push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, rng()});
             } else {
                 object_resource_descriptors.push_back({FixedArray<float, 3>{n.second.position(0), n.second.position(1), 0}, prn.name, rng()});
             }

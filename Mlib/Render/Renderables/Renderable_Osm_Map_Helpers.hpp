@@ -179,6 +179,7 @@ void draw_streets(
     TriangleList& tl_path,
     TriangleList& tl_curb_street,
     TriangleList& tl_curb_path,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& street_light_positions,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
@@ -245,7 +246,7 @@ void apply_height_map(
     float street_node_smoothness);
 
 void add_grass_on_steiner_points(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     ResourceNameCycle& rnc,
     const std::list<SteinerPointInfo>& steiner_points,
@@ -254,7 +255,7 @@ void add_grass_on_steiner_points(
     float dmax);
 
 void add_grass_inside_triangles(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     ResourceNameCycle& rnc,
     const TriangleList& triangles,
@@ -262,7 +263,7 @@ void add_grass_inside_triangles(
     float distance);
 
 void add_trees_to_forest_outlines(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
@@ -280,7 +281,7 @@ void add_beacons_to_raceways(
     float scale);
 
 // void add_grass_outlines(
-//     std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+//     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
 //     std::list<FixedArray<float, 2>>& steiner_points,
 //     const std::map<std::string, Node>& nodes,
 //     const std::map<std::string, Way>& ways,
@@ -290,7 +291,7 @@ void add_beacons_to_raceways(
 //     float scale);
 
 void add_trees_to_tree_nodes(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& fern_positions,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,

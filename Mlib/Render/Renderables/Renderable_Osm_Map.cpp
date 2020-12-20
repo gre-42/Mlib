@@ -372,6 +372,7 @@ RenderableOsmMap::RenderableOsmMap(
             *tl_path,
             *tl_curb_street,
             *tl_curb_path,
+            resource_instance_positions_,
             object_resource_descriptors_,
             height_bindings,
             nodes,
