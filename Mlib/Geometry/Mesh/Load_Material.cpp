@@ -23,7 +23,9 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     const std::regex illum_reg("^\\s*illum .+$");
     const std::regex d_reg("^\\s*d .+$");
     const std::regex map_Kd_reg("^\\s*map_Kd (.+)$");
+    const std::regex map_Ks_reg("^\\s*map_Ks (.+)$");
     const std::regex map_d_reg("^\\s*map_d (.+)$");
+    const std::regex map_bump_reg("^\\s*map_Bump (.+)$");
     const std::regex comment_reg("^\\s*#.*$");
 
     std::string mtl;
@@ -80,9 +82,13 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (std::regex_match(line, match, Km_reg)) {
             // do nothing
         } else if (std::regex_match(line, match, map_Kd_reg)) {
-            mtllib.at(mtl).texture = match[1].str();
+            mtllib.at(mtl).color_texture = match[1].str();
+        } else if (std::regex_match(line, match, map_Ks_reg)) {
+            // do nothing
+        } else if (std::regex_match(line, match, map_bump_reg)) {
+            mtllib.at(mtl).bump_texture = match[1].str();
         } else if (std::regex_match(line, match, map_d_reg)) {
-            if (match[1].str() != mtllib.at(mtl).texture) {
+            if (match[1].str() != mtllib.at(mtl).color_texture) {
                 throw std::runtime_error("map_d differs from map_Kd");
             }
             mtllib.at(mtl).has_alpha_texture = true;
