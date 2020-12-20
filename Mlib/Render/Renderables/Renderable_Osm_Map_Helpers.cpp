@@ -629,7 +629,7 @@ void Mlib::draw_streets(
                                         resource_instance_positions["street_light"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
                                         break;
                                     default:
-                                        resource_instance_positions["road_obstacle"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
+                                        resource_instance_positions["road_bollard"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
                                 }
                             }
                         };
