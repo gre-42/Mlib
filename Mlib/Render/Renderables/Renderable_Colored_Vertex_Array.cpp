@@ -467,9 +467,6 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices) const
 {
-    if (id.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
-        throw std::runtime_error("get_render_program called on aggregated material");
-    }
     if (auto it = render_programs_.find(id); it != render_programs_.end()) {
         return *it->second;
     }

@@ -128,8 +128,6 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         LOG_INFO("RenderableColoredVertexArrayInstance::render get_render_program");
         const ColoredRenderProgram& rp = rcva_->get_render_program(
             {
-                .aggregate_mode = cva->material.aggregate_mode,
-                .transformation_mode = cva->material.transformation_mode,
                 .occluder_type = render_pass.external.black_node_name.empty() ? cva->material.occluder_type : OccluderType::BLACK,
                 .nlights = filtered_lights.size(),
                 .blend_mode = cva->material.blend_mode,

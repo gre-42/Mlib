@@ -38,8 +38,6 @@ struct ColoredRenderProgram: public RenderProgram {
 };
 
 struct RenderProgramIdentifier {
-    AggregateMode aggregate_mode;
-    TransformationMode transformation_mode;
     OccluderType occluder_type;
     size_t nlights;
     BlendMode blend_mode;
