@@ -1384,25 +1384,16 @@ void Mlib::draw_building_walls(
     float scale,
     float uv_scale,
     float max_width,
-    const std::string& facade_texture,
-    const std::string& facade_texture_2,
-    const std::string& facade_texture_3)
+    const std::vector<std::string>& facade_textures)
 {
+    if (facade_textures.empty()) {
+        throw std::runtime_error("Facade textures empty");
+    }
     size_t bid = 0;
     for(const auto& bu : buildings) {
         ++bid;
         tls.push_back(std::make_shared<TriangleList>("building_walls", material));
-        switch (bid % 3) {
-            case 0:
-                tls.back()->material_.texture_descriptor.color = facade_texture;
-                break;
-            case 1:
-                tls.back()->material_.texture_descriptor.color = facade_texture_2;
-                break;
-            case 2:
-                tls.back()->material_.texture_descriptor.color = facade_texture_3;
-                break;
-        }
+        tls.back()->material_.texture_descriptor.color = facade_textures.at(bid % facade_textures.size());
         auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
         for(auto it = sw.begin(); it != sw.end(); ++it) {
             auto s = it;

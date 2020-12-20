@@ -34,9 +34,7 @@ RenderableOsmMap::RenderableOsmMap(
     const std::string& path_texture,
     const std::string& curb_street_texture,
     const std::string& curb_path_texture,
-    const std::string& facade_texture,
-    const std::string& facade_texture_2,
-    const std::string& facade_texture_3,
+    const std::vector<std::string>& facade_textures,
     const std::string& ceiling_texture,
     const std::string& barrier_texture,
     BlendMode barrier_blend_mode,
@@ -464,9 +462,7 @@ RenderableOsmMap::RenderableOsmMap(
                 scale,
                 uv_scale_facade,
                 max_wall_width,
-                facade_texture,
-                facade_texture_2,
-                facade_texture_3);
+                facade_textures);
         }
         {
             LOG_INFO("draw_building_walls (barrier)");
@@ -485,9 +481,7 @@ RenderableOsmMap::RenderableOsmMap(
                 scale,
                 uv_scale_barrier_wall,
                 max_wall_width,
-                barrier_texture,
-                barrier_texture,
-                barrier_texture);
+                {barrier_texture});
         }
 
         if (with_terrain) {

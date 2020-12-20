@@ -354,9 +354,7 @@ void draw_building_walls(
     float scale,
     float uv_scale,
     float max_width,
-    const std::string& facade_texture,
-    const std::string& facade_texture_2,
-    const std::string& facade_texture_3);
+    const std::vector<std::string>& facade_textures);
 
 std::vector<FixedArray<float, 2>> removed_duplicates(const std::vector<FixedArray<float, 2>>& nodes, bool verbose = true);
 std::list<FixedArray<float, 2>> removed_duplicates(const std::list<FixedArray<float, 2>>& nodes, bool verbose = true);
