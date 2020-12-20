@@ -16,6 +16,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> load_obj(
     OccluderType occluder_type,
     bool occluded_by_black,
     AggregateMode aggregate_mode,
+    TransformationMode transformation_mode,
     bool apply_static_lighting,
     bool werror);
 

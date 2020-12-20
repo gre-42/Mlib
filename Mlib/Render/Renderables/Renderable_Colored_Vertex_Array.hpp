@@ -39,6 +39,7 @@ struct ColoredRenderProgram: public RenderProgram {
 
 struct RenderProgramIdentifier {
     AggregateMode aggregate_mode;
+    TransformationMode transformation_mode;
     OccluderType occluder_type;
     size_t nlights;
     BlendMode blend_mode;
@@ -48,6 +49,7 @@ struct RenderProgramIdentifier {
     bool has_normalmap;
     bool has_dirtmap;
     bool has_instances;
+    bool has_lookat;
     bool reorient_normals;
     bool calculate_lightmap;
     OrderableFixedArray<float, 3> ambience;

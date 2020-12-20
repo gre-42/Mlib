@@ -100,6 +100,7 @@ void test_physics_engine() {
         OccluderType::BLACK,
         true,                            // occluded_by_black
         AggregateMode::OFF,
+        TransformationMode::ALL,
         true,                            // apply_static_lighting
         true);                           // werror
 
@@ -121,6 +122,7 @@ void test_physics_engine() {
         OccluderType::OFF,
         true,                                 // occluded_by_black
         AggregateMode::OFF,
+        TransformationMode::ALL,
         true,                                 // apply_static_lighting
         true                                  // werror
     ));

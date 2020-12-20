@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
+#include <Mlib/Scene_Graph/Transformation_Mode.hpp>
 
 namespace Mlib {
 
@@ -20,6 +21,7 @@ struct Material {
     WrapMode wrap_mode_t = WrapMode::REPEAT;
     bool collide = true;
     AggregateMode aggregate_mode = AggregateMode::OFF;
+    TransformationMode transformation_mode = TransformationMode::ALL;
     bool is_small = false;
     bool cull_faces = true;
     OrderableFixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};

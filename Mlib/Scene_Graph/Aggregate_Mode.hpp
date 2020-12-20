@@ -28,9 +28,9 @@ inline AggregateMode aggregate_mode_from_string(const std::string& str) {
         return AggregateMode::ONCE;
     } else if (str == "sorted") {
         return AggregateMode::SORTED_CONTINUOUSLY;
-    } if (str == "instances_once") {
+    } else if (str == "instances_once") {
         return AggregateMode::INSTANCES_ONCE;
-    } if (str == "instances_sorted") {
+    } else if (str == "instances_sorted") {
         return AggregateMode::INSTANCES_SORTED_CONTINUOUSLY;
     }
     throw std::runtime_error("Unknown aggregate mode");

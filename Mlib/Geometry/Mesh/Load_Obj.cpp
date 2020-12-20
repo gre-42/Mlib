@@ -28,6 +28,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     OccluderType occluder_type,
     bool occluded_by_black,
     AggregateMode aggregate_mode,
+    TransformationMode transformation_mode,
     bool apply_static_lighting,
     bool werror)
 {
@@ -39,12 +40,13 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     TriangleList tl{
         filename,
         Material{
-            texture_descriptor: TextureDescriptor{color: ""},
-            occluded_type: occluded_type,
-            occluder_type: occluder_type,
-            occluded_by_black: occluded_by_black,
-            aggregate_mode: aggregate_mode,
-            is_small: is_small}};
+            .texture_descriptor = TextureDescriptor{color: ""},
+            .occluded_type = occluded_type,
+            .occluder_type = occluder_type,
+            .occluded_by_black = occluded_by_black,
+            .aggregate_mode = aggregate_mode,
+            .transformation_mode = transformation_mode,
+            .is_small = is_small}};
     StaticFaceLightning sfl;
 
     std::ifstream ifs{filename};

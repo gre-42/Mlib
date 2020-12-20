@@ -181,6 +181,7 @@ int main(int argc, char** argv) {
                     OccluderType::BLACK,
                     true,                                                                 // occluded_by_black
                     aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
+                    TransformationMode::ALL,
                     args.has_named("--apply_static_lighting"),
                     !args.has_named("--no_werror")));
                 scene_node->set_position({0.f, safe_stof(args.named_value("--y", "0")), -40.f});

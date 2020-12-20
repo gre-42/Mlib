@@ -27,6 +27,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_diffusivity,
     bool has_specularity,
     bool has_instances,
+    bool has_lookat,
     bool reorient_normals,
     bool orthographic)
 {
@@ -69,7 +70,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_diffusivity || has_specularity) {
         sstr << "out vec3 Normal;" << std::endl;
     }
-    if (has_instances) {
+    if (has_lookat) {
         if (orthographic) {
             sstr << "uniform vec3 viewDir;" << std::endl;
         } else {
@@ -79,7 +80,10 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     sstr << "vec3 vPosInstance;" << std::endl;
-    if (has_instances) {
+    if (has_lookat && !has_instances) {
+        throw std::runtime_error("has_lookat requires has_instances");
+    }
+    if (has_instances && has_lookat) {
         if (orthographic) {
             sstr << "    vec2 dxz = viewDir.xz;" << std::endl;
         } else {
@@ -88,12 +92,13 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec3 dz = vec3(dxz.x, 0, dxz.y);" << std::endl;
         sstr << "    vec3 dy = vec3(0, 1, 0);" << std::endl;
         sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
-        sstr << "    mat4 lookat;" << std::endl;
-        sstr << "    lookat[0] = vec4(dx, 0);" << std::endl;
-        sstr << "    lookat[1] = vec4(dy, 0);" << std::endl;
-        sstr << "    lookat[2] = vec4(dz, 0);" << std::endl;
-        sstr << "    lookat[3] = vec4(0, 0, 0, 1);" << std::endl;
-        sstr << "    vPosInstance = (lookat * vec4(vPos, 1)).xyz + instancePosition;" << std::endl;
+        sstr << "    mat3 lookat;" << std::endl;
+        sstr << "    lookat[0] = dx;" << std::endl;
+        sstr << "    lookat[1] = dy;" << std::endl;
+        sstr << "    lookat[2] = dz;" << std::endl;
+        sstr << "    vPosInstance = lookat * vPos + instancePosition;" << std::endl;
+    } else if (has_instances && !has_lookat) {
+        sstr << "    vPosInstance = vPos + instancePosition;" << std::endl;
     } else {
         sstr << "    vPosInstance = vPos;" << std::endl;
     }
@@ -499,6 +504,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             !id.diffusivity.all_equal(0),
             !id.specularity.all_equal(0),
             id.has_instances,
+            id.has_lookat,
             id.reorient_normals,
             id.orthographic),
         fragment_shader_text_textured_rgb_gen(
@@ -592,7 +598,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
         }
     }
-    if (id.has_instances || !id.specularity.all_equal(0) || id.reorient_normals) {
+    if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_normals) {
         if (id.orthographic) {
             rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
             rp->view_pos = 0;

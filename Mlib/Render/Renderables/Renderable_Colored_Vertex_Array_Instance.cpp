@@ -101,6 +101,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         bool has_normalmap = rcva_->render_textures_ && (!cva->material.texture_descriptor.normal.empty()) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE);
         bool has_dirtmap = rcva_->render_textures_ && (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE);
         bool has_instances = (rcva_->instances_ != nullptr);
+        bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
         if (!has_texture && has_dirtmap) {
             std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture_descriptor.color);
         }
@@ -128,6 +129,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         const ColoredRenderProgram& rp = rcva_->get_render_program(
             {
                 .aggregate_mode = cva->material.aggregate_mode,
+                .transformation_mode = cva->material.transformation_mode,
                 .occluder_type = render_pass.external.black_node_name.empty() ? cva->material.occluder_type : OccluderType::BLACK,
                 .nlights = filtered_lights.size(),
                 .blend_mode = cva->material.blend_mode,
@@ -137,6 +139,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 .has_normalmap = has_normalmap,
                 .has_dirtmap = has_dirtmap,
                 .has_instances = has_instances,
+                .has_lookat = has_lookat,
                 .reorient_normals = reorient_normals,
                 .calculate_lightmap = render_pass.external.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE,
                 .ambience = OrderableFixedArray{ambience},
@@ -204,7 +207,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
                 ++i;
             }
         }
-        if (has_instances || any(specularity != 0.f)) {
+        if (has_lookat || any(specularity != 0.f)) {
             if (vc.orthographic()) {
                 auto d = z3_from_4x4(iv);
                 d /= std::sqrt(sum(squared(d)));

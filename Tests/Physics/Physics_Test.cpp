@@ -1,5 +1,3 @@
-#include <Mlib/Geometry/Mesh/Load_Obj.hpp>
-#include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>

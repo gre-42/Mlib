@@ -17,6 +17,7 @@ RenderableObjFile::RenderableObjFile(
     OccluderType occluder_type,
     bool occluded_by_black,
     AggregateMode aggregate_mode,
+    TransformationMode transformation_mode,
     bool apply_static_lighting,
     bool werror)
 {
@@ -29,6 +30,7 @@ RenderableObjFile::RenderableObjFile(
         occluder_type,
         occluded_by_black,
         aggregate_mode,
+        transformation_mode,
         apply_static_lighting,
         werror);
     FixedArray<float, 3, 3> rotation_matrix{tait_bryan_angles_2_matrix(rotation)};

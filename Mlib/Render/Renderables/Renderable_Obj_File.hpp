@@ -20,6 +20,7 @@ public:
         OccluderType occluder_type,
         bool occluded_by_black,
         AggregateMode aggregate_mode,
+        TransformationMode transformation_mode,
         bool apply_static_lighting,
         bool werror);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
