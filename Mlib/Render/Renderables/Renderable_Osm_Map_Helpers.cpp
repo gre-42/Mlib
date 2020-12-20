@@ -524,6 +524,8 @@ void Mlib::draw_streets(
         }
     }
 
+    Bvh<float, bool, 2> bvh{{0.1, 0.1}, 10};
+
     // Compute rectangles and holes for each pair of connected nodes.
     // To avoid duplicates, the computations are done at each lexicographically
     // smaller node.
@@ -616,21 +618,23 @@ void Mlib::draw_streets(
                         }
                     }
                     if (add_street_lights) {
-                        switch (sid % 10) {
-                            case 3:
-                                // object_resource_descriptors.push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, "street_light"});
-                                // object_resource_descriptors.push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, "street_light"});
-                                resource_instance_positions["street_light"].push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, 1});
-                                resource_instance_positions["street_light"].push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, 1});
-                                break;
-                            default:
-                                resource_instance_positions["road_obstacle"].push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, 1});
-                                resource_instance_positions["road_obstacle"].push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, 1});
-                            //case 8:
-                            //    street_light_positions.push_back({FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}, "bgrass"});
-                            //    street_light_positions.push_back({FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}, "bgrass"});
-                            //    break;
-                        }
+                        float radius = 10 * scale;
+                        auto add_distant_point = [&bvh, &resource_instance_positions, sid, radius](const FixedArray<float, 2>& p) {
+                            bool p_found = false;
+                            bvh.visit(BoundingSphere(p, radius), [&p_found](const std::string&, bool){p_found=true;});
+                            if (!p_found) {
+                                bvh.insert(p, "", true);
+                                switch (sid % 10) {
+                                    case 3:
+                                        resource_instance_positions["street_light"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
+                                        break;
+                                    default:
+                                        resource_instance_positions["road_obstacle"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
+                                }
+                            }
+                        };
+                        add_distant_point(rect.p00_);
+                        add_distant_point(rect.p11_);
                     }
                     //for(float a = 0.1; a < 0.91; a += 0.4) {
                     //    auto p = a * rect.p00_ + (1 - a) * rect.p10_;
