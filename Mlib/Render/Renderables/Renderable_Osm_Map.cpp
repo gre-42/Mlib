@@ -316,6 +316,12 @@ RenderableOsmMap::RenderableOsmMap(
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode());
+    auto tl_street_extrusion = std::make_shared<TriangleList>("street_extrusion", Material{
+        .texture_descriptor = {.color = terrain_texture, .normal = rendering_resources->get_normalmap(terrain_texture)},
+        .dirt_texture = dirt_texture,
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .specularity = {0.2, 0.2, 0.2}}.compute_color_mode());
     auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
         .texture_descriptor = {.color = asphalt_texture, .normal = rendering_resources->get_normalmap(asphalt_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -348,7 +354,7 @@ RenderableOsmMap::RenderableOsmMap(
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
-    std::list<std::shared_ptr<TriangleList>> tls_ground{tl_terrain, tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
+    std::list<std::shared_ptr<TriangleList>> tls_ground{tl_terrain, tl_street_extrusion, tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
     std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb{tl_terrain, tl_street_crossing, tl_path_crossing, tl_street, tl_path};
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
@@ -658,7 +664,7 @@ RenderableOsmMap::RenderableOsmMap(
             scale,
             1,
             uv_scale_terrain,
-            *tl_terrain);
+            *tl_street_extrusion);
     }
     // Normals are invalid after "apply_height_map"
     for(auto& l : tls_ground) {
