@@ -107,10 +107,7 @@ void TriangleList::extrude(const std::list<std::shared_ptr<TriangleList>>& trian
         }
     }
     std::set<std::pair<O, O>> edges = find_contour_edges(tris);
-    size_t i = 0;
-    size_t size0 = tris.size();
     for(auto& t : tris) {
-        assert_true(i != size0);
         FixedArray<ColoredVertex, 3> t_old = *t;
         auto connect_extruded = [&scale, &uv_scale_x, &uv_scale_y, &t_old, &height, &edges, &t, &dest](size_t a, size_t b){
             auto edge = std::make_pair(O(t_old(a).position), O(t_old(b).position));
@@ -140,7 +137,6 @@ void TriangleList::extrude(const std::list<std::shared_ptr<TriangleList>>& trian
         connect_extruded(0, 1);
         connect_extruded(1, 2);
         connect_extruded(2, 0);
-        ++i;
     }
 }
 

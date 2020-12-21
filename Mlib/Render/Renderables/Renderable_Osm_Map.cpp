@@ -316,7 +316,7 @@ RenderableOsmMap::RenderableOsmMap(
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode());
-    auto tl_street_extrusion = std::make_shared<TriangleList>("street_extrusion", Material{
+    auto tl_terrain_street_extrusion = std::make_shared<TriangleList>("terrain_street_extrusion", Material{
         .texture_descriptor = {.color = terrain_texture, .normal = rendering_resources->get_normalmap(terrain_texture)},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -346,15 +346,15 @@ RenderableOsmMap::RenderableOsmMap(
         .texture_descriptor = {.color = curb_street_texture, .normal = rendering_resources->get_normalmap(curb_street_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .wrap_mode_s = extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
+        .wrap_mode_s = (extrude_curb_amount != 0) || ((curb_alpha != 1) && (extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
         .texture_descriptor = {.color = curb_path_texture, .normal = rendering_resources->get_normalmap(curb_path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .wrap_mode_s = extrude_curb_amount != 0 ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
+        .wrap_mode_s = (extrude_curb_amount != 0) || ((curb_alpha != 1) && (extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE,
         .specularity = {0.2, 0.2, 0.2}}.compute_color_mode()); // mixed_texture: terrain_texture
-    std::list<std::shared_ptr<TriangleList>> tls_ground{tl_terrain, tl_street_extrusion, tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
+    std::list<std::shared_ptr<TriangleList>> tls_ground{tl_terrain, tl_terrain_street_extrusion, tl_street_crossing, tl_path_crossing, tl_street, tl_path, tl_curb_street, tl_curb_path};
     std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb{tl_terrain, tl_street_crossing, tl_path_crossing, tl_street, tl_path};
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
@@ -658,13 +658,33 @@ RenderableOsmMap::RenderableOsmMap(
         TriangleList::extrude({tl_curb_path}, extrude_curb_amount * scale, scale, uv_scale_street, uv_scale_street, *tl_curb_path);
     }
     if (extrude_street_amount != 0) {
-        TriangleList::extrude(
-            {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
-            extrude_street_amount * scale,
-            scale,
-            1,
-            uv_scale_terrain,
-            *tl_street_extrusion);
+        if (curb_alpha == 1) {
+            TriangleList::extrude(
+                {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
+                extrude_street_amount * scale,
+                scale,
+                1,
+                uv_scale_terrain,
+                *tl_terrain_street_extrusion);
+        } else {
+            for(auto& t : tl_curb_street->triangles_) {
+                for(auto& v : t.flat_iterable()) {
+                    v.uv(0) *= 0.5 * uv_scale_terrain * (1 - curb_alpha) * default_street_width;
+                }
+            }
+            for(auto& t : tl_curb_path->triangles_) {
+                for(auto& v : t.flat_iterable()) {
+                    v.uv(0) *= 0.5 * uv_scale_terrain * (1 - curb_alpha) * default_street_width;
+                }
+            }
+            TriangleList::extrude(
+                {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
+                extrude_street_amount * scale,
+                scale,
+                1,
+                uv_scale_terrain,
+                *tl_curb_street);
+        }
     }
     // Normals are invalid after "apply_height_map"
     for(auto& l : tls_ground) {
