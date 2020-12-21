@@ -71,6 +71,7 @@ RenderableOsmMap::RenderableOsmMap(
     float curb_alpha,
     float raise_streets_amount,
     float extrude_curb_amount,
+    float extrude_street_amount,
     bool add_street_lights,
     float max_wall_width,
     bool with_height_bindings,
@@ -647,8 +648,17 @@ RenderableOsmMap::RenderableOsmMap(
         scale,
         raise_streets_amount);
     if (extrude_curb_amount != 0) {
-        tl_curb_street->extrude(extrude_curb_amount * scale, scale, uv_scale_street);
-        tl_curb_path->extrude(extrude_curb_amount * scale, scale, uv_scale_street);
+        TriangleList::extrude({tl_curb_street}, extrude_curb_amount * scale, scale, uv_scale_street, uv_scale_street, *tl_curb_street);
+        TriangleList::extrude({tl_curb_path}, extrude_curb_amount * scale, scale, uv_scale_street, uv_scale_street, *tl_curb_path);
+    }
+    if (extrude_street_amount != 0) {
+        TriangleList::extrude(
+            {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
+            extrude_street_amount * scale,
+            scale,
+            1,
+            uv_scale_terrain,
+            *tl_terrain);
     }
     // Normals are invalid after "apply_height_map"
     for(auto& l : tls_ground) {

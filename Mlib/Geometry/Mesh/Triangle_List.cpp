@@ -97,41 +97,45 @@ void TriangleList::draw_rectangle_wo_normals(
     draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11);
 }
 
-void TriangleList::extrude(float height, float scale, float uv_scale) {
+void TriangleList::extrude(const std::list<std::shared_ptr<TriangleList>>& triangle_lists, float height, float scale, float uv_scale_x, float uv_scale_y, TriangleList& dest) {
     using O = OrderableFixedArray<float, 3>;
 
-    std::set<std::pair<O, O>> edges = find_contour_edges(triangles_);
-    size_t i = 0;
-    size_t size0 = triangles_.size();
-    for(auto& t : triangles_) {
-        if (i == size0) {
-            break;
+    std::list<FixedArray<ColoredVertex, 3>*> tris;
+    for(auto& l : triangle_lists) {
+        for(auto& t : l->triangles_) {
+            tris.push_back(&t);
         }
-        FixedArray<ColoredVertex, 3> t_old = t;
-        auto connect_extruded = [this, &scale, &uv_scale, &t_old, &height, &edges, &t](size_t a, size_t b){
+    }
+    std::set<std::pair<O, O>> edges = find_contour_edges(tris);
+    size_t i = 0;
+    size_t size0 = tris.size();
+    for(auto& t : tris) {
+        assert_true(i != size0);
+        FixedArray<ColoredVertex, 3> t_old = *t;
+        auto connect_extruded = [&scale, &uv_scale_x, &uv_scale_y, &t_old, &height, &edges, &t, &dest](size_t a, size_t b){
             auto edge = std::make_pair(O(t_old(a).position), O(t_old(b).position));
             if (edges.contains(edge)) {
-                draw_rectangle_wo_normals(
+                dest.draw_rectangle_wo_normals(
                     t_old(a).position,
                     t_old(b).position,
-                    t(b).position,
-                    t(a).position,
+                    (*t)(b).position,
+                    (*t)(a).position,
                     {1, 1, 1},
                     {1, 1, 1},
                     {1, 1, 1},
                     {1, 1, 1},
                     t_old(a).uv,
                     t_old(b).uv,
-                    t_old(b).uv + FixedArray<float, 2>{height / scale * uv_scale, 0},
-                    t_old(a).uv + FixedArray<float, 2>{height / scale * uv_scale, 0});
+                    t_old(b).uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0},
+                    t_old(a).uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0});
             }
         };
-        t(0).position(2) += height;
-        t(1).position(2) += height;
-        t(2).position(2) += height;
-        t(0).uv(0) *= uv_scale;
-        t(1).uv(0) *= uv_scale;
-        t(2).uv(0) *= uv_scale;
+        (*t)(0).position(2) += height;
+        (*t)(1).position(2) += height;
+        (*t)(2).position(2) += height;
+        (*t)(0).uv(0) *= uv_scale_x;
+        (*t)(1).uv(0) *= uv_scale_x;
+        (*t)(2).uv(0) *= uv_scale_x;
 
         connect_extruded(0, 1);
         connect_extruded(1, 2);

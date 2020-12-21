@@ -67,6 +67,7 @@ public:
         float curb_alpha = 0.9,
         float raise_streets_amount = 0.2,
         float extrude_curb_amount = 0,
+        float extrude_street_amount = 0,
         bool add_street_lights = true,
         float max_wall_width = 5,
         bool with_height_bindings = false,

@@ -167,6 +167,7 @@ void LoadScene::operator()(
         "\\s*curb_alpha=([\\w+-.]+)\\r?\\n"
         "\\s*raise_streets_amount=([\\w+-.]+)\\r?\\n"
         "\\s*extrude_curb_amount=([\\w+-.]+)\\r?\\n"
+        "\\s*extrude_street_amount=([\\w+-.]+)\\r?\\n"
         "\\s*add_street_lights=(0|1)\\r?\\n"
         "\\s*max_wall_width=([\\w+-.]+)\\r?\\n"
         "\\s*with_height_bindings=(0|1)\\r?\\n"
@@ -441,12 +442,13 @@ void LoadScene::operator()(
                     safe_stof(match[45].str()),                                   // curb_alpha
                     safe_stof(match[46].str()),                                   // raise_streets_amount
                     safe_stof(match[47].str()),                                   // extrude_curb_amount
-                    safe_stob(match[48].str()),                                   // add_street_lights
-                    safe_stof(match[49].str()),                                   // max_wall_width
-                    safe_stob(match[50].str()),                                   // with_height_bindings
-                    safe_stof(match[51].str()),                                   // street_node_smoothness
-                    safe_stof(match[52].str()),                                   // street_edge_smoothness
-                    safe_stof(match[53].str())));                                 // terrain_edge_smoothness
+                    safe_stof(match[48].str()),                                   // extrude_street_amount
+                    safe_stob(match[49].str()),                                   // add_street_lights
+                    safe_stof(match[50].str()),                                   // max_wall_width
+                    safe_stob(match[51].str()),                                   // with_height_bindings
+                    safe_stof(match[52].str()),                                   // street_node_smoothness
+                    safe_stof(match[53].str()),                                   // street_edge_smoothness
+                    safe_stof(match[54].str())));                                 // terrain_edge_smoothness
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                 fpath(match[2].str()),

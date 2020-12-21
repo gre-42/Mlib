@@ -5,14 +5,14 @@
 using namespace Mlib;
 
 std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
-    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex, 3>>& triangles)
+    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex, 3>*>& triangles)
 {
     using O = OrderableFixedArray<float, 3>;
 
     std::set<std::pair<O, O>> edges;
     for(const auto& t : triangles) {
         auto safe_insert_edge = [&edges, &t](size_t a, size_t b){
-            auto edge = std::make_pair(O(t(a).position), O(t(b).position));
+            auto edge = std::make_pair(O((*t)(a).position), O((*t)(b).position));
             if (!edges.insert(edge).second) {
                 throw std::runtime_error("Detected duplicate edge");
             }
@@ -22,15 +22,15 @@ std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>
         safe_insert_edge(2, 0);
     }
     for(const auto& t : triangles) {
-        edges.erase(std::make_pair(O(t(1).position), O(t(0).position)));
-        edges.erase(std::make_pair(O(t(2).position), O(t(1).position)));
-        edges.erase(std::make_pair(O(t(0).position), O(t(2).position)));
+        edges.erase(std::make_pair(O((*t)(1).position), O((*t)(0).position)));
+        edges.erase(std::make_pair(O((*t)(2).position), O((*t)(1).position)));
+        edges.erase(std::make_pair(O((*t)(0).position), O((*t)(2).position)));
     }
     return edges;
 }
 
 std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
-    const std::list<FixedArray<ColoredVertex, 3>>& triangles)
+    const std::list<FixedArray<ColoredVertex, 3>*>& triangles)
 {
     using O = OrderableFixedArray<float, 3>;
 
@@ -39,7 +39,7 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
     std::map<O, O> neighbors;
     for(const auto& t : triangles) {
         auto safe_insert_neighbor = [&edges, &neighbors, &t](size_t a, size_t b) {
-            auto v = std::make_pair(O(t(a).position), O(t(b).position));
+            auto v = std::make_pair(O((*t)(a).position), O((*t)(b).position));
             if (edges.find(v) != edges.end()) {
                 if (!neighbors.insert(v).second) {
                     throw std::runtime_error("Contour neighbor already set");
@@ -75,4 +75,14 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
         result.push_back(contour);
     }
     return result;
+}
+
+std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
+    const std::list<FixedArray<ColoredVertex, 3>>& triangles)
+{
+    std::list<FixedArray<ColoredVertex, 3>*> tris;
+    for(auto& t : triangles) {
+        tris.push_back(const_cast<FixedArray<ColoredVertex, 3>*>(&t));
+    }
+    return find_contours(tris);
 }
