@@ -183,7 +183,7 @@ void LoadScene::operator()(
         "\\s*scale=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*is_small=(0|1)\\r?\\n"
         "\\s*blend_mode=(off|binary|continuous)\\r?\\n"
-        "\\s*blend_cull_faces=(0|1)\\r?\\n"
+        "\\s*cull_faces=(0|1)\\r?\\n"
         "\\s*occluded_type=(off|color|depth)\\r?\\n"
         "\\s*occluder_type=(off|white|black)\\r?\\n"
         "\\s*occluded_by_black=(0|1)\\r?\\n"
@@ -203,6 +203,7 @@ void LoadScene::operator()(
         "\\s*occluder_type=(off|white|black)\\r?\\n"
         "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*blend_mode=(off|binary|continuous)\\r?\\n"
+        "\\s*cull_faces=(0|1)\\r?\\n"
         "\\s*aggregate_mode=(off|once|sorted|instances_once|instances_sorted)\\r?\\n"
         "\\s*transformation_mode=(all|position|position_lookat)$");
     static const std::regex blending_x_resource_reg("^(?:\\r?\\n|\\s)*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
@@ -475,7 +476,7 @@ void LoadScene::operator()(
                     &rendering_resources,
                 safe_stoi(match[12].str()),
                 blend_mode_from_string(match[13].str()),
-                safe_stoi(match[14].str()),                     // blend_cull_faces
+                safe_stoi(match[14].str()),                     // cull_faces
                 occluded_type_from_string(match[15].str()),
                 occluder_type_from_string(match[16].str()),
                 safe_stoi(match[17].str()),                     // occluded_by_black
@@ -510,10 +511,13 @@ void LoadScene::operator()(
             // 3, 4: min
             // 5, 6: max
             // 7: is_small
-            // 8: occluder_type
-            // 9, 10, 11: ambience
-            // 12: blend_mode
-            // 13: aggregate_mode
+            // 8: occluded_type
+            // 9: occluder_type
+            // 10, 11, 12: ambience
+            // 13: blend_mode
+            // 14: cull_faces
+            // 15: aggregate_mode
+            // 16: transformation_mode
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableSquare>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -526,10 +530,10 @@ void LoadScene::operator()(
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .collide = false,
-                    .aggregate_mode = aggregate_mode_from_string(match[14].str()),
-                    .transformation_mode = transformation_mode_from_string(match[15].str()),
+                    .aggregate_mode = aggregate_mode_from_string(match[15].str()),
+                    .transformation_mode = transformation_mode_from_string(match[16].str()),
                     .is_small = safe_stob(match[7].str()),
-                    .cull_faces = true,
+                    .cull_faces = safe_stob(match[14].str()),
                     .ambience = {
                         safe_stof(match[10].str()),
                         safe_stof(match[11].str()),

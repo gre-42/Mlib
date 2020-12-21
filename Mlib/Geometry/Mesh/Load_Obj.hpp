@@ -11,7 +11,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> load_obj(
     const std::string& filename,
     bool is_small,
     BlendMode blend_mode,
-    bool blend_cull_faces,
+    bool cull_faces,
     OccludedType occluded_type,
     OccluderType occluder_type,
     bool occluded_by_black,

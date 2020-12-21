@@ -23,7 +23,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     const std::string& filename,
     bool is_small,
     BlendMode blend_mode,
-    bool blend_cull_faces,
+    bool cull_faces,
     OccludedType occluded_type,
     OccluderType occluder_type,
     bool occluded_by_black,
@@ -256,7 +256,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 }
                 if (current_mtl.has_alpha_texture) {
                     tl.material_.blend_mode = blend_mode;
-                    tl.material_.cull_faces = blend_cull_faces;
+                    tl.material_.cull_faces = cull_faces;
                 } else {
                     tl.material_.blend_mode = BlendMode::OFF;
                     tl.material_.cull_faces = true;

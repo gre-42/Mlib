@@ -95,7 +95,7 @@ void test_physics_engine() {
         "Data/box.obj",
         true,                            // is_small
         BlendMode::OFF,
-        false,                           // blend_cull_faces
+        false,                           // cull_faces
         OccludedType::LIGHT_MAP_DEPTH,
         OccluderType::BLACK,
         true,                            // occluded_by_black
@@ -117,7 +117,7 @@ void test_physics_engine() {
         &rendering_resources,
         true,                                 // is_small
         BlendMode::OFF,
-        false,                                // blend_cull_faces
+        false,                                // cull_faces
         OccludedType::OFF,
         OccluderType::OFF,
         true,                                 // occluded_by_black

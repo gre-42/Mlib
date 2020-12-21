@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
                     &rendering_resources,
                     false,                                                                // is_small
                     blend_mode_from_string(args.named_value("--blend_mode", "binary")),
-                    false,                                                                // blend_cull_faces
+                    false,                                                                // cull_faces
                     args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
                     OccluderType::BLACK,
                     true,                                                                 // occluded_by_black
