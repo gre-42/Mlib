@@ -356,7 +356,15 @@ void LoadScene::operator()(
         "\\s*mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex record_track_reg("^(?:\\r?\\n|\\s)*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     static const std::regex playback_track_reg("^(?:\\r?\\n|\\s)*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
-    static const std::regex check_points_reg("^(?:\\r?\\n|\\s)*check_points moving-node=([\\w+-.]+) beacon_node0=([\\w+-.]+) beacon_node1=([\\w+-.]+) player=([\\w+-.]+) nth=(\\d+) radius=([\\w+-.]+) track_filename=([\\w-. \\(\\)/+-]+)$");
+    static const std::regex check_points_reg(
+        "^(?:\\r?\\n|\\s)*check_points\\r?\\n"
+        "\\s*moving_node=([\\w+-.]+)\\r?\\n"
+        "\\s*beacon_nodes=([\\s\\w-. \\(\\)/+-]+)\\r?\\n"
+        "\\s*player=([\\w+-.]+)\\r?\\n"
+        "\\s*nth=(\\d+)\\r?\\n"
+        "\\s*nahead=(\\d+)\\r?\\n"
+        "\\s*radius=([\\w+-.]+)\\r?\\n"
+        "\\s*track_filename=([\\w-. \\(\\)/+-]+)$");
     static const std::regex set_camera_cycle_reg("^(?:\\r?\\n|\\s)*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
     static const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
     static const std::regex set_dirtmap_reg("^(?:\\r?\\n|\\s)*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
@@ -1212,18 +1220,17 @@ void LoadScene::operator()(
             linker.link_absolute_movable(*playback_node, playback);
         } else if (std::regex_match(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
-            auto beacon_node0 = scene.get_node(match[2].str());
-            auto beacon_node1 = scene.get_node(match[3].str());
+            auto beacon_nodes = string_to_vector(match[2].str(), [&](const std::string& n){return scene.get_node(n);});
             physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
                 fpath(match[7].str()),                  // filename
                 physics_engine.advance_times_,
                 moving_node,
                 moving_node->get_absolute_movable(),
-                beacon_node0,
-                beacon_node1,
+                beacon_nodes,
                 &players,
-                &players.get_player(match[4].str()),
-                safe_stoi(match[5].str()),              // nth
+                &players.get_player(match[3].str()),
+                safe_stoi(match[4].str()),              // nth
+                safe_stoi(match[5].str()),              // nahead
                 safe_stof(match[6].str())));            // radius
         } else if (std::regex_match(line, match, set_camera_cycle_reg)) {
             std::regex re{"\\s+"};
