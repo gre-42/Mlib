@@ -13,6 +13,8 @@ class AdvanceTimes;
 class SceneNode;
 class Players;
 class Player;
+class SceneNodeResources;
+class Scene;
 
 struct CheckPointPose {
     FixedArray<float, 3> position;
@@ -26,12 +28,15 @@ public:
         AdvanceTimes& advance_times,
         SceneNode* moving_node,
         AbsoluteMovable* moving,
-        const std::vector<SceneNode*>& beacon_nodes,
+        const std::string& resource_name,
         Players* players,
         Player* player,
+        size_t nbeacons,
         size_t nth,
         size_t nahead,
-        float radius);
+        float radius,
+        SceneNodeResources& scene_node_resources,
+        Scene& scene);
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
 private:
@@ -40,12 +45,16 @@ private:
     SceneNode* moving_node_;
     AbsoluteMovable* moving_;
     std::vector<SceneNode*> beacon_nodes_;
+    std::string resource_name_;
     Players* players_;
     Player* player_;
     float radius_;
+    size_t nbeacons_;
     size_t nth_;
     size_t nahead_;
     size_t i01_;
+    SceneNodeResources& scene_node_resources_;
+    Scene& scene_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
     std::list<CheckPointPose> checkpoints_ahead_;
 };
