@@ -274,13 +274,7 @@ void SceneNode::render(
     FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
     FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
     for(const auto& r : renderables_) {
-        // The lightmap projection matrix is not perspective => mvp checks do not work.
-        // => external_render_pass.black_node_name
-        if ((!external_render_pass.black_node_name.empty() ||
-                ((mvp(2, 3) > scene_graph_config.min_distance_small) &&
-                (sum(squared(t3_from_4x4(mvp))) > squared(scene_graph_config.min_distance_small)) &&
-                (sum(squared(t3_from_4x4(mvp))) < squared(scene_graph_config.max_distance_small)))) &&
-            r.second->requires_blending_pass())
+        if (r.second->requires_blending_pass())
         {
             blended.push_back(Blended{mvp: mvp, m: m, renderable: r.second.get()});
         }
