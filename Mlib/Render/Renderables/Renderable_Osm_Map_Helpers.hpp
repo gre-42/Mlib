@@ -87,6 +87,7 @@ struct ParsedResourceName {
     std::string name;
     float probability;
     AggregateMode aggregate_mode;
+    std::string hitbox;
 };
 
 class ResourceNameCycle {
@@ -181,6 +182,7 @@ void draw_streets(
     TriangleList& tl_curb_path,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& street_light_positions,
+    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -249,6 +251,7 @@ void apply_height_map(
 void add_grass_on_steiner_points(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
+    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     ResourceNameCycle& rnc,
     const std::list<SteinerPointInfo>& steiner_points,
     float scale,

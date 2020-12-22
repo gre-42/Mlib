@@ -380,6 +380,7 @@ RenderableOsmMap::RenderableOsmMap(
             *tl_curb_path,
             resource_instance_positions_,
             object_resource_descriptors_,
+            hitboxes_,
             height_bindings,
             nodes,
             ways,
@@ -584,6 +585,11 @@ RenderableOsmMap::RenderableOsmMap(
                 smoothed_vertices.push_back(&d.position);
             }
         }
+        for(auto& h : hitboxes_) {
+            for(auto& d : h.second) {
+                smoothed_vertices.push_back(&d);
+            }
+        }
         for(SteinerPointInfo& p : steiner_points) {
             smoothed_vertices.push_back(&p.position);
         }
@@ -626,6 +632,11 @@ RenderableOsmMap::RenderableOsmMap(
             for(auto& i : resource_instance_positions_) {
                 i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
                     return vertices_to_delete.contains(&d.position);
+                });
+            }
+            for(auto& h : hitboxes_) {
+                h.second.remove_if([&vertices_to_delete](const FixedArray<float, 3>& p){
+                    return vertices_to_delete.contains(&p);
                 });
             }
             steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
@@ -706,6 +717,7 @@ RenderableOsmMap::RenderableOsmMap(
         add_grass_on_steiner_points(
             resource_instance_positions_,
             object_resource_descriptors_,
+            hitboxes_,
             rnc,
             steiner_points,
             scale,
@@ -767,7 +779,19 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
 }
 
 std::list<std::shared_ptr<ColoredVertexArray>> RenderableOsmMap::get_triangle_meshes() const {
-    return rva_->get_triangle_meshes();
+    auto res = rva_->get_triangle_meshes();
+    for(auto& p : hitboxes_) {
+        for(auto& x : scene_node_resources_.get_triangle_meshes(p.first)) {
+            for(auto& y : p.second) {
+                res.push_back(x->transformed(FixedArray<float, 4, 4>{
+                    scale_, 0, 0, y(0),
+                    0, scale_, 0, y(1),
+                    0, 0, scale_, y(2),
+                    0, 0, 0, 1}));
+            }
+        }
+    }
+    return res;
 }
 
 void RenderableOsmMap::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {

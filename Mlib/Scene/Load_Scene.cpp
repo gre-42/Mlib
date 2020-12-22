@@ -137,7 +137,7 @@ void LoadScene::operator()(
         "\\s*roof_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*tree_resource_names=([\\s\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*grass_resource_names=([\\s\\w-. \\(\\)/+-]*)\\r?\\n"
-        "(\\s*wayside_resource_names=(?:[=\\s\\w-. \\(\\)/+-]*)\\r?\\n)*"
+        "(\\s*wayside_resource_names=(?:[,=\\s\\w-. \\(\\)/+-]*)\\r?\\n)*"
         "\\s*default_street_width=([\\w+-.]+)\\r?\\n"
         "\\s*roof_width=([\\w+-.]+)\\r?\\n"
         "\\s*scale=([\\w+-.]+)\\r?\\n"
@@ -376,10 +376,10 @@ void LoadScene::operator()(
     static const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
     static const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
     static const std::regex wayside_resource_names_reg(
-        "\\s*wayside_resource_names=\\r?\\n"
+        "(?:\\s*wayside_resource_names=\\r?\\n"
         "\\s*min_dist=([\\w+-.]+)\\r?\\n"
         "\\s*max_dist=([\\w+-.]+)\\r?\\n"
-        "([\\s\\w-. \\(\\)/+-]*)\\r?\\n");
+        "([\\s,=\\w-. \\(\\)/+-]*)\\r?\\n|(.+))");
     static const std::regex set_spawn_points_reg("^(?:\\r?\\n|\\s)*set_spawn_points node=([\\w+-.]+) resource=([\\w+-.]+)$");
     static const std::regex set_way_points_reg("^(?:\\r?\\n|\\s)*set_way_points player=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w+-.]+)$");
 
@@ -396,7 +396,10 @@ void LoadScene::operator()(
             findall(
                 match[18].str(),
                 wayside_resource_names_reg,
-                [&waysides](const std::smatch& m){
+                [&waysides, &match](const std::smatch& m){
+                    if (!m[4].str().empty()) {
+                        throw std::runtime_error("Could not parse \"" + match[18].str() + "\", unknown element: \"" + m[4].str() + '"');
+                    }
                     waysides.push_back(WaysideResourceNames{
                         .min_dist = safe_stof(m[1].str()),
                         .max_dist = safe_stof(m[2].str()),

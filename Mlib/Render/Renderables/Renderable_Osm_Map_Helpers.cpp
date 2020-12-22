@@ -435,6 +435,7 @@ void Mlib::draw_streets(
     TriangleList& tl_curb_path,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
+    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -620,7 +621,7 @@ void Mlib::draw_streets(
                     }
                     if (add_street_lights) {
                         float radius = 10 * scale;
-                        auto add_distant_point = [&bvh, &resource_instance_positions, sid, radius](const FixedArray<float, 2>& p) {
+                        auto add_distant_point = [&bvh, &resource_instance_positions, &hitboxes, sid, radius](const FixedArray<float, 2>& p) {
                             bool p_found = false;
                             bvh.visit(BoundingSphere(p, radius), [&p_found](const std::string&, bool){p_found=true;});
                             if (!p_found) {
@@ -628,9 +629,11 @@ void Mlib::draw_streets(
                                 switch (sid % 10) {
                                     case 3:
                                         resource_instance_positions["street_light"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
+                                        hitboxes["street_light_hitbox"].push_back(FixedArray<float, 3>{p(0), p(1), 0});
                                         break;
                                     default:
                                         resource_instance_positions["road_bollard"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
+                                        hitboxes["road_bollard_hitbox"].push_back(FixedArray<float, 3>{p(0), p(1), 0});
                                 }
                             }
                         };
@@ -1063,6 +1066,7 @@ void Mlib::apply_height_map(
 void Mlib::add_grass_on_steiner_points(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
+    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     ResourceNameCycle& rnc,
     const std::list<SteinerPointInfo>& steiner_points,
     float scale,
@@ -1081,6 +1085,9 @@ void Mlib::add_grass_on_steiner_points(
                 resource_instance_positions[prn.name].push_back({p.position, rng()});
             } else {
                 object_resource_descriptors.push_back({p.position, prn.name, rng()});
+            }
+            if (!prn.hitbox.empty()) {
+                hitboxes[prn.hitbox].push_back(p.position);
             }
         }
     }
@@ -1493,15 +1500,16 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
 : rng0_{1, 0, names.size() - 1},
   rng_{2}
 {
-    const std::regex re{"^(.*?)\\(([\\d+.e-]+)\\)$"};
+    const std::regex re{"^(.*?)\\(p=([\\d+.e-]+)(?:,hitbox=(\\w+))?\\)$"};
     names_.reserve(names.size());
     for(const std::string& name : names) {
         std::smatch match;
         if (std::regex_match(name, match, re)) {
             names_.push_back(ParsedResourceName{
-                name: match[1].str(),
-                probability: safe_stof(match[2].str()),
-                aggregate_mode: resources.aggregate_mode(match[1].str())});
+                .name = match[1].str(),
+                .probability = safe_stof(match[2].str()),
+                .aggregate_mode = resources.aggregate_mode(match[1].str()),
+                .hitbox = match[3].str()});
             if (names_.back().probability < 1e-7) {
                 throw std::runtime_error("ResourceNameCycle: threshold too small");
             }
@@ -1510,9 +1518,9 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
             }
         } else {
             names_.push_back(ParsedResourceName{
-                name: name,
-                probability: 1,
-                aggregate_mode: resources.aggregate_mode(name)});
+                .name = name,
+                .probability = 1,
+                .aggregate_mode = resources.aggregate_mode(name)});
         }
     }
 }

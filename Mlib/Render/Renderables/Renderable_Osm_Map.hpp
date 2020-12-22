@@ -85,6 +85,7 @@ private:
     RenderingResources* rendering_resources_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
+    std::map<std::string, std::list<FixedArray<float, 3>>> hitboxes_;
     SceneNodeResources& scene_node_resources_;
     float scale_;
     std::list<SpawnPoint> spawn_points_;
