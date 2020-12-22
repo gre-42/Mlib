@@ -454,8 +454,12 @@ void RenderableColoredVertexArray::generate_ray(const FixedArray<float, 3>& from
 }
 
 AggregateMode RenderableColoredVertexArray::aggregate_mode() const {
-    if (triangles_res_.size() != 1) {
-        throw std::runtime_error("aggregate_mode requires exactly one triangle mesh");
+    std::set<AggregateMode> aggregate_modes;
+    for (const auto& t : triangles_res_) {
+        aggregate_modes.insert(t->material.aggregate_mode);
+    }
+    if (aggregate_modes.size() != 1) {
+        throw std::runtime_error("aggregate_mode is not unique");
     }
     return triangles_res_.front()->material.aggregate_mode;
 }
