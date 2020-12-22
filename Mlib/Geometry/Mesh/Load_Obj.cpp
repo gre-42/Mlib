@@ -244,15 +244,17 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 mtllib = load_mtllib(p == "" ? match[1].str() : p + "/" + match[1].str(), werror);
             } else if (std::regex_match(line, match, usemtl_reg)) {
                 current_mtl = mtllib.at(match[1].str());
-                assert_true(tl.material_.texture_descriptor.color.empty());
-                assert_true(tl.material_.texture_descriptor.normal.empty());
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
                     tl.material_.texture_descriptor.color = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string();
+                } else {
+                    tl.material_.texture_descriptor.color.clear();
                 }
                 if (!current_mtl.bump_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
                     tl.material_.texture_descriptor.normal = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string();
+                } else {
+                    tl.material_.texture_descriptor.normal.clear();
                 }
                 if (current_mtl.has_alpha_texture) {
                     tl.material_.blend_mode = blend_mode;
