@@ -61,6 +61,7 @@ public:
         bool with_buildings = true,
         bool only_raceways = false,
         const std::string& highway_name_pattern = "",
+        const std::set<std::string>& excluded_highways = {"pedestrian", "path", "footway", "cycleway", "steps"},
         const std::set<std::string>& path_tags = {"track", "tertiary"},
         const std::vector<float>& steiner_point_distances_road = {100.f},
         const std::vector<float>& steiner_point_distances_steiner = {100.f},

@@ -161,6 +161,7 @@ void LoadScene::operator()(
         "\\s*with_buildings=(0|1)\\r?\\n"
         "\\s*only_raceways=(0|1)\\r?\\n"
         "\\s*highway_name_pattern=(.*)\\r?\\n"
+        "\\s*excluded_highways=(.*)\\r?\\n"
         "\\s*path_tags=(.*)\\r?\\n"
         "\\s*steiner_point_distances_road=([ \\w+-.]*)\\r?\\n"
         "\\s*steiner_point_distances_steiner=([ \\w+-.]*)\\r?\\n"
@@ -446,19 +447,20 @@ void LoadScene::operator()(
                     safe_stob(match[39].str()),                                   // with_buildings
                     safe_stob(match[40].str()),                                   // only_raceways
                     match[41].str(),                                              // highway_name_pattern
-                    string_to_set(match[42].str()),                               // path_tags
-                    string_to_vector(match[43].str(), safe_stof),                 // steiner_point_distances_road
-                    string_to_vector(match[44].str(), safe_stof),                 // steiner_point_distances_steiner
-                    safe_stof(match[45].str()),                                   // curb_alpha
-                    safe_stof(match[46].str()),                                   // raise_streets_amount
-                    safe_stof(match[47].str()),                                   // extrude_curb_amount
-                    safe_stof(match[48].str()),                                   // extrude_street_amount
-                    safe_stob(match[49].str()),                                   // add_street_lights
-                    safe_stof(match[50].str()),                                   // max_wall_width
-                    safe_stob(match[51].str()),                                   // with_height_bindings
-                    safe_stof(match[52].str()),                                   // street_node_smoothness
-                    safe_stof(match[53].str()),                                   // street_edge_smoothness
-                    safe_stof(match[54].str())));                                 // terrain_edge_smoothness
+                    string_to_set(match[42].str()),                               // excluded_highways
+                    string_to_set(match[43].str()),                               // path_tags
+                    string_to_vector(match[44].str(), safe_stof),                 // steiner_point_distances_road
+                    string_to_vector(match[45].str(), safe_stof),                 // steiner_point_distances_steiner
+                    safe_stof(match[46].str()),                                   // curb_alpha
+                    safe_stof(match[47].str()),                                   // raise_streets_amount
+                    safe_stof(match[48].str()),                                   // extrude_curb_amount
+                    safe_stof(match[49].str()),                                   // extrude_street_amount
+                    safe_stob(match[50].str()),                                   // add_street_lights
+                    safe_stof(match[51].str()),                                   // max_wall_width
+                    safe_stob(match[52].str()),                                   // with_height_bindings
+                    safe_stof(match[53].str()),                                   // street_node_smoothness
+                    safe_stof(match[54].str()),                                   // street_edge_smoothness
+                    safe_stof(match[55].str())));                                 // terrain_edge_smoothness
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                 fpath(match[2].str()),
