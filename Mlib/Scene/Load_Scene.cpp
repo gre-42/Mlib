@@ -219,8 +219,8 @@ void LoadScene::operator()(
     static const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
     static const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
     static const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+)$");
-    static const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+) mode=(ramming|racing)$");
-    static const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player-name=([\\w+-.]+) node=([\\w+-.]+)$");
+    static const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+) mode=(ramming|racing|bystander)$");
+    static const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
     static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
     static const std::regex player_set_surface_power_reg("^(?:\\r?\\n|\\s)*player_set_surface_power player-name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
     static const std::regex player_set_tire_angle_reg("^(?:\\r?\\n|\\s)*player_set_tire_angle player-name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
@@ -373,6 +373,7 @@ void LoadScene::operator()(
     static const std::regex set_dirtmap_reg("^(?:\\r?\\n|\\s)*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
     static const std::regex set_skybox_reg("^(?:\\r?\\n|\\s)*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
     static const std::regex set_preferred_car_spawner_reg("^(?:\\r?\\n|\\s)*set_preferred_car_spawner macro=([\\w ]+) player=([\\w+-.]+) car=([\\w+-.]+)$");
+    static const std::regex set_vip_reg("^(?:\\r?\\n|\\s)*set_vip player=([\\w+-.]+)$");
     static const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
     static const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
     static const std::regex wayside_resource_names_reg(
@@ -1292,6 +1293,8 @@ void LoadScene::operator()(
                     macro_line_executor(sstr.str());
                 }
             );
+        } else if (std::regex_match(line, match, set_vip_reg)) {
+            game_logic.set_vip(&players.get_player(match[1].str()));
         } else if (std::regex_match(line, match, set_spawn_points_reg)) {
             SceneNode* node = scene.get_node(match[1].str());
             std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[2].str());

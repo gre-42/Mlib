@@ -161,6 +161,11 @@ float Player::car_health() const {
     }
 }
 
+GameMode Player::game_mode() const {
+    return game_mode_;
+}
+
+
 void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == scene_node_) {
         scene_node_name_.clear();

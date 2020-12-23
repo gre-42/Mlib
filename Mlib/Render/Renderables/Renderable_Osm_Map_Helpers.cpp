@@ -470,6 +470,7 @@ void Mlib::draw_streets(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
+    std::list<FixedArray<FixedArray<float, 3>, 2, 2>>& street_rectangles,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -597,6 +598,11 @@ void Mlib::draw_streets(
                         it->second.id << " <-> " << na.first << ", (" <<
                         nodes.at(it->second.id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
                 } else {
+                    street_rectangles.push_back(FixedArray<FixedArray<float, 3>, 2, 2>{
+                        FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0},
+                        FixedArray<float, 3>{rect.p01_(0), rect.p01_(1), 0},
+                        FixedArray<float, 3>{rect.p10_(0), rect.p10_(1), 0},
+                        FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}});
                     // Way length is used to get connected street textures where possible.
                     auto len0 = node_way_info.find(na.first);
                     auto len1 = node_way_info.find(it->second.id);

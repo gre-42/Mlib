@@ -25,7 +25,8 @@ struct PlayerStats {
 
 enum class GameMode {
     RAMMING,
-    RACING
+    RACING,
+    BYSTANDER
 };
 
 inline GameMode game_mode_from_string(const std::string& game_mode) {
@@ -33,6 +34,8 @@ inline GameMode game_mode_from_string(const std::string& game_mode) {
         return GameMode::RAMMING;
     } else if (game_mode == "racing") {
         return GameMode::RACING;
+    } else if (game_mode == "bystander") {
+        return GameMode::BYSTANDER;
     } else {
         throw std::runtime_error("Unknown game mode: " + game_mode);
     }
@@ -60,6 +63,7 @@ public:
     PlayerStats& stats();
     const PlayerStats& stats() const;
     float car_health() const;
+    GameMode game_mode() const;
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;

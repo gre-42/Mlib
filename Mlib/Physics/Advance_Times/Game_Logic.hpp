@@ -24,10 +24,14 @@ public:
         std::recursive_mutex& mutex);
     void set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points);
     void set_preferred_car_spawner(Player& player, const std::function<void(const SpawnPoint&)>& preferred_car_spawner);
+    void set_vip(Player* vip);
     virtual void advance_time(float dt) override;
 private:
+    void handle_team_deathmatch();
+    void handle_bystanders();
     Scene& scene_;
     Players& players_;
+    Player* vip_;
     const std::list<Focus>& focus_;
     std::list<SpawnPoint> spawn_points_;
     std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;

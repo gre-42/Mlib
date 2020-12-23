@@ -5,6 +5,7 @@
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map_Helpers.hpp>
@@ -354,6 +355,7 @@ RenderableOsmMap::RenderableOsmMap(
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;
     std::list<SteinerPointInfo> steiner_points;
+    std::list<FixedArray<FixedArray<float, 3>, 2, 2>> street_rectangles;
     {
         ResourceNameCycle street_lights{scene_node_resources, street_light_resource_names};
         std::vector<FixedArray<float, 2>> map_outer_contour;
@@ -375,6 +377,7 @@ RenderableOsmMap::RenderableOsmMap(
             resource_instance_positions_,
             object_resource_descriptors_,
             hitboxes_,
+            street_rectangles,
             height_bindings,
             nodes,
             ways,
@@ -589,6 +592,11 @@ RenderableOsmMap::RenderableOsmMap(
         for(SteinerPointInfo& p : steiner_points) {
             smoothed_vertices.push_back(&p.position);
         }
+        for(auto& r : street_rectangles) {
+            for(auto& p : r.flat_iterable()) {
+                smoothed_vertices.push_back(&p);
+            }
+        }
         {
             std::set<FixedArray<float, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
             if (svs.size() != smoothed_vertices.size()) {
@@ -731,6 +739,31 @@ RenderableOsmMap::RenderableOsmMap(
             *tl_terrain,
             scale,
             much_grass_distance);
+    }
+    for(auto& r : street_rectangles) {
+        SpawnPoint sp;
+        sp.position = (r(0, 0) + r(0, 1)) / 2.f;
+        FixedArray<float, 3> x = r(0, 0) - r(0, 1);
+        FixedArray<float, 3> y = r(0, 0) - r(1, 0);
+        float lx2 = sum(squared(x));
+        float ly2 = sum(squared(y));
+        if (lx2 < squared(3 * scale) || ly2 < squared(3 * scale)) {
+            continue;
+        }
+        x /= std::sqrt(lx2);
+        y /= std::sqrt(ly2);
+        FixedArray<float, 3> z = cross(x, y);
+        float lz2 = sum(squared(z));
+        if (lz2 < squared(3 * scale)) {
+            continue;
+        }
+        z /= std::sqrt(lz2);
+        FixedArray<float, 3, 3> R{
+            x(0), y(0), z(0),
+            x(1), y(1), z(1),
+            x(2), y(2), z(2)};
+        sp.rotation = matrix_2_tait_bryan_angles(R);
+        spawn_points_.push_back(sp);
     }
 
     std::list<std::shared_ptr<ColoredVertexArray>> ts;

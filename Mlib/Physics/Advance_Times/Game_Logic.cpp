@@ -17,6 +17,7 @@ GameLogic::GameLogic(
     std::recursive_mutex& mutex)
 : scene_{scene},
   players_{players},
+  vip_{nullptr},
   focus_{focus},
   mutex_{mutex}
 {}
@@ -36,6 +37,11 @@ void GameLogic::set_preferred_car_spawner(Player& player, const std::function<vo
 }
 
 void GameLogic::advance_time(float dt) {
+    handle_team_deathmatch();
+    handle_bystanders();
+}
+
+void GameLogic::handle_team_deathmatch() {
     std::set<std::string> all_teams;
     std::set<std::string> winner_teams;
     for(auto& p : players_.players()) {
@@ -71,4 +77,58 @@ void GameLogic::advance_time(float dt) {
             it->second(*sit);
         }
     }
+}
+
+void GameLogic::handle_bystanders() {
+    if (vip_ == nullptr) {
+        return;
+    }
+    if (vip_->scene_node_name().empty()) {
+        return;
+    }
+    FixedArray<float, 3> vip_pos = scene_.get_node(vip_->scene_node_name())->position();
+    float r0 = 200;
+    float r1 = 300;
+    float rp = 20;
+    for(auto& player : players_.players()) {
+        if (player.second == vip_) {
+            continue;
+        }
+        auto it = preferred_car_spawners_.find(player.second);
+        if (it == preferred_car_spawners_.end()) {
+            throw std::runtime_error("Player " + player.second->name() + " has no preferred car spawner");
+        }
+        if (player.second->game_mode() == GameMode::BYSTANDER) {
+            if (player.second->scene_node_name().empty()) {
+                for(auto& sp : spawn_points_) {
+                    bool exists = false;
+                    for(auto& player2 : players_.players()) {
+                        if (!player2.second->scene_node_name().empty()) {
+                            if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(rp)) {
+                                exists = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (exists) {
+                        continue;
+                    }
+                    if (sum(squared(sp.position - vip_pos)) < squared(r0)) {
+                        it->second(sp);
+                        if (player.second->scene_node_name().empty()) {
+                            throw std::runtime_error("Scene node name empty for player " + player.first);
+                        }
+                        break;
+                    }
+                }
+            } else if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r1)) {
+                std::lock_guard lock_guard{mutex_};
+                scene_.delete_root_node(player.second->scene_node_name());
+            }
+        }
+    }
+}
+
+void GameLogic::set_vip(Player* vip) {
+    vip_ = vip;
 }
