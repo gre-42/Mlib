@@ -395,6 +395,7 @@ RenderableOsmMap::RenderableOsmMap(
             add_trees_to_forest_outlines(
                 resource_instance_positions_,
                 object_resource_descriptors_,
+                hitboxes_,
                 steiner_points,
                 rnc,
                 nodes,
@@ -444,6 +445,7 @@ RenderableOsmMap::RenderableOsmMap(
             add_trees_to_tree_nodes(
                 resource_instance_positions_,
                 object_resource_descriptors_,
+                hitboxes_,
                 steiner_points,
                 rnc,
                 nodes,
@@ -724,6 +726,7 @@ RenderableOsmMap::RenderableOsmMap(
         add_grass_inside_triangles(
             resource_instance_positions_,
             object_resource_descriptors_,
+            hitboxes_,
             rnc,
             *tl_terrain,
             scale,

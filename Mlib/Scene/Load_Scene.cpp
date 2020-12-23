@@ -135,7 +135,7 @@ void LoadScene::operator()(
         "\\s*barrier_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*barrier_blend_mode=(off|binary|continuous)\\r?\\n"
         "\\s*roof_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*tree_resource_names=([\\s\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*tree_resource_names=([,=\\s\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*grass_resource_names=([\\s\\w-. \\(\\)/+-]*)\\r?\\n"
         "(\\s*wayside_resource_names=(?:[,=\\s\\w-. \\(\\)/+-]*)\\r?\\n)*"
         "\\s*default_street_width=([\\w+-.]+)\\r?\\n"
@@ -458,7 +458,7 @@ void LoadScene::operator()(
                     safe_stof(match[47].str()),                                   // raise_streets_amount
                     safe_stof(match[48].str()),                                   // extrude_curb_amount
                     safe_stof(match[49].str()),                                   // extrude_street_amount
-                    string_to_vector(match[50].str()),                                   // street_light_resource_names
+                    string_to_vector(match[50].str()),                            // street_light_resource_names
                     safe_stof(match[51].str()),                                   // max_wall_width
                     safe_stob(match[52].str()),                                   // with_height_bindings
                     safe_stof(match[53].str()),                                   // street_node_smoothness
