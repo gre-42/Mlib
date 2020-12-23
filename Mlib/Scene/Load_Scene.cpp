@@ -409,7 +409,7 @@ void LoadScene::operator()(
                 match[1].str(),                                                   // name
                 std::make_shared<RenderableOsmMap>(
                     scene_node_resources,
-                    &rendering_resources,
+                    rendering_resources,
                     fpath(match[2].str()),                                        // filename
                     fpath(match[3].str()),                                        // heightmap
                     fpath(match[4].str()),                                        // terrain_texture
@@ -479,7 +479,7 @@ void LoadScene::operator()(
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())},
-                    &rendering_resources,
+                    rendering_resources,
                 safe_stoi(match[12].str()),
                 blend_mode_from_string(match[13].str()),
                 safe_stoi(match[14].str()),                     // cull_faces
@@ -546,21 +546,21 @@ void LoadScene::operator()(
                         safe_stof(match[12].str())},
                     .diffusivity = {0, 0, 0},
                     .specularity = {0, 0, 0}}.compute_color_mode(),
-                &rendering_resources));
+                rendering_resources));
         } else if (std::regex_match(line, match, blending_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 fpath(match[2].str()),
-                &rendering_resources));
+                rendering_resources));
         } else if (std::regex_match(line, match, binary_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBinaryX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 fpath(match[2].str()),
-                &rendering_resources,
+                rendering_resources,
                 safe_stob(match[10].str()),
                 occluder_type_from_string(match[11].str()),
                 FixedArray<float, 3>{

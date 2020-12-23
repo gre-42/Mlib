@@ -7,7 +7,9 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
+#include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array_Instance.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <iostream>
@@ -386,17 +388,16 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
     std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
-    RenderingResources* rendering_resources)
+    RenderingResources& rendering_resources)
 : triangles_res_{triangles},
   rendering_resources_{rendering_resources},
-  render_textures_{rendering_resources_ != nullptr},
   instances_{instances}
 {}
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<ColoredVertexArray>& triangles,
     std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
-    RenderingResources* rendering_resources)
+    RenderingResources& rendering_resources)
 : RenderableColoredVertexArray(std::list<std::shared_ptr<ColoredVertexArray>>{triangles}, instances, rendering_resources)
 {}
 
@@ -471,11 +472,12 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices) const
 {
-    if (auto it = render_programs_.find(id); it != render_programs_.end()) {
+    auto& rps = rendering_resources_.render_programs();
+    if (auto it = rps.find(id); it != rps.end()) {
         return *it->second;
     }
     std::lock_guard guard{mutex_};
-    if (auto it = render_programs_.find(id); it != render_programs_.end()) {
+    if (auto it = rps.find(id); it != rps.end()) {
         return *it->second;
     }
     auto rp = std::make_unique<ColoredRenderProgram>();
@@ -613,7 +615,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     }
 
     auto& result = *rp;
-    render_programs_.insert(std::make_pair(id, std::move(rp)));
+    rps.insert(std::make_pair(id, std::move(rp)));
     return result;
 }
 

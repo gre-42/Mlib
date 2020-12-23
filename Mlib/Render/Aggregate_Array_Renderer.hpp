@@ -13,11 +13,11 @@ class AggregateArrayRenderer: public AggregateRenderer {
 public:
     AggregateArrayRenderer(const AggregateArrayRenderer& other) = delete;
     AggregateArrayRenderer& operator = (const AggregateArrayRenderer& other) = delete;
-    explicit AggregateArrayRenderer(RenderingResources* rendering_resources = nullptr);
+    explicit AggregateArrayRenderer(RenderingResources& rendering_resources);
     virtual void update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) override;
     virtual void render_aggregates(const FixedArray<float, 4, 4>& vp, const FixedArray<float, 4, 4>& iv, const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, ExternalRenderPass external_render_pass) const override;
 private:
-    RenderingResources* rendering_resources_;
+    RenderingResources& rendering_resources_;
     std::shared_ptr<RenderableColoredVertexArray> rcva_;
     std::unique_ptr<RenderableColoredVertexArrayInstance> rcvai_;
     mutable std::mutex mutex_;

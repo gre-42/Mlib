@@ -4,6 +4,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <iostream>
 #include <memory>
 #include <stb_image/stb_array.h>
@@ -121,6 +122,8 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
     }
     assert_true(level - 1 == log2(std::max(si.width, si.height)));
 }
+
+RenderingResources::RenderingResources() {}
 
 RenderingResources::~RenderingResources() {
     for (const auto& t : textures_) {
@@ -355,4 +358,8 @@ void RenderingResources::delete_texture(const std::string& name) {
     if (textures_.erase(name) != 1) {
         throw std::runtime_error("Could not delete texture " + name);
     }
+}
+
+std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& RenderingResources::render_programs() {
+    return render_programs_;
 }

@@ -11,6 +11,7 @@
 namespace Mlib {
 
 class SceneNodeResources;
+class RenderingResources;
 class RenderLogic;
 class RenderResults;
 class Scene;
@@ -38,6 +39,7 @@ public:
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig{});
 
     void render_depth_map(
+        RenderingResources& rendering_resources,
         const Array<float>& rgb_picture,
         const Array<float>& depth_picture,
         const FixedArray<float, 3, 3>& intrinsic_matrix,
@@ -47,6 +49,7 @@ public:
         const CameraConfig& camera_config = CameraConfig{});
 
     void render_height_map(
+        RenderingResources& rendering_resources,
         const Array<float>& rgb_picture,
         const Array<float>& height_picture,
         const FixedArray<float, 2, 3>& normalization_matrix,

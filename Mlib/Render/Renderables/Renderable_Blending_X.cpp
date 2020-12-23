@@ -13,7 +13,7 @@ using namespace Mlib;
 RenderableBlendingX::RenderableBlendingX(
     const FixedArray<float, 2, 2>& square,
     const std::string& texture,
-    RenderingResources* rendering_resources)
+    RenderingResources& rendering_resources)
 : square_{square}
 {
     for(size_t i = 0; i < 2; ++i) {

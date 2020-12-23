@@ -4,7 +4,7 @@
 
 using namespace Mlib;
 
-AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources* rendering_resources)
+AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_resources)
 : rendering_resources_{rendering_resources},
   rcva_{nullptr}
 {}

@@ -10,7 +10,7 @@ using namespace Mlib;
 RenderableSquare::RenderableSquare(
     const FixedArray<float, 2, 2>& square,
     const Material& material,
-    RenderingResources* rendering_resources)
+    RenderingResources& rendering_resources)
 {
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2);

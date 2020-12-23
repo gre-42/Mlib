@@ -207,10 +207,10 @@ int main(int argc, char** argv) {
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;
-            AggregateArrayRenderer small_aggregate_array_renderer{&rendering_resources};
-            AggregateArrayRenderer large_aggregate_array_renderer{&rendering_resources};
-            ArrayInstancesRenderer small_instances_renderer{&rendering_resources};
-            ArrayInstancesRenderer large_instances_renderer{&rendering_resources};
+            AggregateArrayRenderer small_aggregate_array_renderer{rendering_resources};
+            AggregateArrayRenderer large_aggregate_array_renderer{rendering_resources};
+            ArrayInstancesRenderer small_instances_renderer{rendering_resources};
+            ArrayInstancesRenderer large_instances_renderer{rendering_resources};
             // SceneNode destructors require that physics engine is destroyed after scene,
             // => Create PhysicsEngine before Scene
             PhysicsEngine physics_engine{scene_config.physics_engine_config};

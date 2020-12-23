@@ -10,7 +10,7 @@ public:
     RenderableBinaryX(
         const FixedArray<float, 2, 2>& square,
         const std::string& texture,
-        RenderingResources* rendering_resources,
+        RenderingResources& rendering_resources,
         bool is_small,
         OccluderType occluder_type,
         const FixedArray<float, 3>& ambience = {2, 2, 2});

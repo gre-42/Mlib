@@ -4,6 +4,7 @@
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Results.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Stats/Fixed_Random_Arrays.hpp>
 #include <fenv.h>
@@ -42,10 +43,12 @@ void test_render() {
         draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered.ppm");
     }
     {
+        RenderingResources rendering_resources;
         Array<float> output;
         RenderResults render_results{output: &output};
         size_t num_renderings = SIZE_MAX;
         Render2{num_renderings, &render_results, RenderConfig{}}.render_depth_map(
+            rendering_resources,
             img.to_float_rgb(),
             depth,
             FixedArray<float, 3, 3>{intrinsic_matrix},

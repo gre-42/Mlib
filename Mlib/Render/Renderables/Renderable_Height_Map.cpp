@@ -10,7 +10,8 @@ using namespace Mlib;
 RenderableHeightMap::RenderableHeightMap(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const FixedArray<float, 2, 3>& normalization_matrix)
+    const FixedArray<float, 2, 3>& normalization_matrix,
+    RenderingResources& rendering_resources)
 {
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2 * height_picture.nelements());
@@ -88,7 +89,7 @@ RenderableHeightMap::RenderableHeightMap(
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
         nullptr,
-        nullptr);  // rendering_resources
+        rendering_resources);
 }
 
 void RenderableHeightMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const

@@ -12,7 +12,7 @@ public:
         const FixedArray<float, 3>& position,
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& scale,
-        RenderingResources* rendering_resources,
+        RenderingResources& rendering_resources,
         bool is_small,
         BlendMode blend_mode,
         bool cull_faces,

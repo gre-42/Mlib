@@ -6,7 +6,7 @@
 
 using namespace Mlib;
 
-ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources* rendering_resources)
+ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources& rendering_resources)
 : rendering_resources_{rendering_resources},
   rcva_{nullptr}
 {}

@@ -20,7 +20,7 @@ class RenderableOsmMap: public SceneNodeResource {
 public:
     RenderableOsmMap(
         SceneNodeResources& scene_node_resources,
-        RenderingResources* rendering_resources,
+        RenderingResources& rendering_resources,
         const std::string& filename,
         const std::string& heightmap,
         const std::string& terrain_texture,
@@ -82,7 +82,7 @@ public:
     virtual PointsAndAdjacency<float, 2> way_points() const override;
 private:
     std::shared_ptr<RenderableColoredVertexArray> rva_;
-    RenderingResources* rendering_resources_;
+    RenderingResources& rendering_resources_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     std::map<std::string, std::list<FixedArray<float, 3>>> hitboxes_;

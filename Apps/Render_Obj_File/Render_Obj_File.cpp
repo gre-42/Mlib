@@ -157,8 +157,8 @@ int main(int argc, char** argv) {
 
         RenderingResources rendering_resources;
         SceneNodeResources scene_node_resources;
-        AggregateArrayRenderer small_sorted_aggregate_renderer{&rendering_resources};
-        AggregateArrayRenderer large_aggregate_renderer{&rendering_resources};
+        AggregateArrayRenderer small_sorted_aggregate_renderer{rendering_resources};
+        AggregateArrayRenderer large_aggregate_renderer{rendering_resources};
         Scene scene{
             &small_sorted_aggregate_renderer,
             &large_aggregate_renderer};
@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
                     fixed_zeros<float, 3>(),                                              // position
                     fixed_zeros<float, 3>(),                                              // rotation
                     fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
-                    &rendering_resources,
+                    rendering_resources,
                     false,                                                                // is_small
                     blend_mode_from_string(args.named_value("--blend_mode", "binary")),
                     false,                                                                // cull_faces
