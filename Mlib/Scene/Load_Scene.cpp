@@ -169,7 +169,7 @@ void LoadScene::operator()(
         "\\s*raise_streets_amount=([\\w+-.]+)\\r?\\n"
         "\\s*extrude_curb_amount=([\\w+-.]+)\\r?\\n"
         "\\s*extrude_street_amount=([\\w+-.]+)\\r?\\n"
-        "\\s*add_street_lights=(0|1)\\r?\\n"
+        "\\s*street_light_resource_names=([,=\\s\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*max_wall_width=([\\w+-.]+)\\r?\\n"
         "\\s*with_height_bindings=(0|1)\\r?\\n"
         "\\s*street_node_smoothness=([\\w+-.]+)\\r?\\n"
@@ -458,7 +458,7 @@ void LoadScene::operator()(
                     safe_stof(match[47].str()),                                   // raise_streets_amount
                     safe_stof(match[48].str()),                                   // extrude_curb_amount
                     safe_stof(match[49].str()),                                   // extrude_street_amount
-                    safe_stob(match[50].str()),                                   // add_street_lights
+                    string_to_vector(match[50].str()),                                   // street_light_resource_names
                     safe_stof(match[51].str()),                                   // max_wall_width
                     safe_stob(match[52].str()),                                   // with_height_bindings
                     safe_stof(match[53].str()),                                   // street_node_smoothness

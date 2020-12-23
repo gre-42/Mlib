@@ -73,7 +73,7 @@ RenderableOsmMap::RenderableOsmMap(
     float raise_streets_amount,
     float extrude_curb_amount,
     float extrude_street_amount,
-    bool add_street_lights,
+    const std::vector<std::string>& street_light_resource_names,
     float max_wall_width,
     bool with_height_bindings,
     float street_node_smoothness,
@@ -362,6 +362,7 @@ RenderableOsmMap::RenderableOsmMap(
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     {
+        ResourceNameCycle street_lights{scene_node_resources, street_light_resource_names};
         std::vector<FixedArray<float, 2>> map_outer_contour;
         get_map_outer_contour(
             map_outer_contour,
@@ -392,7 +393,7 @@ RenderableOsmMap::RenderableOsmMap(
             excluded_highways,
             path_tags,
             curb_alpha,
-            add_street_lights,
+            street_lights,
             with_height_bindings);
 
         if (forest_outline_tree_distance != INFINITY && !tree_resource_names.empty()) {

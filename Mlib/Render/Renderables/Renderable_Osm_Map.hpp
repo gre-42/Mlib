@@ -69,7 +69,7 @@ public:
         float raise_streets_amount = 0.2,
         float extrude_curb_amount = 0,
         float extrude_street_amount = 0,
-        bool add_street_lights = true,
+        const std::vector<std::string>& street_light_resource_names = {},
         float max_wall_width = 5,
         bool with_height_bindings = false,
         float street_node_smoothness = 0,

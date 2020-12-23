@@ -447,7 +447,7 @@ void Mlib::draw_streets(
     const std::set<std::string>& excluded_highways,
     const std::set<std::string>& path_tags,
     float curb_alpha,
-    bool add_street_lights,
+    ResourceNameCycle& street_lights,
     bool with_height_bindings)
 {
     std::regex name_re{name_pattern};
@@ -531,11 +531,9 @@ void Mlib::draw_streets(
     // Compute rectangles and holes for each pair of connected nodes.
     // To avoid duplicates, the computations are done at each lexicographically
     // smaller node.
-    size_t sid = 0;
     for(const auto& na : node_angles) {
         for(auto it = na.second.begin(); it != na.second.end(); ++it) {
             if (it->second.id < na.first) {
-                ++sid;
                 // node index: na.first
                 // neighbor index: it->second
                 // angle of neighbor: it->first
@@ -619,21 +617,21 @@ void Mlib::draw_streets(
                             node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{angle: nn.at(na.first).angle, curb: 2}, c2.s11));
                         }
                     }
-                    if (add_street_lights) {
+                    if (!street_lights.empty()) {
                         float radius = 10 * scale;
-                        auto add_distant_point = [&bvh, &resource_instance_positions, &hitboxes, sid, radius](const FixedArray<float, 2>& p) {
+                        auto add_distant_point = [&](const FixedArray<float, 2>& p) {
                             bool p_found = false;
                             bvh.visit(BoundingSphere(p, radius), [&p_found](const std::string&, bool){p_found=true;});
                             if (!p_found) {
                                 bvh.insert(p, "", true);
-                                switch (sid % 10) {
-                                    case 3:
-                                        resource_instance_positions["street_light"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
-                                        hitboxes["street_light_hitbox"].push_back(FixedArray<float, 3>{p(0), p(1), 0});
-                                        break;
-                                    default:
-                                        resource_instance_positions["road_bollard"].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
-                                        hitboxes["road_bollard_hitbox"].push_back(FixedArray<float, 3>{p(0), p(1), 0});
+                                const ParsedResourceName& prn = street_lights();
+                                if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
+                                    resource_instance_positions[prn.name].push_back({FixedArray<float, 3>{p(0), p(1), 0}, 1});
+                                } else {
+                                    object_resource_descriptors.push_back({FixedArray<float, 3>{p(0), p(1), 0}, prn.name, 1});
+                                }
+                                if (!prn.hitbox.empty()) {
+                                    hitboxes[prn.hitbox].push_back(FixedArray<float, 3>{p(0), p(1), 0});
                                 }
                             }
                         };
@@ -1539,4 +1537,8 @@ const ParsedResourceName& ResourceNameCycle::operator() () {
             return prn;
         }
     }
+}
+
+bool ResourceNameCycle::empty() const {
+    return names_.empty();
 }

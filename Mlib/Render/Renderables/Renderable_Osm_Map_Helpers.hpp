@@ -94,6 +94,7 @@ class ResourceNameCycle {
 public:
     ResourceNameCycle(const SceneNodeResources& resources, const std::vector<std::string>& names);
     const ParsedResourceName& operator () ();
+    bool empty() const;
 private:
     std::vector<ParsedResourceName> names_;
     UniformIntRandomNumberGenerator<size_t> rng0_;
@@ -194,7 +195,7 @@ void draw_streets(
     const std::set<std::string>& excluded_highways,
     const std::set<std::string>& path_tags,
     float curb_alpha,
-    bool add_street_lights,
+    ResourceNameCycle& street_lights,
     bool with_height_bindings);
 
 void raise_streets(
