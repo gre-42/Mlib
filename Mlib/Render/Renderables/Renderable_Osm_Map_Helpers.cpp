@@ -1504,7 +1504,7 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
 : rng0_{1, 0, names.size() - 1},
   rng_{2}
 {
-    const std::regex re{"^(.*?)\\(p=([\\d+.e-]+)(?:,hitbox=(\\w+))?\\)$"};
+    const std::regex re{"^(.*?)\\(p:([\\d+.e-]+)(?:,hitbox:(\\w+))?\\)$"};
     names_.reserve(names.size());
     for(const std::string& name : names) {
         std::smatch match;

@@ -135,9 +135,9 @@ void LoadScene::operator()(
         "\\s*barrier_texture=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*barrier_blend_mode=(off|binary|continuous)\\r?\\n"
         "\\s*roof_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*tree_resource_names=([,=\\s\\w-. \\(\\)/+-]*)\\r?\\n"
-        "\\s*grass_resource_names=([,=\\s\\w-. \\(\\)/+-]*)\\r?\\n"
-        "(\\s*wayside_resource_names=(?:[,=\\s\\w-. \\(\\)/+-]*)\\r?\\n)*"
+        "\\s*tree_resource_names=([,:\\s\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*grass_resource_names=([,:\\s\\w-. \\(\\)/+-]*)\\r?\\n"
+        "(\\s*wayside_resource_names=(?:[,:\\s\\w-. \\(\\)/+-]*)\\r?\\n)*"
         "\\s*default_street_width=([\\w+-.]+)\\r?\\n"
         "\\s*roof_width=([\\w+-.]+)\\r?\\n"
         "\\s*scale=([\\w+-.]+)\\r?\\n"
@@ -169,7 +169,7 @@ void LoadScene::operator()(
         "\\s*raise_streets_amount=([\\w+-.]+)\\r?\\n"
         "\\s*extrude_curb_amount=([\\w+-.]+)\\r?\\n"
         "\\s*extrude_street_amount=([\\w+-.]+)\\r?\\n"
-        "\\s*street_light_resource_names=([,=\\s\\w-. \\(\\)/+-]*)\\r?\\n"
+        "\\s*street_light_resource_names=([,:\\s\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*max_wall_width=([\\w+-.]+)\\r?\\n"
         "\\s*with_height_bindings=(0|1)\\r?\\n"
         "\\s*street_node_smoothness=([\\w+-.]+)\\r?\\n"
@@ -377,9 +377,9 @@ void LoadScene::operator()(
     static const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
     static const std::regex wayside_resource_names_reg(
         "(?:\\s*wayside_resource_names=\\r?\\n"
-        "\\s*min_dist=([\\w+-.]+)\\r?\\n"
-        "\\s*max_dist=([\\w+-.]+)\\r?\\n"
-        "([\\s,=\\w-. \\(\\)/+-]*)\\r?\\n|(.+))");
+        "\\s*min_dist:([\\w+-.]+)\\r?\\n"
+        "\\s*max_dist:([\\w+-.]+)\\r?\\n"
+        "([\\s,:\\w-. \\(\\)/+-]*)\\r?\\n|(.+))");
     static const std::regex set_spawn_points_reg("^(?:\\r?\\n|\\s)*set_spawn_points node=([\\w+-.]+) resource=([\\w+-.]+)$");
     static const std::regex set_way_points_reg("^(?:\\r?\\n|\\s)*set_way_points player=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w+-.]+)$");
 
