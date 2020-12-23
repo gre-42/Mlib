@@ -742,7 +742,8 @@ RenderableOsmMap::RenderableOsmMap(
     }
     for(auto& r : street_rectangles) {
         SpawnPoint sp;
-        sp.position = (r(0, 0) + r(0, 1)) / 2.f;
+        float alpha = 0.75;
+        sp.position = alpha * (r(0, 0) + r(1, 0)) / 2.f + (1 - alpha) * (r(0, 1) + r(1, 1)) / 2.f;
         FixedArray<float, 3> x = r(0, 0) - r(0, 1);
         FixedArray<float, 3> y = r(0, 0) - r(1, 0);
         float lx2 = sum(squared(x));
