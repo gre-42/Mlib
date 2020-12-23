@@ -18,7 +18,7 @@
                 "--friction_coefficient",
                 "0.5",
                 "--show_mouse_cursor",
-                "--oversampling", "2", "--physics_type", "builtin", "--resolve_collisions_type", "sequential_pulses", "--verbose"],
+                "--oversampling", "2", "--physics_type", "builtin", "--resolve_collision_type", "sequential_pulses", "--verbose"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

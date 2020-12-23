@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
         "    [--print_gamepad_buttons]\n"
         "    [--show_mouse_cursor]\n"
         "    [--physics_type {version1, tracking_springs, builtin}]\n"
-        "    [--resolve_collisions_type {penalty, sequential_pulses}]\n"
+        "    [--resolve_collision_type {penalty, sequential_pulses}]\n"
         "    [--no_bvh]\n"
         "    [--oversampling]\n"
         "    [--verbose]",
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
          "--black_lightmap_height",
          "--physics_dt",
          "--physics_type",
-         "--resolve_collisions_type",
+         "--resolve_collision_type",
          "--oversampling",
          "--render_dt",
          "--damping",
@@ -189,8 +189,8 @@ int main(int argc, char** argv) {
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")),
                 .print_residual_time = args.has_named("--print_residual_time"),
                 .damping = safe_stof(args.named_value("--damping", "0")),
-                .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "2")),
-                .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "1.6")),
+                .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
+                .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
                 .alpha0 = safe_stof(args.named_value("--alpha0", "0.1")),
                 .avoid_burnout = !args.has_named("--no_avoid_burnout"),
                 .no_slip = args.has_named("--no_slip"),
@@ -200,10 +200,10 @@ int main(int argc, char** argv) {
                 .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .physics_type = physics_type_from_string(args.named_value("--physics_type", "version1")),
-                .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collisions_type", "penalty")),
+                .physics_type = physics_type_from_string(args.named_value("--physics_type", "builtin")),
+                .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collision_type", "sequential_pulses")),
                 .bvh = !args.has_named("--no_bvh"),
-                .oversampling = safe_stoz(args.named_value("--oversampling", "20"))};
+                .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
 
             RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;
