@@ -23,6 +23,7 @@ struct RenderConfig {
     int swap_interval = 1;
     FixedArray<float, 3> background_color = fixed_zeros<float, 3>();
     bool print_fps = false;
+    bool print_residual_time = false;
     float dt = 0.01667;
     float max_residual_time = 0.5;
     void apply() const;

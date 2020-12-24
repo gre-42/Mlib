@@ -197,7 +197,7 @@ void test_physics_engine() {
     pe.add_external_force_provider(&gefp);
 
     std::recursive_mutex mutex;
-    SetFps physics_set_fps;
+    SetFps physics_set_fps{"Physics FPS: "};
     PhysicsLoop pl{
         scene_node_resources,
         scene,

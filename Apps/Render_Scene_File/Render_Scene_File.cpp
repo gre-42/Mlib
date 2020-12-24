@@ -57,7 +57,8 @@ int main(int argc, char** argv) {
         "    [--no_physics ]\n"
         "    [--physics_dt <dt> ]\n"
         "    [--render_dt <dt> ]\n"
-        "    [--print_residual_time]\n"
+        "    [--print_physics_residual_time]\n"
+        "    [--print_render_residual_time]\n"
         "    [--damping <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
@@ -91,7 +92,8 @@ int main(int argc, char** argv) {
          "--no_physics",
          "--window_maximized",
          "--full_screen",
-         "--print_residual_time",
+         "--print_physics_residual_time",
+         "--print_render_residual_time",
          "--print_fps",
          "--no_vfx",
          "--no_depth_fog",
@@ -155,6 +157,7 @@ int main(int argc, char** argv) {
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .background_color = {0.68, 0.85, 1},
             .print_fps = args.has_named("--print_fps"),
+            .print_residual_time = args.has_named("--print_render_residual_time"),
             .dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
@@ -168,7 +171,7 @@ int main(int argc, char** argv) {
         ButtonPress button_press{button_states};
         UiFocus ui_focus = UiFocus{focus: {Focus::SCENE}};
         SubstitutionString substitutions;
-        SetFps physics_set_fps;
+        SetFps physics_set_fps{"Physics FPS: "};
         std::map<std::string, size_t> selection_ids;
         FifoLog fifo_log{10 * 1000};
 
@@ -187,7 +190,7 @@ int main(int argc, char** argv) {
 
             scene_config.physics_engine_config = PhysicsEngineConfig{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")),
-                .print_residual_time = args.has_named("--print_residual_time"),
+                .print_residual_time = args.has_named("--print_physics_residual_time"),
                 .damping = safe_stof(args.named_value("--damping", "0")),
                 .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
                 .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),

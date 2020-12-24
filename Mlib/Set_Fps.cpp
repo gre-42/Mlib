@@ -5,9 +5,10 @@
 
 using namespace Mlib;
 
-SetFps::SetFps()
+SetFps::SetFps(const std::string& prefix)
 : sim_time_{std::chrono::steady_clock::now()},
-  paused_{false}
+  paused_{false},
+  prefix_{prefix}
 {}
 
 void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
@@ -20,7 +21,7 @@ void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
     if ((min_residual_time <= 0) && (residual_time < min_residual_time)) {
         sim_time_ = current_time;
         if (print_residual_time) {
-            std::cerr << "resetting sim time" << std::endl;
+            std::cerr << prefix_ << "resetting sim time" << std::endl;
         }
     } else {
         if (residual_time > 0) {
@@ -31,7 +32,7 @@ void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
             }
             // std::this_thread::sleep_for(std::chrono::microseconds(residual_time));
         } else if (print_residual_time) {
-            std::cerr << "residual time: " << residual_time << std::endl;
+            std::cerr << prefix_ << "residual time: " << residual_time << std::endl;
         }
     }
     if (paused()) {
@@ -40,7 +41,7 @@ void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
         }
         sim_time_ = std::chrono::steady_clock::now();
         if (print_residual_time) {
-            std::cerr << "resetting sim time after pause" << std::endl;
+            std::cerr << prefix_ << "resetting sim time after pause" << std::endl;
         }
     }
 }

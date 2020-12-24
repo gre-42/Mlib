@@ -105,7 +105,7 @@ void Render2::operator () (
     std::recursive_mutex& mutex,
     const SceneGraphConfig& scene_graph_config)
 {
-    SetFps set_fps;
+    SetFps set_fps{"Render FPS: "};
     Fps fps;
     size_t fps_i = 0;
     size_t fps_i_max = 500;
@@ -149,7 +149,7 @@ void Render2::operator () (
             glfwSetWindowShouldClose(window_->window(), GLFW_TRUE);
         }
         if (render_config_.dt != 0) {
-            set_fps.tick(render_config_.dt, render_config_.max_residual_time, false); // false = print_residual_time
+            set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
         } else if (render_config_.motion_interpolation) {
             throw std::runtime_error("Motion interpolation requires render_dt");
         }
@@ -157,7 +157,7 @@ void Render2::operator () (
             fps_i = (fps_i + 1) % fps_i_max;
             fps.tick();
             if (fps_i == 0) {
-                std::cerr << fps.fps() << " FPS" << std::endl;
+                std::cerr << "Render: " << fps.fps() << " FPS" << std::endl;
             }
         }
 
