@@ -10,23 +10,23 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
 
     std::ifstream ifs{filename};
 
-    const std::regex newmtl_reg("^newmtl (.+)$");
-    const std::regex Ka_reg("^\\s*Ka +(\\S+) (\\S+) (\\S+)$");
-    const std::regex Kd_reg("^\\s*Kd +(\\S+) (\\S+) (\\S+)$");
-    const std::regex Ks_reg("^\\s*Ks +(\\S+) (\\S+) (\\S+)$");
-    const std::regex Ke_reg("^\\s*Ke .+$");
-    const std::regex Km_reg("^\\s*Km .+$");
-    const std::regex Ni_reg("^\\s*Ni .+$");
-    const std::regex Ns_reg("^\\s*Ns .+$");
-    const std::regex Tr_reg("^\\s*Tr .+$");
-    const std::regex Tf_reg("^\\s*Tf .+$");
-    const std::regex illum_reg("^\\s*illum .+$");
-    const std::regex d_reg("^\\s*d .+$");
-    const std::regex map_Kd_reg("^\\s*map_Kd (.+)$");
-    const std::regex map_Ks_reg("^\\s*map_Ks (.+)$");
-    const std::regex map_d_reg("^\\s*map_d (.+)$");
-    const std::regex map_bump_reg("^\\s*map_Bump (.+)$");
-    const std::regex comment_reg("^\\s*#.*$");
+    static const std::regex newmtl_reg("^newmtl (.+)$");
+    static const std::regex Ka_reg("^\\s*Ka +(\\S+) (\\S+) (\\S+)$");
+    static const std::regex Kd_reg("^\\s*Kd +(\\S+) (\\S+) (\\S+)$");
+    static const std::regex Ks_reg("^\\s*Ks +(\\S+) (\\S+) (\\S+)$");
+    static const std::regex Ke_reg("^\\s*Ke .+$");
+    static const std::regex Km_reg("^\\s*Km .+$");
+    static const std::regex Ni_reg("^\\s*Ni .+$");
+    static const std::regex Ns_reg("^\\s*Ns .+$");
+    static const std::regex Tr_reg("^\\s*Tr .+$");
+    static const std::regex Tf_reg("^\\s*Tf .+$");
+    static const std::regex illum_reg("^\\s*illum .+$");
+    static const std::regex d_reg("^\\s*d .+$");
+    static const std::regex map_Kd_reg("^\\s*map_Kd (.+)$");
+    static const std::regex map_Ks_reg("^\\s*map_Ks (.+)$");
+    static const std::regex map_d_reg("^\\s*map_d (.+)$");
+    static const std::regex map_bump_reg("^\\s*map_Bump (.+)$");
+    static const std::regex comment_reg("^\\s*#.*$");
 
     std::string mtl;
     std::string line;

@@ -9,7 +9,7 @@ static void iterate_replacements(
     const std::string& replacements,
     const std::function<void(const std::string& key, const std::string& value)>& op)
 {
-    std::regex re{"\\s+"};
+    static const std::regex re{"\\s+"};
     for(auto it = std::sregex_token_iterator(replacements.begin(), replacements.end(), re, -1, std::regex_constants::match_not_null);
         it != std::sregex_token_iterator();
         ++it)

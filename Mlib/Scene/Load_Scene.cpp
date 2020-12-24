@@ -1246,7 +1246,6 @@ void LoadScene::operator()(
                 scene_node_resources,
                 scene));
         } else if (std::regex_match(line, match, set_camera_cycle_reg)) {
-            std::regex re{"\\s+"};
             std::string cameras = match[2].str();
             auto& cycle = (match[1].str() == "near")
                 ? selected_cameras.camera_cycle_near

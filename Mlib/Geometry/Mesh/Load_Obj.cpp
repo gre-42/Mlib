@@ -51,28 +51,28 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
 
     std::ifstream ifs{filename};
 
-    const std::regex vertex_reg("^v +(\\S+) (\\S+) (\\S+)(?: (\\S+) (\\S+) (\\S+) (\\S+))?$");
-    const std::regex vertex_normal_reg("^vn +(\\S+) (\\S+) (\\S+)$");
-    const std::regex line_reg("^l +"
+    static const std::regex vertex_reg("^v +(\\S+) (\\S+) (\\S+)(?: (\\S+) (\\S+) (\\S+) (\\S+))?$");
+    static const std::regex vertex_normal_reg("^vn +(\\S+) (\\S+) (\\S+)$");
+    static const std::regex line_reg("^l +"
                               "(\\d+) "
                               "(\\d+) *$");
-    const std::regex face3_reg("^f +"
+    static const std::regex face3_reg("^f +"
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? *$");
-    const std::regex face4_reg("^f +"
+    static const std::regex face4_reg("^f +"
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? *$");
-    const std::regex vertex_uv_texture_reg("^vt +(\\S+) (\\S+)$");
-    const std::regex vertex_uvw_texture_reg("^vt +(\\S+) (\\S+) (\\S+)$");
-    const std::regex comment_reg("^#.*$");
-    const std::regex mtllib_reg("^mtllib (.+)$");
-    const std::regex usemtl_reg("^usemtl (.+)$");
-    const std::regex object_reg("^o .*$");
-    const std::regex group_reg("^g(?: (.*))?$");
-    const std::regex smooth_shading_reg("^s .*$");
+    static const std::regex vertex_uv_texture_reg("^vt +(\\S+) (\\S+)$");
+    static const std::regex vertex_uvw_texture_reg("^vt +(\\S+) (\\S+) (\\S+)$");
+    static const std::regex comment_reg("^#.*$");
+    static const std::regex mtllib_reg("^mtllib (.+)$");
+    static const std::regex usemtl_reg("^usemtl (.+)$");
+    static const std::regex object_reg("^o .*$");
+    static const std::regex group_reg("^g(?: (.*))?$");
+    static const std::regex smooth_shading_reg("^s .*$");
 
     ObjMaterial current_mtl;
 

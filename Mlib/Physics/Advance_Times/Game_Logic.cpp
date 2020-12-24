@@ -87,9 +87,9 @@ void GameLogic::handle_bystanders() {
         return;
     }
     FixedArray<float, 3> vip_pos = scene_.get_node(vip_->scene_node_name())->position();
-    float r0 = 200;
-    float r1 = 300;
-    float rp = 20;
+    float r_spawn = 200;
+    float r_delete = 300;
+    float r_neighbors = 20;
     for(auto& player : players_.players()) {
         if (player.second == vip_) {
             continue;
@@ -104,7 +104,7 @@ void GameLogic::handle_bystanders() {
                     bool exists = false;
                     for(auto& player2 : players_.players()) {
                         if (!player2.second->scene_node_name().empty()) {
-                            if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(rp)) {
+                            if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(r_neighbors)) {
                                 exists = true;
                                 break;
                             }
@@ -113,7 +113,7 @@ void GameLogic::handle_bystanders() {
                     if (exists) {
                         continue;
                     }
-                    if (sum(squared(sp.position - vip_pos)) < squared(r0)) {
+                    if (sum(squared(sp.position - vip_pos)) < squared(r_spawn)) {
                         it->second(sp);
                         if (player.second->scene_node_name().empty()) {
                             throw std::runtime_error("Scene node name empty for player " + player.first);
@@ -121,7 +121,7 @@ void GameLogic::handle_bystanders() {
                         break;
                     }
                 }
-            } else if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r1)) {
+            } else if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r_delete)) {
                 std::lock_guard lock_guard{mutex_};
                 scene_.delete_root_node(player.second->scene_node_name());
             }

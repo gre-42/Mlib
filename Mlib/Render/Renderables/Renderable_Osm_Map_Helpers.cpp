@@ -210,7 +210,7 @@ float Mlib::parse_meters(const std::map<std::string, std::string>& tags, const s
     if (it == tags.end()) {
         return default_value;
     }
-    std::regex re{"^([\\d.-]+) *(m|')?"};
+    static const std::regex re{"^([\\d.-]+) *(m|')?"};
     std::smatch match;
     if (std::regex_match(it->second, match, re)) {
         float res = safe_stof(match[1].str());
@@ -1510,7 +1510,7 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
 : rng0_{1, 0, names.size() - 1},
   rng_{2}
 {
-    const std::regex re{"^(.*?)\\(p:([\\d+.e-]+)(?:,hitbox:(\\w+))?\\)$"};
+    static const std::regex re{"^(.*?)\\(p:([\\d+.e-]+)(?:,hitbox:(\\w+))?\\)$"};
     names_.reserve(names.size());
     for(const std::string& name : names) {
         std::smatch match;

@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 Bgr24Raw Bgr24Raw::load_from_file(const std::string& filename) {
-    std::regex re("^.*-(\\d+)x(\\d+)x(\\d+)\\.bgr$");
+    static const std::regex re("^.*-(\\d+)x(\\d+)x(\\d+)\\.bgr$");
     std::smatch match;
     if (std::regex_match(filename, match, re)) {
         if (match[3] != "24") {

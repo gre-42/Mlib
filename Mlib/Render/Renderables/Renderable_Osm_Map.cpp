@@ -86,13 +86,13 @@ RenderableOsmMap::RenderableOsmMap(
 {
     LOG_FUNCTION("RenderableOsmMap::RenderableOsmMap");
     std::ifstream ifs{filename};
-    const std::regex node_reg("^ +<node id=[\"'](-?\\w+)[\"'] .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
-    const std::regex way_reg("^ +<way id=[\"'](-?\\w+)[\"'].* visible=[\"'](true|false)[\"'].*>$");
-    const std::regex way_end_reg("^ +</way>$");
-    const std::regex node_ref_reg("^  +<nd ref=[\"'](-?\\w+)[\"'] */>$");
-    const std::regex bounds_reg(" +<bounds minlat=[\"']([\\w.-]+)[\"'] minlon=[\"']([\\w.-]+)[\"'] maxlat=[\"']([\\w.-]+)[\"'] maxlon=[\"']([\\w.-]+)[\"'](?: origin=[\"'].*[\"'])? */>$");
-    const std::regex tag_reg("  +<tag k=[\"']([\\w:;.&|*=-]+)[\"'] v=[\"'](.*)[\"'] */>$");
-    const std::regex ignored_reg(
+    static const std::regex node_reg("^ +<node id=[\"'](-?\\w+)[\"'] .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
+    static const std::regex way_reg("^ +<way id=[\"'](-?\\w+)[\"'].* visible=[\"'](true|false)[\"'].*>$");
+    static const std::regex way_end_reg("^ +</way>$");
+    static const std::regex node_ref_reg("^  +<nd ref=[\"'](-?\\w+)[\"'] */>$");
+    static const std::regex bounds_reg(" +<bounds minlat=[\"']([\\w.-]+)[\"'] minlon=[\"']([\\w.-]+)[\"'] maxlat=[\"']([\\w.-]+)[\"'] maxlon=[\"']([\\w.-]+)[\"'](?: origin=[\"'].*[\"'])? */>$");
+    static const std::regex tag_reg("  +<tag k=[\"']([\\w:;.&|*=-]+)[\"'] v=[\"'](.*)[\"'] */>$");
+    static const std::regex ignored_reg(
         "^(?:"
         "<\\?xml .*|"
         "<osm .*|"

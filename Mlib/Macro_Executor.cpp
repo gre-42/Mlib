@@ -13,8 +13,8 @@ using namespace Mlib;
 void MacroFileExecutor::operator()(const MacroLineExecutor& macro_line_executor)
 {
     std::ifstream ifs{macro_line_executor.script_filename_};
-    const std::regex macro_begin_reg("^(?:\\r?\\n|\\s)*macro_begin ([\\w+-.]+)$");
-    const std::regex macro_end_reg("^(?:\\r?\\n|\\s)*macro_end$");
+    static const std::regex macro_begin_reg("^(?:\\r?\\n|\\s)*macro_begin ([\\w+-.]+)$");
+    static const std::regex macro_end_reg("^(?:\\r?\\n|\\s)*macro_end$");
 
     std::string line;
     std::list<std::pair<std::string, Macro>> recording_macros;
@@ -64,10 +64,10 @@ MacroLineExecutor::MacroLineExecutor(
 
 void MacroLineExecutor::operator () (const std::string& line) const
 {
-    const std::regex comment_reg("^(?:\\r?\\n|\\s)*#[\\S\\s]*$");
-    const std::regex macro_playback_reg("^(?:\\r?\\n|\\s)*macro_playback(?:\\r?\\n|\\s)+([\\w+-.]+)(" + substitute_pattern + ")$");
-    const std::regex include_reg("^(?:\\r?\\n|\\s)*include ([\\w-. \\(\\)/+-]+)$");
-    const std::regex empty_reg("^[\\s]*$");
+    static const std::regex comment_reg("^(?:\\r?\\n|\\s)*#[\\S\\s]*$");
+    static const std::regex macro_playback_reg("^(?:\\r?\\n|\\s)*macro_playback(?:\\r?\\n|\\s)+([\\w+-.]+)(" + substitute_pattern + ")$");
+    static const std::regex include_reg("^(?:\\r?\\n|\\s)*include ([\\w-. \\(\\)/+-]+)$");
+    static const std::regex empty_reg("^[\\s]*$");
 
     auto fpath = [&](const fs::path& f) -> std::string {
         if (f.empty()) {
