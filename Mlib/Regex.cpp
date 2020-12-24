@@ -10,6 +10,7 @@ static void iterate_replacements(
     const std::function<void(const std::string& key, const std::string& value)>& op)
 {
     static const std::regex re{"\\s+"};
+    static const std::regex re2{"(\\S+):(\\S*)"};
     for(auto it = std::sregex_token_iterator(replacements.begin(), replacements.end(), re, -1, std::regex_constants::match_not_null);
         it != std::sregex_token_iterator();
         ++it)
@@ -19,7 +20,7 @@ static void iterate_replacements(
             continue;
         }
         std::smatch match2;
-        if (std::regex_match(s, match2, std::regex("(\\S+):(\\S*)"))) {
+        if (std::regex_match(s, match2, re2)) {
             op(match2[1].str(), match2[2].str());
         } else {
             throw std::runtime_error("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
@@ -40,7 +41,8 @@ std::string Mlib::substitute(const std::string& str, const std::string& replacem
         }
     });
     // Assign default values to remainders.
-    new_line = std::regex_replace(new_line, std::regex{"(\\S+:)\\S+="}, "$1");
+    static const std::regex re{"(\\S+:)\\S+="};
+    new_line = std::regex_replace(new_line, re, "$1");
     return new_line;
 }
 

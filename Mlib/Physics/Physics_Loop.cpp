@@ -46,7 +46,8 @@ PhysicsLoop::PhysicsLoop(
         {
             std::lock_guard lock{mutex};
             {
-                scene.delete_root_nodes(std::regex{"^beacon.*"});
+                static const std::regex re{"^beacon.*"};
+                scene.delete_root_nodes(re);
                 size_t i = 0;
                 for(const auto& beacon : beacons) {
                     SceneNode* node = new SceneNode;
