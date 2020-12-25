@@ -19,11 +19,12 @@ GameLogic::GameLogic(
   players_{players},
   vip_{nullptr},
   focus_{focus},
-  mutex_{mutex}
+  mutex_{mutex},
+  spawn_point_id_{0}
 {}
 
 void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {
-    spawn_points_ = spawn_points;
+    spawn_points_ = std::vector(spawn_points.begin(), spawn_points.end());
     FixedArray<float, 4, 4> m = node.absolute_model_matrix();
     FixedArray<float, 3, 3> r = R3_from_4x4(m) / node.scale();
     for (SpawnPoint& p : spawn_points_) {
@@ -92,6 +93,8 @@ void GameLogic::handle_bystanders() {
     float r_spawn = 200;
     float r_delete = 300;
     float r_neighbors = 20;
+    size_t max_nsee = 5;
+    size_t nsee = 0;
     for (auto& player : players_.players()) {
         if (player.second == vip_) {
             continue;
@@ -102,8 +105,12 @@ void GameLogic::handle_bystanders() {
         }
         if (player.second->game_mode() == GameMode::BYSTANDER) {
             if (player.second->scene_node_name().empty()) {
+                if (nsee > max_nsee) {
+                    continue;
+                }
                 bool spawned = false;
-                for (auto& sp : spawn_points_) {
+                for (size_t i = 0; i < spawn_points_.size(); ++i) {
+                    const SpawnPoint& sp = spawn_points_[(spawn_point_id_++) % spawn_points_.size()];
                     // Abort if too far away.
                     if (sum(squared(sp.position - vip_pos)) > squared(r_spawn)) {
                         continue;
@@ -126,6 +133,10 @@ void GameLogic::handle_bystanders() {
                         if (exists) {
                             continue;
                         }
+                    }
+                    ++nsee;
+                    if (nsee > max_nsee) {
+                        break;
                     }
                     // Abort if visible.
                     if (vip_->can_see(sp.position, 2)) {
