@@ -138,7 +138,7 @@ void LoadScene::operator()(
         "\\s*roof_texture=([\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*tree_resource_names=([,:\\s\\w-. \\(\\)/+-]*)\\r?\\n"
         "\\s*grass_resource_names=([,:\\s\\w-. \\(\\)/+-]*)\\r?\\n"
-        "(\\s*wayside_resource_names=(?:[,:\\s\\w-. \\(\\)/+-]*)\\r?\\n)*"
+        "((?:\\s*wayside_resource_names=(?:[,:\\s\\w-. \\(\\)/+-]*)\\r?\\n)*)"
         "\\s*default_street_width=([\\w+-.]+)\\r?\\n"
         "\\s*roof_width=([\\w+-.]+)\\r?\\n"
         "\\s*scale=([\\w+-.]+)\\r?\\n"
