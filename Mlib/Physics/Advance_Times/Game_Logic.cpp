@@ -101,25 +101,34 @@ void GameLogic::handle_bystanders() {
         if (player.second->game_mode() == GameMode::BYSTANDER) {
             if (player.second->scene_node_name().empty()) {
                 for (auto& sp : spawn_points_) {
-                    bool exists = false;
-                    for (auto& player2 : players_.players()) {
-                        if (!player2.second->scene_node_name().empty()) {
-                            if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(r_neighbors)) {
-                                exists = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (exists) {
+                    // Abort if too far away.
+                    if (sum(squared(sp.position - vip_pos)) > squared(r_spawn)) {
                         continue;
                     }
-                    if (sum(squared(sp.position - vip_pos)) < squared(r_spawn)) {
-                        it->second(sp);
-                        if (player.second->scene_node_name().empty()) {
-                            throw std::runtime_error("Scene node name empty for player " + player.first);
+                    // Abort if another car is nearby.
+                    {
+                        bool exists = false;
+                        for (auto& player2 : players_.players()) {
+                            if (!player2.second->scene_node_name().empty()) {
+                                if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(r_neighbors)) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
                         }
-                        break;
+                        if (exists) {
+                            continue;
+                        }
                     }
+                    // Abort if visible.
+                    if (vip_->can_see(sp.position)) {
+                        continue;
+                    }
+                    it->second(sp);
+                    if (player.second->scene_node_name().empty()) {
+                        throw std::runtime_error("Scene node name empty for player " + player.first);
+                    }
+                    break;
                 }
             } else if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r_delete)) {
                 std::lock_guard lock_guard{mutex_};
