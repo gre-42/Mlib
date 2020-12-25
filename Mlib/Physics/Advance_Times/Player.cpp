@@ -165,6 +165,19 @@ GameMode Player::game_mode() const {
     return game_mode_;
 }
 
+bool Player::can_see(const RigidBodyIntegrator& rbi) const {
+    if (rb_ == nullptr) {
+        throw std::runtime_error("Player::can_see requires rb");
+    }
+    return collision_query_.can_see(rb_->rbi_, rbi);
+}
+
+bool Player::can_see(const FixedArray<float, 3>& pos) const {
+    if (rb_ == nullptr) {
+        throw std::runtime_error("Player::can_see requires rb");
+    }
+    return collision_query_.can_see(rb_->rbi_.abs_position(), pos, &rb_->rbi_);
+}
 
 void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == scene_node_) {
@@ -229,7 +242,7 @@ bool Player::unstuck() {
 
 void Player::aim_and_shoot() {
     assert_true(!target_scene_node_ == !target_rbi_);
-    if (rb_ != nullptr && ((target_rbi_ == nullptr) || !collision_query_.can_see(rb_->rbi_, *target_rbi_))) {
+    if (rb_ != nullptr && ((target_rbi_ == nullptr) || !can_see(*target_rbi_))) {
         select_opponent();
     }
     if (ypln_ == nullptr) {
@@ -428,7 +441,7 @@ void Player::select_opponent() {
             if (p.second->rb_ == nullptr) {
                 continue;
             }
-            if (collision_query_.can_see(rb_->rbi_, p.second->rb_->rbi_)) {
+            if (can_see(p.second->rb_->rbi_)) {
                 target_scene_node_ = p.second->scene_node_;
                 target_rbi_ = &p.second->rb_->rbi_;
                 target_scene_node_->add_destruction_observer(this);
