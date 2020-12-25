@@ -28,14 +28,33 @@ static void iterate_replacements(
     }
 }
 
-std::string Mlib::substitute(const std::string& str, const std::string& replacements) {
+const std::regex& RegexSubstitutionCache::get0(const std::string& key) const {
+    auto it = c0_.find(key);
+    if (it != c0_.end()) {
+        return it->second;
+    } else {
+        c0_.insert({key, std::regex{":" + key + "=\\S*"}});
+        return c0_.at(key);
+    }
+}
+const std::regex& RegexSubstitutionCache::get1(const std::string& key) const {
+    auto it = c1_.find(key);
+    if (it != c1_.end()) {
+        return it->second;
+    } else {
+        c1_.insert({key, std::regex{"(\\b|:)" + key + "\\b(?!:)"}});
+        return c1_.at(key);
+    }
+}
+
+std::string Mlib::substitute(const std::string& str, const std::string& replacements, const RegexSubstitutionCache& rsc) {
     std::string new_line = str;
-    iterate_replacements(replacements, [&new_line](const std::string& key, const std::string& value){
+    iterate_replacements(replacements, [&new_line, &rsc](const std::string& key, const std::string& value){
         try {
             // Substitute expressions with default value.
-            new_line = std::regex_replace(new_line, std::regex{":" + key + "=\\S*"}, ':' + value);
+            new_line = std::move(std::regex_replace(new_line, rsc.get0(key), ':' + value));
             // Substitute expressions without default value, and simple expressions.
-            new_line = std::regex_replace(new_line, std::regex{"(\\b|:)" + key + "\\b(?!:)"}, "$01" + value);
+            new_line = std::move(std::regex_replace(new_line, rsc.get1(key), "$01" + value));
         } catch (const std::regex_error&) {
             throw std::runtime_error("Error in regex " + key);
         }
@@ -97,7 +116,7 @@ SubstitutionString::SubstitutionString(const std::string& s)
 {}
 
 std::string SubstitutionString::substitute(const std::string& t) const {
-    return Mlib::substitute(t, s_);
+    return Mlib::substitute(t, s_, rsc_);
 }
 
 void SubstitutionString::merge(const SubstitutionString& other) {

@@ -8,9 +8,19 @@ namespace Mlib {
 
 static const std::string substitute_pattern = "(?:\\S+:\\S*)?(?:(?:\\r?\\n|\\s)+\\S+:\\S*)*";
 
+class RegexSubstitutionCache {
+public:
+    const std::regex& get0(const std::string& key) const;
+    const std::regex& get1(const std::string& key) const;
+private:
+    mutable std::map<std::string, std::regex> c0_;
+    mutable std::map<std::string, std::regex> c1_;
+};
+
 std::string substitute(
     const std::string& str,
-    const std::string& replacements);
+    const std::string& replacements,
+    const RegexSubstitutionCache& rsc = RegexSubstitutionCache{});
 
 std::string merge_replacements(const std::initializer_list<const std::string>& replacements);
 
@@ -33,6 +43,7 @@ public:
     void clear();
 private:
     std::string s_;
+    RegexSubstitutionCache rsc_;
 };
 
 }

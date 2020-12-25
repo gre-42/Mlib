@@ -44,6 +44,7 @@ private:
     std::string working_directory_;
     MacroFileExecutor::UserFunction execute_user_function_;
     SubstitutionString substitutions_;
+    RegexSubstitutionCache rsc_;
     bool verbose_;
 };
 
