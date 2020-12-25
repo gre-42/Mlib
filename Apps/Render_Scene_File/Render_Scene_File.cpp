@@ -84,6 +84,7 @@ int main(int argc, char** argv) {
         "    [--resolve_collision_type {penalty, sequential_pulses}]\n"
         "    [--no_bvh]\n"
         "    [--oversampling]\n"
+        "    [--static_radius <r>]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--no_cull_faces",
@@ -117,6 +118,7 @@ int main(int argc, char** argv) {
          "--scene_lightmap_height",
          "--black_lightmap_width",
          "--black_lightmap_height",
+         "--static_radius",
          "--physics_dt",
          "--physics_type",
          "--resolve_collision_type",
@@ -203,6 +205,7 @@ int main(int argc, char** argv) {
                 .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
+                .static_radius = safe_stof(args.named_value("--static_radius", "200")),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "builtin")),
                 .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collision_type", "sequential_pulses")),
                 .bvh = !args.has_named("--no_bvh"),
