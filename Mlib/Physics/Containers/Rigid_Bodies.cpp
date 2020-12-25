@@ -134,3 +134,7 @@ void RigidBodies::delete_rigid_body(const RigidBody* rigid_body) {
         objects_.erase(it);
     }
 }
+
+void RigidBodies::print_search_time() const {
+    std::cout << "Search time: " << bvh_.search_time() << std::endl;
+}

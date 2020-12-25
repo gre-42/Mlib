@@ -85,6 +85,7 @@ int main(int argc, char** argv) {
         "    [--no_bvh]\n"
         "    [--oversampling]\n"
         "    [--static_radius <r>]\n"
+        "    [--print_search_time]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--no_cull_faces",
@@ -107,6 +108,7 @@ int main(int argc, char** argv) {
          "--no_bvh",
          "--no_slip",
          "--no_avoid_burnout",
+         "--print_search_time",
          "--verbose"},
         {"--swap_interval",
          "--nsamples_msaa",
@@ -205,7 +207,7 @@ int main(int argc, char** argv) {
                 .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .static_radius = safe_stof(args.named_value("--static_radius", "200")),
+                .static_radius = safe_stof(args.named_value("--static_radius", "100")),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "builtin")),
                 .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collision_type", "sequential_pulses")),
                 .bvh = !args.has_named("--no_bvh"),
@@ -309,6 +311,11 @@ int main(int argc, char** argv) {
                 mutex,
                 rsc);
             // scene.print();
+
+            if (args.has_named("--print_search_time")) {
+                physics_engine.rigid_bodies_.print_search_time();
+                return 0;
+            }
 
             std::unique_ptr<PhysicsLoop> pl{args.has_named("--no_physics")
                 ? nullptr

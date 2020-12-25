@@ -31,7 +31,7 @@ struct PhysicsEngineConfig {
     float longitudinal_friction_steepness = 5;
     float lateral_friction_steepness = 7;  // 1 / sin(4 / 180 * pi) = 14.336
     float wheel_penetration_depth = 0.25;  // (penetration depth) + (shock absorber) = 0.2
-    float static_radius = 200;
+    float static_radius = 100;
     Interp<float> outness_fac_interp{{-0.5, 1}, {2000, 0}, OutOfRangeBehavior::CLAMP};
     PhysicsType physics_type = PhysicsType::VERSION1;
     ResolveCollisionType resolve_collision_type = ResolveCollisionType::PENALTY;

@@ -33,6 +33,7 @@ public:
         const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
         const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines);
     void delete_rigid_body(const RigidBody* rigid_body);
+    void print_search_time() const;
 private:
     std::list<std::shared_ptr<RigidBody>> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
