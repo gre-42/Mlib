@@ -58,7 +58,8 @@ public:
         size_t& num_renderings,
         std::map<std::string, size_t>& selection_ids,
         bool verbose,
-        std::recursive_mutex& mutex);
+        std::recursive_mutex& mutex,
+        const RegexSubstitutionCache& rsc);
 private:
     MacroFileExecutor macro_file_executor_;
 };

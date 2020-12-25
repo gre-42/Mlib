@@ -115,8 +115,8 @@ SubstitutionString::SubstitutionString(const std::string& s)
 : s_{s}
 {}
 
-std::string SubstitutionString::substitute(const std::string& t) const {
-    return Mlib::substitute(t, s_, rsc_);
+std::string SubstitutionString::substitute(const std::string& t, const RegexSubstitutionCache& rsc) const {
+    return Mlib::substitute(t, s_, rsc);
 }
 
 void SubstitutionString::merge(const SubstitutionString& other) {

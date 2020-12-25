@@ -22,7 +22,7 @@ public:
         const std::function<std::string(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line)> UserFunction;
-    void operator () (const MacroLineExecutor& macro_line_executor);
+    void operator () (const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc);
 private:
     std::map<std::string, Macro> macros_;
 };
@@ -37,14 +37,13 @@ public:
         const MacroFileExecutor::UserFunction& execute_user_function,
         const SubstitutionString& substitutions,
         bool verbose);
-    void operator () (const std::string& line) const;
+    void operator () (const std::string& line, const RegexSubstitutionCache& rsc) const;
 private:
     MacroFileExecutor& macro_file_executor_;
     std::string script_filename_;
     std::string working_directory_;
     MacroFileExecutor::UserFunction execute_user_function_;
     SubstitutionString substitutions_;
-    RegexSubstitutionCache rsc_;
     bool verbose_;
 };
 

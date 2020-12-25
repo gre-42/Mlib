@@ -38,12 +38,11 @@ class SubstitutionString {
 public:
     SubstitutionString();
     explicit SubstitutionString(const std::string& s);
-    std::string substitute(const std::string& t) const;
+    std::string substitute(const std::string& t, const RegexSubstitutionCache& rsc) const;
     void merge(const SubstitutionString& other);
     void clear();
 private:
     std::string s_;
-    RegexSubstitutionCache rsc_;
 };
 
 }

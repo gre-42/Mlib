@@ -115,7 +115,8 @@ void LoadScene::operator()(
     size_t& num_renderings,
     std::map<std::string, size_t>& selection_ids,
     bool verbose,
-    std::recursive_mutex& mutex)
+    std::recursive_mutex& mutex,
+    const RegexSubstitutionCache& rsc)
 {
     std::ifstream ifs{script_filename};
     static const std::regex osm_resource_reg(
@@ -1272,7 +1273,7 @@ void LoadScene::operator()(
             std::string car = match[3].str();
             game_logic.set_preferred_car_spawner(
                 players.get_player(player),
-                [macro_line_executor, macro, player, car](const SpawnPoint& p){
+                [macro_line_executor, macro, player, car, &rsc](const SpawnPoint& p){
                     std::stringstream sstr;
                     sstr <<
                         "macro_playback " <<
@@ -1289,7 +1290,7 @@ void LoadScene::operator()(
                         " IF_RACING:#" << 
                         " IF_RALLY:" <<
                         " PLAYER_NAME:" << player;
-                    macro_line_executor(sstr.str());
+                    macro_line_executor(sstr.str(), rsc);
                 }
             );
         } else if (std::regex_match(line, match, set_vip_reg)) {
@@ -1319,5 +1320,5 @@ void LoadScene::operator()(
         execute_user_function,
         substitutions,
         verbose};
-    macro_file_executor_(lp2);
+    macro_file_executor_(lp2, rsc);
 }

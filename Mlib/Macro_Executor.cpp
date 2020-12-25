@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
-void MacroFileExecutor::operator()(const MacroLineExecutor& macro_line_executor)
+void MacroFileExecutor::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
 {
     std::ifstream ifs{macro_line_executor.script_filename_};
     static const std::regex macro_begin_reg("^(?:\\r?\\n|\\s)*macro_begin ([\\w+-.]+)$");
@@ -38,7 +38,7 @@ void MacroFileExecutor::operator()(const MacroLineExecutor& macro_line_executor)
         } else if (!recording_macros.empty()) {
             recording_macros.back().second.lines.push_back(line);
         } else {
-            macro_line_executor(macro_line_executor.substitutions_.substitute(line));
+            macro_line_executor(macro_line_executor.substitutions_.substitute(line, rsc), rsc);
         }
     }
 
@@ -62,7 +62,7 @@ MacroLineExecutor::MacroLineExecutor(
   verbose_{verbose}
 {}
 
-void MacroLineExecutor::operator () (const std::string& line) const
+void MacroLineExecutor::operator () (const std::string& line, const RegexSubstitutionCache& rsc) const
 {
     static const std::regex comment_reg("^(?:\\r?\\n|\\s)*#[\\S\\s]*$");
     static const std::regex macro_playback_reg("^(?:\\r?\\n|\\s)*macro_playback(?:\\r?\\n|\\s)+([\\w+-.]+)(" + substitute_pattern + ")$");
@@ -112,7 +112,7 @@ void MacroLineExecutor::operator () (const std::string& line) const
             substitutions_,
             verbose_};
         for(const std::string& l : macro_it->second.lines) {
-            mle2(substitute(l, match[2].str(), rsc_));
+            mle2(substitute(l, match[2].str(), rsc), rsc);
         }
     } else if (std::regex_match(line, match, include_reg)) {
         MacroLineExecutor mle2{
@@ -122,7 +122,7 @@ void MacroLineExecutor::operator () (const std::string& line) const
             execute_user_function_,
             substitutions_,
             verbose_};
-        macro_file_executor_(mle2);
+        macro_file_executor_(mle2, rsc);
     } else if (!execute_user_function_(fpath, *this, line)) {
         throw std::runtime_error("Could not parse line: \"" + line + '"');
     }
