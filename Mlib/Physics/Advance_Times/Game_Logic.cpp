@@ -102,6 +102,7 @@ void GameLogic::handle_bystanders() {
         }
         if (player.second->game_mode() == GameMode::BYSTANDER) {
             if (player.second->scene_node_name().empty()) {
+                bool spawned = false;
                 for (auto& sp : spawn_points_) {
                     // Abort if too far away.
                     if (sum(squared(sp.position - vip_pos)) > squared(r_spawn)) {
@@ -134,6 +135,11 @@ void GameLogic::handle_bystanders() {
                     if (player.second->scene_node_name().empty()) {
                         throw std::runtime_error("Scene node name empty for player " + player.first);
                     }
+                    spawned = true;
+                    break;
+                }
+                if (!spawned) {
+                    // std::cerr << "Could not spawn bystander " << player.second->name() << std::endl;
                     break;
                 }
             } else if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r_delete)) {
