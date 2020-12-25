@@ -172,11 +172,12 @@ bool Player::can_see(const RigidBodyIntegrator& rbi) const {
     return collision_query_.can_see(rb_->rbi_, rbi);
 }
 
-bool Player::can_see(const FixedArray<float, 3>& pos) const {
+bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset) const {
     if (rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
-    return collision_query_.can_see(rb_->rbi_.abs_position(), pos, &rb_->rbi_);
+    FixedArray<float, 3> d = {0, height_offset, 0};
+    return collision_query_.can_see(rb_->rbi_.abs_position() + d, pos + d, &rb_->rbi_);
 }
 
 void Player::notify_destroyed(void* destroyed_object) {

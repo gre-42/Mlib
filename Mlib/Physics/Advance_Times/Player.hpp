@@ -65,7 +65,7 @@ public:
     float car_health() const;
     GameMode game_mode() const;
     bool can_see(const RigidBodyIntegrator& rbi) const;
-    bool can_see(const FixedArray<float, 3>& pos) const;
+    bool can_see(const FixedArray<float, 3>& pos, float height_offset = 0) const;
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;
