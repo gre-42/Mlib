@@ -86,7 +86,9 @@ void GameLogic::handle_bystanders() {
     if (vip_->scene_node_name().empty()) {
         return;
     }
-    FixedArray<float, 3> vip_pos = scene_.get_node(vip_->scene_node_name())->position();
+    FixedArray<float, 4, 4> vip_m = scene_.get_node(vip_->scene_node_name())->absolute_model_matrix();
+    FixedArray<float, 3> vip_pos = t3_from_4x4(vip_m);
+    FixedArray<float, 3> vip_z = z3_from_4x4(vip_m);
     float r_spawn = 200;
     float r_delete = 300;
     float r_neighbors = 20;
@@ -105,6 +107,10 @@ void GameLogic::handle_bystanders() {
                     if (sum(squared(sp.position - vip_pos)) > squared(r_spawn)) {
                         continue;
                     }
+                    // Abort if behind car.
+                    if (dot0d(sp.position - vip_pos, vip_z) > 0) {
+                        continue;
+                    }
                     // Abort if another car is nearby.
                     {
                         bool exists = false;
@@ -121,7 +127,7 @@ void GameLogic::handle_bystanders() {
                         }
                     }
                     // Abort if visible.
-                    if (vip_->can_see(sp.position)) {
+                    if (vip_->can_see(sp.position, 2)) {
                         continue;
                     }
                     it->second(sp);
