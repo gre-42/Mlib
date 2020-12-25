@@ -67,7 +67,7 @@ void test_unproject_point() {
     //std::cerr << sc.x.shape() << std::endl;
     Array<float> y_tracked(ArrayShape{sc.y.shape(0), 3});
     Array<float> ys_tracked(ArrayShape{sc.y.shape(0), 3});
-    for(size_t f = 0; f < sc.y.shape(0); ++f) {
+    for (size_t f = 0; f < sc.y.shape(0); ++f) {
         y_tracked[f] = np.yn[f][index];
         ys_tracked[f] = sc.y[f][index];
     }
@@ -175,7 +175,7 @@ struct HomographyData {
         {0.1, 0.7, 0.15},
         {0.25, 0.9, 1}} // last element must be 1
     {
-        for(size_t r = 0; r < y1.shape(0); ++r) {
+        for (size_t r = 0; r < y1.shape(0); ++r) {
             y1[r] = apply_homography(homography, y0[r]);
         }
     }
@@ -465,7 +465,7 @@ void test_find_epiline() {
 //     {
 //         Array<double> k = random_array3<double>(ArrayShape{3}, 2);
 //         Array<double> x = random_array3<double>(ArrayShape{3}, 3);
-//         for(double i = 1e-3; i > 1e-13; i/=1.5) {
+//         for (double i = 1e-3; i > 1e-13; i/=1.5) {
 //             std::cerr << numerical_differentiation([&](
 //                     const Array<double>& kk){ return (rodrigues(kk), x); },
 //                     k,
@@ -480,7 +480,7 @@ void test_marginalized_map() {
         MarginalizedMap<std::map<std::string, int>> mm;
         mm.active_["a"] = 5;
         size_t ncalls = 0;
-        for(auto c : mm) {
+        for (auto c : mm) {
             ++ncalls;
             assert_true(c.it_->first == "a");
             assert_true(c.it_->second == 5);
@@ -499,7 +499,7 @@ void test_marginalized_map() {
         MarginalizedMap<std::map<std::string, int>> mm;
         mm.marginalized_["a"] = 5;
         size_t ncalls = 0;
-        for(auto c : mm) {
+        for (auto c : mm) {
             ++ncalls;
             assert_true(c.it_->first == "a");
             assert_true(c.it_->second == 5);
@@ -513,7 +513,7 @@ void test_marginalized_map() {
         mm.active_["a"] = 5;
         auto const& mm1 = mm;
         size_t ncalls = 0;
-        for(auto c : mm1) {
+        for (auto c : mm1) {
             ++ncalls;
             assert_true(c.it_->first == "a");
             assert_true(c.it_->second == 5);
@@ -526,7 +526,7 @@ void test_marginalized_map() {
         mm.marginalized_["a"] = 5;
         auto const& mm1 = mm;
         size_t ncalls = 0;
-        for(auto c : mm1) {
+        for (auto c : mm1) {
             ++ncalls;
             assert_true(c.it_->first == "a");
             assert_true(c.it_->second == 5);
@@ -539,7 +539,7 @@ void test_marginalized_map() {
         mm.marginalized_["a"] = 5;
         auto const& mm1 = mm;
         size_t ncalls = 0;
-        for(auto it = mm1.rbegin(); it != mm1.rend(); ++it) {
+        for (auto it = mm1.rbegin(); it != mm1.rend(); ++it) {
             ++ncalls;
             assert_true(it->it_->first == "a");
             assert_true(it->it_->second == 5);
@@ -569,7 +569,7 @@ void test_marginalized_map() {
         mm.active_["z"] = 9;
         {
             std::vector<int> l;
-            for(auto it = mm.rbegin(); it != mm.rend(); ++it) {
+            for (auto it = mm.rbegin(); it != mm.rend(); ++it) {
                 l.push_back(it->it_->second);
             }
             assert_true(l[0] == 9);
@@ -579,7 +579,7 @@ void test_marginalized_map() {
         }
         {
             std::vector<int> l;
-            for(auto c : mm) {
+            for (auto c : mm) {
                 l.push_back(c.it_->second);
             }
             assert_true(l[0] == 5);
@@ -589,7 +589,7 @@ void test_marginalized_map() {
         }
         {
             std::vector<int> l;
-            for(auto it = mm1.rbegin(); it != mm1.rend(); ++it) {
+            for (auto it = mm1.rbegin(); it != mm1.rend(); ++it) {
                 l.push_back(it->it_->second);
             }
             assert_true(l[0] == 9);
@@ -599,7 +599,7 @@ void test_marginalized_map() {
         }
         {
             std::vector<int> l;
-            for(const auto& c : mm1) {
+            for (const auto& c : mm1) {
                 l.push_back(c.it_->second);
             }
             assert_true(l[0] == 5);

@@ -208,7 +208,7 @@ PFN_vkWaitForFences glad_vkWaitForFences = NULL;
 
 
 static void glad_vk_load_VK_VERSION_1_0( GLADuserptrloadfunc load, void* userptr) {
-    if(!GLAD_VK_VERSION_1_0) return;
+    if (!GLAD_VK_VERSION_1_0) return;
     vkAllocateCommandBuffers = (PFN_vkAllocateCommandBuffers) load("vkAllocateCommandBuffers", userptr);
     vkAllocateDescriptorSets = (PFN_vkAllocateDescriptorSets) load("vkAllocateDescriptorSets", userptr);
     vkAllocateMemory = (PFN_vkAllocateMemory) load("vkAllocateMemory", userptr);
@@ -348,7 +348,7 @@ static void glad_vk_load_VK_VERSION_1_0( GLADuserptrloadfunc load, void* userptr
     vkWaitForFences = (PFN_vkWaitForFences) load("vkWaitForFences", userptr);
 }
 static void glad_vk_load_VK_VERSION_1_1( GLADuserptrloadfunc load, void* userptr) {
-    if(!GLAD_VK_VERSION_1_1) return;
+    if (!GLAD_VK_VERSION_1_1) return;
     vkBindBufferMemory2 = (PFN_vkBindBufferMemory2) load("vkBindBufferMemory2", userptr);
     vkBindImageMemory2 = (PFN_vkBindImageMemory2) load("vkBindImageMemory2", userptr);
     vkCmdDispatchBase = (PFN_vkCmdDispatchBase) load("vkCmdDispatchBase", userptr);
@@ -379,13 +379,13 @@ static void glad_vk_load_VK_VERSION_1_1( GLADuserptrloadfunc load, void* userptr
     vkUpdateDescriptorSetWithTemplate = (PFN_vkUpdateDescriptorSetWithTemplate) load("vkUpdateDescriptorSetWithTemplate", userptr);
 }
 static void glad_vk_load_VK_EXT_debug_report( GLADuserptrloadfunc load, void* userptr) {
-    if(!GLAD_VK_EXT_debug_report) return;
+    if (!GLAD_VK_EXT_debug_report) return;
     vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT) load("vkCreateDebugReportCallbackEXT", userptr);
     vkDebugReportMessageEXT = (PFN_vkDebugReportMessageEXT) load("vkDebugReportMessageEXT", userptr);
     vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT) load("vkDestroyDebugReportCallbackEXT", userptr);
 }
 static void glad_vk_load_VK_KHR_surface( GLADuserptrloadfunc load, void* userptr) {
-    if(!GLAD_VK_KHR_surface) return;
+    if (!GLAD_VK_KHR_surface) return;
     vkDestroySurfaceKHR = (PFN_vkDestroySurfaceKHR) load("vkDestroySurfaceKHR", userptr);
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR = (PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR) load("vkGetPhysicalDeviceSurfaceCapabilitiesKHR", userptr);
     vkGetPhysicalDeviceSurfaceFormatsKHR = (PFN_vkGetPhysicalDeviceSurfaceFormatsKHR) load("vkGetPhysicalDeviceSurfaceFormatsKHR", userptr);
@@ -393,7 +393,7 @@ static void glad_vk_load_VK_KHR_surface( GLADuserptrloadfunc load, void* userptr
     vkGetPhysicalDeviceSurfaceSupportKHR = (PFN_vkGetPhysicalDeviceSurfaceSupportKHR) load("vkGetPhysicalDeviceSurfaceSupportKHR", userptr);
 }
 static void glad_vk_load_VK_KHR_swapchain( GLADuserptrloadfunc load, void* userptr) {
-    if(!GLAD_VK_KHR_swapchain) return;
+    if (!GLAD_VK_KHR_swapchain) return;
     vkAcquireNextImage2KHR = (PFN_vkAcquireNextImage2KHR) load("vkAcquireNextImage2KHR", userptr);
     vkAcquireNextImageKHR = (PFN_vkAcquireNextImageKHR) load("vkAcquireNextImageKHR", userptr);
     vkCreateSwapchainKHR = (PFN_vkCreateSwapchainKHR) load("vkCreateSwapchainKHR", userptr);
@@ -492,7 +492,7 @@ static int glad_vk_get_extensions( VkPhysicalDevice physical_device, uint32_t *o
 static void glad_vk_free_extensions(uint32_t extension_count, char **extensions) {
     uint32_t i;
 
-    for(i = 0; i < extension_count ; ++i) {
+    for (i = 0; i < extension_count ; ++i) {
         free((void*) (extensions[i]));
     }
 
@@ -503,7 +503,7 @@ static int glad_vk_has_extension(const char *name, uint32_t extension_count, cha
     uint32_t i;
 
     for (i = 0; i < extension_count; ++i) {
-        if(strcmp(name, extensions[i]) == 0) {
+        if (strcmp(name, extensions[i]) == 0) {
             return 1;
         }
     }

@@ -104,15 +104,15 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         }
         // std::cerr << std::endl;
         // std::cerr << std::endl;
-        // for(size_t i = 0; i < 15; ++i) {
+        // for (size_t i = 0; i < 15; ++i) {
         //     std::cerr << i << "=" << (uint)gamepad_state.buttons[i] << " ";
         // }
         // std::cerr << std::endl;
-        // for(size_t i = 0; i < 6; ++i) {
+        // for (size_t i = 0; i < 6; ++i) {
         //     std::cerr << i << "=" << gamepad_state.axes[i] << " ";
         // }
         // std::cerr << std::endl;
-        for(const auto& k : camera_key_bindings_) {
+        for (const auto& k : camera_key_bindings_) {
             if (button_press_.key_pressed(k.base)) {
                 auto& cams = selected_cameras_.camera_cycle_near;
                 if (cams.empty()) {
@@ -125,7 +125,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 selected_cameras_.set_camera_node_name(*it);
             }
         }
-        for(const auto& k : absolute_movable_idle_bindings_) {
+        for (const auto& k : absolute_movable_idle_bindings_) {
             auto m = k.node->get_absolute_movable();
             auto rb = dynamic_cast<RigidBody*>(m);
             if (rb == nullptr) {
@@ -134,13 +134,13 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             rb->set_surface_power("main", 0);
             rb->set_surface_power("breaks", 0);
             rb->set_max_velocity(INFINITY);
-            for(auto& t : rb->tires_) {
+            for (auto& t : rb->tires_) {
                 t.second.angle_y = 0;
                 // t.second.accel_x = 0;
             }
             rb->tires_z_ = k.tires_z;
         }
-        for(const auto& k : absolute_movable_key_bindings_) {
+        for (const auto& k : absolute_movable_key_bindings_) {
             float alpha = button_press_.key_alpha(k.base_key, 0.05);
             if (!std::isnan(alpha)) {
                 auto m = k.node->get_absolute_movable();
@@ -181,7 +181,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 rb->tires_z_ += k.tires_z;
             }
         }
-        for(const auto& k : absolute_movable_idle_bindings_) {
+        for (const auto& k : absolute_movable_idle_bindings_) {
             auto m = k.node->get_absolute_movable();
             auto rb = dynamic_cast<RigidBody*>(m);
             if (rb == nullptr) {
@@ -195,7 +195,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 rb->set_surface_power("breaks", NAN);
             }
         }
-        for(const auto& k : relative_movable_key_bindings_) {
+        for (const auto& k : relative_movable_key_bindings_) {
             auto m = k.node->get_relative_movable();
             auto rt = dynamic_cast<RelativeTransformer*>(m);
             if (rt == nullptr) {
@@ -203,7 +203,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             }
             rt->w_ = 0.f;
         }
-        for(const auto& k : relative_movable_key_bindings_) {
+        for (const auto& k : relative_movable_key_bindings_) {
             float alpha = button_press_.key_alpha(k.base_key);
             if (!std::isnan(alpha)) {
                 auto m = k.node->get_relative_movable();
@@ -214,7 +214,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 rt->w_ = (1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat;
             }
         }
-        for(const auto& k : gun_key_bindings_) {
+        for (const auto& k : gun_key_bindings_) {
             if (button_press_.key_down(k.base)) {
                 auto m = k.node->get_absolute_observer();
                 auto gun = dynamic_cast<Gun*>(m);

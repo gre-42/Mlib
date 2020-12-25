@@ -53,7 +53,7 @@ static void handle_triangle_triangle_intersection(
     const SatTracker& st,
     BaseLog* base_log)
 {
-    for(const auto& t1 : msh1.mesh->get_triangles_sphere()) {
+    for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
         if (!t1.bounding_sphere.intersects(t0.bounding_sphere)) {
             continue;
         }
@@ -154,7 +154,7 @@ static void collide_triangle(
     }
     const auto& lines = msh1.mesh->get_lines();
     if (msh1.mesh_type == MeshType::CHASSIS) {
-        for(const auto& l1 : lines) {
+        for (const auto& l1 : lines) {
             handle_line_triangle_intersection({
                 .o0 = o0.rigid_body,
                 .o1 = o1.rigid_body,
@@ -174,7 +174,7 @@ static void collide_triangle(
         }
     } else if (msh1.mesh_type == MeshType::TIRE_LINE) {
         size_t tire_id = 0;
-        for(const auto& l1 : lines) {
+        for (const auto& l1 : lines) {
             handle_line_triangle_intersection({
                 .o0 = o0.rigid_body,
                 .o1 = o1.rigid_body,
@@ -216,15 +216,15 @@ static void collide_objects(
     if (o1.rigid_body->mass() == INFINITY) {
         return;
     }
-    for(const auto& msh1 : o1.meshes) {
-        for(const auto& msh0 : o0.meshes) {
+    for (const auto& msh1 : o1.meshes) {
+        for (const auto& msh0 : o0.meshes) {
             if (msh0.mesh_type == MeshType::TIRE_LINE) {
                 continue;
             }
             if (!msh0.mesh->intersects(*msh1.mesh)) {
                 continue;
             }
-            for(const auto& t0 : msh0.mesh->get_triangles_sphere()) {
+            for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
                 collide_triangle(
                     o0,
                     o1,
@@ -252,23 +252,23 @@ void PhysicsEngine::collide(
     });
     {
         std::list<std::shared_ptr<RigidBody>> olist;
-        for(const auto& o : rigid_bodies_.objects_) {
+        for (const auto& o : rigid_bodies_.objects_) {
             assert_true(o.rigid_body->mass() != INFINITY);
             o.rigid_body->reset_forces();
             olist.push_back(o.rigid_body);
         }
-        for(const auto& efp : external_force_providers_) {
+        for (const auto& efp : external_force_providers_) {
             efp->increment_external_forces(olist, burn_in, cfg_);
         }
     }
-    for(const auto& o : rigid_bodies_.objects_) {
+    for (const auto& o : rigid_bodies_.objects_) {
         assert_true(o.rigid_body->mass() != INFINITY);
         if (o.meshes.size() == 0) {
             std::cerr << "Skipping object without meshes" << std::endl;
         }
         FixedArray<float, 4, 4> m = o.rigid_body->get_new_absolute_model_matrix();
         std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> transformed_meshes;
-        for(const auto& msh : o.meshes) {
+        for (const auto& msh : o.meshes) {
             transformed_meshes.push_back({
                 mesh_type: msh.mesh_type,
                 mesh: std::make_shared<TransformedMesh>(
@@ -283,14 +283,14 @@ void PhysicsEngine::collide(
     SatTracker st;
     collide_forward_ = !collide_forward_;
     if (collide_forward_) {
-        for(const auto& o0 : rigid_bodies_.transformed_objects_) {
-            for(const auto& o1 : rigid_bodies_.transformed_objects_) {
+        for (const auto& o0 : rigid_bodies_.transformed_objects_) {
+            for (const auto& o1 : rigid_bodies_.transformed_objects_) {
                 collide_objects(o0, o1, cfg_, st, beacons, contact_infos, base_log);
             }
         }
     } else {
-        for(const auto& o0 : reverse(rigid_bodies_.transformed_objects_)) {
-            for(const auto& o1 : reverse(rigid_bodies_.transformed_objects_)) {
+        for (const auto& o0 : reverse(rigid_bodies_.transformed_objects_)) {
+            for (const auto& o1 : reverse(rigid_bodies_.transformed_objects_)) {
                 collide_objects(o0, o1, cfg_, st, beacons, contact_infos, base_log);
             }
         }
@@ -313,11 +313,11 @@ void PhysicsEngine::collide(
             o0.meshes.push_back(TypedMesh<std::shared_ptr<TransformedMesh>>{});
             return o0;
         }();
-        for(const auto& o1 : rigid_bodies_.transformed_objects_) {
+        for (const auto& o1 : rigid_bodies_.transformed_objects_) {
             if (o1.rigid_body->mass() == INFINITY) {
                 return;
             }
-            for(const auto& msh1 : o1.meshes) {
+            for (const auto& msh1 : o1.meshes) {
                 rigid_bodies_.bvh_.visit(
                     msh1.mesh->transformed_bounding_sphere(),
                     [&](const std::string& category, const CollisionTriangleSphere& t0){
@@ -339,7 +339,7 @@ void PhysicsEngine::collide(
 }
 
 void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
-    for(auto it = rigid_bodies_.objects_.begin(); it != rigid_bodies_.objects_.end(); ) {
+    for (auto it = rigid_bodies_.objects_.begin(); it != rigid_bodies_.objects_.end(); ) {
         auto& o = *it++;
         if (o.rigid_body->mass() != INFINITY) {
             o.rigid_body->advance_time(
@@ -356,21 +356,21 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
 }
 
 void PhysicsEngine::move_advance_times() {
-    for(auto a : advance_times_.advance_times_shared_) {
+    for (auto a : advance_times_.advance_times_shared_) {
         a->advance_time(cfg_.dt);
     }
-    for(auto a : advance_times_.advance_times_ptr_) {
+    for (auto a : advance_times_.advance_times_ptr_) {
         a->advance_time(cfg_.dt);
     }
 }
 
 void PhysicsEngine::burn_in(float seconds) {
-    for(const auto& o : rigid_bodies_.objects_) {
-        for(auto& e : o.rigid_body->engines_) {
+    for (const auto& o : rigid_bodies_.objects_) {
+        for (auto& e : o.rigid_body->engines_) {
             e.second.set_surface_power(NAN);
         }
     }
-    for(float time = 0; time < seconds; time += cfg_.dt / cfg_.oversampling) {
+    for (float time = 0; time < seconds; time += cfg_.dt / cfg_.oversampling) {
         {
             std::list<std::unique_ptr<ContactInfo>> contact_infos;
             collide(
@@ -383,7 +383,7 @@ void PhysicsEngine::burn_in(float seconds) {
             }
         }
         if (time < seconds / 2) {
-            for(const auto& o : rigid_bodies_.objects_) {
+            for (const auto& o : rigid_bodies_.objects_) {
                 o.rigid_body->rbi_.T_ = 0;
                 if (cfg_.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                     o.rigid_body->rbi_.rbp_.w_ = 0;

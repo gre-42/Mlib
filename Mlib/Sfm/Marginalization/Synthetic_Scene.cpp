@@ -56,14 +56,14 @@ Scene1dMatrix::Scene1dMatrix(const TestScene1d& scene)
 : observations_(scene.observations_),
     uuid_gen_(scene.uuid_gen_)
 {
-    for(const auto& c : scene.cameras_) {
+    for (const auto& c : scene.cameras_) {
         cameras_.insert(std::make_pair(CameraVariable(c.first), cameras_.size()));
     }
-    for(const auto& f : scene.feature_points_) {
+    for (const auto& f : scene.feature_points_) {
         feature_points_.insert(std::make_pair(FeaturePointVariable(f.first), feature_points_.size()));
     }
-    for(const auto& o : scene.observations_) {
-        for(const auto& oo : o.second) {
+    for (const auto& o : scene.observations_) {
+        for (const auto& oo : o.second) {
             observation_row_id_.insert(std::make_pair(std::make_pair(o.first, oo.first), observation_row_id_.size()));
         }
     }
@@ -85,8 +85,8 @@ size_t Scene1dMatrix::ncols() const {
 }
 SparseArrayCcs<float> Scene1dMatrix::jacobian() const {
     SparseArrayCcs<float> res{ArrayShape{nrows(), ncols()}};
-    for(const auto& o : observations_) {
-        for(const auto& p : o.second) {
+    for (const auto& o : observations_) {
+        for (const auto& p : o.second) {
             res(row_id_observation(o.first, p.first), column_id_camera(CameraVariable(o.first))) = -intrinsic_matrix;
             if (feature_points_.find(FeaturePointVariable(p.first)) != feature_points_.end()) {
                 res(row_id_observation(o.first, p.first), column_id_feature_point(FeaturePointVariable(p.first))) = intrinsic_matrix;
@@ -97,8 +97,8 @@ SparseArrayCcs<float> Scene1dMatrix::jacobian() const {
 }
 Array<float> Scene1dMatrix::rhs() const {
     Array<float> res{ArrayShape{nrows()}};
-    for(const auto& o : observations_) {
-        for(const auto& p : o.second) {
+    for (const auto& o : observations_) {
+        for (const auto& p : o.second) {
             res(row_id_observation(o.first, p.first)) = p.second;
         }
     }
@@ -106,31 +106,31 @@ Array<float> Scene1dMatrix::rhs() const {
 }
 std::map<UUID, size_t> Scene1dMatrix::predictor_uuids() const {
     std::map<UUID, size_t> res;
-    for(const auto& c : cameras_) {
+    for (const auto& c : cameras_) {
         res.insert(std::make_pair(uuid_gen_.get(c.first), column_id_camera(c.first)));
     }
-    for(const auto& f : feature_points_) {
+    for (const auto& f : feature_points_) {
         res.insert(std::make_pair(uuid_gen_.get(f.first), column_id_feature_point(f.first)));
     }
     return res;
 }
 void Scene1dMatrix::print_x(const Array<float>& x, bool correct) const {
     Array<float> xc = correct ? x - x(0) : x;
-    for(const auto& c : cameras_) {
+    for (const auto& c : cameras_) {
         std::cerr << "c: " << c.first.time_.count() << " ms, translation: " << xc(column_id_camera(c.first)) << std::endl;
     }
-    for(const auto& p : feature_points_) {
+    for (const auto& p : feature_points_) {
         std::cerr << "p: " << p.first.feature_point_id_ << ", " << xc(column_id_feature_point(p.first)) << std::endl;
     }
 }
 void Scene1dMatrix::print_uuids() const {
-    //for(const auto& v : predictor_uuids()) {
+    //for (const auto& v : predictor_uuids()) {
     //    std::cerr << v.first << ": " << v.second << std::endl;
     //}
-    for(const auto& c : cameras_) {
+    for (const auto& c : cameras_) {
         std::cerr << "c: " << c.first.time_.count() << " ms, uuid: " << uuid_gen_.get(c.first) << ", column " << column_id_camera(c.first) << std::endl;
     }
-    for(const auto& p : feature_points_) {
+    for (const auto& p : feature_points_) {
         std::cerr << "p: " << p.first.feature_point_id_ << ",    uuid: " << uuid_gen_.get(p.first) << ", column " << column_id_feature_point(p.first) << std::endl;
     }
 }

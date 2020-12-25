@@ -157,8 +157,8 @@ static GenShaderText optical_flow_fragment_shader_text{[](
     sstr << "    vec4 s = vec4(0, 0, 0, 0);" << std::endl;
     sstr << "    float s_xy = 0;" << std::endl;
     sstr << "    int n = 5;" << std::endl;
-    sstr << "    for(int i = -n; i <= n; ++i) {" << std::endl;
-    sstr << "        for(int j = -n; j <= n; ++j) {" << std::endl;
+    sstr << "    for (int i = -n; i <= n; ++i) {" << std::endl;
+    sstr << "        for (int j = -n; j <= n; ++j) {" << std::endl;
     sstr << "            s += texture(screenTextureDiff, TexCoords.st + vec2(i * dx, j * dy));" << std::endl;
     sstr << "            s_xy += 0;" << std::endl;
     sstr << "        }" << std::endl;

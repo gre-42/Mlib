@@ -17,7 +17,7 @@ Array<std::complex<TFloat>> uniform_random_complex_array(const ArrayShape& shape
 template <class TDerived, class TData>
 void randomize_array_uniform(BaseDenseArray<TDerived, TData>& a, unsigned int seed) {
     UniformRandomNumberGenerator<TData> r{seed};
-    for(TData& v : a->flat_iterable()) {
+    for (TData& v : a->flat_iterable()) {
         v = r();
     }
 }
@@ -42,7 +42,7 @@ Array<std::complex<TFloat>> normal_random_complex_array(const ArrayShape& shape,
 template <class TDerived, class TData>
 void randomize_array_normal(BaseDenseArray<TDerived, TData>& a, unsigned int seed) {
     NormalRandomNumberGenerator<TData> r{seed};
-    for(TData& v : a->flat_iterable()) {
+    for (TData& v : a->flat_iterable()) {
         v = r();
     }
 }

@@ -8,12 +8,12 @@ class VertexNormals {
 public:
     template <class TIterator>
     inline void add_triangles(const TIterator& begin, const TIterator& end) {
-        for(auto it = begin; it != end; ++it) {
+        for (auto it = begin; it != end; ++it) {
             add_triangle(*it);
         }
     }
     inline void add_triangle(const FixedArray<ColoredVertex, 3>& triangle) {
-        for(auto& v : triangle.flat_iterable()) {
+        for (auto& v : triangle.flat_iterable()) {
             add_vertex_face_normal(v.position, v.normal);
         }
     }
@@ -24,7 +24,7 @@ public:
         vertices_[OrderableFixedArray{position}] += normal;
     }
     inline void compute_vertex_normals() {
-        for(auto& v : vertices_) {
+        for (auto& v : vertices_) {
             v.second /= std::sqrt(sum(squared(v.second)));
         }
     }

@@ -18,7 +18,7 @@ public:
     ArrayShape& operator = (const ArrayShape& shape) = default;
     ArrayShape& operator = (ArrayShape&& shape) = default;
     explicit ArrayShape(std::initializer_list<size_t> shape) {
-        for(size_t s : shape) {
+        for (size_t s : shape) {
             append(s);
         }
     }
@@ -26,7 +26,7 @@ public:
         shape_(ndim)
     {}
     ArrayShape& operator = (size_t value) {
-        for(size_t d = 0; d < ndim(); ++d) {
+        for (size_t d = 0; d < ndim(); ++d) {
             shape_[d] = value;
         }
         return *this;
@@ -56,13 +56,13 @@ public:
     }
     ArrayShape reverted() const {
         ArrayShape result;
-        for(size_t i = 0; i < ndim(); i++) {
+        for (size_t i = 0; i < ndim(); i++) {
             result.append((*this)(ndim() - i - 1));
         }
         return result;
     }
     void concatenate(const ArrayShape& other) {
-        for(size_t i = 0; i < other.ndim(); i++) {
+        for (size_t i = 0; i < other.ndim(); i++) {
             append(other(i));
         }
     }
@@ -102,14 +102,14 @@ public:
             f(prepend);
         } else {
             // original code
-            // for(size_t i=0; i<(*this)(0); i++) {
+            // for (size_t i=0; i<(*this)(0); i++) {
             //    erased_first().foreach(f, prepend.appended(i));
             //}
             // optimized code
             ArrayShape ef = erased_first();
             ArrayShape id = prepend.appended(SIZE_MAX);
             size_t last_id = id.ndim() - 1;
-            for(size_t i = 0; i < (*this)(0); i++) {
+            for (size_t i = 0; i < (*this)(0); i++) {
                 id(last_id) = i;
                 ef.foreach(f, id);
             }
@@ -139,7 +139,7 @@ template <class TBinop>
 inline ArrayShape arrayshape_arrayshape_binop(const ArrayShape& a, const ArrayShape& b, const TBinop& binop) {
     assert(a.ndim() == b.ndim());
     ArrayShape result(a.ndim());
-    for(size_t i = 0; i < a.ndim(); i++) {
+    for (size_t i = 0; i < a.ndim(); i++) {
         result(i) = binop(a(i), b(i));
     }
     return result;
@@ -148,7 +148,7 @@ inline ArrayShape arrayshape_arrayshape_binop(const ArrayShape& a, const ArraySh
 template <class TOperation>
 inline ArrayShape arrayshape_apply(const ArrayShape& a, const TOperation& operation) {
     ArrayShape result(a.ndim());
-    for(size_t i = 0; i < a.ndim(); i++) {
+    for (size_t i = 0; i < a.ndim(); i++) {
         result(i) = operation(a(i));
     }
     return result;
@@ -195,7 +195,7 @@ inline ArrayShape operator | (const ArrayShape& a, size_t b) {
 }
 
 inline std::ostream &operator << (std::ostream &ostream, const ArrayShape &v) {
-    for(size_t i=0; i<v.ndim(); i++) {
+    for (size_t i=0; i<v.ndim(); i++) {
         ostream << v(i);
         if (i != v.ndim() - 1) {
             ostream << " ";

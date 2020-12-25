@@ -90,7 +90,7 @@ void Scene::delete_root_nodes(const std::regex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
     std::unique_lock lock{dynamic_mutex_};
     LOG_INFO("Lock acquired");
-    for(auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
+    for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
         auto n = it++;
         if (std::regex_match(n->first, regex)) {
             root_nodes_.erase(n->first);
@@ -129,7 +129,7 @@ void Scene::unregister_node(const std::string& name) {
 
 void Scene::unregister_nodes(const std::regex& regex) {
     std::unique_lock lock{registration_mutex_};
-    for(auto it = nodes_.begin(); it != nodes_.end(); ) {
+    for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (std::regex_match(n.first, regex)) {
             if (nodes_.erase(n.first) != 1) {
@@ -177,13 +177,13 @@ void Scene::render(
         LOG_INFO("Scene::render lights");
         {
             std::shared_lock lock{dynamic_mutex_};
-            for(const auto& n : root_nodes_) {
+            for (const auto& n : root_nodes_) {
                 n.second->append_lights_to_queue(fixed_identity_array<float, 4>(), lights);
             }
         }
         {
             std::shared_lock lock{static_mutex_};
-            for(const auto& n : static_root_nodes_) {
+            for (const auto& n : static_root_nodes_) {
                 n.second->append_lights_to_queue(fixed_identity_array<float, 4>(), lights);
             }
         }
@@ -191,13 +191,13 @@ void Scene::render(
         {
             {
                 std::shared_lock lock{dynamic_mutex_};
-                for(const auto& n : root_nodes_) {
+                for (const auto& n : root_nodes_) {
                     n.second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass);
                 }
             }
             {
                 std::shared_lock lock{static_mutex_};
-                for(const auto& n : static_root_nodes_) {
+                for (const auto& n : static_root_nodes_) {
                     n.second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass);
                 }
             }
@@ -210,7 +210,7 @@ void Scene::render(
                     LOG_INFO("Scene::render large_aggregate_renderer static_mutex (0)");
                     std::shared_lock lock{static_mutex_};
                     LOG_INFO("Scene::render large_aggregate_renderer static_mutex (1)");
-                    for(const auto& n : static_root_nodes_) {
+                    for (const auto& n : static_root_nodes_) {
                         n.second->append_large_aggregates_to_queue(fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config);
                     }
                 }
@@ -218,7 +218,7 @@ void Scene::render(
                     LOG_INFO("Scene::render large_aggregate_renderer aggregate_mutex (0)");
                     std::shared_lock lock{aggregate_mutex_};
                     LOG_INFO("Scene::render large_aggregate_renderer aggregate_mutex (1)");
-                    for(const auto& n : root_aggregate_nodes_) {
+                    for (const auto& n : root_aggregate_nodes_) {
                         n.second->append_large_aggregates_to_queue(fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config);
                     }
                 }
@@ -235,7 +235,7 @@ void Scene::render(
                     LOG_INFO("Scene::render large_instances_renderer static_mutex (0)");
                     std::shared_lock lock{static_mutex_};
                     LOG_INFO("Scene::render large_instances_renderer static_mutex (1)");
-                    for(const auto& n : static_root_nodes_) {
+                    for (const auto& n : static_root_nodes_) {
                         n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
                     }
                 }
@@ -243,7 +243,7 @@ void Scene::render(
                     LOG_INFO("Scene::render large_instances_renderer instances_mutex (0)");
                     std::shared_lock lock{instances_mutex_};
                     LOG_INFO("Scene::render large_instances_renderer instances_mutex (1)");
-                    for(const auto& n : root_aggregate_nodes_) {
+                    for (const auto& n : root_aggregate_nodes_) {
                         n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
                     }
                 }
@@ -266,19 +266,19 @@ void Scene::render(
                         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>> aggregate_queue;
                         {
                             std::shared_lock lock{static_mutex_};
-                            for(const auto& n : static_root_nodes_) {
+                            for (const auto& n : static_root_nodes_) {
                                 n.second->append_sorted_aggregates_to_queue(vp, fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         {
                             std::shared_lock lock{aggregate_mutex_};
-                            for(const auto& n : root_aggregate_nodes_) {
+                            for (const auto& n : root_aggregate_nodes_) {
                                 n.second->append_sorted_aggregates_to_queue(vp, fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         aggregate_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
                         std::list<std::shared_ptr<ColoredVertexArray>> sorted_aggregate_queue;
-                        for(auto& e : aggregate_queue) {
+                        for (auto& e : aggregate_queue) {
                             sorted_aggregate_queue.push_back(std::move(e.second));
                         }
                         small_sorted_aggregate_renderer_->update_aggregates(sorted_aggregate_queue);
@@ -305,19 +305,19 @@ void Scene::render(
                         std::list<std::pair<float, TransformedColoredVertexArray>> instances_queue;
                         {
                             std::shared_lock lock{static_mutex_};
-                            for(const auto& n : static_root_nodes_) {
+                            for (const auto& n : static_root_nodes_) {
                                 n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         {
                             std::shared_lock lock{aggregate_mutex_};
-                            for(const auto& n : root_instances_nodes_) {
+                            for (const auto& n : root_instances_nodes_) {
                                 n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         instances_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
                         std::list<TransformedColoredVertexArray> sorted_instances_queue;
-                        for(auto& e : instances_queue) {
+                        for (auto& e : instances_queue) {
                             sorted_instances_queue.push_back(std::move(e.second));
                         }
                         small_instances_renderer_->update_instances(sorted_instances_queue);
@@ -339,7 +339,7 @@ void Scene::render(
     // Contains continuous alpha and must therefore be rendered late.
     LOG_INFO("Scene::render blended");
     blended.sort([](Blended& a, Blended& b){ return a.mvp(2, 3) > b.mvp(2, 3); });
-    for(const auto& b : blended) {
+    for (const auto& b : blended) {
         b.renderable->render(b.mvp, b.m, iv, lights, scene_graph_config, render_config, {external_render_pass, InternalRenderPass::BLENDED});
     }
 }
@@ -348,7 +348,7 @@ void Scene::move() {
     LOG_FUNCTION("Scene::move");
     std::unique_lock lock{dynamic_mutex_};
     LOG_INFO("Lock acquired");
-    for(const auto& n : root_nodes_) {
+    for (const auto& n : root_nodes_) {
         n.second->move(fixed_identity_array<float, 4>());
     }
 }
@@ -361,17 +361,17 @@ size_t Scene::get_uuid() {
 void Scene::print() const {
     std::string rec(1, '-');
     std::cout << "Dynamic nodes" << std::endl;
-    for(const auto& x : root_nodes_) {
+    for (const auto& x : root_nodes_) {
         std::cout << rec << " " << x.first << std::endl;
         x.second->print(2);
     }
     std::cout << "Static nodes" << std::endl;
-    for(const auto& x : static_root_nodes_) {
+    for (const auto& x : static_root_nodes_) {
         std::cout << rec << " " << x.first << std::endl;
         x.second->print(2);
     }
     std::cout << "Aggregate nodes" << std::endl;
-    for(const auto& x : root_aggregate_nodes_) {
+    for (const auto& x : root_aggregate_nodes_) {
         std::cout << rec << " " << x.first << std::endl;
         x.second->print(2);
     }

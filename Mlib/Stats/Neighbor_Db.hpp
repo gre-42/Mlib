@@ -49,7 +49,7 @@ public:
             assert(adb.ndim() == 2);
             std_.resize(ArrayShape{adb.shape(1)});
             size_t i = 0;
-            for(const Array<TData>& col : adb.T()) {
+            for (const Array<TData>& col : adb.T()) {
                 std_(i) = standardize ? stddev(col) : 1;
                 nb_.push_back(NeighborDb1d<TData>{col});
                 ++i;
@@ -57,7 +57,7 @@ public:
         }
         {
             vdb_.reserve(dbd.size());
-            for(const Array<TData>& e : dbd) {
+            for (const Array<TData>& e : dbd) {
                 vdb_.push_back(e);
             }
         }
@@ -68,16 +68,16 @@ public:
         std::set<size_t> old_ids;
         std::set<size_t> new_ids;
         size_t i = 0;
-        for(const NeighborDb1d<TData>& nb1d : nb_) {
+        for (const NeighborDb1d<TData>& nb1d : nb_) {
             Array<size_t> ids = nb1d.get_neighbors(x(i), radius * std_(i));
             if (i == 0) {
-                for(size_t id : ids.element_iterable()) {
+                for (size_t id : ids.element_iterable()) {
                     new_ids.insert(id);
                 }
             } else {
                 old_ids.swap(new_ids);
                 new_ids.clear();
-                for(size_t id : ids.element_iterable()) {
+                for (size_t id : ids.element_iterable()) {
                     if (old_ids.find(id) != old_ids.end()) {
                         new_ids.insert(id);
                     }
@@ -87,9 +87,9 @@ public:
         }
         size_t result = 0;
         float radius_squared = squared(radius);
-        for(size_t id : new_ids) {
+        for (size_t id : new_ids) {
             TData dist = 0;
-            for(size_t i = 0; i < x.length(); ++i) {
+            for (size_t i = 0; i < x.length(); ++i) {
                 dist += squared((vdb_[id](i) - x(i)) / std_(i));
             }
             if (dist <= radius_squared) {
@@ -104,7 +104,7 @@ public:
 
     size_t count_slow(const Array<TData>& x, const TData& radius) {
         size_t result = 0;
-        for(const Array<TData>& p : vdb_) {
+        for (const Array<TData>& p : vdb_) {
             if (sum(squared(p - x)) <= radius * radius) {
                 ++result;
             }

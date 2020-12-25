@@ -84,8 +84,8 @@ void test_rigid_motion_from_images() {
         Array<float> im1t = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, ke);
         draw_nan_masked_grayscale(im1t, -0.05, 0.05).save_to_file("TestOut/rmfi-t-d_pr-3-0.ppm");
 
-        //for(size_t r = 0; r < depth1.shape(0); ++r) {
-        //    for(size_t c = 0; c < depth1.shape(1) / 2; ++c) {
+        //for (size_t r = 0; r < depth1.shape(0); ++r) {
+        //    for (size_t c = 0; c < depth1.shape(1) / 2; ++c) {
         //        depth0(r, c) *= 1.5;
         //    }
         //}

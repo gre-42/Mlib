@@ -11,7 +11,7 @@ Array<TData> homography_from_points(
     assert(all(x.shape() == p.shape()));
     assert(x.shape(1) == 3);
     Array<TData> M = zeros<TData>(ArrayShape{2 * x.shape(0) + 1, 9});
-    for(size_t r = 0; r < x.shape(0); ++r) {
+    for (size_t r = 0; r < x.shape(0); ++r) {
         M(2 * r + 0, 0) = -x(r, 0);
         M(2 * r + 0, 1) = -x(r, 1);
         M(2 * r + 0, 2) = -x(r, 2);

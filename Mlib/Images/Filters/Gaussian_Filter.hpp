@@ -17,7 +17,7 @@ Array<TData> gaussian_filter_1d_NWE(
     }
     Array<TData> coeffs{ArrayShape{1 + size_t(2 * truncate * sigma)}};
     size_t cdist = coeffs.length() / 2;
-    for(size_t i = cdist; i < coeffs.length(); ++i) {
+    for (size_t i = cdist; i < coeffs.length(); ++i) {
         coeffs(i) = std::exp(-squared((i - cdist) / sigma) / 2);
         coeffs(coeffs.length() - i - 1) = coeffs(i);
     }
@@ -33,7 +33,7 @@ Array<TData> gaussian_filter_NWE(
     size_t truncate=4)
 {
     Array<TData> result = image.copy();
-    for(size_t axis = 0; axis < image.ndim(); ++axis) {
+    for (size_t axis = 0; axis < image.ndim(); ++axis) {
         result = gaussian_filter_1d_NWE(result, sigma, axis, boundary_value, truncate);
     }
     return result;
@@ -47,7 +47,7 @@ Array<TData> multichannel_gaussian_filter_NWE(
     size_t truncate=4)
 {
     Array<TData> result{image.shape()};
-    for(size_t h = 0; h < image.shape(0); ++h) {
+    for (size_t h = 0; h < image.shape(0); ++h) {
         result[h] = gaussian_filter_NWE(image[h], sigma, boundary_value, truncate);
     }
     return result;

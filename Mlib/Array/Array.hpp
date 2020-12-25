@@ -169,7 +169,7 @@ public:
         } else {
             resize[rhs.size()](rhs.front().shape());
             auto it = rhs.begin();
-            for(size_t i = 0; i < rhs.size(); ++i) {
+            for (size_t i = 0; i < rhs.size(); ++i) {
                 if (any(it->shape() != rhs.front().shape())) {
                     // Not an assertion because it is used for file-io
                     throw std::runtime_error("Arrays in lists have differing sizes");
@@ -196,7 +196,7 @@ public:
     {
         resize(lst.size());
         size_t i = 0;
-        for(auto value : lst) {
+        for (auto value : lst) {
             (*this)(i) = value;
             ++i;
         }
@@ -208,7 +208,7 @@ public:
     {
         resize(d.size());
         size_t i = 0;
-        for(auto value : d) {
+        for (auto value : d) {
             (*this)(i) = value;
             ++i;
         }
@@ -222,10 +222,10 @@ public:
         size_t ncols = d.begin()->size();
         resize[d.size()](ncols);
         size_t r = 0;
-        for(auto row : d) {
+        for (auto row : d) {
             assert(row.size() == ncols);
             size_t c = 0;
-            for(auto value : row) {
+            for (auto value : row) {
                 (*this)(r, c) = value;
                 ++c;
             }
@@ -251,7 +251,7 @@ public:
             if (ndim() == 0) {
                 (*this)() = (*rhs)();
             } else if (ndim() == 1) {
-                for(size_t i=0; i<length(); i++) {
+                for (size_t i=0; i<length(); i++) {
                     (*this)(i) = (*rhs)(i);
                 }
             } else {
@@ -271,7 +271,7 @@ public:
     Array& operator = (Array&& rhs) = default;
     Array& operator = (const TData& rhs) {
         Array f = flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) = rhs;
         }
         return *this;
@@ -280,7 +280,7 @@ public:
         assert(all(shape() == rhs.shape()));
         Array f = flattened();
         Array g = rhs.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) &= g(i);
         }
         return *this;
@@ -289,7 +289,7 @@ public:
         assert(all(shape() == rhs.shape()));
         Array f = flattened();
         Array g = rhs.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) |= g(i);
         }
         return *this;
@@ -300,7 +300,7 @@ public:
         Array f = flattened();
         Array g = rhs.flattened();
         Array<bool> e = result.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             e(i) = (f(i) == g(i));
         }
         return result;
@@ -311,7 +311,7 @@ public:
         Array f = flattened();
         Array g = rhs.flattened();
         Array<bool> e = result.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             e(i) = (f(i) != g(i));
         }
         return result;
@@ -325,7 +325,7 @@ public:
         Array<bool> m = mask.flattened();
         Array result(ArrayShape{count_nonzero(m)});
         size_t j = 0;
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             if (m(i)) {
                 result(j) = f(i);
                 ++j;
@@ -340,11 +340,11 @@ public:
         assert(indices.ndim() == 1);
         Array result(ArrayShape{indices.length()}.concatenated(shape().erased_first()));
         if (ndim() == 1) {
-            for(size_t i = 0; i < indices.length();  ++i) {
+            for (size_t i = 0; i < indices.length();  ++i) {
                 result(i) = (*this)(indices(i));
             }
         } else {
-            for(size_t i = 0; i < indices.length();  ++i) {
+            for (size_t i = 0; i < indices.length();  ++i) {
                 result[i] = (*this)[indices(i)];
             }
         }
@@ -538,8 +538,8 @@ public:
             return result;
         } else if (ndim() == 2) {
             Array result{ArrayShape{shape(1), shape(0)}};
-            for(size_t r = 0; r < shape(0); ++r) {
-                for(size_t c = 0; c < shape(1); ++c) {
+            for (size_t r = 0; r < shape(0); ++r) {
+                for (size_t c = 0; c < shape(1); ++c) {
                     result(c, r) = (*this)(r, c);
                 }
             }
@@ -564,7 +564,7 @@ public:
         assert(all(shape() == rhs.shape()));
         Array f = flattened();
         Array g = rhs.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) += g(i);
         }
         return *this;
@@ -573,7 +573,7 @@ public:
         assert(all(shape() == rhs.shape()));
         Array f = flattened();
         Array g = rhs.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) -= g(i);
         }
         return *this;
@@ -582,7 +582,7 @@ public:
         assert(all(shape() == rhs.shape()));
         Array f = flattened();
         Array g = rhs.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) /= g(i);
         }
         return *this;
@@ -591,35 +591,35 @@ public:
         assert(all(shape() == rhs.shape()));
         Array f = flattened();
         Array g = rhs.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) *= g(i);
         }
         return *this;
     }
     Array& operator -= (const TData& rhs) {
         Array f = flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) -= rhs;
         }
         return *this;
     }
     Array& operator += (const TData& rhs) {
         Array f = flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) += rhs;
         }
         return *this;
     }
     Array& operator /= (const TData& rhs) {
         Array f = flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) /= rhs;
         }
         return *this;
     }
     Array& operator *= (const TData& rhs) {
         Array f = flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             f(i) *= rhs;
         }
         return *this;
@@ -629,7 +629,7 @@ public:
         result.do_resize(shape());
         Array f = flattened();
         Array g = result.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             g(i) = -f(i);
         }
         return result;
@@ -645,7 +645,7 @@ public:
         result.do_resize(shape());
         Array f = flattened();
         Array<TNewData> g = result.flattened();
-        for(size_t i = 0; i < f.length();  ++i) {
+        for (size_t i = 0; i < f.length();  ++i) {
             g(i) = static_cast<TNewData>(f(i));
         }
         return result;
@@ -686,8 +686,8 @@ public:
     Array blocked(const Array<size_t>& row_ids, const Array<size_t>& col_ids) const {
         assert(ndim() == 2);
         Array res{ArrayShape{row_ids.length(), col_ids.length()}};
-        for(size_t r = 0; r < res.shape(0); ++r) {
-            for(size_t c = 0; c < res.shape(1); ++c) {
+        for (size_t r = 0; r < res.shape(0); ++r) {
+            for (size_t c = 0; c < res.shape(1); ++c) {
                 res(r, c) = (*this)(row_ids(r), col_ids(c));
             }
         }
@@ -699,8 +699,8 @@ public:
         assert(rows.end >= rows.begin);
         assert(cols.end >= cols.begin);
         Array res{ArrayShape{rows.length(), cols.length()}};
-        for(size_t r = 0; r < res.shape(0); ++r) {
-            for(size_t c = 0; c < res.shape(1); ++c) {
+        for (size_t r = 0; r < res.shape(0); ++r) {
+            for (size_t c = 0; c < res.shape(1); ++c) {
                 res(r, c) = (*this)(rows.begin + r, cols.begin + c);
             }
         }
@@ -717,8 +717,8 @@ public:
         assert(row_ids.length() == shape(0));
         assert(col_ids.length() == shape(1));
         Array res = full<TData>(unblocked_shape, fill_value);
-        for(size_t r = 0; r < shape(0); ++r) {
-            for(size_t c = 0; c < shape(1); ++c) {
+        for (size_t r = 0; r < shape(0); ++r) {
+            for (size_t c = 0; c < shape(1); ++c) {
                 res(row_ids(r), col_ids(c)) = (*this)(r, c);
             }
         }
@@ -729,7 +729,7 @@ public:
         assert(ndim() == 1);
         assert(indices.length() == length());
         Array res = full<TData>(ArrayShape{unblocked_length}, fill_value);
-        for(size_t i = 0; i < length(); ++i) {
+        for (size_t i = 0; i < length(); ++i) {
             res(indices(i)) = (*this)(i);
         }
         return res;
@@ -748,8 +748,8 @@ public:
         std::ofstream ofs(filename);
         ofs.setf(std::ios_base::scientific);
         ofs.precision(10);
-        for(size_t r = 0; r < shape(0); ++r) {
-            for(size_t c = 0; c < shape(1); ++c) {
+        for (size_t r = 0; r < shape(0); ++r) {
+            for (size_t c = 0; c < shape(1); ++c) {
                 ofs << (*this)(r, c) << ((c != shape(1) - 1) ? " " : "");
             }
             ofs << "\n";
@@ -793,7 +793,7 @@ public:
                 throw std::runtime_error("Could not read line of file " + filename);
             }
             Array arow(ArrayShape{rowv.size()});
-            for(size_t c = 0; c < arow.length(); ++c) {
+            for (size_t c = 0; c < arow.length(); ++c) {
                 arow(c) = rowv[c];
             }
             result.push_back(arow);
@@ -809,7 +809,7 @@ public:
         std::ofstream ofs(filename, std::ios::binary);
 
         ofs << "BinaryArray\n" << ndim();
-        for(size_t i = 0; i < ndim(); ++i) {
+        for (size_t i = 0; i < ndim(); ++i) {
             ofs << " " << shape(i);
         }
         ofs << std::endl << sizeof(TData) << std::endl;
@@ -833,7 +833,7 @@ public:
             throw std::runtime_error("Could not read ndim from file " + filename);
         }
         ArrayShape s(ndim);
-        for(size_t i = 0; i < ndim; ++i) {
+        for (size_t i = 0; i < ndim; ++i) {
             ifs >> s(i);
         }
         if (ifs.fail()) {
@@ -865,7 +865,7 @@ public:
 
     static Array from_shape(const ArrayShape& shape) {
         Array result(ArrayShape{shape.ndim()});
-        for(size_t d = 0; d < shape.ndim(); ++d) {
+        for (size_t d = 0; d < shape.ndim(); ++d) {
             result(d) = shape(d);
         }
         return result;
@@ -873,7 +873,7 @@ public:
     ArrayShape to_shape() const {
         assert(ndim() == 1);
         ArrayShape result(length());
-        for(size_t d = 0; d < length(); ++d) {
+        for (size_t d = 0; d < length(); ++d) {
             result(d) = (*this)(d);
         }
         return result;
@@ -926,7 +926,7 @@ public:
         Array<TResultData> rf = r.flattened();
         size_t len = rf.length();
         #pragma omp parallel for if (len > 25)
-        for(size_t i=0; i<len; i++) {
+        for (size_t i=0; i<len; i++) {
             rf(i) = operation(af(i));
         }
         return r;
@@ -941,11 +941,11 @@ public:
         // x(i, j, h, k, l) to x(i * j, h, k * l)
         assert(axis < ndim());
         ArrayShape shape_left;
-        for(size_t i = 0; i < axis; ++i) {
+        for (size_t i = 0; i < axis; ++i) {
             shape_left.append(shape(i));
         }
         ArrayShape shape_right;
-        for(size_t i = axis + 1; i != ndim(); ++i) {
+        for (size_t i = axis + 1; i != ndim(); ++i) {
             shape_right.append(shape(i));
         }
 
@@ -959,8 +959,8 @@ public:
                 shape_left.nelements(),
                 shape_right.nelements()}
             : xf.shape()};
-        for(size_t i = 0; i < xf.shape(0); ++i) {
-            for(size_t k = 0; k < xf.shape(2); ++k) {
+        for (size_t i = 0; i < xf.shape(0); ++i) {
+            for (size_t k = 0; k < xf.shape(2); ++k) {
                 op(i, k, xf, rf);
             }
         }
@@ -978,7 +978,7 @@ public:
         Array<TDataResult> rf = r.flattened();
         size_t len = rf.length();
         #pragma omp parallel for if (len > 25)
-        for(size_t i=0; i<len; i++) {
+        for (size_t i=0; i<len; i++) {
             rf(i) = binop(af(i), bf(i));
         }
         return r;
@@ -991,7 +991,7 @@ public:
     {
         Array<TResultData> res{ArrayShape{nelements()}};
         Array xf = flattened();
-        for(size_t i = 0; i < res.length(); ++i) {
+        for (size_t i = 0; i < res.length(); ++i) {
             if (xf(i) == nan_id) {
                 res(i) = nan_value;
             } else {
@@ -1035,11 +1035,11 @@ std::ostream& operator << (std::ostream& ostream, const Array<TData>& a) {
     if (!a.initialized()) {
         ostream << "<uninitialized array>";
     } else if (a.ndim() == 1) {
-        for(size_t i = 0; i < a.length(); ++i) {
+        for (size_t i = 0; i < a.length(); ++i) {
             ostream << a(i) << (i == a.length() -1 ? "" : " ");
         }
     } else if (a.ndim() != 0) {
-        for(size_t i = 0; i < a.shape(0); ++i) {
+        for (size_t i = 0; i < a.shape(0); ++i) {
             ostream << a[i] << std::endl;
         }
     }

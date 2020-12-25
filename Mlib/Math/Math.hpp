@@ -101,13 +101,13 @@ void svd_u(
     // AA'=US²U'
     // V'=(1/S)U'A
     auto m = outer(a, a);
-    for(size_t i=0; i<uT.shape(0); i++) {
+    for (size_t i=0; i<uT.shape(0); i++) {
         power_iteration(m, uT, s(i), i);
     }
     vT = dot(uT, a);
-    for(size_t r = 0; r < vT.shape(0); r++) {
+    for (size_t r = 0; r < vT.shape(0); r++) {
         s(r) = std::sqrt(s(r));
-        for(size_t c = 0; c < vT.shape(1); c++) {
+        for (size_t c = 0; c < vT.shape(1); c++) {
             vT(r, c) /= s(r);
         }
     }
@@ -141,7 +141,7 @@ void qdq(
     assert(a.shape(0) == a.shape(1));
     q.resize[a.shape(0)](a.shape(0));
     s.resize(q.shape(0));
-    for(size_t i=0; i<a.shape(0); i++) {
+    for (size_t i=0; i<a.shape(0); i++) {
         power_iteration(a, q, s(i), i);
     }
 }
@@ -201,8 +201,8 @@ void power_iteration(
     assert(a.shape(0) == a.shape(1));
     randomize_array(uT[i]);
 
-    for(size_t n = 0; n < 30 * a.shape(0); n++) {
-        for(size_t r=0; r<i; r++) {
+    for (size_t n = 0; n < 30 * a.shape(0); n++) {
+        for (size_t r=0; r<i; r++) {
             uT[i] -= uT[r] * outer(uT[i], uT[r])();
         }
         Array<TData> ui_old;
@@ -254,7 +254,7 @@ void inverse_iteration_symm(
     assert(a.shape(0) == a.shape(1));
     u = random_array<TData>(ArrayShape{a.shape(0)});
 
-    for(size_t n = 0; n < 30 * a.shape(0); n++) {
+    for (size_t n = 0; n < 30 * a.shape(0); n++) {
         // u = lstsq_chol_1d(a, u, float(1e-1));
         u = solve_symm_1d(a, u, alpha, beta);
         s = 1 / std::sqrt(sum(norm(u)));
@@ -274,8 +274,8 @@ Array<TData> reconstruct_svd(
     assert(u.shape(1) >= s.length()); // ECON: equal
     assert(vT.shape(0) == s.length());
     Array<TData> us(ArrayShape{u.shape(0), s.length()});
-    for(size_t r = 0; r < u.shape(0); ++r) {
-        for(size_t c = 0; c < s.length(); ++c) {
+    for (size_t r = 0; r < u.shape(0); ++r) {
+        for (size_t c = 0; c < s.length(); ++c) {
             us(r, c) = u(r, c) * s(c);
         }
     }
@@ -300,8 +300,8 @@ Array<TData> pinv(const Array<TData>& a) {
     Array<typename FloatType<TData>::value_type> s;
     Array<TData> vT;
     svd(a, uT, s, vT);
-    for(size_t r = 0; r < vT.shape(0); r++) {
-        for(size_t c = 0; c < vT.shape(1); c++) {
+    for (size_t r = 0; r < vT.shape(0); r++) {
+        for (size_t c = 0; c < vT.shape(1); c++) {
             vT(r, c) /= s(r);
         }
     }
@@ -333,10 +333,10 @@ Array<TData> cholesky(const Array<TData>& A) {
     assert(A.shape(0) == A.shape(1));
     Array<TData> L;
     L.resize(A.shape());
-    for(size_t i = 0; i < A.shape(0); ++i) {
-        for(size_t j = 0; j <= i; ++j) {
+    for (size_t i = 0; i < A.shape(0); ++i) {
+        for (size_t j = 0; j <= i; ++j) {
             TData s = 0;
-            for(size_t k = 0; k < j; ++k) {
+            for (size_t k = 0; k < j; ++k) {
                 s += L(i, k) * conju(L(j, k));
             }
             L(i, j) = (i == j) ? std::sqrt(A(i, i) - s) : ((A(i, j) - s) / L(j, j));
@@ -365,19 +365,19 @@ Array<TData> solve_LU(
     Array<TData> x, y;
     x.resize(B->shape());
     y.resize(B->shape());
-    for(size_t v = 0; v < B->shape(1); ++v) {
+    for (size_t v = 0; v < B->shape(1); ++v) {
         // Forward solve Ly = b
-        for(size_t i = 0; i < B->shape(0); ++i) {
+        for (size_t i = 0; i < B->shape(0); ++i) {
             y(i, v) = (*B)(i, v);
-            for(size_t j = 0; j < i; ++j) {
+            for (size_t j = 0; j < i; ++j) {
                 y(i, v) -= (*L)(i, j) * y(j, v);
             }
             y(i, v) /= (*L)(i, i);
         }
         // Backward solve Ux = y
-        for(size_t i = B->shape(0) - 1; i != SIZE_MAX; --i) {
+        for (size_t i = B->shape(0) - 1; i != SIZE_MAX; --i) {
             x(i, v) = y(i, v);
-            for(size_t j = i + 1; j < B->shape(0); ++j) {
+            for (size_t j = i + 1; j < B->shape(0); ++j) {
                 x(i, v) -= (*U)(i, j) * x(j, v);
             }
             x(i, v) /= (*U)(i, i);
@@ -415,11 +415,11 @@ Array<TData> solve_symm_inplace(
         beta != TData(0))
     {
         // OpenCV Levenberg-Marquardt
-        for(size_t r = 0; r < A->shape(0); ++r) {
+        for (size_t r = 0; r < A->shape(0); ++r) {
             TData dr = alpha + beta * A(r, r);
             A(r, r) += dr;
             if (x0 != nullptr) {
-                for(size_t c = 0; c < B->shape(1); ++c) {
+                for (size_t c = 0; c < B->shape(1); ++c) {
                     (*B)(r, c) += (*x0)(r, c) * dr;
                 }
             }
@@ -538,7 +538,7 @@ Array<TData> lstsq(const Array<TData>& a, const Array<TData>& b) {
 template <class TData>
 void randomize_array(Array<TData> a, size_t seed) {
     Array<TData> fa = a.flattened();
-    for(size_t i=0; i<fa.length(); i++) {
+    for (size_t i=0; i<fa.length(); i++) {
         //a(c) = std::uniform_real_distribution<TData>()();
         fa(i) = seed;
         seed = (seed * 27 + 47) % 1000;
@@ -560,7 +560,7 @@ void randomize_array2(Array<TData> a, unsigned int seed) {
     assert(seed != 0);
     std::srand(seed);
     Array<TData> fa = a.flattened();
-    for(size_t i=0; i<fa.length(); i++) {
+    for (size_t i=0; i<fa.length(); i++) {
         fa(i) = std::rand() / double(RAND_MAX);
     }
 }
@@ -580,7 +580,7 @@ void randomize_array3(Array<TData> a, unsigned int seed) {
     assert(seed != 0);
     std::default_random_engine e(seed);
     Array<TData> fa = a.flattened();
-    for(size_t i=0; i<fa.length(); i++) {
+    for (size_t i=0; i<fa.length(); i++) {
         fa(i) = (e() - e.min()) / TData(e.max());
     }
 }
@@ -617,8 +617,8 @@ Array<TData> nans(const ArrayShape& shape) {
 template <class TData>
 void identity_array(Array<TData>& a) {
     if (a.ndim() == 2) {
-        for(size_t r = 0; r < a.shape(0); ++r){
-            for(size_t c = 0; c < a.shape(1); ++c) {
+        for (size_t r = 0; r < a.shape(0); ++r){
+            for (size_t c = 0; c < a.shape(1); ++c) {
                 a(r, c) = (r == c);
             }
         }
@@ -662,10 +662,10 @@ void outer2d(
     assert(b.ndim() == 2);
     assert(a.shape(1) == b.shape(1));
     assert(all(result.shape() == ArrayShape{a.shape(0), b.shape(0)}));
-    for(size_t r = 0; r < result.shape(0); ++r) {
-        for(size_t c = 0; c < result.shape(1); ++c) {
+    for (size_t r = 0; r < result.shape(0); ++r) {
+        for (size_t c = 0; c < result.shape(1); ++c) {
             TData v = 0;
-            for(size_t i = 0; i < a.shape(1); ++i) {
+            for (size_t i = 0; i < a.shape(1); ++i) {
                 v += a(r, i) * conju(b(c, i));
             }
             result(r, c) = v;
@@ -739,10 +739,10 @@ void dot2d(
     assert(a->shape(1) == b->shape(0));
     assert(all(result->shape() == ArrayShape{a->shape(0), b->shape(1)}));
     #pragma omp parallel for if (result->nelements() > 200 * 200)
-    for(size_t r = 0; r < result->shape(0); ++r) {
-        for(size_t c = 0; c < result->shape(1); ++c) {
+    for (size_t r = 0; r < result->shape(0); ++r) {
+        for (size_t c = 0; c < result->shape(1); ++c) {
             TData v = 0;
-            for(size_t i = 0; i < a->shape(1); ++i) {
+            for (size_t i = 0; i < a->shape(1); ++i) {
                 v += (*a)(r, i) * (*b)(i, c);
             }
             (*result)(r, c) = v;
@@ -821,9 +821,9 @@ Array<TData> batch_dot(const Array<TData>& a, const Array<TData>& b) {
     assert(b.ndim() >= 1);
     assert(a.shape(1) == b.shape(0));
     Array<TData> result{ArrayShape{a.shape(0)}.concatenated(b.shape().erased_first())};
-    for(size_t r = 0; r < a.shape(0); ++r) {
+    for (size_t r = 0; r < a.shape(0); ++r) {
         Array<TData> v = zeros<TData>(b.shape().erased_first());
-        for(size_t i = 0; i < a.shape(1); ++i) {
+        for (size_t i = 0; i < a.shape(1); ++i) {
             v += a(r, i) * b[i];
         }
         result[r] = v;
@@ -1052,7 +1052,7 @@ inline Array<bool> shape_shape_comparison(const ArrayShape& a, const ArrayShape&
     assert(a.ndim() == b.ndim());
     Array<bool> result;
     result.resize(a.ndim());
-    for(size_t i = 0; i < a.ndim(); i++) {
+    for (size_t i = 0; i < a.ndim(); i++) {
         result(i) = compare(a(i), b(i));
     }
     return result;
@@ -1062,7 +1062,7 @@ template <class TCompare>
 inline Array<bool> shape_comparison(const ArrayShape& a, const TCompare &compare) {
     Array<bool> result;
     result.resize(a.ndim());
-    for(size_t i = 0; i < a.ndim(); i++) {
+    for (size_t i = 0; i < a.ndim(); i++) {
         result(i) = compare(a(i));
     }
     return result;
@@ -1118,7 +1118,7 @@ inline Array<bool> operator >= (const ArrayShape& a, size_t b) {
 
 template <class TDerived>
 inline bool any(const BaseDenseArray<TDerived, bool>& a) {
-    for(bool value : a->flat_iterable()) {
+    for (bool value : a->flat_iterable()) {
         if (value) {
             return true;
         }
@@ -1131,7 +1131,7 @@ inline Array<bool> any(const Array<bool>& a, size_t axis) {
         [&](size_t i, size_t k, const Array<bool>& af, Array<bool>& rf)
         {
             rf(i, k) = false;
-            for(size_t h = 0; h < a.shape(axis); ++h) {
+            for (size_t h = 0; h < a.shape(axis); ++h) {
                 rf(i, k) |= af(i, h, k);
             }
         });
@@ -1139,7 +1139,7 @@ inline Array<bool> any(const Array<bool>& a, size_t axis) {
 
 template <class TDerived>
 inline bool all(const BaseDenseArray<TDerived, bool>& a) {
-    for(bool value : a->flat_iterable()) {
+    for (bool value : a->flat_iterable()) {
         if (!value) {
             return false;
         }
@@ -1152,7 +1152,7 @@ inline Array<bool> all(const Array<bool>& a, size_t axis) {
         [&](size_t i, size_t k, const Array<bool>& af, Array<bool>& rf)
         {
             rf(i, k) = true;
-            for(size_t h = 0; h < a.shape(axis); ++h) {
+            for (size_t h = 0; h < a.shape(axis); ++h) {
                 rf(i, k) &= af(i, h, k);
             }
         });
@@ -1161,7 +1161,7 @@ inline Array<bool> all(const Array<bool>& a, size_t axis) {
 template <class TDerived, class TData>
 inline size_t count_nonzero(const BaseDenseArray<TDerived, TData>& a) {
     size_t result = 0;
-    for(const TData& value : a->flat_iterable()) {
+    for (const TData& value : a->flat_iterable()) {
         result += (value != 0);
     }
     return result;
@@ -1170,7 +1170,7 @@ inline size_t count_nonzero(const BaseDenseArray<TDerived, TData>& a) {
 template <class TDerived, class TData>
 TData sum(const BaseDenseArray<TDerived, TData>& a) {
     TData result{0};
-    for(const TData& v : a->flat_iterable()) {
+    for (const TData& v : a->flat_iterable()) {
         result += v;
     }
     return result;
@@ -1182,7 +1182,7 @@ Array<TData> sum(const Array<TData>& x, size_t axis) {
         [&](size_t i, size_t k, const Array<TData>& xf, Array<TData>& rf)
         {
             rf(i, k) = 0;
-            for(size_t h = 0; h < x.shape(axis); ++h) {
+            for (size_t h = 0; h < x.shape(axis); ++h) {
                 rf(i, k) += xf(i, h, k);
             }
         });
@@ -1307,7 +1307,7 @@ void nans_to_mask(
     Array<TData> image1D = image.flattened();
     Array<TData> mask1D = mask.flattened();
     Array<TData> image0_1D = image0.flattened();
-    for(size_t i = 0; i < image1D.length(); ++i) {
+    for (size_t i = 0; i < image1D.length(); ++i) {
         mask1D(i) = !std::isnan(image1D(i));
         if (mask1D(i)) {
             mask1D(i) = 1;

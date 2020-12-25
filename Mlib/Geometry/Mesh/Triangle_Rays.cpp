@@ -25,9 +25,9 @@ std::vector<FixedArray<FixedArray<float, 3>, 2>> Mlib::generate_triangle_face_ra
     std::vector<FixedArray<FixedArray<float, 3>, 2>> res;
     res.reserve((npoints * (npoints + 1)) / 2 * triangles.size());
     size_t npoints2 = npoints + 2;
-    for(const auto& t : triangles) {
-        for(size_t u = 1; u < npoints2; ++u) {
-            for(size_t v = 1; v < npoints2 - u; ++v) {
+    for (const auto& t : triangles) {
+        for (size_t u = 1; u < npoints2; ++u) {
+            for (size_t v = 1; v < npoints2 - u; ++v) {
                 if ((u + v) >= npoints2) {
                     break;
                 }
@@ -59,7 +59,7 @@ std::vector<FixedArray<FixedArray<float, 3>, 2>> Mlib::generate_triangle_vertex_
 
     std::vector<FixedArray<FixedArray<float, 3>, 2>> res;
     res.reserve(vertex_normals.vertices().size());
-    for(const auto& v : vertex_normals.vertices()) {
+    for (const auto& v : vertex_normals.vertices()) {
         res.push_back(gen_ray(v.first, v.second, lengths));
     }
     return res;

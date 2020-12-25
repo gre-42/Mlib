@@ -23,7 +23,7 @@ template <class TData, class TDataRef, class TFloat=TData>
 Array<TDataRef> histogram_matching(const Array<TData>& data, const Array<TDataRef>& data_ref, size_t nbins = 10) {
     HistogramMatching<TData, TDataRef, TFloat> hm{data, data_ref, nbins};
     Array<TData> result{data.shape()};
-    for(size_t i = 0; i < data.length(); ++i) {
+    for (size_t i = 0; i < data.length(); ++i) {
         result(i) = hm(data(i));
     }
     return result;

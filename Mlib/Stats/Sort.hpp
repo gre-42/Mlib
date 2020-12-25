@@ -44,7 +44,7 @@ size_t argmin(const Array<TData>& a) {
     assert(a.ndim() == 1);
     size_t best_id = SIZE_MAX;
     TData best_value = INFINITY;
-    for(size_t i = 0; i < a.length(); ++i) {
+    for (size_t i = 0; i < a.length(); ++i) {
         // arithmetic exception in release-mode without std::isnan
         if (!std::isnan(a(i)) && a(i) < best_value) {
             best_id = i;
@@ -60,7 +60,7 @@ Array<size_t> argmin(const Array<TData>& a, size_t axis) {
         [&](size_t i, size_t k, const Array<float>& xf, Array<size_t>& rf){
             size_t best_id = SIZE_MAX;
             TData best_value = INFINITY;
-            for(size_t h = 0; h < a.shape(axis); ++h) {
+            for (size_t h = 0; h < a.shape(axis); ++h) {
                 // arithmetic exception in release-mode without std::isnan
                 if (!std::isnan(xf(i, h, k)) && xf(i, h, k) < best_value) {
                     best_id = h;

@@ -29,7 +29,7 @@ void MarginalizingBias::update_indices(const std::map<UUID, size_t>& uuids_ka) {
         // rhs_ka2_.reassign(ra.regrid_1d(rhs_ka2_));
     }
     uuids_ka_map_.clear();
-    for(const auto& v : uuids_ka) {
+    for (const auto& v : uuids_ka) {
         uuids_ka_map_.insert(std::make_pair(v.second, v.first));
     }
 }

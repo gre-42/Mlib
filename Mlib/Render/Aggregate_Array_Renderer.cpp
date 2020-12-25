@@ -12,24 +12,24 @@ AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_res
 void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& sorted_aggregate_queue) {
     //std::map<Material, size_t> material_ids;
     //size_t ntriangles = 0;
-    //for(const auto& a : sorted_aggregate_queue) {
+    //for (const auto& a : sorted_aggregate_queue) {
     //    if (material_ids.find(a.second.material) == material_ids.end()) {
     //        material_ids.insert(std::make_pair(a.second.material, material_ids.size()));
     //    }
     //    ntriangles += a.second.triangles->size();
     //}
     std::map<Material, std::list<FixedArray<ColoredVertex, 3>>> mat_lists;
-    for(const auto& a : sorted_aggregate_queue) {
+    for (const auto& a : sorted_aggregate_queue) {
         auto mat = a->material;
         mat.aggregate_mode = AggregateMode::OFF;
         mat.is_small = false;
         auto& l = mat_lists[mat];
-        for(const auto& c : a->triangles) {
+        for (const auto& c : a->triangles) {
             l.push_back(c);
         }
     }
     std::list<std::shared_ptr<ColoredVertexArray>> mat_vectors;
-    for(auto& l : mat_lists) {
+    for (auto& l : mat_lists) {
         mat_vectors.push_back(std::make_shared<ColoredVertexArray>(
             "AggregateArrayRenderer",
             l.first,

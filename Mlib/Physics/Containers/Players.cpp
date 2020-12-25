@@ -11,7 +11,7 @@ Players::Players(AdvanceTimes& advance_times)
 
 Players::~Players()
 {
-    for(const auto& p : players_) {
+    for (const auto& p : players_) {
         advance_times_.schedule_delete_advance_time(p.second);
     }
 }
@@ -34,7 +34,7 @@ Player& Players::get_player(const std::string& name) {
 }
 
 void Players::set_team_waypoint(const std::string& team_name, const FixedArray<float, 2>& waypoint) {
-    for(auto& p : players_) {
+    for (auto& p : players_) {
         if (p.second->team() == team_name) {
             p.second->set_waypoint(waypoint);
         }
@@ -48,7 +48,7 @@ void Players::notify_lap_time(const Player* player, float lap_time) {
 
 std::string Players::get_score_board() const {
     std::stringstream sstr;
-    for(const auto& p : players_) {
+    for (const auto& p : players_) {
         if (p.second->game_mode() != GameMode::BYSTANDER) {
             sstr << "Player: " << p.first << ", team: " << p.second->team() << ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.second)) << ", car HP: " << p.second->car_health() << std::endl;
         }

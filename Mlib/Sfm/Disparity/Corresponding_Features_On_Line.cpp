@@ -22,7 +22,7 @@ CorrespondingFeaturesOnLine::CorrespondingFeaturesOnLine(
     std::list<Array<float>> yl1_2;
     std::list<Array<float>> yl0;
     std::list<Array<float>> yl1;
-    for(const Array<float>& f0 : feature_points0) {
+    for (const Array<float>& f0 : feature_points0) {
         ArrayShape id = a2i(f0);
         EpilineDirection ed(id(0), id(1), F);
         if (ed.good) {

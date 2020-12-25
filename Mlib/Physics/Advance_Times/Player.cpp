@@ -131,7 +131,7 @@ void Player::set_waypoints(const SceneNode& node, const PointsAndAdjacency<float
     FixedArray<float, 2, 3> m2{
         m(0, 0), m(0, 1), m(0, 3),
         m(2, 0), m(2, 1), m(2, 3)};
-    for(FixedArray<float, 2>& p : waypoints_.points) {
+    for (FixedArray<float, 2>& p : waypoints_.points) {
         p = dot1d(m2, homogenized_3(p));
     }
     last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints_.points.size());
@@ -218,7 +218,7 @@ bool Player::unstuck() {
             unstuck_start_ = std::chrono::steady_clock::time_point();
         } else {
             rb_->set_surface_power("main", surface_power_backward_);
-            for(auto &tire : rb_->tires_) {
+            for (auto &tire : rb_->tires_) {
                 rb_->set_tire_angle_y(tire.first, 0);
             }
             return true;
@@ -258,7 +258,7 @@ void Player::select_next_waypoint() {
         size_t closest_id = SIZE_MAX;
         float closest_distance2 = INFINITY;
         size_t i = 0;
-        for(const FixedArray<float, 2>& rs : waypoints_.points) {
+        for (const FixedArray<float, 2>& rs : waypoints_.points) {
             float dist2 = sum(squared(rs - pos2));
             if (dist2 < closest_distance2) {
                 closest_distance2 = dist2;
@@ -275,7 +275,7 @@ void Player::select_next_waypoint() {
             size_t best_id = SIZE_MAX;
             std::chrono::time_point<std::chrono::steady_clock> best_time;
             auto deflt = std::chrono::time_point<std::chrono::steady_clock>();
-            for(const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
+            for (const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
                 if ((best_id == SIZE_MAX) ||
                     (last_visited_.at(rs.first) == deflt) ||
                     ((best_time != deflt) && (last_visited_.at(rs.first) < best_time)))
@@ -385,11 +385,11 @@ void Player::move_to_waypoint() {
             if (wpt(1) > 0) {
                 // The waypoint is behind us => full, inverted steering.
                 if (wpt(0) < 0) {
-                    for(const auto& x : tire_angles_left_) {
+                    for (const auto& x : tire_angles_left_) {
                         rb_->set_tire_angle_y(x.first, x.second);
                     }
                 } else {
-                    for(const auto& x : tire_angles_right_) {
+                    for (const auto& x : tire_angles_right_) {
                         rb_->set_tire_angle_y(x.first, x.second);
                     }
                 }
@@ -397,12 +397,12 @@ void Player::move_to_waypoint() {
                 // The waypoint is in front of us => full, inverted steering.
                 float angle = std::atan(std::abs(wpt(0) / wpt(1)));
                 if (wpt(0) < 0) {
-                    for(const auto& x : tire_angles_left_) {
+                    for (const auto& x : tire_angles_left_) {
                         float ang = sign(x.second) * std::min(angle, std::abs(x.second));
                         rb_->set_tire_angle_y(x.first, ang);
                     }
                 } else {
-                    for(const auto& x : tire_angles_right_) {
+                    for (const auto& x : tire_angles_right_) {
                         float ang = sign(x.second) * std::min(angle, std::abs(x.second));
                         rb_->set_tire_angle_y(x.first, ang);
                     }

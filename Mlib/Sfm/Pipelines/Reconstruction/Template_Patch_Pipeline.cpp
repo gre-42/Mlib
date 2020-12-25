@@ -45,7 +45,7 @@ void TemplatePatchPipeline::process_image_frame(
 }
 
 void TemplatePatchPipeline::save_cameras() const {
-    for(const auto& c : camera_frames_) {
+    for (const auto& c : camera_frames_) {
         std::stringstream sstr;
         sstr.fill('0');
         sstr << std::setw(6) << c.first.count();

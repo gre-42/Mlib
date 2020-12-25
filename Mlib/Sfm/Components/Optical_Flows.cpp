@@ -26,7 +26,7 @@ void OpticalFlows::compute_optical_flow() {
             true);
         frame.mask = ones<bool>(image_frames_.rbegin()->second.grayscale.shape());
         optical_flow_frames_.insert(std::make_pair(image_frames_.rbegin()->first, frame));
-        for(size_t axis = 0; axis < frame.grayscale.shape(0); ++axis) {
+        for (size_t axis = 0; axis < frame.grayscale.shape(0); ++axis) {
             std::cerr << "axis " << axis << " max(abs(optical_flow)) " << max(abs(frame.grayscale[axis])) << std::endl;
             frame.save_axis_to_file(
                 cache_dir_ + "/flow-" + std::to_string(axis) + "-" + std::to_string(optical_flow_frames_.size()) + ".bmp",
@@ -48,7 +48,7 @@ void OpticalFlows::compute_optical_flow() {
             frame.grayscale,
             frame.mask);
         optical_flow_frames_.insert(std::make_pair(image_frames_.rbegin()->first, frame));
-        for(size_t axis = 0; axis < frame.grayscale.shape(0); ++axis) {
+        for (size_t axis = 0; axis < frame.grayscale.shape(0); ++axis) {
             Array<float> fm = frame.grayscale[axis][frame.mask];
             std::cerr << "axis " << axis << " max(abs(optical_flow)) " << max(abs(fm)) << " mean " << mean(abs(fm)) << std::endl;
             frame.save_axis_to_file(

@@ -33,11 +33,11 @@ Array<TData> solve_penalized_inplace(
         beta != TData(0))
     {
         // OpenCV Levenberg-Marquardt
-        for(size_t r = 0; r < A->shape(0); ++r) {
+        for (size_t r = 0; r < A->shape(0); ++r) {
             TData dr = alpha + beta * A(r, r);
             A(r, r) += dr;
             if (x0 != nullptr) {
-                for(size_t c = 0; c < B->shape(1); ++c) {
+                for (size_t c = 0; c < B->shape(1); ++c) {
                     (*B)(r, c) += (*x0)(r, c) * dr;
                 }
             }

@@ -39,7 +39,7 @@ Array<TData> max(const Array<TData>& x, size_t axis) {
         [&](size_t i, size_t k, const Array<TData>& xf, Array<TData>& rf)
         {
             rf(i, k) = -INFINITY;
-            for(size_t h = 0; h < x.shape(axis); ++h) {
+            for (size_t h = 0; h < x.shape(axis); ++h) {
                 rf(i, k) = std::max(rf(i, k), xf(i, h, k));
             }
         });
@@ -51,7 +51,7 @@ Array<TData> min(const Array<TData>& x, size_t axis) {
         [&](size_t i, size_t k, const Array<TData>& xf, Array<TData>& rf)
         {
             rf(i, k) = -INFINITY;
-            for(size_t h = 0; h < x.shape(axis); ++h) {
+            for (size_t h = 0; h < x.shape(axis); ++h) {
                 rf(i, k) = std::min(rf(i, k), xf(i, h, k));
             }
         });
@@ -64,7 +64,7 @@ TData max(const BaseDenseArray<TDerived, TData>& a) {
         throw std::runtime_error("Cannot determine maximum of array of length 0");
     }
     TData result = *f.begin();
-    for(auto it = f.begin() + 1; it != f.end(); ++it) {
+    for (auto it = f.begin() + 1; it != f.end(); ++it) {
         result = std::max(result, *it);
     }
     return result;
@@ -77,7 +77,7 @@ TData min(const BaseDenseArray<TDerived, TData>& a) {
         throw std::runtime_error("Cannot determine minimum of array of length 0");
     }
     TData result = *f.begin();
-    for(auto it = f.begin() + 1; it != f.end(); ++it) {
+    for (auto it = f.begin() + 1; it != f.end(); ++it) {
         result = std::min(result, *it);
     }
     return result;

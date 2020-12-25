@@ -59,7 +59,7 @@ void test_reconstruction() {
         FeaturePointFrame fr;
         //std::cerr << sc.y.shape() << std::endl;
         assert(keep < sc.y.shape(1));
-        for(size_t pt_id = 0; pt_id < sc.y.shape(1) - keep; ++pt_id) {
+        for (size_t pt_id = 0; pt_id < sc.y.shape(1) - keep; ++pt_id) {
             std::shared_ptr<FeaturePointSequence> seq;
             auto point = std::make_shared<FeaturePoint>(dehomogenized_2(sc.y[itime][pt_id]), traceable_patch);
             if ((particles.size() > 0) &&

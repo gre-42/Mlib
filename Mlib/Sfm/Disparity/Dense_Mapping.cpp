@@ -91,13 +91,13 @@ static Array<float> delta(const Array<float>& q) {
 Array<float> weighted_gradient(const Array<float>& g, const Array<float>& d) {
     Array<float> k_x = full<float>(g.shape(), GRADIENT_BOUNDARY_VALUE);
     Array<float> k_y = full<float>(g.shape(), GRADIENT_BOUNDARY_VALUE);
-    for(size_t r = 0; r < g.shape(0); ++r) {
-        for(size_t c = 0; c < g.shape(1) - 1; ++c) {
+    for (size_t r = 0; r < g.shape(0); ++r) {
+        for (size_t c = 0; c < g.shape(1) - 1; ++c) {
             k_x(r,c) = -0.5*(g(r,c)+g(r,c+1))*d(r,c) + 0.5*(g(r,c)+g(r,c+1))*d(r,c+1);
         }
     }
-    for(size_t r = 0; r < g.shape(0) - 1; ++r) {
-        for(size_t c = 0; c < g.shape(1); ++c) {
+    for (size_t r = 0; r < g.shape(0) - 1; ++r) {
+        for (size_t c = 0; c < g.shape(1); ++c) {
             k_y(r,c) = -0.5*(g(r,c)+g(r+1,c))*d(r,c) + 0.5*(g(r,c)+g(r+1,c))*d(r+1,c);
         }
     }
@@ -111,8 +111,8 @@ Array<float> weighted_gradient(const Array<float>& g, const Array<float>& d) {
  */
 Array<float> weighted_divergence(const Array<float>& g, const Array<float>& k_x, const Array<float>& k_y) {
     Array<float> d = full<float>(g.shape(), GRADIENT_BOUNDARY_VALUE);
-    for(size_t r = 0; r < g.shape(0); ++r) {
-        for(size_t c = 0; c < g.shape(1); ++c) {
+    for (size_t r = 0; r < g.shape(0); ++r) {
+        for (size_t c = 0; c < g.shape(1); ++c) {
             d(r,c) =
                 (r == 0 ? 0 : 0.5*(g(r-1,c)+g(r,c))*k_y(r-1,c))
                 - (r == g.shape(0) - 1 ? 0 : 0.5*(g(r,c)+g(r+1,c))*k_y(r,c))
@@ -186,8 +186,8 @@ Array<float> Mlib::Sfm::Dm::C(
     assert(all(a.shape() == dsi.shape().erased_first()));
     Array<float> res{a.shape()};
     #pragma omp parallel for
-    for(size_t r = 0; r < dsi.shape(1); ++r) {
-        for(size_t c = 0; c < dsi.shape(2); ++c) {
+    for (size_t r = 0; r < dsi.shape(1); ++r) {
+        for (size_t c = 0; c < dsi.shape(2); ++c) {
             if ((a(r, c) >= 0) &&
                 (a(r, c) < dsi.shape(0)))
             {
@@ -358,8 +358,8 @@ Array<float> Mlib::Sfm::Dm::exhaustive_search(
     float sqrt_lambda_2_theta = std::sqrt(lambda * 2 * theta);
     Array<float> a{d.shape()};
     #pragma omp parallel for
-    for(size_t r = 0; r < dsi.shape(1); ++r) {
-        for(size_t c = 0; c < dsi.shape(2); ++c) {
+    for (size_t r = 0; r < dsi.shape(1); ++r) {
+        for (size_t c = 0; c < dsi.shape(2); ++c) {
             float best_h_f = NAN;
             if (!std::isnan(d(r, c)) &&
                 !std::isnan(sqrt_dsi_max_dmin(r, c)) &&
@@ -377,7 +377,7 @@ Array<float> Mlib::Sfm::Dm::exhaustive_search(
                 size_t h_min = std::max(h_min_f, 0.f);
                 size_t h_end = std::min(std::ceil(h_max_f) + 1, float(dsi.shape(0)));
                 if (h_min < dsi.shape(0) && h_end <= dsi.shape(0)) {
-                    for(size_t h = h_min; h < h_end; ++h) {
+                    for (size_t h = h_min; h < h_end; ++h) {
                         if (!std::isnan(dsi(h, r, c))) {
                             float value = e_aux(h);
                             if ((best_h_i == SIZE_MAX) || (value < best_value)) {
@@ -408,8 +408,8 @@ Array<float> saturate(const Array<float>& q) {
         assert(q.shape(0) == 2);
         Array<float> result{q.shape()};
         Array<float> l2q_ = l2q(q);
-        for(size_t r = 0; r < q.shape(1); ++r) {
-            for(size_t c = 0; c < q.shape(2); ++c) {
+        for (size_t r = 0; r < q.shape(1); ++r) {
+            for (size_t c = 0; c < q.shape(2); ++c) {
                 if (std::isnan(q(0, r, c)) || std::isnan(q(1, r, c))) {
                     result(0, r, c) = NAN;
                     result(1, r, c) = NAN;
@@ -513,11 +513,11 @@ Array<float> Mlib::Sfm::Dm::g_from_grayscale(
 
 static Array<float> get_sqrt_dsi_max_dmin(const Array<float>& dsi) {
     Array<float> sqrt_dsi_max_dmin{dsi.shape().erased_first()};
-    for(size_t r = 0; r < dsi.shape(1); ++r) {
-        for(size_t c = 0; c < dsi.shape(2); ++c) {
+    for (size_t r = 0; r < dsi.shape(1); ++r) {
+        for (size_t c = 0; c < dsi.shape(2); ++c) {
             float dsi_min = INFINITY;
             float dsi_max = -INFINITY;
-            for(size_t h = 0; h < dsi.shape(0); ++h) {
+            for (size_t h = 0; h < dsi.shape(0); ++h) {
                 if (!std::isnan(dsi(h, r, c))) {
                     dsi_min = std::min(dsi_min, dsi(h, r, c));
                     dsi_max = std::max(dsi_max, dsi(h, r, c));
@@ -699,7 +699,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
     const Array<float>& g,
     const DtamParameters& parameters)
 {
-    for(float LAMBDA : (parameters.lambda_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
+    for (float LAMBDA : (parameters.lambda_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
         Array<float> a = Dm::dense_mapping(
             dsi,
             g,
@@ -720,7 +720,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
         draw_nan_masked_grayscale(a, 0, dsi.shape(0) - 1).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".ppm");
         std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, a)) << std::endl;
     }
-    for(float EPSILON : (parameters.epsilon_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
+    for (float EPSILON : (parameters.epsilon_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
         Array<float> a = Dm::dense_mapping(
             dsi,
             g,
@@ -749,8 +749,8 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
     const DtamParameters& parameters)
 {
     std::list<std::tuple<DtamParameters, float, Array<float>>> energies;
-    for(float THETA_0 : (parameters.theta_0__ * logspace(-1.f, 1.f, 7)).element_iterable()) {
-        for(float BETA : (parameters.beta_ * logspace(-1.f, 1.f, 7)).element_iterable()) {
+    for (float THETA_0 : (parameters.theta_0__ * logspace(-1.f, 1.f, 7)).element_iterable()) {
+        for (float BETA : (parameters.beta_ * logspace(-1.f, 1.f, 7)).element_iterable()) {
             DtamParameters modified_parameters(
                 parameters.min_depth__,
                 parameters.max_depth__,
@@ -776,7 +776,7 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
     }
     energies.sort([](const auto& a, const auto& b) -> bool { return std::get<1>(a) < std::get<1>(b); });
     size_t rank = 0;
-    for(const auto& p : energies) {
+    for (const auto& p : energies) {
         std::cerr << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " energy " << std::get<1>(p) << std::endl;
         draw_nan_masked_grayscale(std::get<2>(p), 0, dsi.shape(0) - 1).save_to_file("a-" + std::to_string(rank) + ".ppm");
         // draw_quantiled_grayscale(std::get<2>(p), 0.05, 0.5).save_to_file("aq-" + std::to_string(rank) + ".ppm");

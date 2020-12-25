@@ -21,7 +21,7 @@ using namespace Mlib;
 
 template <class T>
 static void print_bytes(const T& header) {
-    for(size_t ct = 0; ct < sizeof(header); ct++)
+    for (size_t ct = 0; ct < sizeof(header); ct++)
     {
         unsigned char value = reinterpret_cast<const unsigned char*>(&header)[ct];
         std::cout << ct << ": " << (unsigned int)value << std::endl;
@@ -90,7 +90,7 @@ void Bgr565Bitmap::draw_mask(const Array<bool>& mask, const Bgr565& color) {
     assert(all(mask.shape() == shape()));
     Array<Bgr565> f = flattened();
     Array<bool> m = mask.flattened();
-    for(size_t i = 0; i < f.length(); ++i) {
+    for (size_t i = 0; i < f.length(); ++i) {
         if (!m(i)) {
             f(i) = color;
         }
@@ -171,8 +171,8 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
         throw std::runtime_error("Could not read bitmap data");
     }
     Bgr565Bitmap result(ArrayShape{header.height, header.width});
-    for(size_t r = 0; r < result.shape(0); ++r) {
-        for(size_t c = 0; c < result.shape(1); ++c) {
+    for (size_t r = 0; r < result.shape(0); ++r) {
+        for (size_t c = 0; c < result.shape(1); ++c) {
             result(result.shape(0) - 1 - r, c) = aligned(r, c);
         }
     }
@@ -184,8 +184,8 @@ void Bgr565Bitmap::save_to_stream(std::ostream& ostream) const {
         throw std::runtime_error("save_to_stream: image does not have ndim=2, but " + shape().str());
     }
     Bgr565Bitmap aligned{aligned_bitmap(shape())};
-    for(size_t r = 0; r < shape(0); ++r) {
-        for(size_t c = 0; c < shape(1); ++c) {
+    for (size_t r = 0; r < shape(0); ++r) {
+        for (size_t c = 0; c < shape(1); ++c) {
             aligned(shape(0) - 1 - r, c) = (*this)(r, c);
         }
         if (aligned.shape(1) != shape(1)) {
@@ -244,7 +244,7 @@ Bgr565Bitmap Bgr565Bitmap::from_float_rgb(const Array<float>& rgb) {
     Array<float> r = rgb[0].flattened();
     Array<float> g = rgb[1].flattened();
     Array<float> b = rgb[2].flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         f(i) = Bgr565::from_float_rgb(r(i), g(i), b(i));
     }
     return result;
@@ -257,7 +257,7 @@ Bgr565Bitmap Bgr565Bitmap::from_float_grayscale(const Array<float>& grayscale) {
     Bgr565Bitmap result(grayscale.shape());
     Array<Bgr565> f = result.flattened();
     Array<float> g = grayscale.flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         f(i) = Bgr565::from_float_grayscale(g(i));
     }
     return result;
@@ -270,7 +270,7 @@ Array<float> Bgr565Bitmap::to_float_grayscale() const {
     Array<float> grayscale(shape());
     Array<Bgr565> f = flattened();
     Array<float> g = grayscale.flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         g(i) = (
             static_cast<float>(f(i).r) / ((1 << 5) - 1) +
             static_cast<float>(f(i).g) / ((1 << 6) - 1) +
@@ -286,8 +286,8 @@ Array<float> Bgr565Bitmap::to_float_rgb() const {
     Array<float> R = result[0];
     Array<float> G = result[1];
     Array<float> B = result[2];
-    for(size_t r = 0; r < shape(0); ++r) {
-        for(size_t c = 0; c < shape(1); ++c) {
+    for (size_t r = 0; r < shape(0); ++r) {
+        for (size_t c = 0; c < shape(1); ++c) {
             R(r, c) = static_cast<float>((*this)(r, c).r) / ((1 << 5) - 1);
             G(r, c) = static_cast<float>((*this)(r, c).g) / ((1 << 6) - 1);
             B(r, c) = static_cast<float>((*this)(r, c).b) / ((1 << 5) - 1);

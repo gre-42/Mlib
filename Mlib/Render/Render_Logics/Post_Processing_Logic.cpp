@@ -88,12 +88,12 @@ static GenShaderText fragment_shader_text{[](
         sstr << "    );" << std::endl;
         sstr << std::endl;
         sstr << "    vec3 sampleTex[9];" << std::endl;
-        sstr << "    for(int i = 0; i < 9; i++)" << std::endl;
+        sstr << "    for (int i = 0; i < 9; i++)" << std::endl;
         sstr << "    {" << std::endl;
         sstr << "        sampleTex[i] = vec3(texture(screenTextureColor, TexCoords.st + offsets[i]));" << std::endl;
         sstr << "    }" << std::endl;
         sstr << "    vec3 col = vec3(0);" << std::endl;
-        sstr << "    for(int i = 0; i < 9; i++)" << std::endl;
+        sstr << "    for (int i = 0; i < 9; i++)" << std::endl;
         sstr << "    {" << std::endl;
         sstr << "        col += sampleTex[i] * kernel[i];" << std::endl;
         sstr << "    }" << std::endl;

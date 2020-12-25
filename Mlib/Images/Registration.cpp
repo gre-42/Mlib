@@ -19,7 +19,7 @@ Array<float> Mlib::patch_registration(
     Array<float> best_ssd(differences.shape());
     best_ssd = std::numeric_limits<float>::infinity();
     max_window_shape.foreach([&](const ArrayShape& window_shapeU) {
-        for(int sign = -1; sign <= 1; sign+=2) {
+        for (int sign = -1; sign <= 1; sign+=2) {
             if (sign == 1 && all(window_shapeU == 0)) {
                 continue;
             }
@@ -75,12 +75,12 @@ void Mlib::flow_registration(
     ArrayShape box_shape(fixed.shape());
     box_shape = box_size;
     Array<bool> mask = ones<bool>(fixed.shape());
-    for(size_t i = 0; i < niterations; ++i) {
+    for (size_t i = 0; i < niterations; ++i) {
         Array<float> registered_moving = apply_displacement(moving, displacement);
         // std::cerr << "r\n" << registered_moving << std::endl;
         Array<float> flow;
         optical_flow(registered_moving, fixed, nullptr, window_shape, max_displacement, flow, mask);
-        for(size_t d = 0; d < flow.shape(0); d++) {
+        for (size_t d = 0; d < flow.shape(0); d++) {
             flow[d] = box_filter_nans_as_zeros_NWE(flow[d], box_shape);
         }
         // std::cerr << "flow\n" << flow << std::endl;

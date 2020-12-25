@@ -27,12 +27,12 @@ set( _glfw3_LIB_SEARCH_DIRS
 
 # Check environment for root search directory
 set( _glfw3_ENV_ROOT $ENV{glfw3_ROOT} )
-if( NOT glfw3_ROOT AND _glfw3_ENV_ROOT )
+if ( NOT glfw3_ROOT AND _glfw3_ENV_ROOT )
 	set(glfw3_ROOT ${_glfw3_ENV_ROOT} )
 endif()
 
 # Put user specified location at beginning of search
-if( glfw3_ROOT )
+if ( glfw3_ROOT )
 	list( INSERT _glfw3_HEADER_SEARCH_DIRS 0 "${glfw3_ROOT}/include" )
 	list( INSERT _glfw3_LIB_SEARCH_DIRS 0 "${glfw3_ROOT}/lib" )
 endif()

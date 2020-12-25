@@ -14,7 +14,7 @@ TFloat newton_1d(
     size_t niterations = 10,
     float werror = true)
 {
-    for(size_t i = 0; i < niterations; ++i) {
+    for (size_t i = 0; i < niterations; ++i) {
         TFloat dx = -function(x) / derivative(x);
         if (std::abs(dx) < eps) {
             return x;

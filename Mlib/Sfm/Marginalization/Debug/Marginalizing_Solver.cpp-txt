@@ -7,7 +7,7 @@ static Array<size_t> index_complement(const Array<size_t>& a_compl, size_t lengt
     Array<size_t> res{ArrayShape{length - a_compl.length()}};
     std::set<size_t> s{a_compl.element_iterable().begin(), a_compl.element_iterable().end()};
     size_t j = 0;
-    for(size_t i = 0; i < length; ++i) {
+    for (size_t i = 0; i < length; ++i) {
         if (s.find(i) == s.end()) {
             res(j++) = i;
         }
@@ -24,7 +24,7 @@ static Array<size_t> strip_indices(
     std::vector<size_t> ids_new;
     ids_new.reserve(ids_old.length());
     size_t j = 0;
-    for(size_t i : ids_old.element_iterable()) {
+    for (size_t i : ids_old.element_iterable()) {
         auto it = uuids_new.find(uuids_old.at(i));
         if (it != uuids_new.end()) {
             ids_new.push_back(it->second);
@@ -60,7 +60,7 @@ void MarginalizingSolver::update_indices(const std::map<UUID, size_t>& uuids_ka)
         ids_a_.reassign(ra.ids_col_);
     }
     uuids_ka_map_.clear();
-    for(const auto& v : uuids_ka) {
+    for (const auto& v : uuids_ka) {
         uuids_ka_map_.insert(std::make_pair(v.second, v.first));
     }
     shape_ = ArrayShape{uuids_ka.size(), uuids_ka.size()};
@@ -74,7 +74,7 @@ void MarginalizingSolver::update_indices2(const std::map<UUID, size_t>& uuids_ka
     rhs_ka_.reassign(rhs_ka_.unblocked(ids_ka_, shape_(1), 0).blocked(ids_ka_new));
     ids_ka_.reassign(ids_ka_new);
     uuids_ka_map_.clear();
-    for(const auto& v : uuids_ka) {
+    for (const auto& v : uuids_ka) {
         uuids_ka_map_.insert(std::make_pair(v.second, v.first));
     }
     shape_ = ArrayShape{uuids_ka.size(), uuids_ka.size()};

@@ -11,7 +11,7 @@ Array<TData> approximate_rank(const Array<TData>& a, size_t rank) {
     Array<TData> s;
     Array<TData> vT;
     svd4(a, u, s, vT);
-    for(size_t i = rank; i < s.length(); ++i) {
+    for (size_t i = rank; i < s.length(); ++i) {
         s(i) = 0;
     }
     return reconstruct_svd(u, s, vT);

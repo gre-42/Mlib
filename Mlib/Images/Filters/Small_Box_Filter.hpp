@@ -22,7 +22,7 @@ Array<TData> small_box_filter_NWE(
     const TData& boundary_value)
 {
     Array<TData> result = image.copy();
-    for(size_t axis = 0; axis < image.ndim(); ++axis) {
+    for (size_t axis = 0; axis < image.ndim(); ++axis) {
         result = small_box_filter_1d_NWE(result, radiuses(axis), axis, boundary_value);
     }
     return result;
@@ -35,7 +35,7 @@ Array<TData> multichannel_small_box_filter_NWE(
     const TData& boundary_value)
 {
     Array<TData> result{image.shape()};
-    for(size_t h = 0; h < image.shape(0); ++h) {
+    for (size_t h = 0; h < image.shape(0); ++h) {
         result[h] = small_box_filter_NWE(image[h], radiuses, boundary_value);
     }
     return result;

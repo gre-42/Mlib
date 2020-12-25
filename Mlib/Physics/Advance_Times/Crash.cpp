@@ -36,7 +36,7 @@ void Crash::notify_impact(
 {
     if (collision_role == CollisionRole::PRIMARY) {
         float damage0 = NAN;
-        for(auto& v : rigid_body.collision_observers_) {
+        for (auto& v : rigid_body.collision_observers_) {
             auto d = dynamic_cast<Crash*>(v.get());
             if (d != nullptr) {
                 if (!std::isnan(damage0)) {

@@ -29,7 +29,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
                 InitialReconstruction ir{y0, y1, ptr.R, ptr.t, intrinsic_matrix};
                 Array<float> p0{ir.projection_residual0()};
                 Array<float> p1{ir.projection_residual1()};
-                for(size_t r = 0; r < indices.length(); ++r) {
+                for (size_t r = 0; r < indices.length(); ++r) {
                     res(r) = sum(squared(p0[r])) + sum(squared(p1[r]));
                 }
                 return res;

@@ -64,7 +64,7 @@ void PpmImage::draw_mask(const Array<bool>& mask, const Rgb24& color) {
     assert(all(mask.shape() == shape()));
     Array<Rgb24> f = flattened();
     Array<bool> m = mask.flattened();
-    for(size_t i = 0; i < f.length(); ++i) {
+    for (size_t i = 0; i < f.length(); ++i) {
         if (!m(i)) {
             f(i) = color;
         }
@@ -178,7 +178,7 @@ PpmImage PpmImage::from_float_rgb(const Array<float>& rgb) {
     Array<float> r = rgb[0].flattened();
     Array<float> g = rgb[1].flattened();
     Array<float> b = rgb[2].flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         f(i) = Rgb24::from_float_rgb(r(i), g(i), b(i));
     }
     return result;
@@ -191,7 +191,7 @@ PpmImage PpmImage::from_float_grayscale(const Array<float>& grayscale) {
     PpmImage result(grayscale.shape());
     Array<Rgb24> f = result.flattened();
     Array<float> g = grayscale.flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         f(i) = Rgb24::from_float_grayscale(g(i));
     }
     return result;
@@ -201,7 +201,7 @@ Array<float> PpmImage::to_float_grayscale() const {
     Array<float> grayscale(shape());
     Array<Rgb24> f = flattened();
     Array<float> g = grayscale.flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         g(i) = (
             static_cast<float>(f(i).r) / 255 +
             static_cast<float>(f(i).g) / 255 +
@@ -217,8 +217,8 @@ Array<float> PpmImage::to_float_rgb() const {
     Array<float> R = result[0];
     Array<float> G = result[1];
     Array<float> B = result[2];
-    for(size_t r = 0; r < shape(0); ++r) {
-        for(size_t c = 0; c < shape(1); ++c) {
+    for (size_t r = 0; r < shape(0); ++r) {
+        for (size_t c = 0; c < shape(1); ++c) {
             R(r, c) = static_cast<float>((*this)(r, c).r) / 255;
             G(r, c) = static_cast<float>((*this)(r, c).g) / 255;
             B(r, c) = static_cast<float>((*this)(r, c).b) / 255;

@@ -16,13 +16,13 @@ public:
         if (elements_.size() > 10) {
             while(!elements_.empty()) {
                 auto& e = elements_.front();
-                for(size_t i = 0; i < tndim; ++i) {
+                for (size_t i = 0; i < tndim; ++i) {
 
                 }
                 auto idn = (e.first.bbox_.min_ > cutoff_);
                 size_t id = 0;
                 size_t s;
-                for(size_t i = 0; i < tndim; ++i) {
+                for (size_t i = 0; i < tndim; ++i) {
                     id = s * id + id;
                     s *= 2;
                 }

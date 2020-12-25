@@ -21,26 +21,26 @@ typedef float vec##n[n]; \
 LINMATH_H_FUNC void vec##n##_add(vec##n r, vec##n const a, vec##n const b) \
 { \
 	int i; \
-	for(i=0; i<n; ++i) \
+	for (i=0; i<n; ++i) \
 		r[i] = a[i] + b[i]; \
 } \
 LINMATH_H_FUNC void vec##n##_sub(vec##n r, vec##n const a, vec##n const b) \
 { \
 	int i; \
-	for(i=0; i<n; ++i) \
+	for (i=0; i<n; ++i) \
 		r[i] = a[i] - b[i]; \
 } \
 LINMATH_H_FUNC void vec##n##_scale(vec##n r, vec##n const v, float const s) \
 { \
 	int i; \
-	for(i=0; i<n; ++i) \
+	for (i=0; i<n; ++i) \
 		r[i] = v[i] * s; \
 } \
 LINMATH_H_FUNC float vec##n##_mul_inner(vec##n const a, vec##n const b) \
 { \
 	float p = 0.; \
 	int i; \
-	for(i=0; i<n; ++i) \
+	for (i=0; i<n; ++i) \
 		p += b[i]*a[i]; \
 	return p; \
 } \
@@ -56,13 +56,13 @@ LINMATH_H_FUNC void vec##n##_norm(vec##n r, vec##n const v) \
 LINMATH_H_FUNC void vec##n##_min(vec##n r, vec##n const a, vec##n const b) \
 { \
 	int i; \
-	for(i=0; i<n; ++i) \
+	for (i=0; i<n; ++i) \
 		r[i] = a[i]<b[i] ? a[i] : b[i]; \
 } \
 LINMATH_H_FUNC void vec##n##_max(vec##n r, vec##n const a, vec##n const b) \
 { \
 	int i; \
-	for(i=0; i<n; ++i) \
+	for (i=0; i<n; ++i) \
 		r[i] = a[i]>b[i] ? a[i] : b[i]; \
 }
 
@@ -81,7 +81,7 @@ LINMATH_H_FUNC void vec3_reflect(vec3 r, vec3 const v, vec3 const n)
 {
 	float p  = 2.f*vec3_mul_inner(v, n);
 	int i;
-	for(i=0;i<3;++i)
+	for (i=0;i<3;++i)
 		r[i] = v[i] - p*n[i];
 }
 
@@ -97,7 +97,7 @@ LINMATH_H_FUNC void vec4_reflect(vec4 r, vec4 v, vec4 n)
 {
 	float p  = 2.f*vec4_mul_inner(v, n);
 	int i;
-	for(i=0;i<4;++i)
+	for (i=0;i<4;++i)
 		r[i] = v[i] - p*n[i];
 }
 
@@ -105,52 +105,52 @@ typedef vec4 mat4x4[4];
 LINMATH_H_FUNC void mat4x4_identity(mat4x4 M)
 {
 	int i, j;
-	for(i=0; i<4; ++i)
-		for(j=0; j<4; ++j)
+	for (i=0; i<4; ++i)
+		for (j=0; j<4; ++j)
 			M[i][j] = i==j ? 1.f : 0.f;
 }
 LINMATH_H_FUNC void mat4x4_dup(mat4x4 M, mat4x4 N)
 {
 	int i, j;
-	for(i=0; i<4; ++i)
-		for(j=0; j<4; ++j)
+	for (i=0; i<4; ++i)
+		for (j=0; j<4; ++j)
 			M[i][j] = N[i][j];
 }
 LINMATH_H_FUNC void mat4x4_row(vec4 r, mat4x4 M, int i)
 {
 	int k;
-	for(k=0; k<4; ++k)
+	for (k=0; k<4; ++k)
 		r[k] = M[k][i];
 }
 LINMATH_H_FUNC void mat4x4_col(vec4 r, mat4x4 M, int i)
 {
 	int k;
-	for(k=0; k<4; ++k)
+	for (k=0; k<4; ++k)
 		r[k] = M[i][k];
 }
 LINMATH_H_FUNC void mat4x4_transpose(mat4x4 M, mat4x4 N)
 {
 	int i, j;
-	for(j=0; j<4; ++j)
-		for(i=0; i<4; ++i)
+	for (j=0; j<4; ++j)
+		for (i=0; i<4; ++i)
 			M[i][j] = N[j][i];
 }
 LINMATH_H_FUNC void mat4x4_add(mat4x4 M, mat4x4 a, mat4x4 b)
 {
 	int i;
-	for(i=0; i<4; ++i)
+	for (i=0; i<4; ++i)
 		vec4_add(M[i], a[i], b[i]);
 }
 LINMATH_H_FUNC void mat4x4_sub(mat4x4 M, mat4x4 a, mat4x4 b)
 {
 	int i;
-	for(i=0; i<4; ++i)
+	for (i=0; i<4; ++i)
 		vec4_sub(M[i], a[i], b[i]);
 }
 LINMATH_H_FUNC void mat4x4_scale(mat4x4 M, mat4x4 a, float k)
 {
 	int i;
-	for(i=0; i<4; ++i)
+	for (i=0; i<4; ++i)
 		vec4_scale(M[i], a[i], k);
 }
 LINMATH_H_FUNC void mat4x4_scale_aniso(mat4x4 M, mat4x4 a, float x, float y, float z)
@@ -159,7 +159,7 @@ LINMATH_H_FUNC void mat4x4_scale_aniso(mat4x4 M, mat4x4 a, float x, float y, flo
 	vec4_scale(M[0], a[0], x);
 	vec4_scale(M[1], a[1], y);
 	vec4_scale(M[2], a[2], z);
-	for(i = 0; i < 4; ++i) {
+	for (i = 0; i < 4; ++i) {
 		M[3][i] = a[3][i];
 	}
 }
@@ -167,9 +167,9 @@ LINMATH_H_FUNC void mat4x4_mul(mat4x4 M, mat4x4 a, mat4x4 b)
 {
 	mat4x4 temp;
 	int k, r, c;
-	for(c=0; c<4; ++c) for(r=0; r<4; ++r) {
+	for (c=0; c<4; ++c) for (r=0; r<4; ++r) {
 		temp[c][r] = 0.f;
-		for(k=0; k<4; ++k)
+		for (k=0; k<4; ++k)
 			temp[c][r] += a[k][r] * b[c][k];
 	}
 	mat4x4_dup(M, temp);
@@ -177,9 +177,9 @@ LINMATH_H_FUNC void mat4x4_mul(mat4x4 M, mat4x4 a, mat4x4 b)
 LINMATH_H_FUNC void mat4x4_mul_vec4(vec4 r, mat4x4 M, vec4 v)
 {
 	int i, j;
-	for(j=0; j<4; ++j) {
+	for (j=0; j<4; ++j) {
 		r[j] = 0.f;
-		for(i=0; i<4; ++i)
+		for (i=0; i<4; ++i)
 			r[j] += M[i][j] * v[i];
 	}
 }
@@ -203,7 +203,7 @@ LINMATH_H_FUNC void mat4x4_translate_in_place(mat4x4 M, float x, float y, float 
 LINMATH_H_FUNC void mat4x4_from_vec3_mul_outer(mat4x4 M, vec3 a, vec3 b)
 {
 	int i, j;
-	for(i=0; i<4; ++i) for(j=0; j<4; ++j)
+	for (i=0; i<4; ++i) for (j=0; j<4; ++j)
 		M[i][j] = i<3 && j<3 ? a[i] * b[j] : 0.f;
 }
 LINMATH_H_FUNC void mat4x4_rotate(mat4x4 R, mat4x4 M, float x, float y, float z, float angle)
@@ -212,7 +212,7 @@ LINMATH_H_FUNC void mat4x4_rotate(mat4x4 R, mat4x4 M, float x, float y, float z,
 	float c = cosf(angle);
 	vec3 u = {x, y, z};
 
-	if(vec3_len(u) > 1e-4) {
+	if (vec3_len(u) > 1e-4) {
 		vec3_norm(u, u);
 		mat4x4 T;
 		mat4x4_from_vec3_mul_outer(T, u, u);
@@ -449,13 +449,13 @@ LINMATH_H_FUNC void quat_identity(quat q)
 LINMATH_H_FUNC void quat_add(quat r, quat a, quat b)
 {
 	int i;
-	for(i=0; i<4; ++i)
+	for (i=0; i<4; ++i)
 		r[i] = a[i] + b[i];
 }
 LINMATH_H_FUNC void quat_sub(quat r, quat a, quat b)
 {
 	int i;
-	for(i=0; i<4; ++i)
+	for (i=0; i<4; ++i)
 		r[i] = a[i] - b[i];
 }
 LINMATH_H_FUNC void quat_mul(quat r, quat p, quat q)
@@ -471,21 +471,21 @@ LINMATH_H_FUNC void quat_mul(quat r, quat p, quat q)
 LINMATH_H_FUNC void quat_scale(quat r, quat v, float s)
 {
 	int i;
-	for(i=0; i<4; ++i)
+	for (i=0; i<4; ++i)
 		r[i] = v[i] * s;
 }
 LINMATH_H_FUNC float quat_inner_product(quat a, quat b)
 {
 	float p = 0.f;
 	int i;
-	for(i=0; i<4; ++i)
+	for (i=0; i<4; ++i)
 		p += b[i]*a[i];
 	return p;
 }
 LINMATH_H_FUNC void quat_conj(quat r, quat q)
 {
 	int i;
-	for(i=0; i<3; ++i)
+	for (i=0; i<3; ++i)
 		r[i] = -q[i];
 	r[3] = q[3];
 }
@@ -493,7 +493,7 @@ LINMATH_H_FUNC void quat_rotate(quat r, float angle, vec3 axis) {
 	vec3 v;
 	vec3_scale(v, axis, sinf(angle / 2));
 	int i;
-	for(i=0; i<3; ++i)
+	for (i=0; i<3; ++i)
 		r[i] = v[i];
 	r[3] = cosf(angle / 2);
 }
@@ -567,9 +567,9 @@ LINMATH_H_FUNC void quat_from_mat4x4(quat q, mat4x4 M)
 	int perm[] = { 0, 1, 2, 0, 1 };
 	int *p = perm;
 
-	for(i = 0; i<3; i++) {
+	for (i = 0; i<3; i++) {
 		float m = M[i][i];
-		if( m < r )
+		if ( m < r )
 			continue;
 		m = r;
 		p = &perm[i];
@@ -577,7 +577,7 @@ LINMATH_H_FUNC void quat_from_mat4x4(quat q, mat4x4 M)
 
 	r = sqrtf(1.f + M[p[0]][p[0]] - M[p[1]][p[1]] - M[p[2]][p[2]] );
 
-	if(r < 1e-6) {
+	if (r < 1e-6) {
 		q[0] = 1.f;
 		q[1] = q[2] = q[3] = 0.f;
 		return;
@@ -597,13 +597,13 @@ LINMATH_H_FUNC void mat4x4_arcball(mat4x4 R, mat4x4 M, vec2 _a, vec2 _b, float s
 	float z_a = 0.;
 	float z_b = 0.;
 
-	if(vec2_len(a) < 1.f) {
+	if (vec2_len(a) < 1.f) {
 		z_a = sqrtf(1.f - vec2_mul_inner(a, a));
 	} else {
 		vec2_norm(a, a);
 	}
 
-	if(vec2_len(b) < 1.f) {
+	if (vec2_len(b) < 1.f) {
 		z_b = sqrtf(1.f - vec2_mul_inner(b, b));
 	} else {
 		vec2_norm(b, b);

@@ -24,7 +24,7 @@ void NormalizedPoints::add_points_quantile(const Array<float>& p, float q) {
     Array<float> pT = p.T();
     Array<float> qx = quantiles(pT[0], Array<float>{q, 1 - q});
     Array<float> qy = quantiles(pT[1], Array<float>{q, 1 - q});
-    for(const auto& pp : p) {
+    for (const auto& pp : p) {
         if (pp(0) >= qx(0) && pp(1) >= qy(0) &&
             pp(0) <= qx(1) && pp(1) <= qy(1))
         {

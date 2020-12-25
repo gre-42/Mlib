@@ -25,13 +25,13 @@ Array<TData> box_filter_1d(
         ArrayAxisView<TData> result_axis(result, index0, axis);
         // prepend virtual 0
         integral_axis(0) = image_axis(0);
-        for(size_t i = 0; i < std::min(delta, result_axis.length()); ++i) {
+        for (size_t i = 0; i < std::min(delta, result_axis.length()); ++i) {
             result_axis(i) = boundary_value;
         }
-        for(size_t i = result_axis.length() - delta; i < result_axis.length(); ++i) {
+        for (size_t i = result_axis.length() - delta; i < result_axis.length(); ++i) {
             result_axis(i) = boundary_value;
         }
-        for(size_t i=1; i < result_axis.length(); i++) {
+        for (size_t i=1; i < result_axis.length(); i++) {
             // std::cerr << "x " << i << std::endl;
             integral_axis(i) = integral_axis(i - 1) + image_axis(i);
             // prepend virtual 0
@@ -58,7 +58,7 @@ Array<TData> box_filter_nan_1d(
     nans_to_mask(image, image0, mask);
     Array<TData> ifilt = box_filter_1d(image0, box_size, NAN, axis).flattened();
     Array<TData> mfilt = box_filter_1d(TData(1) - mask, box_size, NAN, axis).flattened();
-    for(size_t i = 0; i < ifilt.shape(0); ++i) {
+    for (size_t i = 0; i < ifilt.shape(0); ++i) {
         if (mfilt(i) != TData(0)) {
             ifilt(i) = boundary_value;
         }
@@ -82,7 +82,7 @@ Array<TData> filter_len3_1d(
         ArrayAxisView<TData> result_axis(result, index0, axis);
         result_axis(0) = boundary_value;
         result_axis(result_axis.length() - 1) = boundary_value;
-        for(size_t i = 1; i < result_axis.length() - 1; i++) {
+        for (size_t i = 1; i < result_axis.length() - 1; i++) {
             result_axis(i) =
                 coeffs(0) * image_axis(i + 1) +
                 coeffs(1) * image_axis(i) +
@@ -125,7 +125,7 @@ Array<TData> laplace_filter_1d(const Array<TData>& image, const TData& boundary_
 template <class TData>
 Array<TData> laplace_filter(const Array<TData>& image, const TData& boundary_value) {
     Array<TData> result = zeros<TData>(image.shape());
-    for(size_t axis = 0; axis < image.ndim(); ++axis) {
+    for (size_t axis = 0; axis < image.ndim(); ++axis) {
         result += laplace_filter_1d(image, boundary_value, axis);
     }
     return result;
@@ -134,7 +134,7 @@ Array<TData> laplace_filter(const Array<TData>& image, const TData& boundary_val
 template <class TData>
 Array<TData> multichannel_laplace_filter(const Array<TData>& image, const TData& boundary_value) {
     Array<TData> result{image.shape()};
-    for(size_t h = 0; h < image.shape(0); ++h) {
+    for (size_t h = 0; h < image.shape(0); ++h) {
         result[h] = laplace_filter(image[h], boundary_value);
     }
     return result;
@@ -148,7 +148,7 @@ Array<bool> find_local_maxima_1d(const Array<TData>& image, bool boundary_value,
         ArrayAxisView<bool> result_axis(result, index0, axis);
         result_axis(0) = boundary_value;
         result_axis(result_axis.length() - 1) = boundary_value;
-        for(size_t i=1; i < result_axis.length() - 1; i++) {
+        for (size_t i=1; i < result_axis.length() - 1; i++) {
             TData maxneighbor = -INFINITY;
             if (!std::isnan(image_axis(i - 1))) {
                 maxneighbor = image_axis(i - 1);
@@ -166,7 +166,7 @@ template <class TData>
 Array<bool> find_local_maxima(const Array<TData>& image, bool boundary_value) {
     Array<bool> result(image.shape());
     result = true;
-    for(size_t d = 0; d < image.ndim(); d++) {
+    for (size_t d = 0; d < image.ndim(); d++) {
         result &= find_local_maxima_1d(image, boundary_value, d);
     }
     return result;
@@ -179,7 +179,7 @@ Array<TData> box_filter(
     const TData& boundary_value)
 {
     Array<TData> result = image.copy();
-    for(size_t d = 0; d < image.ndim(); d++) {
+    for (size_t d = 0; d < image.ndim(); d++) {
         result = box_filter_1d(result, box_size(d), boundary_value, d);
     }
     return result;
@@ -192,7 +192,7 @@ Array<TData> box_filter_nan(
     const TData& boundary_value)
 {
     Array<TData> result = image.copy();
-    for(size_t d = 0; d < image.ndim(); d++) {
+    for (size_t d = 0; d < image.ndim(); d++) {
         result = box_filter_nan_1d(result, box_size(d), boundary_value, d);
     }
     return result;
@@ -205,7 +205,7 @@ Array<TData> box_filter_nan_multichannel(
     const TData& boundary_value)
 {
     Array<TData> result{image.shape()};
-    for(size_t h = 0; h < image.shape(0); ++h) {
+    for (size_t h = 0; h < image.shape(0); ++h) {
         result[h] = box_filter_nan(image[h], box_size, boundary_value);
     }
     return result;
@@ -214,7 +214,7 @@ Array<TData> box_filter_nan_multichannel(
 template <class TData>
 Array<TData> sad_filter(const Array<TData>& image, const TData& boundary_value, DifferenceFilterType dt = DifferenceFilterType::CENTRAL) {
     Array<TData> result = zeros<TData>(image.shape());
-    for(size_t d = 0; d < image.ndim(); d++) {
+    for (size_t d = 0; d < image.ndim(); d++) {
         result += abs(difference_filter_1d(image, boundary_value, d, dt));
     }
     return result / TData(image.ndim());
@@ -227,7 +227,7 @@ Array<TData> gradient_filter(
     DifferenceFilterType dit = DifferenceFilterType::CENTRAL)
 {
     Array<TData> result{ArrayShape{image.ndim()}.concatenated(image.shape())};
-    for(size_t d = 0; d < image.ndim(); d++) {
+    for (size_t d = 0; d < image.ndim(); d++) {
         result[d] = difference_filter_1d(image, boundary_value, d, dit);
     }
     return result;

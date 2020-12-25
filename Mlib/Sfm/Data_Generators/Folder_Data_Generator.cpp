@@ -34,7 +34,7 @@ std::vector<std::string> get_sorted_files(const std::string& folder) {
     }
     sort_directory_entries_by_filename(entries);
     std::vector<std::string> files;
-    for(const auto& entry : entries) {
+    for (const auto& entry : entries) {
         files.push_back(entry.path().string());
     }
     return files;

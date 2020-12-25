@@ -14,7 +14,7 @@ void gradient_ascent_descent(
     TData des_lambda,
     size_t nsteps)
 {
-    for(size_t i = 0; i < nsteps; ++i) {
+    for (size_t i = 0; i < nsteps; ++i) {
         asc_x += asc_lambda * asc_gradient(asc_x, des_x);
         des_x -= des_lambda * des_gradient(asc_x, des_x);
     }

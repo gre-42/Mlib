@@ -12,10 +12,10 @@ void downsample_rgba_inplace(
     int width,
     int height)
 {
-    for(int r = 0; r < height; ++r) {
-        for(int c = 0; c < width; ++c) {
+    for (int r = 0; r < height; ++r) {
+        for (int c = 0; c < width; ++c) {
             int i = (r * width + c) * 4;
-            for(int d = 0; d < 3; ++d) {
+            for (int d = 0; d < 3; ++d) {
                 data[i + d] = data[i + d] * (float(data[i + 3]) / 255);
             }
         }
@@ -33,10 +33,10 @@ void downsample_rgba_inplace(
     {
         throw std::runtime_error("could not resize image");
     }
-    for(int r = 0; r < height / 2; ++r) {
-        for(int c = 0; c < width / 2; ++c) {
+    for (int r = 0; r < height / 2; ++r) {
+        for (int c = 0; c < width / 2; ++c) {
             int i = r * (width / 2) * 4 + c * 4;
-            for(int d = 0; d < 3; ++d) {
+            for (int d = 0; d < 3; ++d) {
                 if (downsampled_data[i + 3] != 0) {
                     downsampled_data[i + d] = std::clamp(downsampled_data[i + d] / (float(downsampled_data[i + 3]) / 255.f), 0.f, 255.f);
                 } else {

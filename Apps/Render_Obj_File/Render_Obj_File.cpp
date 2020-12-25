@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
         auto scene_node = new SceneNode;
         {
             size_t i = 0;
-            for(const std::string& filename : args.unnamed_values()) {
+            for (const std::string& filename : args.unnamed_values()) {
                 std::string name = "obj-" + std::to_string(i++);
                 scene_node_resources.add_resource(name, std::make_shared<RenderableObjFile>(
                     filename,
@@ -203,9 +203,9 @@ int main(int argc, char** argv) {
                         {safe_stof(args.named_value("--color_gradient_min_c")),
                          safe_stof(args.named_value("--color_gradient_max_c"))},
                         OutOfRangeBehavior::CLAMP};
-                    for(auto& m : scene_node_resources.get_triangle_meshes(name)) {
-                        for(auto& t : m->triangles) {
-                            for(auto& v : t.flat_iterable()) {
+                    for (auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                        for (auto& t : m->triangles) {
+                            for (auto& v : t.flat_iterable()) {
                                 v.color = interp(v.position(0));
                             }
                         }
@@ -222,9 +222,9 @@ int main(int argc, char** argv) {
                         safe_stof(args.named_value("--color_radial_center_x", "0")),
                         safe_stof(args.named_value("--color_radial_center_y", "0")),
                         safe_stof(args.named_value("--color_radial_center_z", "0"))};
-                    for(auto& m : scene_node_resources.get_triangle_meshes(name)) {
-                        for(auto& t : m->triangles) {
-                            for(auto& v : t.flat_iterable()) {
+                    for (auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                        for (auto& t : m->triangles) {
+                            for (auto& v : t.flat_iterable()) {
                                 v.color = interp(std::sqrt(sum(squared(v.position - center))));
                             }
                         }
@@ -241,9 +241,9 @@ int main(int argc, char** argv) {
                     float top = safe_stof(args.named_value("--color_cone_top"));
                     float cx = safe_stof(args.named_value("--color_cone_x", "0"));
                     float cz = safe_stof(args.named_value("--color_cone_z", "0"));
-                    for(auto& m : scene_node_resources.get_triangle_meshes(name)) {
-                        for(auto& t : m->triangles) {
-                            for(auto& v : t.flat_iterable()) {
+                    for (auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                        for (auto& t : m->triangles) {
+                            for (auto& v : t.flat_iterable()) {
                                 float r = std::sqrt(squared(v.position(0) - cx) + squared(v.position(2) - cz));
                                 float h = (top - v.position(1)) / (top - bottom);
                                 v.color = interp(r / h);
@@ -256,9 +256,9 @@ int main(int argc, char** argv) {
                     safe_stof(args.named_value("--color_g", "-1")),
                     safe_stof(args.named_value("--color_b", "-1"))};
                 if (any(color != -1.f)) {
-                    for(auto& m : scene_node_resources.get_triangle_meshes(name)) {
-                        for(auto& t : m->triangles) {
-                            for(auto& v : t.flat_iterable()) {
+                    for (auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                        for (auto& t : m->triangles) {
+                            for (auto& v : t.flat_iterable()) {
                                 v.color = maximum(color, 0.f);
                             }
                         }
@@ -356,7 +356,7 @@ int main(int argc, char** argv) {
             true);              // rotate
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
         std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
-        for(const Light* l : lights) {
+        for (const Light* l : lights) {
             lightmap_logics.push_back(std::make_shared<LightmapLogic>(
                 *read_pixels_logic,
                 rendering_resources,
@@ -369,7 +369,7 @@ int main(int argc, char** argv) {
         std::recursive_mutex mutex;
         RenderLogics render_logics{mutex};
         render_logics.append(nullptr, flying_camera_logic);
-        for(const auto& l : lightmap_logics) {
+        for (const auto& l : lightmap_logics) {
             render_logics.append(nullptr, l);
         }
         render_logics.append(nullptr, read_pixels_logic);

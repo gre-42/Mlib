@@ -28,7 +28,7 @@ RigidBody::~RigidBody()
 
 void RigidBody::reset_forces() {
     rbi_.reset_forces();
-    for(auto& e : engines_) {
+    for (auto& e : engines_) {
         e.second.reset_forces();
     }
 }
@@ -75,7 +75,7 @@ void RigidBody::advance_time(
 {
     std::lock_guard lock{advance_time_mutex_};
     if (physics_type == PhysicsType::TRACKING_SPRINGS) {
-        for(auto& t : tires_) {
+        for (auto& t : tires_) {
             FixedArray<float, 3, 3> rotation = get_abs_tire_rotation_matrix(t.first);
             FixedArray<float, 3> position = get_abs_tire_contact_position(t.first);
             FixedArray<float, 3> power_axis = get_abs_tire_z(t.first);
@@ -131,7 +131,7 @@ void RigidBody::advance_time(
     } else {
         rbi_.rbp_.advance_time(dt);
     }
-    for(auto& t : tires_) {
+    for (auto& t : tires_) {
         t.second.advance_time(dt);
     }
 #ifdef COMPUTE_POWER
@@ -331,7 +331,7 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
         }
 #endif
     }
-    for(const auto& o : collision_observers_) {
+    for (const auto& o : collision_observers_) {
         auto c = std::dynamic_pointer_cast<StatusWriter>(o);
         if (c != nullptr) {
             c->write_status(ostr, log_components);

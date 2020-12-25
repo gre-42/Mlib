@@ -15,25 +15,25 @@ bool CollisionQuery::can_see(const RigidBodyIntegrator& watcher, const RigidBody
     FixedArray<float, 3> dir = watched.abs_position() - start;
     float dist = std::sqrt(sum(squared(dir)));
     dir /= dist;
-    for(float alpha = 0; alpha < dist; alpha += physics_engine_.cfg_.static_radius) {
+    for (float alpha = 0; alpha < dist; alpha += physics_engine_.cfg_.static_radius) {
         FixedArray<FixedArray<float, 3>, 2> l{
             start + alpha * dir,
             start + std::min(alpha + physics_engine_.cfg_.static_radius, dist) * dir};
         BoundingSphere<float, 3> bs{l};
-        for(const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
+        for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
             if (&o0.rigid_body->rbi_ == &watcher ||
                 &o0.rigid_body->rbi_ == &watched)
             {
                 continue;
             }
-            for(const auto& msh0 : o0.meshes) {
+            for (const auto& msh0 : o0.meshes) {
                 if (msh0.mesh_type == MeshType::TIRE_LINE) {
                     continue;
                 }
                 if (!msh0.mesh->intersects(bs)) {
                     continue;
                 }
-                for(const auto& t0 : msh0.mesh->get_triangles_sphere()) {
+                for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
                     if (!t0.bounding_sphere.intersects(bs)) {
                         continue;
                     }

@@ -36,7 +36,7 @@ void Mlib::optical_flow(
     auto rdetM1D = rdetM.flattened();
     auto mask1D = mask.flattened();
     // mask to avoid floating-point exception (0 * infty)
-    for(size_t i = 0; i < rdetM1D.length(); ++i) {
+    for (size_t i = 0; i < rdetM1D.length(); ++i) {
         mask1D(i) = (std::abs(rdetM1D(i)) < 1e12);
         if (!mask1D(i)) {
             rdetM1D(i) = std::numeric_limits<float>::quiet_NaN();
@@ -49,7 +49,7 @@ void Mlib::optical_flow(
         rdetM * (d * B[0] - b * B[1]),
         rdetM * (a * B[1] - b * B[0]),
     });
-    for(size_t axis = 0; axis < flow.shape(0); ++axis) {
+    for (size_t axis = 0; axis < flow.shape(0); ++axis) {
         auto f = flow[axis].flattened();
         // this also masks the quiet NaNs
         mask1D &= (abs(f) < max_displacement);

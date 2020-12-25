@@ -28,7 +28,7 @@ Array<TData> rigid_motion_from_images_robust(
 {
     Array<TData> x0_rot_l_r1 = zeros<TData>(ArrayShape{3});
     if (estimate_rotation_first) {
-        for(const TData& sigma : sigmas) {
+        for (const TData& sigma : sigmas) {
             Hfi::rotation_from_images(
                 gaussian_filter_NWE(im_r1, sigma, NAN),
                 gaussian_filter_NWE(im_l, sigma, NAN),
@@ -50,7 +50,7 @@ Array<TData> rigid_motion_from_images_robust(
     assert(thresholds.size() == sigmas.size() - 1);
     auto threshold_it = thresholds.begin();
     Array<TData> ke;
-    for(const TData& sigma : sigmas) {
+    for (const TData& sigma : sigmas) {
         Array<TData> masked_im_r_depth_s = gaussian_filter_NWE(im_r0_depth, sigma, NAN);
         if (ke.initialized()) {
             masked_im_r_depth_s = masked_im_r_depth_s.array_array_binop(

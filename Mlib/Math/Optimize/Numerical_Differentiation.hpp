@@ -8,7 +8,7 @@ Array<TData> numerical_differentiation(const Tf& f, const Array<TData>& x, const
     auto fx = f(x);
 
     Array<TData> JT(ArrayShape{x.length(), fx.length()});
-    for(size_t i = 0; i < x.length(); ++i) {
+    for (size_t i = 0; i < x.length(); ++i) {
         Array<TData> xi;
         xi = x;
         xi(i) += h;

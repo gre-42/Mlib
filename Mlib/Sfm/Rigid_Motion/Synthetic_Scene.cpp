@@ -59,7 +59,7 @@ Array<float> SyntheticScene::dR(size_t index0, size_t index1) {
 
 void SyntheticScene::draw_to_bmp(const std::string& filename, size_t index0, size_t index1) {
     Bgr565Bitmap bmp(ArrayShape{1024, 512}, Bgr565::white());
-    for(size_t r = 0; r < x.shape(0); ++r) {
+    for (size_t r = 0; r < x.shape(0); ++r) {
         const Array<float>& y0r = y[index0][r];
         const Array<float>& y1r = y[index1][r];
         ArrayShape index0{a2i(dehomogenized_2(y0r))};

@@ -158,7 +158,7 @@ void get_neighbors(
 //class PolygonDrawer {
 //public:
 //    void draw_line(const p2t::Point& from, const p2t::Point& to, size_t nsteps) {
-//        for(size_t i = 0; i < nsteps; ++i) {
+//        for (size_t i = 0; i < nsteps; ++i) {
 //            double alpha = double(i) / nsteps;
 //            point_list_.push_back((1 - alpha) * from + alpha * to);
 //            points_.push_back(&point_list_.back());

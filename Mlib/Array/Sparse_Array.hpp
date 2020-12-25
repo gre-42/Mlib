@@ -24,8 +24,8 @@ public:
     : SparseArrayCcs{rhs.shape()}
     {
         assert(rhs.ndim() == 2);
-        for(size_t r = 0; r < rhs.shape(0); ++r) {
-            for(size_t c = 0; c < rhs.shape(1); ++c) {
+        for (size_t r = 0; r < rhs.shape(0); ++r) {
+            for (size_t c = 0; c < rhs.shape(1); ++c) {
                 if (rhs(r, c) != TData(0)) {
                     (*this)(r, c) = rhs(r, c);
                 }
@@ -85,7 +85,7 @@ public:
 
     SparseArrayCcs columns(const Array<size_t>& column_ids) const {
         SparseArrayCcs<float> res{ArrayShape{shape(0), column_ids.length()}};
-        for(size_t i = 0; i < column_ids.length(); ++i) {
+        for (size_t i = 0; i < column_ids.length(); ++i) {
             res.column(i) = column(column_ids(i));
         }
         return res;
@@ -98,8 +98,8 @@ public:
     Array<TData> to_dense_array() const {
         assert(!conjugated_transposed);
         Array<TData> res{shape()};
-        for(size_t r = 0; r < shape(0); ++r) {
-            for(size_t c = 0; c < shape(1); ++c) {
+        for (size_t r = 0; r < shape(0); ++r) {
+            for (size_t c = 0; c < shape(1); ++c) {
                 res(r, c) = (*this)(r, c);
             }
         }
@@ -109,8 +109,8 @@ public:
     template <class TResultData = TData, class TOperation>
     SparseArrayCcs<TResultData> apply_to_defined(const TOperation& op) const {
         SparseArrayCcs<TResultData> result{shape()};
-        for(size_t c = 0; c < shape(1); ++c) {
-            for(const auto& d : column(c)) {
+        for (size_t c = 0; c < shape(1); ++c) {
+            for (const auto& d : column(c)) {
                 result(d.first, c) = op(d.second);
             }
         }
@@ -128,8 +128,8 @@ public:
 
     Array<bool> row_is_defined() const {
         Array<bool> result = full(ArrayShape{shape(0)}, false);
-        for(const auto& c : columns()) {
-            for(const auto& d : c) {
+        for (const auto& c : columns()) {
+            for (const auto& d : c) {
                 result(d.first) = true;
             }
         }
@@ -160,8 +160,8 @@ Array<TData> dot2d(const SparseArrayCcs<TData>& a, const SparseArrayCcs<TData>& 
     assert(b.ndim() == 2);
     assert(a.shape(0) == b.shape(0));
     Array<TData> result{ArrayShape{a.shape(1), b.shape(1)}};
-    for(size_t r = 0; r < result.shape(0); ++r) {
-        for(size_t c = 0; c < result.shape(1); ++c) {
+    for (size_t r = 0; r < result.shape(0); ++r) {
+        for (size_t c = 0; c < result.shape(1); ++c) {
             const auto& col_a = a.column(r);
             const auto& col_b = b.column(c);
             TData v = 0;
@@ -199,11 +199,11 @@ Array<TData> dot2d(const SparseArrayCcs<TData>& a, const Array<TData>& b) {
     assert(b.ndim() == 2);
     assert(a.shape(0) == b.shape(0));
     Array<TData> result{ArrayShape{a.shape(1), b.shape(1)}};
-    for(size_t r = 0; r < result.shape(0); ++r) {
-        for(size_t c = 0; c < result.shape(1); ++c) {
+    for (size_t r = 0; r < result.shape(0); ++r) {
+        for (size_t c = 0; c < result.shape(1); ++c) {
             const auto& col_a = a.column(r);
             TData v = 0;
-            for(const auto& ea : col_a) {
+            for (const auto& ea : col_a) {
                 v += conju(ea.second) * b(ea.first, c);
             }
             result(r, c) = v;
@@ -220,9 +220,9 @@ Array<TData> dot1d(const SparseArrayCcs<TData>& a, const Array<TData>& b) {
 
 template <class TData>
 std::ostream& operator << (std::ostream& ostr, const SparseArrayCcs<TData>& ar) {
-    for(size_t c = 0; c < ar.shape(1); ++c) {
+    for (size_t c = 0; c < ar.shape(1); ++c) {
         ostr << "c " << c << ":";
-        for(const auto& v : ar.column(c)) {
+        for (const auto& v : ar.column(c)) {
             ostr << " (" << v.first << ", " << v.second << ")";
         }
         ostr << std::endl;

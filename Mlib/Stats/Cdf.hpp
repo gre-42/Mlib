@@ -12,7 +12,7 @@ public:
         const Array<size_t>& hist = hist_.hist();
         cdf_.resize(hist.shape());
         TFloat cumsum = 0;
-        for(size_t i = 0; i < hist.length(); ++i) {
+        for (size_t i = 0; i < hist.length(); ++i) {
             cumsum += TFloat(hist(i)) / data.length();
             cdf_(i) = cumsum;
         }

@@ -3,7 +3,7 @@
 using namespace Mlib;
 
 void AdvanceTimes::delete_scheduled_advance_times() {
-    for(auto it = advance_times_shared_.begin(); it != advance_times_shared_.end(); ) {
+    for (auto it = advance_times_shared_.begin(); it != advance_times_shared_.end(); ) {
         auto v = it++;
         auto dit = advance_times_to_delete_.find(v->get());
         if (dit != advance_times_to_delete_.end()) {

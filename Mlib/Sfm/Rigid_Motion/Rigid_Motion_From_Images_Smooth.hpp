@@ -14,7 +14,7 @@ Array<TData> rigid_motion_from_images_smooth(
     const Array<TData>& x0 = zeros<TData>(ArrayShape{6}))
 {
     Array<TData> x00 = x0.copy();
-    for(const TData& sigma : sigmas) {
+    for (const TData& sigma : sigmas) {
         rigid_motion_from_images(
             gaussian_filter_NWE(im_r, sigma, NAN),
             gaussian_filter_NWE(im_l, sigma, NAN),

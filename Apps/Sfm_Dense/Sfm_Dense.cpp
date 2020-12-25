@@ -25,8 +25,8 @@ void filter_distance_to_camera(Array<float>& x, Array<float>& cond, const Array<
     assert(x.ndim() == 3);
     assert(x.shape(0) == 3);
     Array<float> dist{x.shape().erased_first()};
-    for(size_t r = 0; r < x.shape(1); ++r) {
-        for(size_t c = 0; c < x.shape(2); ++c) {
+    for (size_t r = 0; r < x.shape(1); ++r) {
+        for (size_t c = 0; c < x.shape(2); ++c) {
             dist(r, c) = std::sqrt(
                 squared(x(0, r, c)) +
                 squared(x(1, r, c)) +
@@ -38,26 +38,26 @@ void filter_distance_to_camera(Array<float>& x, Array<float>& cond, const Array<
     draw_nan_masked_grayscale(distf, -25.f, 25.f).save_to_file("distf.ppm");
     draw_nan_masked_grayscale(abs(dist - distf), 0.f, 1.f).save_to_file("dist-distf.ppm");
     if (false) {
-        for(size_t r = 0; r < x.shape(1); ++r) {
-            for(size_t c = 0; c < x.shape(2); ++c) {
-                for(size_t d = 0; d < x.shape(0); ++d) {
+        for (size_t r = 0; r < x.shape(1); ++r) {
+            for (size_t c = 0; c < x.shape(2); ++c) {
+                for (size_t d = 0; d < x.shape(0); ++d) {
                     x(d, r, c) /= dist(r, c);
                 }
             }
         }
     }
     if (true) {
-        for(size_t r = 0; r < x.shape(1); ++r) {
-            for(size_t c = 0; c < x.shape(2); ++c) {
+        for (size_t r = 0; r < x.shape(1); ++r) {
+            for (size_t c = 0; c < x.shape(2); ++c) {
                 if (!std::isnan(dist(r, c)) &&
                     !std::isnan(distf(r, c)) &&
                     abs(dist(r, c) - distf(r, c)) < 0.5)
                 {
-                    for(size_t d = 0; d < x.shape(0); ++d) {
+                    for (size_t d = 0; d < x.shape(0); ++d) {
                         x(d, r, c) = x(d, r, c);
                     }
                 } else {
-                    for(size_t d = 0; d < x.shape(0); ++d) {
+                    for (size_t d = 0; d < x.shape(0); ++d) {
                         x(d, r, c) = NAN;
                     }
                     cond(r, c) = NAN;
@@ -73,8 +73,8 @@ void reproject(
     const Array<float>& im0_rgb)
 {
     Array<float> reprojected{im0_rgb.shape()};
-    for(size_t r = 0; r < reprojected.shape(1); ++r) {
-        for(size_t c = 0; c < reprojected.shape(2); ++c) {
+    for (size_t r = 0; r < reprojected.shape(1); ++r) {
+        for (size_t c = 0; c < reprojected.shape(2); ++c) {
             if (std::isnan(x(0, r, c))) {
                 reprojected(0, r, c) = NAN;
                 reprojected(1, r, c) = NAN;
@@ -185,11 +185,11 @@ int main(int argc, char **argv) {
         // => Either upsample and interpolate, or low-pass-filter the image.
         // Array<float> im0_rgb_smooth{im0_rgb.shape() + ArrayShape{3, 0, 0}};
         // Array<float> im1_rgb_smooth{im1_rgb.shape() + ArrayShape{3, 0, 0}};
-        // for(size_t d = 0; d < 3; ++d) {
+        // for (size_t d = 0; d < 3; ++d) {
         //     im0_rgb_smooth[d] = box_filter_nan(im0_rgb[d], ArrayShape{5, 5}, NAN);
         //     im1_rgb_smooth[d] = box_filter_nan(im1_rgb[d], ArrayShape{5, 5}, NAN);
         // }
-        // for(size_t d = 3; d < 6; ++d) {
+        // for (size_t d = 3; d < 6; ++d) {
         //     im0_rgb_smooth[d] = im0_rgb[d - 3];
         //     im1_rgb_smooth[d] = im1_rgb[d - 3];
         // }
@@ -221,17 +221,17 @@ int main(int argc, char **argv) {
             if (false) {
                 Array<float> stddev0 = standard_deviation(im0_gray, ArrayShape{5, 5}, NAN);
                 Array<float> stddev1 = standard_deviation(im1_gray, ArrayShape{5, 5}, NAN);
-                for(size_t r = 0; r < stddev0.shape(0); ++r) {
-                    for(size_t c = 0; c < stddev0.shape(1); ++c) {
+                for (size_t r = 0; r < stddev0.shape(0); ++r) {
+                    for (size_t c = 0; c < stddev0.shape(1); ++c) {
                         // std::cerr << stddev(r, c) << std::endl;
                         if (!(stddev0(r, c) > 0.001)) {
-                            for(size_t d = 0; d < 3; ++d) {
+                            for (size_t d = 0; d < 3; ++d) {
                                 im0_rgb(d, r, c) = NAN;
                             }
                             im0_gray_masked(r, c) = NAN;
                         }
                         if (!(stddev1(r, c) > 0.001)) {
-                            for(size_t d = 0; d < 3; ++d) {
+                            for (size_t d = 0; d < 3; ++d) {
                                 im1_rgb(d, r, c) = NAN;
                             }
                             im1_gray_masked(r, c) = NAN;
@@ -250,25 +250,25 @@ int main(int argc, char **argv) {
                 draw_nan_masked_grayscale(hr1_1d_im, 0, 1).save_to_file("hr1_1d_im.ppm");
                 hr0_1d = box_filter_nan(hr0_1d, ArrayShape{10, 10}, NAN);
                 hr1_1d = box_filter_nan(hr1_1d, ArrayShape{10, 10}, NAN);
-                for(size_t r = 0; r < hr0_1d.shape(0); ++r) {
-                    for(size_t c = 0; c < hr0_1d.shape(1); ++c) {
+                for (size_t r = 0; r < hr0_1d.shape(0); ++r) {
+                    for (size_t c = 0; c < hr0_1d.shape(1); ++c) {
                         if (!(hr0_1d(r, c) > 1e-4)) {
-                            for(size_t d = 0; d < 3; ++d) {
+                            for (size_t d = 0; d < 3; ++d) {
                                 im0_rgb(d, r, c) = NAN;
                             }
                             im0_gray_masked(r, c) = NAN;
                         } else {
-                            for(size_t d = 0; d < 3; ++d) {
+                            for (size_t d = 0; d < 3; ++d) {
                                 //im0_rgb(d, r, c) *= hr0_1d_im(r, c);
                             }
                         }
                         if (!(hr1_1d(r, c) > 1e-4)) {
-                            for(size_t d = 0; d < 3; ++d) {
+                            for (size_t d = 0; d < 3; ++d) {
                                 im1_rgb(d, r, c) = NAN;
                             }
                             im1_gray_masked(r, c) = NAN;
                         } else {
-                            for(size_t d = 0; d < 3; ++d) {
+                            for (size_t d = 0; d < 3; ++d) {
                                 //im1_rgb(d, r, c) *= hr1_1d_im(r, c);
                             }
                         }
@@ -333,10 +333,10 @@ int main(int argc, char **argv) {
 
         if (false) {
             Array<float> hr0_1d = harris_response_1d(im0_gray, F);
-            for(size_t r = 0; r < hr0_1d.shape(0); ++r) {
-                for(size_t c = 0; c < hr0_1d.shape(1); ++c) {
+            for (size_t r = 0; r < hr0_1d.shape(0); ++r) {
+                for (size_t c = 0; c < hr0_1d.shape(1); ++c) {
                     if (!(hr0_1d(r, c) > 1e-4)) {
-                        for(size_t d = 0; d < 3; ++d) {
+                        for (size_t d = 0; d < 3; ++d) {
                             x(d, r, c) = NAN;
                         }
                         condition_number(r, c) = NAN;
@@ -347,10 +347,10 @@ int main(int argc, char **argv) {
 
         if (false) {
             Array<bool> mask0 = PpmImage::load_from_file("mask/mask.ppm").to_float_grayscale().casted<bool>();
-            for(size_t r = 0; r < mask0.shape(0); ++r) {
-                for(size_t c = 0; c < mask0.shape(1); ++c) {
+            for (size_t r = 0; r < mask0.shape(0); ++r) {
+                for (size_t c = 0; c < mask0.shape(1); ++c) {
                     if (!mask0(r, c)) {
-                        for(size_t d = 0; d < 3; ++d) {
+                        for (size_t d = 0; d < 3; ++d) {
                             x(d, r, c) = NAN;
                         }
                         condition_number(r, c) = NAN;
@@ -363,8 +363,8 @@ int main(int argc, char **argv) {
             Array<float> hr0_1d = harris_response_1d(im0_gray, F);
             Array<float> hr0_1d_im = hr0_1d / float(1e-3);
             draw_nan_masked_grayscale(hr0_1d_im, 0, 1).save_to_file("hr0_1d_im.ppm");
-            for(size_t r = 0; r < hr0_1d.shape(0); ++r) {
-                for(size_t c = 0; c < hr0_1d.shape(1); ++c) {
+            for (size_t r = 0; r < hr0_1d.shape(0); ++r) {
+                for (size_t c = 0; c < hr0_1d.shape(1); ++c) {
                     if (!(hr0_1d(r, c) > 1e-3)) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;
@@ -383,12 +383,12 @@ int main(int argc, char **argv) {
 
         // check constraints: dx/dx > 0, z > 0
         if (false) {
-            for(size_t axis = 0; axis < 1; ++axis) {
+            for (size_t axis = 0; axis < 1; ++axis) {
                 Array<float> dx = (difference_filter_1d(x[axis], NAN, 1 - axis) > 0.f).casted<float>();
                 Array<float> ldx = box_filter(dx, ArrayShape{5, 5}, NAN);
                 draw_nan_masked_grayscale(ldx, 0, 1).save_to_file("ldx-" + std::to_string(axis) + ".ppm");
-                for(size_t r = 0; r < ldx.shape(0); ++r) {
-                    for(size_t c = 0; c < ldx.shape(1); ++c) {
+                for (size_t r = 0; r < ldx.shape(0); ++r) {
+                    for (size_t c = 0; c < ldx.shape(1); ++c) {
                         if (!(ldx(r, c) > 0.9)) {
                             x(0, r, c) = NAN;
                             x(1, r, c) = NAN;
@@ -403,8 +403,8 @@ int main(int argc, char **argv) {
                 Array<float> sz = (x[2] > 0.f).casted<float>();
                 Array<float> lz = box_filter(sz, ArrayShape{2, 2}, NAN);
                 draw_nan_masked_grayscale(lz, 0, 1).save_to_file("lx-2.ppm");
-                for(size_t r = 0; r < lz.shape(0); ++r) {
-                    for(size_t c = 0; c < lz.shape(1); ++c) {
+                for (size_t r = 0; r < lz.shape(0); ++r) {
+                    for (size_t c = 0; c < lz.shape(1); ++c) {
                         if (!(lz(r, c) > 0.9)) {
                             x(0, r, c) = NAN;
                             x(1, r, c) = NAN;
@@ -456,8 +456,8 @@ int main(int argc, char **argv) {
             Array<float> disparity_0_f = guided_filter(im0_gray, disparity_0, ArrayShape{15, 15}, float(1e-3));
             draw_nan_masked_grayscale(disparity_0_f, -50.f, 50.f).save_to_file("disparity-0-f.ppm");
             draw_nan_masked_grayscale(disparity_0_f - disparity_0, -10.f, 10.f).save_to_file("disparity-0-f-diff.ppm");
-            for(size_t r = 0; r < disparity_0_f.shape(0); ++r) {
-                for(size_t c = 0; c < disparity_0_f.shape(1); ++c) {
+            for (size_t r = 0; r < disparity_0_f.shape(0); ++r) {
+                for (size_t c = 0; c < disparity_0_f.shape(1); ++c) {
                     if (!(std::abs(disparity_0_f(r, c) - disparity_0(r, c)) < 10)) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;
@@ -472,8 +472,8 @@ int main(int argc, char **argv) {
             Array<float> hr0_1d = harris_response_1d(im0_gray, F);
             draw_nan_masked_grayscale(hr0_1d, 0, 1e-3).save_to_file("hr0_1d.ppm");
             hr0_1d = box_filter_nan(hr0_1d, ArrayShape{10, 10}, NAN);
-            for(size_t r = 0; r < hr0_1d.shape(0); ++r) {
-                for(size_t c = 0; c < hr0_1d.shape(1); ++c) {
+            for (size_t r = 0; r < hr0_1d.shape(0); ++r) {
+                for (size_t c = 0; c < hr0_1d.shape(1); ++c) {
                     if (!(hr0_1d(r, c) > 1e-4)) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;
@@ -492,8 +492,8 @@ int main(int argc, char **argv) {
             // Array<float> bp = box_filter_nan((!(sad_filter(disparity_0, NAN) < 0.5f)).casted<float>(), ArrayShape{5, 5}, NAN);
             draw_nan_masked_grayscale(bp, 0, 1).save_to_file("bp.ppm");
 
-            for(size_t r = 0; r < bp.shape(0); ++r) {
-                for(size_t c = 0; c < bp.shape(1); ++c) {
+            for (size_t r = 0; r < bp.shape(0); ++r) {
+                for (size_t c = 0; c < bp.shape(1); ++c) {
                     if (bp(r, c) > 0.01) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;
@@ -510,8 +510,8 @@ int main(int argc, char **argv) {
             draw_nan_masked_grayscale(adiff, 0, 0).save_to_file("mdm.ppm");
             Array<float> adiff2 = median_filter_2d(adiff, 10, 20);
             draw_nan_masked_grayscale(adiff2, 0, 0).save_to_file("mdm2.ppm");
-            for(size_t r = 0; r < md.shape(0); ++r) {
-                for(size_t c = 0; c < md.shape(1); ++c) {
+            for (size_t r = 0; r < md.shape(0); ++r) {
+                for (size_t c = 0; c < md.shape(1); ++c) {
                     // std::cerr << std::abs(md(r, c) - disparity_0(r, c)) << std::endl;
                     //if (std::abs(md(r, c) - disparity_0(r, c)) >= 1 || x(2, r, c) < 0) {
                     if (adiff2(r, c) >= 2) {
@@ -531,9 +531,9 @@ int main(int argc, char **argv) {
             // Array<float> dx = difference_filter_1d(x[0], NAN, 1);
 
             std::list<Array<float>> dbd;
-            for(size_t r = 0; r < im0_rgb.shape(1); ++r) {
+            for (size_t r = 0; r < im0_rgb.shape(1); ++r) {
                 // std::cerr << r << std::endl;
-                for(size_t c = 0; c < im0_rgb.shape(2); ++c) {
+                for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
                     if (r % 10 != 0 || c % 10 != 0) {
                         continue;
                     }
@@ -545,9 +545,9 @@ int main(int argc, char **argv) {
                 }
             }
             NeighborDb<float> db(dbd, true); // true = standardize
-            for(size_t r = 0; r < im0_rgb.shape(1); ++r) {
+            for (size_t r = 0; r < im0_rgb.shape(1); ++r) {
                 // std::cerr << r << std::endl;
-                for(size_t c = 0; c < im0_rgb.shape(2); ++c) {
+                for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
                     if (!desc.can_compute(r, c) ||
                         db.count(desc(r, c), 0.1) > 0) {
                         x(0, r, c) = NAN;
@@ -560,7 +560,7 @@ int main(int argc, char **argv) {
         }
 
         if (false) {
-            for(auto xx : x) {
+            for (auto xx : x) {
                 xx = median_filter_2d(xx, 10, 20);
             }
             // median filter removes NANs
@@ -574,8 +574,8 @@ int main(int argc, char **argv) {
         if (true) {
             Array<bool> mask = zeros<bool>(x[0].shape());
             PpmImage im = PpmImage::from_float_rgb(im0_rgb);
-            for(size_t r = 0; r < condition_number.shape(0); ++r) {
-                for(size_t c = 0; c < condition_number.shape(1); ++c) {
+            for (size_t r = 0; r < condition_number.shape(0); ++r) {
+                for (size_t c = 0; c < condition_number.shape(1); ++c) {
                     if (x(2, r, c) < 0) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;
@@ -591,8 +591,8 @@ int main(int argc, char **argv) {
             Array<bool> inverse_mask;
             Array<float> img = im1_rgb.copy();
             move_along_disparity(disparity_0, F, im1_rgb, &mask, &inverse_mask);
-            for(size_t r = 0; r < inverse_mask.shape(0); ++r) {
-                for(size_t c = 0; c < inverse_mask.shape(1); ++c) {
+            for (size_t r = 0; r < inverse_mask.shape(0); ++r) {
+                for (size_t c = 0; c < inverse_mask.shape(1); ++c) {
                     if (inverse_mask(r, c) == 1) {
                         img(0, r, c) = NAN;
                         img(1, r, c) = NAN;
@@ -605,8 +605,8 @@ int main(int argc, char **argv) {
 
         if (false) {
             Array<float> xm = median_filter_2d(x[2], 15, 20);
-            for(size_t r = 0; r < xm.shape(0); ++r) {
-                for(size_t c = 0; c < xm.shape(1); ++c) {
+            for (size_t r = 0; r < xm.shape(0); ++r) {
+                for (size_t c = 0; c < xm.shape(1); ++c) {
                     if (!(std::abs(xm(r, c) - x(2, r, c)) < 50)) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;
@@ -619,8 +619,8 @@ int main(int argc, char **argv) {
 
         if (false) {
             Array<float> disparity_diff = PpmImage::load_from_file("disparity-0-diff.ppm").to_float_grayscale();
-            for(size_t r = 0; r < disparity_diff.shape(0); ++r) {
-                for(size_t c = 0; c < disparity_diff.shape(1); ++c) {
+            for (size_t r = 0; r < disparity_diff.shape(0); ++r) {
+                for (size_t c = 0; c < disparity_diff.shape(1); ++c) {
                     if (disparity_diff(r, c) > 0.8) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;
@@ -632,8 +632,8 @@ int main(int argc, char **argv) {
         }
         if (false) {
             Array<float> diff01 = PpmImage::load_from_file("im-01-sm-diff.ppm").to_float_grayscale();
-            for(size_t r = 0; r < diff01.shape(0); ++r) {
-                for(size_t c = 0; c < diff01.shape(1); ++c) {
+            for (size_t r = 0; r < diff01.shape(0); ++r) {
+                for (size_t c = 0; c < diff01.shape(1); ++c) {
                     if (diff01(r, c) > 0.05) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;

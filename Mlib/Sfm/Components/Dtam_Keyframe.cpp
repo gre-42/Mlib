@@ -182,7 +182,7 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
                 down_sampler_.ds_image_frames_.at(key_frame_time_).rgb,
                 down_sampler_.ds_image_frames_.at(it->first).rgb);
         };
-        for(auto it = ++cams_sorted.find(last_integrated_time_);
+        for (auto it = ++cams_sorted.find(last_integrated_time_);
             (it != cams_sorted.end()) && (!future_is_full());
             ++it)
         {
@@ -237,7 +237,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             dm_->notify_cost_volume_changed(dsi_);
         }
         if (is_full()) {
-            for(size_t i = 0; i < dsi_.shape(0); i += dsi_.shape(0) / 5) {
+            for (size_t i = 0; i < dsi_.shape(0); i += dsi_.shape(0) / 5) {
                 draw_nan_masked_grayscale(dsi_[i], 0, 1).save_to_file(cache_dir_ + "/vol-" + suffix + "-" + std::to_string(i) + ".ppm");
             }
         }
@@ -309,7 +309,7 @@ void DtamKeyframe::optimize1() {
         size_t nerr = 0;
         {
             auto cit = key_frames_.find(key_frame_time_);
-            for(auto neighbor = key_frames_.begin(); neighbor != cit; ++neighbor) {
+            for (auto neighbor = key_frames_.begin(); neighbor != cit; ++neighbor) {
                 if (std::distance(neighbor, cit) > 2 ||
                     neighbor == cit ||
                     !neighbor->second.depth_.initialized())
@@ -336,9 +336,9 @@ void DtamKeyframe::optimize1() {
             draw_quantiled_grayscale(err, 0, 0.8).save_to_file(cache_dir_ + "/err-" + suffix + ".ppm");
             // float q = nanquantile(err, 0.8f);
             // masked_depth_ = depth_.array_array_binop(err, [q](float de, float er){ return er < q ? de : NAN; });
-            // for(size_t h = 0; h < vol.shape(0); ++h) {
-            //     for(size_t r = 0; r < vol.shape(1); ++r) {
-            //         for(size_t c = 0; c < vol.shape(2); ++c) {
+            // for (size_t h = 0; h < vol.shape(0); ++h) {
+            //     for (size_t r = 0; r < vol.shape(1); ++r) {
+            //         for (size_t c = 0; c < vol.shape(2); ++c) {
             //             if (!(err(r, c) < q)) {
             //                 vol(h, r, c) = NAN;
             //             }
@@ -363,7 +363,7 @@ void DtamKeyframe::optimize1() {
 void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
     {
         auto img = draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth__, 1 / cfg_.params_.min_depth__);
-        for(const std::chrono::milliseconds& time : times_integrated_) {
+        for (const std::chrono::milliseconds& time : times_integrated_) {
             if (time != key_frame_time_) {
                 Array<float> ke = projection_in_reference(
                     camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
@@ -431,7 +431,7 @@ bool DtamKeyframe::future_is_full() const {
 }
 
 const DtamKeyframe* DtamKeyframe::currently_tracking_keyframe(const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames) {
-    for(auto it = key_frames.rbegin(); it != key_frames.rend(); ++it) {
+    for (auto it = key_frames.rbegin(); it != key_frames.rend(); ++it) {
         if ((!it->second.cfg_.incremental_update_ && it->second.depth_.initialized()) ||
             (it->second.cfg_.incremental_update_ && it->second.can_track()))
         {

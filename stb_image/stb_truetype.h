@@ -2696,7 +2696,7 @@ STBTT_DEF stbtt_uint8 *stbtt_FindSVGDoc(const stbtt_fontinfo *info, int gl)
    int numEntries = ttUSHORT(svg_doc_list);
    stbtt_uint8 *svg_docs = svg_doc_list + 2;
 
-   for(i=0; i<numEntries; i++) {
+   for (i=0; i<numEntries; i++) {
       stbtt_uint8 *svg_doc = svg_docs + (12 * i);
       if ((gl >= ttUSHORT(svg_doc)) && (gl <= ttUSHORT(svg_doc + 2)))
          return svg_doc;
@@ -2974,7 +2974,7 @@ static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e,
          }
 
          // resort the list if needed
-         for(;;) {
+         for (;;) {
             int changed=0;
             step = &active;
             while (*step && (*step)->next) {
@@ -3389,7 +3389,7 @@ static void stbtt__sort_edges_quicksort(stbtt__edge *p, int n)
       /* partition loop */
       i=1;
       j=n-1;
-      for(;;) {
+      for (;;) {
          /* handling of equality is crucial here */
          /* for sentinels & efficiency with duplicates */
          for (;;++i) {

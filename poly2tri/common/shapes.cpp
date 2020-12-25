@@ -77,10 +77,10 @@ void Triangle::MarkNeighbor(Triangle& t)
 void Triangle::Clear()
 {
     Triangle *t;
-    for( int i=0; i<3; i++ )
+    for ( int i=0; i<3; i++ )
     {
         t = neighbors_[i];
-        if( t != NULL )
+        if ( t != NULL )
         {
             t->ClearNeighbor( this );
         }
@@ -91,11 +91,11 @@ void Triangle::Clear()
 
 void Triangle::ClearNeighbor(Triangle *triangle )
 {
-    if( neighbors_[0] == triangle )
+    if ( neighbors_[0] == triangle )
     {
         neighbors_[0] = NULL;
     }
-    else if( neighbors_[1] == triangle )
+    else if ( neighbors_[1] == triangle )
     {
         neighbors_[1] = NULL;
     }

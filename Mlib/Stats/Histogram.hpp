@@ -17,8 +17,8 @@ public:
         // TData h = (ma - mi) / (nbins - 1);
         // Array<TData> boundaries = linspace(mi - h / 2, ma + h / 2, nbins + 1);
         hist_ = zeros<size_t>(ArrayShape{nbins});
-        for(const TData& v : fdata.flat_iterable()) {
-            // for(size_t j = 1; j < boundaries.length(); ++j) {
+        for (const TData& v : fdata.flat_iterable()) {
+            // for (size_t j = 1; j < boundaries.length(); ++j) {
             //     if (const TData& v = fdata(i); v >= boundaries(j - 1) && v < boundaries(j)) {
             //         ++hist(j - 1);
             //     }

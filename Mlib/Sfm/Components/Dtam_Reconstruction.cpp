@@ -68,7 +68,7 @@ void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
         {
             if (cfg_.rewind_first_keyframe_) {
                 size_t i = 0;
-                for(const auto& c : cams_sorted) {
+                for (const auto& c : cams_sorted) {
                     if (i % cfg_.nframes_between_keyframes_ == 0) {
                         std::cerr << "Inserting rewinded keyframe at " << c.first.count() << " ms" << std::endl;
                         insert_keyframe(c.first);
@@ -106,7 +106,7 @@ void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
             key_frames_.rbegin()->second.reconstruct();
         }
     } else {
-        for(auto& k : key_frames_) {
+        for (auto& k : key_frames_) {
             k.second.reconstruct();
         }
     }

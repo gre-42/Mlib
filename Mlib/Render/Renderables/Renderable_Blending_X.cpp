@@ -16,7 +16,7 @@ RenderableBlendingX::RenderableBlendingX(
     RenderingResources& rendering_resources)
 : square_{square}
 {
-    for(size_t i = 0; i < 2; ++i) {
+    for (size_t i = 0; i < 2; ++i) {
         ColoredVertex v00{ // min(x), min(y)
                 {square(0, 0) / 2, square(0, 1), 0},
                 fixed_ones<float, 3>(),

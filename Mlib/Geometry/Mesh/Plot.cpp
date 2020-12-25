@@ -15,15 +15,15 @@ PpmImage Mlib::plot_mesh(
     const std::list<FixedArray<float, 2>>& highlighted_nodes)
 {
     NormalizedPointsFixed np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::MINIMUM};
-    for(const auto& t : triangles) {
+    for (const auto& t : triangles) {
         np.add_point(t(0));
         np.add_point(t(1));
         np.add_point(t(2));
     }
-    for(const auto& c : contour) {
+    for (const auto& c : contour) {
         np.add_point(c);
     }
-    for(const auto& n : highlighted_nodes) {
+    for (const auto& n : highlighted_nodes) {
         np.add_point(n);
     }
     PpmImage im{image_size, Rgb24::white()};
@@ -31,7 +31,7 @@ PpmImage Mlib::plot_mesh(
     auto trafo = [&](const FixedArray<float, 2>& p){
         return 0.5f + dot1d(normalization_matrix, homogenized_3(p)).to_array() * (Array<float>::from_shape(im.shape()) - 1.f);
     };
-    for(const auto& t : triangles) {
+    for (const auto& t : triangles) {
         auto a = trafo(t(0));
         auto b = trafo(t(1));
         auto c = trafo(t(2));
@@ -42,7 +42,7 @@ PpmImage Mlib::plot_mesh(
         im.draw_fill_rect(ArrayShape{a2i(b(0)), a2i(b(1))}, 4, Rgb24::blue());
         im.draw_fill_rect(ArrayShape{a2i(c(0)), a2i(c(1))}, 4, Rgb24::blue());
     }
-    for(auto it = contour.begin(); ; ) {
+    for (auto it = contour.begin(); ; ) {
         auto it0 = it++;
         if (it == contour.end()) {
             break;
@@ -54,7 +54,7 @@ PpmImage Mlib::plot_mesh(
         auto a = trafo(contour.front());
         im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, 4, Rgb24::green());
     }
-    for(const auto& n : highlighted_nodes) {
+    for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);
         im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, 4, Rgb24::red());
     }
@@ -68,18 +68,18 @@ PpmImage Mlib::plot_mesh(
     const std::list<FixedArray<float, 3>>& highlighted_nodes)
 {
     std::list<FixedArray<FixedArray<float, 2>, 3>> triangles2d;
-    for(const auto& t : triangles) {
+    for (const auto& t : triangles) {
         triangles2d.push_back({
             FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
             FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
             FixedArray<float, 2>{t(2).position(0), t(2).position(1)}});
     }
     std::list<FixedArray<float, 2>> contour2d;
-    for(const auto& c : contour) {
+    for (const auto& c : contour) {
         contour2d.push_back({c(0), c(1)});
     }
     std::list<FixedArray<float, 2>> highlighted_nodes2d;
-    for(const auto& n : highlighted_nodes) {
+    for (const auto& n : highlighted_nodes) {
         highlighted_nodes2d.push_back(FixedArray<float, 2>{n(0), n(1)});
     }
     return plot_mesh(image_size, triangles2d, contour2d, highlighted_nodes2d);

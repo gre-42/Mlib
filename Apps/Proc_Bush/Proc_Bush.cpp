@@ -40,7 +40,7 @@ void draw_arrays(
             std::runtime_error(strerror(errno));
         }
     }
-    for(const FixedArray<size_t, 4>& f : faces) {
+    for (const FixedArray<size_t, 4>& f : faces) {
         int res = fprintf(
 			pFile,
 			"f %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu\n",
@@ -63,7 +63,7 @@ Bush generate_bush(size_t nplanes, unsigned int seed) {
     Bush result;
     result.vertices.reserve(4 * nplanes);
     result.faces.reserve(nplanes);
-    for(size_t i = 0; i < nplanes; ++i) {
+    for (size_t i = 0; i < nplanes; ++i) {
         FixedArray<float, 3> n = fixed_random_uniform_array<float, 3>(seed + i);
         n(2) = 0;
         n /= std::sqrt(sum(squared(n)));
@@ -74,7 +74,7 @@ Bush generate_bush(size_t nplanes, unsigned int seed) {
             -1, -1, +1, +1,
             0, 0, 0, 0};
         FixedArray<float, 3, 4> tf = dot2d(r, face);
-        for(size_t v = 0; v < 4; ++v) {
+        for (size_t v = 0; v < 4; ++v) {
             result.vertices.push_back(Vertex{
                 position: {tf(0, v), tf(1, v), tf(2, v)},
                 normal: dot1d(r, FixedArray<float, 3>{0, 0, 1}),

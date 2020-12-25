@@ -97,7 +97,7 @@ Node* AdvancingFront::LocatePoint(const Point* point)
         break;
     }
   }
-  if(node) search_node_ = node;
+  if (node) search_node_ = node;
   return node;
 }
 

@@ -168,7 +168,7 @@ void test_bvh_performance() {
         std::cout << bvh << std::endl;
     }
     bool check_linear = false;
-    for(size_t o = 0; o < 1 + (size_t)check_linear; ++o) {
+    for (size_t o = 0; o < 1 + (size_t)check_linear; ++o) {
         std::mt19937 gen(0); // Standard mersenne_twister_engine
         std::uniform_real_distribution<float> dis(-1, 1);
         Bvh<float, int, 3> bvh{{0.25f + 10.f * o, 0.2f + 10.f * o, 0.2f + 10.f * o}, 10};
@@ -247,9 +247,9 @@ void test_roundness_estimator() {
 //     triangle_lists.back()->draw_triangle_wo_normals({0.f, 0.f, 0.f}, {1.f, 0.f, 0.f}, {0.5f, 1.f, 0.f});
 //     triangle_lists.back()->draw_triangle_wo_normals({0.f, 0.f, 0.f}, {0.5f, -1.f, 0.4f}, {1.f, 0.f, 0.f});
 //     TriangleList::smoothen_edges(triangle_lists, triangle_lists);
-//     for(const auto& t : triangle_lists.back()->triangles_) {
+//     for (const auto& t : triangle_lists.back()->triangles_) {
 //         std::cerr << std::endl;
-//         for(const auto& v : t.flat_iterable()) {
+//         for (const auto& v : t.flat_iterable()) {
 //             std::cerr << v.position << std::endl;
 //         }
 //     }

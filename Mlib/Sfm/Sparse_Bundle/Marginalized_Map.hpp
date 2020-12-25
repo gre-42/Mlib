@@ -446,7 +446,7 @@ public:
     }
     std::map<typename TMap::key_type, const typename TMap::mapped_type*> sorted() const {
         std::map<typename TMap::key_type, const typename TMap::mapped_type*> res;
-        for(const auto& p : *this) {
+        for (const auto& p : *this) {
             if (res.find(p.first) != res.end()) {
                 throw std::runtime_error("Duplicate key");
             }

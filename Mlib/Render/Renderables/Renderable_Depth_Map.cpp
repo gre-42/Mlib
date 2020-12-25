@@ -23,8 +23,8 @@ RenderableDepthMap::RenderableDepthMap(
     Array<float> G = rgb_picture[1];
     Array<float> B = rgb_picture[2];
     const Array<float>& Z = depth_picture;
-    for(size_t r = 0; r < rgb_picture.shape(1) - 1; ++r) {
-        for(size_t c = 0; c < rgb_picture.shape(2) - 1; ++c) {
+    for (size_t r = 0; r < rgb_picture.shape(1) - 1; ++r) {
+        for (size_t c = 0; c < rgb_picture.shape(2) - 1; ++c) {
             if (std::isnan(Z(r, c)) ||
                 std::isnan(Z(r, c + 1)) ||
                 std::isnan(Z(r + 1, c)) ||

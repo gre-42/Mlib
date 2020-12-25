@@ -23,8 +23,8 @@ static Array<float> unpack_k_internal_dk(const Array<float>& k, const Array<floa
     assert(k.ndim() == 1);
     // t, i, y, k
     Array<float> result{ArrayShape{ke.shape(0), x.shape(0), 3, 4}};
-    for(size_t t = 0; t < ke.shape(0); ++t) {
-        for(size_t i = 0; i < x.shape(0); ++i) {
+    for (size_t t = 0; t < ke.shape(0); ++t) {
+        for (size_t i = 0; i < x.shape(0); ++i) {
             result[t][i][2] = 0;
             result[t][i].row_range(0, 2) = projected_points_jacobian_dki_1p_1ke(x[i], k.row_range(0, 4), ke[t]);
         }
@@ -36,7 +36,7 @@ static Array<float> unpack_k_external(const Array<float>& k, size_t nintrinsic, 
     assert(k.ndim() == 1);
     assert((k.shape(0) - nintrinsic - nx) % 6 == 0);
     Array<float> result{ArrayShape{(k.shape(0) - nintrinsic - nx) / 6, 3, 4}};
-    for(size_t i = nintrinsic; i < k.shape(0) - nx; i += 6) {
+    for (size_t i = nintrinsic; i < k.shape(0) - nx; i += 6) {
         result[(i - nintrinsic) / 6] = k_external(k.row_range(i, i + 6));
     }
     return result;
@@ -47,8 +47,8 @@ static Array<float> unpack_k_external_dk(const Array<float>& ki, const Array<flo
     assert((k.shape(0) - nintrinsic - nx) % 6 == 0);
     // t, i, y, k
     Array<float> result{ArrayShape{(k.shape(0) - nintrinsic - nx) / 6, x.shape(0), 3, 6}};
-    for(size_t t = nintrinsic; t < k.shape(0) - nx; t += 6) {
-        for(size_t i = 0; i < x.shape(0); ++i) {
+    for (size_t t = nintrinsic; t < k.shape(0) - nx; t += 6) {
+        for (size_t i = 0; i < x.shape(0); ++i) {
             result[(t - nintrinsic) / 6][i][2] = 0;
             result[(t - nintrinsic) / 6][i].row_range(0, 2) = projected_points_jacobian_dke_1p_1ke(
                 x[i],
@@ -71,8 +71,8 @@ static Array<float> unpack_x(const Array<float>& k, size_t nx) {
 static Array<float> unpack_x_dx(const Array<float>& ki, const Array<float>& x, const Array<float>& ke) {
     // t, i, y, x
     Array<float> result{ArrayShape{ke.shape(0), x.shape(0), 3, 3}};
-    for(size_t t = 0; t < ke.shape(0); ++t) {
-        for(size_t i = 0; i < x.shape(0); ++i) {
+    for (size_t t = 0; t < ke.shape(0); ++t) {
+        for (size_t i = 0; i < x.shape(0); ++i) {
             result[t][i][2] = 0;
             result[t][i].row_range(0, 2) = projected_points_jacobian_dx_1p_1ke(x[i], ki, ke[t]).col_range(0, 3);
         }
@@ -111,7 +111,7 @@ Array<float> Mlib::Sfm::initial_reconstruction(
         assemble_inverse_homogeneous_3x4(R, t)}));
     Array<float> x(ArrayShape{y0.shape(0), 3});
     Array<float> y_tracked(ArrayShape{2, 3});
-    for(size_t i = 0; i < y0.shape(0); ++i) {
+    for (size_t i = 0; i < y0.shape(0); ++i) {
         y_tracked[0] = y0[i];
         y_tracked[1] = y1[i];
         x[i] = reconstructed_point(y_tracked, ki, ke,
@@ -273,19 +273,19 @@ void Mlib::Sfm::find_projection_matrices(
                 if (x_out != nullptr) {
                     dy_dx = unpack_x_dx(ki, xx, ke);
                 }
-                for(size_t t = 0; t < y.shape(0); ++t) {
-                    for(size_t i = 0; i < y.shape(1); ++i) {
-                        for(size_t d = 0; d < 3; ++d) {
+                for (size_t t = 0; t < y.shape(0); ++t) {
+                    for (size_t i = 0; i < y.shape(1); ++i) {
+                        for (size_t d = 0; d < 3; ++d) {
                             if (ki_precomputed == nullptr) {
-                                for(size_t j = 0; j < 4; ++j) {
+                                for (size_t j = 0; j < 4; ++j) {
                                     J(t, i, d, j) = dy_dki(t, i, d, j);
                                 }
                             }
-                            for(size_t j = 0; j < 6; ++j) {
+                            for (size_t j = 0; j < 6; ++j) {
                                 J(t, i, d, nintrinsic + t * 6 + j) = dy_dke(t, i, d, j);
                             }
                             if (x_out != nullptr) {
-                                for(size_t j = 0; j < 3; ++j) {
+                                for (size_t j = 0; j < 3; ++j) {
                                     J(t, i, d, nintrinsic + y.shape(0) * 6 + i * 3 + j) = dy_dx(t, i, d, j);
                                 }
                             }
@@ -354,7 +354,7 @@ void Mlib::Sfm::find_projection_matrices_ransac(
 {
     auto gen_y1 = [&](const Array<size_t>& indices) {
         Array<float> y1{ArrayShape{y.shape(0), indices.length(), y.shape(2)}};
-        for(size_t i = 0; i < y.shape(0); ++i) {
+        for (size_t i = 0; i < y.shape(0); ++i) {
             y1[i] = y[i][indices];
         }
         return y1;
@@ -389,9 +389,9 @@ void Mlib::Sfm::find_projection_matrices_ransac(
                 &final_residual1);
             Array<float> residual = projected_points(x, ki_out1, ke_out1) - y;
             Array<float> residual2 = zeros<float>(ArrayShape{y.shape(1)});
-            for(size_t i = 0; i < residual.shape(0); ++i) {
-                for(size_t j = 0; j < residual.shape(1); ++j) {
-                    for(size_t k = 0; k < residual.shape(2); ++k) {
+            for (size_t i = 0; i < residual.shape(0); ++i) {
+                for (size_t j = 0; j < residual.shape(1); ++j) {
+                    for (size_t k = 0; k < residual.shape(2); ++k) {
                         residual2(j) += squared(residual(i, j, k));
                     }
                 }

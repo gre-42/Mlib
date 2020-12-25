@@ -237,7 +237,7 @@ Array<float> Mlib::homogenized_Nx3(const Array<float>& a) {
     assert(a.ndim() == 2);
     assert(a.shape(1) == 2);
     Array<float> result{ArrayShape{a.shape(0), 3}};
-    for(size_t r = 0; r < a.shape(0); ++r) {
+    for (size_t r = 0; r < a.shape(0); ++r) {
         result(r, 0) = a(r, 0);
         result(r, 1) = a(r, 1);
         result(r, 2) = 1;
@@ -249,7 +249,7 @@ Array<float> Mlib::homogenized_Nx4(const Array<float>& a, float value) {
     assert(a.ndim() == 2);
     assert(a.shape(1) == 3);
     Array<float> result{ArrayShape{a.shape(0), 4}};
-    for(size_t r = 0; r < a.shape(0); ++r) {
+    for (size_t r = 0; r < a.shape(0); ++r) {
         result(r, 0) = a(r, 0);
         result(r, 1) = a(r, 1);
         result(r, 2) = a(r, 2);
@@ -262,7 +262,7 @@ Array<float> Mlib::dehomogenized_Nx3(const Array<float>& a, float value) {
     assert(a.ndim() == 2);
     assert(a.shape(1) == 4);
     Array<float> result{ArrayShape{a.shape(0), 3}};
-    for(size_t r = 0; r < a.shape(0); ++r) {
+    for (size_t r = 0; r < a.shape(0); ++r) {
         result(r, 0) = a(r, 0);
         result(r, 1) = a(r, 1);
         result(r, 2) = a(r, 2);
@@ -275,7 +275,7 @@ Array<float> Mlib::dehomogenized_Nx2(const Array<float>& a, float value) {
     assert(a.ndim() == 2);
     assert(a.shape(1) == 3);
     Array<float> result{ArrayShape{a.shape(0), 2}};
-    for(size_t r = 0; r < a.shape(0); ++r) {
+    for (size_t r = 0; r < a.shape(0); ++r) {
         result(r, 0) = a(r, 0);
         result(r, 1) = a(r, 1);
         assert(std::abs(a(r, 2) - value) < 1e-12);

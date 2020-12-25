@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     float ey0 = 0;
     float ex1 = 0;
     float ey1 = 0;
-    for(size_t seed = 1; seed < 100; ++seed) {
+    for (size_t seed = 1; seed < 100; ++seed) {
         FixedArray<float, 3> angles{uniform_random_array<float>(ArrayShape{3}, seed) - 0.5f};
         FixedArray<float, 3, 3> m = tait_bryan_angles_2_matrix<float>(angles);
         FixedArray<float, 3> g{0, 0, -9.8};
@@ -28,9 +28,9 @@ int main(int argc, char** argv) {
             std::cerr << std::atan(a(0) / std::sqrt(squared(a(0)) + squared(a(2)))) << std::endl; // y
 
             std::cerr << std::endl;
-            for(size_t i = 0; i < 3; ++i) {
-                for(size_t j = 0; j < 3; ++j) {
-                    for(size_t k = 0; k < 3; ++k) {
+            for (size_t i = 0; i < 3; ++i) {
+                for (size_t j = 0; j < 3; ++j) {
+                    for (size_t k = 0; k < 3; ++k) {
                         std::cerr << i << " " << j << " " << k << "    " << std::atan(a(i) / std::sqrt(squared(a(j)) + squared(a(k)))) << std::endl;
                     }
                 }

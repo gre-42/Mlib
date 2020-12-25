@@ -63,19 +63,19 @@ void draw_arrays(FILE * pFile, int vertCount, fvec3 * vert, fvec3 * normal, fvec
             std::runtime_error(strerror(errno));
         }
     }
-    for(int i = 0; i < vertCount; ++i) {
+    for (int i = 0; i < vertCount; ++i) {
         int res = fprintf(pFile, "vn %+3.3f %+3.3f %+3.3f\n", normal[i].x, normal[i].y, normal[i].z);
         if (res < 0) {
             std::runtime_error(strerror(errno));
         }
     }
-    for(int i = 0; i < vertCount; ++i) {
+    for (int i = 0; i < vertCount; ++i) {
         int res = fprintf(pFile, "vt %+3.3f %+3.3f\n", uv[i].u, uv[i].v);
         if (res < 0) {
             std::runtime_error(strerror(errno));
         }
     }
-    for(int i = 0; i < faceCount; ++i) {
+    for (int i = 0; i < faceCount; ++i) {
         int res = fprintf(
 			pFile,
 			"f %d/%d/%d %d/%d/%d %d/%d/%d\n",
@@ -143,7 +143,7 @@ void basic_use()
         if (seed0 == 0) {
             throw std::runtime_error("mSeed=0 not allowed");
         }
-        for(int i = 0; i < ntrees; ++i) {
+        for (int i = 0; i < ntrees; ++i) {
             srand(seed0 + i);
             tree.generate();
             fprintf(pFile, "g Tree%d\n", i);

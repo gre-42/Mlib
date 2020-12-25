@@ -54,7 +54,7 @@ void InverseDepthCostVolume::increment(
         }
     }
 
-    for(size_t di = 0; di < inverse_depths_.length(); ++di) {
+    for (size_t di = 0; di < inverse_depths_.length(); ++di) {
         Array<float> homog_e = rotation_and_translation_to_homography(
             R,
             t,
@@ -65,8 +65,8 @@ void InverseDepthCostVolume::increment(
         FixedArray<size_t, 2> space_shape_f{space_shape_};
         HomographySampler<float> hs{homog_i};
         #pragma omp parallel for
-        for(size_t r = 0; r < im0_rgb.shape(1); ++r) {
-            for(size_t c = 0; c < im0_rgb.shape(2); ++c) {
+        for (size_t r = 0; r < im0_rgb.shape(1); ++r) {
+            for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
                 if (e.initialized() && (std::abs(r - e(0)) < 80) && (std::abs(c - e(1)) < 80)) {
                     continue;
                 }
@@ -77,7 +77,7 @@ void InverseDepthCostVolume::increment(
                     ArrayShape i1 = a2i(dehomogenized_2(ai1));
                     // std::cerr << "i0 " << i0 << " i1 " << i1 << std::endl;
                     if (all(i1 < space_shape_)) {
-                        for(size_t h = 0; h < im0_rgb.shape(0); ++h) {
+                        for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
                             idsi_sum_(di, r, c) += std::abs(
                                 im0_rgb(h, i0(0), i0(1)) -
                                 im1_rgb(h, i1(0), i1(1)));
@@ -90,7 +90,7 @@ void InverseDepthCostVolume::increment(
                     FixedArray<float, 3> ai1 = apply_homography(homog_i_f, homogenized_3(ai0));
                     FixedArray<size_t, 2> i1 = a2i(dehomogenized_2(ai1));
                     if (all(i1 < space_shape_f)) {
-                        for(size_t h = 0; h < im0_rgb.shape(0); ++h) {
+                        for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
                             idsi_sum_(di, r, c) += std::abs(
                                 im0_rgb(h, i0(0), i0(1)) -
                                 im1_rgb(h, i1(0), i1(1)));
@@ -100,7 +100,7 @@ void InverseDepthCostVolume::increment(
                 } else {
                     BilinearInterpolator<float> bi;
                     if (hs.sample_destination(r, c, space_shape_, bi)) {
-                        for(size_t h = 0; h < im0_rgb.shape(0); ++h) {
+                        for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
                             float v = bi.interpolate_multichannel(im1_rgb, h);
                             if (!std::isnan(v)) {
                                 idsi_sum_(di, r, c) += std::abs(im0_rgb(h, r, c) - v);
@@ -122,9 +122,9 @@ Array<float> InverseDepthCostVolume::get(size_t min_channel_increments) const {
         return n == 0 ? NAN : s / n;
     });
     Array<bool> all_set = all(nelements_idsi_ >= size_t(min_channel_increments), 0);
-    for(size_t di = 0; di < inverse_depths_.length(); ++di) {
-        for(size_t r = 0; r < res.shape(1); ++r) {
-            for(size_t c = 0; c < res.shape(2); ++c) {
+    for (size_t di = 0; di < inverse_depths_.length(); ++di) {
+        for (size_t r = 0; r < res.shape(1); ++r) {
+            for (size_t c = 0; c < res.shape(2); ++c) {
                 if (!all_set(r, c)) {
                     res(di, r, c) = NAN;
                 }

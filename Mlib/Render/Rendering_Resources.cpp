@@ -76,7 +76,7 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
         //     // vpa[3] = (vpa[3] > 0.5f).casted<float>();
         //     float sigma = std::min(im.width, im.height) / 10.f;
         //     Array<float> m = gaussian_filter_NWE(vpa[3], sigma, float(NAN));
-        //     for(size_t i = 0; i < 3; ++i) {
+        //     for (size_t i = 0; i < 3; ++i) {
         //         vpa[i] = gaussian_filter_NWE(vpa[i] * vpa[3], sigma, float(NAN)) / m;
         //     }
         //     // static int ii = 0;
@@ -93,7 +93,7 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
         //         Array<float> vpa = vp.to_array();
         //         // vpa[3] = gaussian_filter_NWE(vpa[3], 0.5f, float(NAN));
         //         // vpa[3] = (vpa[3] > 0.5f).casted<float>();
-        //         for(size_t i = 0; i < 3; ++i) {
+        //         for (size_t i = 0; i < 3; ++i) {
         //             vpa[i] = gaussian_filter_NWE(vpa[i], 2.f, float(NAN));
         //         }
         //         // static int ii = 0;

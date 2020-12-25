@@ -10,9 +10,9 @@ namespace Mlib {
 template <class TColor>
 void draw_circle_points(Array<TColor>& image, const float angle0, const size_t na, const int nz) {
     assert(image.ndim() == 2);
-    for(size_t ia = 0; ia < na; ia++) {
+    for (size_t ia = 0; ia < na; ia++) {
         const float dangle0 = M_PI * static_cast<float>(ia) / na;
-        for(int iz = -nz; iz <= nz; iz++) {
+        for (int iz = -nz; iz <= nz; iz++) {
             const float angle1 = M_PI * static_cast<float>(iz) / nz;
             Array<float> point3d;
             point3d.resize(3);
@@ -50,7 +50,7 @@ inline void visit_streamline(
     if (any(center >= field_shape)) {
         return;
     }
-    for(size_t i = 0; i < length; ++i) {
+    for (size_t i = 0; i < length; ++i) {
         ArrayShape ipos{a2i(fpos)};
         if (any(ipos >= field_shape)) {
             break;
@@ -80,11 +80,11 @@ void draw_fill_rect(
 {
     assert(image.ndim() == 2);
     assert(center.ndim() == 2);
-    for(size_t r = center(0) - size; r != center(0) + size + 1; ++r) {
+    for (size_t r = center(0) - size; r != center(0) + size + 1; ++r) {
         if (r >= image.shape(0)) {
             continue;
         }
-        for(size_t c = center(1) - size; c != center(1) + size + 1; ++c) {
+        for (size_t c = center(1) - size; c != center(1) + size + 1; ++c) {
             if (c >= image.shape(1)) {
                 continue;
             }
@@ -112,7 +112,7 @@ void draw_line_ext(
     v /= len;
     Array<float> p;
     p = from;
-    for(size_t i = 0; infinite || i < len; ++i) {
+    for (size_t i = 0; infinite || i < len; ++i) {
         ArrayShape index{fi2i(p(0)), fi2i(p(1))};
         if (any(index >= image.shape())) {
             break;
@@ -132,7 +132,7 @@ void draw_points_as_boxes(
     assert(image.ndim() == 2);
     assert(feature_points.ndim() == 2);
     assert(feature_points.shape(1) == 2);
-    for(const Array<float>& feature_point : feature_points) {
+    for (const Array<float>& feature_point : feature_points) {
         assert(feature_point.ndim() == 1);
         assert(feature_point.length() == 2);
         //assert(feature_point(0) >= 0);

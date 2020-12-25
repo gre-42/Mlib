@@ -26,7 +26,7 @@ void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoi
     spawn_points_ = spawn_points;
     FixedArray<float, 4, 4> m = node.absolute_model_matrix();
     FixedArray<float, 3, 3> r = R3_from_4x4(m) / node.scale();
-    for(SpawnPoint& p : spawn_points_) {
+    for (SpawnPoint& p : spawn_points_) {
         p.position = dehomogenized_3(dot1d(m, homogenized_4(p.position)));
         p.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(r, tait_bryan_angles_2_matrix(p.rotation)), r.T()));
     }
@@ -44,7 +44,7 @@ void GameLogic::advance_time(float dt) {
 void GameLogic::handle_team_deathmatch() {
     std::set<std::string> all_teams;
     std::set<std::string> winner_teams;
-    for(auto& p : players_.players()) {
+    for (auto& p : players_.players()) {
         const std::string& node_name = p.second->scene_node_name();
         all_teams.insert(p.second->team());
         if (!node_name.empty()) {
@@ -56,12 +56,12 @@ void GameLogic::handle_team_deathmatch() {
         (spawn_points_.size() > 1))
     {
         std::lock_guard lock_guard{mutex_};
-        for(auto& p : players_.players()) {
+        for (auto& p : players_.players()) {
             if (p.second->team() == *winner_teams.begin()) {
                 ++p.second->stats().nwins;
             }
         }
-        for(auto& p : players_.players()) {
+        for (auto& p : players_.players()) {
             const std::string& node_name = p.second->scene_node_name();
             if (!node_name.empty()) {
                 scene_.delete_root_node(node_name);
@@ -69,7 +69,7 @@ void GameLogic::handle_team_deathmatch() {
         }
         auto sit = spawn_points_.begin();
         auto pit = players_.players().begin();
-        for(; sit != spawn_points_.end() && pit != players_.players().end(); ++sit, ++pit) {
+        for (; sit != spawn_points_.end() && pit != players_.players().end(); ++sit, ++pit) {
             auto it = preferred_car_spawners_.find(pit->second);
             if (it == preferred_car_spawners_.end()) {
                 throw std::runtime_error("Player " + pit->second->name() + " has no preferred car spawner");
@@ -90,7 +90,7 @@ void GameLogic::handle_bystanders() {
     float r_spawn = 200;
     float r_delete = 300;
     float r_neighbors = 20;
-    for(auto& player : players_.players()) {
+    for (auto& player : players_.players()) {
         if (player.second == vip_) {
             continue;
         }
@@ -100,9 +100,9 @@ void GameLogic::handle_bystanders() {
         }
         if (player.second->game_mode() == GameMode::BYSTANDER) {
             if (player.second->scene_node_name().empty()) {
-                for(auto& sp : spawn_points_) {
+                for (auto& sp : spawn_points_) {
                     bool exists = false;
-                    for(auto& player2 : players_.players()) {
+                    for (auto& player2 : players_.players()) {
                         if (!player2.second->scene_node_name().empty()) {
                             if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(r_neighbors)) {
                                 exists = true;

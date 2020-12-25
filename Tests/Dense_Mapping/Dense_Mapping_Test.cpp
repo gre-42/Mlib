@@ -126,18 +126,18 @@ void test_boundary_and_nan() {
     Array<float> a = Dm::dense_mapping(dsi, g, p);
     //std::cerr << a << std::endl;
 
-    for(size_t dc = 0; dc < 2; ++dc) {
+    for (size_t dc = 0; dc < 2; ++dc) {
         Array<float> dsiN = full(ArrayShape{nH, nR, nC + 1}, NAN);
         Array<float> gN = full(ArrayShape{nR, nC + 1}, 0.45f);
-        for(size_t h = 0; h < dsi.shape(0); ++h) {
-            for(size_t r = 0; r < dsi.shape(1); ++r) {
-                for(size_t c = 0; c < dsi.shape(2); ++c) {
+        for (size_t h = 0; h < dsi.shape(0); ++h) {
+            for (size_t r = 0; r < dsi.shape(1); ++r) {
+                for (size_t c = 0; c < dsi.shape(2); ++c) {
                     dsiN(h, r, c + dc) = dsi(h, r, c);
                 }
             }
         }
-        for(size_t r = 0; r < g.shape(0); ++r) {
-            for(size_t c = 0; c < g.shape(1); ++c) {
+        for (size_t r = 0; r < g.shape(0); ++r) {
+            for (size_t c = 0; c < g.shape(1); ++c) {
                 gN(r, c + dc) = g(r, c);
             }
         }
@@ -147,8 +147,8 @@ void test_boundary_and_nan() {
         //std::cerr << gN << std::endl;
         Array<float> aN = Dm::dense_mapping(dsiN, gN, p);
         //std::cerr << aN << std::endl;
-        for(size_t r = 0; r < a.shape(0); ++r) {
-            for(size_t c = 0; c < a.shape(1); ++c) {
+        for (size_t r = 0; r < a.shape(0); ++r) {
+            for (size_t c = 0; c < a.shape(1); ++c) {
                 assert_isclose(aN(r, c + dc), a(r, c));
             }
         }

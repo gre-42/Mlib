@@ -17,8 +17,8 @@ public:
     : shape(shape) {}
     template <class TOperation>
     void foreach(const Array<float>& homography, const TOperation& op) const {
-        for(size_t r = 0; r < shape(0); ++r) {
-            for(size_t c = 0; c < shape(1); ++c) {
+        for (size_t r = 0; r < shape(0); ++r) {
+            for (size_t c = 0; c < shape(1); ++c) {
                 Array<float> p0 = homogenized_3(i2a(ArrayShape{r, c}));
                 op(p0, apply_homography(homography, p0));
             }
@@ -48,7 +48,7 @@ public:
     HomographyList(const ArrayShape& shape, const Array<float>& feature_points, const float max_dist)
     : shape_{shape}, max_dist_{max_dist}
     {
-        for(const Array<float>& p : feature_points) {
+        for (const Array<float>& p : feature_points) {
             feature_points_.push_back(FixedArray<float, 2>{p});
         }
     }
@@ -58,7 +58,7 @@ public:
         FixedArray<float, 3, 3> inverse_homography{inv(homography)};
         // std::cerr << homography << std::endl;
 
-        for(const FixedArray<float, 2>& p : feature_points_) {
+        for (const FixedArray<float, 2>& p : feature_points_) {
             FixedArray<float, 3> pos = apply_homography(inverse_homography, homogenized_3(p));
             FixedArray<size_t, 2> ip0{a2i(p)};
             FixedArray<size_t, 2> ipos{a2i(dehomogenized_2(pos))};
@@ -105,7 +105,7 @@ void Mlib::Sfm::detect_chessboard(
 
     float best_good = 0;
     Array<float> best_homography;
-    for(float w = 3 * ws; w < 10 * ws; w += 0.5 * ws) {
+    for (float w = 3 * ws; w < 10 * ws; w += 0.5 * ws) {
 
         if (any(image.shape() < w * shape)) {
             throw std::runtime_error("Shape problem, internal error");
@@ -113,8 +113,8 @@ void Mlib::Sfm::detect_chessboard(
         float maxX = image.shape(id1) - w * shape(id1);
         float maxY = image.shape(id0) - w * shape(id0);
 
-        for(float fx = 0; fx < maxX; fx += 3 * xs) {
-            for(float fy = 0; fy < maxY; fy += 3 * ys) {
+        for (float fx = 0; fx < maxX; fx += 3 * xs) {
+            for (float fy = 0; fy < maxY; fy += 3 * ys) {
                 Array<unsigned int> hist = zeros<unsigned int>(shape);
                 Array<float> homography{
                     {w, 0, fx},
@@ -175,10 +175,10 @@ void Mlib::Sfm::detect_chessboard(
     /*std::list<Array<float>> feature_points = find_saddle_points(image);
     std::cerr << feature_points.size() << std::endl;
     size_t i = 0;
-    for(const Array<float>&p0 : feature_points) {
+    for (const Array<float>&p0 : feature_points) {
         ++i;
         size_t j = 0;
-        for(const Array<float>&p1 : feature_points) {
+        for (const Array<float>&p1 : feature_points) {
             ++j;
             if (i == j) {
                 continue;
@@ -193,7 +193,7 @@ void Mlib::Sfm::detect_chessboard(
             float c = (line, p0)();
             //std::cerr << (line, p0)() << " .... " << (line, p0)() << std::endl;
             size_t matches = 0;
-            for(const Array<float>&p2 : feature_points) {
+            for (const Array<float>&p2 : feature_points) {
                 if (std::abs((line, p2)() - c) < 3) {
                     ++matches;
                     matched.push_back(p2);

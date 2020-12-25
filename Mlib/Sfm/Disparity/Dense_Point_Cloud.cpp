@@ -24,8 +24,8 @@ Array<float> Mlib::Sfm::harris_response_1d(
     assert(im0.ndim() == 2);
     assert(all(im0.shape() > 0));
     Array<float> res{im0.shape()};
-    for(size_t r = 0; r < im0.shape(0); ++r) {
-        for(size_t c = 0; c < im0.shape(1); ++c) {
+    for (size_t r = 0; r < im0.shape(0); ++r) {
+        for (size_t c = 0; c < im0.shape(1); ++c) {
             InverseEpilineDirection ied(r, c, F);
             if (ied.good) {
                 ArrayShape id0{a2i(ied.center0 - ied.v0)};
@@ -85,17 +85,17 @@ Array<float> Mlib::Sfm::compute_disparity_rgb_single_pixel(
         *dsi = NAN;
     }
     Array<float> disparity{im0.shape().erased_first()};
-    for(size_t r = 0; r < im0.shape(1); ++r) {
-        for(size_t c = 0; c < im0.shape(2); ++c) {
+    for (size_t r = 0; r < im0.shape(1); ++r) {
+        for (size_t c = 0; c < im0.shape(2); ++c) {
             EpilineDirection ed(r, c, F, l1_normalization);
             float best_diff = INFINITY;
             float best_d = NAN;
             if (ed.good) {
-                for(float d = -float(search_length); d <= float(search_length); ++d) {
+                for (float d = -float(search_length); d <= float(search_length); ++d) {
                     ArrayShape id1{a2i(ed.center1 + ed.v1 * d * d_multiplier)};
                     if (all(id1 < im1.shape().erased_first())) {
                         float cdiff = 0;
-                        for(size_t h = 0; h < im0.shape(0); ++h) {
+                        for (size_t h = 0; h < im0.shape(0); ++h) {
                             cdiff += std::abs(im0(h, r, c) - im1(h, id1(0), id1(1)));
                         }
                         if (cdiff < best_diff) {
@@ -137,8 +137,8 @@ Array<float> Mlib::Sfm::compute_disparity_rgb_patch(
     if (im0_error != nullptr) {
         im0_error->resize(disparity.shape());
     }
-    for(size_t r = 0; r < im0_rgb.shape(1); ++r) {
-        for(size_t c = 0; c < im0_rgb.shape(2); ++c) {
+    for (size_t r = 0; r < im0_rgb.shape(1); ++r) {
+        for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
             if ((mask != nullptr) && (prior_disparity != nullptr) && (!(*mask)(r, c))) {
                 disparity(r, c) = (*prior_disparity)(r, c);
                 continue;
@@ -195,15 +195,15 @@ Array<float> Mlib::Sfm::iterate_disparity_rgb_patch(
         assert(all(initial_disparity->shape() == mask.shape()));
         // prior_disparity = guided_filter(im0_gray, *initial_disparity, ArrayShape{15, 15}, float(1e-3));
         prior_disparity = median_filter_2d(*initial_disparity, 15);
-        // for(size_t r = 0; r < im0_rgb.shape(1); ++r) {
-        //     for(size_t c = 0; c < im0_rgb.shape(2); ++c) {
+        // for (size_t r = 0; r < im0_rgb.shape(1); ++r) {
+        //     for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
         //         mask(r, c) = std::abs(prior_disparity(r, c) - (*initial_disparity)(r, c)) > 10;
         //     }
         // }
     }
     // return mask.casted<float>();
 
-    for(size_t i = 0; i < 10; ++i) {
+    for (size_t i = 0; i < 10; ++i) {
         if (count_nonzero(mask) == 0) {
             break;
         }
@@ -231,8 +231,8 @@ Array<float> Mlib::Sfm::iterate_disparity_rgb_patch(
 
         // std::cerr << nanmax(abs(disparity_0 - prior_disparity)) << std::endl;
         // std::cerr << "------------" << std::endl;
-        // for(size_t r = 0; r < disparity_0.shape(0); ++r) {
-        //     for(size_t c = 0; c < disparity_0.shape(1); ++c) {
+        // for (size_t r = 0; r < disparity_0.shape(0); ++r) {
+        //     for (size_t c = 0; c < disparity_0.shape(1); ++c) {
         //         if (mask(r, c)) {
         //             mask(r, c) = (std::abs(prior_disparity(r, c) - disparity_0(r, c)) > 10);
         //             prior_disparity(r, c) = disparity_0(r, c);
@@ -262,8 +262,8 @@ Array<float> Mlib::Sfm::move_along_disparity(
         reverse_mask->resize(mask->shape());
         *reverse_mask = false;
     }
-    for(size_t r = 0; r < disparity.shape(0); ++r) {
-        for(size_t c = 0; c < disparity.shape(1); ++c) {
+    for (size_t r = 0; r < disparity.shape(0); ++r) {
+        for (size_t c = 0; c < disparity.shape(1); ++c) {
             EpilineDirection ed(r, c, F);
             if (!ed.good || std::isnan(disparity(r, c))) {
                 result(0, r, c) = NAN;
@@ -301,8 +301,8 @@ Array<float> Mlib::Sfm::reconstruct_disparity(
     if (condition_number != nullptr) {
         condition_number->do_resize(disparity.shape());
     }
-    for(size_t r = 0; r < disparity.shape(0); ++r) {
-        for(size_t c = 0; c < disparity.shape(1); ++c) {
+    for (size_t r = 0; r < disparity.shape(0); ++r) {
+        for (size_t c = 0; c < disparity.shape(1); ++c) {
             EpilineDirection ed(r, c, F);
             if (!ed.good || std::isnan(disparity(r, c))) {
                 x(0, r, c) = NAN;
@@ -367,8 +367,8 @@ Array<float> Mlib::Sfm::reconstruct_depth(
     assert(depth.ndim() == 2);
     Array<float> x{ArrayShape{3}.concatenated(depth.shape())};
     FixedArray<float, 3, 3> ipi{inv(intrinsic_matrix)};
-    for(size_t r = 0; r < depth.shape(0); ++r) {
-        for(size_t c = 0; c < depth.shape(1); ++c) {
+    for (size_t r = 0; r < depth.shape(0); ++r) {
+        for (size_t c = 0; c < depth.shape(1); ++c) {
             FixedArray<size_t, 2> id{r, c};
             FixedArray<float, 3> y = homogenized_3(i2a(id));
             FixedArray<float, 3> xx = dot(ipi, y);

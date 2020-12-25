@@ -15,7 +15,7 @@ TData clipped_element(const TData& v, const TData& low, const TData& high) {
 
 template <class TData>
 void clip(Array<TData>& a, const TData& low, const TData& high) {
-    for(auto& v : a.flat_iterable()) {
+    for (auto& v : a.flat_iterable()) {
         v = clipped_element(v, low, high);
     }
 }

@@ -15,7 +15,7 @@ Array<TData> gradient_descent(
     Array<TData> x = x0.copy();
     Array<TData> dx;
     TData step_size = 1.f;
-    for(size_t i = 0; i < nsteps; ++i) {
+    for (size_t i = 0; i < nsteps; ++i) {
         TData f0 = func(x);
         dx = gradient(x);
         // TData len = std::sqrt(sum(squared(dx)));
@@ -49,7 +49,7 @@ Array<TData> gradient_descent(
                 }
                 step_size /= 2;
             }
-            if(!(best_step_value < f0)) {
+            if (!(best_step_value < f0)) {
                 // std::cerr << "!(" << func(x - step_size * dx) << " < " << f0 << ")" << std::endl;
                 std::cerr <<
                     "Negative gradient does not descent, stopping after " <<

@@ -13,10 +13,10 @@ FixedArray<TData, nrows, ncolumns> outer2d(
     const FixedArray<TData, ncolumns, nsum>& b)
 {
     FixedArray<TData, nrows, ncolumns> result;
-    for(size_t r = 0; r < nrows; ++r) {
-        for(size_t c = 0; c < ncolumns; ++c) {
+    for (size_t r = 0; r < nrows; ++r) {
+        for (size_t c = 0; c < ncolumns; ++c) {
             TData v = 0;
-            for(size_t i = 0; i < nsum; ++i) {
+            for (size_t i = 0; i < nsum; ++i) {
                 v += a(r, i) * conju(b(c, i));
             }
             result(r, c) = v;
@@ -60,10 +60,10 @@ FixedArray<TData, nrows, ncolumns> dot2d(
     const FixedArray<TData, nsum, ncolumns>& b)
 {
     FixedArray<TData, nrows, ncolumns> result;
-    for(size_t r = 0; r < nrows; ++r) {
-        for(size_t c = 0; c < ncolumns; ++c) {
+    for (size_t r = 0; r < nrows; ++r) {
+        for (size_t c = 0; c < ncolumns; ++c) {
             TData v = 0;
-            for(size_t i = 0; i < nsum; ++i) {
+            for (size_t i = 0; i < nsum; ++i) {
                 v += a(r, i) * b(i, c);
             }
             result(r, c) = v;
@@ -114,7 +114,7 @@ TData dot0d(
 
 template <class TData, size_t tshape0, size_t... tshape>
 void assert_allequal(const FixedArray<TData, tshape0, tshape...>& a, const FixedArray<TData, tshape0, tshape...>& b) {
-    for(size_t i = 0; i < tshape0; ++i) {
+    for (size_t i = 0; i < tshape0; ++i) {
         assert_allequal(a[i], b[i]);
     }
 }
@@ -129,8 +129,8 @@ void assert_allequal(const FixedArray<TData>& a, const FixedArray<TData>& b) {
 template <class TData, size_t n>
 FixedArray<TData, n, n> fixed_identity_array() {
     FixedArray<TData, n, n> result;
-    for(size_t r = 0; r < n; ++r){
-        for(size_t c = 0; c < n; ++c) {
+    for (size_t r = 0; r < n; ++r){
+        for (size_t c = 0; c < n; ++c) {
             result(r, c) = (r == c);
         }
     }

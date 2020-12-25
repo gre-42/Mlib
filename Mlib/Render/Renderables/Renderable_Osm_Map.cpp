@@ -252,8 +252,8 @@ RenderableOsmMap::RenderableOsmMap(
             ways,
             0,  // building_bottom
             0); // default_building_top
-        for(const Building& bu : spawn_lines) {
-            for(auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+        for (const Building& bu : spawn_lines) {
+            for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s != bu.way.nd.end()) {
@@ -278,20 +278,20 @@ RenderableOsmMap::RenderableOsmMap(
             0,  // building_bottom
             0); // default_building_top
         std::set<std::string> points;
-        for(const Building& bu : way_point_lines) {
+        for (const Building& bu : way_point_lines) {
             points.insert(bu.way.nd.begin(), bu.way.nd.end());
         }
         std::map<std::string, size_t> indices;
-        for(const std::string& id : points) {
+        for (const std::string& id : points) {
             indices[id] = indices.size();
         }
         way_points_.points.reserve(points.size());
-        for(const std::string& p : points) {
+        for (const std::string& p : points) {
             way_points_.points.push_back(nodes.at(p).position);
         }
         way_points_.adjacency = SparseArrayCcs<float>{ArrayShape{points.size(), points.size()}};
-        for(const Building& bu : way_point_lines) {
-            for(auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+        for (const Building& bu : way_point_lines) {
+            for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s != bu.way.nd.end()) {
@@ -305,7 +305,7 @@ RenderableOsmMap::RenderableOsmMap(
                 }
             }
         }
-        for(size_t i = 0; i < points.size(); ++i) {
+        for (size_t i = 0; i < points.size(); ++i) {
             if (!way_points_.adjacency.column(i).insert({i, 0}).second) {
                 throw std::runtime_error("Could not insert waypoint (2)");
             }
@@ -557,7 +557,7 @@ RenderableOsmMap::RenderableOsmMap(
                 max_wall_width);
         }
         if (remove_backfacing_triangles) {
-            for(auto& l : tls_ground) {
+            for (auto& l : tls_ground) {
                 l->delete_backfacing_triangles();
             }
         }
@@ -569,31 +569,31 @@ RenderableOsmMap::RenderableOsmMap(
 
     if (!heightmap.empty() || street_edge_smoothness > 0 || terrain_edge_smoothness > 0) {
         std::list<FixedArray<float, 3>*> smoothed_vertices;
-        for(auto& l : tls_all) {
-            for(auto& t : l->triangles_) {
-                for(auto& v : t.flat_iterable()) {
+        for (auto& l : tls_all) {
+            for (auto& t : l->triangles_) {
+                for (auto& v : t.flat_iterable()) {
                     smoothed_vertices.push_back(&v.position);
                 }
             }
         }
-        for(auto& d : object_resource_descriptors_) {
+        for (auto& d : object_resource_descriptors_) {
             smoothed_vertices.push_back(&d.position);
         }
-        for(auto& i : resource_instance_positions_) {
-            for(auto& d : i.second) {
+        for (auto& i : resource_instance_positions_) {
+            for (auto& d : i.second) {
                 smoothed_vertices.push_back(&d.position);
             }
         }
-        for(auto& h : hitboxes_) {
-            for(auto& d : h.second) {
+        for (auto& h : hitboxes_) {
+            for (auto& d : h.second) {
                 smoothed_vertices.push_back(&d);
             }
         }
-        for(SteinerPointInfo& p : steiner_points) {
+        for (SteinerPointInfo& p : steiner_points) {
             smoothed_vertices.push_back(&p.position);
         }
-        for(auto& r : street_rectangles) {
-            for(auto& p : r.flat_iterable()) {
+        for (auto& r : street_rectangles) {
+            for (auto& p : r.flat_iterable()) {
                 smoothed_vertices.push_back(&p);
             }
         }
@@ -616,7 +616,7 @@ RenderableOsmMap::RenderableOsmMap(
                 ways,
                 height_bindings,
                 street_node_smoothness);
-            for(auto& l : tls_all) {
+            for (auto& l : tls_all) {
                 l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
                     bool del =
                         vertices_to_delete.contains(&v(0).position) ||
@@ -633,12 +633,12 @@ RenderableOsmMap::RenderableOsmMap(
             object_resource_descriptors_.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
                 return vertices_to_delete.contains(&d.position);
             });
-            for(auto& i : resource_instance_positions_) {
+            for (auto& i : resource_instance_positions_) {
                 i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
                     return vertices_to_delete.contains(&d.position);
                 });
             }
-            for(auto& h : hitboxes_) {
+            for (auto& h : hitboxes_) {
                 h.second.remove_if([&vertices_to_delete](const FixedArray<float, 3>& p){
                     return vertices_to_delete.contains(&p);
                 });
@@ -684,13 +684,13 @@ RenderableOsmMap::RenderableOsmMap(
                 uv_scale_terrain,
                 *tl_terrain_street_extrusion);
         } else {
-            for(auto& t : tl_curb_street->triangles_) {
-                for(auto& v : t.flat_iterable()) {
+            for (auto& t : tl_curb_street->triangles_) {
+                for (auto& v : t.flat_iterable()) {
                     v.uv(0) *= 0.5 * uv_scale_terrain * (1 - curb_alpha) * default_street_width;
                 }
             }
-            for(auto& t : tl_curb_path->triangles_) {
-                for(auto& v : t.flat_iterable()) {
+            for (auto& t : tl_curb_path->triangles_) {
+                for (auto& v : t.flat_iterable()) {
                     v.uv(0) *= 0.5 * uv_scale_terrain * (1 - curb_alpha) * default_street_width;
                 }
             }
@@ -704,18 +704,18 @@ RenderableOsmMap::RenderableOsmMap(
         }
     }
     // Normals are invalid after "apply_height_map"
-    for(auto& l : tls_ground) {
+    for (auto& l : tls_ground) {
         l->calculate_triangle_normals();
     }
 
     TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
     TriangleList::convert_triangle_to_vertex_normals(tls_ground_wo_curb);
 
-    // for(auto& l : tls_ground) {
+    // for (auto& l : tls_ground) {
     //     colorize_height_map(l->triangles_);
     // }
 
-    for(const WaysideResourceNames& ws : waysides) {
+    for (const WaysideResourceNames& ws : waysides) {
         LOG_INFO("add_grass_on_steiner_points");
         ResourceNameCycle rnc{scene_node_resources, ws.resource_names};
         add_grass_on_steiner_points(
@@ -740,7 +740,7 @@ RenderableOsmMap::RenderableOsmMap(
             scale,
             much_grass_distance);
     }
-    for(auto& r : street_rectangles) {
+    for (auto& r : street_rectangles) {
         SpawnPoint sp;
         float alpha = 0.75;
         sp.position = alpha * (r(0, 0) + r(1, 0)) / 2.f + (1 - alpha) * (r(0, 1) + r(1, 1)) / 2.f;
@@ -768,7 +768,7 @@ RenderableOsmMap::RenderableOsmMap(
     }
 
     std::list<std::shared_ptr<ColoredVertexArray>> ts;
-    for(auto& l : tls_all) {
+    for (auto& l : tls_all) {
         if (!l->triangles_.empty()) {
             ts.push_back(l->triangle_array());
         }
@@ -780,7 +780,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
 {
     {
         size_t i = 0;
-        for(auto& p : object_resource_descriptors_) {
+        for (auto& p : object_resource_descriptors_) {
             auto node = new SceneNode;
             node->set_position(p.position);
             node->set_scale(scale_ * p.scale);
@@ -794,7 +794,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
             }
         }
     }
-    for(auto& p : resource_instance_positions_) {
+    for (auto& p : resource_instance_positions_) {
         auto node = new SceneNode;
         node->set_rotation({M_PI / 2, 0, 0});
         scene_node_resources_.instantiate_renderable(p.first, p.first, *node, SceneNodeResourceFilter{});
@@ -802,7 +802,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
             throw std::runtime_error("Object " + p.first + " requires render pass");
         }
         scene_node.add_instances_child(p.first, node);
-        for(const auto& r : p.second) {
+        for (const auto& r : p.second) {
             scene_node.add_instances_position(p.first, r.position);
         }
     }
@@ -811,9 +811,9 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
 
 std::list<std::shared_ptr<ColoredVertexArray>> RenderableOsmMap::get_triangle_meshes() const {
     auto res = rva_->get_triangle_meshes();
-    for(auto& p : hitboxes_) {
-        for(auto& x : scene_node_resources_.get_triangle_meshes(p.first)) {
-            for(auto& y : p.second) {
+    for (auto& p : hitboxes_) {
+        for (auto& x : scene_node_resources_.get_triangle_meshes(p.first)) {
+            for (auto& y : p.second) {
                 res.push_back(x->transformed(FixedArray<float, 4, 4>{
                     scale_, 0, 0, y(0),
                     0, scale_, 0, y(1),

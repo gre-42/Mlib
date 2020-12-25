@@ -13,16 +13,16 @@ ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources& rendering_res
 
 void ArrayInstancesRenderer::update_instances(const std::list<TransformedColoredVertexArray>& instances_queue) {
     std::map<std::shared_ptr<ColoredVertexArray>, std::list<FixedArray<float, 4, 4>>> cva_lists;
-    for(const auto& a : instances_queue) {
+    for (const auto& a : instances_queue) {
         cva_lists[a.cva].push_back(a.transformation_matrix);
     }
     std::list<std::shared_ptr<ColoredVertexArray>> mat_vectors;
-    for(const auto& a : cva_lists) {
+    for (const auto& a : cva_lists) {
         mat_vectors.push_back(a.first);
     }
     sort_for_rendering(mat_vectors);
     auto cva_instances = new std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>;
-    for(const auto& a : cva_lists) {
+    for (const auto& a : cva_lists) {
         cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});
     }
     auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, cva_instances, rendering_resources_);

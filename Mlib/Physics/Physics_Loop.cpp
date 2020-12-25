@@ -32,7 +32,7 @@ PhysicsLoop::PhysicsLoop(
             }
         }
         std::list<Beacon> beacons;
-        for(size_t i = 0; i < physics_cfg.oversampling; ++i) {
+        for (size_t i = 0; i < physics_cfg.oversampling; ++i) {
             std::list<Beacon>* bcns = (i == physics_cfg.oversampling - 1)
                 ? &beacons
                 : nullptr;
@@ -49,7 +49,7 @@ PhysicsLoop::PhysicsLoop(
                 static const std::regex re{"^beacon.*"};
                 scene.delete_root_nodes(re);
                 size_t i = 0;
-                for(const auto& beacon : beacons) {
+                for (const auto& beacon : beacons) {
                     SceneNode* node = new SceneNode;
                     scene.add_root_node("beacon" + std::to_string(i), new SceneNode);
                     scene_node_resources.instantiate_renderable(beacon.resource_name, "box", *node, SceneNodeResourceFilter{});

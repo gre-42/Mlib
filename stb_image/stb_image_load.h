@@ -11,9 +11,9 @@ struct StbInfo {
 };
 
 static void stb_image_flip_horizontally(const StbInfo& image) {
-    for(size_t r = 0; r < (size_t)image.height; ++r) {
-        for(size_t c = 0; c < (size_t)image.width / 2; ++c) {
-            for(size_t d = 0; d < (size_t)image.nrChannels; ++d) {
+    for (size_t r = 0; r < (size_t)image.height; ++r) {
+        for (size_t c = 0; c < (size_t)image.width / 2; ++c) {
+            for (size_t d = 0; d < (size_t)image.nrChannels; ++d) {
                 std::swap(
                     image.data.get()[(r * image.width  + c) * image.nrChannels + d],
                     image.data.get()[(r * image.width  + image.width - 1 - c) * image.nrChannels + d]);

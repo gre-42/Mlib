@@ -101,13 +101,13 @@ void TriangleList::extrude(const std::list<std::shared_ptr<TriangleList>>& trian
     using O = OrderableFixedArray<float, 3>;
 
     std::list<FixedArray<ColoredVertex, 3>*> tris;
-    for(auto& l : triangle_lists) {
-        for(auto& t : l->triangles_) {
+    for (auto& l : triangle_lists) {
+        for (auto& t : l->triangles_) {
             tris.push_back(&t);
         }
     }
     std::set<std::pair<O, O>> edges = find_contour_edges(tris);
-    for(auto& t : tris) {
+    for (auto& t : tris) {
         FixedArray<ColoredVertex, 3> t_old = *t;
         auto connect_extruded = [&scale, &uv_scale_x, &uv_scale_y, &t_old, &height, &edges, &t, &dest](size_t a, size_t b){
             auto edge = std::make_pair(O(t_old(a).position), O(t_old(b).position));
@@ -158,7 +158,7 @@ void TriangleList::delete_backfacing_triangles() {
 }
 
 void TriangleList::calculate_triangle_normals() {
-    for(auto& t : triangles_) {
+    for (auto& t : triangles_) {
         auto n = triangle_normal({t(0).position, t(1).position, t(2).position});
         t(0).normal = n;
         t(1).normal = n;
@@ -168,15 +168,15 @@ void TriangleList::calculate_triangle_normals() {
 
 void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<TriangleList>>& triangle_lists) {
     VertexNormals vertex_normals;
-    for(const auto& l : triangle_lists) {
+    for (const auto& l : triangle_lists) {
         vertex_normals.add_triangles(
             l->triangles_.begin(),
             l->triangles_.end());
     }
     vertex_normals.compute_vertex_normals();
-    for(const auto& l : triangle_lists) {
-        for(auto& it : l->triangles_) {
-            for(auto& v : it.flat_iterable()) {
+    for (const auto& l : triangle_lists) {
+        for (auto& it : l->triangles_) {
+            for (auto& v : it.flat_iterable()) {
                 v.normal = vertex_normals.get_normal(v.position);
             }
         }
@@ -191,21 +191,21 @@ void TriangleList::smoothen_edges(
     size_t niterations)
 {
     std::set<OrderableFixedArray<float, 3>> excluded_vertices;
-    for(const auto& tl : excluded_triangle_lists) {
-        for(const auto& t : tl->triangles_) {
-            for(const auto& v : t.flat_iterable()) {
+    for (const auto& tl : excluded_triangle_lists) {
+        for (const auto& t : tl->triangles_) {
+            for (const auto& v : t.flat_iterable()) {
                 excluded_vertices.insert(OrderableFixedArray{v.position});
             }
         }
     }
-    for(size_t i = 0; i < niterations; ++i) {
+    for (size_t i = 0; i < niterations; ++i) {
         typedef OrderableFixedArray<float, 2> Vertex2;
         typedef OrderableFixedArray<float, 3> Vertex3;
         typedef OrderableFixedArray<Vertex3, 2> Edge3;
         std::map<Edge3, Vertex3> edge_neighbors;
         std::map<Vertex2, FixedArray<float, 3>> vertex_movement;
-        for(const auto& l : edge_triangle_lists) {
-            for(const auto& t : l->triangles_) {
+        for (const auto& l : edge_triangle_lists) {
+            for (const auto& t : l->triangles_) {
                 auto insert_edge = [&](size_t i, size_t j, size_t n){
                     Vertex3 ei{t(i).position};
                     Vertex3 ej{t(j).position};
@@ -238,7 +238,7 @@ void TriangleList::smoothen_edges(
                 insert_edge(2, 0, 1);
             }
         }
-        for(const auto& s : smoothed_vertices) {
+        for (const auto& s : smoothed_vertices) {
             auto it = vertex_movement.find(Vertex2{(*s)(0), (*s)(1)});
             if (it != vertex_movement.end()) {
                 *s += it->second;
@@ -249,7 +249,7 @@ void TriangleList::smoothen_edges(
 
 std::list<FixedArray<ColoredVertex, 3>> TriangleList::get_triangles_around(const FixedArray<float, 2>& pt, float radius) const {
     std::list<FixedArray<ColoredVertex, 3>> tf;
-    for(const auto& t : triangles_) {
+    for (const auto& t : triangles_) {
         FixedArray<float, 2> a{t(0).position(0), t(0).position(1)};
         FixedArray<float, 2> b{t(1).position(0), t(1).position(1)};
         FixedArray<float, 2> c{t(2).position(0), t(2).position(1)};

@@ -8,9 +8,9 @@ Array<TData> huber_norm_multichannel(const Array<TData>& x, TData epsilon) {
     Array<TData> res = zeros<TData>(x.shape().erased_first());
     Array<TData> rf = res.flattened();
     Array<TData> xf = x.columns_as_1D();
-    for(size_t i = 0; i < xf.shape(1); ++i) {
+    for (size_t i = 0; i < xf.shape(1); ++i) {
         TData l22 = 0;
-        for(size_t h = 0; h < xf.shape(0); ++h) {
+        for (size_t h = 0; h < xf.shape(0); ++h) {
             l22 += squared(xf(h, i));
         }
         if (l22 < squared(epsilon)) {

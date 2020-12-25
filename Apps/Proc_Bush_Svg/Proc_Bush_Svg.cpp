@@ -25,7 +25,7 @@ void generate_bush(
     Svg svg{ostr, width, height};
     float border_x = 100 + twig_width / 2;
     float border_y = 100 + twig_height / 2;
-    for(size_t i = 0; i < ntwigs; ++i) {
+    for (size_t i = 0; i < ntwigs; ++i) {
         SvgTransform t{ostr, SvgTransformationParameters<float>{
             angle: float((dist(rng) - 0.5) * 45),
             rotation_x: float(twig_width / 2),

@@ -13,8 +13,8 @@ PpmImage Mlib::draw_nan_masked_grayscale(const Array<float>& image, float low, f
 {
     PpmImage res = PpmImage::from_float_grayscale(nac(image, low, high));
     if (low != high) {
-        for(size_t r = 0; r < image.shape(0); ++r) {
-            for(size_t c = 0; c < image.shape(1); ++c) {
+        for (size_t r = 0; r < image.shape(0); ++r) {
+            for (size_t c = 0; c < image.shape(1); ++c) {
                 if (!std::isnan(image(r, c))) {
                     if (image(r, c) > high) {
                         res(r, c) = Rgb24::red();
@@ -33,8 +33,8 @@ PpmImage Mlib::draw_quantiled_grayscale(const Array<float>& image, float low_qua
     Array<float> qu = nanquantiles(image, Array<float>{low_quantile, high_quantile});
     if (qu(0) == qu(1)) {
         PpmImage ppm(image.shape());
-        for(size_t r = 0; r < image.shape(0); ++r) {
-            for(size_t c = 0; c < image.shape(1); ++c) {
+        for (size_t r = 0; r < image.shape(0); ++r) {
+            for (size_t c = 0; c < image.shape(1); ++c) {
                 ppm(r, c) = std::isnan(image(r, c)) ? Rgb24::nan() : Rgb24::green();
             }
         }

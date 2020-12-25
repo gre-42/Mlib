@@ -41,7 +41,7 @@ public:
     : FixedArray{Array<size_t>::from_shape(shape)}
     {}
     explicit FixedArray(const TData& rhs) {
-        for(TData& v : flat_iterable()) {
+        for (TData& v : flat_iterable()) {
             v = rhs;
         }
     }
@@ -51,7 +51,7 @@ public:
         set_values<0>(v0, values...);
     }
     FixedArray& operator = (const TData& rhs) {
-        for(TData& v : flat_iterable()) {
+        for (TData& v : flat_iterable()) {
             v = rhs;
         }
         return *this;
@@ -127,7 +127,7 @@ public:
         FixedArray<TResultData, tshape0, tshape...> r;
         const TData* s = flat_begin();
         TResultData* d = r.flat_begin();
-        for(size_t i = 0; i < nelements(); ++i) {
+        for (size_t i = 0; i < nelements(); ++i) {
             *d++ = operation(*s++);
         }
         return r;
@@ -138,13 +138,13 @@ public:
         const TData* sa = flat_begin();
         const TData* sb = b.flat_begin();
         TDataResult* d = r.flat_begin();
-        for(size_t i = 0; i < nelements(); ++i) {
+        for (size_t i = 0; i < nelements(); ++i) {
             *d++ = binop(*sa++, *sb++);
         }
         return r;
     }
     bool less_than(const FixedArray& rhs) const {
-        for(size_t i = 0; i < tshape0; ++i) {
+        for (size_t i = 0; i < tshape0; ++i) {
             if ((*this)[i].less_than(rhs[i])) {
                 return true;
             }
@@ -187,13 +187,13 @@ public:
         return *this;
     }
     FixedArray& operator *= (const TData& rhs) {
-        for(TData& v : flat_iterable()) {
+        for (TData& v : flat_iterable()) {
             v *= rhs;
         }
         return *this;
     }
     FixedArray& operator /= (const TData& rhs) {
-        for(TData& v : flat_iterable()) {
+        for (TData& v : flat_iterable()) {
             v /= rhs;
         }
         return *this;
@@ -203,7 +203,7 @@ public:
         static_assert(tend >= tstart);
         static_assert(tend <= tshape0);
         FixedArray<TData, tend - tstart, tshape...> result;
-        for(size_t r = tstart; r < tend; ++r) {
+        for (size_t r = tstart; r < tend; ++r) {
             result[r - tstart] = (*this)[r];
         }
         return result;
@@ -211,7 +211,7 @@ public:
     FixedArray<TData, tshape0> column(size_t c, size_t r_begin = 0, size_t r_end = tshape0) const {
         static_assert(ndim() == 2);
         FixedArray<TData, tshape0> result;
-        for(size_t r = r_begin; r < r_end; ++r) {
+        for (size_t r = r_begin; r < r_end; ++r) {
             result(r) = (*this)(r, c);
         }
         return result;
@@ -280,8 +280,8 @@ public:
     auto T() const {
         static_assert(ndim() == 2);
         FixedArray<TData, shape().last(), tshape0> result;
-        for(size_t r = 0; r < tshape0; ++r) {
-            for(size_t c = 0; c < shape().last(); ++c) {
+        for (size_t r = 0; r < tshape0; ++r) {
+            for (size_t c = 0; c < shape().last(); ++c) {
                 result(c, r) = (*this)(r, c);
             }
         }
@@ -290,8 +290,8 @@ public:
     auto H() const {
         static_assert(ndim() == 2);
         FixedArray<TData, shape().last(), tshape0> result;
-        for(size_t r = 0; r < tshape0; ++r) {
-            for(size_t c = 0; c < shape().last(); ++c) {
+        for (size_t r = 0; r < tshape0; ++r) {
+            for (size_t c = 0; c < shape().last(); ++c) {
                 result(c, r) = conju((*this)(r, c));
             }
         }
@@ -355,11 +355,11 @@ private:
 template <typename TData, size_t tshape0, size_t... tshape>
 std::ostream& operator << (std::ostream& ostream, const FixedArray<TData, tshape0, tshape...>& a) {
     if constexpr (a.ndim() == 1) {
-        for(size_t i = 0; i < a.length(); ++i) {
+        for (size_t i = 0; i < a.length(); ++i) {
             ostream << a(i) << (i == a.length() -1 ? "" : " ");
         }
     } else if constexpr (a.ndim() != 0) {
-        for(size_t i = 0; i < tshape0; ++i) {
+        for (size_t i = 0; i < tshape0; ++i) {
             ostream << a[i] << std::endl;
         }
     }

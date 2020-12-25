@@ -34,9 +34,9 @@ RenderableObjFile::RenderableObjFile(
         apply_static_lighting,
         werror);
     FixedArray<float, 3, 3> rotation_matrix{tait_bryan_angles_2_matrix(rotation)};
-    for(auto& l : triangles) {
-        for(auto& t : l->triangles) {
-            for(auto& v : t.flat_iterable()) {
+    for (auto& l : triangles) {
+        for (auto& t : l->triangles) {
+            for (auto& v : t.flat_iterable()) {
                 v.position *= scale;
                 v.position = dot1d(rotation_matrix, v.position);
                 v.position += position;

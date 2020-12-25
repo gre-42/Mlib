@@ -17,7 +17,7 @@ template <class TData>
 Array<TData> forward_gradient_filter(const Array<TData>& image, const TData& boundary_value)
 {
     Array<TData> result{ArrayShape{image.ndim()}.concatenated(image.shape())};
-    for(size_t axis = 0; axis < image.ndim(); axis++) {
+    for (size_t axis = 0; axis < image.ndim(); axis++) {
         result[axis] = forward_differences_1d(image, boundary_value, axis);
     }
     return result;
@@ -26,7 +26,7 @@ Array<TData> forward_gradient_filter(const Array<TData>& image, const TData& bou
 template <class TData>
 Array<TData> forward_sad_filter(const Array<TData>& image, const TData& boundary_value) {
     Array<TData> result = zeros<TData>(image.shape());
-    for(size_t axis = 0; axis < image.ndim(); axis++) {
+    for (size_t axis = 0; axis < image.ndim(); axis++) {
         result += abs(forward_differences_1d(image, boundary_value, axis));
     }
     return result / TData(image.ndim());

@@ -26,7 +26,7 @@ Array<TData> generic_optimization(
     x = x0;
     TData old_ssq_residual = std::numeric_limits<TData>::infinity();
     Array<TData> residual;
-    for(size_t i = 0; i < niterations; ++i) {
+    for (size_t i = 0; i < niterations; ++i) {
         // std::cerr << "i " << i << std::endl;
         // std::cerr << "J " << J(x).shape() << std::endl;
         // std::cerr << "f " << f(x).shape() << std::endl;
@@ -35,7 +35,7 @@ Array<TData> generic_optimization(
             if (final_residual != nullptr) {
                 *final_residual = residual;
             }
-            for(size_t r = 0; r < residual.length(); ++r) {
+            for (size_t r = 0; r < residual.length(); ++r) {
                 if (std::abs(residual(r)) > *max_residual) {
                     residual(r) = sign(residual(r)) * (*max_residual);
                 }

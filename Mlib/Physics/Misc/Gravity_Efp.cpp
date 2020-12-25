@@ -9,7 +9,7 @@ GravityEfp::GravityEfp(const FixedArray<float, 3>& gravity)
 {}
 
 void GravityEfp::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
-    for(auto& rb : olist) {
+    for (auto& rb : olist) {
         if (rb->mass() != INFINITY) {
             if (cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
                 rb->integrate_gravity(gravity_);

@@ -11,7 +11,7 @@ Array<TData> quantized(
 {
     Array<TData> imf = im.flattened();
     Array<TData> res(im.shape());
-    for(size_t i = 0; i < imf.length(); ++i) {
+    for (size_t i = 0; i < imf.length(); ++i) {
         size_t am = argmin(abs(levels - im(i)));
         if (am == SIZE_MAX) {
             res(i) = NAN;

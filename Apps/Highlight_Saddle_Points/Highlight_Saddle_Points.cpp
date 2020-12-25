@@ -18,7 +18,7 @@ void highlight_saddle_points(
     auto bitmap = PpmImage::load_from_file(source);
 
     Array<float> image = bitmap.to_float_grayscale();
-    for(size_t i = 0; i < niter; ++i) {
+    for (size_t i = 0; i < niter; ++i) {
         image = box_filter(image, ArrayShape{width, width}, NAN);
     }
     Array<float> feature_points = find_saddle_points(image);

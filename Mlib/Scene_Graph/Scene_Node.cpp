@@ -20,16 +20,16 @@ SceneNode::SceneNode(Scene* scene)
 {}
 
 SceneNode::~SceneNode() {
-    for(auto& o : destruction_observers_) {
+    for (auto& o : destruction_observers_) {
         o->notify_destroyed(this);
     }
-    for(auto& c : children_) {
+    for (auto& c : children_) {
         if (c.second.is_registered) {
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(c.first);
         }
     }
-    for(auto& c : aggregate_children_) {
+    for (auto& c : aggregate_children_) {
         if (c.second.is_registered) {
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(c.first);
@@ -237,18 +237,18 @@ void SceneNode::move(const FixedArray<float, 4, 4>& v) {
     if (absolute_observer_ != nullptr) {
         absolute_observer_->set_absolute_model_matrix(inverted_scaled_se3(v2));
     }
-    for(const auto& n : children_) {
+    for (const auto& n : children_) {
         n.second.scene_node->move(v2);
     }
 }
 
 bool SceneNode::requires_render_pass() const {
-    for(const auto& r : renderables_) {
+    for (const auto& r : renderables_) {
         if (r.second->requires_render_pass()) {
             return true;
         }
     }
-    for(const auto& n : children_) {
+    for (const auto& n : children_) {
         if (n.second.scene_node->requires_render_pass()) {
             return true;
         }
@@ -273,14 +273,14 @@ void SceneNode::render(
     // row-major matrices."
     FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
     FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
-    for(const auto& r : renderables_) {
+    for (const auto& r : renderables_) {
         if (r.second->requires_blending_pass())
         {
             blended.push_back(Blended{mvp: mvp, m: m, renderable: r.second.get()});
         }
         r.second->render(mvp, m, iv, lights, scene_graph_config, render_config, {external_render_pass, InternalRenderPass::INITIAL});
     }
-    for(const auto& n : children_) {
+    for (const auto& n : children_) {
         n.second.scene_node->render(mvp, m, iv, lights, blended, render_config, scene_graph_config, external_render_pass);
     }
 }
@@ -299,13 +299,13 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // row-major matrices."
     FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
     FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
-    for(const auto& r : renderables_) {
+    for (const auto& r : renderables_) {
         r.second->append_sorted_aggregates_to_queue(mvp, m, scene_graph_config, external_render_pass, aggregate_queue);
     }
-    for(const auto& n : children_) {
+    for (const auto& n : children_) {
         n.second.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
     }
-    for(const auto& a : aggregate_children_) {
+    for (const auto& a : aggregate_children_) {
         a.second.scene_node->append_sorted_aggregates_to_queue(mvp, m, aggregate_queue, scene_graph_config, external_render_pass);
     }
 }
@@ -316,13 +316,13 @@ void SceneNode::append_large_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config) const
 {
     FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
-    for(const auto& r : renderables_) {
+    for (const auto& r : renderables_) {
         r.second->append_large_aggregates_to_queue(m, scene_graph_config, aggregate_queue);
     }
-    for(const auto& n : children_) {
+    for (const auto& n : children_) {
         n.second.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
     }
-    for(const auto& a : aggregate_children_) {
+    for (const auto& a : aggregate_children_) {
         a.second.scene_node->append_large_aggregates_to_queue(m, aggregate_queue, scene_graph_config);
     }
 }
@@ -341,14 +341,14 @@ void SceneNode::append_small_instances_to_queue(
     rel(2, 3) += delta_position(2);
     FixedArray<float, 4, 4> mvp = dot2d(vp, rel);
     FixedArray<float, 4, 4> m = dot2d(parent_m, rel);
-    for(const auto& r : renderables_) {
+    for (const auto& r : renderables_) {
         r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, external_render_pass, instances_queue);
     }
-    for(const auto& n : children_) {
+    for (const auto& n : children_) {
         n.second.scene_node->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
     }
-    for(const auto& i : instances_children_) {
-        for(const auto& j : i.second.instances) {
+    for (const auto& i : instances_children_) {
+        for (const auto& j : i.second.instances) {
             i.second.scene_node->append_small_instances_to_queue(mvp, m, j, instances_queue, scene_graph_config, external_render_pass);
         }
     }
@@ -365,14 +365,14 @@ void SceneNode::append_large_instances_to_queue(
     rel(1, 3) += delta_position(1);
     rel(2, 3) += delta_position(2);
     FixedArray<float, 4, 4> m = dot2d(parent_m, rel);
-    for(const auto& r : renderables_) {
+    for (const auto& r : renderables_) {
         r.second->append_large_instances_to_queue(m, scene_graph_config, instances_queue);
     }
-    for(const auto& n : children_) {
+    for (const auto& n : children_) {
         n.second.scene_node->append_large_instances_to_queue(m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
     }
-    for(const auto& i : instances_children_) {
-        for(const auto& j : i.second.instances) {
+    for (const auto& i : instances_children_) {
+        for (const auto& j : i.second.instances) {
             i.second.scene_node->append_large_instances_to_queue(m, j, instances_queue, scene_graph_config);
         }
     }
@@ -383,10 +383,10 @@ void SceneNode::append_lights_to_queue(
     std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights) const
 {
     FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
-    for(const auto& l : lights_) {
+    for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
     }
-    for(const auto& n : children_) {
+    for (const auto& n : children_) {
         n.second.scene_node->append_lights_to_queue(m, lights);
     }
 }
@@ -466,16 +466,16 @@ void SceneNode::print(size_t recursion_depth) const {
     std::cerr << rec << " Position " << position() << std::endl;
     std::cerr << rec << " Rotation " << rotation() << std::endl;
     std::cout << rec << " Renderables" << std::endl;
-    for(const auto& x : renderables_) {
+    for (const auto& x : renderables_) {
         std::cerr << rec2 << " " << x.first << std::endl;
     }
     std::cout << rec << " Children" << std::endl;
-    for(const auto& x : children_) {
+    for (const auto& x : children_) {
         std::cerr << rec2 << " " << x.first << std::endl;
         x.second.scene_node->print(recursion_depth + 1);
     }
     std::cout << rec << " Aggregate children" << std::endl;
-    for(const auto& x : aggregate_children_) {
+    for (const auto& x : aggregate_children_) {
         std::cerr << rec2 << " " << x.first << std::endl;
         x.second.scene_node->print(recursion_depth + 1);
     }

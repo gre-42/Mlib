@@ -37,7 +37,7 @@ public:
         const TIterable& iterable_end)
     : BoundingBox()
     {
-        for(auto it = iterable_begin; it != iterable_end; ++it) {
+        for (auto it = iterable_begin; it != iterable_end; ++it) {
             extend(*it);
         }
     }

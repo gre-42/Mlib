@@ -14,14 +14,14 @@ static float sat_overlap(
 {
     float max0 = -INFINITY;
     float min1 = INFINITY;
-    for(const auto& t : triangles0) {
-        for(const auto& v : t.triangle.flat_iterable()) {
+    for (const auto& t : triangles0) {
+        for (const auto& v : t.triangle.flat_iterable()) {
             float s = dot0d(v, n);
             max0 = std::max(max0, s);
         }
     }
-    for(const auto& t : triangles1) {
-        for(const auto& v : t.triangle.flat_iterable()) {
+    for (const auto& t : triangles1) {
+        for (const auto& v : t.triangle.flat_iterable()) {
             float s = dot0d(v, n);
             min1 = std::min(min1, s);
         }
@@ -76,7 +76,7 @@ void SatTracker::get_collision_plane(
         #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         PlaneNd<float, 3> best_plane;
         #pragma GCC diagnostic pop
-        for(const auto& t0 : mesh0->get_triangles_sphere()) {
+        for (const auto& t0 : mesh0->get_triangles_sphere()) {
             //if (dot(n.normal, o1.first->abs_com() - o0.first->abs_com())() < 0) {
             //    continue;
             //}

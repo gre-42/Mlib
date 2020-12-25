@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
             }
             std::cerr << "nanmin(dsi) " << nanmin(dsi) << std::endl;
             std::cerr << "nanmax(dsi) " << nanmax(dsi) << std::endl;
-            for(size_t i = 0; i < dsi.shape(0); i += dsi.shape(0) / 5) {
+            for (size_t i = 0; i < dsi.shape(0); i += dsi.shape(0) / 5) {
                 draw_nan_masked_grayscale(dsi[i], 0, 0).save_to_file("dsi-" + std::to_string(i) + ".ppm");
             }
             if (cache_dsi) {

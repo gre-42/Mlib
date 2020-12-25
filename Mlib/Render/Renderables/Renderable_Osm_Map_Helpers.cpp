@@ -31,7 +31,7 @@ static std::list<FixedArray<float, 2>> smooth_way(
     float max_width)
 {
     std::list<FixedArray<float, 2>> result;
-    for(auto it = nd.begin(); it != nd.end(); ++it) {
+    for (auto it = nd.begin(); it != nd.end(); ++it) {
         auto s = it;
         ++s;
         if (s != nd.end()) {
@@ -39,7 +39,7 @@ static std::list<FixedArray<float, 2>> smooth_way(
             auto p1 = nodes.at(*s).position;
             float width = std::sqrt(sum(squared(p0 - p1)));
             auto refined = linspace(0.f, 1.f, std::max(2, int(width / scale / max_width))).flat_iterable();
-            for(auto a = refined.begin(); a != refined.end(); ++a) {
+            for (auto a = refined.begin(); a != refined.end(); ++a) {
                 auto b = a;
                 ++b;
                 if (b != refined.end() || &*s == &nd.back()) {
@@ -59,7 +59,7 @@ static float compute_area(
 {
     // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
     float area2 = 0;
-    for(auto it = nd.begin(); it != nd.end(); ++it) {
+    for (auto it = nd.begin(); it != nd.end(); ++it) {
         auto s = it;
         ++s;
         if (s != nd.end()) {
@@ -73,7 +73,7 @@ static float compute_area(
 
 // std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> Mlib::gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points) {
 //     std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map;
-//     for(auto& p : steiner_points) {
+//     for (auto& p : steiner_points) {
 //         if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
 //             throw std::runtime_error("Could not generate steiner point map");
 //         }
@@ -83,7 +83,7 @@ static float compute_area(
 // 
 // std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> Mlib::gen_const_steiner_point_map(const std::list<SteinerPointInfo>& steiner_points) {
 //     std::map<OrderableFixedArray<float, 3>, const SteinerPointInfo*> steiner_point_map;
-//     for(auto& p : steiner_points) {
+//     for (auto& p : steiner_points) {
 //         if (!steiner_point_map.insert({OrderableFixedArray{p.position}, &p}).second) {
 //             throw std::runtime_error("Could not generate const steiner point map");
 //         }
@@ -153,8 +153,8 @@ void Mlib::draw_nodes(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, std::list<std::string>>& ways)
 {
-    for(const auto& way : ways) {
-        for(const auto& nd : way.second) {
+    for (const auto& way : ways) {
+        for (const auto& nd : way.second) {
             if (nodes.find(nd) == nodes.end()) {
                 throw std::runtime_error("Way " + way.first + " could not find node with ID " + nd);
             }
@@ -230,7 +230,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     float default_building_top)
 {
     std::list<Building> result;
-    for(const auto& w : ways) {
+    for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.find("level") != tags.end()) {
             continue;
@@ -277,7 +277,7 @@ void Mlib::draw_roofs(
     float z0,
     float z1)
 {
-    for(const auto& bu : buildings) {
+    for (const auto& bu : buildings) {
         if (bu.way.nd.empty()) {
             std::cerr << "Building " + bu.id + ": outline is empty" << std::endl;
             continue;
@@ -294,7 +294,7 @@ void Mlib::draw_roofs(
             std::swap(zz0, zz1);
         }
         auto a = way1.begin();
-        for(size_t i = 0; i < way1.size(); ++i) {
+        for (size_t i = 0; i < way1.size(); ++i) {
             auto b = a;
             ++b;
             if (b == way1.end()) {
@@ -347,7 +347,7 @@ void Mlib::draw_ceilings(
     float uv_scale,
     float max_width)
 {
-    for(const auto& bu : buildings) {
+    for (const auto& bu : buildings) {
         if (bu.way.nd.empty()) {
             std::cerr << "Building " + bu.id + ": outline is empty" << std::endl;
             continue;
@@ -360,7 +360,7 @@ void Mlib::draw_ceilings(
         outline.reserve(sw.size() - 1);
         auto it = sw.begin();
         ++it;
-        for(; it != sw.end(); ++it) {
+        for (; it != sw.end(); ++it) {
             outline.push_back(*it);
         }
         outline = removed_duplicates(outline);
@@ -410,7 +410,7 @@ void Mlib::get_neighbors(
 //class PolygonDrawer {
 //public:
 //    void draw_line(const p2t::Point& from, const p2t::Point& to, size_t nsteps) {
-//        for(size_t i = 0; i < nsteps; ++i) {
+//        for (size_t i = 0; i < nsteps; ++i) {
 //            double alpha = double(i) / nsteps;
 //            point_list_.push_back((1 - alpha) * from + alpha * to);
 //            points_.push_back(&point_list_.back());
@@ -429,7 +429,7 @@ void Mlib::get_map_outer_contour(
     if (!contour.empty()) {
         throw std::runtime_error("Initial map contour not empty");
     }
-    for(const auto& w : ways) {
+    for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.find("name") != tags.end() && tags.at("name") == "map-outer-contour") {
             if (!contour.empty()) {
@@ -439,7 +439,7 @@ void Mlib::get_map_outer_contour(
             if (w.second.nd.empty()) {
                 throw std::runtime_error("Map outer contour is empty");
             }
-            for(auto it = w.second.nd.begin(); ; ++it) {
+            for (auto it = w.second.nd.begin(); ; ++it) {
                 auto s = it;
                 ++s;
                 if (s == w.second.nd.end()) {
@@ -489,14 +489,14 @@ void Mlib::draw_streets(
     std::map<std::string, std::map<float, AngleWay>> node_angles;
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;
     std::map<std::string, std::map<AngleCurb, FixedArray<float, 2>>> node_hole_contours;
-    for(const auto& n : nodes) {
+    for (const auto& n : nodes) {
         node_angles.insert(std::make_pair(n.first, std::map<float, AngleWay>()));
         node_neighbors.insert(std::make_pair(n.first, std::map<std::string, NeighborWay>()));
         node_hole_contours.insert(std::make_pair(n.first, std::map<AngleCurb, FixedArray<float, 2>>()));
     }
     std::map<std::string, NodeWayInfo> node_way_info;
     std::set<std::string> node_no_way_length;
-    for(const auto& w : ways) {
+    for (const auto& w : ways) {
         FixedArray<float, 3> color;
         auto rgb_it = w.second.tags.find("color");
         if (rgb_it != w.second.tags.end()) {
@@ -513,7 +513,7 @@ void Mlib::draw_streets(
         const auto& tags = w.second.tags;
         {
             bool exclude_by_tag = false;
-            for(const auto& x : excluded_highway_tags) {
+            for (const auto& x : excluded_highway_tags) {
                 if (tags.find(x) != tags.end()) {
                     exclude_by_tag = true;
                     break;
@@ -536,7 +536,7 @@ void Mlib::draw_streets(
             float width = scale * parse_meters(tags, "width", default_street_width);
             RoadType road_type = path_tags.contains(tags.at("highway")) ? RoadType::PATH : RoadType::STREET;
             float way_length = 0;
-            for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
+            for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 if (node_no_way_length.find(*it) == node_no_way_length.end()) {
                     if (node_way_info.find(*it) != node_way_info.end()) {
                         node_no_way_length.insert(*it);
@@ -566,8 +566,8 @@ void Mlib::draw_streets(
     // Compute rectangles and holes for each pair of connected nodes.
     // To avoid duplicates, the computations are done at each lexicographically
     // smaller node.
-    for(const auto& na : node_angles) {
-        for(auto it = na.second.begin(); it != na.second.end(); ++it) {
+    for (const auto& na : node_angles) {
+        for (auto it = na.second.begin(); it != na.second.end(); ++it) {
             if (it->second.id < na.first) {
                 // node index: na.first
                 // neighbor index: it->second
@@ -670,7 +670,7 @@ void Mlib::draw_streets(
                         add_distant_point(rect.p00_);
                         add_distant_point(rect.p11_);
                     }
-                    //for(float a = 0.1; a < 0.91; a += 0.4) {
+                    //for (float a = 0.1; a < 0.91; a += 0.4) {
                     //    auto p = a * rect.p00_ + (1 - a) * rect.p10_;
                     //    street_light_positions.push_back(std::make_pair(FixedArray<float, 3>{p(0), p(1), 0}, "bgrass"));
                     //}
@@ -679,16 +679,16 @@ void Mlib::draw_streets(
         }
     }
 
-    for(const auto& nh : node_hole_contours) {
+    for (const auto& nh : node_hole_contours) {
         Array<FixedArray<float, 2>> hv{ArrayShape{nh.second.size()}};
         {
             size_t i = 0;
-            for(const auto& h : nh.second) {
+            for (const auto& h : nh.second) {
                 hv(i++) = h.second;
             }
         }
         RoadType road_type = RoadType::PATH;
-        for(const auto& a : node_angles.at(nh.first)) {
+        for (const auto& a : node_angles.at(nh.first)) {
             if (a.second.road_type == RoadType::STREET) {
                 road_type = RoadType::STREET;
             }
@@ -704,7 +704,7 @@ void Mlib::draw_streets(
                 FixedArray<float, 3>{hv(2)(0), hv(2)(1), 0});
         } else if (nh.second.size() >= 3) {
             const FixedArray<float, 2>& center = mean(hv);
-            for(size_t i = 0; i < hv.length(); ++i) {
+            for (size_t i = 0; i < hv.length(); ++i) {
                 size_t j = (i + 1) % hv.length();
                 crossings.draw_triangle_wo_normals(
                     FixedArray<float, 3>{hv(i)(0), hv(i)(1), 0},
@@ -720,8 +720,8 @@ void Mlib::draw_streets(
         }
     }
 
-    for(TriangleList* l : std::list<TriangleList*>{&tl_street_crossing, &tl_path_crossing}) {
-        for(auto& t : l->triangles_) {
+    for (TriangleList* l : std::list<TriangleList*>{&tl_street_crossing, &tl_path_crossing}) {
+        for (auto& t : l->triangles_) {
             t(0).color = way_color;
             t(1).color = way_color;
             t(2).color = way_color;
@@ -745,7 +745,7 @@ void Mlib::raise_streets(
 {
     std::set<OrderableFixedArray<float, 3>> lowered_nodes;
     auto ins = [&](const std::list<FixedArray<ColoredVertex, 3>>& l){
-        for(const auto& n : l) {
+        for (const auto& n : l) {
             lowered_nodes.insert(OrderableFixedArray{n(0).position});
             lowered_nodes.insert(OrderableFixedArray{n(1).position});
             lowered_nodes.insert(OrderableFixedArray{n(2).position});
@@ -756,8 +756,8 @@ void Mlib::raise_streets(
     ins(tl_street.triangles_);
     ins(tl_path.triangles_);
     auto lower = [&](std::list<FixedArray<ColoredVertex, 3>>& l){
-        for(auto& n : l) {
-            for(auto& v : n.flat_iterable()) {
+        for (auto& n : l) {
+            for (auto& v : n.flat_iterable()) {
                 if (lowered_nodes.find(OrderableFixedArray{v.position}) != lowered_nodes.end()) {
                     v.position(2) += scale * amount;
                 }
@@ -794,12 +794,12 @@ BoundingInfo::BoundingInfo(
     boundary_min = fixed_full<float, 2>(INFINITY);
     boundary_max = fixed_full<float, 2>(-INFINITY);
     if (bounding_contour.empty()) {
-        for(const auto& n : nodes) {
+        for (const auto& n : nodes) {
             boundary_min = minimum(boundary_min, n.second.position);
             boundary_max = maximum(boundary_max, n.second.position);
         }
     } else {
-        for(const auto& p : bounding_contour) {
+        for (const auto& p : bounding_contour) {
             boundary_min = minimum(boundary_min, p);
             boundary_max = maximum(boundary_max, p);
         }
@@ -816,9 +816,9 @@ void Mlib::add_street_steiner_points(
 {
     if (!steiner_point_distances_road.empty()) {
         typedef FixedArray<FixedArray<float, 2>, 3> Triangle2d;
-        // for(float f = 0.01; f < 2; f += 0.01) {
+        // for (float f = 0.01; f < 2; f += 0.01) {
         //     Bvh<float, Triangle2d, 2> bvh{{f, f}, 10};
-        //     for(const auto& t : triangles) {
+        //     for (const auto& t : triangles) {
         //         Triangle2d tri{
         //             FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
         //             FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
@@ -828,7 +828,7 @@ void Mlib::add_street_steiner_points(
         //     std::cerr << "f " << f << " search_time " << bvh.search_time() << std::endl;
         // }
         Bvh<float, Triangle2d, 2> bvh{{0.1, 0.1}, 10};
-        for(const auto& t : triangles) {
+        for (const auto& t : triangles) {
             Triangle2d tri{
                 FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
                 FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
@@ -841,16 +841,16 @@ void Mlib::add_street_steiner_points(
         // std::cerr << "search_time " << bvh.search_time() << std::endl;
         float dist0 = (*std::min_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale;
         float dist1 = 0;
-        for(float v : steiner_point_distances_steiner) {
+        for (float v : steiner_point_distances_steiner) {
             if (v != INFINITY) {
                 dist1 = std::max(dist1, v * scale);
             }
         }
         size_t ix = 0;
         NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
-        for(float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
+        for (float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
             size_t iy = 0;
-            for(float y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
+            for (float y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
                 float min_distance = INFINITY;
                 FixedArray<float, 2> pt{x + rng2() * scale, y + rng2() * scale};
                 bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt](const std::string& category, const Triangle2d& tri) {
@@ -895,7 +895,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     p2t_bounding_nodes.reserve(bounding_contour.size());
     std::vector<p2t::Point*> p2t_bounding_contour;
     p2t_bounding_contour.reserve(bounding_contour.size());
-    for(const auto& p : bounding_contour) {
+    for (const auto& p : bounding_contour) {
         p2t_bounding_nodes.push_back(p2t::Point{p(0), p(1)});
         p2t_bounding_contour.push_back(&p2t_bounding_nodes.back());
     }
@@ -912,7 +912,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     if (false) {
         std::vector<p2t::Point> p2t_nodes;
         p2t_nodes.reserve(3 * hole_triangles.size());
-        for(const auto& t : hole_triangles) {
+        for (const auto& t : hole_triangles) {
             if (std::find(p2t_nodes.begin(), p2t_nodes.end(), p2t::Point{t(0).position(0), t(0).position(1)}) != p2t_nodes.end()) continue;
             if (std::find(p2t_nodes.begin(), p2t_nodes.end(), p2t::Point{t(1).position(0), t(1).position(1)}) != p2t_nodes.end()) continue;
             if (std::find(p2t_nodes.begin(), p2t_nodes.end(), p2t::Point{t(2).position(0), t(2).position(1)}) != p2t_nodes.end()) continue;
@@ -929,14 +929,14 @@ void Mlib::triangulate_terrain_or_ceilings(
 
     std::vector<std::vector<p2t::Point>> p2t_hole_nodes;
     p2t_hole_nodes.reserve(hole_contours.size());
-    for(const std::list<FixedArray<float, 3>>& c : hole_contours) {
+    for (const std::list<FixedArray<float, 3>>& c : hole_contours) {
         p2t_hole_nodes.push_back(std::vector<p2t::Point>());
         auto& pts = p2t_hole_nodes.back();
         pts.reserve(c.size());
         std::vector<p2t::Point*> hole_contour;
         hole_contour.reserve(c.size());
         // size_t i = 0;
-        for(const auto& p : c) {
+        for (const auto& p : c) {
             pts.push_back(p2t::Point{p(0), p(1)});
             hole_contour.push_back(&pts.back());
             // draw_node(triangles, FixedArray<float, 2>{p(0), p(1)}, 0.1 * float(i++) / c.size());
@@ -944,14 +944,14 @@ void Mlib::triangulate_terrain_or_ceilings(
         cdt.AddHole(hole_contour);
     }
     std::list<p2t::Point> p2t_grid_nodes;
-    for(const auto& p : steiner_points) {
+    for (const auto& p : steiner_points) {
         p2t_grid_nodes.push_back(p2t::Point{p.position(0), p.position(1)});
         cdt.AddPoint(&p2t_grid_nodes.back());
     }
     std::vector<p2t::Point> p2t_triangle_centers;
     p2t_triangle_centers.reserve(hole_triangles.size());
     std::set<p2t::Point*> p2t_hole_triangle_centers_set;
-    for(const auto& t : hole_triangles) {
+    for (const auto& t : hole_triangles) {
         auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
         p2t_triangle_centers.push_back(p2t::Point{center(0), center(1)});
         cdt.AddPoint(&*p2t_triangle_centers.rbegin());
@@ -969,7 +969,7 @@ void Mlib::triangulate_terrain_or_ceilings(
         std::list<PTri>& wrapped_tris = reinterpret_cast<std::list<PTri>&>(tris);
         delete_triangles_outside_contour(final_bounding_contour, wrapped_tris);
     }
-    for(const auto& t : tris) {
+    for (const auto& t : tris) {
         if (p2t_hole_triangle_centers_set.find(t->GetPoint(0)) != p2t_hole_triangle_centers_set.end()) {
             continue;
         }
@@ -1016,8 +1016,8 @@ void Mlib::apply_height_map(
     std::map<std::string, NodeHeight> node_height;
     if (street_node_smoothness != 0) {
         std::map<std::string, std::list<NeighborWeight>> node_neighbors;
-        for(const auto& w : ways) {
-            for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
+        for (const auto& w : ways) {
+            for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s != w.second.nd.end()) {
@@ -1027,7 +1027,7 @@ void Mlib::apply_height_map(
                 }
             }
         }
-        for(const auto& n : node_neighbors) {
+        for (const auto& n : node_neighbors) {
             FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(nodes.at(n.first).position));
             float z;
             if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
@@ -1036,14 +1036,14 @@ void Mlib::apply_height_map(
                     .smooth_height = z};
             }
         }
-        for(size_t i = 0; i < 50; ++i) {
+        for (size_t i = 0; i < 50; ++i) {
             // std::cerr << i << " " << node_neighbors.size() << std::endl;
-            for(const auto& n : node_neighbors) {
+            for (const auto& n : node_neighbors) {
                 auto hit = node_height.find(n.first);
                 if (hit != node_height.end()) {
                     float mean_height = 0;
                     float sum_weights = 0;
-                    for(const auto& b : n.second) {
+                    for (const auto& b : n.second) {
                         auto it = node_height.find(b.id);
                         if (it != node_height.end()) {
                             mean_height += b.weight * it->second.smooth_height;
@@ -1062,12 +1062,12 @@ void Mlib::apply_height_map(
     for (FixedArray<float, 3>* iv : in_vertices) {
         vertex_instances_map[OrderableFixedArray<float, 2>{(*iv)(0), (*iv)(1)}].push_back(iv);
     }
-    for(auto& position : vertex_instances_map) {
+    for (auto& position : vertex_instances_map) {
         FixedArray<float, 2> vc;
         auto it = height_bindings.find(OrderableFixedArray<float, 2>{position.first(0), position.first(1)});
         if ((it != height_bindings.end()) && (it->second.size() == 1)) {
             if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
-                for(auto& pc : position.second) {
+                for (auto& pc : position.second) {
                     (*pc)(2) += hit->second.smooth_height * scale;
                 }
                 continue;
@@ -1080,13 +1080,13 @@ void Mlib::apply_height_map(
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
             // std::cerr << "Height out of bounds." << std::endl;
-            for(auto& pc : position.second) {
+            for (auto& pc : position.second) {
                 if (!vertices_to_delete.insert(pc).second) {
                     throw std::runtime_error("Could not insert vertex to delete");
                 }
             }
         } else {
-            for(auto& pc : position.second) {
+            for (auto& pc : position.second) {
                 (*pc)(2) += z * scale;
             }
         }
@@ -1104,7 +1104,7 @@ void Mlib::add_grass_on_steiner_points(
     float dmax)
 {
     NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
-    for(const auto& p : steiner_points) {
+    for (const auto& p : steiner_points) {
         if ((p.type == SteinerPointType::STREET_NEIGHBOR) &&
             !std::isnan(p.distance_to_road) &&
             ((p.distance_to_road > dmin * scale) &&
@@ -1130,11 +1130,11 @@ void Mlib::add_grass_inside_triangles(
     NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
     size_t gid = 0;
-    for(auto& t : triangles.triangles_) {
+    for (auto& t : triangles.triangles_) {
         float dist_a = std::sqrt(std::min(sum(squared(t(1).position - t(0).position)), sum(squared(t(2).position - t(0).position))));
         float dist_b = std::sqrt(std::min(sum(squared(t(1).position - t(0).position)), sum(squared(t(2).position - t(1).position))));
-        for(float a = 0.01; a < 0.99; a += distance * scale / dist_a) {
-            for(float b = 0.01; b < 1 - a; b += distance * scale / dist_b) {
+        for (float a = 0.01; a < 0.99; a += distance * scale / dist_a) {
+            for (float b = 0.01; b < 1 - a; b += distance * scale / dist_b) {
                 float aa = a + rng2() * distance * scale / dist_a;
                 float bb = b + rng2() * distance * scale / dist_b;
                 float c = 1 - aa - bb;
@@ -1164,13 +1164,13 @@ void Mlib::add_trees_to_forest_outlines(
     NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
     // size_t rid = 0;
-    for(const auto& w : ways) {
+    for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if ((tags.find("landuse") != tags.end() && tags.at("landuse") == "forest") ||
             (tags.find("natural") != tags.end() && tags.at("natural") == "wood"))
         {
             float area = compute_area(w.second.nd, nodes, scale);
-            for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
+            for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s == w.second.nd.end()) {
@@ -1181,7 +1181,7 @@ void Mlib::add_trees_to_forest_outlines(
                 float len = std::sqrt(sum(squared(p0 - p1)));
                 FixedArray<float, 2> n{p0(1) - p1(1), p1(0) - p0(0)};
                 n /= len;
-                for(float a = 0.1; a < 0.91; a += tree_distance * scale / len) {
+                for (float a = 0.1; a < 0.91; a += tree_distance * scale / len) {
                     float aa = a + rng2() * tree_distance * scale / len;
                     if (aa < 0 || aa > 0.91) {
                         continue;
@@ -1211,12 +1211,12 @@ void Mlib::add_beacons_to_raceways(
     float raceway_beacon_distance,
     float scale)
 {
-    for(const auto& w : ways) {
+    for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.find("raceway") != tags.end() && tags.at("raceway") == "yes")
         {
             auto sw = smooth_way(nodes, w.second.nd, scale, raceway_beacon_distance);
-            for(const auto p : sw) {
+            for (const auto p : sw) {
                 street_light_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, "raceway_beacon", 1});
             }
         }
@@ -1237,13 +1237,13 @@ void Mlib::add_beacons_to_raceways(
 //     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
 //     GammaRandomNumberGenerator<float> rng3{0, 3, 2};
 //     NextGrassResourceName ntrn{continuous};
-//     for(float f : linspace<float>(tree_inwards_distance, tree_inwards_distance + 5.f, 3).flat_iterable()) {
-//         for(const auto& w : ways) {
+//     for (float f : linspace<float>(tree_inwards_distance, tree_inwards_distance + 5.f, 3).flat_iterable()) {
+//         for (const auto& w : ways) {
 //             const auto& tags = w.second.tags;
 //             if ((tags.find("landuse") != tags.end() && (tags.at("landuse") == "farmland" || tags.at("landuse") == "meadow")))
 //             {
 //                 float area = compute_area(w.second.nd, nodes, scale);
-//                 for(auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
+//                 for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
 //                     auto s = it;
 //                     ++s;
 //                     if (s == w.second.nd.end()) {
@@ -1254,7 +1254,7 @@ void Mlib::add_beacons_to_raceways(
 //                     float len = std::sqrt(sum(squared(p0 - p1)));
 //                     FixedArray<float, 2> n{p0(1) - p1(1), p1(0) - p0(0)};
 //                     n /= len;
-//                     for(float a = 0.1; a < 0.91; a += tree_distance * scale / len) {
+//                     for (float a = 0.1; a < 0.91; a += tree_distance * scale / len) {
 //                         float aa = a + rng2() * tree_distance * scale / len;
 //                         if (aa < 0 || aa > 0.91) {
 //                             continue;
@@ -1278,7 +1278,7 @@ void Mlib::add_trees_to_tree_nodes(
     float scale)
 {
     NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
-    for(const auto& n : nodes) {
+    for (const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
             const auto& p = n.second.position;
@@ -1301,7 +1301,7 @@ void Mlib::add_binary_vegetation_old(
     float scale)
 {
     size_t tid = 0;
-    for(auto& t : ground_triangles.triangles_) {
+    for (auto& t : ground_triangles.triangles_) {
         ++tid;
         tls.push_back(std::make_shared<TriangleList>("binary_vegetation_old", material));
         float veg_size;
@@ -1376,7 +1376,7 @@ private:
 void Mlib::colorize_height_map(std::list<FixedArray<ColoredVertex, 3>>& triangles)
 {
     StaticFaceLightning sfl{true}; // true == swap_yz
-    for(auto& t : triangles) {
+    for (auto& t : triangles) {
         t(0).color = sfl.get_color(t(0).color, t(0).normal);
         t(1).color = sfl.get_color(t(1).color, t(1).normal);
         t(2).color = sfl.get_color(t(2).color, t(2).normal);
@@ -1388,7 +1388,7 @@ void Mlib::compute_building_area(
     const std::map<std::string, Node>& nodes,
     float scale)
 {
-    for(auto& b : buildings) {
+    for (auto& b : buildings) {
         b.area = compute_area(b.way.nd, nodes, scale);
     }
 }
@@ -1408,12 +1408,12 @@ void Mlib::draw_building_walls(
         throw std::runtime_error("Facade textures empty");
     }
     size_t bid = 0;
-    for(const auto& bu : buildings) {
+    for (const auto& bu : buildings) {
         ++bid;
         tls.push_back(std::make_shared<TriangleList>("building_walls", material));
         tls.back()->material_.texture_descriptor.color = facade_textures.at(bid % facade_textures.size());
         auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
-        for(auto it = sw.begin(); it != sw.end(); ++it) {
+        for (auto it = sw.begin(); it != sw.end(); ++it) {
             auto s = it;
             ++s;
             if (s != sw.end()) {
@@ -1453,7 +1453,7 @@ void to_orderable_fixed_array(
 {
     typedef decltype(get_orderable_fixed_array(nodes.front())) Key;
     std::set<Key> pts;
-    for(const auto& p : nodes) {
+    for (const auto& p : nodes) {
         auto o = get_orderable_fixed_array(p);
         if (pts.find(o) != pts.end()) {
             if (verbose) {
@@ -1512,7 +1512,7 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
 {
     static const std::regex re{"^(.*?)\\(p:([\\d+.e-]+)(?:,hitbox:(\\w+))?\\)$"};
     names_.reserve(names.size());
-    for(const std::string& name : names) {
+    for (const std::string& name : names) {
         std::smatch match;
         if (std::regex_match(name, match, re)) {
             names_.push_back(ParsedResourceName{

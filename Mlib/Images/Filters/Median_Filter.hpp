@@ -18,11 +18,11 @@ Array<TData> median_filter_2d(
     if (any(im.shape() < window_size)) {
         return result;
     }
-    for(size_t r = window_size; r < im.shape(0) - window_size; ++r) {
-        for(size_t c = window_size; c < im.shape(1) - window_size; ++c) {
+    for (size_t r = window_size; r < im.shape(0) - window_size; ++r) {
+        for (size_t c = window_size; c < im.shape(1) - window_size; ++c) {
             size_t nvals = 0;
-            for(size_t rr = 0; rr < 2 * window_size + 1; ++rr) {
-                for(size_t cc = 0; cc < 2 * window_size + 1; ++cc) {
+            for (size_t rr = 0; rr < 2 * window_size + 1; ++rr) {
+                for (size_t cc = 0; cc < 2 * window_size + 1; ++cc) {
                     const TData& v = im(r + rr - window_size, c + cc - window_size);
                     if (!std::isnan(v)) {
                         values[nvals++] = v;

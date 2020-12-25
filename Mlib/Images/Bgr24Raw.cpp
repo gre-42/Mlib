@@ -43,7 +43,7 @@ Array<float> Bgr24Raw::to_float_grayscale() const {
     Array<float> grayscale(shape());
     Array<Bgr24> f = flattened();
     Array<float> g = grayscale.flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         g(i) = (
             static_cast<float>(f(i).r) / 255 +
             static_cast<float>(f(i).g) / 255 +
@@ -59,8 +59,8 @@ Array<float> Bgr24Raw::to_float_rgb() const {
     Array<float> R = result[0];
     Array<float> G = result[1];
     Array<float> B = result[2];
-    for(size_t r = 0; r < shape(0); ++r) {
-        for(size_t c = 0; c < shape(1); ++c) {
+    for (size_t r = 0; r < shape(0); ++r) {
+        for (size_t c = 0; c < shape(1); ++c) {
             R(r, c) = static_cast<float>((*this)(r, c).r) / 255;
             G(r, c) = static_cast<float>((*this)(r, c).g) / 255;
             B(r, c) = static_cast<float>((*this)(r, c).b) / 255;

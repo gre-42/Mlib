@@ -39,7 +39,7 @@ public:
             data_[category].push_back({bounding_box, data});
             return;
         }
-        for(auto& c : children_) {
+        for (auto& c : children_) {
             BoundingBox<TData, tndim> bb = c.first;
             bb.extend(bounding_box);
             if (all(bb.size() <= TData(level_) * max_size_)) {
@@ -54,16 +54,16 @@ public:
     }
     template <class TVisitor>
     void visit(const BoundingSphere<TData, tndim>& sphere, const TVisitor& visitor, const std::regex& filter = std::regex{""}) const {
-        for(const auto& d : data_) {
+        for (const auto& d : data_) {
             if (std::regex_search(d.first, filter)) {
-                for(const auto& v : d.second) {
+                for (const auto& v : d.second) {
                     if (v.first.intersects(sphere)) {
                         visitor(d.first, v.second);
                     }
                 }
             }
         }
-        for(const auto& c : children_) {
+        for (const auto& c : children_) {
             if (c.first.intersects(sphere)) {
                 c.second.visit(sphere, visitor);
             }
@@ -71,12 +71,12 @@ public:
     }
     BoundingBox<TData, tndim> bounding_box() const {
         BoundingBox<TData, tndim> result;
-        for(const auto& d : data_) {
-            for(const auto& v : d.second) {
+        for (const auto& d : data_) {
+            for (const auto& v : d.second) {
                 result.extend(v.first);
             }
         }
-        for(const auto& c : children_) {
+        for (const auto& c : children_) {
             result.extend(c.first);
         }
         return result;
@@ -88,9 +88,9 @@ public:
         }
         if (opts.data) {
             ostr << indent << "data " << data_.size() << std::endl;
-            for(const auto& d : data_) {
+            for (const auto& d : data_) {
                 ostr << indent << d.first << " " << d.second.size() << std::endl;
-                for(const auto& v : d.second) {
+                for (const auto& v : d.second) {
                     if (opts.bounding_box) {
                         v.first.print(ostr, rec + 1);
                     }
@@ -99,7 +99,7 @@ public:
         }
         if (opts.children) {
             ostr << indent << "children " << children_.size() << std::endl;
-            for(const auto& c : children_) {
+            for (const auto& c : children_) {
                 if (opts.bounding_box) {
                     c.first.print(ostr, rec + 1);
                 }
@@ -109,10 +109,10 @@ public:
     }
     float search_time() const {
         float res = children_.size();
-        for(const auto& c : children_) {
+        for (const auto& c : children_) {
             res += c.second.search_time() / children_.size();
         }
-        for(const auto& d : data_) {
+        for (const auto& d : data_) {
             res += d.second.size();
         }
         return res;

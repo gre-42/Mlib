@@ -36,7 +36,7 @@ void TrackingWheel::notify_intersection(
 {
     sum_stiction_force_ += stiction_force;
     sum_friction_force_ += friction_force;
-    for(TrackingSpring& s : springs_) {
+    for (TrackingSpring& s : springs_) {
         if (s.active) {
             if (sum(squared(s.position - s.spring.point_of_contact)) > squared(max_dist_)) {
                 s.active = false;
@@ -90,7 +90,7 @@ void TrackingWheel::update_position(
     power_external = 0;
     moment = 0;
     size_t nactive = 0;
-    for(auto& s : springs_) {
+    for (auto& s : springs_) {
         if (s.active) {
             if (!s.found) {
                 s.active = false;
@@ -100,7 +100,7 @@ void TrackingWheel::update_position(
         }
     }
     size_t nslipping = 0;
-    for(auto& s : springs_) {
+    for (auto& s : springs_) {
         if (s.active) {
             // std::cerr << "old_rotation_" << std::endl;
             // std::cerr << old_rotation_ << std::endl;
@@ -164,7 +164,7 @@ void TrackingWheel::update_position(
     slipping = (nslipping > nactive / 2);
     sum_stiction_force_ = 0;
     sum_friction_force_ = 0;
-    for(auto& s : springs_) {
+    for (auto& s : springs_) {
         s.found = false;
     }
     old_rotation_ = rotation;

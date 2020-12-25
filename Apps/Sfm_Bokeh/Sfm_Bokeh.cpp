@@ -189,7 +189,7 @@ void compute_z(const ParsedArgs& args) {
     //Array<float> err = fundamental_error(F, y0, y1);
     //std::cerr << "err " << err << std::endl;
     //std::list<Array<float>> bad_points;
-    //for(size_t r = 0; r < y0.shape(1); ++r) {
+    //for (size_t r = 0; r < y0.shape(1); ++r) {
     //    if (std::abs(err(r)) > 1 * mean(abs(err))) {
     //        std::cerr << r << " " << y0[r] << std::endl;
     //        bad_points.push_back(y0_2[r]);
@@ -301,7 +301,7 @@ void compute_bokeh(const ParsedArgs& args) {
 
     Array<float> f;
     f = im0;
-    for(float thr = 0.5; thr <= 1; thr += 0.1) {
+    for (float thr = 0.5; thr <= 1; thr += 0.1) {
         Array<float> f1 = box_filter_nan(f, ArrayShape{10, 10}, NAN);
         auto w = zf - thr;
         clip(w, 0.f, 1.f);
@@ -309,7 +309,7 @@ void compute_bokeh(const ParsedArgs& args) {
     }
     clip(f, 0.f, 1.f);
     PpmImage::from_float_grayscale(f).save_to_file(args.named_value("--bokeh"));
-    /*for(size_t i = 0; i < 10; ++i) {
+    /*for (size_t i = 0; i < 10; ++i) {
 
     }*/
 }

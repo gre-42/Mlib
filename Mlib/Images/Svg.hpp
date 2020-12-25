@@ -108,7 +108,7 @@ public:
             throw std::runtime_error("Size mismatch in draw_path");
         }
         PathDrawer pd{ostr_};
-        for(size_t i = 0; i < x.size(); i += down_sampling) {
+        for (size_t i = 0; i < x.size(); i += down_sampling) {
             pd.draw_point(x[i], y[i]);
         }
         pd.finish();
@@ -144,18 +144,18 @@ public:
         const auto ypos = [&](const TData& y) {
             return height_ - ((y - *ym.first) * height_) / (*ym.second - *ym.first);
         };
-        // for(size_t i = down_sampling; i < x.size(); i += down_sampling) {
+        // for (size_t i = down_sampling; i < x.size(); i += down_sampling) {
         //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
         //}
         PathDrawer pd{ostr_};
-        for(size_t i = 0; i < x.size(); i += down_sampling) {
+        for (size_t i = 0; i < x.size(); i += down_sampling) {
             pd.draw_point(xpos(x[i]), ypos(y[i]));
         }
         pd.finish();
-        for(const TData& xx : linspace(*xm.first, *xm.second, 5).flat_iterable()) {
+        for (const TData& xx : linspace(*xm.first, *xm.second, 5).flat_iterable()) {
             draw_text<TData>(xpos(xx), height_, std::to_string(xx));
         }
-        for(const TData& yy : linspace(*ym.first, *ym.second, 5).flat_iterable()) {
+        for (const TData& yy : linspace(*ym.first, *ym.second, 5).flat_iterable()) {
             draw_text<TData>(0, ypos(yy), std::to_string(yy));
         }
     }

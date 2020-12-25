@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
         Array<float> green = PpmImage{grf.shape(), Rgb24{100, 106, 32}}.to_float_rgb();
         Array<float> brown = PpmImage{grf.shape(), Rgb24{175, 146, 105}}.to_float_rgb();
         Array<float> res{ArrayShape{3}.concatenated(grf.shape())};
-        for(size_t h = 0; h < 3; ++h) {
+        for (size_t h = 0; h < 3; ++h) {
             res[h] = green[h] * grf + brown[h] * (1.f - grf);
         }
         PpmImage::from_float_rgb(res).save_to_file(args.named_value("--blended"));

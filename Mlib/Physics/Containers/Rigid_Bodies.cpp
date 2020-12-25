@@ -24,11 +24,11 @@ std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
         throw std::runtime_error("Transformation matrix contains NAN values. Forgot to add rigid body to scene node?");
     }
     std::list<std::pair<FixedArray<float, 3>, std::list<CollisionTriangleSphere>>> centers;
-    for(auto& m : cvas) {
+    for (auto& m : cvas) {
         if (m->material.collide) {
-            for(const auto& t : m->transformed_triangles_sphere(tm)) {
+            for (const auto& t : m->transformed_triangles_sphere(tm)) {
                 bool sphere_found = false;
-                for(auto& x : centers) {
+                for (auto& x : centers) {
                     if (sum(squared(t.bounding_sphere.center() - x.first)) < squared(static_radius)) {
                         x.second.push_back(t);
                         sphere_found = true;
@@ -42,7 +42,7 @@ std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
         }
     }
     std::list<std::vector<CollisionTriangleSphere>> result;
-    for(const auto& x : centers) {
+    for (const auto& x : centers) {
         std::vector<CollisionTriangleSphere> res{x.second.begin(), x.second.end()};
         result.push_back(std::move(res));
     }
@@ -59,9 +59,9 @@ void RigidBodies::add_rigid_body(
             throw std::runtime_error("static rigid body has tirelines");
         }
         if (cfg_.bvh) {
-            for(auto& m : hitbox) {
+            for (auto& m : hitbox) {
                 if (m->material.collide) {
-                    for(const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
+                    for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
                         bvh_.insert(t.bounding_box, "", t.base);
                     }
                 }
@@ -72,10 +72,10 @@ void RigidBodies::add_rigid_body(
             RigidBodyAndTransformedMeshes rbtm;
             rbtm.rigid_body = rigid_body;
             
-            for(const auto& p : xx) {
+            for (const auto& p : xx) {
                 std::vector<FixedArray<float, 3>> vertices;
                 vertices.reserve(p.size() * 3);
-                for(const auto& t : p) {
+                for (const auto& t : p) {
                     vertices.push_back(t.triangle(0));
                     vertices.push_back(t.triangle(1));
                     vertices.push_back(t.triangle(2));
@@ -93,7 +93,7 @@ void RigidBodies::add_rigid_body(
         RigidBodyAndMeshes rbm;
         rbm.rigid_body = rigid_body;
         auto ins = [this, &rbm](const auto& cvas, MeshType mesh_type) {
-            for(auto& cva : cvas) {
+            for (auto& cva : cvas) {
                 if (cva->material.collide) {
                     auto vertices = cva->vertices();
                     if (vertices.size() > 0) {

@@ -111,7 +111,7 @@ void MacroLineExecutor::operator () (const std::string& line, const RegexSubstit
             execute_user_function_,
             substitutions_,
             verbose_};
-        for(const std::string& l : macro_it->second.lines) {
+        for (const std::string& l : macro_it->second.lines) {
             mle2(substitute(l, match[2].str(), rsc), rsc);
         }
     } else if (std::regex_match(line, match, include_reg)) {

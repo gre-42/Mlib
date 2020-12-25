@@ -62,13 +62,13 @@ void test_power_to_force_negative() {
     float dt = 0.1;
     float m = 1000;
     float alpha0 = 0.2;
-    for(float t = 0; t < 10; t += dt) {
+    for (float t = 0; t < 10; t += dt) {
         auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, P, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
     }
     assert_isclose<float>(v3(0), 32.4703, 1e-4);
-    for(float t = 0; t < 10; t += dt) {
+    for (float t = 0; t < 10; t += dt) {
         auto F = power_to_force_infinite_mass(1e4, 1e-1, 5e4, 5e4, INFINITY, n3, -P, v3, dt, alpha0, false);
         v3 += F / m * dt;
         // std::cerr << v3 << std::endl;
@@ -85,7 +85,7 @@ void test_power_to_force_stiction_normal() {
     float m = 1000;
     float stiction_coefficient = 1;
     float alpha0 = 0.2;
-    for(float t = 0; t < 10; t += dt) {
+    for (float t = 0; t < 10; t += dt) {
         auto F = power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, v3, dt, alpha0, true);
         F += power_to_force_infinite_mass(1e4, 1e-1, g * m * stiction_coefficient / 2, 1e3, INFINITY, n3, P, v3, dt, alpha0, true);
         v3 += F / m * dt;
@@ -100,7 +100,7 @@ void test_power_to_force_stiction_normal() {
 //     FixedArray<float, 3> v3{0, 0, 0};
 //     float dt = 0.016667;
 //     float m = 1000;
-//     for(float t = 0; t < 10; t += dt) {
+//     for (float t = 0; t < 10; t += dt) {
 //         auto F = power_to_force_infinite_mass(10, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
 //         F += power_to_force_infinite_mass(10, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
 //         v3 += F / m * dt;
@@ -121,7 +121,7 @@ void test_power_to_force_stiction_normal() {
 //     };
 //     Array<float> vs = linspace(0.f, 5 / 3.6f, 100.f);
 //     Array<float> fs{ArrayShape{0}};
-//     for(float v : vs.flat_iterable()) {
+//     for (float v : vs.flat_iterable()) {
 //         fs.append(get_force(v)(1));
 //     }
 //     Array<float>({vs, fs}).T().save_txt_2d("vf.m");

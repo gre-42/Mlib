@@ -18,7 +18,7 @@ RenderLogics::RenderLogics(std::recursive_mutex &mutex)
 
 RenderLogics::~RenderLogics() {
     std::set<SceneNode*> visited_nodes;
-    for(const auto& n : render_logics_) {
+    for (const auto& n : render_logics_) {
         if ((n.first != nullptr) && !visited_nodes.contains(n.first)) {
             visited_nodes.insert(n.first);
             n.first->remove_destruction_observer(this);
@@ -35,7 +35,7 @@ void RenderLogics::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("RenderLogics::render");
-    for(const auto& c : render_logics_) {
+    for (const auto& c : render_logics_) {
         c.second->render(width, height, render_config, scene_graph_config, render_results, frame_id);
     }
 }

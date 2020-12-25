@@ -31,7 +31,7 @@ void test_rigid_body_physics_particle0() {
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
     p.v2b = p.v1 + h * g;
-    for(size_t i = 0; i < 100; ++i) {
+    for (size_t i = 0; i < 100; ++i) {
         FixedArray<float, 3> J = -pc.normal_impulse.normal;
         float lambda = - (dot0d(J, p.v2b) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J));
         p.v2 = p.v2b + solve_symm_1d(p.mass, J * lambda);
@@ -48,7 +48,7 @@ void test_rigid_body_physics_particle() {
     float beta = 0.5;
     FixedArray<float, 3> g = {0, -9.8, 0};
     p.v += h * g;
-    for(size_t i = 0; i < 100; ++i) {
+    for (size_t i = 0; i < 100; ++i) {
         FixedArray<float, 3> J = -pc.normal_impulse.normal;
         float lambda = - (dot0d(J, p.v) + pc.b + beta / h * pc.C(p.x)) / dot0d(J, solve_symm_1d(p.mass, J));
         p.v += solve_symm_1d(p.mass, J * lambda);
@@ -66,10 +66,10 @@ void test_rigid_body_physics_timestep() {
     FixedArray<float, 3> g = {0, -9.8, 0};
     std::list<float> xs;
     std::list<float> ys;
-    for(size_t i = 0; i < 100; ++i) {
+    for (size_t i = 0; i < 100; ++i) {
         p.v += h * g;
         if (pc.active(p.x)) {
-            for(size_t j = 0; j < 100; ++j) {
+            for (size_t j = 0; j < 100; ++j) {
                 FixedArray<float, 3> J = -pc.normal_impulse.normal;
                 float lambda = - (dot0d(J, p.v) + pc.b + 1.f / h * (beta * pc.C(p.x) - beta2 * pc.bias(p.x))) / dot0d(J, solve_symm_1d(p.mass, J));
                 p.v += solve_symm_1d(p.mass, J * lambda);
@@ -109,7 +109,7 @@ void test_rigid_body_physics_rbi() {
     FixedArray<float, 3> g = {0, -9.8, 0};
     // std::list<float> xs;
     // std::list<float> ys;
-    for(size_t i = 0; i < 100; ++i) {
+    for (size_t i = 0; i < 100; ++i) {
         rbp.v_ += h * g;
         FixedArray<float, 3> p = rbp.abs_position() - FixedArray<float, 3>{0, 0.1, 0};
         // std::cerr << x << std::endl;
@@ -117,7 +117,7 @@ void test_rigid_body_physics_rbi() {
         // std::cerr << rbp.abs_com_ << std::endl;
         // std::cerr << rbp.com_ << std::endl;
         if (pc.active(p)) {
-            for(size_t j = 0; j < 100; ++j) {
+            for (size_t j = 0; j < 100; ++j) {
                 float v = dot0d(rbp.velocity_at_position(p), pc.normal_impulse.normal);
                 float mc = rbp.effective_mass({.vector = pc.normal_impulse.normal, .position = p});
                 float lambda = - mc * (-v + pc.b + 1.f / h * (beta * pc.C(p) - beta2 * pc.bias(p)));
@@ -151,7 +151,7 @@ void test_rigid_body_physics_rbi_multiple() {
     FixedArray<float, 3> g = {0, -9.8, 0};
     std::list<float> xs;
     std::list<float> ys;
-    for(size_t i = 0; i < 100; ++i) {
+    for (size_t i = 0; i < 100; ++i) {
         rbp.v_ += h * g;
         std::list<std::unique_ptr<ContactInfo>> cis;
         cis.push_back(
@@ -195,10 +195,10 @@ void test_rigid_body_physics_rbi_multiple() {
 //     float h = 1. / 60.;
 //     float beta = 0.5;
 //     FixedArray<float, 3> g = {0, -9.8, 0};
-//     for(size_t i = 0; i < 10; ++i) {
+//     for (size_t i = 0; i < 10; ++i) {
 //         p.v2b = p.v1 + h * g;
-//         for(size_t j = 0; j < 100; ++j) {
-//             for(PlaneInequalityConstraint& pc: pcs) {
+//         for (size_t j = 0; j < 100; ++j) {
+//             for (PlaneInequalityConstraint& pc: pcs) {
 //                 // std::cerr << pc.J << std::endl;
 //                 float lambda = - (dot0d(pc.J, p.v2b) + pc.b + beta / h * pc.C(p.x)) / dot0d(pc.J, solve_symm_1d(p.mass, pc.J));
 //                 p.v2 = p.v2b + solve_symm_1d(p.mass, pc.J * lambda);

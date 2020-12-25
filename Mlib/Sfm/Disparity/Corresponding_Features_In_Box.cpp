@@ -17,7 +17,7 @@ CorrespondingFeaturesInBox::CorrespondingFeaturesInBox(
     std::list<Array<float>> yl1_2;
     std::list<Array<float>> yl0;
     std::list<Array<float>> yl1;
-    for(const Array<float>& f : feature_points0) {
+    for (const Array<float>& f : feature_points0) {
         TraceablePatch tp{im0_rgb, a2i(f), ArrayShape{10, 10}};
         if (tp.good_) {
             ArrayShape new_pos = tp.new_position_in_box(im1_rgb, a2i(f), ArrayShape{2 * max_distance + 1, 2 * max_distance + 1}, worst_error);

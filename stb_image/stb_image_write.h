@@ -763,7 +763,7 @@ static int stbi_write_hdr_core(stbi__write_context *s, int x, int y, int comp, f
 #endif
       s->func(s->context, buffer, len);
 
-      for(i=0; i < y; i++)
+      for (i=0; i < y; i++)
          stbiw__write_hdr_scanline(s, x, comp, scratch, data + comp*x*(stbi__flip_vertically_on_write ? y-1-i : i));
       STBIW_FREE(scratch);
       return 1;
@@ -1227,7 +1227,7 @@ static void stbiw__jpg_writeBits(stbi__write_context *s, int *bitBufP, int *bitC
    while(bitCnt >= 8) {
       unsigned char c = (bitBuf >> 16) & 255;
       stbiw__putc(s, c);
-      if(c == 255) {
+      if (c == 255) {
          stbiw__putc(s, 0);
       }
       bitBuf <<= 8;
@@ -1302,17 +1302,17 @@ static int stbiw__jpg_processDU(stbi__write_context *s, int *bitBuf, int *bitCnt
    int DU[64];
 
    // DCT rows
-   for(dataOff=0, n=du_stride*8; dataOff<n; dataOff+=du_stride) {
+   for (dataOff=0, n=du_stride*8; dataOff<n; dataOff+=du_stride) {
       stbiw__jpg_DCT(&CDU[dataOff], &CDU[dataOff+1], &CDU[dataOff+2], &CDU[dataOff+3], &CDU[dataOff+4], &CDU[dataOff+5], &CDU[dataOff+6], &CDU[dataOff+7]);
    }
    // DCT columns
-   for(dataOff=0; dataOff<8; ++dataOff) {
+   for (dataOff=0; dataOff<8; ++dataOff) {
       stbiw__jpg_DCT(&CDU[dataOff], &CDU[dataOff+du_stride], &CDU[dataOff+du_stride*2], &CDU[dataOff+du_stride*3], &CDU[dataOff+du_stride*4],
                      &CDU[dataOff+du_stride*5], &CDU[dataOff+du_stride*6], &CDU[dataOff+du_stride*7]);
    }
    // Quantize/descale/zigzag the coefficients
-   for(y = 0, j=0; y < 8; ++y) {
-      for(x = 0; x < 8; ++x,++j) {
+   for (y = 0, j=0; y < 8; ++y) {
+      for (x = 0; x < 8; ++x,++j) {
          float v;
          i = y*du_stride+x;
          v = CDU[i]*fdtbl[j];
@@ -1334,14 +1334,14 @@ static int stbiw__jpg_processDU(stbi__write_context *s, int *bitBuf, int *bitCnt
    }
    // Encode ACs
    end0pos = 63;
-   for(; (end0pos>0)&&(DU[end0pos]==0); --end0pos) {
+   for (; (end0pos>0)&&(DU[end0pos]==0); --end0pos) {
    }
    // end0pos = first element in reverse order !=0
-   if(end0pos == 0) {
+   if (end0pos == 0) {
       stbiw__jpg_writeBits(s, bitBuf, bitCnt, EOB);
       return DU[0];
    }
-   for(i = 1; i <= end0pos; ++i) {
+   for (i = 1; i <= end0pos; ++i) {
       int startpos = i;
       int nrzeroes;
       unsigned short bits[2];
@@ -1359,7 +1359,7 @@ static int stbiw__jpg_processDU(stbi__write_context *s, int *bitBuf, int *bitCnt
       stbiw__jpg_writeBits(s, bitBuf, bitCnt, HTAC[(nrzeroes<<4)+bits[1]]);
       stbiw__jpg_writeBits(s, bitBuf, bitCnt, bits);
    }
-   if(end0pos != 63) {
+   if (end0pos != 63) {
       stbiw__jpg_writeBits(s, bitBuf, bitCnt, EOB);
    }
    return DU[0];
@@ -1441,7 +1441,7 @@ static int stbi_write_jpg_core(stbi__write_context *s, int width, int height, in
    float fdtbl_Y[64], fdtbl_UV[64];
    unsigned char YTable[64], UVTable[64];
 
-   if(!data || !width || !height || comp > 4 || comp < 1) {
+   if (!data || !width || !height || comp > 4 || comp < 1) {
       return 0;
    }
 
@@ -1450,15 +1450,15 @@ static int stbi_write_jpg_core(stbi__write_context *s, int width, int height, in
    quality = quality < 1 ? 1 : quality > 100 ? 100 : quality;
    quality = quality < 50 ? 5000 / quality : 200 - quality * 2;
 
-   for(i = 0; i < 64; ++i) {
+   for (i = 0; i < 64; ++i) {
       int uvti, yti = (YQT[i]*quality+50)/100;
       YTable[stbiw__jpg_ZigZag[i]] = (unsigned char) (yti < 1 ? 1 : yti > 255 ? 255 : yti);
       uvti = (UVQT[i]*quality+50)/100;
       UVTable[stbiw__jpg_ZigZag[i]] = (unsigned char) (uvti < 1 ? 1 : uvti > 255 ? 255 : uvti);
    }
 
-   for(row = 0, k = 0; row < 8; ++row) {
-      for(col = 0; col < 8; ++col, ++k) {
+   for (row = 0, k = 0; row < 8; ++row) {
+      for (col = 0; col < 8; ++col, ++k) {
          fdtbl_Y[k]  = 1 / (YTable [stbiw__jpg_ZigZag[k]] * aasf[row] * aasf[col]);
          fdtbl_UV[k] = 1 / (UVTable[stbiw__jpg_ZigZag[k]] * aasf[row] * aasf[col]);
       }
@@ -1500,15 +1500,15 @@ static int stbi_write_jpg_core(stbi__write_context *s, int width, int height, in
       const unsigned char *dataG = dataR + ofsG;
       const unsigned char *dataB = dataR + ofsB;
       int x, y, pos;
-      if(subsample) {
-         for(y = 0; y < height; y += 16) {
-            for(x = 0; x < width; x += 16) {
+      if (subsample) {
+         for (y = 0; y < height; y += 16) {
+            for (x = 0; x < width; x += 16) {
                float Y[256], U[256], V[256];
-               for(row = y, pos = 0; row < y+16; ++row) {
+               for (row = y, pos = 0; row < y+16; ++row) {
                   // row >= height => use last input row
                   int clamped_row = (row < height) ? row : height - 1;
                   int base_p = (stbi__flip_vertically_on_write ? (height-1-clamped_row) : clamped_row)*width*comp;
-                  for(col = x; col < x+16; ++col, ++pos) {
+                  for (col = x; col < x+16; ++col, ++pos) {
                      // if col >= width => use pixel from last input column
                      int p = base_p + ((col < width) ? col : (width-1))*comp;
                      float r = dataR[p], g = dataG[p], b = dataB[p];
@@ -1526,8 +1526,8 @@ static int stbi_write_jpg_core(stbi__write_context *s, int width, int height, in
                {
                   float subU[64], subV[64];
                   int yy, xx;
-                  for(yy = 0, pos = 0; yy < 8; ++yy) {
-                     for(xx = 0; xx < 8; ++xx, ++pos) {
+                  for (yy = 0, pos = 0; yy < 8; ++yy) {
+                     for (xx = 0; xx < 8; ++xx, ++pos) {
                         int j = yy*32+xx*2;
                         subU[pos] = (U[j+0] + U[j+1] + U[j+16] + U[j+17]) * 0.25f;
                         subV[pos] = (V[j+0] + V[j+1] + V[j+16] + V[j+17]) * 0.25f;
@@ -1539,14 +1539,14 @@ static int stbi_write_jpg_core(stbi__write_context *s, int width, int height, in
             }
          }
       } else {
-         for(y = 0; y < height; y += 8) {
-            for(x = 0; x < width; x += 8) {
+         for (y = 0; y < height; y += 8) {
+            for (x = 0; x < width; x += 8) {
                float Y[64], U[64], V[64];
-               for(row = y, pos = 0; row < y+8; ++row) {
+               for (row = y, pos = 0; row < y+8; ++row) {
                   // row >= height => use last input row
                   int clamped_row = (row < height) ? row : height - 1;
                   int base_p = (stbi__flip_vertically_on_write ? (height-1-clamped_row) : clamped_row)*width*comp;
-                  for(col = x; col < x+8; ++col, ++pos) {
+                  for (col = x; col < x+8; ++col, ++pos) {
                      // if col >= width => use pixel from last input column
                      int p = base_p + ((col < width) ? col : (width-1))*comp;
                      float r = dataR[p], g = dataG[p], b = dataB[p];

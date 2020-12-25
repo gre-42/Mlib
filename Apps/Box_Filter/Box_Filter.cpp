@@ -15,7 +15,7 @@ void box_filter_file(
     auto bitmap = Bgr565Bitmap::load_from_file(source);
 
     Array<float> image = bitmap.to_float_grayscale();
-    for(size_t i = 0; i < niter; ++i) {
+    for (size_t i = 0; i < niter; ++i) {
         image = box_filter(image, ArrayShape{width, width}, 0.f);
     }
 

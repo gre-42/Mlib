@@ -18,7 +18,7 @@ void downsample_file(const char* in_filename, const char* out_prefix) {
         throw std::runtime_error("channels != 4");
     }
     RgbaDownsampler rds{data, width, height};
-    for(RgbaImage im = rds.next(); im.data != nullptr; im = rds.next()) {
+    for (RgbaImage im = rds.next(); im.data != nullptr; im = rds.next()) {
         if (!stbi_write_png(
             (out_prefix + std::to_string(im.width) + "x" + std::to_string(im.width) + ".png").c_str(),
             im.width,

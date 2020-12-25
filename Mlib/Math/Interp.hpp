@@ -85,7 +85,7 @@ private:
 
 template <class TData>
 std::ostream& operator << (std::ostream& ostr, const Interp<TData>& interp) {
-    for(size_t i = 0; i < interp.x_.size(); ++i) {
+    for (size_t i = 0; i < interp.x_.size(); ++i) {
         ostr << interp.x_[i] << " -> " << interp.y_[i] << '\n';
     }
     return ostr;

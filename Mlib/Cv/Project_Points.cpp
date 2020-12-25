@@ -47,7 +47,7 @@ Array<float> Mlib::Cv::projected_points(
     assert(all(ke.shape().erased_first() == ArrayShape{3, 4}));
     // std::cerr << x.shape() << " | " << ki.shape() << " | " << ke.shape() << std::endl;
     Array<float> y(ArrayShape{ke.shape(0), x.shape(0), 3});
-    for(size_t i = 0; i < ke.shape(0); ++i) {
+    for (size_t i = 0; i < ke.shape(0); ++i) {
         // std::cerr << ki.shape() << " | " << ke[i].shape() << std::endl;
         auto m = dot(ki, ke[i]);
         // auto kk = R3_from_Nx4(ke[i], 3);
@@ -59,8 +59,8 @@ Array<float> Mlib::Cv::projected_points(
         y[i] = outer(m, x).T();
     }
     // std::cerr << "y\n" << y << std::endl;
-    for(size_t r = 0; r < y.shape(0); ++r) {
-        for(size_t c = 0; c < y.shape(1); ++c) {
+    for (size_t r = 0; r < y.shape(0); ++r) {
+        for (size_t c = 0; c < y.shape(1); ++c) {
             const float t = y(r, c, 2);
             // also fails for NaN
             if (std::isnan(t)) {
@@ -228,7 +228,7 @@ Array<float> Mlib::Cv::reconstructed_point(
         M = Array<float>(ArrayShape{y_tracked.shape(0) * 3, 3});
     }
     Array<float> B(ArrayShape{y_tracked.shape(0) * 3});
-    for(size_t r = 0; r < y_tracked.shape(0); ++r) {
+    for (size_t r = 0; r < y_tracked.shape(0); ++r) {
         Array<float> v;
         if (points_are_normalized) {
             Array<float> K = dot(ki, ke[r]);
@@ -259,8 +259,8 @@ Array<float> Mlib::Cv::reconstructed_point(
         //std::cerr << "ke f " << (ke[r], Array<float>{f(0), f(1), f(2), 1}) << std::endl;
 
         if (method2) {
-            for(size_t rr = 0; rr < 3; ++rr) {
-                for(size_t c = 0; c < 3; ++c) {
+            for (size_t rr = 0; rr < 3; ++rr) {
+                for (size_t c = 0; c < 3; ++c) {
                     M(rr + 3 * r, c) = (rr == c);
                 }
                 M(rr + 3 * r, 3 + r) = -v(rr);
@@ -299,9 +299,9 @@ Array<float> Mlib::Cv::reconstructed_point_reweighted(
 {
     Array<float> fs{ArrayShape{y_tracked.shape(0), 3}};
     Array<float> x = reconstructed_point(y_tracked, ki, ke, nullptr, &fs, false);
-    for(size_t i = 0; i < 1; ++i) {
+    for (size_t i = 0; i < 1; ++i) {
         Array<float> weights{ArrayShape{y_tracked.shape(0)}};
-        for(size_t r = 0; r < weights.length(); ++r) {
+        for (size_t r = 0; r < weights.length(); ++r) {
             weights(r) =  1 / std::sqrt(sum(squared(x - fs[r])));
         }
         x = reconstructed_point(y_tracked, ki, ke, &weights, nullptr, false);

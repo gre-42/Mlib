@@ -52,7 +52,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const FixedArray<float, 4, 4>& a
     }
     auto offset = fixed_zeros<float, 3>();
     float t = 0;
-    for(size_t i = 0; i < 10; ++i) {
+    for (size_t i = 0; i < 10; ++i) {
         RigidBodyIntegrator rbi = *followed_;
         rbi.a_ = 0;
         rbi.rbp_.v_ -= follower_.rbp_.v_;

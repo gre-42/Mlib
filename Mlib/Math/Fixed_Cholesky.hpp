@@ -9,10 +9,10 @@ namespace Mlib {
 template <class TData, size_t tsize>
 FixedArray<TData, tsize, tsize> cholesky(const FixedArray<TData, tsize, tsize>& A) {
     FixedArray<TData, tsize, tsize> L;
-    for(size_t i = 0; i < tsize; ++i) {
-        for(size_t j = 0; j <= i; ++j) {
+    for (size_t i = 0; i < tsize; ++i) {
+        for (size_t j = 0; j <= i; ++j) {
             TData s = 0;
-            for(size_t k = 0; k < j; ++k) {
+            for (size_t k = 0; k < j; ++k) {
                 s += L(i, k) * conju(L(j, k));
             }
             L(i, j) = (i == j) ? std::sqrt(A(i, i) - s) : ((A(i, j) - s) / L(j, j));
@@ -34,19 +34,19 @@ FixedArray<TData, tsize, tsize_b> solve_LU(
     // Ax = b -> LUx = b. Then y is defined to be Ux
     FixedArray<TData, tsize, tsize_b> x;
     FixedArray<TData, tsize, tsize_b> y;
-    for(size_t v = 0; v < tsize_b; ++v) {
+    for (size_t v = 0; v < tsize_b; ++v) {
         // Forward solve Ly = b
-        for(size_t i = 0; i < tsize; ++i) {
+        for (size_t i = 0; i < tsize; ++i) {
             y(i, v) = B(i, v);
-            for(size_t j = 0; j < i; ++j) {
+            for (size_t j = 0; j < i; ++j) {
                 y(i, v) -= L(i, j) * y(j, v);
             }
             y(i, v) /= L(i, i);
         }
         // Backward solve Ux = y
-        for(size_t i = tsize - 1; i != SIZE_MAX; --i) {
+        for (size_t i = tsize - 1; i != SIZE_MAX; --i) {
             x(i, v) = y(i, v);
-            for(size_t j = i + 1; j < tsize; ++j) {
+            for (size_t j = i + 1; j < tsize; ++j) {
                 x(i, v) -= U(i, j) * x(j, v);
             }
             x(i, v) /= U(i, i);
@@ -76,11 +76,11 @@ FixedArray<TData, tsize, tsize_b> solve_symm_inplace(
         beta != TData(0))
     {
         // OpenCV Levenberg-Marquardt
-        for(size_t r = 0; r < tsize; ++r) {
+        for (size_t r = 0; r < tsize; ++r) {
             TData dr = alpha + beta * A(r, r);
             A(r, r) += dr;
             if (x0 != nullptr) {
-                for(size_t c = 0; c < tsize_b; ++c) {
+                for (size_t c = 0; c < tsize_b; ++c) {
                     B(r, c) += (*x0)(r, c) * dr;
                 }
             }

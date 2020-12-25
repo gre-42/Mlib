@@ -77,8 +77,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 /*static void print_mat4x4(const mat4x4& m) {
-    for(size_t r = 0; r < 4; ++r) {
-        for(size_t c = 0; c < 4; ++c) {
+    for (size_t r = 0; r < 4; ++r) {
+        for (size_t c = 0; c < 4; ++c) {
             std::cerr << m[r][c] << " ";
         }
         std::cerr << std::endl;
@@ -195,7 +195,7 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
         CHK(glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp));
         CHK(glDrawArrays(GL_TRIANGLES, 0, vertices.size()));
 
-        if(output != nullptr) {
+        if (output != nullptr) {
             VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
             CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
             glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -228,8 +228,8 @@ void Mlib::render_depth_map(
     Array<float> G = rgb_picture[1];
     Array<float> B = rgb_picture[2];
     const Array<float>& Z = depth_picture;
-    for(size_t r = 0; r < rgb_picture.shape(1) - 1; ++r) {
-        for(size_t c = 0; c < rgb_picture.shape(2) - 1; ++c) {
+    for (size_t r = 0; r < rgb_picture.shape(1) - 1; ++r) {
+        for (size_t c = 0; c < rgb_picture.shape(2) - 1; ++c) {
             if (std::isnan(Z(r, c)) ||
                 std::isnan(Z(r, c + 1)) ||
                 std::isnan(Z(r + 1, c)) ||
@@ -307,8 +307,8 @@ void Mlib::render_height_map(
     Array<float> G = rgb_picture[1];
     Array<float> B = rgb_picture[2];
     const Array<float>& Z = height_picture;
-    for(size_t r = 0; r < rgb_picture.shape(1) - 1; ++r) {
-        for(size_t c = 0; c < rgb_picture.shape(2) - 1; ++c) {
+    for (size_t r = 0; r < rgb_picture.shape(1) - 1; ++r) {
+        for (size_t c = 0; c < rgb_picture.shape(2) - 1; ++c) {
             if (std::isnan(Z(r, c)) ||
                 std::isnan(Z(r, c + 1)) ||
                 std::isnan(Z(r + 1, c)) ||

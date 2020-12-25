@@ -25,13 +25,13 @@ void FifoLog::get_messages(std::ostream& ostr, size_t nentries, LogEntrySeverity
 {
     std::lock_guard lock{mutex_};
     auto it = entries_.end();
-    for(size_t i = 0; (i < entries_.size()) && (nentries > 0); ++i) {
+    for (size_t i = 0; (i < entries_.size()) && (nentries > 0); ++i) {
         if (it->first >= severity) {
             --nentries;
         }
         --it;
     }
-    for(; it != entries_.end(); ++it) {
+    for (; it != entries_.end(); ++it) {
         if (it->first >= severity) {
             ostr << it->second << std::endl;
         }

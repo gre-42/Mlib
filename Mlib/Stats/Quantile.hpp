@@ -28,7 +28,7 @@ template <class TDataX, class TDataQ>
 Array<TDataX> quantiles(const Array<TDataX>& x, const Array<TDataQ>& q) {
     Quantiles<TDataX> sx{x};
     Array<TDataX> res(q.shape());
-    for(size_t i = 0; i < q.length(); ++i) {
+    for (size_t i = 0; i < q.length(); ++i) {
         res(i) = sx(q(i));
     }
     return res;

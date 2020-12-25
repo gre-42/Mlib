@@ -16,8 +16,8 @@ Array<TData> rigid_motion_roundtrip(
     assert(all(im_r_depth.shape() == im_l_depth.shape()));
     Array<TData> result{im_r_depth.shape()};
     RigidMotionRoundtripSampler rs{ki, ke, im_r_depth, im_l_depth};
-    for(size_t r = 0; r < result.shape(0); ++r) {
-        for(size_t c = 0; c < result.shape(1); ++c) {
+    for (size_t r = 0; r < result.shape(0); ++r) {
+        for (size_t c = 0; c < result.shape(1); ++c) {
             FixedArray<TData, 2> pos_r_round;
             if (!std::isnan(im_r_depth(r, c))) {
                 // std::cerr << "from " << FixedArray<TData, 2>{i2a(r), i2a(c)} << std::endl;

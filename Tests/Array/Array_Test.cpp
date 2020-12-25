@@ -114,8 +114,8 @@ void test_sparse_array() {
         SparseArrayCcs<float> a{ArrayShape{6, 5}};
         Array<float> ad = uniform_random_array<float>(a.shape(), 2);
         Array<float> b = uniform_random_array<float>(ArrayShape{6, 4}, 1);
-        for(size_t r = 0; r < a.shape(0); ++r) {
-            for(size_t c = 0; c < a.shape(1); ++c) {
+        for (size_t r = 0; r < a.shape(0); ++r) {
+            for (size_t c = 0; c < a.shape(1); ++c) {
                 a(r, c) = ad(r, c);
             }
         }
@@ -135,7 +135,7 @@ void test_move() {
 void test_element_iterable() {
     Array<float> a{2, 3, 4};
     std::list<float> l;
-    for(const float& v : a.element_iterable()) {
+    for (const float& v : a.element_iterable()) {
         l.push_back(v);
     }
     assert_allclose(Array<float>{l}, a);

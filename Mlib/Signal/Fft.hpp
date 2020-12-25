@@ -55,16 +55,16 @@ void fft1d_inplace(Array<std::complex<TFloat>>& x) {
 
 template <class TFloat>
 void fft_inplace(Array<std::complex<TFloat>>& x) {
-    for(size_t axis = 0; axis < x.ndim(); ++axis) {
+    for (size_t axis = 0; axis < x.ndim(); ++axis) {
         Array<std::complex<TFloat>> tmp{ArrayShape{x.shape(axis)}};
         x = x.apply_over_axis(axis, ApplyOverAxisType::NOREDUCE,
             [&x, &tmp, axis](size_t i, size_t k, const Array<std::complex<TFloat>>& xf, Array<std::complex<TFloat>>& rf)
             {
-                for(size_t h = 0; h < x.shape(axis); ++h) {
+                for (size_t h = 0; h < x.shape(axis); ++h) {
                     tmp(h) = xf(i, h, k);
                 }
                 fft1d_inplace(tmp);
-                for(size_t h = 0; h < x.shape(axis); ++h) {
+                for (size_t h = 0; h < x.shape(axis); ++h) {
                     rf(i, h, k) = tmp(h);
                 }
             });

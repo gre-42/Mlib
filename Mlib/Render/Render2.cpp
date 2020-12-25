@@ -27,8 +27,8 @@ static void error_callback(int error, const char* description)
 }
 
 /*static void print_mat4x4(const mat4x4& m) {
-    for(size_t r = 0; r < 4; ++r) {
-        for(size_t c = 0; c < 4; ++c) {
+    for (size_t r = 0; r < 4; ++r) {
+        for (size_t c = 0; c < 4; ++c) {
             std::cerr << m[r][c] << " ";
         }
         std::cerr << std::endl;

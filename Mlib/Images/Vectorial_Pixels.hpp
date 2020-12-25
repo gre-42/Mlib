@@ -16,7 +16,7 @@ public:
     : Array<FixedArray<TData, tdata_dimension>>{ar.shape().erased_first()}
     {
         assert(ar.shape(0) == tdata_dimension);
-        for(size_t d = 0; d < tdata_dimension; ++d) {
+        for (size_t d = 0; d < tdata_dimension; ++d) {
             auto a_fi = ar[d].flat_iterable();
             auto fi = this->flat_iterable();
             auto a_it = a_fi.begin();
@@ -31,7 +31,7 @@ public:
 
     Array<TData> to_array() const {
         Array<TData> result{ArrayShape{tdata_dimension}.concatenated(this->shape())};
-        for(size_t d = 0; d < tdata_dimension; ++d) {
+        for (size_t d = 0; d < tdata_dimension; ++d) {
             result[d] = this->template applied<TData>([&](const auto& p){ return p(d); });
         }
         return result;

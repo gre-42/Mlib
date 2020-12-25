@@ -88,7 +88,7 @@ std::strong_ordering Mlib::operator <=> (const std::string& a, const std::string
 std::list<std::string> Mlib::string_to_list(const std::string& str) {
     std::list<std::string> res;
     static const std::regex re{"\\s+"};
-    for(auto it = std::sregex_token_iterator(str.begin(), str.end(), re, -1, std::regex_constants::match_not_null);
+    for (auto it = std::sregex_token_iterator(str.begin(), str.end(), re, -1, std::regex_constants::match_not_null);
         it != std::sregex_token_iterator();
         ++it)
     {
@@ -112,7 +112,7 @@ std::set<std::string> Mlib::string_to_set(const std::string& str) {
 std::string Mlib::join(const std::string& delimiter, const std::list<std::string>& lst) {
     std::string res;
     int i = 0;
-    for(const std::string& s : lst) {
+    for (const std::string& s : lst) {
         res += (i++ == 0)
             ? s
             : delimiter + s;

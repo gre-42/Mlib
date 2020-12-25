@@ -28,10 +28,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     }
     CollisionType collision_type = CollisionType::REFLECT;
     bool abort = false;
-    for(auto& c0 : c.o0->collision_observers_) {
+    for (auto& c0 : c.o0->collision_observers_) {
         c0->notify_collided(*c.o1, CollisionRole::PRIMARY, collision_type, abort);
     }
-    for(auto& c1 : c.o1->collision_observers_) {
+    for (auto& c1 : c.o1->collision_observers_) {
         c1->notify_collided(*c.o0, CollisionRole::SECONDARY, collision_type, abort);
     }
     if (abort) {
@@ -158,10 +158,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     // c.l1(penetrating_id)};
                     c.tire_id != SIZE_MAX ? c.o1->get_abs_tire_contact_position(c.tire_id) : c.l1(penetrating_id),
                     [c, plane](float lambda_final){
-                        for(auto& c0 : c.o0->collision_observers_) {
+                        for (auto& c0 : c.o0->collision_observers_) {
                             c0->notify_impact(*c.o1, CollisionRole::PRIMARY, plane.normal, lambda_final, c.base_log);
                         }
-                        for(auto& c1 : c.o1->collision_observers_) {
+                        for (auto& c1 : c.o1->collision_observers_) {
                             c1->notify_impact(*c.o0, CollisionRole::SECONDARY, plane.normal, lambda_final, c.base_log);
                         }
                     }};

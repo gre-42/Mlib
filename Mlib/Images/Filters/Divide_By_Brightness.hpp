@@ -12,7 +12,7 @@ Array<TData> divide_by_brightness(
 {
     Array<TData> gf = gaussian_filter_NWE(sum(image, 0), sigma, boundary_value);
     Array<TData> result{image.shape()};
-    for(size_t h = 0; h < image.shape(0); ++h) {
+    for (size_t h = 0; h < image.shape(0); ++h) {
         result[h] = image[h] / gf;
     }
     return result;

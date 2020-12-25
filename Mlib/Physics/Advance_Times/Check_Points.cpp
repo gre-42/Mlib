@@ -59,7 +59,7 @@ void CheckPoints::advance_time(float dt) {
     }
 
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
-        for(size_t i = 0; i < nth_; ++i) {
+        for (size_t i = 0; i < nth_; ++i) {
             float time;
             FixedArray<float, 3> position;
             FixedArray<float, 3> rotation;

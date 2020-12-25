@@ -37,7 +37,7 @@ void ImageFrame::save_axis_to_file(const std::string& filename, size_t axis, flo
     auto f = grayscale[axis].flattened();
     auto m = mask.flattened();
     auto b = bmp.flattened();
-    for(size_t j = 0; j < m.length(); ++j) {
+    for (size_t j = 0; j < m.length(); ++j) {
         if (m(j)) {
             b(j) = Bgr565::from_float_grayscale((f(j) - min) / (max - min));
         } else {

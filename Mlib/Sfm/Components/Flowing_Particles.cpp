@@ -36,8 +36,8 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     const size_t n_new_particles = cfg_.target_nparticles - new_frame.size();
 
     if (false) {
-        for(size_t r = 0; r < shape_(id0); r+=shape_(id0)/10) {
-            for(size_t c = 0; c < shape_(id1); c+=shape_(id1)/10) {
+        for (size_t r = 0; r < shape_(id0); r+=shape_(id0)/10) {
+            for (size_t c = 0; c < shape_(id1); c+=shape_(id1)/10) {
                 try_generate_feature_point_sequence(
                     new_frame,
                     i2a(ArrayShape{r, c}));
@@ -46,7 +46,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     }
 
     Array<bool> existing_points_mask = ones<bool>(image_frames_.rbegin()->second.grayscale.shape());
-    for(const auto& kv : new_frame) {
+    for (const auto& kv : new_frame) {
         draw_fill_rect(
             existing_points_mask,
             a2i(kv.second->sequence.rbegin()->second->position),
@@ -100,7 +100,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
         //std::cerr << count_nonzero(mask) << std::endl;
     }
     std::cerr << "Trying to generate " << points.shape(0) << " new particles" << std::endl;
-    for(const Array<float>& p : points) {
+    for (const Array<float>& p : points) {
         try_generate_feature_point_sequence(new_frame, p);
     }
 }
@@ -167,7 +167,7 @@ void FlowingParticles::advance_existing_particles(
         5,
         10);*/
     /*Array<float> fff(flow_field.shape());
-    for(size_t d = 0; d < flow_field.shape(0); ++d) {
+    for (size_t d = 0; d < flow_field.shape(0); ++d) {
         fff[d] = box_filter_nans_as_zeros_NWE(flow_field[d], ArrayShape{3, 3});
     }*/
     assert(particles_.size() > 0);
@@ -176,7 +176,7 @@ void FlowingParticles::advance_existing_particles(
         assert(flow_field.shape(0) == 2);
     }
     size_t nsuccess = 0;
-    for(const auto& s : particles_.rbegin()->second) {
+    for (const auto& s : particles_.rbegin()->second) {
         //if (bad_points_.find(s.first) != bad_points_.end()) {
         //    std::cerr << "Discontinuing bad point [" << s.first << "]" << std::endl;
         //    continue;
@@ -271,13 +271,13 @@ void FlowingParticles::advance_flowing_particles_cv() {
         descriptors1t);
     Array<uint8_t> des1t = cv_mat_to_array(descriptors1t);
     std::set<size_t> unmatched_ids1t;
-    for(size_t i = 0; i < des1t.shape(0); ++i) {
+    for (size_t i = 0; i < des1t.shape(0); ++i) {
         unmatched_ids1t.insert(i);
     }
     if (particles_.size() > 0) {
         Array<uint8_t> des0q{ArrayShape{particles_.rbegin()->second.size(), des1t.shape(1)}};
         std::vector<size_t> ids0q;
-        for(const auto& p0 : particles_.rbegin()->second) {
+        for (const auto& p0 : particles_.rbegin()->second) {
             des0q[ids0q.size()] = p0.second->sequence.begin()->second->descriptor;
             ids0q.push_back(p0.first);
         }
@@ -285,7 +285,7 @@ void FlowingParticles::advance_flowing_particles_cv() {
         bfm_.match(array_to_cv_mat(des0q), descriptors1t, matches);
         // std::sort(matches.begin(), matches.end());
         std::cerr << "Matched " << matches.size() << " existing particles" << std::endl;
-        for(const auto& m : matches) {
+        for (const auto& m : matches) {
             unmatched_ids1t.erase(m.trainIdx);
             try_insert_and_append_feature_point(
                 new_frame,
@@ -295,7 +295,7 @@ void FlowingParticles::advance_flowing_particles_cv() {
         }
     }
     std::cerr << "Trying to generate " << unmatched_ids1t.size() << " new particles" << std::endl;
-    for(size_t i1t : unmatched_ids1t) {
+    for (size_t i1t : unmatched_ids1t) {
         try_generate_feature_point_sequence(
             new_frame,
             Array<float>{keypoints1t.at(i1t).pt.x, keypoints1t.at(i1t).pt.y},
@@ -319,7 +319,7 @@ void FlowingParticles::advance_flowing_particles_cv() {
 void FlowingParticles::draw(Bgr565Bitmap& bmp) {
     assert(all(bmp.shape() == shape_));
     assert(particles_.size() > 0);
-    for(const auto& s : particles_.rbegin()->second) {
+    for (const auto& s : particles_.rbegin()->second) {
         ArrayShape index{a2i(s.second->sequence.rbegin()->second->position)};
         //assert(all(index < bmp.shape()));
         bmp.draw_fill_rect(

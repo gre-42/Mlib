@@ -31,15 +31,15 @@ int main(int argc, char** argv) {
     PpmImage::from_float_grayscale(normalized_and_clipped(flow[0], -max_displacement, max_displacement)).save_to_file("flow-0.ppm");
     PpmImage::from_float_grayscale(normalized_and_clipped(flow[1], -max_displacement, max_displacement)).save_to_file("flow-1.ppm");
     // global_mask.row_range(0, global_mask.shape(0) / 2) = false;
-    for(size_t tile_id = 0; tile_id < 5; ++tile_id) {
+    for (size_t tile_id = 0; tile_id < 5; ++tile_id) {
         Array<bool> mask{global_mask.copy()};
-        for(size_t it = 0; it < 3; ++it) {
+        for (size_t it = 0; it < 3; ++it) {
             // H: x -> p, p = x-prime = x'
             Array<float> x{ArrayShape{count_nonzero(mask), 3}};
             Array<float> p{ArrayShape{count_nonzero(mask), 3}};
             size_t i = 0;
-            for(size_t r = 0; r < mask.shape(0); ++r) {
-                for(size_t c = 0; c < mask.shape(1); ++c) {
+            for (size_t r = 0; r < mask.shape(0); ++r) {
+                for (size_t c = 0; c < mask.shape(1); ++c) {
                     if (mask(r, c)) {
                         x(i, id1) = i2a(r);
                         x(i, id0) = i2a(c);
@@ -60,8 +60,8 @@ int main(int argc, char** argv) {
             H /= H(2, 2);
             std::list<Array<float>> feature_list;
             std::list<Array<float>> Hp_list;
-            for(size_t r = 0; r < mask.shape(0); ++r) {
-                for(size_t c = 0; c < mask.shape(1); ++c) {
+            for (size_t r = 0; r < mask.shape(0); ++r) {
+                for (size_t c = 0; c < mask.shape(1); ++c) {
                     Array<float> a{i2a(ArrayShape{r, c})};
                     Array<float> b{apply_homography(H, homogenized_3(a)).row_range(0, 2)};
                     ArrayShape ia = a2i(a);

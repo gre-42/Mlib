@@ -32,7 +32,7 @@ Array<size_t> ransac(
     TData best_mean_residual = std::numeric_limits<TData>::infinity();
     Array<size_t> best_indices;
 
-    for(size_t i = 0; i < ro.ncalls; ++i) {
+    for (size_t i = 0; i < ro.ncalls; ++i) {
 
         std::shuffle(&ids_large(0), &ids_large(ids_large.length() - 1), g);
         Array<size_t> perm(&ids_large(0), &ids_large(0) + std::min(ro.nelems_small, nelems_large));

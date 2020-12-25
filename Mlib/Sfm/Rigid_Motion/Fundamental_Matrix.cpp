@@ -18,7 +18,7 @@ Array<float> Mlib::Sfm::find_fundamental_matrix(
     assert(y1.shape(1) == 3);
     assert(all(y0.shape() == y1.shape()));
     Array<double> Y(ArrayShape{y0.shape(0), 9});
-    for(size_t r = 0; r < y0.shape(0); ++r) {
+    for (size_t r = 0; r < y0.shape(0); ++r) {
         Y(r, 0) = y1(r, 0) * y0(r, 0); // e11
         Y(r, 1) = y1(r, 0) * y0(r, 1); // e12
         Y(r, 2) = y1(r, 0);            // e13
@@ -61,10 +61,10 @@ Array<float> Mlib::Sfm::find_fundamental_matrix(
         //std::cerr << vT << std::endl;
     }
     //std::cerr << "zzzz\n";
-    //for(size_t i = 0; i < vT.shape(0); ++i) {
+    //for (size_t i = 0; i < vT.shape(0); ++i) {
     //    F = vT[i].reshaped(ArrayShape{3, 3}).casted<float>();
     //    float z = 0;
-    //    for(size_t r = 0; r < y0.shape(0); ++r) {
+    //    for (size_t r = 0; r < y0.shape(0); ++r) {
     //        // assert_isclose<float>((y1[r], (F, y0))(), 0, 5);
     //        z += squared((y1[r], (F, y0[r]))());
     //    }
@@ -84,7 +84,7 @@ Array<float> Mlib::Sfm::fundamental_error(
     assert(y0.shape(1) == 3);
     assert(all(y0.shape() == y1.shape()));
     Array<float> result(ArrayShape{y0.shape(0)});
-    for(size_t r = 0; r < y1.shape(0); ++r) {
+    for (size_t r = 0; r < y1.shape(0); ++r) {
         result[r] = dot0d(y1[r], dot1d(F, y0[r]));
     }
     return result;

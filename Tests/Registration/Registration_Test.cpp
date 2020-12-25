@@ -41,9 +41,9 @@ void test_patch_registration_2d() {
     Array<float> b(array_shape);
     ArrayShape max_window_shape{3, 4};
 
-    for(size_t s = 0; s <= 2; ++s) {
+    for (size_t s = 0; s <= 2; ++s) {
         b = 0;
-        for(size_t i = s; i < b.shape(0); i++) {
+        for (size_t i = s; i < b.shape(0); i++) {
             b[i] = a[i - s];
         }
         Array<float> flow = patch_registration(a, b, max_window_shape, false);

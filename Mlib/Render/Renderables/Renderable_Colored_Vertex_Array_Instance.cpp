@@ -20,7 +20,7 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
 : rcva_{rcva}
 {
     size_t i = 0;
-    for(const auto& t : rcva->triangles_res_) {
+    for (const auto& t : rcva->triangles_res_) {
         if (resource_filter.matches(i++, t->name)) {
             triangles_res_subset_.push_back(t);
         }
@@ -45,7 +45,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
     if (render_pass.external.pass == ExternalRenderPass::DIRTMAP) {
         return;
     }
-    for(auto& cva : triangles_res_subset_) {
+    for (auto& cva : triangles_res_subset_) {
         if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {
             continue;
         }
@@ -68,7 +68,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         }
 
         std::list<std::pair<FixedArray<float, 4, 4>, Light*>> filtered_lights;
-        for(const auto& l : lights) {
+        for (const auto& l : lights) {
             if (!l.second->only_black || cva->material.occluded_by_black) {
                 filtered_lights.push_back(l);
             }
@@ -81,7 +81,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         black_shadow_indices.reserve(filtered_lights.size());
         {
             size_t i = 0;
-            for(const auto& l : filtered_lights) {
+            for (const auto& l : filtered_lights) {
                 if (!l.second->only_black) {
                     if (l.second->shadow) {
                         light_shadow_indices.push_back(i++);
@@ -163,7 +163,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         assert_true(!(has_lightmap_color && has_lightmap_depth));
         if (has_lightmap_color) {
             size_t i = 0;
-            for(const auto& l : filtered_lights) {
+            for (const auto& l : filtered_lights) {
                 if (l.second->shadow) {
                     CHK(glUniform1i(rp.texture_lightmap_color_locations.at(i), 1 + i));
                 }
@@ -171,7 +171,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             }
         }
         if (has_lightmap_depth) {
-            for(size_t i = 0; i < filtered_lights.size(); ++i) {
+            for (size_t i = 0; i < filtered_lights.size(); ++i) {
                 CHK(glUniform1i(rp.texture_lightmap_depth_locations.at(i), 1 + i));
             }
         }
@@ -187,13 +187,13 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
             CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, (const GLfloat*) m.flat_begin()));
             // CHK(glUniform3fv(rp.light_position_location, 1, (const GLfloat*) t3_from_4x4(filtered_lights.front().first).flat_begin()));
             size_t i = 0;
-            for(const auto& l : filtered_lights) {
+            for (const auto& l : filtered_lights) {
                 CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, (const GLfloat*) z3_from_4x4(l.first).flat_begin()));
             }
         }
         {
             size_t i = 0;
-            for(const auto& l : filtered_lights) {
+            for (const auto& l : filtered_lights) {
                 if (any(ambience != 0.f)) {
                     CHK(glUniform3fv(rp.light_ambiences.at(i), 1, (const GLfloat*) l.second->ambience.flat_begin()));
                 }
@@ -239,7 +239,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         LOG_INFO("RenderableColoredVertexArrayInstance::render bind light color textures");
         if (has_lightmap_color) {
             size_t i = 0;
-            for(const auto& l : filtered_lights) {
+            for (const auto& l : filtered_lights) {
                 if (l.second->shadow) {
                     std::string mname = "lightmap_color" + l.second->node_name;
                     const auto& light_vp = rcva_->rendering_resources_.get_vp(mname);
@@ -260,7 +260,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
         LOG_INFO("RenderableColoredVertexArrayInstance::render bind light depth textures");
         if (has_lightmap_depth) {
             size_t i = 0;
-            for(const auto& l : filtered_lights) {
+            for (const auto& l : filtered_lights) {
                 if (l.second->shadow) {
                     std::string mname = "lightmap_depth" + l.second->node_name;
                     const auto& light_vp = rcva_->rendering_resources_.get_vp(mname);
@@ -341,7 +341,7 @@ void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>&
 }
 
 bool RenderableColoredVertexArrayInstance::requires_render_pass() const {
-    for(auto cva : triangles_res_subset_) {
+    for (auto cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::OFF)
         {
             return true;
@@ -351,7 +351,7 @@ bool RenderableColoredVertexArrayInstance::requires_render_pass() const {
 }
 
 bool RenderableColoredVertexArrayInstance::requires_blending_pass() const {
-    for(auto cva : triangles_res_subset_) {
+    for (auto cva : triangles_res_subset_) {
         if ((cva->material.blend_mode == BlendMode::CONTINUOUS) &&
             (cva->material.aggregate_mode == AggregateMode::OFF))
         {
@@ -368,7 +368,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
     ExternalRenderPass external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
 {
-    for(const auto& cva : triangles_res_subset_) {
+    for (const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
             if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
@@ -386,7 +386,7 @@ void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config,
     std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const
 {
-    for(const auto& cva : triangles_res_subset_) {
+    for (const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::ONCE) {
             aggregate_queue.push_back(std::move(cva->transformed(m)));
         }
@@ -400,7 +400,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
     ExternalRenderPass external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
 {
-    for(const auto& cva : triangles_res_subset_) {
+    for (const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
             if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
@@ -418,7 +418,7 @@ void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
     const SceneGraphConfig& scene_graph_config,
     std::list<TransformedColoredVertexArray>& aggregate_queue) const
 {
-    for(const auto& cva : triangles_res_subset_) {
+    for (const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
             aggregate_queue.push_back({cva: cva, transformation_matrix: m});
         }
@@ -428,7 +428,7 @@ void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
 void RenderableColoredVertexArrayInstance::print_stats() const {
     std::cerr << "#triangle lists: " << triangles_res_subset_.size() << std::endl;
     size_t i = 0;
-    for(auto& cva : triangles_res_subset_) {
+    for (auto& cva : triangles_res_subset_) {
         std::cerr << "triangle list " << i << " #lines: " << cva->lines.size() << std::endl;
         std::cerr << "triangle list " << i << " #tris:  " << cva->triangles.size() << std::endl;
     }

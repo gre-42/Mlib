@@ -16,10 +16,10 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TData>
         ArrayAxisView<TData> image_axis(image, index0, axis);
         ArrayAxisView<TData> result_axis(result, index0, axis);
         size_t cdist = coeffs.length() / 2;
-        for(size_t i = 0; i < result_axis.length(); i++) {
+        for (size_t i = 0; i < result_axis.length(); i++) {
             TData v = 0;
             TData sc = 0;
-            for(size_t d = 0; d < coeffs.length(); ++d) {
+            for (size_t d = 0; d < coeffs.length(); ++d) {
                 size_t idi = i + d - cdist;
                 if (idi < result_axis.length()) {
                     TData ic = image_axis(idi);
@@ -46,7 +46,7 @@ Array<TData> lowpass_filter_NWE(
     const TData& boundary_value)
 {
     Array<TData> result = image.copy();
-    for(size_t axis = 0; axis < image.ndim(); ++axis) {
+    for (size_t axis = 0; axis < image.ndim(); ++axis) {
         result = lowpass_filter_1d_NWE(result, coeffs, boundary_value, axis);
     }
     return result;

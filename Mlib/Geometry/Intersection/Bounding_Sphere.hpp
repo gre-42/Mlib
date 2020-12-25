@@ -35,7 +35,7 @@ public:
     {
         size_t nelements = 0;
         center_ = 0;
-        for(auto it = iterable_begin; it != iterable_end; ++it) {
+        for (auto it = iterable_begin; it != iterable_end; ++it) {
             center_ += *it;
             ++nelements;
         }
@@ -44,7 +44,7 @@ public:
         }
         center_ /= nelements;
         radius_ = 0;
-        for(auto it = iterable_begin; it != iterable_end; ++it) {
+        for (auto it = iterable_begin; it != iterable_end; ++it) {
             radius_ = std::max(radius_, sum(squared(*it - center_)));
         }
         radius_ = std::sqrt(radius_);

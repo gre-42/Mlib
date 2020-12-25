@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
         {"--out-prefix"});
     const auto args = parser.parsed(argc, argv);
     std::vector<std::string> sources = args.unnamed_values();
-    for(size_t i = 1; i < sources.size(); ++i) {
+    for (size_t i = 1; i < sources.size(); ++i) {
         auto s0 = PpmImage::load_from_file(sources[i - 1]);
         auto s1 = PpmImage::load_from_file(sources[i]);
         auto g0 = s0.to_float_grayscale();

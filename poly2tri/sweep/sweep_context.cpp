@@ -53,7 +53,7 @@ SweepContext::SweepContext(std::vector<Point*> polyline) :
 void SweepContext::AddHole(std::vector<Point*> polyline)
 {
   InitEdges(polyline);
-  for(unsigned int i = 0; i < polyline.size(); i++) {
+  for (unsigned int i = 0; i < polyline.size(); i++) {
     points_.push_back(polyline[i]);
   }
 }
@@ -202,12 +202,12 @@ SweepContext::~SweepContext()
 
     typedef std::list<Triangle*> type_list;
 
-    for(type_list::iterator iter = map_.begin(); iter != map_.end(); ++iter) {
+    for (type_list::iterator iter = map_.begin(); iter != map_.end(); ++iter) {
         Triangle* ptr = *iter;
         delete ptr;
     }
 
-     for(unsigned int i = 0; i < edge_list.size(); i++) {
+     for (unsigned int i = 0; i < edge_list.size(); i++) {
         delete edge_list[i];
     }
 

@@ -12,7 +12,7 @@ RegridArray::RegridArray(
     std::vector<size_t> ids_dst_v;
     ids_src_v.reserve(uuids_old.size());
     ids_dst_v.reserve(uuids_old.size());
-    for(const auto& o : uuids_old) {
+    for (const auto& o : uuids_old) {
         auto it = uuids_new.find(o.second);
         if (it != uuids_new.end()) {
             ids_src_v.push_back(o.first);
@@ -30,7 +30,7 @@ RegridArray::RegridArray(
 Array<float> RegridArray::regrid_1d(const Array<float>& a) {
     assert(a.ndim() == 1);
     Array<float> res = zeros<float>(ArrayShape{length_});
-    for(size_t r = 0; r < ids_src_.length(); ++r) {
+    for (size_t r = 0; r < ids_src_.length(); ++r) {
         res(ids_dst_(r)) = a(ids_src_(r));
     }
     return res;
@@ -39,8 +39,8 @@ Array<float> RegridArray::regrid_1d(const Array<float>& a) {
 Array<float> RegridArray::regrid_2d(const Array<float>& a) {
     assert(a.ndim() == 2);
     Array<float> res = zeros<float>(ArrayShape{length_, length_});
-    for(size_t r = 0; r < ids_src_.length(); ++r) {
-        for(size_t c = 0; c < ids_src_.length(); ++c) {
+    for (size_t r = 0; r < ids_src_.length(); ++r) {
+        for (size_t c = 0; c < ids_src_.length(); ++c) {
             res(ids_dst_(r), ids_dst_(c)) = a(ids_src_(r), ids_src_(c));
         }
     }

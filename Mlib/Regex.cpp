@@ -11,7 +11,7 @@ static void iterate_replacements(
 {
     static const std::regex re{"\\s+"};
     static const std::regex re2{"(\\S+):(\\S*)"};
-    for(auto it = std::sregex_token_iterator(replacements.begin(), replacements.end(), re, -1, std::regex_constants::match_not_null);
+    for (auto it = std::sregex_token_iterator(replacements.begin(), replacements.end(), re, -1, std::regex_constants::match_not_null);
         it != std::sregex_token_iterator();
         ++it)
     {
@@ -68,13 +68,13 @@ std::string Mlib::substitute(const std::string& str, const std::string& replacem
 
 std::string Mlib::merge_replacements(const std::initializer_list<const std::string>& replacements) {
     std::map<std::string, std::string> repls;
-    for(const auto& r : replacements) {
+    for (const auto& r : replacements) {
         iterate_replacements(r, [&repls](const std::string& key, const std::string& value){
             repls[key] = value;
         });
     }
     std::string res;
-    for(const auto& p : repls) {
+    for (const auto& p : repls) {
         res += ' ' + p.first + ':' + p.second;
     }
     return res;

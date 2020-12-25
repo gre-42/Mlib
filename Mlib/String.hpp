@@ -23,7 +23,7 @@ auto string_to_vector(const std::string& str, const TOperation& op) {
     std::list<std::string> sresult = string_to_list(str);
     std::vector<decltype(op(""))> result;
     result.reserve(sresult.size());
-    for(const std::string& s : sresult) {
+    for (const std::string& s : sresult) {
         result.push_back(op(s));
     }
     return result;

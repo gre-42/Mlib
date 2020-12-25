@@ -23,8 +23,8 @@ void Mlib::hessian_determinant_trace(
         *trace = zeros<float>(image.shape());
     }
     Array<float> hessian(ArrayShape{2, 2});
-    for(size_t r = 1; r + 1 < image.shape(0); r++) {
-        for(size_t c = 1; c + 1 < image.shape(1); c++) {
+    for (size_t r = 1; r + 1 < image.shape(0); r++) {
+        for (size_t c = 1; c + 1 < image.shape(1); c++) {
             //off_derivatives(0, 0) = (image[r + 1](c - 1) - image[r - 1](c - 1)) / 2.0;
             //off_derivatives(0, 1) = (image[r + 1](c + 1) - image[r - 1](c + 1)) / 2.0;
             //off_derivatives(1, 0) = (image[r - 1](c + 1) - image[r - 1](c - 1)) / 2.0;
@@ -62,8 +62,8 @@ Array<float> Mlib::find_saddle_points(
 
     Array<float> det;
     hessian_determinant_trace(image, &det, nullptr);
-    for(size_t r = 1; r + 1 < image.shape(0); r++) {
-        for(size_t c = 1; c + 1 < image.shape(1); c++) {
+    for (size_t r = 1; r + 1 < image.shape(0); r++) {
+        for (size_t c = 1; c + 1 < image.shape(1); c++) {
             if (det(r, c) < delta) {
                 feature_points.push_back(i2a(ArrayShape{r, c}));
             }
@@ -83,7 +83,7 @@ Array<float> Mlib::structure_tensor(
     Array<float> M(ArrayShape{2, 2}.concatenated(image.shape()));
     size_t nelements = image.nelements();
     Array<float> M_f = M.reshaped(ArrayShape{2, 2, nelements});
-    for(size_t i = 0; i < nelements; ++i) {
+    for (size_t i = 0; i < nelements; ++i) {
         M_f(0, 0, i) = squared(Ix(i));
         M_f(0, 1, i) = Ix(i) * Iy(i);
         M_f(1, 0, i) = Iy(i) * Ix(i);
@@ -178,8 +178,8 @@ Array<float> Mlib::find_feature_in_neighborhood(
     ArrayShape best_id(old_feature_point.length());
     best_id = SIZE_MAX;
     float best_featureness = -std::numeric_limits<float>::infinity();
-    for(size_t r = 0; r < window_shape(0); ++r) {
-        for(size_t c = 0; c < window_shape(1); ++c) {
+    for (size_t r = 0; r < window_shape(0); ++r) {
+        for (size_t c = 0; c < window_shape(1); ++c) {
             size_t R = r + index(0);
             size_t C = c + index(1);
             if ((R < new_featureness.shape(0)) &&

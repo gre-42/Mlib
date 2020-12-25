@@ -64,7 +64,7 @@ void PgmImage::draw_mask(const Array<bool>& mask, uint16_t color) {
     assert(all(mask.shape() == shape()));
     Array<uint16_t> f = flattened();
     Array<bool> m = mask.flattened();
-    for(size_t i = 0; i < f.length(); ++i) {
+    for (size_t i = 0; i < f.length(); ++i) {
         if (!m(i)) {
             f(i) = color;
         }
@@ -138,7 +138,7 @@ PgmImage PgmImage::load_from_stream(std::istream& istream) {
     }
     result.do_resize(ArrayShape{height, width});
     istream.read(reinterpret_cast<char*>(&result(0, 0)), result.nbytes());
-    for(auto& v : result.flat_iterable()) {
+    for (auto& v : result.flat_iterable()) {
         v = ((v & 0xFF00) >> 8) | ((v & 0xFF) << 8);
     }
     if (istream.fail()) {
@@ -162,7 +162,7 @@ void PgmImage::save_to_stream(std::ostream& ostream) const {
     }
     std::string header{"P5\n" + std::to_string(shape(1)) + " " + std::to_string(shape(0)) + "\n65535\n"};
     ostream.write(header.c_str(), header.length());
-    for(auto v : flat_iterable()) {
+    for (auto v : flat_iterable()) {
         ostream.put((v & 0xFF00) >> 8);
         ostream.put(v & 0xFF);
     }
@@ -179,7 +179,7 @@ PgmImage PgmImage::from_float(const Array<float>& grayscale) {
     PgmImage result(grayscale.shape());
     Array<uint16_t> f = result.flattened();
     Array<float> g = grayscale.flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         f(i) = uint16_from_float(g(i));
     }
     return result;
@@ -189,7 +189,7 @@ Array<float> PgmImage::to_float() const {
     Array<float> grayscale(shape());
     Array<uint16_t> f = flattened();
     Array<float> g = grayscale.flattened();
-    for(size_t i = 0; i < g.length(); i++) {
+    for (size_t i = 0; i < g.length(); i++) {
         g(i) = static_cast<float>(f(i)) / UINT16_MAX;
         assert(g(i) >= 0);
         assert(g(i) <= 1);

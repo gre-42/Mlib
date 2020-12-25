@@ -55,7 +55,7 @@ void ListView<TOption>::render(int width, int height, bool periodic_position)
 {
     std::stringstream sstr;
     size_t i = 0;
-    for(const auto& s : options_) {
+    for (const auto& s : options_) {
         if (i++ == selection_index_) {
             sstr << transformation_(s) << " <-----" << std::endl;
         } else {

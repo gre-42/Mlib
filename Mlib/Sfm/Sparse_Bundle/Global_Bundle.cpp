@@ -60,7 +60,7 @@ GlobalBundle::GlobalBundle(
 :cfg_{cfg},
  cache_dir_{cache_dir}
 {
-    for(const auto& p : particles) {
+    for (const auto& p : particles) {
         const auto c = camera_frames.find(p.first);
         if (skip_missing_cameras &&
             (c == camera_frames.end())) {
@@ -68,7 +68,7 @@ GlobalBundle::GlobalBundle(
         }
         if (c->state_ != MmState::MARGINALIZED) {
             bool point_found = false;
-            for(const auto& y : p.second) {
+            for (const auto& y : p.second) {
                 if (dropped_observations.find(std::make_pair(p.first, y.first)) != dropped_observations.end()) {
                     continue;
                 }
@@ -76,7 +76,7 @@ GlobalBundle::GlobalBundle(
                 if (r != reconstructed_points.end()) {
                     if (r->state_ != MmState::MARGINALIZED) {
                         point_found = true;
-                        for(size_t d = 0; d < 2; ++d) {
+                        for (size_t d = 0; d < 2; ++d) {
                             ys.insert(std::make_pair(Y{p.first, y.first, d}, ys.size()));
                         }
                     }
@@ -87,16 +87,16 @@ GlobalBundle::GlobalBundle(
             }
         }
     }
-    for(const auto& x : reconstructed_points) {
+    for (const auto& x : reconstructed_points) {
         if (x.state_ != MmState::MARGINALIZED) {
-            for(size_t d = 0; d < 3; ++d) {
+            for (size_t d = 0; d < 3; ++d) {
                 xps.insert(std::make_pair(XP(x.first, d), xps.size()));
             }
         }
     }
-    for(const auto& c : camera_frames) {
+    for (const auto& c : camera_frames) {
         if (c.state_ != MmState::MARGINALIZED) {
-            for(size_t d = 0; d < 6; ++d) {
+            for (size_t d = 0; d < 6; ++d) {
                 xks.insert(std::make_pair(XK(c.first, d), xks.size()));
             }
         }
@@ -105,7 +105,7 @@ GlobalBundle::GlobalBundle(
     xg.resize(ArrayShape{xps.size() + xks.size()});
     frozen_xg.resize(xg.shape());
 
-    for(const auto& xxp : xps) {
+    for (const auto& xxp : xps) {
         const auto& xpi = xxp.first;
         const auto& r = reconstructed_points.find(xpi.index);
         xg(column_id(xpi)) = r->second->position(xpi.dimension);
@@ -119,7 +119,7 @@ GlobalBundle::GlobalBundle(
         predictor_uuids_.insert(std::make_pair(uuid_gen.get(xpi), column_id(xpi)));
         xp_uuids_[xpi.index](xpi.dimension) = uuid_gen.get(xpi);
     }
-    for(const auto& xkk : xks) {
+    for (const auto& xkk : xks) {
         const auto& xki = xkk.first;
         const auto& c = camera_frames.find(xki.time);
         xg(column_id(xki)) = c->second.kep(xki.dimension);
@@ -139,7 +139,7 @@ GlobalBundle::GlobalBundle(
     Jg = SparseArrayCcs<float>{ArrayShape{ys.size(), xg.length()}};
     fg.resize(ys.size());
     yg.resize(ys.size());
-    for(const auto& y : ys)
+    for (const auto& y : ys)
     {
         const auto& p = particles.at(y.first.time);
         const auto& s = p.at(y.first.index)->sequence;
@@ -151,11 +151,11 @@ GlobalBundle::GlobalBundle(
 
         {
             Array<float> ox{ArrayShape{xg.length(), 2}};
-            for(const auto& xxp : xps) {
+            for (const auto& xxp : xps) {
                 ox(column_id(xxp.first), 0) = xxp.first.index;
                 ox(column_id(xxp.first), 1) = xxp.first.dimension;
             }
-            for(const auto& xkk : xks) {
+            for (const auto& xkk : xks) {
                 ox(column_id(xkk.first), 0) = xkk.first.time.count();
                 ox(column_id(xkk.first), 1) = xkk.first.dimension;
             }
@@ -163,7 +163,7 @@ GlobalBundle::GlobalBundle(
         }
         {
             Array<float> oy{ArrayShape{ys.size(), 3}};
-            for(const auto& y : ys) {
+            for (const auto& y : ys) {
                 oy(row_id(y.first), 0) = y.first.time.count();
                 oy(row_id(y.first), 1) = y.first.index;
                 oy(row_id(y.first), 2) = y.first.dimension;
@@ -183,7 +183,7 @@ void GlobalBundle::copy_in(
     bool skip_missing_cameras,
     const std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations)
 {
-    for(const auto& p : particles) {
+    for (const auto& p : particles) {
         // This code is equivalent to (for c, p in (cameras & particles)),
         // but with an additional error check.
         const auto c_raw = camera_frames.find(p.first);
@@ -198,7 +198,7 @@ void GlobalBundle::copy_in(
             continue;
         }
         const CameraFrame& cf = (c_raw->state_ == MmState::ACTIVE) ? c_raw->second : frozen_camera_frames.at(c_raw->first);
-        for(const auto& y : p.second) {
+        for (const auto& y : p.second) {
             if (dropped_observations.find(std::make_pair(p.first, y.first)) != dropped_observations.end()) {
                 continue;
             }
@@ -231,8 +231,8 @@ void GlobalBundle::copy_in(
 
                     // std::cerr << "JP " << JP.shape() << std::endl;
                     // std::cerr << JP << std::endl;
-                    for(size_t r = 0; r < JP.shape(0); ++r) {
-                        for(size_t c = 0; c < JP.shape(1); ++c) {
+                    for (size_t r = 0; r < JP.shape(0); ++r) {
+                        for (size_t c = 0; c < JP.shape(1); ++c) {
                             Jg_at(Y{p.first, y.first, r}, XP{y.first, c}) = JP(r, c);
                         }
                     }
@@ -251,8 +251,8 @@ void GlobalBundle::copy_in(
                         : projected_points_jacobian_dke_1p_1ke(homogenized_4(rf.position), intrinsic_matrix, cf.kep);
                     // std::cerr << "JK " << JK.shape() << std::endl;
                     // std::cerr << JK << std::endl;
-                    for(size_t r = 0; r < JK.shape(0); ++r) {
-                        for(size_t c = 0; c < JK.shape(1); ++c) {
+                    for (size_t r = 0; r < JK.shape(0); ++r) {
+                        for (size_t c = 0; c < JK.shape(1); ++c) {
                             Jg_at(Y{p.first, y.first, r}, XK{p.first, c}) = JK(r, c);
                         }
                     }
@@ -261,7 +261,7 @@ void GlobalBundle::copy_in(
         }
     }
     if (false) {
-        for(const auto& xkk : xks) {
+        for (const auto& xkk : xks) {
             size_t col = column_id(xkk.first);
             if (Jg.column(col).size() == 0) {
                 std::cerr << xkk.first.time.count() << " ms " << xkk.first.dimension << std::endl;
@@ -282,7 +282,7 @@ void GlobalBundle::copy_in(
                 throw std::runtime_error("Camera column is zero");
             }
         }
-        for(const auto& xxp : xps) {
+        for (const auto& xxp : xps) {
             size_t col = column_id(xxp.first);
             if (Jg.column(col).size() == 0) {
                 std::cerr << xxp.first.index << " " << xxp.first.dimension << " " << col << std::endl;
@@ -306,7 +306,7 @@ void GlobalBundle::copy_in(
         //     throw std::runtime_error("Some columns are zero");
         // }
     }
-    for(const auto& c : Jg.columns()) {
+    for (const auto& c : Jg.columns()) {
         // The regularizer (marginalization) has to compensate for
         // this.
         if (c.size() == 0) {
@@ -324,14 +324,14 @@ void GlobalBundle::copy_out(
     MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>>& reconstructed_points,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames) const
 {
-    for(const auto& r : reconstructed_points) {
+    for (const auto& r : reconstructed_points) {
         if (r->state_ != MmState::MARGINALIZED) {
-            for(size_t d = 0; d < 3; ++d) {
+            for (size_t d = 0; d < 3; ++d) {
                 r.second->position(d) = x(column_id(XP{r.first, d}));
             }
         }
     }
-    for(auto c : camera_frames) {
+    for (auto c : camera_frames) {
         if (c->state_ != MmState::MARGINALIZED) {
             size_t cid = column_id(XK{c.first, 0});
             const Array<float> kke = x.row_range(cid, cid + 6);
@@ -345,7 +345,7 @@ void GlobalBundle::copy_out(
 std::map<std::pair<std::chrono::milliseconds, size_t>, float> GlobalBundle::sum_squared_observation_residuals() const
 {
     std::map<std::pair<std::chrono::milliseconds, size_t>, float> result;
-    for(const auto& y : ys) {
+    for (const auto& y : ys) {
         result[std::make_pair(y.first.time, y.first.index)] += squared(yg(row_id(y.first)) - fg(row_id(y.first)));
     }
     return result;
