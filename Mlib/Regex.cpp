@@ -33,16 +33,17 @@ const std::regex& RegexSubstitutionCache::get0(const std::string& key) const {
     if (it != c0_.end()) {
         return it->second;
     } else {
-        c0_.insert({key, std::regex{":" + key + "=\\S*"}});
+        c0_.insert({key, std::regex{":" + key + "(?:=\\S*|\\b(?!:))"}});
         return c0_.at(key);
     }
 }
+
 const std::regex& RegexSubstitutionCache::get1(const std::string& key) const {
     auto it = c1_.find(key);
     if (it != c1_.end()) {
         return it->second;
     } else {
-        c1_.insert({key, std::regex{"(\\b|:)" + key + "\\b(?!:)"}});
+        c1_.insert({key, std::regex{"\\b" + key + "\\b(?!:)"}});
         return c1_.at(key);
     }
 }
@@ -51,10 +52,10 @@ std::string Mlib::substitute(const std::string& str, const std::string& replacem
     std::string new_line = str;
     iterate_replacements(replacements, [&new_line, &rsc](const std::string& key, const std::string& value){
         try {
-            // Substitute expressions with default value.
+            // Substitute expressions with and without default value.
             new_line = std::move(std::regex_replace(new_line, rsc.get0(key), ':' + value));
-            // Substitute expressions without default value, and simple expressions.
-            new_line = std::move(std::regex_replace(new_line, rsc.get1(key), "$01" + value));
+            // Substitute simple expressions.
+            new_line = std::move(std::regex_replace(new_line, rsc.get1(key), value));
         } catch (const std::regex_error&) {
             throw std::runtime_error("Error in regex " + key);
         }
