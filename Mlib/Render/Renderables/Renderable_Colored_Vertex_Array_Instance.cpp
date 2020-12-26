@@ -10,6 +10,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Light.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Scene_Graph/Visibility_Check.hpp>
 
 using namespace Mlib;
@@ -47,7 +48,8 @@ void RenderableColoredVertexArrayInstance::render(
     const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
-    const RenderPass& render_pass) const
+    const RenderPass& render_pass,
+    const Style* style) const
 {
     LOG_FUNCTION("RenderableColoredVertexArrayInstance::render");
     if (render_pass.external.pass == ExternalRenderPass::DIRTMAP) {
@@ -114,9 +116,18 @@ void RenderableColoredVertexArrayInstance::render(
         if (!has_texture && has_dirtmap) {
             std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture_descriptor.color);
         }
-        FixedArray<float, 3> ambience = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.ambience : fixed_zeros<float, 3>();
-        FixedArray<float, 3> diffusivity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.diffusivity : fixed_zeros<float, 3>();
-        FixedArray<float, 3> specularity = !filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ? cva->material.specularity : fixed_zeros<float, 3>();
+        FixedArray<float, 3> ambience;
+        FixedArray<float, 3> diffusivity;
+        FixedArray<float, 3> specularity;
+        if (!filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE)) {
+            ambience = style ? style->ambience : cva->material.ambience;
+            diffusivity = style ? style->diffusivity : cva->material.diffusivity;
+            specularity = style ? style->specularity : cva->material.specularity;
+        } else {
+            ambience = fixed_zeros<float, 3>();
+            diffusivity = fixed_zeros<float, 3>();
+            specularity = fixed_zeros<float, 3>();
+        }
         if (filtered_lights.size() == 1) {
             ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
             diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();

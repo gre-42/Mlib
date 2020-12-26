@@ -80,7 +80,8 @@ public:
         std::list<Blended>& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
-        ExternalRenderPass external_render_pass) const;
+        ExternalRenderPass external_render_pass,
+        const Style* style) const;
     void append_sorted_aggregates_to_queue(
         const FixedArray<float, 4, 4>& vp,
         const FixedArray<float, 4, 4>& parent_m,
@@ -121,6 +122,7 @@ public:
     FixedArray<float, 4, 4> relative_view_matrix() const;
     FixedArray<float, 4, 4> absolute_view_matrix() const;
     void print(size_t recursion_depth) const;
+    void set_style(const Style* style);
 private:
     Scene* scene_;
     SceneNode* parent_;
@@ -139,7 +141,7 @@ private:
     float scale_;
     mutable FixedArray<float, 3, 3> rotation_matrix_;
     mutable bool rotation_matrix_invalidated_;
-
+    std::unique_ptr<const Style> style_;
 };
 
 }

@@ -85,6 +85,7 @@ private:
     std::mutex uuid_mutex_;
     size_t uuid_;
     bool shutting_down_;
+    std::unique_ptr<const Style> style_;
 };
 
 }

@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Style.hpp>
 
 using namespace Mlib;
 
@@ -167,7 +168,7 @@ void Scene::render(
         if (it == root_nodes_.end()) {
             throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
         }
-        it->second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass);
+        it->second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
     } else {
         // |         |Lights|Blended|Large|Small|Move|
         // |---------|------|-------|-----|-----|----|
@@ -192,13 +193,13 @@ void Scene::render(
             {
                 std::shared_lock lock{dynamic_mutex_};
                 for (const auto& n : root_nodes_) {
-                    n.second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass);
+                    n.second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
                 }
             }
             {
                 std::shared_lock lock{static_mutex_};
                 for (const auto& n : static_root_nodes_) {
-                    n.second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass);
+                    n.second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
                 }
             }
         }
@@ -340,7 +341,15 @@ void Scene::render(
     LOG_INFO("Scene::render blended");
     blended.sort([](Blended& a, Blended& b){ return a.mvp(2, 3) > b.mvp(2, 3); });
     for (const auto& b : blended) {
-        b.renderable->render(b.mvp, b.m, iv, lights, scene_graph_config, render_config, {external_render_pass, InternalRenderPass::BLENDED});
+        b.renderable->render(
+            b.mvp,
+            b.m,
+            iv,
+            lights,
+            scene_graph_config,
+            render_config,
+            {external_render_pass, InternalRenderPass::BLENDED},
+            style_.get());
     }
 }
 

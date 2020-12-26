@@ -13,6 +13,7 @@ struct Light;
 struct RenderConfig;
 struct RenderPass;
 struct SceneGraphConfig;
+struct Style;
 
 class Renderable {
 public:
@@ -25,7 +26,8 @@ public:
         const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
-        const RenderPass& render_pass) const = 0;
+        const RenderPass& render_pass,
+        const Style* style) const = 0;
     virtual void append_sorted_aggregates_to_queue(
         const FixedArray<float, 4, 4>& mvp,
         const FixedArray<float, 4, 4>& m,

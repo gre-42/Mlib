@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Style.hpp>
 
 using namespace Mlib;
 
@@ -209,6 +210,10 @@ void SceneNode::add_light(Light* light) {
     lights_.push_back(std::unique_ptr<Light>{light});
 }
 
+void SceneNode::set_style(const Style* style) {
+    style_.reset(style);
+}
+
 void SceneNode::move(const FixedArray<float, 4, 4>& v) {
     FixedArray<float, 4, 4> v2;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
@@ -264,7 +269,8 @@ void SceneNode::render(
     std::list<Blended>& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
-    ExternalRenderPass external_render_pass) const
+    ExternalRenderPass external_render_pass,
+    const Style* style) const
 {
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.
@@ -278,10 +284,27 @@ void SceneNode::render(
         {
             blended.push_back(Blended{mvp: mvp, m: m, renderable: r.second.get()});
         }
-        r.second->render(mvp, m, iv, lights, scene_graph_config, render_config, {external_render_pass, InternalRenderPass::INITIAL});
+        r.second->render(
+            mvp,
+            m,
+            iv,
+            lights,
+            scene_graph_config,
+            render_config,
+            {external_render_pass, InternalRenderPass::INITIAL},
+            style_ && (std::regex_search(r.first, style_->selector)) ? style_.get() : nullptr);
     }
     for (const auto& n : children_) {
-        n.second.scene_node->render(mvp, m, iv, lights, blended, render_config, scene_graph_config, external_render_pass);
+        n.second.scene_node->render(
+            mvp,
+            m,
+            iv,
+            lights,
+            blended,
+            render_config,
+            scene_graph_config,
+            external_render_pass,
+            style_ ? style_.get() : style);
     }
 }
 

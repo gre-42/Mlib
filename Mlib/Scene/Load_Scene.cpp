@@ -53,6 +53,7 @@
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/String.hpp>
 #include <filesystem>
 #include <fstream>
@@ -329,6 +330,13 @@ void LoadScene::operator()(
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
         "\\s*default=([\\d]+)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
+    static const std::regex set_renderable_style_reg(
+        "^(?:\\r?\\n|\\s)*set_renderable_style\\r?\\n"
+        "\\s*selector=([\\w+-.]+)\\r?\\n"
+        "\\s*node=([\\w+-.]+)\\r?\\n"
+        "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex ui_background_reg("^(?:\\r?\\n|\\s)*ui_background texture=([\\w-. \\(\\)/+-]+) target_focus=(menu|loading|countdown|scene)$");
     static const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
@@ -1063,6 +1071,22 @@ void LoadScene::operator()(
                 ui_focus.focus,
                 focus_from_string(match[2].str()));
             render_logics.append(nullptr, bg);
+        } else if (std::regex_match(line, match, set_renderable_style_reg)) {
+            auto node = scene.get_node(match[2].str());
+            node->set_style(new Style{
+                .selector = std::regex{match[1].str()},
+                .ambience = {
+                    safe_stof(match[3].str()),
+                    safe_stof(match[4].str()),
+                    safe_stof(match[5].str())},
+                .diffusivity = {
+                    safe_stof(match[6].str()),
+                    safe_stof(match[7].str()),
+                    safe_stof(match[8].str())},
+                .specularity = {
+                    safe_stof(match[9].str()),
+                    safe_stof(match[10].str()),
+                    safe_stof(match[11].str())}});
         } else if (std::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
