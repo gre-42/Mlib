@@ -381,7 +381,7 @@ void LoadScene::operator()(
     static const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
     static const std::regex set_dirtmap_reg("^(?:\\r?\\n|\\s)*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
     static const std::regex set_skybox_reg("^(?:\\r?\\n|\\s)*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
-    static const std::regex set_preferred_car_spawner_reg("^(?:\\r?\\n|\\s)*set_preferred_car_spawner macro=([\\w ]+) player=([\\w+-.]+) car=([\\w+-.]+) decimate=([\\w+-.]*)$");
+    static const std::regex set_preferred_car_spawner_reg("^(?:\\r?\\n|\\s)*set_preferred_car_spawner player=([\\w+-.]+)\\s+macro=([\\w]+)\\s+parameters=([: \\w+-.]*)$");
     static const std::regex set_vip_reg("^(?:\\r?\\n|\\s)*set_vip player=([\\w+-.]+)$");
     static const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
     static const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
@@ -1292,13 +1292,12 @@ void LoadScene::operator()(
                 fpath(match[7].str())},
                 match[1].str());
         } else if (std::regex_match(line, match, set_preferred_car_spawner_reg)) {
-            std::string macro = match[1].str();
-            std::string player = match[2].str();
-            std::string car = match[3].str();
-            std::string decimate = match[4].str();
+            std::string player = match[1].str();
+            std::string macro = match[2].str();
+            std::string parameters = match[3].str();
             game_logic.set_preferred_car_spawner(
                 players.get_player(player),
-                [macro_line_executor, macro, player, car, decimate, &rsc](const SpawnPoint& p){
+                [macro_line_executor, player, macro, parameters, &rsc](const SpawnPoint& p){
                     std::stringstream sstr;
                     sstr <<
                         "macro_playback " <<
@@ -1309,8 +1308,7 @@ void LoadScene::operator()(
                         " CAR_NODE_ANGLE_X:" << 180.f / M_PI * p.rotation(0) <<
                         " CAR_NODE_ANGLE_Y:" << 180.f / M_PI * p.rotation(1) <<
                         " CAR_NODE_ANGLE_Z:" << 180.f / M_PI * p.rotation(2) <<
-                        " -CAR_NAME:_" << car <<
-                        " -DECIMATE:" << decimate <<
+                        " " << parameters <<
                         " -SUFFIX:_" << player <<
                         " IF_WITH_PHYSICS:" << 
                         " IF_RACING:#" << 
