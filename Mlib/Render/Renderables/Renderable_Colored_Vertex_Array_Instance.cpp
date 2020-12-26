@@ -40,7 +40,15 @@ GLint get_wrap_param(WrapMode mode) {
     }
 }
 
-void RenderableColoredVertexArrayInstance::render(const FixedArray<float, 4, 4>& mvp, const FixedArray<float, 4, 4>& m, const FixedArray<float, 4, 4>& iv, const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const RenderPass& render_pass) const {
+void RenderableColoredVertexArrayInstance::render(
+    const FixedArray<float, 4, 4>& mvp,
+    const FixedArray<float, 4, 4>& m,
+    const FixedArray<float, 4, 4>& iv,
+    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const SceneGraphConfig& scene_graph_config,
+    const RenderConfig& render_config,
+    const RenderPass& render_pass) const
+{
     LOG_FUNCTION("RenderableColoredVertexArrayInstance::render");
     if (render_pass.external.pass == ExternalRenderPass::DIRTMAP) {
         return;
