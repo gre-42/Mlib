@@ -372,7 +372,7 @@ void Player::move_to_waypoint() {
         float dvel = sum(squared(rb_->rbi_.rbp_.v_)) - squared(driving_mode_.max_velocity);
         if (dvel < 0) {
             rb_->set_surface_power("main", surface_power_forward_);
-        } else if (dvel < squared(driving_mode_.max_velocity_break)) {
+        } else if (dvel < squared(driving_mode_.max_delta_velocity2_break)) {
             rb_->set_surface_power("main", 0);
         } else {
             rb_->set_surface_power("main", NAN);  // NAN=break
@@ -394,9 +394,8 @@ void Player::move_to_waypoint() {
             z(1), -z(0),
             z(0), z(1)};
         wpt = dot1d(m, wpt);
-        float wptl2 = sum(squared(wpt));
-        if (wptl2 > 1e-12) {
-            wpt += FixedArray<float, 2>(wpt(1), -wpt(0)) * d_wpt;
+        if (sum(squared(wpt)) > 1e-12) {
+            wpt += FixedArray<float, 2>(-wpt(1), wpt(0)) * d_wpt;
             if (wpt(1) > 0) {
                 // The waypoint is behind us => full, inverted steering.
                 if (wpt(0) < 0) {
