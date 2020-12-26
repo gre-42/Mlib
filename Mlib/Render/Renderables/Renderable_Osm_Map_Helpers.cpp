@@ -472,6 +472,7 @@ void Mlib::draw_streets(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::list<FixedArray<FixedArray<float, 3>, 2, 2>>& street_rectangles,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
+    std::list<std::pair<std::string, std::string>>& way_point_edges,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float scale,
@@ -598,6 +599,7 @@ void Mlib::draw_streets(
                         it->second.id << " <-> " << na.first << ", (" <<
                         nodes.at(it->second.id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
                 } else {
+                    way_point_edges.push_back({na.first, it->second.id});
                     street_rectangles.push_back(FixedArray<FixedArray<float, 3>, 2, 2>{
                         FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0},
                         FixedArray<float, 3>{rect.p01_(0), rect.p01_(1), 0},

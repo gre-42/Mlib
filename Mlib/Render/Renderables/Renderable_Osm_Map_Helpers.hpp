@@ -186,6 +186,7 @@ void draw_streets(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::list<FixedArray<FixedArray<float, 3>, 2, 2>>& street_rectangles,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
+    std::list<std::pair<std::string, std::string>>& way_point_edges,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float scale,

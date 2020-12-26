@@ -12,17 +12,6 @@
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
-static const float rest_radius = 30;
-static const float max_velocity = 70 / 3.6;
-static const float max_velocity_break = 2;
-static const float collision_avoidance_radius_break = 20;
-static const float collision_avoidance_radius_correct = 100;
-static const float collision_avoidance_cos = 0.6;
-static const float collision_avoidance_delta = 0.5;
-static const float stuck_velocity = 2 / 3.6;
-static const float stuck_seconds = 3;
-static const float unstuck_seconds = 5;
-
 using namespace Mlib;
 
 Player::Player(
@@ -30,7 +19,8 @@ Player::Player(
     Players& players,
     const std::string& name,
     const std::string& team,
-    GameMode game_mode)
+    GameMode game_mode,
+    const DrivingMode& driving_mode)
 : collision_query_{collision_query},
   players_{players},
   name_{name},
@@ -47,7 +37,8 @@ Player::Player(
   waypoint_id_{SIZE_MAX},
   waypoint_reached_{false},
   game_mode_{game_mode},
-  enable_unstuck_{false}
+  enable_unstuck_{false},
+  driving_mode_{driving_mode}
 {}
 
 void Player::enable_unstuck() {
@@ -135,6 +126,8 @@ void Player::set_waypoints(const SceneNode& node, const PointsAndAdjacency<float
         p = dot1d(m2, homogenized_3(p));
     }
     last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints_.points.size());
+    waypoint_id_ = SIZE_MAX;
+    waypoint_reached_ = false;
 }
 
 const std::string& Player::name() const {
@@ -180,6 +173,11 @@ bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset) const
     return collision_query_.can_see(rb_->rbi_.abs_position() + d, pos + d, &rb_->rbi_);
 }
 
+void Player::unset_waypoint() {
+    waypoint_id_ = SIZE_MAX;
+    waypoint_reached_ = false;
+}
+
 void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == scene_node_) {
         scene_node_name_.clear();
@@ -215,19 +213,19 @@ bool Player::unstuck() {
     if (rb_ == nullptr) {
         return false;
     }
-    if ((sum(squared(rb_->rbi_.rbp_.v_)) > squared(stuck_velocity)) ||
+    if ((sum(squared(rb_->rbi_.rbp_.v_)) > squared(driving_mode_.stuck_velocity)) ||
         (unstuck_start_ != std::chrono::steady_clock::time_point()))
     {
         stuck_start_ = std::chrono::steady_clock::now();
     } else if (
         (stuck_start_ != std::chrono::steady_clock::time_point()) &&
         (unstuck_start_ == std::chrono::steady_clock::time_point()) &&
-        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - stuck_start_).count() > stuck_seconds * 1000)
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - stuck_start_).count() > driving_mode_.stuck_seconds * 1000)
     {
         unstuck_start_ = std::chrono::steady_clock::now();
     }
     if (unstuck_start_ != std::chrono::steady_clock::time_point()) {
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - unstuck_start_).count() > unstuck_seconds * 1000)
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - unstuck_start_).count() > driving_mode_.unstuck_seconds * 1000)
         {
             unstuck_start_ = std::chrono::steady_clock::time_point();
         } else {
@@ -266,6 +264,7 @@ void Player::select_next_waypoint() {
     if (rb_ == nullptr) {
         return;
     }
+    FixedArray<float, 2> z2{rb_->rbi_.abs_z()(0), rb_->rbi_.abs_z()(2)};
     FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
     if (waypoint_id_ == SIZE_MAX) {
         // If we have no current waypoint, find closest point in waypoints array.
@@ -273,10 +272,12 @@ void Player::select_next_waypoint() {
         float closest_distance2 = INFINITY;
         size_t i = 0;
         for (const FixedArray<float, 2>& rs : waypoints_.points) {
-            float dist2 = sum(squared(rs - pos2));
-            if (dist2 < closest_distance2) {
-                closest_distance2 = dist2;
-                closest_id = i;
+            if (dot0d(rs - pos2, z2) < 0) {
+                float dist2 = sum(squared(rs - pos2));
+                if (dist2 < closest_distance2) {
+                    closest_distance2 = dist2;
+                    closest_id = i;
+                }
             }
             ++i;
         }
@@ -326,7 +327,7 @@ void Player::move_to_waypoint() {
     // Stop when distance to waypoint is small enough (break).
     if (!ramming()) {
         FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
-        if (sum(squared(pos2 - waypoint_)) < squared(rest_radius)) {
+        if (sum(squared(pos2 - waypoint_)) < squared(driving_mode_.rest_radius)) {
             rb_->set_surface_power("main", NAN);  // NAN=break
             if (waypoint_id_ != SIZE_MAX) {
                 last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
@@ -351,27 +352,27 @@ void Player::move_to_waypoint() {
         }
         FixedArray<float, 3> d = p.second->rb_->rbi_.abs_position() - rb_->rbi_.abs_position();
         float dl2 = sum(squared(d));
-        if (dl2 < squared(collision_avoidance_radius_break)) {
+        if (dl2 < squared(driving_mode_.collision_avoidance_radius_break)) {
             auto z = rb_->rbi_.abs_z();
             if (dot0d(d, z) < 0) {
                 rb_->set_surface_power("main", NAN);  // NAN=break
                 return;
             }
-        } else if (dl2 < squared(collision_avoidance_radius_correct)) {
+        } else if (dl2 < squared(driving_mode_.collision_avoidance_radius_correct)) {
             if (dl2 > 1e-12) {
                 auto z = rb_->rbi_.abs_z();
-                if (dot0d(d, z) / std::sqrt(dl2) < -collision_avoidance_cos) {
-                    d_wpt = collision_avoidance_delta;
+                if (dot0d(d, z) / std::sqrt(dl2) < -driving_mode_.collision_avoidance_cos) {
+                    d_wpt = driving_mode_.collision_avoidance_delta;
                 }
             }
         }
     }
     // Keep velocity within the specified range.
     {
-        float dvel = sum(squared(rb_->rbi_.rbp_.v_)) - squared(max_velocity);
+        float dvel = sum(squared(rb_->rbi_.rbp_.v_)) - squared(driving_mode_.max_velocity);
         if (dvel < 0) {
             rb_->set_surface_power("main", surface_power_forward_);
-        } else if (dvel < squared(max_velocity_break)) {
+        } else if (dvel < squared(driving_mode_.max_velocity_break)) {
             rb_->set_surface_power("main", 0);
         } else {
             rb_->set_surface_power("main", NAN);  // NAN=break

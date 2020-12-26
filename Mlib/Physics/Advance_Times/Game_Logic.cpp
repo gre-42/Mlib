@@ -156,6 +156,7 @@ void GameLogic::handle_bystanders() {
             } else if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r_delete)) {
                 std::lock_guard lock_guard{mutex_};
                 scene_.delete_root_node(player.second->scene_node_name());
+                player.second->unset_waypoint();
             }
         }
     }

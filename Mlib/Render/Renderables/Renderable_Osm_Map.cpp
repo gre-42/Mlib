@@ -271,46 +271,6 @@ RenderableOsmMap::RenderableOsmMap(
             }
         }
     }
-    {
-        std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
-            BuildingType::WAYPOINTS,
-            ways,
-            0,  // building_bottom
-            0); // default_building_top
-        std::set<std::string> points;
-        for (const Building& bu : way_point_lines) {
-            points.insert(bu.way.nd.begin(), bu.way.nd.end());
-        }
-        std::map<std::string, size_t> indices;
-        for (const std::string& id : points) {
-            indices[id] = indices.size();
-        }
-        way_points_.points.reserve(points.size());
-        for (const std::string& p : points) {
-            way_points_.points.push_back(nodes.at(p).position);
-        }
-        way_points_.adjacency = SparseArrayCcs<float>{ArrayShape{points.size(), points.size()}};
-        for (const Building& bu : way_point_lines) {
-            for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
-                auto s = it;
-                ++s;
-                if (s != bu.way.nd.end()) {
-                    float dist = std::sqrt(sum(squared(nodes.at(*s).position - nodes.at(*it).position)));
-                    if (!way_points_.adjacency.column(indices.at(*s)).insert({indices.at(*it), dist}).second) {
-                        throw std::runtime_error("Could not insert waypoint (0)");
-                    }
-                    if (!way_points_.adjacency.column(indices.at(*it)).insert({indices.at(*s), dist}).second) {
-                        throw std::runtime_error("Could not insert waypoint (1)");
-                    }
-                }
-            }
-        }
-        for (size_t i = 0; i < points.size(); ++i) {
-            if (!way_points_.adjacency.column(i).insert({i, 0}).second) {
-                throw std::runtime_error("Could not insert waypoint (2)");
-            }
-        }
-    }
 
     auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
         .texture_descriptor = {.color = terrain_texture, .normal = rendering_resources.get_normalmap(terrain_texture)},
@@ -358,11 +318,8 @@ RenderableOsmMap::RenderableOsmMap(
     std::list<FixedArray<FixedArray<float, 3>, 2, 2>> street_rectangles;
     {
         ResourceNameCycle street_lights{scene_node_resources, street_light_resource_names};
-        std::vector<FixedArray<float, 2>> map_outer_contour;
-        get_map_outer_contour(
-            map_outer_contour,
-            nodes,
-            ways);
+
+        std::list<std::pair<std::string, std::string>> way_point_edges;
 
         // draw_nodes(vertices, nodes, ways);
         // draw_test_lines(vertices, 0.02);
@@ -379,6 +336,7 @@ RenderableOsmMap::RenderableOsmMap(
             hitboxes_,
             street_rectangles,
             height_bindings,
+            way_point_edges,
             nodes,
             ways,
             scale,
@@ -391,175 +349,231 @@ RenderableOsmMap::RenderableOsmMap(
             curb_alpha,
             street_lights,
             with_height_bindings);
+    
+        std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
+            BuildingType::WAYPOINTS,
+            ways,
+            0,  // building_bottom
+            0); // default_building_top
 
-        if (forest_outline_tree_distance != INFINITY && !tree_resource_names.empty()) {
-            ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
-            LOG_INFO("add_trees_to_forest_outlines");
-            add_trees_to_forest_outlines(
-                resource_instance_positions_,
-                object_resource_descriptors_,
-                hitboxes_,
-                steiner_points,
-                rnc,
-                nodes,
-                ways,
-                forest_outline_tree_distance,
-                forest_outline_tree_inwards_distance,
-                scale);
-            // add_binary_vegetation(
-            //     tls,
-            //     Material{
-            //         texture: grass_texture,
-            //         mixed_texture: "",
-            //         overlap_npixels: 0,
-            //         blend_mode: BlendMode::BINARY,
-            //         wrap_mode: WrapMode::CLAMP_TO_EDGE,
-            //         collide: false,
-            //         aggregate_mode: AggregateMode::ONCE},
-            //     grass_texture,
-            //     tree_texture,
-            //     tree_texture_2,
-            //     *tl_terrain,
-            //     scale);
+        std::set<std::string> way_point_nodes;
+        for (const Building& bu : way_point_lines) {
+            way_point_nodes.insert(bu.way.nd.begin(), bu.way.nd.end());
         }
-        // if (forest_outline_tree_distance != INFINITY) {
-        //     add_grass_outlines(
-        //         resource_instance_positions_,
-        //         steiner_points,
-        //         nodes,
-        //         ways,
-        //         continuous_vegetation,
-        //         forest_outline_tree_distance / 3,
-        //         forest_outline_tree_inwards_distance * 5,
-        //         scale);
-        // }
-        if (raceway_beacon_distance != INFINITY) {
-            LOG_INFO("add_beacons_to_raceways");
-            add_beacons_to_raceways(
-                object_resource_descriptors_,
-                nodes,
-                ways,
-                raceway_beacon_distance,
-                scale);
+        for (const auto& e : way_point_edges) {
+            way_point_nodes.insert(e.first);
+            way_point_nodes.insert(e.second);
         }
-        if (with_tree_nodes && !tree_resource_names.empty()) {
-            ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
-            LOG_INFO("add_trees_to_tree_nodes");
-            add_trees_to_tree_nodes(
-                resource_instance_positions_,
-                object_resource_descriptors_,
-                hitboxes_,
-                steiner_points,
-                rnc,
-                nodes,
-                scale);
+        std::map<std::string, size_t> indices;
+        for (const std::string& id : way_point_nodes) {
+            indices[id] = indices.size();
         }
-
-        if (with_buildings) {
-            LOG_INFO("draw_building_walls (facade)");
-            draw_building_walls(
-                tls_buildings,
-                steiner_points,
-                Material{
-                    .texture_descriptor = {color: "<tbd>"},
-                    .occluder_type = OccluderType::BLACK,
-                    .aggregate_mode = AggregateMode::ONCE,
-                    .ambience = {1, 1, 1},
-                    .specularity = {0, 0, 0}}.compute_color_mode(),
-                buildings,
-                nodes,
-                scale,
-                uv_scale_facade,
-                max_wall_width,
-                facade_textures);
+        way_points_.points.reserve(way_point_nodes.size());
+        for (const std::string& p : way_point_nodes) {
+            way_points_.points.push_back(nodes.at(p).position);
         }
-        {
-            LOG_INFO("draw_building_walls (barrier)");
-            draw_building_walls(
-                tls_wall_barriers,
-                steiner_points,
-                Material{
-                    .texture_descriptor = {color: "<tbd>"},
-                    .occluder_type = OccluderType::BLACK,
-                    .blend_mode = barrier_blend_mode,
-                    .aggregate_mode = AggregateMode::ONCE,
-                    .is_small = false,
-                    .cull_faces = false}.compute_color_mode(),
-                wall_barriers,
-                nodes,
-                scale,
-                uv_scale_barrier_wall,
-                max_wall_width,
-                {barrier_texture});
-        }
-
-        if (with_terrain) {
-            auto hole_triangles = tl_street_crossing->triangles_;
-            hole_triangles.insert(hole_triangles.end(), tl_path_crossing->triangles_.begin(), tl_path_crossing->triangles_.end());
-            hole_triangles.insert(hole_triangles.end(), tl_street->triangles_.begin(), tl_street->triangles_.end());
-            hole_triangles.insert(hole_triangles.end(), tl_path->triangles_.begin(), tl_path->triangles_.end());
-            hole_triangles.insert(hole_triangles.end(), tl_curb_street->triangles_.begin(), tl_curb_street->triangles_.end());
-            hole_triangles.insert(hole_triangles.end(), tl_curb_path->triangles_.begin(), tl_curb_path->triangles_.end());
-            // plot_mesh(ArrayShape{2000, 2000}, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
-            steiner_points = removed_duplicates(steiner_points, false);  // false = verbose
-            BoundingInfo bounding_info{map_outer_contour, nodes, 0.1};
-            LOG_INFO("add_street_steiner_points");
-            add_street_steiner_points(
-                steiner_points,
-                hole_triangles,
-                bounding_info,
-                scale,
-                steiner_point_distances_road,
-                steiner_point_distances_steiner);
-            LOG_INFO("triangulate_terrain_or_ceilings");
-            triangulate_terrain_or_ceilings(
-                *tl_terrain,
-                bounding_info,
-                steiner_points,
-                map_outer_contour,
-                hole_triangles,
-                nodes,
-                scale,
-                uv_scale_terrain,
-                0);
-        }
-        if (with_roofs) {
-            LOG_INFO("draw_roofs");
-            draw_roofs(
-                tls_buildings,
-                Material{
-                    .texture_descriptor = {color: roof_texture},
-                    .occluder_type = OccluderType::BLACK,
-                    .aggregate_mode = AggregateMode::ONCE,
-                    .ambience = {1, 1, 1}}.compute_color_mode(),
-                roof_color,
-                buildings,
-                nodes,
-                roof_width,
-                scale,
-                roof_height0,
-                roof_height1);
-        }
-        if (with_ceilings) {
-            LOG_INFO("draw_ceilings");
-            draw_ceilings(
-                tls_buildings,
-                Material{
-                    .texture_descriptor = {color: ceiling_texture},
-                    .occluder_type = OccluderType::BLACK,
-                    .aggregate_mode = AggregateMode::ONCE,
-                    .ambience = {1, 1, 1},
-                    .specularity = {0, 0, 0}}.compute_color_mode(),
-                buildings,
-                nodes,
-                scale,
-                uv_scale_ceiling,
-                max_wall_width);
-        }
-        if (remove_backfacing_triangles) {
-            for (auto& l : tls_ground) {
-                l->delete_backfacing_triangles();
+        way_points_.adjacency = SparseArrayCcs<float>{ArrayShape{way_point_nodes.size(), way_point_nodes.size()}};
+        auto insert_edge = [this, &nodes, &indices](const std::string& a, const std::string& b) {
+            float dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
+            if (!way_points_.adjacency.column(indices.at(a)).insert({indices.at(b), dist}).second) {
+                throw std::runtime_error("Could not insert waypoint (0)");
             }
+            if (!way_points_.adjacency.column(indices.at(b)).insert({indices.at(a), dist}).second) {
+                throw std::runtime_error("Could not insert waypoint (1)");
+            }
+        };
+        for (const Building& bu : way_point_lines) {
+            for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+                auto s = it;
+                ++s;
+                if (s != bu.way.nd.end()) {
+                    insert_edge(*s, *it);
+                }
+            }
+        }
+        for (const auto& e : way_point_edges) {
+            insert_edge(e.first, e.second);
+        }
+        for (size_t i = 0; i < way_point_nodes.size(); ++i) {
+            if (!way_points_.adjacency.column(i).insert({i, 0}).second) {
+                throw std::runtime_error("Could not insert waypoint (2)");
+            }
+        }
+    }
+
+    if (forest_outline_tree_distance != INFINITY && !tree_resource_names.empty()) {
+        ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
+        LOG_INFO("add_trees_to_forest_outlines");
+        add_trees_to_forest_outlines(
+            resource_instance_positions_,
+            object_resource_descriptors_,
+            hitboxes_,
+            steiner_points,
+            rnc,
+            nodes,
+            ways,
+            forest_outline_tree_distance,
+            forest_outline_tree_inwards_distance,
+            scale);
+        // add_binary_vegetation(
+        //     tls,
+        //     Material{
+        //         texture: grass_texture,
+        //         mixed_texture: "",
+        //         overlap_npixels: 0,
+        //         blend_mode: BlendMode::BINARY,
+        //         wrap_mode: WrapMode::CLAMP_TO_EDGE,
+        //         collide: false,
+        //         aggregate_mode: AggregateMode::ONCE},
+        //     grass_texture,
+        //     tree_texture,
+        //     tree_texture_2,
+        //     *tl_terrain,
+        //     scale);
+    }
+    // if (forest_outline_tree_distance != INFINITY) {
+    //     add_grass_outlines(
+    //         resource_instance_positions_,
+    //         steiner_points,
+    //         nodes,
+    //         ways,
+    //         continuous_vegetation,
+    //         forest_outline_tree_distance / 3,
+    //         forest_outline_tree_inwards_distance * 5,
+    //         scale);
+    // }
+    if (raceway_beacon_distance != INFINITY) {
+        LOG_INFO("add_beacons_to_raceways");
+        add_beacons_to_raceways(
+            object_resource_descriptors_,
+            nodes,
+            ways,
+            raceway_beacon_distance,
+            scale);
+    }
+    if (with_tree_nodes && !tree_resource_names.empty()) {
+        ResourceNameCycle rnc{scene_node_resources, tree_resource_names};
+        LOG_INFO("add_trees_to_tree_nodes");
+        add_trees_to_tree_nodes(
+            resource_instance_positions_,
+            object_resource_descriptors_,
+            hitboxes_,
+            steiner_points,
+            rnc,
+            nodes,
+            scale);
+    }
+
+    if (with_buildings) {
+        LOG_INFO("draw_building_walls (facade)");
+        draw_building_walls(
+            tls_buildings,
+            steiner_points,
+            Material{
+                .texture_descriptor = {color: "<tbd>"},
+                .occluder_type = OccluderType::BLACK,
+                .aggregate_mode = AggregateMode::ONCE,
+                .ambience = {1, 1, 1},
+                .specularity = {0, 0, 0}}.compute_color_mode(),
+            buildings,
+            nodes,
+            scale,
+            uv_scale_facade,
+            max_wall_width,
+            facade_textures);
+    }
+    {
+        LOG_INFO("draw_building_walls (barrier)");
+        draw_building_walls(
+            tls_wall_barriers,
+            steiner_points,
+            Material{
+                .texture_descriptor = {color: "<tbd>"},
+                .occluder_type = OccluderType::BLACK,
+                .blend_mode = barrier_blend_mode,
+                .aggregate_mode = AggregateMode::ONCE,
+                .is_small = false,
+                .cull_faces = false}.compute_color_mode(),
+            wall_barriers,
+            nodes,
+            scale,
+            uv_scale_barrier_wall,
+            max_wall_width,
+            {barrier_texture});
+    }
+
+    if (with_terrain) {
+        std::vector<FixedArray<float, 2>> map_outer_contour;
+        get_map_outer_contour(
+            map_outer_contour,
+            nodes,
+            ways);
+
+        auto hole_triangles = tl_street_crossing->triangles_;
+        hole_triangles.insert(hole_triangles.end(), tl_path_crossing->triangles_.begin(), tl_path_crossing->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), tl_street->triangles_.begin(), tl_street->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), tl_path->triangles_.begin(), tl_path->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), tl_curb_street->triangles_.begin(), tl_curb_street->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), tl_curb_path->triangles_.begin(), tl_curb_path->triangles_.end());
+        // plot_mesh(ArrayShape{2000, 2000}, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
+        steiner_points = removed_duplicates(steiner_points, false);  // false = verbose
+        BoundingInfo bounding_info{map_outer_contour, nodes, 0.1};
+        LOG_INFO("add_street_steiner_points");
+        add_street_steiner_points(
+            steiner_points,
+            hole_triangles,
+            bounding_info,
+            scale,
+            steiner_point_distances_road,
+            steiner_point_distances_steiner);
+        LOG_INFO("triangulate_terrain_or_ceilings");
+        triangulate_terrain_or_ceilings(
+            *tl_terrain,
+            bounding_info,
+            steiner_points,
+            map_outer_contour,
+            hole_triangles,
+            nodes,
+            scale,
+            uv_scale_terrain,
+            0);
+    }
+    if (with_roofs) {
+        LOG_INFO("draw_roofs");
+        draw_roofs(
+            tls_buildings,
+            Material{
+                .texture_descriptor = {color: roof_texture},
+                .occluder_type = OccluderType::BLACK,
+                .aggregate_mode = AggregateMode::ONCE,
+                .ambience = {1, 1, 1}}.compute_color_mode(),
+            roof_color,
+            buildings,
+            nodes,
+            roof_width,
+            scale,
+            roof_height0,
+            roof_height1);
+    }
+    if (with_ceilings) {
+        LOG_INFO("draw_ceilings");
+        draw_ceilings(
+            tls_buildings,
+            Material{
+                .texture_descriptor = {color: ceiling_texture},
+                .occluder_type = OccluderType::BLACK,
+                .aggregate_mode = AggregateMode::ONCE,
+                .ambience = {1, 1, 1},
+                .specularity = {0, 0, 0}}.compute_color_mode(),
+            buildings,
+            nodes,
+            scale,
+            uv_scale_ceiling,
+            max_wall_width);
+    }
+    if (remove_backfacing_triangles) {
+        for (auto& l : tls_ground) {
+            l->delete_backfacing_triangles();
         }
     }
 

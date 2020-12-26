@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Physics/Driving_Mode.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <chrono>
@@ -48,7 +49,8 @@ public:
         Players& players,
         const std::string& name,
         const std::string& team,
-        GameMode game_mode);
+        GameMode game_mode,
+        const DrivingMode& driving_mode);
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
@@ -66,6 +68,7 @@ public:
     GameMode game_mode() const;
     bool can_see(const RigidBodyIntegrator& rbi) const;
     bool can_see(const FixedArray<float, 3>& pos, float height_offset = 0) const;
+    void unset_waypoint();
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;
@@ -102,6 +105,7 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> stuck_start_;
     std::chrono::time_point<std::chrono::steady_clock> unstuck_start_;
     bool enable_unstuck_;
+    DrivingMode driving_mode_;
 };
 
 };
