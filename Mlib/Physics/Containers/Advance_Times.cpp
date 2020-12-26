@@ -26,8 +26,7 @@ void AdvanceTimes::add_advance_time(AdvanceTime& advance_time) {
 }
 
 void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime* advance_time) {
-    auto it = advance_times_to_delete_.insert(advance_time);
-    if (!it.second) {
+    if (!advance_times_to_delete_.insert(advance_time).second) {
         throw std::runtime_error("Multiple deletes scheduled for a single advance_time");
     }
 }

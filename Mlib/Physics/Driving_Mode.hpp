@@ -27,7 +27,7 @@ static std::map<std::string, DrivingMode> driving_modes{
         .collision_avoidance_cos = 0.6,
         .collision_avoidance_delta = 0.5,
         .stuck_velocity = 2 / 3.6,
-        .stuck_seconds = 3,
+        .stuck_seconds = 6,
         .unstuck_seconds = 5}},
     {"arena", {
         .rest_radius = 30,

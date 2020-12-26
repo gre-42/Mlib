@@ -221,13 +221,12 @@ void LoadScene::operator()(
     static const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
     static const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
     static const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+)$");
-    static const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+) mode=(ramming|racing|bystander) driving_mode=(arena|city)$");
+    static const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+) mode=(ramming|racing|bystander) unstuck_mode=(off|reverse|delete) driving_mode=(arena|city)$");
     static const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
     static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
     static const std::regex player_set_surface_power_reg("^(?:\\r?\\n|\\s)*player_set_surface_power player-name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
     static const std::regex player_set_tire_angle_reg("^(?:\\r?\\n|\\s)*player_set_tire_angle player-name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
     static const std::regex player_set_waypoint_reg("^(?:\\r?\\n|\\s)*player_set_waypoint player-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
-    static const std::regex player_enable_unstuck_reg("^(?:\\r?\\n|\\s)*player_enable_unstuck player-name=([\\w+-.]+)$");
     static const std::regex team_set_waypoint_reg("^(?:\\r?\\n|\\s)*team_set_waypoint team-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
     static const std::regex camera_key_binding_reg("^(?:\\r?\\n|\\s)*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
     static const std::regex abs_idle_binding_reg(
@@ -798,12 +797,15 @@ void LoadScene::operator()(
             }
         } else if (std::regex_match(line, match, player_create_reg)) {
             auto player = std::make_shared<Player>(
+                scene,
                 physics_engine.collision_query_,
                 players,
                 match[1].str(),
                 match[2].str(),
                 game_mode_from_string(match[3].str()),
-                driving_modes.at(match[4].str()));
+                unstuck_mode_from_string(match[4].str()),
+                driving_modes.at(match[5].str()),
+                mutex);
             players.add_player(*player);
             physics_engine.advance_times_.add_advance_time(player);
             physics_engine.add_external_force_provider(player.get());
@@ -842,8 +844,6 @@ void LoadScene::operator()(
             players.get_player(match[1].str()).set_waypoint({
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str())});
-        } else if (std::regex_match(line, match, player_enable_unstuck_reg)) {
-            players.get_player(match[1].str()).enable_unstuck();
         } else if (std::regex_match(line, match, team_set_waypoint_reg)) {
             players.set_team_waypoint(
                 match[1].str(), {

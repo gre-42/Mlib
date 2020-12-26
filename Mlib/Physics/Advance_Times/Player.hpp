@@ -8,6 +8,7 @@
 #include <chrono>
 #include <list>
 #include <map>
+#include <mutex>
 #include <string>
 
 namespace Mlib {
@@ -16,6 +17,7 @@ struct RigidBody;
 struct RigidBodyIntegrator;
 class Players;
 class SceneNode;
+class Scene;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 class Gun;
@@ -42,15 +44,36 @@ inline GameMode game_mode_from_string(const std::string& game_mode) {
     }
 }
 
+enum class UnstuckMode {
+    OFF,
+    REVERSE,
+    DELETE
+};
+
+inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
+    if (unstuck_mode == "off") {
+        return UnstuckMode::OFF;
+    } else if (unstuck_mode == "reverse") {
+        return UnstuckMode::REVERSE;
+    } else if (unstuck_mode == "delete") {
+        return UnstuckMode::DELETE;
+    } else {
+        throw std::runtime_error("Unknown unstuck mode: " + unstuck_mode);
+    }
+}
+
 class Player: public DestructionObserver, public AdvanceTime, public ExternalForceProvider {
 public:
     Player(
+        Scene& scene,
         CollisionQuery& collision_query,
         Players& players,
         const std::string& name,
         const std::string& team,
         GameMode game_mode,
-        const DrivingMode& driving_mode);
+        UnstuckMode unstuck_mode,
+        const DrivingMode& driving_mode,
+        std::recursive_mutex& mutex);
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
@@ -59,7 +82,6 @@ public:
     void set_waypoint(const FixedArray<float, 2>& waypoint);
     void set_waypoint(size_t waypoint_id);
     void set_waypoints(const SceneNode& node, const PointsAndAdjacency<float, 2>& waypoints);
-    void enable_unstuck();
     const std::string& name() const;
     const std::string& team() const;
     PlayerStats& stats();
@@ -80,6 +102,7 @@ private:
     void select_next_waypoint();
     bool ramming() const;
     bool unstuck();
+    Scene& scene_;
     CollisionQuery& collision_query_;
     Players& players_;
     std::string name_;
@@ -104,8 +127,9 @@ private:
     GameMode game_mode_;
     std::chrono::time_point<std::chrono::steady_clock> stuck_start_;
     std::chrono::time_point<std::chrono::steady_clock> unstuck_start_;
-    bool enable_unstuck_;
+    UnstuckMode unstuck_mode_;
     DrivingMode driving_mode_;
+    std::recursive_mutex& mutex_;
 };
 
 };

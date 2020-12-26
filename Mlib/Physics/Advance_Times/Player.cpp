@@ -10,18 +10,23 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
 using namespace Mlib;
 
 Player::Player(
+    Scene& scene,
     CollisionQuery& collision_query,
     Players& players,
     const std::string& name,
     const std::string& team,
     GameMode game_mode,
-    const DrivingMode& driving_mode)
-: collision_query_{collision_query},
+    UnstuckMode unstuck_mode,
+    const DrivingMode& driving_mode,
+    std::recursive_mutex& mutex)
+: scene_{scene},
+  collision_query_{collision_query},
   players_{players},
   name_{name},
   team_{team},
@@ -37,13 +42,10 @@ Player::Player(
   waypoint_id_{SIZE_MAX},
   waypoint_reached_{false},
   game_mode_{game_mode},
-  enable_unstuck_{false},
-  driving_mode_{driving_mode}
+  unstuck_mode_{unstuck_mode},
+  driving_mode_{driving_mode},
+  mutex_{mutex}
 {}
-
-void Player::enable_unstuck() {
-    enable_unstuck_ = true;
-}
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
     if (scene_node_ != nullptr || rb_ != nullptr) {
@@ -197,7 +199,7 @@ void Player::advance_time(float dt) {
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in) {
-        if (!enable_unstuck_ || !unstuck()) {
+        if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
             if (ramming()) {
                 auto tpos = target_rbi_->abs_position();
                 set_waypoint({tpos(0), tpos(2)});
@@ -229,9 +231,18 @@ bool Player::unstuck() {
         {
             unstuck_start_ = std::chrono::steady_clock::time_point();
         } else {
-            rb_->set_surface_power("main", surface_power_backward_);
-            for (auto &tire : rb_->tires_) {
-                rb_->set_tire_angle_y(tire.first, 0);
+            if (unstuck_mode_ == UnstuckMode::REVERSE) {
+                rb_->set_surface_power("main", surface_power_backward_);
+                for (auto &tire : rb_->tires_) {
+                    rb_->set_tire_angle_y(tire.first, 0);
+                }
+            } else if (unstuck_mode_ == UnstuckMode::DELETE) {
+                std::lock_guard lock{mutex_};
+                scene_.delete_root_node(scene_node_name_);
+                stuck_start_ = std::chrono::steady_clock::time_point();
+                unstuck_start_ = std::chrono::steady_clock::time_point();
+            } else {
+                throw std::runtime_error("Unsupported unstuck mode");
             }
             return true;
         }
