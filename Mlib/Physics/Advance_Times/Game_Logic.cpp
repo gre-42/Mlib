@@ -146,7 +146,7 @@ void GameLogic::handle_bystanders() {
                     if (player.second->scene_node_name().empty()) {
                         throw std::runtime_error("Scene node name empty for player " + player.first);
                     }
-                    player.second->unset_waypoint();
+                    player.second->reset_pathfinding();
                     spawned = true;
                     break;
                 }

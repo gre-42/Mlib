@@ -128,7 +128,7 @@ void Player::set_waypoints(const SceneNode& node, const PointsAndAdjacency<float
         p = dot1d(m2, homogenized_3(p));
     }
     last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints_.points.size());
-    unset_waypoint();
+    waypoint_id_ = SIZE_MAX;
 }
 
 const std::string& Player::name() const {
@@ -174,7 +174,10 @@ bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset) const
     return collision_query_.can_see(rb_->rbi_.abs_position() + d, pos + d, &rb_->rbi_);
 }
 
-void Player::unset_waypoint() {
+void Player::reset_pathfinding() {
+    for (auto& l : last_visited_) {
+        l = std::chrono::time_point<std::chrono::steady_clock>();
+    }
     set_waypoint(fixed_nans<float, 2>());
 }
 
