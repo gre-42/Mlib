@@ -162,14 +162,14 @@ GameMode Player::game_mode() const {
     return game_mode_;
 }
 
-bool Player::can_see(const RigidBodyIntegrator& rbi) const {
+bool Player::can_see(const RigidBodyIntegrator& rbi, bool only_terrain) const {
     if (rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
-    return collision_query_.can_see(rb_->rbi_, rbi);
+    return collision_query_.can_see(rb_->rbi_, rbi, only_terrain);
 }
 
-bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset, float time_offset) const {
+bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset, float time_offset, bool only_terrain) const {
     if (rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
@@ -177,20 +177,20 @@ bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset, float
     if (time_offset != 0) {
         RigidBodyPulses rbp = rb_->rbi_.rbp_;
         rbp.advance_time(time_offset);
-        return collision_query_.can_see(rbp.abs_position() + d, pos + d, &rb_->rbi_);
+        return collision_query_.can_see(rbp.abs_position() + d, pos + d, &rb_->rbi_, nullptr, only_terrain);
     } else {
-        return collision_query_.can_see(rb_->rbi_.abs_position() + d, pos + d, &rb_->rbi_);
+        return collision_query_.can_see(rb_->rbi_.abs_position() + d, pos + d, &rb_->rbi_, nullptr, only_terrain);
     }
 }
 
-bool Player::can_see(const Player& player) const {
+bool Player::can_see(const Player& player, bool only_terrain) const {
     if (rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
     if (player.rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
-    return collision_query_.can_see(rb_->rbi_, player.rb_->rbi_);
+    return collision_query_.can_see(rb_->rbi_, player.rb_->rbi_, only_terrain);
 }
 
 void Player::notify_spawn() {

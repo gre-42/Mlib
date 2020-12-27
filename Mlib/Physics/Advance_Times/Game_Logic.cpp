@@ -20,6 +20,7 @@ struct GameLogicConfig {
     float visible_after_delete = 3;
     size_t max_nsee = 5;
     float spawn_y_offset = 0.7;
+    bool only_terrain = true;
 };
 
 GameLogicConfig cfg;
@@ -149,14 +150,14 @@ void GameLogic::handle_bystanders() {
                     if (nsee > cfg.max_nsee) {
                         break;
                     }
-                    bool spotted = vip_->can_see(sp.position, 2);
+                    bool spotted = vip_->can_see(sp.position, 2, 0, cfg.only_terrain);
                     if (dist2 < squared(cfg.r_spawn_near)) {
                         // Abort if visible.
                         if (spotted) {
                             continue;
                         }
                         // Abort if not visible after x seconds.
-                        if (!vip_->can_see(sp.position, 2, cfg.visible_after_spawn)) {
+                        if (!vip_->can_see(sp.position, 2, cfg.visible_after_spawn, cfg.only_terrain)) {
                             continue;
                         }
                     } else {
@@ -190,14 +191,14 @@ void GameLogic::handle_bystanders() {
                     }
                 }
                 if (dist2 > squared(cfg.r_delete_far)) {
-                    if (!vip_->can_see(*player.second)) {
+                    if (!vip_->can_see(*player.second, cfg.only_terrain)) {
                         goto delete_player;
                     } else {
                         player.second->set_spotted();
                     }
                 }
                 if (!player.second->spotted() && (player.second->seconds_since_spawn() > cfg.visible_after_delete)) {
-                    if (!vip_->can_see(*player.second)) {
+                    if (!vip_->can_see(*player.second, cfg.only_terrain)) {
                         goto delete_player;
                     } else {
                         player.second->set_spotted();

@@ -13,10 +13,12 @@ public:
         const FixedArray<float, 3>& watcher,
         const FixedArray<float, 3>& watched,
         const RigidBodyIntegrator* excluded0 = nullptr,
-        const RigidBodyIntegrator* excluded1 = nullptr);
+        const RigidBodyIntegrator* excluded1 = nullptr,
+        bool only_terrain = false);
     bool can_see(
         const RigidBodyIntegrator& watcher,
-        const RigidBodyIntegrator& watched);
+        const RigidBodyIntegrator& watched,
+        bool only_terrain = false);
 private:
     PhysicsEngine& physics_engine_;
 };

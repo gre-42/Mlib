@@ -14,7 +14,8 @@ bool CollisionQuery::can_see(
     const FixedArray<float, 3>& watcher,
     const FixedArray<float, 3>& watched,
     const RigidBodyIntegrator* excluded0,
-    const RigidBodyIntegrator* excluded1)
+    const RigidBodyIntegrator* excluded1,
+    bool only_terrain)
 {
     FixedArray<float, 3> start = watcher;
     FixedArray<float, 3> dir = watched - start;
@@ -25,31 +26,33 @@ bool CollisionQuery::can_see(
             start + alpha * dir,
             start + std::min(alpha + physics_engine_.cfg_.static_radius, dist) * dir};
         BoundingSphere<float, 3> bs{l};
-        for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
-            if (&o0.rigid_body->rbi_ == excluded0 ||
-                &o0.rigid_body->rbi_ == excluded1)
-            {
-                continue;
-            }
-            for (const auto& msh0 : o0.meshes) {
-                if (msh0.mesh_type == MeshType::TIRE_LINE) {
+        if (!only_terrain) {
+            for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
+                if (&o0.rigid_body->rbi_ == excluded0 ||
+                    &o0.rigid_body->rbi_ == excluded1)
+                {
                     continue;
                 }
-                if (!msh0.mesh->intersects(bs)) {
-                    continue;
-                }
-                for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
-                    if (!t0.bounding_sphere.intersects(bs)) {
+                for (const auto& msh0 : o0.meshes) {
+                    if (msh0.mesh_type == MeshType::TIRE_LINE) {
                         continue;
                     }
-                    FixedArray<float, 3> intersection_point;
-                    if (line_intersects_triangle(
-                        l(0),
-                        l(1),
-                        t0.triangle,
-                        intersection_point))
-                    {
-                        return false;
+                    if (!msh0.mesh->intersects(bs)) {
+                        continue;
+                    }
+                    for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
+                        if (!t0.bounding_sphere.intersects(bs)) {
+                            continue;
+                        }
+                        FixedArray<float, 3> intersection_point;
+                        if (line_intersects_triangle(
+                            l(0),
+                            l(1),
+                            t0.triangle,
+                            intersection_point))
+                        {
+                            return false;
+                        }
                     }
                 }
             }
@@ -78,7 +81,8 @@ bool CollisionQuery::can_see(
 
 bool CollisionQuery::can_see(
     const RigidBodyIntegrator& watcher,
-    const RigidBodyIntegrator& watched)
+    const RigidBodyIntegrator& watched,
+    bool only_terrain)
 {
-    return can_see(watcher.abs_position(), watched.abs_position(), &watcher, &watched);
+    return can_see(watcher.abs_position(), watched.abs_position(), &watcher, &watched, only_terrain);
 }
