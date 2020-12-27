@@ -29,6 +29,7 @@ public:
 private:
     void handle_team_deathmatch();
     void handle_bystanders();
+    void spawn(std::function<void(const SpawnPoint&)>& func, const SpawnPoint& sp);
     Scene& scene_;
     Players& players_;
     Player* vip_;

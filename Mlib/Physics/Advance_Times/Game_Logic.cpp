@@ -10,6 +10,18 @@
 
 using namespace Mlib;
 
+struct GameLogicConfig {
+    float r_spawn = 200;
+    float r_delete = 300;
+    float r_neighbors = 20;
+    float visible_after_spawn = 2;
+    float visible_after_delete = 3;
+    size_t max_nsee = 5;
+    float spawn_y_offset = 0.7;
+};
+
+GameLogicConfig cfg;
+
 GameLogic::GameLogic(
     Scene& scene,
     Players& players,
@@ -75,7 +87,7 @@ void GameLogic::handle_team_deathmatch() {
             if (it == preferred_car_spawners_.end()) {
                 throw std::runtime_error("Player " + pit->second->name() + " has no preferred car spawner");
             }
-            it->second(*sit);
+            spawn(it->second, *sit);
         }
     }
 }
@@ -90,12 +102,6 @@ void GameLogic::handle_bystanders() {
     FixedArray<float, 4, 4> vip_m = scene_.get_node(vip_->scene_node_name())->absolute_model_matrix();
     FixedArray<float, 3> vip_pos = t3_from_4x4(vip_m);
     FixedArray<float, 3> vip_z = z3_from_4x4(vip_m);
-    float r_spawn = 200;
-    float r_delete = 300;
-    float r_neighbors = 20;
-    float visible_after_spawn = 2;
-    float visible_after_delete = 3;
-    size_t max_nsee = 5;
     size_t nsee = 0;
     for (auto& player : players_.players()) {
         if (player.second == vip_) {
@@ -107,14 +113,14 @@ void GameLogic::handle_bystanders() {
         }
         if (player.second->game_mode() == GameMode::BYSTANDER) {
             if (player.second->scene_node_name().empty()) {
-                if (nsee > max_nsee) {
+                if (nsee > cfg.max_nsee) {
                     continue;
                 }
                 bool spawned = false;
                 for (size_t i = 0; i < spawn_points_.size(); ++i) {
                     const SpawnPoint& sp = spawn_points_[(spawn_point_id_++) % spawn_points_.size()];
                     // Abort if too far away.
-                    if (sum(squared(sp.position - vip_pos)) > squared(r_spawn)) {
+                    if (sum(squared(sp.position - vip_pos)) > squared(cfg.r_spawn)) {
                         continue;
                     }
                     // Abort if behind car.
@@ -126,7 +132,7 @@ void GameLogic::handle_bystanders() {
                         bool exists = false;
                         for (auto& player2 : players_.players()) {
                             if (!player2.second->scene_node_name().empty()) {
-                                if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(r_neighbors)) {
+                                if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(cfg.r_neighbors)) {
                                     exists = true;
                                     break;
                                 }
@@ -137,7 +143,7 @@ void GameLogic::handle_bystanders() {
                         }
                     }
                     ++nsee;
-                    if (nsee > max_nsee) {
+                    if (nsee > cfg.max_nsee) {
                         break;
                     }
                     // Abort if visible.
@@ -145,10 +151,10 @@ void GameLogic::handle_bystanders() {
                         continue;
                     }
                     // Abort if not visible after x seconds.
-                    if (!vip_->can_see(sp.position, 2, visible_after_spawn)) {
+                    if (!vip_->can_see(sp.position, 2, cfg.visible_after_spawn)) {
                         continue;
                     }
-                    it->second(sp);
+                    spawn(it->second, sp);
                     if (player.second->scene_node_name().empty()) {
                         throw std::runtime_error("Scene node name empty for player " + player.first);
                     }
@@ -161,10 +167,10 @@ void GameLogic::handle_bystanders() {
                     break;
                 }
             } else {
-                if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r_delete)) {
+                if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(cfg.r_delete)) {
                     goto delete_player;
                 }
-                if (!player.second->spotted() && (player.second->seconds_since_spawn() > visible_after_delete)) {
+                if (!player.second->spotted() && (player.second->seconds_since_spawn() > cfg.visible_after_delete)) {
                     if (!vip_->can_see(*player.second)) {
                         goto delete_player;
                     } else {
@@ -186,4 +192,10 @@ void GameLogic::handle_bystanders() {
 
 void GameLogic::set_vip(Player* vip) {
     vip_ = vip;
+}
+
+void GameLogic::spawn(std::function<void(const SpawnPoint&)>& func, const SpawnPoint& sp) {
+    SpawnPoint sp2 = sp;
+    sp2.position(1) += cfg.spawn_y_offset;
+    func(sp2);
 }
