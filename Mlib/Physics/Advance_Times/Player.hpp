@@ -123,6 +123,7 @@ private:
     std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;
     size_t waypoint_id_;
     bool waypoint_reached_;
+    size_t nwaypoints_reached_;
     PlayerStats stats_;
     GameMode game_mode_;
     std::chrono::time_point<std::chrono::steady_clock> stuck_start_;

@@ -41,6 +41,7 @@ Player::Player(
   waypoint_{fixed_nans<float, 2>()},
   waypoint_id_{SIZE_MAX},
   waypoint_reached_{false},
+  nwaypoints_reached_{0},
   game_mode_{game_mode},
   unstuck_mode_{unstuck_mode},
   driving_mode_{driving_mode},
@@ -129,6 +130,7 @@ void Player::set_waypoints(const SceneNode& node, const PointsAndAdjacency<float
     }
     last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints_.points.size());
     waypoint_id_ = SIZE_MAX;
+    nwaypoints_reached_ = 0;
 }
 
 const std::string& Player::name() const {
@@ -179,6 +181,7 @@ void Player::reset_pathfinding() {
         l = std::chrono::time_point<std::chrono::steady_clock>();
     }
     set_waypoint(fixed_nans<float, 2>());
+    nwaypoints_reached_ = 0;
 }
 
 void Player::notify_destroyed(void* destroyed_object) {
@@ -297,24 +300,41 @@ void Player::select_next_waypoint() {
             set_waypoint(closest_id);
         }
     } else {
-        // If we already have a waypoint, pick oldest neighbor.
         if (waypoint_reached_) {
-            size_t best_id = SIZE_MAX;
-            std::chrono::time_point<std::chrono::steady_clock> best_time;
-            auto deflt = std::chrono::time_point<std::chrono::steady_clock>();
-            for (const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
-                if ((best_id == SIZE_MAX) ||
-                    (last_visited_.at(rs.first) == deflt) ||
-                    ((best_time != deflt) && (last_visited_.at(rs.first) < best_time)))
-                {
-                    best_id = rs.first;
-                    best_time = last_visited_.at(rs.first);
+            if (nwaypoints_reached_ < 2) {
+                // If we already have less than two waypoints, go further forward.
+                size_t best_id = SIZE_MAX;
+                float best_distance = INFINITY;
+                for (const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
+                    float dist = dot0d(waypoints_.points.at(rs.first) - pos2, z2);
+                    if (dist < best_distance) {
+                        best_id = rs.first;
+                        best_distance = dist;
+                    }
                 }
+                if (best_id == SIZE_MAX) {
+                    throw std::runtime_error("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
+                }
+                set_waypoint(best_id);
+            } else {
+                // If we already have two waypoints, pick oldest neighbor.
+                size_t best_id = SIZE_MAX;
+                std::chrono::time_point<std::chrono::steady_clock> best_time;
+                auto deflt = std::chrono::time_point<std::chrono::steady_clock>();
+                for (const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
+                    if ((best_id == SIZE_MAX) ||
+                        (last_visited_.at(rs.first) == deflt) ||
+                        ((best_time != deflt) && (last_visited_.at(rs.first) < best_time)))
+                    {
+                        best_id = rs.first;
+                        best_time = last_visited_.at(rs.first);
+                    }
+                }
+                if (best_id == SIZE_MAX) {
+                    throw std::runtime_error("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
+                }
+                set_waypoint(best_id);
             }
-            if (best_id == SIZE_MAX) {
-                throw std::runtime_error("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
-            }
-            set_waypoint(best_id);
         }
     }
 }
@@ -345,6 +365,7 @@ void Player::move_to_waypoint() {
                 last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
             }
             waypoint_reached_ = true;
+            ++nwaypoints_reached_;
             return;
         }
     }
