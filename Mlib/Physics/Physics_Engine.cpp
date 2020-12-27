@@ -25,8 +25,9 @@ PhysicsEngine::~PhysicsEngine() {
     // The physics thread calls "delete_scheduled_advance_times".
     // However, scene destruction (which schedules deletion) happens after physics thread joining
     // and before PhysicsEngine destruction.
-    // => We need to call "delete_scheduled_advance_times" in the PhysicsEngine destructor.
-    // No action is required for objects (i.e. rigid bodies), because their deletion is not scheduled.
+    // => We need to call "delete_scheduled_advance_times" in the PhysicsEngine destructor (in the main thread).
+    // No special handling is required for objects (i.e. rigid bodies), because their deletion is not scheduled,
+    // but happens instantaneously.
     advance_times_.delete_scheduled_advance_times();
     if (check_objects_deleted_on_destruction_) {
         if (!rigid_bodies_.objects_.empty()) {
