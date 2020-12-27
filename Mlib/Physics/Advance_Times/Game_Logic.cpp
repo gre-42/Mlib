@@ -11,7 +11,8 @@
 using namespace Mlib;
 
 struct GameLogicConfig {
-    float r_spawn = 200;
+    float r_spawn_near = 200;
+    float r_spawn_far = 400;
     float r_delete = 300;
     float r_neighbors = 20;
     float visible_after_spawn = 2;
@@ -119,8 +120,9 @@ void GameLogic::handle_bystanders() {
                 bool spawned = false;
                 for (size_t i = 0; i < spawn_points_.size(); ++i) {
                     const SpawnPoint& sp = spawn_points_[(spawn_point_id_++) % spawn_points_.size()];
+                    float dist2 = sum(squared(sp.position - vip_pos));
                     // Abort if too far away.
-                    if (sum(squared(sp.position - vip_pos)) > squared(cfg.r_spawn)) {
+                    if (dist2 > squared(cfg.r_spawn_far)) {
                         continue;
                     }
                     // Abort if behind car.
@@ -146,19 +148,30 @@ void GameLogic::handle_bystanders() {
                     if (nsee > cfg.max_nsee) {
                         break;
                     }
-                    // Abort if visible.
-                    if (vip_->can_see(sp.position, 2)) {
-                        continue;
-                    }
-                    // Abort if not visible after x seconds.
-                    if (!vip_->can_see(sp.position, 2, cfg.visible_after_spawn)) {
-                        continue;
+                    bool spotted = vip_->can_see(sp.position, 2);
+                    if (dist2 < squared(cfg.r_spawn_near)) {
+                        // Abort if visible.
+                        if (spotted) {
+                            continue;
+                        }
+                        // Abort if not visible after x seconds.
+                        if (!vip_->can_see(sp.position, 2, cfg.visible_after_spawn)) {
+                            continue;
+                        }
+                    } else {
+                        // Abort if not visible.
+                        if (!spotted) {
+                            continue;
+                        }
                     }
                     spawn(it->second, sp);
                     if (player.second->scene_node_name().empty()) {
                         throw std::runtime_error("Scene node name empty for player " + player.first);
                     }
                     player.second->notify_spawn();
+                    if (spotted) {
+                        player.second->set_spotted();
+                    }
                     spawned = true;
                     break;
                 }
@@ -167,8 +180,17 @@ void GameLogic::handle_bystanders() {
                     break;
                 }
             } else {
-                if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(cfg.r_delete)) {
-                    goto delete_player;
+                FixedArray<float, 3> player_pos = scene_.get_node(player.second->scene_node_name())->position();
+                if (sum(squared(player_pos - vip_pos)) > squared(cfg.r_delete)) {
+                    // Abort if behind car.
+                    if (dot0d(player_pos - vip_pos, vip_z) > 0) {
+                        goto delete_player;
+                    }
+                    if (!vip_->can_see(*player.second)) {
+                        goto delete_player;
+                    } else {
+                        player.second->set_spotted();
+                    }
                 }
                 if (!player.second->spotted() && (player.second->seconds_since_spawn() > cfg.visible_after_delete)) {
                     if (!vip_->can_see(*player.second)) {
