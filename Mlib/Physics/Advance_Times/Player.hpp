@@ -89,8 +89,12 @@ public:
     float car_health() const;
     GameMode game_mode() const;
     bool can_see(const RigidBodyIntegrator& rbi) const;
-    bool can_see(const FixedArray<float, 3>& pos, float height_offset = 0) const;
-    void reset_pathfinding();
+    bool can_see(const FixedArray<float, 3>& pos, float height_offset = 0, float time_offset = 0) const;
+    bool can_see(const Player& player) const;
+    void notify_spawn();
+    float seconds_since_spawn() const;
+    bool spotted() const;
+    void set_spotted();
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;
@@ -131,6 +135,8 @@ private:
     UnstuckMode unstuck_mode_;
     DrivingMode driving_mode_;
     std::recursive_mutex& mutex_;
+    std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
+    bool spotted_;
 };
 
 };

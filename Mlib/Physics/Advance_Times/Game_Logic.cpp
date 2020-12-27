@@ -93,6 +93,8 @@ void GameLogic::handle_bystanders() {
     float r_spawn = 200;
     float r_delete = 300;
     float r_neighbors = 20;
+    float visible_after_spawn = 2;
+    float visible_after_delete = 3;
     size_t max_nsee = 5;
     size_t nsee = 0;
     for (auto& player : players_.players()) {
@@ -142,11 +144,15 @@ void GameLogic::handle_bystanders() {
                     if (vip_->can_see(sp.position, 2)) {
                         continue;
                     }
+                    // Abort if not visible after x seconds.
+                    if (!vip_->can_see(sp.position, 2, visible_after_spawn)) {
+                        continue;
+                    }
                     it->second(sp);
                     if (player.second->scene_node_name().empty()) {
                         throw std::runtime_error("Scene node name empty for player " + player.first);
                     }
-                    player.second->reset_pathfinding();
+                    player.second->notify_spawn();
                     spawned = true;
                     break;
                 }
@@ -154,9 +160,25 @@ void GameLogic::handle_bystanders() {
                     // std::cerr << "Could not spawn bystander " << player.second->name() << std::endl;
                     break;
                 }
-            } else if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r_delete)) {
-                std::lock_guard lock_guard{mutex_};
-                scene_.delete_root_node(player.second->scene_node_name());
+            } else {
+                if (sum(squared(scene_.get_node(player.second->scene_node_name())->position() - vip_pos)) > squared(r_delete)) {
+                    goto delete_player;
+                }
+                if (!player.second->spotted() && (player.second->seconds_since_spawn() > visible_after_delete)) {
+                    if (!vip_->can_see(*player.second)) {
+                        goto delete_player;
+                    } else {
+                        player.second->set_spotted();
+                    }
+                }
+                goto nodelete_player;
+                delete_player:
+                {
+                    std::lock_guard lock_guard{mutex_};
+                    scene_.delete_root_node(player.second->scene_node_name());
+                }
+                nodelete_player:
+                    ;
             }
         }
     }

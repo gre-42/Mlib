@@ -45,7 +45,8 @@ Player::Player(
   game_mode_{game_mode},
   unstuck_mode_{unstuck_mode},
   driving_mode_{driving_mode},
-  mutex_{mutex}
+  mutex_{mutex},
+  spotted_{false}
 {}
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
@@ -168,20 +169,52 @@ bool Player::can_see(const RigidBodyIntegrator& rbi) const {
     return collision_query_.can_see(rb_->rbi_, rbi);
 }
 
-bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset) const {
+bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset, float time_offset) const {
     if (rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
     FixedArray<float, 3> d = {0, height_offset, 0};
-    return collision_query_.can_see(rb_->rbi_.abs_position() + d, pos + d, &rb_->rbi_);
+    if (time_offset != 0) {
+        RigidBodyPulses rbp = rb_->rbi_.rbp_;
+        rbp.advance_time(time_offset);
+        return collision_query_.can_see(rbp.abs_position() + d, pos + d, &rb_->rbi_);
+    } else {
+        return collision_query_.can_see(rb_->rbi_.abs_position() + d, pos + d, &rb_->rbi_);
+    }
 }
 
-void Player::reset_pathfinding() {
+bool Player::can_see(const Player& player) const {
+    if (rb_ == nullptr) {
+        throw std::runtime_error("Player::can_see requires rb");
+    }
+    if (player.rb_ == nullptr) {
+        throw std::runtime_error("Player::can_see requires rb");
+    }
+    return collision_query_.can_see(rb_->rbi_, player.rb_->rbi_);
+}
+
+void Player::notify_spawn() {
     for (auto& l : last_visited_) {
         l = std::chrono::time_point<std::chrono::steady_clock>();
     }
     set_waypoint(fixed_nans<float, 2>());
     nwaypoints_reached_ = 0;
+    spawn_time_ = std::chrono::steady_clock::now();
+    spotted_ = false;
+}
+
+float Player::seconds_since_spawn() const {
+    if (spawn_time_ == std::chrono::time_point<std::chrono::steady_clock>()) {
+        throw std::runtime_error("Seconds since spawn requires previous call to notify_spawn");
+    }
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - spawn_time_).count() / 1000.f;
+}
+
+bool Player::spotted() const {
+    return spotted_;
+}
+void Player::set_spotted() {
+    spotted_ = true;
 }
 
 void Player::notify_destroyed(void* destroyed_object) {
