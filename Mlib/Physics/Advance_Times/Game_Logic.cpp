@@ -13,7 +13,8 @@ using namespace Mlib;
 struct GameLogicConfig {
     float r_spawn_near = 200;
     float r_spawn_far = 400;
-    float r_delete = 300;
+    float r_delete_near = 100;
+    float r_delete_far = 300;
     float r_neighbors = 20;
     float visible_after_spawn = 2;
     float visible_after_delete = 3;
@@ -181,11 +182,14 @@ void GameLogic::handle_bystanders() {
                 }
             } else {
                 FixedArray<float, 3> player_pos = scene_.get_node(player.second->scene_node_name())->position();
-                if (sum(squared(player_pos - vip_pos)) > squared(cfg.r_delete)) {
+                float dist2 = sum(squared(player_pos - vip_pos));
+                if (dist2 > squared(cfg.r_delete_near)) {
                     // Abort if behind car.
                     if (dot0d(player_pos - vip_pos, vip_z) > 0) {
                         goto delete_player;
                     }
+                }
+                if (dist2 > squared(cfg.r_delete_far)) {
                     if (!vip_->can_see(*player.second)) {
                         goto delete_player;
                     } else {
