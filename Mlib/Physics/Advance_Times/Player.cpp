@@ -128,8 +128,7 @@ void Player::set_waypoints(const SceneNode& node, const PointsAndAdjacency<float
         p = dot1d(m2, homogenized_3(p));
     }
     last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints_.points.size());
-    waypoint_id_ = SIZE_MAX;
-    waypoint_reached_ = false;
+    unset_waypoint();
 }
 
 const std::string& Player::name() const {
@@ -176,8 +175,7 @@ bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset) const
 }
 
 void Player::unset_waypoint() {
-    waypoint_id_ = SIZE_MAX;
-    waypoint_reached_ = false;
+    set_waypoint(fixed_nans<float, 2>());
 }
 
 void Player::notify_destroyed(void* destroyed_object) {
