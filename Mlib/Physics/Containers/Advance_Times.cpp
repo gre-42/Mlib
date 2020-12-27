@@ -11,6 +11,14 @@ void AdvanceTimes::delete_scheduled_advance_times() {
             advance_times_to_delete_.erase(dit);
         }
     }
+    for (auto it = advance_times_ptr_.begin(); it != advance_times_ptr_.end(); ) {
+        auto v = it++;
+        auto dit = advance_times_to_delete_.find(*v);
+        if (dit != advance_times_to_delete_.end()) {
+            advance_times_ptr_.erase(v);
+            advance_times_to_delete_.erase(dit);
+        }
+    }
     if (!advance_times_to_delete_.empty()) {
         throw std::runtime_error("Could not delete all advance times");
     }

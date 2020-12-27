@@ -351,6 +351,7 @@ int main(int argc, char** argv) {
             if (pl != nullptr) {
                 pl->stop_and_join();
             }
+            physics_engine.advance_times_.schedule_delete_advance_time(&game_logic);
             main_scene_filename = next_scene_filename;
         }
 

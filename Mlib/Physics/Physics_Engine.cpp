@@ -37,7 +37,10 @@ PhysicsEngine::~PhysicsEngine() {
             std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_to_delete_.size() << " advance_times_to_delete still exist." << std::endl;
         }
         if (!advance_times_.advance_times_shared_.empty()) {
-            std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times still exist." << std::endl;
+            std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times_shared still exist." << std::endl;
+        }
+        if (!advance_times_.advance_times_ptr_.empty()) {
+            std::cerr << "~PhysicsEngine: " << advance_times_.advance_times_ptr_.size() << " advance_times_ptr still exist." << std::endl;
         }
     }
 }
