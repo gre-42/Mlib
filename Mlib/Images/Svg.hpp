@@ -90,14 +90,14 @@ public:
     }
 
     template <class TData>
-    void draw_line(const TData& x0, const TData& y0, const TData& x1, const TData& y1) {
+    void draw_line(const TData& x0, const TData& y0, const TData& x1, const TData& y1, const TData& width = 1.5) {
         ostr_ <<
             "  <line "
             "y2=\"" << y1 << "\" "
             "x2=\"" << x1 << "\" "
             "y1=\"" << y0 << "\" "
             "x1=\"" << x0 << "\" "
-            "stroke-width=\"1.5\" "
+            "stroke-width=\"" << width << "\" "
             "stroke=\"#000\" "
             "fill=\"none\"/>\n";
     }
@@ -171,6 +171,7 @@ public:
         const std::vector<TData>& y_start,
         const std::vector<TData>& x_stop,
         const std::vector<TData>& y_stop,
+        const TData& line_width = 1.5,
         size_t down_sampling = 1)
     {
         if (x_start.size() != y_start.size()) {
@@ -209,7 +210,8 @@ public:
             // pd.finish();
             draw_line(
                 xpos(x_start[i]), ypos(y_start[i]),
-                xpos(x_stop[i]), ypos(y_stop[i]));
+                xpos(x_stop[i]), ypos(y_stop[i]),
+                line_width);
         }
         for (const TData& xx : linspace(xm_min, xm_max, 5).flat_iterable()) {
             draw_text<TData>(xpos(xx), height_, std::to_string(xx));

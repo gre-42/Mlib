@@ -11,7 +11,7 @@ struct PointsAndAdjacency {
     SparseArrayCcs<TData> adjacency;
 
     template <class TSize>
-    void plot(Svg<TSize>& svg) const {
+    void plot(Svg<TSize>& svg, float line_width = 1.5) const {
         static_assert(tndim == 2);
         std::vector<TData> x_start;
         std::vector<TData> y_start;
@@ -25,13 +25,13 @@ struct PointsAndAdjacency {
                 y_stop.push_back(points.at(r.first)(1));
             }
         }
-        svg.plot_edges(x_start, y_start, x_stop, y_stop);
+        svg.plot_edges(x_start, y_start, x_stop, y_stop, line_width);
     }
 
-    void plot(const std::string& filename, size_t width, size_t height) const {
+    void plot(const std::string& filename, size_t width, size_t height, float line_width = 1.5) const {
         std::ofstream ofstr{filename};
         Svg<size_t> svg{ofstr, width, height};
-        plot(svg);
+        plot(svg, line_width);
         svg.finish();
         ofstr.flush();
         if (ofstr.fail()) {
