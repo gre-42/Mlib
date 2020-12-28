@@ -814,6 +814,7 @@ RenderableOsmMap::RenderableOsmMap(
             }
         }
     }
+    // way_points_.plot("/tmp/plot.svg", 600, 600, 0.1);
 
     std::list<std::shared_ptr<ColoredVertexArray>> ts;
     for (auto& l : tls_all) {

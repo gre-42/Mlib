@@ -461,6 +461,16 @@ struct AngleCurb {
     auto operator <=> (const AngleCurb& other) const = default;
 };
 
+struct NodeWaypoint {
+    std::string node;
+    FixedArray<float, 2> position;
+};
+
+struct HoleWaypoint {
+    std::list<NodeWaypoint> in;
+    std::list<NodeWaypoint> out;
+};
+
 void Mlib::draw_streets(
     TriangleList& tl_street_crossing,
     TriangleList& tl_path_crossing,
@@ -493,10 +503,16 @@ void Mlib::draw_streets(
     std::map<std::string, std::map<float, AngleWay>> node_angles;
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;
     std::map<std::string, std::map<AngleCurb, FixedArray<float, 2>>> node_hole_contours;
+    std::map<std::string, HoleWaypoint> node_hole_waypoints;
     for (const auto& n : nodes) {
         node_angles.insert(std::make_pair(n.first, std::map<float, AngleWay>()));
         node_neighbors.insert(std::make_pair(n.first, std::map<std::string, NeighborWay>()));
         node_hole_contours.insert(std::make_pair(n.first, std::map<AngleCurb, FixedArray<float, 2>>()));
+        if (driving_direction == DrivingDirection::LEFT || driving_direction == DrivingDirection::RIGHT) {
+            node_hole_waypoints.insert(std::make_pair(n.first, HoleWaypoint()));
+        } else if (driving_direction != DrivingDirection::CENTER) {
+            throw std::runtime_error("Unknown driving direction");
+        }
     }
     std::map<std::string, NodeWayInfo> node_way_info;
     std::set<std::string> node_no_way_length;
@@ -605,27 +621,32 @@ void Mlib::draw_streets(
                     if (driving_direction == DrivingDirection::CENTER) {
                         way_point_edges_1_lane.push_back({na.first, it->second.id});
                     } else if (driving_direction == DrivingDirection::LEFT) {
+                        CurbedStreet c5{rect, -0.5, 0.5};
                         way_point_edges_2_lanes.push_back({
-                            FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0},
-                            FixedArray<float, 3>{rect.p10_(0), rect.p10_(1), 0}});
+                            FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0},
+                            FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0}});
                         way_point_edges_2_lanes.push_back({
-                            FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0},
-                            FixedArray<float, 3>{rect.p01_(0), rect.p01_(1), 0}});
+                            FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0},
+                            FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0}});
                     } else if (driving_direction == DrivingDirection::RIGHT) {
+                        CurbedStreet c5{rect, -0.5, 0.5};
                         way_point_edges_2_lanes.push_back({
-                            FixedArray<float, 3>{rect.p10_(0), rect.p10_(1), 0},
-                            FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0}});
+                            FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0},
+                            FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0}});
                         way_point_edges_2_lanes.push_back({
-                            FixedArray<float, 3>{rect.p01_(0), rect.p01_(1), 0},
-                            FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}});
+                            FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0},
+                            FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0}});
                     } else {
                         throw std::runtime_error("Unknown driving direction");
                     }
-                    street_rectangles.push_back(FixedArray<FixedArray<float, 3>, 2, 2>{
-                        FixedArray<float, 3>{rect.p00_(0), rect.p00_(1), 0},
-                        FixedArray<float, 3>{rect.p01_(0), rect.p01_(1), 0},
-                        FixedArray<float, 3>{rect.p10_(0), rect.p10_(1), 0},
-                        FixedArray<float, 3>{rect.p11_(0), rect.p11_(1), 0}});
+                    {
+                        CurbedStreet c1{rect, -curb_alpha, curb_alpha};
+                        street_rectangles.push_back(FixedArray<FixedArray<float, 3>, 2, 2>{
+                            FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},
+                            FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0},
+                            FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0},
+                            FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0}});
+                    }
                     // Way length is used to get connected street textures where possible.
                     auto len0 = node_way_info.find(na.first);
                     auto len1 = node_way_info.find(it->second.id);
@@ -667,6 +688,17 @@ void Mlib::draw_streets(
                             node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb = 2}, c0.s00));
                             node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb = 0}, c2.s00));
                         }
+                        if (driving_direction == DrivingDirection::LEFT) {
+                            CurbedStreet c5{rect, -0.5, 0.5};
+                            node_hole_waypoints.at(na.first).out.push_back({it->second.id, c5.s00});
+                            node_hole_waypoints.at(na.first).in.push_back({it->second.id, c5.s01});
+                        } else if (driving_direction == DrivingDirection::RIGHT) {
+                            CurbedStreet c5{rect, -0.5, 0.5};
+                            node_hole_waypoints.at(na.first).in.push_back({it->second.id, c5.s00});
+                            node_hole_waypoints.at(na.first).out.push_back({it->second.id, c5.s01});
+                        } else if (driving_direction != DrivingDirection::CENTER) {
+                            throw std::runtime_error("Unknown driving direction");
+                        }
                     }
                     const std::map<std::string, NeighborWay>& nn = node_neighbors.at(it->second.id);
                     if (nn.size() >= 3) {
@@ -678,6 +710,17 @@ void Mlib::draw_streets(
                             CurbedStreet c2{rect, curb_alpha, 1};
                             node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb = 0}, c0.s11));
                             node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb = 2}, c2.s11));
+                        }
+                        if (driving_direction == DrivingDirection::LEFT) {
+                            CurbedStreet c5{rect, -0.5, 0.5};
+                            node_hole_waypoints.at(it->second.id).out.push_back({na.first, c5.s11});
+                            node_hole_waypoints.at(it->second.id).in.push_back({na.first, c5.s10});
+                        } else if (driving_direction == DrivingDirection::RIGHT) {
+                            CurbedStreet c5{rect, -0.5, 0.5};
+                            node_hole_waypoints.at(it->second.id).in.push_back({na.first, c5.s11});
+                            node_hole_waypoints.at(it->second.id).out.push_back({na.first, c5.s10});
+                        } else if (driving_direction != DrivingDirection::CENTER) {
+                            throw std::runtime_error("Unknown driving direction");
                         }
                     }
                     if (!street_lights.empty()) {
@@ -702,29 +745,25 @@ void Mlib::draw_streets(
         }
     }
 
-    for (const auto& nh : node_hole_contours) {
-        if (driving_direction == DrivingDirection::LEFT ||
-            driving_direction == DrivingDirection::RIGHT)
-        {
-            for (const auto& x : nh.second) {
-                if (x.first.curb != 1) {
-                    continue;
-                }
-                for (const auto& y : nh.second) {
-                    if (y.first.curb != 1) {
-                        continue;
-                    }
-                    if (x.first == y.first) {
+    if (driving_direction == DrivingDirection::LEFT ||
+        driving_direction == DrivingDirection::RIGHT)
+    {
+        for(const auto& nw : node_hole_waypoints) {
+            for (const auto& x : nw.second.in) {
+                for (const auto& y : nw.second.out) {
+                    if (x.node == y.node) {
                         continue;
                     }
                     way_point_edges_2_lanes.push_back({
-                        FixedArray<float, 3>{x.second(0), x.second(1), 0},
-                        FixedArray<float, 3>{y.second(0), y.second(1), 0}});
+                        FixedArray<float, 3>{x.position(0), x.position(1), 0},
+                        FixedArray<float, 3>{y.position(0), y.position(1), 0}});
                 }
             }
-        } else if (driving_direction != DrivingDirection::CENTER) {
-            throw std::runtime_error("Only 1 or 2 lanes are supported");
         }
+    } else if (driving_direction != DrivingDirection::CENTER) {
+        throw std::runtime_error("Only 1 or 2 lanes are supported");
+    }
+    for (const auto& nh : node_hole_contours) {
         Array<FixedArray<float, 2>> hv{ArrayShape{nh.second.size()}};
         {
             size_t i = 0;
