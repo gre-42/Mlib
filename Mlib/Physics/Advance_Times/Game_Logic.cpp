@@ -111,7 +111,14 @@ void GameLogic::handle_bystanders() {
         }
         if (player.second->game_mode() == GameMode::BYSTANDER) {
             if (player.second->scene_node_name().empty()) {
-                if (!spawn_for_vip(
+                spawn_for_vip(
+                    *player.second,
+                    vip_z,
+                    vip_pos,
+                    nsee);
+                break;
+            } else {
+                if (delete_for_vip(
                     *player.second,
                     vip_z,
                     vip_pos,
@@ -119,12 +126,6 @@ void GameLogic::handle_bystanders() {
                 {
                     break;
                 }
-            } else {
-                delete_for_vip(
-                    *player.second,
-                    vip_z,
-                    vip_pos,
-                    nsee);
             }
         }
     }
@@ -198,7 +199,7 @@ bool GameLogic::spawn_for_vip(
     return false;
 }
 
-void GameLogic::delete_for_vip(
+bool GameLogic::delete_for_vip(
     Player& player,
     const FixedArray<float, 3>& vip_z,
     const FixedArray<float, 3>& vip_pos,
@@ -228,14 +229,11 @@ void GameLogic::delete_for_vip(
             player.set_spotted();
         }
     }
-    goto nodelete_player;
+    return false;
     delete_player:
-    {
-        std::lock_guard lock_guard{mutex_};
-        scene_.delete_root_node(player.scene_node_name());
-    }
-    nodelete_player:
-        ;
+    std::lock_guard lock_guard{mutex_};
+    scene_.delete_root_node(player.scene_node_name());
+    return true;
 }
 
 void GameLogic::set_vip(Player* vip) {

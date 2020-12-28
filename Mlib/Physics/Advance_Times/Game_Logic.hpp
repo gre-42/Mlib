@@ -41,7 +41,7 @@ private:
         const FixedArray<float, 3>& vip_z,
         const FixedArray<float, 3>& vip_pos,
         size_t& nsee);
-    void delete_for_vip(
+    bool delete_for_vip(
         Player& player,
         const FixedArray<float, 3>& vip_z,
         const FixedArray<float, 3>& vip_pos,
