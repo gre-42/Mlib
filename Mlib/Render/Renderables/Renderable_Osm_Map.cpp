@@ -79,7 +79,8 @@ RenderableOsmMap::RenderableOsmMap(
     bool with_height_bindings,
     float street_node_smoothness,
     float street_edge_smoothness,
-    float terrain_edge_smoothness)
+    float terrain_edge_smoothness,
+    DrivingDirection driving_direction)
 : rendering_resources_{rendering_resources},
   scene_node_resources_{scene_node_resources},
   scale_{scale}
@@ -316,10 +317,10 @@ RenderableOsmMap::RenderableOsmMap(
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<FixedArray<FixedArray<float, 3>, 2, 2>> street_rectangles;
+    std::list<std::pair<std::string, std::string>> way_point_edges_1_lane;
+    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>> way_point_edges_2_lanes;
     {
         ResourceNameCycle street_lights{scene_node_resources, street_light_resource_names};
-
-        std::list<std::pair<std::string, std::string>> way_point_edges;
 
         // draw_nodes(vertices, nodes, ways);
         // draw_test_lines(vertices, 0.02);
@@ -336,7 +337,8 @@ RenderableOsmMap::RenderableOsmMap(
             hitboxes_,
             street_rectangles,
             height_bindings,
-            way_point_edges,
+            way_point_edges_1_lane,
+            way_point_edges_2_lanes,
             nodes,
             ways,
             scale,
@@ -348,57 +350,8 @@ RenderableOsmMap::RenderableOsmMap(
             path_tags,
             curb_alpha,
             street_lights,
-            with_height_bindings);
-    
-        std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
-            BuildingType::WAYPOINTS,
-            ways,
-            0,  // building_bottom
-            0); // default_building_top
-
-        std::set<std::string> way_point_nodes;
-        for (const Building& bu : way_point_lines) {
-            way_point_nodes.insert(bu.way.nd.begin(), bu.way.nd.end());
-        }
-        for (const auto& e : way_point_edges) {
-            way_point_nodes.insert(e.first);
-            way_point_nodes.insert(e.second);
-        }
-        std::map<std::string, size_t> indices;
-        for (const std::string& id : way_point_nodes) {
-            indices[id] = indices.size();
-        }
-        way_points_.points.reserve(way_point_nodes.size());
-        for (const std::string& p : way_point_nodes) {
-            way_points_.points.push_back(nodes.at(p).position);
-        }
-        way_points_.adjacency = SparseArrayCcs<float>{ArrayShape{way_point_nodes.size(), way_point_nodes.size()}};
-        auto insert_edge = [this, &nodes, &indices](const std::string& a, const std::string& b) {
-            float dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
-            if (!way_points_.adjacency.column(indices.at(a)).insert({indices.at(b), dist}).second) {
-                throw std::runtime_error("Could not insert waypoint (0)");
-            }
-            if (!way_points_.adjacency.column(indices.at(b)).insert({indices.at(a), dist}).second) {
-                throw std::runtime_error("Could not insert waypoint (1)");
-            }
-        };
-        for (const Building& bu : way_point_lines) {
-            for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
-                auto s = it;
-                ++s;
-                if (s != bu.way.nd.end()) {
-                    insert_edge(*s, *it);
-                }
-            }
-        }
-        for (const auto& e : way_point_edges) {
-            insert_edge(e.first, e.second);
-        }
-        for (size_t i = 0; i < way_point_nodes.size(); ++i) {
-            if (!way_points_.adjacency.column(i).insert({i, 0}).second) {
-                throw std::runtime_error("Could not insert waypoint (2)");
-            }
-        }
+            with_height_bindings,
+            driving_direction);
     }
 
     if (forest_outline_tree_distance != INFINITY && !tree_resource_names.empty()) {
@@ -611,6 +564,10 @@ RenderableOsmMap::RenderableOsmMap(
                 smoothed_vertices.push_back(&p);
             }
         }
+        for (auto& e : way_point_edges_2_lanes) {
+            smoothed_vertices.push_back(&e.first);
+            smoothed_vertices.push_back(&e.second);
+        }
         {
             std::set<FixedArray<float, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
             if (svs.size() != smoothed_vertices.size()) {
@@ -779,6 +736,83 @@ RenderableOsmMap::RenderableOsmMap(
             x(2), y(2), z(2)};
         sp.rotation = matrix_2_tait_bryan_angles(R);
         spawn_points_.push_back(sp);
+    }
+    {
+        std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
+            BuildingType::WAYPOINTS,
+            ways,
+            0,  // building_bottom
+            0); // default_building_top
+
+        std::map<std::string, size_t> indices_1_lane;
+        for (const Building& bu : way_point_lines) {
+            for (const std::string& n : bu.way.nd) {
+                indices_1_lane.insert({n, indices_1_lane.size()});
+            }
+        }
+        for (const auto& e : way_point_edges_1_lane) {
+            indices_1_lane.insert({e.first, indices_1_lane.size()});
+            indices_1_lane.insert({e.second, indices_1_lane.size()});
+        }
+        std::map<OrderableFixedArray<float, 2>, size_t> indices_2_lanes;
+        for (const auto& e : way_point_edges_2_lanes) {
+            indices_2_lanes.insert({OrderableFixedArray<float, 2>{e.first(0), e.first(1)}, indices_2_lanes.size()});
+            indices_2_lanes.insert({OrderableFixedArray<float, 2>{e.second(0), e.second(1)}, indices_2_lanes.size()});
+        }
+        way_points_.points.resize(indices_1_lane.size() + indices_2_lanes.size());
+        for (const auto& p : indices_1_lane) {
+            way_points_.points[p.second] = nodes.at(p.first).position;
+        }
+        for (const auto& p : indices_2_lanes) {
+            way_points_.points[indices_1_lane.size() + p.second] = p.first;
+        }
+        way_points_.adjacency = SparseArrayCcs<float>{ArrayShape{
+            indices_1_lane.size() + indices_2_lanes.size(),
+            indices_1_lane.size() + indices_2_lanes.size()}};
+        
+        {
+            auto insert_edge_1_lane = [this, &nodes, &indices_1_lane](const std::string& a, const std::string& b) {
+                float dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
+                if (!way_points_.adjacency.column(indices_1_lane.at(a)).insert({indices_1_lane.at(b), dist}).second) {
+                    throw std::runtime_error("Could not insert waypoint (0)");
+                }
+                if (!way_points_.adjacency.column(indices_1_lane.at(b)).insert({indices_1_lane.at(a), dist}).second) {
+                    throw std::runtime_error("Could not insert waypoint (1)");
+                }
+            };
+            for (const Building& bu : way_point_lines) {
+                for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+                    auto s = it;
+                    ++s;
+                    if (s != bu.way.nd.end()) {
+                        insert_edge_1_lane(*s, *it);
+                    }
+                }
+            }
+            for (const auto& e : way_point_edges_1_lane) {
+                insert_edge_1_lane(e.first, e.second);
+            }
+            for (size_t i = 0; i < indices_1_lane.size(); ++i) {
+                if (!way_points_.adjacency.column(i).insert({i, 0}).second) {
+                    throw std::runtime_error("Could not insert waypoint (2)");
+                }
+            }
+        }
+        {
+            for (const auto& e : way_point_edges_2_lanes) {
+                float dist = std::sqrt(sum(squared(e.first - e.second)));
+                size_t col_id_0 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{e.first(0), e.first(1)});
+                size_t col_id_1 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{e.second(0), e.second(1)});
+                if (!way_points_.adjacency.column(col_id_0).insert({col_id_1, dist}).second) {
+                    throw std::runtime_error("Could not insert waypoint (3)");
+                }
+            }
+            for (size_t i = 0; i < indices_2_lanes.size(); ++i) {
+                if (!way_points_.adjacency.column(indices_1_lane.size() + i).insert({indices_1_lane.size() + i, 0}).second) {
+                    throw std::runtime_error("Could not insert waypoint (4)");
+                }
+            }
+        }
     }
 
     std::list<std::shared_ptr<ColoredVertexArray>> ts;

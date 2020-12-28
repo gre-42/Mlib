@@ -16,6 +16,7 @@ struct Material;
 struct ResourceInstanceDescriptor;
 struct ObjectResourceDescriptor;
 struct TriangleList;
+enum class DrivingDirection;
 
 static const FixedArray<float, 3> way_color{1, 1, 1};      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1, 1, 1};  // replaced with texture
@@ -186,7 +187,8 @@ void draw_streets(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::list<FixedArray<FixedArray<float, 3>, 2, 2>>& street_rectangles,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
-    std::list<std::pair<std::string, std::string>>& way_point_edges,
+    std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
+    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float scale,
@@ -198,7 +200,8 @@ void draw_streets(
     const std::set<std::string>& path_tags,
     float curb_alpha,
     ResourceNameCycle& street_lights,
-    bool with_height_bindings);
+    bool with_height_bindings,
+    DrivingDirection driving_direction);
 
 void raise_streets(
     TriangleList& tl_street_crossing,

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Render/Renderables/Driving_Direction.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Renderables/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -74,7 +75,8 @@ public:
         bool with_height_bindings = false,
         float street_node_smoothness = 0,
         float street_edge_smoothness = 0,
-        float terrain_edge_smoothness = 0);
+        float terrain_edge_smoothness = 0,
+        DrivingDirection driving_direction = DrivingDirection::CENTER);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;

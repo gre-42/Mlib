@@ -33,6 +33,7 @@
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
+#include <Mlib/Render/Renderables/Driving_Direction.hpp>
 #include <Mlib/Render/Renderables/Renderable_Binary_X.hpp>
 #include <Mlib/Render/Renderables/Renderable_Blending_X.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
@@ -176,7 +177,8 @@ void LoadScene::operator()(
         "\\s*with_height_bindings=(0|1)\\r?\\n"
         "\\s*street_node_smoothness=([\\w+-.]+)\\r?\\n"
         "\\s*street_edge_smoothness=([\\w+-.]+)\\r?\\n"
-        "\\s*terrain_edge_smoothness=([\\w+-.]+)$");
+        "\\s*terrain_edge_smoothness=([\\w+-.]+)\\r?\\n"
+        "\\s*driving_direction=(center|left|right)$");
     static const std::regex obj_resource_reg(
         "^(?:\\r?\\n|\\s)*obj_resource\\r?\\n"
         "\\s*name=([\\w-. \\(\\)/+-]+)\\r?\\n"
@@ -472,7 +474,8 @@ void LoadScene::operator()(
                     safe_stob(match[52].str()),                                   // with_height_bindings
                     safe_stof(match[53].str()),                                   // street_node_smoothness
                     safe_stof(match[54].str()),                                   // street_edge_smoothness
-                    safe_stof(match[55].str())));                                 // terrain_edge_smoothness
+                    safe_stof(match[55].str()),                                   // terrain_edge_smoothness
+                    driving_direction_from_string(match[56].str())));             // driving_direction
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                 fpath(match[2].str()),
