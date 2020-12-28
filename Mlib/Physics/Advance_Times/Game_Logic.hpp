@@ -22,14 +22,30 @@ public:
         Players& players,
         const std::list<Focus>& focus,
         std::recursive_mutex& mutex);
-    void set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points);
-    void set_preferred_car_spawner(Player& player, const std::function<void(const SpawnPoint&)>& preferred_car_spawner);
+    void set_spawn_points(
+        const SceneNode& node,
+        const std::list<SpawnPoint>& spawn_points);
+    void set_preferred_car_spawner(
+        Player& player,
+        const std::function<void(const SpawnPoint&)>& preferred_car_spawner);
     void set_vip(Player* vip);
     virtual void advance_time(float dt) override;
 private:
     void handle_team_deathmatch();
     void handle_bystanders();
-    void spawn(std::function<void(const SpawnPoint&)>& func, const SpawnPoint& sp);
+    void spawn_at_spawn_point(
+        Player& player,
+        const SpawnPoint& sp);
+    bool spawn_for_vip(
+        Player& player,
+        const FixedArray<float, 3>& vip_z,
+        const FixedArray<float, 3>& vip_pos,
+        size_t& nsee);
+    void delete_for_vip(
+        Player& player,
+        const FixedArray<float, 3>& vip_z,
+        const FixedArray<float, 3>& vip_pos,
+        size_t& nsee);
     Scene& scene_;
     Players& players_;
     Player* vip_;

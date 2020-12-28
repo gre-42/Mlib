@@ -86,11 +86,7 @@ void GameLogic::handle_team_deathmatch() {
         auto sit = spawn_points_.begin();
         auto pit = players_.players().begin();
         for (; sit != spawn_points_.end() && pit != players_.players().end(); ++sit, ++pit) {
-            auto it = preferred_car_spawners_.find(pit->second);
-            if (it == preferred_car_spawners_.end()) {
-                throw std::runtime_error("Player " + pit->second->name() + " has no preferred car spawner");
-            }
-            spawn(it->second, *sit);
+            spawn_at_spawn_point(*pit->second, *sit);
         }
     }
 }
@@ -110,119 +106,151 @@ void GameLogic::handle_bystanders() {
         if (player.second == vip_) {
             continue;
         }
-        auto it = preferred_car_spawners_.find(player.second);
-        if (it == preferred_car_spawners_.end()) {
-            throw std::runtime_error("Player " + player.second->name() + " has no preferred car spawner");
+        if (nsee > cfg.max_nsee) {
+            break;
         }
         if (player.second->game_mode() == GameMode::BYSTANDER) {
             if (player.second->scene_node_name().empty()) {
-                if (nsee > cfg.max_nsee) {
-                    continue;
-                }
-                bool spawned = false;
-                for (size_t i = 0; i < spawn_points_.size(); ++i) {
-                    const SpawnPoint& sp = spawn_points_[(spawn_point_id_++) % spawn_points_.size()];
-                    float dist2 = sum(squared(sp.position - vip_pos));
-                    // Abort if too far away.
-                    if (dist2 > squared(cfg.r_spawn_far)) {
-                        continue;
-                    }
-                    // Abort if behind car.
-                    if (dot0d(sp.position - vip_pos, vip_z) > 0) {
-                        continue;
-                    }
-                    // Abort if another car is nearby.
-                    {
-                        bool exists = false;
-                        for (auto& player2 : players_.players()) {
-                            if (!player2.second->scene_node_name().empty()) {
-                                if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(cfg.r_neighbors)) {
-                                    exists = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (exists) {
-                            continue;
-                        }
-                    }
-                    ++nsee;
-                    if (nsee > cfg.max_nsee) {
-                        break;
-                    }
-                    bool spotted = vip_->can_see(sp.position, 2, 0, cfg.only_terrain);
-                    if (dist2 < squared(cfg.r_spawn_near)) {
-                        // Abort if visible.
-                        if (spotted) {
-                            continue;
-                        }
-                        // Abort if not visible after x seconds.
-                        if (!vip_->can_see(sp.position, 2, cfg.visible_after_spawn, cfg.only_terrain)) {
-                            continue;
-                        }
-                    } else {
-                        // Abort if not visible.
-                        if (!spotted) {
-                            continue;
-                        }
-                    }
-                    spawn(it->second, sp);
-                    if (player.second->scene_node_name().empty()) {
-                        throw std::runtime_error("Scene node name empty for player " + player.first);
-                    }
-                    player.second->notify_spawn();
-                    if (spotted) {
-                        player.second->set_spotted();
-                    }
-                    spawned = true;
-                    break;
-                }
-                if (!spawned) {
-                    // std::cerr << "Could not spawn bystander " << player.second->name() << std::endl;
+                if (!spawn_for_vip(
+                    *player.second,
+                    vip_z,
+                    vip_pos,
+                    nsee))
+                {
                     break;
                 }
             } else {
-                FixedArray<float, 3> player_pos = scene_.get_node(player.second->scene_node_name())->position();
-                float dist2 = sum(squared(player_pos - vip_pos));
-                if (dist2 > squared(cfg.r_delete_near)) {
-                    // Abort if behind car.
-                    if (dot0d(player_pos - vip_pos, vip_z) > 0) {
-                        goto delete_player;
-                    }
-                }
-                if (dist2 > squared(cfg.r_delete_far)) {
-                    if (!vip_->can_see(*player.second, cfg.only_terrain)) {
-                        goto delete_player;
-                    } else {
-                        player.second->set_spotted();
-                    }
-                }
-                if (!player.second->spotted() && (player.second->seconds_since_spawn() > cfg.visible_after_delete)) {
-                    if (!vip_->can_see(*player.second, cfg.only_terrain)) {
-                        goto delete_player;
-                    } else {
-                        player.second->set_spotted();
-                    }
-                }
-                goto nodelete_player;
-                delete_player:
-                {
-                    std::lock_guard lock_guard{mutex_};
-                    scene_.delete_root_node(player.second->scene_node_name());
-                }
-                nodelete_player:
-                    ;
+                delete_for_vip(
+                    *player.second,
+                    vip_z,
+                    vip_pos,
+                    nsee);
             }
         }
     }
+}
+
+bool GameLogic::spawn_for_vip(
+    Player& player,
+    const FixedArray<float, 3>& vip_z,
+    const FixedArray<float, 3>& vip_pos,
+    size_t& nsee)
+{
+    if (nsee > cfg.max_nsee) {
+        return false;
+    }
+    for (size_t i = 0; i < spawn_points_.size(); ++i) {
+        const SpawnPoint& sp = spawn_points_[(spawn_point_id_++) % spawn_points_.size()];
+        float dist2 = sum(squared(sp.position - vip_pos));
+        // Abort if too far away.
+        if (dist2 > squared(cfg.r_spawn_far)) {
+            continue;
+        }
+        // Abort if behind car.
+        if (dot0d(sp.position - vip_pos, vip_z) > 0) {
+            continue;
+        }
+        // Abort if another car is nearby.
+        {
+            bool exists = false;
+            for (auto& player2 : players_.players()) {
+                if (!player2.second->scene_node_name().empty()) {
+                    if (sum(squared(sp.position - scene_.get_node(player2.second->scene_node_name())->position())) < squared(cfg.r_neighbors)) {
+                        exists = true;
+                        break;
+                    }
+                }
+            }
+            if (exists) {
+                continue;
+            }
+        }
+        ++nsee;
+        if (nsee > cfg.max_nsee) {
+            break;
+        }
+        bool spotted = vip_->can_see(sp.position, 2, 0, cfg.only_terrain);
+        if (dist2 < squared(cfg.r_spawn_near)) {
+            // Abort if visible.
+            if (spotted) {
+                continue;
+            }
+            // Abort if not visible after x seconds.
+            if (!vip_->can_see(sp.position, 2, cfg.visible_after_spawn, cfg.only_terrain)) {
+                continue;
+            }
+        } else {
+            // Abort if not visible.
+            if (!spotted) {
+                continue;
+            }
+        }
+        spawn_at_spawn_point(player, sp);
+        if (player.scene_node_name().empty()) {
+            throw std::runtime_error("Scene node name empty for player " + player.name());
+        }
+        player.notify_spawn();
+        if (spotted) {
+            player.set_spotted();
+        }
+        return true;
+    }
+    return false;
+}
+
+void GameLogic::delete_for_vip(
+    Player& player,
+    const FixedArray<float, 3>& vip_z,
+    const FixedArray<float, 3>& vip_pos,
+    size_t& nsee)
+{
+    FixedArray<float, 3> player_pos = scene_.get_node(player.scene_node_name())->position();
+    float dist2 = sum(squared(player_pos - vip_pos));
+    if (dist2 > squared(cfg.r_delete_near)) {
+        // Abort if behind car.
+        if (dot0d(player_pos - vip_pos, vip_z) > 0) {
+            goto delete_player;
+        }
+    }
+    if (dist2 > squared(cfg.r_delete_far)) {
+        ++nsee;
+        if (!vip_->can_see(player, cfg.only_terrain)) {
+            goto delete_player;
+        } else {
+            player.set_spotted();
+        }
+    }
+    if (!player.spotted() && (player.seconds_since_spawn() > cfg.visible_after_delete)) {
+        ++nsee;
+        if (!vip_->can_see(player, cfg.only_terrain)) {
+            goto delete_player;
+        } else {
+            player.set_spotted();
+        }
+    }
+    goto nodelete_player;
+    delete_player:
+    {
+        std::lock_guard lock_guard{mutex_};
+        scene_.delete_root_node(player.scene_node_name());
+    }
+    nodelete_player:
+        ;
 }
 
 void GameLogic::set_vip(Player* vip) {
     vip_ = vip;
 }
 
-void GameLogic::spawn(std::function<void(const SpawnPoint&)>& func, const SpawnPoint& sp) {
+void GameLogic::spawn_at_spawn_point(
+    Player& player,
+    const SpawnPoint& sp)
+{
+    auto spawn_macro = preferred_car_spawners_.find(&player);
+    if (spawn_macro == preferred_car_spawners_.end()) {
+        throw std::runtime_error("Player " + player.name() + " has no preferred car spawner");
+    }
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg.spawn_y_offset;
-    func(sp2);
+    spawn_macro->second(sp2);
 }
