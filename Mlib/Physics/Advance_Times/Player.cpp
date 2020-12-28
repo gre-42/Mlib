@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
@@ -24,6 +25,7 @@ Player::Player(
     GameMode game_mode,
     UnstuckMode unstuck_mode,
     const DrivingMode& driving_mode,
+    DrivingDirection driving_direction,
     std::recursive_mutex& mutex)
 : scene_{scene},
   collision_query_{collision_query},
@@ -45,6 +47,7 @@ Player::Player(
   game_mode_{game_mode},
   unstuck_mode_{unstuck_mode},
   driving_mode_{driving_mode},
+  driving_direction_{driving_direction},
   mutex_{mutex},
   spotted_{false}
 {}
@@ -428,7 +431,13 @@ void Player::move_to_waypoint() {
             if (dl2 > 1e-12) {
                 auto z = rb_->rbi_.abs_z();
                 if (dot0d(d, z) / std::sqrt(dl2) < -driving_mode_.collision_avoidance_cos) {
-                    d_wpt = driving_mode_.collision_avoidance_delta;
+                    if (driving_direction_ == DrivingDirection::CENTER || driving_direction_ == DrivingDirection::RIGHT) {
+                        d_wpt = driving_mode_.collision_avoidance_delta;
+                    } else if (driving_direction_ == DrivingDirection::LEFT) {
+                        d_wpt = -driving_mode_.collision_avoidance_delta;
+                    } else {
+                        throw std::runtime_error("Unknown driving direction");
+                    }
                 }
             }
         }

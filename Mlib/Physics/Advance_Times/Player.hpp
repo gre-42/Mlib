@@ -21,6 +21,7 @@ class Scene;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 class Gun;
+enum class DrivingDirection;
 
 struct PlayerStats {
     size_t nwins = 0;
@@ -73,6 +74,7 @@ public:
         GameMode game_mode,
         UnstuckMode unstuck_mode,
         const DrivingMode& driving_mode,
+        DrivingDirection driving_direction,
         std::recursive_mutex& mutex);
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
     const std::string& scene_node_name() const;
@@ -134,6 +136,7 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> unstuck_start_;
     UnstuckMode unstuck_mode_;
     DrivingMode driving_mode_;
+    DrivingDirection driving_direction_;
     std::recursive_mutex& mutex_;
     std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
     bool spotted_;

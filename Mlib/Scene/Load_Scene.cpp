@@ -33,7 +33,6 @@
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
-#include <Mlib/Render/Renderables/Driving_Direction.hpp>
 #include <Mlib/Render/Renderables/Renderable_Binary_X.hpp>
 #include <Mlib/Render/Renderables/Renderable_Blending_X.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
@@ -51,6 +50,7 @@
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
+#include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -223,7 +223,14 @@ void LoadScene::operator()(
     static const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
     static const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
     static const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+)$");
-    static const std::regex player_create_reg("^(?:\\r?\\n|\\s)*player_create name=([\\w+-.]+) team=([\\w+-.]+) mode=(ramming|racing|bystander) unstuck_mode=(off|reverse|delete) driving_mode=(arena|city)$");
+    static const std::regex player_create_reg(
+        "^(?:\\r?\\n|\\s)*player_create"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+team=([\\w+-.]+)"
+        "\\s+mode=(ramming|racing|bystander)"
+        "\\s+unstuck_mode=(off|reverse|delete)"
+        "\\s+driving_mode=(arena|city)"
+        "\\s+driving_direction=(center|left|right)$");
     static const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
     static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
     static const std::regex player_set_surface_power_reg("^(?:\\r?\\n|\\s)*player_set_surface_power player-name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
@@ -808,6 +815,7 @@ void LoadScene::operator()(
                 game_mode_from_string(match[3].str()),
                 unstuck_mode_from_string(match[4].str()),
                 driving_modes.at(match[5].str()),
+                driving_direction_from_string(match[6].str()),
                 mutex);
             players.add_player(*player);
             physics_engine.advance_times_.add_advance_time(player);
