@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <chrono>
@@ -330,6 +331,9 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
             ostr << "P: " << power_ * 0.00135962 << " PS" << std::endl;
         }
 #endif
+    }
+    if ((log_components & STATUS_DRIVER_NAME) && (driver_ != nullptr)) {
+        ostr << "Driver: " << driver_->name() << std::endl;
     }
     for (const auto& o : collision_observers_) {
         auto c = std::dynamic_pointer_cast<StatusWriter>(o);
