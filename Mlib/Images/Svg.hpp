@@ -164,6 +164,60 @@ public:
     void plot(const std::list<TData>& x, const std::list<TData>& y, size_t down_sampling = 1) {
         plot(std::vector(x.begin(), x.end()), std::vector(y.begin(), y.end()), down_sampling);
     }
+
+    template <class TData>
+    void plot_edges(
+        const std::vector<TData>& x_start,
+        const std::vector<TData>& y_start,
+        const std::vector<TData>& x_stop,
+        const std::vector<TData>& y_stop,
+        size_t down_sampling = 1)
+    {
+        if (x_start.size() != y_start.size()) {
+            throw std::runtime_error("Size mismatch in plot");
+        }
+        if (x_start.size() != x_stop.size()) {
+            throw std::runtime_error("Size mismatch in plot");
+        }
+        if (x_start.size() != y_stop.size()) {
+            throw std::runtime_error("Size mismatch in plot");
+        }
+        if (x_start.empty()) {
+            return;
+        }
+        const auto xm_start = std::minmax_element(x_start.begin(), x_start.end());
+        const auto xm_stop = std::minmax_element(x_stop.begin(), x_stop.end());
+        const auto ym_start = std::minmax_element(y_start.begin(), y_start.end());
+        const auto ym_stop = std::minmax_element(y_stop.begin(), y_stop.end());
+        const auto xm_min = std::min(*xm_start.first, *xm_stop.first);
+        const auto xm_max = std::max(*xm_start.second, *xm_stop.second);
+        const auto ym_min = std::min(*ym_start.first, *ym_stop.first);
+        const auto ym_max = std::max(*ym_start.second, *ym_stop.second);
+        const auto xpos = [&](const TData& x) {
+            return ((x - xm_min) * width_) / (xm_max - xm_min);
+        };
+        const auto ypos = [&](const TData& y) {
+            return height_ - ((y - ym_min) * height_) / (ym_max - ym_min);
+        };
+        // for (size_t i = down_sampling; i < x.size(); i += down_sampling) {
+        //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
+        //}
+        for(size_t i = 0; i < x_start.size(); i += down_sampling) {
+            // PathDrawer pd{ostr_};
+            // pd.draw_point(xpos(x_start[i]), ypos(y_start[i]));
+            // pd.draw_point(xpos(x_stop[i]), ypos(y_stop[i]));
+            // pd.finish();
+            draw_line(
+                xpos(x_start[i]), ypos(y_start[i]),
+                xpos(x_stop[i]), ypos(y_stop[i]));
+        }
+        for (const TData& xx : linspace(xm_min, xm_max, 5).flat_iterable()) {
+            draw_text<TData>(xpos(xx), height_, std::to_string(xx));
+        }
+        for (const TData& yy : linspace(ym_min, ym_max, 5).flat_iterable()) {
+            draw_text<TData>(0, ypos(yy), std::to_string(yy));
+        }
+    }
 private:
     std::ostream& ostr_;
     TSize width_;
