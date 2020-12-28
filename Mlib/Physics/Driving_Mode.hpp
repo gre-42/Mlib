@@ -23,7 +23,7 @@ static std::map<std::string, DrivingMode> driving_modes{
         .max_velocity = 30 / 3.6,
         .max_delta_velocity2_break = 2,
         .collision_avoidance_radius_break = 6,
-        .collision_avoidance_radius_correct = 15,
+        .collision_avoidance_radius_correct = 0,
         .collision_avoidance_cos = 0.6,
         .collision_avoidance_delta = 0.5,
         .stuck_velocity = 2 / 3.6,
