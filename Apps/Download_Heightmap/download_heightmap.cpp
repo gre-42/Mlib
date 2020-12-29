@@ -80,11 +80,13 @@ int main(int argc, char** argv) {
             for (size_t da = 0; da < tile_pixels; ++da) {
                 for (size_t dl = 0; dl < tile_pixels; ++dl) {
                     unsigned char* rgb = &image.data.get()[(da * image.width  + dl) * image.nrChannels];
+                    size_t ga = da + a * tile_pixels;
+                    size_t go = dl + o * tile_pixels;
                     // https://www.mapzen.com/blog/elevation/
-                    res(da + a * tile_pixels, dl + o * tile_pixels) =
+                    res(ga, go) =
                         ((rgb[0] * 256 * 256 + 256 * rgb[1] + rgb[2]) - 32768) / 2;
                     for (size_t c = 0; c < 3; ++c) {
-                        res_rgb[(da * image.width  + dl) * 3 + c] = rgb[c];
+                        res_rgb[(ga * res.shape(1)  + go) * 3 + c] = rgb[c];
                     }
                 }
             }
