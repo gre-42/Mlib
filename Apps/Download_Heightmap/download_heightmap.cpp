@@ -57,22 +57,22 @@ int main(int argc, char** argv) {
     size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
 
     size_t ntiles_global = std::pow(2, safe_stoz(args.named_value("--zoom")));
-    float tile_len = 180.f / ntiles_global;
-    size_t ntiles_lat = std::ceil((max_lat - min_lat) / tile_len);
-    size_t ntiles_lon = std::ceil((max_lon - min_lon) / tile_len);
-    PgmImage res{ArrayShape{ntiles_lat * tile_pixels, ntiles_lon * tile_pixels}};
+    float tile_len = 360.f / ntiles_global;
+    size_t min_y = std::floor((min_lat + tile_len / 2 + 180) / tile_len);
+    size_t max_y = std::ceil ((max_lat + tile_len / 2 + 180) / tile_len);
+    size_t min_x = std::floor((min_lon + tile_len / 2 + 180) / tile_len);
+    size_t max_x = std::ceil ((max_lon + tile_len / 2 + 180) / tile_len);
+    size_t ntiles_y = (max_y - min_y);
+    size_t ntiles_x = (max_x - min_x);
+    std::cerr << "ntiles_y " << ntiles_y << std::endl;
+    std::cerr << "ntiles_x " << ntiles_x << std::endl;
+    PgmImage res{ArrayShape{ntiles_y * tile_pixels, ntiles_x * tile_pixels}};
     std::vector<unsigned char> res_rgb(res.nelements() * 3);
-    std::cerr << "ntiles_lat " << ntiles_lat << std::endl;
-    std::cerr << "ntiles_lon " << ntiles_lon << std::endl;
-    for(size_t a = 0; a < ntiles_lat; ++a) {
-        for(size_t o = 0; o < ntiles_lon; ++o) {
-            float lat = min_lat + a * tile_len;
-            float lon = min_lon + o * tile_len;
-            download_tile(
-                tile_pixels,
-                zoom,
-                (lon + tile_len / 2 + 180) / 360 * 1024,
-                (lat + tile_len / 2 + 180) / 360 * 1024);
+    for(size_t a = 0; a < ntiles_y; ++a) {
+        for(size_t o = 0; o < ntiles_x; ++o) {
+            size_t y = min_y + a;
+            size_t x = min_x + o;
+            download_tile(tile_pixels, zoom, x, y);
             StbInfo image = stb_load("/tmp/tile.png", false, false);
             if (image.nrChannels != 3 && image.nrChannels != 4) {
                 throw std::runtime_error("Only 3 or 4 channels are supported");
