@@ -71,8 +71,8 @@ int main(int argc, char** argv) {
             download_tile(
                 tile_pixels,
                 zoom,
-                (lat + tile_len / 2 + 180) / 360 * 1024,
-                (lon + tile_len / 2 + 180) / 360 * 1024);
+                (lon + tile_len / 2 + 180) / 360 * 1024,
+                (lat + tile_len / 2 + 180) / 360 * 1024);
             StbInfo image = stb_load("/tmp/tile.png", false, false);
             if (image.nrChannels != 3 && image.nrChannels != 4) {
                 throw std::runtime_error("Only 3 or 4 channels are supported");
