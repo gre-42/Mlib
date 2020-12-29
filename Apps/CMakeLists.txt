@@ -1,6 +1,7 @@
 add_subdirectory(Box_Filter)
 add_subdirectory(Cgi_Player)
 add_subdirectory(Chessboard_Detector)
+add_subdirectory(Download_Heightmap)
 add_subdirectory(Generate_Tree)
 add_subdirectory(Harris_Corner_Detector)
 add_subdirectory(Highlight_Saddle_Points)

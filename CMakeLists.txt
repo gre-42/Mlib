@@ -28,9 +28,14 @@ find_package(SDL2)
 find_package(Vulkan)
 find_package(glm)
 find_package(OpenCV OPTIONAL_COMPONENTS features2d)
+find_package(OpenSSL)
 
 if (OpenCV_FOUND)
     add_compile_definitions(WITH_OPENCV)
+endif()
+
+if (OPENSSL_FOUND)
+    add_compile_definitions(WITH_OPENSSL)
 endif()
 
 #####################
@@ -50,6 +55,7 @@ set(Mlib_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 ######################
 
 add_subdirectory(Apps)
+add_subdirectory(cpp-httplib)
 add_subdirectory(Mlib)
 add_subdirectory(poly2tri)
 add_subdirectory(stb_image)
