@@ -180,7 +180,7 @@ RenderableOsmMap::RenderableOsmMap(
                 } else {
                     ordered_node_positions.insert(std::make_pair(opos, match[1].str()));
                 }
-                nodes.insert(std::make_pair(match[1].str(), Node{position: pos}));
+                nodes.insert(std::make_pair(match[1].str(), Node{.position = pos}));
                 // float dist = sum(squared(pos - FixedArray<float, 2>{-0.801262, 0.0782831}));
                 // if (dist < 1e-3) {
                 //     std::cerr << "err: " << dist << " " << match[1].str() << std::endl;
@@ -423,7 +423,7 @@ RenderableOsmMap::RenderableOsmMap(
             tls_buildings,
             steiner_points,
             Material{
-                .texture_descriptor = {color: "<tbd>"},
+                .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
@@ -441,7 +441,7 @@ RenderableOsmMap::RenderableOsmMap(
             tls_wall_barriers,
             steiner_points,
             Material{
-                .texture_descriptor = {color: "<tbd>"},
+                .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
                 .blend_mode = barrier_blend_mode,
                 .aggregate_mode = AggregateMode::ONCE,
@@ -496,7 +496,7 @@ RenderableOsmMap::RenderableOsmMap(
         draw_roofs(
             tls_buildings,
             Material{
-                .texture_descriptor = {color: roof_texture},
+                .texture_descriptor = {.color = roof_texture},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1, 1, 1}}.compute_color_mode(),
@@ -513,7 +513,7 @@ RenderableOsmMap::RenderableOsmMap(
         draw_ceilings(
             tls_buildings,
             Material{
-                .texture_descriptor = {color: ceiling_texture},
+                .texture_descriptor = {.color = ceiling_texture},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
