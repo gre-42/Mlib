@@ -170,7 +170,6 @@ void RenderableColoredVertexArrayInstance::render(
             light_noshadow_indices,
             light_shadow_indices,
             black_shadow_indices);
-        const VertexArray& va = rcva_->get_vertex_array(cva.get());
         LOG_INFO("RenderableColoredVertexArrayInstance::render glUseProgram");
         CHK(glUseProgram(rp.program));
         LOG_INFO("RenderableColoredVertexArrayInstance::render mvp");
@@ -234,8 +233,6 @@ void RenderableColoredVertexArrayInstance::render(
                 CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
             }
         }
-        LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");
-        CHK(glBindVertexArray(va.vertex_array));
         LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture");
         if (has_texture) {
             LOG_INFO("RenderableColoredVertexArrayInstance::render get texture \"" + cva->material.texture + '"');
@@ -345,12 +342,16 @@ void RenderableColoredVertexArrayInstance::render(
             default:
                 throw std::runtime_error("Unknown blend_mode");
         }
+        const VertexArray& va = rcva_->get_vertex_array(cva.get());
+        LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");
+        CHK(glBindVertexArray(va.vertex_array));
         LOG_INFO("RenderableColoredVertexArrayInstance::render glDrawArrays");
         if (has_instances) {
             CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * cva->triangles.size(), rcva_->instances_->at(cva.get()).size()));
         } else {
             CHK(glDrawArrays(GL_TRIANGLES, 0, 3 * cva->triangles.size()));
         }
+        CHK(glBindVertexArray(0));
         CHK(glDisable(GL_CULL_FACE));
         CHK(glDisable(GL_BLEND));
         CHK(glBlendFunc(GL_ONE, GL_ZERO));

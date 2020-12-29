@@ -208,6 +208,7 @@ void PostProcessingLogic::render(
 
         CHK(glBindVertexArray(va_.vertex_buffer));
         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+        CHK(glBindVertexArray(0));
 
         // Reset to defaults
         CHK(glActiveTexture(GL_TEXTURE0));

@@ -303,6 +303,7 @@ void MotionInterpolationLogic::render(
 
                 CHK(glBindVertexArray(va_.vertex_buffer));
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+                CHK(glBindVertexArray(0));
                 // save_movie.save("/tmp/mov-", "-n", width, height);
             }
         } else {
@@ -325,6 +326,7 @@ void MotionInterpolationLogic::render(
 
                     CHK(glBindVertexArray(va_.vertex_buffer));
                     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+                    CHK(glBindVertexArray(0));
 
                     // Reset to defaults
                     CHK(glActiveTexture(GL_TEXTURE0));
@@ -353,6 +355,7 @@ void MotionInterpolationLogic::render(
 
                         CHK(glBindVertexArray(va_.vertex_buffer));
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+                        CHK(glBindVertexArray(0));
 
                         // Reset to defaults
                         CHK(glActiveTexture(GL_TEXTURE0));
@@ -374,6 +377,7 @@ void MotionInterpolationLogic::render(
 
                         CHK(glBindVertexArray(va_.vertex_buffer));
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+                        CHK(glBindVertexArray(0));
 
                         // save_movie.save("/tmp/mov-", "-f", of_width, of_height);
 
@@ -402,6 +406,7 @@ void MotionInterpolationLogic::render(
 
                         CHK(glBindVertexArray(va_.vertex_buffer));
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+                        CHK(glBindVertexArray(0));
 
                         // save_movie.save("/tmp/mov-", "-i", of_width, of_height);
 
