@@ -34,7 +34,7 @@ float Mlib::safe_stof(const std::string& s) {
 
 int Mlib::safe_stoi(const std::string& s) {
     std::size_t idx;
-    float res;
+    int res;
     try {
         res = std::stoi(s, &idx);
     } catch (const std::invalid_argument&) {
@@ -42,6 +42,24 @@ int Mlib::safe_stoi(const std::string& s) {
     }
     if (idx != s.length()) {
         throw std::invalid_argument("safe_stoi: \"" + s + '"');
+    }
+    return res;
+}
+
+unsigned int Mlib::safe_stou(const std::string& s) {
+    std::size_t idx;
+    unsigned int res;
+    try {
+        unsigned long ul = std::stoul(s, &idx);
+        res = ul;
+        if (res != ul) {
+            throw std::invalid_argument(s);
+        }
+    } catch (const std::invalid_argument&) {
+        throw std::invalid_argument("safe_stou: \"" + s + '"');
+    }
+    if (idx != s.length()) {
+        throw std::invalid_argument("safe_stou: \"" + s + '"');
     }
     return res;
 }
