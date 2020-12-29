@@ -28,9 +28,9 @@ struct PointsAndAdjacency {
         svg.plot_edges(x_start, y_start, x_stop, y_stop, line_width);
     }
 
-    void plot(const std::string& filename, size_t width, size_t height, float line_width = 1.5) const {
+    void plot(const std::string& filename, float width, float height, float line_width = 1.5) const {
         std::ofstream ofstr{filename};
-        Svg<size_t> svg{ofstr, width, height};
+        Svg<float> svg{ofstr, width, height};
         plot(svg, line_width);
         svg.finish();
         ofstr.flush();
