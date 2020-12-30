@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
         " --max_lon <max_lon>"
         " --out_pgm <filename>"
         " [--api_key <api_key>]"
-        " [--tmp_filename <filename>]"
+        " [--tmp_png <filename>]"
         " [--stitched_png <filename>]"
         " [--stitched_pgm <filename>]"
         " [--resampled_pgm <filename>]",
@@ -98,7 +98,6 @@ int main(int argc, char** argv) {
          "--max_lat",
          "--max_lon",
          "--api_key",
-         "--tmp_filename",
          "--tmp_filename",
          "--stitched_png",
          "--stitched_pgm",
@@ -113,7 +112,7 @@ int main(int argc, char** argv) {
     float max_lon = safe_stof(args.named_value("--max_lon"));
     size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
     size_t result_pixels = safe_stoz(args.named_value("--result_pixels"));
-    std::string tmp_filename = args.named_value("--tmp_filename", "/tmp/tile.png");
+    std::string tmp_png = args.named_value("--tmp_png", "/tmp/tile.png");
     std::string out_pgm = args.named_value("--out_pgm");
 
     size_t ntiles_global_y = std::pow(2, zoom) / 2;
@@ -140,8 +139,8 @@ int main(int argc, char** argv) {
                 x,
                 y,
                 args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
-                tmp_filename);
-            StbInfo image = stb_load(tmp_filename, false, false);
+                tmp_png);
+            StbInfo image = stb_load(tmp_png, false, false);
             if (image.nrChannels != 3 && image.nrChannels != 4) {
                 throw std::runtime_error("Only 3 or 4 channels are supported");
             }
