@@ -113,6 +113,7 @@ int main(int argc, char** argv) {
     float max_lon = safe_stof(args.named_value("--max_lon"));
     size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
     size_t result_pixels = safe_stoz(args.named_value("--result_pixels"));
+    std::string tmp_filename = args.named_value("--tmp_filename", "/tmp/tile.png");
     std::string out_pgm = args.named_value("--out_pgm");
 
     size_t ntiles_global_y = std::pow(2, zoom) / 2;
@@ -139,8 +140,8 @@ int main(int argc, char** argv) {
                 x,
                 y,
                 args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
-                args.named_value("--tmp_filename", "/tmp/tile.png"));
-            StbInfo image = stb_load("/tmp/tile.png", false, false);
+                tmp_filename);
+            StbInfo image = stb_load(tmp_filename, false, false);
             if (image.nrChannels != 3 && image.nrChannels != 4) {
                 throw std::runtime_error("Only 3 or 4 channels are supported");
             }
