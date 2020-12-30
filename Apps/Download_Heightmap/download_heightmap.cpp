@@ -54,8 +54,8 @@ public:
       max_x_id_{max_x_id}
     {}
     bool operator () (float y, float x, float& intensity) const {
-        float rf = min_y_id_ * y + max_y_id_ * (1 - y);
-        float cf = min_x_id_ * x + max_x_id_ * (1 - x);
+        float rf = min_y_id_ * (1 - y) + max_y_id_ * y;
+        float cf = min_x_id_ * (1 - x) + max_x_id_ * x;
         return bilinear_grayscale_interpolation(rf, cf, map_, intensity);
     }
 private:
@@ -160,6 +160,7 @@ int main(int argc, char** argv) {
             }
         }
     }
+    draw_nan_masked_grayscale(res, 0, 0).save_to_file("/tmp/res.pgm");
     draw_nan_masked_grayscale(resampled, 0, 0).save_to_file("/tmp/heightmap.pgm");
     stbi_write_png("/tmp/heightmap.png", res.shape(1), res.shape(0), 3, res_rgb.data(), 0);
     PgmImage::from_float((resampled - min(resampled)) * 64.f / float(UINT16_MAX)).save_to_file("/tmp/heightmap_64.pgm");
