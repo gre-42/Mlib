@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
                     size_t ga = da + a * tile_pixels;
                     size_t go = dl + o * tile_pixels;
                     // https://www.mapzen.com/blog/elevation/
-                    res(ga, go) = ((rgb[0] * 256.f + rgb[1] + rgb[2] / 256.f) - 32768.f) / 2.f;
+                    res(ga, go) = (rgb[0] * 256.f + rgb[1] + rgb[2] / 256.f) - 32768.f;
                     for (size_t c = 0; c < 3; ++c) {
                         res_rgb[(ga * res.shape(1)  + go) * 3 + c] = rgb[c];
                     }
