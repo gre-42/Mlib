@@ -36,7 +36,8 @@ public:
         size_t nahead,
         float radius,
         SceneNodeResources& scene_node_resources,
-        Scene& scene);
+        Scene& scene,
+        bool enable_height_changed_mode = false);
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
 private:
@@ -57,6 +58,7 @@ private:
     Scene& scene_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
     std::list<CheckPointPose> checkpoints_ahead_;
+    bool enable_height_changed_mode_;
 };
 
 }

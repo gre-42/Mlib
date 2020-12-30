@@ -24,7 +24,8 @@ CheckPoints::CheckPoints(
     size_t nahead,
     float radius,
     SceneNodeResources& scene_node_resources,
-    Scene& scene)
+    Scene& scene,
+    bool enable_height_changed_mode)
 : advance_times_{advance_times},
   track_reader_{filename},
   moving_node_{moving_node},
@@ -38,7 +39,8 @@ CheckPoints::CheckPoints(
   nahead_{nahead},
   i01_{0},
   scene_node_resources_{scene_node_resources},
-  scene_{scene}
+  scene_{scene},
+  enable_height_changed_mode_{enable_height_changed_mode}
 {
     if (nbeacons == 0) {
         throw std::runtime_error("Need at least one beacon node");
@@ -77,6 +79,15 @@ void CheckPoints::advance_time(float dt) {
                 i01_ = (i01_ + 1) % nbeacons_;
             }
         }
+    }
+
+    if (enable_height_changed_mode_) {
+        for (SceneNode* b : beacon_nodes_) {
+            auto pos = b->position();
+            pos(1) = moving_node_->position()(1);
+            b->set_position(pos);
+        }
+        checkpoints_ahead_.front().position(1) = moving_node_->position()(1);
     }
 
     if (!checkpoints_ahead_.empty() &&
