@@ -2,6 +2,7 @@
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/String.hpp>
 #include <cpp-httplib/httplib.h>
 #include <stb_image/stb_image_load.h>
@@ -159,6 +160,7 @@ int main(int argc, char** argv) {
     }
     draw_nan_masked_grayscale(resampled, 0, 0).save_to_file("/tmp/heightmap.pgm");
     stbi_write_png("/tmp/heightmap.png", res.shape(1), res.shape(0), 3, res_rgb.data(), 0);
+    PpmImage::from_float_grayscale((resampled + max(resampled)) * 64.f / float(UINT16_MAX)).save_to_file("/tmp/heightmap_64.pgm");
     
     return 0;
 }
