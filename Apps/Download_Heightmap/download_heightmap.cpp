@@ -115,8 +115,8 @@ int main(int argc, char** argv) {
     size_t result_pixels = safe_stoz(args.named_value("--result_pixels"));
     std::string out_pgm = args.named_value("--out_pgm");
 
-    size_t ntiles_global_y = std::pow(2, safe_stoz(args.named_value("--zoom"))) / 2;
-    size_t ntiles_global_x = std::pow(2, safe_stoz(args.named_value("--zoom")));
+    size_t ntiles_global_y = std::pow(2, zoom) / 2;
+    size_t ntiles_global_x = std::pow(2, zoom);
     float tile_len_y = 180.f / ntiles_global_y;
     float tile_len_x = 360.f / ntiles_global_x;
     size_t min_y = std::floor((min_lat + tile_len_y / 2 + 90) / tile_len_y);
