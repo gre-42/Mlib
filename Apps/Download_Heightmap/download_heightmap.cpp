@@ -71,12 +71,13 @@ int main(int argc, char** argv) {
         "Usage: download_heightmap"
         " --zoom <zoom>"
         " --tile_pixels <tile_pixels>"
+        " --result_pixels <result_pixels>"
         " --min_lat <min_lat>"
         " --min_lon <min_lon>"
         " --max_lat <max_lat>"
         " --max_lon <max_lon>",
         {},
-        {"--zoom", "--tile_pixels", "--min_lat", "--min_lon", "--max_lat", "--max_lon"});
+        {"--zoom", "--tile_pixels", "--result_pixels", "--min_lat", "--min_lon", "--max_lat", "--max_lon"});
     const auto args = parser.parsed(argc, argv);
     args.assert_num_unamed(0);
     float zoom = safe_stof(args.named_value("--zoom"));
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
     float max_lat = safe_stof(args.named_value("--max_lat"));
     float max_lon = safe_stof(args.named_value("--max_lon"));
     size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
+    size_t result_pixels = safe_stoz(args.named_value("--result_pixels"));
 
     size_t ntiles_global_y = std::pow(2, safe_stoz(args.named_value("--zoom"))) / 2;
     size_t ntiles_global_x = std::pow(2, safe_stoz(args.named_value("--zoom")));
@@ -143,7 +145,7 @@ int main(int argc, char** argv) {
         max_y_id,
         min_x_id,
         max_x_id};
-    Array<float> resampled{ArrayShape{512, 512}};
+    Array<float> resampled{ArrayShape{result_pixels, result_pixels}};
     for (size_t r = 0; r < resampled.shape(0); ++r) {
         for (size_t c = 0; c < resampled.shape(1); ++c) {
             float intensity;
