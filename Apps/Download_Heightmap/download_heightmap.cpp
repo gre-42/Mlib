@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
+#include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/String.hpp>
@@ -129,8 +130,8 @@ int main(int argc, char** argv) {
     size_t ntiles_global_x = std::pow(2, zoom);
     float tile_len_y = (max_y_global - min_y_global) / ntiles_global_y;
     float tile_len_x = 360.f / ntiles_global_x;
-    size_t min_y = std::floor((get_y(min_lat / 180 * M_PI) + tile_len_y / 2 - min_y_global) / tile_len_y);
-    size_t max_y = std::ceil ((get_y(max_lat / 180 * M_PI) - tile_len_y / 2 - min_y_global) / tile_len_y);
+    size_t min_y = std::floor((get_y(min_lat / 180 * M_PI) - min_y_global) / tile_len_y);
+    size_t max_y = std::ceil ((get_y(max_lat / 180 * M_PI) - min_y_global) / tile_len_y);
     size_t min_x = std::floor((min_lon + tile_len_x / 2 + 180) / tile_len_x);
     size_t max_x = std::ceil ((max_lon - tile_len_x / 2 + 180) / tile_len_x);
     size_t ntiles_y = (max_y - min_y) + 1;
@@ -160,7 +161,7 @@ int main(int argc, char** argv) {
                 tile_pixels,
                 zoom,
                 x,
-                y,
+                ntiles_global_y - 1 - y,
                 args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
                 tmp_png);
             StbInfo image = stb_load(tmp_png, false, false);
@@ -170,7 +171,7 @@ int main(int argc, char** argv) {
             for (size_t da = 0; da < tile_pixels; ++da) {
                 for (size_t dl = 0; dl < tile_pixels; ++dl) {
                     unsigned char* rgb = &image.data.get()[(da * image.width  + dl) * image.nrChannels];
-                    size_t ga = da + a * tile_pixels;
+                    size_t ga = da + (ntiles_y - 1 - a) * tile_pixels;
                     size_t go = dl + o * tile_pixels;
                     // https://www.mapzen.com/blog/elevation/
                     res(ga, go) = (rgb[0] * 256.f + rgb[1] + rgb[2] / 256.f) - 32768.f;
@@ -181,10 +182,10 @@ int main(int argc, char** argv) {
             }
         }
     }
-    float min_y_actual = min_y * tile_len_y - tile_len_y / 2 + min_y_global;
-    float max_y_actual = max_y * tile_len_y + tile_len_y / 2 + min_y_global;
-    float min_lon_actual = min_x * tile_len_x - tile_len_x / 2 - 180;
-    float max_lon_actual = max_x * tile_len_x + tile_len_x / 2 - 180;
+    float min_y_actual = min_y * tile_len_y + min_y_global;
+    float max_y_actual = max_y * tile_len_y + min_y_global;
+    float min_lon_actual = min_x * tile_len_x - 180;
+    float max_lon_actual = (max_x + 1) * tile_len_x - 180;
     // float min_lat_actual = (tile_len_y * (2 * min_y - 1) - 180) / 2;
     // float max_lat_actual = (tile_len_y * (2 * max_y - 1) - 180) / 2;
     // float min_lon_actual = (tile_len_x * (2 * min_x - 1) - 360) / 2;
@@ -217,16 +218,21 @@ int main(int argc, char** argv) {
         }
     }
     if (args.has_named_value("--stitched_png")) {
-        stbi_write_png(args.named_value("--stitched_png").c_str(), res.shape(1), res.shape(0), 3, res_rgb.data(), 0);
+        if (stbi_write_png(args.named_value("--stitched_png").c_str(), res.shape(1), res.shape(0), 3, res_rgb.data(), 0) == 0) {
+            throw std::runtime_error("Could not write \"" + args.named_value("--stitched_png") + '"');
+        }
     }
     if (args.has_named_value("--stitched_pgm")) {
-        draw_nan_masked_grayscale(res, 0, 0).save_to_file(args.named_value("--stitched_gpm"));
+        draw_nan_masked_grayscale(res, 0, 0).save_to_file(args.named_value("--stitched_pgm"));
     }
     if (args.has_named_value("--resampled_pgm")) {
         draw_nan_masked_grayscale(resampled, 0, 0).save_to_file(args.named_value("--resampled_pgm"));
     }
-    PgmImage::from_float((resampled - min(resampled)) * 64.f / float(UINT16_MAX))
-    .save_to_file(out_pgm);
+    PgmImage::from_float(
+        clipped(
+            resampled * 64.f / float(UINT16_MAX),
+            0.f,
+            1.f)).save_to_file(out_pgm);
     
     return 0;
 }
