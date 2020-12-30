@@ -14,6 +14,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/String.hpp>
+#include <iomanip>
 #include <regex>
 
 #undef LOG_FUNCTION
@@ -105,6 +106,8 @@ RenderableOsmMap::RenderableOsmMap(
 
     NormalizedPointsFixed normalized_points{ScaleMode::NONE, OffsetMode::CENTERED};
 
+    FixedArray<double, 2> bounds_min_merged = fixed_full<double, 2>(INFINITY);
+    FixedArray<double, 2> bounds_max_merged = fixed_full<double, 2>(-INFINITY);
     FixedArray<double, 2> coords_ref;
     FixedArray<float, 2, 3> normalization_matrix;
     bool normalization_matrix_defined = false;
@@ -132,26 +135,35 @@ RenderableOsmMap::RenderableOsmMap(
             FixedArray<double, 2> bounds_max{
                 safe_stod(match[3].str()),
                 safe_stod(match[4].str())};
-            coords_ref = (bounds_max + bounds_min) / 2.0;
+            bounds_min_merged = minimum(bounds_min, bounds_min_merged);
+            bounds_max_merged = maximum(bounds_max, bounds_max_merged);
+            coords_ref = (bounds_max_merged + bounds_min_merged) / 2.0;
             FixedArray<float, 2> min;
             FixedArray<float, 2> max;
             latitude_longitude_2_meters(
-                safe_stod(match[1].str()),
-                safe_stod(match[2].str()),
+                bounds_min_merged(0),
+                bounds_min_merged(1),
                 coords_ref(0),
                 coords_ref(1),
                 min(0),
                 min(1));
             latitude_longitude_2_meters(
-                safe_stod(match[3].str()),
-                safe_stod(match[4].str()),
+                bounds_max_merged(0),
+                bounds_max_merged(1),
                 coords_ref(0),
                 coords_ref(1),
                 max(0),
                 max(1));
-            normalized_points.add_point(min * scale);
-            normalized_points.add_point(max * scale);
+            normalized_points.set_min(min * scale);
+            normalized_points.set_max(max * scale);
             normalization_matrix = normalized_points.normalization_matrix();
+            if (normalization_matrix_defined) {
+                std::cerr << "merged bounds" << std::endl;
+                std::cerr << "min lat " << std::setprecision(15) << bounds_min_merged(0) << std::endl;
+                std::cerr << "min lon " << std::setprecision(15) << bounds_min_merged(1) << std::endl;
+                std::cerr << "max lat " << std::setprecision(15) << bounds_max_merged(0) << std::endl;
+                std::cerr << "max lon " << std::setprecision(15) << bounds_max_merged(1) << std::endl;
+            }
             normalization_matrix_defined = true;
         } else if (std::regex_match(line, match, node_reg)) {
             current_way = "<none>";

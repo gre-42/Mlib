@@ -17,6 +17,14 @@ void NormalizedPointsFixed::add_point(const FixedArray<float, 2>& y)
     max_ = maximum(y, max_);
 }
 
+void NormalizedPointsFixed::set_min(const FixedArray<float, 2>& p) {
+    min_ = p;
+}
+
+void NormalizedPointsFixed::set_max(const FixedArray<float, 2>& p) {
+    max_ = p;
+}
+
 FixedArray<float, 2, 3> NormalizedPointsFixed::normalization_matrix() const {
     // dx: difference
     // sx: sum

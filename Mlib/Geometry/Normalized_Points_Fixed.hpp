@@ -18,6 +18,8 @@ class NormalizedPointsFixed {
 public:
     NormalizedPointsFixed(ScaleMode scale_mode, OffsetMode offset_mode);
     void add_point(const FixedArray<float, 2>& p);
+    void set_min(const FixedArray<float, 2>& p);
+    void set_max(const FixedArray<float, 2>& p);
     FixedArray<float, 2, 3> normalization_matrix() const;
     NormalizedPointsFixed chained(ScaleMode scale_mode, OffsetMode offset_mode) const;
 private:
