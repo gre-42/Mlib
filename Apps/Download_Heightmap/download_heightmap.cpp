@@ -131,10 +131,10 @@ int main(int argc, char** argv) {
     // float min_lon_actual = (tile_len_x * (2 * min_x - 1) - 360) / 2;
     // float max_lon_actual = (tile_len_x * (2 * max_x - 1) - 360) / 2;
 
-    float min_y_id = (min_lat - min_lat_actual) / (max_lat_actual - min_lat_actual) * res.shape(0);
-    float max_y_id = (max_lat - min_lat_actual) / (max_lat_actual - min_lat_actual) * res.shape(0);
-    float min_x_id = (min_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * res.shape(1);
-    float max_x_id = (max_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * res.shape(1);
+    float min_y_id = (min_lat - min_lat_actual) / (max_lat_actual - min_lat_actual) * (res.shape(0) - 1);
+    float max_y_id = (max_lat - min_lat_actual) / (max_lat_actual - min_lat_actual) * (res.shape(0) - 1);
+    float min_x_id = (min_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * (res.shape(1) - 1);
+    float max_x_id = (max_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * (res.shape(1) - 1);
 
     CroppedTerrariumHeightmap cth{
         res,
@@ -147,8 +147,8 @@ int main(int argc, char** argv) {
         for (size_t c = 0; c < resampled.shape(1); ++c) {
             float intensity;
             if (cth(
-                r / float(resampled.shape(0)),
-                c / float(resampled.shape(1)),
+                r / float(resampled.shape(0) - 1),
+                c / float(resampled.shape(1) - 1),
                 intensity))
             {
                 resampled(r, c) = intensity;
