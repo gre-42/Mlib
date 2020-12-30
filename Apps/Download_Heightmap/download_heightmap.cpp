@@ -10,7 +10,13 @@
 
 using namespace Mlib;
 
-void download_tile(size_t tile_pixels, size_t zoom, size_t x, size_t y)
+void download_tile(
+    size_t tile_pixels,
+    size_t zoom,
+    size_t x,
+    size_t y,
+    const std::string& api_key,
+    const std::string& filename)
 {
     httplib::Client cli("https://tile.nextzen.org");
     std::stringstream sstr;
@@ -23,19 +29,20 @@ void download_tile(size_t tile_pixels, size_t zoom, size_t x, size_t y)
         << x
         << "/"
         << y
-        << ".png?api_key=dmlO1fVQRPKI-GrVIYJ1YA";
+        << ".png?api_key="
+        << api_key;
     std::cerr << "Get: " << sstr.str() << std::endl;
     auto res = cli.Get(sstr.str().c_str());
     if (res->status != 200) {
         throw std::runtime_error("Error status: " + std::to_string(res->status) + "\n" + res->body);
     }
-    std::ofstream ofstr("/tmp/tile.png", std::ios::binary);
+    std::ofstream ofstr(filename, std::ios::binary);
     for(char c : res->body) {
         ofstr.put(c);
     }
     ofstr.flush();
     if (ofstr.fail()) {
-        throw std::runtime_error("Could not write tile file");
+        throw std::runtime_error("Could not write tile file \"" + filename + '"');
     }
 }
 
@@ -75,9 +82,28 @@ int main(int argc, char** argv) {
         " --min_lat <min_lat>"
         " --min_lon <min_lon>"
         " --max_lat <max_lat>"
-        " --max_lon <max_lon>",
+        " --max_lon <max_lon>"
+        " --out_pgm <filename>"
+        " [--api_key <api_key>]"
+        " [--tmp_filename <filename>]"
+        " [--stitched_png <filename>]"
+        " [--stitched_pgm <filename>]"
+        " [--resampled_pgm <filename>]",
         {},
-        {"--zoom", "--tile_pixels", "--result_pixels", "--min_lat", "--min_lon", "--max_lat", "--max_lon"});
+        {"--zoom",
+         "--tile_pixels",
+         "--result_pixels",
+         "--min_lat",
+         "--min_lon",
+         "--max_lat",
+         "--max_lon",
+         "--api_key",
+         "--tmp_filename",
+         "--tmp_filename",
+         "--stitched_png",
+         "--stitched_pgm",
+         "--resampled_pgm",
+         "--out_pgm"});
     const auto args = parser.parsed(argc, argv);
     args.assert_num_unamed(0);
     float zoom = safe_stof(args.named_value("--zoom"));
@@ -87,6 +113,7 @@ int main(int argc, char** argv) {
     float max_lon = safe_stof(args.named_value("--max_lon"));
     size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
     size_t result_pixels = safe_stoz(args.named_value("--result_pixels"));
+    std::string out_pgm = args.named_value("--out_pgm");
 
     size_t ntiles_global_y = std::pow(2, safe_stoz(args.named_value("--zoom"))) / 2;
     size_t ntiles_global_x = std::pow(2, safe_stoz(args.named_value("--zoom")));
@@ -106,7 +133,13 @@ int main(int argc, char** argv) {
         for(size_t o = 0; o < ntiles_x; ++o) {
             size_t y = min_y + a;
             size_t x = min_x + o;
-            download_tile(tile_pixels, zoom, x, y);
+            download_tile(
+                tile_pixels,
+                zoom,
+                x,
+                y,
+                args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
+                args.named_value("--tmp_filename", "/tmp/tile.png"));
             StbInfo image = stb_load("/tmp/tile.png", false, false);
             if (image.nrChannels != 3 && image.nrChannels != 4) {
                 throw std::runtime_error("Only 3 or 4 channels are supported");
@@ -160,10 +193,17 @@ int main(int argc, char** argv) {
             }
         }
     }
-    draw_nan_masked_grayscale(res, 0, 0).save_to_file("/tmp/res.pgm");
-    draw_nan_masked_grayscale(resampled, 0, 0).save_to_file("/tmp/heightmap.pgm");
-    stbi_write_png("/tmp/heightmap.png", res.shape(1), res.shape(0), 3, res_rgb.data(), 0);
-    PgmImage::from_float((resampled - min(resampled)) * 64.f / float(UINT16_MAX)).save_to_file("/tmp/heightmap_64.pgm");
+    if (args.has_named_value("--stitched_png")) {
+        stbi_write_png(args.named_value("--stitched_png").c_str(), res.shape(1), res.shape(0), 3, res_rgb.data(), 0);
+    }
+    if (args.has_named_value("--stitched_pgm")) {
+        draw_nan_masked_grayscale(res, 0, 0).save_to_file(args.named_value("--stitched_gpm"));
+    }
+    if (args.has_named_value("--resampled_pgm")) {
+        draw_nan_masked_grayscale(resampled, 0, 0).save_to_file(args.named_value("--resampled_pgm"));
+    }
+    PgmImage::from_float((resampled - min(resampled)) * 64.f / float(UINT16_MAX))
+    .save_to_file(out_pgm);
     
     return 0;
 }
