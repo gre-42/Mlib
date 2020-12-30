@@ -1,4 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Images/Bilinear_Interpolation.hpp>
+#include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/String.hpp>
 #include <cpp-httplib/httplib.h>
@@ -24,7 +26,7 @@ void download_tile(size_t tile_pixels, size_t zoom, size_t x, size_t y)
     std::cerr << "Get: " << sstr.str() << std::endl;
     auto res = cli.Get(sstr.str().c_str());
     if (res->status != 200) {
-        throw std::runtime_error("Error status: " + std::to_string(res->status));
+        throw std::runtime_error("Error status: " + std::to_string(res->status) + "\n" + res->body);
     }
     std::ofstream ofstr("/tmp/tile.png", std::ios::binary);
     for(char c : res->body) {
@@ -35,6 +37,33 @@ void download_tile(size_t tile_pixels, size_t zoom, size_t x, size_t y)
         throw std::runtime_error("Could not write tile file");
     }
 }
+
+class CroppedTerrariumHeightmap {
+public:
+    CroppedTerrariumHeightmap(
+        Array<float> map,
+        float min_y_id,
+        float max_y_id,
+        float min_x_id,
+        float max_x_id)
+    : map_{map},
+      min_y_id_{min_y_id},
+      max_y_id_{max_y_id},
+      min_x_id_{min_x_id},
+      max_x_id_{max_x_id}
+    {}
+    bool operator () (float y, float x, float& intensity) const {
+        float rf = min_y_id_ * y + max_y_id_ * (1 - y);
+        float cf = min_x_id_ * x + max_x_id_ * (1 - x);
+        return bilinear_grayscale_interpolation(rf, cf, map_, intensity);
+    }
+private:
+    Array<float> map_;
+    float min_y_id_;
+    float max_y_id_;
+    float min_x_id_;
+    float max_x_id_;
+};
 
 int main(int argc, char** argv) {
     const ArgParser parser(
@@ -56,17 +85,19 @@ int main(int argc, char** argv) {
     float max_lon = safe_stof(args.named_value("--max_lon"));
     size_t tile_pixels = safe_stoz(args.named_value("--tile_pixels"));
 
-    size_t ntiles_global = std::pow(2, safe_stoz(args.named_value("--zoom")));
-    float tile_len = 360.f / ntiles_global;
-    size_t min_y = std::floor((min_lat + tile_len / 2 + 180) / tile_len);
-    size_t max_y = std::ceil ((max_lat + tile_len / 2 + 180) / tile_len);
-    size_t min_x = std::floor((min_lon + tile_len / 2 + 180) / tile_len);
-    size_t max_x = std::ceil ((max_lon + tile_len / 2 + 180) / tile_len);
-    size_t ntiles_y = (max_y - min_y);
-    size_t ntiles_x = (max_x - min_x);
+    size_t ntiles_global_y = std::pow(2, safe_stoz(args.named_value("--zoom"))) / 2;
+    size_t ntiles_global_x = std::pow(2, safe_stoz(args.named_value("--zoom")));
+    float tile_len_y = 180.f / ntiles_global_y;
+    float tile_len_x = 360.f / ntiles_global_x;
+    size_t min_y = std::floor((min_lat + tile_len_y / 2 + 90) / tile_len_y);
+    size_t max_y = std::ceil ((max_lat - tile_len_y / 2 + 90) / tile_len_y);
+    size_t min_x = std::floor((min_lon + tile_len_x / 2 + 180) / tile_len_x);
+    size_t max_x = std::ceil ((max_lon - tile_len_x / 2 + 180) / tile_len_x);
+    size_t ntiles_y = (max_y - min_y) + 1;
+    size_t ntiles_x = (max_x - min_x) + 1;
     std::cerr << "ntiles_y " << ntiles_y << std::endl;
     std::cerr << "ntiles_x " << ntiles_x << std::endl;
-    PgmImage res{ArrayShape{ntiles_y * tile_pixels, ntiles_x * tile_pixels}};
+    Array<float> res{ArrayShape{ntiles_y * tile_pixels, ntiles_x * tile_pixels}};
     std::vector<unsigned char> res_rgb(res.nelements() * 3);
     for(size_t a = 0; a < ntiles_y; ++a) {
         for(size_t o = 0; o < ntiles_x; ++o) {
@@ -83,8 +114,7 @@ int main(int argc, char** argv) {
                     size_t ga = da + a * tile_pixels;
                     size_t go = dl + o * tile_pixels;
                     // https://www.mapzen.com/blog/elevation/
-                    res(ga, go) =
-                        ((rgb[0] * 256 * 256 + 256 * rgb[1] + rgb[2]) - 32768) / 2;
+                    res(ga, go) = ((rgb[0] * 256.f + rgb[1] + rgb[2] / 256.f) - 32768.f) / 2.f;
                     for (size_t c = 0; c < 3; ++c) {
                         res_rgb[(ga * res.shape(1)  + go) * 3 + c] = rgb[c];
                     }
@@ -92,7 +122,42 @@ int main(int argc, char** argv) {
             }
         }
     }
-    res.save_to_file("/tmp/heightmap.pgm");
+    float min_lat_actual = min_y * tile_len_y - tile_len_y / 2 - 90;
+    float max_lat_actual = max_y * tile_len_y + tile_len_y / 2 - 90;
+    float min_lon_actual = min_x * tile_len_x - tile_len_x / 2 - 180;
+    float max_lon_actual = max_x * tile_len_x + tile_len_x / 2 - 180;
+    // float min_lat_actual = (tile_len_y * (2 * min_y - 1) - 180) / 2;
+    // float max_lat_actual = (tile_len_y * (2 * max_y - 1) - 180) / 2;
+    // float min_lon_actual = (tile_len_x * (2 * min_x - 1) - 360) / 2;
+    // float max_lon_actual = (tile_len_x * (2 * max_x - 1) - 360) / 2;
+
+    float min_y_id = (min_lat - min_lat_actual) / (max_lat_actual - min_lat_actual) * res.shape(0);
+    float max_y_id = (max_lat - min_lat_actual) / (max_lat_actual - min_lat_actual) * res.shape(0);
+    float min_x_id = (min_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * res.shape(1);
+    float max_x_id = (max_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * res.shape(1);
+
+    CroppedTerrariumHeightmap cth{
+        res,
+        min_y_id,
+        max_y_id,
+        min_x_id,
+        max_x_id};
+    Array<float> resampled{ArrayShape{512, 512}};
+    for (size_t r = 0; r < resampled.shape(0); ++r) {
+        for (size_t c = 0; c < resampled.shape(1); ++c) {
+            float intensity;
+            if (cth(
+                r / float(resampled.shape(0)),
+                c / float(resampled.shape(1)),
+                intensity))
+            {
+                resampled(r, c) = intensity;
+            } else {
+                resampled(r, c) = NAN;
+            }
+        }
+    }
+    draw_nan_masked_grayscale(resampled, 0, 0).save_to_file("/tmp/heightmap.pgm");
     stbi_write_png("/tmp/heightmap.png", res.shape(1), res.shape(0), 3, res_rgb.data(), 0);
     
     return 0;
