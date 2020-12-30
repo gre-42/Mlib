@@ -73,6 +73,13 @@ private:
     float max_x_id_;
 };
 
+/**
+ * From: https://en.wikipedia.org/wiki/Mercator_projection#Derivation_of_the_Mercator_projection
+ */
+float get_y(float phi) {
+    return std::log(std::tan(M_PI / 4 + phi / 2));
+}
+
 int main(int argc, char** argv) {
     const ArgParser parser(
         "Usage: download_heightmap"
@@ -115,18 +122,34 @@ int main(int argc, char** argv) {
     std::string tmp_png = args.named_value("--tmp_png", "/tmp/tile.png");
     std::string out_pgm = args.named_value("--out_pgm");
 
-    size_t ntiles_global_y = std::pow(2, zoom) / 2;
+    // From: https://epsg.io/3857
+    float max_y_global = get_y(85.06 / 180 * M_PI);
+    float min_y_global = get_y(-85.06 / 180 * M_PI);
+    size_t ntiles_global_y = std::pow(2, zoom);
     size_t ntiles_global_x = std::pow(2, zoom);
-    float tile_len_y = 180.f / ntiles_global_y;
+    float tile_len_y = (max_y_global - min_y_global) / ntiles_global_y;
     float tile_len_x = 360.f / ntiles_global_x;
-    size_t min_y = std::floor((min_lat + tile_len_y / 2 + 90) / tile_len_y);
-    size_t max_y = std::ceil ((max_lat - tile_len_y / 2 + 90) / tile_len_y);
+    size_t min_y = std::floor((get_y(min_lat / 180 * M_PI) + tile_len_y / 2 - min_y_global) / tile_len_y);
+    size_t max_y = std::ceil ((get_y(max_lat / 180 * M_PI) - tile_len_y / 2 - min_y_global) / tile_len_y);
     size_t min_x = std::floor((min_lon + tile_len_x / 2 + 180) / tile_len_x);
     size_t max_x = std::ceil ((max_lon - tile_len_x / 2 + 180) / tile_len_x);
     size_t ntiles_y = (max_y - min_y) + 1;
     size_t ntiles_x = (max_x - min_x) + 1;
     std::cerr << "ntiles_y " << ntiles_y << std::endl;
     std::cerr << "ntiles_x " << ntiles_x << std::endl;
+    std::cerr << min_x << '/' << min_y << " - " << max_x << '/' << max_y << std::endl;
+    if (min_y >= ntiles_global_y) {
+        throw std::runtime_error("min_y out of range");
+    }
+    if (max_y >= ntiles_global_y) {
+        throw std::runtime_error("max_y out of range");
+    }
+    if (min_x >= ntiles_global_x) {
+        throw std::runtime_error("min_x out of range");
+    }
+    if (max_x >= ntiles_global_x) {
+        throw std::runtime_error("max_x out of range");
+    }
     Array<float> res{ArrayShape{ntiles_y * tile_pixels, ntiles_x * tile_pixels}};
     std::vector<unsigned char> res_rgb(res.nelements() * 3);
     for(size_t a = 0; a < ntiles_y; ++a) {
@@ -158,8 +181,8 @@ int main(int argc, char** argv) {
             }
         }
     }
-    float min_lat_actual = min_y * tile_len_y - tile_len_y / 2 - 90;
-    float max_lat_actual = max_y * tile_len_y + tile_len_y / 2 - 90;
+    float min_y_actual = min_y * tile_len_y - tile_len_y / 2 + min_y_global;
+    float max_y_actual = max_y * tile_len_y + tile_len_y / 2 + min_y_global;
     float min_lon_actual = min_x * tile_len_x - tile_len_x / 2 - 180;
     float max_lon_actual = max_x * tile_len_x + tile_len_x / 2 - 180;
     // float min_lat_actual = (tile_len_y * (2 * min_y - 1) - 180) / 2;
@@ -167,8 +190,8 @@ int main(int argc, char** argv) {
     // float min_lon_actual = (tile_len_x * (2 * min_x - 1) - 360) / 2;
     // float max_lon_actual = (tile_len_x * (2 * max_x - 1) - 360) / 2;
 
-    float min_y_id = (min_lat - min_lat_actual) / (max_lat_actual - min_lat_actual) * (res.shape(0) - 1);
-    float max_y_id = (max_lat - min_lat_actual) / (max_lat_actual - min_lat_actual) * (res.shape(0) - 1);
+    float min_y_id = (get_y(min_lat / 180 * M_PI) - min_y_actual) / (max_y_actual - min_y_actual) * (res.shape(0) - 1);
+    float max_y_id = (get_y(max_lat / 180 * M_PI) - min_y_actual) / (max_y_actual - min_y_actual) * (res.shape(0) - 1);
     float min_x_id = (min_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * (res.shape(1) - 1);
     float max_x_id = (max_lon - min_lon_actual) / (max_lon_actual - min_lon_actual) * (res.shape(1) - 1);
 
