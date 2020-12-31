@@ -10,7 +10,7 @@ Array<Array<TData>> vanderNd(const Array<Array<TData>>& x, size_t degree) {
     std::vector<std::vector<Array<TData>>> v(degree + 1);
     v[0].push_back(ones<TData>(x(0).shape()));
     size_t nelems = 1;
-    for (size_t d = 1; d < degree; ++d) {
+    for (size_t d = 1; d <= degree; ++d) {
         v[d].reserve(x.shape(0) * v[d-1].size());
         for (const auto& vv : v[d-1]) {
             for (const auto& xx : x.flat_iterable()) {
@@ -21,7 +21,7 @@ Array<Array<TData>> vanderNd(const Array<Array<TData>>& x, size_t degree) {
     }
     size_t i = 0;
     Array<Array<TData>> result{ArrayShape{nelems}};
-    for (size_t d = 0; d < degree; ++d) {
+    for (size_t d = 0; d <= degree; ++d) {
         for (const auto& vv : v[d]) {
             result(i) = vv;
             ++i;

@@ -10,9 +10,11 @@ Array<TData> conju_x(const Array<TData>& a) {
 
 template <class TData>
 Array<Array<TData>> vH_x(const Array<Array<TData>>& a) {
-    Array<Array<TData>> res = a.T();
-    for (Array<TData>& x : res.flat_iterable()) {
-        x = x.template applied([](const TData& v){return conju(v);});
+    Array<Array<TData>> res{a.shape()};
+    for (size_t i = 0; i < a.shape(0); ++i) {
+        for (size_t j = 0; j <= i; ++j) {
+            res(j, i) = a(i, j).template applied([](const TData& v){return conju(v);});
+        }
     }
     return res;
 }
@@ -75,7 +77,7 @@ Array<Array<TData>> batch_cholesky(const Array<Array<TData>>& A) {
     L.resize(A.shape());
     for (size_t i = 0; i < A.shape(0); ++i) {
         for (size_t j = 0; j <= i; ++j) {
-            Array<TData> s = zeros<TData>(L(0, 0).shape());
+            Array<TData> s = zeros<TData>(A(0, 0).shape());
             for (size_t k = 0; k < j; ++k) {
                 s += L(i, k) * conju_x(L(j, k));
             }
