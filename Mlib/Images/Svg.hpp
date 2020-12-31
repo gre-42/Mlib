@@ -203,7 +203,7 @@ public:
         // for (size_t i = down_sampling; i < x.size(); i += down_sampling) {
         //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
         //}
-        for(size_t i = 0; i < x_start.size(); i += down_sampling) {
+        for (size_t i = 0; i < x_start.size(); i += down_sampling) {
             // PathDrawer pd{ostr_};
             // pd.draw_point(xpos(x_start[i]), ypos(y_start[i]));
             // pd.draw_point(xpos(x_stop[i]), ypos(y_stop[i]));

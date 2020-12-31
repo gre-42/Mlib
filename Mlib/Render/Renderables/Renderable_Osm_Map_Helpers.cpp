@@ -748,7 +748,7 @@ void Mlib::draw_streets(
     if (driving_direction == DrivingDirection::LEFT ||
         driving_direction == DrivingDirection::RIGHT)
     {
-        for(const auto& nw : node_hole_waypoints) {
+        for (const auto& nw : node_hole_waypoints) {
             for (const auto& x : nw.second.in) {
                 for (const auto& y : nw.second.out) {
                     if (x.node == y.node) {

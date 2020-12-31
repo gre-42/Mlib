@@ -38,7 +38,7 @@ void download_tile(
         throw std::runtime_error("Error status: " + std::to_string(res->status) + "\n" + res->body);
     }
     std::ofstream ofstr(filename, std::ios::binary);
-    for(char c : res->body) {
+    for (char c : res->body) {
         ofstr.put(c);
     }
     ofstr.flush();
@@ -155,8 +155,8 @@ int main(int argc, char** argv) {
     }
     Array<float> res{ArrayShape{ntiles_y * tile_pixels, ntiles_x * tile_pixels}};
     std::vector<unsigned char> res_rgb(res.nelements() * 3);
-    for(size_t a = 0; a < ntiles_y; ++a) {
-        for(size_t o = 0; o < ntiles_x; ++o) {
+    for (size_t a = 0; a < ntiles_y; ++a) {
+        for (size_t o = 0; o < ntiles_x; ++o) {
             size_t y = tiles_min_y + a;
             size_t x = tiles_min_x + o;
             download_tile(
