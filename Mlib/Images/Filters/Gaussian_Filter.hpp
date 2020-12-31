@@ -22,7 +22,7 @@ Array<TData> gaussian_filter_1d_NWE(
         coeffs(coeffs.length() - i - 1) = coeffs(i);
     }
     coeffs /= sum(coeffs);
-    return lowpass_filter_1d_NWE(image, coeffs, NAN, axis);
+    return lowpass_filter_1d_NWE(image, coeffs, boundary_value, axis, nwe);
 }
 
 template <class TData>
