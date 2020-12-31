@@ -18,7 +18,12 @@ void lpr(
     auto bitmap = PgmImage::load_from_file(source);
     PgmImage dest;
     dest = PgmImage::from_float(clipped(
-        local_polynomial_regression(bitmap.to_float(), [sigma, degree](const Array<float>& im){return gaussian_filter_NWE(im, sigma, NAN);}, degree),
+        local_polynomial_regression(
+            bitmap.to_float(),
+            [sigma, degree](const Array<float>& im){
+                return gaussian_filter_NWE(im, sigma, NAN, 4.f, false);
+            },
+            degree),
         0.f,
         1.f));
     dest.save_to_file(destination);
