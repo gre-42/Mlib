@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Images/Filters/Lowpass_Filters.hpp>
 
-
 namespace Mlib {
 
 template <class TData>
@@ -10,7 +9,8 @@ Array<TData> gaussian_filter_1d_NWE(
     const TData& sigma,
     size_t axis,
     const TData& boundary_value,
-    size_t truncate=4)
+    const TData& truncate = 4,
+    bool nwe = true)
 {
     if (sigma == 0) {
         return image.copy();
@@ -30,11 +30,12 @@ Array<TData> gaussian_filter_NWE(
     const Array<TData>& image,
     const TData& sigma,
     const TData& boundary_value,
-    size_t truncate=4)
+    const TData& truncate = 4,
+    bool nwe = true)
 {
     Array<TData> result = image.copy();
     for (size_t axis = 0; axis < image.ndim(); ++axis) {
-        result = gaussian_filter_1d_NWE(result, sigma, axis, boundary_value, truncate);
+        result = gaussian_filter_1d_NWE(result, sigma, axis, boundary_value, truncate, nwe);
     }
     return result;
 }
@@ -44,11 +45,12 @@ Array<TData> multichannel_gaussian_filter_NWE(
     const Array<TData>& image,
     const TData& sigma,
     const TData& boundary_value,
-    size_t truncate=4)
+    const TData& truncate = 4,
+    bool nwe = true)
 {
     Array<TData> result{image.shape()};
     for (size_t h = 0; h < image.shape(0); ++h) {
-        result[h] = gaussian_filter_NWE(image[h], sigma, boundary_value, truncate);
+        result[h] = gaussian_filter_NWE(image[h], sigma, boundary_value, truncate, nwe);
     }
     return result;
 }

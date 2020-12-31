@@ -4,7 +4,7 @@
 namespace Mlib {
 
 template <class TData>
-Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TData>& coeffs, const TData& boundary_value, size_t axis) {
+Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TData>& coeffs, const TData& boundary_value, size_t axis, bool nwe = true) {
     assert(coeffs.ndim() == 1);
 
     if (coeffs.length() <= 1) {
@@ -31,8 +31,10 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TData>
             }
             if (sc == 0) {
                 result_axis(i) = boundary_value;
-            } else {
+            } else if (nwe) {
                 result_axis(i) = v / sc;
+            } else {
+                result_axis(i) = v;
             }
         }
     });

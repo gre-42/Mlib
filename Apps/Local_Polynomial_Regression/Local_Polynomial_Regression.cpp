@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
+#include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/String.hpp>
 #include <fenv.h>
@@ -16,7 +17,10 @@ void lpr(
 {
     auto bitmap = PgmImage::load_from_file(source);
     PgmImage dest;
-    dest = PgmImage::from_float(local_polynomial_regression(bitmap.to_float(), [sigma, degree](const Array<float>& im){return gaussian_filter_NWE(im, sigma, NAN);}, degree));
+    dest = PgmImage::from_float(clipped(
+        local_polynomial_regression(bitmap.to_float(), [sigma, degree](const Array<float>& im){return gaussian_filter_NWE(im, sigma, NAN);}, degree),
+        0.f,
+        1.f));
     dest.save_to_file(destination);
 }
 

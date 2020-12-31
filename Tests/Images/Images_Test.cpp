@@ -289,8 +289,9 @@ void test_meshgrid() {
 }
 
 void test_local_polynomial_regression() {
-    Array<float> image{random_array3<float>(ArrayShape{3, 4}, 1)};
-    std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN);}, 1) << std::endl;
+    Array<float> image{random_array3<float>(ArrayShape{5, 6}, 1)};
+    meshgrid(image, 0);
+    std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN, 4.f, false);}, 2) << std::endl;
 }
 
 int main(int argc, char **argv) {
