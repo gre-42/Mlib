@@ -9,6 +9,7 @@
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Forward_Differences.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
+#include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PpmImage.hpp>
@@ -278,6 +279,20 @@ void test_down_sample_average() {
     assert_true(all(d.shape() == ArrayShape{2, 1, 2}));
 }
 
+void test_meshgrid() {
+    Array<float> mg{ArrayShape{3, 4}};
+    meshgrid(mg, 1);
+    assert_allclose(mg, Array<float>{
+        {0, 1, 2, 3},
+        {0, 1, 2, 3},
+        {0, 1, 2, 3}});
+}
+
+void test_local_polynomial_regression() {
+    Array<float> image{random_array3<float>(ArrayShape{3, 4}, 1)};
+    std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN);}, 2) << std::endl;
+}
+
 int main(int argc, char **argv) {
     #ifndef __MINGW32__
     feenableexcept(FE_INVALID);
@@ -301,5 +316,7 @@ int main(int argc, char **argv) {
     test_bilinear_interpolation();
     test_division_by_brightness();
     test_down_sample_average();
+    test_meshgrid();
+    test_local_polynomial_regression();
     return 0;
 }
