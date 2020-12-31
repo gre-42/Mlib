@@ -48,7 +48,7 @@ void meshgrid(TImage& image, size_t axis) {
 }
 
 template <class TData, class TFilter>
-Array<Array<TData>> local_polynomial_regression(const Array<TData>& image, const TFilter& filter, size_t degree) {
+Array<TData> local_polynomial_regression(const Array<TData>& image, const TFilter& filter, size_t degree) {
     Array<Array<TData>> x{ArrayShape{image.ndim()}};
     for (size_t axis = 0; axis < x.shape(0); ++axis) {
         x(axis).resize(image.shape());
@@ -71,7 +71,7 @@ Array<Array<TData>> local_polynomial_regression(const Array<TData>& image, const
         b(i) = filter(m(i) * image);
     }
     Array<Array<TData>> beta = batch_solve_symm_1d(xx, b);
-    return batch_dot1d(m, beta);
+    return sum(m * beta);
 }
 
 }

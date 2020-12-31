@@ -19,52 +19,16 @@ Array<Array<TData>> vH_x(const Array<Array<TData>>& a) {
     return res;
 }
 
-template <class TDerivedA, class TDerivedB, class TDerivedR, class TData>
-void batch_dot2d(
-    const BaseDenseArray<TDerivedA, Array<TData>>& a,
-    const BaseDenseArray<TDerivedB, Array<TData>>& b,
-    BaseDenseArray<TDerivedR, Array<TData>>& result)
-{
-    assert(a->ndim() == 2);
-    assert(b->ndim() == 2);
-    assert(a->shape(1) == b->shape(0));
-    assert(all(result->shape() == ArrayShape{a->shape(0), b->shape(1)}));
-    #pragma omp parallel for if (result->nelements() > 200 * 200)
-    for (size_t r = 0; r < result->shape(0); ++r) {
-        for (size_t c = 0; c < result->shape(1); ++c) {
-            Array<TData> v = zeros<TData>((*a)(0, 0).shape());
-            for (size_t i = 0; i < a->shape(1); ++i) {
-                v += (*a)(r, i) * (*b)(i, c);
-            }
-            (*result)(r, c) = v;
-        }
+template <class TDerived, class TData>
+Array<TData> sum(const BaseDenseArray<TDerived, Array<TData>>& a) {
+    if (a->nelements() == 0) {
+        throw std::runtime_error("Sum received empty array");
     }
-}
-
-template <class TDerivedA, class TDerivedB, class TData>
-Array<Array<TData>> batch_dot2d(
-    const BaseDenseArray<TDerivedA, Array<TData>>& a,
-    const BaseDenseArray<TDerivedB, Array<TData>>& b)
-{
-    assert(a->ndim() == 2);
-    assert(b->ndim() == 2);
-    assert(a->shape(1) == b->shape(0));
-    Array<Array<TData>> result{ArrayShape{a->shape(0), b->shape(1)}};
-    batch_dot2d(a, b, result);
+    Array<TData> result = zeros<TData>(a->flat_iterable().begin()->shape());
+    for (const Array<TData>& v : a->flat_iterable()) {
+        result += v;
+    }
     return result;
-}
-
-template <class TDerivedA, class TDerivedB, class TData>
-Array<Array<TData>> batch_dot1d(
-    const BaseDenseArray<TDerivedA, Array<TData>>& a,
-    const BaseDenseArray<TDerivedB, Array<TData>>& b)
-{
-    assert(a->ndim() == 2);
-    assert(b->ndim() == 1);
-    assert(a->shape(1) == b->length());
-    Array<Array<TData>> result{ArrayShape{a->shape(0), 1}};
-    batch_dot2d(a, b->reshaped(ArrayShape{b->length(), 1}), result);
-    return result.flattened();
 }
 
 /*

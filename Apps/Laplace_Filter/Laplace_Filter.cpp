@@ -34,6 +34,6 @@ int main(int argc, char **argv) {
     laplace_filter_file(
         args.unnamed_value(0),
         args.unnamed_value(1),
-        safe_stoi(args.named_value("--sigma")));
+        safe_stof(args.named_value("--sigma")));
     return 0;
 }
