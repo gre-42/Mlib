@@ -619,16 +619,19 @@ void Mlib::draw_streets(
                         nodes.at(it->second.id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
                 } else {
                     size_t nlanes;
+                    float lane_alpha;
                     float car_width = 2;
                     if (it->second.width < 4 * car_width * scale) {
                         nlanes = 2;
+                        lane_alpha = 0.5;
                     } else {
                         nlanes = 4;
+                        lane_alpha = 0.25;
                     }
                     if (driving_direction == DrivingDirection::CENTER) {
                         way_point_edges_1_lane.push_back({na.first, it->second.id});
                     } else if (driving_direction == DrivingDirection::LEFT) {
-                        CurbedStreet c5{rect, nlanes == 2 ? -0.5f : -0.25f, nlanes == 2 ? 0.5f : 0.25f};
+                        CurbedStreet c5{rect, -lane_alpha, lane_alpha};
                         way_point_edges_2_lanes.push_back({
                             FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0},
                             FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0}});
@@ -636,7 +639,7 @@ void Mlib::draw_streets(
                             FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0},
                             FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0}});
                     } else if (driving_direction == DrivingDirection::RIGHT) {
-                        CurbedStreet c5{rect, nlanes == 2 ? -0.5f : -0.25f, nlanes == 2 ? 0.5f : 0.25f};
+                        CurbedStreet c5{rect, -lane_alpha, lane_alpha};
                         way_point_edges_2_lanes.push_back({
                             FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0},
                             FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0}});
@@ -698,11 +701,11 @@ void Mlib::draw_streets(
                             node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb = 0}, c2.s00));
                         }
                         if (driving_direction == DrivingDirection::LEFT) {
-                            CurbedStreet c5{rect, -0.5, 0.5};
+                            CurbedStreet c5{rect, -lane_alpha, lane_alpha};
                             node_hole_waypoints.at(na.first).out.push_back({it->second.id, c5.s00});
                             node_hole_waypoints.at(na.first).in.push_back({it->second.id, c5.s01});
                         } else if (driving_direction == DrivingDirection::RIGHT) {
-                            CurbedStreet c5{rect, -0.5, 0.5};
+                            CurbedStreet c5{rect, -lane_alpha, lane_alpha};
                             node_hole_waypoints.at(na.first).in.push_back({it->second.id, c5.s00});
                             node_hole_waypoints.at(na.first).out.push_back({it->second.id, c5.s01});
                         } else if (driving_direction != DrivingDirection::CENTER) {
@@ -721,11 +724,11 @@ void Mlib::draw_streets(
                             node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb = 2}, c2.s11));
                         }
                         if (driving_direction == DrivingDirection::LEFT) {
-                            CurbedStreet c5{rect, -0.5, 0.5};
+                            CurbedStreet c5{rect, -lane_alpha, lane_alpha};
                             node_hole_waypoints.at(it->second.id).out.push_back({na.first, c5.s11});
                             node_hole_waypoints.at(it->second.id).in.push_back({na.first, c5.s10});
                         } else if (driving_direction == DrivingDirection::RIGHT) {
-                            CurbedStreet c5{rect, -0.5, 0.5};
+                            CurbedStreet c5{rect, -lane_alpha, lane_alpha};
                             node_hole_waypoints.at(it->second.id).in.push_back({na.first, c5.s11});
                             node_hole_waypoints.at(it->second.id).out.push_back({na.first, c5.s10});
                         } else if (driving_direction != DrivingDirection::CENTER) {
