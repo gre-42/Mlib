@@ -278,6 +278,7 @@ RenderableOsmMap::RenderableOsmMap(
                     }
                     dir /= std::sqrt(len2);
                     spawn_points_.push_back(SpawnPoint{
+                        .type = SpawnPointType::SPAWN_LINE,
                         .position = {p(0), p(1), bu.building_top * scale},
                         .rotation = {0, 0, std::atan2(dir(0), -dir(1))}});
                 }
@@ -723,10 +724,8 @@ RenderableOsmMap::RenderableOsmMap(
             scale,
             much_grass_distance);
     }
-    for (auto& r : street_rectangles) {
+    for (const auto& r : street_rectangles) {
         SpawnPoint sp;
-        float alpha = 0.75;
-        sp.position = alpha * (r(0, 0) + r(1, 0)) / 2.f + (1 - alpha) * (r(0, 1) + r(1, 1)) / 2.f;
         FixedArray<float, 3> x = r(0, 0) - r(0, 1);
         FixedArray<float, 3> y = r(0, 0) - r(1, 0);
         float lx2 = sum(squared(x));
@@ -734,8 +733,10 @@ RenderableOsmMap::RenderableOsmMap(
         if (lx2 < squared(3 * scale) || ly2 < squared(3 * scale)) {
             continue;
         }
-        x /= std::sqrt(lx2);
-        y /= std::sqrt(ly2);
+        float lx = std::sqrt(lx2);
+        float ly = std::sqrt(ly2);
+        x /= lx;
+        y /= ly;
         FixedArray<float, 3> z = cross(x, y);
         float lz2 = sum(squared(z));
         if (lz2 < squared(3 * scale)) {
@@ -747,7 +748,32 @@ RenderableOsmMap::RenderableOsmMap(
             x(1), y(1), z(1),
             x(2), y(2), z(2)};
         sp.rotation = matrix_2_tait_bryan_angles(R);
-        spawn_points_.push_back(sp);
+        auto create_spawn_point = [this, &sp, &r](SpawnPointType spawn_point_type, float alpha){
+            sp.type = spawn_point_type;
+            sp.position = alpha * (r(0, 0) + r(1, 0)) / 2.f + (1 - alpha) * (r(0, 1) + r(1, 1)) / 2.f;
+            spawn_points_.push_back(sp);
+        };
+        float car_width = 2;
+        if (driving_direction == DrivingDirection::CENTER) {
+            create_spawn_point(SpawnPointType::ROAD, 0.5);
+        } else if (driving_direction == DrivingDirection::LEFT) {
+            if (lx < 4 * car_width * scale) {
+                create_spawn_point(SpawnPointType::ROAD, 1 - 0.5 - 0.25);
+            } else {
+                create_spawn_point(SpawnPointType::ROAD, 1 - 0.5 - 0.125);
+                create_spawn_point(SpawnPointType::PARKING, 1 - 0.75 - 0.125);
+            }
+        } else if (driving_direction == DrivingDirection::RIGHT) {
+            create_spawn_point(SpawnPointType::ROAD, 0.75);
+            if (lx < 4 * car_width * scale) {
+                create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.25);
+            } else {
+                create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.125);
+                create_spawn_point(SpawnPointType::PARKING, 0.75 + 0.125);
+            }
+        } else {
+            throw std::runtime_error("Unknown driving direction");
+        }
     }
     {
         std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
@@ -826,7 +852,7 @@ RenderableOsmMap::RenderableOsmMap(
             }
         }
     }
-    // way_points_.plot("/tmp/plot.svg", 600, 600, 0.1);
+    // way_points_.plot("/tmp/way_points.svg", 600, 600, 0.1);
 
     std::list<std::shared_ptr<ColoredVertexArray>> ts;
     for (auto& l : tls_all) {

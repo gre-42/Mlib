@@ -220,6 +220,10 @@ void Player::set_spotted() {
     spotted_ = true;
 }
 
+bool Player::has_waypoints() const {
+    return !waypoints_.points.empty();
+}
+
 void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == scene_node_) {
         scene_node_name_.clear();
@@ -380,9 +384,6 @@ bool Player::ramming() const {
 }
 
 void Player::move_to_waypoint() {
-    if (any(isnan(waypoint_))) {
-        return;
-    }
     if (rb_ == nullptr) {
         return;
     }
@@ -392,11 +393,19 @@ void Player::move_to_waypoint() {
     if (std::isnan(surface_power_backward_)) {
         return;
     }
+    auto step_on_breaks = [this](){
+        rb_->set_surface_power("main", NAN);    // NAN=break
+        rb_->set_surface_power("breaks", NAN);  // NAN=break
+    };
+    if (any(isnan(waypoint_))) {
+        step_on_breaks();
+        return;
+    }
     // Stop when distance to waypoint is small enough (break).
     if (!ramming()) {
         FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
         if (sum(squared(pos2 - waypoint_)) < squared(driving_mode_.rest_radius)) {
-            rb_->set_surface_power("main", NAN);  // NAN=break
+            step_on_breaks();
             if (waypoint_id_ != SIZE_MAX) {
                 last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
             }
@@ -424,7 +433,7 @@ void Player::move_to_waypoint() {
         if (dl2 < squared(driving_mode_.collision_avoidance_radius_break)) {
             auto z = rb_->rbi_.abs_z();
             if (dot0d(d, z) < 0) {
-                rb_->set_surface_power("main", NAN);  // NAN=break
+                step_on_breaks();
                 return;
             }
         } else if (dl2 < squared(driving_mode_.collision_avoidance_radius_correct)) {
@@ -450,7 +459,7 @@ void Player::move_to_waypoint() {
         } else if (dvel < squared(driving_mode_.max_delta_velocity2_break)) {
             rb_->set_surface_power("main", 0);
         } else {
-            rb_->set_surface_power("main", NAN);  // NAN=break
+            step_on_breaks();
         }
     }
     // Steer towards waypoint.

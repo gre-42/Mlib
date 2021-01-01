@@ -97,6 +97,7 @@ public:
     float seconds_since_spawn() const;
     bool spotted() const;
     void set_spotted();
+    bool has_waypoints() const;
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;

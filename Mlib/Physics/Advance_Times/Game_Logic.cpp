@@ -142,6 +142,9 @@ bool GameLogic::spawn_for_vip(
     }
     for (size_t i = 0; i < spawn_points_.size(); ++i) {
         const SpawnPoint& sp = spawn_points_[(spawn_point_id_++) % spawn_points_.size()];
+        if ((sp.type == SpawnPointType::PARKING) == player.has_waypoints()) {
+            continue;
+        }
         float dist2 = sum(squared(sp.position - vip_pos));
         // Abort if too far away.
         if (dist2 > squared(cfg.r_spawn_far)) {
@@ -172,6 +175,8 @@ bool GameLogic::spawn_for_vip(
         }
         bool spotted = vip_->can_see(sp.position, 2, 0, cfg.only_terrain);
         if (dist2 < squared(cfg.r_spawn_near)) {
+            // The spawn point is near the VIP.
+
             // Abort if visible.
             if (spotted) {
                 continue;
@@ -181,15 +186,14 @@ bool GameLogic::spawn_for_vip(
                 continue;
             }
         } else {
+            // The spawn point is far away from the VIP.
+
             // Abort if not visible.
             if (!spotted) {
                 continue;
             }
         }
         spawn_at_spawn_point(player, sp);
-        if (player.scene_node_name().empty()) {
-            throw std::runtime_error("Scene node name empty for player " + player.name());
-        }
         player.notify_spawn();
         if (spotted) {
             player.set_spotted();
@@ -244,6 +248,9 @@ void GameLogic::spawn_at_spawn_point(
     Player& player,
     const SpawnPoint& sp)
 {
+    if (!player.scene_node_name().empty()) {
+        throw std::runtime_error("Before spawning, scene node name not empty for player " + player.name());
+    }
     auto spawn_macro = preferred_car_spawners_.find(&player);
     if (spawn_macro == preferred_car_spawners_.end()) {
         throw std::runtime_error("Player " + player.name() + " has no preferred car spawner");
@@ -251,4 +258,7 @@ void GameLogic::spawn_at_spawn_point(
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg.spawn_y_offset;
     spawn_macro->second(sp2);
+    if (player.scene_node_name().empty()) {
+        throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
+    }
 }
