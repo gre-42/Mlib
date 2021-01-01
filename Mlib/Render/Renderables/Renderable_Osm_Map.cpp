@@ -302,7 +302,7 @@ RenderableOsmMap::RenderableOsmMap(
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE}.compute_color_mode());
     auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
-        .texture_descriptor = {.color = path_texture, .normal = rendering_resources.get_normalmap(path_crossing_texture)},
+        .texture_descriptor = {.color = path_crossing_texture, .normal = rendering_resources.get_normalmap(path_crossing_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
