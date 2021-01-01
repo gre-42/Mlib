@@ -90,9 +90,21 @@ public:
     const PlayerStats& stats() const;
     float car_health() const;
     GameMode game_mode() const;
-    bool can_see(const RigidBodyIntegrator& rbi, bool only_terrain = false) const;
-    bool can_see(const FixedArray<float, 3>& pos, float height_offset = 0, float time_offset = 0, bool only_terrain = false) const;
-    bool can_see(const Player& player, bool only_terrain = false) const;
+    bool can_see(
+        const RigidBodyIntegrator& rbi,
+        bool only_terrain = false,
+        float height_offset = 0,
+        float time_offset = 0) const;
+    bool can_see(
+        const FixedArray<float, 3>& pos,
+        bool only_terrain = false,
+        float height_offset = 0,
+        float time_offset = 0) const;
+    bool can_see(
+        const Player& player,
+        bool only_terrain = false,
+        float height_offset = 0,
+        float time_offset = 0) const;
     void notify_spawn();
     float seconds_since_spawn() const;
     bool spotted() const;

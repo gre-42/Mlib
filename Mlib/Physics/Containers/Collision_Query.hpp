@@ -18,7 +18,15 @@ public:
     bool can_see(
         const RigidBodyIntegrator& watcher,
         const RigidBodyIntegrator& watched,
-        bool only_terrain = false);
+        bool only_terrain = false,
+        float height_offset = 0,
+        float time_offset = 0);
+    bool can_see(
+        const RigidBodyIntegrator& watcher,
+        const FixedArray<float, 3>& watched,
+        bool only_terrain = false,
+        float height_offset = 0,
+        float time_offset = 0);
 private:
     PhysicsEngine& physics_engine_;
 };

@@ -21,6 +21,7 @@ struct GameLogicConfig {
     size_t max_nsee = 5;
     float spawn_y_offset = 0.7;
     bool only_terrain = true;
+    float can_see_y_offset = 2;
 };
 
 GameLogicConfig cfg;
@@ -173,7 +174,10 @@ bool GameLogic::spawn_for_vip(
         if (nsee > cfg.max_nsee) {
             break;
         }
-        bool spotted = vip_->can_see(sp.position, 2, 0, cfg.only_terrain);
+        bool spotted = vip_->can_see(
+            sp.position,
+            cfg.only_terrain,
+            cfg.can_see_y_offset);
         if (dist2 < squared(cfg.r_spawn_near)) {
             // The spawn point is near the VIP.
 
@@ -182,7 +186,12 @@ bool GameLogic::spawn_for_vip(
                 continue;
             }
             // Abort if not visible after x seconds.
-            if (!vip_->can_see(sp.position, 2, cfg.visible_after_spawn, cfg.only_terrain)) {
+            if (!vip_->can_see(
+                sp.position,
+                cfg.only_terrain,
+                cfg.can_see_y_offset,
+                cfg.visible_after_spawn))
+            {
                 continue;
             }
         } else {
@@ -219,7 +228,11 @@ bool GameLogic::delete_for_vip(
     }
     if (dist2 > squared(cfg.r_delete_far)) {
         ++nsee;
-        if (!vip_->can_see(player, cfg.only_terrain)) {
+        if (!vip_->can_see(
+            player,
+            cfg.only_terrain,
+            cfg.can_see_y_offset))
+        {
             goto delete_player;
         } else {
             player.set_spotted();
@@ -227,7 +240,11 @@ bool GameLogic::delete_for_vip(
     }
     if (!player.spotted() && (player.seconds_since_spawn() > cfg.visible_after_delete)) {
         ++nsee;
-        if (!vip_->can_see(player, cfg.only_terrain)) {
+        if (!vip_->can_see(
+            player,
+            cfg.only_terrain,
+            cfg.can_see_y_offset))
+        {
             goto delete_player;
         } else {
             player.set_spotted();

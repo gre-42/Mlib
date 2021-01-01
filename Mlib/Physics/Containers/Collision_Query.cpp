@@ -82,7 +82,55 @@ bool CollisionQuery::can_see(
 bool CollisionQuery::can_see(
     const RigidBodyIntegrator& watcher,
     const RigidBodyIntegrator& watched,
-    bool only_terrain)
+    bool only_terrain,
+    float height_offset,
+    float time_offset)
 {
-    return can_see(watcher.abs_position(), watched.abs_position(), &watcher, &watched, only_terrain);
+    FixedArray<float, 3> d = {0, height_offset, 0};
+    if (time_offset != 0) {
+        RigidBodyPulses watcher_rbp = watcher.rbp_;
+        RigidBodyPulses watched_rbp = watched.rbp_;
+        watcher_rbp.advance_time(time_offset);
+        watched_rbp.advance_time(time_offset);
+        return can_see(
+            watcher_rbp.abs_position() + d,
+            watched_rbp.abs_position() + d,
+            &watcher,
+            &watched,
+            only_terrain);
+    } else {
+        return can_see(
+            watcher.abs_position() + d,
+            watched.abs_position() + d,
+            &watcher,
+            &watched,
+            only_terrain);
+    }
+}
+
+bool CollisionQuery::can_see(
+    const RigidBodyIntegrator& watcher,
+    const FixedArray<float, 3>& watched,
+    bool only_terrain,
+    float height_offset,
+    float time_offset)
+{
+    FixedArray<float, 3> d = {0, height_offset, 0};
+    if (time_offset != 0) {
+        RigidBodyPulses rbp = watcher.rbp_;
+        rbp.advance_time(time_offset);
+        return can_see(
+            rbp.abs_position() + d,
+            watched + d,
+            &watcher,
+            nullptr,
+            only_terrain);
+    } else {
+        return can_see(
+            watcher.abs_position() + d,
+            watched + d,
+            &watcher,
+            nullptr,
+            only_terrain);
+    }
 }

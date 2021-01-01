@@ -165,35 +165,58 @@ GameMode Player::game_mode() const {
     return game_mode_;
 }
 
-bool Player::can_see(const RigidBodyIntegrator& rbi, bool only_terrain) const {
+bool Player::can_see(
+    const RigidBodyIntegrator& rbi,
+    bool only_terrain,
+    float height_offset,
+    float time_offset) const
+{
     if (rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
-    return collision_query_.can_see(rb_->rbi_, rbi, only_terrain);
+    return collision_query_.can_see(
+        rb_->rbi_,
+        rbi,
+        only_terrain,
+        height_offset,
+        time_offset);
 }
 
-bool Player::can_see(const FixedArray<float, 3>& pos, float height_offset, float time_offset, bool only_terrain) const {
+bool Player::can_see(
+    const FixedArray<float, 3>& pos,
+    bool only_terrain,
+    float height_offset,
+    float time_offset) const
+{
     if (rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
-    FixedArray<float, 3> d = {0, height_offset, 0};
-    if (time_offset != 0) {
-        RigidBodyPulses rbp = rb_->rbi_.rbp_;
-        rbp.advance_time(time_offset);
-        return collision_query_.can_see(rbp.abs_position() + d, pos + d, &rb_->rbi_, nullptr, only_terrain);
-    } else {
-        return collision_query_.can_see(rb_->rbi_.abs_position() + d, pos + d, &rb_->rbi_, nullptr, only_terrain);
-    }
+    return collision_query_.can_see(
+        rb_->rbi_,
+        pos,
+        only_terrain,
+        height_offset,
+        time_offset);
 }
 
-bool Player::can_see(const Player& player, bool only_terrain) const {
+bool Player::can_see(
+    const Player& player,
+    bool only_terrain,
+    float height_offset,
+    float time_offset) const
+{
     if (rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
     if (player.rb_ == nullptr) {
         throw std::runtime_error("Player::can_see requires rb");
     }
-    return collision_query_.can_see(rb_->rbi_, player.rb_->rbi_, only_terrain);
+    return collision_query_.can_see(
+        rb_->rbi_,
+        player.rb_->rbi_,
+        only_terrain,
+        height_offset,
+        time_offset);
 }
 
 void Player::notify_spawn() {
