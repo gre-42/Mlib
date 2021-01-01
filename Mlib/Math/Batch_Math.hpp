@@ -5,7 +5,7 @@ namespace Mlib {
 
 template <class TData>
 Array<TData> conju_x(const Array<TData>& a) {
-    return a.template applied([](const TData& v){return conju(v);});
+    return a.applied([](const TData& v){return conju(v);});
 }
 
 template <class TData>
@@ -13,7 +13,7 @@ Array<Array<TData>> vH_x(const Array<Array<TData>>& a) {
     Array<Array<TData>> res{a.shape()};
     for (size_t i = 0; i < a.shape(0); ++i) {
         for (size_t j = 0; j <= i; ++j) {
-            res(j, i) = a(i, j).template applied([](const TData& v){return conju(v);});
+            res(j, i) = a(i, j).applied([](const TData& v){return conju(v);});
         }
     }
     return res;
