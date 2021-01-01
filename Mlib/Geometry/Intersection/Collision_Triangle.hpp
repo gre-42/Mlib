@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 
@@ -12,9 +12,9 @@ struct CollisionTriangleSphere {
     FixedArray<FixedArray<float, 3>, 3> triangle;
 };
 
-struct CollisionTriangleBbox {
+struct CollisionTriangleAabb {
     CollisionTriangleSphere base;
-    BoundingBox<float, 3> bounding_box;
+    AxisAlignedBoundingBox<float, 3> aabb;
 };
 
 }

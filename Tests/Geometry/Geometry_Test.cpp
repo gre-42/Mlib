@@ -63,7 +63,7 @@ void test_invert_scaled_4x4() {
 
 //void test_octree() {
 //    Octree<float, 1, std::string> o;
-//    o.insert(BoundingBox<float, 1>{min_: 1, max_: 2}, "1-2");
+//    o.insert(AxisAlignedBoundingBox<float, 1>{min_: 1, max_: 2}, "1-2");
 //}
 
 void test_intersect_lines() {
@@ -197,13 +197,13 @@ void test_bvh_performance() {
         }
         bvh.print(std::cout, BvhPrintingOptions{
             level: false,
-            bounding_box: false});
+            aabb: false});
         if (false) {
             FixedArray<float, 3> center{0.012, 0.023, 0.045};
             bvh.insert({{0.01, 0.02, 0.03}, center}, "int", 4321);
             bvh.print(std::cout, BvhPrintingOptions{
                 level: false,
-                bounding_box: false});
+                aabb: false});
             bvh.visit({center, 0.01}, [](const std::string& category, int data){
                 std::cout << category << " " << data << std::endl;
             });

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -10,7 +10,7 @@ namespace Mlib {
 template <class TData, size_t tndim, class TUserData>
 class Octree {
 public:
-    void insert(const BoundingBox<TData, tndim>& bbox, const TUserData& user_data) {
+    void insert(const AxisAlignedBoundingBox<TData, tndim>& bbox, const TUserData& user_data) {
         elements_.push_back(std::make_pair(bbox, user_data));
         bbox_.extend(bbox);
         if (elements_.size() > 10) {
@@ -30,11 +30,11 @@ public:
             }
         }
     }
-    BoundingBox<TData, tndim> bbox_;
+    AxisAlignedBoundingBox<TData, tndim> bbox_;
 private:
     FixedArray<std::unique_ptr<Octree>, 2, tndim> children_;
     FixedArray<TData, tndim> cutoff_;
-    std::list<std::pair<BoundingBox<TData, tndim>, TUserData>> elements_;
+    std::list<std::pair<AxisAlignedBoundingBox<TData, tndim>, TUserData>> elements_;
 };
 
 }

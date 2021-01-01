@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Intersection/Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <list>
@@ -15,7 +15,7 @@ namespace Mlib {
 
 struct BvhPrintingOptions {
     bool level = true;
-    bool bounding_box = true;
+    bool aabb = true;
     bool data = true;
     bool children = true;
 };
@@ -31,26 +31,26 @@ public:
       level_{level}
     {}
     void insert(
-        const BoundingBox<TData, tndim>& bounding_box,
+        const AxisAlignedBoundingBox<TData, tndim>& aabb,
         const std::string& category,
         const TPayload& data)
     {
         if (level_ == 0) {
-            data_[category].push_back({bounding_box, data});
+            data_[category].push_back({aabb, data});
             return;
         }
         for (auto& c : children_) {
-            BoundingBox<TData, tndim> bb = c.first;
-            bb.extend(bounding_box);
+            AxisAlignedBoundingBox<TData, tndim> bb = c.first;
+            bb.extend(aabb);
             if (all(bb.size() <= TData(level_) * max_size_)) {
                 c.first = bb;
-                c.second.insert(bounding_box, category, data);
+                c.second.insert(aabb, category, data);
                 return;
             }
         }
         Bvh bvh{max_size_, level_ - 1};
-        bvh.insert(bounding_box, category, data);
-        children_.push_back({bounding_box, bvh});
+        bvh.insert(aabb, category, data);
+        children_.push_back({aabb, bvh});
     }
     template <class TVisitor>
     void visit(const BoundingSphere<TData, tndim>& sphere, const TVisitor& visitor, const std::regex& filter = std::regex{""}) const {
@@ -69,8 +69,8 @@ public:
             }
         }
     }
-    BoundingBox<TData, tndim> bounding_box() const {
-        BoundingBox<TData, tndim> result;
+    AxisAlignedBoundingBox<TData, tndim> aabb() const {
+        AxisAlignedBoundingBox<TData, tndim> result;
         for (const auto& d : data_) {
             for (const auto& v : d.second) {
                 result.extend(v.first);
@@ -91,7 +91,7 @@ public:
             for (const auto& d : data_) {
                 ostr << indent << d.first << " " << d.second.size() << std::endl;
                 for (const auto& v : d.second) {
-                    if (opts.bounding_box) {
+                    if (opts.aabb) {
                         v.first.print(ostr, rec + 1);
                     }
                 }
@@ -100,7 +100,7 @@ public:
         if (opts.children) {
             ostr << indent << "children " << children_.size() << std::endl;
             for (const auto& c : children_) {
-                if (opts.bounding_box) {
+                if (opts.aabb) {
                     c.first.print(ostr, rec + 1);
                 }
                 c.second.print(ostr, opts, rec + 1);
@@ -120,8 +120,8 @@ public:
 private:
     FixedArray<TData, tndim> max_size_;
     size_t level_;
-    std::map<std::string, std::list<std::pair<BoundingBox<TData, tndim>, TPayload>>> data_;
-    std::list<std::pair<BoundingBox<TData, tndim>, Bvh>> children_;
+    std::map<std::string, std::list<std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>>> data_;
+    std::list<std::pair<AxisAlignedBoundingBox<TData, tndim>, Bvh>> children_;
 };
 
 template <class TData, class TPayload, size_t tndim>

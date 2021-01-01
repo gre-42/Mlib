@@ -24,7 +24,7 @@ struct ColoredVertexArray {
     std::vector<FixedArray<float, 3>> vertices() const;
     std::shared_ptr<ColoredVertexArray> transformed(const FixedArray<float, 4, 4>& m) const;
     std::vector<CollisionTriangleSphere> transformed_triangles_sphere(const FixedArray<float, 4, 4>& m) const;
-    std::vector<CollisionTriangleBbox> transformed_triangles_bbox(const FixedArray<float, 4, 4>& m) const;
+    std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const FixedArray<float, 4, 4>& m) const;
     std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const FixedArray<float, 4, 4>& m) const;
 };
 

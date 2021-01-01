@@ -1,5 +1,5 @@
 #include "Sat_Normals.hpp"
-#include <Mlib/Geometry/Intersection/Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
