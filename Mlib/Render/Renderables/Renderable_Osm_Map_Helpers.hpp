@@ -53,6 +53,11 @@ struct SteinerPointInfo {
     float distance_to_road;
 };
 
+struct StreetRectangle {
+    size_t nlanes;
+    FixedArray<FixedArray<float, 3>, 2, 2> rectangle;
+};
+
 void draw_node(
     std::vector<FixedArray<ColoredVertex, 3>>& triangles,
     const FixedArray<float, 2>& pos2d,
@@ -185,7 +190,7 @@ void draw_streets(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& street_light_positions,
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
-    std::list<FixedArray<FixedArray<float, 3>, 2, 2>>& street_rectangles,
+    std::list<StreetRectangle>& street_rectangles,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
     std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes,

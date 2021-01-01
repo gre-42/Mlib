@@ -109,6 +109,10 @@ private:
     void select_next_waypoint();
     bool ramming() const;
     bool unstuck();
+    void step_on_breaks();
+    void drive_forward();
+    void drive_backwards();
+    void roll();
     Scene& scene_;
     CollisionQuery& collision_query_;
     Players& players_;

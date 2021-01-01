@@ -276,7 +276,7 @@ bool Player::unstuck() {
             unstuck_start_ = std::chrono::steady_clock::time_point();
         } else {
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
-                rb_->set_surface_power("main", surface_power_backward_);
+                drive_backwards();
                 for (auto &tire : rb_->tires_) {
                     rb_->set_tire_angle_y(tire.first, 0);
                 }
@@ -292,6 +292,38 @@ bool Player::unstuck() {
         }
     }
     return false;
+}
+
+void Player::step_on_breaks() {
+    if (rb_ == nullptr) {
+        throw std::runtime_error("step_on_breaks despite nullptr");
+    }
+    rb_->set_surface_power("main", NAN);    // NAN=break
+    rb_->set_surface_power("breaks", NAN);  // NAN=break
+}
+
+void Player::drive_forward() {
+    if (rb_ == nullptr) {
+        throw std::runtime_error("drive_forward despite nullptr");
+    }
+    rb_->set_surface_power("main", surface_power_forward_);
+    rb_->set_surface_power("breaks", 0);
+}
+
+void Player::drive_backwards() {
+    if (rb_ == nullptr) {
+        throw std::runtime_error("drive_backwards despite nullptr");
+    }
+    rb_->set_surface_power("main", surface_power_backward_);
+    rb_->set_surface_power("breaks", 0);
+}
+
+void Player::roll() {
+    if (rb_ == nullptr) {
+        throw std::runtime_error("roll despite nullptr");
+    }
+    rb_->set_surface_power("main", 0);
+    rb_->set_surface_power("breaks", 0);
 }
 
 void Player::aim_and_shoot() {
@@ -393,10 +425,6 @@ void Player::move_to_waypoint() {
     if (std::isnan(surface_power_backward_)) {
         return;
     }
-    auto step_on_breaks = [this](){
-        rb_->set_surface_power("main", NAN);    // NAN=break
-        rb_->set_surface_power("breaks", NAN);  // NAN=break
-    };
     if (any(isnan(waypoint_))) {
         step_on_breaks();
         return;
@@ -455,9 +483,9 @@ void Player::move_to_waypoint() {
     {
         float dvel = sum(squared(rb_->rbi_.rbp_.v_)) - squared(driving_mode_.max_velocity);
         if (dvel < 0) {
-            rb_->set_surface_power("main", surface_power_forward_);
+            drive_forward();
         } else if (dvel < squared(driving_mode_.max_delta_velocity2_break)) {
-            rb_->set_surface_power("main", 0);
+            roll();
         } else {
             step_on_breaks();
         }

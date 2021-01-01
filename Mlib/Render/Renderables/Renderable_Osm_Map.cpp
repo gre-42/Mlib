@@ -329,7 +329,7 @@ RenderableOsmMap::RenderableOsmMap(
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;
     std::list<SteinerPointInfo> steiner_points;
-    std::list<FixedArray<FixedArray<float, 3>, 2, 2>> street_rectangles;
+    std::list<StreetRectangle> street_rectangles;
     std::list<std::pair<std::string, std::string>> way_point_edges_1_lane;
     std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>> way_point_edges_2_lanes;
     {
@@ -573,7 +573,7 @@ RenderableOsmMap::RenderableOsmMap(
             smoothed_vertices.push_back(&p.position);
         }
         for (auto& r : street_rectangles) {
-            for (auto& p : r.flat_iterable()) {
+            for (auto& p : r.rectangle.flat_iterable()) {
                 smoothed_vertices.push_back(&p);
             }
         }
@@ -726,17 +726,15 @@ RenderableOsmMap::RenderableOsmMap(
     }
     for (const auto& r : street_rectangles) {
         SpawnPoint sp;
-        FixedArray<float, 3> x = r(0, 0) - r(0, 1);
-        FixedArray<float, 3> y = r(0, 0) - r(1, 0);
+        FixedArray<float, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
+        FixedArray<float, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
         float lx2 = sum(squared(x));
         float ly2 = sum(squared(y));
         if (lx2 < squared(3 * scale) || ly2 < squared(3 * scale)) {
             continue;
         }
-        float lx = std::sqrt(lx2);
-        float ly = std::sqrt(ly2);
-        x /= lx;
-        y /= ly;
+        x /= std::sqrt(lx2);
+        y /= std::sqrt(ly2);
         FixedArray<float, 3> z = cross(x, y);
         float lz2 = sum(squared(z));
         if (lz2 < squared(3 * scale)) {
@@ -750,26 +748,29 @@ RenderableOsmMap::RenderableOsmMap(
         sp.rotation = matrix_2_tait_bryan_angles(R);
         auto create_spawn_point = [this, &sp, &r](SpawnPointType spawn_point_type, float alpha){
             sp.type = spawn_point_type;
-            sp.position = alpha * (r(0, 0) + r(1, 0)) / 2.f + (1 - alpha) * (r(0, 1) + r(1, 1)) / 2.f;
+            sp.position = alpha * (r.rectangle(0, 0) + r.rectangle(1, 0)) / 2.f + (1 - alpha) * (r.rectangle(0, 1) + r.rectangle(1, 1)) / 2.f;
             spawn_points_.push_back(sp);
         };
-        float car_width = 2;
         if (driving_direction == DrivingDirection::CENTER) {
             create_spawn_point(SpawnPointType::ROAD, 0.5);
         } else if (driving_direction == DrivingDirection::LEFT) {
-            if (lx < 4 * car_width * scale) {
+            if (r.nlanes == 2) {
                 create_spawn_point(SpawnPointType::ROAD, 1 - 0.5 - 0.25);
-            } else {
+            } else if (r.nlanes == 4) {
                 create_spawn_point(SpawnPointType::ROAD, 1 - 0.5 - 0.125);
                 create_spawn_point(SpawnPointType::PARKING, 1 - 0.75 - 0.125);
+            } else {
+                throw std::runtime_error("Unsupported number of lanes");
             }
         } else if (driving_direction == DrivingDirection::RIGHT) {
             create_spawn_point(SpawnPointType::ROAD, 0.75);
-            if (lx < 4 * car_width * scale) {
+            if (r.nlanes == 2) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.25);
-            } else {
+            } else if (r.nlanes == 4) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.125);
                 create_spawn_point(SpawnPointType::PARKING, 0.75 + 0.125);
+            } else {
+                throw std::runtime_error("Unsupported number of lanes");
             }
         } else {
             throw std::runtime_error("Unknown driving direction");

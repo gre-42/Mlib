@@ -481,7 +481,7 @@ void Mlib::draw_streets(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
-    std::list<FixedArray<FixedArray<float, 3>, 2, 2>>& street_rectangles,
+    std::list<StreetRectangle>& street_rectangles,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
     std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes,
@@ -618,10 +618,17 @@ void Mlib::draw_streets(
                         it->second.id << " <-> " << na.first << ", (" <<
                         nodes.at(it->second.id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
                 } else {
+                    size_t nlanes;
+                    float car_width = 2;
+                    if (it->second.width < 4 * car_width * scale) {
+                        nlanes = 2;
+                    } else {
+                        nlanes = 4;
+                    }
                     if (driving_direction == DrivingDirection::CENTER) {
                         way_point_edges_1_lane.push_back({na.first, it->second.id});
                     } else if (driving_direction == DrivingDirection::LEFT) {
-                        CurbedStreet c5{rect, -0.5, 0.5};
+                        CurbedStreet c5{rect, nlanes == 2 ? -0.5f : -0.25f, nlanes == 2 ? 0.5f : 0.25f};
                         way_point_edges_2_lanes.push_back({
                             FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0},
                             FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0}});
@@ -629,7 +636,7 @@ void Mlib::draw_streets(
                             FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0},
                             FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0}});
                     } else if (driving_direction == DrivingDirection::RIGHT) {
-                        CurbedStreet c5{rect, -0.5, 0.5};
+                        CurbedStreet c5{rect, nlanes == 2 ? -0.5f : -0.25f, nlanes == 2 ? 0.5f : 0.25f};
                         way_point_edges_2_lanes.push_back({
                             FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0},
                             FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0}});
@@ -641,11 +648,13 @@ void Mlib::draw_streets(
                     }
                     {
                         CurbedStreet c1{rect, -curb_alpha, curb_alpha};
-                        street_rectangles.push_back(FixedArray<FixedArray<float, 3>, 2, 2>{
-                            FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},
-                            FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0},
-                            FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0},
-                            FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0}});
+                        street_rectangles.push_back(StreetRectangle{
+                            .nlanes = nlanes,
+                            .rectangle = FixedArray<FixedArray<float, 3>, 2, 2>{
+                                FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},
+                                FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0},
+                                FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0},
+                                FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0}}});
                     }
                     // Way length is used to get connected street textures where possible.
                     auto len0 = node_way_info.find(na.first);
