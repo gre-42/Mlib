@@ -31,8 +31,9 @@ RenderableOsmMap::RenderableOsmMap(
     const std::string& heightmap,
     const std::string& terrain_texture,
     const std::string& dirt_texture,
-    const std::string& asphalt_texture,
+    const std::string& street_crossing_texture,
     const std::string& street_texture,
+    const std::string& path_crossing_texture,
     const std::string& path_texture,
     const std::string& curb_street_texture,
     const std::string& curb_path_texture,
@@ -297,11 +298,11 @@ RenderableOsmMap::RenderableOsmMap(
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE}.compute_color_mode());
     auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
-        .texture_descriptor = {.color = asphalt_texture, .normal = rendering_resources.get_normalmap(asphalt_texture)},
+        .texture_descriptor = {.color = street_crossing_texture, .normal = rendering_resources.get_normalmap(street_crossing_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE}.compute_color_mode());
     auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
-        .texture_descriptor = {.color = path_texture, .normal = rendering_resources.get_normalmap(path_texture)},
+        .texture_descriptor = {.color = path_texture, .normal = rendering_resources.get_normalmap(path_crossing_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
