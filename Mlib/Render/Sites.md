@@ -10,7 +10,6 @@ AC Cobra
 
 - https://free3d.com/3d-model/ac-cobra-269-83668.html
 
-
 ## Textures
 
 - https://cc0textures.com/
@@ -74,3 +73,17 @@ google "proctree.js"
 
 - http://www.snappytree.com
   - https://www.cgchan.com/cantree
+
+## Animation
+
+google: blender create animate human
+
+- https://ardas-it.com/human-model-creation-with-a-rig-for-later-work-in-blender
+  - http://www.makehumancommunity.org
+
+google: bvh walk file download
+
+- https://www.outworldz.com/Secondlife/Posts/CMU/
+- https://thomasmakehuman.wordpress.com/makewalk/where-to-find-bvh-files/
+  - https://sites.google.com/a/cgspeed.com/cgspeed/motion-capture
+    - https://sites.google.com/a/cgspeed.com/cgspeed/motion-capture/daz-friendly-release
