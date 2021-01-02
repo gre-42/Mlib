@@ -639,26 +639,22 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va->vertex_buffer));
     CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(cva->triangles[0]) * cva->triangles.size(), cva->triangles.front().flat_begin(), GL_STATIC_DRAW));
 
+    ColoredVertex* cv = nullptr;
     CHK(glEnableVertexAttribArray(0));
-    CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-                              sizeof(cva->triangles[0][0]), (void*) 0));
+    CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->position));
     CHK(glEnableVertexAttribArray(1));
-    CHK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,
-                              sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 3)));
+    CHK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->color));
     CHK(glEnableVertexAttribArray(2));
-    CHK(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
-                              sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 6)));
+    CHK(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
     if (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0)) {
         CHK(glEnableVertexAttribArray(3));
-        CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE,
-                                sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 8)));
+        CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->normal));
     }
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
     if (!cva->material.texture_descriptor.normal.empty()) {
         CHK(glEnableVertexAttribArray(4));
-        CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE,
-                                sizeof(cva->triangles[0][0]), (void*) (sizeof(float) * 11)));
+        CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
     }
     if (instances_ != nullptr) {
         const std::vector<FixedArray<float, 4, 4>>& inst = instances_->at(cva);
