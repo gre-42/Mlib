@@ -15,6 +15,7 @@
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
+#include <Mlib/Render/Renderables/Renderable_Mhx2_File.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
@@ -168,22 +169,45 @@ int main(int argc, char** argv) {
             size_t i = 0;
             for (const std::string& filename : args.unnamed_values()) {
                 std::string name = "obj-" + std::to_string(i++);
-                scene_node_resources.add_resource(name, std::make_shared<RenderableObjFile>(
-                    filename,
-                    fixed_zeros<float, 3>(),                                              // position
-                    fixed_zeros<float, 3>(),                                              // rotation
-                    fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
-                    rendering_resources,
-                    false,                                                                // is_small
-                    blend_mode_from_string(args.named_value("--blend_mode", "binary")),
-                    false,                                                                // cull_faces
-                    args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
-                    OccluderType::BLACK,
-                    true,                                                                 // occluded_by_black
-                    aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
-                    TransformationMode::ALL,
-                    args.has_named("--apply_static_lighting"),
-                    !args.has_named("--no_werror")));
+                if (filename.ends_with(".obj")) {
+                    scene_node_resources.add_resource(name, std::make_shared<RenderableObjFile>(
+                        filename,
+                        fixed_zeros<float, 3>(),                                              // position
+                        fixed_zeros<float, 3>(),                                              // rotation
+                        fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
+                        rendering_resources,
+                        false,                                                                // is_small
+                        blend_mode_from_string(args.named_value("--blend_mode", "binary")),
+                        false,                                                                // cull_faces
+                        args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
+                        OccluderType::BLACK,
+                        true,                                                                 // occluded_by_black
+                        aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
+                        TransformationMode::ALL,
+                        args.has_named("--apply_static_lighting"),
+                        !args.has_named("--no_werror")));
+                } else if (filename.ends_with(".mhx2")) {
+                    if (args.has_named("--apply_static_lighting")) {
+                        throw std::runtime_error("Static lighting not supported for mhx2 files");
+                    }
+                    scene_node_resources.add_resource(name, std::make_shared<RenderableMhx2File>(
+                        filename,
+                        fixed_zeros<float, 3>(),                                              // position
+                        fixed_zeros<float, 3>(),                                              // rotation
+                        fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
+                        rendering_resources,
+                        false,                                                                // is_small
+                        blend_mode_from_string(args.named_value("--blend_mode", "binary")),
+                        false,                                                                // cull_faces
+                        args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
+                        OccluderType::BLACK,
+                        true,                                                                 // occluded_by_black
+                        aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
+                        TransformationMode::ALL,
+                        !args.has_named("--no_werror")));
+                } else {
+                    throw std::runtime_error("File has unknown extension: " + filename);
+                }
                 scene_node->set_position({0.f, safe_stof(args.named_value("--y", "0")), -40.f});
                 scene_node->set_rotation({
                     safe_stof(args.named_value("--angle_x", "0")) / 180.f * float(M_PI),
