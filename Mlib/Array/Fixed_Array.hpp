@@ -4,6 +4,7 @@
 #include "Fixed_Array_Shape.hpp"
 #include <cstddef>
 #include <ostream>
+#include <vector>
 
 namespace Mlib {
 
@@ -36,6 +37,10 @@ public:
     explicit FixedArray(const Array<TData>& a) {
         assert(all(a.shape() == ArrayShape{tshape0, tshape...}));
         memcpy(flat_begin(), a.flat_iterable().begin(), nbytes());
+    }
+    explicit FixedArray(const std::vector<TData>& v) {
+        assert(v.size() == nelements());
+        memcpy(flat_begin(), &*v.begin(), nbytes());
     }
     explicit FixedArray(const ArrayShape& shape)
     : FixedArray{Array<size_t>::from_shape(shape)}
