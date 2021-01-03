@@ -98,6 +98,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
         if (tl.triangles_.empty()) {
             throw std::runtime_error("Triangle array is empty in file " + filename);
         }
+        tl.convert_triangle_to_vertex_normals();
         result.push_back(tl.triangle_array());
         tl.triangles_.clear();
     }

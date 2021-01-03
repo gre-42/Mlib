@@ -72,6 +72,7 @@ public:
     static void extrude(const std::list<std::shared_ptr<TriangleList>>& triangle_lists, float height, float scale, float uv_scale_x, float uv_scale_y, TriangleList& dest);
     void delete_backfacing_triangles();
     void calculate_triangle_normals();
+    void convert_triangle_to_vertex_normals();
     static void convert_triangle_to_vertex_normals(std::list<std::shared_ptr<TriangleList>>& triangle_lists);
     static void smoothen_edges(
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,

@@ -166,6 +166,16 @@ void TriangleList::calculate_triangle_normals() {
     }
 }
 
+void TriangleList::convert_triangle_to_vertex_normals() {
+    VertexNormals vertex_normals;
+    vertex_normals.add_triangles(triangles_.begin(), triangles_.end());
+    for (auto& it : triangles_) {
+        for (auto& v : it.flat_iterable()) {
+            v.normal = vertex_normals.get_normal(v.position);
+        }
+    }
+}
+
 void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<TriangleList>>& triangle_lists) {
     VertexNormals vertex_normals;
     for (const auto& l : triangle_lists) {
