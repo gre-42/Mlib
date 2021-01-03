@@ -8,6 +8,11 @@
 
 namespace Mlib {
 
+struct BoneWeight {
+    float weight;
+    size_t bone_index;
+};
+
 struct ColoredVertexArray {
     ColoredVertexArray() = default;
     ColoredVertexArray(const ColoredVertexArray&) = delete;
@@ -21,7 +26,10 @@ struct ColoredVertexArray {
     Material material;
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     std::vector<FixedArray<ColoredVertex, 2>> lines;
+    std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+    std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
     std::vector<FixedArray<float, 3>> vertices() const;
+    std::shared_ptr<ColoredVertexArray> transformed(const std::vector<FixedArray<float, 4, 4>>& m) const;
     std::shared_ptr<ColoredVertexArray> transformed(const FixedArray<float, 4, 4>& m) const;
     std::vector<CollisionTriangleSphere> transformed_triangles_sphere(const FixedArray<float, 4, 4>& m) const;
     std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const FixedArray<float, 4, 4>& m) const;

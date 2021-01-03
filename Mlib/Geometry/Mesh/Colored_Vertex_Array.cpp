@@ -35,6 +35,57 @@ std::vector<FixedArray<float, 3>> ColoredVertexArray::vertices() const {
     return res;
 }
 
+FixedArray<float, 4, 4> weighted_bones_transformation_matrix(
+    const std::vector<BoneWeight>& weights,
+    const std::vector<FixedArray<float, 4, 4>>& m)
+{
+    FixedArray<float, 3, 3> R(0);
+    FixedArray<float, 3> t(0);
+    for (const BoneWeight& w : weights) {
+        R += w.weight * R3_from_4x4(m[w.bone_index]);
+        t += w.weight * t3_from_4x4(m[w.bone_index]);
+    }
+    return assemble_homogeneous_4x4(R, t);
+}
+
+std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::vector<FixedArray<float, 4, 4>>& m) const {
+    auto res = std::make_shared<ColoredVertexArray>();
+    res->material = material;
+    res->triangles.reserve(triangles.size());
+    {
+        if (triangle_bone_weights.size() != triangles.size()) {
+            throw std::runtime_error("Size mismatch in triangle bone weights");
+        }
+        auto wit = triangle_bone_weights.begin();
+        for (const auto& tri : triangles) {
+            res->triangles.push_back({
+                tri(0).transformed(weighted_bones_transformation_matrix((*wit)(0), m)),
+                tri(1).transformed(weighted_bones_transformation_matrix((*wit)(1), m)),
+                tri(2).transformed(weighted_bones_transformation_matrix((*wit)(2), m))});
+            // res->triangles.back()(0).normalize();
+            // res->triangles.back()(1).normalize();
+            // res->triangles.back()(2).normalize();
+            ++wit;
+        }
+    }
+    {
+        if (line_bone_weights.size() != lines.size()) {
+            throw std::runtime_error("Size mismatch in line bone weights");
+        }
+        auto wit = line_bone_weights.begin();
+        res->lines.reserve(lines.size());
+        for (const auto& li : lines) {
+            res->lines.push_back({
+                li(0).transformed(weighted_bones_transformation_matrix((*wit)(0), m)),
+                li(1).transformed(weighted_bones_transformation_matrix((*wit)(1), m))});
+            // res->lines.back()(0).normalize();
+            // res->lines.back()(1).normalize();
+            ++wit;
+        }
+    }
+    return res;
+}
+
 std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const FixedArray<float, 4, 4>& m) const {
     auto res = std::make_shared<ColoredVertexArray>();
     res->material = material;
