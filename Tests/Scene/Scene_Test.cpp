@@ -83,7 +83,9 @@ void test_physics_engine() {
             occluded_type: OccludedType::LIGHT_MAP_DEPTH,
             occluder_type: OccluderType::BLACK},
         std::move(triangles0_raw),
-        std::move(std::vector<FixedArray<ColoredVertex, 2>>()));
+        std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+        std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
+        std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
 
     /*std::vector<FixedArray<ColoredVertex, 3>> triangles1{
         FixedArray<ColoredVertex, 3>{

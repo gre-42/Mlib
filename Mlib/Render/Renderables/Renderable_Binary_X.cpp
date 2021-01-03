@@ -61,7 +61,9 @@ RenderableBinaryX::RenderableBinaryX(
                 .diffusivity = {0, 0, 0},
                 .specularity = {0, 0, 0}}.compute_color_mode(),
             std::move(triangles),
-            std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
+            std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
         nullptr,  // instances
         rendering_resources);
 }

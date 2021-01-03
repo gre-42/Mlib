@@ -92,7 +92,9 @@ RenderableDepthMap::RenderableDepthMap(
             "RenderableDepthMap",
             Material{},
             std::move(triangles),
-            std::move(std::vector<FixedArray<ColoredVertex, 2>>())),
+            std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
         nullptr,
         rendering_resources);
 }

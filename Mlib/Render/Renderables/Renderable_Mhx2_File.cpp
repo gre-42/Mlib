@@ -1,4 +1,5 @@
 #include "Renderable_Mhx2_File.hpp"
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mhx2.hpp>
 
 using namespace Mlib;
@@ -8,8 +9,8 @@ RenderableMhx2File::RenderableMhx2File(
     const LoadMeshConfig& cfg,
     RenderingResources& rendering_resources)
 {
-    std::list<std::shared_ptr<ColoredVertexArray>> triangles = load_mhx2(filename, cfg);
-    rva_ = std::make_shared<RenderableColoredVertexArray>(triangles, nullptr, rendering_resources);
+    std::shared_ptr<AnimatedColoredVertexArrays> acvas = load_mhx2(filename, cfg);
+    rva_ = std::make_shared<RenderableColoredVertexArray>(acvas->cvas, nullptr, rendering_resources);
 }
 
 void RenderableMhx2File::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const

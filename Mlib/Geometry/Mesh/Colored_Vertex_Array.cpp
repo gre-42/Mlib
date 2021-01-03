@@ -8,11 +8,15 @@ ColoredVertexArray::ColoredVertexArray(
     const std::string& name,
     const Material& material,
     std::vector<FixedArray<ColoredVertex, 3>>&& triangles,
-    std::vector<FixedArray<ColoredVertex, 2>>&& lines)
+    std::vector<FixedArray<ColoredVertex, 2>>&& lines,
+    std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
+    std::vector<FixedArray<std::vector<BoneWeight>, 2>>&& line_bone_weights)
 : name{name},
   material{material},
   triangles{std::forward<std::vector<FixedArray<ColoredVertex, 3>>>(triangles)},
-  lines{std::forward<std::vector<FixedArray<ColoredVertex, 2>>>(lines)}
+  lines{std::forward<std::vector<FixedArray<ColoredVertex, 2>>>(lines)},
+  triangle_bone_weights{std::forward<std::vector<FixedArray<std::vector<BoneWeight>, 3>>>(triangle_bone_weights)},
+  line_bone_weights{std::forward<std::vector<FixedArray<std::vector<BoneWeight>, 2>>>(line_bone_weights)}
 {
     assert_true(!name.empty());
 }

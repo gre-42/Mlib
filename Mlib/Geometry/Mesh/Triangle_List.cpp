@@ -22,7 +22,10 @@ void TriangleList::draw_triangle_with_normals(
     const FixedArray<float, 3>& c01,
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
-    const FixedArray<float, 2>& u01)
+    const FixedArray<float, 2>& u01,
+    const std::vector<BoneWeight>& b00,
+    const std::vector<BoneWeight>& b10,
+    const std::vector<BoneWeight>& b01)
 {
     ColoredVertex v00{p00, c00, u00, n00};
     ColoredVertex v10{p10, c10, u10, n10};
@@ -40,6 +43,12 @@ void TriangleList::draw_triangle_with_normals(
     v01.tangent = tangent;
 
     triangles_.push_back(FixedArray<ColoredVertex, 3>{v00, v10, v01});
+    if (!b00.empty() || !b10.empty() || !b01.empty()) {
+        triangle_bone_weights_.push_back(FixedArray<std::vector<BoneWeight>, 3>{b00, b10, b01});
+        if (triangles_.size() != triangle_bone_weights_.size()) {
+            throw std::runtime_error("Triangle bone size mismatch");
+        }
+    }
 }
 
 void TriangleList::draw_triangle_wo_normals(
@@ -51,10 +60,13 @@ void TriangleList::draw_triangle_wo_normals(
     const FixedArray<float, 3>& c01,
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
-    const FixedArray<float, 2>& u01)
+    const FixedArray<float, 2>& u01,
+    const std::vector<BoneWeight>& b00,
+    const std::vector<BoneWeight>& b10,
+    const std::vector<BoneWeight>& b01)
 {
     auto n = triangle_normal({p00, p10, p01});
-    draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01);
+    draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01);
 }
 
 void TriangleList::draw_rectangle_with_normals(
@@ -73,7 +85,11 @@ void TriangleList::draw_rectangle_with_normals(
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u11,
-    const FixedArray<float, 2>& u01)
+    const FixedArray<float, 2>& u01,
+    const std::vector<BoneWeight>& b00,
+    const std::vector<BoneWeight>& b10,
+    const std::vector<BoneWeight>& b11,
+    const std::vector<BoneWeight>& b01)
 {
     draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01);
     draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11);
@@ -91,10 +107,14 @@ void TriangleList::draw_rectangle_wo_normals(
     const FixedArray<float, 2>& u00,
     const FixedArray<float, 2>& u10,
     const FixedArray<float, 2>& u11,
-    const FixedArray<float, 2>& u01)
+    const FixedArray<float, 2>& u01,
+    const std::vector<BoneWeight>& b00,
+    const std::vector<BoneWeight>& b10,
+    const std::vector<BoneWeight>& b11,
+    const std::vector<BoneWeight>& b01)
 {
-    draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01);
-    draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11);
+    draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01);
+    draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11);
 }
 
 void TriangleList::extrude(const std::list<std::shared_ptr<TriangleList>>& triangle_lists, float height, float scale, float uv_scale_x, float uv_scale_y, TriangleList& dest) {
@@ -278,5 +298,7 @@ std::shared_ptr<ColoredVertexArray> TriangleList::triangle_array() const {
         name_,
         material_,
         std::move(std::vector<FixedArray<ColoredVertex, 3>>{triangles_.begin(), triangles_.end()}),
-        std::move(std::vector<FixedArray<ColoredVertex, 2>>()));
+        std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+        std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights_.begin(), triangle_bone_weights_.end()}),
+        std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
 }

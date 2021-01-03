@@ -1,4 +1,5 @@
 #include "Load_Mhx2.hpp"
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
@@ -47,7 +48,7 @@ std::string gen_filename(const std::string& f, const std::string& texture_name) 
     }
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
+std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     const std::string& filename,
     const LoadMeshConfig& cfg)
 {
@@ -65,12 +66,12 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
         throw std::runtime_error("Could not read from file " + filename);
     }
 
+    auto result = std::make_shared<AnimatedColoredVertexArrays>();
     auto bones = j.at("skeleton").at("bones");
     for (const auto& bone : bones) {
-        std::cerr << bone.at("name") << std::endl;
+        result->bone_indices.insert({bone.at("name").get<std::string>(), result->bone_indices.size()});
     }
     std::map<std::string, Material> materials;
-    std::list<std::shared_ptr<ColoredVertexArray>> result;
     
     for (const auto& material : j.at("materials")) {
         /*
@@ -134,6 +135,26 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
         auto mesh = geometry.at("mesh");
         std::vector<FixedArray<float, 3>> vertices = load_vector<3>(mesh.at("vertices"));
         std::vector<FixedArray<float, 2>> uv_coordinates = load_vector<2>(mesh.at("uv_coordinates"));
+        std::vector<std::list<BoneWeight>> vertex_bone_weights;
+        vertex_bone_weights.resize(vertices.size());
+        for (const auto& bw : mesh.at("weights").items()) {
+            auto bone_id = result->bone_indices.find(bw.key());
+            if (bone_id == result->bone_indices.end()) {
+                throw std::runtime_error("Could not find bone id for " + bw.key());
+            }
+            for (const auto& b : bw.value()) {
+                if (b.size() != 2) {
+                    throw std::runtime_error("Invalid weight length");
+                }
+                size_t vertex_id = b[0].get<size_t>();
+                if (vertex_id >= vertex_bone_weights.size()) {
+                    throw std::runtime_error("Vertex ID out of bounds");
+                }
+                vertex_bone_weights[vertex_id].push_back(BoneWeight{
+                    .bone_index = bone_id->second,
+                    .weight = b[1].get<float>()});
+            }
+        }
         auto uv_faces = mesh.at("uv_faces");
         auto uv_it = uv_faces.begin();
         for (const auto& face : mesh.at("faces")) {
@@ -158,7 +179,11 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
                     uv_coordinates.at(u[0]),
                     uv_coordinates.at(u[1]),
                     uv_coordinates.at(u[2]),
-                    uv_coordinates.at(u[3]));
+                    uv_coordinates.at(u[3]),
+                    std::vector(vertex_bone_weights.at(f[0]).begin(), vertex_bone_weights.at(f[0]).end()),
+                    std::vector(vertex_bone_weights.at(f[1]).begin(), vertex_bone_weights.at(f[1]).end()),
+                    std::vector(vertex_bone_weights.at(f[2]).begin(), vertex_bone_weights.at(f[2]).end()),
+                    std::vector(vertex_bone_weights.at(f[3]).begin(), vertex_bone_weights.at(f[3]).end()));
             } else {
                 throw std::runtime_error("Unsupported dimensionality");
             }
@@ -171,11 +196,11 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
             throw std::runtime_error("Triangle array is empty in file " + filename);
         }
         tl.convert_triangle_to_vertex_normals();
-        result.push_back(tl.triangle_array());
+        result->cvas.push_back(tl.triangle_array());
         tl.triangles_.clear();
     }
     FixedArray<float, 3, 3> rotation_matrix{tait_bryan_angles_2_matrix(cfg.rotation)};
-    for (auto& l : result) {
+    for (auto& l : result->cvas) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
                 v.position *= cfg.scale;

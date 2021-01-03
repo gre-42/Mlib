@@ -34,7 +34,9 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
             "AggregateArrayRenderer",
             l.first,
             std::vector<FixedArray<ColoredVertex, 3>>{l.second.begin(), l.second.end()},
-            std::vector<FixedArray<ColoredVertex, 2>>{}));
+            std::vector<FixedArray<ColoredVertex, 2>>{},
+            std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
+            std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
     }
     sort_for_rendering(mat_vectors);
     auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, nullptr, rendering_resources_);

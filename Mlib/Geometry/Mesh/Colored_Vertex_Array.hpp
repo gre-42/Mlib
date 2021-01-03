@@ -3,15 +3,11 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Mesh/BoneWeight.hpp>
 #include <memory>
 #include <vector>
 
 namespace Mlib {
-
-struct BoneWeight {
-    float weight;
-    size_t bone_index;
-};
 
 struct ColoredVertexArray {
     ColoredVertexArray() = default;
@@ -21,7 +17,9 @@ struct ColoredVertexArray {
         const std::string& name,
         const Material& material,
         std::vector<FixedArray<ColoredVertex, 3>>&& triangles,
-        std::vector<FixedArray<ColoredVertex, 2>>&& lines);
+        std::vector<FixedArray<ColoredVertex, 2>>&& lines,
+        std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
+        std::vector<FixedArray<std::vector<BoneWeight>, 2>>&& line_bone_weights);
     std::string name;
     Material material;
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
