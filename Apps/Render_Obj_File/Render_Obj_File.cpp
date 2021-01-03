@@ -1,5 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Look_At.hpp>
+#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -169,42 +170,30 @@ int main(int argc, char** argv) {
             size_t i = 0;
             for (const std::string& filename : args.unnamed_values()) {
                 std::string name = "obj-" + std::to_string(i++);
+                LoadMeshConfig cfg{
+                    .position = fixed_zeros<float, 3>(),                                              // position
+                    .rotation = fixed_zeros<float, 3>(),                                              // rotation
+                    .scale = fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
+                    .is_small = false,                                                                // is_small
+                    .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
+                    .cull_faces = false,                                                                // cull_faces
+                    .occluded_type = args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
+                    .occluder_type = OccluderType::BLACK,
+                    .occluded_by_black = true,                                                                 // occluded_by_black
+                    .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
+                    .transformation_mode = TransformationMode::ALL,
+                    .apply_static_lighting = args.has_named("--apply_static_lighting"),
+                    .werror = !args.has_named("--no_werror")};
                 if (filename.ends_with(".obj")) {
                     scene_node_resources.add_resource(name, std::make_shared<RenderableObjFile>(
                         filename,
-                        fixed_zeros<float, 3>(),                                              // position
-                        fixed_zeros<float, 3>(),                                              // rotation
-                        fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
-                        rendering_resources,
-                        false,                                                                // is_small
-                        blend_mode_from_string(args.named_value("--blend_mode", "binary")),
-                        false,                                                                // cull_faces
-                        args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
-                        OccluderType::BLACK,
-                        true,                                                                 // occluded_by_black
-                        aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
-                        TransformationMode::ALL,
-                        args.has_named("--apply_static_lighting"),
-                        !args.has_named("--no_werror")));
+                        cfg,
+                        rendering_resources));
                 } else if (filename.ends_with(".mhx2")) {
-                    if (args.has_named("--apply_static_lighting")) {
-                        throw std::runtime_error("Static lighting not supported for mhx2 files");
-                    }
                     scene_node_resources.add_resource(name, std::make_shared<RenderableMhx2File>(
                         filename,
-                        fixed_zeros<float, 3>(),                                              // position
-                        fixed_zeros<float, 3>(),                                              // rotation
-                        fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
-                        rendering_resources,
-                        false,                                                                // is_small
-                        blend_mode_from_string(args.named_value("--blend_mode", "binary")),
-                        false,                                                                // cull_faces
-                        args.has_named("--no_shadows") || (light_configuration == "none") ? OccludedType::OFF : OccludedType::LIGHT_MAP_DEPTH,
-                        OccluderType::BLACK,
-                        true,                                                                 // occluded_by_black
-                        aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
-                        TransformationMode::ALL,
-                        !args.has_named("--no_werror")));
+                        cfg,
+                        rendering_resources));
                 } else {
                     throw std::runtime_error("File has unknown extension: " + filename);
                 }

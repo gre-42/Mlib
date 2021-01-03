@@ -1,6 +1,8 @@
 #include "Load_Mhx2.hpp"
+#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <filesystem>
 #include <nlohmann/json.hpp>
 
@@ -47,16 +49,12 @@ std::string gen_filename(const std::string& f, const std::string& texture_name) 
 
 std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
     const std::string& filename,
-    bool is_small,
-    BlendMode blend_mode,
-    bool cull_faces,
-    OccludedType occluded_type,
-    OccluderType occluder_type,
-    bool occluded_by_black,
-    AggregateMode aggregate_mode,
-    TransformationMode transformation_mode,
-    bool werror)
+    const LoadMeshConfig& cfg)
 {
+    if (cfg.apply_static_lighting) {
+        throw std::runtime_error("Static lighting not supported for mhx2 files");
+    }
+
     json j;
     std::ifstream f{filename};
     if (f.fail()) {
@@ -124,12 +122,12 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
             filename,
             Material{
                 .texture_descriptor = m.texture_descriptor,
-                .occluded_type = occluded_type,
-                .occluder_type = occluder_type,
-                .occluded_by_black = occluded_by_black,
-                .aggregate_mode = aggregate_mode,
-                .transformation_mode = transformation_mode,
-                .is_small = is_small,
+                .occluded_type = cfg.occluded_type,
+                .occluder_type = cfg.occluder_type,
+                .occluded_by_black = cfg.occluded_by_black,
+                .aggregate_mode = cfg.aggregate_mode,
+                .transformation_mode = cfg.transformation_mode,
+                .is_small = cfg.is_small,
                 .ambience = m.ambience,
                 .diffusivity = m.diffusivity,
                 .specularity = m.specularity}.compute_color_mode()};
@@ -175,6 +173,17 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_mhx2(
         tl.convert_triangle_to_vertex_normals();
         result.push_back(tl.triangle_array());
         tl.triangles_.clear();
+    }
+    FixedArray<float, 3, 3> rotation_matrix{tait_bryan_angles_2_matrix(cfg.rotation)};
+    for (auto& l : result) {
+        for (auto& t : l->triangles) {
+            for (auto& v : t.flat_iterable()) {
+                v.position *= cfg.scale;
+                v.position = dot1d(rotation_matrix, v.position);
+                v.position += cfg.position;
+                v.normal = dot1d(rotation_matrix, v.normal);
+            }
+        }
     }
     return result;
 }

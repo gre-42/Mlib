@@ -1,4 +1,5 @@
 #include "Load_Scene.hpp"
+#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
@@ -488,29 +489,30 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                 fpath(match[2].str()),
-                FixedArray<float, 3>{
-                    safe_stof(match[3].str()),
-                    safe_stof(match[4].str()),
-                    safe_stof(match[5].str())},
-                FixedArray<float, 3>{
-                    safe_stof(match[6].str()) / 180 * float(M_PI),
-                    safe_stof(match[7].str()) / 180 * float(M_PI),
-                    safe_stof(match[8].str()) / 180 * float(M_PI)},
-                FixedArray<float, 3>{
-                    safe_stof(match[9].str()),
-                    safe_stof(match[10].str()),
-                    safe_stof(match[11].str())},
-                    rendering_resources,
-                safe_stoi(match[12].str()),
-                blend_mode_from_string(match[13].str()),
-                safe_stoi(match[14].str()),                     // cull_faces
-                occluded_type_from_string(match[15].str()),
-                occluder_type_from_string(match[16].str()),
-                safe_stoi(match[17].str()),                     // occluded_by_black
-                aggregate_mode_from_string(match[18].str()),
-                transformation_mode_from_string(match[19].str()),
-                false,                                          // apply_static_lighting
-                match[20].str() == ""));
+                LoadMeshConfig{
+                    .position = FixedArray<float, 3>{
+                        safe_stof(match[3].str()),
+                        safe_stof(match[4].str()),
+                        safe_stof(match[5].str())},
+                    .rotation = FixedArray<float, 3>{
+                        safe_stof(match[6].str()) / 180 * float(M_PI),
+                        safe_stof(match[7].str()) / 180 * float(M_PI),
+                        safe_stof(match[8].str()) / 180 * float(M_PI)},
+                    .scale = FixedArray<float, 3>{
+                        safe_stof(match[9].str()),
+                        safe_stof(match[10].str()),
+                        safe_stof(match[11].str())},
+                    .is_small = safe_stob(match[12].str()),
+                    .blend_mode = blend_mode_from_string(match[13].str()),
+                    .cull_faces = safe_stob(match[14].str()),
+                    .occluded_type = occluded_type_from_string(match[15].str()),
+                    .occluder_type = occluder_type_from_string(match[16].str()),
+                    .occluded_by_black = safe_stob(match[17].str()),
+                    .aggregate_mode = aggregate_mode_from_string(match[18].str()),
+                    .transformation_mode = transformation_mode_from_string(match[19].str()),
+                    .apply_static_lighting = false,
+                    .werror = match[20].str() == ""},
+                rendering_resources));
         } else if (std::regex_match(line, match, gen_triangle_rays_reg)) {
             scene_node_resources.generate_triangle_rays(
                 match[1].str(),

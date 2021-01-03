@@ -1,10 +1,12 @@
 #include "Load_Obj.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Material.hpp>
+#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/String.hpp>
 #include <filesystem>
 #include <regex>
@@ -21,16 +23,7 @@ struct ColoredVertexX {
 
 std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     const std::string& filename,
-    bool is_small,
-    BlendMode blend_mode,
-    bool cull_faces,
-    OccludedType occluded_type,
-    OccluderType occluder_type,
-    bool occluded_by_black,
-    AggregateMode aggregate_mode,
-    TransformationMode transformation_mode,
-    bool apply_static_lighting,
-    bool werror)
+    const LoadMeshConfig& cfg)
 {
     std::map<std::string, ObjMaterial> mtllib;
     std::vector<ColoredVertexX> obj_vertices;
@@ -41,12 +34,12 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
         filename,
         Material{
             .texture_descriptor = TextureDescriptor{color: ""},
-            .occluded_type = occluded_type,
-            .occluder_type = occluder_type,
-            .occluded_by_black = occluded_by_black,
-            .aggregate_mode = aggregate_mode,
-            .transformation_mode = transformation_mode,
-            .is_small = is_small}};
+            .occluded_type = cfg.occluded_type,
+            .occluder_type = cfg.occluder_type,
+            .occluded_by_black = cfg.occluded_by_black,
+            .aggregate_mode = cfg.aggregate_mode,
+            .transformation_mode = cfg.transformation_mode,
+            .is_small = cfg.is_small}};
     StaticFaceLightning sfl;
 
     std::ifstream ifs{filename};
@@ -164,9 +157,9 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     n0,
                     n1,
                     n2,
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffusivity, n0),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffusivity, n1),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffusivity, n2),
+                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffusivity, n0),
+                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffusivity, n1),
+                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffusivity, n2),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0, 0},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1, 0},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{0, 1});
@@ -221,10 +214,10 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     n1,
                     n2,
                     n3,
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffusivity, n0),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffusivity, n1),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffusivity, n2),
-                    current_mtl.has_alpha_texture || !apply_static_lighting ? v3.color : sfl.get_color(current_mtl.diffusivity, n3),
+                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v0.color : sfl.get_color(current_mtl.diffusivity, n0),
+                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v1.color : sfl.get_color(current_mtl.diffusivity, n1),
+                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffusivity, n2),
+                    current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v3.color : sfl.get_color(current_mtl.diffusivity, n3),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0, 0},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1, 0},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{1, 1},
@@ -241,7 +234,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 tl.name_ = match[1].str();
             } else if (std::regex_match(line, match, mtllib_reg)) {
                 std::string p = fs::path(filename).parent_path().string();
-                mtllib = load_mtllib(p == "" ? match[1].str() : p + "/" + match[1].str(), werror);
+                mtllib = load_mtllib(p == "" ? match[1].str() : p + "/" + match[1].str(), cfg.werror);
             } else if (std::regex_match(line, match, usemtl_reg)) {
                 current_mtl = mtllib.at(match[1].str());
                 if (!current_mtl.color_texture.empty()) {
@@ -257,8 +250,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     tl.material_.texture_descriptor.normal.clear();
                 }
                 if (current_mtl.has_alpha_texture) {
-                    tl.material_.blend_mode = blend_mode;
-                    tl.material_.cull_faces = cull_faces;
+                    tl.material_.blend_mode = cfg.blend_mode;
+                    tl.material_.cull_faces = cfg.cull_faces;
                 } else {
                     tl.material_.blend_mode = BlendMode::OFF;
                     tl.material_.cull_faces = true;
@@ -270,7 +263,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             } else if (std::regex_match(line, match, smooth_shading_reg)) {
                 // do nothing
             } else {
-                if (werror) {
+                if (cfg.werror) {
                     throw std::runtime_error("Could not parse line");
                 } else {
                     std::cerr << "WARNING: Could not parse line: " + line << std::endl;
@@ -286,5 +279,16 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
         throw std::runtime_error("Error reading from file " + filename);
     }
     result.push_back(tl.triangle_array());
+    FixedArray<float, 3, 3> rotation_matrix{tait_bryan_angles_2_matrix(cfg.rotation)};
+    for (auto& l : result) {
+        for (auto& t : l->triangles) {
+            for (auto& v : t.flat_iterable()) {
+                v.position *= cfg.scale;
+                v.position = dot1d(rotation_matrix, v.position);
+                v.position += cfg.position;
+                v.normal = dot1d(rotation_matrix, v.normal);
+            }
+        }
+    }
     return result;
 }

@@ -1,4 +1,5 @@
 #include <Mlib/Env.hpp>
+#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Pi.hpp>
@@ -93,16 +94,17 @@ void test_physics_engine() {
     };*/
     std::list<std::shared_ptr<ColoredVertexArray>> triangles1 = load_obj(
         "Data/box.obj",
-        true,                            // is_small
-        BlendMode::OFF,
-        false,                           // cull_faces
-        OccludedType::LIGHT_MAP_DEPTH,
-        OccluderType::BLACK,
-        true,                            // occluded_by_black
-        AggregateMode::OFF,
-        TransformationMode::ALL,
-        true,                            // apply_static_lighting
-        true);                           // werror
+        LoadMeshConfig{
+            .is_small = true,
+            .blend_mode = BlendMode::OFF,
+            .cull_faces = false,
+            .occluded_type = OccludedType::LIGHT_MAP_DEPTH,
+            .occluder_type = OccluderType::BLACK,
+            .occluded_by_black = true,
+            .aggregate_mode = AggregateMode::OFF,
+            .transformation_mode = TransformationMode::ALL,
+            .apply_static_lighting = true,
+            .werror = true});
 
     SceneNodeResources scene_node_resources;
     Scene scene;
@@ -111,21 +113,21 @@ void test_physics_engine() {
     scene_node_resources.add_resource("obj1", std::make_shared<RenderableColoredVertexArray>(triangles1, nullptr, rendering_resources));
     scene_node_resources.add_resource("beacon", std::make_shared<RenderableObjFile>(
         "Data/box.obj",
-        FixedArray<float, 3>{0, 0, 0},        // position
-        FixedArray<float, 3>{0, 0, 0},        // rotation
-        FixedArray<float, 3>{0.5, 0.5, 0.5},  // scale
-        rendering_resources,
-        true,                                 // is_small
-        BlendMode::OFF,
-        false,                                // cull_faces
-        OccludedType::OFF,
-        OccluderType::OFF,
-        true,                                 // occluded_by_black
-        AggregateMode::OFF,
-        TransformationMode::ALL,
-        true,                                 // apply_static_lighting
-        true                                  // werror
-    ));
+        LoadMeshConfig{
+            .position = FixedArray<float, 3>{0, 0, 0},
+            .rotation = FixedArray<float, 3>{0, 0, 0},
+            .scale = FixedArray<float, 3>{0.5, 0.5, 0.5},
+            .is_small = true,
+            .blend_mode = BlendMode::OFF,
+            .cull_faces = false,
+            .occluded_type = OccludedType::OFF,
+            .occluder_type = OccluderType::OFF,
+            .occluded_by_black = true,
+            .aggregate_mode = AggregateMode::OFF,
+            .transformation_mode = TransformationMode::ALL,
+            .apply_static_lighting = true,
+            .werror = true},
+        rendering_resources));
     scene_node_resources.generate_triangle_rays("obj1", 5, {1, 1, 1});
     auto scene_node0 = new SceneNode;
     auto scene_node1_0 = new SceneNode;
