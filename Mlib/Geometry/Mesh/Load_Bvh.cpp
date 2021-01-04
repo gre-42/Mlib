@@ -148,8 +148,8 @@ std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
     }
     std::map<std::string, FixedArray<float, 4, 4>> result;
     for (const auto& p : frames_[id]) {
-        FixedArray<float, 3> position = p.second[0];
-        FixedArray<float, 3> rotation = p.second[1];
+        const FixedArray<float, 3>& position = p.second[0];
+        const FixedArray<float, 3>& rotation = p.second[1];
         FixedArray<float, 4, 4> m = assemble_homogeneous_4x4(
             tait_bryan_angles_2_matrix(
                 rotation / 180.f * float(M_PI),
