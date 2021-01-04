@@ -22,12 +22,14 @@ FixedArray<TData, 3, 3> rodrigues(const FixedArray<TData, 3>& k, const TData& th
 }
 
 template <class TData>
-FixedArray<TData, 3, 3> tait_bryan_angles_2_matrix(const FixedArray<TData, 3>& angles)
+FixedArray<TData, 3, 3> tait_bryan_angles_2_matrix(
+    const FixedArray<TData, 3>& angles,
+    const FixedArray<size_t, 3>& indices = {0, 1, 2})
 {
     FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
-    FixedArray<TData, 3, 3> result = rodrigues(I[0], angles(0));
-    result = dot2d(rodrigues(I[1], angles(1)), result);
-    result = dot2d(rodrigues(I[2], angles(2)), result);
+    FixedArray<TData, 3, 3> result = rodrigues(I[indices(0)], angles(indices(0)));
+    result = dot2d(rodrigues(I[indices(1)], angles(indices(1))), result);
+    result = dot2d(rodrigues(I[indices(2)], angles(indices(2))), result);
     return result;
 }
 
