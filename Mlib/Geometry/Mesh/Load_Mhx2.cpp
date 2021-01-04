@@ -67,6 +67,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     }
 
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
+    float scale = j.at("skeleton").at("scale").get<float>();
     FixedArray<float, 3> offset(j.at("skeleton").at("offset").get<std::vector<float>>());
     auto bones = j.at("skeleton").at("bones");
     std::map<std::string, Bone*> bone_names;
@@ -93,6 +94,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         Bone* new_bone = new Bone{
             .index = result->bone_indices.size(),
             .initial_transformation = initial_transformation};
+        new_bone->initial_transformation(0, 3) /= scale;
+        new_bone->initial_transformation(1, 3) /= scale;
+        new_bone->initial_transformation(2, 3) /= scale;
         std::string new_bone_name = bone.at("name").get<std::string>();
         result->bone_indices.insert({new_bone_name, new_bone->index});
         if (parent != bone.end()) {
@@ -212,10 +216,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             }
             if (f.size() == 4) {
                 tl.draw_rectangle_wo_normals(
-                    vertices.at(f[0]),
-                    vertices.at(f[1]),
-                    vertices.at(f[2]),
-                    vertices.at(f[3]),
+                    vertices.at(f[0]) / scale,
+                    vertices.at(f[1]) / scale,
+                    vertices.at(f[2]) / scale,
+                    vertices.at(f[3]) / scale,
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
