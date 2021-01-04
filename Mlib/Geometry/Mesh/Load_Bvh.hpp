@@ -18,6 +18,7 @@ public:
     std::map<std::string, FixedArray<float, 4, 4>> get_frame(size_t id);
 private:
     std::vector<std::map<std::string, FixedArray<float, 2, 3>>> frames_;
+    std::map<std::string, FixedArray<float, 2, 3>> offsets_;
     std::list<ColumnDescription> columns_;
     float frame_time_;
 };

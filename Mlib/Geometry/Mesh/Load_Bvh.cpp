@@ -5,6 +5,8 @@
 #include <fstream>
 #include <regex>
 
+static const float scale = 0.1;
+
 using namespace Mlib;
 
 BvhLoader::BvhLoader(const std::string& filename, bool center) {
@@ -18,11 +20,28 @@ BvhLoader::BvhLoader(const std::string& filename, bool center) {
     while (std::getline(f, line)) {
         if (!in_data_section) {
             static const std::regex name_re{"^[\\s\\n\\r]*(?:ROOT|JOINT)\\s+(\\w+)[\\s\\n\\r]*$"};
+            static const std::regex ends_re{"^[\\s\\n\\r]*End Site[\\s\\n\\r]*$"};
+            static const std::regex offs_re{"^[\\s\\n\\r]*OFFSET\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)[\\n\\r]*$"};
             static const std::regex chan_re{"^[\\s\\n\\r]*CHANNELS\\s+(\\d+)\\s+(.+)[\\n\\r]*$"};
             static const std::regex motion_re{"^[\\s\\n\\r]*MOTION[\\s\\n\\r]*$"};
             std::smatch match;
             if (std::regex_match(line, match, name_re)) {
                 joint_name = match[1].str();
+            } else if (std::regex_match(line, match, ends_re)) {
+                joint_name = "<end site>";
+            } else if (std::regex_match(line, match, offs_re)) {
+                if (joint_name != "<end site>") {
+                    if (!offsets_.insert({joint_name, FixedArray<float, 2, 3>{
+                        safe_stof(match[1].str()),
+                        safe_stof(match[2].str()),
+                        safe_stof(match[3].str()),
+                        0,
+                        0,
+                        0}}).second)
+                    {
+                        throw std::runtime_error("Could not insert offset for joint " + joint_name);
+                    }
+                }
             } else if (std::regex_match(line, match, chan_re)) {
                 size_t nchannels = safe_stoz(match[1].str());
                 auto channels = string_to_vector(match[2].str());
@@ -86,7 +105,7 @@ BvhLoader::BvhLoader(const std::string& filename, bool center) {
             frames_.emplace_back();
             size_t i = 0;
             for (const auto& c : columns_) {
-                frames_.back()[c.joint_name](c.pose_index0, c.pose_index1) = d[i++];
+                frames_.back()[c.joint_name](c.pose_index0, c.pose_index1) = d[i++] + offsets_.at(c.joint_name)(c.pose_index0, c.pose_index1);
             }
         }
     }
@@ -115,7 +134,7 @@ std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
         FixedArray<float, 3> rotation = p.second[1];
         // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
         // v*R = v*YXZ
-        result[p.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation, {1, 0, 2}), position);
+        result[p.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation, {1, 0, 2}), position * scale);
     }
     return result;
 }
