@@ -10,7 +10,6 @@ namespace Mlib {
 
 struct Bone {
     size_t index;
-    FixedArray<float, 4, 4> transformation;
     std::vector<std::unique_ptr<Bone>> children;
     std::vector<FixedArray<float, 4, 4>> absolutify(
         const std::vector<FixedArray<float, 4, 4>>& transformations);
@@ -22,7 +21,7 @@ private:
 };
 
 struct AnimatedColoredVertexArrays {
-    Bone skeleton;
+    std::unique_ptr<Bone> skeleton;
     std::map<std::string, size_t> bone_indices;
     std::list<std::shared_ptr<ColoredVertexArray>> cvas;
 };

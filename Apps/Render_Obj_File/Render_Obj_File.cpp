@@ -1,5 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Look_At.hpp>
+#include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -34,6 +35,8 @@ int main(int argc, char** argv) {
 
     const ArgParser parser(
         "Usage: render_obj_file <filename ...> "
+        "[--bvh <filename>] "
+        "[--animation_frame <id>] "
         "[--scale <scale>] "
         "[--y <y>] "
         "[--angle_x <angle_x>] "
@@ -86,7 +89,9 @@ int main(int argc, char** argv) {
          "--no_werror",
          "--apply_static_lighting",
          "--no_shadows"},
-        {"--scale",
+        {"--bvh",
+         "--animation_frame",
+         "--scale",
          "--y",
          "--angle_x",
          "--angle_y",
@@ -194,6 +199,11 @@ int main(int argc, char** argv) {
                         filename,
                         cfg,
                         rendering_resources));
+                    if (args.has_named_value("--bvh")) {
+                        size_t animation_frame = safe_stoz(args.named_value("--animation_frame"));
+                        BvhLoader bvh{args.named_value("--bvh")};
+                        scene_node_resources.set_relative_joint_poses(name, bvh.get_frame(animation_frame));
+                    }
                 } else {
                     throw std::runtime_error("File has unknown extension: " + filename);
                 }

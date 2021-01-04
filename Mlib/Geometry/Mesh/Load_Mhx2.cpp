@@ -68,8 +68,31 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
 
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     auto bones = j.at("skeleton").at("bones");
+    std::map<std::string, Bone*> bone_names;
     for (const auto& bone : bones) {
-        result->bone_indices.insert({bone.at("name").get<std::string>(), result->bone_indices.size()});
+        Bone* new_bone = new Bone{.index = result->bone_indices.size()};
+        std::string new_bone_name = bone.at("name").get<std::string>();
+        result->bone_indices.insert({new_bone_name, new_bone->index});
+        auto parent = bone.find("parent");
+        if (parent != bone.end()) {
+            std::string parent_name = parent.value().get<std::string>();
+            auto par = bone_names.find(parent_name);
+            if (par == bone_names.end()) {
+                throw std::runtime_error("Unknown bone " + parent_name);
+            }
+            par->second->children.push_back(std::unique_ptr<Bone>(new_bone));
+        } else {
+            if (result->skeleton != nullptr) {
+                throw std::runtime_error("Found multiple root bones");
+            }
+            result->skeleton.reset(new_bone);
+        }
+        if (!bone_names.insert({new_bone_name, new_bone}).second) {
+            throw std::runtime_error("Could not insert bone " + new_bone_name);
+        }
+    }
+    if (result->skeleton == nullptr) {
+        throw std::runtime_error("Could not find root node");
     }
     std::map<std::string, Material> materials;
     

@@ -103,3 +103,19 @@ PointsAndAdjacency<float, 2> SceneNodeResources::way_points(const std::string& n
         throw std::runtime_error("way_points for resource \"" + name + "\" failed: " + e.what());
     }
 }
+
+void SceneNodeResources::set_relative_joint_poses(
+    const std::string& name,
+    const std::map<std::string, FixedArray<float, 4, 4>>& poses) const
+{
+    auto it = resources_.find(name);
+    if (it == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + name + '"');
+    }
+    try {
+        return it->second->set_relative_joint_poses(poses);
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("set_relative_joint_poses for resource \"" + name + "\" failed: " + e.what());
+    }
+
+}

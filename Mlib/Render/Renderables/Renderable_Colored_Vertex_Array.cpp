@@ -681,3 +681,11 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     vertex_arrays_.insert(std::make_pair(cva, std::move(va)));
     return result;
 }
+
+void RenderableColoredVertexArray::set_joint_poses(
+    const std::vector<FixedArray<float, 4, 4>>& poses)
+{
+    for (auto& t : triangles_res_) {
+        t = t->transformed(poses);
+    }
+}

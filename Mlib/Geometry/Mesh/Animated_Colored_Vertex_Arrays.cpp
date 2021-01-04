@@ -20,7 +20,10 @@ void Bone::absolutify(
     if (index >= result.size()) {
         throw std::runtime_error("Bone index too large for result array");
     }
-    result[index] = dot2d(parent_transformation, transformation);
+    if (index >= transformations.size()) {
+        throw std::runtime_error("Bone index too large for transformations");
+    }
+    result[index] = dot2d(parent_transformation, transformations[index]);
     for (const auto& c : children) {
         c->absolutify(transformations, result[index], result);
     }
