@@ -5,11 +5,14 @@
 #include <fstream>
 #include <regex>
 
-static const float scale = 0.1;
-
 using namespace Mlib;
 
-BvhLoader::BvhLoader(const std::string& filename, bool center) {
+BvhLoader::BvhLoader(
+    const std::string& filename,
+    bool demean,
+    float scale)
+: scale_{scale}
+{
     std::ifstream f{filename};
     if (f.fail()) {
         throw std::runtime_error("Could not open " + filename);
@@ -109,7 +112,7 @@ BvhLoader::BvhLoader(const std::string& filename, bool center) {
             }
         }
     }
-    if (center) {
+    if (demean) {
         if (columns_.empty()) {
             throw std::runtime_error("Columns list is empty");
         }
@@ -134,7 +137,7 @@ std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
         FixedArray<float, 3> rotation = p.second[1];
         // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
         // v*R = v*YXZ
-        result[p.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation, {1, 0, 2}), position * scale);
+        result[p.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation, {1, 0, 2}), position * scale_);
     }
     return result;
 }

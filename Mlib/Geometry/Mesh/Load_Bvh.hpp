@@ -14,13 +14,14 @@ struct ColumnDescription {
 
 class BvhLoader {
 public:
-    explicit BvhLoader(const std::string& filename, bool center);
+    explicit BvhLoader(const std::string& filename, bool demean, float scale);
     std::map<std::string, FixedArray<float, 4, 4>> get_frame(size_t id);
 private:
     std::vector<std::map<std::string, FixedArray<float, 2, 3>>> frames_;
     std::map<std::string, FixedArray<float, 2, 3>> offsets_;
     std::list<ColumnDescription> columns_;
     float frame_time_;
+    float scale_;
 };
 
 }
