@@ -40,7 +40,7 @@ public:
     explicit BvhLoader(
         const std::string& filename,
         const BvhConfig& cfg = blender_bvh_config);
-    std::map<std::string, FixedArray<float, 4, 4>> get_frame(size_t id);
+    std::map<std::string, FixedArray<float, 4, 4>> get_frame(size_t id) const;
 private:
     std::vector<std::map<std::string, FixedArray<float, 2, 3>>> frames_;
     std::map<std::string, FixedArray<float, 3>> offsets_;

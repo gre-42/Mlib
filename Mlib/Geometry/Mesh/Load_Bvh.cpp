@@ -142,7 +142,7 @@ BvhLoader::BvhLoader(
     }
 }
 
-std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
+std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) const {
     if (id >= frames_.size()) {
         throw std::runtime_error("Frame ID too large");
     }
