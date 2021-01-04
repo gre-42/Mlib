@@ -75,13 +75,13 @@ BvhLoader::BvhLoader(const std::string& filename, bool center) {
                     columns_.push_back(ColumnDescription{.joint_name = joint_name, .pose_index0 = cid0, .pose_index1 = cid1});
                 }
             } else if (std::regex_match(line, match, motion_re)) {
-                static const std::regex frames_re{"^\\s*Frames:	(\\d+)\\s*"};
+                static const std::regex frames_re{"^\\s*Frames:\\s*(\\d+)\\s*"};
                 static const std::regex frame_time_re{"^\\s*Frame Time:\\s*(\\S+)\\s*"};
                 if (!std::getline(f, line)) {
                     throw std::runtime_error("Could not get line");
                 }
                 if (!std::regex_match(line, match, frames_re)) {
-                    throw std::runtime_error("Could not match frames: " + line);
+                    throw std::runtime_error("Could not match frames: \"" + line + '"');
                 }
                 size_t nframes = safe_stoz(match[1].str());
                 frames_.reserve(nframes);
@@ -89,7 +89,7 @@ BvhLoader::BvhLoader(const std::string& filename, bool center) {
                     throw std::runtime_error("Could not get line");
                 }
                 if (!std::regex_match(line, match, frame_time_re)) {
-                    throw std::runtime_error("Could not match frame time: " + line);
+                    throw std::runtime_error("Could not match frame time: \"" + line + '"');
                 }
                 frame_time_ = safe_stof(match[1].str());
                 in_data_section = true;
