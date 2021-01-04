@@ -81,33 +81,56 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         auto bones = j.at("skeleton").at("bones");
         std::map<std::string, Bone*> bone_names;
         for (const auto& bone : bones) {
-            FixedArray<float, 4, 4> initial_transformation;
+            FixedArray<float, 4, 4> initial_absolute_transformation;
             {
-                auto initial_transformation_v = bone.at("matrix").get<std::vector<std::vector<float>>>();
-                if (initial_transformation_v.size() != 4) {
+                auto initial_absolute_transformation_v = bone.at("matrix").get<std::vector<std::vector<float>>>();
+                if (initial_absolute_transformation_v.size() != 4) {
                     throw std::runtime_error("wrong matrix size");
                 }
                 for (size_t r = 0; r < 4; ++r) {
-                    if (initial_transformation_v[r].size() != 4) {
+                    if (initial_absolute_transformation_v[r].size() != 4) {
                         throw std::runtime_error("wrong matrix size");
                     }
                     for (size_t c = 0; c < 4; ++c) {
-                        initial_transformation(r, c) = initial_transformation_v[r][c];
+                        initial_absolute_transformation(r, c) = initial_absolute_transformation_v[r][c];
                     }
                 }
             }
             auto parent = bone.find("parent");
             if (parent == bone.end()) {
-                initial_transformation(0, 3) += so_skelleton.offset(0);
-                initial_transformation(1, 3) += so_skelleton.offset(1);
-                initial_transformation(2, 3) += so_skelleton.offset(2);
+                initial_absolute_transformation(0, 3) += so_skelleton.offset(0);
+                initial_absolute_transformation(1, 3) += so_skelleton.offset(1);
+                initial_absolute_transformation(2, 3) += so_skelleton.offset(2);
             }
-            initial_transformation(0, 3) /= so_skelleton.scale10;
-            initial_transformation(1, 3) /= so_skelleton.scale10;
-            initial_transformation(2, 3) /= so_skelleton.scale10;
+            initial_absolute_transformation(0, 3) /= so_skelleton.scale10;
+            initial_absolute_transformation(1, 3) /= so_skelleton.scale10;
+            initial_absolute_transformation(2, 3) /= so_skelleton.scale10;
+            // ~/.config/blender/2.90/scripts/addons/import_runtime_mhx2/importer.py
+            // if "matrix" in mhBone.keys():
+            //     mat = Matrix(mhBone["matrix"])
+            //     nmat = Matrix((mat[0], -mat[2], mat[1])).to_3x3().to_4x4()
+            //     nmat.col[3] = eb.matrix.col[3]
+            //     eb.matrix = nmat
+            // else:
+            //     eb.roll = mhBone["roll"]
+            // {
+            //     FixedArray<float, 4, 4> roll = assemble_homogeneous_4x4(
+            //         rodrigues(
+            //             FixedArray<float, 3>{0, 0, 1},
+            //             bone.at("roll").get<float>()),
+            //         FixedArray<float, 3>{0, 0, 0});
+            //     initial_absolute_transformation = dot2d(initial_absolute_transformation, roll);
+            // }
+            // {
+            //     auto R = R3_from_4x4(initial_absolute_transformation);
+            //     auto t = t3_from_4x4(initial_absolute_transformation);
+            //     std::swap(R[1], R[2]);
+            //     R[1] *= -1;
+            //     initial_absolute_transformation = assemble_homogeneous_4x4(R, t);
+            // }
             Bone* new_bone = new Bone{
                 .index = result->bone_indices.size(),
-                .initial_transformation = initial_transformation};
+                .initial_absolute_transformation = initial_absolute_transformation};
             std::string new_bone_name = bone.at("name").get<std::string>();
             result->bone_indices.insert({new_bone_name, new_bone->index});
             if (parent != bone.end()) {

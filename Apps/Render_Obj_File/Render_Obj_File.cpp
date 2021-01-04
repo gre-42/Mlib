@@ -32,18 +32,45 @@
 
 using namespace Mlib;
 
-void add_bone(const Bone& b, SceneNode* parent_node, SceneNodeResources& scene_node_resources){
+void add_bone(
+    const Bone& b,
+    SceneNode* parent_node,
+    SceneNodeResources& scene_node_resources)
+{
     SceneNode* bone_node = new SceneNode;
-    bone_node->set_position(t3_from_4x4(b.initial_transformation));
-    bone_node->set_rotation(matrix_2_tait_bryan_angles(R3_from_4x4(b.initial_transformation)));
+    bone_node->set_position(t3_from_4x4(b.initial_absolute_transformation));
+    bone_node->set_rotation(matrix_2_tait_bryan_angles(R3_from_4x4(b.initial_absolute_transformation)));
     scene_node_resources.instantiate_renderable(
-        "bone",
-        "bone",
+        "reference_bone",
+        "reference_bone",
         *bone_node,
         SceneNodeResourceFilter{});
-    parent_node->add_child("bone" + std::to_string(b.index), bone_node);
+    parent_node->add_child("reference_bone" + std::to_string(b.index), bone_node);
     for (const auto& c : b.children) {
-        add_bone(*c, bone_node, scene_node_resources);
+        add_bone(*c, parent_node, scene_node_resources);
+    }
+}
+
+void add_bone_frame(
+    const Bone& b,
+    const std::vector<FixedArray<float, 4, 4>>& frame,
+    SceneNode* parent_node,
+    SceneNodeResources& scene_node_resources)
+{
+    if (b.index >= frame.size()) {
+        throw std::runtime_error("Frame index too large");
+    }
+    SceneNode* bone_node = new SceneNode;
+    bone_node->set_position(t3_from_4x4(frame.at(b.index)));
+    bone_node->set_rotation(matrix_2_tait_bryan_angles(R3_from_4x4(frame.at(b.index))));
+    scene_node_resources.instantiate_renderable(
+        "frame_bone",
+        "frame_bone",
+        *bone_node,
+        SceneNodeResourceFilter{});
+    parent_node->add_child("frame_bone" + std::to_string(b.index), bone_node);
+    for (const auto& c : b.children) {
+        add_bone_frame(*c, frame, bone_node, scene_node_resources);
     }
 }
 
@@ -53,6 +80,8 @@ int main(int argc, char** argv) {
         "Usage: render_obj_file <filename ...> "
         "[--bvh <filename>] "
         "[--animation_frame <id>] "
+        "[--bone_frame <id>] "
+        "[--hide_object] "
         "[--scale <scale>] "
         "[--node_scale <scale>] "
         "[--bvh_scale <scale>] "
@@ -60,7 +89,8 @@ int main(int argc, char** argv) {
         "[--bvh_rotation_0] "
         "[--bvh_rotation_1] "
         "[--bvh_rotation_2] "
-        "[--bone <filename>] "
+        "[--reference_bone <filename>] "
+        "[--frame_bone <filename>] "
         "[--bone_scale <scale>] "
         "[--x <x>] "
         "[--y <y>] "
@@ -110,7 +140,8 @@ int main(int argc, char** argv) {
         "[--no_shadows] "
         "[--light_configuration {none, one, shifted_circle, circle}]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
-        {"--no_cull_faces",
+        {"--hide_object",
+         "--no_cull_faces",
          "--wire_frame",
          "--no_werror",
          "--apply_static_lighting",
@@ -120,9 +151,11 @@ int main(int argc, char** argv) {
          "--bvh_rotation_0",
          "--bvh_rotation_1",
          "--bvh_rotation_2",
-         "--bone",
+         "--reference_bone",
+         "--frame_bone",
          "--bone_scale",
          "--animation_frame",
+         "--bone_frame",
          "--scale",
          "--node_scale",
          "--bvh_scale",
@@ -236,8 +269,28 @@ int main(int argc, char** argv) {
                         cfg,
                         rendering_resources);
                     scene_node_resources.add_resource(name, rmhx2);
+                    LoadMeshConfig bone_cfg{
+                        .position = fixed_zeros<float, 3>(),
+                        .rotation = fixed_zeros<float, 3>(),
+                        .scale = fixed_full<float, 3>(safe_stof(args.named_value("--bone_scale", "1"))),
+                        .is_small = false,
+                        .blend_mode = BlendMode::OFF,
+                        .cull_faces = false,
+                        .occluded_type = OccludedType::OFF,
+                        .occluder_type = OccluderType::OFF,
+                        .occluded_by_black = false,
+                        .aggregate_mode = AggregateMode::OFF,
+                        .transformation_mode = TransformationMode::ALL,
+                        .apply_static_lighting = false,
+                        .werror = !args.has_named("--no_werror")};
+                    if (args.has_named_value("--reference_bone")) {
+                        scene_node_resources.add_resource("reference_bone", std::make_shared<RenderableObjFile>(
+                            args.named_value("--reference_bone"),
+                            bone_cfg,
+                            rendering_resources));
+                        add_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
+                    }
                     if (args.has_named_value("--bvh")) {
-                        size_t animation_frame = safe_stoz(args.named_value("--animation_frame"));
                         BvhLoader bvh{
                             args.named_value("--bvh"),
                             safe_stob(args.named_value("--bvh_demean", "0")),
@@ -246,28 +299,22 @@ int main(int argc, char** argv) {
                                 safe_stoz(args.named_value("--bvh_rotation_0", "1")),
                                 safe_stoz(args.named_value("--bvh_rotation_1", "0")),
                                 safe_stoz(args.named_value("--bvh_rotation_2", "2"))}};
-                        scene_node_resources.set_relative_joint_poses(name, bvh.get_frame(animation_frame));
-                    }
-                    if (args.has_named_value("--bone")) {
-                        LoadMeshConfig bone_cfg{
-                            .position = fixed_zeros<float, 3>(),
-                            .rotation = fixed_zeros<float, 3>(),
-                            .scale = fixed_full<float, 3>(safe_stof(args.named_value("--bone_scale", "1"))),
-                            .is_small = false,
-                            .blend_mode = BlendMode::OFF,
-                            .cull_faces = false,
-                            .occluded_type = OccludedType::OFF,
-                            .occluder_type = OccluderType::OFF,
-                            .occluded_by_black = false,
-                            .aggregate_mode = AggregateMode::OFF,
-                            .transformation_mode = TransformationMode::ALL,
-                            .apply_static_lighting = false,
-                            .werror = !args.has_named("--no_werror")};
-                        scene_node_resources.add_resource("bone", std::make_shared<RenderableObjFile>(
-                            args.named_value("--bone"),
-                            bone_cfg,
-                            rendering_resources));
-                        add_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
+                        if (args.has_named_value("--animation_frame")) {
+                            size_t animation_frame = safe_stoz(args.named_value("--animation_frame"));
+                            scene_node_resources.set_relative_joint_poses(name, bvh.get_frame(animation_frame));
+                        }
+                        if (args.has_named_value("--frame_bone")) {
+                            size_t bone_frame = safe_stoz(args.named_value("--bone_frame"));
+                            scene_node_resources.add_resource("frame_bone", std::make_shared<RenderableObjFile>(
+                                args.named_value("--frame_bone"),
+                                bone_cfg,
+                                rendering_resources));
+                            add_bone_frame(
+                                rmhx2->skeleton(),
+                                rmhx2->vectorize_joint_poses(bvh.get_frame(bone_frame)),
+                                scene_node,
+                                scene_node_resources);
+                        }
                     }
                 } else {
                     throw std::runtime_error("File has unknown extension: " + filename);
@@ -281,13 +328,15 @@ int main(int argc, char** argv) {
                     safe_stof(args.named_value("--angle_y", "0")) / 180.f * float(M_PI),
                     safe_stof(args.named_value("--angle_z", "0")) / 180.f * float(M_PI)});
                 scene_node->set_scale(safe_stof(args.named_value("--node_scale", "1")));
-                scene_node_resources.instantiate_renderable(
-                    name,
-                    name,
-                    *scene_node,
-                    SceneNodeResourceFilter{
-                        min_num: safe_stoz(args.named_value("--min_num", "0")),
-                        regex: std::regex{args.named_value("--regex", "")}});
+                if (!args.has_named("--hide_object")) {
+                    scene_node_resources.instantiate_renderable(
+                        name,
+                        name,
+                        *scene_node,
+                        SceneNodeResourceFilter{
+                            min_num: safe_stoz(args.named_value("--min_num", "0")),
+                            regex: std::regex{args.named_value("--regex", "")}});
+                }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     Interp<float> interp{
                         {safe_stof(args.named_value("--color_gradient_min_x")),

@@ -39,19 +39,15 @@ AggregateMode RenderableMhx2File::aggregate_mode() const {
 }
 
 void RenderableMhx2File::set_relative_joint_poses(const std::map<std::string, FixedArray<float, 4, 4>>& poses) {
-    std::vector<FixedArray<float, 4, 4>> ms(acvas_->bone_indices.size());
-    for (auto& m : ms) {
-        m = fixed_identity_array<float, 4>();
-    }
-    for (const auto& p : poses) {
-        auto it = acvas_->bone_indices.find(p.first);
-        if (it == acvas_->bone_indices.end()) {
-            throw std::runtime_error("set_relative_joint_poses: Could not find bone with name " + p.first);
-        }
-        ms.at(it->second) = p.second;
-    }
+    std::vector<FixedArray<float, 4, 4>> ms = vectorize_joint_poses(poses);
     std::vector<FixedArray<float, 4, 4>> mt = acvas_->skeleton->absolutify(ms);
     rva_->set_joint_poses(mt);
+}
+
+std::vector<FixedArray<float, 4, 4>> RenderableMhx2File::vectorize_joint_poses(
+    const std::map<std::string, FixedArray<float, 4, 4>>& poses) const
+{
+    return acvas_->vectorize_joint_poses(poses);
 }
 
 const Bone& RenderableMhx2File::skeleton() const {

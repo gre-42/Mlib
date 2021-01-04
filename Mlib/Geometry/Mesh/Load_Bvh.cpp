@@ -15,6 +15,9 @@ BvhLoader::BvhLoader(
 : scale_{scale},
   rotation_order_{rotation_order}
 {
+    if (!all(rotation_order_ < size_t(3))) {
+        throw std::runtime_error("Rotation order out of bounds");
+    }
     std::ifstream f{filename};
     if (f.fail()) {
         throw std::runtime_error("Could not open " + filename);
@@ -36,13 +39,10 @@ BvhLoader::BvhLoader(
                 joint_name = "<end site>";
             } else if (std::regex_match(line, match, offs_re)) {
                 if (joint_name != "<end site>") {
-                    if (!offsets_.insert({joint_name, FixedArray<float, 2, 3>{
+                    if (!offsets_.insert({joint_name, FixedArray<float, 3>{
                         safe_stof(match[1].str()),
                         safe_stof(match[2].str()),
-                        safe_stof(match[3].str()),
-                        0,
-                        0,
-                        0}}).second)
+                        safe_stof(match[3].str())}}).second)
                     {
                         throw std::runtime_error("Could not insert offset for joint " + joint_name);
                     }
@@ -108,9 +108,13 @@ BvhLoader::BvhLoader(
                     ": " + line);
             }
             frames_.emplace_back();
+            for (const auto& o : offsets_) {
+                frames_.back()[o.first][0] = o.second;
+            }
             size_t i = 0;
             for (const auto& c : columns_) {
-                frames_.back()[c.joint_name](c.pose_index0, c.pose_index1) = d[i++] + offsets_.at(c.joint_name)(c.pose_index0, c.pose_index1);
+                frames_.back()[c.joint_name](c.pose_index0, c.pose_index1) = d[i++];
+                //  + offsets_.at(c.joint_name)(c.pose_index0, c.pose_index1);
             }
         }
     }
@@ -137,9 +141,19 @@ std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
     for (const auto& p : frames_[id]) {
         FixedArray<float, 3> position = p.second[0];
         FixedArray<float, 3> rotation = p.second[1];
+        FixedArray<float, 4, 4> m = assemble_homogeneous_4x4(
+            tait_bryan_angles_2_matrix(
+                rotation / 180.f * float(M_PI),
+                rotation_order_),
+            position * scale_);
+        FixedArray<float, 4, 4> n{
+            1, 0, 0, 0,
+            0, 0, 1, 0,
+            0, -1, 0, 0,
+            0, 0, 0, 1};
         // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
         // v*R = v*YXZ
-        result[p.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation, rotation_order_), position * scale_);
+        result[p.first] = dot2d(n, dot2d(m, n.T()));
     }
     return result;
 }
