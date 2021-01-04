@@ -60,13 +60,13 @@ BvhLoader::BvhLoader(const std::string& filename, bool center) {
                     } else if (c == "Zposition") {
                         cid0 = 0;
                         cid1 = 2;
-                    } else if (c == "Zrotation") {
+                    } else if (c == "Xrotation") {
                         cid0 = 1;
                         cid1 = 0;
                     } else if (c == "Yrotation") {
                         cid0 = 1;
                         cid1 = 1;
-                    } else if (c == "Xrotation") {
+                    } else if (c == "Zrotation") {
                         cid0 = 1;
                         cid1 = 2;
                     } else {
