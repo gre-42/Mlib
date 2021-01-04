@@ -67,6 +67,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     }
 
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
+    FixedArray<float, 3> offset(j.at("skeleton").at("offset").get<std::vector<float>>());
     auto bones = j.at("skeleton").at("bones");
     std::map<std::string, Bone*> bone_names;
     for (const auto& bone : bones) {
@@ -83,12 +84,17 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 initial_transformation(r, c) = initial_transformation_v[r][c];
             }
         }
+        auto parent = bone.find("parent");
+        if (parent == bone.end()) {
+            initial_transformation(0, 3) += offset(0);
+            initial_transformation(1, 3) += offset(1);
+            initial_transformation(2, 3) += offset(2);
+        }
         Bone* new_bone = new Bone{
             .index = result->bone_indices.size(),
             .initial_transformation = initial_transformation};
         std::string new_bone_name = bone.at("name").get<std::string>();
         result->bone_indices.insert({new_bone_name, new_bone->index});
-        auto parent = bone.find("parent");
         if (parent != bone.end()) {
             std::string parent_name = parent.value().get<std::string>();
             auto par = bone_names.find(parent_name);
