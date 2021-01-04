@@ -214,7 +214,21 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             if (f.size() != u.size()) {
                 throw std::runtime_error("face and uv_face have unequal number of elements");
             }
-            if (f.size() == 4) {
+            if (f.size() == 3) {
+                tl.draw_triangle_wo_normals(
+                    vertices.at(f[0]) / scale,
+                    vertices.at(f[1]) / scale,
+                    vertices.at(f[2]) / scale,
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    uv_coordinates.at(u[0]),
+                    uv_coordinates.at(u[1]),
+                    uv_coordinates.at(u[2]),
+                    std::vector(vertex_bone_weights.at(f[0]).begin(), vertex_bone_weights.at(f[0]).end()),
+                    std::vector(vertex_bone_weights.at(f[1]).begin(), vertex_bone_weights.at(f[1]).end()),
+                    std::vector(vertex_bone_weights.at(f[2]).begin(), vertex_bone_weights.at(f[2]).end()));
+            } else if (f.size() == 4) {
                 tl.draw_rectangle_wo_normals(
                     vertices.at(f[0]) / scale,
                     vertices.at(f[1]) / scale,
