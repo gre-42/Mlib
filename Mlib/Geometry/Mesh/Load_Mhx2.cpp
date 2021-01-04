@@ -128,6 +128,11 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             //     R[1] *= -1;
             //     initial_absolute_transformation = assemble_homogeneous_4x4(R, t);
             // }
+            {
+                auto t = t3_from_4x4(initial_absolute_transformation);
+                auto R = fixed_identity_array<float, 3>();
+                initial_absolute_transformation = assemble_homogeneous_4x4(R, t);
+            }
             Bone* new_bone = new Bone{
                 .index = result->bone_indices.size(),
                 .initial_absolute_transformation = initial_absolute_transformation};
@@ -155,35 +160,50 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         }
     }
     std::map<std::string, Material> materials;
+
+    // auto contains_bone = [&result](
+    //     const std::string& bone_name,
+    //     const std::list<BoneWeight>& weights)
+    // {
+    //     auto bone_id = result->bone_indices.find(bone_name);
+    //     if (bone_id == result->bone_indices.end()) {
+    //         throw std::runtime_error("Could not find bone with name " + bone_name);
+    //     }
+    //     //std::cerr << bone_id->second << std::endl;
+    //     //assert_true(false);
+    //     auto it = std::find_if(
+    //         weights.begin(),
+    //         weights.end(),
+    //         [&bone_id](const auto& w){return w.bone_index == bone_id->second;});
+    //     return (it != weights.end());
+    // };
     
     for (const auto& material : j.at("materials")) {
-        /*
-        "diffuse_color" : [1,1,1],
-        "diffuse_map_intensity" : 1,
-        "specular_color" : [0.062745,0.05098,0.05098],
-        "specular_map_intensity" : 1,
-        "shininess" : 0.5,
-        "opacity" : 1,
-        "translucency" : 0,
-        "emissive_color" : [0.19608,0.10196,0.10196],
-        "ambient_color" : [0.30196,0.27843,0.27843],
-        "transparency_map_intensity" : 1,
-        "shadeless" : false,
-        "wireframe" : false,
-        "transparent" : false,
-        "alphaToCoverage" : true,
-        "backfaceCull" : true,
-        "depthless" : false,
-        "castShadows" : true,
-        "receiveShadows" : true,
-        "sssEnabled" : true,
-        "sssRScale" : 5,
-        "sssGScale" : 2.5,
-        "sssBScale" : 1,
-        "diffuse_texture" : "textures/middleage_lightskinned_female_diffuse.png",
-        "viewPortColor" : [0.75089,0.57281,0.45185],
-        "viewPortAlpha" : 1
-        */
+        // "diffuse_color" : [1,1,1],
+        // "diffuse_map_intensity" : 1,
+        // "specular_color" : [0.062745,0.05098,0.05098],
+        // "specular_map_intensity" : 1,
+        // "shininess" : 0.5,
+        // "opacity" : 1,
+        // "translucency" : 0,
+        // "emissive_color" : [0.19608,0.10196,0.10196],
+        // "ambient_color" : [0.30196,0.27843,0.27843],
+        // "transparency_map_intensity" : 1,
+        // "shadeless" : false,
+        // "wireframe" : false,
+        // "transparent" : false,
+        // "alphaToCoverage" : true,
+        // "backfaceCull" : true,
+        // "depthless" : false,
+        // "castShadows" : true,
+        // "receiveShadows" : true,
+        // "sssEnabled" : true,
+        // "sssRScale" : 5,
+        // "sssGScale" : 2.5,
+        // "sssBScale" : 1,
+        // "diffuse_texture" : "textures/middleage_lightskinned_female_diffuse.png",
+        // "viewPortColor" : [0.75089,0.57281,0.45185],
+        // "viewPortAlpha" : 1
         if (!materials.insert({material.at("name"), Material{
             .texture_descriptor{
                 .color = gen_filename(filename, material.at("diffuse_texture"))
@@ -264,6 +284,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     (vertices.at(f[0]) + so_geometry.offset) / so_geometry.scale10,
                     (vertices.at(f[1]) + so_geometry.offset) / so_geometry.scale10,
                     (vertices.at(f[2]) + so_geometry.offset) / so_geometry.scale10,
+                    // {1.f * contains_bone("thigh_l", vertex_bone_weights.at(f[0])), 1.f * contains_bone("calf_r", vertex_bone_weights.at(f[0])), 1.f * contains_bone("upperarm_r", vertex_bone_weights.at(f[0]))},
+                    // {1.f * contains_bone("thigh_l", vertex_bone_weights.at(f[1])), 1.f * contains_bone("calf_r", vertex_bone_weights.at(f[1])), 1.f * contains_bone("upperarm_r", vertex_bone_weights.at(f[1]))},
+                    // {1.f * contains_bone("thigh_l", vertex_bone_weights.at(f[2])), 1.f * contains_bone("calf_r", vertex_bone_weights.at(f[2])), 1.f * contains_bone("upperarm_r", vertex_bone_weights.at(f[2]))},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
@@ -279,6 +302,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     (vertices.at(f[1]) + so_geometry.offset) / so_geometry.scale10,
                     (vertices.at(f[2]) + so_geometry.offset) / so_geometry.scale10,
                     (vertices.at(f[3]) + so_geometry.offset) / so_geometry.scale10,
+                    // {1.f * contains_bone("thigh_l", vertex_bone_weights.at(f[0])), 1.f * contains_bone("calf_r", vertex_bone_weights.at(f[0])), 1.f * contains_bone("upperarm_r", vertex_bone_weights.at(f[0]))},
+                    // {1.f * contains_bone("thigh_l", vertex_bone_weights.at(f[1])), 1.f * contains_bone("calf_r", vertex_bone_weights.at(f[1])), 1.f * contains_bone("upperarm_r", vertex_bone_weights.at(f[1]))},
+                    // {1.f * contains_bone("thigh_l", vertex_bone_weights.at(f[2])), 1.f * contains_bone("calf_r", vertex_bone_weights.at(f[2])), 1.f * contains_bone("upperarm_r", vertex_bone_weights.at(f[2]))},
+                    // {1.f * contains_bone("thigh_l", vertex_bone_weights.at(f[3])), 1.f * contains_bone("calf_r", vertex_bone_weights.at(f[3])), 1.f * contains_bone("upperarm_r", vertex_bone_weights.at(f[3]))},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
