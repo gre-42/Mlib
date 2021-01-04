@@ -91,8 +91,8 @@ void TriangleList::draw_rectangle_with_normals(
     const std::vector<BoneWeight>& b11,
     const std::vector<BoneWeight>& b01)
 {
-    draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01);
-    draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11);
+    draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01);
+    draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11);
 }
 
 void TriangleList::draw_rectangle_wo_normals(
