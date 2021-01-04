@@ -16,6 +16,7 @@ FixedArray<TData, 3, 3> rodrigues(const FixedArray<TData, 3>& k) {
 
 template <class TData>
 FixedArray<TData, 3, 3> rodrigues(const FixedArray<TData, 3>& k, const TData& theta) {
+    assert(abs(theta) < TData{2.1 * M_PI});
     FixedArray<TData, 3, 3> K{cross(k)};
     FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
     return I + std::sin(theta) * K + (1 - std::cos(theta)) * dot(K, K);
