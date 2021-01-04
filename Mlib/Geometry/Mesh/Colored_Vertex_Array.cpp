@@ -19,6 +19,12 @@ ColoredVertexArray::ColoredVertexArray(
   line_bone_weights{std::forward<std::vector<FixedArray<std::vector<BoneWeight>, 2>>>(line_bone_weights)}
 {
     assert_true(!name.empty());
+    if (!this->triangle_bone_weights.empty() && (this->triangle_bone_weights.size() != this->triangles.size())) {
+        throw std::runtime_error("Triangle bone weights size mismatch");
+    }
+    if (!this->line_bone_weights.empty() && (this->line_bone_weights.size() != this->lines.size())) {
+        throw std::runtime_error("Line bone weights size mismatch");
+    }
 }
 
 #pragma GCC push_options
@@ -50,6 +56,17 @@ FixedArray<float, 4, 4> weighted_bones_transformation_matrix(
         t += w.weight * t3_from_4x4(m[w.bone_index]);
     }
     return assemble_homogeneous_4x4(R, t);
+    // float w_max = 0;
+    // size_t w_id = SIZE_MAX;
+    // size_t i = 0;
+    // for (const BoneWeight& w : weights) {
+    //     if (w.weight > w_max) {
+    //         w_max = w.weight;
+    //         w_id = w.bone_index;
+    //     }
+    //     ++i;
+    // }
+    // return m.at(w_id);
 }
 
 std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::vector<FixedArray<float, 4, 4>>& m) const {
