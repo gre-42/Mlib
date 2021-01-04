@@ -67,7 +67,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     }
 
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
-    float scale = j.at("skeleton").at("scale").get<float>();
+    float scale10 = 10 * j.at("skeleton").at("scale").get<float>();
     FixedArray<float, 3> offset(j.at("skeleton").at("offset").get<std::vector<float>>());
     auto bones = j.at("skeleton").at("bones");
     std::map<std::string, Bone*> bone_names;
@@ -94,9 +94,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         Bone* new_bone = new Bone{
             .index = result->bone_indices.size(),
             .initial_transformation = initial_transformation};
-        new_bone->initial_transformation(0, 3) /= scale;
-        new_bone->initial_transformation(1, 3) /= scale;
-        new_bone->initial_transformation(2, 3) /= scale;
+        new_bone->initial_transformation(0, 3) /= scale10;
+        new_bone->initial_transformation(1, 3) /= scale10;
+        new_bone->initial_transformation(2, 3) /= scale10;
         std::string new_bone_name = bone.at("name").get<std::string>();
         result->bone_indices.insert({new_bone_name, new_bone->index});
         if (parent != bone.end()) {
@@ -216,9 +216,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             }
             if (f.size() == 3) {
                 tl.draw_triangle_wo_normals(
-                    vertices.at(f[0]) / scale,
-                    vertices.at(f[1]) / scale,
-                    vertices.at(f[2]) / scale,
+                    vertices.at(f[0]) / scale10,
+                    vertices.at(f[1]) / scale10,
+                    vertices.at(f[2]) / scale10,
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
@@ -230,10 +230,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     std::vector(vertex_bone_weights.at(f[2]).begin(), vertex_bone_weights.at(f[2]).end()));
             } else if (f.size() == 4) {
                 tl.draw_rectangle_wo_normals(
-                    vertices.at(f[0]) / scale,
-                    vertices.at(f[1]) / scale,
-                    vertices.at(f[2]) / scale,
-                    vertices.at(f[3]) / scale,
+                    vertices.at(f[0]) / scale10,
+                    vertices.at(f[1]) / scale10,
+                    vertices.at(f[2]) / scale10,
+                    vertices.at(f[3]) / scale10,
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
