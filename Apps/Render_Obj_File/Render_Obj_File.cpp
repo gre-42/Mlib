@@ -32,7 +32,7 @@
 
 using namespace Mlib;
 
-void add_bone(
+void add_reference_bone(
     const Bone& b,
     SceneNode* parent_node,
     SceneNodeResources& scene_node_resources)
@@ -47,7 +47,7 @@ void add_bone(
         SceneNodeResourceFilter{});
     parent_node->add_child("reference_bone" + std::to_string(b.index), bone_node);
     for (const auto& c : b.children) {
-        add_bone(*c, parent_node, scene_node_resources);
+        add_reference_bone(*c, parent_node, scene_node_resources);
     }
 }
 
@@ -290,7 +290,7 @@ int main(int argc, char** argv) {
                             args.named_value("--reference_bone"),
                             bone_cfg,
                             rendering_resources));
-                        add_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
+                        add_reference_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
                         BvhLoader bvh{
