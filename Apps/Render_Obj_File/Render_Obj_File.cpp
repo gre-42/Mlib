@@ -89,6 +89,7 @@ int main(int argc, char** argv) {
         "[--bvh_rotation_0] "
         "[--bvh_rotation_1] "
         "[--bvh_rotation_2] "
+        "[--bvh_trafo] "
         "[--reference_bone <filename>] "
         "[--frame_bone <filename>] "
         "[--bone_scale <scale>] "
@@ -151,6 +152,7 @@ int main(int argc, char** argv) {
          "--bvh_rotation_0",
          "--bvh_rotation_1",
          "--bvh_rotation_2",
+         "--bvh_trafo",
          "--reference_bone",
          "--frame_bone",
          "--bone_scale",
@@ -293,12 +295,16 @@ int main(int argc, char** argv) {
                     if (args.has_named_value("--bvh")) {
                         BvhLoader bvh{
                             args.named_value("--bvh"),
-                            safe_stob(args.named_value("--bvh_demean", "0")),
-                            safe_stof(args.named_value("--bvh_scale", "1")),
-                            FixedArray<size_t, 3>{
-                                safe_stoz(args.named_value("--bvh_rotation_0", "1")),
-                                safe_stoz(args.named_value("--bvh_rotation_1", "0")),
-                                safe_stoz(args.named_value("--bvh_rotation_2", "2"))}};
+                            BvhConfig{
+                                .demean = args.has_named_value("--bvh_demean") ? safe_stob(args.named_value("--bvh_demean")) : blender_bvh_config.demean,
+                                .scale = args.has_named_value("--bvh_scale") ? safe_stof(args.named_value("--bvh_scale")) : blender_bvh_config.scale,
+                                .rotation_order = FixedArray<size_t, 3>{
+                                    args.has_named_value("--bvh_rotation_0") ? safe_stoz(args.named_value("--bvh_rotation_0")) : blender_bvh_config.rotation_order(0),
+                                    args.has_named_value("--bvh_rotation_1") ? safe_stoz(args.named_value("--bvh_rotation_1")) : blender_bvh_config.rotation_order(1),
+                                    args.has_named_value("--bvh_rotation_2") ? safe_stoz(args.named_value("--bvh_rotation_2")) : blender_bvh_config.rotation_order(2)},
+                                .parameter_transformation = args.has_named_value("--bvh_trafo")
+                                    ? get_parameter_transformation(args.named_value("--bvh_trafo"))
+                                    : blender_bvh_config.parameter_transformation}};
                         if (args.has_named_value("--animation_frame")) {
                             size_t animation_frame = safe_stoz(args.named_value("--animation_frame"));
                             scene_node_resources.set_relative_joint_poses(name, bvh.get_frame(animation_frame));

@@ -7,15 +7,24 @@
 
 using namespace Mlib;
 
+FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& name) {
+    if (name == "xz-y") {
+        return FixedArray<float, 4, 4>{
+            1, 0, 0, 0,
+            0, 0, 1, 0,
+            0, -1, 0, 0,
+            0, 0, 0, 1};
+    } else {
+        throw std::runtime_error("Unknown parameter transformation: " + name);
+    }
+};
+
 BvhLoader::BvhLoader(
     const std::string& filename,
-    bool demean,
-    float scale,
-    const FixedArray<size_t, 3>& rotation_order)
-: scale_{scale},
-  rotation_order_{rotation_order}
+    const BvhConfig& cfg)
+: cfg_{cfg}
 {
-    if (!all(rotation_order_ < size_t(3))) {
+    if (!all(cfg.rotation_order < size_t(3))) {
         throw std::runtime_error("Rotation order out of bounds");
     }
     std::ifstream f{filename};
@@ -118,7 +127,7 @@ BvhLoader::BvhLoader(
             }
         }
     }
-    if (demean) {
+    if (cfg_.demean) {
         if (columns_.empty()) {
             throw std::runtime_error("Columns list is empty");
         }
@@ -144,13 +153,9 @@ std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
         FixedArray<float, 4, 4> m = assemble_homogeneous_4x4(
             tait_bryan_angles_2_matrix(
                 rotation / 180.f * float(M_PI),
-                rotation_order_),
-            position * scale_);
-        FixedArray<float, 4, 4> n{
-            1, 0, 0, 0,
-            0, 0, 1, 0,
-            0, -1, 0, 0,
-            0, 0, 0, 1};
+                cfg_.rotation_order),
+            position * cfg_.scale);
+        const FixedArray<float, 4, 4>& n = cfg_.parameter_transformation;
         // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
         // v*R = v*YXZ
         result[p.first] = dot2d(n, dot2d(m, n.T()));
