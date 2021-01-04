@@ -203,6 +203,15 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     .weight = b[1].get<float>()});
             }
         }
+        for (const auto& w : vertex_bone_weights) {
+            float s = 0;
+            for (const auto& ww : w) {
+                s += ww.weight;
+            }
+            if (std::abs(s - 1) > 1e-4) {
+                throw std::runtime_error("Weights do not sum up to 1: " + std::to_string(s));
+            }
+        }
         auto uv_faces = mesh.at("uv_faces");
         auto uv_it = uv_faces.begin();
         for (const auto& face : mesh.at("faces")) {

@@ -8,11 +8,19 @@ std::vector<FixedArray<float, 4, 4>> Bone::absolutify(
 {
     std::vector<FixedArray<float, 4, 4>> result;
     result.resize(transformations.size());
+    for (FixedArray<float, 4, 4>& r : result) {
+        r = NAN;
+    }
     absolutify(
         transformations,
         fixed_identity_array<float, 4>(),
         fixed_identity_array<float, 4>(),
         result);
+    for (const FixedArray<float, 4, 4>& r : result) {
+        if (any(isnan(r))) {
+            throw std::runtime_error("Bone transformation contains NAN values");
+        }
+    }
     return result;
 }
 
