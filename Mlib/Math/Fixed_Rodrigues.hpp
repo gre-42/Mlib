@@ -26,6 +26,7 @@ FixedArray<TData, 3, 3> tait_bryan_angles_2_matrix(
     const FixedArray<TData, 3>& angles,
     const FixedArray<size_t, 3>& indices = {0, 1, 2})
 {
+    assert(all(rotation_order_ < size_t(3)));
     FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
     FixedArray<TData, 3, 3> result = rodrigues(I[indices(0)], angles(indices(0)));
     result = dot2d(rodrigues(I[indices(1)], angles(indices(1))), result);
