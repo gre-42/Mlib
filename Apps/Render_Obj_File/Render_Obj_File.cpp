@@ -38,7 +38,10 @@ int main(int argc, char** argv) {
         "[--bvh <filename>] "
         "[--animation_frame <id>] "
         "[--scale <scale>] "
+        "[--node_scale <scale>] "
+        "[--x <x>] "
         "[--y <y>] "
+        "[--z <z>] "
         "[--angle_x <angle_x>] "
         "[--angle_y <angle_y>] "
         "[--angle_z <angle_z>] "
@@ -92,7 +95,10 @@ int main(int argc, char** argv) {
         {"--bvh",
          "--animation_frame",
          "--scale",
+         "--node_scale",
+         "--x",
          "--y",
+         "--z",
          "--angle_x",
          "--angle_y",
          "--angle_z",
@@ -207,11 +213,15 @@ int main(int argc, char** argv) {
                 } else {
                     throw std::runtime_error("File has unknown extension: " + filename);
                 }
-                scene_node->set_position({0.f, safe_stof(args.named_value("--y", "0")), -40.f});
+                scene_node->set_position({
+                    safe_stof(args.named_value("--x", "0")),
+                    safe_stof(args.named_value("--y", "0")),
+                    safe_stof(args.named_value("--z", "-40"))});
                 scene_node->set_rotation({
                     safe_stof(args.named_value("--angle_x", "0")) / 180.f * float(M_PI),
                     safe_stof(args.named_value("--angle_y", "0")) / 180.f * float(M_PI),
                     safe_stof(args.named_value("--angle_z", "0")) / 180.f * float(M_PI)});
+                scene_node->set_scale(safe_stof(args.named_value("--node_scale", "1")));
                 scene_node_resources.instantiate_renderable(
                     name,
                     name,

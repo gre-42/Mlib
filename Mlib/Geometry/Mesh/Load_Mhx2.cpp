@@ -70,7 +70,22 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     auto bones = j.at("skeleton").at("bones");
     std::map<std::string, Bone*> bone_names;
     for (const auto& bone : bones) {
-        Bone* new_bone = new Bone{.index = result->bone_indices.size()};
+        auto initial_transformation_v = bone.at("matrix").get<std::vector<std::vector<float>>>();
+        FixedArray<float, 4, 4> initial_transformation;
+        if (initial_transformation_v.size() != 4) {
+            throw std::runtime_error("wrong matrix size");
+        }
+        for (size_t r = 0; r < 4; ++r) {
+            if (initial_transformation_v[r].size() != 4) {
+                throw std::runtime_error("wrong matrix size");
+            }
+            for (size_t c = 0; c < 4; ++c) {
+                initial_transformation(r, c) = initial_transformation_v[r][c];
+            }
+        }
+        Bone* new_bone = new Bone{
+            .index = result->bone_indices.size(),
+            .initial_transformation = initial_transformation};
         std::string new_bone_name = bone.at("name").get<std::string>();
         result->bone_indices.insert({new_bone_name, new_bone->index});
         auto parent = bone.find("parent");

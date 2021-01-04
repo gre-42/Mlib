@@ -8,12 +8,17 @@ std::vector<FixedArray<float, 4, 4>> Bone::absolutify(
 {
     std::vector<FixedArray<float, 4, 4>> result;
     result.resize(transformations.size());
-    absolutify(transformations, fixed_identity_array<float, 4>(), result);
+    absolutify(
+        transformations,
+        fixed_identity_array<float, 4>(),
+        fixed_identity_array<float, 4>(),
+        result);
     return result;
 }
 
 void Bone::absolutify(
     const std::vector<FixedArray<float, 4, 4>>& transformations,
+    const FixedArray<float, 4, 4>& initial_parent_transformation,
     const FixedArray<float, 4, 4>& parent_transformation,
     std::vector<FixedArray<float, 4, 4>>& result)
 {
@@ -23,9 +28,15 @@ void Bone::absolutify(
     if (index >= transformations.size()) {
         throw std::runtime_error("Bone index too large for transformations");
     }
-    result[index] = dot2d(parent_transformation, transformations[index]);
+    FixedArray<float, 4, 4> m = dot2d(initial_parent_transformation, initial_transformation);
+    FixedArray<float, 4, 4> n = dot2d(parent_transformation, transformations[index]);
+    result[index] = dot2d(n, inverted_scaled_se3(m));
     for (const auto& c : children) {
-        c->absolutify(transformations, result[index], result);
+        c->absolutify(
+            transformations,
+            m,
+            n,
+            result);
     }
 }
     
