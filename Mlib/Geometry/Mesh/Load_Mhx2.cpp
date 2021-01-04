@@ -48,6 +48,15 @@ std::string gen_filename(const std::string& f, const std::string& texture_name) 
     }
 }
 
+struct ScaleAndOffset {
+    explicit ScaleAndOffset(const json& j) {
+        scale10 = 10 * j.at("scale").get<float>();
+        offset = FixedArray<float, 3>(j.at("offset").get<std::vector<float>>());
+    }
+    float scale10;
+    FixedArray<float, 3> offset;
+};
+
 std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     const std::string& filename,
     const LoadMeshConfig& cfg)
@@ -67,57 +76,60 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     }
 
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
-    float scale10 = 10 * j.at("skeleton").at("scale").get<float>();
-    FixedArray<float, 3> offset(j.at("skeleton").at("offset").get<std::vector<float>>());
-    auto bones = j.at("skeleton").at("bones");
-    std::map<std::string, Bone*> bone_names;
-    for (const auto& bone : bones) {
-        auto initial_transformation_v = bone.at("matrix").get<std::vector<std::vector<float>>>();
-        FixedArray<float, 4, 4> initial_transformation;
-        if (initial_transformation_v.size() != 4) {
-            throw std::runtime_error("wrong matrix size");
-        }
-        for (size_t r = 0; r < 4; ++r) {
-            if (initial_transformation_v[r].size() != 4) {
-                throw std::runtime_error("wrong matrix size");
+    {
+        ScaleAndOffset so_skelleton{j.at("skeleton")};
+        auto bones = j.at("skeleton").at("bones");
+        std::map<std::string, Bone*> bone_names;
+        for (const auto& bone : bones) {
+            FixedArray<float, 4, 4> initial_transformation;
+            {
+                auto initial_transformation_v = bone.at("matrix").get<std::vector<std::vector<float>>>();
+                if (initial_transformation_v.size() != 4) {
+                    throw std::runtime_error("wrong matrix size");
+                }
+                for (size_t r = 0; r < 4; ++r) {
+                    if (initial_transformation_v[r].size() != 4) {
+                        throw std::runtime_error("wrong matrix size");
+                    }
+                    for (size_t c = 0; c < 4; ++c) {
+                        initial_transformation(r, c) = initial_transformation_v[r][c];
+                    }
+                }
             }
-            for (size_t c = 0; c < 4; ++c) {
-                initial_transformation(r, c) = initial_transformation_v[r][c];
+            auto parent = bone.find("parent");
+            if (parent == bone.end()) {
+                initial_transformation(0, 3) += so_skelleton.offset(0);
+                initial_transformation(1, 3) += so_skelleton.offset(1);
+                initial_transformation(2, 3) += so_skelleton.offset(2);
+            }
+            initial_transformation(0, 3) /= so_skelleton.scale10;
+            initial_transformation(1, 3) /= so_skelleton.scale10;
+            initial_transformation(2, 3) /= so_skelleton.scale10;
+            Bone* new_bone = new Bone{
+                .index = result->bone_indices.size(),
+                .initial_transformation = initial_transformation};
+            std::string new_bone_name = bone.at("name").get<std::string>();
+            result->bone_indices.insert({new_bone_name, new_bone->index});
+            if (parent != bone.end()) {
+                std::string parent_name = parent.value().get<std::string>();
+                auto par = bone_names.find(parent_name);
+                if (par == bone_names.end()) {
+                    throw std::runtime_error("Unknown bone " + parent_name);
+                }
+                par->second->children.push_back(std::unique_ptr<Bone>(new_bone));
+            } else {
+                if (result->skeleton != nullptr) {
+                    throw std::runtime_error("Found multiple root bones");
+                }
+                result->skeleton.reset(new_bone);
+            }
+            if (!bone_names.insert({new_bone_name, new_bone}).second) {
+                throw std::runtime_error("Could not insert bone " + new_bone_name);
             }
         }
-        auto parent = bone.find("parent");
-        if (parent == bone.end()) {
-            initial_transformation(0, 3) += offset(0);
-            initial_transformation(1, 3) += offset(1);
-            initial_transformation(2, 3) += offset(2);
+        if (result->skeleton == nullptr) {
+            throw std::runtime_error("Could not find root node");
         }
-        Bone* new_bone = new Bone{
-            .index = result->bone_indices.size(),
-            .initial_transformation = initial_transformation};
-        new_bone->initial_transformation(0, 3) /= scale10;
-        new_bone->initial_transformation(1, 3) /= scale10;
-        new_bone->initial_transformation(2, 3) /= scale10;
-        std::string new_bone_name = bone.at("name").get<std::string>();
-        result->bone_indices.insert({new_bone_name, new_bone->index});
-        if (parent != bone.end()) {
-            std::string parent_name = parent.value().get<std::string>();
-            auto par = bone_names.find(parent_name);
-            if (par == bone_names.end()) {
-                throw std::runtime_error("Unknown bone " + parent_name);
-            }
-            par->second->children.push_back(std::unique_ptr<Bone>(new_bone));
-        } else {
-            if (result->skeleton != nullptr) {
-                throw std::runtime_error("Found multiple root bones");
-            }
-            result->skeleton.reset(new_bone);
-        }
-        if (!bone_names.insert({new_bone_name, new_bone}).second) {
-            throw std::runtime_error("Could not insert bone " + new_bone_name);
-        }
-    }
-    if (result->skeleton == nullptr) {
-        throw std::runtime_error("Could not find root node");
     }
     std::map<std::string, Material> materials;
     
@@ -162,6 +174,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     }
 
     for (const auto& geometry : j.at("geometries")) {
+        ScaleAndOffset so_geometry{geometry};
         auto mit = materials.find(geometry.at("material"));
         if (mit == materials.end()) {
             throw std::runtime_error("Could not find material with name " + geometry.at("material").get<std::string>());
@@ -225,9 +238,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             }
             if (f.size() == 3) {
                 tl.draw_triangle_wo_normals(
-                    vertices.at(f[0]) / scale10,
-                    vertices.at(f[1]) / scale10,
-                    vertices.at(f[2]) / scale10,
+                    (vertices.at(f[0]) + so_geometry.offset) / so_geometry.scale10,
+                    (vertices.at(f[1]) + so_geometry.offset) / so_geometry.scale10,
+                    (vertices.at(f[2]) + so_geometry.offset) / so_geometry.scale10,
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
@@ -239,10 +252,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     std::vector(vertex_bone_weights.at(f[2]).begin(), vertex_bone_weights.at(f[2]).end()));
             } else if (f.size() == 4) {
                 tl.draw_rectangle_wo_normals(
-                    vertices.at(f[0]) / scale10,
-                    vertices.at(f[1]) / scale10,
-                    vertices.at(f[2]) / scale10,
-                    vertices.at(f[3]) / scale10,
+                    (vertices.at(f[0]) + so_geometry.offset) / so_geometry.scale10,
+                    (vertices.at(f[1]) + so_geometry.offset) / so_geometry.scale10,
+                    (vertices.at(f[2]) + so_geometry.offset) / so_geometry.scale10,
+                    (vertices.at(f[3]) + so_geometry.offset) / so_geometry.scale10,
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
                     {1.f, 1.f, 1.f},
