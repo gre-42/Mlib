@@ -41,6 +41,9 @@ int main(int argc, char** argv) {
         "[--node_scale <scale>] "
         "[--bvh_scale <scale>] "
         "[--bvh_demean] "
+        "[--bvh_rotation_0] "
+        "[--bvh_rotation_1] "
+        "[--bvh_rotation_2] "
         "[--x <x>] "
         "[--y <y>] "
         "[--z <z>] "
@@ -96,6 +99,9 @@ int main(int argc, char** argv) {
          "--no_shadows",
          "--bvh_demean"},
         {"--bvh",
+         "--bvh_rotation_0",
+         "--bvh_rotation_1",
+         "--bvh_rotation_2",
          "--animation_frame",
          "--scale",
          "--node_scale",
@@ -214,7 +220,11 @@ int main(int argc, char** argv) {
                         BvhLoader bvh{
                             args.named_value("--bvh"),
                             safe_stob(args.named_value("--bvh_demean", "0")),
-                            safe_stof(args.named_value("--bvh_scale", "1"))};
+                            safe_stof(args.named_value("--bvh_scale", "1")),
+                            FixedArray<size_t, 3>{
+                                safe_stoz(args.named_value("--bvh_rotation_0", "1")),
+                                safe_stoz(args.named_value("--bvh_rotation_1", "0")),
+                                safe_stoz(args.named_value("--bvh_rotation_2", "2"))}};
                         scene_node_resources.set_relative_joint_poses(name, bvh.get_frame(animation_frame));
                     }
                 } else {

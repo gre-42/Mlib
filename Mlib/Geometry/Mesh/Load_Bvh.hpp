@@ -14,7 +14,11 @@ struct ColumnDescription {
 
 class BvhLoader {
 public:
-    explicit BvhLoader(const std::string& filename, bool demean, float scale);
+    explicit BvhLoader(
+        const std::string& filename,
+        bool demean,
+        float scale,
+        const FixedArray<size_t, 3>& rotation_order = {1, 0, 2});
     std::map<std::string, FixedArray<float, 4, 4>> get_frame(size_t id);
 private:
     std::vector<std::map<std::string, FixedArray<float, 2, 3>>> frames_;
@@ -22,6 +26,7 @@ private:
     std::list<ColumnDescription> columns_;
     float frame_time_;
     float scale_;
+    FixedArray<size_t, 3> rotation_order_;
 };
 
 }

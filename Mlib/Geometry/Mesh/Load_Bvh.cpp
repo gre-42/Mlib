@@ -10,8 +10,10 @@ using namespace Mlib;
 BvhLoader::BvhLoader(
     const std::string& filename,
     bool demean,
-    float scale)
-: scale_{scale}
+    float scale,
+    const FixedArray<size_t, 3>& rotation_order)
+: scale_{scale},
+  rotation_order_{rotation_order}
 {
     std::ifstream f{filename};
     if (f.fail()) {
@@ -137,7 +139,7 @@ std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
         FixedArray<float, 3> rotation = p.second[1];
         // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
         // v*R = v*YXZ
-        result[p.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation, {1, 0, 2}), position * scale_);
+        result[p.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation, rotation_order_), position * scale_);
     }
     return result;
 }
