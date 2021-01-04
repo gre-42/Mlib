@@ -53,3 +53,10 @@ void RenderableMhx2File::set_relative_joint_poses(const std::map<std::string, Fi
     std::vector<FixedArray<float, 4, 4>> mt = acvas_->skeleton->absolutify(ms);
     rva_->set_joint_poses(mt);
 }
+
+const Bone& RenderableMhx2File::skeleton() const {
+    if (acvas_->skeleton == nullptr) {
+        throw std::runtime_error("Mhx2 file has no skeleton");
+    }
+    return *acvas_->skeleton;
+}

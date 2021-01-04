@@ -5,6 +5,7 @@
 namespace Mlib {
 
 struct LoadMeshConfig;
+struct Bone;
 class RenderingResources;
 class AnimatedColoredVertexArrays;
 class RenderableColoredVertexArray;
@@ -22,6 +23,7 @@ public:
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual AggregateMode aggregate_mode() const override;
     virtual void set_relative_joint_poses(const std::map<std::string, FixedArray<float, 4, 4>>& poses) override;
+    const Bone& skeleton() const;
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
     std::shared_ptr<RenderableColoredVertexArray> rva_;
