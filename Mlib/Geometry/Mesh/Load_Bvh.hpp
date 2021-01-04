@@ -14,7 +14,7 @@ struct ColumnDescription {
 
 class BvhLoader {
 public:
-    explicit BvhLoader(const std::string& filename);
+    explicit BvhLoader(const std::string& filename, bool center);
     std::map<std::string, FixedArray<float, 4, 4>> get_frame(size_t id);
 private:
     std::vector<std::map<std::string, FixedArray<float, 2, 3>>> frames_;

@@ -7,7 +7,7 @@
 
 using namespace Mlib;
 
-BvhLoader::BvhLoader(const std::string& filename) {
+BvhLoader::BvhLoader(const std::string& filename, bool center) {
     std::ifstream f{filename};
     if (f.fail()) {
         throw std::runtime_error("Could not open " + filename);
@@ -90,6 +90,19 @@ BvhLoader::BvhLoader(const std::string& filename) {
             }
         }
     }
+    if (center) {
+        if (columns_.empty()) {
+            throw std::runtime_error("Columns list is empty");
+        }
+        FixedArray<float, 3> center(0);
+        for (const auto& f : frames_) {
+            center += f.at(columns_.begin()->joint_name)[0];
+        }
+        center /= frames_.size();
+        for (auto& f : frames_) {
+            f.at(columns_.begin()->joint_name)[0] -= center;
+        }
+    }
 }
 
 std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
@@ -97,10 +110,10 @@ std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) {
         throw std::runtime_error("Frame ID too large");
     }
     std::map<std::string, FixedArray<float, 4, 4>> result;
-    for (const auto& f : frames_[id]) {
-        FixedArray<float, 3> position = f.second[0];
-        FixedArray<float, 3> rotation = f.second[1];
-        result[f.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation), position);
+    for (const auto& p : frames_[id]) {
+        FixedArray<float, 3> position = p.second[0];
+        FixedArray<float, 3> rotation = p.second[1];
+        result[p.first] = assemble_homogeneous_4x4(tait_bryan_angles_2_matrix(rotation), position);
     }
     return result;
 }

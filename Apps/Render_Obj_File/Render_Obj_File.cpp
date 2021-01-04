@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
                         rendering_resources));
                     if (args.has_named_value("--bvh")) {
                         size_t animation_frame = safe_stoz(args.named_value("--animation_frame"));
-                        BvhLoader bvh{args.named_value("--bvh")};
+                        BvhLoader bvh{args.named_value("--bvh"), true};  // true = center
                         scene_node_resources.set_relative_joint_poses(name, bvh.get_frame(animation_frame));
                     }
                 } else {
