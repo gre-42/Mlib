@@ -84,7 +84,10 @@ void RenderableMhx2File::set_relative_joint_poses(const std::map<std::string, Fi
         {"rThumb2", ""},
         {"leftEye", ""},
         {"rightEye", ""}};
-    std::vector<FixedArray<float, 4, 4>> m(acvas_->bone_indices.size());
+    std::vector<FixedArray<float, 4, 4>> ms(acvas_->bone_indices.size());
+    for (auto& m : ms) {
+        m = fixed_identity_array<float, 4>();
+    }
     for (const auto& p : poses) {
         auto nit = n2n.find(p.first);
         if (nit == n2n.end()) {
@@ -95,9 +98,9 @@ void RenderableMhx2File::set_relative_joint_poses(const std::map<std::string, Fi
             if (it == acvas_->bone_indices.end()) {
                 throw std::runtime_error("set_relative_joint_poses: Could not find bone with name " + nit->second);
             }
-            m.at(it->second) = p.second;
+            ms.at(it->second) = p.second;
         }
     }
-    std::vector<FixedArray<float, 4, 4>> mt = acvas_->skeleton->absolutify(m);
+    std::vector<FixedArray<float, 4, 4>> mt = acvas_->skeleton->absolutify(ms);
     rva_->set_joint_poses(mt);
 }
