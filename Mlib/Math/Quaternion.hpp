@@ -11,7 +11,7 @@ template <class TData>
 class Quaternion {
 public:
     static Quaternion identity() {
-        return Quaternion{0, FixedArray<TData, 3>{1, 0, 0}};
+        return Quaternion{1, FixedArray<TData, 3>{0, 0, 0}};
     }
     Quaternion()
     {}
