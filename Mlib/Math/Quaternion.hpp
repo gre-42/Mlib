@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <cmath>
+#include <iostream>
 
 namespace Mlib {
 
@@ -160,6 +161,12 @@ public:
     TData dot0d(const Quaternion& rhs) const {
         return s_ * rhs.s_ + ::Mlib::dot0d(v_, rhs.v_);
     }
+    const TData& scalar() const {
+        return s_;
+    }
+    const FixedArray<TData, 3>& vector() const {
+        return v_;
+    }
 private:
     TData s_;
     FixedArray<TData, 3> v_;
@@ -213,5 +220,17 @@ private:
     FixedArray<TData, 3> o_;
     Quaternion<TData> q_;
 };
+
+template <class TData>
+std::ostream& operator << (std::ostream& ostr, const Quaternion<TData>& q) {
+    ostr << "s: " << q.scalar() << ", v: " << q.vector();
+    return ostr;
+}
+
+template <class TData>
+std::ostream& operator << (std::ostream& ostr, const OffsetAndQuaternion<TData>& oq) {
+    ostr << "o: " << oq.offset() << ", q: " << oq.quaternion();
+    return ostr;
+}
 
 }
