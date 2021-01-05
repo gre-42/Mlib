@@ -192,7 +192,7 @@ std::map<std::string, OffsetAndQuaternion<float>> BvhLoader::get_interpolated_fr
         auto R0 = R3_from_4x4(m0);
         auto R1 = R3_from_4x4(m1);
         result.insert({j0.first, OffsetAndQuaternion<float>{
-            t0 * a0 + t1 * (1 - a0),
+            t0 * (1 - a0) + t1 * a0,
             Quaternion{R0}.slerp(Quaternion{R1}, a0)}});
     }
     return result;
