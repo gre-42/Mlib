@@ -16,8 +16,8 @@ public:
     Quaternion()
     {}
     Quaternion(const TData& s, const FixedArray<TData, 3>& v)
-    : s_{s},
-      v_{v}
+    : v_{v},
+      s_{s}
     {}
     /**
      * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
@@ -174,8 +174,10 @@ public:
         return v_;
     }
 private:
-    TData s_;
+    // Storing s_ after v_ makes it possible to access the
+    // quaternion with xyzw in shaders.
     FixedArray<TData, 3> v_;
+    TData s_;
 };
 
 template <class TData>
