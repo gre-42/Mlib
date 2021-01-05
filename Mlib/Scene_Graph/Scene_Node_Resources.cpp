@@ -106,7 +106,7 @@ PointsAndAdjacency<float, 2> SceneNodeResources::way_points(const std::string& n
 
 void SceneNodeResources::set_relative_joint_poses(
     const std::string& name,
-    const std::map<std::string, FixedArray<float, 4, 4>>& poses) const
+    const std::map<std::string, OffsetAndQuaternion<float>>& poses) const
 {
     auto it = resources_.find(name);
     if (it == resources_.end()) {

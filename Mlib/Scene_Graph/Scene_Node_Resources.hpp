@@ -21,7 +21,7 @@ public:
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
     PointsAndAdjacency<float, 2> way_points(const std::string& name) const;
-    void set_relative_joint_poses(const std::string& name, const std::map<std::string, FixedArray<float, 4, 4>>& poses) const;
+    void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
 private:
     std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
     std::recursive_mutex mutex_;

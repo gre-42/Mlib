@@ -135,7 +135,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             }
             Bone* new_bone = new Bone{
                 .index = result->bone_indices.size(),
-                .initial_absolute_transformation = initial_absolute_transformation};
+                .initial_absolute_transformation = OffsetAndQuaternion<float>{initial_absolute_transformation}};
             std::string new_bone_name = bone.at("name").get<std::string>();
             result->bone_indices.insert({new_bone_name, new_bone->index});
             if (parent != bone.end()) {

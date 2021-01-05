@@ -38,8 +38,8 @@ void add_reference_bone(
     SceneNodeResources& scene_node_resources)
 {
     SceneNode* bone_node = new SceneNode;
-    bone_node->set_position(t3_from_4x4(b.initial_absolute_transformation));
-    bone_node->set_rotation(matrix_2_tait_bryan_angles(R3_from_4x4(b.initial_absolute_transformation)));
+    bone_node->set_position(b.initial_absolute_transformation.offset());
+    bone_node->set_rotation(b.initial_absolute_transformation.quaternion().to_tait_bryan_angles());
     scene_node_resources.instantiate_renderable(
         "reference_bone",
         "reference_bone",
@@ -53,7 +53,7 @@ void add_reference_bone(
 
 void add_bone_frame(
     const Bone& b,
-    const std::vector<FixedArray<float, 4, 4>>& frame,
+    const std::vector<OffsetAndQuaternion<float>>& frame,
     SceneNode* parent_node,
     SceneNodeResources& scene_node_resources)
 {
@@ -61,8 +61,8 @@ void add_bone_frame(
         throw std::runtime_error("Frame index too large");
     }
     SceneNode* bone_node = new SceneNode;
-    bone_node->set_position(t3_from_4x4(frame.at(b.index)));
-    bone_node->set_rotation(matrix_2_tait_bryan_angles(R3_from_4x4(frame.at(b.index))));
+    bone_node->set_position(frame.at(b.index).offset());
+    bone_node->set_rotation(frame.at(b.index).quaternion().to_tait_bryan_angles());
     scene_node_resources.instantiate_renderable(
         "frame_bone",
         "frame_bone",
@@ -306,18 +306,18 @@ int main(int argc, char** argv) {
                                     ? get_parameter_transformation(args.named_value("--bvh_trafo"))
                                     : blender_bvh_config.parameter_transformation}};
                         if (args.has_named_value("--animation_frame")) {
-                            size_t animation_frame = safe_stoz(args.named_value("--animation_frame"));
-                            scene_node_resources.set_relative_joint_poses(name, bvh.get_frame(animation_frame));
+                            float animation_frame = safe_stof(args.named_value("--animation_frame"));
+                            scene_node_resources.set_relative_joint_poses(name, bvh.get_interpolated_frame(animation_frame));
                         }
                         if (args.has_named_value("--frame_bone")) {
-                            size_t bone_frame = safe_stoz(args.named_value("--bone_frame"));
+                            float bone_frame = safe_stof(args.named_value("--bone_frame"));
                             scene_node_resources.add_resource("frame_bone", std::make_shared<RenderableObjFile>(
                                 args.named_value("--frame_bone"),
                                 bone_cfg,
                                 rendering_resources));
                             add_bone_frame(
                                 rmhx2->skeleton(),
-                                rmhx2->vectorize_joint_poses(bvh.get_frame(bone_frame)),
+                                rmhx2->vectorize_joint_poses(bvh.get_interpolated_frame(bone_frame)),
                                 scene_node,
                                 scene_node_resources);
                         }

@@ -22,7 +22,8 @@ FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& na
 BvhLoader::BvhLoader(
     const std::string& filename,
     const BvhConfig& cfg)
-: cfg_{cfg}
+: cfg_{cfg},
+  frame_time_{NAN}
 {
     if (!all(cfg.rotation_order < size_t(3))) {
         throw std::runtime_error("Rotation order out of bounds");
@@ -140,6 +141,9 @@ BvhLoader::BvhLoader(
             f.at(columns_.begin()->joint_name)[0] -= center;
         }
     }
+    if (std::isnan(frame_time_)) {
+        throw std::runtime_error("Frame time not set");
+    }
 }
 
 std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) const {
@@ -156,9 +160,40 @@ std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) c
                 cfg_.rotation_order),
             position * cfg_.scale);
         const FixedArray<float, 4, 4>& n = cfg_.parameter_transformation;
-        // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
-        // v*R = v*YXZ
         result[p.first] = dot2d(n, dot2d(m, n.T()));
+    }
+    return result;
+}
+
+std::map<std::string, OffsetAndQuaternion<float>> BvhLoader::get_interpolated_frame(float seconds) const {
+    if (frames_.empty()) {
+        throw std::runtime_error("No frames to interpolate from");
+    }
+    float i = seconds / frame_time_;
+    i = std::clamp(i, float{0}, float(frames_.size() - 1));
+    size_t i0 = size_t(i);
+    size_t i1 = i0 + 1;
+    if (i1 > frames_.size()) {
+        throw std::runtime_error("Frame interpolation internal error");
+    }
+    if (i1 == frames_.size()) {
+        --i1;
+        --i0;
+    }
+    float a0 = i - i0;
+    auto f0 = get_frame(i0);
+    auto f1 = get_frame(i1);
+    std::map<std::string, OffsetAndQuaternion<float>> result;
+    for (const auto& j0 : f0) {
+        const auto& m0 = j0.second;
+        const auto& m1 = f1.at(j0.first);
+        auto t0 = t3_from_4x4(m0);
+        auto t1 = t3_from_4x4(m1);
+        auto R0 = R3_from_4x4(m0);
+        auto R1 = R3_from_4x4(m1);
+        result.insert({j0.first, OffsetAndQuaternion<float>{
+            t0 * a0 + t1 * (1 - a0),
+            Quaternion{R0}.slerp(Quaternion{R1}, a0)}});
     }
     return result;
 }

@@ -3,20 +3,20 @@
 
 using namespace Mlib;
 
-std::vector<FixedArray<float, 4, 4>> Bone::absolutify(
-    const std::vector<FixedArray<float, 4, 4>>& transformations)
+std::vector<OffsetAndQuaternion<float>> Bone::absolutify(
+    const std::vector<OffsetAndQuaternion<float>>& transformations)
 {
-    std::vector<FixedArray<float, 4, 4>> result;
+    std::vector<OffsetAndQuaternion<float>> result;
     result.resize(transformations.size());
-    for (FixedArray<float, 4, 4>& r : result) {
-        r = NAN;
+    for (OffsetAndQuaternion<float>& r : result) {
+        r.offset() = NAN;
     }
     absolutify(
         transformations,
-        fixed_identity_array<float, 4>(),
+        OffsetAndQuaternion<float>::identity(),
         result);
-    for (const FixedArray<float, 4, 4>& r : result) {
-        if (any(isnan(r))) {
+    for (const OffsetAndQuaternion<float>& r : result) {
+        if (any(isnan(r.offset()))) {
             throw std::runtime_error("Bone transformation contains NAN values");
         }
     }
@@ -24,9 +24,9 @@ std::vector<FixedArray<float, 4, 4>> Bone::absolutify(
 }
 
 void Bone::absolutify(
-    const std::vector<FixedArray<float, 4, 4>>& transformations,
-    const FixedArray<float, 4, 4>& parent_transformation,
-    std::vector<FixedArray<float, 4, 4>>& result)
+    const std::vector<OffsetAndQuaternion<float>>& transformations,
+    const OffsetAndQuaternion<float>& parent_transformation,
+    std::vector<OffsetAndQuaternion<float>>& result)
 {
     if (index >= result.size()) {
         throw std::runtime_error("Bone index too large for result array");
@@ -34,9 +34,9 @@ void Bone::absolutify(
     if (index >= transformations.size()) {
         throw std::runtime_error("Bone index too large for transformations");
     }
-    const FixedArray<float, 4, 4>& m = initial_absolute_transformation;
-    FixedArray<float, 4, 4> n = dot2d(parent_transformation, transformations[index]);
-    result[index] = dot2d(n, inverted_scaled_se3(m));
+    const OffsetAndQuaternion<float>& m = initial_absolute_transformation;
+    OffsetAndQuaternion<float> n = parent_transformation * transformations[index];
+    result[index] = n * m.inverse();
     for (const auto& c : children) {
         c->absolutify(
             transformations,

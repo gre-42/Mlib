@@ -1,14 +1,15 @@
 #include "Animated_Colored_Vertex_Arrays.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Quaternion.hpp>
 
 using namespace Mlib;
 
-std::vector<FixedArray<float, 4, 4>> AnimatedColoredVertexArrays::vectorize_joint_poses(
-    const std::map<std::string, FixedArray<float, 4, 4>>& poses) const
+std::vector<OffsetAndQuaternion<float>> AnimatedColoredVertexArrays::vectorize_joint_poses(
+    const std::map<std::string, OffsetAndQuaternion<float>>& poses) const
 {
-    std::vector<FixedArray<float, 4, 4>> ms(bone_indices.size());
+    std::vector<OffsetAndQuaternion<float>> ms(bone_indices.size());
     for (auto& m : ms) {
-        m = fixed_nans<float, 4, 4>();
+        m.offset() = fixed_nans<float, 3>();
     }
     for (const auto& p : poses) {
         auto it = bone_indices.find(p.first);
@@ -18,7 +19,7 @@ std::vector<FixedArray<float, 4, 4>> AnimatedColoredVertexArrays::vectorize_join
         ms.at(it->second) = p.second;
     }
     for (const auto& m : ms) {
-        if (any(isnan(m))) {
+        if (any(isnan(m.offset()))) {
             throw std::runtime_error("Pose contains NAN values or was not set");
         }
     }

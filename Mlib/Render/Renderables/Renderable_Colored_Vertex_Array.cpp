@@ -682,8 +682,8 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     return result;
 }
 
-void RenderableColoredVertexArray::set_joint_poses(
-    const std::vector<FixedArray<float, 4, 4>>& poses)
+void RenderableColoredVertexArray::set_absolute_joint_poses(
+    const std::vector<OffsetAndQuaternion<float>>& poses)
 {
     for (auto& t : triangles_res_) {
         t = t->transformed(poses);

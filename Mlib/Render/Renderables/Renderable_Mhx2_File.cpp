@@ -38,14 +38,14 @@ AggregateMode RenderableMhx2File::aggregate_mode() const {
     return rva_->aggregate_mode();
 }
 
-void RenderableMhx2File::set_relative_joint_poses(const std::map<std::string, FixedArray<float, 4, 4>>& poses) {
-    std::vector<FixedArray<float, 4, 4>> ms = vectorize_joint_poses(poses);
-    std::vector<FixedArray<float, 4, 4>> mt = acvas_->skeleton->absolutify(ms);
-    rva_->set_joint_poses(mt);
+void RenderableMhx2File::set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) {
+    std::vector<OffsetAndQuaternion<float>> ms = vectorize_joint_poses(poses);
+    std::vector<OffsetAndQuaternion<float>> mt = acvas_->skeleton->absolutify(ms);
+    rva_->set_absolute_joint_poses(mt);
 }
 
-std::vector<FixedArray<float, 4, 4>> RenderableMhx2File::vectorize_joint_poses(
-    const std::map<std::string, FixedArray<float, 4, 4>>& poses) const
+std::vector<OffsetAndQuaternion<float>> RenderableMhx2File::vectorize_joint_poses(
+    const std::map<std::string, OffsetAndQuaternion<float>>& poses) const
 {
     return acvas_->vectorize_joint_poses(poses);
 }

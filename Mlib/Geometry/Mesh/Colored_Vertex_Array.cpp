@@ -45,31 +45,31 @@ std::vector<FixedArray<float, 3>> ColoredVertexArray::vertices() const {
     return res;
 }
 
-FixedArray<float, 4, 4> weighted_bones_transformation_matrix(
-    const std::vector<BoneWeight>& weights,
-    const std::vector<FixedArray<float, 4, 4>>& m)
-{
-    FixedArray<float, 3, 3> R(0);
-    FixedArray<float, 3> t(0);
-    for (const BoneWeight& w : weights) {
-        R += w.weight * R3_from_4x4(m[w.bone_index]);
-        t += w.weight * t3_from_4x4(m[w.bone_index]);
-    }
-    return assemble_homogeneous_4x4(R, t);
-    // float w_max = 0;
-    // size_t w_id = SIZE_MAX;
-    // size_t i = 0;
-    // for (const BoneWeight& w : weights) {
-    //     if (w.weight > w_max) {
-    //         w_max = w.weight;
-    //         w_id = w.bone_index;
-    //     }
-    //     ++i;
-    // }
-    // return m.at(w_id);
-}
+// FixedArray<float, 4, 4> weighted_bones_transformation_matrix(
+//     const std::vector<BoneWeight>& weights,
+//     const std::vector<FixedArray<float, 4, 4>>& m)
+// {
+//     FixedArray<float, 3, 3> R(0);
+//     FixedArray<float, 3> t(0);
+//     for (const BoneWeight& w : weights) {
+//         R += w.weight * R3_from_4x4(m[w.bone_index]);
+//         t += w.weight * t3_from_4x4(m[w.bone_index]);
+//     }
+//     return assemble_homogeneous_4x4(R, t);
+//     // float w_max = 0;
+//     // size_t w_id = SIZE_MAX;
+//     // size_t i = 0;
+//     // for (const BoneWeight& w : weights) {
+//     //     if (w.weight > w_max) {
+//     //         w_max = w.weight;
+//     //         w_id = w.bone_index;
+//     //     }
+//     //     ++i;
+//     // }
+//     // return m.at(w_id);
+// }
 
-std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::vector<FixedArray<float, 4, 4>>& m) const {
+std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const {
     auto res = std::make_shared<ColoredVertexArray>();
     res->material = material;
     res->triangles.reserve(triangles.size());
@@ -80,12 +80,9 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::v
         auto wit = triangle_bone_weights.begin();
         for (const auto& tri : triangles) {
             res->triangles.push_back({
-                tri(0).transformed(weighted_bones_transformation_matrix((*wit)(0), m)),
-                tri(1).transformed(weighted_bones_transformation_matrix((*wit)(1), m)),
-                tri(2).transformed(weighted_bones_transformation_matrix((*wit)(2), m))});
-            // res->triangles.back()(0).normalize();
-            // res->triangles.back()(1).normalize();
-            // res->triangles.back()(2).normalize();
+                tri(0).transformed((*wit)(0), qs),
+                tri(1).transformed((*wit)(1), qs),
+                tri(2).transformed((*wit)(2), qs)});
             ++wit;
         }
     }
@@ -97,8 +94,8 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::v
         res->lines.reserve(lines.size());
         for (const auto& li : lines) {
             res->lines.push_back({
-                li(0).transformed(weighted_bones_transformation_matrix((*wit)(0), m)),
-                li(1).transformed(weighted_bones_transformation_matrix((*wit)(1), m))});
+                li(0).transformed((*wit)(0), qs),
+                li(1).transformed((*wit)(1), qs)});
             // res->lines.back()(0).normalize();
             // res->lines.back()(1).normalize();
             ++wit;
