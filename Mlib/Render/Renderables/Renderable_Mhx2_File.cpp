@@ -11,7 +11,7 @@ RenderableMhx2File::RenderableMhx2File(
     RenderingResources& rendering_resources)
 {
     acvas_ = load_mhx2(filename, cfg);
-    rva_ = std::make_shared<RenderableColoredVertexArray>(acvas_->cvas, nullptr, rendering_resources);
+    rva_ = std::make_shared<RenderableColoredVertexArray>(acvas_, nullptr, rendering_resources);
 }
 
 RenderableMhx2File::~RenderableMhx2File()

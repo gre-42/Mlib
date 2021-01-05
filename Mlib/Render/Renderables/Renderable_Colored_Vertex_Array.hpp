@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -28,6 +28,10 @@ public:
     RenderableColoredVertexArray(const RenderableColoredVertexArray& other) = delete;
     RenderableColoredVertexArray& operator = (const RenderableColoredVertexArray& other) = delete;
     explicit RenderableColoredVertexArray(
+        const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
+        std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
+        RenderingResources& rendering_resources);
+    explicit RenderableColoredVertexArray(
         const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
         std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
         RenderingResources& rendering_resources);
@@ -49,7 +53,7 @@ private:
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices) const;
     const VertexArray& get_vertex_array(const ColoredVertexArray* cva) const;
-    std::list<std::shared_ptr<ColoredVertexArray>> triangles_res_;
+    std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<VertexArray>> vertex_arrays_;
     RenderingResources& rendering_resources_;
     mutable std::mutex mutex_;

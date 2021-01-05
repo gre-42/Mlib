@@ -21,7 +21,7 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
 : rcva_{rcva}
 {
     size_t i = 0;
-    for (const auto& t : rcva->triangles_res_) {
+    for (const auto& t : rcva->triangles_res_->cvas) {
         if (resource_filter.matches(i++, t->name)) {
             triangles_res_subset_.push_back(t);
         }

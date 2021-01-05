@@ -386,7 +386,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 }};
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
-    const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
+    const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
     std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
     RenderingResources& rendering_resources)
 : triangles_res_{triangles},
@@ -395,11 +395,25 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 {}
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
+    const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
+    std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
+    RenderingResources& rendering_resources)
+: RenderableColoredVertexArray{
+    std::make_shared<AnimatedColoredVertexArrays>(),
+    instances,
+    rendering_resources}
+{
+    triangles_res_->cvas = triangles;
+}
+
+RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<ColoredVertexArray>& triangles,
     std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
     RenderingResources& rendering_resources)
 : RenderableColoredVertexArray(std::list<std::shared_ptr<ColoredVertexArray>>{triangles}, instances, rendering_resources)
-{}
+{
+    triangles_res_->cvas.push_back(triangles);
+}
 
 void RenderableColoredVertexArray::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
@@ -409,11 +423,11 @@ void RenderableColoredVertexArray::instantiate_renderable(const std::string& nam
 }
 
 std::list<std::shared_ptr<ColoredVertexArray>> RenderableColoredVertexArray::get_triangle_meshes() const {
-    return triangles_res_;
+    return triangles_res_->cvas;
 }
 
 void RenderableColoredVertexArray::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
-    for (auto& t : triangles_res_) {
+    for (auto& t : triangles_res_->cvas) {
         auto r = Mlib::generate_triangle_rays(t->triangles, npoints, lengths);
         t->lines.reserve(t->lines.size() + r.size());
         for (const auto& l : r) {
@@ -437,10 +451,10 @@ void RenderableColoredVertexArray::generate_triangle_rays(size_t npoints, const 
 }
 
 void RenderableColoredVertexArray::generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) {
-    if (triangles_res_.size() != 1) {
+    if (triangles_res_->cvas.size() != 1) {
         throw std::runtime_error("generate_ray requires exactly one triangle mesh");
     }
-    triangles_res_.front()->lines.push_back({
+    triangles_res_->cvas.front()->lines.push_back({
         ColoredVertex{
             position: from,
             color: {1, 1, 1},
@@ -456,13 +470,16 @@ void RenderableColoredVertexArray::generate_ray(const FixedArray<float, 3>& from
 
 AggregateMode RenderableColoredVertexArray::aggregate_mode() const {
     std::set<AggregateMode> aggregate_modes;
-    for (const auto& t : triangles_res_) {
+    if (triangles_res_->cvas.empty()) {
+        throw std::runtime_error("Cannot determine aggregate mode of empty array");
+    }
+    for (const auto& t : triangles_res_->cvas) {
         aggregate_modes.insert(t->material.aggregate_mode);
     }
     if (aggregate_modes.size() != 1) {
         throw std::runtime_error("aggregate_mode is not unique");
     }
-    return triangles_res_.front()->material.aggregate_mode;
+    return triangles_res_->cvas.front()->material.aggregate_mode;
 }
 
 const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
@@ -685,7 +702,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
 void RenderableColoredVertexArray::set_absolute_joint_poses(
     const std::vector<OffsetAndQuaternion<float>>& poses)
 {
-    for (auto& t : triangles_res_) {
+    for (auto& t : triangles_res_->cvas) {
         t = t->transformed(poses);
     }
 }
