@@ -274,10 +274,10 @@ int main(int argc, char** argv) {
             Players players{physics_engine.advance_times_};
             GameLogic game_logic{
                 scene,
+                physics_engine.advance_times_,
                 players,
                 ui_focus.focus,
                 mutex};
-            physics_engine.advance_times_.add_advance_time(game_logic);
 
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;
@@ -351,7 +351,6 @@ int main(int argc, char** argv) {
             if (pl != nullptr) {
                 pl->stop_and_join();
             }
-            physics_engine.advance_times_.schedule_delete_advance_time(&game_logic);
             main_scene_filename = next_scene_filename;
         }
 

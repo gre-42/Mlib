@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Player.hpp>
+#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -28,16 +29,24 @@ GameLogicConfig cfg;
 
 GameLogic::GameLogic(
     Scene& scene,
+    AdvanceTimes& advance_times,
     Players& players,
     const std::list<Focus>& focus,
     std::recursive_mutex& mutex)
 : scene_{scene},
+  advance_times_{advance_times},
   players_{players},
   vip_{nullptr},
   focus_{focus},
   mutex_{mutex},
   spawn_point_id_{0}
-{}
+{
+    advance_times_.add_advance_time(*this);
+}
+
+GameLogic::~GameLogic() {
+    advance_times_.schedule_delete_advance_time(this);
+}
 
 void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {
     spawn_points_ = std::vector(spawn_points.begin(), spawn_points.end());

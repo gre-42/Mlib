@@ -14,14 +14,17 @@ class Players;
 enum class Focus;
 class Scene;
 class SceneNode;
+class AdvanceTimes;
 
 class GameLogic: public AdvanceTime {
 public:
     GameLogic(
         Scene& scene,
+        AdvanceTimes& advance_times,
         Players& players,
         const std::list<Focus>& focus,
         std::recursive_mutex& mutex);
+    ~GameLogic();
     void set_spawn_points(
         const SceneNode& node,
         const std::list<SpawnPoint>& spawn_points);
@@ -47,6 +50,7 @@ private:
         const FixedArray<float, 3>& vip_pos,
         size_t& nsee);
     Scene& scene_;
+    AdvanceTimes& advance_times_;
     Players& players_;
     Player* vip_;
     const std::list<Focus>& focus_;
