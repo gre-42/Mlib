@@ -346,7 +346,11 @@ void LoadScene::operator()(
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s*specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
+        "\\s*animation_name=([\\w+-.]*)\\r?\\n"
+        "\\s*animation_loop_begin=([\\w+-.]+)\\r?\\n"
+        "\\s*animation_loop_end=([\\w+-.]+)\\r?\\n"
+        "\\s*animation_loop_time=([\\w+-.]+)$");
     static const std::regex ui_background_reg("^(?:\\r?\\n|\\s)*ui_background texture=([\\w-. \\(\\)/+-]+) target_focus=(menu|loading|countdown|scene)$");
     static const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
@@ -1102,7 +1106,11 @@ void LoadScene::operator()(
                 .specularity = {
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
-                    safe_stof(match[11].str())}});
+                    safe_stof(match[11].str())},
+                .animation_frame = {
+                    .loop_begin = safe_stof(match[12].str()),
+                    .loop_end = safe_stof(match[13].str()),
+                    .loop_time = safe_stof(match[14].str())}});
         } else if (std::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
