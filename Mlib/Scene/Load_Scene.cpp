@@ -1108,9 +1108,10 @@ void LoadScene::operator()(
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())},
                 .animation_frame = {
-                    .loop_begin = safe_stof(match[12].str()),
-                    .loop_end = safe_stof(match[13].str()),
-                    .loop_time = safe_stof(match[14].str())}});
+                    .name = match[12].str(),
+                    .loop_begin = safe_stof(match[13].str()),
+                    .loop_end = safe_stof(match[14].str()),
+                    .loop_time = safe_stof(match[15].str())}});
         } else if (std::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
