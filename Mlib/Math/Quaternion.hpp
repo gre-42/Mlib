@@ -164,7 +164,13 @@ public:
     const TData& scalar() const {
         return s_;
     }
+    TData& scalar() {
+        return s_;
+    }
     const FixedArray<TData, 3>& vector() const {
+        return v_;
+    }
+    FixedArray<TData, 3>& vector() {
         return v_;
     }
 private:
