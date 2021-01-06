@@ -12,7 +12,9 @@ RenderableMhx2File::RenderableMhx2File(
 {
     acvas_ = load_mhx2(filename, cfg);
     rva_ = std::make_shared<RenderableColoredVertexArray>(acvas_, nullptr, rendering_resources);
+#ifdef DEBUG
     acvas_->check_consistency();
+#endif
 }
 
 RenderableMhx2File::~RenderableMhx2File()
@@ -45,7 +47,9 @@ void RenderableMhx2File::set_relative_joint_poses(const std::map<std::string, Of
     rva_->set_absolute_joint_poses(mt);
     acvas_->bone_indices.clear();
     acvas_->skeleton = nullptr;
+#ifdef DEBUG
     acvas_->check_consistency();
+#endif
 }
 
 std::vector<OffsetAndQuaternion<float>> RenderableMhx2File::vectorize_joint_poses(

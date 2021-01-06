@@ -27,7 +27,9 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
             triangles_res_subset_.push_back(t);
         }
     }
+#ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
+#endif
     for (const auto& cva : triangles_res_subset_) {
         assert_true(cva->triangle_bone_weights.empty() == !rcva_->triangles_res_->skeleton);
     }
@@ -238,7 +240,9 @@ void RenderableColoredVertexArrayInstance::render(
                 CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
             }
         }
+#ifdef DEBUG
         rcva_->triangles_res_->check_consistency();
+#endif
         assert_true(cva->triangle_bone_weights.empty() == !rcva_->triangles_res_->skeleton);
         assert_true(cva->triangle_bone_weights.empty() == rcva_->triangles_res_->bone_indices.empty());
         if (!rcva_->triangles_res_->bone_indices.empty()) {
