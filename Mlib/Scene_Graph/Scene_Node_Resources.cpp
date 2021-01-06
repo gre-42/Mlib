@@ -1,17 +1,33 @@
 #include "Scene_Node_Resources.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 
 using namespace Mlib;
+
+SceneNodeResources::SceneNodeResources()
+{}
+
+SceneNodeResources::~SceneNodeResources()
+{}
 
 void SceneNodeResources::add_resource(
     const std::string& name,
     const std::shared_ptr<SceneNodeResource>& resource)
 {
     std::lock_guard<std::recursive_mutex> lock_guard{mutex_};
-    if (resources_.find(name) != resources_.end()) {
+    if (!resources_.insert(std::make_pair(name, resource)).second) {
         throw std::runtime_error("SceneNodeResource with name \"" + name + "\" already exists\"");
     }
-    resources_.insert(std::make_pair(name, resource));
+}
+
+void SceneNodeResources::add_bvh_loader(
+    const std::string& name,
+    const std::shared_ptr<BvhLoader>& bvh_loader)
+{
+    std::lock_guard<std::recursive_mutex> lock_guard{mutex_};
+    if (!bvh_loaders_.insert(std::make_pair(name, bvh_loader)).second) {
+        throw std::runtime_error("BVH-loader with name \"" + name + "\" already exists\"");
+    }
 }
 
 void SceneNodeResources::instantiate_renderable(
@@ -117,5 +133,17 @@ void SceneNodeResources::set_relative_joint_poses(
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("set_relative_joint_poses for resource \"" + name + "\" failed: " + e.what());
     }
+}
 
+std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResources::get_poses(const std::string& name, float seconds) const
+{
+    auto it = bvh_loaders_.find(name);
+    if (it == bvh_loaders_.end()) {
+        throw std::runtime_error("Could not find BVH-loader with name \"" + name + '"');
+    }
+    try {
+        return it->second->get_interpolated_frame(seconds);
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("get_poses for resource \"" + name + "\" failed: " + e.what());
+    }
 }

@@ -13,6 +13,7 @@ struct VertexArray {
     GLuint vertex_array = (GLuint)-1;
     GLuint vertex_buffer = (GLuint)-1;
     GLuint position_buffer = (GLuint)-1;
+    GLuint bone_weight_buffer = (GLuint)-1;
     void free();
 };
 

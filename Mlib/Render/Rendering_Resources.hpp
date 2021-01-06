@@ -20,10 +20,11 @@ struct TextureHandleAndNeedsGc {
 };
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
+class SceneNodeResources;
 
 class RenderingResources {
 public:
-    RenderingResources();
+    explicit RenderingResources(SceneNodeResources& scene_node_resources);
     ~RenderingResources();
     GLuint get_texture(const TextureDescriptor& descriptor) const;
     GLuint get_texture(const std::string& name, const TextureDescriptor& descriptor) const;
@@ -43,6 +44,8 @@ public:
     void delete_texture(const std::string& name);
 
     std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
+
+    SceneNodeResources& scene_node_resources() const;
 private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
@@ -51,6 +54,7 @@ private:
     std::map<std::string, float> discreteness_;
     std::map<std::string, WrapMode> texture_wrap_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
+    SceneNodeResources& scene_node_resources_;
 };
 
 }

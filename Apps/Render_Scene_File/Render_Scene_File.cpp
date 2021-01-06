@@ -213,8 +213,8 @@ int main(int argc, char** argv) {
                 .bvh = !args.has_named("--no_bvh"),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
 
-            RenderingResources rendering_resources;
             SceneNodeResources scene_node_resources;
+            RenderingResources rendering_resources{scene_node_resources};
             AggregateArrayRenderer small_aggregate_array_renderer{rendering_resources};
             AggregateArrayRenderer large_aggregate_array_renderer{rendering_resources};
             ArrayInstancesRenderer small_instances_renderer{rendering_resources};

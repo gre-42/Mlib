@@ -25,6 +25,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/String.hpp>
@@ -233,8 +234,8 @@ int main(int argc, char** argv) {
 
         render2.print_hardware_info();
 
-        RenderingResources rendering_resources;
         SceneNodeResources scene_node_resources;
+        RenderingResources rendering_resources{scene_node_resources};
         AggregateArrayRenderer small_sorted_aggregate_renderer{rendering_resources};
         AggregateArrayRenderer large_aggregate_renderer{rendering_resources};
         Scene scene{
@@ -271,6 +272,7 @@ int main(int argc, char** argv) {
                         cfg,
                         rendering_resources);
                     scene_node_resources.add_resource(name, rmhx2);
+                    scene_node->set_style(new Style{.selector = std::regex{""}, .animation_frame = {.name = "anim"}});
                     LoadMeshConfig bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),
@@ -293,7 +295,7 @@ int main(int argc, char** argv) {
                         add_reference_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
-                        BvhLoader bvh{
+                        auto bvh = std::make_shared<BvhLoader>(
                             args.named_value("--bvh"),
                             BvhConfig{
                                 .demean = args.has_named_value("--bvh_demean") ? safe_stob(args.named_value("--bvh_demean")) : blender_bvh_config.demean,
@@ -304,10 +306,11 @@ int main(int argc, char** argv) {
                                     args.has_named_value("--bvh_rotation_2") ? safe_stoz(args.named_value("--bvh_rotation_2")) : blender_bvh_config.rotation_order(2)},
                                 .parameter_transformation = args.has_named_value("--bvh_trafo")
                                     ? get_parameter_transformation(args.named_value("--bvh_trafo"))
-                                    : blender_bvh_config.parameter_transformation}};
+                                    : blender_bvh_config.parameter_transformation});
+                        scene_node_resources.add_bvh_loader("anim", bvh);
                         if (args.has_named_value("--animation_frame")) {
                             float animation_frame = safe_stof(args.named_value("--animation_frame"));
-                            scene_node_resources.set_relative_joint_poses(name, bvh.get_interpolated_frame(animation_frame));
+                            scene_node_resources.set_relative_joint_poses(name, bvh->get_interpolated_frame(animation_frame));
                         }
                         if (args.has_named_value("--frame_bone")) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
@@ -317,7 +320,7 @@ int main(int argc, char** argv) {
                                 rendering_resources));
                             add_bone_frame(
                                 rmhx2->skeleton(),
-                                rmhx2->vectorize_joint_poses(bvh.get_interpolated_frame(bone_frame)),
+                                rmhx2->vectorize_joint_poses(bvh->get_interpolated_frame(bone_frame)),
                                 scene_node,
                                 scene_node_resources);
                         }

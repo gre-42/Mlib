@@ -10,6 +10,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Light.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Scene_Graph/Visibility_Check.hpp>
 
@@ -231,6 +232,30 @@ void RenderableColoredVertexArrayInstance::render(
                 CHK(glUniform3fv(rp.view_dir, 1, (const GLfloat*) d.flat_begin()));
             } else {
                 CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
+            }
+        }
+        assert_true(rcva_->triangles_res_->bone_indices.empty() == !rcva_->triangles_res_->skeleton);
+        if (!rcva_->triangles_res_->bone_indices.empty()) {
+            if (style == nullptr) {
+                throw std::runtime_error("Animation without style");
+            }
+            if (style->animation_frame.name.empty()) {
+                throw std::runtime_error("Animation frame has no name");
+            }
+            if (std::isnan(style->animation_frame.loop_time)) {
+                throw std::runtime_error("Loop time is NAN");
+            }
+            auto poses = rcva_->rendering_resources_.scene_node_resources().get_poses(style->animation_frame.name, style->animation_frame.loop_time);
+            std::vector<OffsetAndQuaternion<float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
+            std::vector<OffsetAndQuaternion<float>> mt = rcva_->triangles_res_->skeleton->absolutify(ms);
+            if (mt.size() != rcva_->triangles_res_->bone_indices.size()) {
+                throw std::runtime_error("Number of bone indices differs from number of quaternions");
+            }
+            size_t i = 0;
+            for (const auto& l : mt) {
+                CHK(glUniform3fv(rp.pose_positions.at(i), 1, (const GLfloat*) l.offset().flat_begin()));
+                CHK(glUniform4fv(rp.pose_quaternions.at(i), 1, (const GLfloat*) l.quaternion().vector().flat_begin()));
+                ++i;
             }
         }
         LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture");

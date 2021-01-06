@@ -14,6 +14,12 @@
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <iostream>
 
+static const size_t ANIMATION_NINTERPOLATED = 4;
+struct ShaderBoneWeight {
+    unsigned char indices[ANIMATION_NINTERPOLATED];
+    float weights[ANIMATION_NINTERPOLATED];
+};
+
 using namespace Mlib;
 
 static GenShaderText vertex_shader_text_gen{[](
@@ -30,6 +36,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_specularity,
     bool has_instances,
     bool has_lookat,
+    size_t nbones,
     bool reorient_normals,
     bool orthographic)
 {
@@ -51,6 +58,12 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_instances) {
         sstr << "layout (location=5) in vec3 instancePosition;" << std::endl;
+    }
+    if (nbones != 0) {
+        sstr << "layout (location=6) in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
+        sstr << "layout (location=7) in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
+        sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
+        sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
     sstr << "out vec3 color;" << std::endl;
     sstr << "out vec2 tex_coord;" << std::endl;
@@ -103,6 +116,21 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vPosInstance = vPos + instancePosition;" << std::endl;
     } else {
         sstr << "    vPosInstance = vPos;" << std::endl;
+    }
+    if (nbones != 0) {
+        sstr << "    vec3 avPosInstance = vec3(0, 0, 0);" << std::endl;
+        for (size_t k = 0; k < ANIMATION_NINTERPOLATED; ++k) {
+            static std::map<char, char> m{{0, 'x'}, {1, 'y'}, {2, 'z'}, {3, 'w'}};
+            sstr << "    {" << std::endl;
+            sstr << "        lowp uint i = bone_ids." << m.at(k) << ";" << std::endl;
+            sstr << "        float weight = bone_weights." << m.at(k) << ";" << std::endl;
+            sstr << "        vec3 o = bone_positions[i];" << std::endl;
+            sstr << "        vec4 v = bone_quaternions[i];" << std::endl;
+            sstr << "        vec3 p = vPosInstance;" << std::endl;
+            sstr << "        avPosInstance += weight * (o + p + 2 * cross(v.xyz, cross(v.xyz, p) + v.w * p));" << std::endl;
+            sstr << "    }" << std::endl;
+        }
+        sstr << "    vPosInstance = avPosInstance;" << std::endl;
     }
     sstr << "    gl_Position = MVP * vec4(vPosInstance, 1.0);" << std::endl;
     sstr << "    color = vCol;" << std::endl;
@@ -410,9 +438,17 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<ColoredVertexArray>& triangles,
     std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
     RenderingResources& rendering_resources)
-: RenderableColoredVertexArray(std::list<std::shared_ptr<ColoredVertexArray>>{triangles}, instances, rendering_resources)
+: RenderableColoredVertexArray(
+    std::list<std::shared_ptr<ColoredVertexArray>>{triangles},
+    instances,
+    rendering_resources)
 {
     triangles_res_->cvas.push_back(triangles);
+}
+
+RenderableColoredVertexArray::~RenderableColoredVertexArray()
+{
+    ;
 }
 
 void RenderableColoredVertexArray::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
@@ -510,6 +546,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     } else {
         occlusion_type = OcclusionType::OFF;
     }
+    assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
     rp->generate(
         vertex_shader_text_gen(
             filtered_lights,
@@ -525,6 +562,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             !id.specularity.all_equal(0),
             id.has_instances,
             id.has_lookat,
+            triangles_res_->bone_indices.size(),
             id.reorient_normals,
             id.orthographic),
         fragment_shader_text_textured_rgb_gen(
@@ -607,6 +645,11 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         rp->m_location = 0;
     }
     // rp->light_position_location = checked_glGetUniformLocation(rp->program, "lightPos");
+    assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
+    for (size_t i = 0; i < triangles_res_->bone_indices.size(); ++i) {
+        rp->pose_positions[i] = checked_glGetUniformLocation(rp->program, ("bone_positions[" + std::to_string(i) + "]").c_str());
+        rp->pose_quaternions[i] = checked_glGetUniformLocation(rp->program, ("bone_quaternions[" + std::to_string(i) + "]").c_str());
+    }
     for (size_t i = 0; i < filtered_lights.size(); ++i) {
         if (!id.ambience.all_equal(0)) {
             rp->light_ambiences[i] = checked_glGetUniformLocation(rp->program, ("lightAmbience[" + std::to_string(i) + "]").c_str());
@@ -688,9 +731,48 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
         CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
 
         CHK(glEnableVertexAttribArray(5));
-        CHK(glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE,
-                                  sizeof(positions[0]), (void*) 0));
+        CHK(glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
         CHK(glVertexAttribDivisor(5, 1));
+    }
+    if (triangles_res_->skeleton != nullptr) {
+        std::vector<FixedArray<ShaderBoneWeight, 3>> triangle_bone_weights(cva->triangle_bone_weights.size());
+        for (size_t tid = 0; tid < triangle_bone_weights.size(); ++tid) {
+            const auto& td = cva->triangle_bone_weights[tid];
+            auto& ts = triangle_bone_weights[tid];
+            for (size_t vid = 0; vid < td.length(); ++vid) {
+                auto vd = td(vid);
+                auto& vs = ts(vid);
+                // Sort in descending order
+                std::sort(vd.begin(), vd.end(), [](const BoneWeight& w0, const BoneWeight& w1){return w0.weight > w1.weight;});
+                float sum_weights = 0;
+                for (size_t i = 0; i < ANIMATION_NINTERPOLATED; ++i) {
+                    if (vd[i].bone_index >= triangles_res_->bone_indices.size()) {
+                        throw std::runtime_error("Bone index too large in get_vertex_array");
+                    }
+                    vs.indices[i] = (i < vd.size()) ? vd[i].bone_index : 0;
+                    vs.weights[i] = (i < vd.size()) ? vd[i].weight : 0;
+                    sum_weights += vs.weights[i];
+                }
+                if (sum_weights < 1e-3) {
+                    throw std::runtime_error("Sum of weights too small");
+                }
+                if (sum_weights > 1.1) {
+                    throw std::runtime_error("Sum of weights too large");
+                }
+                for (size_t i = 0; i < ANIMATION_NINTERPOLATED; ++i) {
+                    vs.weights[i] /= sum_weights;
+                }
+            }
+        }
+        CHK(glGenBuffers(1, &va->bone_weight_buffer));
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va->bone_weight_buffer));
+        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size(), &triangle_bone_weights.front(), GL_STATIC_DRAW));
+
+        BoneWeight* bw = nullptr;
+        CHK(glEnableVertexAttribArray(6));
+        CHK(glVertexAttribPointer(6, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(ShaderBoneWeight), &bw->bone_index));
+        CHK(glEnableVertexAttribArray(7));
+        CHK(glVertexAttribPointer(7, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weight));
     }
 
     CHK(glBindVertexArray(0));

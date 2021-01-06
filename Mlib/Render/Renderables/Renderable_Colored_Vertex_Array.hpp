@@ -16,8 +16,8 @@ namespace Mlib {
 
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
-class RenderingResources;
 struct Light;
+class RenderingResources;
 
 class RenderableColoredVertexArray:
     public SceneNodeResource,
@@ -39,6 +39,7 @@ public:
         const std::shared_ptr<ColoredVertexArray>& triangles,
         std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
         RenderingResources& rendering_resources);
+    ~RenderableColoredVertexArray();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;

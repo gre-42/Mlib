@@ -123,7 +123,9 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
     assert_true(level - 1 == log2(std::max(si.width, si.height)));
 }
 
-RenderingResources::RenderingResources() {}
+RenderingResources::RenderingResources(SceneNodeResources& scene_node_resources)
+: scene_node_resources_{scene_node_resources}
+{}
 
 RenderingResources::~RenderingResources() {
     for (const auto& t : textures_) {
@@ -362,4 +364,8 @@ void RenderingResources::delete_texture(const std::string& name) {
 
 std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& RenderingResources::render_programs() {
     return render_programs_;
+}
+
+SceneNodeResources& RenderingResources::scene_node_resources() const {
+    return scene_node_resources_;
 }

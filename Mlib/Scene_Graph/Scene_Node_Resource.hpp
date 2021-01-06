@@ -49,8 +49,7 @@ public:
     virtual PointsAndAdjacency<float, 2> way_points() const {
         throw std::runtime_error("way_points not implemented");
     }
-    virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses)
-    {
+    virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) {
         throw std::runtime_error("set_relative_joint_poses not implemented");
     }
 };

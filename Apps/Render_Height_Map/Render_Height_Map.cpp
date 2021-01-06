@@ -5,6 +5,7 @@
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/String.hpp>
 #include <vector>
 
@@ -29,7 +30,8 @@ int main(int argc, char** argv) {
         NormalizedPointsFixed np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::CENTERED};
         np.add_point({0.f, 0.f});
         np.add_point({float(img.shape(id1)) - 1, float(img.shape(id0)) - 1});
-        RenderingResources rendering_resources;
+        SceneNodeResources scene_node_resources;
+        RenderingResources rendering_resources{scene_node_resources};
         size_t num_renderings = SIZE_MAX;
         Render2{num_renderings}.render_height_map(
             rendering_resources,

@@ -20,6 +20,8 @@ struct ColoredRenderProgram: public RenderProgram {
     // GLint light_pos;
     GLint view_dir;
     GLint view_pos;
+    std::map<size_t, GLint> pose_positions;
+    std::map<size_t, GLint> pose_quaternions;
     std::map<size_t, GLint> light_ambiences;
     std::map<size_t, GLint> light_diffusivities;
     std::map<size_t, GLint> light_specularities;
