@@ -35,6 +35,7 @@ BvhLoader::BvhLoader(
     std::string line;
     std::string joint_name;
     bool in_data_section = false;
+    size_t nframes = SIZE_MAX;
     while (std::getline(f, line)) {
         if (!in_data_section) {
             static const std::regex name_re{"^[\\s\\n\\r]*(?:ROOT|JOINT)\\s+(\\w+)[\\s\\n\\r]*$"};
@@ -98,7 +99,7 @@ BvhLoader::BvhLoader(
                 if (!std::regex_match(line, match, frames_re)) {
                     throw std::runtime_error("Could not match frames: \"" + line + '"');
                 }
-                size_t nframes = safe_stoz(match[1].str());
+                nframes = safe_stoz(match[1].str());
                 frames_.reserve(nframes);
                 if (!std::getline(f, line)) {
                     throw std::runtime_error("Could not get line");
@@ -117,6 +118,12 @@ BvhLoader::BvhLoader(
                     ", received " + std::to_string(d.size()) +
                     ": " + line);
             }
+            if (nframes == SIZE_MAX) {
+                throw std::runtime_error("In data section without nframes");
+            }
+            if (frames_.size() == nframes) {
+                throw std::runtime_error("Too many frames in BVH file");
+            }
             frames_.emplace_back();
             for (const auto& o : offsets_) {
                 frames_.back()[o.first][0] = o.second;
@@ -127,6 +134,12 @@ BvhLoader::BvhLoader(
                 //  + offsets_.at(c.joint_name)(c.pose_index0, c.pose_index1);
             }
         }
+    }
+    if (nframes == SIZE_MAX) {
+        throw std::runtime_error("nframes undefined");
+    }
+    if (frames_.size() != nframes) {
+        throw std::runtime_error("Too few frames in BVH file");
     }
     if (cfg_.demean) {
         if (columns_.empty()) {
