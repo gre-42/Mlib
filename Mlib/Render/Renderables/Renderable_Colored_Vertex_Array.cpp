@@ -750,12 +750,20 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
                 std::sort(vd.begin(), vd.end(), [](const BoneWeight& w0, const BoneWeight& w1){return w0.weight > w1.weight;});
                 float sum_weights = 0;
                 for (size_t i = 0; i < ANIMATION_NINTERPOLATED; ++i) {
-                    if (vd[i].bone_index >= triangles_res_->bone_indices.size()) {
-                        throw std::runtime_error("Bone index too large in get_vertex_array");
+                    if (i < vd.size()) {
+                        if (vd[i].bone_index >= triangles_res_->bone_indices.size()) {
+                            throw std::runtime_error(
+                                "Bone index too large in get_vertex_array: " +
+                                std::to_string(vd[i].bone_index) + " >= " +
+                                std::to_string(triangles_res_->bone_indices.size()));
+                        }
+                        vs.indices[i] = vd[i].bone_index;
+                        vs.weights[i] = vd[i].weight;
+                        sum_weights += vs.weights[i];
+                    } else {
+                        vs.indices[i] = 0;
+                        vs.weights[i] = 0;
                     }
-                    vs.indices[i] = (i < vd.size()) ? vd[i].bone_index : 0;
-                    vs.weights[i] = (i < vd.size()) ? vd[i].weight : 0;
-                    sum_weights += vs.weights[i];
                 }
                 if (sum_weights < 1e-3) {
                     throw std::runtime_error("Sum of weights too small");
