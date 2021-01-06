@@ -734,6 +734,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
         CHK(glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
         CHK(glVertexAttribDivisor(5, 1));
     }
+    assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
     if (triangles_res_->skeleton != nullptr) {
         std::vector<FixedArray<ShaderBoneWeight, 3>> triangle_bone_weights(cva->triangle_bone_weights.size());
         for (size_t tid = 0; tid < triangle_bone_weights.size(); ++tid) {
