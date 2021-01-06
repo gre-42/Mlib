@@ -13,6 +13,7 @@
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Move_Scene_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
@@ -277,8 +278,8 @@ int main(int argc, char** argv) {
                         .animation_frame = {
                             .name = "anim",
                             .loop_begin = 0,
-                            .loop_end = 30,
-                            .loop_time = 5}});
+                            .loop_end = 2,
+                            .loop_time = 1}});
                     LoadMeshConfig bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),
@@ -530,6 +531,7 @@ int main(int argc, char** argv) {
             render_logics.append(nullptr, l);
         }
         render_logics.append(nullptr, read_pixels_logic);
+        render_logics.append(nullptr, std::make_shared<MoveSceneLogic>(scene));
 
         render2(
             render_logics,

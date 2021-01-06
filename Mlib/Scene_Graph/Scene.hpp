@@ -51,7 +51,7 @@ public:
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         ExternalRenderPass external_render_pass) const;
-    void move();
+    void move(float dt);
     size_t get_uuid();
     void print() const;
     bool shutting_down() const;

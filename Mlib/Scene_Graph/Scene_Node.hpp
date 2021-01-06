@@ -70,7 +70,7 @@ public:
     void set_camera(const std::shared_ptr<Camera>& camera);
     std::shared_ptr<Camera> get_camera() const;
     void add_light(Light* light);
-    void move(const FixedArray<float, 4, 4>& v);
+    void move(const FixedArray<float, 4, 4>& v, float dt);
     bool requires_render_pass() const;
     void render(
         const FixedArray<float, 4, 4>& vp,
@@ -122,7 +122,7 @@ public:
     FixedArray<float, 4, 4> relative_view_matrix() const;
     FixedArray<float, 4, 4> absolute_view_matrix() const;
     void print(size_t recursion_depth) const;
-    void set_style(const Style* style);
+    void set_style(Style* style);
 private:
     Scene* scene_;
     SceneNode* parent_;
@@ -141,7 +141,7 @@ private:
     float scale_;
     mutable FixedArray<float, 3, 3> rotation_matrix_;
     mutable bool rotation_matrix_invalidated_;
-    std::unique_ptr<const Style> style_;
+    std::unique_ptr<Style> style_;
 };
 
 }

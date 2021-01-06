@@ -210,11 +210,40 @@ void SceneNode::add_light(Light* light) {
     lights_.push_back(std::unique_ptr<Light>{light});
 }
 
-void SceneNode::set_style(const Style* style) {
+void SceneNode::set_style(Style* style) {
     style_.reset(style);
 }
 
-void SceneNode::move(const FixedArray<float, 4, 4>& v) {
+void SceneNode::move(const FixedArray<float, 4, 4>& v, float dt) {
+    if (style_ != nullptr) {
+        AnimationFrame& af = style_->animation_frame;
+        if (!std::isnan(af.loop_time)) {
+            if (std::isnan(af.loop_begin) != std::isnan(af.loop_end)) {
+                throw std::runtime_error("Inconsistent loop_begin and loop_end NAN-ness");
+            }
+            if (!std::isnan(af.loop_begin)) {
+                if (af.loop_end < af.loop_begin) {
+                    throw std::runtime_error("Loop end before loop begin");
+                }
+                if (af.loop_time < af.loop_begin) {
+                    throw std::runtime_error("Loop time before loop begin");
+                }
+                if (af.loop_time > af.loop_end) {
+                    throw std::runtime_error("Loop time after loop end");
+                }
+                if (af.loop_end == af.loop_begin) {
+                    af.loop_time = af.loop_begin;
+                } else {
+                    af.loop_time = std::clamp(
+                        af.loop_begin + std::fmod(
+                            af.loop_time + dt - af.loop_begin,
+                            af.loop_end - af.loop_begin),
+                        af.loop_begin,
+                        af.loop_end);
+                }
+            }
+        }
+    }
     FixedArray<float, 4, 4> v2;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
         FixedArray<float, 4, 4> ma = absolute_movable_->get_new_absolute_model_matrix();
@@ -243,7 +272,7 @@ void SceneNode::move(const FixedArray<float, 4, 4>& v) {
         absolute_observer_->set_absolute_model_matrix(inverted_scaled_se3(v2));
     }
     for (const auto& n : children_) {
-        n.second.scene_node->move(v2);
+        n.second.scene_node->move(v2, dt);
     }
 }
 

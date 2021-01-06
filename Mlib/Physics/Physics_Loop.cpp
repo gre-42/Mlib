@@ -58,7 +58,7 @@ PhysicsLoop::PhysicsLoop(
                     ++i;
                 }
             }
-            scene.move();
+            scene.move(physics_cfg.dt);
         }
         physics_engine.move_advance_times();
         physics_engine.advance_times_.delete_scheduled_advance_times();

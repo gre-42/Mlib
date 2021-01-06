@@ -353,12 +353,12 @@ void Scene::render(
     }
 }
 
-void Scene::move() {
+void Scene::move(float dt) {
     LOG_FUNCTION("Scene::move");
     std::unique_lock lock{dynamic_mutex_};
     LOG_INFO("Lock acquired");
     for (const auto& n : root_nodes_) {
-        n.second->move(fixed_identity_array<float, 4>());
+        n.second->move(fixed_identity_array<float, 4>(), dt);
     }
 }
 

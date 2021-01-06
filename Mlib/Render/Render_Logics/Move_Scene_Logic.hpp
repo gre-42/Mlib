@@ -5,9 +5,9 @@ namespace Mlib {
 
 class Scene;
 
-class StandardRenderLogic: public RenderLogic {
+class MoveSceneLogic: public RenderLogic {
 public:
-    StandardRenderLogic(const Scene& scene, RenderLogic& child_logic);
+    explicit MoveSceneLogic(Scene& scene);
 
     virtual void render(
         int width,
@@ -22,8 +22,7 @@ public:
     virtual const FixedArray<float, 4, 4>& iv() const override;
     virtual bool requires_postprocessing() const override;
 private:
-    const Scene& scene_;
-    RenderLogic& child_logic_;
+    Scene& scene_;
 };
 
 }
