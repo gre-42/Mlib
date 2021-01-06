@@ -125,9 +125,9 @@ void RenderableColoredVertexArrayInstance::render(
         FixedArray<float, 3> diffusivity;
         FixedArray<float, 3> specularity;
         if (!filtered_lights.empty() && (render_pass.external.pass != ExternalRenderPass::LIGHTMAP_TO_TEXTURE)) {
-            ambience = style ? style->ambience : cva->material.ambience;
-            diffusivity = style ? style->diffusivity : cva->material.diffusivity;
-            specularity = style ? style->specularity : cva->material.specularity;
+            ambience = style && !all(style->ambience == -1.f) ? style->ambience : cva->material.ambience;
+            diffusivity = style && !all(style->diffusivity == -1.f) ? style->diffusivity : cva->material.diffusivity;
+            specularity = style && !all(style->specularity == -1.f) ? style->specularity : cva->material.specularity;
         } else {
             ambience = fixed_zeros<float, 3>();
             diffusivity = fixed_zeros<float, 3>();
