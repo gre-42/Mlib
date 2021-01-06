@@ -7,8 +7,9 @@
 
 using namespace Mlib;
 
-MoveSceneLogic::MoveSceneLogic(Scene& scene)
-: scene_{scene}
+MoveSceneLogic::MoveSceneLogic(Scene& scene, float speed)
+: scene_{scene},
+  speed_{speed}
 {}
 
 void MoveSceneLogic::render(
@@ -21,7 +22,7 @@ void MoveSceneLogic::render(
 {
     LOG_FUNCTION("MoveSceneLogic::render");
 
-    scene_.move(render_config.dt);
+    scene_.move(render_config.dt * speed_);
 }
 
 float MoveSceneLogic::near_plane() const {

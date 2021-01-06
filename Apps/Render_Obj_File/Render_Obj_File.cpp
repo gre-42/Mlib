@@ -92,6 +92,10 @@ int main(int argc, char** argv) {
         "[--bvh_rotation_1] "
         "[--bvh_rotation_2] "
         "[--bvh_trafo] "
+        "[--loop_begin] "
+        "[--loop_end] "
+        "[--loop_time] "
+        "[--speed] "
         "[--reference_bone <filename>] "
         "[--frame_bone <filename>] "
         "[--bone_scale <scale>] "
@@ -155,6 +159,10 @@ int main(int argc, char** argv) {
          "--bvh_rotation_1",
          "--bvh_rotation_2",
          "--bvh_trafo",
+         "--loop_begin",
+         "--loop_end",
+         "--loop_time",
+         "--speed",
          "--reference_bone",
          "--frame_bone",
          "--bone_scale",
@@ -277,9 +285,9 @@ int main(int argc, char** argv) {
                         .selector = std::regex{""},
                         .animation_frame = {
                             .name = "anim",
-                            .loop_begin = 0,
-                            .loop_end = 2,
-                            .loop_time = 1}});
+                            .loop_begin = safe_stof(args.named_value("--loop_begin", "0")),
+                            .loop_end = safe_stof(args.named_value("--loop_end", "2")),
+                            .loop_time = safe_stof(args.named_value("--loop_time", "1"))}});
                     LoadMeshConfig bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),
@@ -529,7 +537,7 @@ int main(int argc, char** argv) {
             render_logics.append(nullptr, l);
         }
         render_logics.append(nullptr, read_pixels_logic);
-        render_logics.append(nullptr, std::make_shared<MoveSceneLogic>(scene));
+        render_logics.append(nullptr, std::make_shared<MoveSceneLogic>(scene, safe_stof(args.named_value("--speed", "1"))));
 
         render2(
             render_logics,

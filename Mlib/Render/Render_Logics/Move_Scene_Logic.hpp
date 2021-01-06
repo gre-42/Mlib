@@ -7,7 +7,7 @@ class Scene;
 
 class MoveSceneLogic: public RenderLogic {
 public:
-    explicit MoveSceneLogic(Scene& scene);
+    explicit MoveSceneLogic(Scene& scene, float speed = 1);
 
     virtual void render(
         int width,
@@ -23,6 +23,7 @@ public:
     virtual bool requires_postprocessing() const override;
 private:
     Scene& scene_;
+    float speed_;
 };
 
 }
