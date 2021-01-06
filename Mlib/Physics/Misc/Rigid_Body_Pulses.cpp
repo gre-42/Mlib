@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Math/Fixed_Inverse.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 
@@ -81,7 +82,8 @@ FixedArray<float, 3> RigidBodyPulses::solve_abs_I(const FixedArray<float, 3>& x)
         FixedArray<float, 3> Iv{I_(0, 0), I_(1, 1), I_(2, 2)};
         return dot1d(rotation_, dot1d(rotation_.T(), x) / Iv);
     } else {
-        return solve_symm_1d(abs_I(), x);
+        // return solve_symm_1d(abs_I(), x);
+        return dot1d(fixed_symmetric_inverse_3x3(abs_I()), x);
     }
 }
 
