@@ -4,6 +4,12 @@
 
 using namespace Mlib;
 
+struct Mlib::BvhEntry {
+    std::string filename;
+    BvhConfig config;
+    std::unique_ptr<BvhLoader> loader;
+};
+
 SceneNodeResources::SceneNodeResources()
 {}
 
@@ -20,13 +26,14 @@ void SceneNodeResources::add_resource(
     }
 }
 
-void SceneNodeResources::add_bvh_loader(
+void SceneNodeResources::add_bvh_file(
     const std::string& name,
-    const std::shared_ptr<BvhLoader>& bvh_loader)
+    const std::string& filename,
+    const BvhConfig& bvh_config)
 {
     std::lock_guard<std::recursive_mutex> lock_guard{mutex_};
-    if (!bvh_loaders_.insert(std::make_pair(name, bvh_loader)).second) {
-        throw std::runtime_error("BVH-loader with name \"" + name + "\" already exists\"");
+    if (!bvh_loaders_.insert({name, BvhEntry{filename, bvh_config, nullptr}}).second) {
+        throw std::runtime_error("BVH-file with name \"" + name + "\" already exists\"");
     }
 }
 
@@ -141,8 +148,15 @@ std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResources::get_poses(
     if (it == bvh_loaders_.end()) {
         throw std::runtime_error("Could not find BVH-loader with name \"" + name + '"');
     }
+    if (it->second.loader == nullptr) {
+        std::lock_guard<std::recursive_mutex> lock_guard{mutex_};
+        it = bvh_loaders_.find(name);
+        if (it->second.loader == nullptr) {
+            it->second.loader = std::make_unique<BvhLoader>(it->second.filename, it->second.config);
+        }
+    }
     try {
-        return it->second->get_interpolated_frame(seconds);
+        return it->second.loader->get_interpolated_frame(seconds);
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("get_poses for resource \"" + name + "\" failed: " + e.what());
     }

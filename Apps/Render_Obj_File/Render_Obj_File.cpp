@@ -302,19 +302,17 @@ int main(int argc, char** argv) {
                         add_reference_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
-                        auto bvh = std::make_shared<BvhLoader>(
-                            args.named_value("--bvh"),
-                            BvhConfig{
-                                .demean = args.has_named_value("--bvh_demean") ? safe_stob(args.named_value("--bvh_demean")) : blender_bvh_config.demean,
-                                .scale = args.has_named_value("--bvh_scale") ? safe_stof(args.named_value("--bvh_scale")) : blender_bvh_config.scale,
-                                .rotation_order = FixedArray<size_t, 3>{
-                                    args.has_named_value("--bvh_rotation_0") ? safe_stoz(args.named_value("--bvh_rotation_0")) : blender_bvh_config.rotation_order(0),
-                                    args.has_named_value("--bvh_rotation_1") ? safe_stoz(args.named_value("--bvh_rotation_1")) : blender_bvh_config.rotation_order(1),
-                                    args.has_named_value("--bvh_rotation_2") ? safe_stoz(args.named_value("--bvh_rotation_2")) : blender_bvh_config.rotation_order(2)},
-                                .parameter_transformation = args.has_named_value("--bvh_trafo")
-                                    ? get_parameter_transformation(args.named_value("--bvh_trafo"))
-                                    : blender_bvh_config.parameter_transformation});
-                        scene_node_resources.add_bvh_loader("anim", bvh);
+                        BvhConfig bvh_config{
+                            .demean = args.has_named_value("--bvh_demean") ? safe_stob(args.named_value("--bvh_demean")) : blender_bvh_config.demean,
+                            .scale = args.has_named_value("--bvh_scale") ? safe_stof(args.named_value("--bvh_scale")) : blender_bvh_config.scale,
+                            .rotation_order = FixedArray<size_t, 3>{
+                                args.has_named_value("--bvh_rotation_0") ? safe_stoz(args.named_value("--bvh_rotation_0")) : blender_bvh_config.rotation_order(0),
+                                args.has_named_value("--bvh_rotation_1") ? safe_stoz(args.named_value("--bvh_rotation_1")) : blender_bvh_config.rotation_order(1),
+                                args.has_named_value("--bvh_rotation_2") ? safe_stoz(args.named_value("--bvh_rotation_2")) : blender_bvh_config.rotation_order(2)},
+                            .parameter_transformation = args.has_named_value("--bvh_trafo")
+                                ? get_parameter_transformation(args.named_value("--bvh_trafo"))
+                                : blender_bvh_config.parameter_transformation};
+                        scene_node_resources.add_bvh_file("anim", args.named_value("--bvh"), bvh_config);
                         if (args.has_named_value("--frame_bone")) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
                             scene_node_resources.add_resource("frame_bone", std::make_shared<RenderableObjFile>(
@@ -323,14 +321,14 @@ int main(int argc, char** argv) {
                                 rendering_resources));
                             add_bone_frame(
                                 rmhx2->skeleton(),
-                                rmhx2->vectorize_joint_poses(bvh->get_interpolated_frame(bone_frame)),
+                                rmhx2->vectorize_joint_poses(scene_node_resources.get_poses("anim", bone_frame)),
                                 scene_node,
                                 scene_node_resources);
                         }
                         // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
                         if (args.has_named_value("--animation_frame")) {
                             float animation_frame = safe_stof(args.named_value("--animation_frame"));
-                            scene_node_resources.set_relative_joint_poses(name, bvh->get_interpolated_frame(animation_frame));
+                            scene_node_resources.set_relative_joint_poses(name, scene_node_resources.get_poses("anim", animation_frame));
                         }
                     }
                 } else {

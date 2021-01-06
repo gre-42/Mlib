@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+struct BvhEntry;
+struct BvhConfig;
 class BvhLoader;
 
 class SceneNodeResources {
@@ -14,9 +16,10 @@ public:
     void add_resource(
         const std::string& name,
         const std::shared_ptr<SceneNodeResource>& resource);
-    void add_bvh_loader(
+    void add_bvh_file(
         const std::string& name,
-        const std::shared_ptr<BvhLoader>& bvh_loader);
+        const std::string& filename,
+        const BvhConfig& bvh_config);
     void instantiate_renderable(
         const std::string& resource_name,
         const std::string& instance_name,
@@ -32,8 +35,8 @@ public:
     std::map<std::string, OffsetAndQuaternion<float>> get_poses(const std::string& name, float seconds) const;
 private:
     std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
-    std::map<std::string, std::shared_ptr<BvhLoader>> bvh_loaders_;
-    std::recursive_mutex mutex_;
+    mutable std::map<std::string, BvhEntry> bvh_loaders_;
+    mutable std::recursive_mutex mutex_;
 };
 
 }
