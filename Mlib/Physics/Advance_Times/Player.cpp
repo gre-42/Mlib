@@ -40,6 +40,8 @@ Player::Player(
   gun_{nullptr},
   surface_power_forward_{NAN},
   surface_power_backward_{NAN},
+  angular_velocity_left_{NAN},
+  angular_velocity_right_{NAN},
   waypoint_{fixed_nans<float, 2>()},
   waypoint_id_{SIZE_MAX},
   waypoint_reached_{false},
@@ -96,18 +98,17 @@ void Player::set_surface_power(float forward, float backward) {
 }
 
 void Player::set_tire_angle_y(size_t tire_id, float angle_left, float angle_right) {
-    {
-        auto it = tire_angles_left_.insert(std::make_pair(tire_id, angle_left));
-        if (!it.second) {
-            throw std::runtime_error("tire angle left already set");
-        }
+    if (!tire_angles_left_.insert({tire_id, angle_left}).second) {
+        throw std::runtime_error("tire angle left already set");
     }
-    {
-        auto it = tire_angles_right_.insert(std::make_pair(tire_id, angle_right));
-        if (!it.second) {
-            throw std::runtime_error("tire angle right already set");
-        }
+    if (!tire_angles_right_.insert({tire_id, angle_right}).second) {
+        throw std::runtime_error("tire angle right already set");
     }
+}
+
+void Player::set_angular_velocity(float angular_velocity_left, float angular_velocity_right) {
+    angular_velocity_left_ = angular_velocity_left;
+    angular_velocity_right_ = angular_velocity_right;
 }
 
 void Player::set_waypoint(const FixedArray<float, 2>& waypoint) {
@@ -349,6 +350,46 @@ void Player::roll() {
     rb_->set_surface_power("breaks", 0);
 }
 
+void Player::steer_left_full() {
+    for (const auto& x : tire_angles_left_) {
+        rb_->set_tire_angle_y(x.first, x.second);
+    }
+    if (!std::isnan(angular_velocity_left_)) {
+        rb_->rbi_.rbp_.w_(1) = angular_velocity_left_;
+    }
+}
+
+void Player::steer_right_full() {
+    for (const auto& x : tire_angles_right_) {
+        rb_->set_tire_angle_y(x.first, x.second);
+    }
+    if (!std::isnan(angular_velocity_right_)) {
+        rb_->rbi_.rbp_.w_(1) = angular_velocity_right_;
+    }
+}
+
+void Player::steer_left_partial(float angle) {
+    for (const auto& x : tire_angles_left_) {
+        float ang = sign(x.second) * std::min(angle, std::abs(x.second));
+        rb_->set_tire_angle_y(x.first, ang);
+    }
+    if (!std::isnan(angular_velocity_left_)) {
+        float ang = sign(angular_velocity_left_) * std::min(angle, std::abs(angular_velocity_left_));
+        rb_->rbi_.rbp_.w_(1) = ang;
+    }
+}
+
+void Player::steer_right_partial(float angle) {
+    for (const auto& x : tire_angles_right_) {
+        float ang = sign(x.second) * std::min(angle, std::abs(x.second));
+        rb_->set_tire_angle_y(x.first, ang);
+    }
+    if (!std::isnan(angular_velocity_right_)) {
+        float ang = sign(angular_velocity_right_) * std::min(angle, std::abs(angular_velocity_right_));
+        rb_->rbi_.rbp_.w_(1) = ang;
+    }
+}
+
 void Player::aim_and_shoot() {
     assert_true(!target_scene_node_ == !target_rbi_);
     if (rb_ != nullptr && ((target_rbi_ == nullptr) || !can_see(*target_rbi_))) {
@@ -534,27 +575,17 @@ void Player::move_to_waypoint() {
             if (wpt(1) > 0) {
                 // The waypoint is behind us => full, inverted steering.
                 if (wpt(0) < 0) {
-                    for (const auto& x : tire_angles_left_) {
-                        rb_->set_tire_angle_y(x.first, x.second);
-                    }
+                    steer_left_full();
                 } else {
-                    for (const auto& x : tire_angles_right_) {
-                        rb_->set_tire_angle_y(x.first, x.second);
-                    }
+                    steer_right_full();
                 }
             } else {
-                // The waypoint is in front of us => full, inverted steering.
+                // The waypoint is in front of us => partial, inverted steering.
                 float angle = std::atan(std::abs(wpt(0) / wpt(1)));
                 if (wpt(0) < 0) {
-                    for (const auto& x : tire_angles_left_) {
-                        float ang = sign(x.second) * std::min(angle, std::abs(x.second));
-                        rb_->set_tire_angle_y(x.first, ang);
-                    }
+                    steer_left_partial(angle);
                 } else {
-                    for (const auto& x : tire_angles_right_) {
-                        float ang = sign(x.second) * std::min(angle, std::abs(x.second));
-                        rb_->set_tire_angle_y(x.first, ang);
-                    }
+                    steer_right_partial(angle);
                 }
             }
         }

@@ -311,7 +311,7 @@ void PhysicsEngine::collide(
                     fixed_nans<float, 3>(),     // w    // angular velocity
                     fixed_nans<float, 3>(),     // T    // torque
                     fixed_nans<float, 3>(),     // position
-                    fixed_nans<float, 3>(),     // rotation
+                    fixed_zeros<float, 3>(),    // rotation (not NAN to pass rogridues angle assertion)
                     false                       // I_is_diagonal
                 })};
             o0.meshes.push_back(TypedMesh<std::shared_ptr<TransformedMesh>>{});

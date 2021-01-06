@@ -186,11 +186,11 @@ void RigidBody::set_max_velocity(float max_velocity) {
 }
 
 void RigidBody::set_tire_angle_y(size_t id, float angle_y) {
-    tires_.at(id).angle_y = angle_y;
+    get_tire(id).angle_y = angle_y;
 }
 
 // void RigidBody::set_tire_accel_x(size_t id, float accel_x) {
-//     tires_.at(id).accel_x = accel_x;
+//     get_tire(id).accel_x = accel_x;
 // }
 
 FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const {
@@ -211,11 +211,11 @@ FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
 }
 
 float RigidBody::get_tire_angular_velocity(size_t id) const {
-    return tires_.at(id).angular_velocity;
+    return get_tire(id).angular_velocity;
 }
 
 void RigidBody::set_tire_angular_velocity(size_t id, float w) {
-    tires_.at(id).angular_velocity = w;
+    get_tire(id).angular_velocity = w;
 }
 
 FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(const FixedArray<float, 3>& surface_normal, size_t id) const {
@@ -231,7 +231,7 @@ float RigidBody::get_angular_velocity_at_tire(const FixedArray<float, 3>& surfac
 }
 
 float RigidBody::get_tire_radius(size_t id) const {
-    return tires_.at(id).radius;
+    return get_tire(id).radius;
 }
 
 PowerIntent RigidBody::consume_tire_surface_power(size_t id) {
@@ -255,15 +255,27 @@ void RigidBody::set_surface_power(const std::string& engine_name, float surface_
 }
 
 float RigidBody::get_tire_break_force(size_t id) const {
-    return tires_.at(id).break_force;
+    return get_tire(id).break_force;
 }
 
 TrackingWheel& RigidBody::get_tire_tracking_wheel(size_t id) {
-    return tires_.at(id).tracking_wheel;
+    return get_tire(id).tracking_wheel;
 }
 
 FixedArray<float, 3> RigidBody::get_abs_tire_contact_position(size_t id) const {
-    return rbi_.rbp_.transform_to_world_coordinates(tires_.at(id).position - FixedArray<float, 3>{0, -tires_.at(id).radius, 0});
+    return rbi_.rbp_.transform_to_world_coordinates(get_tire(id).position - FixedArray<float, 3>{0, -get_tire(id).radius, 0});
+}
+
+const Tire& RigidBody::get_tire(size_t id) const {
+    return const_cast<RigidBody*>(this)->get_tire(id);
+}
+
+Tire& RigidBody::get_tire(size_t id) {
+    auto it = tires_.find(id);
+    if (it == tires_.end()) {
+        throw std::runtime_error("No tire with ID " + std::to_string(id) + " exists");
+    }
+    return it->second;
 }
 
 float RigidBody::energy() const {

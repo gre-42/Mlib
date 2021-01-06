@@ -66,6 +66,8 @@ public:
     float get_tire_break_force(size_t id) const;
     TrackingWheel& get_tire_tracking_wheel(size_t id);
     FixedArray<float, 3> get_abs_tire_contact_position(size_t id) const;
+    const Tire& get_tire(size_t id) const;
+    Tire& get_tire(size_t id);
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;
     float energy() const;

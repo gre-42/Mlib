@@ -81,6 +81,7 @@ public:
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
     void set_surface_power(float forward, float backward);
     void set_tire_angle_y(size_t tire_id, float angle_left, float angle_right);
+    void set_angular_velocity(float angle_left, float angle_right);
     void set_waypoint(const FixedArray<float, 2>& waypoint);
     void set_waypoint(size_t waypoint_id);
     void set_waypoints(const SceneNode& node, const PointsAndAdjacency<float, 2>& waypoints);
@@ -125,6 +126,10 @@ private:
     void drive_forward();
     void drive_backwards();
     void roll();
+    void steer_left_full();
+    void steer_right_full();
+    void steer_left_partial(float angle);
+    void steer_right_partial(float angle);
     Scene& scene_;
     CollisionQuery& collision_query_;
     Players& players_;
@@ -141,6 +146,8 @@ private:
     float surface_power_backward_;
     std::map<size_t, float> tire_angles_left_;
     std::map<size_t, float> tire_angles_right_;
+    float angular_velocity_left_;
+    float angular_velocity_right_;
     FixedArray<float, 2> waypoint_;
     PointsAndAdjacency<float, 2> waypoints_;
     std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;

@@ -29,7 +29,7 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
         fixed_zeros<float, 3>(),            // v
         fixed_zeros<float, 3>(),            // w
         fixed_nans<float, 3>(),             // position
-        fixed_nans<float, 3>(),             // rotation
+        fixed_zeros<float, 3>(),            // rotation (not NAN to pass rogridues angle assertion)
         count_nonzero(com != 0.f) <= 1      // I_is_diagonal
     };
 }
@@ -59,7 +59,7 @@ RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
         fixed_zeros<float, 3>(),            // w
         fixed_zeros<float, 3>(),            // T
         fixed_nans<float, 3>(),             // position
-        fixed_nans<float, 3>(),             // rotation
+        fixed_zeros<float, 3>(),            // rotation (not NAN to pass rogridues angle assertion)
         count_nonzero(com != 0.f) <= 1      // I_is_diagonal
     };
 }

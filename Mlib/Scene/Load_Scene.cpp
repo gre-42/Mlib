@@ -237,6 +237,7 @@ void LoadScene::operator()(
     static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
     static const std::regex player_set_surface_power_reg("^(?:\\r?\\n|\\s)*player_set_surface_power player-name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
     static const std::regex player_set_tire_angle_reg("^(?:\\r?\\n|\\s)*player_set_tire_angle player-name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
+    static const std::regex player_set_angular_velocity_reg("^(?:\\r?\\n|\\s)*player_set_angular_velocity player-name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
     static const std::regex player_set_waypoint_reg("^(?:\\r?\\n|\\s)*player_set_waypoint player-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
     static const std::regex team_set_waypoint_reg("^(?:\\r?\\n|\\s)*team_set_waypoint team-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
     static const std::regex camera_key_binding_reg("^(?:\\r?\\n|\\s)*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
@@ -859,6 +860,10 @@ void LoadScene::operator()(
                 safe_stoi(match[2].str()),
                 M_PI / 180.f * safe_stof(match[3].str()),
                 M_PI / 180.f * safe_stof(match[4].str()));
+        } else if (std::regex_match(line, match, player_set_angular_velocity_reg)) {
+            players.get_player(match[1].str()).set_angular_velocity(
+                M_PI / 180.f * safe_stof(match[2].str()),
+                M_PI / 180.f * safe_stof(match[3].str()));
         } else if (std::regex_match(line, match, player_set_waypoint_reg)) {
             players.get_player(match[1].str()).set_waypoint({
                 safe_stof(match[2].str()),
