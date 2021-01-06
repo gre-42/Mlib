@@ -272,7 +272,13 @@ int main(int argc, char** argv) {
                         cfg,
                         rendering_resources);
                     scene_node_resources.add_resource(name, rmhx2);
-                    scene_node->set_style(new Style{.selector = std::regex{""}, .animation_frame = {.name = "anim"}});
+                    scene_node->set_style(new Style{
+                        .selector = std::regex{""},
+                        .animation_frame = {
+                            .name = "anim",
+                            .loop_begin = 0,
+                            .loop_end = 30,
+                            .loop_time = 5}});
                     LoadMeshConfig bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),

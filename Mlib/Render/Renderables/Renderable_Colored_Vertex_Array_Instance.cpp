@@ -251,7 +251,9 @@ void RenderableColoredVertexArrayInstance::render(
             if (std::isnan(style->animation_frame.loop_time)) {
                 throw std::runtime_error("Loop time is NAN");
             }
-            auto poses = rcva_->rendering_resources_.scene_node_resources().get_poses(style->animation_frame.name, style->animation_frame.loop_time);
+            auto poses = rcva_->rendering_resources_.scene_node_resources().get_poses(
+                style->animation_frame.name,
+                style->animation_frame.loop_time);
             std::vector<OffsetAndQuaternion<float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
             std::vector<OffsetAndQuaternion<float>> mt = rcva_->triangles_res_->skeleton->absolutify(ms);
             if (mt.size() != rcva_->triangles_res_->bone_indices.size()) {

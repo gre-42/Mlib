@@ -94,7 +94,23 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    sstr << "vec3 vPosInstance;" << std::endl;
+    sstr << "    vec3 vPosInstance;" << std::endl;
+    if (nbones != 0) {
+        sstr << "    vPosInstance = vec3(0, 0, 0);" << std::endl;
+        for (size_t k = 0; k < ANIMATION_NINTERPOLATED; ++k) {
+            static std::map<char, char> m{{0, 'x'}, {1, 'y'}, {2, 'z'}, {3, 'w'}};
+            sstr << "    {" << std::endl;
+            sstr << "        lowp uint i = bone_ids." << m.at(k) << ";" << std::endl;
+            sstr << "        float weight = bone_weights." << m.at(k) << ";" << std::endl;
+            sstr << "        vec3 o = bone_positions[i];" << std::endl;
+            sstr << "        vec4 v = bone_quaternions[i];" << std::endl;
+            sstr << "        vec3 p = vPos;" << std::endl;
+            sstr << "        vPosInstance += weight * (o + p + 2 * cross(v.xyz, cross(v.xyz, p) + v.w * p));" << std::endl;
+            sstr << "    }" << std::endl;
+        }
+    } else {
+        sstr << "    vPosInstance = vPos;" << std::endl;
+    }
     if (has_lookat && !has_instances) {
         throw std::runtime_error("has_lookat requires has_instances");
     }
@@ -111,26 +127,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    lookat[0] = dx;" << std::endl;
         sstr << "    lookat[1] = dy;" << std::endl;
         sstr << "    lookat[2] = dz;" << std::endl;
-        sstr << "    vPosInstance = lookat * vPos + instancePosition;" << std::endl;
+        sstr << "    vPosInstance = lookat * vPosInstance + instancePosition;" << std::endl;
     } else if (has_instances && !has_lookat) {
-        sstr << "    vPosInstance = vPos + instancePosition;" << std::endl;
-    } else {
-        sstr << "    vPosInstance = vPos;" << std::endl;
-    }
-    if (nbones != 0) {
-        sstr << "    vec3 avPosInstance = vec3(0, 0, 0);" << std::endl;
-        for (size_t k = 0; k < ANIMATION_NINTERPOLATED; ++k) {
-            static std::map<char, char> m{{0, 'x'}, {1, 'y'}, {2, 'z'}, {3, 'w'}};
-            sstr << "    {" << std::endl;
-            sstr << "        lowp uint i = bone_ids." << m.at(k) << ";" << std::endl;
-            sstr << "        float weight = bone_weights." << m.at(k) << ";" << std::endl;
-            sstr << "        vec3 o = bone_positions[i];" << std::endl;
-            sstr << "        vec4 v = bone_quaternions[i];" << std::endl;
-            sstr << "        vec3 p = vPosInstance;" << std::endl;
-            sstr << "        avPosInstance += weight * (o + p + 2 * cross(v.xyz, cross(v.xyz, p) + v.w * p));" << std::endl;
-            sstr << "    }" << std::endl;
-        }
-        sstr << "    vPosInstance = avPosInstance;" << std::endl;
+        sstr << "    vPosInstance = vPosInstance + instancePosition;" << std::endl;
     }
     sstr << "    gl_Position = MVP * vec4(vPosInstance, 1.0);" << std::endl;
     sstr << "    color = vCol;" << std::endl;
@@ -782,7 +781,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
 
         ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(6));
-        CHK(glVertexAttribPointer(6, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(ShaderBoneWeight), &bw->indices));
+        CHK(glVertexAttribIPointer(6, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
         CHK(glEnableVertexAttribArray(7));
         CHK(glVertexAttribPointer(7, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
     }
