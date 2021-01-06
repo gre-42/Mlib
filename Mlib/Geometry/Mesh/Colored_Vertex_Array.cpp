@@ -72,12 +72,12 @@ std::vector<FixedArray<float, 3>> ColoredVertexArray::vertices() const {
 std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const {
     auto res = std::make_shared<ColoredVertexArray>();
     res->material = material;
-    res->triangles.reserve(triangles.size());
     {
         if (triangle_bone_weights.size() != triangles.size()) {
             throw std::runtime_error("Size mismatch in triangle bone weights");
         }
         auto wit = triangle_bone_weights.begin();
+        res->triangles.reserve(triangles.size());
         for (const auto& tri : triangles) {
             res->triangles.push_back({
                 tri(0).transformed((*wit)(0), qs),

@@ -15,6 +15,7 @@ struct AnimatedColoredVertexArrays {
     std::map<std::string, size_t> bone_indices;
     std::list<std::shared_ptr<ColoredVertexArray>> cvas;
     std::vector<OffsetAndQuaternion<float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
+    void check_consistency() const;
 };
 
 }

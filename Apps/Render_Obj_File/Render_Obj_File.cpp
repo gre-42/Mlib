@@ -308,10 +308,6 @@ int main(int argc, char** argv) {
                                     ? get_parameter_transformation(args.named_value("--bvh_trafo"))
                                     : blender_bvh_config.parameter_transformation});
                         scene_node_resources.add_bvh_loader("anim", bvh);
-                        if (args.has_named_value("--animation_frame")) {
-                            float animation_frame = safe_stof(args.named_value("--animation_frame"));
-                            scene_node_resources.set_relative_joint_poses(name, bvh->get_interpolated_frame(animation_frame));
-                        }
                         if (args.has_named_value("--frame_bone")) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
                             scene_node_resources.add_resource("frame_bone", std::make_shared<RenderableObjFile>(
@@ -323,6 +319,11 @@ int main(int argc, char** argv) {
                                 rmhx2->vectorize_joint_poses(bvh->get_interpolated_frame(bone_frame)),
                                 scene_node,
                                 scene_node_resources);
+                        }
+                        // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
+                        if (args.has_named_value("--animation_frame")) {
+                            float animation_frame = safe_stof(args.named_value("--animation_frame"));
+                            scene_node_resources.set_relative_joint_poses(name, bvh->get_interpolated_frame(animation_frame));
                         }
                     }
                 } else {

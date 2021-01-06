@@ -27,6 +27,10 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
             triangles_res_subset_.push_back(t);
         }
     }
+    rcva_->triangles_res_->check_consistency();
+    for (const auto& cva : triangles_res_subset_) {
+        assert_true(cva->triangle_bone_weights.empty() == !rcva_->triangles_res_->skeleton);
+    }
 }
 
 GLint get_wrap_param(WrapMode mode) {
@@ -234,7 +238,9 @@ void RenderableColoredVertexArrayInstance::render(
                 CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
             }
         }
-        assert_true(rcva_->triangles_res_->bone_indices.empty() == !rcva_->triangles_res_->skeleton);
+        rcva_->triangles_res_->check_consistency();
+        assert_true(cva->triangle_bone_weights.empty() == !rcva_->triangles_res_->skeleton);
+        assert_true(cva->triangle_bone_weights.empty() == rcva_->triangles_res_->bone_indices.empty());
         if (!rcva_->triangles_res_->bone_indices.empty()) {
             if (style == nullptr) {
                 throw std::runtime_error("Animation without style");

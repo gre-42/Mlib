@@ -420,7 +420,9 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 : triangles_res_{triangles},
   rendering_resources_{rendering_resources},
   instances_{instances}
-{}
+{
+    triangles_res_->check_consistency();
+}
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
@@ -432,6 +434,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     rendering_resources}
 {
     triangles_res_->cvas = triangles;
+    triangles_res_->check_consistency();
 }
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
@@ -444,15 +447,15 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     rendering_resources)
 {
     triangles_res_->cvas.push_back(triangles);
+    triangles_res_->check_consistency();
 }
 
 RenderableColoredVertexArray::~RenderableColoredVertexArray()
-{
-    ;
-}
+{}
 
 void RenderableColoredVertexArray::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
+    triangles_res_->check_consistency();
     scene_node.add_renderable(name, std::make_shared<RenderableColoredVertexArrayInstance>(
         shared_from_this(),
         resource_filter));

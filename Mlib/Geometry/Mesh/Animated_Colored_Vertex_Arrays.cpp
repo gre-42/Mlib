@@ -25,3 +25,10 @@ std::vector<OffsetAndQuaternion<float>> AnimatedColoredVertexArrays::vectorize_j
     }
     return ms;
 }
+
+void AnimatedColoredVertexArrays::check_consistency() const {
+    assert_true(bone_indices.empty() == !skeleton);
+    for (const auto& cva : cvas) {
+        assert_true(cva->triangle_bone_weights.empty() == !skeleton);
+    }
+}
