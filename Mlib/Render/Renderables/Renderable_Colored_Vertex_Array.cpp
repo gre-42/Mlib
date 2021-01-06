@@ -768,11 +768,11 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va->bone_weight_buffer));
         CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size(), &triangle_bone_weights.front(), GL_STATIC_DRAW));
 
-        BoneWeight* bw = nullptr;
+        ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(6));
-        CHK(glVertexAttribPointer(6, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(ShaderBoneWeight), &bw->bone_index));
+        CHK(glVertexAttribPointer(6, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(ShaderBoneWeight), &bw->indices));
         CHK(glEnableVertexAttribArray(7));
-        CHK(glVertexAttribPointer(7, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weight));
+        CHK(glVertexAttribPointer(7, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
     }
 
     CHK(glBindVertexArray(0));
