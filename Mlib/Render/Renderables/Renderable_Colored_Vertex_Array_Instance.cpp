@@ -21,10 +21,20 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     const SceneNodeResourceFilter& resource_filter)
 : rcva_{rcva}
 {
+    requires_render_pass_ = false;
+    requires_blending_pass_ = false;
     size_t i = 0;
     for (const auto& t : rcva->triangles_res_->cvas) {
         if (resource_filter.matches(i++, t->name)) {
             triangles_res_subset_.push_back(t);
+            if (t->material.aggregate_mode == AggregateMode::OFF) {
+                requires_render_pass_ = true;
+            }
+            if ((t->material.blend_mode == BlendMode::CONTINUOUS) &&
+                (t->material.aggregate_mode == AggregateMode::OFF))
+            {
+                requires_blending_pass_ = true;
+            }
         }
     }
 #ifdef DEBUG
@@ -398,24 +408,11 @@ void RenderableColoredVertexArrayInstance::render(
 }
 
 bool RenderableColoredVertexArrayInstance::requires_render_pass() const {
-    for (auto cva : triangles_res_subset_) {
-        if (cva->material.aggregate_mode == AggregateMode::OFF)
-        {
-            return true;
-        }
-    }
-    return false;
+    return requires_render_pass_;
 }
 
 bool RenderableColoredVertexArrayInstance::requires_blending_pass() const {
-    for (auto cva : triangles_res_subset_) {
-        if ((cva->material.blend_mode == BlendMode::CONTINUOUS) &&
-            (cva->material.aggregate_mode == AggregateMode::OFF))
-        {
-            return true;
-        }
-    }
-    return false;
+    return requires_blending_pass_;
 }
 
 void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(

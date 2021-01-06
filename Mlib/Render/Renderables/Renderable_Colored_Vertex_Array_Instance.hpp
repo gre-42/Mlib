@@ -50,6 +50,8 @@ public:
 private:
     std::shared_ptr<const RenderableColoredVertexArray> rcva_;
     std::list<std::shared_ptr<ColoredVertexArray>> triangles_res_subset_;
+    bool requires_render_pass_;
+    bool requires_blending_pass_;
 };
 
 }
