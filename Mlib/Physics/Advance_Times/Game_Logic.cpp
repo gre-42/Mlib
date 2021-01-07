@@ -283,6 +283,7 @@ void GameLogic::spawn_at_spawn_point(
     }
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg.spawn_y_offset;
+    std::lock_guard lock_guard{mutex_};
     spawn_macro->second(sp2);
     if (player.scene_node_name().empty()) {
         throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
