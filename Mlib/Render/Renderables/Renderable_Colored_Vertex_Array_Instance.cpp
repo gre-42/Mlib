@@ -21,6 +21,9 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     const SceneNodeResourceFilter& resource_filter)
 : rcva_{rcva}
 {
+#ifdef DEBUG
+    rcva_->triangles_res_->check_consistency();
+#endif
     requires_render_pass_ = false;
     requires_blending_pass_ = false;
     size_t i = 0;
@@ -36,12 +39,6 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
                 requires_blending_pass_ = true;
             }
         }
-    }
-#ifdef DEBUG
-    rcva_->triangles_res_->check_consistency();
-#endif
-    for (const auto& cva : triangles_res_subset_) {
-        assert_true(cva->triangle_bone_weights.empty() == !rcva_->triangles_res_->skeleton);
     }
 }
 
