@@ -32,7 +32,7 @@ void RigidBodyPulses::advance_time(float dt)
     abs_com_ += dt * v_;
     rotation_ = dot2d(rodrigues(dt * w_), rotation_);
     if (!I_is_diagonal_) {
-        update_abs_I();
+        update_abs_I_and_inv();
     }
     // std::cerr << std::endl;
     // std::cerr << std::sqrt(sum(squared(v_))) << " "  << (sum(squared(v_)) < squared(min_velocity)) << std::endl;
@@ -54,12 +54,18 @@ const FixedArray<float, 3, 3>& RigidBodyPulses::abs_I() const {
     return abs_I_;
 }
 
-void RigidBodyPulses::update_abs_I() {
+const FixedArray<float, 3, 3>& RigidBodyPulses::abs_I_inv() const {
+    assert(all(abs_I_rotation_ == rotation_));
+    return abs_I_inv_;
+}
+
+void RigidBodyPulses::update_abs_I_and_inv() {
     assert(!I_is_diagonal_);
 #ifndef NDEBUG
     abs_I_rotation_ = rotation_;
 #endif
     abs_I_ = dot2d(rotation_, dot2d(I_, rotation_.T()));
+    abs_I_inv_ = fixed_symmetric_inverse_3x3(abs_I());
 }
 
 FixedArray<float, 3> RigidBodyPulses::velocity_at_position(const FixedArray<float, 3>& position) const {
@@ -84,7 +90,7 @@ void RigidBodyPulses::set_pose(const FixedArray<float, 3, 3>& rotation, const Fi
     rotation_ = rotation;
     abs_com_ = dot1d(rotation_, com_) + position;
     if (!I_is_diagonal_) {
-        update_abs_I();
+        update_abs_I_and_inv();
     }
 }
 
@@ -98,7 +104,7 @@ FixedArray<float, 3> RigidBodyPulses::solve_abs_I(const FixedArray<float, 3>& x)
         return dot1d(rotation_, dot1d(rotation_.T(), x) / Iv);
     } else {
         // return solve_symm_1d(abs_I(), x);
-        return dot1d(fixed_symmetric_inverse_3x3(abs_I()), x);
+        return dot1d(abs_I_inv(), x);
     }
 }
 
