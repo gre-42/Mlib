@@ -253,12 +253,12 @@ void Scene::render(
             }
             large_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
         }
-        if (external_render_pass.black_node_name.empty()) {
+        bool is_foreground_task =
+            (external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ||
+            (external_render_pass.pass == ExternalRenderPass::DIRTMAP);
+        if (!is_foreground_task && external_render_pass.black_node_name.empty()) {
             // Contains continuous alpha and must therefore be rendered late.
             LOG_INFO("Scene::render small_sorted_aggregate_renderer");
-            bool is_foreground_task =
-                (external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ||
-                (external_render_pass.pass == ExternalRenderPass::DIRTMAP);
             if (small_sorted_aggregate_renderer_ != nullptr) {
                 BackgroundTaskStatus status = aggregation_bg_task_.tick(scene_graph_config.aggregate_update_interval);
                 if (aggregation_bg_task_.done()) {
@@ -284,15 +284,9 @@ void Scene::render(
                         }
                         small_sorted_aggregate_renderer_->update_aggregates(sorted_aggregate_queue);
                     };
-                    if (is_foreground_task) {
-                        func();
-                    } else {
-                        if (status == BackgroundTaskStatus::IDLE) {
-                            aggregation_bg_task_.run(func);
-                        }
+                    if (status == BackgroundTaskStatus::IDLE) {
+                        aggregation_bg_task_.run(func);
                     }
-                } else if (is_foreground_task) {
-                    throw std::runtime_error("Small sorted aggregate background task is running despite one-shot");
                 }
                 small_sorted_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
             }
@@ -323,15 +317,9 @@ void Scene::render(
                         }
                         small_instances_renderer_->update_instances(sorted_instances_queue);
                     };
-                    if (is_foreground_task) {
-                        func();
-                    } else {
-                        if (status == BackgroundTaskStatus::IDLE) {
-                            instances_bg_task_.run(func);
-                        }
+                    if (status == BackgroundTaskStatus::IDLE) {
+                        instances_bg_task_.run(func);
                     }
-                } else if (is_foreground_task) {
-                    throw std::runtime_error("Small sorted instances background task is running despite one-shot");
                 }
                 small_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
             }
