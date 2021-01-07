@@ -161,3 +161,15 @@ std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResources::get_poses(
         throw std::runtime_error("get_poses for resource \"" + name + "\" failed: " + e.what());
     }
 }
+
+void SceneNodeResources::downsample(const std::string& name, size_t factor) const {
+    auto it = resources_.find(name);
+    if (it == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + name + '"');
+    }
+    try {
+        return it->second->downsample(factor);
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("downsample for resource \"" + name + "\" failed: " + e.what());
+    }
+}

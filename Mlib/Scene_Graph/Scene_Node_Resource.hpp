@@ -52,6 +52,9 @@ public:
     virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) {
         throw std::runtime_error("set_relative_joint_poses not implemented");
     }
+    virtual void downsample(size_t factor) {
+        throw std::runtime_error("downsample not implemented");
+    }
 };
 
 }

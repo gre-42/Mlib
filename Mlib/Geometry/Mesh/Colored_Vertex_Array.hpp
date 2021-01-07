@@ -32,6 +32,7 @@ struct ColoredVertexArray {
     std::vector<CollisionTriangleSphere> transformed_triangles_sphere(const FixedArray<float, 4, 4>& m) const;
     std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const FixedArray<float, 4, 4>& m) const;
     std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const FixedArray<float, 4, 4>& m) const;
+    void downsample_triangles(size_t n);
 };
 
 void sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& colored_vertex_arrays);

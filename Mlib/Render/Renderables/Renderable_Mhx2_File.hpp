@@ -26,6 +26,7 @@ public:
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual AggregateMode aggregate_mode() const override;
     virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) override;
+    virtual void downsample(size_t n) override;
     std::vector<OffsetAndQuaternion<float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
     const Bone& skeleton() const;
 private:

@@ -46,6 +46,7 @@ public:
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual AggregateMode aggregate_mode() const override;
     virtual void set_absolute_joint_poses(const std::vector<OffsetAndQuaternion<float>>& poses);
+    virtual void downsample(size_t factor);
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,

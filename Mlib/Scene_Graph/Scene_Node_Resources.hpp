@@ -33,6 +33,7 @@ public:
     PointsAndAdjacency<float, 2> way_points(const std::string& name) const;
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
     std::map<std::string, OffsetAndQuaternion<float>> get_poses(const std::string& name, float seconds) const;
+    void downsample(const std::string& name, size_t factor) const;
 private:
     std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
     mutable std::map<std::string, BvhEntry> bvh_loaders_;

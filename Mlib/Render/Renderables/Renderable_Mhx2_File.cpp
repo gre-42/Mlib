@@ -52,6 +52,10 @@ void RenderableMhx2File::set_relative_joint_poses(const std::map<std::string, Of
 #endif
 }
 
+void RenderableMhx2File::downsample(size_t n) {
+    rva_->downsample(n);
+}
+
 std::vector<OffsetAndQuaternion<float>> RenderableMhx2File::vectorize_joint_poses(
     const std::map<std::string, OffsetAndQuaternion<float>>& poses) const
 {

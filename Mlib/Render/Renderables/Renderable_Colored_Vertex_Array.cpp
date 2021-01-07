@@ -514,6 +514,12 @@ void RenderableColoredVertexArray::generate_ray(const FixedArray<float, 3>& from
     });
 }
 
+void RenderableColoredVertexArray::downsample(size_t factor) {
+    for (auto& t : triangles_res_->cvas) {
+        t->downsample_triangles(factor);
+    }
+}
+
 AggregateMode RenderableColoredVertexArray::aggregate_mode() const {
     std::set<AggregateMode> aggregate_modes;
     if (triangles_res_->cvas.empty()) {

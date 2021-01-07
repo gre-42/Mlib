@@ -201,6 +201,7 @@ void LoadScene::operator()(
         "\\s*no_werror)?$");
     static const std::regex gen_triangle_rays_reg("^(?:\\r?\\n|\\s)*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
     static const std::regex gen_ray_reg("^(?:\\r?\\n|\\s)*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const std::regex downsample_reg("^(?:\\r?\\n|\\s)*downsample name=([\\w+-.]+) factor=(\\d+)$");
     static const std::regex square_resource_reg(
         "^(?:\\r?\\n|\\s)*square_resource\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
@@ -556,6 +557,10 @@ void LoadScene::operator()(
                     safe_stof(match[5].str()),
                     safe_stof(match[6].str()),
                     safe_stof(match[7].str())});
+        } else if (std::regex_match(line, match, downsample_reg)) {
+            scene_node_resources.downsample(
+                match[1].str(),
+                safe_stoz(match[2].str()));
         } else if (std::regex_match(line, match, square_resource_reg)) {
             // 1: name
             // 2: texture_filename

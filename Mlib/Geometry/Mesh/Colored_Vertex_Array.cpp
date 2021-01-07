@@ -171,6 +171,32 @@ std::vector<FixedArray<FixedArray<float, 3>, 2>> ColoredVertexArray::transformed
     return res;
 }
 
+template <class TData>
+std::vector<TData> downsampled_array(const std::vector<TData>& v, size_t n) {
+    std::vector<TData> result;
+    if (v.empty()) {
+        return result;
+    }
+    result.reserve((v.size() - 1) / n + 1);
+    for (size_t i = 0; i < v.size(); i += n) {
+        result.push_back(v[i]);
+    }
+    assert_true(result.size() == ((v.size() - 1) / n + 1));
+    return result;
+}
+
+void ColoredVertexArray::downsample_triangles(size_t n) {
+    if (n == 0) {
+        throw std::runtime_error("Cannot downsaple by a factor of 0");
+    }
+    if (n == 1) {
+        return;
+    }
+    assert_true(triangle_bone_weights.empty() || (triangles.size() == triangle_bone_weights.size()));
+    triangles = downsampled_array(triangles, n);
+    triangle_bone_weights = downsampled_array(triangle_bone_weights, n);
+}
+
 void Mlib::sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& colored_vertex_arrays) {
     colored_vertex_arrays.sort([](
         const std::shared_ptr<ColoredVertexArray>& a,

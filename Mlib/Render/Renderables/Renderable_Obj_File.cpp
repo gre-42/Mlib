@@ -32,3 +32,7 @@ void RenderableObjFile::generate_ray(const FixedArray<float, 3>& from, const Fix
 AggregateMode RenderableObjFile::aggregate_mode() const {
     return rva_->aggregate_mode();
 }
+
+void RenderableObjFile::downsample(size_t n) {
+    rva_->downsample(n);
+}
