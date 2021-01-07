@@ -55,7 +55,7 @@ public:
     /**
      * From: https://en.wikipedia.org/wiki/Slerp
      */
-    Quaternion slerp(Quaternion q1, const TData& t) {
+    Quaternion slerp(Quaternion q1, const TData& t) const {
         const Quaternion& q0 = *this;
         // Only unit quaternions are valid rotations.
         // Normalize to avoid undefined behavior.
@@ -211,6 +211,13 @@ public:
         return OffsetAndQuaternion{
             transform(rhs.o_),
             q_ * rhs.q_};
+    }
+    OffsetAndQuaternion slerp(const OffsetAndQuaternion& other, const TData& a0) const {
+        const OffsetAndQuaternion& m0 = *this;
+        const OffsetAndQuaternion& m1 = other;
+        return OffsetAndQuaternion{
+            m0.offset() * (1 - a0) + m1.offset() * a0,
+            m0.quaternion().slerp(m1.quaternion(), a0)};
     }
     const FixedArray<TData, 3>& offset() const {
         return o_;

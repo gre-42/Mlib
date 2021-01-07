@@ -32,6 +32,7 @@ BvhLoader::BvhLoader(
     if (f.fail()) {
         throw std::runtime_error("Could not open " + filename);
     }
+    std::vector<std::map<std::string, FixedArray<float, 2, 3>>> raw_frames;
     std::string line;
     std::string joint_name;
     bool in_data_section = false;
@@ -100,7 +101,7 @@ BvhLoader::BvhLoader(
                     throw std::runtime_error("Could not match frames: \"" + line + '"');
                 }
                 nframes = safe_stoz(match[1].str());
-                frames_.reserve(nframes);
+                raw_frames.reserve(nframes);
                 if (!std::getline(f, line)) {
                     throw std::runtime_error("Could not get line");
                 }
@@ -121,16 +122,16 @@ BvhLoader::BvhLoader(
             if (nframes == SIZE_MAX) {
                 throw std::runtime_error("In data section without nframes");
             }
-            if (frames_.size() == nframes) {
+            if (raw_frames.size() == nframes) {
                 throw std::runtime_error("Too many frames in BVH file");
             }
-            frames_.emplace_back();
+            raw_frames.emplace_back();
             for (const auto& o : offsets_) {
-                frames_.back()[o.first][0] = o.second;
+                raw_frames.back()[o.first][0] = o.second;
             }
             size_t i = 0;
             for (const auto& c : columns_) {
-                frames_.back()[c.joint_name](c.pose_index0, c.pose_index1) = d[i++];
+                raw_frames.back()[c.joint_name](c.pose_index0, c.pose_index1) = d[i++];
                 //  + offsets_.at(c.joint_name)(c.pose_index0, c.pose_index1);
             }
         }
@@ -138,7 +139,7 @@ BvhLoader::BvhLoader(
     if (nframes == SIZE_MAX) {
         throw std::runtime_error("nframes undefined");
     }
-    if (frames_.size() != nframes) {
+    if (raw_frames.size() != nframes) {
         throw std::runtime_error("Too few frames in BVH file");
     }
     if (cfg_.demean) {
@@ -146,67 +147,70 @@ BvhLoader::BvhLoader(
             throw std::runtime_error("Columns list is empty");
         }
         FixedArray<float, 3> center(0);
-        for (const auto& f : frames_) {
+        for (const auto& f : raw_frames) {
             center += f.at(columns_.begin()->joint_name)[0];
         }
-        center /= frames_.size();
-        for (auto& f : frames_) {
+        center /= raw_frames.size();
+        for (auto& f : raw_frames) {
             f.at(columns_.begin()->joint_name)[0] -= center;
         }
     }
     if (std::isnan(frame_time_)) {
         throw std::runtime_error("Frame time not set");
     }
+    transformed_frames_.resize(raw_frames.size());
+    for (size_t i = 0; i < raw_frames.size(); ++i) {
+        for (const auto& p : raw_frames[i]) {
+            const FixedArray<float, 3>& position = p.second[0];
+            const FixedArray<float, 3>& rotation = p.second[1];
+            FixedArray<float, 4, 4> m = assemble_homogeneous_4x4(
+                tait_bryan_angles_2_matrix(
+                    rotation / 180.f * float(M_PI),
+                    cfg_.rotation_order),
+                position * cfg_.scale);
+            const FixedArray<float, 4, 4>& n = cfg_.parameter_transformation;
+            if (!transformed_frames_[i].insert({
+                p.first,
+                OffsetAndQuaternion<float>{dot2d(n, dot2d(m, n.T()))}}).second)
+            {
+                throw std::runtime_error("Could not insert transformed frame");
+            }
+        }
+    }
 }
 
-std::map<std::string, FixedArray<float, 4, 4>> BvhLoader::get_frame(size_t id) const {
-    if (id >= frames_.size()) {
-        throw std::runtime_error("Frame ID too large");
+const std::map<std::string, OffsetAndQuaternion<float>>& BvhLoader::get_frame(size_t id) const {
+    if (id >= transformed_frames_.size()) {
+        throw std::runtime_error("Frame index too large");
     }
-    std::map<std::string, FixedArray<float, 4, 4>> result;
-    for (const auto& p : frames_[id]) {
-        const FixedArray<float, 3>& position = p.second[0];
-        const FixedArray<float, 3>& rotation = p.second[1];
-        FixedArray<float, 4, 4> m = assemble_homogeneous_4x4(
-            tait_bryan_angles_2_matrix(
-                rotation / 180.f * float(M_PI),
-                cfg_.rotation_order),
-            position * cfg_.scale);
-        const FixedArray<float, 4, 4>& n = cfg_.parameter_transformation;
-        result[p.first] = dot2d(n, dot2d(m, n.T()));
-    }
-    return result;
+    return transformed_frames_[id];
 }
 
 std::map<std::string, OffsetAndQuaternion<float>> BvhLoader::get_interpolated_frame(float seconds) const {
-    if (frames_.empty()) {
+    if (transformed_frames_.empty()) {
         throw std::runtime_error("No frames to interpolate from");
     }
     float i = seconds / frame_time_;
-    i = std::clamp(i, float{0}, float(frames_.size() - 1));
+    i = std::clamp(i, float{0}, float(transformed_frames_.size() - 1));
     size_t i0 = size_t(i);
     size_t i1 = i0 + 1;
-    if (i1 > frames_.size()) {
+    if (i1 > transformed_frames_.size()) {
         throw std::runtime_error("Frame interpolation internal error");
     }
-    if (i1 == frames_.size()) {
+    if (i1 == transformed_frames_.size()) {
         --i1;
         --i0;
     }
     float a0 = i - i0;
-    auto f0 = get_frame(i0);
-    auto f1 = get_frame(i1);
+    const auto& f0 = get_frame(i0);
+    const auto& f1 = get_frame(i1);
     std::map<std::string, OffsetAndQuaternion<float>> result;
     for (const auto& j0 : f0) {
         const auto& m0 = j0.second;
         const auto& m1 = f1.at(j0.first);
-        auto t0 = t3_from_4x4(m0);
-        auto t1 = t3_from_4x4(m1);
-        auto R0 = R3_from_4x4(m0);
-        auto R1 = R3_from_4x4(m1);
-        result.insert({j0.first, OffsetAndQuaternion<float>{
-            t0 * (1 - a0) + t1 * a0,
-            Quaternion{R0}.slerp(Quaternion{R1}, a0)}});
+        if (!result.insert({j0.first, m0.slerp(m1, a0)}).second) {
+            throw std::runtime_error("Could not insert interpolated frame");
+        }
     }
     return result;
 }
