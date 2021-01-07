@@ -321,7 +321,7 @@ void SceneNode::render(
             scene_graph_config,
             render_config,
             {external_render_pass, InternalRenderPass::INITIAL},
-            style_ && (std::regex_search(r.first, style_->selector)) ? style_.get() : nullptr);
+            style_ && std::regex_search(r.first, style_->selector) ? style_.get() : nullptr);
     }
     for (const auto& n : children_) {
         n.second.scene_node->render(

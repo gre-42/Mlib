@@ -1,4 +1,5 @@
 #include "Load_Scene.hpp"
+#include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
@@ -36,6 +37,7 @@
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Render/Renderables/Renderable_Binary_X.hpp>
 #include <Mlib/Render/Renderables/Renderable_Blending_X.hpp>
+#include <Mlib/Render/Renderables/Renderable_Mhx2_File.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
 #include <Mlib/Render/Renderables/Renderable_Square.hpp>
@@ -343,7 +345,7 @@ void LoadScene::operator()(
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     static const std::regex set_renderable_style_reg(
         "^(?:\\r?\\n|\\s)*set_renderable_style\\r?\\n"
-        "\\s*selector=([\\w+-.]+)\\r?\\n"
+        "\\s*selector=([\\w+-.]*)\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
@@ -352,6 +354,10 @@ void LoadScene::operator()(
         "\\s*animation_loop_begin=([\\w+-.]+)\\r?\\n"
         "\\s*animation_loop_end=([\\w+-.]+)\\r?\\n"
         "\\s*animation_loop_time=([\\w+-.]+)$");
+    static const std::regex add_bvh_resource_reg(
+        "^(?:\\r?\\n|\\s)*add_bvh_resource\\r?\\n"
+        "\\s*name=([\\w+-.]+)\\r?\\n"
+        "\\s*filename=([\\w-. \\(\\)/+-]+)$");
     static const std::regex ui_background_reg("^(?:\\r?\\n|\\s)*ui_background texture=([\\w-. \\(\\)/+-]+) target_focus=(menu|loading|countdown|scene)$");
     static const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
@@ -492,32 +498,43 @@ void LoadScene::operator()(
                     safe_stof(match[56].str()),                                   // terrain_edge_smoothness
                     driving_direction_from_string(match[57].str())));             // driving_direction
         } else if (std::regex_match(line, match, obj_resource_reg)) {
-            scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
-                fpath(match[2].str()),
-                LoadMeshConfig{
-                    .position = FixedArray<float, 3>{
-                        safe_stof(match[3].str()),
-                        safe_stof(match[4].str()),
-                        safe_stof(match[5].str())},
-                    .rotation = FixedArray<float, 3>{
-                        safe_stof(match[6].str()) / 180 * float(M_PI),
-                        safe_stof(match[7].str()) / 180 * float(M_PI),
-                        safe_stof(match[8].str()) / 180 * float(M_PI)},
-                    .scale = FixedArray<float, 3>{
-                        safe_stof(match[9].str()),
-                        safe_stof(match[10].str()),
-                        safe_stof(match[11].str())},
-                    .is_small = safe_stob(match[12].str()),
-                    .blend_mode = blend_mode_from_string(match[13].str()),
-                    .cull_faces = safe_stob(match[14].str()),
-                    .occluded_type = occluded_type_from_string(match[15].str()),
-                    .occluder_type = occluder_type_from_string(match[16].str()),
-                    .occluded_by_black = safe_stob(match[17].str()),
-                    .aggregate_mode = aggregate_mode_from_string(match[18].str()),
-                    .transformation_mode = transformation_mode_from_string(match[19].str()),
-                    .apply_static_lighting = false,
-                    .werror = match[20].str() == ""},
-                rendering_resources));
+            LoadMeshConfig load_mesh_config{
+                .position = FixedArray<float, 3>{
+                    safe_stof(match[3].str()),
+                    safe_stof(match[4].str()),
+                    safe_stof(match[5].str())},
+                .rotation = FixedArray<float, 3>{
+                    safe_stof(match[6].str()) / 180 * float(M_PI),
+                    safe_stof(match[7].str()) / 180 * float(M_PI),
+                    safe_stof(match[8].str()) / 180 * float(M_PI)},
+                .scale = FixedArray<float, 3>{
+                    safe_stof(match[9].str()),
+                    safe_stof(match[10].str()),
+                    safe_stof(match[11].str())},
+                .is_small = safe_stob(match[12].str()),
+                .blend_mode = blend_mode_from_string(match[13].str()),
+                .cull_faces = safe_stob(match[14].str()),
+                .occluded_type = occluded_type_from_string(match[15].str()),
+                .occluder_type = occluder_type_from_string(match[16].str()),
+                .occluded_by_black = safe_stob(match[17].str()),
+                .aggregate_mode = aggregate_mode_from_string(match[18].str()),
+                .transformation_mode = transformation_mode_from_string(match[19].str()),
+                .apply_static_lighting = false,
+                .werror = match[20].str() == ""};
+            std::string filename = fpath(match[2].str());
+            if (filename.ends_with(".obj")) {
+                scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
+                    filename,
+                    load_mesh_config,
+                    rendering_resources));
+            } else if (filename.ends_with(".mhx2")) {
+                scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableMhx2File>(
+                    filename,
+                    load_mesh_config,
+                    rendering_resources));
+            } else {
+                throw std::runtime_error("Unknown file type: " + filename);
+            }
         } else if (std::regex_match(line, match, gen_triangle_rays_reg)) {
             scene_node_resources.generate_triangle_rays(
                 match[1].str(),
@@ -1117,6 +1134,11 @@ void LoadScene::operator()(
                     .loop_begin = safe_stof(match[13].str()),
                     .loop_end = safe_stof(match[14].str()),
                     .loop_time = safe_stof(match[15].str())}});
+        } else if (std::regex_match(line, match, add_bvh_resource_reg)) {
+            scene_node_resources.add_bvh_file(
+                match[1].str(),
+                fpath(match[2].str()),
+                blender_bvh_config);
         } else if (std::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
