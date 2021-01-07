@@ -308,6 +308,9 @@ void SceneNode::render(
     // row-major matrices."
     FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
     FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    const Style* estyle = style_ != nullptr
+        ? style_.get()
+        : style;
     for (const auto& r : renderables_) {
         if (r.second->requires_blending_pass())
         {
@@ -321,7 +324,9 @@ void SceneNode::render(
             scene_graph_config,
             render_config,
             {external_render_pass, InternalRenderPass::INITIAL},
-            style_ && std::regex_search(r.first, style_->selector) ? style_.get() : nullptr);
+            (estyle != nullptr) && std::regex_search(r.first, estyle->selector)
+                ? estyle
+                : nullptr);
     }
     for (const auto& n : children_) {
         n.second.scene_node->render(
@@ -333,7 +338,7 @@ void SceneNode::render(
             render_config,
             scene_graph_config,
             external_render_pass,
-            style_ ? style_.get() : style);
+            estyle);
     }
 }
 
