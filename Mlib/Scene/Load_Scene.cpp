@@ -233,7 +233,7 @@ void LoadScene::operator()(
         "\\s+team=([\\w+-.]+)"
         "\\s+mode=(ramming|racing|bystander)"
         "\\s+unstuck_mode=(off|reverse|delete)"
-        "\\s+driving_mode=(arena|city)"
+        "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");
     static const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
     static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
