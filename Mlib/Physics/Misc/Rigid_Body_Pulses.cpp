@@ -31,6 +31,9 @@ void RigidBodyPulses::advance_time(float dt)
 {
     abs_com_ += dt * v_;
     rotation_ = dot2d(rodrigues(dt * w_), rotation_);
+    if (!I_is_diagonal_) {
+        update_abs_I();
+    }
     // std::cerr << std::endl;
     // std::cerr << std::sqrt(sum(squared(v_))) << " "  << (sum(squared(v_)) < squared(min_velocity)) << std::endl;
     // std::cerr << std::sqrt(sum(squared(w_))) << " "  << (sum(squared(w_)) < squared(min_angular_velocity)) << std::endl;
@@ -46,8 +49,17 @@ void RigidBodyPulses::advance_time(float dt)
     // }
 }
 
-FixedArray<float, 3, 3> RigidBodyPulses::abs_I() const {
-    return dot2d(rotation_, dot2d(I_, rotation_.T()));
+const FixedArray<float, 3, 3>& RigidBodyPulses::abs_I() const {
+    assert(all(abs_I_rotation_ == rotation_));
+    return abs_I_;
+}
+
+void RigidBodyPulses::update_abs_I() {
+    assert(!I_is_diagonal_);
+#ifndef NDEBUG
+    abs_I_rotation_ = rotation_;
+#endif
+    abs_I_ = dot2d(rotation_, dot2d(I_, rotation_.T()));
 }
 
 FixedArray<float, 3> RigidBodyPulses::velocity_at_position(const FixedArray<float, 3>& position) const {
@@ -71,6 +83,9 @@ FixedArray<float, 3> RigidBodyPulses::abs_z() const {
 void RigidBodyPulses::set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position) {
     rotation_ = rotation;
     abs_com_ = dot1d(rotation_, com_) + position;
+    if (!I_is_diagonal_) {
+        update_abs_I();
+    }
 }
 
 FixedArray<float, 3> RigidBodyPulses::solve_abs_I(const FixedArray<float, 3>& x) const
@@ -87,6 +102,18 @@ FixedArray<float, 3> RigidBodyPulses::solve_abs_I(const FixedArray<float, 3>& x)
     }
 }
 
+FixedArray<float, 3> RigidBodyPulses::dot1d_abs_I(const FixedArray<float, 3>& x) const
+{
+    if (I_is_diagonal_) {
+        return FixedArray<float, 3>{
+            (x(0) == 0 ? 0 : abs_I()(0, 0) * x(0)) +
+            (x(1) == 0 ? 0 : abs_I()(1, 1) * x(1)) +
+            (x(2) == 0 ? 0 : abs_I()(2, 2) * x(2))};
+    } else {
+        return dot1d(abs_I(), x);
+    }
+}
+
 void RigidBodyPulses::integrate_gravity(const FixedArray<float, 3>& g, float dt) {
     v_ += dt * g;
 }
@@ -99,7 +126,7 @@ void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, 3>& J, flo
 
 float RigidBodyPulses::energy() const {
     // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
-    return 0.5f * (mass_ * sum(squared(v_)) + dot0d(w_, dot1d(abs_I(), w_)));
+    return 0.5f * (mass_ * sum(squared(v_)) + dot0d(w_, dot1d_abs_I(w_)));
 }
 
 float RigidBodyPulses::effective_mass(const VectorAtPosition<float, 3>& vp) const {

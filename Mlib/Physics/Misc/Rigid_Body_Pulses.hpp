@@ -6,9 +6,13 @@ namespace Mlib {
 
 template <class TData, size_t tsize>
 struct VectorAtPosition;
+class RigidBodyPulses;
 
-struct RigidBodyPulses {
+std::ostream& operator << (std::ostream& ostr, const RigidBodyPulses& rbi);
 
+class RigidBodyPulses {
+    friend std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyPulses& rbi);
+public:
     RigidBodyPulses(
         float mass,
         const FixedArray<float, 3, 3>& I, // inertia tensor
@@ -21,9 +25,10 @@ struct RigidBodyPulses {
 
     FixedArray<float, 3> abs_z() const;
     FixedArray<float, 3> abs_position() const;
-    FixedArray<float, 3, 3> abs_I() const;
+    const FixedArray<float, 3, 3>& abs_I() const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
     FixedArray<float, 3> solve_abs_I(const FixedArray<float, 3>& x) const;
+    FixedArray<float, 3> dot1d_abs_I(const FixedArray<float, 3>& x) const;
     FixedArray<float, 3> transform_to_world_coordinates(const FixedArray<float, 3>& v) const;
     void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<float, 3>& position);
     void integrate_gravity(const FixedArray<float, 3>& g, float dt);
@@ -42,9 +47,13 @@ struct RigidBodyPulses {
     FixedArray<float, 3, 3> rotation_;
     FixedArray<float, 3> abs_com_;
 
+private:
     bool I_is_diagonal_;
+    void update_abs_I();
+    FixedArray<float, 3, 3> abs_I_;
+#ifndef NDEBUG
+    mutable FixedArray<float, 3, 3> abs_I_rotation_;
+#endif
 };
-
-std::ostream& operator << (std::ostream& ostr, const RigidBodyPulses& rbp);
 
 }
