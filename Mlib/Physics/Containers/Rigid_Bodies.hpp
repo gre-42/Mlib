@@ -9,6 +9,7 @@
 
 namespace Mlib {
 
+enum class CollidableMode;
 class ColoredVertexArray;
 class RigidBody;
 class TransformedMesh;
@@ -31,13 +32,16 @@ public:
     void add_rigid_body(
         const std::shared_ptr<RigidBody>& rigid_body,
         const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
-        const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines);
+        const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
+        CollidableMode collidable_mode);
     void delete_rigid_body(const RigidBody* rigid_body);
     void print_search_time() const;
 private:
+    void transform_object_and_add(const RigidBodyAndMeshes& o);
     std::list<std::shared_ptr<RigidBody>> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndTransformedMeshes> transformed_objects_;
+    std::map<const RigidBody*, CollidableMode> collidable_modes_;
     Bvh<float, CollisionTriangleSphere, 3> bvh_;
     PhysicsEngineConfig cfg_;
 };

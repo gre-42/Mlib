@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
@@ -188,10 +189,10 @@ void test_physics_engine() {
     scene_node1_1->set_absolute_movable(rb1_1.get());
     scene_node1_2->set_absolute_movable(rb1_2.get());
 
-    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {});
-    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {});
-    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {});
-    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {});
+    pe.rigid_bodies_.add_rigid_body(rb0, {triangles0}, {}, CollidableMode::TERRAIN);
+    pe.rigid_bodies_.add_rigid_body(rb1_0, triangles1, {}, CollidableMode::SMALL_MOVING);
+    pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, CollidableMode::SMALL_MOVING);
+    pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, CollidableMode::SMALL_MOVING);
 
     assert_allclose(scene_node1_0->position().to_array(), fixed_zeros<float, 3>().to_array());
     scene.move(physics_cfg.dt);

@@ -20,6 +20,7 @@
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder.hpp>
 #include <Mlib/Physics/Advance_Times/Trigger_Gun_Ai.hpp>
+#include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
@@ -220,7 +221,15 @@ void LoadScene::operator()(
     static const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
     static const std::regex node_instance_reg("^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+) name=([\\w+-.]+) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) scale=([\\w+-.]+)(?: aggregate=(true|false))?$");
     static const std::regex renderable_instance_reg("^(?:\\r?\\n|\\s)*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
-    static const std::regex rigid_cuboid_reg("^(?:\\r?\\n|\\s)*rigid_cuboid node=([\\w+-.]+) hitbox=([\\w-. \\(\\)/+-]+)(?: tirelines=([\\w-. \\(\\)/+-]+))? mass=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)(?: com=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
+    static const std::regex rigid_cuboid_reg(
+        "^(?:\\r?\\n|\\s)*rigid_cuboid "
+        "node=([\\w+-.]+) "
+        "hitbox=([\\w-. \\(\\)/+-]+)"
+        "(?: tirelines=([\\w-. \\(\\)/+-]+))? "
+        "mass=([\\w+-.]+) "
+        "size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "(?: com=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))? "
+        "collidable_mode=(terrain|small_static|small_moving)$");
     static const std::regex gun_reg("^(?:\\r?\\n|\\s)*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex trigger_gun_ai_reg("^(?:\\r?\\n|\\s)*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
     static const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
@@ -675,7 +684,11 @@ void LoadScene::operator()(
             // 1. Set movable, which updates the transformation-matrix
             scene.get_node(match[1].str())->set_absolute_movable(rb.get());
             // 2. Add to physics engine
-            physics_engine.rigid_bodies_.add_rigid_body(rb, hitbox, tirelines);
+            physics_engine.rigid_bodies_.add_rigid_body(
+                rb,
+                hitbox,
+                tirelines,
+                collidable_mode_from_string(match[11].str()));
         } else if (std::regex_match(line, match, gun_reg)) {
             auto parent_rb_node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBody*>(parent_rb_node->get_absolute_movable());

@@ -257,32 +257,22 @@ void PhysicsEngine::collide(
     {
         std::list<std::shared_ptr<RigidBody>> olist;
         for (const auto& o : rigid_bodies_.objects_) {
-            assert_true(o.rigid_body->mass() != INFINITY);
-            o.rigid_body->reset_forces();
-            olist.push_back(o.rigid_body);
+            if (o.rigid_body->mass() != INFINITY) {
+                o.rigid_body->reset_forces();
+                olist.push_back(o.rigid_body);
+            }
         }
         for (const auto& efp : external_force_providers_) {
             efp->increment_external_forces(olist, burn_in, cfg_);
         }
     }
     for (const auto& o : rigid_bodies_.objects_) {
-        assert_true(o.rigid_body->mass() != INFINITY);
-        if (o.meshes.size() == 0) {
-            std::cerr << "Skipping object without meshes" << std::endl;
+        if (o.rigid_body->mass() != INFINITY) {
+            if (o.meshes.size() == 0) {
+                std::cerr << "Skipping object without meshes" << std::endl;
+            }
+            rigid_bodies_.transform_object_and_add(o);
         }
-        FixedArray<float, 4, 4> m = o.rigid_body->get_new_absolute_model_matrix();
-        std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> transformed_meshes;
-        for (const auto& msh : o.meshes) {
-            transformed_meshes.push_back({
-                mesh_type: msh.mesh_type,
-                mesh: std::make_shared<TransformedMesh>(
-                    m,
-                    msh.mesh.first,
-                    msh.mesh.second)});
-        }
-        rigid_bodies_.transformed_objects_.push_back({
-            rigid_body: o.rigid_body,
-            meshes: std::move(transformed_meshes)});
     }
     SatTracker st;
     collide_forward_ = !collide_forward_;
@@ -319,7 +309,7 @@ void PhysicsEngine::collide(
         }();
         for (const auto& o1 : rigid_bodies_.transformed_objects_) {
             if (o1.rigid_body->mass() == INFINITY) {
-                return;
+                continue;
             }
             for (const auto& msh1 : o1.meshes) {
                 rigid_bodies_.bvh_.visit(

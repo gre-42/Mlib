@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
+#include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -61,8 +62,16 @@ void Gun::advance_time(float dt) {
         rc->rbi_.rbp_.v_ =
             - bullet_velocity_ * z3_from_4x4(absolute_model_matrix_)
             + parent_rbi_.rbp_.v_;
-        scene_node_resources_.instantiate_renderable(bullet_renderable_resource_name_, "bullet", *node, SceneNodeResourceFilter{});
-        rigid_bodies_.add_rigid_body(rc, scene_node_resources_.get_triangle_meshes(bullet_hitbox_resource_name_), {});
+        scene_node_resources_.instantiate_renderable(
+            bullet_renderable_resource_name_,
+            "bullet",
+            *node,
+            SceneNodeResourceFilter{});
+        rigid_bodies_.add_rigid_body(
+            rc,
+            scene_node_resources_.get_triangle_meshes(bullet_hitbox_resource_name_),
+            {},
+            CollidableMode::SMALL_MOVING);
         std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
         auto bullet = std::make_shared<Bullet>(
             scene_,
