@@ -56,9 +56,9 @@ void RenderableSquare::instantiate_renderable(const std::string& name, SceneNode
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> RenderableSquare::get_triangle_meshes() const
+std::shared_ptr<AnimatedColoredVertexArrays> RenderableSquare::get_animated_arrays() const
 {
-    return rva_->get_triangle_meshes();
+    return rva_->get_animated_arrays();
 }
 
 void RenderableSquare::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {

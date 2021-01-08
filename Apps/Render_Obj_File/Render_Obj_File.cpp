@@ -367,7 +367,7 @@ int main(int argc, char** argv) {
                         {safe_stof(args.named_value("--color_gradient_min_c")),
                          safe_stof(args.named_value("--color_gradient_max_c"))},
                         OutOfRangeBehavior::CLAMP};
-                    for (auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                    for (auto& m : scene_node_resources.get_animated_arrays(name)->cvas) {
                         for (auto& t : m->triangles) {
                             for (auto& v : t.flat_iterable()) {
                                 v.color = interp(v.position(0));
@@ -386,7 +386,7 @@ int main(int argc, char** argv) {
                         safe_stof(args.named_value("--color_radial_center_x", "0")),
                         safe_stof(args.named_value("--color_radial_center_y", "0")),
                         safe_stof(args.named_value("--color_radial_center_z", "0"))};
-                    for (auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                    for (auto& m : scene_node_resources.get_animated_arrays(name)->cvas) {
                         for (auto& t : m->triangles) {
                             for (auto& v : t.flat_iterable()) {
                                 v.color = interp(std::sqrt(sum(squared(v.position - center))));
@@ -405,7 +405,7 @@ int main(int argc, char** argv) {
                     float top = safe_stof(args.named_value("--color_cone_top"));
                     float cx = safe_stof(args.named_value("--color_cone_x", "0"));
                     float cz = safe_stof(args.named_value("--color_cone_z", "0"));
-                    for (auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                    for (auto& m : scene_node_resources.get_animated_arrays(name)->cvas) {
                         for (auto& t : m->triangles) {
                             for (auto& v : t.flat_iterable()) {
                                 float r = std::sqrt(squared(v.position(0) - cx) + squared(v.position(2) - cz));
@@ -420,7 +420,7 @@ int main(int argc, char** argv) {
                     safe_stof(args.named_value("--color_g", "-1")),
                     safe_stof(args.named_value("--color_b", "-1"))};
                 if (any(color != -1.f)) {
-                    for (auto& m : scene_node_resources.get_triangle_meshes(name)) {
+                    for (auto& m : scene_node_resources.get_animated_arrays(name)->cvas) {
                         for (auto& t : m->triangles) {
                             for (auto& v : t.flat_iterable()) {
                                 v.color = maximum(color, 0.f);

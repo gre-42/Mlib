@@ -30,5 +30,12 @@ void AnimatedColoredVertexArrays::check_consistency() const {
     assert_true(bone_indices.empty() == !skeleton);
     for (const auto& cva : cvas) {
         assert_true(cva->triangle_bone_weights.empty() == !skeleton);
+        assert_true(cva->line_bone_weights.empty() == !skeleton);
+        if (!cva->triangle_bone_weights.empty()) {
+            assert_true(cva->triangle_bone_weights.size() == cva->triangles.size());
+        }
+        if (!cva->line_bone_weights.empty()) {
+            assert_true(cva->line_bone_weights.size() == cva->line_bone_weights.size());
+        }
     }
 }

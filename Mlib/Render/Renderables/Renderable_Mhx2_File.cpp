@@ -25,8 +25,8 @@ void RenderableMhx2File::instantiate_renderable(const std::string& name, SceneNo
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> RenderableMhx2File::get_triangle_meshes() const {
-    return rva_->get_triangle_meshes();
+std::shared_ptr<AnimatedColoredVertexArrays> RenderableMhx2File::get_animated_arrays() const {
+    return rva_->get_animated_arrays();
 }
 
 void RenderableMhx2File::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {

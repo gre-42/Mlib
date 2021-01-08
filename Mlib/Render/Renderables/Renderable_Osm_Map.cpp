@@ -897,12 +897,13 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> RenderableOsmMap::get_triangle_meshes() const {
-    auto res = rva_->get_triangle_meshes();
+std::shared_ptr<AnimatedColoredVertexArrays> RenderableOsmMap::get_animated_arrays() const {
+    auto res = std::make_shared<AnimatedColoredVertexArrays>();
+    res->cvas = rva_->get_animated_arrays()->cvas;
     for (auto& p : hitboxes_) {
-        for (auto& x : scene_node_resources_.get_triangle_meshes(p.first)) {
+        for (auto& x : scene_node_resources_.get_animated_arrays(p.first)->cvas) {
             for (auto& y : p.second) {
-                res.push_back(x->transformed(FixedArray<float, 4, 4>{
+                res->cvas.push_back(x->transformed(FixedArray<float, 4, 4>{
                     scale_, 0, 0, y(0),
                     0, scale_, 0, y(1),
                     0, 0, scale_, y(2),

@@ -1,5 +1,6 @@
 #include "Gun.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
@@ -69,7 +70,7 @@ void Gun::advance_time(float dt) {
             SceneNodeResourceFilter{});
         rigid_bodies_.add_rigid_body(
             rc,
-            scene_node_resources_.get_triangle_meshes(bullet_hitbox_resource_name_),
+            scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->cvas,
             {},
             CollidableMode::SMALL_MOVING);
         std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());

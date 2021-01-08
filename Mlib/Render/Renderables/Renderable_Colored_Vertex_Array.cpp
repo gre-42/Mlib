@@ -1,5 +1,6 @@
 #include "Renderable_Colored_Vertex_Array.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
@@ -468,8 +469,8 @@ void RenderableColoredVertexArray::instantiate_renderable(const std::string& nam
         resource_filter));
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> RenderableColoredVertexArray::get_triangle_meshes() const {
-    return triangles_res_->cvas;
+std::shared_ptr<AnimatedColoredVertexArrays> RenderableColoredVertexArray::get_animated_arrays() const {
+    return triangles_res_;
 }
 
 void RenderableColoredVertexArray::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -812,4 +813,14 @@ void RenderableColoredVertexArray::set_absolute_joint_poses(
     for (auto& t : triangles_res_->cvas) {
         t = t->transformed(poses);
     }
+}
+
+void RenderableColoredVertexArray::import_bone_weights(
+    const AnimatedColoredVertexArrays& other_acvas,
+    float max_distance)
+{
+    Mlib::import_bone_weights(
+        *triangles_res_,
+        other_acvas,
+        max_distance);
 }

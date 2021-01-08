@@ -54,15 +54,15 @@ void SceneNodeResources::instantiate_renderable(
     }
 }
 
-std::list<std::shared_ptr<ColoredVertexArray>> SceneNodeResources::get_triangle_meshes(const std::string& name) const {
+std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_arrays(const std::string& name) const {
     auto it = resources_.find(name);
     if (it == resources_.end()) {
         throw std::runtime_error("Could not find resource with name \"" + name + '"');
     }
     try {
-        return it->second->get_triangle_meshes();
+        return it->second->get_animated_arrays();
     } catch(const std::runtime_error& e) {
-        throw std::runtime_error("get_triangle_meshes for resource \"" + name + "\" failed: " + e.what());
+        throw std::runtime_error("get_animated_arrays for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
@@ -171,5 +171,25 @@ void SceneNodeResources::downsample(const std::string& name, size_t factor) cons
         return it->second->downsample(factor);
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("downsample for resource \"" + name + "\" failed: " + e.what());
+    }
+}
+
+void SceneNodeResources::import_bone_weights(
+    const std::string& destination,
+    const std::string& source,
+    float max_distance) const
+{
+    auto dit = resources_.find(destination);
+    if (dit == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + destination + '"');
+    }
+    auto sit = resources_.find(source);
+    if (sit == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + source + '"');
+    }
+    try {
+        return dit->second->import_bone_weights(*sit->second->get_animated_arrays(), max_distance);
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("import_bone_weights for resource \"" + destination + "\" failed: " + e.what());
     }
 }

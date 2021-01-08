@@ -203,6 +203,11 @@ void LoadScene::operator()(
     static const std::regex gen_triangle_rays_reg("^(?:\\r?\\n|\\s)*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
     static const std::regex gen_ray_reg("^(?:\\r?\\n|\\s)*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex downsample_reg("^(?:\\r?\\n|\\s)*downsample name=([/\\w+-.]+) factor=(\\d+)$");
+    static const std::regex import_bone_weights_reg(
+        "^(?:\\r?\\n|\\s)*import_bone_weights"
+        "\\s+destination=([/\\w+-.]+)"
+        "\\s+source=([/\\w+-.]+)"
+        "\\s+max_distance=([\\w+-.]+)$");
     static const std::regex square_resource_reg(
         "^(?:\\r?\\n|\\s)*square_resource\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
@@ -570,6 +575,11 @@ void LoadScene::operator()(
             scene_node_resources.downsample(
                 match[1].str(),
                 safe_stoz(match[2].str()));
+        } else if (std::regex_match(line, match, import_bone_weights_reg)) {
+            scene_node_resources.import_bone_weights(
+                match[1].str(),
+                match[2].str(),
+                safe_stof(match[3].str()));
         } else if (std::regex_match(line, match, square_resource_reg)) {
             // 1: name
             // 2: texture_filename
@@ -676,10 +686,10 @@ void LoadScene::operator()(
                     match[8].str().empty() ? 0.f : safe_stof(match[8].str()),
                     match[9].str().empty() ? 0.f : safe_stof(match[9].str()),
                     match[10].str().empty() ? 0.f : safe_stof(match[10].str())});
-            std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_triangle_meshes(match[2].str());
+            std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_animated_arrays(match[2].str())->cvas;
             std::list<std::shared_ptr<ColoredVertexArray>> tirelines;
             if (!match[3].str().empty()) {
-                tirelines = scene_node_resources.get_triangle_meshes(match[3].str());
+                tirelines = scene_node_resources.get_animated_arrays(match[3].str())->cvas;
             }
             // 1. Set movable, which updates the transformation-matrix
             scene.get_node(match[1].str())->set_absolute_movable(rb.get());

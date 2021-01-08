@@ -13,6 +13,7 @@ namespace Mlib {
 template <class TData>
 struct OffsetAndQuaternion;
 
+struct AnimatedColoredVertexArrays;
 class ColoredVertexArray;
 class Scene;
 class SceneNode;
@@ -31,8 +32,8 @@ public:
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const {
         throw std::runtime_error("instantiate_renderable not implemented");
     }
-    virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const {
-        throw std::runtime_error("get_triangle_meshes not implemented");
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const {
+        throw std::runtime_error("get_animated_arrays not implemented");
     }
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) {
         throw std::runtime_error("generate_triangle_rays not implemented");
@@ -54,6 +55,12 @@ public:
     }
     virtual void downsample(size_t factor) {
         throw std::runtime_error("downsample not implemented");
+    }
+    virtual void import_bone_weights(
+        const AnimatedColoredVertexArrays& other_acvas,
+        float max_distance)
+    {
+        throw std::runtime_error("import_bone_weights not implemented");
     }
 };
 

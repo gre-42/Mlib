@@ -21,7 +21,7 @@ public:
         RenderingResources& rendering_resources);
     ~RenderableMhx2File();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
-    virtual std::list<std::shared_ptr<ColoredVertexArray>> get_triangle_meshes() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual AggregateMode aggregate_mode() const override;
