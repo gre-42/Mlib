@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
-#include <Mlib/Threads/BackgroundTask.hpp>
+#include <Mlib/Threads/Background_Loop.hpp>
 #include <atomic>
 #include <map>
 #include <memory>
@@ -80,8 +80,8 @@ private:
     InstancesRenderer* large_instances_renderer_;
     mutable bool large_aggregate_renderer_initialized_;
     mutable bool large_instances_renderer_initialized_;
-    mutable BackgroundTask aggregation_bg_task_;
-    mutable BackgroundTask instances_bg_task_;
+    mutable BackgroundLoop aggregation_bg_worker_;
+    mutable BackgroundLoop instances_bg_worker_;
     std::mutex uuid_mutex_;
     size_t uuid_;
     bool shutting_down_;

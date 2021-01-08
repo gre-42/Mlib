@@ -260,8 +260,8 @@ void Scene::render(
             // Contains continuous alpha and must therefore be rendered late.
             LOG_INFO("Scene::render small_sorted_aggregate_renderer");
             if (small_sorted_aggregate_renderer_ != nullptr) {
-                BackgroundTaskStatus status = aggregation_bg_task_.tick(scene_graph_config.aggregate_update_interval);
-                if (aggregation_bg_task_.done()) {
+                WorkerStatus status = aggregation_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
+                if (aggregation_bg_worker_.done()) {
                     // copy "vp" and "scene_graph_config"
                     auto func = [this, vp, scene_graph_config, external_render_pass](){
                         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>> aggregate_queue;
@@ -284,8 +284,8 @@ void Scene::render(
                         }
                         small_sorted_aggregate_renderer_->update_aggregates(sorted_aggregate_queue);
                     };
-                    if (status == BackgroundTaskStatus::IDLE) {
-                        aggregation_bg_task_.run(func);
+                    if (status == WorkerStatus::IDLE) {
+                        aggregation_bg_worker_.run(func);
                     }
                 }
                 small_sorted_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
@@ -293,8 +293,8 @@ void Scene::render(
             // Contains continuous alpha and must therefore be rendered late.
             LOG_INFO("Scene::render instances_renderer");
             if (small_instances_renderer_ != nullptr) {
-                BackgroundTaskStatus status = instances_bg_task_.tick(scene_graph_config.aggregate_update_interval);
-                if (instances_bg_task_.done()) {
+                WorkerStatus status = instances_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
+                if (instances_bg_worker_.done()) {
                     // copy "vp" and "scene_graph_config"
                     auto func = [this, vp, scene_graph_config, external_render_pass](){
                         std::list<std::pair<float, TransformedColoredVertexArray>> instances_queue;
@@ -317,8 +317,8 @@ void Scene::render(
                         }
                         small_instances_renderer_->update_instances(sorted_instances_queue);
                     };
-                    if (status == BackgroundTaskStatus::IDLE) {
-                        instances_bg_task_.run(func);
+                    if (status == WorkerStatus::IDLE) {
+                        instances_bg_worker_.run(func);
                     }
                 }
                 small_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);

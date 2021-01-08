@@ -1,18 +1,16 @@
 #pragma once
+#include <Mlib/Threads/Worker_Status.hpp>
 #include <functional>
+#include <mutex>
 #include <thread>
 
 namespace Mlib {
 
-enum class BackgroundTaskStatus {
-    IDLE,
-    BUSY
-};
-
-class BackgroundTask {
+class BackgroundLoop {
 public:
-    ~BackgroundTask();
-    BackgroundTaskStatus tick(size_t update_interval);
+    BackgroundLoop();
+    ~BackgroundLoop();
+    WorkerStatus tick(size_t update_interval);
     void run(const std::function<void()>& task);
     bool done() const;
 private:
@@ -20,6 +18,8 @@ private:
     std::function<void()> task_;
     size_t i_ = 0;
     std::atomic_bool done_ = true;
+    std::atomic_bool shutdown_requested_ = false;
+    std::mutex task_ready_mutex_;
 };
 
 }

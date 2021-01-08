@@ -1,4 +1,4 @@
-#include "BackgroundTask.hpp"
+#include "Background_Task.hpp"
 
 using namespace Mlib;
 
@@ -8,19 +8,19 @@ BackgroundTask::~BackgroundTask() {
     }
 }
 
-BackgroundTaskStatus BackgroundTask::tick(size_t update_interval) {
+WorkerStatus BackgroundTask::tick(size_t update_interval) {
     i_ = (i_ + 1) % update_interval;
     if (done_) {
         if (thread_.joinable()) {
             thread_.join();
         }
         if (i_ == 0) {
-            return BackgroundTaskStatus::IDLE;
+            return WorkerStatus::IDLE;
         } else {
-            return BackgroundTaskStatus::BUSY;
+            return WorkerStatus::BUSY;
         }
     } else {
-        return BackgroundTaskStatus::BUSY;
+        return WorkerStatus::BUSY;
     }
 }
 
