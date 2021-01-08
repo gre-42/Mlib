@@ -58,6 +58,8 @@ private:
     std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
     std::recursive_mutex& mutex_;
     size_t spawn_point_id_;
+    // size_t nspawns_;
+    // size_t ndelete_;
 };
 
 }

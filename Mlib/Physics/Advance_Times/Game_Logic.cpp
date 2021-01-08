@@ -63,8 +63,16 @@ void GameLogic::set_preferred_car_spawner(Player& player, const std::function<vo
 }
 
 void GameLogic::advance_time(float dt) {
+    // nspawns_ = 0;
+    // ndelete_ = 0;
     handle_team_deathmatch();
     handle_bystanders();
+    // size_t nactive = 0;
+    // for (const auto& p : players_.players()) {
+    //     nactive += !p.second->scene_node_name().empty();
+    // }
+    // std::cerr << "nactive " << nactive << std::endl;
+    // std::cerr << "nspawns " << nspawns_ << " , ndelete " << ndelete_ << std::endl;
 }
 
 void GameLogic::handle_team_deathmatch() {
@@ -91,6 +99,7 @@ void GameLogic::handle_team_deathmatch() {
             const std::string& node_name = p.second->scene_node_name();
             if (!node_name.empty()) {
                 scene_.delete_root_node(node_name);
+                // ++ndelete_;
             }
         }
         auto sit = spawn_points_.begin();
@@ -263,6 +272,7 @@ bool GameLogic::delete_for_vip(
     delete_player:
     std::lock_guard lock_guard{mutex_};
     scene_.delete_root_node(player.scene_node_name());
+    // ++ndelete_;
     return true;
 }
 
@@ -284,6 +294,7 @@ void GameLogic::spawn_at_spawn_point(
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg.spawn_y_offset;
     std::lock_guard lock_guard{mutex_};
+    // ++nspawns_;
     spawn_macro->second(sp2);
     if (player.scene_node_name().empty()) {
         throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
