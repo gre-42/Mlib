@@ -10,6 +10,12 @@ AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_res
 {}
 
 void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& sorted_aggregate_queue) {
+    // size_t ntris = 0;
+    // for (const auto& a : sorted_aggregate_queue) {
+    //     ntris += a->triangles.size();
+    // }
+    // std::cerr << "Update aggregates: " << ntris << std::endl;
+
     //std::map<Material, size_t> material_ids;
     //size_t ntriangles = 0;
     //for (const auto& a : sorted_aggregate_queue) {

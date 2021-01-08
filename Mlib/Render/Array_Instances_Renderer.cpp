@@ -12,6 +12,12 @@ ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources& rendering_res
 {}
 
 void ArrayInstancesRenderer::update_instances(const std::list<TransformedColoredVertexArray>& instances_queue) {
+    // size_t ntris = 0;
+    // for (const auto& a : instances_queue) {
+    //     ntris += a.cva->triangles.size();
+    // }
+    // std::cerr << "Update instances: " << ntris << std::endl;
+
     std::map<std::shared_ptr<ColoredVertexArray>, std::list<FixedArray<float, 4, 4>>> cva_lists;
     for (const auto& a : instances_queue) {
         cva_lists[a.cva].push_back(a.transformation_matrix);
