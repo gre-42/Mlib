@@ -202,7 +202,7 @@ void LoadScene::operator()(
         "\\s*no_werror)?$");
     static const std::regex gen_triangle_rays_reg("^(?:\\r?\\n|\\s)*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
     static const std::regex gen_ray_reg("^(?:\\r?\\n|\\s)*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex downsample_reg("^(?:\\r?\\n|\\s)*downsample name=([\\w+-.]+) factor=(\\d+)$");
+    static const std::regex downsample_reg("^(?:\\r?\\n|\\s)*downsample name=([/\\w+-.]+) factor=(\\d+)$");
     static const std::regex square_resource_reg(
         "^(?:\\r?\\n|\\s)*square_resource\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
