@@ -101,7 +101,7 @@ void RigidBodies::add_rigid_body(
             for (auto& cva : cvas) {
                 if (cva->material.collide) {
                     auto vertices = cva->vertices();
-                    if (vertices.size() > 0) {
+                    if (!vertices.empty()) {
                         BoundingSphere<float, 3> bs{vertices.begin(), vertices.end()};
                         rbm.meshes.push_back({
                             .mesh_type = mesh_type,
