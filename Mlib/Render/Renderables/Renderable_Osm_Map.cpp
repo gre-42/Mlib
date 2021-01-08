@@ -729,19 +729,18 @@ RenderableOsmMap::RenderableOsmMap(
         SpawnPoint sp;
         FixedArray<float, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
         FixedArray<float, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
-        float lx2 = sum(squared(x));
-        float ly2 = sum(squared(y));
-        if (lx2 < squared(3 * scale) || ly2 < squared(3 * scale)) {
-            continue;
+        {
+            float lx2 = sum(squared(x));
+            float ly2 = sum(squared(y));
+            if (lx2 < squared(3 * scale) || ly2 < squared(3 * scale)) {
+                continue;
+            }
+            x /= std::sqrt(lx2);
+            y /= std::sqrt(ly2);
+            x -= y * dot0d(y, x);
+            x /= std::sqrt(sum(squared(x)));
         }
-        x /= std::sqrt(lx2);
-        y /= std::sqrt(ly2);
         FixedArray<float, 3> z = cross(x, y);
-        float lz2 = sum(squared(z));
-        if (lz2 < squared(3 * scale)) {
-            continue;
-        }
-        z /= std::sqrt(lz2);
         FixedArray<float, 3, 3> R{
             x(0), y(0), z(0),
             x(1), y(1), z(1),
