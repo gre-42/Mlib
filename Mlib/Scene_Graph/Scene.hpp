@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
-#include <Mlib/Thread.hpp>
+#include <Mlib/Threads/BackgroundTask.hpp>
 #include <atomic>
 #include <map>
 #include <memory>

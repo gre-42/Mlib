@@ -6,4 +6,4 @@ my_add_shared_library(MlibSceneGraph "1" "" "${mlib_excluded_files}")
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibSceneGraph Mlib MlibGeometry)
+target_link_libraries(MlibSceneGraph Mlib MlibGeometry MlibThreads)
