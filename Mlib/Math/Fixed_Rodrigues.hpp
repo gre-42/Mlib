@@ -5,18 +5,27 @@
 namespace Mlib{
 
 template <class TData>
-FixedArray<TData, 3, 3> rodrigues(const FixedArray<TData, 3>& k) {
+FixedArray<TData, 3, 3> rodrigues(
+    const FixedArray<TData, 3>& k,
+    bool check_angle = true)
+{
     if (sum(squared(k)) < 1e-12) {
         return fixed_identity_array<TData, 3>();
     } else {
         TData len_k = std::sqrt(sum(norm(k)));
-        return rodrigues(k / len_k, len_k);
+        return rodrigues(k / len_k, len_k, check_angle);
     }
 }
 
 template <class TData>
-FixedArray<TData, 3, 3> rodrigues(const FixedArray<TData, 3>& k, const TData& theta) {
-    assert(std::abs(theta) < TData{2.1 * M_PI});
+FixedArray<TData, 3, 3> rodrigues(
+    const FixedArray<TData, 3>& k,
+    const TData& theta,
+    bool check_angle = true)
+{
+    if (check_angle) {
+        assert(std::abs(theta) < TData{2.1 * M_PI});
+    }
     FixedArray<TData, 3, 3> K{cross(k)};
     FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
     return I + std::sin(theta) * K + (1 - std::cos(theta)) * dot(K, K);
