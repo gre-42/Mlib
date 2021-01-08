@@ -545,10 +545,10 @@ void Player::move_to_waypoint() {
     }
     // Keep velocity within the specified range.
     {
-        float dvel = sum(squared(rb_->rbi_.rbp_.v_)) - squared(driving_mode_.max_velocity);
+        float dvel = -dot0d(rb_->rbi_.rbp_.v_, rb_->rbi_.abs_z()) - driving_mode_.max_velocity;
         if (dvel < 0) {
             drive_forward();
-        } else if (dvel < squared(driving_mode_.max_delta_velocity2_break)) {
+        } else if (dvel < driving_mode_.max_delta_velocity_break) {
             roll();
         } else {
             step_on_breaks();
