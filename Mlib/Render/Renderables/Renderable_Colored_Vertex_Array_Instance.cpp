@@ -69,6 +69,29 @@ void RenderableColoredVertexArrayInstance::render(
     if (render_pass.external.pass == ExternalRenderPass::DIRTMAP) {
         return;
     }
+    #ifdef DEBUG
+    rcva_->triangles_res_->check_consistency();
+    #endif
+    std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations;
+    if (!rcva_->triangles_res_->bone_indices.empty()) {
+        if (style == nullptr) {
+            throw std::runtime_error("Animation without style");
+        }
+        if (style->animation_frame.name.empty()) {
+            throw std::runtime_error("Animation frame has no name");
+        }
+        if (std::isnan(style->animation_frame.loop_time)) {
+            throw std::runtime_error("Loop time is NAN");
+        }
+        auto poses = rcva_->rendering_resources_.scene_node_resources().get_poses(
+            style->animation_frame.name,
+            style->animation_frame.loop_time);
+        std::vector<OffsetAndQuaternion<float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
+        absolute_bone_transformations = rcva_->triangles_res_->skeleton->absolutify(ms);
+        if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
+            throw std::runtime_error("Number of bone indices differs from number of quaternions");
+        }
+    }
     for (auto& cva : triangles_res_subset_) {
         if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {
             continue;
@@ -247,31 +270,9 @@ void RenderableColoredVertexArrayInstance::render(
                 CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
             }
         }
-#ifdef DEBUG
-        rcva_->triangles_res_->check_consistency();
-#endif
-        assert_true(cva->triangle_bone_weights.empty() == !rcva_->triangles_res_->skeleton);
-        assert_true(cva->triangle_bone_weights.empty() == rcva_->triangles_res_->bone_indices.empty());
         if (!rcva_->triangles_res_->bone_indices.empty()) {
-            if (style == nullptr) {
-                throw std::runtime_error("Animation without style");
-            }
-            if (style->animation_frame.name.empty()) {
-                throw std::runtime_error("Animation frame has no name");
-            }
-            if (std::isnan(style->animation_frame.loop_time)) {
-                throw std::runtime_error("Loop time is NAN");
-            }
-            auto poses = rcva_->rendering_resources_.scene_node_resources().get_poses(
-                style->animation_frame.name,
-                style->animation_frame.loop_time);
-            std::vector<OffsetAndQuaternion<float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
-            std::vector<OffsetAndQuaternion<float>> mt = rcva_->triangles_res_->skeleton->absolutify(ms);
-            if (mt.size() != rcva_->triangles_res_->bone_indices.size()) {
-                throw std::runtime_error("Number of bone indices differs from number of quaternions");
-            }
             size_t i = 0;
-            for (const auto& l : mt) {
+            for (const auto& l : absolute_bone_transformations) {
                 CHK(glUniform3fv(rp.pose_positions.at(i), 1, (const GLfloat*) l.offset().flat_begin()));
                 CHK(glUniform4fv(rp.pose_quaternions.at(i), 1, (const GLfloat*) l.quaternion().vector().flat_begin()));
                 ++i;
