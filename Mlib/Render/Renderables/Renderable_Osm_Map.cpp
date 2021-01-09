@@ -10,6 +10,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Waypoints.hpp>
+#include <Mlib/Render/Renderables/Renderable_Osm_Map/Draw_Streets.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>

@@ -8,9 +8,9 @@ namespace Mlib {
 
 template <class TData, size_t tndim>
 struct PointsAndAdjacency;
-struct Building;
 template <typename TData, size_t... tshape>
 class FixedArray;
+struct Building;
 struct Node;
 
 void calculate_waypoints(
