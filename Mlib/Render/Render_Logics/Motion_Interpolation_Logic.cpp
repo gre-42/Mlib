@@ -21,7 +21,7 @@ using namespace Mlib;
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
 static GenShaderText fragment_shader_text{[](
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
@@ -50,7 +50,7 @@ static GenShaderText fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_diff_fragment_shader_text{[](
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices)
@@ -98,7 +98,7 @@ static GenShaderText optical_flow_diff_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_diff1_fragment_shader_text{[](
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices)
@@ -138,7 +138,7 @@ static GenShaderText optical_flow_diff1_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_fragment_shader_text{[](
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices)
@@ -176,7 +176,7 @@ static GenShaderText optical_flow_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_apply_fragment_shader_text{[](
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices)

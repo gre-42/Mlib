@@ -1,7 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <list>
 #include <map>
+#include <stdexcept>
+#include <vector>
 
 namespace Mlib {
 
@@ -15,7 +16,7 @@ public:
     {}
     template <class... Args>
     const char* operator() (
-        const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+        const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
@@ -27,7 +28,9 @@ public:
             return it->second.second;
         }
         std::string text = func_(lights, light_noshadow_indices, light_shadow_indices, black_shadow_indices, args...);
-        texts.insert(std::make_pair(key, std::make_pair(std::move(text), text.c_str())));
+        if (!texts.insert(std::make_pair(key, std::make_pair(std::move(text), text.c_str()))).second) {
+            throw std::runtime_error("Could not insert shader text");
+        }
         return texts.at(key).second;
     }
 private:

@@ -114,32 +114,31 @@ void RenderableColoredVertexArrayInstance::render(
             }
         }
 
-        std::list<std::pair<FixedArray<float, 4, 4>, Light*>> filtered_lights;
-        for (const auto& l : lights) {
-            if (!l.second->only_black || cva->material.occluded_by_black) {
-                filtered_lights.push_back(l);
-            }
-        }
+        std::vector<std::pair<FixedArray<float, 4, 4>, Light*>> filtered_lights;
         std::vector<size_t> light_noshadow_indices;
         std::vector<size_t> light_shadow_indices;
         std::vector<size_t> black_shadow_indices;
-        light_noshadow_indices.reserve(filtered_lights.size());
-        light_shadow_indices.reserve(filtered_lights.size());
-        black_shadow_indices.reserve(filtered_lights.size());
+        filtered_lights.reserve(lights.size());
+        light_noshadow_indices.reserve(lights.size());
+        light_shadow_indices.reserve(lights.size());
+        black_shadow_indices.reserve(lights.size());
         {
             size_t i = 0;
-            for (const auto& l : filtered_lights) {
-                if (!l.second->only_black) {
-                    if (l.second->shadow) {
-                        light_shadow_indices.push_back(i++);
+            for (const auto& l : lights) {
+                if (!l.second->only_black || cva->material.occluded_by_black) {
+                    filtered_lights.push_back(l);
+                    if (!l.second->only_black) {
+                        if (l.second->shadow) {
+                            light_shadow_indices.push_back(i++);
+                        } else {
+                            light_noshadow_indices.push_back(i++);
+                        }
                     } else {
-                        light_noshadow_indices.push_back(i++);
+                        if (!l.second->shadow) {
+                            throw std::runtime_error("Only-black light marked as not shadowed");
+                        }
+                        black_shadow_indices.push_back(i++);
                     }
-                } else {
-                    if (!l.second->shadow) {
-                        throw std::runtime_error("Only-black light marked as not shadowed");
-                    }
-                    black_shadow_indices.push_back(i++);
                 }
             }
         }

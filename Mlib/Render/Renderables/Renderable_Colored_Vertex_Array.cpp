@@ -24,7 +24,7 @@ struct ShaderBoneWeight {
 using namespace Mlib;
 
 static GenShaderText vertex_shader_text_gen{[](
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
@@ -164,7 +164,7 @@ enum class OcclusionType {
 };
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
@@ -537,7 +537,7 @@ AggregateMode RenderableColoredVertexArray::aggregate_mode() const {
 
 const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const RenderProgramIdentifier& id,
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights,
+    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices) const

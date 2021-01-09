@@ -53,7 +53,7 @@ public:
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
-        const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights,
+        const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights,
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices) const;
