@@ -185,10 +185,12 @@ void Mlib::draw_streets(
                     float car_width = 2;
                     if (it->second.width < 4 * car_width * scale) {
                         nlanes = 2;
-                        lane_alpha = 0.5;
+                        // alpha is in [-1 .. +1]
+                        lane_alpha = 0.5 * curb_alpha;
                     } else {
                         nlanes = 4;
-                        lane_alpha = 0.25;
+                        // alpha is in [-1 .. +1]
+                        lane_alpha = 0.25 * curb_alpha;
                     }
                     if (driving_direction == DrivingDirection::CENTER) {
                         way_point_edges_1_lane.push_back({na.first, it->second.id});
