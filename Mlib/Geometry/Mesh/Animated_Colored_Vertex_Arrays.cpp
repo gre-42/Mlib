@@ -8,9 +8,11 @@ std::vector<OffsetAndQuaternion<float>> AnimatedColoredVertexArrays::vectorize_j
     const std::map<std::string, OffsetAndQuaternion<float>>& poses) const
 {
     std::vector<OffsetAndQuaternion<float>> ms(bone_indices.size());
+#ifndef NDEBUG
     for (auto& m : ms) {
         m.offset() = fixed_nans<float, 3>();
     }
+#endif
     for (const auto& p : poses) {
         auto it = bone_indices.find(p.first);
         if (it == bone_indices.end()) {
@@ -18,11 +20,13 @@ std::vector<OffsetAndQuaternion<float>> AnimatedColoredVertexArrays::vectorize_j
         }
         ms.at(it->second) = p.second;
     }
+#ifndef NDEBUG
     for (const auto& m : ms) {
         if (any(isnan(m.offset()))) {
             throw std::runtime_error("Pose contains NAN values or was not set");
         }
     }
+#endif
     return ms;
 }
 
