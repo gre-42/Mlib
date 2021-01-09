@@ -71,6 +71,8 @@ public:
         const std::vector<float>& steiner_point_distances_steiner = {100.f},
         float curb_alpha = 0.9,
         float curb2_alpha = 0.95,
+        float curb_uv_x = 1,
+        float curb2_uv_x = 1,
         float raise_streets_amount = 0.2,
         float extrude_curb_amount = 0,
         float extrude_street_amount = 0,

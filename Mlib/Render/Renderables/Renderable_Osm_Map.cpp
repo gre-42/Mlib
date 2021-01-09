@@ -76,6 +76,8 @@ RenderableOsmMap::RenderableOsmMap(
     const std::vector<float>& steiner_point_distances_steiner,
     float curb_alpha,
     float curb2_alpha,
+    float curb_uv_x,
+    float curb2_uv_x,
     float raise_streets_amount,
     float extrude_curb_amount,
     float extrude_street_amount,
@@ -392,6 +394,8 @@ RenderableOsmMap::RenderableOsmMap(
             path_tags,
             curb_alpha,
             curb2_alpha,
+            curb_uv_x,
+            curb2_uv_x,
             street_lights,
             with_height_bindings,
             driving_direction);

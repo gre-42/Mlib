@@ -498,6 +498,8 @@ void Mlib::draw_streets(
     const std::set<std::string>& path_tags,
     float curb_alpha,
     float curb2_alpha,
+    float curb_uv_x,
+    float curb2_uv_x,
     ResourceNameCycle& street_lights,
     bool with_height_bindings,
     DrivingDirection driving_direction)
@@ -681,25 +683,25 @@ void Mlib::draw_streets(
                     if ((len0 != node_way_info.end()) &&
                         (len1 != node_way_info.end()))
                     {
-                        rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, len0->second.color, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+                        rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
                         if (curb_alpha != 1) {
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
                         }
                         if (curb2_alpha != 1) {
-                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, len0->second.color, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, len0->second.color, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
                         }
                     } else {
                         float len = std::sqrt(sum(squared(nodes.at(na.first).position - nodes.at(it->second.id).position)));
-                        rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, way_color, 0, len / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+                        rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, way_color, 0, 1, 0, len / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
                         if (curb_alpha != 1) {
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, 0, len / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, 0, len / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
                         }
                         if (curb2_alpha != 1) {
-                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, way_color, 0, len / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, way_color, 0, len / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
+                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
                         }
                         // rect.draw_z0(tl_street_crossing);
                     }

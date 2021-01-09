@@ -47,8 +47,10 @@ void Rectangle::draw_z0(
     const std::string& b,
     const std::string& c,
     const FixedArray<float, 3>& color,
-    float uv0,
-    float uv1,
+    float uv0_x,
+    float uv1_x,
+    float uv0_y,
+    float uv1_y,
     float start,
     float stop,
     bool rotate_texture,
@@ -75,10 +77,10 @@ void Rectangle::draw_z0(
         color,
         color,
         color,
-        rotate_texture ? FixedArray<float, 2>{1.f, uv1} : FixedArray<float, 2>{0.f, uv0},
-        rotate_texture ? FixedArray<float, 2>{0.f, uv1} : FixedArray<float, 2>{1.f, uv0},
-        rotate_texture ? FixedArray<float, 2>{0.f, uv0} : FixedArray<float, 2>{1.f, uv1},
-        rotate_texture ? FixedArray<float, 2>{1.f, uv0} : FixedArray<float, 2>{0.f, uv1});
+        rotate_texture ? FixedArray<float, 2>{uv1_x, uv1_y} : FixedArray<float, 2>{uv0_x, uv0_y},
+        rotate_texture ? FixedArray<float, 2>{uv0_x, uv1_y} : FixedArray<float, 2>{uv1_x, uv0_y},
+        rotate_texture ? FixedArray<float, 2>{uv0_x, uv0_y} : FixedArray<float, 2>{uv1_x, uv1_y},
+        rotate_texture ? FixedArray<float, 2>{uv1_x, uv0_y} : FixedArray<float, 2>{uv0_x, uv1_y});
 }
 
 void Rectangle::draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color) {

@@ -207,6 +207,8 @@ void draw_streets(
     const std::set<std::string>& path_tags,
     float curb_alpha,
     float curb2_alpha,
+    float curb_uv_x,
+    float curb2_uv_x,
     ResourceNameCycle& street_lights,
     bool with_height_bindings,
     DrivingDirection driving_direction);

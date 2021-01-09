@@ -177,6 +177,8 @@ void LoadScene::operator()(
         "\\s*steiner_point_distances_steiner=([ \\w+-.]*)\\r?\\n"
         "\\s*curb_alpha=([\\w+-.]+)\\r?\\n"
         "\\s*curb2_alpha=([\\w+-.]+)\\r?\\n"
+        "\\s*curb_uv_x=([\\w+-.]+)\\r?\\n"
+        "\\s*curb2_uv_x=([\\w+-.]+)\\r?\\n"
         "\\s*raise_streets_amount=([\\w+-.]+)\\r?\\n"
         "\\s*extrude_curb_amount=([\\w+-.]+)\\r?\\n"
         "\\s*extrude_street_amount=([\\w+-.]+)\\r?\\n"
@@ -508,16 +510,18 @@ void LoadScene::operator()(
                     string_to_vector(match[48].str(), safe_stof),                 // steiner_point_distances_steiner
                     safe_stof(match[49].str()),                                   // curb_alpha
                     safe_stof(match[50].str()),                                   // curb2_alpha
-                    safe_stof(match[51].str()),                                   // raise_streets_amount
-                    safe_stof(match[52].str()),                                   // extrude_curb_amount
-                    safe_stof(match[53].str()),                                   // extrude_street_amount
-                    string_to_vector(match[54].str()),                            // street_light_resource_names
-                    safe_stof(match[55].str()),                                   // max_wall_width
-                    safe_stob(match[56].str()),                                   // with_height_bindings
-                    safe_stof(match[57].str()),                                   // street_node_smoothness
-                    safe_stof(match[58].str()),                                   // street_edge_smoothness
-                    safe_stof(match[59].str()),                                   // terrain_edge_smoothness
-                    driving_direction_from_string(match[60].str())));             // driving_direction
+                    safe_stof(match[51].str()),                                   // curb_uv_x
+                    safe_stof(match[52].str()),                                   // curb2_uv_x
+                    safe_stof(match[53].str()),                                   // raise_streets_amount
+                    safe_stof(match[54].str()),                                   // extrude_curb_amount
+                    safe_stof(match[55].str()),                                   // extrude_street_amount
+                    string_to_vector(match[56].str()),                            // street_light_resource_names
+                    safe_stof(match[57].str()),                                   // max_wall_width
+                    safe_stob(match[58].str()),                                   // with_height_bindings
+                    safe_stof(match[59].str()),                                   // street_node_smoothness
+                    safe_stof(match[60].str()),                                   // street_edge_smoothness
+                    safe_stof(match[61].str()),                                   // terrain_edge_smoothness
+                    driving_direction_from_string(match[62].str())));             // driving_direction
         } else if (std::regex_match(line, match, obj_resource_reg)) {
             LoadMeshConfig load_mesh_config{
                 .position = FixedArray<float, 3>{
