@@ -7,6 +7,7 @@
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Rectangle.hpp>
 #include <Mlib/Render/Renderables/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <regex>
 
@@ -43,8 +44,7 @@ void Mlib::draw_streets(
     std::list<StreetRectangle>& street_rectangles,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane_street,
-    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes_street,
-    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes_sidewalk,
+    std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float scale,
@@ -210,9 +210,9 @@ void Mlib::draw_streets(
                                 FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0},
                                 FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0}});
                         };
-                        add(lane_alpha, way_point_edges_2_lanes_street);
+                        add(lane_alpha, way_point_edges_2_lanes[WayPointLocation::STREET]);
                         if (curb2_alpha != 1) {
-                            add(sidewalk_alpha, way_point_edges_2_lanes_sidewalk);
+                            add(sidewalk_alpha, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
                         }
                     } else if (driving_direction == DrivingDirection::RIGHT) {
                         auto add = [&rect](float alpha, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& lanes){
@@ -224,9 +224,9 @@ void Mlib::draw_streets(
                                 FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0},
                                 FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0}});
                         };
-                        add(lane_alpha, way_point_edges_2_lanes_street);
+                        add(lane_alpha, way_point_edges_2_lanes[WayPointLocation::STREET]);
                         if (curb2_alpha != 1) {
-                            add(sidewalk_alpha, way_point_edges_2_lanes_sidewalk);
+                            add(sidewalk_alpha, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
                         }
                     } else {
                         throw std::runtime_error("Unknown driving direction");
@@ -408,8 +408,8 @@ void Mlib::draw_streets(
                 }
             }
         };
-        connect(node_hole_waypoints_street, way_point_edges_2_lanes_street);
-        connect(node_hole_waypoints_sidewalk, way_point_edges_2_lanes_sidewalk);
+        connect(node_hole_waypoints_street, way_point_edges_2_lanes[WayPointLocation::STREET]);
+        connect(node_hole_waypoints_sidewalk, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
     } else if (driving_direction != DrivingDirection::CENTER) {
         throw std::runtime_error("Only 1 or 2 lanes are supported");
     }

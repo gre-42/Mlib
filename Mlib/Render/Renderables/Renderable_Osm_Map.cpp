@@ -364,8 +364,7 @@ RenderableOsmMap::RenderableOsmMap(
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::list<std::pair<std::string, std::string>> way_point_edges_1_lane;
-    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>> way_point_edges_2_lanes_street;
-    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>> way_point_edges_2_lanes_sidewalk;
+    std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>> way_point_edges_2_lanes;
     {
         ResourceNameCycle street_lights{scene_node_resources, street_light_resource_names};
 
@@ -387,8 +386,7 @@ RenderableOsmMap::RenderableOsmMap(
             street_rectangles,
             height_bindings,
             way_point_edges_1_lane,
-            way_point_edges_2_lanes_street,
-            way_point_edges_2_lanes_sidewalk,
+            way_point_edges_2_lanes,
             nodes,
             ways,
             scale,
@@ -619,13 +617,11 @@ RenderableOsmMap::RenderableOsmMap(
                 smoothed_vertices.push_back(&p);
             }
         }
-        for (auto& e : way_point_edges_2_lanes_street) {
-            smoothed_vertices.push_back(&e.first);
-            smoothed_vertices.push_back(&e.second);
-        }
-        for (auto& e : way_point_edges_2_lanes_sidewalk) {
-            smoothed_vertices.push_back(&e.first);
-            smoothed_vertices.push_back(&e.second);
+        for (auto& w : way_point_edges_2_lanes) {
+            for (auto& e : w.second) {
+                smoothed_vertices.push_back(&e.first);
+                smoothed_vertices.push_back(&e.second);
+            }
         }
         {
             std::set<FixedArray<float, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
@@ -807,13 +803,13 @@ RenderableOsmMap::RenderableOsmMap(
             way_points_[WayPointLocation::STREET],
             way_point_lines,
             way_point_edges_1_lane,
-            way_point_edges_2_lanes_street,
+            way_point_edges_2_lanes[WayPointLocation::STREET],
             nodes);
         calculate_waypoints(
             way_points_[WayPointLocation::SIDEWALK],
             way_point_lines,
             {},
-            way_point_edges_2_lanes_sidewalk,
+            way_point_edges_2_lanes[WayPointLocation::SIDEWALK],
             nodes);
     }
     // way_points_.at(WayPointLocation::STREET).plot("/tmp/way_points_street.svg", 600, 600, 0.1);
