@@ -8,7 +8,9 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Render/Renderables/Renderable_Osm_Map_Helpers.hpp>
+#include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Spawn_Points.hpp>
+#include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Waypoints.hpp>
+#include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -782,133 +784,23 @@ RenderableOsmMap::RenderableOsmMap(
             scale,
             much_grass_distance);
     }
-    for (const auto& r : street_rectangles) {
-        SpawnPoint sp;
-        FixedArray<float, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
-        FixedArray<float, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
-        {
-            float lx2 = sum(squared(x));
-            float ly2 = sum(squared(y));
-            if (lx2 < squared(3 * scale) || ly2 < squared(3 * scale)) {
-                continue;
-            }
-            x /= std::sqrt(lx2);
-            y /= std::sqrt(ly2);
-            x -= y * dot0d(y, x);
-            x /= std::sqrt(sum(squared(x)));
-        }
-        FixedArray<float, 3> z = cross(x, y);
-        FixedArray<float, 3, 3> R{
-            x(0), y(0), z(0),
-            x(1), y(1), z(1),
-            x(2), y(2), z(2)};
-        sp.rotation = matrix_2_tait_bryan_angles(R);
-        auto create_spawn_point = [this, &sp, &r](SpawnPointType spawn_point_type, float alpha){
-            sp.type = spawn_point_type;
-            sp.position = alpha * (r.rectangle(0, 0) + r.rectangle(1, 0)) / 2.f + (1 - alpha) * (r.rectangle(0, 1) + r.rectangle(1, 1)) / 2.f;
-            spawn_points_.push_back(sp);
-        };
-        if (driving_direction == DrivingDirection::CENTER) {
-            create_spawn_point(SpawnPointType::ROAD, 0.5);
-        } else if (driving_direction == DrivingDirection::LEFT) {
-            if (r.nlanes == 2) {
-                create_spawn_point(SpawnPointType::ROAD, 1 - 0.5 - 0.25);
-            } else if (r.nlanes == 4) {
-                create_spawn_point(SpawnPointType::ROAD, 1 - 0.5 - 0.125);
-                create_spawn_point(SpawnPointType::PARKING, 1 - 0.75 - 0.125);
-            } else {
-                throw std::runtime_error("Unsupported number of lanes");
-            }
-        } else if (driving_direction == DrivingDirection::RIGHT) {
-            create_spawn_point(SpawnPointType::ROAD, 0.75);
-            if (r.nlanes == 2) {
-                create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.25);
-            } else if (r.nlanes == 4) {
-                create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.125);
-                create_spawn_point(SpawnPointType::PARKING, 0.75 + 0.125);
-            } else {
-                throw std::runtime_error("Unsupported number of lanes");
-            }
-        } else {
-            throw std::runtime_error("Unknown driving direction");
-        }
-    }
+    calculate_spawn_points(
+        spawn_points_,
+        street_rectangles,
+        scale,
+        driving_direction);
     {
         std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
             BuildingType::WAYPOINTS,
             ways,
             0,  // building_bottom
             0); // default_building_top
-
-        std::map<std::string, size_t> indices_1_lane;
-        for (const Building& bu : way_point_lines) {
-            for (const std::string& n : bu.way.nd) {
-                indices_1_lane.insert({n, indices_1_lane.size()});
-            }
-        }
-        for (const auto& e : way_point_edges_1_lane) {
-            indices_1_lane.insert({e.first, indices_1_lane.size()});
-            indices_1_lane.insert({e.second, indices_1_lane.size()});
-        }
-        std::map<OrderableFixedArray<float, 2>, size_t> indices_2_lanes;
-        for (const auto& e : way_point_edges_2_lanes) {
-            indices_2_lanes.insert({OrderableFixedArray<float, 2>{e.first(0), e.first(1)}, indices_2_lanes.size()});
-            indices_2_lanes.insert({OrderableFixedArray<float, 2>{e.second(0), e.second(1)}, indices_2_lanes.size()});
-        }
-        way_points_.points.resize(indices_1_lane.size() + indices_2_lanes.size());
-        for (const auto& p : indices_1_lane) {
-            way_points_.points[p.second] = nodes.at(p.first).position;
-        }
-        for (const auto& p : indices_2_lanes) {
-            way_points_.points[indices_1_lane.size() + p.second] = p.first;
-        }
-        way_points_.adjacency = SparseArrayCcs<float>{ArrayShape{
-            indices_1_lane.size() + indices_2_lanes.size(),
-            indices_1_lane.size() + indices_2_lanes.size()}};
-        
-        {
-            auto insert_edge_1_lane = [this, &nodes, &indices_1_lane](const std::string& a, const std::string& b) {
-                float dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
-                if (!way_points_.adjacency.column(indices_1_lane.at(a)).insert({indices_1_lane.at(b), dist}).second) {
-                    throw std::runtime_error("Could not insert waypoint (0)");
-                }
-                if (!way_points_.adjacency.column(indices_1_lane.at(b)).insert({indices_1_lane.at(a), dist}).second) {
-                    throw std::runtime_error("Could not insert waypoint (1)");
-                }
-            };
-            for (const Building& bu : way_point_lines) {
-                for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
-                    auto s = it;
-                    ++s;
-                    if (s != bu.way.nd.end()) {
-                        insert_edge_1_lane(*s, *it);
-                    }
-                }
-            }
-            for (const auto& e : way_point_edges_1_lane) {
-                insert_edge_1_lane(e.first, e.second);
-            }
-            for (size_t i = 0; i < indices_1_lane.size(); ++i) {
-                if (!way_points_.adjacency.column(i).insert({i, 0}).second) {
-                    throw std::runtime_error("Could not insert waypoint (2)");
-                }
-            }
-        }
-        {
-            for (const auto& e : way_point_edges_2_lanes) {
-                float dist = std::sqrt(sum(squared(e.first - e.second)));
-                size_t col_id_0 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{e.first(0), e.first(1)});
-                size_t col_id_1 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{e.second(0), e.second(1)});
-                if (!way_points_.adjacency.column(col_id_0).insert({col_id_1, dist}).second) {
-                    throw std::runtime_error("Could not insert waypoint (3)");
-                }
-            }
-            for (size_t i = 0; i < indices_2_lanes.size(); ++i) {
-                if (!way_points_.adjacency.column(indices_1_lane.size() + i).insert({indices_1_lane.size() + i, 0}).second) {
-                    throw std::runtime_error("Could not insert waypoint (4)");
-                }
-            }
-        }
+        calculate_waypoints(
+            way_points_,
+            way_point_lines,
+            way_point_edges_1_lane,
+            way_point_edges_2_lanes,
+            nodes);
     }
     // way_points_.plot("/tmp/way_points.svg", 600, 600, 0.1);
 
