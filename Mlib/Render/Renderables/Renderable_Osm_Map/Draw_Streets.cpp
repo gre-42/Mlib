@@ -191,12 +191,12 @@ void Mlib::draw_streets(
                         nlanes = 2;
                         // alpha is in [-1 .. +1]
                         lane_alpha = 0.5 * curb_alpha;
-                        sidewalk_alpha = (curb_alpha + curb2_alpha) / 2;
+                        sidewalk_alpha = (curb2_alpha + 1) / 2;
                     } else {
                         nlanes = 4;
                         // alpha is in [-1 .. +1]
                         lane_alpha = 0.25 * curb_alpha;
-                        sidewalk_alpha = (curb_alpha + curb2_alpha) / 2;
+                        sidewalk_alpha = (curb2_alpha + 1) / 2;
                     }
                     if (driving_direction == DrivingDirection::CENTER) {
                         way_point_edges_1_lane_street.push_back({na.first, it->second.id});
