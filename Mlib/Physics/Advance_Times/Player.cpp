@@ -118,22 +118,27 @@ void Player::set_waypoint(const FixedArray<float, 2>& waypoint) {
 }
 
 void Player::set_waypoint(size_t waypoint_id) {
-    waypoint_ = waypoints_.points.at(waypoint_id);
+    waypoint_ = waypoints().points.at(waypoint_id);
     waypoint_id_ = waypoint_id;
     waypoint_reached_ = false;
 }
 
-void Player::set_waypoints(const SceneNode& node, const PointsAndAdjacency<float, 2>& waypoints) {
-    waypoints_ = waypoints;
-    waypoints_.adjacency = waypoints_.adjacency / node.scale();
-    FixedArray<float, 4, 4> m = node.absolute_model_matrix();
-    FixedArray<float, 2, 3> m2{
-        m(0, 0), m(0, 1), m(0, 3),
-        m(2, 0), m(2, 1), m(2, 3)};
-    for (FixedArray<float, 2>& p : waypoints_.points) {
-        p = dot1d(m2, homogenized_3(p));
+void Player::set_waypoints(
+    const SceneNode& node,
+    const std::map<WayPointLocation, PointsAndAdjacency<float, 2>>& all_waypoints)
+{
+    all_waypoints_ = all_waypoints;
+    for (auto& wps : all_waypoints_) {
+        wps.second.adjacency = wps.second.adjacency / node.scale();
+        FixedArray<float, 4, 4> m = node.absolute_model_matrix();
+        FixedArray<float, 2, 3> m2{
+            m(0, 0), m(0, 1), m(0, 3),
+            m(2, 0), m(2, 1), m(2, 3)};
+        for (FixedArray<float, 2>& p : wps.second.points) {
+            p = dot1d(m2, homogenized_3(p));
+        }
     }
-    last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints_.points.size());
+    last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints().points.size());
     waypoint_id_ = SIZE_MAX;
     nwaypoints_reached_ = 0;
 }
@@ -244,10 +249,6 @@ void Player::set_spotted() {
     spotted_ = true;
 }
 
-bool Player::has_waypoints() const {
-    return !waypoints_.points.empty();
-}
-
 void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == scene_node_) {
         scene_node_name_.clear();
@@ -272,7 +273,9 @@ void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody
                 auto tpos = target_rbi_->abs_position();
                 set_waypoint({tpos(0), tpos(2)});
             } else {
-                select_next_waypoint();
+                if (has_waypoints()) {
+                    select_next_waypoint();
+                }
             }
             move_to_waypoint();
         }
@@ -390,6 +393,22 @@ void Player::steer_right_partial(float angle) {
     }
 }
 
+const PointsAndAdjacency<float, 2>& Player::waypoints() const {
+    auto it = all_waypoints_.find((Mlib::WayPointLocation)driving_mode_.way_point_location);
+    if (it == all_waypoints_.end()) {
+        throw std::runtime_error("Could not find waypoints for the specified location");
+    }
+    return it->second;
+}
+
+bool Player::has_waypoints() const {
+    auto it = all_waypoints_.find((Mlib::WayPointLocation)driving_mode_.way_point_location);
+    if (it == all_waypoints_.end()) {
+        return false;
+    }
+    return !it->second.points.empty();
+}
+
 void Player::aim_and_shoot() {
     assert_true(!target_scene_node_ == !target_rbi_);
     if (rb_ != nullptr && ((target_rbi_ == nullptr) || !can_see(*target_rbi_))) {
@@ -409,7 +428,7 @@ void Player::aim_and_shoot() {
 }
 
 void Player::select_next_waypoint() {
-    if (!waypoints_.adjacency.initialized()) {
+    if (!waypoints().adjacency.initialized()) {
         return;
     }
     if (rb_ == nullptr) {
@@ -422,7 +441,7 @@ void Player::select_next_waypoint() {
         size_t closest_id = SIZE_MAX;
         float closest_distance2 = INFINITY;
         size_t i = 0;
-        for (const FixedArray<float, 2>& rs : waypoints_.points) {
+        for (const FixedArray<float, 2>& rs : waypoints().points) {
             if (dot0d(rs - pos2, z2) < 0) {
                 float dist2 = sum(squared(rs - pos2));
                 if (dist2 < closest_distance2) {
@@ -441,8 +460,8 @@ void Player::select_next_waypoint() {
                 // If we already have less than two waypoints, go further forward.
                 size_t best_id = SIZE_MAX;
                 float best_distance = INFINITY;
-                for (const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
-                    float dist = dot0d(waypoints_.points.at(rs.first) - pos2, z2);
+                for (const auto& rs : waypoints().adjacency.column(waypoint_id_)) {
+                    float dist = dot0d(waypoints().points.at(rs.first) - pos2, z2);
                     if (dist < best_distance) {
                         best_id = rs.first;
                         best_distance = dist;
@@ -457,7 +476,7 @@ void Player::select_next_waypoint() {
                 size_t best_id = SIZE_MAX;
                 std::chrono::time_point<std::chrono::steady_clock> best_time;
                 auto deflt = std::chrono::time_point<std::chrono::steady_clock>();
-                for (const auto& rs : waypoints_.adjacency.column(waypoint_id_)) {
+                for (const auto& rs : waypoints().adjacency.column(waypoint_id_)) {
                     if ((best_id == SIZE_MAX) ||
                         (last_visited_.at(rs.first) == deflt) ||
                         ((best_time != deflt) && (last_visited_.at(rs.first) < best_time)))

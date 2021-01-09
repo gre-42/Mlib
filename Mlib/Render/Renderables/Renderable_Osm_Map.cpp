@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/String.hpp>
 #include <iomanip>
 #include <regex>
@@ -363,7 +364,8 @@ RenderableOsmMap::RenderableOsmMap(
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::list<std::pair<std::string, std::string>> way_point_edges_1_lane;
-    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>> way_point_edges_2_lanes;
+    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>> way_point_edges_2_lanes_street;
+    std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>> way_point_edges_2_lanes_sidewalk;
     {
         ResourceNameCycle street_lights{scene_node_resources, street_light_resource_names};
 
@@ -385,7 +387,8 @@ RenderableOsmMap::RenderableOsmMap(
             street_rectangles,
             height_bindings,
             way_point_edges_1_lane,
-            way_point_edges_2_lanes,
+            way_point_edges_2_lanes_street,
+            way_point_edges_2_lanes_sidewalk,
             nodes,
             ways,
             scale,
@@ -616,7 +619,11 @@ RenderableOsmMap::RenderableOsmMap(
                 smoothed_vertices.push_back(&p);
             }
         }
-        for (auto& e : way_point_edges_2_lanes) {
+        for (auto& e : way_point_edges_2_lanes_street) {
+            smoothed_vertices.push_back(&e.first);
+            smoothed_vertices.push_back(&e.second);
+        }
+        for (auto& e : way_point_edges_2_lanes_sidewalk) {
             smoothed_vertices.push_back(&e.first);
             smoothed_vertices.push_back(&e.second);
         }
@@ -797,13 +804,20 @@ RenderableOsmMap::RenderableOsmMap(
             0,  // building_bottom
             0); // default_building_top
         calculate_waypoints(
-            way_points_,
+            way_points_[WayPointLocation::STREET],
             way_point_lines,
             way_point_edges_1_lane,
-            way_point_edges_2_lanes,
+            way_point_edges_2_lanes_street,
+            nodes);
+        calculate_waypoints(
+            way_points_[WayPointLocation::SIDEWALK],
+            way_point_lines,
+            {},
+            way_point_edges_2_lanes_sidewalk,
             nodes);
     }
-    // way_points_.plot("/tmp/way_points.svg", 600, 600, 0.1);
+    // way_points_.at(WayPointLocation::STREET).plot("/tmp/way_points_street.svg", 600, 600, 0.1);
+    // way_points_.at(WayPointLocation::SIDEWALK).plot("/tmp/way_points_sidewalk.svg", 600, 600, 0.1);
 
     std::list<std::shared_ptr<ColoredVertexArray>> ts;
     for (auto& l : tls_all) {
@@ -872,6 +886,6 @@ std::list<SpawnPoint> RenderableOsmMap::spawn_points() const {
     return spawn_points_;
 }
 
-PointsAndAdjacency<float, 2> RenderableOsmMap::way_points() const {
+std::map<WayPointLocation, PointsAndAdjacency<float, 2>> RenderableOsmMap::way_points() const {
     return way_points_;
 }

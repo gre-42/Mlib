@@ -22,6 +22,7 @@ class CollisionQuery;
 class YawPitchLookAtNodes;
 class Gun;
 enum class DrivingDirection;
+enum class WayPointLocation;
 
 struct PlayerStats {
     size_t nwins = 0;
@@ -84,7 +85,9 @@ public:
     void set_angular_velocity(float angle_left, float angle_right);
     void set_waypoint(const FixedArray<float, 2>& waypoint);
     void set_waypoint(size_t waypoint_id);
-    void set_waypoints(const SceneNode& node, const PointsAndAdjacency<float, 2>& waypoints);
+    void set_waypoints(
+        const SceneNode& node,
+        const std::map<WayPointLocation, PointsAndAdjacency<float, 2>>& all_waypoints);
     const std::string& name() const;
     const std::string& team() const;
     PlayerStats& stats();
@@ -130,6 +133,7 @@ private:
     void steer_right_full();
     void steer_left_partial(float angle);
     void steer_right_partial(float angle);
+    const PointsAndAdjacency<float, 2>& waypoints() const;
     Scene& scene_;
     CollisionQuery& collision_query_;
     Players& players_;
@@ -149,7 +153,7 @@ private:
     float angular_velocity_left_;
     float angular_velocity_right_;
     FixedArray<float, 2> waypoint_;
-    PointsAndAdjacency<float, 2> waypoints_;
+    std::map<WayPointLocation, PointsAndAdjacency<float, 2>> all_waypoints_;
     std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;
     size_t waypoint_id_;
     bool waypoint_reached_;

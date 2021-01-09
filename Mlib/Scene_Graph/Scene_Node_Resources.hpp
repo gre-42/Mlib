@@ -30,7 +30,7 @@ public:
     void generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) const;
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
-    PointsAndAdjacency<float, 2> way_points(const std::string& name) const;
+    std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points(const std::string& name) const;
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float>>& poses) const;
     std::map<std::string, OffsetAndQuaternion<float>> get_poses(const std::string& name, float seconds) const;
     void downsample(const std::string& name, size_t factor) const;

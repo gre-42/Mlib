@@ -1416,7 +1416,7 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, set_way_points_reg)) {
             Player& player = players.get_player(match[1].str());
             SceneNode* node = scene.get_node(match[2].str());
-            PointsAndAdjacency<float, 2> way_points = scene_node_resources.way_points(match[3].str());
+            std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points = scene_node_resources.way_points(match[3].str());
             player.set_waypoints(*node, way_points);
         } else if (std::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));

@@ -87,7 +87,7 @@ public:
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
     virtual std::list<SpawnPoint> spawn_points() const override;
-    virtual PointsAndAdjacency<float, 2> way_points() const override;
+    virtual std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points() const override;
 private:
     std::shared_ptr<RenderableColoredVertexArray> rva_;
     RenderingResources& rendering_resources_;
@@ -97,7 +97,7 @@ private:
     SceneNodeResources& scene_node_resources_;
     float scale_;
     std::list<SpawnPoint> spawn_points_;
-    PointsAndAdjacency<float, 2> way_points_;
+    std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points_;
 };
 
 }

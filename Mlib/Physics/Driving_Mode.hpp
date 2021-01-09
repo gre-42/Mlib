@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <map>
 #include <string>
 
@@ -15,6 +16,7 @@ struct DrivingMode {
     float stuck_velocity;
     float stuck_seconds;
     float unstuck_seconds;
+    WayPointLocation way_point_location;
 };
 
 static std::map<std::string, DrivingMode> driving_modes{
@@ -28,7 +30,8 @@ static std::map<std::string, DrivingMode> driving_modes{
         .collision_avoidance_delta = 0.5,
         .stuck_velocity = 2 / 3.6,
         .stuck_seconds = 6,
-        .unstuck_seconds = 5}},
+        .unstuck_seconds = 5,
+        .way_point_location = WayPointLocation::SIDEWALK}},
     {"car_city", {
         .rest_radius = 5,
         .max_velocity = 30 / 3.6,
@@ -39,7 +42,8 @@ static std::map<std::string, DrivingMode> driving_modes{
         .collision_avoidance_delta = 0.5,
         .stuck_velocity = 2 / 3.6,
         .stuck_seconds = 6,
-        .unstuck_seconds = 5}},
+        .unstuck_seconds = 5,
+        .way_point_location = WayPointLocation::STREET}},
     {"car_arena", {
         .rest_radius = 30,
         .max_velocity = 70 / 3.6,
@@ -50,6 +54,7 @@ static std::map<std::string, DrivingMode> driving_modes{
         .collision_avoidance_delta = 0.5,
         .stuck_velocity = 2 / 3.6,
         .stuck_seconds = 3,
-        .unstuck_seconds = 5}}};
+        .unstuck_seconds = 5,
+        .way_point_location = WayPointLocation::STREET}}};
 
 }

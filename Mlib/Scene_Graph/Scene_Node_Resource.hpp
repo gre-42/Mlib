@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <list>
+#include <map>
 #include <memory>
 #include <regex>
 #include <vector>
@@ -17,6 +18,7 @@ struct AnimatedColoredVertexArrays;
 class ColoredVertexArray;
 class Scene;
 class SceneNode;
+enum class WayPointLocation;
 
 struct SceneNodeResourceFilter {
     size_t min_num = 0;
@@ -47,7 +49,7 @@ public:
     virtual std::list<SpawnPoint> spawn_points() const {
         throw std::runtime_error("spawn_points not implemented");
     }
-    virtual PointsAndAdjacency<float, 2> way_points() const {
+    virtual std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points() const {
         throw std::runtime_error("way_points not implemented");
     }
     virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) {
