@@ -187,6 +187,8 @@ void draw_streets(
     TriangleList& tl_path,
     TriangleList& tl_curb_street,
     TriangleList& tl_curb_path,
+    TriangleList& tl_curb2_street,
+    TriangleList& tl_curb2_path,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& street_light_positions,
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
@@ -204,6 +206,7 @@ void draw_streets(
     const std::set<std::string>& excluded_highways,
     const std::set<std::string>& path_tags,
     float curb_alpha,
+    float curb2_alpha,
     ResourceNameCycle& street_lights,
     bool with_height_bindings,
     DrivingDirection driving_direction);
@@ -215,6 +218,8 @@ void raise_streets(
     TriangleList& tl_path,
     TriangleList& tl_curb_street,
     TriangleList& tl_curb_path,
+    TriangleList& tl_curb2_street,
+    TriangleList& tl_curb2_path,
     TriangleList& tl_terrain,
     float scale,
     float amount);
