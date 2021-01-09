@@ -245,11 +245,9 @@ int main(int argc, char** argv) {
 
         SceneNodeResources scene_node_resources;
         RenderingResources rendering_resources{scene_node_resources};
-        AggregateArrayRenderer small_sorted_aggregate_renderer{rendering_resources};
+        SmallSortedAggregateRendererGuard small_sorted_aggregate_renderer_guard{rendering_resources};
         AggregateArrayRenderer large_aggregate_renderer{rendering_resources};
-        Scene scene{
-            &small_sorted_aggregate_renderer,
-            &large_aggregate_renderer};
+        Scene scene{&large_aggregate_renderer};
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = new SceneNode;
         {

@@ -4,6 +4,14 @@
 
 using namespace Mlib;
 
+SmallSortedAggregateRendererGuard::SmallSortedAggregateRendererGuard(RenderingResources& rendering_resources) {
+    AggregateRenderer::small_sorted_aggregate_renderers_.push_back(new AggregateArrayRenderer(rendering_resources));
+}
+
+SmallSortedAggregateRendererGuard::~SmallSortedAggregateRendererGuard() {
+    AggregateRenderer::small_sorted_aggregate_renderers_.pop_back();
+}
+
 AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_resources)
 : rendering_resources_{rendering_resources},
   rcva_{nullptr}

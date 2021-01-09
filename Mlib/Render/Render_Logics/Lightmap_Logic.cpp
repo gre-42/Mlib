@@ -1,5 +1,7 @@
 #include "Lightmap_Logic.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Render/Aggregate_Array_Renderer.hpp>
+#include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
@@ -59,7 +61,11 @@ void LightmapLogic::render(
         }
         fb_->configure({width: lightmap_width, height: lightmap_height, with_depth_texture: with_depth_texture_});
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_->frame_buffer));
-        child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
+        {
+            SmallSortedAggregateRendererGuard small_aggregate_array_renderer{rendering_resources_};
+            SmallInstancesRendererGuard small_instances_renderer{rendering_resources_};
+            child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
+        }
 
         // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
         // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));

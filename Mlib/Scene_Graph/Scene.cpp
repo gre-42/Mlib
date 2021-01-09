@@ -12,13 +12,9 @@
 using namespace Mlib;
 
 Scene::Scene(
-    AggregateRenderer* small_sorted_aggregate_renderer,
     AggregateRenderer* large_aggregate_renderer,
-    InstancesRenderer* small_instances_renderer,
     InstancesRenderer* large_instances_renderer)
-: small_sorted_aggregate_renderer_{small_sorted_aggregate_renderer},
-  large_aggregate_renderer_{large_aggregate_renderer},
-  small_instances_renderer_{small_instances_renderer},
+: large_aggregate_renderer_{large_aggregate_renderer},
   large_instances_renderer_{large_instances_renderer},
   large_aggregate_renderer_initialized_{false},
   large_instances_renderer_initialized_{false},
@@ -253,17 +249,17 @@ void Scene::render(
             }
             large_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
         }
-        bool is_foreground_task =
-            (external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ||
-            (external_render_pass.pass == ExternalRenderPass::DIRTMAP);
-        if (!is_foreground_task && external_render_pass.black_node_name.empty()) {
-            // Contains continuous alpha and must therefore be rendered late.
-            LOG_INFO("Scene::render small_sorted_aggregate_renderer");
-            if (small_sorted_aggregate_renderer_ != nullptr) {
-                WorkerStatus status = aggregation_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
-                if (aggregation_bg_worker_.done()) {
+        if (external_render_pass.black_node_name.empty()) {
+            bool is_foreground_task =
+                (external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ||
+                (external_render_pass.pass == ExternalRenderPass::DIRTMAP);
+            auto small_sorted_aggregate_renderer = AggregateRenderer::small_sorted_aggregate_renderer();
+            if (small_sorted_aggregate_renderer != nullptr) {
+                // Contains continuous alpha and must therefore be rendered late.
+                LOG_INFO("Scene::render small_sorted_aggregate_renderer");
+                auto small_sorted_aggregate_renderer_update_func = [&](){
                     // copy "vp" and "scene_graph_config"
-                    auto func = [this, vp, scene_graph_config, external_render_pass](){
+                    return [this, vp, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer](){
                         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>> aggregate_queue;
                         {
                             std::shared_lock lock{static_mutex_};
@@ -282,21 +278,27 @@ void Scene::render(
                         for (auto& e : aggregate_queue) {
                             sorted_aggregate_queue.push_back(std::move(e.second));
                         }
-                        small_sorted_aggregate_renderer_->update_aggregates(sorted_aggregate_queue);
+                        small_sorted_aggregate_renderer->update_aggregates(sorted_aggregate_queue);
                     };
+                };
+                if (is_foreground_task) {
+                    small_sorted_aggregate_renderer_update_func()();
+                } else if (aggregation_bg_worker_.done()) {
+                    WorkerStatus status = aggregation_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
                     if (status == WorkerStatus::IDLE) {
-                        aggregation_bg_worker_.run(func);
+                        aggregation_bg_worker_.run(small_sorted_aggregate_renderer_update_func());
                     }
                 }
-                small_sorted_aggregate_renderer_->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+                small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
             }
+
             // Contains continuous alpha and must therefore be rendered late.
             LOG_INFO("Scene::render instances_renderer");
-            if (small_instances_renderer_ != nullptr) {
-                WorkerStatus status = instances_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
-                if (instances_bg_worker_.done()) {
+            auto* small_instances_renderer = InstancesRenderer::small_instances_renderer();
+            if (small_instances_renderer != nullptr) {
+                auto small_instances_renderer_update_func = [&](){
                     // copy "vp" and "scene_graph_config"
-                    auto func = [this, vp, scene_graph_config, external_render_pass](){
+                    return [this, vp, scene_graph_config, external_render_pass, small_instances_renderer](){
                         std::list<std::pair<float, TransformedColoredVertexArray>> instances_queue;
                         {
                             std::shared_lock lock{static_mutex_};
@@ -315,13 +317,18 @@ void Scene::render(
                         for (auto& e : instances_queue) {
                             sorted_instances_queue.push_back(std::move(e.second));
                         }
-                        small_instances_renderer_->update_instances(sorted_instances_queue);
+                        small_instances_renderer->update_instances(sorted_instances_queue);
                     };
+                };
+                if (is_foreground_task) {
+                    small_instances_renderer_update_func()();
+                } else if (instances_bg_worker_.done()) {
+                    WorkerStatus status = instances_bg_worker_.tick(scene_graph_config.aggregate_update_interval);
                     if (status == WorkerStatus::IDLE) {
-                        instances_bg_worker_.run(func);
+                        instances_bg_worker_.run(small_instances_renderer_update_func());
                     }
                 }
-                small_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+                small_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
             }
         }
     }

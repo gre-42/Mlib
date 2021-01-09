@@ -16,10 +16,8 @@ class InstancesRenderer;
 class Scene {
 public:
     // Noncopyable because of mutex_
-    explicit Scene(
-        AggregateRenderer* small_sorted_aggregate_renderer = nullptr,
+    Scene(
         AggregateRenderer* large_aggregate_renderer = nullptr,
-        InstancesRenderer* small_instances_renderer = nullptr,
         InstancesRenderer* large_instances_renderer = nullptr);
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
@@ -74,9 +72,7 @@ private:
     std::map<std::string, std::unique_ptr<SceneNode>> static_root_nodes_;
     std::map<std::string, std::unique_ptr<SceneNode>> root_aggregate_nodes_;
     std::map<std::string, std::unique_ptr<SceneNode>> root_instances_nodes_;
-    AggregateRenderer* small_sorted_aggregate_renderer_;
     AggregateRenderer* large_aggregate_renderer_;
-    InstancesRenderer* small_instances_renderer_;
     InstancesRenderer* large_instances_renderer_;
     mutable bool large_aggregate_renderer_initialized_;
     mutable bool large_instances_renderer_initialized_;

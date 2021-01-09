@@ -9,6 +9,12 @@ namespace Mlib {
 
 class RenderingResources;
 
+class SmallSortedAggregateRendererGuard {
+public:
+    explicit SmallSortedAggregateRendererGuard(RenderingResources& rendering_resources);
+    ~SmallSortedAggregateRendererGuard();
+};
+
 class AggregateArrayRenderer: public AggregateRenderer {
 public:
     AggregateArrayRenderer(const AggregateArrayRenderer& other) = delete;

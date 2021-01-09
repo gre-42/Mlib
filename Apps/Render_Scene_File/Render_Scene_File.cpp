@@ -215,17 +215,15 @@ int main(int argc, char** argv) {
 
             SceneNodeResources scene_node_resources;
             RenderingResources rendering_resources{scene_node_resources};
-            AggregateArrayRenderer small_aggregate_array_renderer{rendering_resources};
+            SmallSortedAggregateRendererGuard small_sorted_aggregate_renderer_guard{rendering_resources};
+            SmallInstancesRendererGuard small_instances_renderer_guard{rendering_resources};
             AggregateArrayRenderer large_aggregate_array_renderer{rendering_resources};
-            ArrayInstancesRenderer small_instances_renderer{rendering_resources};
             ArrayInstancesRenderer large_instances_renderer{rendering_resources};
             // SceneNode destructors require that physics engine is destroyed after scene,
             // => Create PhysicsEngine before Scene
             PhysicsEngine physics_engine{scene_config.physics_engine_config};
             Scene scene{
-                &small_aggregate_array_renderer,
                 &large_aggregate_array_renderer,
-                &small_instances_renderer,
                 &large_instances_renderer};
             SelectedCameras selected_cameras{scene};
             FlyingCameraUserClass user_object{
