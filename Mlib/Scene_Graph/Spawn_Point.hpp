@@ -6,7 +6,8 @@ namespace Mlib {
 enum class SpawnPointType {
     SPAWN_LINE,
     ROAD,
-    PARKING
+    PARKING,
+    SIDEWALK
 };
 
 struct SpawnPoint {

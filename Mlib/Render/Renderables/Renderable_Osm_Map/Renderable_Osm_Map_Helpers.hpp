@@ -18,6 +18,7 @@ struct ObjectResourceDescriptor;
 struct TriangleList;
 struct ParsedResourceName;
 enum class DrivingDirection;
+enum class WayPointLocation;
 
 static const FixedArray<float, 3> way_color{1, 1, 1};      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1, 1, 1};  // replaced with texture
@@ -55,6 +56,7 @@ struct SteinerPointInfo {
 };
 
 struct StreetRectangle {
+    WayPointLocation way_point_location;
     size_t nlanes;
     FixedArray<FixedArray<float, 3>, 2, 2> rectangle;
 };

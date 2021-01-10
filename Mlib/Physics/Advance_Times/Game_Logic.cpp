@@ -164,6 +164,9 @@ bool GameLogic::spawn_for_vip(
         if ((sp.type == SpawnPointType::PARKING) == player.has_waypoints()) {
             continue;
         }
+        if ((sp.type == SpawnPointType::SIDEWALK) != player.is_pedestrian()) {
+            continue;
+        }
         float dist2 = sum(squared(sp.position - vip_pos));
         // Abort if too far away.
         if (dist2 > squared(cfg.r_spawn_far)) {

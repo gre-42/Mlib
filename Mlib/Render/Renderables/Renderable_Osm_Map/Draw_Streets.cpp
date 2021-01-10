@@ -232,14 +232,27 @@ void Mlib::draw_streets(
                         throw std::runtime_error("Unknown driving direction");
                     }
                     {
-                        CurbedStreet c1{rect, -curb_alpha, curb_alpha};
-                        street_rectangles.push_back(StreetRectangle{
-                            .nlanes = nlanes,
-                            .rectangle = FixedArray<FixedArray<float, 3>, 2, 2>{
-                                FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},
-                                FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0},
-                                FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0},
-                                FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0}}});
+                        auto add = [&street_rectangles, &rect](
+                            float start,
+                            float stop,
+                            WayPointLocation way_point_location,
+                            size_t nlanes)
+                        {
+                            CurbedStreet c1{rect, start, stop};
+                            street_rectangles.push_back(StreetRectangle{
+                                .way_point_location = way_point_location,
+                                .nlanes = nlanes,
+                                .rectangle = FixedArray<FixedArray<float, 3>, 2, 2>{
+                                    FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},
+                                    FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0},
+                                    FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0},
+                                    FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0}}});
+                        };
+                        add(-curb_alpha, curb_alpha, WayPointLocation::STREET, nlanes);
+                        if (sidewalk_alpha != 1) {
+                            add(-1, -sidewalk_alpha, WayPointLocation::SIDEWALK, 2);
+                            add(sidewalk_alpha, 1, WayPointLocation::SIDEWALK, 2);
+                        }
                     }
                     // Way length is used to get connected street textures where possible.
                     auto len0 = node_way_info.find(na.first);

@@ -409,6 +409,10 @@ bool Player::has_waypoints() const {
     return !it->second.points.empty();
 }
 
+bool Player::is_pedestrian() const {
+    return driving_mode_.way_point_location == WayPointLocation::SIDEWALK;
+}
+
 void Player::aim_and_shoot() {
     assert_true(!target_scene_node_ == !target_rbi_);
     if (rb_ != nullptr && ((target_rbi_ == nullptr) || !can_see(*target_rbi_))) {
