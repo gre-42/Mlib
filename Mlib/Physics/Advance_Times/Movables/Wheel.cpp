@@ -25,16 +25,16 @@ Wheel::Wheel(
   resolve_collision_type_{resolve_collision_type}
 {}
 
-void Wheel::set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix)
+void Wheel::set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix)
 {
-    position_ = t3_from_4x4(relative_model_matrix);
-    rotation_ = R3_from_4x4(relative_model_matrix);
+    position_ = relative_model_matrix.t();
+    rotation_ = relative_model_matrix.R();
     y0_ = position_(1);
 }
 
-void Wheel::set_updated_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix)
+void Wheel::set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix)
 {
-    position_ = t3_from_4x4(relative_model_matrix);
+    position_ = relative_model_matrix.t();
 }
 
 void Wheel::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix)

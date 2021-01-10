@@ -39,13 +39,13 @@ YawPitchLookAtNodes::~YawPitchLookAtNodes() {
     }
 }
 
-void YawPitchLookAtNodes::set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) {
-    relative_position_ = t3_from_4x4(relative_model_matrix);
-    yaw_ = matrix_2_tait_bryan_angles(R3_from_4x4(relative_model_matrix))(1);
+void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) {
+    relative_position_ = relative_model_matrix.t();
+    yaw_ = matrix_2_tait_bryan_angles(relative_model_matrix.R())(1);
 }
 
-void YawPitchLookAtNodes::set_updated_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) {
-    relative_position_ = t3_from_4x4(relative_model_matrix);
+void YawPitchLookAtNodes::set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) {
+    relative_position_ = relative_model_matrix.t();
 }
 
 void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {

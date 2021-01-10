@@ -20,8 +20,8 @@ public:
         float radius,
         PhysicsType physics_type,
         ResolveCollisionType resolve_collision_type);
-    virtual void set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) override;
-    virtual void set_updated_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) override;
+    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) override;
+    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
     virtual TransformationMatrix<float> get_new_relative_model_matrix() const override;
     virtual void advance_time(float dt) override;

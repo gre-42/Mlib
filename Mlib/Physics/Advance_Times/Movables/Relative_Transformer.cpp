@@ -13,15 +13,15 @@ RelativeTransformer::RelativeTransformer(AdvanceTimes& advance_times)
   w_{fixed_zeros<float, 3>()}
 {}
 
-void RelativeTransformer::set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix)
+void RelativeTransformer::set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix)
 {
-    position_ = t3_from_4x4(relative_model_matrix);
-    rotation_ = R3_from_4x4(relative_model_matrix);
+    position_ = relative_model_matrix.t();
+    rotation_ = relative_model_matrix.R();
 }
 
-void RelativeTransformer::set_updated_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix)
+void RelativeTransformer::set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix)
 {
-    position_ = t3_from_4x4(relative_model_matrix);
+    position_ = relative_model_matrix.t();
 }
 
 void RelativeTransformer::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix)

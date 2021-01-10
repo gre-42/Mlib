@@ -37,13 +37,13 @@ PitchLookAtNode::~PitchLookAtNode() {
     }
 }
 
-void PitchLookAtNode::set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) {
-    relative_position_ = t3_from_4x4(relative_model_matrix);
-    pitch_ = matrix_2_tait_bryan_angles(R3_from_4x4(relative_model_matrix))(0);
+void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) {
+    relative_position_ = relative_model_matrix.t();
+    pitch_ = matrix_2_tait_bryan_angles(relative_model_matrix.R())(0);
 }
 
-void PitchLookAtNode::set_updated_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) {
-    relative_position_ = t3_from_4x4(relative_model_matrix);
+void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) {
+    relative_position_ = relative_model_matrix.t();
 }
 
 void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {

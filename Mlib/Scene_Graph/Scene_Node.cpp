@@ -73,7 +73,7 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
         throw std::runtime_error("Relative movable already set");
     }
     relative_movable_ = relative_movable.get();
-    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix().affine());
+    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
     relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
     add_destruction_observer(relative_movable.observer());
 }
@@ -249,7 +249,7 @@ void SceneNode::move(const TransformationMatrix<float>& v, float dt) {
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
         auto ma = absolute_movable_->get_new_absolute_model_matrix();
         auto mr = v * ma;
-        relative_movable_->set_updated_relative_model_matrix(mr.affine());
+        relative_movable_->set_updated_relative_model_matrix(mr);
         relative_movable_->set_absolute_model_matrix(ma);
         auto mr2 = relative_movable_->get_new_relative_model_matrix();
         set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1);

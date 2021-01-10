@@ -23,8 +23,8 @@ public:
         float gravity,
         const PhysicsEngineConfig& cfg);
     ~YawPitchLookAtNodes();
-    virtual void set_initial_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) override;
-    virtual void set_updated_relative_model_matrix(const FixedArray<float, 4, 4>& relative_model_matrix) override;
+    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) override;
+    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
     virtual TransformationMatrix<float> get_new_relative_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
