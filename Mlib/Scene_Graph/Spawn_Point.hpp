@@ -3,15 +3,17 @@
 
 namespace Mlib {
 
+enum class WayPointLocation;
+
 enum class SpawnPointType {
     SPAWN_LINE,
     ROAD,
-    PARKING,
-    SIDEWALK
+    PARKING
 };
 
 struct SpawnPoint {
     SpawnPointType type;
+    WayPointLocation location;
     FixedArray<float, 3> position;
     FixedArray<float, 3> rotation;
 };

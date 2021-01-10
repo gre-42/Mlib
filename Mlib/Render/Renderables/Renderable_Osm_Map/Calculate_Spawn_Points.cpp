@@ -3,6 +3,7 @@
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -15,12 +16,16 @@ void Mlib::calculate_spawn_points(
 {
     for (const auto& r : street_rectangles) {
         SpawnPoint sp;
+        sp.location = r.location;
         FixedArray<float, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
         FixedArray<float, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
         {
             float lx2 = sum(squared(x));
             float ly2 = sum(squared(y));
-            if (lx2 < squared(3 * scale) || ly2 < squared(3 * scale)) {
+            if ((r.location == WayPointLocation::STREET) && (lx2 < squared(3 * scale))) {
+                continue;
+            }
+            if (ly2 < squared(3 * scale)) {
                 continue;
             }
             x /= std::sqrt(lx2);

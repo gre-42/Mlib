@@ -23,7 +23,7 @@ static std::map<std::string, DrivingMode> driving_modes{
     {"pedestrian", {
         .rest_radius = 5,
         .max_velocity = 5 / 3.6,
-        .max_delta_velocity_break = 7 / 3.6,
+        .max_delta_velocity_break = 1 / 3.6,
         .collision_avoidance_radius_break = 0,
         .collision_avoidance_radius_correct = 0,
         .collision_avoidance_cos = 0.6,

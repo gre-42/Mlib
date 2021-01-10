@@ -289,6 +289,7 @@ RenderableOsmMap::RenderableOsmMap(
                     dir /= std::sqrt(len2);
                     spawn_points_.push_back(SpawnPoint{
                         .type = SpawnPointType::SPAWN_LINE,
+                        .location = WayPointLocation::UNKNOWN,
                         .position = {p(0), p(1), bu.building_top * scale},
                         .rotation = {0, 0, std::atan2(dir(0), -dir(1))}});
                 }

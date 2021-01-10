@@ -235,12 +235,12 @@ void Mlib::draw_streets(
                         auto add = [&street_rectangles, &rect](
                             float start,
                             float stop,
-                            WayPointLocation way_point_location,
+                            WayPointLocation location,
                             size_t nlanes)
                         {
                             CurbedStreet c1{rect, start, stop};
                             street_rectangles.push_back(StreetRectangle{
-                                .way_point_location = way_point_location,
+                                .location = location,
                                 .nlanes = nlanes,
                                 .rectangle = FixedArray<FixedArray<float, 3>, 2, 2>{
                                     FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},

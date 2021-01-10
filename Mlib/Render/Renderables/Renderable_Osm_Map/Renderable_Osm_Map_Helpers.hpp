@@ -56,7 +56,7 @@ struct SteinerPointInfo {
 };
 
 struct StreetRectangle {
-    WayPointLocation way_point_location;
+    WayPointLocation location;
     size_t nlanes;
     FixedArray<FixedArray<float, 3>, 2, 2> rectangle;
 };
