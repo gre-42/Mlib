@@ -90,9 +90,10 @@ public:
     }
 
     template <class TData>
-    void draw_line(const TData& x0, const TData& y0, const TData& x1, const TData& y1, const TData& width = 1.5) {
+    void draw_line(const TData& x0, const TData& y0, const TData& x1, const TData& y1, const TData& width = 1.5, const std::string& id = "") {
         ostr_ <<
-            "  <line "
+            "  <line " <<
+            (id.empty() ? "" : "id=\"" + id + "\" ") <<
             "y2=\"" << y1 << "\" "
             "x2=\"" << x1 << "\" "
             "y1=\"" << y0 << "\" "
@@ -211,7 +212,8 @@ public:
             draw_line(
                 xpos(x_start[i]), ypos(y_start[i]),
                 xpos(x_stop[i]), ypos(y_stop[i]),
-                line_width);
+                line_width,
+                "line" + std::to_string(i));
         }
         for (const TData& xx : linspace(xm_min, xm_max, 5).flat_iterable()) {
             draw_text<TData>(xpos(xx), height_, std::to_string(xx));
