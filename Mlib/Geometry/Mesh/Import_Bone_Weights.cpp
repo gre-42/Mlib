@@ -22,7 +22,7 @@ void Mlib::import_bone_weights(
         for (const auto& t : other->triangles) {
             auto vo_it = wo_it->flat_begin();
             for (const auto& v : t.flat_iterable()) {
-                bvh.insert(v.position, "", {&v.position, vo_it});
+                bvh.insert(v.position, {&v.position, vo_it});
                 ++vo_it;
             }
             ++wo_it;
@@ -40,7 +40,7 @@ void Mlib::import_bone_weights(
             for (const auto& v : t.flat_iterable()) {
                 float best_distance2 = INFINITY;
                 const std::vector<BoneWeight>* best_weights = nullptr;
-                bvh.visit({v.position, max_distance}, [&](const std::string& category, const VertexAndWeights& nv){
+                bvh.visit({v.position, max_distance}, [&](const VertexAndWeights& nv){
                     float dist2 = sum(squared(v.position - *nv.position));
                     if (dist2 < best_distance2) {
                         best_distance2 = dist2;

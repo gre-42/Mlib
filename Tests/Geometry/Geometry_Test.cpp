@@ -143,12 +143,12 @@ void test_inverse_rodrigues() {
 
 void test_bvh() {
     Bvh<float, int, 3> bvh{{3, 4, 5}, 2};
-    bvh.insert({{1, 2, 3}, {2, 3, 4}}, "int", 42);
-    bvh.insert({{1, 2, 3}, {2, 3, 4}}, "int", 43);
-    bvh.insert({{1, 20, 3}, {2, 23, 4}}, "int", 44);
-    bvh.insert({{1, 6, 3}, {2, 7, 4}}, "int", 45);
-    bvh.insert({{1, 3, 3}, {2, 4, 4}}, "int", 46);    
-    // bvh.visit({{0, 1, 2}, 4}, [](const std::string& category, const int& data){
+    bvh.insert({{1, 2, 3}, {2, 3, 4}}, 42);
+    bvh.insert({{1, 2, 3}, {2, 3, 4}}, 43);
+    bvh.insert({{1, 20, 3}, {2, 23, 4}}, 44);
+    bvh.insert({{1, 6, 3}, {2, 7, 4}}, 45);
+    bvh.insert({{1, 3, 3}, {2, 4, 4}}, 46);    
+    // bvh.visit({{0, 1, 2}, 4}, [](const int& data){
     //     std::cerr << category << " " << data << std::endl;
     // });
     // std::cerr << bvh << std::endl;
@@ -157,13 +157,13 @@ void test_bvh() {
 void test_bvh_performance() {
     {
         Bvh<float, int, 3> bvh{{3, 4, 5}, 2};
-        bvh.insert({{1, 2, 3}, {2, 3, 4}}, "int", 42);
-        bvh.insert({{1, 2, 3}, {2, 3, 4}}, "int", 43);
-        bvh.insert({{1, 20, 3}, {2, 23, 4}}, "int", 44);
-        bvh.insert({{1, 6, 3}, {2, 7, 4}}, "int", 45);
-        bvh.insert({{1, 3, 3}, {2, 4, 4}}, "int", 46);    
-        bvh.visit({{0, 1, 2}, 4}, [](const std::string& category, int data){
-            std::cout << category << " " << data << std::endl;
+        bvh.insert({{1, 2, 3}, {2, 3, 4}}, 42);
+        bvh.insert({{1, 2, 3}, {2, 3, 4}}, 43);
+        bvh.insert({{1, 20, 3}, {2, 23, 4}}, 44);
+        bvh.insert({{1, 6, 3}, {2, 7, 4}}, 45);
+        bvh.insert({{1, 3, 3}, {2, 4, 4}}, 46);    
+        bvh.visit({{0, 1, 2}, 4}, [](int data){
+            std::cout << data << std::endl;
         });
         std::cout << bvh << std::endl;
     }
@@ -186,7 +186,7 @@ void test_bvh_performance() {
                 search_times.push_back(bvh.search_time());
             }
             FixedArray<float, 3> bmin{dis(gen), dis(gen), dis(gen)};
-            bvh.insert({bmin, bmin + FixedArray<float, 3>{0.01, 0.02, 0.03}}, "int", 42);
+            bvh.insert({bmin, bmin + FixedArray<float, 3>{0.01, 0.02, 0.03}}, 42);
             // std::cout << "search time " << bvh.search_time() << std::endl;
         }
         if (compute_search_time) {
@@ -200,12 +200,12 @@ void test_bvh_performance() {
             aabb: false});
         if (false) {
             FixedArray<float, 3> center{0.012, 0.023, 0.045};
-            bvh.insert({{0.01, 0.02, 0.03}, center}, "int", 4321);
+            bvh.insert({{0.01, 0.02, 0.03}, center}, 4321);
             bvh.print(std::cout, BvhPrintingOptions{
                 level: false,
                 aabb: false});
-            bvh.visit({center, 0.01}, [](const std::string& category, int data){
-                std::cout << category << " " << data << std::endl;
+            bvh.visit({center, 0.01}, [](int data){
+                std::cout << data << std::endl;
             });
         }
     }

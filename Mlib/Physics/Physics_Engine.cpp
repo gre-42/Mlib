@@ -314,7 +314,7 @@ void PhysicsEngine::collide(
             for (const auto& msh1 : o1.meshes) {
                 rigid_bodies_.bvh_.visit(
                     msh1.mesh->transformed_bounding_sphere(),
-                    [&](const std::string& category, const CollisionTriangleSphere& t0){
+                    [&](const CollisionTriangleSphere& t0){
                         collide_triangle(
                             o0,
                             o1,

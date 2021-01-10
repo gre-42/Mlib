@@ -143,7 +143,7 @@ void Player::set_waypoints(
         size_t i = 0;
         for (FixedArray<float, 2>& p : wps.second.points) {
             p = dot1d(m2, homogenized_3(p));
-            bvh.insert(p, "", i++);
+            bvh.insert(p, i++);
         }
         if (!all_waypoints_bvh_.insert({wps.first, std::move(bvh)}).second) {
             throw std::runtime_error("Could not insert waypoints");
@@ -459,7 +459,7 @@ void Player::select_next_waypoint() {
         const auto& wps = waypoints();
         all_waypoints_bvh_.at(driving_mode_.way_point_location).visit(
             {pos2, max_distance},
-            [&](const std::string& category, size_t i)
+            [&](size_t i)
         {
             const auto& rs = wps.points.at(i);
             if (dot0d(rs - pos2, z2) < 0) {

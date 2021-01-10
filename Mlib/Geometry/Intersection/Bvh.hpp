@@ -3,9 +3,7 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <list>
-#include <map>
 #include <ostream>
-#include <regex>
 #include <vector>
 
 #pragma GCC push_options
@@ -32,11 +30,10 @@ public:
     {}
     void insert(
         const AxisAlignedBoundingBox<TData, tndim>& aabb,
-        const std::string& category,
         const TPayload& data)
     {
         if (level_ == 0) {
-            data_[category].push_back({aabb, data});
+            data_.push_back({aabb, data});
             return;
         }
         for (auto& c : children_) {
@@ -44,23 +41,19 @@ public:
             bb.extend(aabb);
             if (all(bb.size() <= TData(level_) * max_size_)) {
                 c.first = bb;
-                c.second.insert(aabb, category, data);
+                c.second.insert(aabb, data);
                 return;
             }
         }
         Bvh bvh{max_size_, level_ - 1};
-        bvh.insert(aabb, category, data);
+        bvh.insert(aabb, data);
         children_.push_back({aabb, bvh});
     }
     template <class TVisitor>
-    void visit(const BoundingSphere<TData, tndim>& sphere, const TVisitor& visitor, const std::regex& filter = std::regex{""}) const {
+    void visit(const BoundingSphere<TData, tndim>& sphere, const TVisitor& visitor) const {
         for (const auto& d : data_) {
-            if (std::regex_search(d.first, filter)) {
-                for (const auto& v : d.second) {
-                    if (v.first.intersects(sphere)) {
-                        visitor(d.first, v.second);
-                    }
-                }
+            if (d.first.intersects(sphere)) {
+                visitor(d.second);
             }
         }
         for (const auto& c : children_) {
@@ -72,9 +65,7 @@ public:
     AxisAlignedBoundingBox<TData, tndim> aabb() const {
         AxisAlignedBoundingBox<TData, tndim> result;
         for (const auto& d : data_) {
-            for (const auto& v : d.second) {
-                result.extend(v.first);
-            }
+            result.extend(d.first);
         }
         for (const auto& c : children_) {
             result.extend(c.first);
@@ -89,11 +80,8 @@ public:
         if (opts.data) {
             ostr << indent << "data " << data_.size() << std::endl;
             for (const auto& d : data_) {
-                ostr << indent << d.first << " " << d.second.size() << std::endl;
-                for (const auto& v : d.second) {
-                    if (opts.aabb) {
-                        v.first.print(ostr, rec + 1);
-                    }
+                if (opts.aabb) {
+                    d.first.print(ostr, rec + 1);
                 }
             }
         }
@@ -112,15 +100,13 @@ public:
         for (const auto& c : children_) {
             res += c.second.search_time() / children_.size();
         }
-        for (const auto& d : data_) {
-            res += d.second.size();
-        }
+        res += data_.size();
         return res;
     }
 private:
     FixedArray<TData, tndim> max_size_;
     size_t level_;
-    std::map<std::string, std::list<std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>>> data_;
+    std::list<std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>> data_;
     std::list<std::pair<AxisAlignedBoundingBox<TData, tndim>, Bvh>> children_;
 };
 

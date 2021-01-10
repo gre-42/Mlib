@@ -527,7 +527,7 @@ void Mlib::add_street_steiner_points(
                 FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
                 FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
             if (triangle_is_right_handed(tri(0), tri(1), tri(2))) {
-                bvh.insert(tri, "", tri);
+                bvh.insert(tri, tri);
             }
         }
         Interp<float> interp{steiner_point_distances_road, steiner_point_distances_steiner, OutOfRangeBehavior::CLAMP};
@@ -546,7 +546,7 @@ void Mlib::add_street_steiner_points(
             for (float y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
                 float min_distance = INFINITY;
                 FixedArray<float, 2> pt{x + rng2() * scale, y + rng2() * scale};
-                bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt](const std::string& category, const Triangle2d& tri) {
+                bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt](const Triangle2d& tri) {
                     min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
                 });
                 if (min_distance > 0) {
