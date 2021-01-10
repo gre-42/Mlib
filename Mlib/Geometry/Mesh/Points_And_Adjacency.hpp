@@ -19,10 +19,12 @@ struct PointsAndAdjacency {
         std::vector<TData> y_stop;
         for (size_t c = 0; c < adjacency.shape(1); ++c) {
             for (const auto& r : adjacency.column(c)) {
-                x_start.push_back(points.at(r.first)(0));
-                y_start.push_back(points.at(r.first)(1));
-                x_stop.push_back(points.at(c)(0));
-                y_stop.push_back(points.at(c)(1));
+                if (r.first != c) {
+                    x_start.push_back(points.at(c)(0));
+                    y_start.push_back(points.at(c)(1));
+                    x_stop.push_back(points.at(r.first)(0));
+                    y_stop.push_back(points.at(r.first)(1));
+                }
             }
         }
         svg.plot_edges(x_start, y_start, x_stop, y_stop, line_width);
