@@ -1,6 +1,7 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
@@ -1388,6 +1389,7 @@ void LoadScene::operator()(
             game_logic.set_preferred_car_spawner(
                 players.get_player(player),
                 [macro_line_executor, player, macro, parameters, &rsc](const SpawnPoint& p){
+                    auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
                     std::stringstream sstr;
                     sstr <<
                         "macro_playback " <<
@@ -1398,6 +1400,7 @@ void LoadScene::operator()(
                         " CAR_NODE_ANGLE_X:" << 180.f / M_PI * p.rotation(0) <<
                         " CAR_NODE_ANGLE_Y:" << 180.f / M_PI * p.rotation(1) <<
                         " CAR_NODE_ANGLE_Z:" << 180.f / M_PI * p.rotation(2) <<
+                        " HUMAN_NODE_ANGLE_Y:" << 180.f / M_PI * std::atan2(z(0), z(2)) <<
                         " " << parameters <<
                         " -SUFFIX:_" << player <<
                         " IF_WITH_PHYSICS:" << 
