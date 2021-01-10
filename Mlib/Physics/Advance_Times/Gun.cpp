@@ -55,13 +55,13 @@ void Gun::advance_time(float dt) {
         triggered_ = false;
         std::shared_ptr<RigidBody> rc = rigid_cuboid(rigid_bodies_, bullet_mass_, bullet_size_);
         SceneNode* node = new SceneNode;
-        FixedArray<float, 3> t = t3_from_4x4(absolute_model_matrix_);
-        FixedArray<float, 3> r = matrix_2_tait_bryan_angles(R3_from_4x4(absolute_model_matrix_));
+        FixedArray<float, 3> t = absolute_model_matrix_.t();
+        FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());
         node->set_position(t);
         node->set_rotation(r);
         node->set_absolute_movable(rc.get());
         rc->rbi_.rbp_.v_ =
-            - bullet_velocity_ * z3_from_4x4(absolute_model_matrix_)
+            - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
             + parent_rbi_.rbp_.v_;
         scene_node_resources_.instantiate_renderable(
             bullet_renderable_resource_name_,
@@ -88,7 +88,7 @@ void Gun::advance_time(float dt) {
     }
 }
 
-void Gun::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix)
+void Gun::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix)
 {
     absolute_model_matrix_ = absolute_model_matrix;
 }

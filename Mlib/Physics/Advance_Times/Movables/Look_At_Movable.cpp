@@ -32,9 +32,9 @@ void LookAtMovable::advance_time(float dt) {
     rotation_ = lookat(position_, dpos);
 }
 
-void LookAtMovable::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) {
-    position_ = t3_from_4x4(absolute_model_matrix);
-    rotation_ = R3_from_4x4(absolute_model_matrix);
+void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {
+    position_ = absolute_model_matrix.t();
+    rotation_ = absolute_model_matrix.R();
 }
 
 TransformationMatrix<float> LookAtMovable::get_new_absolute_model_matrix() const {

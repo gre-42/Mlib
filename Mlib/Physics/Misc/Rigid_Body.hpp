@@ -72,7 +72,7 @@ public:
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
-    virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
     virtual TransformationMatrix<float> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
     virtual void write_status(std::ostream& ostr, unsigned int log_components) const override;

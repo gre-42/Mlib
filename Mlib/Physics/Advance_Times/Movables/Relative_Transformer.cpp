@@ -1,6 +1,7 @@
 #include "Relative_Transformer.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 
 using namespace Mlib;
@@ -23,14 +24,14 @@ void RelativeTransformer::set_updated_relative_model_matrix(const FixedArray<flo
     position_ = t3_from_4x4(relative_model_matrix);
 }
 
-void RelativeTransformer::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix)
+void RelativeTransformer::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix)
 {
     // do nothing
 }
 
-FixedArray<float, 4, 4> RelativeTransformer::get_new_relative_model_matrix() const
+TransformationMatrix<float> RelativeTransformer::get_new_relative_model_matrix() const
 {
-    return assemble_homogeneous_4x4(rotation_, position_);
+    return TransformationMatrix<float>{rotation_, position_};
 }
 
 void RelativeTransformer::advance_time(float dt) {

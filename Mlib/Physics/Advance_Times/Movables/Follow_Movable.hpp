@@ -27,7 +27,7 @@ public:
         float dt = 1.f/60,
         float dt_ref = 1.f/60);
     virtual void advance_time(float dt) override;
-    virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
     virtual TransformationMatrix<float> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
 

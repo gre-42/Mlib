@@ -31,9 +31,9 @@ void KeepOffsetMovable::advance_time(float dt) {
     position_ = followed_->get_new_absolute_model_matrix().t() + offset_;
 }
 
-void KeepOffsetMovable::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) {
-    position_ = t3_from_4x4(absolute_model_matrix);
-    rotation_ = R3_from_4x4(absolute_model_matrix);
+void KeepOffsetMovable::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {
+    position_ = absolute_model_matrix.t();
+    rotation_ = absolute_model_matrix.R();
 }
 
 TransformationMatrix<float> KeepOffsetMovable::get_new_absolute_model_matrix() const {

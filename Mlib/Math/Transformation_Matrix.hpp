@@ -69,9 +69,12 @@ public:
     }
 
     TransformationMatrix inverted() const {
-        TransformationMatrix result;
-        invert_t_R(t_, R_, result.t_, result.R_);
-        return result;
+        return inverse(R_, t_);
+    }
+
+    TransformationMatrix inverted_scaled() const {
+        auto scale2 = sum(squared(R_)) / 3;
+        return inverse(R_ / scale2, t_);
     }
 private:
     FixedArray<TData, 3, 3> R_;

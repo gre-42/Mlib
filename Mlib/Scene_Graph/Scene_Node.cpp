@@ -56,7 +56,7 @@ void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolu
         throw std::runtime_error("Absolute movable already set");
     }
     absolute_movable_ = absolute_movable.get();
-    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix().affine());
+    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix());
     add_destruction_observer(absolute_movable.observer());
 }
 
@@ -74,7 +74,7 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
     }
     relative_movable_ = relative_movable.get();
     relative_movable_->set_initial_relative_model_matrix(relative_model_matrix().affine());
-    relative_movable_->set_absolute_model_matrix(absolute_model_matrix().affine());
+    relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
     add_destruction_observer(relative_movable.observer());
 }
 
@@ -91,7 +91,7 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
         throw std::runtime_error("Absolute observer already set");
     }
     absolute_observer_ = absolute_observer.get();
-    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix().affine());
+    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
     add_destruction_observer(absolute_observer.observer());
 }
 
@@ -250,11 +250,11 @@ void SceneNode::move(const TransformationMatrix<float>& v, float dt) {
         auto ma = absolute_movable_->get_new_absolute_model_matrix();
         auto mr = v * ma;
         relative_movable_->set_updated_relative_model_matrix(mr.affine());
-        relative_movable_->set_absolute_model_matrix(ma.affine());
-        FixedArray<float, 4, 4> mr2 = relative_movable_->get_new_relative_model_matrix();
-        set_relative_pose(t3_from_4x4(mr2), matrix_2_tait_bryan_angles(R3_from_4x4(mr2)), 1);
+        relative_movable_->set_absolute_model_matrix(ma);
+        auto mr2 = relative_movable_->get_new_relative_model_matrix();
+        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1);
         v2 = relative_view_matrix() * v;
-        absolute_movable_->set_absolute_model_matrix(inverted_scaled_se3(v2.affine()));
+        absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
     } else {
         if (absolute_movable_ != nullptr) {
             auto m = absolute_movable_->get_new_absolute_model_matrix();
@@ -263,14 +263,14 @@ void SceneNode::move(const TransformationMatrix<float>& v, float dt) {
         }
         v2 = relative_view_matrix() * v;
         if (relative_movable_ != nullptr) {
-            relative_movable_->set_absolute_model_matrix(inverted_scaled_se3(v2.affine()));
-            FixedArray<float, 4, 4> m = relative_movable_->get_new_relative_model_matrix();
-            set_relative_pose(t3_from_4x4(m), matrix_2_tait_bryan_angles(R3_from_4x4(m)), 1);
+            relative_movable_->set_absolute_model_matrix(v2.inverted_scaled());
+            auto m = relative_movable_->get_new_relative_model_matrix();
+            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
             v2 = relative_view_matrix() * v;
         }
     }
     if (absolute_observer_ != nullptr) {
-        absolute_observer_->set_absolute_model_matrix(inverted_scaled_se3(v2.affine()));
+        absolute_observer_->set_absolute_model_matrix(v2.inverted_scaled());
     }
     for (const auto& n : children_) {
         n.second.scene_node->move(v2, dt);

@@ -37,14 +37,14 @@ void Wheel::set_updated_relative_model_matrix(const FixedArray<float, 4, 4>& rel
     position_ = t3_from_4x4(relative_model_matrix);
 }
 
-void Wheel::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix)
+void Wheel::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix)
 {
     // do nothing
 }
 
-FixedArray<float, 4, 4> Wheel::get_new_relative_model_matrix() const
+TransformationMatrix<float> Wheel::get_new_relative_model_matrix() const
 {
-    return assemble_homogeneous_4x4(rotation_, position_);
+    return TransformationMatrix<float>{rotation_, position_};
 }
 
 void Wheel::advance_time(float dt) {

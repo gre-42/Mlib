@@ -70,9 +70,9 @@ void FollowMovable::advance_time(float dt) {
     dpos_old_ = dpos3;
 }
 
-void FollowMovable::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) {
-    position_ = t3_from_4x4(absolute_model_matrix);
-    rotation_ = R3_from_4x4(absolute_model_matrix);
+void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {
+    position_ = absolute_model_matrix.t();
+    rotation_ = absolute_model_matrix.R();
     attachment_position_(0) = position_(0) - node_displacement_(0);
     attachment_position_(1) = position_(2) - node_displacement_(2);
 }

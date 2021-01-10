@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
@@ -29,7 +30,7 @@ public:
         float bullet_damage,
         const FixedArray<float, 3>& bullet_size);
     virtual void advance_time(float dt) override;
-    virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
     void trigger();
 private:
@@ -48,7 +49,7 @@ private:
     std::atomic_bool triggered_;
     float cool_down_;
     float seconds_since_last_shot_;
-    FixedArray<float, 4, 4> absolute_model_matrix_;
+    TransformationMatrix<float> absolute_model_matrix_;
 };
 
 }
