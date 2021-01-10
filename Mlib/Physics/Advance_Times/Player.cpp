@@ -1,6 +1,7 @@
 #include "Player.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
@@ -52,6 +53,9 @@ Player::Player(
   driving_direction_{driving_direction},
   mutex_{mutex},
   spotted_{false}
+{}
+
+Player::~Player()
 {}
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
@@ -127,6 +131,7 @@ void Player::set_waypoints(
     const SceneNode& node,
     const std::map<WayPointLocation, PointsAndAdjacency<float, 2>>& all_waypoints)
 {
+    all_waypoints_bvh_.clear();
     all_waypoints_ = all_waypoints;
     for (auto& wps : all_waypoints_) {
         wps.second.adjacency = wps.second.adjacency / node.scale();
@@ -134,8 +139,14 @@ void Player::set_waypoints(
         FixedArray<float, 2, 3> m2{
             m(0, 0), m(0, 1), m(0, 3),
             m(2, 0), m(2, 1), m(2, 3)};
+        Bvh<float, size_t, 2> bvh{{100.f, 100.f}, 10};
+        size_t i = 0;
         for (FixedArray<float, 2>& p : wps.second.points) {
             p = dot1d(m2, homogenized_3(p));
+            bvh.insert(p, "", i++);
+        }
+        if (!all_waypoints_bvh_.insert({wps.first, std::move(bvh)}).second) {
+            throw std::runtime_error("Could not insert waypoints");
         }
     }
     last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(waypoints().points.size());
@@ -442,10 +453,15 @@ void Player::select_next_waypoint() {
     FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
     if (waypoint_id_ == SIZE_MAX) {
         // If we have no current waypoint, find closest point in waypoints array.
+        float max_distance = 100;
         size_t closest_id = SIZE_MAX;
         float closest_distance2 = INFINITY;
-        size_t i = 0;
-        for (const FixedArray<float, 2>& rs : waypoints().points) {
+        const auto& wps = waypoints();
+        all_waypoints_bvh_.at(driving_mode_.way_point_location).visit(
+            {pos2, max_distance},
+            [&](const std::string& category, size_t i)
+        {
+            const auto& rs = wps.points.at(i);
             if (dot0d(rs - pos2, z2) < 0) {
                 float dist2 = sum(squared(rs - pos2));
                 if (dist2 < closest_distance2) {
@@ -453,8 +469,7 @@ void Player::select_next_waypoint() {
                     closest_id = i;
                 }
             }
-            ++i;
-        }
+        });
         if (closest_id != SIZE_MAX) {
             set_waypoint(closest_id);
         }

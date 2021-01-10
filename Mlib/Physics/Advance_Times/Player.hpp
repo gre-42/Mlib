@@ -21,6 +21,8 @@ class Scene;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 class Gun;
+template <class TData, class TPayload, size_t tndim>
+class Bvh;
 enum class DrivingDirection;
 enum class WayPointLocation;
 
@@ -77,6 +79,7 @@ public:
         const DrivingMode& driving_mode,
         DrivingDirection driving_direction,
         std::recursive_mutex& mutex);
+    ~Player();
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
@@ -155,6 +158,7 @@ private:
     float angular_velocity_right_;
     FixedArray<float, 2> waypoint_;
     std::map<WayPointLocation, PointsAndAdjacency<float, 2>> all_waypoints_;
+    std::map<WayPointLocation, Bvh<float, size_t, 2>> all_waypoints_bvh_;
     std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;
     size_t waypoint_id_;
     bool waypoint_reached_;
