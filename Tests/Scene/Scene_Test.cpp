@@ -194,6 +194,8 @@ void test_physics_engine() {
     pe.rigid_bodies_.add_rigid_body(rb1_1, triangles1, {}, CollidableMode::SMALL_MOVING);
     pe.rigid_bodies_.add_rigid_body(rb1_2, triangles1, {}, CollidableMode::SMALL_MOVING);
 
+    // Check if the initialization does not change the node positions.
+    // Not that only "physics advance time" can change the positions.
     assert_allclose(scene_node1_0->position().to_array(), fixed_zeros<float, 3>().to_array());
     scene.move(physics_cfg.dt);
     assert_allclose(scene_node1_0->position().to_array(), fixed_zeros<float, 3>().to_array());
