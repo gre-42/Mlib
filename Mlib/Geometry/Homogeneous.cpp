@@ -1,5 +1,4 @@
 #include "Homogeneous.hpp"
-#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
 
 using namespace Mlib;
@@ -94,16 +93,6 @@ void Mlib::invert_t_R(
     ti = -dot1d(Ri, t);
 }
 
-void Mlib::invert_t_R(
-    const FixedArray<float, 3>& t,
-    const FixedArray<float, 3, 3>& R,
-    FixedArray<float, 3>& ti,
-    FixedArray<float, 3, 3>& Ri)
-{
-    Ri = R.T();
-    ti = -dot1d(Ri, t);
-}
-
 Array<float> Mlib::t3_from_Nx4(const Array<float>& a, size_t nrows) {
     assert(nrows == 3 || nrows == 4);
     assert(all(a.shape() == ArrayShape{nrows, 4}));
@@ -136,19 +125,6 @@ Array<float> Mlib::inverted_homogeneous_3x4(const Array<float>& ke) {
 //         a(2, 3)};
 // }
 
-FixedArray<float, 3, 3> Mlib::R3_from_4x4(const FixedArray<float, 4, 4>& a) {
-    return FixedArray<float, 3, 3>{
-        a(0, 0), a(0, 1), a(0, 2),
-        a(1, 0), a(1, 1), a(1, 2),
-        a(2, 0), a(2, 1), a(2, 2)};
-}
-
-FixedArray<float, 4, 4> Mlib::inverted_scaled_se3(const FixedArray<float, 4, 4>& m) {
-    auto R = R3_from_4x4(m);
-    auto scale2 = sum(squared(R)) / 3;
-    return assemble_inverse_homogeneous_4x4(R / scale2, t3_from_4x4(m));
-}
-
 /**
  * See also: Mlib::assemble_inverse_homogeneous_3x4, Mlib::invert_t_R,
  * the alternative implementation in "reconstructed_point"
@@ -179,14 +155,6 @@ Array<float> Mlib::assemble_homogeneous_3x4(const Array<float>& R, const Array<f
             {R(2, 0), R(2, 1), R(2, 2), t(2)}};
 }
 
-FixedArray<float, 4, 4> Mlib::assemble_homogeneous_4x4(const FixedArray<float, 3, 3>& R, const FixedArray<float, 3>& t) {
-    return FixedArray<float, 4, 4>{
-            R(0, 0), R(0, 1), R(0, 2), t(0),
-            R(1, 0), R(1, 1), R(1, 2), t(1),
-            R(2, 0), R(2, 1), R(2, 2), t(2),
-            0, 0, 0, 1};
-}
-
 Array<float> Mlib::assemble_inverse_homogeneous_3x4(const Array<float>& R, const Array<float>& t) {
     // slow
     // return lstsq_chol(
@@ -198,13 +166,6 @@ Array<float> Mlib::assemble_inverse_homogeneous_3x4(const Array<float>& R, const
     Array<float> ti;
     invert_t_R(t, R, ti, Ri);
     return assemble_homogeneous_3x4(Ri, ti);
-}
-
-FixedArray<float, 4, 4> Mlib::assemble_inverse_homogeneous_4x4(const FixedArray<float, 3, 3>& R, const FixedArray<float, 3>& t) {
-    FixedArray<float, 3, 3> Ri;
-    FixedArray<float, 3> ti;
-    invert_t_R(t, R, ti, Ri);
-    return assemble_homogeneous_4x4(Ri, ti);
 }
 
 Array<float> Mlib::homogenized_4x4(const Array<float>& a) {
@@ -227,10 +188,6 @@ Array<float> Mlib::homogenized_4(const Array<float>& a) {
 Array<float> Mlib::homogenized_3(const Array<float>& a) {
     assert(all(a.shape() == ArrayShape{2}));
     return Array<float>{a(0), a(1), 1};
-}
-
-FixedArray<float, 3> Mlib::homogenized_3(const FixedArray<float, 2>& a) {
-    return FixedArray<float, 3>{a(0), a(1), 1};
 }
 
 Array<float> Mlib::homogenized_Nx3(const Array<float>& a) {
@@ -287,11 +244,6 @@ Array<float> Mlib::dehomogenized_2(const Array<float>& a, float value) {
     assert(all(a.shape() == ArrayShape{3}));
     assert(std::abs(a(2) - value) < 1e-12);
     return Array<float>{a(0), a(1)};
-}
-
-FixedArray<float, 2> Mlib::dehomogenized_2(const FixedArray<float, 3>& a, float value) {
-    assert(std::abs(a(2) - value) < 1e-12);
-    return FixedArray<float, 2>{a(0), a(1)};
 }
 
 Array<float> Mlib::dehomogenized_3(const Array<float>& a) {
