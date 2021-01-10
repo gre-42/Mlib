@@ -23,6 +23,7 @@ struct GameLogicConfig {
     float spawn_y_offset = 0.7;
     bool only_terrain = true;
     float can_see_y_offset = 2;
+    size_t max_spawn_points_searched = 100;
 };
 
 GameLogicConfig cfg;
@@ -39,7 +40,7 @@ GameLogic::GameLogic(
   vip_{nullptr},
   focus_{focus},
   mutex_{mutex},
-  spawn_point_id_{0}
+  spawn_point_id_{SIZE_MAX}
 {
     advance_times_.add_advance_time(*this);
 }
@@ -50,6 +51,7 @@ GameLogic::~GameLogic() {
 
 void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {
     spawn_points_ = std::vector(spawn_points.begin(), spawn_points.end());
+    spawn_point_id_ = 0;
     FixedArray<float, 4, 4> m = node.absolute_model_matrix();
     FixedArray<float, 3, 3> r = R3_from_4x4(m) / node.scale();
     for (SpawnPoint& p : spawn_points_) {
@@ -159,8 +161,9 @@ bool GameLogic::spawn_for_vip(
     if (nsee > cfg.max_nsee) {
         return false;
     }
-    for (size_t i = 0; i < spawn_points_.size(); ++i) {
-        const SpawnPoint& sp = spawn_points_[(spawn_point_id_++) % spawn_points_.size()];
+    for (size_t i = 0; i < std::min(spawn_points_.size(), cfg.max_spawn_points_searched); ++i) {
+        const SpawnPoint& sp = spawn_points_[spawn_point_id_];
+        spawn_point_id_ = (spawn_point_id_ + 1) % spawn_points_.size();
         if ((sp.type == SpawnPointType::PARKING) == player.has_waypoints()) {
             continue;
         }
