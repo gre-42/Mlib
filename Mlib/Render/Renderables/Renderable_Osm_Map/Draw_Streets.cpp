@@ -164,6 +164,13 @@ void Mlib::draw_streets(
                 const std::string* dL;
                 const std::string* dR;
                 get_neighbors(na.first, node_neighbors.at(it->second.id), node_angles.at(it->second.id), &dL, &dR);
+                if (sum(squared(nodes.at(na.first).position - nodes.at(it->second.id).position)) < squared(0.1 * scale))
+                {
+                    std::cerr << "Skipping street because it is too short. " <<
+                        it->second.id << " <-> " << na.first << ", (" <<
+                        nodes.at(it->second.id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
+                    continue;
+                }
                 Rectangle rect;
                 if (!Rectangle::from_line(
                     rect,
@@ -182,226 +189,226 @@ void Mlib::draw_streets(
                     std::cerr << "Error triangulating street nodes " <<
                         it->second.id << " <-> " << na.first << ", (" <<
                         nodes.at(it->second.id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
+                    continue;
+                }
+                size_t nlanes;
+                float lane_alpha;
+                float sidewalk_alpha0 = 0.75 * curb2_alpha + 0.25 * 1;
+                float sidewalk_alpha1 = 0.25 * curb2_alpha + 0.75 * 1;
+                float car_width = 2;
+                if (it->second.width < 4 * car_width * scale) {
+                    nlanes = 2;
+                    // alpha is in [-1 .. +1]
+                    lane_alpha = 0.5 * curb_alpha;
                 } else {
-                    size_t nlanes;
-                    float lane_alpha;
-                    float sidewalk_alpha0 = 0.75 * curb2_alpha + 0.25 * 1;
-                    float sidewalk_alpha1 = 0.25 * curb2_alpha + 0.75 * 1;
-                    float car_width = 2;
-                    if (it->second.width < 4 * car_width * scale) {
-                        nlanes = 2;
-                        // alpha is in [-1 .. +1]
-                        lane_alpha = 0.5 * curb_alpha;
-                    } else {
-                        nlanes = 4;
-                        // alpha is in [-1 .. +1]
-                        lane_alpha = 0.25 * curb_alpha;
+                    nlanes = 4;
+                    // alpha is in [-1 .. +1]
+                    lane_alpha = 0.25 * curb_alpha;
+                }
+                if (driving_direction == DrivingDirection::CENTER) {
+                    way_point_edges_1_lane_street.push_back({na.first, it->second.id});
+                } else if (driving_direction == DrivingDirection::LEFT) {
+                    auto add = [&rect](float start, float stop, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& lanes){
+                        CurbedStreet c5{rect, start, stop};
+                        lanes.push_back({
+                            FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0},
+                            FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0}});
+                        lanes.push_back({
+                            FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0},
+                            FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0}});
+                    };
+                    add(-lane_alpha, lane_alpha, way_point_edges_2_lanes[WayPointLocation::STREET]);
+                    if (curb2_alpha != 1) {
+                        add(sidewalk_alpha0, sidewalk_alpha1, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
+                        add(-sidewalk_alpha1, -sidewalk_alpha0, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
                     }
-                    if (driving_direction == DrivingDirection::CENTER) {
-                        way_point_edges_1_lane_street.push_back({na.first, it->second.id});
-                    } else if (driving_direction == DrivingDirection::LEFT) {
-                        auto add = [&rect](float start, float stop, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& lanes){
+                } else if (driving_direction == DrivingDirection::RIGHT) {
+                    auto add = [&rect](float start, float stop, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& lanes){
+                        CurbedStreet c5{rect, start, stop};
+                        lanes.push_back({
+                            FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0},
+                            FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0}});
+                        lanes.push_back({
+                            FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0},
+                            FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0}});
+                    };
+                    add(-lane_alpha, lane_alpha, way_point_edges_2_lanes[WayPointLocation::STREET]);
+                    if (curb2_alpha != 1) {
+                        add(sidewalk_alpha0, sidewalk_alpha1, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
+                        add(-sidewalk_alpha1, -sidewalk_alpha0, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
+                    }
+                } else {
+                    throw std::runtime_error("Unknown driving direction");
+                }
+                {
+                    auto add = [&street_rectangles, &rect](
+                        float start,
+                        float stop,
+                        WayPointLocation location,
+                        size_t nlanes)
+                    {
+                        CurbedStreet c1{rect, start, stop};
+                        street_rectangles.push_back(StreetRectangle{
+                            .location = location,
+                            .nlanes = nlanes,
+                            .rectangle = FixedArray<FixedArray<float, 3>, 2, 2>{
+                                FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},
+                                FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0},
+                                FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0},
+                                FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0}}});
+                    };
+                    add(-curb_alpha, curb_alpha, WayPointLocation::STREET, nlanes);
+                    if (curb2_alpha != 1) {
+                        add(-1, -curb2_alpha, WayPointLocation::SIDEWALK, 2);
+                        add(curb2_alpha, 1, WayPointLocation::SIDEWALK, 2);
+                    }
+                }
+                // Way length is used to get connected street textures where possible.
+                auto len0 = node_way_info.find(na.first);
+                auto len1 = node_way_info.find(it->second.id);
+                auto& street_lst = it->second.road_type == RoadType::STREET ? tl_street : tl_path;
+                auto& curb_lst = it->second.road_type == RoadType::STREET ? tl_curb_street : tl_curb_path;
+                auto& curb2_lst = it->second.road_type == RoadType::STREET ? tl_curb2_street : tl_curb2_path;
+                bool with_b_height_binding;
+                bool with_c_height_binding;
+                {
+                    const auto& tags = nodes.at(na.first).tags;
+                    with_b_height_binding = with_height_bindings && (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes");
+                }
+                {
+                    const auto& tags = nodes.at(it->second.id).tags;
+                    with_c_height_binding = with_height_bindings && (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes");
+                }
+                if ((len0 != node_way_info.end()) &&
+                    (len1 != node_way_info.end()))
+                {
+                    rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+                    if (curb_alpha != 1) {
+                        rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
+                        rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
+                    }
+                    if (curb2_alpha != 1) {
+                        rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
+                        rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
+                    }
+                } else {
+                    float len = std::sqrt(sum(squared(nodes.at(na.first).position - nodes.at(it->second.id).position)));
+                    rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, way_color, 0, 1, 0, len / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+                    if (curb_alpha != 1) {
+                        rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
+                        rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
+                    }
+                    if (curb2_alpha != 1) {
+                        rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
+                        rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
+                    }
+                    // rect.draw_z0(tl_street_crossing);
+                }
+                if (na.second.size() >= 3) {
+                    {
+                        CurbedStreet c0{rect, -curb_alpha, curb_alpha};
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = 0}, c0.s00));
+                    }
+                    if (curb_alpha != 1) {
+                        CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
+                        CurbedStreet cP{rect, curb_alpha, curb2_alpha};
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = +1}, cN.s00));
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = -1}, cP.s00));
+                    }
+                    if (curb2_alpha != 1) {
+                        CurbedStreet cN{rect, -1, -curb2_alpha};
+                        CurbedStreet cP{rect, curb2_alpha, 1};
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = +2}, cN.s00));
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = -2}, cP.s00));
+                    }
+                    if (driving_direction == DrivingDirection::LEFT) {
+                        auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
                             CurbedStreet c5{rect, start, stop};
-                            lanes.push_back({
-                                FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0},
-                                FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0}});
-                            lanes.push_back({
-                                FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0},
-                                FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0}});
+                            node_hole_waypoints.at(na.first).out.push_back({it->second.id, c5.s00});
+                            node_hole_waypoints.at(na.first).in.push_back({it->second.id, c5.s01});
                         };
-                        add(-lane_alpha, lane_alpha, way_point_edges_2_lanes[WayPointLocation::STREET]);
+                        add(-lane_alpha, lane_alpha, node_hole_waypoints_street);
                         if (curb2_alpha != 1) {
-                            add(sidewalk_alpha0, sidewalk_alpha1, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
-                            add(-sidewalk_alpha1, -sidewalk_alpha0, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
+                            add(sidewalk_alpha0, sidewalk_alpha1, node_hole_waypoints_sidewalk);
+                            add(-sidewalk_alpha1, -sidewalk_alpha0, node_hole_waypoints_sidewalk);
                         }
                     } else if (driving_direction == DrivingDirection::RIGHT) {
-                        auto add = [&rect](float start, float stop, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& lanes){
+                        auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
                             CurbedStreet c5{rect, start, stop};
-                            lanes.push_back({
-                                FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0},
-                                FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0}});
-                            lanes.push_back({
-                                FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0},
-                                FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0}});
+                            node_hole_waypoints.at(na.first).in.push_back({it->second.id, c5.s00});
+                            node_hole_waypoints.at(na.first).out.push_back({it->second.id, c5.s01});
                         };
-                        add(-lane_alpha, lane_alpha, way_point_edges_2_lanes[WayPointLocation::STREET]);
+                        add(-lane_alpha, lane_alpha, node_hole_waypoints_street);
                         if (curb2_alpha != 1) {
-                            add(sidewalk_alpha0, sidewalk_alpha1, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
-                            add(-sidewalk_alpha1, -sidewalk_alpha0, way_point_edges_2_lanes[WayPointLocation::SIDEWALK]);
+                            add(sidewalk_alpha0, sidewalk_alpha1, node_hole_waypoints_sidewalk);
+                            add(-sidewalk_alpha1, -sidewalk_alpha0, node_hole_waypoints_sidewalk);
                         }
-                    } else {
+                    } else if (driving_direction != DrivingDirection::CENTER) {
                         throw std::runtime_error("Unknown driving direction");
                     }
-                    {
-                        auto add = [&street_rectangles, &rect](
-                            float start,
-                            float stop,
-                            WayPointLocation location,
-                            size_t nlanes)
-                        {
-                            CurbedStreet c1{rect, start, stop};
-                            street_rectangles.push_back(StreetRectangle{
-                                .location = location,
-                                .nlanes = nlanes,
-                                .rectangle = FixedArray<FixedArray<float, 3>, 2, 2>{
-                                    FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},
-                                    FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0},
-                                    FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0},
-                                    FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0}}});
-                        };
-                        add(-curb_alpha, curb_alpha, WayPointLocation::STREET, nlanes);
-                        if (curb2_alpha != 1) {
-                            add(-1, -curb2_alpha, WayPointLocation::SIDEWALK, 2);
-                            add(curb2_alpha, 1, WayPointLocation::SIDEWALK, 2);
-                        }
-                    }
-                    // Way length is used to get connected street textures where possible.
-                    auto len0 = node_way_info.find(na.first);
-                    auto len1 = node_way_info.find(it->second.id);
-                    auto& street_lst = it->second.road_type == RoadType::STREET ? tl_street : tl_path;
-                    auto& curb_lst = it->second.road_type == RoadType::STREET ? tl_curb_street : tl_curb_path;
-                    auto& curb2_lst = it->second.road_type == RoadType::STREET ? tl_curb2_street : tl_curb2_path;
-                    bool with_b_height_binding;
-                    bool with_c_height_binding;
-                    {
-                        const auto& tags = nodes.at(na.first).tags;
-                        with_b_height_binding = with_height_bindings && (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes");
-                    }
-                    {
-                        const auto& tags = nodes.at(it->second.id).tags;
-                        with_c_height_binding = with_height_bindings && (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes");
-                    }
-                    if ((len0 != node_way_info.end()) &&
-                        (len1 != node_way_info.end()))
-                    {
-                        rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
-                        if (curb_alpha != 1) {
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
-                        }
-                        if (curb2_alpha != 1) {
-                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
-                        }
-                    } else {
-                        float len = std::sqrt(sum(squared(nodes.at(na.first).position - nodes.at(it->second.id).position)));
-                        rect.draw_z0(street_lst, height_bindings, na.first, it->second.id, way_color, 0, 1, 0, len / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
-                        if (curb_alpha != 1) {
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb_lst, height_bindings, na.first, it->second.id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
-                        }
-                        if (curb2_alpha != 1) {
-                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
-                            rect.draw_z0(curb2_lst, height_bindings, na.first, it->second.id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
-                        }
-                        // rect.draw_z0(tl_street_crossing);
-                    }
-                    if (na.second.size() >= 3) {
-                        {
-                            CurbedStreet c0{rect, -curb_alpha, curb_alpha};
-                            node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = 0}, c0.s00));
-                        }
-                        if (curb_alpha != 1) {
-                            CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
-                            CurbedStreet cP{rect, curb_alpha, curb2_alpha};
-                            node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = +1}, cN.s00));
-                            node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = -1}, cP.s00));
-                        }
-                        if (curb2_alpha != 1) {
-                            CurbedStreet cN{rect, -1, -curb2_alpha};
-                            CurbedStreet cP{rect, curb2_alpha, 1};
-                            node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = +2}, cN.s00));
-                            node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = -2}, cP.s00));
-                        }
-                        if (driving_direction == DrivingDirection::LEFT) {
-                            auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
-                                CurbedStreet c5{rect, start, stop};
-                                node_hole_waypoints.at(na.first).out.push_back({it->second.id, c5.s00});
-                                node_hole_waypoints.at(na.first).in.push_back({it->second.id, c5.s01});
-                            };
-                            add(-lane_alpha, lane_alpha, node_hole_waypoints_street);
-                            if (curb2_alpha != 1) {
-                                add(sidewalk_alpha0, sidewalk_alpha1, node_hole_waypoints_sidewalk);
-                                add(-sidewalk_alpha1, -sidewalk_alpha0, node_hole_waypoints_sidewalk);
-                            }
-                        } else if (driving_direction == DrivingDirection::RIGHT) {
-                            auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
-                                CurbedStreet c5{rect, start, stop};
-                                node_hole_waypoints.at(na.first).in.push_back({it->second.id, c5.s00});
-                                node_hole_waypoints.at(na.first).out.push_back({it->second.id, c5.s01});
-                            };
-                            add(-lane_alpha, lane_alpha, node_hole_waypoints_street);
-                            if (curb2_alpha != 1) {
-                                add(sidewalk_alpha0, sidewalk_alpha1, node_hole_waypoints_sidewalk);
-                                add(-sidewalk_alpha1, -sidewalk_alpha0, node_hole_waypoints_sidewalk);
-                            }
-                        } else if (driving_direction != DrivingDirection::CENTER) {
-                            throw std::runtime_error("Unknown driving direction");
-                        }
-                    }
-                    const std::map<std::string, NeighborWay>& nn = node_neighbors.at(it->second.id);
-                    if (nn.size() >= 3) {
-                        {
-                            CurbedStreet c0{rect, -curb_alpha, curb_alpha};
-                            // Left and right are swapped for the neighbor, so we use p11_ instead of p10_.
-                            node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = 0}, c0.s11));
-                        }
-                        if (curb_alpha != 1) {
-                            CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
-                            CurbedStreet cP{rect, curb_alpha, curb2_alpha};
-                            node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = -1}, cN.s11));
-                            node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = +1}, cP.s11));
-                        }
-                        if (curb2_alpha != 1) {
-                            CurbedStreet cN{rect, -1, -curb2_alpha};
-                            CurbedStreet cP{rect, curb2_alpha, 1};
-                            node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = -2}, cN.s11));
-                            node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = +2}, cP.s11));
-                        }
-                        if (driving_direction == DrivingDirection::LEFT) {
-                            auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
-                                CurbedStreet c5{rect, start, stop};
-                                node_hole_waypoints.at(it->second.id).out.push_back({na.first, c5.s11});
-                                node_hole_waypoints.at(it->second.id).in.push_back({na.first, c5.s10});
-                            };
-                            add(-lane_alpha, lane_alpha, node_hole_waypoints_street);
-                            if (curb2_alpha != 1) {
-                                add(sidewalk_alpha0, sidewalk_alpha1, node_hole_waypoints_sidewalk);
-                                add(-sidewalk_alpha1, -sidewalk_alpha0, node_hole_waypoints_sidewalk);
-                            }
-                        } else if (driving_direction == DrivingDirection::RIGHT) {
-                            auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
-                                CurbedStreet c5{rect, start, stop};
-                                node_hole_waypoints.at(it->second.id).in.push_back({na.first, c5.s11});
-                                node_hole_waypoints.at(it->second.id).out.push_back({na.first, c5.s10});
-                            };
-                            add(-lane_alpha, lane_alpha, node_hole_waypoints_street);
-                            if (curb2_alpha != 1) {
-                                add(sidewalk_alpha0, sidewalk_alpha1, node_hole_waypoints_sidewalk);
-                                add(-sidewalk_alpha1, -sidewalk_alpha0, node_hole_waypoints_sidewalk);
-                            }
-                        } else if (driving_direction != DrivingDirection::CENTER) {
-                            throw std::runtime_error("Unknown driving direction");
-                        }
-                    }
-                    if (!street_lights.empty()) {
-                        float radius = 10 * scale;
-                        auto add_distant_point = [&](const FixedArray<float, 2>& p) {
-                            bool p_found = false;
-                            street_light_bvh.visit(BoundingSphere(p, radius), [&p_found](const std::string&, bool){p_found=true;});
-                            if (!p_found) {
-                                street_light_bvh.insert(p, "", true);
-                                add_parsed_resource_name(p, street_lights(), 1, resource_instance_positions, object_resource_descriptors, hitboxes);
-                            }
-                        };
-                        add_distant_point(rect.p00_);
-                        add_distant_point(rect.p11_);
-                    }
-                    //for (float a = 0.1; a < 0.91; a += 0.4) {
-                    //    auto p = a * rect.p00_ + (1 - a) * rect.p10_;
-                    //    street_light_positions.push_back(std::make_pair(FixedArray<float, 3>{p(0), p(1), 0}, "bgrass"));
-                    //}
                 }
+                const std::map<std::string, NeighborWay>& nn = node_neighbors.at(it->second.id);
+                if (nn.size() >= 3) {
+                    {
+                        CurbedStreet c0{rect, -curb_alpha, curb_alpha};
+                        // Left and right are swapped for the neighbor, so we use p11_ instead of p10_.
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = 0}, c0.s11));
+                    }
+                    if (curb_alpha != 1) {
+                        CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
+                        CurbedStreet cP{rect, curb_alpha, curb2_alpha};
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = -1}, cN.s11));
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = +1}, cP.s11));
+                    }
+                    if (curb2_alpha != 1) {
+                        CurbedStreet cN{rect, -1, -curb2_alpha};
+                        CurbedStreet cP{rect, curb2_alpha, 1};
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = -2}, cN.s11));
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = +2}, cP.s11));
+                    }
+                    if (driving_direction == DrivingDirection::LEFT) {
+                        auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
+                            CurbedStreet c5{rect, start, stop};
+                            node_hole_waypoints.at(it->second.id).out.push_back({na.first, c5.s11});
+                            node_hole_waypoints.at(it->second.id).in.push_back({na.first, c5.s10});
+                        };
+                        add(-lane_alpha, lane_alpha, node_hole_waypoints_street);
+                        if (curb2_alpha != 1) {
+                            add(sidewalk_alpha0, sidewalk_alpha1, node_hole_waypoints_sidewalk);
+                            add(-sidewalk_alpha1, -sidewalk_alpha0, node_hole_waypoints_sidewalk);
+                        }
+                    } else if (driving_direction == DrivingDirection::RIGHT) {
+                        auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
+                            CurbedStreet c5{rect, start, stop};
+                            node_hole_waypoints.at(it->second.id).in.push_back({na.first, c5.s11});
+                            node_hole_waypoints.at(it->second.id).out.push_back({na.first, c5.s10});
+                        };
+                        add(-lane_alpha, lane_alpha, node_hole_waypoints_street);
+                        if (curb2_alpha != 1) {
+                            add(sidewalk_alpha0, sidewalk_alpha1, node_hole_waypoints_sidewalk);
+                            add(-sidewalk_alpha1, -sidewalk_alpha0, node_hole_waypoints_sidewalk);
+                        }
+                    } else if (driving_direction != DrivingDirection::CENTER) {
+                        throw std::runtime_error("Unknown driving direction");
+                    }
+                }
+                if (!street_lights.empty()) {
+                    float radius = 10 * scale;
+                    auto add_distant_point = [&](const FixedArray<float, 2>& p) {
+                        bool p_found = false;
+                        street_light_bvh.visit(BoundingSphere(p, radius), [&p_found](const std::string&, bool){p_found=true;});
+                        if (!p_found) {
+                            street_light_bvh.insert(p, "", true);
+                            add_parsed_resource_name(p, street_lights(), 1, resource_instance_positions, object_resource_descriptors, hitboxes);
+                        }
+                    };
+                    add_distant_point(rect.p00_);
+                    add_distant_point(rect.p11_);
+                }
+                //for (float a = 0.1; a < 0.91; a += 0.4) {
+                //    auto p = a * rect.p00_ + (1 - a) * rect.p10_;
+                //    street_light_positions.push_back(std::make_pair(FixedArray<float, 3>{p(0), p(1), 0}, "bgrass"));
+                //}
             }
         }
     }

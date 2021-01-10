@@ -80,16 +80,16 @@ bool Mlib::lines_to_rectangles(
     // std::cerr << c << std::endl;
     // std::cerr << dL << std::endl;
     // std::cerr << dR << std::endl;
-    if (std::abs(dot0d(n_aLb, n_bc)) < cos(M_PI / 8)) {
+    if (std::abs(dot0d(n_aLb, n_bc)) < std::cos(M_PI / 8)) {
         p00 = intersect_lines({aL, b}, {b, c}, width_aLb, width_bc, true);  // true = compute_center
     }
-    if (std::abs(dot0d(n_aRb, n_bc)) < cos(M_PI / 8)) {
+    if (std::abs(dot0d(n_aRb, n_bc)) < std::cos(M_PI / 8)) {
         p01 = intersect_lines({aR, b}, {b, c}, -width_aRb, -width_bc, true);  // true = compute_center
     }
-    if (std::abs(dot0d(n_cdL, n_bc)) < cos(M_PI / 8)) {
+    if (std::abs(dot0d(n_cdL, n_bc)) < std::cos(M_PI / 8)) {
         p10 = intersect_lines({b, c}, {c, dL}, width_bc, width_cdL, true);  // true = compute_center
     }
-    if (std::abs(dot0d(n_cdR, n_bc)) < cos(M_PI / 8)) {
+    if (std::abs(dot0d(n_cdR, n_bc)) < std::cos(M_PI / 8)) {
         p11 = intersect_lines({b, c}, {c, dR}, -width_bc, -width_cdR, true);  // true = compute_center
     }
 
