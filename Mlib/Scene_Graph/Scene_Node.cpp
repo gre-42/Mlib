@@ -502,7 +502,7 @@ TransformationMatrix<float> SceneNode::relative_view_matrix() const {
         rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
         rotation_matrix_invalidated_ = false;
     }
-    return TransformationMatrix{rotation_matrix_ / scale_, position_};
+    return TransformationMatrix<float>::inverse(rotation_matrix_ / scale_, position_);
 }
 
 TransformationMatrix<float> SceneNode::absolute_view_matrix() const {

@@ -15,6 +15,12 @@ public:
             fixed_zeros<TData, 3>()};
     }
 
+    static TransformationMatrix inverse(const FixedArray<TData, 3, 3>& R, const FixedArray<float, 3>& t) {
+        TransformationMatrix result;
+        invert_t_R(t, R, result.t_, result.R_);
+        return result;
+    }
+
     TransformationMatrix()
     {}
 
@@ -60,6 +66,12 @@ public:
 
     const FixedArray<TData, 4, 4> affine() const {
         return assemble_homogeneous_4x4(R_, t_);
+    }
+
+    TransformationMatrix inverted() const {
+        TransformationMatrix result;
+        invert_t_R(t_, R_, result.t_, result.R_);
+        return result;
     }
 private:
     FixedArray<TData, 3, 3> R_;
