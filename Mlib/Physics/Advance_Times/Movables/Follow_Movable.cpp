@@ -6,6 +6,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
@@ -37,8 +38,7 @@ FollowMovable::FollowMovable(
   kalman_filter_{1e-5, 1e-2,  1, 0},
   exponential_smoother_{1 - std::pow(1 - y_snappiness, dt_dt_ref_), 0}
 {
-    auto dmat = followed_->get_new_absolute_model_matrix();
-    dpos_old_ = t3_from_4x4(dmat);
+    dpos_old_ = followed_->get_new_absolute_model_matrix().t();
     followed_node_->add_destruction_observer(this);
 }
 
@@ -49,8 +49,7 @@ void FollowMovable::advance_time(float dt) {
     if (any(isnan(attachment_position_))) {
         throw std::runtime_error("Attachment position is NAN, set_absolute_model_matrix not called?");
     }
-    auto dmat = followed_->get_new_absolute_model_matrix();
-    FixedArray<float, 3> dpos3 = t3_from_4x4(dmat);
+    FixedArray<float, 3> dpos3 = followed_->get_new_absolute_model_matrix().t();
     FixedArray<float, 2> dpos2{dpos3(0), dpos3(2)};
     FixedArray<float, 2> dpos_old2{dpos_old_(0), dpos_old_(2)};
     FixedArray<float, 2> residual2 = attachment_position_ - snappiness_ * dpos2 - (1 - snappiness_) * dpos_old2;
@@ -78,8 +77,8 @@ void FollowMovable::set_absolute_model_matrix(const FixedArray<float, 4, 4>& abs
     attachment_position_(1) = position_(2) - node_displacement_(2);
 }
 
-FixedArray<float, 4, 4> FollowMovable::get_new_absolute_model_matrix() const {
-    return assemble_homogeneous_4x4(rotation_, position_);
+TransformationMatrix<float> FollowMovable::get_new_absolute_model_matrix() const {
+    return TransformationMatrix<float>{rotation_, position_};
 }
 
 void FollowMovable::notify_destroyed(void* obj) {

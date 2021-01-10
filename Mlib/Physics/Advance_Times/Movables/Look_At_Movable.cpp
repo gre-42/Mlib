@@ -1,6 +1,7 @@
 #include "Look_At_Movable.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Look_At.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -27,7 +28,7 @@ void LookAtMovable::advance_time(float dt) {
         return;
     }
     auto dmat = followed_->get_new_absolute_model_matrix();
-    auto dpos = t3_from_4x4(dmat);
+    auto dpos = dmat.t();
     rotation_ = lookat(position_, dpos);
 }
 
@@ -36,8 +37,8 @@ void LookAtMovable::set_absolute_model_matrix(const FixedArray<float, 4, 4>& abs
     rotation_ = R3_from_4x4(absolute_model_matrix);
 }
 
-FixedArray<float, 4, 4> LookAtMovable::get_new_absolute_model_matrix() const {
-    return assemble_homogeneous_4x4(rotation_, position_);
+TransformationMatrix<float> LookAtMovable::get_new_absolute_model_matrix() const {
+    return TransformationMatrix<float>{rotation_, position_};
 }
 
 void LookAtMovable::notify_destroyed(void* obj) {

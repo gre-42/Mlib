@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <atomic>
 #include <mutex>
 #include <vector>
@@ -13,7 +14,7 @@ class ColoredVertexArray;
 class TransformedMesh {
 public:
     TransformedMesh(
-        const FixedArray<float, 4, 4>& transformation_matrix,
+        const TransformationMatrix<float>& transformation_matrix,
         const BoundingSphere<float, 3>& bounding_sphere,
         const std::shared_ptr<ColoredVertexArray>& mesh);
     TransformedMesh(
@@ -27,7 +28,7 @@ public:
     void print_info() const;
     const BoundingSphere<float, 3>& transformed_bounding_sphere() const;
 private:
-    const FixedArray<float, 4, 4> transformation_matrix_;
+    const TransformationMatrix<float> transformation_matrix_;
     BoundingSphere<float, 3> transformed_bounding_sphere_;
     std::shared_ptr<ColoredVertexArray> mesh_;
     mutable std::vector<CollisionTriangleSphere> transformed_triangles_;

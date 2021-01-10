@@ -864,11 +864,11 @@ std::shared_ptr<AnimatedColoredVertexArrays> RenderableOsmMap::get_animated_arra
     for (auto& p : hitboxes_) {
         for (auto& x : scene_node_resources_.get_animated_arrays(p.first)->cvas) {
             for (auto& y : p.second) {
-                res->cvas.push_back(x->transformed(FixedArray<float, 4, 4>{
+                res->cvas.push_back(x->transformed(TransformationMatrix{FixedArray<float, 4, 4>{
                     scale_, 0, 0, y(0),
                     0, scale_, 0, y(1),
                     0, 0, scale_, y(2),
-                    0, 0, 0, 1}));
+                    0, 0, 0, 1}}));
             }
         }
     }

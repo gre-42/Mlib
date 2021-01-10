@@ -172,9 +172,9 @@ void RigidBody::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolut
         t3_from_4x4(absolute_model_matrix));
 }
 
-FixedArray<float, 4, 4> RigidBody::get_new_absolute_model_matrix() const {
+TransformationMatrix<float> RigidBody::get_new_absolute_model_matrix() const {
     std::lock_guard lock{advance_time_mutex_};
-    return assemble_homogeneous_4x4(rbi_.rbp_.rotation_, rbi_.abs_position());
+    return TransformationMatrix<float>{rbi_.rbp_.rotation_, rbi_.abs_position()};
 }
 
 void RigidBody::notify_destroyed(void* obj) {

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
@@ -72,7 +73,7 @@ public:
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
     virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
-    virtual FixedArray<float, 4, 4> get_new_absolute_model_matrix() const override;
+    virtual TransformationMatrix<float> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
     virtual void write_status(std::ostream& ostr, unsigned int log_components) const override;
 

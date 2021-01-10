@@ -419,6 +419,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
     ExternalRenderPass external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
 {
+    TransformationMatrix<float> tm{m};
     for (const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
             if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
@@ -426,7 +427,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
                 float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
                     ? -mvp(2, 3)
                     : -INFINITY;
-                aggregate_queue.push_back(std::make_pair(sorting_key, std::move(cva->transformed(m))));
+                aggregate_queue.push_back(std::make_pair(sorting_key, std::move(cva->transformed(tm))));
             }
         }
     }
@@ -437,9 +438,10 @@ void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config,
     std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const
 {
+    TransformationMatrix<float> tm{m};
     for (const auto& cva : triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::ONCE) {
-            aggregate_queue.push_back(std::move(cva->transformed(m)));
+            aggregate_queue.push_back(std::move(cva->transformed(tm)));
         }
     }
 }

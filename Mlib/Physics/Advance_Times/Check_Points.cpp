@@ -1,6 +1,7 @@
 #include "Check_Points.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -91,7 +92,7 @@ void CheckPoints::advance_time(float dt) {
     }
 
     if (!checkpoints_ahead_.empty() &&
-        (sum(squared(t3_from_4x4(moving_->get_new_absolute_model_matrix()) - checkpoints_ahead_.front().position)) < squared(radius_)))
+        (sum(squared(moving_->get_new_absolute_model_matrix().t() - checkpoints_ahead_.front().position)) < squared(radius_)))
     {
         checkpoints_ahead_.pop_front();
     }

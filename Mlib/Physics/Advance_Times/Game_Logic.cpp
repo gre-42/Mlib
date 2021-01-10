@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
@@ -52,11 +53,11 @@ GameLogic::~GameLogic() {
 void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {
     spawn_points_ = std::vector(spawn_points.begin(), spawn_points.end());
     spawn_point_id_ = 0;
-    FixedArray<float, 4, 4> m = node.absolute_model_matrix();
-    FixedArray<float, 3, 3> r = R3_from_4x4(m) / node.scale();
+    TransformationMatrix tm{node.absolute_model_matrix()};
+    FixedArray<float, 3, 3> R = tm.R() / node.scale();
     for (SpawnPoint& p : spawn_points_) {
-        p.position = dehomogenized_3(dot1d(m, homogenized_4(p.position)));
-        p.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(r, tait_bryan_angles_2_matrix(p.rotation)), r.T()));
+        p.position = tm * p.position;
+        p.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(p.rotation)), R.T()));
     }
 }
 

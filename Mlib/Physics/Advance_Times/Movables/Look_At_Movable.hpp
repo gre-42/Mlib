@@ -21,7 +21,7 @@ public:
         AbsoluteMovable* followed);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) override;
-    virtual FixedArray<float, 4, 4> get_new_absolute_model_matrix() const override;
+    virtual TransformationMatrix<float> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
 
 private:

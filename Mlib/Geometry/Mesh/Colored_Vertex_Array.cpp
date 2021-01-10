@@ -1,6 +1,5 @@
 #include "Colored_Vertex_Array.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
-#include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 using namespace Mlib;
 
@@ -104,33 +103,33 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::v
     return res;
 }
 
-std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const FixedArray<float, 4, 4>& m) const {
+std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const TransformationMatrix<float>& tm) const {
     auto res = std::make_shared<ColoredVertexArray>();
     res->material = material;
     res->triangles.reserve(triangles.size());
     for (const auto& tri : triangles) {
         res->triangles.push_back({
-            tri(0).transformed(m),
-            tri(1).transformed(m),
-            tri(2).transformed(m)});
+            tri(0).transformed(tm),
+            tri(1).transformed(tm),
+            tri(2).transformed(tm)});
     }
     res->lines.reserve(lines.size());
     for (const auto& li : lines) {
         res->lines.push_back({
-            li(0).transformed(m),
-            li(1).transformed(m)});
+            li(0).transformed(tm),
+            li(1).transformed(tm)});
     }
     return res;
 }
 
-std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(const FixedArray<float, 4, 4>& m) const {
+std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(const TransformationMatrix<float>& tm) const {
     std::vector<CollisionTriangleSphere> res;
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
         FixedArray<FixedArray<float, 3>, 3> pt{
-            dehomogenized_3(dot1d(m, homogenized_4(t(0).position))),
-            dehomogenized_3(dot1d(m, homogenized_4(t(1).position))),
-            dehomogenized_3(dot1d(m, homogenized_4(t(2).position)))};
+            tm * t(0).position,
+            tm * t(1).position,
+            tm * t(2).position};
         res.push_back(CollisionTriangleSphere{
             .bounding_sphere = BoundingSphere<float, 3>{pt},
             .plane = PlaneNd<float, 3>{pt},
@@ -140,14 +139,14 @@ std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_s
     return res;
 }
 
-std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbox(const FixedArray<float, 4, 4>& m) const {
+std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbox(const TransformationMatrix<float>& tm) const {
     std::vector<CollisionTriangleAabb> res;
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
         FixedArray<FixedArray<float, 3>, 3> pt{
-            dehomogenized_3(dot1d(m, homogenized_4(t(0).position))),
-            dehomogenized_3(dot1d(m, homogenized_4(t(1).position))),
-            dehomogenized_3(dot1d(m, homogenized_4(t(2).position)))};
+            tm * t(0).position,
+            tm * t(1).position,
+            tm * t(2).position};
         res.push_back(CollisionTriangleAabb{
             .base = CollisionTriangleSphere{
                 .bounding_sphere = BoundingSphere<float, 3>{pt},
@@ -160,13 +159,13 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbo
     return res;
 }
 
-std::vector<FixedArray<FixedArray<float, 3>, 2>> ColoredVertexArray::transformed_lines(const FixedArray<float, 4, 4>& m) const {
+std::vector<FixedArray<FixedArray<float, 3>, 2>> ColoredVertexArray::transformed_lines(const TransformationMatrix<float>& tm) const {
     std::vector<FixedArray<FixedArray<float, 3>, 2>> res;
     res.reserve(lines.size());
     for (const auto& t : lines) {
         res.push_back(FixedArray<FixedArray<float, 3>, 2>{
-            dehomogenized_3(dot1d(m, homogenized_4(t(0).position))),
-            dehomogenized_3(dot1d(m, homogenized_4(t(1).position)))});
+            tm * t(0).position,
+            tm * t(1).position});
     }
     return res;
 }

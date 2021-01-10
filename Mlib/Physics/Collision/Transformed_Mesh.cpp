@@ -11,13 +11,13 @@ using namespace Mlib;
 #pragma GCC push_options
 #pragma GCC optimize ("O3")
 TransformedMesh::TransformedMesh(
-    const FixedArray<float, 4, 4>& transformation_matrix,
+    const TransformationMatrix<float>& transformation_matrix,
     const BoundingSphere<float, 3>& bounding_sphere,
     const std::shared_ptr<ColoredVertexArray>& mesh)
 : transformation_matrix_{transformation_matrix},
   transformed_bounding_sphere_{
-    dehomogenized_3(dot1d(transformation_matrix, homogenized_4(bounding_sphere.center()))),
-    bounding_sphere.radius() * std::sqrt(sum(squared(R3_from_4x4(transformation_matrix_))) / 3)},
+    transformation_matrix * bounding_sphere.center(),
+    bounding_sphere.radius() * std::sqrt(sum(squared(transformation_matrix_.R())) / 3)},
   mesh_{mesh}
 {}
 

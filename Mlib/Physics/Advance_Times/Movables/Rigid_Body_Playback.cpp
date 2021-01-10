@@ -1,6 +1,7 @@
 #include "Rigid_Body_Playback.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
@@ -36,6 +37,6 @@ void RigidBodyPlayback::set_absolute_model_matrix(const FixedArray<float, 4, 4>&
     rotation_ = R3_from_4x4(absolute_model_matrix);
 }
 
-FixedArray<float, 4, 4> RigidBodyPlayback::get_new_absolute_model_matrix() const {
-    return assemble_homogeneous_4x4(rotation_, position_);
+TransformationMatrix<float> RigidBodyPlayback::get_new_absolute_model_matrix() const {
+    return TransformationMatrix<float>{rotation_, position_};
 }

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
@@ -246,7 +247,7 @@ void SceneNode::move(const FixedArray<float, 4, 4>& v, float dt) {
     }
     FixedArray<float, 4, 4> v2;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
-        FixedArray<float, 4, 4> ma = absolute_movable_->get_new_absolute_model_matrix();
+        FixedArray<float, 4, 4> ma = absolute_movable_->get_new_absolute_model_matrix().affine();
         FixedArray<float, 4, 4> mr = dot2d(v, ma);
         relative_movable_->set_updated_relative_model_matrix(mr);
         relative_movable_->set_absolute_model_matrix(ma);
@@ -256,7 +257,7 @@ void SceneNode::move(const FixedArray<float, 4, 4>& v, float dt) {
         absolute_movable_->set_absolute_model_matrix(inverted_scaled_se3(v2));
     } else {
         if (absolute_movable_ != nullptr) {
-            FixedArray<float, 4, 4> m = absolute_movable_->get_new_absolute_model_matrix();
+            FixedArray<float, 4, 4> m = absolute_movable_->get_new_absolute_model_matrix().affine();
             m = dot2d(v, m);
             set_relative_pose(t3_from_4x4(m), matrix_2_tait_bryan_angles(R3_from_4x4(m)), 1);
         }

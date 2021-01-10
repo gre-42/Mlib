@@ -9,6 +9,9 @@
 
 namespace Mlib {
 
+template <class TData>
+class TransformationMatrix;
+
 struct ColoredVertexArray {
     ColoredVertexArray() = default;
     ColoredVertexArray(const ColoredVertexArray&) = delete;
@@ -28,10 +31,10 @@ struct ColoredVertexArray {
     std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
     std::vector<FixedArray<float, 3>> vertices() const;
     std::shared_ptr<ColoredVertexArray> transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const;
-    std::shared_ptr<ColoredVertexArray> transformed(const FixedArray<float, 4, 4>& m) const;
-    std::vector<CollisionTriangleSphere> transformed_triangles_sphere(const FixedArray<float, 4, 4>& m) const;
-    std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const FixedArray<float, 4, 4>& m) const;
-    std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const FixedArray<float, 4, 4>& m) const;
+    std::shared_ptr<ColoredVertexArray> transformed(const TransformationMatrix<float>& tm) const;
+    std::vector<CollisionTriangleSphere> transformed_triangles_sphere(const TransformationMatrix<float>& tm) const;
+    std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const TransformationMatrix<float>& tm) const;
+    std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float>& tm) const;
     void downsample_triangles(size_t n);
 };
 

@@ -15,13 +15,13 @@ RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
 
 std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
     const std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
-    const FixedArray<float, 4, 4>& tm,
+    const TransformationMatrix<float>& tm,
     float static_radius)
 {
     if (std::isnan(static_radius)) {
         throw std::runtime_error("Static objects require a non-NAN static_radius");
     }
-    if (any(isnan(tm))) {
+    if (any(isnan(tm.R())) || any(isnan(tm.t()))) {
         throw std::runtime_error("Transformation matrix contains NAN values. Forgot to add rigid body to scene node?");
     }
     std::list<std::pair<FixedArray<float, 3>, std::list<CollisionTriangleSphere>>> centers;
@@ -166,7 +166,7 @@ void RigidBodies::delete_rigid_body(const RigidBody* rigid_body) {
 }
 
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
-    FixedArray<float, 4, 4> m = o.rigid_body->get_new_absolute_model_matrix();
+    auto m = o.rigid_body->get_new_absolute_model_matrix();
     std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> transformed_meshes;
     for (const auto& msh : o.meshes) {
         transformed_meshes.push_back({

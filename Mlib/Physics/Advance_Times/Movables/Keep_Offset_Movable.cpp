@@ -1,5 +1,6 @@
 #include "Keep_Offset_Movable.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -27,8 +28,7 @@ void KeepOffsetMovable::advance_time(float dt) {
     if (followed_ == nullptr) {
         return;
     }
-    auto dmat = followed_->get_new_absolute_model_matrix();
-    position_ = t3_from_4x4(dmat) + offset_;
+    position_ = followed_->get_new_absolute_model_matrix().t() + offset_;
 }
 
 void KeepOffsetMovable::set_absolute_model_matrix(const FixedArray<float, 4, 4>& absolute_model_matrix) {
@@ -36,8 +36,8 @@ void KeepOffsetMovable::set_absolute_model_matrix(const FixedArray<float, 4, 4>&
     rotation_ = R3_from_4x4(absolute_model_matrix);
 }
 
-FixedArray<float, 4, 4> KeepOffsetMovable::get_new_absolute_model_matrix() const {
-    return assemble_homogeneous_4x4(rotation_, position_);
+TransformationMatrix<float> KeepOffsetMovable::get_new_absolute_model_matrix() const {
+    return TransformationMatrix<float>{rotation_, position_};
 }
 
 void KeepOffsetMovable::notify_destroyed(void* obj) {

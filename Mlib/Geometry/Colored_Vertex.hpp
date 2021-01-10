@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/BoneWeight.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <iosfwd>
 #include <vector>
 
@@ -18,13 +19,13 @@ struct ColoredVertex {
     FixedArray<float, 3> normal;
     FixedArray<float, 3> tangent;
 
-    ColoredVertex transformed(const FixedArray<float, 4, 4>& m) const {
+    ColoredVertex transformed(const TransformationMatrix<float>& m) const {
         return ColoredVertex{
-            .position = dehomogenized_3(dot1d(m, homogenized_4(position))),
+            .position = m * position,
             .color = color,
             .uv = uv,
-            .normal = dot1d(R3_from_4x4(m), normal),
-            .tangent = dot1d(R3_from_4x4(m), tangent)};
+            .normal = m.rotate(normal),
+            .tangent = m.rotate(tangent)};
     }
     ColoredVertex transformed(
         const std::vector<BoneWeight>& weights,
