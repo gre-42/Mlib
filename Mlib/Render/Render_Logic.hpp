@@ -3,6 +3,8 @@
 
 namespace Mlib {
 
+template <class TData>
+class TransformationMatrix;
 struct RenderConfig;
 struct RenderResults;
 struct RenderedSceneDescriptor;
@@ -20,7 +22,7 @@ public:
     virtual float near_plane() const = 0;
     virtual float far_plane() const = 0;
     virtual const FixedArray<float, 4, 4>& vp() const = 0;
-    virtual const FixedArray<float, 4, 4>& iv() const = 0;
+    virtual const TransformationMatrix<float>& iv() const = 0;
     virtual bool requires_postprocessing() const = 0;
 };
 

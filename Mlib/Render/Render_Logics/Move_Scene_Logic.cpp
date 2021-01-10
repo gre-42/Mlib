@@ -37,7 +37,7 @@ const FixedArray<float, 4, 4>& MoveSceneLogic::vp() const {
     throw std::runtime_error("MoveSceneLogic::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& MoveSceneLogic::iv() const {
+const TransformationMatrix<float>& MoveSceneLogic::iv() const {
     throw std::runtime_error("MoveSceneLogic::iv not implemented");
 }
 

@@ -186,7 +186,7 @@ const FixedArray<float, 4, 4>& FlyingCameraLogic::vp() const {
     throw std::runtime_error("FlyingCameraLogic::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& FlyingCameraLogic::iv() const {
+const TransformationMatrix<float>& FlyingCameraLogic::iv() const {
     throw std::runtime_error("FlyingCameraLogic::iv not implemented");
 }
 

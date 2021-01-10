@@ -94,7 +94,7 @@ const FixedArray<float, 4, 4>& LightmapLogic::vp() const {
     return child_logic_.vp();
 }
 
-const FixedArray<float, 4, 4>& LightmapLogic::iv() const {
+const TransformationMatrix<float>& LightmapLogic::iv() const {
     return child_logic_.iv();
 }
 

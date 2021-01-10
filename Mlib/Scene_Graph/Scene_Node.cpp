@@ -56,7 +56,7 @@ void SceneNode::set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolu
         throw std::runtime_error("Absolute movable already set");
     }
     absolute_movable_ = absolute_movable.get();
-    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix());
+    absolute_movable_->set_absolute_model_matrix(absolute_model_matrix().affine());
     add_destruction_observer(absolute_movable.observer());
 }
 
@@ -73,8 +73,8 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relati
         throw std::runtime_error("Relative movable already set");
     }
     relative_movable_ = relative_movable.get();
-    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
-    relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
+    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix().affine());
+    relative_movable_->set_absolute_model_matrix(absolute_model_matrix().affine());
     add_destruction_observer(relative_movable.observer());
 }
 
@@ -91,7 +91,7 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
         throw std::runtime_error("Absolute observer already set");
     }
     absolute_observer_ = absolute_observer.get();
-    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
+    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix().affine());
     add_destruction_observer(absolute_observer.observer());
 }
 
@@ -215,7 +215,7 @@ void SceneNode::set_style(Style* style) {
     style_.reset(style);
 }
 
-void SceneNode::move(const FixedArray<float, 4, 4>& v, float dt) {
+void SceneNode::move(const TransformationMatrix<float>& v, float dt) {
     if (style_ != nullptr) {
         AnimationFrame& af = style_->animation_frame;
         if (!std::isnan(af.loop_time)) {
@@ -245,32 +245,32 @@ void SceneNode::move(const FixedArray<float, 4, 4>& v, float dt) {
             }
         }
     }
-    FixedArray<float, 4, 4> v2;
+    TransformationMatrix<float> v2;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
-        FixedArray<float, 4, 4> ma = absolute_movable_->get_new_absolute_model_matrix().affine();
-        FixedArray<float, 4, 4> mr = dot2d(v, ma);
-        relative_movable_->set_updated_relative_model_matrix(mr);
-        relative_movable_->set_absolute_model_matrix(ma);
+        auto ma = absolute_movable_->get_new_absolute_model_matrix();
+        auto mr = v * ma;
+        relative_movable_->set_updated_relative_model_matrix(mr.affine());
+        relative_movable_->set_absolute_model_matrix(ma.affine());
         FixedArray<float, 4, 4> mr2 = relative_movable_->get_new_relative_model_matrix();
         set_relative_pose(t3_from_4x4(mr2), matrix_2_tait_bryan_angles(R3_from_4x4(mr2)), 1);
-        v2 = dot2d(relative_view_matrix(), v);
-        absolute_movable_->set_absolute_model_matrix(inverted_scaled_se3(v2));
+        v2 = relative_view_matrix() * v;
+        absolute_movable_->set_absolute_model_matrix(inverted_scaled_se3(v2.affine()));
     } else {
         if (absolute_movable_ != nullptr) {
-            FixedArray<float, 4, 4> m = absolute_movable_->get_new_absolute_model_matrix().affine();
-            m = dot2d(v, m);
-            set_relative_pose(t3_from_4x4(m), matrix_2_tait_bryan_angles(R3_from_4x4(m)), 1);
+            auto m = absolute_movable_->get_new_absolute_model_matrix();
+            m = v * m;
+            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
         }
-        v2 = dot2d(relative_view_matrix(), v);
+        v2 = relative_view_matrix() * v;
         if (relative_movable_ != nullptr) {
-            relative_movable_->set_absolute_model_matrix(inverted_scaled_se3(v2));
+            relative_movable_->set_absolute_model_matrix(inverted_scaled_se3(v2.affine()));
             FixedArray<float, 4, 4> m = relative_movable_->get_new_relative_model_matrix();
             set_relative_pose(t3_from_4x4(m), matrix_2_tait_bryan_angles(R3_from_4x4(m)), 1);
-            v2 = dot2d(relative_view_matrix(), v);
+            v2 = relative_view_matrix() * v;
         }
     }
     if (absolute_observer_ != nullptr) {
-        absolute_observer_->set_absolute_model_matrix(inverted_scaled_se3(v2));
+        absolute_observer_->set_absolute_model_matrix(inverted_scaled_se3(v2.affine()));
     }
     for (const auto& n : children_) {
         n.second.scene_node->move(v2, dt);
@@ -293,9 +293,9 @@ bool SceneNode::requires_render_pass() const {
 
 void SceneNode::render(
     const FixedArray<float, 4, 4>& vp,
-    const FixedArray<float, 4, 4>& parent_m,
-    const FixedArray<float, 4, 4>& iv,
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const TransformationMatrix<float>& parent_m,
+    const TransformationMatrix<float>& iv,
+    const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights,
     std::list<Blended>& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
@@ -307,8 +307,8 @@ void SceneNode::render(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
-    FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
+    auto m = parent_m * relative_model_matrix();
     const Style* estyle = style_ != nullptr
         ? style_.get()
         : style;
@@ -345,7 +345,7 @@ void SceneNode::render(
 
 void SceneNode::append_sorted_aggregates_to_queue(
     const FixedArray<float, 4, 4>& vp,
-    const FixedArray<float, 4, 4>& parent_m,
+    const TransformationMatrix<float>& parent_m,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPass external_render_pass) const
@@ -355,8 +355,8 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix());
-    FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    FixedArray<float, 4, 4> mvp = dot2d(vp, relative_model_matrix().affine());
+    auto m = parent_m * relative_model_matrix();
     for (const auto& r : renderables_) {
         r.second->append_sorted_aggregates_to_queue(mvp, m, scene_graph_config, external_render_pass, aggregate_queue);
     }
@@ -369,11 +369,11 @@ void SceneNode::append_sorted_aggregates_to_queue(
 }
 
 void SceneNode::append_large_aggregates_to_queue(
-    const FixedArray<float, 4, 4>& parent_m,
+    const TransformationMatrix<float>& parent_m,
     std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    TransformationMatrix<float> m = parent_m * relative_model_matrix();
     for (const auto& r : renderables_) {
         r.second->append_large_aggregates_to_queue(m, scene_graph_config, aggregate_queue);
     }
@@ -387,18 +387,16 @@ void SceneNode::append_large_aggregates_to_queue(
 
 void SceneNode::append_small_instances_to_queue(
     const FixedArray<float, 4, 4>& vp,
-    const FixedArray<float, 4, 4>& parent_m,
+    const TransformationMatrix<float>& parent_m,
     const FixedArray<float, 3>& delta_position,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPass external_render_pass) const
 {
-    FixedArray<float, 4, 4> rel = relative_model_matrix();
-    rel(0, 3) += delta_position(0);
-    rel(1, 3) += delta_position(1);
-    rel(2, 3) += delta_position(2);
-    FixedArray<float, 4, 4> mvp = dot2d(vp, rel);
-    FixedArray<float, 4, 4> m = dot2d(parent_m, rel);
+    TransformationMatrix<float> rel = relative_model_matrix();
+    rel.t() += delta_position;
+    FixedArray<float, 4, 4> mvp = dot2d(vp, rel.affine());
+    TransformationMatrix<float> m = parent_m * rel;
     for (const auto& r : renderables_) {
         r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, external_render_pass, instances_queue);
     }
@@ -413,16 +411,14 @@ void SceneNode::append_small_instances_to_queue(
 }
 
 void SceneNode::append_large_instances_to_queue(
-    const FixedArray<float, 4, 4>& parent_m,
+    const TransformationMatrix<float>& parent_m,
     const FixedArray<float, 3>& delta_position,
     std::list<TransformedColoredVertexArray>& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
-    FixedArray<float, 4, 4> rel = relative_model_matrix();
-    rel(0, 3) += delta_position(0);
-    rel(1, 3) += delta_position(1);
-    rel(2, 3) += delta_position(2);
-    FixedArray<float, 4, 4> m = dot2d(parent_m, rel);
+    TransformationMatrix<float> rel = relative_model_matrix();
+    rel.t() += delta_position;
+    TransformationMatrix<float> m = parent_m * rel;
     for (const auto& r : renderables_) {
         r.second->append_large_instances_to_queue(m, scene_graph_config, instances_queue);
     }
@@ -437,10 +433,10 @@ void SceneNode::append_large_instances_to_queue(
 }
 
 void SceneNode::append_lights_to_queue(
-    const FixedArray<float, 4, 4>& parent_m,
-    std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights) const
+    const TransformationMatrix<float>& parent_m,
+    std::list<std::pair<TransformationMatrix<float>, Light*>>& lights) const
 {
-    FixedArray<float, 4, 4> m = dot2d(parent_m, relative_model_matrix());
+    TransformationMatrix<float> m = parent_m * relative_model_matrix();
     for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
     }
@@ -484,35 +480,35 @@ void SceneNode::set_relative_pose(
     set_scale(scale);
 }
 
-FixedArray<float, 4, 4> SceneNode::relative_model_matrix() const {
+TransformationMatrix<float> SceneNode::relative_model_matrix() const {
     if (rotation_matrix_invalidated_) {
         rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
         rotation_matrix_invalidated_ = false;
     }
-    return assemble_homogeneous_4x4(rotation_matrix_ * scale_, position_);
+    return TransformationMatrix{rotation_matrix_ * scale_, position_};
 }
 
-FixedArray<float, 4, 4> SceneNode::absolute_model_matrix() const {
-    FixedArray<float, 4, 4> result = relative_model_matrix();
+TransformationMatrix<float> SceneNode::absolute_model_matrix() const {
+    TransformationMatrix<float> result = relative_model_matrix();
     if (parent_ != nullptr) {
-        return dot2d(parent_->absolute_model_matrix(), result);
+        return parent_->absolute_model_matrix() * result;
     } else {
         return result;
     }
 }
 
-FixedArray<float, 4, 4> SceneNode::relative_view_matrix() const {
+TransformationMatrix<float> SceneNode::relative_view_matrix() const {
     if (rotation_matrix_invalidated_) {
         rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
         rotation_matrix_invalidated_ = false;
     }
-    return assemble_inverse_homogeneous_4x4(rotation_matrix_ / scale_, position_);
+    return TransformationMatrix{rotation_matrix_ / scale_, position_};
 }
 
-FixedArray<float, 4, 4> SceneNode::absolute_view_matrix() const {
-    FixedArray<float, 4, 4> result = relative_view_matrix();
+TransformationMatrix<float> SceneNode::absolute_view_matrix() const {
+    TransformationMatrix<float> result = relative_view_matrix();
     if (parent_ != nullptr) {
-        return dot2d(result, parent_->absolute_view_matrix());
+        return result * parent_->absolute_view_matrix();
     } else {
         return result;
     }

@@ -18,8 +18,8 @@ void test_scene_node() {
     node.set_rotation(fixed_random_uniform_array<float, 3>(2));
     node.set_scale(5);
     assert_allclose(
-        node.relative_model_matrix().to_array(),
-        inv(node.absolute_view_matrix().to_array()));
+        node.relative_model_matrix().affine().to_array(),
+        inv(node.absolute_view_matrix().affine().to_array()));
 }
 
 void test_render() {

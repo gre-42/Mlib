@@ -75,8 +75,8 @@ void RotatingLogic::render(
     co->set_aspect_ratio(aspect_ratio);
     FixedArray<float, 4, 4> vp = dot2d(
         co->projection_matrix(),
-        cn->absolute_view_matrix());
-    FixedArray<float, 4, 4> iv = cn->absolute_model_matrix();
+        cn->absolute_view_matrix().affine());
+    TransformationMatrix<float> iv = cn->absolute_model_matrix();
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
         auto on = scene_.get_node("obj");
@@ -114,7 +114,7 @@ const FixedArray<float, 4, 4>& RotatingLogic::vp() const {
     throw std::runtime_error("RotatingLogic::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& RotatingLogic::iv() const {
+const TransformationMatrix<float>& RotatingLogic::iv() const {
     throw std::runtime_error("RotatingLogic::iv not implemented");
 }
 

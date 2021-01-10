@@ -63,7 +63,7 @@ const FixedArray<float, 4, 4>& CountDownLogic::vp() const {
     throw std::runtime_error("CountDownLogic::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& CountDownLogic::iv() const {
+const TransformationMatrix<float>& CountDownLogic::iv() const {
     throw std::runtime_error("CountDownLogic::iv not implemented");
 }
 

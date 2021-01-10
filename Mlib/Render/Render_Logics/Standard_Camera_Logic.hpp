@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 
@@ -22,13 +23,13 @@ public:
     virtual float near_plane() const override;
     virtual float far_plane() const override;
     virtual const FixedArray<float, 4, 4>& vp() const override;
-    virtual const FixedArray<float, 4, 4>& iv() const override;
+    virtual const TransformationMatrix<float>& iv() const override;
     virtual bool requires_postprocessing() const override;
 private:
     const Scene& scene_;
     SelectedCameras& cameras_;
     FixedArray<float, 4, 4> vp_;
-    FixedArray<float, 4, 4> iv_;
+    TransformationMatrix<float> iv_;
 };
 
 }

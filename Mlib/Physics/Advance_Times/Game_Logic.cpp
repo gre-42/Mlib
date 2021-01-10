@@ -120,9 +120,9 @@ void GameLogic::handle_bystanders() {
     if (vip_->scene_node_name().empty()) {
         return;
     }
-    FixedArray<float, 4, 4> vip_m = scene_.get_node(vip_->scene_node_name())->absolute_model_matrix();
-    FixedArray<float, 3> vip_pos = t3_from_4x4(vip_m);
-    FixedArray<float, 3> vip_z = z3_from_4x4(vip_m);
+    TransformationMatrix<float> vip_m = scene_.get_node(vip_->scene_node_name())->absolute_model_matrix();
+    const FixedArray<float, 3>& vip_pos = vip_m.t();
+    FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R());
     size_t nsee = 0;
     for (auto& player : players_.players()) {
         if (player.second == vip_) {

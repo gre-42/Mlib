@@ -60,7 +60,7 @@ const FixedArray<float, 4, 4>& DirtmapLogic::vp() const {
     return child_logic_.vp();
 }
 
-const FixedArray<float, 4, 4>& DirtmapLogic::iv() const {
+const TransformationMatrix<float>& DirtmapLogic::iv() const {
     return child_logic_.iv();
 }
 

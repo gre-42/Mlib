@@ -54,7 +54,7 @@ const FixedArray<float, 4, 4>& VisualGlobalLog::vp() const {
     throw std::runtime_error("VisualGlobalLog::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& VisualGlobalLog::iv() const {
+const TransformationMatrix<float>& VisualGlobalLog::iv() const {
     throw std::runtime_error("VisualGlobalLog::iv not implemented");
 }
 

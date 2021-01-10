@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Post_Processing_Logic.hpp"
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -17,7 +18,7 @@ using namespace Mlib;
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
 static GenShaderText fragment_shader_text{[](
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
@@ -227,7 +228,7 @@ const FixedArray<float, 4, 4>& PostProcessingLogic::vp() const {
     return child_logic_.vp();
 }
 
-const FixedArray<float, 4, 4>& PostProcessingLogic::iv() const {
+const TransformationMatrix<float>& PostProcessingLogic::iv() const {
     return child_logic_.iv();
 }
 

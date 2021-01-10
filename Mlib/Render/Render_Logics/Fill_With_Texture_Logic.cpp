@@ -65,7 +65,7 @@ const FixedArray<float, 4, 4>& FillWithTextureLogic::vp() const {
     throw std::runtime_error("FillWithTextureLogic::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& FillWithTextureLogic::iv() const {
+const TransformationMatrix<float>& FillWithTextureLogic::iv() const {
     throw std::runtime_error("FillWithTextureLogic::iv not implemented");
 }
 

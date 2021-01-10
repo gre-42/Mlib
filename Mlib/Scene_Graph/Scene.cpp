@@ -150,13 +150,13 @@ SceneNode* Scene::get_node(const std::string& name) const {
 
 void Scene::render(
     const FixedArray<float, 4, 4>& vp,
-    const FixedArray<float, 4, 4>& iv,
+    const TransformationMatrix<float>& iv,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPass external_render_pass) const
 {
     LOG_FUNCTION("Scene::render");
-    std::list<std::pair<FixedArray<float, 4, 4>, Light*>> lights;
+    std::list<std::pair<TransformationMatrix<float>, Light*>> lights;
     std::list<Blended> blended;
     if ((external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && !external_render_pass.black_node_name.empty()) {
         std::shared_lock lock{dynamic_mutex_};
@@ -164,7 +164,7 @@ void Scene::render(
         if (it == root_nodes_.end()) {
             throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
         }
-        it->second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+        it->second->render(vp, TransformationMatrix<float>::identity(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
     } else {
         // |         |Lights|Blended|Large|Small|Move|
         // |---------|------|-------|-----|-----|----|
@@ -175,13 +175,13 @@ void Scene::render(
         {
             std::shared_lock lock{dynamic_mutex_};
             for (const auto& n : root_nodes_) {
-                n.second->append_lights_to_queue(fixed_identity_array<float, 4>(), lights);
+                n.second->append_lights_to_queue(TransformationMatrix<float>::identity(), lights);
             }
         }
         {
             std::shared_lock lock{static_mutex_};
             for (const auto& n : static_root_nodes_) {
-                n.second->append_lights_to_queue(fixed_identity_array<float, 4>(), lights);
+                n.second->append_lights_to_queue(TransformationMatrix<float>::identity(), lights);
             }
         }
         LOG_INFO("Scene::render non-blended");
@@ -189,13 +189,13 @@ void Scene::render(
             {
                 std::shared_lock lock{dynamic_mutex_};
                 for (const auto& n : root_nodes_) {
-                    n.second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+                    n.second->render(vp, TransformationMatrix<float>::identity(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
                 }
             }
             {
                 std::shared_lock lock{static_mutex_};
                 for (const auto& n : static_root_nodes_) {
-                    n.second->render(vp, fixed_identity_array<float, 4>(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+                    n.second->render(vp, TransformationMatrix<float>::identity(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
                 }
             }
         }
@@ -208,7 +208,7 @@ void Scene::render(
                     std::shared_lock lock{static_mutex_};
                     LOG_INFO("Scene::render large_aggregate_renderer static_mutex (1)");
                     for (const auto& n : static_root_nodes_) {
-                        n.second->append_large_aggregates_to_queue(fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config);
+                        n.second->append_large_aggregates_to_queue(TransformationMatrix<float>::identity(), aggregate_queue, scene_graph_config);
                     }
                 }
                 {
@@ -216,7 +216,7 @@ void Scene::render(
                     std::shared_lock lock{aggregate_mutex_};
                     LOG_INFO("Scene::render large_aggregate_renderer aggregate_mutex (1)");
                     for (const auto& n : root_aggregate_nodes_) {
-                        n.second->append_large_aggregates_to_queue(fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config);
+                        n.second->append_large_aggregates_to_queue(TransformationMatrix<float>::identity(), aggregate_queue, scene_graph_config);
                     }
                 }
                 large_aggregate_renderer_->update_aggregates(aggregate_queue);
@@ -233,7 +233,7 @@ void Scene::render(
                     std::shared_lock lock{static_mutex_};
                     LOG_INFO("Scene::render large_instances_renderer static_mutex (1)");
                     for (const auto& n : static_root_nodes_) {
-                        n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
+                        n.second->append_large_instances_to_queue(TransformationMatrix<float>::identity(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
                     }
                 }
                 {
@@ -241,7 +241,7 @@ void Scene::render(
                     std::shared_lock lock{instances_mutex_};
                     LOG_INFO("Scene::render large_instances_renderer instances_mutex (1)");
                     for (const auto& n : root_aggregate_nodes_) {
-                        n.second->append_large_instances_to_queue(fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
+                        n.second->append_large_instances_to_queue(TransformationMatrix<float>::identity(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
                     }
                 }
                 large_instances_renderer_->update_instances(instances_queue);
@@ -264,13 +264,13 @@ void Scene::render(
                         {
                             std::shared_lock lock{static_mutex_};
                             for (const auto& n : static_root_nodes_) {
-                                n.second->append_sorted_aggregates_to_queue(vp, fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config, external_render_pass);
+                                n.second->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float>::identity(), aggregate_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         {
                             std::shared_lock lock{aggregate_mutex_};
                             for (const auto& n : root_aggregate_nodes_) {
-                                n.second->append_sorted_aggregates_to_queue(vp, fixed_identity_array<float, 4>(), aggregate_queue, scene_graph_config, external_render_pass);
+                                n.second->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float>::identity(), aggregate_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         aggregate_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
@@ -303,13 +303,13 @@ void Scene::render(
                         {
                             std::shared_lock lock{static_mutex_};
                             for (const auto& n : static_root_nodes_) {
-                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
+                                n.second->append_small_instances_to_queue(vp, TransformationMatrix<float>::identity(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         {
                             std::shared_lock lock{aggregate_mutex_};
                             for (const auto& n : root_instances_nodes_) {
-                                n.second->append_small_instances_to_queue(vp, fixed_identity_array<float, 4>(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
+                                n.second->append_small_instances_to_queue(vp, TransformationMatrix<float>::identity(), fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
                             }
                         }
                         instances_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
@@ -353,7 +353,7 @@ void Scene::move(float dt) {
     std::unique_lock lock{dynamic_mutex_};
     LOG_INFO("Lock acquired");
     for (const auto& n : root_nodes_) {
-        n.second->move(fixed_identity_array<float, 4>(), dt);
+        n.second->move(TransformationMatrix<float>::identity(), dt);
     }
 }
 

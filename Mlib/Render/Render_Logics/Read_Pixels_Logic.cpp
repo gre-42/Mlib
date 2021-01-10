@@ -59,7 +59,7 @@ const FixedArray<float, 4, 4>& ReadPixelsLogic::vp() const {
     return child_logic_.vp();
 }
 
-const FixedArray<float, 4, 4>& ReadPixelsLogic::iv() const {
+const TransformationMatrix<float>& ReadPixelsLogic::iv() const {
     return child_logic_.iv();
 }
 

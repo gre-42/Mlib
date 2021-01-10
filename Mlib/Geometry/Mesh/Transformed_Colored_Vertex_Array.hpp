@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 namespace Mlib {
 
 struct TransformedColoredVertexArray {
     std::shared_ptr<ColoredVertexArray> cva;
-    FixedArray<float, 4, 4> transformation_matrix;
+    TransformationMatrix<float> transformation_matrix;
 };
 
 }

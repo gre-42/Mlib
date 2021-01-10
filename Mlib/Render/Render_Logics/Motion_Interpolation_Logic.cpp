@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Motion_Interpolation_Logic.hpp"
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
@@ -21,7 +22,7 @@ using namespace Mlib;
  * https://stackoverflow.com/questions/6408851/draw-the-depth-value-in-opengl-using-shaders/6409229#6409229
  */
 static GenShaderText fragment_shader_text{[](
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
@@ -50,7 +51,7 @@ static GenShaderText fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_diff_fragment_shader_text{[](
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices)
@@ -98,7 +99,7 @@ static GenShaderText optical_flow_diff_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_diff1_fragment_shader_text{[](
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices)
@@ -138,7 +139,7 @@ static GenShaderText optical_flow_diff1_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_fragment_shader_text{[](
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices)
@@ -176,7 +177,7 @@ static GenShaderText optical_flow_fragment_shader_text{[](
 }};
 
 static GenShaderText optical_flow_apply_fragment_shader_text{[](
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices)
@@ -431,7 +432,7 @@ const FixedArray<float, 4, 4>& MotionInterpolationLogic::vp() const {
     return child_logic_.vp();
 }
 
-const FixedArray<float, 4, 4>& MotionInterpolationLogic::iv() const {
+const TransformationMatrix<float>& MotionInterpolationLogic::iv() const {
     return child_logic_.iv();
 }
 

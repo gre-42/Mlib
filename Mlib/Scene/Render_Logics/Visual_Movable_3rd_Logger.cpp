@@ -55,7 +55,7 @@ void VisualMovable3rdLogger::render(
     if (renderable_text_ == nullptr) {
         renderable_text_.reset(new RenderableText{ttf_filename_, font_height_pixels_});
     }
-    FixedArray<float, 3> node_pos = t3_from_4x4(scene_node_.absolute_model_matrix());
+    FixedArray<float, 3> node_pos = scene_node_.absolute_model_matrix().t();
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));
     if (position4(2) > scene_logic_.near_plane()) {
         FixedArray<float, 2> position2{
@@ -78,7 +78,7 @@ const FixedArray<float, 4, 4>& VisualMovable3rdLogger::vp() const {
     throw std::runtime_error("VisualMovable3rdLogger::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& VisualMovable3rdLogger::iv() const {
+const TransformationMatrix<float>& VisualMovable3rdLogger::iv() const {
     throw std::runtime_error("VisualMovable3rdLogger::iv not implemented");
 }
 

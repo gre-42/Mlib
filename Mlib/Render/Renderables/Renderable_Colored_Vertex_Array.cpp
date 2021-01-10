@@ -24,7 +24,7 @@ struct ShaderBoneWeight {
 using namespace Mlib;
 
 static GenShaderText vertex_shader_text_gen{[](
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
@@ -164,7 +164,7 @@ enum class OcclusionType {
 };
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
@@ -415,7 +415,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
+    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>* instances,
     RenderingResources& rendering_resources)
 : triangles_res_{triangles},
   rendering_resources_{rendering_resources},
@@ -428,7 +428,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
+    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>* instances,
     RenderingResources& rendering_resources)
 : RenderableColoredVertexArray{
     std::make_shared<AnimatedColoredVertexArrays>(),
@@ -443,7 +443,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<ColoredVertexArray>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
+    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>* instances,
     RenderingResources& rendering_resources)
 : RenderableColoredVertexArray(
     std::list<std::shared_ptr<ColoredVertexArray>>{triangles},
@@ -537,7 +537,7 @@ AggregateMode RenderableColoredVertexArray::aggregate_mode() const {
 
 const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const RenderProgramIdentifier& id,
-    const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights,
+    const std::vector<std::pair<TransformationMatrix<float>, Light*>>& filtered_lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices) const
@@ -734,14 +734,14 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
         CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
     }
     if (instances_ != nullptr) {
-        const std::vector<FixedArray<float, 4, 4>>& inst = instances_->at(cva);
+        const std::vector<TransformationMatrix<float>>& inst = instances_->at(cva);
         if (inst.empty()) {
             throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array received empty instances \"" + cva->name + '"');
         }
         std::vector<FixedArray<float, 3>> positions;
         positions.reserve(inst.size());
-        for (const FixedArray<float, 4, 4>& m : inst) {
-            positions.push_back(t3_from_4x4(m));
+        for (const TransformationMatrix<float>& m : inst) {
+            positions.push_back(m.t());
         }
         CHK(glGenBuffers(1, &va->position_buffer));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va->position_buffer));

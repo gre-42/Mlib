@@ -16,7 +16,7 @@ public:
     {}
     template <class... Args>
     const char* operator() (
-        const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+        const std::vector<std::pair<TransformationMatrix<float>, Light*>>& lights,
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,

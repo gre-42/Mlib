@@ -29,15 +29,15 @@ public:
     RenderableColoredVertexArray& operator = (const RenderableColoredVertexArray& other) = delete;
     explicit RenderableColoredVertexArray(
         const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
+        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>* instances,
         RenderingResources& rendering_resources);
     explicit RenderableColoredVertexArray(
         const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
+        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>* instances,
         RenderingResources& rendering_resources);
     explicit RenderableColoredVertexArray(
         const std::shared_ptr<ColoredVertexArray>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>* instances,
+        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>* instances,
         RenderingResources& rendering_resources);
     ~RenderableColoredVertexArray();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
@@ -53,7 +53,7 @@ public:
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
-        const std::vector<std::pair<FixedArray<float, 4, 4>, Light*>>& filtered_lights,
+        const std::vector<std::pair<TransformationMatrix<float>, Light*>>& filtered_lights,
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices) const;
@@ -62,7 +62,7 @@ private:
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<VertexArray>> vertex_arrays_;
     RenderingResources& rendering_resources_;
     mutable std::mutex mutex_;
-    std::unique_ptr<std::map<const ColoredVertexArray*, std::vector<FixedArray<float, 4, 4>>>> instances_;
+    std::unique_ptr<std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>> instances_;
 };
 
 }

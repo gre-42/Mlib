@@ -40,7 +40,7 @@ void StandardCameraLogic::render(
     co->set_aspect_ratio(aspect_ratio);
     vp_ = dot2d(
         co->projection_matrix(),
-        cn->absolute_view_matrix());
+        cn->absolute_view_matrix().affine());
     iv_ = cn->absolute_model_matrix();
 }
 
@@ -56,7 +56,7 @@ const FixedArray<float, 4, 4>& StandardCameraLogic::vp() const {
     return vp_;
 }
 
-const FixedArray<float, 4, 4>& StandardCameraLogic::iv() const {
+const TransformationMatrix<float>& StandardCameraLogic::iv() const {
     return iv_;
 }
 

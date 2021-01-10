@@ -64,7 +64,7 @@ const FixedArray<float, 4, 4>& VisualMovableLogger::vp() const {
     throw std::runtime_error("VisualMovableLogger::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& VisualMovableLogger::iv() const {
+const TransformationMatrix<float>& VisualMovableLogger::iv() const {
     throw std::runtime_error("VisualMovableLogger::iv not implemented");
 }
 

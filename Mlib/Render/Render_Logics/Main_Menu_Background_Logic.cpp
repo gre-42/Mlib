@@ -42,7 +42,7 @@ const FixedArray<float, 4, 4>& MainMenuBackgroundLogic::vp() const {
     throw std::runtime_error("MainMenuBackgroundLogic::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& MainMenuBackgroundLogic::iv() const {
+const TransformationMatrix<float>& MainMenuBackgroundLogic::iv() const {
     throw std::runtime_error("MainMenuBackgroundLogic::iv not implemented");
 }
 

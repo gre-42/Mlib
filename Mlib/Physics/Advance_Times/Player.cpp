@@ -133,12 +133,12 @@ void Player::set_waypoints(
 {
     all_waypoints_bvh_.clear();
     all_waypoints_ = all_waypoints;
+    FixedArray<float, 4, 4> m = node.absolute_model_matrix().affine();
+    FixedArray<float, 2, 3> m2{
+        m(0, 0), m(0, 1), m(0, 3),
+        m(2, 0), m(2, 1), m(2, 3)};
     for (auto& wps : all_waypoints_) {
         wps.second.adjacency = wps.second.adjacency / node.scale();
-        FixedArray<float, 4, 4> m = node.absolute_model_matrix();
-        FixedArray<float, 2, 3> m2{
-            m(0, 0), m(0, 1), m(0, 3),
-            m(2, 0), m(2, 1), m(2, 3)};
         Bvh<float, size_t, 2> bvh{{100.f, 100.f}, 10};
         size_t i = 0;
         for (FixedArray<float, 2>& p : wps.second.points) {

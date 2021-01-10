@@ -88,7 +88,7 @@ const FixedArray<float, 4, 4>& SceneSelectorLogic::vp() const {
     throw std::runtime_error("SceneSelectorLogic::vp not implemented");
 }
 
-const FixedArray<float, 4, 4>& SceneSelectorLogic::iv() const {
+const TransformationMatrix<float>& SceneSelectorLogic::iv() const {
     throw std::runtime_error("SceneSelectorLogic::iv not implemented");
 }
 

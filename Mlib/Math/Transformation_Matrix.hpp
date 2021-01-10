@@ -9,6 +9,15 @@ namespace Mlib {
 template <class TData>
 class TransformationMatrix {
 public:
+    static TransformationMatrix identity() {
+        return TransformationMatrix{
+            fixed_identity_array<TData, 3>(),
+            fixed_zeros<TData, 3>()};
+    }
+
+    TransformationMatrix()
+    {}
+
     TransformationMatrix(const FixedArray<TData, 3, 3>& R, const FixedArray<float, 3>& t)
     : R_{R},
       t_{t}
@@ -23,6 +32,12 @@ public:
         return dot1d(R_, rhs) + t_;
     }
 
+    TransformationMatrix operator * (const TransformationMatrix& rhs) const {
+        return TransformationMatrix{
+            dot2d(R_, rhs.R_),
+            dot1d(R_, rhs.t_) + t_};
+    }
+
     FixedArray<TData, 3> rotate(const FixedArray<TData, 3>& rhs) const {
         return dot1d(R_, rhs);
     }
@@ -32,6 +47,14 @@ public:
     }
 
     const FixedArray<TData, 3>& t() const {
+        return t_;
+    }
+
+    FixedArray<TData, 3, 3>& R() {
+        return R_;
+    }
+
+    FixedArray<TData, 3>& t() {
         return t_;
     }
 

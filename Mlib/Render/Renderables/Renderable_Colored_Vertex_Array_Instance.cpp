@@ -57,9 +57,9 @@ GLint get_wrap_param(WrapMode mode) {
 
 void RenderableColoredVertexArrayInstance::render(
     const FixedArray<float, 4, 4>& mvp,
-    const FixedArray<float, 4, 4>& m,
-    const FixedArray<float, 4, 4>& iv,
-    const std::list<std::pair<FixedArray<float, 4, 4>, Light*>>& lights,
+    const TransformationMatrix<float>& m,
+    const TransformationMatrix<float>& iv,
+    const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -114,7 +114,7 @@ void RenderableColoredVertexArrayInstance::render(
             }
         }
 
-        std::vector<std::pair<FixedArray<float, 4, 4>, Light*>> filtered_lights;
+        std::vector<std::pair<TransformationMatrix<float>, Light*>> filtered_lights;
         std::vector<size_t> light_noshadow_indices;
         std::vector<size_t> light_shadow_indices;
         std::vector<size_t> black_shadow_indices;
@@ -238,11 +238,11 @@ void RenderableColoredVertexArrayInstance::render(
         }
         LOG_INFO("RenderableColoredVertexArrayInstance::render lights");
         if (any(diffusivity != 0.f) || any(specularity != 0.f)) {
-            CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, (const GLfloat*) m.flat_begin()));
+            CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, (const GLfloat*) m.affine().flat_begin()));
             // CHK(glUniform3fv(rp.light_position_location, 1, (const GLfloat*) t3_from_4x4(filtered_lights.front().first).flat_begin()));
             size_t i = 0;
             for (const auto& l : filtered_lights) {
-                CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, (const GLfloat*) z3_from_4x4(l.first).flat_begin()));
+                CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, (const GLfloat*) z3_from_3x3(l.first.R()).flat_begin()));
             }
         }
         {
@@ -262,11 +262,11 @@ void RenderableColoredVertexArrayInstance::render(
         }
         if (has_lookat || any(specularity != 0.f)) {
             if (vc.orthographic()) {
-                auto d = z3_from_4x4(iv);
+                auto d = z3_from_3x3(iv.R());
                 d /= std::sqrt(sum(squared(d)));
                 CHK(glUniform3fv(rp.view_dir, 1, (const GLfloat*) d.flat_begin()));
             } else {
-                CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) t3_from_4x4(iv).flat_begin()));
+                CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) iv.t().flat_begin()));
             }
         }
         if (!rcva_->triangles_res_->bone_indices.empty()) {
@@ -303,7 +303,7 @@ void RenderableColoredVertexArrayInstance::render(
                 if (l.second->shadow) {
                     std::string mname = "lightmap_color" + l.second->node_name;
                     const auto& light_vp = rcva_->rendering_resources_.get_vp(mname);
-                    auto mvp_light = dot2d(light_vp, m);
+                    auto mvp_light = dot2d(light_vp, m.affine());
                     CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
                     
                     CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
@@ -324,7 +324,7 @@ void RenderableColoredVertexArrayInstance::render(
                 if (l.second->shadow) {
                     std::string mname = "lightmap_depth" + l.second->node_name;
                     const auto& light_vp = rcva_->rendering_resources_.get_vp(mname);
-                    auto mvp_light = dot2d(light_vp, m);
+                    auto mvp_light = dot2d(light_vp, m.affine());
                     CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
@@ -348,7 +348,7 @@ void RenderableColoredVertexArrayInstance::render(
         if (has_dirtmap) {
             std::string mname = "dirtmap";
             const auto& dirtmap_vp = rcva_->rendering_resources_.get_vp(mname);
-            auto mvp_dirtmap = dot2d(dirtmap_vp, m);
+            auto mvp_dirtmap = dot2d(dirtmap_vp, m.affine());
             CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, (const GLfloat*) mvp_dirtmap.flat_begin()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 1 + has_normalmap + filtered_lights.size()));
@@ -414,7 +414,7 @@ bool RenderableColoredVertexArrayInstance::requires_blending_pass() const {
 
 void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
     const FixedArray<float, 4, 4>& mvp,
-    const FixedArray<float, 4, 4>& m,
+    const TransformationMatrix<float>& m,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPass external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
@@ -434,7 +434,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
 }
 
 void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
-    const FixedArray<float, 4, 4>& m,
+    const TransformationMatrix<float>& m,
     const SceneGraphConfig& scene_graph_config,
     std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const
 {
@@ -448,7 +448,7 @@ void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
 
 void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
     const FixedArray<float, 4, 4>& mvp,
-    const FixedArray<float, 4, 4>& m,
+    const TransformationMatrix<float>& m,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPass external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
@@ -467,7 +467,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
 }
 
 void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
-    const FixedArray<float, 4, 4>& m,
+    const TransformationMatrix<float>& m,
     const SceneGraphConfig& scene_graph_config,
     std::list<TransformedColoredVertexArray>& aggregate_queue) const
 {
