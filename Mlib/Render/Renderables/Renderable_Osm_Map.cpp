@@ -733,16 +733,16 @@ RenderableOsmMap::RenderableOsmMap(
                 uv_scale_terrain,
                 *tl_terrain_street_extrusion);
         } else {
-            for (auto& t : tl_curb_street->triangles_) {
-                for (auto& v : t.flat_iterable()) {
-                    v.uv(0) *= 0.5 * uv_scale_terrain * (1 - curb_alpha) * default_street_width;
-                }
-            }
-            for (auto& t : tl_curb_path->triangles_) {
-                for (auto& v : t.flat_iterable()) {
-                    v.uv(0) *= 0.5 * uv_scale_terrain * (1 - curb_alpha) * default_street_width;
-                }
-            }
+            // for (auto& t : tl_curb_street->triangles_) {
+            //     for (auto& v : t.flat_iterable()) {
+            //         v.uv(0) *= 0.5 * uv_scale_terrain * (curb2_alpha - curb_alpha) * default_street_width;
+            //     }
+            // }
+            // for (auto& t : tl_curb_path->triangles_) {
+            //     for (auto& v : t.flat_iterable()) {
+            //         v.uv(0) *= 0.5 * uv_scale_terrain * (curb2_alpha - curb_alpha) * default_street_width;
+            //     }
+            // }
             TriangleList::extrude(
                 {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
                 extrude_street_amount * scale,
