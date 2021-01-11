@@ -158,7 +158,7 @@ BvhLoader::BvhLoader(
     if (std::isnan(frame_time_)) {
         throw std::runtime_error("Frame time not set");
     }
-    transformed_frames_.resize(raw_frames.size());
+    transformed_frames_.resize(raw_frames.size() + (cfg.periodic && !transformed_frames_.empty()));
     for (size_t i = 0; i < raw_frames.size(); ++i) {
         for (const auto& p : raw_frames[i]) {
             const FixedArray<float, 3>& position = p.second[0];
@@ -176,6 +176,10 @@ BvhLoader::BvhLoader(
                 throw std::runtime_error("Could not insert transformed frame");
             }
         }
+    }
+    smoothen();
+    if (cfg.periodic && !transformed_frames_.empty()) {
+        transformed_frames_[transformed_frames_.size() - 1] = transformed_frames_[0];
     }
 }
 
@@ -213,4 +217,42 @@ std::map<std::string, OffsetAndQuaternion<float>> BvhLoader::get_interpolated_fr
         }
     }
     return result;
+}
+
+int mod(int x, int N) {
+    return (x % N + N) % N;
+}
+
+void BvhLoader::smoothen() {
+    if (transformed_frames_.empty()) {
+        return;
+    }
+    if (cfg_.smooth_radius == 0) {
+        return;
+    }
+    if (!cfg_.periodic) {
+        throw std::runtime_error("Aperiodic smoothing not implemented");
+    }
+    std::vector<std::map<std::string, OffsetAndQuaternion<float>>> smoothed_transformed_frames(transformed_frames_.size());
+    auto get_cyclic_frame = [this](int i){
+        return transformed_frames_[mod(i, transformed_frames_.size())];
+    };
+    for (int t = 0; t < (int)transformed_frames_.size(); ++t) {
+        std::map<std::string, OffsetAndQuaternion<float>> fn = get_cyclic_frame(t - cfg_.smooth_radius);
+        for (int i = t - cfg_.smooth_radius + 1; i < t; ++i) {
+            for (const auto& f : get_cyclic_frame(i)) {
+                fn[f.first] = fn[f.first].slerp(f.second, cfg_.smooth_alpha);
+            }
+        }
+        std::map<std::string, OffsetAndQuaternion<float>> fp = get_cyclic_frame(t + cfg_.smooth_radius);
+        for (int i = t + cfg_.smooth_radius - 1; i > t; --i) {
+            for (const auto& f : get_cyclic_frame(i)) {
+                fp[f.first] = fp[f.first].slerp(f.second, cfg_.smooth_alpha);
+            }
+        }
+        for (const auto& en : fn) {
+            smoothed_transformed_frames[t][en.first] = en.second.slerp(fp[en.first], 0.5);
+        }
+    }
+    transformed_frames_ = std::move(smoothed_transformed_frames);
 }

@@ -14,6 +14,9 @@ struct ColumnDescription {
 };
 
 struct BvhConfig {
+    size_t smooth_radius = 20;
+    float smooth_alpha = 0.9;
+    bool periodic = true;
     bool demean = false;
     float scale = 1;
     // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
@@ -27,6 +30,9 @@ struct BvhConfig {
 };
 
 static const BvhConfig blender_bvh_config{
+    .smooth_radius = 20,
+    .smooth_alpha = 0.9,
+    .periodic = true,
     .demean = false,
     .scale = 1,
     .rotation_order = {2, 1, 0},
@@ -46,6 +52,7 @@ public:
     const std::map<std::string, OffsetAndQuaternion<float>>& get_frame(size_t id) const;
     std::map<std::string, OffsetAndQuaternion<float>> get_interpolated_frame(float seconds) const;
 private:
+    void smoothen();
     std::vector<std::map<std::string, OffsetAndQuaternion<float>>> transformed_frames_;
     std::map<std::string, FixedArray<float, 3>> offsets_;
     std::list<ColumnDescription> columns_;

@@ -376,9 +376,12 @@ void LoadScene::operator()(
         "\\s*animation_loop_end=([\\w+-.]+)\\r?\\n"
         "\\s*animation_loop_time=([\\w+-.]+)$");
     static const std::regex add_bvh_resource_reg(
-        "^(?:\\r?\\n|\\s)*add_bvh_resource\\r?\\n"
-        "\\s*name=([\\w+-.]+)\\r?\\n"
-        "\\s*filename=([\\w-. \\(\\)/+-]+)$");
+        "^(?:\\r?\\n|\\s)*add_bvh_resource"
+        "\\s+name=([\\w+-.]+)\\r?\\n"
+        "\\s+filename=([\\w-. \\(\\)/+-]+)"
+        "\\s+smooth_radius=([\\w+-.]+)"
+        "\\s+smooth_alpha=([\\w+-.]+)"
+        "\\s+periodic=(0|1)$");
     static const std::regex ui_background_reg("^(?:\\r?\\n|\\s)*ui_background texture=([\\w-. \\(\\)/+-]+) target_focus=(menu|loading|countdown|scene)$");
     static const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
@@ -1174,10 +1177,14 @@ void LoadScene::operator()(
                     .loop_end = safe_stof(match[14].str()),
                     .loop_time = safe_stof(match[15].str())}});
         } else if (std::regex_match(line, match, add_bvh_resource_reg)) {
+            BvhConfig cfg = blender_bvh_config;
+            cfg.smooth_radius = safe_stoz(match[3].str());
+            cfg.smooth_alpha = safe_stof(match[4].str());
+            cfg.periodic = safe_stob(match[5].str());
             scene_node_resources.add_bvh_file(
                 match[1].str(),
                 fpath(match[2].str()),
-                blender_bvh_config);
+                cfg);
         } else if (std::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
