@@ -15,6 +15,7 @@ public:
     RenderableColoredVertexArrayInstance(
         const std::shared_ptr<const RenderableColoredVertexArray>& rcva,
         const SceneNodeResourceFilter& resource_filter);
+    ~RenderableColoredVertexArrayInstance();
     virtual bool requires_render_pass() const override;
     virtual bool requires_blending_pass() const override;
     virtual void render(

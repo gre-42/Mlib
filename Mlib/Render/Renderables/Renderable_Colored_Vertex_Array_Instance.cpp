@@ -42,6 +42,9 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     }
 }
 
+RenderableColoredVertexArrayInstance::~RenderableColoredVertexArrayInstance()
+{}
+
 GLint get_wrap_param(WrapMode mode) {
     switch(mode) {
     case WrapMode::REPEAT:
