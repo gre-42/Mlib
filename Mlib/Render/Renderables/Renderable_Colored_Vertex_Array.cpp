@@ -75,6 +75,7 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_normalmap) {
         sstr << "out vec3 tangent;" << std::endl;
+        sstr << "out vec3 bitangent;" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
@@ -152,6 +153,7 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_normalmap) {
         sstr << "    tangent = mat3(M) * vTangent;" << std::endl;
+        sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
     return sstr.str();
@@ -204,6 +206,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_normalmap) {
         sstr << "in vec3 tangent;" << std::endl;
+        sstr << "in vec3 bitangent;" << std::endl;
         sstr << "uniform sampler2D texture_normalmap;" << std::endl;
     }
     if (has_dirtmap) {
@@ -277,19 +280,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 norm = normalize(Normal);" << std::endl;
         // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
     }
-    if (has_normalmap) {
-        sstr << "    vec3 tang = normalize(tangent);" << std::endl;
-        sstr << "    vec3 bitangent = normalize(cross(norm, tang));" << std::endl;
-        sstr << "    mat3 TBN = mat3(tang, bitangent, norm);" << std::endl;
-        sstr << "    vec3 tnorm = 2 * texture(texture_normalmap, tex_coord).rgb - 1;" << std::endl;
-        sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
-    }
     if (reorient_normals) {
         if (orthographic) {
             sstr << "    norm *= sign(dot(norm, viewDir));" << std::endl;
         } else {
             sstr << "    norm *= sign(dot(norm, viewPos - FragPos));" << std::endl;
         }
+    }
+    if (has_normalmap) {
+        sstr << "    vec3 tang = normalize(tangent);" << std::endl;
+        sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
+        sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
+        // sstr << "    mat3 TBN = mat3(tangent, bitangent, norm);" << std::endl;
+        sstr << "    vec3 tnorm = 2 * texture(texture_normalmap, tex_coord).rgb - 1;" << std::endl;
+        sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
     }
     if (!ambience.all_equal(0) || !diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         if (!light_noshadow_indices.empty()) {
