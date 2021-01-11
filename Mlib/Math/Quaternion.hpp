@@ -58,7 +58,7 @@ public:
     /**
      * From: https://en.wikipedia.org/wiki/Slerp
      */
-    Quaternion slerp(const Quaternion& q1, const TData& t) const {
+    Quaternion slerp(Quaternion q1, const TData& t) const {
         const Quaternion& q0 = *this;
         // Only unit quaternions are valid rotations.
         // Normalize to avoid undefined behavior.
