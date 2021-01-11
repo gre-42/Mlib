@@ -5,6 +5,9 @@
 #include <cmath>
 #include <iostream>
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+
 namespace Mlib {
 
 template <class TData>
@@ -249,3 +252,5 @@ std::ostream& operator << (std::ostream& ostr, const OffsetAndQuaternion<TData>&
 }
 
 }
+
+#pragma GCC pop_options
