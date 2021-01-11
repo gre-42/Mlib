@@ -49,6 +49,19 @@ public:
         std::list<TransformedColoredVertexArray>& instances_queue) const override;
     void print_stats() const;
 private:
+    std::vector<OffsetAndQuaternion<float>> calculate_absolute_bone_transformations(const Style* style) const;
+    void render_cva(
+        const ColoredVertexArray& cva,
+        const std::vector<OffsetAndQuaternion<float>>& absolute_bone_transformations,
+        const FixedArray<float, 4, 4>& mvp,
+        const TransformationMatrix<float>& m,
+        const TransformationMatrix<float>& iv,
+        const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights,
+        const SceneGraphConfig& scene_graph_config,
+        const RenderConfig& render_config,
+        const RenderPass& render_pass,
+        const Style* style) const;
+
     std::shared_ptr<const RenderableColoredVertexArray> rcva_;
     std::list<std::shared_ptr<ColoredVertexArray>> triangles_res_subset_;
     bool requires_render_pass_;
