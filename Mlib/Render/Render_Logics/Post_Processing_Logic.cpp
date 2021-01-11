@@ -161,11 +161,13 @@ void PostProcessingLogic::render(
         assert_true(render_config.nsamples_msaa > 0);
 
         RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
-        fb_.configure({width: width, height: height, with_depth_texture: true});
+        fb_.configure({.width = width, .height = height, .with_depth_texture = true});
         if (render_config.nsamples_msaa != 1) {
-            ms_fb_.configure({width: width, height: height, with_depth_texture: true, nsamples_msaa: render_config.nsamples_msaa});
+            ms_fb_.configure({.width = width, .height = height, .with_depth_texture = true, .nsamples_msaa = render_config.nsamples_msaa});
+            CHK(glBindFramebuffer(GL_FRAMEBUFFER, ms_fb_.frame_buffer));
+        } else {
+            CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_.frame_buffer));
         }
-        CHK(glBindFramebuffer(GL_FRAMEBUFFER, ms_fb_.frame_buffer));
         child_logic_.render(
             width,
             height,
