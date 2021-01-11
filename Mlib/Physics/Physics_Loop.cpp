@@ -58,11 +58,13 @@ PhysicsLoop::PhysicsLoop(
                     ++i;
                 }
             }
+            // TimeGuard tg1{"scene.move"};
             scene.move(physics_cfg.dt);
         }
         physics_engine.move_advance_times();
         physics_engine.advance_times_.delete_scheduled_advance_times();
         // std::cerr << rb0->get_new_absolute_model_matrix() << std::endl;
+        // TimeGuard tg2{"physics tick"};
         set_fps.tick(physics_cfg.dt, physics_cfg.max_residual_time, physics_cfg.print_residual_time);
     }
     }}

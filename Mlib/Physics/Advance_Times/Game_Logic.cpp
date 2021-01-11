@@ -66,6 +66,7 @@ void GameLogic::set_preferred_car_spawner(Player& player, const std::function<vo
 }
 
 void GameLogic::advance_time(float dt) {
+    // TimeGuard tg{"GameLogic::advance_time"};
     // nspawns_ = 0;
     // ndelete_ = 0;
     handle_team_deathmatch();

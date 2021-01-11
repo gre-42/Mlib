@@ -115,16 +115,25 @@ TimeGuard::TimeGuard(const char* message)
         .message = message,
         .stack_size = stack_size_});
     ++stack_size_;
+    insert_event({
+        .event_id = event_id_,
+        .time = std::chrono::steady_clock::now(),
+        .message = message,
+        .stack_size = stack_size_});
 }
 
 TimeGuard::~TimeGuard() {
-    --stack_size_;
-    called_function_.end_time = std::chrono::steady_clock::now();
-    insert_called_function(called_function_);
     insert_event({
         .event_id = event_id_,
         .time = std::chrono::steady_clock::now(),
         .message = "dtor",
         .stack_size = stack_size_});
-    
+    --stack_size_;
+    insert_event({
+        .event_id = event_id_,
+        .time = std::chrono::steady_clock::now(),
+        .message = "dtor",
+        .stack_size = stack_size_});
+    called_function_.end_time = std::chrono::steady_clock::now();
+    insert_called_function(called_function_);
 }

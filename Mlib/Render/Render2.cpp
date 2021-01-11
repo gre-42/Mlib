@@ -15,6 +15,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
+#include <Mlib/Time_Guard.hpp>
 #include <fenv.h>
 #include <iostream>
 
@@ -128,6 +129,7 @@ void Render2::operator () (
         {
             std::lock_guard lock{mutex}; // formerly shared_lock
 
+            // TimeGuard tg0{"render"};
             logic.render(
                 width,
                 height,
@@ -149,6 +151,7 @@ void Render2::operator () (
             glfwSetWindowShouldClose(window_->window(), GLFW_TRUE);
         }
         if (render_config_.dt != 0) {
+            // TimeGuard tg1{"render tick"};
             set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
         } else if (render_config_.motion_interpolation) {
             throw std::runtime_error("Motion interpolation requires render_dt");

@@ -30,6 +30,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
 #include <Mlib/String.hpp>
+#include <Mlib/Time_Guard.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -180,6 +181,7 @@ int main(int argc, char** argv) {
         FifoLog fifo_log{10 * 1000};
 
         while (!render2.window_should_close()) {
+            // TimeGuard::initialize(5000);
             num_renderings = SIZE_MAX;
             ui_focus.n_submenus = 0;
 
@@ -355,6 +357,9 @@ int main(int argc, char** argv) {
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;
         return 1;
+    }
+    if (!TimeGuard::is_empty()) {
+        TimeGuard::write_svg("/tmp/events.svg");
     }
     return 0;
 }
