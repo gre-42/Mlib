@@ -1,7 +1,6 @@
 #include "Rigid_Body_Playback.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
@@ -17,14 +16,17 @@ RigidBodyPlayback::RigidBodyPlayback(
   track_reader_{filename, speed}
 {}
 
+RigidBodyPlayback::~RigidBodyPlayback()
+{}
+
 void RigidBodyPlayback::advance_time(float dt) {
     if (focus_.empty() || (std::find(focus_.begin(), focus_.end(), Focus::COUNTDOWN) != focus_.end())) {
         return;
     }
     float time;
     FixedArray<float, 3> rotation;
-    if (track_reader_.read(time, position_, rotation)) {
-        rotation_ = tait_bryan_angles_2_matrix(rotation);
+    if (track_reader_.read(time, transformation_matrix_.t(), rotation)) {
+        transformation_matrix_.R() = tait_bryan_angles_2_matrix(rotation);
     }
 }
 
@@ -33,10 +35,9 @@ void RigidBodyPlayback::notify_destroyed(void* obj) {
 }
 
 void RigidBodyPlayback::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {
-    position_ = absolute_model_matrix.t();
-    rotation_ = absolute_model_matrix.R();
+    transformation_matrix_ = absolute_model_matrix;
 }
 
 TransformationMatrix<float> RigidBodyPlayback::get_new_absolute_model_matrix() const {
-    return TransformationMatrix<float>{rotation_, position_};
+    return transformation_matrix_;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
@@ -26,6 +27,7 @@ public:
         float y_snappiness = 0.05,
         float dt = 1.f/60,
         float dt_ref = 1.f/60);
+    ~FollowMovable();
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
     virtual TransformationMatrix<float> get_new_absolute_model_matrix() const override;
@@ -39,8 +41,7 @@ private:
     FixedArray<float, 2> attachment_position_;
     FixedArray<float, 3> node_displacement_;
     FixedArray<float, 3> look_at_displacement_;
-    FixedArray<float, 3> position_;
-    FixedArray<float, 3, 3> rotation_;
+    TransformationMatrix<float> transformation_matrix_;
     FixedArray<float, 3> dpos_old_;
     float snappiness_;
     float y_adaptivity_;

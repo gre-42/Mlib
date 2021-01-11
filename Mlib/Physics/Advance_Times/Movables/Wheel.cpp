@@ -15,8 +15,9 @@ Wheel::Wheel(
     ResolveCollisionType resolve_collision_type)
 : rigid_body_{rigid_body},
   advance_times_{advance_times},
-  position_{fixed_nans<float, 3>()},
-  rotation_{fixed_nans<float, 3, 3>()},
+  transformation_matrix_{
+      fixed_nans<float, 3, 3>(),
+      fixed_nans<float, 3>()},
   tire_id_{tire_id},
   angle_x_{0},
   radius_{radius},
@@ -25,16 +26,18 @@ Wheel::Wheel(
   resolve_collision_type_{resolve_collision_type}
 {}
 
+Wheel::~Wheel()
+{}
+
 void Wheel::set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix)
 {
-    position_ = relative_model_matrix.t();
-    rotation_ = relative_model_matrix.R();
-    y0_ = position_(1);
+    transformation_matrix_ = relative_model_matrix;
+    y0_ = transformation_matrix_.t()(1);
 }
 
 void Wheel::set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix)
 {
-    position_ = relative_model_matrix.t();
+    transformation_matrix_.t() = relative_model_matrix.t();
 }
 
 void Wheel::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix)
@@ -44,7 +47,7 @@ void Wheel::set_absolute_model_matrix(const TransformationMatrix<float>& absolut
 
 TransformationMatrix<float> Wheel::get_new_relative_model_matrix() const
 {
-    return TransformationMatrix<float>{rotation_, position_};
+    return transformation_matrix_;
 }
 
 void Wheel::advance_time(float dt) {
@@ -52,9 +55,9 @@ void Wheel::advance_time(float dt) {
     if (auto it = rigid_body_.tires_.find(tire_id_); it != rigid_body_.tires_.end()) {
         tire_angles(1) = it->second.angle_y;
         if (resolve_collision_type_ == ResolveCollisionType::PENALTY) {
-            position_(1) = y0_ + it->second.shock_absorber.position();
+            transformation_matrix_.t()(1) = y0_ + it->second.shock_absorber.position();
         } else if (resolve_collision_type_ == ResolveCollisionType::SEQUENTIAL_PULSES) {
-            position_(1) = y0_ + it->second.shock_absorber_position;
+            transformation_matrix_.t()(1) = y0_ + it->second.shock_absorber_position;
         } else {
             throw std::runtime_error("Unknown resolve collision type");
         }
@@ -71,7 +74,7 @@ void Wheel::advance_time(float dt) {
         angle_x_ = std::fmod(angle_x_, 2 * M_PI);
     }
     tire_angles(0) = angle_x_;
-    rotation_ = tait_bryan_angles_2_matrix(tire_angles);
+    transformation_matrix_.R() = tait_bryan_angles_2_matrix(tire_angles);
 }
 
 void Wheel::notify_destroyed(void* obj) {

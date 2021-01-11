@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -20,6 +21,7 @@ public:
         float radius,
         PhysicsType physics_type,
         ResolveCollisionType resolve_collision_type);
+    ~Wheel();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) override;
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
@@ -28,8 +30,7 @@ public:
     virtual void notify_destroyed(void* obj) override;
     RigidBody& rigid_body_;
     AdvanceTimes& advance_times_;
-    FixedArray<float, 3> position_;
-    FixedArray<float, 3, 3> rotation_;
+    TransformationMatrix<float> transformation_matrix_;
     size_t tire_id_;
     float angle_x_;
     float radius_;

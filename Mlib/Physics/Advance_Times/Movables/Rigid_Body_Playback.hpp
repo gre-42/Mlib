@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
@@ -20,6 +21,7 @@ public:
         AdvanceTimes& advance_times,
         const std::list<Focus>& focus,
         float speed);
+    ~RigidBodyPlayback();
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
@@ -27,8 +29,7 @@ public:
 private:
     AdvanceTimes& advance_times_;
     const std::list<Focus>& focus_;
-    FixedArray<float, 3> position_;
-    FixedArray<float, 3, 3> rotation_;
+    TransformationMatrix<float> transformation_matrix_;
     TrackReader track_reader_;
 };
 
