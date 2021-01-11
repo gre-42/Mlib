@@ -6,13 +6,15 @@ namespace Mlib {
 
 class PathDrawer {
 public:
-    explicit PathDrawer(std::ostream& ostr)
+    explicit PathDrawer(
+        std::ostream& ostr,
+        const std::string& stroke = "#000")
     :ostr_{ostr}
     {
         ostr_ <<
             "  <path "
             "stroke-width=\"1.5\" "
-            "stroke=\"#000\" "
+            "stroke=\"" << stroke << "\" "
             "fill=\"none\" "
             "d=\"M ";
     }
@@ -127,6 +129,72 @@ public:
             << "  <image xlink:href=\"" << filename << "\" "
             << "width=\"" << width << "\" "
             << "height=\"" << height << "\"/>\n";
+    }
+
+    template <class TData>
+    void plot(
+        const std::vector<std::vector<TData>>& x,
+        const std::vector<std::vector<TData>>& y,
+        size_t down_sampling = 1,
+        const std::vector<std::string>& colors = {"#000", "#FF5733"})
+    {
+        if (x.size() != y.size()) {
+            throw std::runtime_error("Size mismatch in plot");
+        }
+        if (x.empty()) {
+            return;
+        }
+        auto xm = std::make_pair((const TData*)nullptr, (const TData*)nullptr);
+        auto ym = std::make_pair((const TData*)nullptr, (const TData*)nullptr);
+        for (size_t i = 0; i < x.size(); ++i) {
+            if (x[i].size() != y[i].size()) {
+                throw std::runtime_error("Size mismatch in plot");
+            }
+            if (x[i].empty()) {
+                continue;
+            }
+            const auto lxm = std::minmax_element(x[i].begin(), x[i].end());
+            const auto lym = std::minmax_element(y[i].begin(), y[i].end());
+            if (xm.first == nullptr) {
+                xm.first = &*lxm.first;
+                xm.second = &*lxm.second;
+                ym.first = &*lym.first;
+                ym.second = &*lym.second;
+            } else {
+                xm.first = &std::min(*xm.first, *lxm.first);
+                xm.second = &std::max(*xm.second, *lxm.second);
+                ym.first = &std::min(*ym.first, *lym.first);
+                ym.second = &std::max(*ym.second, *lym.second);
+            }
+        }
+        if (xm.first == nullptr) {
+            return;
+        }
+        const auto xpos = [&](const TData& x) {
+            return ((x - *xm.first) * width_) / (*xm.second - *xm.first);
+        };
+        const auto ypos = [&](const TData& y) {
+            return height_ - ((y - *ym.first) * height_) / (*ym.second - *ym.first);
+        };
+        // for (size_t i = down_sampling; i < x.size(); i += down_sampling) {
+        //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
+        //}
+        for (size_t i = 0; i < x.size(); ++i) {
+            if (colors.empty()) {
+                throw std::runtime_error("No color defined");
+            }
+            PathDrawer pd{ostr_, colors[i % colors.size()]};
+            for (size_t j = 0; j < x[i].size(); j += down_sampling) {
+                pd.draw_point(xpos(x[i][j]), ypos(y[i][j]));
+            }
+            pd.finish();
+        }
+        for (const TData& xx : linspace(*xm.first, *xm.second, 5).flat_iterable()) {
+            draw_text<TData>(xpos(xx), height_, std::to_string(xx));
+        }
+        for (const TData& yy : linspace(*ym.first, *ym.second, 5).flat_iterable()) {
+            draw_text<TData>(0, ypos(yy), std::to_string(yy));
+        }
     }
 
     template <class TData>
