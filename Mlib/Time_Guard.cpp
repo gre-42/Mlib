@@ -53,11 +53,9 @@ void TimeGuard::write_svg(const std::string& filename) {
         x[i].reserve(e.second.size());
         y[i].reserve(e.second.size());
         for (const auto& ee : sorted_events) {
-            if (ee.stack_size != SIZE_MAX) {
-                float time = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(ee.time - global_start_time_).count();
-                x[i].push_back(time);
-                y[i].push_back(ee.stack_size);
-            }
+            float time = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(ee.time - global_start_time_).count();
+            x[i].push_back(time);
+            y[i].push_back(ee.stack_size);
         }
         ++i;
     }
@@ -75,7 +73,7 @@ bool TimeGuard::is_empty() {
 
 void TimeGuard::insert_event(const TimeEvent& e) {
     auto& ar = events_[std::this_thread::get_id()];
-    if (event_id_ == ar.size()) {
+    if (event_id_ < max_log_length_) {
         ar.push_back(e);
     } else {
         ar[event_id_ % max_log_length_] = e;
@@ -85,19 +83,20 @@ void TimeGuard::insert_event(const TimeEvent& e) {
 
 void TimeGuard::insert_called_function(const CalledFunction& called_function) {
     auto& ar = called_functions_[std::this_thread::get_id()];
-    if (called_function_id_ == ar.size()) {
+    if (called_function_id_ < max_log_length_) {
         ar.push_back(called_function);
     } else {
-        ar[called_function_id_] = called_function;
+        ar[called_function_id_ % max_log_length_] = called_function;
     }
-    called_function_id_ = (called_function_id_ + 1) % max_log_length_;
+    ++called_function_id_;
 }
 
 TimeGuard::TimeGuard(const char* message)
 : called_function_{
     .start_time = std::chrono::steady_clock::now(),
     .message = message,
-    .stack_size = stack_size_} {
+    .stack_size = stack_size_}
+{
     if (max_log_length_ == 0) {
         throw std::runtime_error("Please call \"TimeGuard::set_max_log_length\"");
     }
@@ -106,6 +105,7 @@ TimeGuard::TimeGuard(const char* message)
         ar.reserve(max_log_length_);
     }
     insert_event({
+        .event_id = event_id_,
         .time = std::chrono::steady_clock::now(),
         .message = message,
         .stack_size = stack_size_});
