@@ -30,7 +30,7 @@ class TimeGuard {
 public:
     TimeGuard(const char* message);
     ~TimeGuard();
-    static void set_max_log_length(size_t len);
+    static void initialize(size_t max_log_length);
     static void write_svg(const std::string& filename);
     static bool is_empty();
 private:

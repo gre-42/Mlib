@@ -14,9 +14,14 @@ size_t TimeGuard::max_log_length_ = 0;
 thread_local size_t TimeGuard::event_id_ = 0;
 thread_local size_t TimeGuard::called_function_id_ = 0;
 
-void TimeGuard::set_max_log_length(size_t len) {
-    max_log_length_ = len;
+void TimeGuard::initialize(size_t max_log_length) {
     global_start_time_ = std::chrono::steady_clock::now();
+    events_.clear();
+    called_functions_.clear();
+    stack_size_ = 0;
+    max_log_length_ = max_log_length;
+    event_id_ = 0;
+    called_function_id_ = 0;
 }
 
 void TimeGuard::write_svg(const std::string& filename) {
@@ -98,7 +103,7 @@ TimeGuard::TimeGuard(const char* message)
     .stack_size = stack_size_}
 {
     if (max_log_length_ == 0) {
-        throw std::runtime_error("Please call \"TimeGuard::set_max_log_length\"");
+        throw std::runtime_error("Please call \"TimeGuard::initialize\"");
     }
     auto& ar = events_[std::this_thread::get_id()];
     if (ar.capacity() == 0) {
