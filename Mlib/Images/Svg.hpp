@@ -4,21 +4,22 @@
 
 namespace Mlib {
 
+template <class TData>
 class PathDrawer {
 public:
     explicit PathDrawer(
         std::ostream& ostr,
+        const TData& stroke_width,
         const std::string& stroke = "#000")
     :ostr_{ostr}
     {
         ostr_ <<
             "  <path "
-            "stroke-width=\"1.5\" "
+            "stroke-width=\"" << stroke_width << "\" "
             "stroke=\"" << stroke << "\" "
             "fill=\"none\" "
             "d=\"M ";
     }
-    template <class TData>
     void draw_point(const TData& x, const TData& y) {
         ostr_ << x << "," << y << " ";
     }
@@ -92,7 +93,14 @@ public:
     }
 
     template <class TData>
-    void draw_line(const TData& x0, const TData& y0, const TData& x1, const TData& y1, const TData& width = 1.5, const std::string& id = "") {
+    void draw_line(
+        const TData& x0,
+        const TData& y0,
+        const TData& x1,
+        const TData& y1,
+        const TData& stroke_width = 1.5,
+        const std::string& id = "")
+    {
         ostr_ <<
             "  <line " <<
             (id.empty() ? "" : "id=\"" + id + "\" ") <<
@@ -100,17 +108,22 @@ public:
             "x2=\"" << x1 << "\" "
             "y1=\"" << y0 << "\" "
             "x1=\"" << x0 << "\" "
-            "stroke-width=\"" << width << "\" "
+            "stroke-width=\"" << stroke_width << "\" "
             "stroke=\"#000\" "
             "fill=\"none\"/>\n";
     }
 
     template <class TData>
-    void draw_path(const std::vector<TData>& x, const std::vector<TData>& y, size_t down_sampling = 1) {
+    void draw_path(
+        const std::vector<TData>& x,
+        const std::vector<TData>& y,
+        const TData& stroke_width = 1.5,
+        size_t down_sampling = 1)
+    {
         if (x.size() != y.size()) {
             throw std::runtime_error("Size mismatch in draw_path");
         }
-        PathDrawer pd{ostr_};
+        PathDrawer pd{ostr_, stroke_width};
         for (size_t i = 0; i < x.size(); i += down_sampling) {
             pd.draw_point(x[i], y[i]);
         }
@@ -135,8 +148,9 @@ public:
     void plot(
         const std::vector<std::vector<TData>>& x,
         const std::vector<std::vector<TData>>& y,
-        size_t down_sampling = 1,
-        const std::vector<std::string>& colors = {"#000", "#FF5733"})
+        const TData& stroke_width = 1.5,
+        const std::vector<std::string>& colors = {"#000", "#FF5733"},
+        size_t down_sampling = 1)
     {
         if (x.size() != y.size()) {
             throw std::runtime_error("Size mismatch in plot");
@@ -183,7 +197,7 @@ public:
             if (colors.empty()) {
                 throw std::runtime_error("No color defined");
             }
-            PathDrawer pd{ostr_, colors[i % colors.size()]};
+            PathDrawer pd{ostr_, stroke_width, colors[i % colors.size()]};
             for (size_t j = 0; j < x[i].size(); j += down_sampling) {
                 pd.draw_point(xpos(x[i][j]), ypos(y[i][j]));
             }
@@ -198,7 +212,12 @@ public:
     }
 
     template <class TData>
-    void plot(const std::vector<TData>& x, const std::vector<TData>& y, size_t down_sampling = 1) {
+    void plot(
+        const std::vector<TData>& x,
+        const std::vector<TData>& y,
+        const TData& stroke_width = 1.5,
+        size_t down_sampling = 1)
+    {
         if (x.size() != y.size()) {
             throw std::runtime_error("Size mismatch in plot");
         }
@@ -216,7 +235,7 @@ public:
         // for (size_t i = down_sampling; i < x.size(); i += down_sampling) {
         //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
         //}
-        PathDrawer pd{ostr_};
+        PathDrawer pd{ostr_, stroke_width};
         for (size_t i = 0; i < x.size(); i += down_sampling) {
             pd.draw_point(xpos(x[i]), ypos(y[i]));
         }
@@ -230,8 +249,13 @@ public:
     }
 
     template <class TData>
-    void plot(const std::list<TData>& x, const std::list<TData>& y, size_t down_sampling = 1) {
-        plot(std::vector(x.begin(), x.end()), std::vector(y.begin(), y.end()), down_sampling);
+    void plot(
+        const std::list<TData>& x,
+        const std::list<TData>& y,
+        const TData& stroke_width = 1.5,
+        size_t down_sampling = 1)
+    {
+        plot(std::vector(x.begin(), x.end()), std::vector(y.begin(), y.end()), stroke_width, down_sampling);
     }
 
     template <class TData>
@@ -240,7 +264,7 @@ public:
         const std::vector<TData>& y_start,
         const std::vector<TData>& x_stop,
         const std::vector<TData>& y_stop,
-        const TData& line_width = 1.5,
+        const TData& stroke_width = 1.5,
         size_t down_sampling = 1)
     {
         if (x_start.size() != y_start.size()) {
@@ -280,7 +304,7 @@ public:
             draw_line(
                 xpos(x_start[i]), ypos(y_start[i]),
                 xpos(x_stop[i]), ypos(y_stop[i]),
-                line_width,
+                stroke_width,
                 "line" + std::to_string(i));
         }
         for (const TData& xx : linspace(xm_min, xm_max, 5).flat_iterable()) {

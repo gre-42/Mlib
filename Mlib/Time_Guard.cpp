@@ -61,7 +61,7 @@ void TimeGuard::write_svg(const std::string& filename) {
         }
         ++i;
     }
-    svg.plot(x, y);
+    svg.plot(x, y, 0.01f);
     svg.finish();
     ostr.flush();
     if (ostr.fail()) {
