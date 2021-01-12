@@ -103,6 +103,14 @@ public:
         res += data_.size();
         return res;
     }
+    const std::list<std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>>& data() const
+    {
+        return data_;
+    }
+    const std::list<std::pair<AxisAlignedBoundingBox<TData, tndim>, Bvh>>& children() const
+    {
+        return children_;
+    }
 private:
     FixedArray<TData, tndim> max_size_;
     size_t level_;
