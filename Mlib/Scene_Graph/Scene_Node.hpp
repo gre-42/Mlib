@@ -122,7 +122,7 @@ public:
     TransformationMatrix<float> absolute_model_matrix() const;
     TransformationMatrix<float> relative_view_matrix() const;
     TransformationMatrix<float> absolute_view_matrix() const;
-    void print(size_t recursion_depth) const;
+    void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     void set_style(Style* style);
 private:
     Scene* scene_;
@@ -144,5 +144,7 @@ private:
     mutable bool rotation_matrix_invalidated_;
     std::unique_ptr<Style> style_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const SceneNode& node);
 
 }

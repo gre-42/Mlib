@@ -362,25 +362,34 @@ size_t Scene::get_uuid() {
     return uuid_++;
 }
 
-void Scene::print() const {
-    std::string rec(1, '-');
-    std::cout << "Dynamic nodes" << std::endl;
-    for (const auto& x : root_nodes_) {
-        std::cout << rec << " " << x.first << std::endl;
-        x.second->print(2);
+void Scene::print(std::ostream& ostr) const {
+    ostr << "Dynamic nodes\n";
+    for (const auto& n : root_nodes_) {
+        ostr << " " << n.first << '\n';
+        n.second->print(ostr, 2);
     }
-    std::cout << "Static nodes" << std::endl;
-    for (const auto& x : static_root_nodes_) {
-        std::cout << rec << " " << x.first << std::endl;
-        x.second->print(2);
+    ostr << "Static nodes\n";
+    for (const auto& n : static_root_nodes_) {
+        ostr << " " << n.first << '\n';
+        n.second->print(ostr, 2);
     }
-    std::cout << "Aggregate nodes" << std::endl;
-    for (const auto& x : root_aggregate_nodes_) {
-        std::cout << rec << " " << x.first << std::endl;
-        x.second->print(2);
+    ostr << "Aggregate nodes\n";
+    for (const auto& n : root_aggregate_nodes_) {
+        ostr << " " << n.first << '\n';
+        n.second->print(ostr, 2);
+    }
+    ostr << "Instances nodes\n";
+    for (const auto& n : root_instances_nodes_) {
+        ostr << " " << n.first << '\n';
+        n.second->print(ostr, 2);
     }
 }
 
 bool Scene::shutting_down() const {
     return shutting_down_;
+}
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {
+    scene.print(ostr);
+    return ostr;
 }

@@ -514,23 +514,33 @@ TransformationMatrix<float> SceneNode::absolute_view_matrix() const {
     }
 }
 
-void SceneNode::print(size_t recursion_depth) const {
-    std::string rec(recursion_depth, '-');
-    std::string rec2(recursion_depth + 1, '-');
-    std::cerr << rec << " Position " << position() << std::endl;
-    std::cerr << rec << " Rotation " << rotation() << std::endl;
-    std::cout << rec << " Renderables" << std::endl;
-    for (const auto& x : renderables_) {
-        std::cerr << rec2 << " " << x.first << std::endl;
+void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
+    std::string ind(recursion_depth, '-');
+    std::string ind2(recursion_depth + 1, '-');
+    ostr << " " << ind << " Position " << position() << '\n';
+    ostr << " " << ind << " Rotation " << rotation() << '\n';
+    ostr << " " << ind << " Renderables\n";
+    for (const auto& r : renderables_) {
+        ostr << " " << ind2 << " " << r.first << '\n';
     }
-    std::cout << rec << " Children" << std::endl;
-    for (const auto& x : children_) {
-        std::cerr << rec2 << " " << x.first << std::endl;
-        x.second.scene_node->print(recursion_depth + 1);
+    ostr << " " << ind << " Children\n";
+    for (const auto& n : children_) {
+        ostr << " " << ind2 << " " << n.first << '\n';
+        n.second.scene_node->print(ostr, recursion_depth + 1);
     }
-    std::cout << rec << " Aggregate children" << std::endl;
-    for (const auto& x : aggregate_children_) {
-        std::cerr << rec2 << " " << x.first << std::endl;
-        x.second.scene_node->print(recursion_depth + 1);
+    ostr << " " << ind << " Aggregates\n";
+    for (const auto& n : aggregate_children_) {
+        ostr << " " << ind2 << " " << n.first << '\n';
+        n.second.scene_node->print(ostr, recursion_depth + 1);
     }
+    ostr << " " << ind << " Instances\n";
+    for (const auto& n : instances_children_) {
+        ostr << " " << ind2 << " " << n.first << " n=" << n.second.instances.size() << '\n';
+        n.second.scene_node->print(ostr, recursion_depth + 1);
+    }
+}
+
+std::ostream& operator << (std::ostream& ostr, const SceneNode& node) {
+    node.print(ostr);
+    return ostr;
 }

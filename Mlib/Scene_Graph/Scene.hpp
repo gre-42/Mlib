@@ -2,6 +2,7 @@
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <atomic>
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -51,7 +52,7 @@ public:
         ExternalRenderPass external_render_pass) const;
     void move(float dt);
     size_t get_uuid();
-    void print() const;
+    void print(std::ostream& ostr) const;
     bool shutting_down() const;
 private:
     mutable std::shared_mutex dynamic_mutex_;
@@ -83,5 +84,7 @@ private:
     bool shutting_down_;
     std::unique_ptr<const Style> style_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const Scene& scene);
 
 }
