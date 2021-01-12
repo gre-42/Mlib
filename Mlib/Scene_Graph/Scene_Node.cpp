@@ -540,7 +540,7 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     }
 }
 
-std::ostream& operator << (std::ostream& ostr, const SceneNode& node) {
+std::ostream& Mlib::operator << (std::ostream& ostr, const SceneNode& node) {
     node.print(ostr);
     return ostr;
 }
