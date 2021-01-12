@@ -43,6 +43,29 @@ void StandardRenderLogic::render(
     scene_.render(child_logic_.vp(), child_logic_.iv(), render_config, scene_graph_config, frame_id.external_render_pass);
 
     render_config.unapply();
+
+    // if (frame_id.external_render_pass.pass == ExternalRenderPass::Pass::STANDARD_WO_POSTPROCESSING ||
+    //     frame_id.external_render_pass.pass == ExternalRenderPass::Pass::STANDARD_WITH_POSTPROCESSING)
+    // {
+    //     static Fps fps;
+    //     fps.tick();
+    //     static size_t ctr = 0;
+    //     if (ctr++ % (60 * 5) == 0) {
+    //         std::stringstream sstr;
+    //         sstr << "/tmp/scene_"  <<
+    //             std::setfill('0') <<
+    //             std::setw(5) <<
+    //             ctr <<
+    //             "_" << 
+    //             fps.fps() <<
+    //             ".txt";
+    //         std::ofstream f{sstr.str()};
+    //         f << scene_ << std::endl;
+    //         if (f.fail()) {
+    //             throw std::runtime_error("Could not write to file " + sstr.str());
+    //         }
+    //     }
+    // }
 }
 
 float StandardRenderLogic::near_plane() const {
