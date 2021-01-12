@@ -149,11 +149,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
-        sstr << "    Normal = normalize(mat3(M) * vNormal);" << std::endl;
+        sstr << "    Normal = mat3(M) * vNormal;" << std::endl;
     }
     if (has_normalmap) {
-        sstr << "    tangent = normalize(mat3(M) * vTangent);" << std::endl;
-        sstr << "    bitangent = normalize(cross(Normal, tangent));" << std::endl;
+        sstr << "    tangent = mat3(M) * vTangent;" << std::endl;
+        sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
     return sstr.str();
@@ -278,7 +278,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     sstr << "    vec3 fragBrightness = vec3(0, 0, 0);" << std::endl;
     if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         // sstr << "    vec3 norm = normalize(Normal);" << std::endl;
-        sstr << "    vec3 norm = Normal;" << std::endl;
+        sstr << "    vec3 norm = normalize(Normal);" << std::endl;
         // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
     }
     if (reorient_normals) {
@@ -289,12 +289,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     if (has_normalmap) {
-        // sstr << "    vec3 tang = normalize(tangent);" << std::endl;
-        // sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
-        // sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
-        sstr << "    mat3 TBN = mat3(tangent, bitangent, norm);" << std::endl;
+        sstr << "    vec3 tang = normalize(tangent);" << std::endl;
+        sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
+        sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
+        // sstr << "    mat3 TBN = mat3(tangent, bitangent, norm);" << std::endl;
         sstr << "    vec3 tnorm = 2 * texture(texture_normalmap, tex_coord).rgb - 1;" << std::endl;
-        sstr << "    norm = TBN * tnorm;" << std::endl;
+        sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
     }
     if (!ambience.all_equal(0) || !diffusivity.all_equal(0) || !specularity.all_equal(0)) {
         if (!light_noshadow_indices.empty()) {
