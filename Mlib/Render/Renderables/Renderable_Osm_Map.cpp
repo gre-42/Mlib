@@ -1,5 +1,6 @@
 #include "Renderable_Osm_Map.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/PgmImage.hpp>
@@ -8,6 +9,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Render/Renderables/Renderable_Bvh.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Waypoints.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Draw_Streets.hpp>
@@ -91,10 +93,12 @@ RenderableOsmMap::RenderableOsmMap(
     float street_node_smoothness,
     float street_edge_smoothness,
     float terrain_edge_smoothness,
-    DrivingDirection driving_direction)
+    DrivingDirection driving_direction,
+    bool limit_draw_distance)
 : rendering_resources_{rendering_resources},
   scene_node_resources_{scene_node_resources},
-  scale_{scale}
+  scale_{scale},
+  limit_draw_distance_{limit_draw_distance}
 {
     LOG_FUNCTION("RenderableOsmMap::RenderableOsmMap");
     std::ifstream ifs{filename};
@@ -477,7 +481,7 @@ RenderableOsmMap::RenderableOsmMap(
             Material{
                 .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = limit_draw_distance_ ? AggregateMode::OFF : AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
                 .specularity = {0, 0, 0}}.compute_color_mode(),
             buildings,
@@ -496,7 +500,7 @@ RenderableOsmMap::RenderableOsmMap(
                 .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
                 .blend_mode = barrier_blend_mode,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = limit_draw_distance_ ? AggregateMode::OFF : AggregateMode::ONCE,
                 .is_small = false,
                 .cull_faces = false}.compute_color_mode(),
             wall_barriers,
@@ -552,7 +556,7 @@ RenderableOsmMap::RenderableOsmMap(
             Material{
                 .texture_descriptor = {.color = roof_texture},
                 .occluder_type = OccluderType::BLACK,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = limit_draw_distance_ ? AggregateMode::OFF : AggregateMode::ONCE,
                 .ambience = {1, 1, 1}}.compute_color_mode(),
             roof_color,
             buildings,
@@ -569,7 +573,7 @@ RenderableOsmMap::RenderableOsmMap(
             Material{
                 .texture_descriptor = {.color = ceiling_texture},
                 .occluder_type = OccluderType::BLACK,
-                .aggregate_mode = AggregateMode::ONCE,
+                .aggregate_mode = limit_draw_distance_ ? AggregateMode::OFF : AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
                 .specularity = {0, 0, 0}}.compute_color_mode(),
             buildings,
@@ -816,13 +820,11 @@ RenderableOsmMap::RenderableOsmMap(
     // way_points_.at(WayPointLocation::STREET).plot("/tmp/way_points_street.svg", 600, 600, 0.1);
     // way_points_.at(WayPointLocation::SIDEWALK).plot("/tmp/way_points_sidewalk.svg", 600, 600, 0.1);
 
-    std::list<std::shared_ptr<ColoredVertexArray>> ts;
     for (auto& l : tls_all) {
         if (!l->triangles_.empty()) {
-            ts.push_back(l->triangle_array());
+            cvas_.push_back(l->triangle_array());
         }
     }
-    rva_ = std::make_shared<RenderableColoredVertexArray>(ts, nullptr, rendering_resources_);
 }
 
 void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
@@ -855,28 +857,34 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
             scene_node.add_instances_position(p.first, r.position);
         }
     }
-    rva_->instantiate_renderable(name, scene_node, resource_filter);
+    if (limit_draw_distance_) {
+        if (rbvh_ == nullptr) {
+            rbvh_ = std::make_shared<RenderableBvh>(cvas_, rendering_resources_);
+        }
+        rbvh_->instantiate_renderable(name, scene_node, resource_filter);
+    } else {
+        if (rcva_ == nullptr) {
+            rcva_ = std::make_shared<RenderableColoredVertexArray>(cvas_, nullptr, rendering_resources_);
+        }
+        rcva_->instantiate_renderable(name, scene_node, resource_filter);
+    }
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> RenderableOsmMap::get_animated_arrays() const {
     auto res = std::make_shared<AnimatedColoredVertexArrays>();
-    res->cvas = rva_->get_animated_arrays()->cvas;
+    res->cvas = cvas_;
+    // Append scaled hitboxes
     for (auto& p : hitboxes_) {
         for (auto& x : scene_node_resources_.get_animated_arrays(p.first)->cvas) {
             for (auto& y : p.second) {
-                res->cvas.push_back(x->transformed(TransformationMatrix{FixedArray<float, 4, 4>{
-                    scale_, 0, 0, y(0),
-                    0, scale_, 0, y(1),
-                    0, 0, scale_, y(2),
-                    0, 0, 0, 1}}));
+                res->cvas.push_back(x->transformed(
+                    TransformationMatrix{
+                        scale_ * fixed_identity_array<float, 3>(),
+                        y}));
             }
         }
     }
     return res;
-}
-
-void RenderableOsmMap::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
-    return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
 }
 
 std::list<SpawnPoint> RenderableOsmMap::spawn_points() const {
