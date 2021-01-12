@@ -515,29 +515,40 @@ TransformationMatrix<float> SceneNode::absolute_view_matrix() const {
 }
 
 void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
-    std::string ind(recursion_depth, '-');
-    std::string ind2(recursion_depth + 1, '-');
-    ostr << " " << ind << " Position " << position() << '\n';
-    ostr << " " << ind << " Rotation " << rotation() << '\n';
-    ostr << " " << ind << " Renderables\n";
-    for (const auto& r : renderables_) {
-        ostr << " " << ind2 << " " << r.first << '\n';
+    std::string ind0(3 * recursion_depth, '-');
+    std::string ind1(3 * recursion_depth + 1, '-');
+    std::string ind2(3 * recursion_depth + 2, '-');
+    ostr << " " << ind0 << " Node\n";
+    ostr << " " << ind1 << " Position " << position() << '\n';
+    ostr << " " << ind1 << " Rotation " << rotation() << '\n';
+    if (!renderables_.empty()) {
+        ostr << " " << ind1 << " Renderables (" << renderables_.size() << ")\n";
+        for (const auto& r : renderables_) {
+            ostr << " " << ind2 << " " << r.first << '\n';
+        }
     }
-    ostr << " " << ind << " Children\n";
-    for (const auto& n : children_) {
-        ostr << " " << ind2 << " " << n.first << '\n';
-        n.second.scene_node->print(ostr, recursion_depth + 1);
+    if (!children_.empty()) {
+        ostr << " " << ind1 << " Children (" << children_.size() << ")\n";
+        for (const auto& n : children_) {
+            ostr << " " << ind2 << " " << n.first << '\n';
+            n.second.scene_node->print(ostr, recursion_depth + 1);
+        }
     }
-    ostr << " " << ind << " Aggregates\n";
-    for (const auto& n : aggregate_children_) {
-        ostr << " " << ind2 << " " << n.first << '\n';
-        n.second.scene_node->print(ostr, recursion_depth + 1);
+    if (!aggregate_children_.empty()) {
+        ostr << " " << ind1 << " Aggregates (" << aggregate_children_.size() << ")\n";
+        for (const auto& n : aggregate_children_) {
+            ostr << " " << ind2 << " " << n.first << '\n';
+            n.second.scene_node->print(ostr, recursion_depth + 1);
+        }
     }
-    ostr << " " << ind << " Instances\n";
-    for (const auto& n : instances_children_) {
-        ostr << " " << ind2 << " " << n.first << " n=" << n.second.instances.size() << '\n';
-        n.second.scene_node->print(ostr, recursion_depth + 1);
+    if (!instances_children_.empty()) {
+        ostr << " " << ind1 << " Instances (" << instances_children_.size() << ")\n";
+        for (const auto& n : instances_children_) {
+            ostr << " " << ind2 << " " << n.first << " n=" << n.second.instances.size() << '\n';
+            n.second.scene_node->print(ostr, recursion_depth + 1);
+        }
     }
+    ostr << " " << ind0 << " End\n";
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const SceneNode& node) {
