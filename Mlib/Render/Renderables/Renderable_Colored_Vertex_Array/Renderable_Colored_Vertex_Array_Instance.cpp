@@ -407,7 +407,8 @@ void RenderableColoredVertexArrayInstance::render_cva(
             std::isnan(render_config.draw_distance_slop)
                 ? cva->material.draw_distance_slop
                 : render_config.draw_distance_slop,
-            cva->material.draw_distance_noperations);
+            cva->material.draw_distance_noperations,
+            true);
     }
     LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");
     CHK(glBindVertexArray(si.va.vertex_array));

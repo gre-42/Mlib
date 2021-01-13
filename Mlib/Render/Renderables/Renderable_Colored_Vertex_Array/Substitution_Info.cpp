@@ -3,6 +3,10 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Threads/Background_Loop.hpp>
+
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
 
 using namespace Mlib;
 
@@ -41,7 +45,8 @@ void SubstitutionInfo::delete_triangles_far_away(
     const TransformationMatrix<float>& m,
     float draw_distance_add,
     float draw_distance_slop,
-    size_t noperations)
+    size_t noperations,
+    bool run_in_background)
 {
     if (cva->triangles.empty()) {
         return;
@@ -56,25 +61,78 @@ void SubstitutionInfo::delete_triangles_far_away(
         current_triangle_id = 0;
     }
     assert(triangles_local_ids.size() == cva->triangles.size());
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
     typedef FixedArray<ColoredVertex, 3> Triangle;
-    CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-    float add2 = squared(draw_distance_add);
-    float remove2 = squared(draw_distance_add + draw_distance_slop);
-    for (size_t i = 0; i < noperations; ++i) {
-        auto center_local = mean(cva->triangles[current_triangle_id].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
-        auto center = m * center_local;
-        float dist2 = sum(squared(center - position));
-        if (triangles_local_ids[current_triangle_id] != SIZE_MAX) {
-            if (dist2 > remove2) {
-                delete_triangle(current_triangle_id, ptr);
-            }
-        } else {
-            if (dist2 < add2) {
-                insert_triangle(current_triangle_id, ptr);
-            }
+    auto func = [this, draw_distance_add, draw_distance_slop, noperations, m, position, run_in_background](){
+        Triangle* ptr = nullptr;
+        if (!run_in_background) {
+            // Must be inside here because CHK requires an OpenGL context
+            CHK(ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         }
-        current_triangle_id = (current_triangle_id + 1) % triangles_local_ids.size();
+        float add2 = squared(draw_distance_add);
+        float remove2 = squared(draw_distance_add + draw_distance_slop);
+        for (size_t i = 0; i < noperations; ++i) {
+            auto center_local = mean(cva->triangles[current_triangle_id].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
+            auto center = m * center_local;
+            float dist2 = sum(squared(center - position));
+            if (triangles_local_ids[current_triangle_id] != SIZE_MAX) {
+                if (dist2 > remove2) {
+                    if (run_in_background) {
+                        if (triangles_to_delete_.size() == triangles_to_delete_.capacity()) {
+                            return;
+                        }
+                        triangles_to_delete_.push_back(current_triangle_id);
+                    } else {
+                        delete_triangle(current_triangle_id, ptr);
+                    }
+                }
+            } else {
+                if (dist2 < add2) {
+                    if (run_in_background) {
+                        if (triangles_to_insert_.size() == triangles_to_insert_.capacity()) {
+                            return;
+                        }
+                        triangles_to_insert_.push_back(current_triangle_id);
+                    } else {
+                        insert_triangle(current_triangle_id, ptr);
+                    }
+                }
+            }
+            current_triangle_id = (current_triangle_id + 1) % triangles_local_ids.size();
+        }
+    };
+    if (run_in_background) {
+        if (background_loop_ == nullptr) {
+            background_loop_ = std::make_unique<BackgroundLoop>();
+            triangles_to_delete_.reserve(std::min(noperations, cva->triangles.size()));
+            triangles_to_insert_.reserve(std::min(noperations, cva->triangles.size()));
+        }
+        if (triangles_to_delete_.capacity() != std::min(noperations, cva->triangles.size())) {
+            throw std::runtime_error("noperations changed");
+        }
+        if (background_loop_->done()) {
+            if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
+                CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
+                CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+                for (size_t i : triangles_to_delete_) {
+                    delete_triangle(i, ptr);
+                }
+                triangles_to_delete_.clear();
+                for (size_t i : triangles_to_insert_) {
+                    insert_triangle(i, ptr);
+                }
+                triangles_to_insert_.clear();
+                CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
+            }
+            background_loop_->run(func);
+        }
+    } else {
+        if (background_loop_ != nullptr) {
+            throw std::runtime_error("Substitution both in fg and bg");
+        }
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
+        func();
+        CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
     }
-    CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
 }
+
+#pragma GCC pop_options
