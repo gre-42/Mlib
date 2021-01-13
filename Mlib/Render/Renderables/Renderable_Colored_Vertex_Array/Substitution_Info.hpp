@@ -25,11 +25,13 @@ public:
         float draw_distance_add,
         float draw_distance_slop,
         size_t noperations,
-        bool run_in_background);
+        bool run_in_background,
+        bool is_static);
 private:
     void delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
     void insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
 
+    std::vector<FixedArray<FixedArray<float, 3>, 3>> transformed_triangles;
     std::vector<size_t> triangles_local_ids;
     std::vector<size_t> triangles_global_ids;
     size_t current_triangle_id = SIZE_MAX;

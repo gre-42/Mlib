@@ -46,7 +46,8 @@ void SubstitutionInfo::delete_triangles_far_away(
     float draw_distance_add,
     float draw_distance_slop,
     size_t noperations,
-    bool run_in_background)
+    bool run_in_background,
+    bool is_static)
 {
     if (cva->triangles.empty()) {
         return;
@@ -59,11 +60,19 @@ void SubstitutionInfo::delete_triangles_far_away(
             triangles_global_ids[i] = i;
         }
         current_triangle_id = 0;
+        if (is_static) {
+            transformed_triangles.resize(cva->triangles.size());
+            for (size_t i = 0; i < cva->triangles.size(); ++i) {
+                transformed_triangles[i] = cva->triangles[i].applied<FixedArray<float, 3>>([&m](const ColoredVertex& v){return m * v.position;});
+            }
+        }
     }
     size_t noperations2 = std::min(noperations, cva->triangles.size());
-    assert(triangles_local_ids.size() == cva->triangles.size());
+    if (triangles_local_ids.size() != cva->triangles.size()) {
+        throw std::runtime_error("Array length has changed");
+    }
     typedef FixedArray<ColoredVertex, 3> Triangle;
-    auto func = [this, draw_distance_add, draw_distance_slop, noperations2, m, position, run_in_background](){
+    auto func = [this, draw_distance_add, draw_distance_slop, noperations2, m, position, run_in_background, is_static](){
         Triangle* ptr = nullptr;
         if (!run_in_background) {
             // Must be inside here because CHK requires an OpenGL context
@@ -72,8 +81,13 @@ void SubstitutionInfo::delete_triangles_far_away(
         float add2 = squared(draw_distance_add);
         float remove2 = squared(draw_distance_add + draw_distance_slop);
         for (size_t i = 0; i < noperations2; ++i) {
-            auto center_local = mean(cva->triangles[current_triangle_id].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
-            auto center = m * center_local;
+            FixedArray<float, 3> center;
+            if (is_static) {
+                center = mean(transformed_triangles[current_triangle_id]);
+            } else {
+                auto center_local = mean(cva->triangles[current_triangle_id].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
+                center = m * center_local;
+            }
             float dist2 = sum(squared(center - position));
             if (triangles_local_ids[current_triangle_id] != SIZE_MAX) {
                 if (dist2 > remove2) {

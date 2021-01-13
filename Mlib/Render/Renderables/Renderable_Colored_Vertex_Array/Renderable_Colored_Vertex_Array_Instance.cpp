@@ -408,7 +408,8 @@ void RenderableColoredVertexArrayInstance::render_cva(
                 ? cva->material.draw_distance_slop
                 : render_config.draw_distance_slop,
             cva->material.draw_distance_noperations,
-            true);
+            true,  // run_in_background
+            true); // is_static
     }
     LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");
     CHK(glBindVertexArray(si.va.vertex_array));
