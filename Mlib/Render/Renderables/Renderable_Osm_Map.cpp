@@ -302,56 +302,56 @@ RenderableOsmMap::RenderableOsmMap(
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 200}.compute_color_mode());
+        .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_terrain_street_extrusion = std::make_shared<TriangleList>("terrain_street_extrusion", Material{
         .texture_descriptor = {.color = terrain_texture, .normal = rendering_resources.get_normalmap(terrain_texture)},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 200}.compute_color_mode());
+        .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
         .texture_descriptor = {.color = street_crossing_texture, .normal = rendering_resources.get_normalmap(street_crossing_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 200}.compute_color_mode());
+        .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
         .texture_descriptor = {.color = path_crossing_texture, .normal = rendering_resources.get_normalmap(path_crossing_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 200}.compute_color_mode());
+        .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
         .texture_descriptor = {.color = street_texture, .normal = rendering_resources.get_normalmap(street_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
+        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_path = std::make_shared<TriangleList>("path", Material{
         .texture_descriptor = {.color = path_texture, .normal = rendering_resources.get_normalmap(path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
+        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     WrapMode curb_wrap_mode_s = (extrude_curb_amount != 0) || ((curb_alpha != 1) && (extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
     auto tl_curb_street = std::make_shared<TriangleList>("curb_street", Material{
         .texture_descriptor = {.color = curb_street_texture, .normal = rendering_resources.get_normalmap(curb_street_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = curb_wrap_mode_s,
-        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
+        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
         .texture_descriptor = {.color = curb_path_texture, .normal = rendering_resources.get_normalmap(curb_path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = curb_wrap_mode_s,
-        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
+        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb2_street = std::make_shared<TriangleList>("curb_street", Material{
         .texture_descriptor = {.color = curb2_street_texture, .normal = rendering_resources.get_normalmap(curb2_street_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
+        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb2_path = std::make_shared<TriangleList>("curb_path", Material{
         .texture_descriptor = {.color = curb2_path_texture, .normal = rendering_resources.get_normalmap(curb2_path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
+        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     std::list<std::shared_ptr<TriangleList>> tls_ground{
         tl_terrain,
         tl_terrain_street_extrusion,
@@ -490,7 +490,7 @@ RenderableOsmMap::RenderableOsmMap(
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
                 .specularity = {0, 0, 0},
-                .draw_distance_noperations = 200}.compute_color_mode(),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
             buildings,
             nodes,
             scale,
@@ -510,7 +510,7 @@ RenderableOsmMap::RenderableOsmMap(
                 .aggregate_mode = AggregateMode::ONCE,
                 .is_small = false,
                 .cull_faces = false,
-                .draw_distance_noperations = 200}.compute_color_mode(),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
             wall_barriers,
             nodes,
             scale,
@@ -566,7 +566,7 @@ RenderableOsmMap::RenderableOsmMap(
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
-                .draw_distance_noperations = 200}.compute_color_mode(),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
             roof_color,
             buildings,
             nodes,
@@ -585,7 +585,7 @@ RenderableOsmMap::RenderableOsmMap(
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
                 .specularity = {0, 0, 0},
-                .draw_distance_noperations = 200}.compute_color_mode(),
+                .draw_distance_noperations = 1000}.compute_color_mode(),
             buildings,
             nodes,
             scale,
