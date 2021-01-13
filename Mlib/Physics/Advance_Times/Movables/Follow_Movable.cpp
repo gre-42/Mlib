@@ -44,6 +44,10 @@ FollowMovable::FollowMovable(
 FollowMovable::~FollowMovable()
 {}
 
+void FollowMovable::initialize() {
+    advance_time(NAN);
+}
+
 void FollowMovable::advance_time(float dt) {
     if (followed_ == nullptr) {
         return;

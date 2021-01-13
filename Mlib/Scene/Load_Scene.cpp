@@ -1318,6 +1318,7 @@ void LoadScene::operator()(
                 safe_stof(match[12].str()),        // y_snappiness
                 physics_engine_config.dt);
             linker.link_absolute_movable(*follower_node, follower);
+            follower->initialize();
         } else if (std::regex_match(line, match, add_texture_descriptor_reg)) {
             rendering_resources.add_texture_descriptor(
                 match[1].str(),
