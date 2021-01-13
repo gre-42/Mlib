@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <cmath>
 
@@ -29,6 +30,29 @@ void latitude_longitude_2_meters(
     TData0 circumference1 = r1 * 2 * M_PI;
     x = (circumference1 / 360) * (longitude - longitude0);
     y = (circumference0 / 360) * (latitude - latitude0);
+}
+
+template <class TData>
+FixedArray<TData, 3, 3> latitude_longitude_2_meters_matrix(
+    TData latitude0,
+    TData longitude0)
+{
+    FixedArray<TData, 3, 3> result;
+    TData x;
+    TData y;
+    latitude_longitude_2_meters<TData, TData>(0, 0, latitude0, longitude0, x, y);
+    result(0, 2) = x;
+    result(1, 2) = y;
+    result(2, 2) = 1;
+    latitude_longitude_2_meters<TData, TData>(1, 0, latitude0, longitude0, x, y);
+    result(0, 0) = x - result(0, 2);
+    result(1, 0) = y - result(1, 2);
+    result(2, 0) = 0;
+    latitude_longitude_2_meters<TData, TData>(0, 1, latitude0, longitude0, x, y);
+    result(0, 1) = x - result(0, 2);
+    result(1, 1) = y - result(1, 2);
+    result(2, 1) = 0;
+    return result;
 }
 
 }
