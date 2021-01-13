@@ -15,9 +15,9 @@ using namespace Mlib;
 
 static void flying_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window);
+    GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     }
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
         if (mods & GLFW_MOD_CONTROL) {
@@ -75,9 +75,9 @@ static void flying_key_callback(GLFWwindow* window, int key, int scancode, int a
 }
 
 static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window);
+    GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
     // if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-    //     glfwSetWindowShouldClose(window, GLFW_TRUE);
+    //     GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     // }
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
         switch(key) {
@@ -119,11 +119,11 @@ FlyingCameraLogic::FlyingCameraLogic(
   fly_{fly},
   rotate_{rotate}
 {
-    // glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y);
-    // glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height);
-    glfwSetWindowUserPointer(window, &user_object_);
+    // GLFW_CHK(glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y));
+    // GLFW_CHK(glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height));
+    GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
     if (fly_ || rotate_) {
-        glfwSetKeyCallback(window, flying_key_callback);
+        GLFW_CHK(glfwSetKeyCallback(window, flying_key_callback));
 
         if (fly_) {
             auto cn = scene_.get_node(user_object_.cameras.camera_node_name());
@@ -136,7 +136,7 @@ FlyingCameraLogic::FlyingCameraLogic(
             user_object_.obj_angles = on->rotation();
         }
     } else {
-        glfwSetKeyCallback(window, nofly_key_callback);
+        GLFW_CHK(glfwSetKeyCallback(window, nofly_key_callback));
     }
 }
 

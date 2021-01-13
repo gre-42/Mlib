@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     GLFW_CHK(GLFWwindow* window = glfwCreateWindow(640, 480, "Gamepad buttons", NULL, NULL));
 
     if (!window) {
-        glfwTerminate();
+        GLFW_CHK(glfwTerminate());
         throw std::runtime_error("Could not initialize window");
     }
 

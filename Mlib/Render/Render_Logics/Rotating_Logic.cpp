@@ -12,9 +12,9 @@ using namespace Mlib;
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    RotatingLocigUserClass* user_object = (RotatingLocigUserClass*)glfwGetWindowUserPointer(window);
+    GLFW_CHK(RotatingLocigUserClass* user_object = (RotatingLocigUserClass*)glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     }
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
         switch (key) {
@@ -52,10 +52,10 @@ RotatingLogic::RotatingLogic(GLFWwindow* window, const Scene& scene, bool rotate
   rotate_{rotate},
   scale_{scale}
 {
-    glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y);
-    glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height);
-    glfwSetWindowUserPointer(window, &user_object_);
-    glfwSetKeyCallback(window, key_callback);
+    GLFW_CHK(glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y));
+    GLFW_CHK(glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height));
+    GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
+    GLFW_CHK(glfwSetKeyCallback(window, key_callback));
 }
 
 void RotatingLogic::render(

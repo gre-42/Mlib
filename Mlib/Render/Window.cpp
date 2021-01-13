@@ -5,12 +5,12 @@
 using namespace Mlib;
 
 Window::Window(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share) {
-    window_ = glfwCreateWindow(
+    window_ = GLFW_CHK(glfwCreateWindow(
         width,
         height,
         title,
         monitor,
-        share);
+        share));
     if (!window_) {
         throw std::runtime_error("Could not initialize window");
     }

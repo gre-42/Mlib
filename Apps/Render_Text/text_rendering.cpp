@@ -17,25 +17,25 @@ int main(int argc, char** argv)
     }
     // glfw: initialize and configure
     // ------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    GLFW_CHK(glfwInit());
+    GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3));
+    GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3));
+    GLFW_CHK(glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE));
 
 #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    GLFW_CHK(glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE));
 #endif
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", nullptr, nullptr);
+    GLFW_CHK(GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", nullptr, nullptr));
     if (window == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
+        GLFW_CHK(glfwTerminate());
         return -1;
     }
-    glfwMakeContextCurrent(window);
+    GLFW_CHK(glfwMakeContextCurrent(window));
     CHK(int version = gladLoadGL(glfwGetProcAddress));
     if (version == 0) {
         throw std::runtime_error("gladLoadGL failed");
@@ -63,9 +63,9 @@ int main(int argc, char** argv)
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        GLFW_CHK(glfwSwapBuffers(window));
+        GLFW_CHK(glfwPollEvents());
     }
 
-    glfwTerminate();
+    GLFW_CHK(glfwTerminate());
 }

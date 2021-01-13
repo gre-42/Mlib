@@ -50,9 +50,9 @@ public:
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    UserClass* user_object = (UserClass*)glfwGetWindowUserPointer(window);
+    GLFW_CHK(UserClass* user_object = (UserClass*)glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     }
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
         if (key == GLFW_KEY_UP) {
@@ -92,36 +92,36 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
 
     UserClass user_object;
 
-    glfwSetErrorCallback(error_callback);
+    GLFW_CHK(glfwSetErrorCallback(error_callback));
 
     if (!glfwInit()) {
         throw std::runtime_error("glfwInit failed");
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3));
+    GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3));
     if (output != nullptr) {
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        GLFW_CHK(glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE));
     }
 
 #ifndef WIN32
     int fpeflags = fegetexcept();
     fedisableexcept(FE_ALL_EXCEPT);
 #endif
-    GLFWwindow* window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+    GLFW_CHK(GLFWwindow* window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL));
 #ifndef WIN32
     feenableexcept(fpeflags);
 #endif
     if (!window)
     {
-        glfwTerminate();
+        GLFW_CHK(glfwTerminate());
         throw std::runtime_error("Could not initialize window");
     }
-    glfwSetWindowUserPointer(window, &user_object);
+    GLFW_CHK(glfwSetWindowUserPointer(window, &user_object));
 
-    glfwSetKeyCallback(window, key_callback);
+    GLFW_CHK(glfwSetKeyCallback(window, key_callback));
 
-    glfwMakeContextCurrent(window);
+    GLFW_CHK(glfwMakeContextCurrent(window));
     CHK(int version = gladLoadGL(glfwGetProcAddress));
     if (version == 0) {
         throw std::runtime_error("gladLoadGL failed");
@@ -198,7 +198,7 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
         if (output != nullptr) {
             VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
             CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
+            GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
             *output = reverted_axis(vp.to_array(), 1);
         }
 
@@ -208,7 +208,7 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
 
     GLFW_CHK(glfwDestroyWindow(window));
 
-    glfwTerminate();
+    GLFW_CHK(glfwTerminate());
 }
 
 void Mlib::render_depth_map(

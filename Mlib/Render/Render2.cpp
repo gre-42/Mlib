@@ -68,11 +68,14 @@ Render2::Render2(
     if (window_ != nullptr) {
         throw std::runtime_error("Multiple calls to render2");
     }
+    GLFWmonitor* monitor = !render_config.full_screen
+        ? nullptr
+        : GLFW_CHK(glfwGetPrimaryMonitor());
     window_ = std::make_unique<Window>(
         render_config.screen_width,
         render_config.screen_height,
         render_config.window_title.c_str(),
-        render_config.full_screen ? glfwGetPrimaryMonitor() : nullptr,
+        monitor,
         nullptr);
 #ifndef WIN32
     feenableexcept(fpeflags);
@@ -144,11 +147,11 @@ void Render2::operator () (
         if (render_results_ != nullptr && render_results_->output != nullptr) {
             VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
             CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
-            glfwSetWindowShouldClose(window_->window(), GLFW_TRUE);
+            GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
             *render_results_->output = reverted_axis(vp.to_array(), 1);
         }
         if (render_results_ != nullptr && !render_results_->outputs.empty()) {
-            glfwSetWindowShouldClose(window_->window(), GLFW_TRUE);
+            GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
         }
         if (render_config_.dt != 0) {
             // TimeGuard tg1{"render tick"};
@@ -254,5 +257,5 @@ GLFWwindow* Render2::window() const {
 }
 
 bool Render2::window_should_close() const {
-    return (window_ != nullptr) && glfwWindowShouldClose(window_->window());
+    return (window_ != nullptr) && GLFW_CHK(glfwWindowShouldClose(window_->window()));
 }
