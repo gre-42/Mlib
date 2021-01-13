@@ -28,8 +28,8 @@ struct SubstitutionInfo {
     void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float>& m,
-        float distance_add,
-        float distance_remove,
+        float draw_distance_add,
+        float draw_distance_slop,
         size_t noperations);
 };
 

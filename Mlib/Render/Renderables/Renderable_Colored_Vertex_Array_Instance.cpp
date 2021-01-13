@@ -403,9 +403,9 @@ void RenderableColoredVertexArrayInstance::render_cva(
             std::isnan(render_config.draw_distance_add)
                 ? cva->material.draw_distance_add
                 : render_config.draw_distance_add,
-            std::isnan(render_config.draw_distance_add)
-                ? cva->material.draw_distance_remove
-                : render_config.draw_distance_add + render_config.draw_distance_slop,
+            std::isnan(render_config.draw_distance_slop)
+                ? cva->material.draw_distance_slop
+                : render_config.draw_distance_slop,
             cva->material.draw_distance_noperations);
     }
     LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");

@@ -452,8 +452,8 @@ void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* 
 void SubstitutionInfo::delete_triangles_far_away(
     const FixedArray<float, 3>& position,
     const TransformationMatrix<float>& m,
-    float distance_add,
-    float distance_remove,
+    float draw_distance_add,
+    float draw_distance_slop,
     size_t noperations)
 {
     if (cva->triangles.empty()) {
@@ -472,8 +472,8 @@ void SubstitutionInfo::delete_triangles_far_away(
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
     typedef FixedArray<ColoredVertex, 3> Triangle;
     CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-    float add2 = squared(distance_add);
-    float remove2 = squared(distance_remove);
+    float add2 = squared(draw_distance_add);
+    float remove2 = squared(draw_distance_add + draw_distance_slop);
     for (size_t i = 0; i < noperations; ++i) {
         auto center_local = mean(cva->triangles[current_triangle_id].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
         auto center = m * center_local;

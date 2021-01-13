@@ -27,8 +27,8 @@ struct Material {
     OrderableFixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};
     OrderableFixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
     OrderableFixedArray<float, 3> specularity{1.f, 1.f, 1.f};
-    float draw_distance_add = 1000;
-    float draw_distance_remove = 1010;
+    float draw_distance_add = 500;
+    float draw_distance_slop = 10;
     size_t draw_distance_noperations = 0;
     inline Material& compute_color_mode() {
         texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)

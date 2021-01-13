@@ -27,7 +27,7 @@ struct RenderConfig {
     float dt = 0.01667;
     float max_residual_time = 0.5;
     float draw_distance_add = NAN;
-    float draw_distance_slop = 10;
+    float draw_distance_slop = NAN;
     void apply() const;
     void unapply() const;
 };
