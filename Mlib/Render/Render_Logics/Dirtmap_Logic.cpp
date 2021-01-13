@@ -33,7 +33,7 @@ void DirtmapLogic::render(
         if (filename_ == "") {
             throw std::runtime_error("DirtmapLogic::set_filename not called");
         }
-        // Populate camera position
+        // Calculate camera position
         child_logic_.render(0, 0, render_config, scene_graph_config, render_results, {.external_render_pass = {ExternalRenderPass::DIRTMAP, ""}, .time_id = 0, .light_node_name = ""});
         // Load texture and set alias
         rendering_resources_.add_texture_descriptor(
