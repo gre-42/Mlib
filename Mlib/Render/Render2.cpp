@@ -160,7 +160,7 @@ void Render2::operator () (
             fps_i = (fps_i + 1) % fps_i_max;
             fps.tick();
             if (fps_i == 0) {
-                std::cerr << "Render: " << fps.fps() << " FPS" << std::endl;
+                std::cerr << "Render FPS: Mean = " << fps.mean_fps() << ", MAD = " << fps.mad_fps() << std::endl;
             }
         }
 
