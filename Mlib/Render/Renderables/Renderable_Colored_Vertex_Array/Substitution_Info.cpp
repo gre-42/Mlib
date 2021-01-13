@@ -60,9 +60,10 @@ void SubstitutionInfo::delete_triangles_far_away(
         }
         current_triangle_id = 0;
     }
+    size_t noperations2 = std::min(noperations, cva->triangles.size());
     assert(triangles_local_ids.size() == cva->triangles.size());
     typedef FixedArray<ColoredVertex, 3> Triangle;
-    auto func = [this, draw_distance_add, draw_distance_slop, noperations, m, position, run_in_background](){
+    auto func = [this, draw_distance_add, draw_distance_slop, noperations2, m, position, run_in_background](){
         Triangle* ptr = nullptr;
         if (!run_in_background) {
             // Must be inside here because CHK requires an OpenGL context
@@ -70,7 +71,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         }
         float add2 = squared(draw_distance_add);
         float remove2 = squared(draw_distance_add + draw_distance_slop);
-        for (size_t i = 0; i < noperations; ++i) {
+        for (size_t i = 0; i < noperations2; ++i) {
             auto center_local = mean(cva->triangles[current_triangle_id].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
             auto center = m * center_local;
             float dist2 = sum(squared(center - position));
@@ -103,11 +104,11 @@ void SubstitutionInfo::delete_triangles_far_away(
     if (run_in_background) {
         if (background_loop_ == nullptr) {
             background_loop_ = std::make_unique<BackgroundLoop>();
-            triangles_to_delete_.reserve(std::min(noperations, cva->triangles.size()));
-            triangles_to_insert_.reserve(std::min(noperations, cva->triangles.size()));
+            triangles_to_delete_.reserve(noperations2);
+            triangles_to_insert_.reserve(noperations2);
         }
-        if (triangles_to_delete_.capacity() != std::min(noperations, cva->triangles.size())) {
-            throw std::runtime_error("noperations changed");
+        if (triangles_to_delete_.capacity() != noperations2) {
+            throw std::runtime_error("noperations or triangle list changed");
         }
         if (background_loop_->done()) {
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
