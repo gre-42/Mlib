@@ -13,7 +13,7 @@ public:
     : mvp_{mvp},
       orthographic_{(mvp(3, 0) == 0 && mvp(3, 1) == 0 && mvp(3, 2) == 0 && mvp(3, 3) == 1)}
     {}
-    inline bool is_visible(const Material& m, const SceneGraphConfig& scene_graph_config, ExternalRenderPass external_render_pass) const {
+    inline bool is_visible(const Material& m, const SceneGraphConfig& scene_graph_config, const ExternalRenderPass& external_render_pass) const {
         return ((!m.is_small) ||
                 ((external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (m.occluder_type != OccluderType::OFF)) ||
                 (// (mvp(2, 3) > scene_graph_config.min_distance_small) && // no mvp-check to support rotations

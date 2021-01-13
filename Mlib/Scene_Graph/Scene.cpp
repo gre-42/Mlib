@@ -153,7 +153,7 @@ void Scene::render(
     const TransformationMatrix<float>& iv,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
-    ExternalRenderPass external_render_pass) const
+    const ExternalRenderPass& external_render_pass) const
 {
     LOG_FUNCTION("Scene::render");
     std::list<std::pair<TransformationMatrix<float>, Light*>> lights;

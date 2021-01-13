@@ -6,6 +6,8 @@
 
 namespace Mlib {
 
+template <class TData>
+class OffsetAndQuaternion;
 class RenderableColoredVertexArray;
 struct SceneNodeResourceFilter;
 
@@ -31,7 +33,7 @@ public:
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float>& m,
         const SceneGraphConfig& scene_graph_config,
-        ExternalRenderPass external_render_pass,
+        const ExternalRenderPass& external_render_pass,
         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const override;
     virtual void append_large_aggregates_to_queue(
         const TransformationMatrix<float>& m,
@@ -41,7 +43,7 @@ public:
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float>& m,
         const SceneGraphConfig& scene_graph_config,
-        ExternalRenderPass external_render_pass,
+        const ExternalRenderPass& external_render_pass,
         std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const override;
     virtual void append_large_instances_to_queue(
         const TransformationMatrix<float>& m,

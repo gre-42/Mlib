@@ -2,7 +2,6 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
-#include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <list>
 #include <map>
@@ -10,28 +9,11 @@
 
 namespace Mlib {
 
+struct SubstitutionInfo;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 struct Light;
 class RenderingResources;
-
-struct SubstitutionInfo {
-    VertexArray va;
-    std::shared_ptr<ColoredVertexArray> cva;
-    size_t ntriangles;
-    size_t nlines;
-    std::vector<size_t> triangles_local_ids;
-    std::vector<size_t> triangles_global_ids;
-    size_t current_triangle_id = SIZE_MAX;
-    void delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
-    void insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
-    void delete_triangles_far_away(
-        const FixedArray<float, 3>& position,
-        const TransformationMatrix<float>& m,
-        float draw_distance_add,
-        float draw_distance_slop,
-        size_t noperations);
-};
 
 class RenderableColoredVertexArray:
     public SceneNodeResource,

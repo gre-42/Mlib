@@ -49,7 +49,7 @@ public:
         const TransformationMatrix<float>& iv,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
-        ExternalRenderPass external_render_pass) const;
+        const ExternalRenderPass& external_render_pass) const;
     void move(float dt);
     size_t get_uuid();
     void print(std::ostream& ostr) const;

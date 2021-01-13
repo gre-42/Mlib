@@ -1,4 +1,3 @@
-#include "Renderable_Colored_Vertex_Array.hpp"
 #include "Renderable_Colored_Vertex_Array_Instance.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
@@ -7,6 +6,8 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array/Substitution_Info.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Light.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -470,7 +471,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
     const FixedArray<float, 4, 4>& mvp,
     const TransformationMatrix<float>& m,
     const SceneGraphConfig& scene_graph_config,
-    ExternalRenderPass external_render_pass,
+    const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
 {
     for (const auto& cva : triangles_res_subset_) {
@@ -502,7 +503,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
     const FixedArray<float, 4, 4>& mvp,
     const TransformationMatrix<float>& m,
     const SceneGraphConfig& scene_graph_config,
-    ExternalRenderPass external_render_pass,
+    const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
 {
     for (const auto& cva : triangles_res_subset_) {

@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
@@ -299,7 +300,7 @@ void SceneNode::render(
     std::list<Blended>& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
-    ExternalRenderPass external_render_pass,
+    const ExternalRenderPass& external_render_pass,
     const Style* style) const
 {
     // OpenGL matrices are transposed in memory,
@@ -348,7 +349,7 @@ void SceneNode::append_sorted_aggregates_to_queue(
     const TransformationMatrix<float>& parent_m,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config,
-    ExternalRenderPass external_render_pass) const
+    const ExternalRenderPass& external_render_pass) const
 {
     // OpenGL matrices are transposed in memory,
     // https://stackoverflow.com/a/17718408/2292832.
@@ -391,7 +392,7 @@ void SceneNode::append_small_instances_to_queue(
     const FixedArray<float, 3>& delta_position,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
     const SceneGraphConfig& scene_graph_config,
-    ExternalRenderPass external_render_pass) const
+    const ExternalRenderPass& external_render_pass) const
 {
     TransformationMatrix<float> rel = relative_model_matrix();
     rel.t() += delta_position;

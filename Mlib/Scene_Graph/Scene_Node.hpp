@@ -81,14 +81,14 @@ public:
         std::list<Blended>& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
-        ExternalRenderPass external_render_pass,
+        const ExternalRenderPass& external_render_pass,
         const Style* style) const;
     void append_sorted_aggregates_to_queue(
         const FixedArray<float, 4, 4>& vp,
         const TransformationMatrix<float>& parent_m,
         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config,
-        ExternalRenderPass external_render_pass) const;
+        const ExternalRenderPass& external_render_pass) const;
     void append_large_aggregates_to_queue(
         const TransformationMatrix<float>& parent_m,
         std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue,
@@ -99,7 +99,7 @@ public:
         const FixedArray<float, 3>& delta_position,
         std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
         const SceneGraphConfig& scene_graph_config,
-        ExternalRenderPass external_render_pass) const;
+        const ExternalRenderPass& external_render_pass) const;
     void append_large_instances_to_queue(
         const TransformationMatrix<float>& parent_m,
         const FixedArray<float, 3>& delta_position,
