@@ -15,6 +15,24 @@ struct ColoredRenderProgram;
 struct Light;
 class RenderingResources;
 
+struct SubstitutionInfo {
+    VertexArray va;
+    std::shared_ptr<ColoredVertexArray> cva;
+    size_t ntriangles;
+    size_t nlines;
+    std::vector<size_t> triangles_local_ids;
+    std::vector<size_t> triangles_global_ids;
+    size_t current_triangle_id = SIZE_MAX;
+    void delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
+    void insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
+    void delete_triangles_far_away(
+        const FixedArray<float, 3>& position,
+        const TransformationMatrix<float>& m,
+        float distance_add,
+        float distance_remove,
+        size_t noperations);
+};
+
 class RenderableColoredVertexArray:
     public SceneNodeResource,
     public std::enable_shared_from_this<RenderableColoredVertexArray>
@@ -53,9 +71,9 @@ private:
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices) const;
-    const VertexArray& get_vertex_array(const ColoredVertexArray* cva) const;
+    const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
-    mutable std::map<const ColoredVertexArray*, std::unique_ptr<VertexArray>> vertex_arrays_;
+    mutable std::map<const ColoredVertexArray*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
     RenderingResources& rendering_resources_;
     mutable std::mutex mutex_;
     std::unique_ptr<std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>> instances_;

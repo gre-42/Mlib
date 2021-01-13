@@ -1,6 +1,5 @@
 #include "Renderable_Osm_Map.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/PgmImage.hpp>
@@ -9,7 +8,6 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Render/Renderables/Renderable_Bvh.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Waypoints.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Draw_Streets.hpp>
@@ -93,12 +91,10 @@ RenderableOsmMap::RenderableOsmMap(
     float street_node_smoothness,
     float street_edge_smoothness,
     float terrain_edge_smoothness,
-    DrivingDirection driving_direction,
-    bool limit_draw_distance)
+    DrivingDirection driving_direction)
 : rendering_resources_{rendering_resources},
   scene_node_resources_{scene_node_resources},
-  scale_{scale},
-  limit_draw_distance_{limit_draw_distance}
+  scale_{scale}
 {
     LOG_FUNCTION("RenderableOsmMap::RenderableOsmMap");
     std::ifstream ifs{filename};
@@ -305,47 +301,57 @@ RenderableOsmMap::RenderableOsmMap(
         .texture_descriptor = {.color = terrain_texture, .normal = rendering_resources.get_normalmap(terrain_texture)},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE}.compute_color_mode());
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 200}.compute_color_mode());
     auto tl_terrain_street_extrusion = std::make_shared<TriangleList>("terrain_street_extrusion", Material{
         .texture_descriptor = {.color = terrain_texture, .normal = rendering_resources.get_normalmap(terrain_texture)},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE}.compute_color_mode());
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 200}.compute_color_mode());
     auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
         .texture_descriptor = {.color = street_crossing_texture, .normal = rendering_resources.get_normalmap(street_crossing_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE}.compute_color_mode());
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 200}.compute_color_mode());
     auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
         .texture_descriptor = {.color = path_crossing_texture, .normal = rendering_resources.get_normalmap(path_crossing_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE}.compute_color_mode());
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 200}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
         .texture_descriptor = {.color = street_texture, .normal = rendering_resources.get_normalmap(street_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE}.compute_color_mode()); // mixed_texture: terrain_texture
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_path = std::make_shared<TriangleList>("path", Material{
         .texture_descriptor = {.color = path_texture, .normal = rendering_resources.get_normalmap(path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE}.compute_color_mode()); // mixed_texture: terrain_texture
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
     WrapMode curb_wrap_mode_s = (extrude_curb_amount != 0) || ((curb_alpha != 1) && (extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
     auto tl_curb_street = std::make_shared<TriangleList>("curb_street", Material{
         .texture_descriptor = {.color = curb_street_texture, .normal = rendering_resources.get_normalmap(curb_street_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .wrap_mode_s = curb_wrap_mode_s}.compute_color_mode()); // mixed_texture: terrain_texture
+        .wrap_mode_s = curb_wrap_mode_s,
+        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
         .texture_descriptor = {.color = curb_path_texture, .normal = rendering_resources.get_normalmap(curb_path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .wrap_mode_s = curb_wrap_mode_s}.compute_color_mode()); // mixed_texture: terrain_texture
+        .wrap_mode_s = curb_wrap_mode_s,
+        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb2_street = std::make_shared<TriangleList>("curb_street", Material{
         .texture_descriptor = {.color = curb2_street_texture, .normal = rendering_resources.get_normalmap(curb2_street_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE}.compute_color_mode()); // mixed_texture: terrain_texture
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb2_path = std::make_shared<TriangleList>("curb_path", Material{
         .texture_descriptor = {.color = curb2_path_texture, .normal = rendering_resources.get_normalmap(curb2_path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE}.compute_color_mode()); // mixed_texture: terrain_texture
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 200}.compute_color_mode()); // mixed_texture: terrain_texture
     std::list<std::shared_ptr<TriangleList>> tls_ground{
         tl_terrain,
         tl_terrain_street_extrusion,
@@ -481,9 +487,10 @@ RenderableOsmMap::RenderableOsmMap(
             Material{
                 .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
-                .aggregate_mode = limit_draw_distance_ ? AggregateMode::OFF : AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
-                .specularity = {0, 0, 0}}.compute_color_mode(),
+                .specularity = {0, 0, 0},
+                .draw_distance_noperations = 200}.compute_color_mode(),
             buildings,
             nodes,
             scale,
@@ -500,9 +507,10 @@ RenderableOsmMap::RenderableOsmMap(
                 .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
                 .blend_mode = barrier_blend_mode,
-                .aggregate_mode = limit_draw_distance_ ? AggregateMode::OFF : AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::ONCE,
                 .is_small = false,
-                .cull_faces = false}.compute_color_mode(),
+                .cull_faces = false,
+                .draw_distance_noperations = 200}.compute_color_mode(),
             wall_barriers,
             nodes,
             scale,
@@ -556,8 +564,9 @@ RenderableOsmMap::RenderableOsmMap(
             Material{
                 .texture_descriptor = {.color = roof_texture},
                 .occluder_type = OccluderType::BLACK,
-                .aggregate_mode = limit_draw_distance_ ? AggregateMode::OFF : AggregateMode::ONCE,
-                .ambience = {1, 1, 1}}.compute_color_mode(),
+                .aggregate_mode = AggregateMode::ONCE,
+                .ambience = {1, 1, 1},
+                .draw_distance_noperations = 200}.compute_color_mode(),
             roof_color,
             buildings,
             nodes,
@@ -573,9 +582,10 @@ RenderableOsmMap::RenderableOsmMap(
             Material{
                 .texture_descriptor = {.color = ceiling_texture},
                 .occluder_type = OccluderType::BLACK,
-                .aggregate_mode = limit_draw_distance_ ? AggregateMode::OFF : AggregateMode::ONCE,
+                .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1, 1, 1},
-                .specularity = {0, 0, 0}}.compute_color_mode(),
+                .specularity = {0, 0, 0},
+                .draw_distance_noperations = 200}.compute_color_mode(),
             buildings,
             nodes,
             scale,
@@ -857,17 +867,14 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
             scene_node.add_instances_position(p.first, r.position);
         }
     }
-    if (limit_draw_distance_) {
-        if (rbvh_ == nullptr) {
-            rbvh_ = std::make_shared<RenderableBvh>(cvas_, rendering_resources_);
-        }
-        rbvh_->instantiate_renderable(name, scene_node, resource_filter);
-    } else {
-        if (rcva_ == nullptr) {
-            rcva_ = std::make_shared<RenderableColoredVertexArray>(cvas_, nullptr, rendering_resources_);
-        }
-        rcva_->instantiate_renderable(name, scene_node, resource_filter);
+    // if (rbvh_ == nullptr) {
+    //     rbvh_ = std::make_shared<RenderableBvh>(cvas_, rendering_resources_);
+    // }
+    // rbvh_->instantiate_renderable(name, scene_node, resource_filter);
+    if (rcva_ == nullptr) {
+        rcva_ = std::make_shared<RenderableColoredVertexArray>(cvas_, nullptr, rendering_resources_);
     }
+    rcva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> RenderableOsmMap::get_animated_arrays() const {

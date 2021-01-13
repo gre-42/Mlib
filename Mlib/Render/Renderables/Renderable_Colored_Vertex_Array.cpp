@@ -13,6 +13,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Stats/Mean.hpp>
 #include <iostream>
 
 static const size_t ANIMATION_NINTERPOLATED = 4;
@@ -418,6 +419,79 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     return sstr.str();
 }};
 
+void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr) {
+    assert(ntriangles > 0);
+    if (triangles_local_ids[id] == ntriangles - 1) {
+        triangles_local_ids[id] = SIZE_MAX;
+        triangles_global_ids[ntriangles - 1] = SIZE_MAX;
+    } else if (ntriangles > 1) {
+        size_t from = ntriangles - 1;
+        size_t to = triangles_local_ids[id];
+        assert(to != SIZE_MAX);
+        ptr[to] = cva->triangles[triangles_global_ids[from]];
+        triangles_local_ids[id] = SIZE_MAX;
+        triangles_local_ids[triangles_global_ids[from]] = to;
+        triangles_global_ids[to] = triangles_global_ids[from];
+        triangles_global_ids[from] = SIZE_MAX;
+    }
+    --ntriangles;
+}
+
+void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr) {
+    assert(triangles_global_ids[ntriangles] == SIZE_MAX);
+    assert(triangles_local_ids[id] == SIZE_MAX);
+    triangles_local_ids[id] = ntriangles;
+    triangles_global_ids[ntriangles] = id;
+    ptr[ntriangles] = cva->triangles[id];
+    ++ntriangles;
+}
+
+/**
+ * From: https://learnopengl.com/Advanced-OpenGL/Advanced-Data
+ */
+void SubstitutionInfo::delete_triangles_far_away(
+    const FixedArray<float, 3>& position,
+    const TransformationMatrix<float>& m,
+    float distance_add,
+    float distance_remove,
+    size_t noperations)
+{
+    if (cva->triangles.empty()) {
+        return;
+    }
+    if (triangles_local_ids.empty()) {
+        triangles_local_ids.resize(cva->triangles.size());
+        triangles_global_ids.resize(cva->triangles.size());
+        for (size_t i = 0; i < triangles_local_ids.size(); ++i) {
+            triangles_local_ids[i] = i;
+            triangles_global_ids[i] = i;
+        }
+        current_triangle_id = 0;
+    }
+    assert(triangles_local_ids.size() == cva->triangles.size());
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
+    typedef FixedArray<ColoredVertex, 3> Triangle;
+    CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+    float add2 = squared(distance_add);
+    float remove2 = squared(distance_remove);
+    for (size_t i = 0; i < noperations; ++i) {
+        auto center_local = mean(cva->triangles[current_triangle_id].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
+        auto center = m * center_local;
+        float dist2 = sum(squared(center - position));
+        if (triangles_local_ids[current_triangle_id] != SIZE_MAX) {
+            if (dist2 > remove2) {
+                delete_triangle(current_triangle_id, ptr);
+            }
+        } else {
+            if (dist2 < add2) {
+                insert_triangle(current_triangle_id, ptr);
+            }
+        }
+        current_triangle_id = (current_triangle_id + 1) % triangles_local_ids.size();
+    }
+    CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
+}
+
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
     std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>* instances,
@@ -701,24 +775,26 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     return result;
 }
 
-const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredVertexArray* cva) const {
+const SubstitutionInfo& RenderableColoredVertexArray::get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const
+{
     if (cva->material.aggregate_mode != AggregateMode::OFF && instances_ == nullptr) {
         throw std::runtime_error("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
-    if (auto it = vertex_arrays_.find(cva); it != vertex_arrays_.end()) {
+    if (auto it = vertex_arrays_.find(cva.get()); it != vertex_arrays_.end()) {
         return *it->second;
     }
     if (cva->triangles.empty()) {
         throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array on empty array \"" + cva->name + '"');
     }
     std::lock_guard guard{mutex_};
-    auto va = std::make_unique<VertexArray>();
+    auto si = std::make_unique<SubstitutionInfo>();
+    auto& va = si->va;
     // https://stackoverflow.com/a/13405205/2292832
-    CHK(glGenVertexArrays(1, &va->vertex_array));
-    CHK(glBindVertexArray(va->vertex_array));
+    CHK(glGenVertexArrays(1, &va.vertex_array));
+    CHK(glBindVertexArray(va.vertex_array));
 
-    CHK(glGenBuffers(1, &va->vertex_buffer));
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va->vertex_buffer));
+    CHK(glGenBuffers(1, &va.vertex_buffer));
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
     CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(cva->triangles[0]) * cva->triangles.size(), cva->triangles.front().flat_begin(), GL_STATIC_DRAW));
 
     ColoredVertex* cv = nullptr;
@@ -739,7 +815,7 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
         CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
     }
     if (instances_ != nullptr) {
-        const std::vector<TransformationMatrix<float>>& inst = instances_->at(cva);
+        const std::vector<TransformationMatrix<float>>& inst = instances_->at(cva.get());
         if (inst.empty()) {
             throw std::runtime_error("RenderableColoredVertexArray::get_vertex_array received empty instances \"" + cva->name + '"');
         }
@@ -748,8 +824,8 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
         for (const TransformationMatrix<float>& m : inst) {
             positions.push_back(m.t());
         }
-        CHK(glGenBuffers(1, &va->position_buffer));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va->position_buffer));
+        CHK(glGenBuffers(1, &va.position_buffer));
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
         CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
 
         CHK(glEnableVertexAttribArray(5));
@@ -795,8 +871,8 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
                 }
             }
         }
-        CHK(glGenBuffers(1, &va->bone_weight_buffer));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va->bone_weight_buffer));
+        CHK(glGenBuffers(1, &va.bone_weight_buffer));
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.bone_weight_buffer));
         CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size(), &triangle_bone_weights.front(), GL_STATIC_DRAW));
 
         ShaderBoneWeight* bw = nullptr;
@@ -807,8 +883,11 @@ const VertexArray& RenderableColoredVertexArray::get_vertex_array(const ColoredV
     }
 
     CHK(glBindVertexArray(0));
-    auto& result = *va;  // store data before std::move
-    vertex_arrays_.insert(std::make_pair(cva, std::move(va)));
+    si->cva = cva;
+    si->ntriangles = cva->triangles.size();
+    si->nlines = cva->lines.size();
+    auto& result = *si;  // store data before std::move (unique_ptr)
+    vertex_arrays_.insert(std::make_pair(cva.get(), std::move(si)));
     return result;
 }
 

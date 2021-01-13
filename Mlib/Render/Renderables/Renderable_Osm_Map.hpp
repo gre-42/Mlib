@@ -10,7 +10,6 @@ namespace Mlib {
 class RenderingResources;
 class SceneNodeResources;
 class ResourceInstanceDescriptor;
-class RenderableBvh;
 
 struct WaysideResourceNames {
     float min_dist;
@@ -83,8 +82,7 @@ public:
         float street_node_smoothness = 0,
         float street_edge_smoothness = 0,
         float terrain_edge_smoothness = 0,
-        DrivingDirection driving_direction = DrivingDirection::CENTER,
-        bool limit_draw_distance = true);
+        DrivingDirection driving_direction = DrivingDirection::CENTER);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
@@ -92,7 +90,6 @@ public:
 private:
     std::list<std::shared_ptr<ColoredVertexArray>> cvas_;
     mutable std::shared_ptr<RenderableColoredVertexArray> rcva_;
-    mutable std::shared_ptr<RenderableBvh> rbvh_;
     RenderingResources& rendering_resources_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
@@ -101,7 +98,6 @@ private:
     float scale_;
     std::list<SpawnPoint> spawn_points_;
     std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points_;
-    bool limit_draw_distance_;
 };
 
 }

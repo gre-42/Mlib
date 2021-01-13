@@ -51,7 +51,7 @@ public:
 private:
     std::vector<OffsetAndQuaternion<float>> calculate_absolute_bone_transformations(const Style* style) const;
     void render_cva(
-        const ColoredVertexArray& cva,
+        const std::shared_ptr<ColoredVertexArray>& cva,
         const std::vector<OffsetAndQuaternion<float>>& absolute_bone_transformations,
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float>& m,
