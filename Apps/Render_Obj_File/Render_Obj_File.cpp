@@ -229,17 +229,17 @@ int main(int argc, char** argv) {
             num_renderings,
             &render_results,
             RenderConfig{
-                nsamples_msaa: safe_stoi(args.named_value("--nsamples_msaa", "1")),
-                cull_faces: !args.has_named("--no_cull_faces"),
-                wire_frame: args.has_named("--wire_frame"),
-                screen_width: safe_stoi(args.named_value("--width", "640")),
-                screen_height: safe_stoi(args.named_value("--height", "480")),
-                show_mouse_cursor: true,
-                background_color: {
+                .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "1")),
+                .cull_faces = !args.has_named("--no_cull_faces"),
+                .wire_frame = args.has_named("--wire_frame"),
+                .screen_width = safe_stoi(args.named_value("--width", "640")),
+                .screen_height = safe_stoi(args.named_value("--height", "480")),
+                .show_mouse_cursor = true,
+                .background_color = {
                     safe_stof(args.named_value("--background_r", "1")),
                     safe_stof(args.named_value("--background_g", "0")),
                     safe_stof(args.named_value("--background_b", "1"))},
-                dt: safe_stof(args.named_value("--render_dt", "0.01667"))}};
+                .dt = safe_stof(args.named_value("--render_dt", "0.01667"))}};
 
         render2.print_hardware_info();
 

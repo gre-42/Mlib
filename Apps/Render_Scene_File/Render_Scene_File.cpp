@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
         "    [--render_dt <dt> ]\n"
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
+        "    [--draw_distance_add <value>]\n"
         "    [--damping <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
@@ -136,7 +137,8 @@ int main(int argc, char** argv) {
          "--max_extra_friction",
          "--longitudinal_friction_steepness",
          "--lateral_friction_steepness",
-         "--wheel_penetration_depth"});
+         "--wheel_penetration_depth",
+         "--draw_distance_add"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -163,7 +165,8 @@ int main(int argc, char** argv) {
             .background_color = {0.68, 0.85, 1},
             .print_fps = args.has_named("--print_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),
-            .dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
+            .dt = safe_stof(args.named_value("--render_dt", "0.01667")),
+            .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "NAN"))};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
             num_renderings,
@@ -190,9 +193,9 @@ int main(int argc, char** argv) {
             scene_config.render_config = render_config;
 
             scene_config.scene_graph_config = SceneGraphConfig{
-                min_distance_small: 1,
-                max_distance_small: safe_stof(args.named_value("--max_distance_small", "1000")),
-                aggregate_update_interval: safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
+                .min_distance_small = 1,
+                .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),
+                .aggregate_update_interval = safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
 
             scene_config.physics_engine_config = PhysicsEngineConfig{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")),
