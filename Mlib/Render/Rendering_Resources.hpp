@@ -26,6 +26,7 @@ class RenderingResources {
 public:
     explicit RenderingResources(SceneNodeResources& scene_node_resources);
     ~RenderingResources();
+    void preload(const TextureDescriptor& descriptor) const;
     GLuint get_texture(const TextureDescriptor& descriptor) const;
     GLuint get_texture(const std::string& name, const TextureDescriptor& descriptor) const;
     GLuint get_cubemap(const std::string& name, const std::vector<std::string>& filenames) const;
@@ -49,7 +50,7 @@ public:
 private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
-    mutable std::mutex mutex_;
+    mutable std::recursive_mutex mutex_;
     std::map<std::string, FixedArray<float, 4, 4>> vps_;
     std::map<std::string, float> discreteness_;
     std::map<std::string, WrapMode> texture_wrap_;

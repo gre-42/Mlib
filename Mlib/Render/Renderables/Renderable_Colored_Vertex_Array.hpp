@@ -59,6 +59,7 @@ private:
     RenderingResources& rendering_resources_;
     mutable std::mutex mutex_;
     std::unique_ptr<std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>> instances_;
+    mutable bool textures_preloaded_;
 };
 
 }

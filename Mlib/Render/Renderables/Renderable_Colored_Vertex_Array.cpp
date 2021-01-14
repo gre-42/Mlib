@@ -426,7 +426,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     RenderingResources& rendering_resources)
 : triangles_res_{triangles},
   rendering_resources_{rendering_resources},
-  instances_{instances}
+  instances_{instances},
+  textures_preloaded_{false}
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
@@ -471,6 +472,12 @@ void RenderableColoredVertexArray::instantiate_renderable(const std::string& nam
 #ifdef DEBUG
     triangles_res_->check_consistency();
 #endif
+    if (!textures_preloaded_ && (glfwGetCurrentContext() != nullptr)) {
+        for (auto& cva : triangles_res_->cvas) {
+            rendering_resources_.preload(cva->material.texture_descriptor);
+        }
+        textures_preloaded_ = true;
+    }
     scene_node.add_renderable(name, std::make_shared<RenderableColoredVertexArrayInstance>(
         shared_from_this(),
         resource_filter));
