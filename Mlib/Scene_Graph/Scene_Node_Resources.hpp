@@ -40,6 +40,9 @@ public:
         const std::string& instance_name,
         SceneNode& scene_node,
         const SceneNodeResourceFilter& resource_filter) const;
+    void instantiate_geographic_mapping(
+        const std::string& name,
+        SceneNode& scene_node);
     std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(const std::string& name) const;
     void generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) const;
     void generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) const;
