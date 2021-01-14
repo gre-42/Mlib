@@ -2,6 +2,9 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+
 namespace Mlib {
 
 Array<float> intrinsic_times_inverse(
@@ -232,3 +235,5 @@ inline FixedArray<TData, 4, 4> assemble_homogeneous_NxN(
 }
 
 }
+
+#pragma GCC pop_options
