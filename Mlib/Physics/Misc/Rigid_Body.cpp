@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
@@ -340,9 +341,9 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
         ostr << "z: " << pos(2) << " m" << std::endl;
         if (geographic_mapping_ != nullptr) {
             auto gpos = (*geographic_mapping_) * pos.casted<double>();
-            ostr << "lat: " << gpos(0) << " ?" << std::endl;
-            ostr << "lon: " << gpos(1) << " ?" << std::endl;
-            ostr << "height: " << gpos(2) << " m" << std::endl;
+            ostr << "lat: " << latitude_to_string(gpos(0)) << std::endl;
+            ostr << "lon: " << longitude_to_string(gpos(1)) << std::endl;
+            ostr << "height: " << height_to_string(gpos(2)) << std::endl;
         }
     }
     if (log_components & STATUS_ENERGY) {

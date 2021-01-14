@@ -149,7 +149,7 @@ RenderableOsmMap::RenderableOsmMap(
             bounds_min_merged = minimum(bounds_min, bounds_min_merged);
             bounds_max_merged = maximum(bounds_max, bounds_max_merged);
             coords_ref = (bounds_max_merged + bounds_min_merged) / 2.0;
-            auto m = latitude_longitude_2_meters_matrix(
+            auto m = latitude_longitude_2_meters_mapping(
                 coords_ref(0),
                 coords_ref(1)).scaled(scale);
             FixedArray<float, 2> min = (m * bounds_min_merged).casted<float>();

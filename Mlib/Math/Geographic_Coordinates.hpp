@@ -3,6 +3,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <cmath>
+#include <string>
 
 namespace Mlib {
 
@@ -34,7 +35,7 @@ void latitude_longitude_2_meters(
 }
 
 template <class TData>
-TransformationMatrix<TData, 2> latitude_longitude_2_meters_matrix(
+TransformationMatrix<TData, 2> latitude_longitude_2_meters_mapping(
     TData latitude0,
     TData longitude0)
 {
@@ -51,6 +52,33 @@ TransformationMatrix<TData, 2> latitude_longitude_2_meters_matrix(
     result.R()(0, 1) = x - result.t()(0);
     result.R()(1, 1) = y - result.t()(1);
     return result;
+}
+
+template <class TData>
+std::string latitude_to_string(TData latitude) {
+    if (latitude == 0) {
+        return "0";
+    } else if (latitude > 0) {
+        return std::to_string(latitude) + " N";
+    } else {
+        return std::to_string(-latitude) + " S";
+    }
+}
+
+template <class TData>
+std::string longitude_to_string(TData longitude) {
+    if (longitude == 0) {
+        return "0";
+    } else if (longitude > 0) {
+        return std::to_string(longitude) + " E";
+    } else {
+        return std::to_string(-longitude) + " W";
+    }
+}
+
+template <class TData>
+std::string height_to_string(TData height) {
+    return std::to_string(height) + " m";
 }
 
 }
