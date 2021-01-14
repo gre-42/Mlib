@@ -47,13 +47,13 @@ struct TextureDescriptor {
 
 inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t) {
     ostr <<
-        "color: " << t.color << std::endl <<
-        "normal: " << t.normal << std::endl <<
-        "color_mode: " << color_mode_to_string(t.color_mode) << std::endl <<
-        "histogram: " << t.histogram << std::endl <<
-        "mixed: " << t.mixed << std::endl <<
-        "overlap_npixels: " << t.overlap_npixels << std::endl <<
-        "mean_color: " << t.mean_color << std::endl;
+        "color: " << t.color << '\n' <<
+        "normal: " << t.normal << '\n' <<
+        "color_mode: " << color_mode_to_string(t.color_mode) << '\n' <<
+        "histogram: " << t.histogram << '\n' <<
+        "mixed: " << t.mixed << '\n' <<
+        "overlap_npixels: " << t.overlap_npixels << '\n' <<
+        "mean_color: " << t.mean_color << '\n';
     return ostr;
 }
 

@@ -13,7 +13,7 @@ void render(const std::list<std::string>& pathes, std::ostream& ostream) {
     auto head_ = _<head>({meta_});
     auto body_ = _<body>(contents_);
     auto html_ = _<html>({head_, body_});
-    ostream << "<!DOCTYPE html>" << std::endl;
+    ostream << "<!DOCTYPE html>\n";
     ostream << *html_;
 }
 
