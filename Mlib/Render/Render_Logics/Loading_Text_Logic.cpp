@@ -56,7 +56,7 @@ const FixedArray<float, 4, 4>& LoadingTextLogic::vp() const {
     throw std::runtime_error("LoadingTextLogic::vp not implemented");
 }
 
-const TransformationMatrix<float>& LoadingTextLogic::iv() const {
+const TransformationMatrix<float, 3>& LoadingTextLogic::iv() const {
     throw std::runtime_error("LoadingTextLogic::iv not implemented");
 }
 

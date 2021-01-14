@@ -89,9 +89,9 @@ void RenderableColoredVertexArrayInstance::render_cva(
     const std::shared_ptr<ColoredVertexArray>& cva,
     const std::vector<OffsetAndQuaternion<float>>& absolute_bone_transformations,
     const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float>& m,
-    const TransformationMatrix<float>& iv,
-    const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights,
+    const TransformationMatrix<float, 3>& m,
+    const TransformationMatrix<float, 3>& iv,
+    const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -118,7 +118,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
         }
     }
 
-    std::vector<std::pair<TransformationMatrix<float>, Light*>> filtered_lights;
+    std::vector<std::pair<TransformationMatrix<float, 3>, Light*>> filtered_lights;
     std::vector<size_t> light_noshadow_indices;
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
@@ -429,9 +429,9 @@ void RenderableColoredVertexArrayInstance::render_cva(
 
 void RenderableColoredVertexArrayInstance::render(
     const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float>& m,
-    const TransformationMatrix<float>& iv,
-    const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights,
+    const TransformationMatrix<float, 3>& m,
+    const TransformationMatrix<float, 3>& iv,
+    const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -471,7 +471,7 @@ bool RenderableColoredVertexArrayInstance::requires_blending_pass() const {
 
 void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
     const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float>& m,
+    const TransformationMatrix<float, 3>& m,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
@@ -490,7 +490,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
 }
 
 void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
-    const TransformationMatrix<float>& m,
+    const TransformationMatrix<float, 3>& m,
     const SceneGraphConfig& scene_graph_config,
     std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const
 {
@@ -503,7 +503,7 @@ void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
 
 void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
     const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float>& m,
+    const TransformationMatrix<float, 3>& m,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
@@ -522,7 +522,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
 }
 
 void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
-    const TransformationMatrix<float>& m,
+    const TransformationMatrix<float, 3>& m,
     const SceneGraphConfig& scene_graph_config,
     std::list<TransformedColoredVertexArray>& aggregate_queue) const
 {

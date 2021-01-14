@@ -19,7 +19,7 @@ struct ColoredVertex {
     FixedArray<float, 3> normal;
     FixedArray<float, 3> tangent;
 
-    ColoredVertex transformed(const TransformationMatrix<float>& m) const {
+    ColoredVertex transformed(const TransformationMatrix<float, 3>& m) const {
         return ColoredVertex{
             .position = m * position,
             .color = color,

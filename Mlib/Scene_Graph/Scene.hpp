@@ -46,7 +46,7 @@ public:
     SceneNode* get_node(const std::string& name) const;
     void render(
         const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float>& iv,
+        const TransformationMatrix<float, 3>& iv,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;

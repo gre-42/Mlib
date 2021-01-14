@@ -56,7 +56,7 @@ const FixedArray<float, 4, 4>& StandardCameraLogic::vp() const {
     return vp_;
 }
 
-const TransformationMatrix<float>& StandardCameraLogic::iv() const {
+const TransformationMatrix<float, 3>& StandardCameraLogic::iv() const {
     return iv_;
 }
 

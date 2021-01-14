@@ -22,10 +22,10 @@ public:
         float gravity,
         const PhysicsEngineConfig& cfg);
     ~PitchLookAtNode();
-    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) override;
-    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float> get_new_relative_model_matrix() const override;
+    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
+    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, 3> get_new_relative_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
 

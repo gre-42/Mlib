@@ -9,7 +9,7 @@
 
 namespace Mlib {
 
-template <class TData>
+template <class TData, size_t tsize>
 class TransformationMatrix;
 
 struct ColoredVertexArray {
@@ -31,10 +31,10 @@ struct ColoredVertexArray {
     std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
     std::vector<FixedArray<float, 3>> vertices() const;
     std::shared_ptr<ColoredVertexArray> transformed(const std::vector<OffsetAndQuaternion<float>>& qs) const;
-    std::shared_ptr<ColoredVertexArray> transformed(const TransformationMatrix<float>& tm) const;
-    std::vector<CollisionTriangleSphere> transformed_triangles_sphere(const TransformationMatrix<float>& tm) const;
-    std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const TransformationMatrix<float>& tm) const;
-    std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float>& tm) const;
+    std::shared_ptr<ColoredVertexArray> transformed(const TransformationMatrix<float, 3>& tm) const;
+    std::vector<CollisionTriangleSphere> transformed_triangles_sphere(const TransformationMatrix<float, 3>& tm) const;
+    std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const TransformationMatrix<float, 3>& tm) const;
+    std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float, 3>& tm) const;
     void downsample_triangles(size_t n);
 };
 

@@ -89,7 +89,7 @@ void Gun::advance_time(float dt) {
     }
 }
 
-void Gun::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix)
+void Gun::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix)
 {
     absolute_model_matrix_ = absolute_model_matrix;
 }

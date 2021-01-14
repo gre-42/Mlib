@@ -6,7 +6,7 @@ namespace Mlib {
 
 struct TransformedColoredVertexArray {
     std::shared_ptr<ColoredVertexArray> cva;
-    TransformationMatrix<float> transformation_matrix;
+    TransformationMatrix<float, 3> transformation_matrix;
 };
 
 }

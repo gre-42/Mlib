@@ -30,7 +30,7 @@ public:
         float bullet_damage,
         const FixedArray<float, 3>& bullet_size);
     virtual void advance_time(float dt) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
     void trigger();
 private:
@@ -49,7 +49,7 @@ private:
     std::atomic_bool triggered_;
     float cool_down_;
     float seconds_since_last_shot_;
-    TransformationMatrix<float> absolute_model_matrix_;
+    TransformationMatrix<float, 3> absolute_model_matrix_;
 };
 
 }

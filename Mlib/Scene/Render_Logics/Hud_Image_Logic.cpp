@@ -85,7 +85,7 @@ const FixedArray<float, 4, 4>& HudImageLogic::vp() const {
     throw std::runtime_error("HudImageLogic::vp not implemented");
 }
 
-const TransformationMatrix<float>& HudImageLogic::iv() const {
+const TransformationMatrix<float, 3>& HudImageLogic::iv() const {
     throw std::runtime_error("HudImageLogic::iv not implemented");
 }
 

@@ -55,7 +55,7 @@ const FixedArray<float, 4, 4>& KeyBindings::vp() const {
     throw std::runtime_error("KeyBindings::vp not implemented");
 }
 
-const TransformationMatrix<float>& KeyBindings::iv() const {
+const TransformationMatrix<float, 3>& KeyBindings::iv() const {
     throw std::runtime_error("KeyBindings::iv not implemented");
 }
 

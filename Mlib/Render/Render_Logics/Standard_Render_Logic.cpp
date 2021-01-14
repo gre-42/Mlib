@@ -80,7 +80,7 @@ const FixedArray<float, 4, 4>& StandardRenderLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float>& StandardRenderLogic::iv() const {
+const TransformationMatrix<float, 3>& StandardRenderLogic::iv() const {
     return child_logic_.iv();
 }
 

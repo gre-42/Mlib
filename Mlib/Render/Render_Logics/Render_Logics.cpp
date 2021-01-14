@@ -52,7 +52,7 @@ const FixedArray<float, 4, 4>& RenderLogics::vp() const {
     throw std::runtime_error("RenderLogics::vp not implemented");
 }
 
-const TransformationMatrix<float>& RenderLogics::iv() const {
+const TransformationMatrix<float, 3>& RenderLogics::iv() const {
     throw std::runtime_error("RenderLogics::iv not implemented");
 }
 

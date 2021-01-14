@@ -30,8 +30,8 @@ public:
     ~FollowMovable();
     void initialize();
     virtual void advance_time(float dt) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float> get_new_absolute_model_matrix() const override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
 
 private:
@@ -42,7 +42,7 @@ private:
     FixedArray<float, 2> attachment_position_;
     FixedArray<float, 3> node_displacement_;
     FixedArray<float, 3> look_at_displacement_;
-    TransformationMatrix<float> transformation_matrix_;
+    TransformationMatrix<float, 3> transformation_matrix_;
     FixedArray<float, 3> dpos_old_;
     float snappiness_;
     float y_adaptivity_;

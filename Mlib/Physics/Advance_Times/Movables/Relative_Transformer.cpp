@@ -16,22 +16,22 @@ RelativeTransformer::RelativeTransformer(AdvanceTimes& advance_times)
 RelativeTransformer::~RelativeTransformer()
 {}
 
-void RelativeTransformer::set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix)
+void RelativeTransformer::set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix)
 {
     transformation_matrix_ = relative_model_matrix;
 }
 
-void RelativeTransformer::set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix)
+void RelativeTransformer::set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix)
 {
     transformation_matrix_.t() = relative_model_matrix.t();
 }
 
-void RelativeTransformer::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix)
+void RelativeTransformer::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix)
 {
     // do nothing
 }
 
-TransformationMatrix<float> RelativeTransformer::get_new_relative_model_matrix() const
+TransformationMatrix<float, 3> RelativeTransformer::get_new_relative_model_matrix() const
 {
     return transformation_matrix_;
 }

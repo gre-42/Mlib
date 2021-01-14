@@ -103,7 +103,7 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const std::v
     return res;
 }
 
-std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const TransformationMatrix<float>& tm) const {
+std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const TransformationMatrix<float, 3>& tm) const {
     auto res = std::make_shared<ColoredVertexArray>();
     res->material = material;
     res->triangles.reserve(triangles.size());
@@ -122,7 +122,7 @@ std::shared_ptr<ColoredVertexArray> ColoredVertexArray::transformed(const Transf
     return res;
 }
 
-std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(const TransformationMatrix<float>& tm) const {
+std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_sphere(const TransformationMatrix<float, 3>& tm) const {
     std::vector<CollisionTriangleSphere> res;
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
@@ -139,7 +139,7 @@ std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_s
     return res;
 }
 
-std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbox(const TransformationMatrix<float>& tm) const {
+std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbox(const TransformationMatrix<float, 3>& tm) const {
     std::vector<CollisionTriangleAabb> res;
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
@@ -159,7 +159,7 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbo
     return res;
 }
 
-std::vector<FixedArray<FixedArray<float, 3>, 2>> ColoredVertexArray::transformed_lines(const TransformationMatrix<float>& tm) const {
+std::vector<FixedArray<FixedArray<float, 3>, 2>> ColoredVertexArray::transformed_lines(const TransformationMatrix<float, 3>& tm) const {
     std::vector<FixedArray<FixedArray<float, 3>, 2>> res;
     res.reserve(lines.size());
     for (const auto& t : lines) {

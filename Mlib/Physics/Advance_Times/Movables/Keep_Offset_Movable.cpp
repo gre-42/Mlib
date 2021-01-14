@@ -33,11 +33,11 @@ void KeepOffsetMovable::advance_time(float dt) {
     transformation_matrix_.t() = followed_->get_new_absolute_model_matrix().t() + offset_;
 }
 
-void KeepOffsetMovable::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {
+void KeepOffsetMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float> KeepOffsetMovable::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, 3> KeepOffsetMovable::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }
 

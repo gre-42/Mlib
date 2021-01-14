@@ -14,7 +14,7 @@ class ColoredVertexArray;
 class TransformedMesh {
 public:
     TransformedMesh(
-        const TransformationMatrix<float>& transformation_matrix,
+        const TransformationMatrix<float, 3>& transformation_matrix,
         const BoundingSphere<float, 3>& bounding_sphere,
         const std::shared_ptr<ColoredVertexArray>& mesh);
     TransformedMesh(
@@ -28,7 +28,7 @@ public:
     void print_info() const;
     const BoundingSphere<float, 3>& transformed_bounding_sphere() const;
 private:
-    const TransformationMatrix<float> transformation_matrix_;
+    const TransformationMatrix<float, 3> transformation_matrix_;
     BoundingSphere<float, 3> transformed_bounding_sphere_;
     std::shared_ptr<ColoredVertexArray> mesh_;
     mutable std::vector<CollisionTriangleSphere> transformed_triangles_;

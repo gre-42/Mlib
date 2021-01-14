@@ -26,7 +26,7 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
     // }
     // std::cerr << "Update instances: " << ntris << std::endl;
 
-    std::map<std::shared_ptr<ColoredVertexArray>, std::list<TransformationMatrix<float>>> cva_lists;
+    std::map<std::shared_ptr<ColoredVertexArray>, std::list<TransformationMatrix<float, 3>>> cva_lists;
     for (const auto& a : instances_queue) {
         cva_lists[a.cva].push_back(a.transformation_matrix);
     }
@@ -35,7 +35,7 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
         mat_vectors.push_back(a.first);
     }
     sort_for_rendering(mat_vectors);
-    auto cva_instances = new std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float>>>;
+    auto cva_instances = new std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>;
     for (const auto& a : cva_lists) {
         cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});
     }
@@ -49,12 +49,12 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
     }
 }
 
-void ArrayInstancesRenderer::render_instances(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float>& iv, const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const {
+void ArrayInstancesRenderer::render_instances(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float, 3>& iv, const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const {
     std::lock_guard<std::mutex> lock_guard{mutex_};
     if (is_initialized_) {
         rcvai_->render(
             vp,
-            TransformationMatrix<float>::identity(),
+            TransformationMatrix<float, 3>::identity(),
             iv,
             lights,
             scene_graph_config,

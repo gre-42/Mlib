@@ -155,7 +155,7 @@ const FixedArray<float, 4, 4>& SkyboxLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float>& SkyboxLogic::iv() const {
+const TransformationMatrix<float, 3>& SkyboxLogic::iv() const {
     return child_logic_.iv();
 }
 

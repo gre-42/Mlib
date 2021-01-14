@@ -76,13 +76,13 @@ void FollowMovable::advance_time(float dt) {
     dpos_old_ = dpos3;
 }
 
-void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {
+void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
     attachment_position_(0) = transformation_matrix_.t()(0) - node_displacement_(0);
     attachment_position_(1) = transformation_matrix_.t()(2) - node_displacement_(2);
 }
 
-TransformationMatrix<float> FollowMovable::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, 3> FollowMovable::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }
 

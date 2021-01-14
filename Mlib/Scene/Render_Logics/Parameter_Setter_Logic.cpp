@@ -84,7 +84,7 @@ const FixedArray<float, 4, 4>& ParameterSetterLogic::vp() const {
     throw std::runtime_error("ParameterSetterLogic::vp not implemented");
 }
 
-const TransformationMatrix<float>& ParameterSetterLogic::iv() const {
+const TransformationMatrix<float, 3>& ParameterSetterLogic::iv() const {
     throw std::runtime_error("ParameterSetterLogic::iv not implemented");
 }
 

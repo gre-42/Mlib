@@ -166,15 +166,15 @@ FixedArray<float, 3> RigidBody::velocity_at_position(const FixedArray<float, 3>&
     return rbi_.velocity_at_position(position);
 }
 
-void RigidBody::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {
+void RigidBody::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
     rbi_.set_pose(
         absolute_model_matrix.R(),
         absolute_model_matrix.t());
 }
 
-TransformationMatrix<float> RigidBody::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, 3> RigidBody::get_new_absolute_model_matrix() const {
     std::lock_guard lock{advance_time_mutex_};
-    return TransformationMatrix<float>{rbi_.rbp_.rotation_, rbi_.abs_position()};
+    return TransformationMatrix<float, 3>{rbi_.rbp_.rotation_, rbi_.abs_position()};
 }
 
 void RigidBody::notify_destroyed(void* obj) {

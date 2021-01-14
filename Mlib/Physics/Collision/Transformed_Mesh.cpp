@@ -11,7 +11,7 @@ using namespace Mlib;
 #pragma GCC push_options
 #pragma GCC optimize ("O3")
 TransformedMesh::TransformedMesh(
-    const TransformationMatrix<float>& transformation_matrix,
+    const TransformationMatrix<float, 3>& transformation_matrix,
     const BoundingSphere<float, 3>& bounding_sphere,
     const std::shared_ptr<ColoredVertexArray>& mesh)
 : transformation_matrix_{transformation_matrix},

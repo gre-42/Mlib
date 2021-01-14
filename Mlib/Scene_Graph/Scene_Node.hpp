@@ -20,7 +20,7 @@ class Scene;
 
 struct Blended {
     FixedArray<float, 4, 4> mvp;
-    TransformationMatrix<float> m;
+    TransformationMatrix<float, 3> m;
     const Renderable* renderable;
 };
 
@@ -71,13 +71,13 @@ public:
     void set_camera(const std::shared_ptr<Camera>& camera);
     std::shared_ptr<Camera> get_camera() const;
     void add_light(Light* light);
-    void move(const TransformationMatrix<float>& v, float dt);
+    void move(const TransformationMatrix<float, 3>& v, float dt);
     bool requires_render_pass() const;
     void render(
         const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float>& parent_m,
-        const TransformationMatrix<float>& iv,
-        const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights,
+        const TransformationMatrix<float, 3>& parent_m,
+        const TransformationMatrix<float, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
         std::list<Blended>& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
@@ -85,29 +85,29 @@ public:
         const Style* style) const;
     void append_sorted_aggregates_to_queue(
         const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float>& parent_m,
+        const TransformationMatrix<float, 3>& parent_m,
         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;
     void append_large_aggregates_to_queue(
-        const TransformationMatrix<float>& parent_m,
+        const TransformationMatrix<float, 3>& parent_m,
         std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_small_instances_to_queue(
         const FixedArray<float, 4, 4>& vp,
-        const TransformationMatrix<float>& parent_m,
+        const TransformationMatrix<float, 3>& parent_m,
         const FixedArray<float, 3>& delta_position,
         std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;
     void append_large_instances_to_queue(
-        const TransformationMatrix<float>& parent_m,
+        const TransformationMatrix<float, 3>& parent_m,
         const FixedArray<float, 3>& delta_position,
         std::list<TransformedColoredVertexArray>& instances_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_lights_to_queue(
-        const TransformationMatrix<float>& parent_m,
-        std::list<std::pair<TransformationMatrix<float>, Light*>>& lights) const;
+        const TransformationMatrix<float, 3>& parent_m,
+        std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights) const;
     const FixedArray<float, 3>& position() const;
     const FixedArray<float, 3>& rotation() const;
     float scale() const;
@@ -118,10 +118,10 @@ public:
         const FixedArray<float, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale);
-    TransformationMatrix<float> relative_model_matrix() const;
-    TransformationMatrix<float> absolute_model_matrix() const;
-    TransformationMatrix<float> relative_view_matrix() const;
-    TransformationMatrix<float> absolute_view_matrix() const;
+    TransformationMatrix<float, 3> relative_model_matrix() const;
+    TransformationMatrix<float, 3> absolute_model_matrix() const;
+    TransformationMatrix<float, 3> relative_view_matrix() const;
+    TransformationMatrix<float, 3> absolute_view_matrix() const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     void set_style(Style* style);
 private:

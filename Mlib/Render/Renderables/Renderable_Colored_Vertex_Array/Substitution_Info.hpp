@@ -9,7 +9,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class ColoredVertexArray;
 class ColoredVertex;
-template <class TData>
+template <class TData, size_t tsize>
 class TransformationMatrix;
 class BackgroundLoop;
 
@@ -21,7 +21,7 @@ public:
     size_t nlines;
     void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
-        const TransformationMatrix<float>& m,
+        const TransformationMatrix<float, 3>& m,
         float draw_distance_add,
         float draw_distance_slop,
         size_t noperations,

@@ -21,7 +21,7 @@ public:
     AggregateArrayRenderer& operator = (const AggregateArrayRenderer& other) = delete;
     explicit AggregateArrayRenderer(RenderingResources& rendering_resources);
     virtual void update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) override;
-    virtual void render_aggregates(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float>& iv, const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const override;
+    virtual void render_aggregates(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float, 3>& iv, const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const override;
 private:
     RenderingResources& rendering_resources_;
     std::shared_ptr<RenderableColoredVertexArray> rcva_;

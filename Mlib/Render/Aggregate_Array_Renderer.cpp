@@ -63,12 +63,12 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
     }
 }
 
-void AggregateArrayRenderer::render_aggregates(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float>& iv, const std::list<std::pair<TransformationMatrix<float>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const {
+void AggregateArrayRenderer::render_aggregates(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float, 3>& iv, const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const {
     std::lock_guard<std::mutex> lock_guard{mutex_};
     if (is_initialized_) {
         rcvai_->render(
             vp,
-            TransformationMatrix<float>::identity(),
+            TransformationMatrix<float, 3>::identity(),
             iv,
             lights,
             scene_graph_config,

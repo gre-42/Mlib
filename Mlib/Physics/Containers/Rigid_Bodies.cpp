@@ -15,7 +15,7 @@ RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
 
 std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
     const std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
-    const TransformationMatrix<float>& tm,
+    const TransformationMatrix<float, 3>& tm,
     float static_radius)
 {
     if (std::isnan(static_radius)) {

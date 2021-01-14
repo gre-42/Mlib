@@ -42,7 +42,7 @@ void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* 
  */
 void SubstitutionInfo::delete_triangles_far_away(
     const FixedArray<float, 3>& position,
-    const TransformationMatrix<float>& m,
+    const TransformationMatrix<float, 3>& m,
     float draw_distance_add,
     float draw_distance_slop,
     size_t noperations,

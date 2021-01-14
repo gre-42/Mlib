@@ -39,16 +39,16 @@ YawPitchLookAtNodes::~YawPitchLookAtNodes() {
     }
 }
 
-void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) {
+void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
     relative_position_ = relative_model_matrix.t();
     yaw_ = matrix_2_tait_bryan_angles(relative_model_matrix.R())(1);
 }
 
-void YawPitchLookAtNodes::set_updated_relative_model_matrix(const TransformationMatrix<float>& relative_model_matrix) {
+void YawPitchLookAtNodes::set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
     relative_position_ = relative_model_matrix.t();
 }
 
-void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float>& absolute_model_matrix) {
+void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
     if (followed_ == nullptr) {
         return;
     }
@@ -80,8 +80,8 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     }
 }
 
-TransformationMatrix<float> YawPitchLookAtNodes::get_new_relative_model_matrix() const {
-    return TransformationMatrix<float>{
+TransformationMatrix<float, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {
+    return TransformationMatrix<float, 3>{
         tait_bryan_angles_2_matrix(FixedArray<float, 3>{0, yaw_, 0.f}),
         relative_position_};
 }
