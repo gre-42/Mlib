@@ -1,24 +1,24 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
-#include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
-#include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <list>
 #include <map>
 #include <memory>
 #include <regex>
-#include <vector>
 
 namespace Mlib {
 
 template <class TData>
 struct OffsetAndQuaternion;
+template <class TData, size_t tndim>
+struct PointsAndAdjacency;
 
 struct AnimatedColoredVertexArrays;
 class ColoredVertexArray;
 class Scene;
 class SceneNode;
 enum class WayPointLocation;
+enum class AggregateMode;
+struct SpawnPoint;
 
 struct SceneNodeResourceFilter {
     size_t min_num = 0;

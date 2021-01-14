@@ -1,13 +1,28 @@
 #pragma once
-#include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <list>
 #include <map>
+#include <memory>
 #include <mutex>
+#include <string>
 
 namespace Mlib {
 
 struct BvhEntry;
 struct BvhConfig;
 class BvhLoader;
+class SceneNodeResource;
+class SceneNode;
+struct SceneNodeResourceFilter;
+template <typename TData, size_t... tshape>
+class FixedArray;
+template <class TData>
+class OffsetAndQuaternion;
+struct AnimatedColoredVertexArrays;
+template <class TData, size_t tndim>
+struct PointsAndAdjacency;
+enum class AggregateMode;
+struct SpawnPoint;
+enum class WayPointLocation;
 
 class SceneNodeResources {
 public:
