@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <cmath>
 
 namespace Mlib {
@@ -33,25 +34,22 @@ void latitude_longitude_2_meters(
 }
 
 template <class TData>
-FixedArray<TData, 3, 3> latitude_longitude_2_meters_matrix(
+TransformationMatrix<TData, 2> latitude_longitude_2_meters_matrix(
     TData latitude0,
     TData longitude0)
 {
-    FixedArray<TData, 3, 3> result;
+    TransformationMatrix<TData, 2> result;
     TData x;
     TData y;
     latitude_longitude_2_meters<TData, TData>(0, 0, latitude0, longitude0, x, y);
-    result(0, 2) = x;
-    result(1, 2) = y;
-    result(2, 2) = 1;
+    result.t()(0) = x;
+    result.t()(1) = y;
     latitude_longitude_2_meters<TData, TData>(1, 0, latitude0, longitude0, x, y);
-    result(0, 0) = x - result(0, 2);
-    result(1, 0) = y - result(1, 2);
-    result(2, 0) = 0;
+    result.R()(0, 0) = x - result.t()(0);
+    result.R()(1, 0) = y - result.t()(1);
     latitude_longitude_2_meters<TData, TData>(0, 1, latitude0, longitude0, x, y);
-    result(0, 1) = x - result(0, 2);
-    result(1, 1) = y - result(1, 2);
-    result(2, 1) = 0;
+    result.R()(0, 1) = x - result.t()(0);
+    result.R()(1, 1) = y - result.t()(1);
     return result;
 }
 

@@ -18,7 +18,7 @@ public:
             fixed_zeros<TData, n>()};
     }
 
-    static inline TransformationMatrix inverse(const FixedArray<TData, n, n>& R, const FixedArray<float, n>& t) {
+    static inline TransformationMatrix inverse(const FixedArray<TData, n, n>& R, const FixedArray<TData, n>& t) {
         TransformationMatrix result;
         invert_t_R(t, R, result.t_, result.R_);
         return result;
@@ -27,7 +27,7 @@ public:
     inline TransformationMatrix()
     {}
 
-    inline TransformationMatrix(const FixedArray<TData, n, n>& R, const FixedArray<float, n>& t)
+    inline TransformationMatrix(const FixedArray<TData, n, n>& R, const FixedArray<TData, n>& t)
     : R_{R},
       t_{t}
     {}
@@ -78,6 +78,19 @@ public:
     inline TransformationMatrix inverted_scaled() const {
         auto scale2 = sum(squared(R_)) / n;
         return inverse(R_ / scale2, t_);
+    }
+    void scale(const TData& f) {
+        R_ *= f;
+        t_ *= f;
+    }
+    TransformationMatrix scaled(const TData& f) const {
+        return TransformationMatrix{R_ * f, t_ * f};
+    }
+    template <class TResultData>
+    TransformationMatrix<TResultData, n> casted() const {
+        return TransformationMatrix<TResultData, n>{
+            R_.template casted<TResultData>(),
+            t_.template casted<TResultData>()};
     }
 private:
     FixedArray<TData, n, n> R_;

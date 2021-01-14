@@ -8,6 +8,8 @@
 
 namespace Mlib {
 
+template <class TData, size_t n>
+class TransformationMatrix;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
 class SceneNodeResources;
@@ -223,7 +225,7 @@ void apply_height_map(
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
-    const FixedArray<float, 2, 3>& normalization_matrix,
+    const TransformationMatrix<float, 2>& normalization_matrix,
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,

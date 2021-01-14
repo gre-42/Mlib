@@ -17,6 +17,9 @@ class RenderResults;
 class Scene;
 class Window;
 
+template <class TData, size_t n>
+class TransformationMatrix;
+
 class Render2 {
 public:
     explicit Render2(
@@ -52,7 +55,7 @@ public:
         RenderingResources& rendering_resources,
         const Array<float>& rgb_picture,
         const Array<float>& height_picture,
-        const FixedArray<float, 2, 3>& normalization_matrix,
+        const TransformationMatrix<float, 2>& normalization_matrix,
         bool rotate = false,
         float scale = 1,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},

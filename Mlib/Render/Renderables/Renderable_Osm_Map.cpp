@@ -120,7 +120,7 @@ RenderableOsmMap::RenderableOsmMap(
     FixedArray<double, 2> bounds_min_merged = fixed_full<double, 2>(INFINITY);
     FixedArray<double, 2> bounds_max_merged = fixed_full<double, 2>(-INFINITY);
     FixedArray<double, 2> coords_ref;
-    FixedArray<double, 2, 3> normalization_matrix;
+    TransformationMatrix<double, 2> normalization_matrix;
     bool normalization_matrix_defined = false;
     std::string current_way = "<none>";
     std::string current_node = "<none>";
@@ -151,15 +151,13 @@ RenderableOsmMap::RenderableOsmMap(
             coords_ref = (bounds_max_merged + bounds_min_merged) / 2.0;
             auto m = latitude_longitude_2_meters_matrix(
                 coords_ref(0),
-                coords_ref(1));
-            m *= scale;
-            m(2, 2) = 1;
-            FixedArray<float, 2> min = dehomogenized_2(dot1d(m, homogenized_3(bounds_min_merged))).casted<float>();
-            FixedArray<float, 2> max = dehomogenized_2(dot1d(m, homogenized_3(bounds_max_merged))).casted<float>();
+                coords_ref(1)).scaled(scale);
+            FixedArray<float, 2> min = (m * bounds_min_merged).casted<float>();
+            FixedArray<float, 2> max = (m * bounds_max_merged).casted<float>();
             // Scale converts from meters to e.g. kilometers
             normalized_points.set_min(min);
             normalized_points.set_max(max);
-            normalization_matrix = dot2d(normalized_points.normalization_matrix().casted<double>(), m);
+            normalization_matrix = normalized_points.normalization_matrix().casted<double>() * m;
             if (normalization_matrix_defined) {
                 std::cerr << "merged bounds" << std::endl;
                 std::cerr << "min lat " << std::setprecision(15) << bounds_min_merged(0) << std::endl;
@@ -178,12 +176,11 @@ RenderableOsmMap::RenderableOsmMap(
                 if (nodes.find(match[1].str()) != nodes.end()) {
                     throw std::runtime_error("Found duplicate node id: " + match[1].str());
                 }
-                auto pos = dot1d(
-                    normalization_matrix,
-                    FixedArray<double, 3>{
+                auto pos = (
+                    normalization_matrix *
+                    FixedArray<double, 2>{
                         safe_stod(match[3].str()),
-                        safe_stod(match[4].str()),
-                        1}).casted<float>();
+                        safe_stod(match[4].str())}).casted<float>();
                 auto opos = OrderableFixedArray<float, 2>{pos};
                 auto it = ordered_node_positions.find(opos);
                 if (it != ordered_node_positions.end()) {

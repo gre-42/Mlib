@@ -295,7 +295,7 @@ void Mlib::render_depth_map(
 void Mlib::render_height_map(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const FixedArray<float, 2, 3>& normalization_matrix,
+    const TransformationMatrix<float, 2>& normalization_matrix,
     bool rotate,
     Array<float>* output)
 {
@@ -318,8 +318,8 @@ void Mlib::render_height_map(
             }
             FixedArray<size_t, 2> id0{r, c};
             FixedArray<size_t, 2> id1{r + 1, c + 1};
-            FixedArray<float, 2> pos0 = dot1d(normalization_matrix, homogenized_3(i2a(id0)));
-            FixedArray<float, 2> pos1 = dot1d(normalization_matrix, homogenized_3(i2a(id1)));
+            FixedArray<float, 2> pos0 = normalization_matrix * i2a(id0);
+            FixedArray<float, 2> pos1 = normalization_matrix * i2a(id1);
             ColoredVertex v00{
                 FixedArray<float, 3>{
                     pos0(0),

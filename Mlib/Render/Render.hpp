@@ -21,7 +21,7 @@ void render_depth_map(
 void render_height_map(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const FixedArray<float, 2, 3>& normalization_matrix,
+    const TransformationMatrix<float, 2>& normalization_matrix,
     bool rotate = false,
     Array<float>* output = nullptr);
 

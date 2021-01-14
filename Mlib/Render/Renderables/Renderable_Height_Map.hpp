@@ -10,7 +10,7 @@ public:
     RenderableHeightMap(
         const Array<float>& rgb_picture,
         const Array<float>& height_picture,
-        const FixedArray<float, 2, 3>& normalization_matrix,
+        const TransformationMatrix<float, 2>& normalization_matrix,
         RenderingResources& rendering_resources);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;

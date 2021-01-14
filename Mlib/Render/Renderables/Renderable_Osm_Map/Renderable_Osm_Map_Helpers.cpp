@@ -699,7 +699,7 @@ void Mlib::apply_height_map(
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
-    const FixedArray<float, 2, 3>& normalization_matrix,
+    const TransformationMatrix<float, 2>& normalization_matrix,
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -721,7 +721,7 @@ void Mlib::apply_height_map(
             }
         }
         for (const auto& n : node_neighbors) {
-            FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(nodes.at(n.first).position));
+            FixedArray<float, 2> p = normalization_matrix * nodes.at(n.first).position;
             float z;
             if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
                 node_height[n.first] = {
@@ -769,7 +769,7 @@ void Mlib::apply_height_map(
         } else {
             vc = {position.first(0), position.first(1)};
         }
-        FixedArray<float, 2> p = dot1d(normalization_matrix, homogenized_3(vc));
+        FixedArray<float, 2> p = normalization_matrix * vc;
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
             // std::cerr << "Height out of bounds." << std::endl;

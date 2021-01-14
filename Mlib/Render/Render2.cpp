@@ -225,7 +225,7 @@ void Render2::render_height_map(
     RenderingResources& rendering_resources,
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const FixedArray<float, 2, 3>& normalization_matrix,
+    const TransformationMatrix<float, 2>& normalization_matrix,
     bool rotate,
     float scale,
     const SceneGraphConfig& scene_graph_config,
