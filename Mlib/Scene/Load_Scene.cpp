@@ -426,6 +426,7 @@ void LoadScene::operator()(
         "\\s*nth=(\\d+)\\r?\\n"
         "\\s*nahead=(\\d+)\\r?\\n"
         "\\s*radius=([\\w+-.]+)\\r?\\n"
+        "\\s*height_changed=(0|1)\\r?\\n"
         "\\s*track_filename=([\\w-. \\(\\)/+-]+)$");
     static const std::regex set_camera_cycle_reg("^(?:\\r?\\n|\\s)*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
     static const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
@@ -1368,7 +1369,7 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
             physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
-                fpath(match[8].str()),                  // filename
+                fpath(match[9].str()),                  // filename
                 physics_engine.advance_times_,
                 moving_node,
                 moving_node->get_absolute_movable(),
@@ -1380,7 +1381,8 @@ void LoadScene::operator()(
                 safe_stoi(match[6].str()),              // nahead
                 safe_stof(match[7].str()),              // radius
                 scene_node_resources,
-                scene));
+                scene,
+                safe_stob(match[8].str())));            // enable_height_changed_mode
         } else if (std::regex_match(line, match, set_camera_cycle_reg)) {
             std::string cameras = match[2].str();
             auto& cycle = (match[1].str() == "near")
