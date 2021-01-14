@@ -28,7 +28,10 @@ class Player;
  */
 class RigidBody: public DestructionObserver, public AbsoluteMovable, public StatusWriter {
 public:
-    RigidBody(RigidBodies& rigid_bodies, const RigidBodyIntegrator& rbi);
+    RigidBody(
+        RigidBodies& rigid_bodies,
+        const RigidBodyIntegrator& rbi,
+        const TransformationMatrix<double, 3>* geographic_mapping = nullptr);
     ~RigidBody();
     void reset_forces();
     void integrate_force(const VectorAtPosition<float, 3>& F);
@@ -95,6 +98,8 @@ public:
     Damageable* damageable_;
 
     Player* driver_;
+
+    const TransformationMatrix<double, 3>* geographic_mapping_;
 
     mutable std::mutex advance_time_mutex_;
 };

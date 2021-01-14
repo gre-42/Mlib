@@ -56,28 +56,32 @@ inline FixedArray<TData, 4, 4> inverted_scaled_se3(const FixedArray<TData, 4, 4>
     return assemble_inverse_homogeneous_4x4(R / scale2, t3_from_4x4(m));
 }
 
-inline FixedArray<float, 3> z3_from_4x4(const FixedArray<float, 4, 4>& a) {
-    return FixedArray<float, 3>{
+template <class TData>
+inline FixedArray<TData, 3> z3_from_4x4(const FixedArray<TData, 4, 4>& a) {
+    return FixedArray<TData, 3>{
         a(0, 2),
         a(1, 2),
         a(2, 2)};
 }
 
-inline FixedArray<float, 3> z3_from_3x3(const FixedArray<float, 3, 3>& a) {
-    return FixedArray<float, 3>{
+template <class TData>
+inline FixedArray<TData, 3> z3_from_3x3(const FixedArray<TData, 3, 3>& a) {
+    return FixedArray<TData, 3>{
         a(0, 2),
         a(1, 2),
         a(2, 2)};
 }
 
-inline FixedArray<float, 2> t2_from_3x3(const FixedArray<float, 3, 3>& a) {
-    return FixedArray<float, 2>{
+template <class TData>
+inline FixedArray<TData, 2> t2_from_3x3(const FixedArray<TData, 3, 3>& a) {
+    return FixedArray<TData, 2>{
         a(0, 2),
         a(1, 2)};
 }
 
-inline FixedArray<float, 3> t3_from_4x4(const FixedArray<float, 4, 4>& a) {
-    return FixedArray<float, 3>{
+template <class TData>
+inline FixedArray<TData, 3> t3_from_4x4(const FixedArray<TData, 4, 4>& a) {
+    return FixedArray<TData, 3>{
         a(0, 3),
         a(1, 3),
         a(2, 3)};

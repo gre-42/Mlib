@@ -232,6 +232,11 @@ void LoadScene::operator()(
     static const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
     static const std::regex node_instance_reg("^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+) name=([\\w+-.]+) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) scale=([\\w+-.]+)(?: aggregate=(true|false))?$");
     static const std::regex renderable_instance_reg("^(?:\\r?\\n|\\s)*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
+    static const std::regex register_geographic_mapping_reg(
+        "^(?:\\r?\\n|\\s)*register_geographic_mapping"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+resource=([\\w-. \\(\\)/+-]+)");
     static const std::regex rigid_cuboid_reg(
         "^(?:\\r?\\n|\\s)*rigid_cuboid "
         "node=([\\w+-.]+) "
@@ -688,6 +693,12 @@ void LoadScene::operator()(
                 match[1].str(),
                 *node,
                 {regex: std::regex{match[4].str()}});
+        } else if (std::regex_match(line, match, register_geographic_mapping_reg)) {
+            auto node = scene.get_node(match[2].str());
+            scene_node_resources.register_geographic_mapping(
+                match[3].str(),
+                match[1].str(),
+                *node);
         } else if (std::regex_match(line, match, rigid_cuboid_reg)) {
             std::shared_ptr<RigidBody> rb = rigid_cuboid(
                 physics_engine.rigid_bodies_,
@@ -699,7 +710,8 @@ void LoadScene::operator()(
                 FixedArray<float, 3>{
                     match[8].str().empty() ? 0.f : safe_stof(match[8].str()),
                     match[9].str().empty() ? 0.f : safe_stof(match[9].str()),
-                    match[10].str().empty() ? 0.f : safe_stof(match[10].str())});
+                    match[10].str().empty() ? 0.f : safe_stof(match[10].str())},
+                scene_node_resources.get_geographic_mapping("world"));
             std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_animated_arrays(match[2].str())->cvas;
             std::list<std::shared_ptr<ColoredVertexArray>> tirelines;
             if (!match[3].str().empty()) {

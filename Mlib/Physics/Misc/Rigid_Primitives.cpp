@@ -68,9 +68,11 @@ std::shared_ptr<RigidBody> Mlib::rigid_cuboid(
     RigidBodies& rigid_bodies,
     float mass,
     const FixedArray<float, 3>& size,
-    const FixedArray<float, 3>& com)
+    const FixedArray<float, 3>& com,
+    const TransformationMatrix<double, 3>* geographic_coordinates)
 {
     return std::make_shared<RigidBody>(
         rigid_bodies,
-        rigid_cuboid_integrator(mass, size, com));
+        rigid_cuboid_integrator(mass, size, com),
+        geographic_coordinates);
 }

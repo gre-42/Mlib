@@ -57,6 +57,37 @@ void SceneNodeResources::instantiate_renderable(
     }
 }
 
+void SceneNodeResources::register_geographic_mapping(
+    const std::string& resource_name,
+    const std::string& instance_name,
+    SceneNode& scene_node)
+{
+    auto it = resources_.find(resource_name);
+    if (it == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + resource_name + '"');
+    }
+    bool success;
+    try {
+        success = geographic_mappings_.insert({
+            instance_name,
+            it->second->get_geographic_mapping(scene_node)}).second;
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("register_geographic_mapping for resource \"" + resource_name + "\" failed: " + e.what());
+    }
+    if (!success) {
+        throw std::runtime_error("Resource with name \"" + resource_name + "\" already exists");
+    }
+}
+
+const TransformationMatrix<double, 3>* SceneNodeResources::get_geographic_mapping(const std::string& name) const
+{
+    auto it = geographic_mappings_.find(name);
+    if (it == geographic_mappings_.end()) {
+        return nullptr;
+    }
+    return &it->second;
+}
+
 std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_arrays(const std::string& name) const {
     auto it = resources_.find(name);
     if (it == resources_.end()) {

@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
@@ -120,7 +121,6 @@ RenderableOsmMap::RenderableOsmMap(
     FixedArray<double, 2> bounds_min_merged = fixed_full<double, 2>(INFINITY);
     FixedArray<double, 2> bounds_max_merged = fixed_full<double, 2>(-INFINITY);
     FixedArray<double, 2> coords_ref;
-    TransformationMatrix<double, 2> normalization_matrix;
     bool normalization_matrix_defined = false;
     std::string current_way = "<none>";
     std::string current_node = "<none>";
@@ -157,7 +157,7 @@ RenderableOsmMap::RenderableOsmMap(
             // Scale converts from meters to e.g. kilometers
             normalized_points.set_min(min);
             normalized_points.set_max(max);
-            normalization_matrix = normalized_points.normalization_matrix().casted<double>() * m;
+            normalization_matrix_ = normalized_points.normalization_matrix().casted<double>() * m;
             if (normalization_matrix_defined) {
                 std::cerr << "merged bounds" << std::endl;
                 std::cerr << "min lat " << std::setprecision(15) << bounds_min_merged(0) << std::endl;
@@ -177,7 +177,7 @@ RenderableOsmMap::RenderableOsmMap(
                     throw std::runtime_error("Found duplicate node id: " + match[1].str());
                 }
                 auto pos = (
-                    normalization_matrix *
+                    normalization_matrix_ *
                     FixedArray<double, 2>{
                         safe_stod(match[3].str()),
                         safe_stod(match[4].str())}).casted<float>();
@@ -878,6 +878,22 @@ std::shared_ptr<AnimatedColoredVertexArrays> RenderableOsmMap::get_animated_arra
         }
     }
     return res;
+}
+
+TransformationMatrix<double, 3> RenderableOsmMap::get_geographic_mapping(SceneNode& scene_node) const
+{
+    TransformationMatrix<double, 3> m3;
+    const auto& R2 = normalization_matrix_.R();
+    const auto& t2 = normalization_matrix_.t();
+    m3.R() = FixedArray<double, 3, 3>{
+        R2(0, 0), R2(0, 1), 0,
+        R2(1, 0), R2(1, 1), 0,
+        0, 0, scale_};
+    m3.t() = FixedArray<double, 3>{
+        t2(0),
+        t2(1),
+        scale_};
+    return TransformationMatrix<double, 3>{inv((scene_node.absolute_model_matrix().casted<double>() * m3).affine())};
 }
 
 std::list<SpawnPoint> RenderableOsmMap::spawn_points() const {

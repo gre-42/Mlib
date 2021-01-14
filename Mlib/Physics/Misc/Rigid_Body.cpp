@@ -11,7 +11,10 @@
 
 using namespace Mlib;
 
-RigidBody::RigidBody(RigidBodies& rigid_bodies, const RigidBodyIntegrator& rbi)
+RigidBody::RigidBody(
+    RigidBodies& rigid_bodies,
+    const RigidBodyIntegrator& rbi,
+    const TransformationMatrix<double, 3>* geographic_mapping)
 : rigid_bodies_{rigid_bodies},
   max_velocity_{INFINITY},
 #ifdef COMPUTE_POWER
@@ -21,7 +24,8 @@ RigidBody::RigidBody(RigidBodies& rigid_bodies, const RigidBodyIntegrator& rbi)
   tires_z_{0, 0, -1},
   rbi_{rbi},
   damageable_{nullptr},
-  driver_{nullptr}
+  driver_{nullptr},
+  geographic_mapping_{geographic_mapping}
 {}
 
 RigidBody::~RigidBody()
@@ -334,6 +338,12 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
         ostr << "x: " << pos(0) << " m" << std::endl;
         ostr << "y: " << pos(1) << " m" << std::endl;
         ostr << "z: " << pos(2) << " m" << std::endl;
+        if (geographic_mapping_ != nullptr) {
+            auto gpos = (*geographic_mapping_) * pos.casted<double>();
+            ostr << "lat: " << gpos(0) << " ?" << std::endl;
+            ostr << "lon: " << gpos(1) << " ?" << std::endl;
+            ostr << "height: " << gpos(2) << " m" << std::endl;
+        }
     }
     if (log_components & STATUS_ENERGY) {
         ostr << "E: " << energy() / 1e3 << " kJ" << std::endl;

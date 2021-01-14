@@ -7,6 +7,8 @@
 
 namespace Mlib {
 
+template <class TData, size_t n>
+class TransformationMatrix;
 struct BvhEntry;
 struct BvhConfig;
 class BvhLoader;
@@ -40,9 +42,11 @@ public:
         const std::string& instance_name,
         SceneNode& scene_node,
         const SceneNodeResourceFilter& resource_filter) const;
-    void instantiate_geographic_mapping(
-        const std::string& name,
+    void register_geographic_mapping(
+        const std::string& resource_name,
+        const std::string& instance_name,
         SceneNode& scene_node);
+    const TransformationMatrix<double, 3>* get_geographic_mapping(const std::string& name) const;
     std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(const std::string& name) const;
     void generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) const;
     void generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) const;
@@ -59,6 +63,7 @@ public:
 private:
     std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
     mutable std::map<std::string, BvhEntry> bvh_loaders_;
+    std::map<std::string, TransformationMatrix<double, 3>> geographic_mappings_;
     mutable std::recursive_mutex mutex_;
 };
 

@@ -4,6 +4,8 @@
 
 namespace Mlib {
 
+template <class TData, size_t n>
+class TransformationMatrix;
 class RigidBodyPulses;
 class RigidBodyIntegrator;
 class RigidBody;
@@ -25,6 +27,7 @@ std::shared_ptr<RigidBody> rigid_cuboid(
     RigidBodies& rigid_bodies,
     float mass,
     const FixedArray<float, 3>& size,
-    const FixedArray<float, 3>& com = fixed_zeros<float, 3>());
+    const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
+    const TransformationMatrix<double, 3>* geographic_coordinates = nullptr);
 
 }
