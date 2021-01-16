@@ -762,7 +762,7 @@ RenderableOsmMap::RenderableOsmMap(
             //     1,
             //     uv_scale_terrain,
             //     *tl_curb_street);
-            std::list<std::shared_ptr<TriangleList>> source_vertices{tl_curb_street};
+            std::list<std::shared_ptr<TriangleList>> source_vertices{tl_curb_street, tl_curb_path};
             TriangleList::extrude(
                 *tl_curb_street,
                 {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
