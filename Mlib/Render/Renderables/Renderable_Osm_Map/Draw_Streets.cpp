@@ -489,7 +489,9 @@ void DrawStreets::draw_holes() {
                         auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
                         auto p11 = nh.second.at(AngleCurb{angles[j], curb2});
                         auto p01 = nh.second.at(AngleCurb{angles[j], curb3});
-                        float len = std::sqrt(sum(squared((p00 + p10) / 2.f - (p01 + p11) / 2.f)));
+                        // float len = std::sqrt(sum(squared((p00 + p10) / 2.f - (p01 + p11) / 2.f)));
+                        float len = std::sqrt(sum(squared(p00 - p01)));
+                        // std::cerr << std::sqrt(sum(squared(p00 - p01))) << " " << std::sqrt(sum(squared(p10 - p11))) << std::endl;
                         float f = uv_x;
                         float g = len / scale * uv_scale;
                         tl.draw_rectangle_wo_normals(
