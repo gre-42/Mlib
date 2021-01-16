@@ -368,7 +368,7 @@ RenderableOsmMap::RenderableOsmMap(
         // draw_nodes(vertices, nodes, ways);
         // draw_test_lines(vertices, 0.02);
         // draw_ways(vertices, nodes, ways, 0.002);
-        draw_streets(
+        DrawStreets{DrawStreetsInput{
             *tl_street_crossing,
             *tl_path_crossing,
             *tl_street,
@@ -399,7 +399,8 @@ RenderableOsmMap::RenderableOsmMap(
             curb2_uv_x,
             street_lights,
             with_height_bindings,
-            driving_direction);
+            driving_direction
+        }};
     }
 
     if (forest_outline_tree_distance != INFINITY && !tree_resource_names.empty()) {

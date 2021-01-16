@@ -13,6 +13,8 @@
 
 using namespace Mlib;
 
+namespace Mlib {
+
 struct AngleCurb {
     float angle;
     int curb;
@@ -29,46 +31,22 @@ struct HoleWaypoint {
     std::list<NodeWaypoint> out;
 };
 
-void Mlib::draw_streets(
-    TriangleList& tl_street_crossing,
-    TriangleList& tl_path_crossing,
-    TriangleList& tl_street,
-    TriangleList& tl_path,
-    TriangleList& tl_curb_street,
-    TriangleList& tl_curb_path,
-    TriangleList& tl_curb2_street,
-    TriangleList& tl_curb2_path,
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
-    std::list<StreetRectangle>& street_rectangles,
-    std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
-    std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane_street,
-    std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes,
-    const std::map<std::string, Node>& nodes,
-    const std::map<std::string, Way>& ways,
-    float scale,
-    float uv_scale,
-    float default_street_width,
-    bool only_raceways,
-    const std::string& name_pattern,
-    const std::set<std::string>& excluded_highways,
-    const std::set<std::string>& path_tags,
-    float curb_alpha,
-    float curb2_alpha,
-    float curb_uv_x,
-    float curb2_uv_x,
-    ResourceNameCycle& street_lights,
-    bool with_height_bindings,
-    DrivingDirection driving_direction)
+}
+
+DrawStreets::DrawStreets(const DrawStreetsInput& in)
+: DrawStreetsInput{in}
 {
-    check_curb_validity(curb_alpha, curb2_alpha);
-    std::regex name_re{name_pattern};
-    std::map<std::string, std::map<float, AngleWay>> node_angles;
-    std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;
-    std::map<std::string, std::map<AngleCurb, FixedArray<float, 2>>> node_hole_contours;
-    std::map<std::string, HoleWaypoint> node_hole_waypoints_street;
-    std::map<std::string, HoleWaypoint> node_hole_waypoints_sidewalk;
+    check_curb_validity(in.curb_alpha, in.curb2_alpha);
+    initialize_arrays();
+    calculate_neighbors();
+    draw_streets();
+    draw_holes();
+}
+
+DrawStreets::~DrawStreets()
+{}
+
+void DrawStreets::initialize_arrays() {
     for (const auto& n : nodes) {
         node_angles.insert(std::make_pair(n.first, std::map<float, AngleWay>()));
         node_neighbors.insert(std::make_pair(n.first, std::map<std::string, NeighborWay>()));
@@ -80,7 +58,10 @@ void Mlib::draw_streets(
             throw std::runtime_error("Unknown driving direction");
         }
     }
-    std::map<std::string, NodeWayInfo> node_way_info;
+}
+
+void DrawStreets::calculate_neighbors() {
+    std::regex name_re{name_pattern};
     std::set<std::string> node_no_way_length;
     for (const auto& w : ways) {
         FixedArray<float, 3> color;
@@ -146,7 +127,9 @@ void Mlib::draw_streets(
             }
         }
     }
+}
 
+void DrawStreets::draw_streets() {
     Bvh<float, bool, 2> street_light_bvh{{0.1, 0.1}, 10};
 
     // Compute rectangles and holes for each pair of connected nodes.
@@ -242,7 +225,7 @@ void Mlib::draw_streets(
                     throw std::runtime_error("Unknown driving direction");
                 }
                 {
-                    auto add = [&street_rectangles, &rect](
+                    auto add = [this, &rect](
                         float start,
                         float stop,
                         WayPointLocation location,
@@ -413,7 +396,9 @@ void Mlib::draw_streets(
             }
         }
     }
+}
 
+void DrawStreets::draw_holes() {
     if (driving_direction == DrivingDirection::LEFT ||
         driving_direction == DrivingDirection::RIGHT)
     {
