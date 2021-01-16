@@ -484,11 +484,14 @@ void DrawStreets::draw_holes() {
                 }
                 for (size_t i = 0; i < angles.size(); ++i) {
                     size_t j = (i + 1) % angles.size();
-                    auto draw_rect = [&](TriangleList& tl, int curb0, int curb1, int curb2, int curb3, float uv_scale) {
+                    auto draw_rect = [&](TriangleList& tl, int curb0, int curb1, int curb2, int curb3, float uv_x) {
                         auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
                         auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
                         auto p11 = nh.second.at(AngleCurb{angles[j], curb2});
                         auto p01 = nh.second.at(AngleCurb{angles[j], curb3});
+                        float len = std::sqrt(sum(squared((p00 + p10) / 2.f - (p01 + p11) / 2.f)));
+                        float f = uv_x;
+                        float g = len / scale * uv_scale;
                         tl.draw_rectangle_wo_normals(
                             FixedArray<float, 3>{p00(0), p00(1), 0},
                             FixedArray<float, 3>{p10(0), p10(1), 0},
@@ -498,15 +501,19 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 2>{0.f, 0.f} * uv_scale,
-                            FixedArray<float, 2>{1.f, 0.f} * uv_scale,
-                            FixedArray<float, 2>{1.f, 1.f} * uv_scale,
-                            FixedArray<float, 2>{0.f, 1.f} * uv_scale);
+                            FixedArray<float, 2>{0, 0},
+                            FixedArray<float, 2>{f, 0},
+                            FixedArray<float, 2>{f, g},
+                            FixedArray<float, 2>{0, g});
                     };
-                    auto draw_triangle = [&](TriangleList& tl, int curb0, int curb1, int curb2, float uv_scale) {
+                    auto draw_triangle = [&](TriangleList& tl, int curb0, int curb1, int curb2, float uv_x) {
                         auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
                         auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
                         auto p01 = nh.second.at(AngleCurb{angles[j], curb2});
+                        float len = std::sqrt(sum(squared(p00 - p01)));
+                        float f = uv_x;
+                        float g = len / scale * uv_scale;
+                        float h = g / 2;
                         tl.draw_triangle_wo_normals(
                             FixedArray<float, 3>{p00(0), p00(1), 0},
                             FixedArray<float, 3>{p10(0), p10(1), 0},
@@ -514,9 +521,9 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 2>{0.f, 0.f} * uv_scale,
-                            FixedArray<float, 2>{1.f, 0.f} * uv_scale,
-                            FixedArray<float, 2>{0.f, 1.f} * uv_scale);
+                            FixedArray<float, 2>{0, 0} * uv_scale,
+                            FixedArray<float, 2>{f, h} * uv_scale,
+                            FixedArray<float, 2>{0, g} * uv_scale);
                     };
                     if (curb2_alpha != 1) {
                         draw_rect(tl_curb_street, 0, 1, -2, -1, curb_uv_x);
