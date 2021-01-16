@@ -62,6 +62,7 @@ void Mlib::draw_streets(
     bool with_height_bindings,
     DrivingDirection driving_direction)
 {
+    check_curb_validity(curb_alpha, curb2_alpha);
     std::regex name_re{name_pattern};
     std::map<std::string, std::map<float, AngleWay>> node_angles;
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;

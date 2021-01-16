@@ -731,6 +731,7 @@ RenderableOsmMap::RenderableOsmMap(
             *tl_curb_path);
     }
     if (extrude_street_amount != 0) {
+        check_curb_validity(curb_alpha, curb2_alpha);
         if (curb_alpha == 1) {
             TriangleList::extrude(
                 {tl_street, tl_path, tl_street_crossing, tl_path_crossing},

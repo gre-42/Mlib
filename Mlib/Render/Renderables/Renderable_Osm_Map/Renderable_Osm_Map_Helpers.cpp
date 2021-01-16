@@ -1250,3 +1250,15 @@ const ParsedResourceName& ResourceNameCycle::operator() () {
 bool ResourceNameCycle::empty() const {
     return names_.empty();
 }
+
+void Mlib::check_curb_validity(float curb_alpha, float curb2_alpha) {
+    if (curb_alpha >= curb2_alpha) {
+        throw std::runtime_error("curb_alpha >= curb2_alpha");
+    }
+    if (curb_alpha <= 0.5) {
+        throw std::runtime_error("curb_alpha <= 0.5");
+    }
+    if (curb2_alpha > 1) {
+        throw std::runtime_error("curb2_alpha > 1");
+    }
+}

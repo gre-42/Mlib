@@ -351,4 +351,6 @@ std::vector<FixedArray<float, 2>> removed_duplicates(const std::vector<FixedArra
 std::list<FixedArray<float, 2>> removed_duplicates(const std::list<FixedArray<float, 2>>& nodes, bool verbose = true);
 std::list<SteinerPointInfo> removed_duplicates(const std::list<SteinerPointInfo>& nodes, bool verbose = true);
 
+void check_curb_validity(float curb_alpha, float curb2_alpha);
+
 }
