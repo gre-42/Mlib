@@ -99,6 +99,7 @@ public:
         const TData& x1,
         const TData& y1,
         const TData& stroke_width = 1.5,
+        const std::string& color = "black",
         const std::string& id = "")
     {
         ostr_ <<
@@ -109,7 +110,7 @@ public:
             "y1=\"" << y0 << "\" "
             "x1=\"" << x0 << "\" "
             "stroke-width=\"" << stroke_width << "\" "
-            "stroke=\"#000\" "
+            "stroke=\"" << color << "\" "
             "fill=\"none\"/>\n";
     }
 
@@ -305,6 +306,7 @@ public:
                 xpos(x_start[i]), ypos(y_start[i]),
                 xpos(x_stop[i]), ypos(y_stop[i]),
                 stroke_width,
+                "black",
                 "line" + std::to_string(i));
         }
         for (const TData& xx : linspace(xm_min, xm_max, 5).flat_iterable()) {
@@ -313,6 +315,12 @@ public:
         for (const TData& yy : linspace(ym_min, ym_max, 5).flat_iterable()) {
             draw_text<TData>(0, ypos(yy), std::to_string(yy));
         }
+    }
+    const TSize& width() const {
+        return width_;
+    }
+    const TSize& height() const {
+        return height_;
     }
 private:
     std::ostream& ostr_;
