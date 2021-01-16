@@ -484,7 +484,7 @@ void DrawStreets::draw_holes() {
                 }
                 for (size_t i = 0; i < angles.size(); ++i) {
                     size_t j = (i + 1) % angles.size();
-                    auto draw_rect = [&](int curb0, int curb1, int curb2, int curb3, TriangleList& tl) {
+                    auto draw_rect = [&](TriangleList& tl, int curb0, int curb1, int curb2, int curb3, float uv_scale) {
                         auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
                         auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
                         auto p11 = nh.second.at(AngleCurb{angles[j], curb2});
@@ -497,9 +497,13 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 3>{1, 1, 1});
+                            FixedArray<float, 3>{1, 1, 1},
+                            FixedArray<float, 2>{0.f, 0.f} * uv_scale,
+                            FixedArray<float, 2>{1.f, 0.f} * uv_scale,
+                            FixedArray<float, 2>{1.f, 1.f} * uv_scale,
+                            FixedArray<float, 2>{0.f, 1.f} * uv_scale);
                     };
-                    auto draw_triangle = [&](int curb0, int curb1, int curb2, TriangleList& tl) {
+                    auto draw_triangle = [&](TriangleList& tl, int curb0, int curb1, int curb2, float uv_scale) {
                         auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
                         auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
                         auto p01 = nh.second.at(AngleCurb{angles[j], curb2});
@@ -509,13 +513,16 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 3>{p01(0), p01(1), 0},
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 3>{1, 1, 1});
+                            FixedArray<float, 3>{1, 1, 1},
+                            FixedArray<float, 2>{0.f, 0.f} * uv_scale,
+                            FixedArray<float, 2>{1.f, 0.f} * uv_scale,
+                            FixedArray<float, 2>{0.f, 1.f} * uv_scale);
                     };
                     if (curb2_alpha != 1) {
-                        draw_rect(0, 1, -2, -1, tl_curb_street);
-                        draw_triangle(1, 2, -2, tl_curb2_street);
+                        draw_rect(tl_curb_street, 0, 1, -2, -1, curb_uv_x);
+                        draw_triangle(tl_curb2_street, 1, 2, -2, curb2_uv_x);
                     } else {
-                        draw_triangle(0, 1, -1, tl_curb_street);
+                        draw_triangle(tl_curb_street, 0, 1, -1, curb_uv_x);
                     }
                 }
             }

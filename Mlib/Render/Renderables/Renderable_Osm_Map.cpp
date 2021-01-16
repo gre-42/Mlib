@@ -717,30 +717,33 @@ RenderableOsmMap::RenderableOsmMap(
         raise_streets_amount);
     if (extrude_curb_amount != 0) {
         TriangleList::extrude(
+            *tl_curb_street,
             {tl_curb_street},
+            nullptr,
             extrude_curb_amount * scale,
             scale,
             uv_scale_street,
-            uv_scale_street,
-            *tl_curb_street);
+            uv_scale_street);
         TriangleList::extrude(
+            *tl_curb_path,
             {tl_curb_path},
+            nullptr,
             extrude_curb_amount * scale,
             scale,
             uv_scale_street,
-            uv_scale_street,
-            *tl_curb_path);
+            uv_scale_street);
     }
     if (extrude_street_amount != 0) {
         check_curb_validity(curb_alpha, curb2_alpha);
         if (curb_alpha == 1) {
             TriangleList::extrude(
+                *tl_terrain_street_extrusion,
                 {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
+                nullptr,
                 extrude_street_amount * scale,
                 scale,
                 1,
-                uv_scale_terrain,
-                *tl_terrain_street_extrusion);
+                uv_scale_terrain);
         } else {
             // for (auto& t : tl_curb_street->triangles_) {
             //     for (auto& v : t.flat_iterable()) {
@@ -752,13 +755,22 @@ RenderableOsmMap::RenderableOsmMap(
             //         v.uv(0) *= 0.5 * uv_scale_terrain * (curb2_alpha - curb_alpha) * default_street_width;
             //     }
             // }
+            // TriangleList::extrude(
+            //     {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
+            //     extrude_street_amount * scale,
+            //     scale,
+            //     1,
+            //     uv_scale_terrain,
+            //     *tl_curb_street);
+            std::list<std::shared_ptr<TriangleList>> source_vertices{tl_curb_street};
             TriangleList::extrude(
+                *tl_curb_street,
                 {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
+                &source_vertices,
                 extrude_street_amount * scale,
                 scale,
                 1,
-                uv_scale_terrain,
-                *tl_curb_street);
+                uv_scale_terrain);
         }
     }
     // Normals are invalid after "apply_height_map"

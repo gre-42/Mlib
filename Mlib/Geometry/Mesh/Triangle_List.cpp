@@ -117,8 +117,27 @@ void TriangleList::draw_rectangle_wo_normals(
     draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11);
 }
 
-void TriangleList::extrude(const std::list<std::shared_ptr<TriangleList>>& triangle_lists, float height, float scale, float uv_scale_x, float uv_scale_y, TriangleList& dest) {
+void TriangleList::extrude(
+    TriangleList& dest,
+    const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
+    const std::list<std::shared_ptr<TriangleList>>* source_vertices,
+    float height,
+    float scale,
+    float uv_scale_x,
+    float uv_scale_y)
+{
     using O = OrderableFixedArray<float, 3>;
+
+    std::map<std::pair<O, O>, std::pair<const ColoredVertex*, const ColoredVertex*>> edge_map;
+    if (source_vertices != nullptr) {
+        for (const auto& l : *source_vertices) {
+            for (const auto& t : l->triangles_) {
+                edge_map[{O{t(1).position}, O{t(0).position}}] = {&t(1), &t(0)};
+                edge_map[{O{t(2).position}, O{t(1).position}}] = {&t(2), &t(1)};
+                edge_map[{O{t(0).position}, O{t(2).position}}] = {&t(0), &t(2)};
+            }
+        }
+    }
 
     std::list<FixedArray<ColoredVertex, 3>*> tris;
     for (auto& l : triangle_lists) {
@@ -126,26 +145,41 @@ void TriangleList::extrude(const std::list<std::shared_ptr<TriangleList>>& trian
             tris.push_back(&t);
         }
     }
-    std::set<std::pair<O, O>> edges = find_contour_edges(tris);
+    std::set<std::pair<O, O>> contour_edges = find_contour_edges(tris);
     for (auto& t : tris) {
         FixedArray<ColoredVertex, 3> t_old = *t;
-        auto connect_extruded = [&scale, &uv_scale_x, &uv_scale_y, &t_old, &height, &edges, &t, &dest](size_t a, size_t b){
-            auto edge = std::make_pair(O(t_old(a).position), O(t_old(b).position));
-            if (edges.contains(edge)) {
-                dest.draw_rectangle_wo_normals(
-                    t_old(a).position,
-                    t_old(b).position,
-                    (*t)(b).position,
-                    (*t)(a).position,
-                    {1, 1, 1},
-                    {1, 1, 1},
-                    {1, 1, 1},
-                    {1, 1, 1},
-                    t_old(a).uv,
-                    t_old(b).uv,
-                    t_old(b).uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0},
-                    t_old(a).uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0});
+        auto connect_extruded = [&](size_t a, size_t b){
+            auto edge = std::make_pair(O{t_old(a).position}, O{t_old(b).position});
+            if (!contour_edges.contains(edge)) {
+                return;
             }
+            const ColoredVertex* va;
+            const ColoredVertex* vb;
+            if (source_vertices != nullptr) {
+                auto it = edge_map.find(edge);
+                if (it == edge_map.end()) {
+                    return;
+                } else {
+                    va = it->second.first;
+                    vb = it->second.second;
+                }
+            } else {
+                va = &t_old(a);
+                vb = &t_old(b);
+            }
+            dest.draw_rectangle_wo_normals(
+                va->position,
+                vb->position,
+                (*t)(b).position,
+                (*t)(a).position,
+                {1, 1, 1},
+                {1, 1, 1},
+                {1, 1, 1},
+                {1, 1, 1},
+                va->uv,
+                vb->uv,
+                vb->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0},
+                va->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0});
         };
         (*t)(0).position(2) += height;
         (*t)(1).position(2) += height;

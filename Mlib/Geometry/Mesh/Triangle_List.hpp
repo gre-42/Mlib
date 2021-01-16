@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/BoneWeight.hpp>
 #include <list>
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -85,7 +86,14 @@ public:
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b11 = {},
         const std::vector<BoneWeight>& b01 = {});
-    static void extrude(const std::list<std::shared_ptr<TriangleList>>& triangle_lists, float height, float scale, float uv_scale_x, float uv_scale_y, TriangleList& dest);
+    static void extrude(
+        TriangleList& dest,
+        const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
+        const std::list<std::shared_ptr<TriangleList>>* source_vertices,
+        float height,
+        float scale,
+        float uv_scale_x,
+        float uv_scale_y);
     void delete_backfacing_triangles();
     void calculate_triangle_normals();
     void convert_triangle_to_vertex_normals();
