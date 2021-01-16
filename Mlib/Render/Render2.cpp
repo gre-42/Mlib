@@ -106,7 +106,6 @@ void Render2::print_hardware_info() const {
 
 void Render2::operator () (
     RenderLogic& logic,
-    std::recursive_mutex& mutex,
     const SceneGraphConfig& scene_graph_config)
 {
     SetFps set_fps{"Render FPS: "};
@@ -129,20 +128,15 @@ void Render2::operator () (
 
         CHK(glViewport(0, 0, width, height));
 
-        {
-            std::lock_guard lock{mutex}; // formerly shared_lock
-
-            // TimeGuard tg0{"render"};
-            logic.render(
-                width,
-                height,
-                render_config_,
-                scene_graph_config,
-                render_results_,
-                (render_results_ != nullptr) && (!render_results_->outputs.empty())
-                    ? RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = ""}
-                    : RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::UNDEFINED, ""}, .time_id = time_id, .light_node_name = ""});
-        }
+        logic.render(
+            width,
+            height,
+            render_config_,
+            scene_graph_config,
+            render_results_,
+            (render_results_ != nullptr) && (!render_results_->outputs.empty())
+                ? RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = ""}
+                : RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::UNDEFINED, ""}, .time_id = time_id, .light_node_name = ""});
 
         if (render_results_ != nullptr && render_results_->output != nullptr) {
             VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
@@ -175,6 +169,45 @@ void Render2::operator () (
             time_id = (time_id + 1) % 4;
         }
     }
+}
+
+class LockingRenderLogic: public RenderLogic {
+public:
+    explicit LockingRenderLogic(
+        RenderLogic& child_logic,
+        std::recursive_mutex& mutex)
+    : child_logic_{child_logic},
+      mutex_{mutex}
+    {}
+    virtual void render(
+        int width,
+        int height,
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const RenderedSceneDescriptor& frame_id)
+    {
+        std::lock_guard lock{mutex_}; // formerly shared_lock
+        child_logic_.render(
+            width,
+            height,
+            render_config,
+            scene_graph_config,
+            render_results,
+            frame_id);
+    }
+private:
+    RenderLogic& child_logic_;
+    std::recursive_mutex& mutex_;
+};
+
+void Render2::operator () (
+    RenderLogic& logic,
+    std::recursive_mutex& mutex,
+    const SceneGraphConfig& scene_graph_config)
+{
+    LockingRenderLogic lrl{logic, mutex};
+    (*this)(lrl, scene_graph_config);
 }
 
 void Render2::operator () (

@@ -32,6 +32,10 @@ public:
 
     void operator () (
         RenderLogic& logic,
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{});
+
+    void operator () (
+        RenderLogic& logic,
         std::recursive_mutex& mutex,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig{});
 

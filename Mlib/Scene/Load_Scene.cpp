@@ -1140,9 +1140,10 @@ void LoadScene::operator()(
             std::list<ReplacementParameter> rps;
             for (const auto& e : find_all_name_values(match[8].str(), "[\\w+-. ]+", substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
-                    name: e.first,
-                    substitutions: SubstitutionString{e.second}});
+                    .name = e.first,
+                    .substitutions = SubstitutionString{e.second}});
             }
+            // If the selection_ids array is not yet initialized, apply the default value.
             if (selection_ids.find(match[1].str()) == selection_ids.end()) {
                 selection_ids.insert({match[1].str(), safe_stoi(match[7].str())});
             }

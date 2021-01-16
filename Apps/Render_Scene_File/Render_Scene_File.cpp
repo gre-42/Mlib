@@ -1,37 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Images/PpmImage.hpp>
-#include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
-#include <Mlib/Physics/Containers/Players.hpp>
-#include <Mlib/Physics/Misc/Gravity_Efp.hpp>
-#include <Mlib/Physics/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Loop.hpp>
-#include <Mlib/Regex.hpp>
-#include <Mlib/Render/Aggregate_Array_Renderer.hpp>
-#include <Mlib/Render/Array_Instances_Renderer.hpp>
-#include <Mlib/Render/Render2.hpp>
-#include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
-#include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
-#include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Selected_Cameras.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
-#include <Mlib/Scene/Load_Scene.hpp>
-#include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
-#include <Mlib/Scene/Scene_Config.hpp>
-#include <Mlib/Scene_Graph/Fifo_Log.hpp>
-#include <Mlib/Scene_Graph/Scene.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Set_Fps.hpp>
-#include <Mlib/String.hpp>
-#include <Mlib/Time_Guard.hpp>
-#include <vector>
+#include <Mlib/Scene/Renderable_Scene.hpp>
 
 using namespace Mlib;
 
@@ -176,10 +144,8 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         ButtonStates button_states;
-        ButtonPress button_press{button_states};
         UiFocus ui_focus = UiFocus{focus: {Focus::SCENE}};
         SubstitutionString substitutions;
-        SetFps physics_set_fps{"Physics FPS: "};
         std::map<std::string, size_t> selection_ids;
         FifoLog fifo_log{10 * 1000};
 
@@ -220,140 +186,59 @@ int main(int argc, char** argv) {
 
             SceneNodeResources scene_node_resources;
             RenderingResources rendering_resources{scene_node_resources};
-            SmallSortedAggregateRendererGuard small_sorted_aggregate_renderer_guard{rendering_resources};
-            SmallInstancesRendererGuard small_instances_renderer_guard{rendering_resources};
-            AggregateArrayRenderer large_aggregate_array_renderer{rendering_resources};
-            ArrayInstancesRenderer large_instances_renderer{rendering_resources};
-            // SceneNode destructors require that physics engine is destroyed after scene,
-            // => Create PhysicsEngine before Scene
-            PhysicsEngine physics_engine{scene_config.physics_engine_config};
-            Scene scene{
-                &large_aggregate_array_renderer,
-                &large_instances_renderer};
-            SelectedCameras selected_cameras{scene};
-            FlyingCameraUserClass user_object{
-                button_states: button_states,
-                cameras: selected_cameras,
-                focus: ui_focus.focus,
-                physics_set_fps: &physics_set_fps};
-            GravityEfp gefp{FixedArray<float, 3>{0, -9.8, 0}};
-            StandardCameraLogic standard_camera_logic{
-                scene,
-                selected_cameras};
-            SkyboxLogic skybox_logic{standard_camera_logic, rendering_resources};
-            auto standard_render_logic = std::make_shared<StandardRenderLogic>(scene, skybox_logic);
-            auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
-                render2.window(),
+            RenderableSceneConfig config{
+                .fly = args.has_named("--fly"),
+                .rotate = args.has_named("--rotate"),
+                .print_gamepad_buttons = args.has_named("--print_gamepad_buttons"),
+                .depth_fog = !args.has_named("--no_depth_fog"),
+                .low_pass = args.has_named("--low_pass"),
+                .high_pass = args.has_named("--high_pass"),
+                .vfx = !args.has_named("--no_vfx")
+            };
+            RenderableScene renderable_scene{
+                scene_node_resources,
+                rendering_resources,
+                scene_config,
                 button_states,
-                scene,
-                user_object,
-                args.has_named("--fly"),
-                args.has_named("--rotate"));
-            auto key_bindings = std::make_shared<KeyBindings>(
-                button_press,
-                args.has_named("--print_gamepad_buttons"),
-                selected_cameras,
-                ui_focus.focus,
-                scene);
-            ReadPixelsLogic read_pixels_logic{*standard_render_logic};
-            auto dirtmap_logic = std::make_shared<DirtmapLogic>(read_pixels_logic, rendering_resources);
-            auto motion_interp_logic = std::make_shared<MotionInterpolationLogic>(read_pixels_logic, InterpolationType::OPTICAL_FLOW);
-            auto post_processing_logic = std::make_shared<PostProcessingLogic>(
-                *standard_render_logic,
-                !args.has_named("--no_depth_fog"),
-                args.has_named("--low_pass"),
-                args.has_named("--high_pass"));
-            std::recursive_mutex mutex;
-            RenderLogics render_logics{mutex};
-            render_logics.append(nullptr, flying_camera_logic);
-            render_logics.append(nullptr, dirtmap_logic);
-            render_logics.append(nullptr, !args.has_named("--no_vfx")
-                ? post_processing_logic
-                : (scene_config.render_config.motion_interpolation ? std::dynamic_pointer_cast<RenderLogic>(motion_interp_logic) : standard_render_logic));
-            render_logics.append(nullptr, key_bindings);
-            physics_engine.add_external_force_provider(&gefp);
-            physics_engine.add_external_force_provider(key_bindings.get());
-
-            Players players{physics_engine.advance_times_};
-            GameLogic game_logic{
-                scene,
-                physics_engine.advance_times_,
-                players,
-                ui_focus.focus,
-                mutex};
+                ui_focus,
+                selection_ids,
+                render2,
+                config};
 
             std::string next_scene_filename;
-            RegexSubstitutionCache rsc;
-            LoadScene load_scene;
-            load_scene(
-                main_scene_filename,
+            renderable_scene.load_scene_file(
                 main_scene_filename,
                 next_scene_filename,
-                rendering_resources,
-                scene_node_resources,
-                players,
-                scene,
-                physics_engine,
-                button_press,
-                *key_bindings,
-                selected_cameras,
-                scene_config.camera_config,
-                scene_config.physics_engine_config,
-                render_logics,
-                standard_camera_logic,
-                read_pixels_logic,
-                *dirtmap_logic,
-                skybox_logic,
-                game_logic,
-                fifo_log,
-                ui_focus,
-                substitutions,
                 num_renderings,
-                selection_ids,
-                args.has_named("--verbose"),
-                mutex,
-                rsc);
-            // scene.print();
+                args.has_named("--verbose"));
 
             if (args.has_named("--print_search_time")) {
-                physics_engine.rigid_bodies_.print_search_time();
+                renderable_scene.print_physics_engine_search_time();
                 return 0;
             }
 
-            std::unique_ptr<PhysicsLoop> pl{args.has_named("--no_physics")
-                ? nullptr
-                : new PhysicsLoop{
-                    scene_node_resources,
-                    scene,
-                    physics_engine,
-                    mutex,
-                    scene_config.physics_engine_config,
-                    physics_set_fps,
-                    SIZE_MAX,  // nframes
-                    &fifo_log}};
+            if (!args.has_named("--no_physics")) {
+                renderable_scene.start_physics_loop();
+            }
 
             if (args.has_named("--no_render")) {
                 std::cout << "Press enter to exit" << std::endl;
                 std::cin.get();
             } else {
                 render2(
-                    render_logics,
-                    mutex,
+                    renderable_scene,
                     scene_config.scene_graph_config);
             }
             if (!render2.window_should_close()) {
                 ui_focus.focus = {Focus::SCENE, Focus::LOADING};
                 num_renderings = 1;
                 render2(
-                    render_logics,
-                    mutex,
+                    renderable_scene,
                     scene_config.scene_graph_config);
                 ui_focus.focus.pop_back();
             }
 
-            if (pl != nullptr) {
-                pl->stop_and_join();
-            }
+            renderable_scene.stop_and_join();
             main_scene_filename = next_scene_filename;
         }
 
