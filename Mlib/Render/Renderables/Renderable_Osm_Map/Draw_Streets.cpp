@@ -15,7 +15,7 @@ using namespace Mlib;
 
 struct AngleCurb {
     float angle;
-    int curb_;
+    int curb;
     auto operator <=> (const AngleCurb& other) const = default;
 };
 
@@ -307,19 +307,19 @@ void Mlib::draw_streets(
                 if (na.second.size() >= 3) {
                     {
                         CurbedStreet c0{rect, -curb_alpha, curb_alpha};
-                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = 0}, c0.s00));
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb = 0}, c0.s00));
                     }
                     if (curb_alpha != 1) {
                         CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
                         CurbedStreet cP{rect, curb_alpha, curb2_alpha};
-                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = +1}, cN.s00));
-                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = -1}, cP.s00));
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb = +1}, cN.s00));
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb = -1}, cP.s00));
                     }
                     if (curb2_alpha != 1) {
                         CurbedStreet cN{rect, -1, -curb2_alpha};
                         CurbedStreet cP{rect, curb2_alpha, 1};
-                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = +2}, cN.s00));
-                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb_ = -2}, cP.s00));
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb = +2}, cN.s00));
+                        node_hole_contours.at(na.first).insert(std::make_pair(AngleCurb{.angle = it->first, .curb = -2}, cP.s00));
                     }
                     if (driving_direction == DrivingDirection::LEFT) {
                         auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
@@ -352,19 +352,19 @@ void Mlib::draw_streets(
                     {
                         CurbedStreet c0{rect, -curb_alpha, curb_alpha};
                         // Left and right are swapped for the neighbor, so we use p11_ instead of p10_.
-                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = 0}, c0.s11));
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb = 0}, c0.s11));
                     }
                     if (curb_alpha != 1) {
                         CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
                         CurbedStreet cP{rect, curb_alpha, curb2_alpha};
-                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = -1}, cN.s11));
-                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = +1}, cP.s11));
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb = -1}, cN.s11));
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb = +1}, cP.s11));
                     }
                     if (curb2_alpha != 1) {
                         CurbedStreet cN{rect, -1, -curb2_alpha};
                         CurbedStreet cP{rect, curb2_alpha, 1};
-                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = -2}, cN.s11));
-                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb_ = +2}, cP.s11));
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb = -2}, cN.s11));
+                        node_hole_contours.at(it->second.id).insert(std::make_pair(AngleCurb{.angle = nn.at(na.first).angle, .curb = +2}, cP.s11));
                     }
                     if (driving_direction == DrivingDirection::LEFT) {
                         auto add = [&rect, &na, &it](float start, float stop, std::map<std::string, HoleWaypoint>& node_hole_waypoints){
@@ -443,8 +443,15 @@ void Mlib::draw_streets(
         {
             size_t i = 0;
             for (const auto& h : nh.second) {
-                hv(i++) = h.second;
+                if (curb_alpha != 1) {
+                    if (h.first.curb == 0 || h.first.curb == -1) {
+                        hv(i++) = h.second;
+                    }
+                } else {
+                    hv(i++) = h.second;
+                }
             }
+            hv.reshape(ArrayShape{i});
         }
         RoadType road_type = RoadType::PATH;
         for (const auto& a : node_angles.at(nh.first)) {
@@ -462,18 +469,68 @@ void Mlib::draw_streets(
                 FixedArray<float, 3>{hv(1)(0), hv(1)(1), 0},
                 FixedArray<float, 3>{hv(2)(0), hv(2)(1), 0});
         } else if (nh.second.size() >= 3) {
-            const FixedArray<float, 2>& center = mean(hv);
-            for (size_t i = 0; i < hv.length(); ++i) {
-                size_t j = (i + 1) % hv.length();
-                crossings.draw_triangle_wo_normals(
-                    FixedArray<float, 3>{hv(i)(0), hv(i)(1), 0},
-                    FixedArray<float, 3>{hv(j)(0), hv(j)(1), 0},
-                    FixedArray<float, 3>{center(0), center(1), 0});
+            // Draw center fan
+            {
+                const FixedArray<float, 2>& center = mean(hv);
+                for (size_t i = 0; i < hv.length(); ++i) {
+                    size_t j = (i + 1) % hv.length();
+                    crossings.draw_triangle_wo_normals(
+                        FixedArray<float, 3>{hv(i)(0), hv(i)(1), 0},
+                        FixedArray<float, 3>{hv(j)(0), hv(j)(1), 0},
+                        FixedArray<float, 3>{center(0), center(1), 0});
+                }
+                if (with_height_bindings) {
+                    auto& tags = nodes.at(nh.first).tags;
+                    if (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes") {
+                        height_bindings[OrderableFixedArray{center}].insert(nh.first);
+                    }
+                }
             }
-            if (with_height_bindings) {
-                auto& tags = nodes.at(nh.first).tags;
-                if (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes") {
-                    height_bindings[OrderableFixedArray{center}].insert(nh.first);
+            // Draw corners
+            if (curb_alpha != 1) {
+                std::vector<float> angles;
+                {
+                    std::set<float> angles_set;
+                    for (const auto& e : nh.second) {
+                        angles_set.insert(e.first.angle);
+                    }
+                    angles = std::vector<float>(angles_set.begin(), angles_set.end());
+                }
+                for (size_t i = 0; i < angles.size(); ++i) {
+                    size_t j = (i + 1) % angles.size();
+                    auto draw_rect = [&](int curb0, int curb1, int curb2, int curb3, TriangleList& tl) {
+                        auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
+                        auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
+                        auto p11 = nh.second.at(AngleCurb{angles[j], curb2});
+                        auto p01 = nh.second.at(AngleCurb{angles[j], curb3});
+                        tl.draw_rectangle_wo_normals(
+                            FixedArray<float, 3>{p00(0), p00(1), 0},
+                            FixedArray<float, 3>{p10(0), p10(1), 0},
+                            FixedArray<float, 3>{p11(0), p11(1), 0},
+                            FixedArray<float, 3>{p01(0), p01(1), 0},
+                            FixedArray<float, 3>{1, 1, 1},
+                            FixedArray<float, 3>{1, 1, 1},
+                            FixedArray<float, 3>{1, 1, 1},
+                            FixedArray<float, 3>{1, 1, 1});
+                    };
+                    auto draw_triangle = [&](int curb0, int curb1, int curb2, TriangleList& tl) {
+                        auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
+                        auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
+                        auto p01 = nh.second.at(AngleCurb{angles[j], curb2});
+                        tl.draw_triangle_wo_normals(
+                            FixedArray<float, 3>{p00(0), p00(1), 0},
+                            FixedArray<float, 3>{p10(0), p10(1), 0},
+                            FixedArray<float, 3>{p01(0), p01(1), 0},
+                            FixedArray<float, 3>{1, 1, 1},
+                            FixedArray<float, 3>{1, 1, 1},
+                            FixedArray<float, 3>{1, 1, 1});
+                    };
+                    if (curb2_alpha != 1) {
+                        draw_rect(0, 1, -2, -1, tl_curb_street);
+                        draw_triangle(1, 2, -2, tl_curb2_street);
+                    } else {
+                        draw_triangle(0, 1, -1, tl_curb_street);
+                    }
                 }
             }
         }
