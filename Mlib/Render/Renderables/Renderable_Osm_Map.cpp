@@ -521,6 +521,13 @@ RenderableOsmMap::RenderableOsmMap(
         hole_triangles.insert(hole_triangles.end(), tl_curb2_street->triangles_.begin(), tl_curb2_street->triangles_.end());
         hole_triangles.insert(hole_triangles.end(), tl_curb2_path->triangles_.begin(), tl_curb2_path->triangles_.end());
         // plot_mesh(ArrayShape{2000, 2000}, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
+        // {
+        //     std::list<FixedArray<ColoredVertex, 3>*> tf;
+        //     for (auto& t : hole_triangles) {
+        //         tf.push_back(&t);
+        //     }
+        //     plot_mesh_svg("/tmp/plt.svg", 800, 800, tf, {}, {});
+        // }
         steiner_points = removed_duplicates(steiner_points, false);  // false = verbose
         BoundingInfo bounding_info{map_outer_contour, nodes, 0.1};
         LOG_INFO("add_street_steiner_points");

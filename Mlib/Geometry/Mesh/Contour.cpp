@@ -69,6 +69,7 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
         const FixedArray<float, 3>& vv0 = v0;
         if (any(vv != vv0)) {
             // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
+            // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, contour, {});
             throw std::runtime_error("Contour is not closed");
         }
         neighbors.erase(v);
