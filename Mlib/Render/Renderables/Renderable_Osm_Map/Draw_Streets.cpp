@@ -521,9 +521,9 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
                             FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 2>{0, 0} * uv_scale,
-                            FixedArray<float, 2>{f, h} * uv_scale,
-                            FixedArray<float, 2>{0, g} * uv_scale);
+                            FixedArray<float, 2>{0, 0},
+                            FixedArray<float, 2>{f, h},
+                            FixedArray<float, 2>{0, g});
                     };
                     if (curb2_alpha != 1) {
                         draw_rect(tl_curb_street, 0, 1, -2, -1, curb_uv_x);
