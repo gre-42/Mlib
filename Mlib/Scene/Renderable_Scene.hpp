@@ -35,8 +35,6 @@
 
 namespace Mlib {
 
-class LoadScene;
-
 struct RenderableSceneConfig {
     bool fly;
     bool rotate;
@@ -58,11 +56,6 @@ public:
         std::map<std::string, size_t>& selection_ids,
         Render2& render2,
         const RenderableSceneConfig& config);
-    void load_scene_file(
-        const std::string& main_scene_filename,
-        std::string& next_scene_filename,
-        size_t& num_renderings,
-        bool verbose);
     void start_physics_loop();
     void print_physics_engine_search_time() const;
     virtual void render(
@@ -73,7 +66,6 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
     void stop_and_join();
-private:
     SceneNodeResources& scene_node_resources_;
     RenderingResources& rendering_resources_;
     SmallSortedAggregateRendererGuard small_sorted_aggregate_renderer_guard_;
@@ -86,7 +78,6 @@ private:
     UiFocus& ui_focus_;
     std::map<std::string, size_t>& selection_ids_;
     FlyingCameraUserClass user_object_;
-    SubstitutionString substitutions_;
     SetFps physics_set_fps_{"Physics FPS: "};
     FifoLog fifo_log_{10 * 1000};
     GravityEfp gefp_;
@@ -107,8 +98,6 @@ private:
 
     std::unique_ptr<PhysicsLoop> physics_loop_;
     const SceneConfig& scene_config_;
-    std::unique_ptr<LoadScene> load_scene_;
-    RegexSubstitutionCache rsc_;
 };
 
 }

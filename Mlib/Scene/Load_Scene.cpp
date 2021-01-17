@@ -1,6 +1,7 @@
 #include "Load_Scene.hpp"
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
+#include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
@@ -46,6 +47,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
@@ -100,30 +102,11 @@ void LoadScene::operator()(
     const std::string& scene_filename,
     const std::string& script_filename,
     std::string& next_scene_filename,
-    RenderingResources& rendering_resources,
-    SceneNodeResources& scene_node_resources,
-    Players& players,
-    Scene& scene,
-    PhysicsEngine& physics_engine,
-    ButtonPress& button_press,
-    KeyBindings& key_bindings,
-    SelectedCameras& selected_cameras,
-    const CameraConfig& camera_config,
-    const PhysicsEngineConfig& physics_engine_config,
-    RenderLogics& render_logics,
-    RenderLogic& scene_logic,
-    ReadPixelsLogic& read_pixels_logic,
-    DirtmapLogic& dirtmap_logic,
-    SkyboxLogic& skybox_logic,
-    GameLogic& game_logic,
-    BaseLog& base_log,
-    UiFocus& ui_focus,
     SubstitutionString& substitutions,
     size_t& num_renderings,
-    std::map<std::string, size_t>& selection_ids,
     bool verbose,
-    std::recursive_mutex& mutex,
-    const RegexSubstitutionCache& rsc)
+    RegexSubstitutionCache& rsc,
+    std::map<std::string, std::unique_ptr<RenderableScene>>& renderable_scenes)
 {
     std::ifstream ifs{script_filename};
     static const std::regex osm_resource_reg(
@@ -444,13 +427,38 @@ void LoadScene::operator()(
     static const std::regex set_spawn_points_reg("^(?:\\r?\\n|\\s)*set_spawn_points node=([\\w+-.]+) resource=([\\w+-.]+)$");
     static const std::regex set_way_points_reg("^(?:\\r?\\n|\\s)*set_way_points player=([\\w+-.]+)\\s+node=([\\w+-.]+) resource=([\\w+-.]+)$");
 
-    Linker linker{physics_engine.advance_times_};
-
-    MacroFileExecutor::UserFunction execute_user_function = [&, linker](
+    MacroLineExecutor::UserFunction user_function = [&](
+        const std::string& context,
         const std::function<std::string(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line) -> bool
     {
+        auto cit = renderable_scenes.find(context);
+        if (cit == renderable_scenes.end()) {
+            throw std::runtime_error("Could not find renderable scene with name \"" + context + '"');
+        }
+        auto& rendering_resources = cit->second->rendering_resources_;
+        auto& scene_node_resources = cit->second->scene_node_resources_;
+        auto& players = cit->second->players_;
+        auto& scene = cit->second->scene_;
+        auto& physics_engine = cit->second->physics_engine_;
+        auto& button_press = cit->second->button_press_;
+        auto& key_bindings = *cit->second->key_bindings_;
+        auto& selected_cameras = cit->second->selected_cameras_;
+        auto& camera_config = cit->second->scene_config_.camera_config;
+        auto& physics_engine_config = cit->second->scene_config_.physics_engine_config;
+        auto& render_logics = cit->second->render_logics_;
+        auto& scene_logic = cit->second->standard_camera_logic_;
+        auto& read_pixels_logic = cit->second->read_pixels_logic_;
+        auto& dirtmap_logic = *cit->second->dirtmap_logic_;
+        auto& skybox_logic = cit->second->skybox_logic_;
+        auto& game_logic = cit->second->game_logic_;
+        auto& base_log = cit->second->fifo_log_;
+        auto& ui_focus = cit->second->ui_focus_;
+        auto& selection_ids = cit->second->selection_ids_;
+        auto& mutex = cit->second->mutex_;
+
+        Linker linker{physics_engine.advance_times_};
         std::smatch match;
         if (std::regex_match(line, match, osm_resource_reg)) {
             std::list<WaysideResourceNames> waysides;
@@ -1457,7 +1465,8 @@ void LoadScene::operator()(
         macro_file_executor_,
         script_filename,
         fs::path(scene_filename).parent_path().string(),
-        execute_user_function,
+        user_function,
+        "default_context",
         substitutions,
         verbose};
     macro_file_executor_(lp2, rsc);

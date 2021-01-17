@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
 
         ButtonStates button_states;
         UiFocus ui_focus = UiFocus{focus: {Focus::SCENE}};
-        // SubstitutionString substitutions;
+        SubstitutionString substitutions;
         std::map<std::string, size_t> selection_ids;
         // FifoLog fifo_log{10 * 1000};
 
@@ -195,22 +195,35 @@ int main(int argc, char** argv) {
                 .high_pass = args.has_named("--high_pass"),
                 .vfx = !args.has_named("--no_vfx")
             };
-            RenderableScene renderable_scene{
-                scene_node_resources,
-                rendering_resources,
-                scene_config,
-                button_states,
-                ui_focus,
-                selection_ids,
-                render2,
-                config};
+            std::map<std::string, std::unique_ptr<RenderableScene>> renderable_scenes;
+            if (!renderable_scenes.insert({
+                "default_context",
+                std::make_unique<RenderableScene>(
+                    scene_node_resources,
+                    rendering_resources,
+                    scene_config,
+                    button_states,
+                    ui_focus,
+                    selection_ids,
+                    render2,
+                    config)}).second)
+            {
+                throw std::runtime_error("Could not insert default context");
+            }
+            auto& renderable_scene = *renderable_scenes.at("default_context");
 
             std::string next_scene_filename;
-            renderable_scene.load_scene_file(
+            RegexSubstitutionCache rsc;
+            LoadScene load_scene;
+            load_scene(
+                main_scene_filename,
                 main_scene_filename,
                 next_scene_filename,
+                substitutions,
                 num_renderings,
-                args.has_named("--verbose"));
+                args.has_named("--verbose"),
+                rsc,
+                renderable_scenes);
 
             if (args.has_named("--print_search_time")) {
                 renderable_scene.print_physics_engine_search_time();

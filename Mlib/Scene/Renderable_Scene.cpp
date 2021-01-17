@@ -83,48 +83,6 @@ RenderableScene::RenderableScene(
     physics_engine_.add_external_force_provider(key_bindings_.get());
 }
 
-void RenderableScene::load_scene_file(
-    const std::string& main_scene_filename,
-    std::string& next_scene_filename,
-    size_t& num_renderings,
-    bool verbose)
-{
-    if (load_scene_ != nullptr) {
-        throw std::runtime_error("Load scene is not null");
-    }
-    load_scene_ = std::make_unique<LoadScene>();
-    (*load_scene_)(
-        main_scene_filename,
-        main_scene_filename,
-        next_scene_filename,
-        rendering_resources_,
-        scene_node_resources_,
-        players_,
-        scene_,
-        physics_engine_,
-        button_press_,
-        *key_bindings_,
-        selected_cameras_,
-        scene_config_.camera_config,
-        scene_config_.physics_engine_config,
-        render_logics_,
-        standard_camera_logic_,
-        read_pixels_logic_,
-        *dirtmap_logic_,
-        skybox_logic_,
-        game_logic_,
-        fifo_log_,
-        ui_focus_,
-        substitutions_,
-        num_renderings,
-        selection_ids_,
-        verbose,
-        mutex_,
-        rsc_);
-    // load_scene.print();
-
-}
-
 void RenderableScene::start_physics_loop() {
     if (physics_loop_ != nullptr) {
         throw std::runtime_error("physics loop already started");
