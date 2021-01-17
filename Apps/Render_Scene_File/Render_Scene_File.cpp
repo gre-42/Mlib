@@ -1,5 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Render/Render2.hpp>
 
 using namespace Mlib;
 
@@ -195,6 +196,8 @@ int main(int argc, char** argv) {
                 .high_pass = args.has_named("--high_pass"),
                 .vfx = !args.has_named("--no_vfx")
             };
+            std::recursive_mutex mutex;
+            RenderLogics render_logics{mutex};
             std::map<std::string, std::unique_ptr<RenderableScene>> renderable_scenes;
             if (!renderable_scenes.insert({
                 "default_context",
@@ -205,8 +208,10 @@ int main(int argc, char** argv) {
                     button_states,
                     ui_focus,
                     selection_ids,
-                    render2,
-                    config)}).second)
+                    render2.window(),
+                    render_logics,
+                    config,
+                    mutex)}).second)
             {
                 throw std::runtime_error("Could not insert default context");
             }

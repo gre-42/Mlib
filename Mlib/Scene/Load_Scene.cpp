@@ -333,6 +333,8 @@ void LoadScene::operator()(
         "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)$");
+    static const std::regex create_scene_reg(
+        "^(?:\\r?\\n|\\s)*create_scene name=([\\w+-.]+)$");
     static const std::regex scene_selector_reg(
         "^(?:\\r?\\n|\\s)*scene_selector\\r?\\n"
         "\\s*id=([\\w+-.]+)\\r?\\n"
@@ -351,6 +353,8 @@ void LoadScene::operator()(
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
         "\\s*default=([\\d]+)\\r?\\n"
+        "\\s*on_init=([\\w+-.]*)\\r?\\n"
+        "\\s*on_change=([\\w+-.]*)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     static const std::regex set_renderable_style_reg(
         "^(?:\\r?\\n|\\s)*set_renderable_style\\r?\\n"
@@ -445,8 +449,7 @@ void LoadScene::operator()(
         auto& button_press = cit->second->button_press_;
         auto& key_bindings = *cit->second->key_bindings_;
         auto& selected_cameras = cit->second->selected_cameras_;
-        auto& camera_config = cit->second->scene_config_.camera_config;
-        auto& physics_engine_config = cit->second->scene_config_.physics_engine_config;
+        auto& scene_config = cit->second->scene_config_;
         auto& render_logics = cit->second->render_logics_;
         auto& scene_logic = cit->second->standard_camera_logic_;
         auto& read_pixels_logic = cit->second->read_pixels_logic_;
@@ -457,6 +460,9 @@ void LoadScene::operator()(
         auto& ui_focus = cit->second->ui_focus_;
         auto& selection_ids = cit->second->selection_ids_;
         auto& mutex = cit->second->mutex_;
+
+        auto& button_states = cit->second->button_states_;
+        auto& window = cit->second->window_;
 
         Linker linker{physics_engine.advance_times_};
         std::smatch match;
@@ -839,8 +845,8 @@ void LoadScene::operator()(
                     physics_engine.advance_times_,
                     tire_id,
                     radius,
-                    physics_engine_config.physics_type,
-                    physics_engine_config.resolve_collision_type);
+                    scene_config.physics_engine_config.physics_type,
+                    scene_config.physics_engine_config.resolve_collision_type);
                 linker.link_relative_movable(*scene.get_node(node), wheel);
             }
             {
@@ -870,11 +876,11 @@ void LoadScene::operator()(
                             radius,
                             nsprings_tracking,
                             max_dist,
-                            physics_engine_config.dt / physics_engine_config.oversampling},
+                            scene_config.physics_engine_config.dt / scene_config.physics_engine_config.oversampling},
                         CombinedMagicFormula<float>{
                             .f = FixedArray<MagicFormulaArgmax<float>, 2>{
-                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * physics_engine_config.longitudinal_friction_steepness}},
-                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * physics_engine_config.lateral_friction_steepness}}
+                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
+                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
                             }
                         },
                         position,
@@ -1120,6 +1126,25 @@ void LoadScene::operator()(
                 safe_stof(match[4].str()),        // font_height_pixels
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
+        } else if (std::regex_match(line, match, create_scene_reg)) {
+            render_logics.append(nullptr, std::make_shared<RenderableScene>(
+                scene_node_resources,
+                rendering_resources,
+                scene_config,
+                button_states,
+                ui_focus,
+                selection_ids,
+                window,
+                render_logics,
+                RenderableSceneConfig{
+                    .fly = false,
+                    .rotate = false,
+                    .print_gamepad_buttons = false,
+                    .depth_fog = false,
+                    .low_pass = false,
+                    .high_pass = false,
+                    .vfx = false},
+                mutex));
         } else if (std::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
             for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
@@ -1145,30 +1170,47 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
             substitutions.clear();
         } else if (std::regex_match(line, match, parameter_setter_reg)) {
+            std::string id = match[1].str();
+            std::string ttf_filename = fpath(match[2].str());
+            FixedArray<float, 2> position{
+                safe_stof(match[3].str()),
+                safe_stof(match[4].str())};
+            float font_height_pixels = safe_stof(match[5].str());
+            float line_distance_pixels = safe_stof(match[6].str());
+            size_t deflt = safe_stoz(match[7].str());
+            std::string on_init = match[8].str();
+            std::string on_change = match[9].str();
+            std::string parameters = match[10].str();
             std::list<ReplacementParameter> rps;
-            for (const auto& e : find_all_name_values(match[8].str(), "[\\w+-. ]+", substitute_pattern)) {
+            for (const auto& e : find_all_name_values(parameters, "[\\w+-. ]+", substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
                     .name = e.first,
                     .substitutions = SubstitutionString{e.second}});
             }
             // If the selection_ids array is not yet initialized, apply the default value.
-            if (selection_ids.find(match[1].str()) == selection_ids.end()) {
-                selection_ids.insert({match[1].str(), safe_stoi(match[7].str())});
+            if (selection_ids.find(id) == selection_ids.end()) {
+                selection_ids.insert({id, deflt});
             }
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
-                fpath(match[2].str()),            // ttf_filename
-                FixedArray<float, 2>{             // position
-                    safe_stof(match[3].str()),
-                    safe_stof(match[4].str())},
-                safe_stof(match[5].str()),        // font_height_pixels
-                safe_stof(match[6].str()),        // line_distance_pixels
+                ttf_filename,
+                position,
+                font_height_pixels,
+                line_distance_pixels,        // line_distance_pixels
                 ui_focus,
                 ui_focus.n_submenus++,
                 substitutions,
                 num_renderings,
                 button_press,
-                selection_ids.at(match[1].str()));
+                selection_ids.at(id),
+                [macro_line_executor, on_change, &rsc](){
+                    if (!on_change.empty()) {
+                        macro_line_executor(on_change, rsc);
+                    }
+                });
+            if (!on_init.empty()) {
+                macro_line_executor(on_init, rsc);
+            }
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (std::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
@@ -1224,14 +1266,14 @@ void LoadScene::operator()(
             physics_engine.advance_times_.add_advance_time(hud_image);
         } else if (std::regex_match(line, match, perspective_camera_reg)) {
             auto node = scene.get_node(match[1].str());
-            node->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
+            node->set_camera(std::make_shared<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::PERSPECTIVE));
             node->get_camera()->set_y_fov(safe_stof(match[2].str()));
             node->get_camera()->set_near_plane(safe_stof(match[3].str()));
             node->get_camera()->set_far_plane(safe_stof(match[4].str()));
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[5].str()));
         } else if (std::regex_match(line, match, ortho_camera_reg)) {
             auto node = scene.get_node(match[1].str());
-            node->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::ORTHO));
+            node->set_camera(std::make_shared<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::ORTHO));
             node->get_camera()->set_near_plane(safe_stof(match[2].str()));
             node->get_camera()->set_far_plane(safe_stof(match[3].str()));
             node->get_camera()->set_left_plane(safe_stof(match[4].str()));
@@ -1315,7 +1357,7 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()),
                 safe_stof(match[6].str()),
                 safe_stof(match[7].str()),
-                physics_engine_config);
+                scene_config.physics_engine_config);
             linker.link_relative_movable(*yaw_node, follower);
             linker.link_relative_movable(*pitch_node, follower->pitch_look_at_node());
         } else if (std::regex_match(line, match, follow_node_reg)) {
@@ -1338,7 +1380,7 @@ void LoadScene::operator()(
                 safe_stof(match[10].str()),        // snappiness
                 safe_stof(match[11].str()),        // y_adaptivity
                 safe_stof(match[12].str()),        // y_snappiness
-                physics_engine_config.dt);
+                scene_config.physics_engine_config.dt);
             linker.link_absolute_movable(*follower_node, follower);
             follower->initialize(*follower_node);
         } else if (std::regex_match(line, match, add_texture_descriptor_reg)) {

@@ -11,8 +11,10 @@ RenderableScene::RenderableScene(
     ButtonStates& button_states,
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
-    Render2& render2,
-    const RenderableSceneConfig& config)
+    GLFWwindow* window,
+    RenderLogics& render_logics,
+    const RenderableSceneConfig& config,
+    std::recursive_mutex& mutex)
 : scene_node_resources_{scene_node_resources},
   rendering_resources_{rendering_resources},
   small_sorted_aggregate_renderer_guard_{rendering_resources},
@@ -28,6 +30,7 @@ RenderableScene::RenderableScene(
   selected_cameras_{scene_},
   ui_focus_{ui_focus},
   selection_ids_{selection_ids},
+  button_states_{button_states},
   user_object_{
       button_states: button_states,
       cameras: selected_cameras_,
@@ -39,8 +42,9 @@ RenderableScene::RenderableScene(
       selected_cameras_},
   skybox_logic_{standard_camera_logic_, rendering_resources},
   standard_render_logic_{std::make_shared<StandardRenderLogic>(scene_, skybox_logic_)},
+  window_{window},
   flying_camera_logic_{std::make_shared<FlyingCameraLogic>(
-      render2.window(),
+      window,
       button_states,
       scene_,
       user_object_,
@@ -61,7 +65,8 @@ RenderableScene::RenderableScene(
       config.depth_fog,
       config.low_pass,
       config.high_pass)},
-  render_logics_{mutex_},
+  mutex_{mutex},
+  render_logics_{render_logics},
   players_{physics_engine_.advance_times_},
   game_logic_{
       scene_,

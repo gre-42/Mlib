@@ -29,7 +29,8 @@ public:
         SubstitutionString& substitutions,
         size_t& num_renderings,
         ButtonPress& button_press,
-        size_t& selection_index);
+        size_t& selection_index,
+        const std::function<void()>& on_change = [](){});
     ~ParameterSetterLogic();
 
     virtual void render(

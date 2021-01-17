@@ -24,7 +24,8 @@ public:
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
-        const std::function<std::string(const TOption&)>& transformation = [](const TOption& s) -> std::string {return s;});
+        const std::function<std::string(const TOption&)>& transformation = [](const TOption& s) -> std::string {return s;},
+        const std::function<void()>& on_change = [](){});
     ~ListView();
     void handle_input();
     void render(int width, int height, bool periodic_position);
@@ -39,6 +40,7 @@ private:
     std::function<std::string(TOption)> transformation_;
     size_t& selection_index_;
     ButtonPress& button_press_;
+    const std::function<void()> on_change_;
 };
 
 }

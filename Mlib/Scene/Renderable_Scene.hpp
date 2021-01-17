@@ -8,7 +8,6 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
-#include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
@@ -54,8 +53,10 @@ public:
         ButtonStates& button_states,
         UiFocus& ui_focus,
         std::map<std::string, size_t>& selection_ids,
-        Render2& render2,
-        const RenderableSceneConfig& config);
+        GLFWwindow* window,
+        RenderLogics& render_logics,
+        const RenderableSceneConfig& config,
+        std::recursive_mutex& mutex);
     void start_physics_loop();
     void print_physics_engine_search_time() const;
     virtual void render(
@@ -77,6 +78,7 @@ public:
     SelectedCameras selected_cameras_;
     UiFocus& ui_focus_;
     std::map<std::string, size_t>& selection_ids_;
+    ButtonStates& button_states_;
     FlyingCameraUserClass user_object_;
     SetFps physics_set_fps_{"Physics FPS: "};
     FifoLog fifo_log_{10 * 1000};
@@ -84,6 +86,7 @@ public:
     StandardCameraLogic standard_camera_logic_;
     SkyboxLogic skybox_logic_;
     std::shared_ptr<StandardRenderLogic> standard_render_logic_;
+    GLFWwindow* window_;
     std::shared_ptr<FlyingCameraLogic> flying_camera_logic_;
     ButtonPress button_press_;
     std::shared_ptr<KeyBindings> key_bindings_;
@@ -91,8 +94,8 @@ public:
     std::shared_ptr<DirtmapLogic> dirtmap_logic_;
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
-    std::recursive_mutex mutex_;
-    RenderLogics render_logics_;
+    std::recursive_mutex& mutex_;
+    RenderLogics& render_logics_;
     Players players_;
     GameLogic game_logic_;
 

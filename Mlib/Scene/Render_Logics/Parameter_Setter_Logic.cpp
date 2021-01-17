@@ -16,7 +16,8 @@ ParameterSetterLogic::ParameterSetterLogic(
     SubstitutionString& substitutions,
     size_t& num_renderings,
     ButtonPress& button_press,
-    size_t& selection_index)
+    size_t& selection_index,
+    const std::function<void()>& on_change)
 : scene_selector_list_view_{
     button_press,
     selection_index,
@@ -25,7 +26,8 @@ ParameterSetterLogic::ParameterSetterLogic(
     position,
     font_height_pixels,
     line_distance_pixels,
-    [](const ReplacementParameter& s){return s.name;}},
+    [](const ReplacementParameter& s){return s.name;},
+    on_change},
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
   substitutions_{substitutions},

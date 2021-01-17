@@ -14,14 +14,16 @@ ListView<TOption>::ListView(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
-    const std::function<std::string(const TOption&)>& transformation)
+    const std::function<std::string(const TOption&)>& transformation,
+    const std::function<void()>& on_change)
 : renderable_text_{new RenderableText{ttf_filename, font_height_pixels}},
   options_{options},
   position_{position},
   line_distance_pixels_{line_distance_pixels},
   transformation_{transformation},
   selection_index_{selection_index},
-  button_press_{button_press}
+  button_press_{button_press},
+  on_change_{on_change}
 {}
 
 template <class TOption>
@@ -34,18 +36,26 @@ void ListView<TOption>::handle_input() {
         if (button_press_.key_pressed({key: "UP", joystick_axis: "2", joystick_axis_sign: -1})) {
             if (selection_index_ > 0) {
                 --selection_index_;
+                on_change_();
             }
         }
         if (button_press_.key_pressed({key: "DOWN", joystick_axis: "2", joystick_axis_sign: 1})) {
             if (selection_index_ < options_.size() - 1) {
                 ++selection_index_;
+                on_change_();
             }
         }
         if (button_press_.key_pressed({key: "HOME"})) {
-            selection_index_ = 0;
+            if (selection_index_ != 0) {
+                selection_index_ = 0;
+                on_change_();
+            }
         }
         if (button_press_.key_pressed({key: "END"})) {
-            selection_index_ = options_.size() - 1;
+            if (selection_index_ != options_.size() - 1) {
+                selection_index_ = options_.size() - 1;
+                on_change_();
+            }
         }
     }
 }
