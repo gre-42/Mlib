@@ -246,14 +246,16 @@ int main(int argc, char** argv) {
                 std::cin.get();
             } else {
                 render2(
-                    renderable_scene,
+                    render_logics,
+                    mutex,
                     scene_config.scene_graph_config);
             }
             if (!render2.window_should_close()) {
                 ui_focus.focus = {Focus::SCENE, Focus::LOADING};
                 num_renderings = 1;
                 render2(
-                    renderable_scene,
+                    render_logics,
+                    mutex,
                     scene_config.scene_graph_config);
                 ui_focus.focus.pop_back();
             }

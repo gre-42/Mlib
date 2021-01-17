@@ -46,7 +46,7 @@ struct RenderableSceneConfig {
     bool with_skybox;
 };
 
-class RenderableScene: public RenderLogic {
+class RenderableScene {
 public:
     RenderableScene(
         SceneNodeResources& scene_node_resources,
@@ -61,13 +61,6 @@ public:
         std::recursive_mutex& mutex);
     void start_physics_loop();
     void print_physics_engine_search_time() const;
-    virtual void render(
-        int width,
-        int height,
-        const RenderConfig& render_config,
-        const SceneGraphConfig& scene_graph_config,
-        RenderResults* render_results,
-        const RenderedSceneDescriptor& frame_id) override;
     void stop_and_join();
     SceneNodeResources& scene_node_resources_;
     RenderingResources& rendering_resources_;

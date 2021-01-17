@@ -114,26 +114,6 @@ void RenderableScene::print_physics_engine_search_time() const {
     physics_engine_.rigid_bodies_.print_search_time();
 }
 
-void RenderableScene::render(
-    int width,
-    int height,
-    const RenderConfig& render_config,
-    const SceneGraphConfig& scene_graph_config,
-    RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
-{
-    std::lock_guard lock{mutex_}; // formerly shared_lock
-
-    // TimeGuard tg0{"render"};
-    render_logics_.render(
-        width,
-        height,
-        scene_config_.render_config,
-        scene_graph_config,
-        render_results,
-        frame_id);
-}
-
 void RenderableScene::stop_and_join() {
     if (physics_loop_ != nullptr) {
         physics_loop_->stop_and_join();
