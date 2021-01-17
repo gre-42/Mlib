@@ -40,4 +40,8 @@ void MacroFileExecutor::operator()(const MacroLineExecutor& macro_line_executor,
     if (!ifs.eof() && ifs.fail()) {
         throw std::runtime_error("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
     }
+
+    if (!recording_macros.empty()) {
+        throw std::runtime_error("Missing macro_end; in file \"" + macro_line_executor.script_filename_ + '"');
+    }
 }
