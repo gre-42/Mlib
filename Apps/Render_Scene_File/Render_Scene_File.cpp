@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/Scene/Renderable_Scene.hpp>
 
 using namespace Mlib;
 
@@ -196,7 +197,8 @@ int main(int argc, char** argv) {
                 .high_pass = args.has_named("--high_pass"),
                 .vfx = !args.has_named("--no_vfx"),
                 .with_dirtmap = true,
-                .with_skybox = true
+                .with_skybox = true,
+                .clear_mode = ClearMode::COLOR_AND_DEPTH
             };
             std::recursive_mutex mutex;
             RenderLogics render_logics{mutex};

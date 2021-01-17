@@ -1,11 +1,11 @@
-#include "Macro_File_Executor.hpp"
+#include "Macro_Recorder.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <fstream>
 #include <regex>
 
 using namespace Mlib;
 
-void MacroFileExecutor::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
+void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
 {
     std::ifstream ifs{macro_line_executor.script_filename_};
     static const std::regex macro_begin_reg("^(?:\\r?\\n|\\s)*macro_begin ([\\w+-.]+)$");

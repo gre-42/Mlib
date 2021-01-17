@@ -45,7 +45,8 @@ RenderableScene::RenderableScene(
       scene_,
       config.with_skybox
         ? (RenderLogic&)skybox_logic_
-        : (RenderLogic&)standard_camera_logic_)},
+        : (RenderLogic&)standard_camera_logic_,
+      config.clear_mode)},
   window_{window},
   flying_camera_logic_{std::make_shared<FlyingCameraLogic>(
       window,

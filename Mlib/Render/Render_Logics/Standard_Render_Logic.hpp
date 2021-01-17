@@ -5,9 +5,14 @@ namespace Mlib {
 
 class Scene;
 
+enum class ClearMode;
+
 class StandardRenderLogic: public RenderLogic {
 public:
-    StandardRenderLogic(const Scene& scene, RenderLogic& child_logic);
+    StandardRenderLogic(
+        const Scene& scene,
+        RenderLogic& child_logic,
+        ClearMode clear_mode);
 
     virtual void render(
         int width,
@@ -24,6 +29,7 @@ public:
 private:
     const Scene& scene_;
     RenderLogic& child_logic_;
+    ClearMode clear_mode_;
 };
 
 }

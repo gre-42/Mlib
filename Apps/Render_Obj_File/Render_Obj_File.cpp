@@ -11,6 +11,7 @@
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Move_Scene_Logic.hpp>
@@ -503,7 +504,10 @@ int main(int argc, char** argv) {
         std::list<Focus> focus = {Focus::SCENE};
         ButtonStates button_states;
         StandardCameraLogic standard_camera_logic{scene, selected_cameras};
-        StandardRenderLogic standard_render_logic{scene, standard_camera_logic};
+        StandardRenderLogic standard_render_logic{
+            scene,
+            standard_camera_logic,
+            ClearMode::COLOR_AND_DEPTH};
         FlyingCameraUserClass user_object{
             button_states: button_states,
             cameras: selected_cameras,

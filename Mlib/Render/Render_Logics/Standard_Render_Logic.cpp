@@ -2,6 +2,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
@@ -9,9 +10,11 @@ using namespace Mlib;
 
 StandardRenderLogic::StandardRenderLogic(
     const Scene& scene,
-    RenderLogic& child_logic)
+    RenderLogic& child_logic,
+    ClearMode clear_mode)
 : scene_{scene},
-  child_logic_{child_logic}
+  child_logic_{child_logic},
+  clear_mode_{clear_mode}
 {}
 
 void StandardRenderLogic::render(
@@ -24,17 +27,28 @@ void StandardRenderLogic::render(
 {
     LOG_FUNCTION("StandardRenderLogic::render");
 
-    // make sure we clear the framebuffer's content
-    if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
-        CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
-    } else {
-        CHK(glClearColor(
-            render_config.background_color(0),
-            render_config.background_color(1),
-            render_config.background_color(2),
-            1));
+    if (clear_mode_ == ClearMode::COLOR || clear_mode_ == ClearMode::COLOR_AND_DEPTH) {
+        // make sure we clear the framebuffer's content
+        if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
+            CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
+        } else {
+            CHK(glClearColor(
+                render_config.background_color(0),
+                render_config.background_color(1),
+                render_config.background_color(2),
+                1));
+        }
     }
-    CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    {
+        GLbitfield mask = 0;
+        if (clear_mode_ == ClearMode::COLOR || clear_mode_ == ClearMode::COLOR_AND_DEPTH) {
+            mask |= GL_COLOR_BUFFER_BIT;
+        }
+        if (clear_mode_ == ClearMode::DEPTH || clear_mode_ == ClearMode::COLOR_AND_DEPTH) {
+            mask |= GL_DEPTH_BUFFER_BIT;
+        }
+        CHK(glClear(mask));
+    }
 
     child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 

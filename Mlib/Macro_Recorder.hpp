@@ -14,7 +14,7 @@ struct Macro {
     std::list<std::string> lines;
 };
 
-class MacroFileExecutor {
+class MacroRecorder {
     friend MacroLineExecutor;
 public:
     void operator () (const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc);

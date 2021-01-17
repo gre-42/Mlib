@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Macro_File_Executor.hpp>
+#include <Mlib/Macro_Recorder.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -19,7 +19,7 @@ public:
         RegexSubstitutionCache& rsc,
         std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);
 private:
-    MacroFileExecutor macro_file_executor_;
+    MacroRecorder macro_file_executor_;
 };
 
 }

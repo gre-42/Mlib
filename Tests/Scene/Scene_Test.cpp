@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -218,7 +219,10 @@ void test_physics_engine() {
     }
 
     StandardCameraLogic standard_camera_logic{scene, selected_cameras};
-    StandardRenderLogic standard_render_logic{scene, standard_camera_logic};
+    StandardRenderLogic standard_render_logic{
+        scene,
+        standard_camera_logic,
+        ClearMode::COLOR_AND_DEPTH};
     std::list<Focus> focus = {Focus::SCENE};
     ButtonStates button_states;
     FlyingCameraUserClass user_object{

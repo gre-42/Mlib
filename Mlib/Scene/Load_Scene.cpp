@@ -30,6 +30,7 @@
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
@@ -47,7 +48,6 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
-#include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
@@ -56,6 +56,7 @@
 #include <Mlib/Scene/Render_Logics/Visual_Global_Log.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
+#include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
@@ -1152,7 +1153,8 @@ void LoadScene::operator()(
                     .high_pass = false,
                     .vfx = false,
                     .with_dirtmap = false,
-                    .with_skybox = false},
+                    .with_skybox = false,
+                    .clear_mode = ClearMode::DEPTH},
                 mutex);
             if (!renderable_scenes.insert({match[1].str(), rs}).second) {
                 throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");

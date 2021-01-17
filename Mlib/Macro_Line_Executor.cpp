@@ -1,5 +1,5 @@
 #include "Macro_Line_Executor.hpp"
-#include <Mlib/Macro_File_Executor.hpp>
+#include <Mlib/Macro_Recorder.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/String.hpp>
 #include <filesystem>
@@ -12,7 +12,7 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 
 MacroLineExecutor::MacroLineExecutor(
-    MacroFileExecutor& macro_file_executor,
+    MacroRecorder& macro_file_executor,
     const std::string& script_filename,
     const std::string& working_directory,
     const UserFunction& user_function,
