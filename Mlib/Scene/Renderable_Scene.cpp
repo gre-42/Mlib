@@ -48,13 +48,15 @@ RenderableScene::RenderableScene(
         : (RenderLogic&)standard_camera_logic_,
       config.clear_mode)},
   window_{window},
-  flying_camera_logic_{std::make_shared<FlyingCameraLogic>(
-      window,
-      button_states,
-      scene_,
-      user_object_,
-      config.fly,
-      config.rotate)},
+  flying_camera_logic_{config.with_flying_logic
+      ? std::make_shared<FlyingCameraLogic>(
+        window,
+        button_states,
+        scene_,
+        user_object_,
+        config.fly,
+        config.rotate)
+      : nullptr},
   button_press_{button_states},
   key_bindings_{std::make_shared<KeyBindings>(
       button_press_,
@@ -81,7 +83,9 @@ RenderableScene::RenderableScene(
       mutex_},
   scene_config_{scene_config}
 {
-    render_logics_.append(nullptr, flying_camera_logic_);
+    if (config.with_flying_logic) {
+        render_logics_.append(nullptr, flying_camera_logic_);
+    }
     if (config.with_dirtmap) {
         render_logics_.append(nullptr, dirtmap_logic_);
     }

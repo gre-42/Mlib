@@ -1154,6 +1154,7 @@ void LoadScene::operator()(
                     .vfx = false,
                     .with_dirtmap = false,
                     .with_skybox = false,
+                    .with_flying_logic = false,
                     .clear_mode = ClearMode::DEPTH},
                 mutex);
             if (!renderable_scenes.insert({match[1].str(), rs}).second) {

@@ -198,6 +198,7 @@ int main(int argc, char** argv) {
                 .vfx = !args.has_named("--no_vfx"),
                 .with_dirtmap = true,
                 .with_skybox = true,
+                .with_flying_logic = true,
                 .clear_mode = ClearMode::COLOR_AND_DEPTH
             };
             std::recursive_mutex mutex;

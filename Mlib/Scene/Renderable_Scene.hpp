@@ -44,6 +44,7 @@ struct RenderableSceneConfig {
     bool vfx;
     bool with_dirtmap;
     bool with_skybox;
+    bool with_flying_logic;
     ClearMode clear_mode;
 };
 
