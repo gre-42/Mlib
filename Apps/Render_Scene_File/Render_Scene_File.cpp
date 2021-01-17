@@ -194,7 +194,9 @@ int main(int argc, char** argv) {
                 .depth_fog = !args.has_named("--no_depth_fog"),
                 .low_pass = args.has_named("--low_pass"),
                 .high_pass = args.has_named("--high_pass"),
-                .vfx = !args.has_named("--no_vfx")
+                .vfx = !args.has_named("--no_vfx"),
+                .with_dirtmap = true,
+                .with_skybox = true
             };
             std::recursive_mutex mutex;
             RenderLogics render_logics{mutex};

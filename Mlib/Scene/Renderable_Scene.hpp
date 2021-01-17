@@ -42,6 +42,8 @@ struct RenderableSceneConfig {
     bool low_pass;
     bool high_pass;
     bool vfx;
+    bool with_dirtmap;
+    bool with_skybox;
 };
 
 class RenderableScene: public RenderLogic {

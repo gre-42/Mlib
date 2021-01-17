@@ -41,7 +41,11 @@ RenderableScene::RenderableScene(
       scene_,
       selected_cameras_},
   skybox_logic_{standard_camera_logic_, rendering_resources},
-  standard_render_logic_{std::make_shared<StandardRenderLogic>(scene_, skybox_logic_)},
+  standard_render_logic_{std::make_shared<StandardRenderLogic>(
+      scene_,
+      config.with_skybox
+        ? (RenderLogic&)skybox_logic_
+        : (RenderLogic&)standard_camera_logic_)},
   window_{window},
   flying_camera_logic_{std::make_shared<FlyingCameraLogic>(
       window,
@@ -77,7 +81,9 @@ RenderableScene::RenderableScene(
   scene_config_{scene_config}
 {
     render_logics_.append(nullptr, flying_camera_logic_);
-    render_logics_.append(nullptr, dirtmap_logic_);
+    if (config.with_dirtmap) {
+        render_logics_.append(nullptr, dirtmap_logic_);
+    }
     render_logics_.append(nullptr, config.vfx
         ? post_processing_logic_
         : (scene_config.render_config.motion_interpolation

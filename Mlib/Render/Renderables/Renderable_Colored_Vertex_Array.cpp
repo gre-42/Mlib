@@ -71,6 +71,9 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "out vec3 color;" << std::endl;
     sstr << "out vec2 tex_coord;" << std::endl;
     if (has_lightmap_color || has_lightmap_depth) {
+        if (lights.empty()) {
+            throw std::runtime_error("No lights despite has_lightmap_color or has_lightmap_depth");
+        }
         sstr << "uniform mat4 MVP_light[" << lights.size() << "];" << std::endl;
         // vec4 to avoid clipping problems
         sstr << "out vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
@@ -158,6 +161,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -197,6 +203,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     sstr << "out vec4 frag_color;" << std::endl;
     sstr << "uniform sampler2D texture1;" << std::endl;
     if (has_lightmap_color || has_lightmap_depth) {
+        if (lights.empty()) {
+            throw std::runtime_error("No lights despite has_lightmap_color or has_lightmap_depth");
+        }
         sstr << "in vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
     }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
@@ -417,6 +426,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
