@@ -213,7 +213,13 @@ void LoadScene::operator()(
         "\\s*transformation_mode=(all|position|position_lookat)$");
     static const std::regex blending_x_resource_reg("^(?:\\r?\\n|\\s)*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
-    static const std::regex node_instance_reg("^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+) name=([\\w+-.]+) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) scale=([\\w+-.]+)(?: aggregate=(true|false))?$");
+    static const std::regex node_instance_reg(
+        "^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+)"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+scale=([\\w+-.]+)"
+        "(?:\\s+aggregate=(true|false))?$");
     static const std::regex renderable_instance_reg("^(?:\\r?\\n|\\s)*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
     static const std::regex register_geographic_mapping_reg(
         "^(?:\\r?\\n|\\s)*register_geographic_mapping"
