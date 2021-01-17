@@ -106,7 +106,7 @@ void LoadScene::operator()(
     size_t& num_renderings,
     bool verbose,
     RegexSubstitutionCache& rsc,
-    std::map<std::string, std::unique_ptr<RenderableScene>>& renderable_scenes)
+    std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
 {
     std::ifstream ifs{script_filename};
     static const std::regex osm_resource_reg(
@@ -214,7 +214,8 @@ void LoadScene::operator()(
     static const std::regex blending_x_resource_reg("^(?:\\r?\\n|\\s)*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
     static const std::regex node_instance_reg(
-        "^(?:\\r?\\n|\\s)*node_instance parent=([\\w-.<>]+)"
+        "^(?:\\r?\\n|\\s)*node_instance"
+        "\\s+parent=([\\w-.<>]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
@@ -359,7 +360,7 @@ void LoadScene::operator()(
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
         "\\s*default=([\\d]+)\\r?\\n"
-        "\\s*on_init=([\\w+-.]*)\\r?\\n"
+        "\\s*on_init=([\\w+-.:= ]*)\\r?\\n"
         "\\s*on_change=([\\w+-.]*)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     static const std::regex set_renderable_style_reg(
@@ -425,7 +426,7 @@ void LoadScene::operator()(
     static const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
     static const std::regex set_dirtmap_reg("^(?:\\r?\\n|\\s)*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
     static const std::regex set_skybox_reg("^(?:\\r?\\n|\\s)*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
-    static const std::regex set_preferred_car_spawner_reg("^(?:\\r?\\n|\\s)*set_preferred_car_spawner player=([\\w+-.]+)\\s+macro=([\\w]+)\\s+parameters=([#: \\w+-.]*)$");
+    static const std::regex set_preferred_car_spawner_reg("^(?:\\r?\\n|\\s)*set_preferred_car_spawner player=([\\w+-.]+)\\s+macro=(\\w+)\\s+parameters=([#: \\w+-.]*)$");
     static const std::regex set_vip_reg("^(?:\\r?\\n|\\s)*set_vip player=([\\w+-.]+)$");
     static const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
     static const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
@@ -1133,7 +1134,7 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
         } else if (std::regex_match(line, match, create_scene_reg)) {
-            render_logics.append(nullptr, std::make_shared<RenderableScene>(
+            auto rs = std::make_shared<RenderableScene>(
                 scene_node_resources,
                 rendering_resources,
                 scene_config,
@@ -1150,7 +1151,11 @@ void LoadScene::operator()(
                     .low_pass = false,
                     .high_pass = false,
                     .vfx = false},
-                mutex));
+                mutex);
+            if (!renderable_scenes.insert({match[1].str(), rs}).second) {
+                throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");
+            }
+            render_logics.append(nullptr, rs);
         } else if (std::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
             for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {

@@ -41,6 +41,7 @@ public:
     std::string substitute(const std::string& t, const RegexSubstitutionCache& rsc) const;
     void merge(const SubstitutionString& other);
     void clear();
+    explicit operator const std::string& () const;
 private:
     std::string s_;
 };

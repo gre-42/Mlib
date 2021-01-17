@@ -35,7 +35,7 @@ private:
     std::string working_directory_;
     UserFunction user_function_;
     std::string context_;
-    SubstitutionString substitutions_;
+    const SubstitutionString& substitutions_;
     bool verbose_;
 };
 

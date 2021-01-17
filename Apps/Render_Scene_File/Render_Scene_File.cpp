@@ -198,10 +198,10 @@ int main(int argc, char** argv) {
             };
             std::recursive_mutex mutex;
             RenderLogics render_logics{mutex};
-            std::map<std::string, std::unique_ptr<RenderableScene>> renderable_scenes;
+            std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             if (!renderable_scenes.insert({
                 "default_context",
-                std::make_unique<RenderableScene>(
+                std::make_shared<RenderableScene>(
                     scene_node_resources,
                     rendering_resources,
                     scene_config,

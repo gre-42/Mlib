@@ -17,7 +17,7 @@ public:
         size_t& num_renderings,
         bool verbose,
         RegexSubstitutionCache& rsc,
-        std::map<std::string, std::unique_ptr<RenderableScene>>& renderable_scenes);
+        std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);
 private:
     MacroFileExecutor macro_file_executor_;
 };

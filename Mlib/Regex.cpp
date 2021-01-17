@@ -127,3 +127,7 @@ void SubstitutionString::merge(const SubstitutionString& other) {
 void SubstitutionString::clear() {
     s_.clear();
 }
+
+SubstitutionString::operator const std::string& () const {
+    return s_;
+}

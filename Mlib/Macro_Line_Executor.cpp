@@ -32,6 +32,7 @@ void MacroLineExecutor::operator () (
     const std::string& line,
     const RegexSubstitutionCache& rsc) const
 {
+    std::string subst_line = substitutions_.substitute(line, rsc);
     static const std::regex comment_reg("^(?:\\r?\\n|\\s)*#[\\S\\s]*$");
     static const std::regex macro_playback_reg("^(?:\\r?\\n|\\s)*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?(" + substitute_pattern + ")$");
     static const std::regex include_reg("^(?:\\r?\\n|\\s)*include ([\\w-. \\(\\)/+-]+)$");
@@ -60,14 +61,14 @@ void MacroLineExecutor::operator () (
     };
 
     if (verbose_) {
-        std::cerr << "Processing line \"" << line << '"' << std::endl;
+        std::cerr << "Processing line \"" << subst_line << '"' << std::endl;
     }
     std::smatch match;
-    if (std::regex_match(line, match, empty_reg)) {
+    if (std::regex_match(subst_line, match, empty_reg)) {
         // Do nothing
-    } else if (std::regex_match(line, match, comment_reg)) {
+    } else if (std::regex_match(subst_line, match, comment_reg)) {
         // Do nothing
-    } else if (std::regex_match(line, match, macro_playback_reg)) {
+    } else if (std::regex_match(subst_line, match, macro_playback_reg)) {
         std::string name = match[1].str();
         std::string context = match[2].str();
         std::string subst_pattern = match[3].str();
@@ -86,7 +87,7 @@ void MacroLineExecutor::operator () (
         for (const std::string& l : macro_it->second.lines) {
             mle2(substitute(l, subst_pattern, rsc), rsc);
         }
-    } else if (std::regex_match(line, match, include_reg)) {
+    } else if (std::regex_match(subst_line, match, include_reg)) {
         MacroLineExecutor mle2{
             macro_file_executor_,
             spath(match[1].str()),
@@ -96,7 +97,7 @@ void MacroLineExecutor::operator () (
             substitutions_,
             verbose_};
         macro_file_executor_(mle2, rsc);
-    } else if (!user_function_(context_, fpath, *this, line)) {
-        throw std::runtime_error("Could not parse line: \"" + line + '"');
+    } else if (!user_function_(context_, fpath, *this, subst_line)) {
+        throw std::runtime_error("Could not parse line: \"" + subst_line + '"');
     }
 }
