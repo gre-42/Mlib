@@ -50,23 +50,3 @@ void CountDownLogic::render(
         }
     }
 }
-
-float CountDownLogic::near_plane() const {
-    throw std::runtime_error("CountDownLogic::requires_postprocessing not implemented");
-}
-
-float CountDownLogic::far_plane() const {
-    throw std::runtime_error("CountDownLogic::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& CountDownLogic::vp() const {
-    throw std::runtime_error("CountDownLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& CountDownLogic::iv() const {
-    throw std::runtime_error("CountDownLogic::iv not implemented");
-}
-
-bool CountDownLogic::requires_postprocessing() const {
-    throw std::runtime_error("CountDownLogic::requires_postprocessing not implemented");
-}

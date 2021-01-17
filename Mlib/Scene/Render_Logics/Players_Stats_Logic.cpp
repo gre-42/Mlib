@@ -34,23 +34,3 @@ void PlayersStatsLogic::render(
 {
     renderable_text().render(position_, players_.get_score_board(), width, height, line_distance_pixels_, true);  // true=periodic_position
 }
-
-float PlayersStatsLogic::near_plane() const {
-    throw std::runtime_error("PlayersStatsLogic::requires_postprocessing not implemented");
-}
-
-float PlayersStatsLogic::far_plane() const {
-    throw std::runtime_error("PlayersStatsLogic::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& PlayersStatsLogic::vp() const {
-    throw std::runtime_error("PlayersStatsLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& PlayersStatsLogic::iv() const {
-    throw std::runtime_error("PlayersStatsLogic::iv not implemented");
-}
-
-bool PlayersStatsLogic::requires_postprocessing() const {
-    throw std::runtime_error("PlayersStatsLogic::requires_postprocessing not implemented");
-}

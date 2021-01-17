@@ -36,7 +36,8 @@ ParameterSetterLogic::ParameterSetterLogic(
     substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
 }
 
-ParameterSetterLogic::~ParameterSetterLogic() = default;
+ParameterSetterLogic::~ParameterSetterLogic()
+{}
 
 void ParameterSetterLogic::render(
     int width,
@@ -70,24 +71,4 @@ void ParameterSetterLogic::render(
     if (ui_focus_.focus.back() == Focus::MENU) {
         scene_selector_list_view_.render(width, height, true); // true=periodic_position
     }
-}
-
-float ParameterSetterLogic::near_plane() const {
-    throw std::runtime_error("ParameterSetterLogic::requires_postprocessing not implemented");
-}
-
-float ParameterSetterLogic::far_plane() const {
-    throw std::runtime_error("ParameterSetterLogic::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& ParameterSetterLogic::vp() const {
-    throw std::runtime_error("ParameterSetterLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& ParameterSetterLogic::iv() const {
-    throw std::runtime_error("ParameterSetterLogic::iv not implemented");
-}
-
-bool ParameterSetterLogic::requires_postprocessing() const {
-    throw std::runtime_error("ParameterSetterLogic::requires_postprocessing not implemented");
 }

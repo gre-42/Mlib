@@ -41,23 +41,3 @@ void VisualGlobalLog::render(
     base_log_.get_messages(sstr, nentries_, severity_);
     renderable_text().render(position_, sstr.str(), width, height, line_distance_pixels_, true);  // true=periodic_position
 }
-
-float VisualGlobalLog::near_plane() const {
-    throw std::runtime_error("VisualGlobalLog::requires_postprocessing not implemented");
-}
-
-float VisualGlobalLog::far_plane() const {
-    throw std::runtime_error("VisualGlobalLog::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& VisualGlobalLog::vp() const {
-    throw std::runtime_error("VisualGlobalLog::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& VisualGlobalLog::iv() const {
-    throw std::runtime_error("VisualGlobalLog::iv not implemented");
-}
-
-bool VisualGlobalLog::requires_postprocessing() const {
-    throw std::runtime_error("VisualGlobalLog::requires_postprocessing not implemented");
-}

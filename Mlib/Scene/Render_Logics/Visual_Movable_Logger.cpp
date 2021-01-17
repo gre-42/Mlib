@@ -51,23 +51,3 @@ void VisualMovableLogger::render(
 {
     renderable_text().render(position_, text_, width, height, line_distance_pixels_, true);  // true=periodic_position
 }
-
-float VisualMovableLogger::near_plane() const {
-    throw std::runtime_error("VisualMovableLogger::requires_postprocessing not implemented");
-}
-
-float VisualMovableLogger::far_plane() const {
-    throw std::runtime_error("VisualMovableLogger::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& VisualMovableLogger::vp() const {
-    throw std::runtime_error("VisualMovableLogger::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& VisualMovableLogger::iv() const {
-    throw std::runtime_error("VisualMovableLogger::iv not implemented");
-}
-
-bool VisualMovableLogger::requires_postprocessing() const {
-    throw std::runtime_error("VisualMovableLogger::requires_postprocessing not implemented");
-}

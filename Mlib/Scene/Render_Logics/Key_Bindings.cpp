@@ -43,26 +43,6 @@ void KeyBindings::render(
     const RenderedSceneDescriptor& frame_id)
 {}
 
-float KeyBindings::near_plane() const {
-    throw std::runtime_error("KeyBindings::requires_postprocessing not implemented");
-}
-
-float KeyBindings::far_plane() const {
-    throw std::runtime_error("KeyBindings::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& KeyBindings::vp() const {
-    throw std::runtime_error("KeyBindings::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& KeyBindings::iv() const {
-    throw std::runtime_error("KeyBindings::iv not implemented");
-}
-
-bool KeyBindings::requires_postprocessing() const {
-    throw std::runtime_error("KeyBindings::requires_postprocessing not implemented");
-}
-
 void KeyBindings::notify_destroyed(void* destroyed_object) {
     absolute_movable_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     absolute_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});

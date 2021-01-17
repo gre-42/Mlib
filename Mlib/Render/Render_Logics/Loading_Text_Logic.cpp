@@ -43,23 +43,3 @@ void LoadingTextLogic::render(
             true);  // true=periodic_position
     }
 }
-
-float LoadingTextLogic::near_plane() const {
-    throw std::runtime_error("LoadingTextLogic::requires_postprocessing not implemented");
-}
-
-float LoadingTextLogic::far_plane() const {
-    throw std::runtime_error("LoadingTextLogic::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& LoadingTextLogic::vp() const {
-    throw std::runtime_error("LoadingTextLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& LoadingTextLogic::iv() const {
-    throw std::runtime_error("LoadingTextLogic::iv not implemented");
-}
-
-bool LoadingTextLogic::requires_postprocessing() const {
-    throw std::runtime_error("LoadingTextLogic::requires_postprocessing not implemented");
-}

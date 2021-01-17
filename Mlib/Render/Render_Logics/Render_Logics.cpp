@@ -40,26 +40,6 @@ void RenderLogics::render(
     }
 }
 
-float RenderLogics::near_plane() const {
-    throw std::runtime_error("RenderLogics::near_plane not implemented");
-}
-
-float RenderLogics::far_plane() const {
-    throw std::runtime_error("RenderLogics::far_plane not implemented");
-}
-
-const FixedArray<float, 4, 4>& RenderLogics::vp() const {
-    throw std::runtime_error("RenderLogics::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& RenderLogics::iv() const {
-    throw std::runtime_error("RenderLogics::iv not implemented");
-}
-
-bool RenderLogics::requires_postprocessing() const {
-    throw std::runtime_error("RenderLogics::requires_postprocessing not implemented");
-}
-
 void RenderLogics::prepend(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
     insert(scene_node, render_logic, true);
 }

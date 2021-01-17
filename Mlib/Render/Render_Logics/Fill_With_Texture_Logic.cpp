@@ -52,23 +52,3 @@ void FillWithTextureLogic::render(
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
 }
-
-float FillWithTextureLogic::near_plane() const {
-    throw std::runtime_error("FillWithTextureLogic::requires_postprocessing not implemented");
-}
-
-float FillWithTextureLogic::far_plane() const {
-    throw std::runtime_error("FillWithTextureLogic::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& FillWithTextureLogic::vp() const {
-    throw std::runtime_error("FillWithTextureLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& FillWithTextureLogic::iv() const {
-    throw std::runtime_error("FillWithTextureLogic::iv not implemented");
-}
-
-bool FillWithTextureLogic::requires_postprocessing() const {
-    throw std::runtime_error("FillWithTextureLogic::requires_postprocessing not implemented");
-}

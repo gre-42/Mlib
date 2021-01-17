@@ -75,23 +75,3 @@ void SceneSelectorLogic::render(
         scene_selector_list_view_.render(width, height, true); // true=periodic_position
     }
 }
-
-float SceneSelectorLogic::near_plane() const {
-    throw std::runtime_error("SceneSelectorLogic::requires_postprocessing not implemented");
-}
-
-float SceneSelectorLogic::far_plane() const {
-    throw std::runtime_error("SceneSelectorLogic::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& SceneSelectorLogic::vp() const {
-    throw std::runtime_error("SceneSelectorLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& SceneSelectorLogic::iv() const {
-    throw std::runtime_error("SceneSelectorLogic::iv not implemented");
-}
-
-bool SceneSelectorLogic::requires_postprocessing() const {
-    throw std::runtime_error("SceneSelectorLogic::requires_postprocessing not implemented");
-}

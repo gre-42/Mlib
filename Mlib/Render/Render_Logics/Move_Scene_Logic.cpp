@@ -24,23 +24,3 @@ void MoveSceneLogic::render(
 
     scene_.move(render_config.dt * speed_);
 }
-
-float MoveSceneLogic::near_plane() const {
-    throw std::runtime_error("MoveSceneLogic::near_plane not implemented");
-}
-
-float MoveSceneLogic::far_plane() const {
-    throw std::runtime_error("MoveSceneLogic::far_plane not implemented");
-}
-
-const FixedArray<float, 4, 4>& MoveSceneLogic::vp() const {
-    throw std::runtime_error("MoveSceneLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& MoveSceneLogic::iv() const {
-    throw std::runtime_error("MoveSceneLogic::iv not implemented");
-}
-
-bool MoveSceneLogic::requires_postprocessing() const {
-    throw std::runtime_error("MoveSceneLogic::requires_postprocessing not implemented");
-}

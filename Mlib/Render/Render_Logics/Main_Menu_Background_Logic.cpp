@@ -29,23 +29,3 @@ void MainMenuBackgroundLogic::render(
         FillWithTextureLogic::render(width, height, render_config, scene_graph_config, render_results, frame_id);
     }
 }
-
-float MainMenuBackgroundLogic::near_plane() const {
-    throw std::runtime_error("MainMenuBackgroundLogic::requires_postprocessing not implemented");
-}
-
-float MainMenuBackgroundLogic::far_plane() const {
-    throw std::runtime_error("MainMenuBackgroundLogic::requires_postprocessing not implemented");
-}
-
-const FixedArray<float, 4, 4>& MainMenuBackgroundLogic::vp() const {
-    throw std::runtime_error("MainMenuBackgroundLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& MainMenuBackgroundLogic::iv() const {
-    throw std::runtime_error("MainMenuBackgroundLogic::iv not implemented");
-}
-
-bool MainMenuBackgroundLogic::requires_postprocessing() const {
-    throw std::runtime_error("MainMenuBackgroundLogic::requires_postprocessing not implemented");
-}

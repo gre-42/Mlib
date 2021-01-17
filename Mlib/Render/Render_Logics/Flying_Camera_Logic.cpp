@@ -172,23 +172,3 @@ void FlyingCameraLogic::render(
         on->set_rotation(user_object_.obj_angles);
     }
 }
-
-float FlyingCameraLogic::near_plane() const {
-    throw std::runtime_error("FlyingCameraLogic::near_plane not implemented");
-}
-
-float FlyingCameraLogic::far_plane() const {
-    throw std::runtime_error("FlyingCameraLogic::far_plane not implemented");
-}
-
-const FixedArray<float, 4, 4>& FlyingCameraLogic::vp() const {
-    throw std::runtime_error("FlyingCameraLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, 3>& FlyingCameraLogic::iv() const {
-    throw std::runtime_error("FlyingCameraLogic::iv not implemented");
-}
-
-bool FlyingCameraLogic::requires_postprocessing() const {
-    throw std::runtime_error("FlyingCameraLogic::requires_postprocessing not implemented");
-}
