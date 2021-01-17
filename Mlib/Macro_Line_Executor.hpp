@@ -7,34 +7,21 @@
 
 namespace Mlib {
 
-class MacroLineExecutor;
 class SubstitutionString;
+class MacroFileExecutor;
 
-struct Macro {
-    std::string filename;
-    std::list<std::string> lines;
-};
-
-class MacroFileExecutor {
-    friend MacroLineExecutor;
+class MacroLineExecutor {
+    friend MacroFileExecutor;
 public:
     typedef std::function<bool(
         const std::function<std::string(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line)> UserFunction;
-    void operator () (const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc);
-private:
-    std::map<std::string, Macro> macros_;
-};
-
-class MacroLineExecutor {
-    friend MacroFileExecutor;
-public:
     MacroLineExecutor(
         MacroFileExecutor& macro_file_executor,
         const std::string& script_filename,
         const std::string& working_directory,
-        const MacroFileExecutor::UserFunction& execute_user_function,
+        const UserFunction& execute_user_function,
         const SubstitutionString& substitutions,
         bool verbose);
     void operator () (const std::string& line, const RegexSubstitutionCache& rsc) const;
@@ -42,7 +29,7 @@ private:
     MacroFileExecutor& macro_file_executor_;
     std::string script_filename_;
     std::string working_directory_;
-    MacroFileExecutor::UserFunction execute_user_function_;
+    UserFunction execute_user_function_;
     SubstitutionString substitutions_;
     bool verbose_;
 };

@@ -145,9 +145,9 @@ int main(int argc, char** argv) {
 
         ButtonStates button_states;
         UiFocus ui_focus = UiFocus{focus: {Focus::SCENE}};
-        SubstitutionString substitutions;
+        // SubstitutionString substitutions;
         std::map<std::string, size_t> selection_ids;
-        FifoLog fifo_log{10 * 1000};
+        // FifoLog fifo_log{10 * 1000};
 
         while (!render2.window_should_close()) {
             // TimeGuard::initialize(5000);
