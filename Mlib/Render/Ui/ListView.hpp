@@ -39,7 +39,6 @@ private:
     std::function<std::string(TOption)> transformation_;
     size_t& selection_index_;
     ButtonPress& button_press_;
-    GLFWwindow* window_;
 };
 
 }

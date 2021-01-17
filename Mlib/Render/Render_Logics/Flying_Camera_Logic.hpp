@@ -54,7 +54,6 @@ public:
 private:
     const Scene& scene_;
     FlyingCameraUserClass& user_object_;
-    GLFWwindow* window_;
     ButtonPress button_press_;
     bool fly_;
     bool rotate_;

@@ -114,7 +114,6 @@ FlyingCameraLogic::FlyingCameraLogic(
     bool rotate)
 : scene_{scene},
   user_object_{user_object},
-  window_{window},
   button_press_{button_states},
   fly_{fly},
   rotate_{rotate}
