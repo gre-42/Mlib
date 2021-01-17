@@ -75,17 +75,27 @@ public:
         return inverse(R_, t_);
     }
 
-    inline TransformationMatrix inverted_scaled() const {
-        auto scale2 = sum(squared(R_)) / n;
-        return inverse(R_ / scale2, t_);
+    inline float get_scale2() const {
+        return sum(squared(R_)) / n;
     }
-    void scale(const TData& f) {
+
+    inline float get_scale() const {
+        return std::sqrt(get_scale2());
+    }
+
+    inline TransformationMatrix inverted_scaled() const {
+        return inverse(R_ / get_scale2(), t_);
+    }
+    
+    void pre_scale(const TData& f) {
         R_ *= f;
         t_ *= f;
     }
-    TransformationMatrix scaled(const TData& f) const {
+
+    TransformationMatrix pre_scaled(const TData& f) const {
         return TransformationMatrix{R_ * f, t_ * f};
     }
+
     template <class TResultData>
     TransformationMatrix<TResultData, n> casted() const {
         return TransformationMatrix<TResultData, n>{

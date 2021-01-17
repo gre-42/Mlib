@@ -151,7 +151,7 @@ RenderableOsmMap::RenderableOsmMap(
             coords_ref = (bounds_max_merged + bounds_min_merged) / 2.0;
             auto m = latitude_longitude_2_meters_mapping(
                 coords_ref(0),
-                coords_ref(1)).scaled(scale);
+                coords_ref(1)).pre_scaled(scale);
             FixedArray<float, 2> min = (m * bounds_min_merged).casted<float>();
             FixedArray<float, 2> max = (m * bounds_max_merged).casted<float>();
             // Scale converts from meters to e.g. kilometers

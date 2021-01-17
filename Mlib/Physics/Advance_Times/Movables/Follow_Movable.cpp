@@ -35,7 +35,8 @@ FollowMovable::FollowMovable(
   y_adapt_{0},
   dt_dt_ref_{dt / dt_ref},
   kalman_filter_{1e-5, 1e-2,  1, 0},
-  exponential_smoother_{1 - std::pow(1 - y_snappiness, dt_dt_ref_), 0}
+  exponential_smoother_{1 - std::pow(1 - y_snappiness, dt_dt_ref_), 0},
+  initialized_{false}
 {
     dpos_old_ = followed_->get_new_absolute_model_matrix().t();
     followed_node_->add_destruction_observer(this);
@@ -44,8 +45,13 @@ FollowMovable::FollowMovable(
 FollowMovable::~FollowMovable()
 {}
 
-void FollowMovable::initialize() {
+void FollowMovable::initialize(SceneNode& follower_node) {
+    initialized_ = true;
     advance_time(NAN);
+    follower_node.set_absolute_pose(
+        transformation_matrix_.t(),
+        matrix_2_tait_bryan_angles(transformation_matrix_.R()),
+        1);
 }
 
 void FollowMovable::advance_time(float dt) {
@@ -54,6 +60,9 @@ void FollowMovable::advance_time(float dt) {
     }
     if (any(isnan(attachment_position_))) {
         throw std::runtime_error("Attachment position is NAN, set_absolute_model_matrix not called?");
+    }
+    if (!initialized_) {
+        throw std::runtime_error("FollowMovable not initialized");
     }
     FixedArray<float, 3> dpos3 = followed_->get_new_absolute_model_matrix().t();
     FixedArray<float, 2> dpos2{dpos3(0), dpos3(2)};
@@ -77,6 +86,9 @@ void FollowMovable::advance_time(float dt) {
 }
 
 void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+    if (std::abs(absolute_model_matrix.get_scale2() - 1) > 1e-12) {
+        throw std::runtime_error("FollowMovable does not support scaling");
+    }
     transformation_matrix_ = absolute_model_matrix;
     attachment_position_(0) = transformation_matrix_.t()(0) - node_displacement_(0);
     attachment_position_(1) = transformation_matrix_.t()(2) - node_displacement_(2);

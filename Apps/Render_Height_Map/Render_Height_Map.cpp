@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
             rendering_resources,
             img.to_float_rgb(),
             height.to_float() * safe_stof(args.named_value("--z_scale", "1")),
-            np.normalization_matrix().scaled(safe_stof(args.named_value("--xy_scale", "1"))),
+            np.normalization_matrix().pre_scaled(safe_stof(args.named_value("--xy_scale", "1"))),
             args.has_named("--rotate"));
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;

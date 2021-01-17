@@ -28,7 +28,7 @@ public:
         float dt = 1.f/60,
         float dt_ref = 1.f/60);
     ~FollowMovable();
-    void initialize();
+    void initialize(SceneNode& follower_node);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
@@ -50,6 +50,7 @@ private:
     float dt_dt_ref_;
     KalmanFilter<float> kalman_filter_;
     ExponentialSmoother<float> exponential_smoother_;
+    bool initialized_;
 };
 
 }

@@ -515,6 +515,30 @@ TransformationMatrix<float, 3> SceneNode::absolute_view_matrix() const {
     }
 }
 
+void SceneNode::set_absolute_pose(
+    const FixedArray<float, 3>& position,
+    const FixedArray<float, 3>& rotation,
+    float scale)
+{
+    if (parent_ == nullptr) {
+        set_relative_pose(
+            position,
+            rotation,
+            scale);
+    } else {
+        auto p_v = parent_->absolute_view_matrix();
+        auto m = TransformationMatrix<float, 3>{
+            tait_bryan_angles_2_matrix(rotation) * scale,
+            position};
+        auto rel_trafo = p_v * m;
+        float rel_scale = rel_trafo.get_scale();
+        set_relative_pose(
+            rel_trafo.t(),
+            matrix_2_tait_bryan_angles(rel_trafo.R() / rel_scale),
+            rel_scale);
+    }
+}
+
 void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     std::string ind0(3 * recursion_depth, '-');
     std::string ind1(3 * recursion_depth + 1, '-');

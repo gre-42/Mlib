@@ -118,6 +118,10 @@ public:
         const FixedArray<float, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale);
+    void set_absolute_pose(
+        const FixedArray<float, 3>& position,
+        const FixedArray<float, 3>& rotation,
+        float scale);
     TransformationMatrix<float, 3> relative_model_matrix() const;
     TransformationMatrix<float, 3> absolute_model_matrix() const;
     TransformationMatrix<float, 3> relative_view_matrix() const;
