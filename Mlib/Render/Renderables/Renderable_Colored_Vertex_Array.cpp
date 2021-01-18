@@ -161,9 +161,6 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -426,9 +423,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
