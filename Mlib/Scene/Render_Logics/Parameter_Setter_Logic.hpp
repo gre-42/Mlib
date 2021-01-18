@@ -42,6 +42,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
 
 private:
+    void merge_substitutions() const;
     ListView<ReplacementParameter> scene_selector_list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;

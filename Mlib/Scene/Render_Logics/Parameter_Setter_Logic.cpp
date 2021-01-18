@@ -27,7 +27,10 @@ ParameterSetterLogic::ParameterSetterLogic(
     font_height_pixels,
     line_distance_pixels,
     [](const ReplacementParameter& s){return s.name;},
-    on_change},
+    [this, on_change](){
+        merge_substitutions();
+        on_change();
+    }},
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
   substitutions_{substitutions},
@@ -35,7 +38,7 @@ ParameterSetterLogic::ParameterSetterLogic(
   button_press_{button_press}
 {
     // Initialize the reference
-    substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
+    merge_substitutions();
 }
 
 ParameterSetterLogic::~ParameterSetterLogic()
@@ -73,4 +76,8 @@ void ParameterSetterLogic::render(
     if (ui_focus_.focus.back() == Focus::MENU) {
         scene_selector_list_view_.render(width, height, true); // true=periodic_position
     }
+}
+
+void ParameterSetterLogic::merge_substitutions() const {
+    substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
 }

@@ -222,6 +222,8 @@ void LoadScene::operator()(
         "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
         "(?:\\s+aggregate=(true|false))?$");
+    static const std::regex delete_root_node_reg(
+        "^(?:\\r?\\n|\\s)*delete_root_node\\s+name=([\\w+-.]+)");
     static const std::regex renderable_instance_reg("^(?:\\r?\\n|\\s)*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
     static const std::regex register_geographic_mapping_reg(
         "^(?:\\r?\\n|\\s)*register_geographic_mapping"
@@ -362,7 +364,7 @@ void LoadScene::operator()(
         "\\s*line_distance=([\\w+-.]+)\\r?\\n"
         "\\s*default=([\\d]+)\\r?\\n"
         "\\s*on_init=([\\w+-.:= ]*)\\r?\\n"
-        "\\s*on_change=([\\w+-.]*)\\r?\\n"
+        "\\s*on_change=([\\w+-.:= ]*)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     static const std::regex set_renderable_style_reg(
         "^(?:\\r?\\n|\\s)*set_renderable_style\\r?\\n"
@@ -709,6 +711,8 @@ void LoadScene::operator()(
                 }
                 scene.register_node(match[2].str(), node);
             }
+        } else if (std::regex_match(line, match, delete_root_node_reg)) {
+            scene.delete_root_node(match[1].str());
         } else if (std::regex_match(line, match, renderable_instance_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.instantiate_renderable(
