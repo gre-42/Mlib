@@ -27,21 +27,17 @@ void StandardRenderLogic::render(
 {
     LOG_FUNCTION("StandardRenderLogic::render");
 
-    if ((clear_mode_ == ClearMode::COLOR) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
-        // make sure we clear the framebuffer's content
-        if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
-            CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
-        } else {
+    if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
+        CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
+        CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    } else {
+        GLbitfield mask = 0;
+        if ((clear_mode_ == ClearMode::COLOR) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
             CHK(glClearColor(
                 render_config.background_color(0),
                 render_config.background_color(1),
                 render_config.background_color(2),
                 1));
-        }
-    }
-    {
-        GLbitfield mask = 0;
-        if ((clear_mode_ == ClearMode::COLOR) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
             mask |= GL_COLOR_BUFFER_BIT;
         }
         if ((clear_mode_ == ClearMode::DEPTH) || (clear_mode_ == ClearMode::COLOR_AND_DEPTH)) {
