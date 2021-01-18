@@ -12,7 +12,6 @@ public:
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
-        const std::list<Focus>& focus,
         const std::string& text);
     ~LoadingTextLogic();
 
@@ -27,7 +26,6 @@ public:
     virtual Focus focus_mask() const override;
 
 private:
-    const std::list<Focus>& focus_;
     const std::string text_;
 };
 

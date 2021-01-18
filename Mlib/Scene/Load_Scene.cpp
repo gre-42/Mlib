@@ -1125,7 +1125,6 @@ void LoadScene::operator()(
                     safe_stof(match[3].str())},
                 safe_stof(match[4].str()),        // font_height_pixels
                 safe_stof(match[5].str()),        // line_distance_pixels
-                ui_focus.focus,
                 match[6].str());                  // text
             render_logics.append(nullptr, loading_logic);
         } else if (std::regex_match(line, match, players_stats_reg)) {
@@ -1236,7 +1235,6 @@ void LoadScene::operator()(
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 rendering_resources,
                 fpath(match[1].str()),
-                ui_focus.focus,
                 focus_from_string(match[2].str()));
             render_logics.append(nullptr, bg);
         } else if (std::regex_match(line, match, set_renderable_style_reg)) {

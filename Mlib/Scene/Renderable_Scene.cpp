@@ -80,7 +80,6 @@ RenderableScene::RenderableScene(
       scene_,
       physics_engine_.advance_times_,
       players_,
-      ui_focus.focus,
       mutex_},
   scene_config_{scene_config}
 {
@@ -95,7 +94,6 @@ RenderableScene::RenderableScene(
         : (scene_config.render_config.motion_interpolation
             ? std::dynamic_pointer_cast<RenderLogic>(motion_interp_logic_)
             : standard_render_logic_));
-    render_logics_.append(nullptr, key_bindings_);
     physics_engine_.add_external_force_provider(&gefp_);
     physics_engine_.add_external_force_provider(key_bindings_.get());
 }

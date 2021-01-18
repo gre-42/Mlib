@@ -15,8 +15,7 @@ public:
     MainMenuBackgroundLogic(
         RenderingResources& rendering_resources,
         const std::string& image_resource_name,
-        const std::list<Focus>& focus,
-        Focus target_focus);
+        Focus focus_mask);
 
     virtual void render(
         int width,
@@ -25,10 +24,11 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    
+    virtual Focus focus_mask() const override;
 
 private:
-    const std::list<Focus>& focus_;
-    Focus target_focus_;
+    Focus focus_mask_;
 };
 
 }

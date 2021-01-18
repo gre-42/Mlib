@@ -22,7 +22,6 @@ public:
         Scene& scene,
         AdvanceTimes& advance_times,
         Players& players,
-        const std::list<Focus>& focus,
         std::recursive_mutex& mutex);
     ~GameLogic();
     void set_spawn_points(
@@ -53,7 +52,6 @@ private:
     AdvanceTimes& advance_times_;
     Players& players_;
     Player* vip_;
-    const std::list<Focus>& focus_;
     std::vector<SpawnPoint> spawn_points_;
     std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
     std::recursive_mutex& mutex_;

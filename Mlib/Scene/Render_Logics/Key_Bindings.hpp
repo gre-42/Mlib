@@ -6,7 +6,6 @@
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 namespace Mlib {
@@ -15,7 +14,7 @@ struct SelectedCameras;
 class ButtonPress;
 class Scene;
 
-class KeyBindings: public DestructionObserver, public ExternalForceProvider, public RenderLogic {
+class KeyBindings: public DestructionObserver, public ExternalForceProvider {
 public:
     KeyBindings(
         ButtonPress& button_press,
@@ -28,14 +27,6 @@ public:
     virtual void notify_destroyed(void* destroyed_object) override;
 
     virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
-
-    virtual void render(
-        int width,
-        int height,
-        const RenderConfig& render_config,
-        const SceneGraphConfig& scene_graph_config,
-        RenderResults* render_results,
-        const RenderedSceneDescriptor& frame_id) override;
 
     void add_camera_key_binding(const CameraKeyBinding& b);
     void add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);

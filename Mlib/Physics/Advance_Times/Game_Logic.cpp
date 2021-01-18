@@ -33,13 +33,11 @@ GameLogic::GameLogic(
     Scene& scene,
     AdvanceTimes& advance_times,
     Players& players,
-    const std::list<Focus>& focus,
     std::recursive_mutex& mutex)
 : scene_{scene},
   advance_times_{advance_times},
   players_{players},
   vip_{nullptr},
-  focus_{focus},
   mutex_{mutex},
   spawn_point_id_{SIZE_MAX}
 {

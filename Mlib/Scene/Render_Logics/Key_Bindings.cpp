@@ -34,15 +34,6 @@ KeyBindings::~KeyBindings() {
     }
 }
 
-void KeyBindings::render(
-    int width,
-    int height,
-    const RenderConfig& render_config,
-    const SceneGraphConfig& scene_graph_config,
-    RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
-{}
-
 void KeyBindings::notify_destroyed(void* destroyed_object) {
     absolute_movable_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     absolute_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});

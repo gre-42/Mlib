@@ -8,14 +8,12 @@ LoadingTextLogic::LoadingTextLogic(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
-    const std::list<Focus>& focus,
     const std::string& text)
 : RenderTextLogic{
     ttf_filename,
     position,
     font_height_pixels,
     line_distance_pixels},
-  focus_{focus},
   text_{text}
 {}
 
