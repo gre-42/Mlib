@@ -67,6 +67,7 @@ public:
         generate_thread_runner(
             std::shared_ptr<RenderingResources> primary_rendering_resources,
             std::shared_ptr<RenderingResources> secondary_rendering_resources);
+    static void print(std::ostream& ostr);
 private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;

@@ -183,6 +183,20 @@ std::function<std::function<void()>(std::function<void()>)>
     };
 }
 
+void RenderingResources::print(std::ostream& ostr) {
+    ostr << "Rendering resource stack\n";
+    for (const auto& e : rendering_resources_stack_) {
+        ostr << "  Texture descriptors\n";
+        for (const auto& x : e->texture_descriptors_) {
+            ostr << "    " << x.first << '\n';
+        }
+        ostr << "  Textures\n";
+        for (const auto& x : e->textures_) {
+            ostr << "    " << x.first << '\n';
+        }
+    };
+}
+
 RenderingResources::RenderingResources(SceneNodeResources& scene_node_resources)
 : scene_node_resources_{scene_node_resources}
 {}
