@@ -7,12 +7,11 @@ using namespace Mlib;
 
 RenderableObjFile::RenderableObjFile(
     const std::string& filename,
-    const LoadMeshConfig& cfg,
-    RenderingResources& rendering_resources)
+    const LoadMeshConfig& cfg)
 {
     acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
     acvas_->cvas = load_obj(filename, cfg);
-    rva_ = std::make_shared<RenderableColoredVertexArray>(acvas_, nullptr, rendering_resources);
+    rva_ = std::make_shared<RenderableColoredVertexArray>(acvas_, nullptr);
 }
 
 RenderableObjFile::~RenderableObjFile()

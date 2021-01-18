@@ -80,11 +80,9 @@ float skybox_vertices[] = {
     1.0f, -1.0f,  1.0f
 };
 
-SkyboxLogic::SkyboxLogic(
-    RenderLogic& child_logic,
-    RenderingResources& rendering_resources)
+SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
 : child_logic_{child_logic},
-  rendering_resources_{rendering_resources},
+  rendering_resources_{RenderingResources::rendering_resources()},
   loaded_{false}
 {}
 
@@ -131,7 +129,7 @@ void SkyboxLogic::render(
 
         CHK(glUniform1i(rp_.skybox_location, 0));
         CHK(glActiveTexture(GL_TEXTURE0));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_cubemap(alias_, filenames_)));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_->get_cubemap(alias_, filenames_)));
 
         CHK(glBindVertexArray(va_.vertex_array));
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));

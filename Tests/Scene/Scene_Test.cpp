@@ -112,9 +112,9 @@ void test_physics_engine() {
 
     SceneNodeResources scene_node_resources;
     Scene scene;
-    RenderingResources rendering_resources{scene_node_resources};
-    scene_node_resources.add_resource("obj0", std::make_shared<RenderableColoredVertexArray>(triangles0, nullptr, rendering_resources));
-    scene_node_resources.add_resource("obj1", std::make_shared<RenderableColoredVertexArray>(triangles1, nullptr, rendering_resources));
+    RenderingResourcesGuard rrg{scene_node_resources};
+    scene_node_resources.add_resource("obj0", std::make_shared<RenderableColoredVertexArray>(triangles0, nullptr));
+    scene_node_resources.add_resource("obj1", std::make_shared<RenderableColoredVertexArray>(triangles1, nullptr));
     scene_node_resources.add_resource("beacon", std::make_shared<RenderableObjFile>(
         "Data/box.obj",
         LoadMeshConfig{
@@ -130,8 +130,7 @@ void test_physics_engine() {
             .aggregate_mode = AggregateMode::OFF,
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
-            .werror = true},
-        rendering_resources));
+            .werror = true}));
     scene_node_resources.generate_triangle_rays("obj1", 5, {1, 1, 1});
     auto scene_node0 = new SceneNode;
     auto scene_node1_0 = new SceneNode;
@@ -241,7 +240,6 @@ void test_physics_engine() {
     auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
     auto lightmap_logic = std::make_shared<LightmapLogic>(
         *read_pixels_logic,
-        rendering_resources,
         LightmapUpdateCycle::ALWAYS,
         shadow_light->node_name,
         "",    // black_node_name

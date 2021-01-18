@@ -10,6 +10,7 @@ template <class TData>
 class OffsetAndQuaternion;
 class RenderableColoredVertexArray;
 struct SceneNodeResourceFilter;
+class RenderingResources;
 
 class RenderableColoredVertexArrayInstance: public Renderable
 {
@@ -68,6 +69,7 @@ private:
     std::list<std::shared_ptr<ColoredVertexArray>> triangles_res_subset_;
     bool requires_render_pass_;
     bool requires_blending_pass_;
+    std::shared_ptr<RenderingResources> secondary_rendering_resources_;
 };
 
 }

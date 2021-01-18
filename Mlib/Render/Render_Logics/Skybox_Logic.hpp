@@ -2,6 +2,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,9 +17,7 @@ struct SRenderProgram: public RenderProgram {
 
 class SkyboxLogic: public RenderLogic {
 public:
-    explicit SkyboxLogic(
-        RenderLogic& child_logic,
-        RenderingResources& rendering_resources);
+    explicit SkyboxLogic(RenderLogic& child_logic);
     ~SkyboxLogic();
 
     virtual void render(
@@ -37,7 +36,7 @@ public:
     void set_filenames(const std::vector<std::string>& filenames, const std::string& alias);
 private:
     RenderLogic& child_logic_;
-    RenderingResources& rendering_resources_;
+    std::shared_ptr<RenderingResources> rendering_resources_;
     SRenderProgram rp_;
     VertexArray va_;
     std::vector<std::string> filenames_;

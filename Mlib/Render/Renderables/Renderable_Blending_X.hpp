@@ -9,8 +9,7 @@ class RenderableBlendingX: public SceneNodeResource {
 public:
     RenderableBlendingX(
         const FixedArray<float, 2, 2>& square,
-        const std::string& texture,
-        RenderingResources& rendering_resources);
+        const std::string& texture);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
 private:
     FixedArray<std::shared_ptr<RenderableColoredVertexArray>, 2> rva_;

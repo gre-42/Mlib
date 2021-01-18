@@ -15,9 +15,7 @@ struct FillWithTextureRenderProgram: public RenderProgram {
 
 class FillWithTextureLogic: public RenderLogic, public GenericPostProcessingLogic {
 public:
-    FillWithTextureLogic(
-        RenderingResources& rendering_resources,
-        const std::string& image_resource_name);
+    FillWithTextureLogic(const std::string& image_resource_name);
 
     virtual void render(
         int width,

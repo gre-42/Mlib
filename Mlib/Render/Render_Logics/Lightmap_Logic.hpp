@@ -27,7 +27,6 @@ class LightmapLogic: public RenderLogic {
 public:
     explicit LightmapLogic(
         RenderLogic& child_logic,
-        RenderingResources& rendering_resources,
         LightmapUpdateCycle update_cycle,
         const std::string& light_node_name,
         const std::string& black_node_name,
@@ -49,7 +48,7 @@ public:
 
 private:
     RenderLogic& child_logic_;
-    RenderingResources& rendering_resources_;
+    std::shared_ptr<RenderingResources> rendering_resources_;
     std::unique_ptr<FrameBuffer> fb_;
     LightmapUpdateCycle update_cycle_;
     std::string light_node_name_;

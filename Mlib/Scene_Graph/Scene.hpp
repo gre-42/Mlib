@@ -49,7 +49,8 @@ public:
         const TransformationMatrix<float, 3>& iv,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
-        const ExternalRenderPass& external_render_pass) const;
+        const ExternalRenderPass& external_render_pass,
+        const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;}) const;
     void move(float dt);
     size_t get_uuid();
     void print(std::ostream& ostr) const;

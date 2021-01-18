@@ -11,8 +11,7 @@ using namespace Mlib;
 RenderableDepthMap::RenderableDepthMap(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const FixedArray<float, 3, 3>& intrinsic_matrix,
-    RenderingResources& rendering_resources)
+    const FixedArray<float, 3, 3>& intrinsic_matrix)
 {
     FixedArray<float, 3, 3> iim{inv(intrinsic_matrix)};
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
@@ -95,8 +94,7 @@ RenderableDepthMap::RenderableDepthMap(
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
-        nullptr,
-        rendering_resources);
+        nullptr);
 }
 
 void RenderableDepthMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const

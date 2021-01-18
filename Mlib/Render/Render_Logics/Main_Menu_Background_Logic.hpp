@@ -13,7 +13,6 @@ class RenderingResources;
 class MainMenuBackgroundLogic: public FillWithTextureLogic {
 public:
     MainMenuBackgroundLogic(
-        RenderingResources& rendering_resources,
         const std::string& image_resource_name,
         Focus focus_mask);
 

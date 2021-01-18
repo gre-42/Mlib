@@ -12,8 +12,7 @@ using namespace Mlib;
 
 RenderableBlendingX::RenderableBlendingX(
     const FixedArray<float, 2, 2>& square,
-    const std::string& texture,
-    RenderingResources& rendering_resources)
+    const std::string& texture)
 : square_{square}
 {
     for (size_t i = 0; i < 2; ++i) {
@@ -63,8 +62,7 @@ RenderableBlendingX::RenderableBlendingX(
                 std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
                 std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
                 std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
-            nullptr,
-            rendering_resources);
+            nullptr);
     }
 }
 

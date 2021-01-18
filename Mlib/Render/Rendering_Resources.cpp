@@ -123,6 +123,40 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
     assert_true(level - 1 == log2(std::max(si.width, si.height)));
 }
 
+RenderingResourcesGuard::RenderingResourcesGuard(SceneNodeResources& scene_node_resources) {
+    RenderingResources::rendering_resources_stack_.push_back(std::make_shared<RenderingResources>(scene_node_resources));
+}
+
+RenderingResourcesGuard::RenderingResourcesGuard(const std::shared_ptr<RenderingResources>& rr) {
+    RenderingResources::rendering_resources_stack_.push_back(rr);
+}
+
+RenderingResourcesGuard::~RenderingResourcesGuard() {
+    if (RenderingResources::rendering_resources_stack_.empty()) {
+        #pragma GCC push_options
+        #pragma GCC diagnostic ignored "-Wterminate"
+        throw std::runtime_error("~RenderingResourcesGuard but stack is empty");
+        #pragma GCC pop_options
+    }
+    RenderingResources::rendering_resources_stack_.pop_back();
+}
+
+thread_local std::list<std::shared_ptr<RenderingResources>> RenderingResources::rendering_resources_stack_;
+
+std::shared_ptr<RenderingResources> RenderingResources::primary_rendering_resources() {
+    if (RenderingResources::rendering_resources_stack_.empty()) {
+        throw std::runtime_error("Primary rendering resources on empty stack");
+    }
+    return RenderingResources::rendering_resources_stack_.front();
+}
+
+std::shared_ptr<RenderingResources> RenderingResources::rendering_resources() {
+    if (RenderingResources::rendering_resources_stack_.empty()) {
+        throw std::runtime_error("Rendering resources on empty stack");
+    }
+    return RenderingResources::rendering_resources_stack_.back();
+}
+
 RenderingResources::RenderingResources(SceneNodeResources& scene_node_resources)
 : scene_node_resources_{scene_node_resources}
 {}

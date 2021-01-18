@@ -10,6 +10,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <list>
 
 namespace Mlib {
 
@@ -21,6 +22,14 @@ struct TextureHandleAndNeedsGc {
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 class SceneNodeResources;
+class RenderingResources;
+
+class RenderingResourcesGuard {
+public:
+    explicit RenderingResourcesGuard(SceneNodeResources& scene_node_resources);
+    explicit RenderingResourcesGuard(const std::shared_ptr<RenderingResources>& rr);
+    ~RenderingResourcesGuard();
+};
 
 class RenderingResources {
 public:
@@ -47,6 +56,9 @@ public:
     std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
 
     SceneNodeResources& scene_node_resources() const;
+    static std::shared_ptr<RenderingResources> primary_rendering_resources();
+    static std::shared_ptr<RenderingResources> rendering_resources();
+    static thread_local std::list<std::shared_ptr<RenderingResources>> rendering_resources_stack_;
 private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;

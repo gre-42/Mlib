@@ -1,10 +1,11 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <memory>
 
 namespace Mlib {
 
 class Scene;
-
+class RenderingResources;
 enum class ClearMode;
 
 class StandardRenderLogic: public RenderLogic {
@@ -14,6 +15,7 @@ public:
         RenderLogic& child_logic,
         ClearMode clear_mode,
         Focus focus_mask);
+    ~StandardRenderLogic();
 
     virtual void render(
         int width,
@@ -33,6 +35,7 @@ private:
     RenderLogic& child_logic_;
     ClearMode clear_mode_;
     Focus focus_mask_;
+    std::shared_ptr<RenderingResources> rendering_resources_;
 };
 
 }

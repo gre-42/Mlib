@@ -9,11 +9,9 @@
 using namespace Mlib;
 
 RenderableBvh::RenderableBvh(
-    const std::list<std::shared_ptr<ColoredVertexArray>>& cvas,
-    RenderingResources& rendering_resources)
+    const std::list<std::shared_ptr<ColoredVertexArray>>& cvas)
 : cvas_{cvas},
-  bvh_{{0.5, 0.5, 0.5}, 10},
-  rendering_resources_{rendering_resources}
+  bvh_{{0.5, 0.5, 0.5}, 10}
 {
     for (const auto& cva : cvas) {
         for (const auto& t : cva->triangles) {
@@ -31,8 +29,7 @@ static void instantiate_bvh(
     SceneNode& scene_node,
     const FixedArray<float, 3>& position_shift,
     const SceneNodeResourceFilter& resource_filter,
-    const Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex, 3>*>, 3>& bvh,
-    RenderingResources& rendering_resources)
+    const Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex, 3>*>, 3>& bvh)
 {
     if (!bvh.data().empty()) {
         AxisAlignedBoundingBox<float, 3> aabb;
@@ -64,7 +61,7 @@ static void instantiate_bvh(
             lcvas.back()->material.is_small = true;
             lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }
-        std::make_shared<RenderableColoredVertexArray>(lcvas, nullptr, rendering_resources)->
+        std::make_shared<RenderableColoredVertexArray>(lcvas, nullptr)->
             instantiate_renderable("renderable_bvh", *node, resource_filter);
         scene_node.add_child(name + "_data", node);
     }
@@ -77,8 +74,7 @@ static void instantiate_bvh(
             *node,
             position_shift + node->position(),
             resource_filter,
-            c.second,
-            rendering_resources);
+            c.second);
         scene_node.add_child("bvh_" + std::to_string(i), node);
         ++i;
     }
@@ -86,6 +82,6 @@ static void instantiate_bvh(
 
 void RenderableBvh::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
-    instantiate_bvh(name, scene_node, fixed_zeros<float, 3>(), resource_filter, bvh_, rendering_resources_);
+    instantiate_bvh(name, scene_node, fixed_zeros<float, 3>(), resource_filter, bvh_);
     std::cerr << scene_node << std::endl;
 }

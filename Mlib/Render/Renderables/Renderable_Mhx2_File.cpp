@@ -7,11 +7,10 @@ using namespace Mlib;
 
 RenderableMhx2File::RenderableMhx2File(
     const std::string& filename,
-    const LoadMeshConfig& cfg,
-    RenderingResources& rendering_resources)
+    const LoadMeshConfig& cfg)
 {
     acvas_ = load_mhx2(filename, cfg);
-    rva_ = std::make_shared<RenderableColoredVertexArray>(acvas_, nullptr, rendering_resources);
+    rva_ = std::make_shared<RenderableColoredVertexArray>(acvas_, nullptr);
 #ifdef DEBUG
     acvas_->check_consistency();
 #endif

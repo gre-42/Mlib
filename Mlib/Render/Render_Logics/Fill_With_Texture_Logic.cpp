@@ -18,13 +18,11 @@ static const char* fragment_shader_text =
 "    color = texture(texture1, TexCoords).rgba;\n"
 "}";
 
-FillWithTextureLogic::FillWithTextureLogic(
-    RenderingResources& rendering_resources,
-    const std::string& image_resource_name)
+FillWithTextureLogic::FillWithTextureLogic(const std::string& image_resource_name)
 {
     rp_.generate(vertex_shader_text, fragment_shader_text);
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
-    rp_.texture_id_ = rendering_resources.get_texture({color: image_resource_name, color_mode: ColorMode::RGBA});
+    rp_.texture_id_ = RenderingResources::rendering_resources()->get_texture({color: image_resource_name, color_mode: ColorMode::RGBA});
 }
 
 void FillWithTextureLogic::render(

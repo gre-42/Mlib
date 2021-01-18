@@ -9,8 +9,7 @@ using namespace Mlib;
 
 RenderableSquare::RenderableSquare(
     const FixedArray<float, 2, 2>& square,
-    const Material& material,
-    RenderingResources& rendering_resources)
+    const Material& material)
 {
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2);
@@ -47,8 +46,7 @@ RenderableSquare::RenderableSquare(
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
-        nullptr,
-        rendering_resources);
+        nullptr);
 }
 
 void RenderableSquare::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const

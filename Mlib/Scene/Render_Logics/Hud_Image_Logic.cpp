@@ -10,11 +10,10 @@ using namespace Mlib;
 HudImageLogic::HudImageLogic(
     SceneNode& scene_node,
     AdvanceTimes& advance_times,
-    RenderingResources& rendering_resources,
     const std::string& image_resource_name,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size)
-: FillWithTextureLogic{rendering_resources, image_resource_name},
+: FillWithTextureLogic{image_resource_name},
   advance_times_{advance_times},
   center_{center},
   size_{size}

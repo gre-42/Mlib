@@ -11,13 +11,12 @@ using namespace Mlib;
 
 LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
-    RenderingResources& rendering_resources,
     LightmapUpdateCycle update_cycle,
     const std::string& light_node_name,
     const std::string& black_node_name,
     bool with_depth_texture)
 : child_logic_{child_logic},
-  rendering_resources_{rendering_resources},
+  rendering_resources_{RenderingResources::rendering_resources()},
   update_cycle_{update_cycle},
   light_node_name_{light_node_name},
   black_node_name_{black_node_name},
@@ -26,11 +25,11 @@ LightmapLogic::LightmapLogic(
 
 LightmapLogic::~LightmapLogic() {
     if (fb_ != nullptr) {
-        rendering_resources_.delete_texture("lightmap_color" + light_node_name_);
-        rendering_resources_.delete_vp("lightmap_color" + light_node_name_);
+        rendering_resources_->delete_texture("lightmap_color." + light_node_name_);
+        rendering_resources_->delete_vp("lightmap_color." + light_node_name_);
         if (with_depth_texture_) {
-            rendering_resources_.delete_texture("lightmap_depth" + light_node_name_);
-            rendering_resources_.delete_vp("lightmap_depth" + light_node_name_);
+            rendering_resources_->delete_texture("lightmap_depth" + light_node_name_);
+            rendering_resources_->delete_vp("lightmap_depth" + light_node_name_);
         }
     }
 }
@@ -62,8 +61,8 @@ void LightmapLogic::render(
         fb_->configure({width: lightmap_width, height: lightmap_height, with_depth_texture: with_depth_texture_});
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_->frame_buffer));
         {
-            SmallSortedAggregateRendererGuard small_aggregate_array_renderer{rendering_resources_};
-            SmallInstancesRendererGuard small_instances_renderer{rendering_resources_};
+            SmallSortedAggregateRendererGuard small_aggregate_array_renderer;
+            SmallInstancesRendererGuard small_instances_renderer;
             child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
         }
 
@@ -72,11 +71,11 @@ void LightmapLogic::render(
         // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
 
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-        rendering_resources_.set_texture("lightmap_color" + light_node_name_, fb_->texture_color_buffer);
-        rendering_resources_.set_vp("lightmap_color" + light_node_name_, vp());
+        rendering_resources_->set_texture("lightmap_color." + light_node_name_, fb_->texture_color_buffer);
+        rendering_resources_->set_vp("lightmap_color." + light_node_name_, vp());
         if (with_depth_texture_) {
-            rendering_resources_.set_texture("lightmap_depth" + light_node_name_, fb_->texture_depth_buffer);
-            rendering_resources_.set_vp("lightmap_depth" + light_node_name_, vp());
+            rendering_resources_->set_texture("lightmap_depth" + light_node_name_, fb_->texture_depth_buffer);
+            rendering_resources_->set_vp("lightmap_depth" + light_node_name_, vp());
         }
         CHK(glViewport(0, 0, width, height));
     }

@@ -11,7 +11,7 @@ class RenderingResources;
 
 class SmallInstancesRendererGuard {
 public:
-    explicit SmallInstancesRendererGuard(RenderingResources& rendering_resources);
+    explicit SmallInstancesRendererGuard();
     ~SmallInstancesRendererGuard();
 };
 
@@ -19,11 +19,10 @@ class ArrayInstancesRenderer: public InstancesRenderer {
 public:
     ArrayInstancesRenderer(const ArrayInstancesRenderer& other) = delete;
     ArrayInstancesRenderer& operator = (const ArrayInstancesRenderer& other) = delete;
-    explicit ArrayInstancesRenderer(RenderingResources& rendering_resources);
+    explicit ArrayInstancesRenderer();
     virtual void update_instances(const std::list<TransformedColoredVertexArray>& instances_queue) override;
     virtual void render_instances(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float, 3>& iv, const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const override;
 private:
-    RenderingResources& rendering_resources_;
     std::shared_ptr<RenderableColoredVertexArray> rcva_;
     std::unique_ptr<RenderableColoredVertexArrayInstance> rcvai_;
     mutable std::mutex mutex_;

@@ -451,7 +451,8 @@ void LoadScene::operator()(
         if (cit == renderable_scenes.end()) {
             throw std::runtime_error("Could not find renderable scene with name \"" + context + '"');
         }
-        auto& rendering_resources = cit->second->rendering_resources_;
+        auto primary_rendering_resources = RenderingResources::primary_rendering_resources();
+        auto secondary_rendering_resources = RenderingResources::rendering_resources();
         auto& scene_node_resources = cit->second->scene_node_resources_;
         auto& players = cit->second->players_;
         auto& scene = cit->second->scene_;
@@ -494,7 +495,6 @@ void LoadScene::operator()(
                 match[1].str(),                                                   // name
                 std::make_shared<RenderableOsmMap>(
                     scene_node_resources,
-                    rendering_resources,
                     fpath(match[2].str()),                                        // filename
                     fpath(match[3].str()),                                        // heightmap
                     fpath(match[4].str()),                                        // terrain_texture
@@ -584,13 +584,11 @@ void LoadScene::operator()(
             if (filename.ends_with(".obj")) {
                 scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
                     filename,
-                    load_mesh_config,
-                    rendering_resources));
+                    load_mesh_config));
             } else if (filename.ends_with(".mhx2")) {
                 scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableMhx2File>(
                     filename,
-                    load_mesh_config,
-                    rendering_resources));
+                    load_mesh_config));
             } else {
                 throw std::runtime_error("Unknown file type: " + filename);
             }
@@ -658,22 +656,19 @@ void LoadScene::operator()(
                         safe_stof(match[11].str()),
                         safe_stof(match[12].str())},
                     .diffusivity = {0, 0, 0},
-                    .specularity = {0, 0, 0}}.compute_color_mode(),
-                rendering_resources));
+                    .specularity = {0, 0, 0}}.compute_color_mode()));
         } else if (std::regex_match(line, match, blending_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
-                fpath(match[2].str()),
-                rendering_resources));
+                fpath(match[2].str())));
         } else if (std::regex_match(line, match, binary_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBinaryX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 fpath(match[2].str()),
-                rendering_resources,
                 safe_stob(match[10].str()),
                 occluder_type_from_string(match[11].str()),
                 FixedArray<float, 3>{
@@ -1140,7 +1135,6 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, create_scene_reg)) {
             auto rs = std::make_shared<RenderableScene>(
                 scene_node_resources,
-                rendering_resources,
                 scene_config,
                 button_states,
                 ui_focus,
@@ -1233,7 +1227,6 @@ void LoadScene::operator()(
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (std::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
-                rendering_resources,
                 fpath(match[1].str()),
                 focus_from_string(match[2].str()));
             render_logics.append(nullptr, bg);
@@ -1272,7 +1265,6 @@ void LoadScene::operator()(
             auto hud_image = std::make_shared<HudImageLogic>(
                 *node,
                 physics_engine.advance_times_,
-                rendering_resources,
                 fpath(match[2].str()),
                 FixedArray<float, 2>{
                     safe_stof(match[3].str()),
@@ -1305,7 +1297,6 @@ void LoadScene::operator()(
             SceneNode* node = scene.get_node(node_name);
             render_logics.prepend(node, std::make_shared<LightmapLogic>(
                 read_pixels_logic,
-                rendering_resources,
                 lightmap_update_cycle_from_string(match[3].str()),
                 node_name,
                 match[2].str(),               // black_node_name
@@ -1402,7 +1393,7 @@ void LoadScene::operator()(
             linker.link_absolute_movable(*follower_node, follower);
             follower->initialize(*follower_node);
         } else if (std::regex_match(line, match, add_texture_descriptor_reg)) {
-            rendering_resources.add_texture_descriptor(
+            primary_rendering_resources->add_texture_descriptor(
                 match[1].str(),
                 TextureDescriptor{
                     .color = fpath(match[2].str()),
@@ -1462,8 +1453,8 @@ void LoadScene::operator()(
             selected_cameras.set_camera_node_name(match[1].str());
         } else if (std::regex_match(line, match, set_dirtmap_reg)) {
             dirtmap_logic.set_filename(fpath(match[1].str()));
-            rendering_resources.set_discreteness("dirtmap", safe_stof(match[2].str()));
-            rendering_resources.set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
+            secondary_rendering_resources->set_discreteness("dirtmap", safe_stof(match[2].str()));
+            secondary_rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
         } else if (std::regex_match(line, match, set_skybox_reg)) {
             skybox_logic.set_filenames({
                 fpath(match[2].str()),

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <memory>
 #include <string>
 
 namespace Mlib {
@@ -9,8 +10,7 @@ class RenderingResources;
 class DirtmapLogic: public RenderLogic {
 public:
     explicit DirtmapLogic(
-        RenderLogic& child_logic,
-        RenderingResources& rendering_resources);
+        RenderLogic& child_logic);
     ~DirtmapLogic();
 
     virtual void render(
@@ -29,7 +29,7 @@ public:
     void set_filename(const std::string& filename);
 private:
     RenderLogic& child_logic_;
-    RenderingResources& rendering_resources_;
+    std::shared_ptr<RenderingResources> rendering_resources_;
     bool generated_;
     std::string filename_;
 };

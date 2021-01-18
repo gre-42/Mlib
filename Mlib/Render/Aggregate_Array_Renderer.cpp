@@ -1,20 +1,20 @@
 #include "Aggregate_Array_Renderer.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <map>
 
 using namespace Mlib;
 
-SmallSortedAggregateRendererGuard::SmallSortedAggregateRendererGuard(RenderingResources& rendering_resources) {
-    AggregateRenderer::small_sorted_aggregate_renderers_.push_back(new AggregateArrayRenderer(rendering_resources));
+SmallSortedAggregateRendererGuard::SmallSortedAggregateRendererGuard() {
+    AggregateRenderer::small_sorted_aggregate_renderers_.push_back(new AggregateArrayRenderer());
 }
 
 SmallSortedAggregateRendererGuard::~SmallSortedAggregateRendererGuard() {
     AggregateRenderer::small_sorted_aggregate_renderers_.pop_back();
 }
 
-AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_resources)
-: rendering_resources_{rendering_resources},
-  rcva_{nullptr}
+AggregateArrayRenderer::AggregateArrayRenderer()
+: rcva_{nullptr}
 {}
 
 void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& sorted_aggregate_queue) {
@@ -53,7 +53,7 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
             std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
     }
     sort_for_rendering(mat_vectors);
-    auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, nullptr, rendering_resources_);
+    auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, nullptr);
     auto rcvai = std::make_unique<RenderableColoredVertexArrayInstance>(rcva, SceneNodeResourceFilter{});
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};

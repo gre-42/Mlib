@@ -6,7 +6,6 @@ using namespace Mlib;
 
 RenderableScene::RenderableScene(
     SceneNodeResources& scene_node_resources,
-    RenderingResources& rendering_resources,
     const SceneConfig& scene_config,
     ButtonStates& button_states,
     UiFocus& ui_focus,
@@ -16,11 +15,6 @@ RenderableScene::RenderableScene(
     const RenderableSceneConfig& config,
     std::recursive_mutex& mutex)
 : scene_node_resources_{scene_node_resources},
-  rendering_resources_{rendering_resources},
-  small_sorted_aggregate_renderer_guard_{rendering_resources},
-  small_instances_renderer_guard_{rendering_resources},
-  large_aggregate_array_renderer_{rendering_resources},
-  large_instances_renderer_{rendering_resources},
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
   physics_engine_{scene_config.physics_engine_config},
@@ -40,7 +34,7 @@ RenderableScene::RenderableScene(
   standard_camera_logic_{
       scene_,
       selected_cameras_},
-  skybox_logic_{standard_camera_logic_, rendering_resources},
+  skybox_logic_{standard_camera_logic_},
   standard_render_logic_{std::make_shared<StandardRenderLogic>(
       scene_,
       config.with_skybox
@@ -66,7 +60,7 @@ RenderableScene::RenderableScene(
       ui_focus.focus,
       scene_)},
   read_pixels_logic_{*standard_render_logic_},
-  dirtmap_logic_{std::make_shared<DirtmapLogic>(read_pixels_logic_, rendering_resources)},
+  dirtmap_logic_{std::make_shared<DirtmapLogic>(read_pixels_logic_)},
   motion_interp_logic_{std::make_shared<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW)},
   post_processing_logic_{std::make_shared<PostProcessingLogic>(
       *standard_render_logic_,

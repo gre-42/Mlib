@@ -153,7 +153,8 @@ void Scene::render(
     const TransformationMatrix<float, 3>& iv,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass) const
+    const ExternalRenderPass& external_render_pass,
+    const std::function<std::function<void()>(std::function<void()>)>& run_in_background) const
 {
     LOG_FUNCTION("Scene::render");
     std::list<std::pair<TransformationMatrix<float, 3>, Light*>> lights;
@@ -259,7 +260,7 @@ void Scene::render(
                 LOG_INFO("Scene::render small_sorted_aggregate_renderer");
                 auto small_sorted_aggregate_renderer_update_func = [&](){
                     // copy "vp" and "scene_graph_config"
-                    return [this, vp, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer](){
+                    return run_in_background([this, vp, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer](){
                         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>> aggregate_queue;
                         {
                             std::shared_lock lock{static_mutex_};
@@ -279,7 +280,7 @@ void Scene::render(
                             sorted_aggregate_queue.push_back(std::move(e.second));
                         }
                         small_sorted_aggregate_renderer->update_aggregates(sorted_aggregate_queue);
-                    };
+                    });
                 };
                 if (is_foreground_task) {
                     small_sorted_aggregate_renderer_update_func()();
@@ -298,7 +299,7 @@ void Scene::render(
             if (small_instances_renderer != nullptr) {
                 auto small_instances_renderer_update_func = [&](){
                     // copy "vp" and "scene_graph_config"
-                    return [this, vp, scene_graph_config, external_render_pass, small_instances_renderer](){
+                    return run_in_background([this, vp, scene_graph_config, external_render_pass, small_instances_renderer](){
                         std::list<std::pair<float, TransformedColoredVertexArray>> instances_queue;
                         {
                             std::shared_lock lock{static_mutex_};
@@ -318,7 +319,7 @@ void Scene::render(
                             sorted_instances_queue.push_back(std::move(e.second));
                         }
                         small_instances_renderer->update_instances(sorted_instances_queue);
-                    };
+                    });
                 };
                 if (is_foreground_task) {
                     small_instances_renderer_update_func()();

@@ -2,21 +2,21 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <map>
 
 using namespace Mlib;
 
-SmallInstancesRendererGuard::SmallInstancesRendererGuard(RenderingResources& rendering_resources) {
-    InstancesRenderer::small_instances_renderers_.push_back(new ArrayInstancesRenderer(rendering_resources));
+SmallInstancesRendererGuard::SmallInstancesRendererGuard() {
+    InstancesRenderer::small_instances_renderers_.push_back(new ArrayInstancesRenderer());
 }
 
 SmallInstancesRendererGuard::~SmallInstancesRendererGuard() {
     InstancesRenderer::small_instances_renderers_.pop_back();
 }
 
-ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources& rendering_resources)
-: rendering_resources_{rendering_resources},
-  rcva_{nullptr}
+ArrayInstancesRenderer::ArrayInstancesRenderer()
+: rcva_{nullptr}
 {}
 
 void ArrayInstancesRenderer::update_instances(const std::list<TransformedColoredVertexArray>& instances_queue) {
@@ -39,7 +39,7 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
     for (const auto& a : cva_lists) {
         cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});
     }
-    auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, cva_instances, rendering_resources_);
+    auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, cva_instances);
     auto rcvai = std::make_unique<RenderableColoredVertexArrayInstance>(rcva, SceneNodeResourceFilter{});
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};

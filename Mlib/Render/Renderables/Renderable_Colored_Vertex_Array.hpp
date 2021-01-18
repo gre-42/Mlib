@@ -25,16 +25,13 @@ public:
     RenderableColoredVertexArray& operator = (const RenderableColoredVertexArray& other) = delete;
     explicit RenderableColoredVertexArray(
         const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances,
-        RenderingResources& rendering_resources);
+        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
     explicit RenderableColoredVertexArray(
         const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances,
-        RenderingResources& rendering_resources);
+        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
     explicit RenderableColoredVertexArray(
         const std::shared_ptr<ColoredVertexArray>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances,
-        RenderingResources& rendering_resources);
+        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
     ~RenderableColoredVertexArray();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
@@ -56,7 +53,7 @@ private:
     const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
-    RenderingResources& rendering_resources_;
+    std::shared_ptr<RenderingResources> rendering_resources_;
     mutable std::mutex mutex_;
     std::unique_ptr<std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>> instances_;
     mutable bool textures_preloaded_;

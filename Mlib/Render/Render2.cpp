@@ -225,7 +225,6 @@ void Render2::operator () (
 }
 
 void Render2::render_depth_map(
-    RenderingResources& rendering_resources,
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
     const FixedArray<float, 3, 3>& intrinsic_matrix,
@@ -234,7 +233,7 @@ void Render2::render_depth_map(
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
-    const auto r = std::make_shared<RenderableDepthMap>(rgb_picture, depth_picture, intrinsic_matrix, rendering_resources);
+    const auto r = std::make_shared<RenderableDepthMap>(rgb_picture, depth_picture, intrinsic_matrix);
     SceneNodeResources scene_node_resources;
     Scene scene;
     scene_node_resources.add_resource("DenderableDepthMap", r);
@@ -255,7 +254,6 @@ void Render2::render_depth_map(
 }
 
 void Render2::render_height_map(
-    RenderingResources& rendering_resources,
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
     const TransformationMatrix<float, 2>& normalization_matrix,
@@ -264,7 +262,7 @@ void Render2::render_height_map(
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
-    const auto r = std::make_shared<RenderableHeightMap>(rgb_picture, height_picture, normalization_matrix, rendering_resources);
+    const auto r = std::make_shared<RenderableHeightMap>(rgb_picture, height_picture, normalization_matrix);
     SceneNodeResources scene_node_resources;
     Scene scene;
     scene_node_resources.add_resource("DenderableHeightMap", r);

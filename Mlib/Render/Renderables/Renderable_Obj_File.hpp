@@ -12,8 +12,7 @@ class RenderableObjFile: public SceneNodeResource {
 public:
     RenderableObjFile(
         const std::string& filename,
-        const LoadMeshConfig& cfg,
-        RenderingResources& rendering_resources);
+        const LoadMeshConfig& cfg);
     ~RenderableObjFile();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;

@@ -245,9 +245,8 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
-        RenderingResources rendering_resources{scene_node_resources};
-        SmallSortedAggregateRendererGuard small_sorted_aggregate_renderer_guard{rendering_resources};
-        AggregateArrayRenderer large_aggregate_renderer{rendering_resources};
+        SmallSortedAggregateRendererGuard small_sorted_aggregate_renderer_guard;
+        AggregateArrayRenderer large_aggregate_renderer;
         Scene scene{&large_aggregate_renderer};
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = new SceneNode;
@@ -272,13 +271,11 @@ int main(int argc, char** argv) {
                 if (filename.ends_with(".obj")) {
                     scene_node_resources.add_resource(name, std::make_shared<RenderableObjFile>(
                         filename,
-                        cfg,
-                        rendering_resources));
+                        cfg));
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<RenderableMhx2File>(
                         filename,
-                        cfg,
-                        rendering_resources);
+                        cfg);
                     scene_node_resources.add_resource(name, rmhx2);
                     scene_node->set_style(new Style{
                         .selector = std::regex{""},
@@ -304,8 +301,7 @@ int main(int argc, char** argv) {
                     if (args.has_named_value("--reference_bone")) {
                         scene_node_resources.add_resource("reference_bone", std::make_shared<RenderableObjFile>(
                             args.named_value("--reference_bone"),
-                            bone_cfg,
-                            rendering_resources));
+                            bone_cfg));
                         add_reference_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
@@ -324,8 +320,7 @@ int main(int argc, char** argv) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
                             scene_node_resources.add_resource("frame_bone", std::make_shared<RenderableObjFile>(
                                 args.named_value("--frame_bone"),
-                                bone_cfg,
-                                rendering_resources));
+                                bone_cfg));
                             add_bone_frame(
                                 rmhx2->skeleton(),
                                 rmhx2->vectorize_joint_poses(scene_node_resources.get_poses("anim", bone_frame)),
@@ -526,7 +521,6 @@ int main(int argc, char** argv) {
         for (const Light* l : lights) {
             lightmap_logics.push_back(std::make_shared<LightmapLogic>(
                 *read_pixels_logic,
-                rendering_resources,
                 LightmapUpdateCycle::ALWAYS,
                 l->node_name,
                 "",                           // black_node_name

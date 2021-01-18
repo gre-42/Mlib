@@ -53,7 +53,7 @@ void SceneNodeResources::instantiate_renderable(
     try {
         it->second->instantiate_renderable(instance_name, scene_node, resource_filter);
     } catch(const std::runtime_error& e) {
-        throw std::runtime_error("instantiate_renderable for resource " + resource_name + " failed: " + e.what());
+        throw std::runtime_error("instantiate_renderable for resource \"" + resource_name + "\" failed: " + e.what());
     }
 }
 

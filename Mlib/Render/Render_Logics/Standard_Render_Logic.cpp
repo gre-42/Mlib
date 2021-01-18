@@ -4,6 +4,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -16,7 +17,11 @@ StandardRenderLogic::StandardRenderLogic(
 : scene_{scene},
   child_logic_{child_logic},
   clear_mode_{clear_mode},
-  focus_mask_{focus_mask}
+  focus_mask_{focus_mask},
+  rendering_resources_{RenderingResources::rendering_resources()}
+{}
+
+StandardRenderLogic::~StandardRenderLogic()
 {}
 
 void StandardRenderLogic::render(
@@ -52,7 +57,23 @@ void StandardRenderLogic::render(
 
     render_config.apply();
 
-    scene_.render(child_logic_.vp(), child_logic_.iv(), render_config, scene_graph_config, frame_id.external_render_pass);
+    {
+        auto primary_rendering_resources = RenderingResources::primary_rendering_resources();
+        RenderingResourcesGuard rrg{rendering_resources_};
+        scene_.render(
+            child_logic_.vp(),
+            child_logic_.iv(),
+            render_config,
+            scene_graph_config,
+            frame_id.external_render_pass,
+            [this, primary_rendering_resources](std::function<void()> f){
+                return [this, primary_rendering_resources, f](){
+                    RenderingResourcesGuard rrg0{primary_rendering_resources};
+                    RenderingResourcesGuard rrg1{rendering_resources_};
+                    f();
+                };
+            });
+    }
 
     render_config.unapply();
 

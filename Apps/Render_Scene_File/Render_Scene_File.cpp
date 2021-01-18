@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
 
             SceneNodeResources scene_node_resources;
-            RenderingResources rendering_resources{scene_node_resources};
+            RenderingResourcesGuard rrg{scene_node_resources};
             RenderableSceneConfig config{
                 .fly = args.has_named("--fly"),
                 .rotate = args.has_named("--rotate"),
@@ -209,7 +209,6 @@ int main(int argc, char** argv) {
                 "default_context",
                 std::make_shared<RenderableScene>(
                     scene_node_resources,
-                    rendering_resources,
                     scene_config,
                     button_states,
                     ui_focus,

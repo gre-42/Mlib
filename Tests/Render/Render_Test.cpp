@@ -45,12 +45,11 @@ void test_render() {
     }
     {
         SceneNodeResources scene_node_resources;
-        RenderingResources rendering_resources{scene_node_resources};
+        RenderingResourcesGuard rrg{scene_node_resources};
         Array<float> output;
         RenderResults render_results{output: &output};
         size_t num_renderings = SIZE_MAX;
         Render2{num_renderings, &render_results, RenderConfig{}}.render_depth_map(
-            rendering_resources,
             img.to_float_rgb(),
             depth,
             FixedArray<float, 3, 3>{intrinsic_matrix},

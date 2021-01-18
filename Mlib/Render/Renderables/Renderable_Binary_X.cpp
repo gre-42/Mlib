@@ -12,7 +12,6 @@ using namespace Mlib;
 RenderableBinaryX::RenderableBinaryX(
     const FixedArray<float, 2, 2>& square,
     const std::string& texture,
-    RenderingResources& rendering_resources,
     bool is_small,
     OccluderType occluder_type,
     const FixedArray<float, 3>& ambience)
@@ -64,8 +63,7 @@ RenderableBinaryX::RenderableBinaryX(
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
-        nullptr,  // instances
-        rendering_resources);
+        nullptr);  // instances
 }
 
 void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const

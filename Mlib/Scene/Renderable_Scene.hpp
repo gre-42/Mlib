@@ -53,7 +53,6 @@ class RenderableScene {
 public:
     RenderableScene(
         SceneNodeResources& scene_node_resources,
-        RenderingResources& rendering_resources,
         const SceneConfig& scene_config,
         ButtonStates& button_states,
         UiFocus& ui_focus,
@@ -66,7 +65,6 @@ public:
     void print_physics_engine_search_time() const;
     void stop_and_join();
     SceneNodeResources& scene_node_resources_;
-    RenderingResources& rendering_resources_;
     SmallSortedAggregateRendererGuard small_sorted_aggregate_renderer_guard_;
     SmallInstancesRendererGuard small_instances_renderer_guard_;
     AggregateArrayRenderer large_aggregate_array_renderer_;

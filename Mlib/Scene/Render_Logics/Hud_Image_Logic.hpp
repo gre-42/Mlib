@@ -16,7 +16,6 @@ public:
     HudImageLogic(
         SceneNode& scene_node,
         AdvanceTimes& advance_times,
-        RenderingResources& rendering_resources,
         const std::string& image_resource_name,
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size);

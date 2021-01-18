@@ -428,10 +428,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances,
-    RenderingResources& rendering_resources)
+    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances)
 : triangles_res_{triangles},
-  rendering_resources_{rendering_resources},
+  rendering_resources_{RenderingResources::primary_rendering_resources()},
   instances_{instances},
   textures_preloaded_{false}
 {
@@ -442,12 +441,10 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances,
-    RenderingResources& rendering_resources)
+    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances)
 : RenderableColoredVertexArray{
     std::make_shared<AnimatedColoredVertexArrays>(),
-    instances,
-    rendering_resources}
+    instances}
 {
     triangles_res_->cvas = triangles;
 #ifdef DEBUG
@@ -457,12 +454,10 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 
 RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<ColoredVertexArray>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances,
-    RenderingResources& rendering_resources)
+    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances)
 : RenderableColoredVertexArray(
     std::list<std::shared_ptr<ColoredVertexArray>>{triangles},
-    instances,
-    rendering_resources)
+    instances)
 {
     triangles_res_->cvas.push_back(triangles);
 #ifdef DEBUG
@@ -480,7 +475,7 @@ void RenderableColoredVertexArray::instantiate_renderable(const std::string& nam
 #endif
     if (!textures_preloaded_ && (glfwGetCurrentContext() != nullptr)) {
         for (auto& cva : triangles_res_->cvas) {
-            rendering_resources_.preload(cva->material.texture_descriptor);
+            rendering_resources_->preload(cva->material.texture_descriptor);
         }
         textures_preloaded_ = true;
     }
@@ -562,7 +557,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices) const
 {
-    auto& rps = rendering_resources_.render_programs();
+    auto& rps = rendering_resources_->render_programs();
     if (auto it = rps.find(id); it != rps.end()) {
         return *it->second;
     }
