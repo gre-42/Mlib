@@ -66,13 +66,9 @@ void StandardRenderLogic::render(
             render_config,
             scene_graph_config,
             frame_id.external_render_pass,
-            [this, primary_rendering_resources](std::function<void()> f){
-                return [this, primary_rendering_resources, f](){
-                    RenderingResourcesGuard rrg0{primary_rendering_resources};
-                    RenderingResourcesGuard rrg1{rendering_resources_};
-                    f();
-                };
-            });
+            RenderingResources::generate_thread_runner(
+                primary_rendering_resources,
+                rendering_resources_));
     }
 
     render_config.unapply();

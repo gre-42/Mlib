@@ -5,6 +5,7 @@
 
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -59,6 +60,13 @@ public:
     static std::shared_ptr<RenderingResources> primary_rendering_resources();
     static std::shared_ptr<RenderingResources> rendering_resources();
     static thread_local std::list<std::shared_ptr<RenderingResources>> rendering_resources_stack_;
+    static std::function<std::function<void()>(std::function<void()>)>
+        generate_thread_runner(
+            std::shared_ptr<RenderingResources> rendering_resources);
+    static std::function<std::function<void()>(std::function<void()>)>
+        generate_thread_runner(
+            std::shared_ptr<RenderingResources> primary_rendering_resources,
+            std::shared_ptr<RenderingResources> secondary_rendering_resources);
 private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;

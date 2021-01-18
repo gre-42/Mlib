@@ -157,6 +157,32 @@ std::shared_ptr<RenderingResources> RenderingResources::rendering_resources() {
     return RenderingResources::rendering_resources_stack_.back();
 }
 
+std::function<std::function<void()>(std::function<void()>)>
+    RenderingResources::generate_thread_runner(
+        std::shared_ptr<RenderingResources> rendering_resources)
+{
+    return [rendering_resources](std::function<void()> f){
+        return [rendering_resources, f](){
+            RenderingResourcesGuard rrg{rendering_resources};
+            f();
+        };
+    };
+}
+
+std::function<std::function<void()>(std::function<void()>)>
+    RenderingResources::generate_thread_runner(
+        std::shared_ptr<RenderingResources> primary_rendering_resources,
+        std::shared_ptr<RenderingResources> secondary_rendering_resources)
+{
+    return [primary_rendering_resources, secondary_rendering_resources](std::function<void()> f){
+        return [primary_rendering_resources, secondary_rendering_resources, f](){
+            RenderingResourcesGuard rrg0{primary_rendering_resources};
+            RenderingResourcesGuard rrg1{secondary_rendering_resources};
+            f();
+        };
+    };
+}
+
 RenderingResources::RenderingResources(SceneNodeResources& scene_node_resources)
 : scene_node_resources_{scene_node_resources}
 {}

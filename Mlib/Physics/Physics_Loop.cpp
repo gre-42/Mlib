@@ -21,10 +21,11 @@ PhysicsLoop::PhysicsLoop(
     const PhysicsEngineConfig& physics_cfg,
     SetFps& set_fps,
     size_t nframes,
-    BaseLog* base_log)
+    BaseLog* base_log,
+    const std::function<std::function<void()>(std::function<void()>)>& run_in_background)
 : exit_physics_{false},
   set_fps_{set_fps},
-  physics_thread_{[&, nframes, base_log](){
+  physics_thread_{run_in_background([&, nframes, base_log](){
     size_t nframes2 = nframes;
     while(!exit_physics_) {
         if (nframes2 != SIZE_MAX) {
@@ -68,7 +69,7 @@ PhysicsLoop::PhysicsLoop(
         // TimeGuard tg2{"physics tick"};
         set_fps.tick(physics_cfg.dt, physics_cfg.max_residual_time, physics_cfg.print_residual_time);
     }
-    }}
+    })}
 {}
 
 void PhysicsLoop::stop_and_join() {

@@ -105,7 +105,9 @@ void RenderableScene::start_physics_loop() {
             scene_config_.physics_engine_config,
             physics_set_fps_,
             SIZE_MAX,  // nframes
-            &fifo_log_});
+            &fifo_log_,
+            RenderingResources::generate_thread_runner(
+                RenderingResources::primary_rendering_resources())});
 }
 
 void RenderableScene::print_physics_engine_search_time() const {
