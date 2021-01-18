@@ -46,6 +46,7 @@ struct RenderableSceneConfig {
     bool with_skybox;
     bool with_flying_logic;
     ClearMode clear_mode;
+    Focus scene_focus_mask;
 };
 
 class RenderableScene {

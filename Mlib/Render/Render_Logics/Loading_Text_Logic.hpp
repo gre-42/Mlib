@@ -23,6 +23,8 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    
+    virtual Focus focus_mask() const override;
 
 private:
     const std::list<Focus>& focus_;

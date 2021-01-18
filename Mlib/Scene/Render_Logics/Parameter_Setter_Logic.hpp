@@ -41,6 +41,7 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
+    virtual Focus focus_mask() const override;
 private:
     void merge_substitutions() const;
     ListView<ReplacementParameter> scene_selector_list_view_;

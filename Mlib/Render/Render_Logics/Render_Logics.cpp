@@ -1,5 +1,6 @@
 #include "Render_Logics.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <stdexcept>
 
@@ -12,8 +13,9 @@ static std::list<std::pair<SceneNode*, std::shared_ptr<RenderLogic>>>::iterator 
         [node](const auto& v){ return v.first == node; });
 }
 
-RenderLogics::RenderLogics(std::recursive_mutex &mutex)
-: mutex_{mutex}
+RenderLogics::RenderLogics(std::recursive_mutex &mutex, UiFocus& ui_focus)
+: mutex_{mutex},
+  ui_focus_{ui_focus}
 {}
 
 RenderLogics::~RenderLogics() {
@@ -34,9 +36,15 @@ void RenderLogics::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    Focus current_focus = ui_focus_.focus.empty()
+        ? Focus::BASE
+        : ui_focus_.focus.back();
+    
     LOG_FUNCTION("RenderLogics::render");
     for (const auto& c : render_logics_) {
-        c.second->render(width, height, render_config, scene_graph_config, render_results, frame_id);
+        if ((current_focus & c.second->focus_mask()) != Focus::NONE) {
+            c.second->render(width, height, render_config, scene_graph_config, render_results, frame_id);
+        }
     }
 }
 

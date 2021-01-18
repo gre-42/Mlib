@@ -8,10 +8,11 @@
 namespace Mlib {
 
 class SceneNode;
+struct UiFocus;
 
 class RenderLogics: public RenderLogic, public DestructionObserver {
 public:
-    explicit RenderLogics(std::recursive_mutex &mutex);
+    explicit RenderLogics(std::recursive_mutex &mutex, UiFocus& ui_focus);
     ~RenderLogics();
     virtual void render(
         int width,
@@ -29,6 +30,7 @@ private:
     void insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
     std::list<std::pair<SceneNode*, std::shared_ptr<RenderLogic>>> render_logics_;
     std::recursive_mutex &mutex_;
+    UiFocus& ui_focus_;
 };
 
 }

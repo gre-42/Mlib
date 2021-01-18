@@ -199,10 +199,11 @@ int main(int argc, char** argv) {
                 .with_dirtmap = true,
                 .with_skybox = true,
                 .with_flying_logic = true,
-                .clear_mode = ClearMode::COLOR_AND_DEPTH
+                .clear_mode = ClearMode::COLOR_AND_DEPTH,
+                .scene_focus_mask = Focus::ALWAYS
             };
             std::recursive_mutex mutex;
-            RenderLogics render_logics{mutex};
+            RenderLogics render_logics{mutex, ui_focus};
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             if (!renderable_scenes.insert({
                 "default_context",

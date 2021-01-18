@@ -11,10 +11,12 @@ using namespace Mlib;
 StandardRenderLogic::StandardRenderLogic(
     const Scene& scene,
     RenderLogic& child_logic,
-    ClearMode clear_mode)
+    ClearMode clear_mode,
+    Focus focus_mask)
 : scene_{scene},
   child_logic_{child_logic},
-  clear_mode_{clear_mode}
+  clear_mode_{clear_mode},
+  focus_mask_{focus_mask}
 {}
 
 void StandardRenderLogic::render(
@@ -96,4 +98,8 @@ const TransformationMatrix<float, 3>& StandardRenderLogic::iv() const {
 
 bool StandardRenderLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
+}
+
+Focus StandardRenderLogic::focus_mask() const {
+    return focus_mask_;
 }

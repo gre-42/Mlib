@@ -152,7 +152,7 @@ void FlyingCameraLogic::render(
         if (!user_object_.focus.empty()) {
             if (user_object_.focus.back() == Focus::MENU) {
                 user_object_.focus.pop_back();
-            } else if ((user_object_.focus.back() == Focus::LOADING) || (user_object_.focus.back() == Focus::COUNTDOWN) || (user_object_.focus.back() == Focus::SCENE)) {
+            } else if ((user_object_.focus.back() & (Focus::LOADING | Focus::COUNTDOWN | Focus::SCENE)) != Focus::NONE) {
                 user_object_.focus.push_back(Focus::MENU);
             } else {
                 throw std::runtime_error("Unknown focus value");

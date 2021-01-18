@@ -1159,7 +1159,8 @@ void LoadScene::operator()(
                     .with_dirtmap = false,
                     .with_skybox = false,
                     .with_flying_logic = false,
-                    .clear_mode = ClearMode::DEPTH},
+                    .clear_mode = ClearMode::DEPTH,
+                    .scene_focus_mask = Focus::MENU},
                 mutex);
             if (!renderable_scenes.insert({match[1].str(), rs}).second) {
                 throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");

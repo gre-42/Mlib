@@ -507,7 +507,8 @@ int main(int argc, char** argv) {
         StandardRenderLogic standard_render_logic{
             scene,
             standard_camera_logic,
-            ClearMode::COLOR_AND_DEPTH};
+            ClearMode::COLOR_AND_DEPTH,
+            Focus::ALWAYS};
         FlyingCameraUserClass user_object{
             button_states: button_states,
             cameras: selected_cameras,
@@ -533,7 +534,8 @@ int main(int argc, char** argv) {
         }
 
         std::recursive_mutex mutex;
-        RenderLogics render_logics{mutex};
+        UiFocus ui_focus;
+        RenderLogics render_logics{mutex, ui_focus};
         render_logics.append(nullptr, flying_camera_logic);
         for (const auto& l : lightmap_logics) {
             render_logics.append(nullptr, l);

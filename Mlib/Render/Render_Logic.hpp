@@ -10,6 +10,7 @@ struct RenderConfig;
 struct RenderResults;
 struct RenderedSceneDescriptor;
 struct SceneGraphConfig;
+enum class Focus;
 
 class RenderLogic {
 public:
@@ -20,21 +21,12 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) = 0;
-    virtual float near_plane() const {
-        throw std::runtime_error("near_plane not implemented");
-    }
-    virtual float far_plane() const  {
-        throw std::runtime_error("far_plane not implemented");
-    }
-    virtual const FixedArray<float, 4, 4>& vp() const  {
-        throw std::runtime_error("vp not implemented");
-    }
-    virtual const TransformationMatrix<float, 3>& iv() const  {
-        throw std::runtime_error("iv not implemented");
-    }
-    virtual bool requires_postprocessing() const  {
-        throw std::runtime_error("requires_postprocessing not implemented");
-    }
+    virtual Focus focus_mask() const;
+    virtual float near_plane() const;
+    virtual float far_plane() const;
+    virtual const FixedArray<float, 4, 4>& vp() const;
+    virtual const TransformationMatrix<float, 3>& iv() const;
+    virtual bool requires_postprocessing() const;
 };
 
 }

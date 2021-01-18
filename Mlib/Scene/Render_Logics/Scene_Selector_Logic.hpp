@@ -37,6 +37,8 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
+    virtual Focus focus_mask() const override;
+
 private:
     ListView<SceneEntry> scene_selector_list_view_;
     UiFocus& ui_focus_;

@@ -50,28 +50,25 @@ void SceneSelectorLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (ui_focus_.focus.empty()) {
-        return;
-    }
-    if (ui_focus_.focus.back() == Focus::MENU) {
-        if (ui_focus_.submenu_id == submenu_id_) {
-            scene_selector_list_view_.handle_input();
-            if (button_press_.key_pressed({key: "LEFT", joystick_axis: "1", joystick_axis_sign: -1})) {
-                ui_focus_.goto_prev_submenu();
-            }
-            if (button_press_.key_pressed({key: "RIGHT", joystick_axis: "1", joystick_axis_sign: 1})) {
-                ui_focus_.goto_next_submenu();
-            }
-            if (scene_selector_list_view_.has_selected_element()) {
-                scene_filename_ = scene_selector_list_view_.selected_element().filename;
-            }
-            if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
-                // ui_focus_.focus.pop_back();
-                num_renderings_ = 0;
-            }
+    if (ui_focus_.submenu_id == submenu_id_) {
+        scene_selector_list_view_.handle_input();
+        if (button_press_.key_pressed({key: "LEFT", joystick_axis: "1", joystick_axis_sign: -1})) {
+            ui_focus_.goto_prev_submenu();
+        }
+        if (button_press_.key_pressed({key: "RIGHT", joystick_axis: "1", joystick_axis_sign: 1})) {
+            ui_focus_.goto_next_submenu();
+        }
+        if (scene_selector_list_view_.has_selected_element()) {
+            scene_filename_ = scene_selector_list_view_.selected_element().filename;
+        }
+        if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
+            // ui_focus_.focus.pop_back();
+            num_renderings_ = 0;
         }
     }
-    if (ui_focus_.focus.back() == Focus::MENU) {
-        scene_selector_list_view_.render(width, height, true); // true=periodic_position
-    }
+    scene_selector_list_view_.render(width, height, true); // true=periodic_position
+}
+
+Focus SceneSelectorLogic::focus_mask() const {
+    return Focus::MENU;
 }

@@ -222,7 +222,8 @@ void test_physics_engine() {
     StandardRenderLogic standard_render_logic{
         scene,
         standard_camera_logic,
-        ClearMode::COLOR_AND_DEPTH};
+        ClearMode::COLOR_AND_DEPTH,
+        Focus::ALWAYS};
     std::list<Focus> focus = {Focus::SCENE};
     ButtonStates button_states;
     FlyingCameraUserClass user_object{
@@ -246,7 +247,8 @@ void test_physics_engine() {
         "",    // black_node_name
         true); // with_depth_texture
 
-    RenderLogics render_logics{mutex};
+    UiFocus ui_focus;
+    RenderLogics render_logics{mutex, ui_focus};
     render_logics.append(nullptr, flying_camera_logic);
     render_logics.append(nullptr, lightmap_logic);
     render_logics.append(nullptr, read_pixels_logic);

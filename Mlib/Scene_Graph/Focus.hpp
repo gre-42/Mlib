@@ -6,11 +6,22 @@
 namespace Mlib {
 
 enum class Focus {
-    MENU,
-    LOADING,
-    COUNTDOWN,
-    SCENE
+    NONE = 0,
+    BASE = 1,
+    MENU = 1 << 1,
+    LOADING = 1 << 2,
+    COUNTDOWN = 1 << 3,
+    SCENE = 1 << 4,
+    ALWAYS = BASE | MENU | LOADING | COUNTDOWN | SCENE
 };
+
+inline Focus operator | (Focus a, Focus b) {
+    return Focus((unsigned int)a | (unsigned int)b);
+}
+
+inline Focus operator & (Focus a, Focus b) {
+    return Focus((unsigned int)a & (unsigned int)b);
+}
 
 struct UiFocus {
     std::list<Focus> focus;
