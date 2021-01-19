@@ -231,14 +231,16 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w-. \\(\\)/+-]+)");
     static const std::regex rigid_cuboid_reg(
-        "^(?:\\r?\\n|\\s)*rigid_cuboid "
-        "node=([\\w+-.]+) "
-        "hitbox=([\\w-. \\(\\)/+-]+)"
-        "(?: tirelines=([\\w-. \\(\\)/+-]+))? "
-        "mass=([\\w+-.]+) "
-        "size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "(?: com=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))? "
-        "collidable_mode=(terrain|small_static|small_moving)$");
+        "^(?:\\r?\\n|\\s)*rigid_cuboid"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
+        "(?:\\s+tirelines=([\\w-. \\(\\)/+-]+))?"
+        "\\s+mass=([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "(?:\\s+com=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "\\s+collidable_mode=(terrain|small_static|small_moving)$");
     static const std::regex gun_reg("^(?:\\r?\\n|\\s)*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex trigger_gun_ai_reg("^(?:\\r?\\n|\\s)*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
     static const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
@@ -737,6 +739,14 @@ void LoadScene::operator()(
                     match[8].str().empty() ? 0.f : safe_stof(match[8].str()),
                     match[9].str().empty() ? 0.f : safe_stof(match[9].str()),
                     match[10].str().empty() ? 0.f : safe_stof(match[10].str())},
+                FixedArray<float, 3>{
+                    match[11].str().empty() ? 0.f : safe_stof(match[11].str()),
+                    match[12].str().empty() ? 0.f : safe_stof(match[12].str()),
+                    match[13].str().empty() ? 0.f : safe_stof(match[13].str())},
+                FixedArray<float, 3>{
+                    match[14].str().empty() ? 0.f : safe_stof(match[14].str()) * float(M_PI / 180),
+                    match[15].str().empty() ? 0.f : safe_stof(match[15].str()) * float(M_PI / 180),
+                    match[16].str().empty() ? 0.f : safe_stof(match[16].str()) * float(M_PI / 180)},
                 scene_node_resources.get_geographic_mapping("world"));
             std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_animated_arrays(match[2].str())->cvas;
             std::list<std::shared_ptr<ColoredVertexArray>> tirelines;
@@ -750,7 +760,7 @@ void LoadScene::operator()(
                 rb,
                 hitbox,
                 tirelines,
-                collidable_mode_from_string(match[11].str()));
+                collidable_mode_from_string(match[17].str()));
         } else if (std::regex_match(line, match, gun_reg)) {
             auto parent_rb_node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBody*>(parent_rb_node->get_absolute_movable());

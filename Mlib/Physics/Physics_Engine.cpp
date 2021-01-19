@@ -46,8 +46,8 @@ PhysicsEngine::~PhysicsEngine() {
 }
 
 static void handle_triangle_triangle_intersection(
-    const std::shared_ptr<RigidBody>& o0,
-    const std::shared_ptr<RigidBody>& o1,
+    RigidBody& o0,
+    RigidBody& o1,
     const CollisionTriangleSphere& t0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
@@ -124,8 +124,8 @@ static void handle_triangle_triangle_intersection(
 }
 
 static void collide_triangle(
-    const RigidBodyAndTransformedMeshes& o0,
-    const RigidBodyAndTransformedMeshes& o1,
+    RigidBody& o0,
+    RigidBody& o1,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
     const CollisionTriangleSphere& t0,
@@ -143,10 +143,10 @@ static void collide_triangle(
     if (!msh1.mesh->intersects(t0.plane)) {
         return;
     }
-    if (!cfg.collide_only_normals && (o0.rigid_body->mass() != INFINITY)) {
+    if (!cfg.collide_only_normals && (o0.mass() != INFINITY)) {
         handle_triangle_triangle_intersection(
-            o0.rigid_body,
-            o1.rigid_body,
+            o0,
+            o1,
             t0,
             msh0,
             msh1,
@@ -160,8 +160,8 @@ static void collide_triangle(
     if (msh1.mesh_type == MeshType::CHASSIS) {
         for (const auto& l1 : lines) {
             handle_line_triangle_intersection({
-                .o0 = o0.rigid_body,
-                .o1 = o1.rigid_body,
+                .o0 = o0,
+                .o1 = o1,
                 .mesh0 = msh0.mesh,
                 .mesh1 = msh1.mesh,
                 .l1 = l1,
@@ -180,8 +180,8 @@ static void collide_triangle(
         size_t tire_id = 0;
         for (const auto& l1 : lines) {
             handle_line_triangle_intersection({
-                .o0 = o0.rigid_body,
-                .o1 = o1.rigid_body,
+                .o0 = o0,
+                .o1 = o1,
                 .mesh0 = msh0.mesh,
                 .mesh1 = msh1.mesh,
                 .l1 = l1,
@@ -230,8 +230,8 @@ static void collide_objects(
             }
             for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
                 collide_triangle(
-                    o0,
-                    o1,
+                    *o0.rigid_body,
+                    *o1.rigid_body,
                     msh0,
                     msh1,
                     t0,
@@ -290,23 +290,7 @@ void PhysicsEngine::collide(
         }
     }
     if (cfg_.bvh) {
-        static RigidBodyAndTransformedMeshes& o0 = [this]() -> RigidBodyAndTransformedMeshes& {
-            static RigidBodyAndTransformedMeshes o0{
-                .rigid_body = std::make_shared<RigidBody>(rigid_bodies_, RigidBodyIntegrator{
-                    INFINITY,                   // mass
-                    fixed_nans<float, 3>(),     // L    // angular momentum
-                    fixed_nans<float, 3, 3>(),  // I    // inertia tensor
-                    fixed_nans<float, 3>(),     // com  // center of mass
-                    fixed_nans<float, 3>(),     // v    // velocity
-                    fixed_nans<float, 3>(),     // w    // angular velocity
-                    fixed_nans<float, 3>(),     // T    // torque
-                    fixed_nans<float, 3>(),     // position
-                    fixed_zeros<float, 3>(),    // rotation (not NAN to pass rogridues angle assertion)
-                    false                       // I_is_diagonal
-                })};
-            o0.meshes.push_back(TypedMesh<std::shared_ptr<TransformedMesh>>{});
-            return o0;
-        }();
+        static TypedMesh<std::shared_ptr<TransformedMesh>> o0_mesh;
         for (const auto& o1 : rigid_bodies_.transformed_objects_) {
             if (o1.rigid_body->mass() == INFINITY) {
                 continue;
@@ -314,13 +298,13 @@ void PhysicsEngine::collide(
             for (const auto& msh1 : o1.meshes) {
                 rigid_bodies_.bvh_.visit(
                     msh1.mesh->transformed_bounding_sphere(),
-                    [&](const CollisionTriangleSphere& t0){
+                    [&](const RigidBodyAndCollisionTriangleSphere& t0){
                         collide_triangle(
-                            o0,
-                            o1,
-                            o0.meshes.front(),
+                            t0.rb,
+                            *o1.rigid_body,
+                            o0_mesh,
                             msh1,
-                            t0,
+                            t0.ctp,
                             cfg_,
                             st,
                             beacons,

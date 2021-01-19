@@ -24,6 +24,11 @@ struct RigidBodyAndTransformedMeshes {
     std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> meshes;
 };
 
+struct RigidBodyAndCollisionTriangleSphere {
+    RigidBody& rb;
+    CollisionTriangleSphere ctp;
+};
+
 class RigidBodies {
     friend class PhysicsEngine;
     friend class CollisionQuery;
@@ -42,7 +47,7 @@ private:
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndTransformedMeshes> transformed_objects_;
     std::map<const RigidBody*, CollidableMode> collidable_modes_;
-    Bvh<float, CollisionTriangleSphere, 3> bvh_;
+    Bvh<float, RigidBodyAndCollisionTriangleSphere, 3> bvh_;
     PhysicsEngineConfig cfg_;
 };
 

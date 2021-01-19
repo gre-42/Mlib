@@ -223,15 +223,21 @@ void RigidBody::set_tire_angular_velocity(size_t id, float w) {
     get_tire(id).angular_velocity = w;
 }
 
-FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(const FixedArray<float, 3>& surface_normal, size_t id) const {
+FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(
+    const FixedArray<float, 3>& surface_normal,
+    size_t id) const
+{
     FixedArray<float, 3> v = velocity_at_position(get_abs_tire_contact_position(id));
     v -= surface_normal * dot0d(v, surface_normal);
     return v;
 }
 
-float RigidBody::get_angular_velocity_at_tire(const FixedArray<float, 3>& surface_normal, size_t id) const {
+float RigidBody::get_angular_velocity_at_tire(
+    const FixedArray<float, 3>& surface_normal,
+    const FixedArray<float, 3>& street_velocity,
+    size_t id) const {
     auto z = get_abs_tire_z(id);
-    auto v = get_velocity_at_tire_contact(surface_normal, id);
+    auto v = get_velocity_at_tire_contact(surface_normal, id) - street_velocity;
     return -dot0d(v, z) / get_tire_radius(id);
 }
 
@@ -310,6 +316,9 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
     }
     if (log_components & STATUS_ACCELERATION) {
         ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) << " m/s^2" << std::endl;
+    }
+    if (log_components & STATUS_ANGULAR_VELOCITY) {
+        ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) * 180 / M_PI << " °/s" << std::endl;
     }
     if (log_components & STATUS_DIAMETER) {
         // T = 2 PI r / v, T = 2 PI / w

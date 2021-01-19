@@ -28,11 +28,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     }
     CollisionType collision_type = CollisionType::REFLECT;
     bool abort = false;
-    for (auto& c0 : c.o0->collision_observers_) {
-        c0->notify_collided(*c.o1, CollisionRole::PRIMARY, collision_type, abort);
+    for (auto& c0 : c.o0.collision_observers_) {
+        c0->notify_collided(c.o1, CollisionRole::PRIMARY, collision_type, abort);
     }
-    for (auto& c1 : c.o1->collision_observers_) {
-        c1->notify_collided(*c.o0, CollisionRole::SECONDARY, collision_type, abort);
+    for (auto& c1 : c.o1.collision_observers_) {
+        c1->notify_collided(c.o0, CollisionRole::SECONDARY, collision_type, abort);
     }
     if (abort) {
         return;
@@ -41,26 +41,26 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         // do nothing
     } else if (collision_type == CollisionType::STICK_TOGETHER) {
         FixedArray<float, 3> v;
-        if (c.o0->mass() == INFINITY || c.o1->mass() == INFINITY) {
+        if (c.o0.mass() == INFINITY || c.o1.mass() == INFINITY) {
             v = 0;
         } else {
-            v = (c.o0->rbi_.rbp_.v_ * c.o0->mass() + c.o1->rbi_.rbp_.v_ * c.o1->mass()) / (c.o0->mass() + c.o1->mass());
+            v = (c.o0.rbi_.rbp_.v_ * c.o0.mass() + c.o1.rbi_.rbp_.v_ * c.o1.mass()) / (c.o0.mass() + c.o1.mass());
         }
-        auto a0 = (v - c.o0->rbi_.rbp_.v_) / (c.cfg.dt / c.cfg.oversampling);
-        auto a1 = (v - c.o1->rbi_.rbp_.v_) / (c.cfg.dt / c.cfg.oversampling);
-        if (c.o0->mass() != INFINITY) {
-            c.o0->integrate_force({c.o0->mass() * a0, intersection_point});
+        auto a0 = (v - c.o0.rbi_.rbp_.v_) / (c.cfg.dt / c.cfg.oversampling);
+        auto a1 = (v - c.o1.rbi_.rbp_.v_) / (c.cfg.dt / c.cfg.oversampling);
+        if (c.o0.mass() != INFINITY) {
+            c.o0.integrate_force({c.o0.mass() * a0, intersection_point});
         }
-        if (c.o1->mass() != INFINITY) {
-            c.o1->integrate_force({c.o1->mass() * a1, intersection_point});
+        if (c.o1.mass() != INFINITY) {
+            c.o1.integrate_force({c.o1.mass() * a1, intersection_point});
         }
     } else if (collision_type == CollisionType::REFLECT) {
         // c.beacons.push_back({.position = intersection_point});
         PlaneNd<float, 3> plane;
-        if (!c.lines_are_normals && c.o0->mass() != INFINITY && c.o1->mass() != INFINITY) {
+        if (!c.lines_are_normals && c.o0.mass() != INFINITY && c.o1.mass() != INFINITY) {
             if (!c.cfg.sat) {
                 plane = PlaneNd{
-                    c.o1->abs_com() - c.o0->abs_com(),
+                    c.o1.abs_com() - c.o0.abs_com(),
                     intersection_point};
             } else {
                 // n = -st.get_collision_normal(o1, o0);
@@ -100,7 +100,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 }
             }
         } else {
-            if (c.mesh0_two_sided && (dot0d(c.o1->abs_com(), plane.normal) + plane.intercept < 0)) {
+            if (c.mesh0_two_sided && (dot0d(c.o1.abs_com(), plane.normal) + plane.intercept < 0)) {
                 plane.intercept *= -1;
                 plane.normal *= -1;
             }
@@ -119,31 +119,31 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         // c.beacons.push_back({.position = c.l1(penetrating_id)});
         assert_true((dist >= 0) || (std::abs(dist) < 1e-3));
         if (c.tire_id != SIZE_MAX) {
-            dist = std::max(0.f, dist - c.cfg.wheel_penetration_depth - c.o1->tires_.at(c.tire_id).shock_absorber.position());
-            // std::cerr << "pos " << c.o1->tires_.at(c.tire_id).shock_absorber.position() << std::endl;
+            dist = std::max(0.f, dist - c.cfg.wheel_penetration_depth - c.o1.tires_.at(c.tire_id).shock_absorber.position());
+            // std::cerr << "pos " << c.o1.tires_.at(c.tire_id).shock_absorber.position() << std::endl;
         } else {
             dist = std::max(0.f, dist);
         }
         float frac0;
         float frac1;
-        if (c.o0->mass() == INFINITY) {
+        if (c.o0.mass() == INFINITY) {
             frac0 = 0;
             frac1 = 1;
-        } else if (c.o1->mass() == INFINITY) {
+        } else if (c.o1.mass() == INFINITY) {
             frac0 = 1;
             frac1 = 0;
         } else {
-            frac0 = c.o1->mass() / (c.o0->mass() + c.o1->mass());
+            frac0 = c.o1.mass() / (c.o0.mass() + c.o1.mass());
             frac1 = 1 - frac0;
         }
         float force_n0 = NAN;
         float force_n1 = NAN;
         const NormalImpulse* normal_impulse = nullptr;
         if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-            if (c.o0->mass() != INFINITY) {
+            if (c.o0.mass() != INFINITY) {
                 NormalContactInfo2* ci = new NormalContactInfo2{
-                    c.o1->rbi_.rbp_,
-                    c.o0->rbi_.rbp_,
+                    c.o1.rbi_.rbp_,
+                    c.o0.rbi_.rbp_,
                     BoundedPlaneInequalityConstraint{
                         .constraint{
                             .normal_impulse{.normal = plane.normal},
@@ -153,16 +153,16 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 : 0.f,
                             .beta = c.cfg.plane_inequality_beta
                         },
-                        .lambda_min = (c.o0->mass() * c.o1->mass()) / (c.o0->mass() + c.o1->mass()) * c.cfg.lambda_min / c.cfg.oversampling,
+                        .lambda_min = (c.o0.mass() * c.o1.mass()) / (c.o0.mass() + c.o1.mass()) * c.cfg.lambda_min / c.cfg.oversampling,
                         .lambda_max = 0},
                     // c.l1(penetrating_id)};
-                    c.tire_id != SIZE_MAX ? c.o1->get_abs_tire_contact_position(c.tire_id) : c.l1(penetrating_id),
+                    c.tire_id != SIZE_MAX ? c.o1.get_abs_tire_contact_position(c.tire_id) : c.l1(penetrating_id),
                     [c, plane](float lambda_final){
-                        for (auto& c0 : c.o0->collision_observers_) {
-                            c0->notify_impact(*c.o1, CollisionRole::PRIMARY, plane.normal, lambda_final, c.base_log);
+                        for (auto& c0 : c.o0.collision_observers_) {
+                            c0->notify_impact(c.o1, CollisionRole::PRIMARY, plane.normal, lambda_final, c.base_log);
                         }
-                        for (auto& c1 : c.o1->collision_observers_) {
-                            c1->notify_impact(*c.o0, CollisionRole::SECONDARY, plane.normal, lambda_final, c.base_log);
+                        for (auto& c1 : c.o1.collision_observers_) {
+                            c1->notify_impact(c.o0, CollisionRole::SECONDARY, plane.normal, lambda_final, c.base_log);
                         }
                     }};
                 c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
@@ -170,7 +170,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             } else {
                 if (c.tire_id == SIZE_MAX) {
                     NormalContactInfo1* ci = new NormalContactInfo1{
-                        c.o1->rbi_.rbp_,
+                        c.o1.rbi_.rbp_,
                         BoundedPlaneInequalityConstraint{
                             .constraint{
                                 .normal_impulse{.normal = plane.normal},
@@ -178,24 +178,24 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                                 .slop = 0.001f,
                                 .beta = c.cfg.plane_inequality_beta
                             },
-                            .lambda_min = c.o1->mass() * c.cfg.lambda_min / c.cfg.oversampling,
+                            .lambda_min = c.o1.mass() * c.cfg.lambda_min / c.cfg.oversampling,
                             .lambda_max = 0},
                         c.l1(penetrating_id)};
                     c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
                     normal_impulse = &ci->normal_impulse();
                 } else {
                     float sap = std::min(0.05f, c.cfg.wheel_penetration_depth + dot0d(c.l1(penetrating_id) - intersection_point, plane.normal));
-                    c.o1->tires_.at(c.tire_id).shock_absorber_position = -sap;
+                    c.o1.tires_.at(c.tire_id).shock_absorber_position = -sap;
                     ShockAbsorberContactInfo1* ci = new ShockAbsorberContactInfo1{
-                        c.o1->rbi_.rbp_,
+                        c.o1.rbi_.rbp_,
                         BoundedShockAbsorberConstraint{
                             .constraint{
                                 .normal_impulse{.normal = plane.normal},
                                 .distance = sap,
-                                .Ks = c.o1->tires_.at(c.tire_id).sKs,
-                                .Ka = c.o1->tires_.at(c.tire_id).sKa
+                                .Ks = c.o1.tires_.at(c.tire_id).sKs,
+                                .Ka = c.o1.tires_.at(c.tire_id).sKa
                             },
-                            .lambda_min = c.o1->mass() * c.cfg.lambda_min / c.cfg.oversampling,
+                            .lambda_min = c.o1.mass() * c.cfg.lambda_min / c.cfg.oversampling,
                             .lambda_max = 0},
                         intersection_point};
                     c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
@@ -205,7 +205,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         } else if (c.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
             float outness;
             {
-                auto o11 = c.o1->rbi_;
+                auto o11 = c.o1.rbi_;
                 o11.advance_time(
                     c.cfg.dt / c.cfg.oversampling,
                     c.cfg.min_acceleration,
@@ -218,12 +218,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             {
                 float fac = c.cfg.outness_fac_interp(outness) * squared(std::min(0.25f, dist));
                 if (frac0 != 0) {
-                    force_n0 = fac * frac0 * c.o0->mass();
+                    force_n0 = fac * frac0 * c.o0.mass();
                 }
                 if (frac1 != 0) {
-                    force_n1 = fac * frac1 * c.o1->mass();
+                    force_n1 = fac * frac1 * c.o1.mass();
                     if (c.tire_id != SIZE_MAX) {
-                        c.o1->tires_.at(c.tire_id).shock_absorber.integrate_force(force_n1);
+                        c.o1.tires_.at(c.tire_id).shock_absorber.integrate_force(force_n1);
                     }
                 }
             }
@@ -240,11 +240,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         //     fac = 1;
         // }
         FixedArray<float, 3> tangential_force;
-        if (c.o0->mass() == INFINITY && c.o1->mass() != INFINITY) {
-            FixedArray<float, 3> v10 = c.o1->velocity_at_position(intersection_point);
+        if (c.o0.mass() == INFINITY && c.o1.mass() != INFINITY) {
+            FixedArray<float, 3> v10 = c.o1.velocity_at_position(intersection_point);
             FixedArray<float, 3> v3 = v10 - plane.normal * dot0d(plane.normal, v10);
             if (c.tire_id != SIZE_MAX) {
-                FixedArray<float, 3> n3 = c.o1->get_abs_tire_z(c.tire_id);
+                FixedArray<float, 3> n3 = c.o1.get_abs_tire_z(c.tire_id);
                 n3 -= plane.normal * dot0d(plane.normal, n3);
                 if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                     n3 /= std::sqrt(len2);
@@ -252,43 +252,48 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         auto t = cross(n3, plane.normal);
                         t /= std::sqrt(sum(squared(t)));
                         c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
-                            c.o1->rbi_.rbp_,
+                            c.o1.rbi_.rbp_,
                             *normal_impulse,
                             c.l1(penetrating_id),
-                            c.o1->tires_.at(c.tire_id).stiction_coefficient(-force_n1),
-                            c.o1->tires_.at(c.tire_id).friction_coefficient(-force_n1),
+                            c.o1.tires_.at(c.tire_id).stiction_coefficient(-force_n1),
+                            c.o1.tires_.at(c.tire_id).friction_coefficient(-force_n1),
                             30.f / 3.6f * n3}));
                         // ci.solve(c.cfg.dt / c.cfg.oversampling);
                         // std::cerr << c.tire_id << " lambda_total " << ci.pc().lambda_total / (c.cfg.dt / c.cfg.oversampling) << " " << c.cfg.stiction_coefficient * force_n1 << std::endl;
                     }
                     if (c.cfg.physics_type == PhysicsType::BUILTIN) {
+                        FixedArray<float, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id);
+                        FixedArray<float, 3> b = c.o0.velocity_at_position(contact_position);
                         if (c.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
                             tangential_force = handle_tire_triangle_intersection(
-                                *c.o1,
+                                c.o1,
+                                b,
                                 v3,
                                 n3,
                                 plane.normal,
-                                c.o1->tires_.at(c.tire_id).stiction_coefficient(-force_n1) * force_n1,
-                                c.o1->tires_.at(c.tire_id).friction_coefficient(-force_n1) * force_n1,
+                                c.o1.tires_.at(c.tire_id).stiction_coefficient(-force_n1) * force_n1,
+                                c.o1.tires_.at(c.tire_id).friction_coefficient(-force_n1) * force_n1,
                                 c.cfg,
                                 c.tire_id);
                         } else if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                             if (normal_impulse != nullptr) {
-                                FixedArray<float, 3> vc = c.o1->rbi_.rbp_.v_;
+                                FixedArray<float, 3> vc = c.o1.rbi_.rbp_.v_;
                                 vc -= plane.normal * dot0d(plane.normal, vc);
+                                FixedArray<float, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id);
+                                FixedArray<float, 3> b = c.o0.velocity_at_position(contact_position);
                                 c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
                                     FrictionContactInfo1{
-                                        c.o1->rbi_.rbp_,
+                                        c.o1.rbi_.rbp_,
                                         *normal_impulse,
-                                        c.o1->get_abs_tire_contact_position(c.tire_id),
-                                        c.o1->tires_.at(c.tire_id).stiction_coefficient(-force_n1),
-                                        c.o1->tires_.at(c.tire_id).friction_coefficient(-force_n1),
-                                        fixed_nans<float, 3>()},
-                                    *c.o1,
+                                        contact_position,
+                                        c.o1.tires_.at(c.tire_id).stiction_coefficient(-force_n1),
+                                        c.o1.tires_.at(c.tire_id).friction_coefficient(-force_n1),
+                                        b},
+                                    c.o1,
                                     c.tire_id,
                                     vc,
                                     n3,
-                                    -dot0d(c.o1->get_velocity_at_tire_contact(plane.normal, c.tire_id), n3),
+                                    -dot0d(c.o1.get_velocity_at_tire_contact(plane.normal, c.tire_id) - b, n3),
                                     c.cfg}));
                             }
                         } else {
@@ -296,23 +301,23 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         }
                         // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
                     } else if (c.cfg.physics_type == PhysicsType::TRACKING_SPRINGS) {
-                        TrackingWheel& tw = c.o1->get_tire_tracking_wheel(c.tire_id);
+                        TrackingWheel& tw = c.o1.get_tire_tracking_wheel(c.tire_id);
                         tw.notify_intersection(
-                            c.o1->get_abs_tire_rotation_matrix(c.tire_id),
-                            c.o1->get_abs_tire_contact_position(c.tire_id),
+                            c.o1.get_abs_tire_rotation_matrix(c.tire_id),
+                            c.o1.get_abs_tire_contact_position(c.tire_id),
                             intersection_point,
                             plane.normal,
-                            c.o1->tires_.at(c.tire_id).stiction_coefficient(-force_n1) * force_n1,
-                            c.o1->tires_.at(c.tire_id).friction_coefficient(-force_n1) * force_n1);
+                            c.o1.tires_.at(c.tire_id).stiction_coefficient(-force_n1) * force_n1,
+                            c.o1.tires_.at(c.tire_id).friction_coefficient(-force_n1) * force_n1);
                         tangential_force = 0;
                     } else if (c.cfg.physics_type == PhysicsType::VERSION1) {
-                        float P = c.o1->consume_tire_surface_power(c.tire_id).power;
+                        float P = c.o1.consume_tire_surface_power(c.tire_id).power;
                         tangential_force = power_to_force_infinite_mass(
-                            c.o1->get_tire_break_force(c.tire_id),
+                            c.o1.get_tire_break_force(c.tire_id),
                             c.cfg.hand_break_velocity,
-                            c.o1->tires_.at(c.tire_id).stiction_coefficient(-force_n1) * force_n1,
-                            c.o1->tires_.at(c.tire_id).friction_coefficient(-force_n1) * force_n1,
-                            c.o1->max_velocity_,
+                            c.o1.tires_.at(c.tire_id).stiction_coefficient(-force_n1) * force_n1,
+                            c.o1.tires_.at(c.tire_id).friction_coefficient(-force_n1) * force_n1,
+                            c.o1.max_velocity_,
                             n3,
                             P,
                             v3,
@@ -333,13 +338,15 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         v3,
                         c.cfg.alpha0);
                 } else if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+                    FixedArray<float, 3> contact_position = c.l1(penetrating_id);
+                    std::cerr << c.o0.velocity_at_position(contact_position) << std::endl;
                     c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
-                        c.o1->rbi_.rbp_,
+                        c.o1.rbi_.rbp_,
                         *normal_impulse,
-                        c.l1(penetrating_id),
+                        contact_position,
                         c.cfg.stiction_coefficient,
                         c.cfg.friction_coefficient,
-                        fixed_zeros<float, 3>()}));
+                        c.o0.velocity_at_position(contact_position)}));
                 }
             }
         } else {
@@ -347,8 +354,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 tangential_force = 0;
             } else if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                 c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo2{
-                    c.o1->rbi_.rbp_,
-                    c.o0->rbi_.rbp_,
+                    c.o1.rbi_.rbp_,
+                    c.o0.rbi_.rbp_,
                     *normal_impulse,
                     c.l1(penetrating_id),
                     c.cfg.stiction_coefficient,
@@ -361,13 +368,13 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         // }
         if (c.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
             if (frac0 != 0) {
-                c.o0->integrate_force({-force_n0 * plane.normal - tangential_force, intersection_point});
+                c.o0.integrate_force({-force_n0 * plane.normal - tangential_force, intersection_point});
             }
             if (frac1 != 0) {
                 if (c.tire_id != SIZE_MAX) {
-                    c.o1->integrate_force({force_n1 * plane.normal + tangential_force, c.o1->get_abs_tire_contact_position(c.tire_id)});
+                    c.o1.integrate_force({force_n1 * plane.normal + tangential_force, c.o1.get_abs_tire_contact_position(c.tire_id)});
                 } else {
-                    c.o1->integrate_force({force_n1 * plane.normal + tangential_force, intersection_point});
+                    c.o1.integrate_force({force_n1 * plane.normal + tangential_force, intersection_point});
                 }
             }
         }

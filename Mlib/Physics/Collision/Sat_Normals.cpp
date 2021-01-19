@@ -37,32 +37,32 @@ static float sat_overlap(
 }
 
 void SatTracker::get_collision_plane(
-    const std::shared_ptr<RigidBody>& o0,
-    const std::shared_ptr<RigidBody>& o1,
+    const RigidBody& o0,
+    const RigidBody& o1,
     const std::shared_ptr<TransformedMesh>& mesh0,
     const std::shared_ptr<TransformedMesh>& mesh1,
     float& min_overlap,
     PlaneNd<float, 3>& plane) const
 {
-    if (collision_planes_.find(o0) == collision_planes_.end()) {
+    if (collision_planes_.find(&o0) == collision_planes_.end()) {
         collision_planes_.insert(std::make_pair(
-            o0,
+            &o0,
             std::map<
-                std::shared_ptr<RigidBody>,
+                const RigidBody*,
                 std::map<std::shared_ptr<TransformedMesh>,
                     std::map<std::shared_ptr<TransformedMesh>,
                         std::pair<float, PlaneNd<float, 3>>>>>()));
     }
-    auto& collision_planes_o0 = collision_planes_.at(o0);
-    if (collision_planes_o0.find(o1) == collision_planes_o0.end()) {
+    auto& collision_planes_o0 = collision_planes_.at(&o0);
+    if (collision_planes_o0.find(&o1) == collision_planes_o0.end()) {
         collision_planes_o0.insert(std::make_pair(
-            o1,
+            &o1,
             std::map<
                 std::shared_ptr<TransformedMesh>,
                 std::map<std::shared_ptr<TransformedMesh>,
                     std::pair<float, PlaneNd<float, 3>>>>()));
     }
-    auto& collision_planes_o0_o1 = collision_planes_o0.at(o1);
+    auto& collision_planes_o0_o1 = collision_planes_o0.at(&o1);
     if (collision_planes_o0_o1.find(mesh0) == collision_planes_o0_o1.end()) {
         collision_planes_o0_o1.insert(std::make_pair(
             mesh0,

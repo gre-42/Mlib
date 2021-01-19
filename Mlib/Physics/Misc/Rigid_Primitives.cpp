@@ -9,7 +9,9 @@ using namespace Mlib;
 RigidBodyPulses Mlib::rigid_cuboid_pulses(
     float mass,
     const FixedArray<float, 3>& size,
-    const FixedArray<float, 3>& com)
+    const FixedArray<float, 3>& com,
+    const FixedArray<float, 3>& v,
+    const FixedArray<float, 3>& w)
 {
     // From: https://de.wikipedia.org/wiki/Steinerscher_Satz
     FixedArray<float, 3, 3> I{
@@ -26,8 +28,8 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
         mass,
         I,                                  // I
         com,                                // com
-        fixed_zeros<float, 3>(),            // v
-        fixed_zeros<float, 3>(),            // w
+        v,                                  // v
+        w,                                  // w
         fixed_nans<float, 3>(),             // position
         fixed_zeros<float, 3>(),            // rotation (not NAN to pass rogridues angle assertion)
         count_nonzero(com != 0.f) <= 1      // I_is_diagonal
@@ -37,7 +39,9 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
 RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
     float mass,
     const FixedArray<float, 3>& size,
-    const FixedArray<float, 3>& com)
+    const FixedArray<float, 3>& com,
+    const FixedArray<float, 3>& v,
+    const FixedArray<float, 3>& w)
 {
     // From: https://de.wikipedia.org/wiki/Steinerscher_Satz
     FixedArray<float, 3, 3> I{
@@ -55,8 +59,8 @@ RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
         fixed_zeros<float, 3>(),            // L
         I,                                  // I
         com,                                // com
-        fixed_zeros<float, 3>(),            // v
-        fixed_zeros<float, 3>(),            // w
+        v,                                  // v
+        w,                                  // w
         fixed_zeros<float, 3>(),            // T
         fixed_nans<float, 3>(),             // position
         fixed_zeros<float, 3>(),            // rotation (not NAN to pass rogridues angle assertion)
@@ -69,10 +73,12 @@ std::shared_ptr<RigidBody> Mlib::rigid_cuboid(
     float mass,
     const FixedArray<float, 3>& size,
     const FixedArray<float, 3>& com,
+    const FixedArray<float, 3>& v,
+    const FixedArray<float, 3>& w,
     const TransformationMatrix<double, 3>* geographic_coordinates)
 {
     return std::make_shared<RigidBody>(
         rigid_bodies,
-        rigid_cuboid_integrator(mass, size, com),
+        rigid_cuboid_integrator(mass, size, com, v, w),
         geographic_coordinates);
 }

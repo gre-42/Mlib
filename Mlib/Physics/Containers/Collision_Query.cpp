@@ -61,13 +61,13 @@ bool CollisionQuery::can_see(
             bool intersects = false;
             physics_engine_.rigid_bodies_.bvh_.visit(
                 bs,
-                [&](const CollisionTriangleSphere& t0){
+                [&](const RigidBodyAndCollisionTriangleSphere& t0){
                     FixedArray<float, 3> intersection_point;
                     if (!intersects) {
                         intersects = (line_intersects_triangle(
                             l(0),
                             l(1),
-                            t0.triangle,
+                            t0.ctp.triangle,
                             intersection_point));
                     }
                 });

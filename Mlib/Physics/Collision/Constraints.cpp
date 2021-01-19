@@ -145,6 +145,10 @@ float FrictionContactInfo1::max_impulse_friction() const {
     return std::max(0.f, -(friction_coefficient_ * (1 + extra_friction_)) * normal_impulse_.lambda_total);
 }
 
+const FixedArray<float, 3>& FrictionContactInfo1::get_b() const {
+    return b_;
+}
+
 void FrictionContactInfo1::set_b(const FixedArray<float, 3>& b) {
     b_ = b;
 }
@@ -240,13 +244,14 @@ TireContactInfo1::TireContactInfo1(
   vc_{vc},
   n3_{n3},
   v0_{v0},
+  b0_{fci.get_b()},
   cfg_{cfg}
 {}
 
 void TireContactInfo1::solve(float dt, float relaxation) {
     float force_min;
     float force_max;
-    FixedArray<float, 3> tv = updated_tire_speed(P_, rb_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
+    FixedArray<float, 3> tv = updated_tire_speed(P_, rb_, b0_, vc_, n3_, v0_, fci_.normal_impulse().normal, cfg_, tire_id_, force_min, force_max);
     // {
     //     FixedArray<float, 3> v3 = rb_.rbi_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
     //     v3 -= fci_.normal_impulse().normal * dot0d(v3, fci_.normal_impulse().normal);
@@ -260,7 +265,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     // x3 /= std::sqrt(sum(squared(x3)));
     // fci_.set_b(v - 1000.f * x3 * rb_.tires_.at(tire_id_).accel_x * (cfg_.dt / cfg_.oversampling));
     fci_.set_b(-tv);
-    FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_);
+    FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal, tire_id_) - b0_;
     float slip;
     {
         float vvx = dot0d(vv, n3_);

@@ -18,8 +18,8 @@ struct ContactInfo;
 class BaseLog;
 
 struct IntersectionScene {
-    const std::shared_ptr<RigidBody>& o0;
-    const std::shared_ptr<RigidBody>& o1;
+    RigidBody& o0;
+    RigidBody& o1;
     const std::shared_ptr<TransformedMesh>& mesh0;
     const std::shared_ptr<TransformedMesh>& mesh1;
     const FixedArray<FixedArray<float, 3>, 2>& l1;

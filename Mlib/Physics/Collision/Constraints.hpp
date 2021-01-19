@@ -157,6 +157,7 @@ public:
     void solve(float dt, float relaxation) override;
     float max_impulse_stiction() const;
     float max_impulse_friction() const;
+    const FixedArray<float, 3>& get_b() const;
     void set_b(const FixedArray<float, 3>& b);
     void set_clamping(
         const FixedArray<float, 3>& clamping_direction,
@@ -237,7 +238,7 @@ private:
     FixedArray<float, 3> vc_;
     FixedArray<float, 3> n3_;
     float v0_;
-    float w0_;
+    FixedArray<float, 3> b0_;
     const PhysicsEngineConfig& cfg_;
 };
 

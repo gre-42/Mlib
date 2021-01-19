@@ -12,6 +12,7 @@ static const unsigned int STATUS_DIAMETER = 1 << 5;
 static const unsigned int STATUS_DIAMETER2 = 1 << 6;
 static const unsigned int STATUS_ENERGY = 1 << 7;
 static const unsigned int STATUS_DRIVER_NAME = 1 << 8;
+static const unsigned int STATUS_ANGULAR_VELOCITY = 1 << 9;
 
 class StatusWriter {
 public:

@@ -67,7 +67,7 @@ void RigidBodies::add_rigid_body(
             for (auto& m : hitbox) {
                 if (m->material.collide) {
                     for (const auto& t : m->transformed_triangles_bbox(rigid_body->get_new_absolute_model_matrix())) {
-                        bvh_.insert(t.aabb, t.base);
+                        bvh_.insert(t.aabb, {*rigid_body, t.base});
                     }
                 }
             }
