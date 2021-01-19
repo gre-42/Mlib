@@ -319,17 +319,16 @@ void PhysicsEngine::collide(
 void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
     for (auto it = rigid_bodies_.objects_.begin(); it != rigid_bodies_.objects_.end(); ) {
         auto& o = *it++;
-        if (o.rigid_body->mass() != INFINITY) {
-            o.rigid_body->advance_time(
-                cfg_.dt / cfg_.oversampling,
-                cfg_.min_acceleration,
-                cfg_.min_velocity,
-                cfg_.min_angular_velocity,
-                cfg_.physics_type,
-                cfg_.resolve_collision_type,
-                cfg_.hand_break_velocity,
-                beacons);
-        }
+        assert (o.rigid_body->mass() != INFINITY);
+        o.rigid_body->advance_time(
+            cfg_.dt / cfg_.oversampling,
+            cfg_.min_acceleration,
+            cfg_.min_velocity,
+            cfg_.min_angular_velocity,
+            cfg_.physics_type,
+            cfg_.resolve_collision_type,
+            cfg_.hand_break_velocity,
+            beacons);
     }
 }
 
