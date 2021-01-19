@@ -312,7 +312,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
                 CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
                 
                 CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
+                CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
                 float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
@@ -333,7 +333,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
                 CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
 
                 CHK(glActiveTexture(GL_TEXTURE0 + 1 + i));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
+                CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
                 CHK(glActiveTexture(GL_TEXTURE0));
@@ -357,9 +357,9 @@ void RenderableColoredVertexArrayInstance::render_cva(
         CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, (const GLfloat*) mvp_dirtmap.flat_begin()));
 
         CHK(glActiveTexture(GL_TEXTURE0 + 1 + has_normalmap + filtered_lights.size()));
-        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
+        CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({color: mname, color_mode: ColorMode::RGB})));
         {
-            GLint p = get_wrap_param(rcva_->rendering_resources_->get_texture_wrap(mname));
+            GLint p = get_wrap_param(secondary_rendering_resources_->get_texture_wrap(mname));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, p));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, p));
         }
