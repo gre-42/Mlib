@@ -100,7 +100,11 @@ void break_positive(
 {
     float w;
     optimal_angular_velocity_positive(rb, surface_normal, cfg, tire_id, w);
-    rb.set_tire_angular_velocity(tire_id, -w);
+    if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
+        rb.set_tire_angular_velocity(tire_id, 0);
+    } else {
+        rb.set_tire_angular_velocity(tire_id, -w);
+    }
     force_min = -rb.tires_.at(tire_id).break_force;
     force_max = 0;
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
@@ -134,7 +138,11 @@ void break_negative(
 {
     float w;
     optimal_angular_velocity_negative(rb, surface_normal, cfg, tire_id, w);
-    rb.set_tire_angular_velocity(tire_id, -w);
+    if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
+        rb.set_tire_angular_velocity(tire_id, 0);
+    } else {
+        rb.set_tire_angular_velocity(tire_id, -w);
+    }
     force_min = 0;
     force_max = rb.tires_.at(tire_id).break_force;
     // FixedArray<float, 3> tf0 = friction_force_infinite_mass(
