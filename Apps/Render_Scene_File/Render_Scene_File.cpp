@@ -219,8 +219,6 @@ int main(int argc, char** argv) {
             {
                 throw std::runtime_error("Could not insert default context");
             }
-            auto& renderable_scene = *renderable_scenes.at("default_context");
-
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;
             LoadScene load_scene;
@@ -235,12 +233,17 @@ int main(int argc, char** argv) {
                 renderable_scenes);
 
             if (args.has_named("--print_search_time")) {
-                renderable_scene.print_physics_engine_search_time();
+                for (const auto& p : renderable_scenes) {
+                    std::cerr << p.first << " search time" << std::endl;
+                    p.second->print_physics_engine_search_time();
+                }
                 return 0;
             }
 
             if (!args.has_named("--no_physics")) {
-                renderable_scene.start_physics_loop();
+                for (const auto& p : renderable_scenes) {
+                    p.second->start_physics_loop();
+                }
             }
 
             if (args.has_named("--no_render")) {
@@ -262,7 +265,9 @@ int main(int argc, char** argv) {
                 ui_focus.focus.pop_back();
             }
 
-            renderable_scene.stop_and_join();
+            for (const auto& p : renderable_scenes) {
+                p.second->stop_and_join();
+            }
             main_scene_filename = next_scene_filename;
         }
 

@@ -243,7 +243,11 @@ void LoadScene::operator()(
     static const std::regex trigger_gun_ai_reg("^(?:\\r?\\n|\\s)*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
     static const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
     static const std::regex crash_reg("^(?:\\r?\\n|\\s)*crash node=([\\w+-.]+) damage=([\\w+-.]+)$");
-    static const std::regex relative_transformer_reg("^(?:\\r?\\n|\\s)*relative_transformer node=([\\w+-.]+)$");
+    static const std::regex relative_transformer_reg(
+        "^(?:\\r?\\n|\\s)*relative_transformer"
+        "\\s+node=([\\w+-.]+)"
+        "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
     static const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
     static const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+)$");
     static const std::regex player_create_reg(
@@ -822,7 +826,16 @@ void LoadScene::operator()(
                 safe_stof(match[2].str()));  // damage
             rb->collision_observers_.push_back(d);
         } else if (std::regex_match(line, match, relative_transformer_reg)) {
-            std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(physics_engine.advance_times_);
+            FixedArray<float, 3> v{
+                match[2].str().empty() ? 0 : safe_stof(match[2].str()),
+                match[3].str().empty() ? 0 : safe_stof(match[3].str()),
+                match[4].str().empty() ? 0 : safe_stof(match[4].str())};
+            FixedArray<float, 3> w{
+                match[5].str().empty() ? 0 : safe_stof(match[5].str()) * float(M_PI / 180),
+                match[6].str().empty() ? 0 : safe_stof(match[6].str()) * float(M_PI / 180),
+                match[7].str().empty() ? 0 : safe_stof(match[7].str()) * float(M_PI / 180)};
+            std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(
+                physics_engine.advance_times_, v, w);
             linker.link_relative_movable(*scene.get_node(match[1].str()), rt);
         } else if (std::regex_match(line, match, wheel_reg)) {
             std::string rigid_body = match[1].str();

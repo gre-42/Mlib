@@ -11,7 +11,10 @@ class AdvanceTimes;
 
 class RelativeTransformer: public DestructionObserver, public RelativeMovable, public AdvanceTime {
 public:
-    explicit RelativeTransformer(AdvanceTimes& advance_times);
+    explicit RelativeTransformer(
+        AdvanceTimes& advance_times,
+        const FixedArray<float, 3>& v = {0, 0, 0},
+        const FixedArray<float, 3>& w = {0, 0, 0});
     ~RelativeTransformer();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
@@ -21,6 +24,7 @@ public:
     virtual void notify_destroyed(void* obj) override;
     AdvanceTimes& advance_times_;
     TransformationMatrix<float, 3> transformation_matrix_;
+    FixedArray<float, 3> v_;
     FixedArray<float, 3> w_;
 };
 

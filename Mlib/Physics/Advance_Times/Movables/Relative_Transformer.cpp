@@ -5,12 +5,16 @@
 
 using namespace Mlib;
 
-RelativeTransformer::RelativeTransformer(AdvanceTimes& advance_times)
+RelativeTransformer::RelativeTransformer(
+    AdvanceTimes& advance_times,
+    const FixedArray<float, 3>& v,
+    const FixedArray<float, 3>& w)
 : advance_times_{advance_times},
   transformation_matrix_{
       fixed_nans<float, 3, 3>(),
       fixed_nans<float, 3>()},
-  w_{fixed_zeros<float, 3>()}
+  v_{v},
+  w_{w}
 {}
 
 RelativeTransformer::~RelativeTransformer()
@@ -37,6 +41,7 @@ TransformationMatrix<float, 3> RelativeTransformer::get_new_relative_model_matri
 }
 
 void RelativeTransformer::advance_time(float dt) {
+    transformation_matrix_.t() += dt * v_;
     transformation_matrix_.R() = dot2d(rodrigues(dt * w_), transformation_matrix_.R());
 }
 
