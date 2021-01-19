@@ -339,7 +339,6 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         c.cfg.alpha0);
                 } else if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                     FixedArray<float, 3> contact_position = c.l1(penetrating_id);
-                    std::cerr << c.o0.velocity_at_position(contact_position) << std::endl;
                     c.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
                         c.o1.rbi_.rbp_,
                         *normal_impulse,
