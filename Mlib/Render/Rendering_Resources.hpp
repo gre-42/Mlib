@@ -57,6 +57,8 @@ public:
     std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
 
     SceneNodeResources& scene_node_resources() const;
+    void print(std::ostream& ostr, size_t indentation = 0) const;
+
     static std::shared_ptr<RenderingResources> primary_rendering_resources();
     static std::shared_ptr<RenderingResources> rendering_resources();
     static thread_local std::list<std::shared_ptr<RenderingResources>> rendering_resources_stack_;
@@ -67,7 +69,7 @@ public:
         generate_thread_runner(
             std::shared_ptr<RenderingResources> primary_rendering_resources,
             std::shared_ptr<RenderingResources> secondary_rendering_resources);
-    static void print(std::ostream& ostr);
+    static void print_stack(std::ostream& ostr);
 private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
@@ -78,5 +80,7 @@ private:
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     SceneNodeResources& scene_node_resources_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const RenderingResources& r);
 
 }

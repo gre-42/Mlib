@@ -97,7 +97,16 @@ void Scene::delete_root_nodes(const std::regex& regex) {
 }
 
 Scene::~Scene() {
+    shutdown();
+}
+
+void Scene::shutdown() {
     shutting_down_ = true;
+    root_instances_nodes_.clear();
+    root_aggregate_nodes_.clear();
+    static_root_nodes_.clear();
+    root_nodes_.clear();
+    nodes_.clear();
 }
 
 bool Scene::contains_node(const std::string& name) const {

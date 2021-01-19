@@ -451,8 +451,8 @@ void LoadScene::operator()(
         if (cit == renderable_scenes.end()) {
             throw std::runtime_error("Could not find renderable scene with name \"" + context + '"');
         }
-        auto primary_rendering_resources = RenderingResources::primary_rendering_resources();
-        auto secondary_rendering_resources = RenderingResources::rendering_resources();
+        RenderingResourcesGuard rrg0{cit->second->primary_rendering_resources_};
+        RenderingResourcesGuard rrg1{cit->second->secondary_rendering_resources_};
         auto& scene_node_resources = cit->second->scene_node_resources_;
         auto& players = cit->second->players_;
         auto& scene = cit->second->scene_;
@@ -1133,6 +1133,7 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
         } else if (std::regex_match(line, match, create_scene_reg)) {
+            RenderingResourcesGuard rrg{scene_node_resources};
             auto rs = std::make_shared<RenderableScene>(
                 scene_node_resources,
                 scene_config,
@@ -1393,7 +1394,7 @@ void LoadScene::operator()(
             linker.link_absolute_movable(*follower_node, follower);
             follower->initialize(*follower_node);
         } else if (std::regex_match(line, match, add_texture_descriptor_reg)) {
-            primary_rendering_resources->add_texture_descriptor(
+            cit->second->primary_rendering_resources_->add_texture_descriptor(
                 match[1].str(),
                 TextureDescriptor{
                     .color = fpath(match[2].str()),
@@ -1453,8 +1454,8 @@ void LoadScene::operator()(
             selected_cameras.set_camera_node_name(match[1].str());
         } else if (std::regex_match(line, match, set_dirtmap_reg)) {
             dirtmap_logic.set_filename(fpath(match[1].str()));
-            secondary_rendering_resources->set_discreteness("dirtmap", safe_stof(match[2].str()));
-            secondary_rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
+            cit->second->secondary_rendering_resources_->set_discreteness("dirtmap", safe_stof(match[2].str()));
+            cit->second->secondary_rendering_resources_->set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
         } else if (std::regex_match(line, match, set_skybox_reg)) {
             skybox_logic.set_filenames({
                 fpath(match[2].str()),

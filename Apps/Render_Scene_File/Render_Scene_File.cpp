@@ -200,8 +200,7 @@ int main(int argc, char** argv) {
                 .with_skybox = true,
                 .with_flying_logic = true,
                 .clear_mode = ClearMode::COLOR_AND_DEPTH,
-                .scene_focus_mask = Focus::ALWAYS
-            };
+                .scene_focus_mask = Focus::ALWAYS};
             std::recursive_mutex mutex;
             RenderLogics render_logics{mutex, ui_focus};
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;

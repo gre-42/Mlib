@@ -183,18 +183,23 @@ std::function<std::function<void()>(std::function<void()>)>
     };
 }
 
-void RenderingResources::print(std::ostream& ostr) {
+void RenderingResources::print_stack(std::ostream& ostr) {
     ostr << "Rendering resource stack\n";
     for (const auto& e : rendering_resources_stack_) {
-        ostr << "  Texture descriptors\n";
-        for (const auto& x : e->texture_descriptors_) {
-            ostr << "    " << x.first << '\n';
-        }
-        ostr << "  Textures\n";
-        for (const auto& x : e->textures_) {
-            ostr << "    " << x.first << '\n';
-        }
+        e->print(ostr, 2);
     };
+}
+
+void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
+    std::string indent = std::string(' ', indentation);
+    ostr << indent << "Texture descriptors\n";
+    for (const auto& x : texture_descriptors_) {
+        ostr << indent << "  " << x.first << '\n';
+    }
+    ostr << indent << "Textures\n";
+    for (const auto& x : textures_) {
+        ostr << indent << "  " << x.first << '\n';
+    }
 }
 
 RenderingResources::RenderingResources(SceneNodeResources& scene_node_resources)
@@ -457,4 +462,9 @@ std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& Render
 
 SceneNodeResources& RenderingResources::scene_node_resources() const {
     return scene_node_resources_;
+}
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const RenderingResources& r) {
+    r.print(ostr);
+    return ostr;
 }

@@ -61,6 +61,7 @@ public:
         RenderLogics& render_logics,
         const RenderableSceneConfig& config,
         std::recursive_mutex& mutex);
+    ~RenderableScene();
     void start_physics_loop();
     void print_physics_engine_search_time() const;
     void stop_and_join();
@@ -97,6 +98,8 @@ public:
 
     std::unique_ptr<PhysicsLoop> physics_loop_;
     const SceneConfig& scene_config_;
+    std::shared_ptr<RenderingResources> primary_rendering_resources_;
+    std::shared_ptr<RenderingResources> secondary_rendering_resources_;
 };
 
 }

@@ -54,6 +54,7 @@ public:
     void move(float dt);
     size_t get_uuid();
     void print(std::ostream& ostr) const;
+    void shutdown();
     bool shutting_down() const;
 private:
     mutable std::shared_mutex dynamic_mutex_;

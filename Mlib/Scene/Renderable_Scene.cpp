@@ -75,7 +75,9 @@ RenderableScene::RenderableScene(
       physics_engine_.advance_times_,
       players_,
       mutex_},
-  scene_config_{scene_config}
+  scene_config_{scene_config},
+  primary_rendering_resources_{RenderingResources::primary_rendering_resources()},
+  secondary_rendering_resources_{RenderingResources::rendering_resources()}
 {
     if (config.with_flying_logic) {
         render_logics_.append(nullptr, flying_camera_logic_);
@@ -90,6 +92,12 @@ RenderableScene::RenderableScene(
             : standard_render_logic_));
     physics_engine_.add_external_force_provider(&gefp_);
     physics_engine_.add_external_force_provider(key_bindings_.get());
+}
+
+RenderableScene::~RenderableScene() {
+    RenderingResourcesGuard rrg0{primary_rendering_resources_};
+    RenderingResourcesGuard rrg1{secondary_rendering_resources_};
+    scene_.shutdown();
 }
 
 void RenderableScene::start_physics_loop() {
