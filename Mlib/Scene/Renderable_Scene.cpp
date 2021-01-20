@@ -26,10 +26,10 @@ RenderableScene::RenderableScene(
   selection_ids_{selection_ids},
   button_states_{button_states},
   user_object_{
-      button_states: button_states,
-      cameras: selected_cameras_,
-      focus: ui_focus.focus,
-      physics_set_fps: &physics_set_fps_},
+      .button_states = button_states,
+      .cameras = selected_cameras_,
+      .focus = ui_focus.focus,
+      .physics_set_fps = &physics_set_fps_},
   gefp_{FixedArray<float, 3>{0, -9.8, 0}},
   standard_camera_logic_{
       scene_,
