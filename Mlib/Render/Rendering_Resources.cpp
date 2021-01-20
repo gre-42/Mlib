@@ -185,19 +185,33 @@ std::function<std::function<void()>(std::function<void()>)>
 
 void RenderingResources::print_stack(std::ostream& ostr) {
     ostr << "Rendering resource stack\n";
+    size_t i = 0;
     for (const auto& e : rendering_resources_stack_) {
+        std::cerr << "Stack element " << i++ << '\n';
         e->print(ostr, 2);
     };
 }
 
 void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
-    std::string indent = std::string(' ', indentation);
+    std::string indent = std::string(indentation, ' ');
     ostr << indent << "Texture descriptors\n";
     for (const auto& x : texture_descriptors_) {
         ostr << indent << "  " << x.first << '\n';
     }
     ostr << indent << "Textures\n";
     for (const auto& x : textures_) {
+        ostr << indent << "  " << x.first << '\n';
+    }
+    ostr << indent << "vps\n";
+    for (const auto& x : vps_) {
+        ostr << indent << "  " << x.first << '\n';
+    }
+    ostr << indent << "Discreteness\n";
+    for (const auto& x : discreteness_) {
+        ostr << indent << "  " << x.first << '\n';
+    }
+    ostr << indent << "Texture wrap\n";
+    for (const auto& x : texture_wrap_) {
         ostr << indent << "  " << x.first << '\n';
     }
 }
@@ -407,6 +421,8 @@ const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& nam
     LOG_FUNCTION("RenderingResources::get_vp " + name);
     auto it = vps_.find(name);
     if (it == vps_.end()) {
+        RenderingResources::print_stack(std::cerr);
+        print(std::cerr, 10);
         throw std::runtime_error("Could not find vp with name " + name + ". Forgot to add a LightmapLogic for the light?");
     }
     return it->second;
