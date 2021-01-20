@@ -25,7 +25,7 @@ void power_to_forces_finite_masses(
  */
 FixedArray<float, 3> power_to_force_infinite_mass(
     float break_accel,
-    float hand_break_velocity,
+    float hand_brake_velocity,
     float max_stiction_force,
     float friction_force,
     float max_velocity,

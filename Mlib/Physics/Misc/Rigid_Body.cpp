@@ -76,7 +76,7 @@ void RigidBody::advance_time(
     float min_angular_velocity,
     PhysicsType physics_type,
     ResolveCollisionType resolve_collision_type,
-    float hand_break_velocity,
+    float hand_brake_velocity,
     std::list<Beacon>* beacons)
 {
     std::lock_guard lock{advance_time_mutex_};
@@ -115,7 +115,7 @@ void RigidBody::advance_time(
                 // std::cerr << "dx " << dx << std::endl;
                 if ((P != 0) && (std::abs(P) > -power_internal) && !slipping) {
                     float v = dot0d(velocity, power_axis);
-                    if (sign(P) != sign(v) && std::abs(v) > hand_break_velocity) {
+                    if (sign(P) != sign(v) && std::abs(v) > hand_brake_velocity) {
                         t.second.tracking_wheel.set_w(0);
                     } else if (P > 0) {
                         t.second.tracking_wheel.set_w(std::max(-w_max, t.second.tracking_wheel.w() - 0.5f));

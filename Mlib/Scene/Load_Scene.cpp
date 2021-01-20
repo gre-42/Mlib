@@ -251,7 +251,12 @@ void LoadScene::operator()(
         "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
     static const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
-    static const std::regex create_engine_reg("^(?:\\r?\\n|\\s)*create_engine rigid_body=([\\w+-.]+) name=([\\w+-.]+) power=([\\w+-.]+)$");
+    static const std::regex create_engine_reg(
+        "^(?:\\r?\\n|\\s)*create_engine"
+        "\\s+rigid_body=([\\w+-.]+)"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+power=([\\w+-.]+)"
+        "(?:\\s+HAND_BRAKE_pulled=(0|1))?$");
     static const std::regex player_create_reg(
         "^(?:\\r?\\n|\\s)*player_create"
         "\\s+name=([\\w+-.]+)"
@@ -926,7 +931,9 @@ void LoadScene::operator()(
             }
             auto ep = rb->engines_.insert({
                 match[2].str(),
-                RigidBodyEngine{safe_stof(match[3].str())}});
+                RigidBodyEngine{
+                    safe_stof(match[3].str()),
+                    match[4].str().empty() ? false : safe_stob(match[4].str())}});  // HAND_BRAKE_pulled
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }

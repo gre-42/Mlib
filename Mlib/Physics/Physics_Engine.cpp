@@ -327,7 +327,7 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
             cfg_.min_angular_velocity,
             cfg_.physics_type,
             cfg_.resolve_collision_type,
-            cfg_.hand_break_velocity,
+            cfg_.hand_brake_velocity,
             beacons);
     }
 }

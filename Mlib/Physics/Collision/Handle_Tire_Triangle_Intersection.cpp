@@ -14,7 +14,7 @@ void optimal_angular_velocity_positive(
     float* v = nullptr)
 {
     float vv = rb.get_angular_velocity_at_tire(surface_normal, street_velocity, tire_id) * rb.get_tire_radius(tire_id);
-    float y = std::max(cfg.hand_break_velocity, std::abs(vv));
+    float y = std::max(cfg.hand_brake_velocity, std::abs(vv));
     float m = rb.tires_.at(tire_id).magic_formula.longitudinal().argmax;
     w = (m * y - vv) / rb.get_tire_radius(tire_id);
     if (v != nullptr) {
@@ -32,7 +32,7 @@ void optimal_angular_velocity_negative(
     float* v = nullptr)
 {
     float vv = rb.get_angular_velocity_at_tire(surface_normal, street_velocity, tire_id) * rb.get_tire_radius(tire_id);
-    float y = std::max(cfg.hand_break_velocity, std::abs(vv));
+    float y = std::max(cfg.hand_brake_velocity, std::abs(vv));
     float m = -rb.tires_.at(tire_id).magic_formula.longitudinal().argmax;
     w = (m * y - vv) / rb.get_tire_radius(tire_id);
     if (v != nullptr) {
@@ -203,7 +203,7 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
         // std::cerr << "dx " << dx << std::endl;
         if (P.power != 0) {
             float v = dot0d(rb.rbi_.rbp_.v_ - street_velocity, n3);
-            if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_break_velocity) {
+            if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_brake_velocity) {
                 if (P.power > 0) {
                     break_positive(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
                 } else if (P.power < 0) {

@@ -314,7 +314,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         float P = c.o1.consume_tire_surface_power(c.tire_id).power;
                         tangential_force = power_to_force_infinite_mass(
                             c.o1.get_tire_break_force(c.tire_id),
-                            c.cfg.hand_break_velocity,
+                            c.cfg.hand_brake_velocity,
                             c.o1.tires_.at(c.tire_id).stiction_coefficient(-force_n1) * force_n1,
                             c.o1.tires_.at(c.tire_id).friction_coefficient(-force_n1) * force_n1,
                             c.o1.max_velocity_,

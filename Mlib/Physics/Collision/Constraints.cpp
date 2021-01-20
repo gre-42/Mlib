@@ -270,7 +270,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     {
         float vvx = dot0d(vv, n3_);
         float tvx = dot0d(tv, n3_);
-        slip = (vvx + tvx) / std::max(cfg_.hand_break_velocity, std::abs(vvx));
+        slip = (vvx + tvx) / std::max(cfg_.hand_brake_velocity, std::abs(vvx));
     }
     float sin_lateral_slip_angle;
     if (float vvl2 = sum(squared(vv)); vvl2 > 1e-12) {

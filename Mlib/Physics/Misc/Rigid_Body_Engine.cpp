@@ -4,11 +4,14 @@
 
 using namespace Mlib;
 
-RigidBodyEngine::RigidBodyEngine(float max_surface_power)
+RigidBodyEngine::RigidBodyEngine(
+    float max_surface_power,
+    bool HAND_BRAKE_pulled)
 : surface_power_{0},
   surface_power_nconsumed_{0},
   max_surface_power_{max_surface_power},
-  ntires_{0}
+  ntires_{0},
+  HAND_BRAKE_pulled_{HAND_BRAKE_pulled}
 {}
 
 void RigidBodyEngine::reset_forces() {
@@ -16,11 +19,11 @@ void RigidBodyEngine::reset_forces() {
 }
 
 PowerIntent RigidBodyEngine::consume_abs_surface_power() {
+    if (HAND_BRAKE_pulled_ || std::isnan(surface_power_)) {
+        return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
+    }
     if (max_surface_power_ == 0) {
         return PowerIntent{.power = surface_power_, .type = PowerIntentType::BREAK_OR_IDLE};
-    }
-    if (std::isnan(surface_power_)) {
-        return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
     }
     if (surface_power_nconsumed_ >= ntires_) {
         return PowerIntent{.power = sign(surface_power_), .type=PowerIntentType::BREAK_OR_IDLE};
