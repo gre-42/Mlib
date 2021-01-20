@@ -236,9 +236,9 @@ void Render2::render_depth_map(
     const auto r = std::make_shared<RenderableDepthMap>(rgb_picture, depth_picture, intrinsic_matrix);
     SceneNodeResources scene_node_resources;
     Scene scene;
-    scene_node_resources.add_resource("DenderableDepthMap", r);
+    scene_node_resources.add_resource("RenderableDepthMap", r);
     auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("DenderableDepthMap", "DenderableDepthMap", *on, SceneNodeResourceFilter{});
+    scene_node_resources.instantiate_renderable("RenderableDepthMap", "RenderableDepthMap", *on, SceneNodeResourceFilter{});
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
@@ -265,9 +265,9 @@ void Render2::render_height_map(
     const auto r = std::make_shared<RenderableHeightMap>(rgb_picture, height_picture, normalization_matrix);
     SceneNodeResources scene_node_resources;
     Scene scene;
-    scene_node_resources.add_resource("DenderableHeightMap", r);
+    scene_node_resources.add_resource("RenderableHeightMap", r);
     auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("DenderableHeightMap", "DenderableHeightMap", *on, SceneNodeResourceFilter{});
+    scene_node_resources.instantiate_renderable("RenderableHeightMap", "RenderableHeightMap", *on, SceneNodeResourceFilter{});
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
