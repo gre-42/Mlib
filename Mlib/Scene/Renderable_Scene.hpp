@@ -66,7 +66,7 @@ public:
     void print_physics_engine_search_time() const;
     void stop_and_join();
     SceneNodeResources& scene_node_resources_;
-    std::shared_ptr<AggregateArrayRenderer> small_sorted_aggregate_renderer_;
+    std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
     std::shared_ptr<InstancesRenderer> small_instances_renderer_;
     AggregateArrayRenderer large_aggregate_array_renderer_;
     ArrayInstancesRenderer large_instances_renderer_;

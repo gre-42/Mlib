@@ -204,20 +204,24 @@ int main(int argc, char** argv) {
             std::recursive_mutex mutex;
             RenderLogics render_logics{mutex, ui_focus};
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
-            if (!renderable_scenes.insert({
-                "default_context",
-                std::make_shared<RenderableScene>(
-                    scene_node_resources,
-                    scene_config,
-                    button_states,
-                    ui_focus,
-                    selection_ids,
-                    render2.window(),
-                    render_logics,
-                    config,
-                    mutex)}).second)
             {
-                throw std::runtime_error("Could not insert default context");
+                AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
+                InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};
+                if (!renderable_scenes.insert({
+                    "default_context",
+                    std::make_shared<RenderableScene>(
+                        scene_node_resources,
+                        scene_config,
+                        button_states,
+                        ui_focus,
+                        selection_ids,
+                        render2.window(),
+                        render_logics,
+                        config,
+                        mutex)}).second)
+                {
+                    throw std::runtime_error("Could not insert default context");
+                }
             }
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;

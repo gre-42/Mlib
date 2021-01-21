@@ -1182,6 +1182,8 @@ void LoadScene::operator()(
             render_logics.append(nullptr, players_stats_logic);
         } else if (std::regex_match(line, match, create_scene_reg)) {
             RenderingResourcesGuard rrg{scene_node_resources, match[1].str() + ".rendering_resources"};
+            AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
+            InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};
             auto rs = std::make_shared<RenderableScene>(
                 scene_node_resources,
                 scene_config,

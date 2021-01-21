@@ -15,8 +15,8 @@ RenderableScene::RenderableScene(
     const RenderableSceneConfig& config,
     std::recursive_mutex& mutex)
 : scene_node_resources_{scene_node_resources},
-  small_sorted_aggregate_renderer_{std::make_shared<AggregateArrayRenderer>()},
-  small_instances_renderer_{std::make_shared<ArrayInstancesRenderer>()},
+  small_sorted_aggregate_renderer_{AggregateArrayRenderer::small_sorted_aggregate_renderer()},
+  small_instances_renderer_{ArrayInstancesRenderer::small_instances_renderer()},
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
   physics_engine_{scene_config.physics_engine_config},
