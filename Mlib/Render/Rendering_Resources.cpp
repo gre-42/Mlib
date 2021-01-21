@@ -127,8 +127,10 @@ RenderingResourcesGuard::RenderingResourcesGuard(const std::shared_ptr<Rendering
     RenderingResources::rendering_resources_stack_.push_back(rr);
 }
 
-RenderingResourcesGuard::RenderingResourcesGuard(SceneNodeResources& scene_node_resources)
-: RenderingResourcesGuard{std::make_shared<RenderingResources>(scene_node_resources)}
+RenderingResourcesGuard::RenderingResourcesGuard(
+    SceneNodeResources& scene_node_resources,
+    const std::string& name)
+: RenderingResourcesGuard{std::make_shared<RenderingResources>(scene_node_resources, name)}
 {}
 
 RenderingResourcesGuard::~RenderingResourcesGuard() {
@@ -194,6 +196,7 @@ void RenderingResources::print_stack(std::ostream& ostr) {
 
 void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     std::string indent = std::string(indentation, ' ');
+    ostr << indent << "Name: " << name_ << '\n';
     ostr << indent << "Texture descriptors\n";
     for (const auto& x : texture_descriptors_) {
         ostr << indent << "  " << x.first << '\n';
@@ -216,8 +219,11 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     }
 }
 
-RenderingResources::RenderingResources(SceneNodeResources& scene_node_resources)
-: scene_node_resources_{scene_node_resources}
+RenderingResources::RenderingResources(
+    SceneNodeResources& scene_node_resources,
+    const std::string& name)
+: scene_node_resources_{scene_node_resources},
+  name_{name}
 {}
 
 RenderingResources::~RenderingResources() {
@@ -478,6 +484,10 @@ std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& Render
 
 SceneNodeResources& RenderingResources::scene_node_resources() const {
     return scene_node_resources_;
+}
+
+const std::string& RenderingResources::name() const {
+    return name_;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const RenderingResources& r) {

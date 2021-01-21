@@ -28,13 +28,17 @@ class RenderingResources;
 class RenderingResourcesGuard {
 public:
     explicit RenderingResourcesGuard(const std::shared_ptr<RenderingResources>& rr);
-    explicit RenderingResourcesGuard(SceneNodeResources& scene_node_resources);
+    explicit RenderingResourcesGuard(
+        SceneNodeResources& scene_node_resources,
+        const std::string& name);
     ~RenderingResourcesGuard();
 };
 
 class RenderingResources {
 public:
-    explicit RenderingResources(SceneNodeResources& scene_node_resources);
+    explicit RenderingResources(
+        SceneNodeResources& scene_node_resources,
+        const std::string& name);
     ~RenderingResources();
     void preload(const TextureDescriptor& descriptor) const;
     GLuint get_texture(const TextureDescriptor& descriptor) const;
@@ -57,6 +61,7 @@ public:
     std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
 
     SceneNodeResources& scene_node_resources() const;
+    const std::string& name() const;
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
     static std::shared_ptr<RenderingResources> primary_rendering_resources();
@@ -79,6 +84,7 @@ private:
     std::map<std::string, WrapMode> texture_wrap_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     SceneNodeResources& scene_node_resources_;
+    std::string name_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderingResources& r);

@@ -45,7 +45,7 @@ void test_render() {
     }
     {
         SceneNodeResources scene_node_resources;
-        RenderingResourcesGuard rrg{scene_node_resources};
+        RenderingResourcesGuard rrg{scene_node_resources, "primary_rendering_resources"};
         Array<float> output;
         RenderResults render_results{output: &output};
         size_t num_renderings = SIZE_MAX;

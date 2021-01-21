@@ -53,25 +53,27 @@ void StandardRenderLogic::render(
         CHK(glClear(mask));
     }
 
-    child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
-
-    render_config.apply();
-
     {
-        auto primary_rendering_resources = RenderingResources::primary_rendering_resources();
         RenderingResourcesGuard rrg{rendering_resources_};
-        scene_.render(
-            child_logic_.vp(),
-            child_logic_.iv(),
-            render_config,
-            scene_graph_config,
-            frame_id.external_render_pass,
-            RenderingResources::generate_thread_runner(
-                primary_rendering_resources,
-                rendering_resources_));
-    }
+        child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 
-    render_config.unapply();
+        render_config.apply();
+
+        {
+            auto primary_rendering_resources = RenderingResources::primary_rendering_resources();
+            scene_.render(
+                child_logic_.vp(),
+                child_logic_.iv(),
+                render_config,
+                scene_graph_config,
+                frame_id.external_render_pass,
+                RenderingResources::generate_thread_runner(
+                    primary_rendering_resources,
+                    rendering_resources_));
+        }
+
+        render_config.unapply();
+    }
 
     // if (frame_id.external_render_pass.pass == ExternalRenderPass::Pass::STANDARD_WO_POSTPROCESSING ||
     //     frame_id.external_render_pass.pass == ExternalRenderPass::Pass::STANDARD_WITH_POSTPROCESSING)

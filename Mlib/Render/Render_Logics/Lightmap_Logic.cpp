@@ -61,6 +61,7 @@ void LightmapLogic::render(
         fb_->configure({width: lightmap_width, height: lightmap_height, with_depth_texture: with_depth_texture_});
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_->frame_buffer));
         {
+            RenderingResourcesGuard rrg{rendering_resources_};
             SmallSortedAggregateRendererGuard small_aggregate_array_renderer;
             SmallInstancesRendererGuard small_instances_renderer;
             child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
