@@ -20,7 +20,7 @@ class FlyingCameraUserClass: public BaseUserObject {
 public:
     ButtonStates& button_states;
     SelectedCameras& cameras;
-    std::list<Focus>& focus;
+    Focuses& focuses;
     SetFps* physics_set_fps;
     FixedArray<float, 3> position;
     FixedArray<float, 3> angles;

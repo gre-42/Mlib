@@ -30,7 +30,7 @@ RenderableScene::RenderableScene(
   user_object_{
       .button_states = button_states,
       .cameras = selected_cameras_,
-      .focus = ui_focus.focus,
+      .focuses = ui_focus.focuses,
       .physics_set_fps = &physics_set_fps_},
   gefp_{FixedArray<float, 3>{0, -9.8, 0}},
   standard_camera_logic_{
@@ -59,7 +59,7 @@ RenderableScene::RenderableScene(
       button_press_,
       config.print_gamepad_buttons,
       selected_cameras_,
-      ui_focus.focus,
+      ui_focus.focuses,
       scene_)},
   read_pixels_logic_{*standard_render_logic_},
   dirtmap_logic_{std::make_shared<DirtmapLogic>(read_pixels_logic_)},

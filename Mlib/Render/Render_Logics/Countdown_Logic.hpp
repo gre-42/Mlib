@@ -14,7 +14,7 @@ public:
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
-        std::list<Focus>& focus,
+        Focuses& focuses,
         float nseconds);
     ~CountDownLogic();
 
@@ -30,7 +30,7 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
     bool timeout_started_;
     float nseconds_;
-    std::list<Focus>& focus_;
+    Focuses& focuses_;
 };
 
 }

@@ -11,8 +11,8 @@ RigidBodyRecorder::RigidBodyRecorder(
     AdvanceTimes& advance_times,
     SceneNode* recorded_node,
     RigidBodyIntegrator* rbi,
-    const std::list<Focus>& focus)
-: focus_{focus},
+    const Focuses& focuses)
+: focuses_{focuses},
   advance_times_{advance_times},
   recorded_node_{recorded_node},
   rbi_{rbi},
@@ -27,7 +27,7 @@ void RigidBodyRecorder::advance_time(float dt) {
     if (recorded_node_ == nullptr) {
         return;
     }
-    if (focus_.empty() || (std::find(focus_.begin(), focus_.end(), Focus::COUNTDOWN) != focus_.end())) {
+    if (!focuses_.contains(Focus::COUNTDOWN)) {
         return;
     }
     auto rotation = matrix_2_tait_bryan_angles(rbi_->rbp_.rotation_);

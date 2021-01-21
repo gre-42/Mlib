@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         ButtonStates button_states;
-        UiFocus ui_focus = UiFocus{focus: {Focus::SCENE}};
+        UiFocus ui_focus = UiFocus{.focuses = {Focus::SCENE}};
         SubstitutionString substitutions;
         std::map<std::string, size_t> selection_ids;
         // FifoLog fifo_log{10 * 1000};
@@ -256,13 +256,13 @@ int main(int argc, char** argv) {
                     scene_config.scene_graph_config);
             }
             if (!render2.window_should_close()) {
-                ui_focus.focus = {Focus::SCENE, Focus::LOADING};
+                ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
                 num_renderings = 1;
                 render2(
                     render_logics,
                     mutex,
                     scene_config.scene_graph_config);
-                ui_focus.focus.pop_back();
+                ui_focus.focuses.pop_back();
             }
 
             for (const auto& p : renderable_scenes) {

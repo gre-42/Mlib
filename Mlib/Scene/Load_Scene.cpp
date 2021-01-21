@@ -1141,7 +1141,7 @@ void LoadScene::operator()(
                     safe_stof(match[3].str())},
                 safe_stof(match[4].str()),        // font_height_pixels
                 safe_stof(match[5].str()),        // line_distance_pixels
-                ui_focus.focus,
+                ui_focus.focuses,
                 safe_stof(match[6].str()));       // nseconds
             render_logics.append(nullptr, countdown_logic);
         } else if (std::regex_match(line, match, loading_reg)) {
@@ -1450,13 +1450,13 @@ void LoadScene::operator()(
                 physics_engine.advance_times_,
                 recorder_node,
                 &rb->rbi_,
-                ui_focus.focus));
+                ui_focus.focuses));
         } else if (std::regex_match(line, match, playback_track_reg)) {
             auto playback_node = scene.get_node(match[1].str());
             auto playback = std::make_shared<RigidBodyPlayback>(
                 fpath(match[3].str()),
                 physics_engine.advance_times_,
-                ui_focus.focus,
+                ui_focus.focuses,
                 safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
         } else if (std::regex_match(line, match, check_points_reg)) {
@@ -1541,7 +1541,7 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
         } else if (std::regex_match(line, match, append_focus_reg)) {
-            ui_focus.focus.push_back(focus_from_string(match[1].str()));
+            ui_focus.focuses.push_back(focus_from_string(match[1].str()));
         } else {
             return false;
         }

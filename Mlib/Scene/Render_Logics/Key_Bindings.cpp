@@ -14,13 +14,13 @@ KeyBindings::KeyBindings(
     ButtonPress& button_press,
     bool print_gamepad_buttons,
     SelectedCameras& selected_cameras,
-    const std::list<Focus>& focus,
+    const Focuses& focuses,
     const Scene& scene)
 : button_press_{button_press},
   print_gamepad_buttons_{print_gamepad_buttons},
   scene_{scene},
   selected_cameras_{selected_cameras},
-  focus_{focus}
+  focuses_{focuses}
 {}
 
 KeyBindings::~KeyBindings() {
@@ -66,7 +66,7 @@ void KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
 }
 
 void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
-    if (!burn_in && !focus_.empty() && (focus_.back() == Focus::SCENE)) {
+    if (!burn_in && (focuses_.focus() == Focus::SCENE)) {
         // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
         // }

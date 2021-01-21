@@ -36,9 +36,7 @@ void RenderLogics::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    Focus current_focus = ui_focus_.focus.empty()
-        ? Focus::BASE
-        : ui_focus_.focus.back();
+    Focus current_focus = ui_focus_.focuses.focus();
     
     LOG_FUNCTION("RenderLogics::render");
     for (const auto& c : render_logics_) {

@@ -20,7 +20,7 @@ public:
         ButtonPress& button_press,
         bool print_gamepad_buttons,
         SelectedCameras& selected_cameras,
-        const std::list<Focus>& focus,
+        const Focuses& focuses,
         const Scene& scene);
     ~KeyBindings();
 
@@ -44,7 +44,7 @@ private:
     bool print_gamepad_buttons_;
     const Scene& scene_;
     SelectedCameras& selected_cameras_;
-    const std::list<Focus>& focus_;
+    const Focuses& focuses_;
 };
 
 }

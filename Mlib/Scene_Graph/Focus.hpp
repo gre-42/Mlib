@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <list>
 #include <stdexcept>
 #include <string>
@@ -23,8 +24,47 @@ inline Focus operator & (Focus a, Focus b) {
     return Focus((unsigned int)a & (unsigned int)b);
 }
 
+class Focuses {
+public:
+    Focuses() = default;
+    Focuses(const std::initializer_list<Focus>& focuses)
+    : focuses_{focuses}
+    {}
+    inline Focus focus() const {
+        return focuses_.empty()
+            ? Focus::BASE
+            : focuses_.back();
+    }
+    inline std::list<Focus>::const_iterator find(Focus focus) const {
+        return std::find(focuses_.begin(), focuses_.end(), focus);
+    }
+    inline std::list<Focus>::iterator find(Focus focus) {
+        return std::find(focuses_.begin(), focuses_.end(), focus);
+    }
+    inline std::list<Focus>::const_iterator end() const {
+        return focuses_.end();
+    }
+    inline std::list<Focus>::iterator end() {
+        return focuses_.end();
+    }
+    inline void erase(const std::list<Focus>::iterator& it) {
+        focuses_.erase(it);
+    }
+    void pop_back() {
+        focuses_.pop_back();
+    }
+    void push_back(Focus focus) {
+        focuses_.push_back(focus);
+    }
+    bool contains(Focus focus) const {
+        return find(focus) != end();
+    }
+private:
+    std::list<Focus> focuses_;
+};
+
 struct UiFocus {
-    std::list<Focus> focus;
+    Focuses focuses;
     size_t submenu_id = 0;
     size_t n_submenus = 0;
     inline void goto_next_submenu() {

@@ -149,14 +149,13 @@ void FlyingCameraLogic::render(
 {
     user_object_.button_states.update_gamepad_state();
     if (button_press_.key_pressed({key: "ESCAPE", gamepad_button: "START"})) {
-        if (!user_object_.focus.empty()) {
-            if (user_object_.focus.back() == Focus::MENU) {
-                user_object_.focus.pop_back();
-            } else if ((user_object_.focus.back() & (Focus::LOADING | Focus::COUNTDOWN | Focus::SCENE)) != Focus::NONE) {
-                user_object_.focus.push_back(Focus::MENU);
-            } else {
-                throw std::runtime_error("Unknown focus value");
-            }
+        Focus focus = user_object_.focuses.focus();
+        if (focus == Focus::MENU) {
+            user_object_.focuses.pop_back();
+        } else if ((focus & (Focus::LOADING | Focus::COUNTDOWN | Focus::SCENE)) != Focus::NONE) {
+            user_object_.focuses.push_back(Focus::MENU);
+        } else if (focus != Focus::BASE) {
+            throw std::runtime_error("Unknown focus value");
         }
     }
 

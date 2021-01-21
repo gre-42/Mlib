@@ -19,7 +19,7 @@ public:
     RigidBodyPlayback(
         const std::string& filename,
         AdvanceTimes& advance_times,
-        const std::list<Focus>& focus,
+        const Focuses& focuses,
         float speed);
     ~RigidBodyPlayback();
     virtual void advance_time(float dt) override;
@@ -28,7 +28,7 @@ public:
     virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
 private:
     AdvanceTimes& advance_times_;
-    const std::list<Focus>& focus_;
+    const Focuses& focuses_;
     TransformationMatrix<float, 3> transformation_matrix_;
     TrackReader track_reader_;
 };

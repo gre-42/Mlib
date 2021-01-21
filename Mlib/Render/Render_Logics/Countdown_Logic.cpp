@@ -8,7 +8,7 @@ CountDownLogic::CountDownLogic(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
-    std::list<Focus>& focus,
+    Focuses& focuses,
     float nseconds)
 : RenderTextLogic{
     ttf_filename,
@@ -17,7 +17,7 @@ CountDownLogic::CountDownLogic(
     line_distance_pixels},
   timeout_started_{false},
   nseconds_{nseconds},
-  focus_{focus}
+  focuses_{focuses}
 {}
 
 CountDownLogic::~CountDownLogic()
@@ -31,14 +31,14 @@ void CountDownLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (auto it = std::find(focus_.begin(), focus_.end(), Focus::COUNTDOWN); it != focus_.end()) {
+    if (auto it = focuses_.find(Focus::COUNTDOWN); it != focuses_.end()) {
         if (!timeout_started_) {
             start_time_ = std::chrono::steady_clock::now();
             timeout_started_ = true;
         }
         std::chrono::duration<float> elapsed_time = std::chrono::steady_clock::now() - start_time_;
         if (elapsed_time.count() >= nseconds_) {
-            focus_.erase(it);
+            focuses_.erase(it);
         } else {
             renderable_text().render(
                 position_,

@@ -496,7 +496,7 @@ int main(int argc, char** argv) {
         scene.get_node("follower_camera")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
         
         // scene.print();
-        std::list<Focus> focus = {Focus::SCENE};
+        Focuses focuses = {Focus::SCENE};
         ButtonStates button_states;
         StandardCameraLogic standard_camera_logic{scene, selected_cameras};
         StandardRenderLogic standard_render_logic{
@@ -507,7 +507,7 @@ int main(int argc, char** argv) {
         FlyingCameraUserClass user_object{
             button_states: button_states,
             cameras: selected_cameras,
-            focus: focus,
+            focuses: focuses,
             physics_set_fps: nullptr};
         auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
             render2.window(),

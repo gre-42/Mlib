@@ -223,12 +223,12 @@ void test_physics_engine() {
         standard_camera_logic,
         ClearMode::COLOR_AND_DEPTH,
         Focus::ALWAYS};
-    std::list<Focus> focus = {Focus::SCENE};
+    Focuses focuses = {Focus::SCENE};
     ButtonStates button_states;
     FlyingCameraUserClass user_object{
         button_states: button_states,
         cameras: selected_cameras,
-        focus: focus,
+        focuses: focuses,
         physics_set_fps: &physics_set_fps};
     auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
         render2.window(),
