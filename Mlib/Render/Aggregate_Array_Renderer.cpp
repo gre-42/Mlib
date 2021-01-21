@@ -11,11 +11,6 @@ AggregateArrayRenderer::AggregateArrayRenderer()
 {}
 
 void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& sorted_aggregate_queue) {
-    if (rendering_resources_ != RenderingResources::rendering_resources()) {
-        std::cerr << rendering_resources_ << std::endl;
-        std::cerr << rendering_resources_->name() << " " << RenderingResources::rendering_resources()->name() << std::endl;
-        assert_true(false);
-    }
     // size_t ntris = 0;
     // for (const auto& a : sorted_aggregate_queue) {
     //     ntris += a->triangles.size();
@@ -59,21 +54,11 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
         std::swap(rcvai_, rcvai);
         is_initialized_ = true;
     }
-    if (rendering_resources_ != RenderingResources::rendering_resources()) {
-        std::cerr << rendering_resources_ << std::endl;
-        std::cerr << rendering_resources_->name() << " " << RenderingResources::rendering_resources()->name() << std::endl;
-        assert_true(false);
-    }
 }
 
 void AggregateArrayRenderer::render_aggregates(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float, 3>& iv, const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const {
     std::lock_guard<std::mutex> lock_guard{mutex_};
     if (is_initialized_) {
-        if (rendering_resources_ != RenderingResources::rendering_resources()) {
-            std::cerr << rendering_resources_ << std::endl;
-            std::cerr << rendering_resources_->name() << " " << RenderingResources::rendering_resources()->name() << std::endl;
-            assert_true(false);
-        }
         rcvai_->render(
             vp,
             TransformationMatrix<float, 3>::identity(),

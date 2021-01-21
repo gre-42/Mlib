@@ -439,11 +439,6 @@ void RenderableColoredVertexArrayInstance::render(
     const Style* style) const
 {
     LOG_FUNCTION("RenderableColoredVertexArrayInstance::render");
-    if (secondary_rendering_resources_ != RenderingResources::rendering_resources()) {
-        RenderingResources::print_stack(std::cerr);
-        secondary_rendering_resources_->print(std::cerr, 5);
-        throw std::runtime_error("Rendering resources mismatch: " + secondary_rendering_resources_->name() + " != " + RenderingResources::rendering_resources()->name());
-    }
     if (render_pass.external.pass == ExternalRenderPass::DIRTMAP) {
         return;
     }
