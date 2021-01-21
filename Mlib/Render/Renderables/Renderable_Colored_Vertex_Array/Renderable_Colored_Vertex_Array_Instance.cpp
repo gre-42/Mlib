@@ -534,11 +534,17 @@ void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
     }
 }
 
-void RenderableColoredVertexArrayInstance::print_stats() const {
-    std::cerr << "#triangle lists: " << triangles_res_subset_.size() << std::endl;
+void RenderableColoredVertexArrayInstance::print_stats(std::ostream& ostr) const {
+    ostr << "#triangle lists: " << triangles_res_subset_.size() << std::endl;
     size_t i = 0;
     for (auto& cva : triangles_res_subset_) {
-        std::cerr << "triangle list " << i << " #lines: " << cva->lines.size() << std::endl;
-        std::cerr << "triangle list " << i << " #tris:  " << cva->triangles.size() << std::endl;
+        ostr << "triangle list " << i << " #lines: " << cva->lines.size() << std::endl;
+        ostr << "triangle list " << i << " #tris:  " << cva->triangles.size() << std::endl;
     }
+}
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const RenderableColoredVertexArrayInstance& rcvi)
+{
+    rcvi.print_stats(ostr);
+    return ostr;
 }

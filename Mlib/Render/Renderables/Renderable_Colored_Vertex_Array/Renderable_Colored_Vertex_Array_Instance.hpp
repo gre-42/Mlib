@@ -50,7 +50,7 @@ public:
         const TransformationMatrix<float, 3>& m,
         const SceneGraphConfig& scene_graph_config,
         std::list<TransformedColoredVertexArray>& instances_queue) const override;
-    void print_stats() const;
+    void print_stats(std::ostream& ostr) const;
 private:
     std::vector<OffsetAndQuaternion<float>> calculate_absolute_bone_transformations(const Style* style) const;
     void render_cva(
@@ -71,5 +71,7 @@ private:
     bool requires_blending_pass_;
     std::shared_ptr<RenderingResources> secondary_rendering_resources_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArrayInstance& rcvi);
 
 }
