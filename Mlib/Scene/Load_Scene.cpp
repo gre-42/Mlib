@@ -36,6 +36,7 @@
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Loading_Text_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Main_Menu_Background_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Pause_On_Lose_Focus_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
@@ -395,7 +396,10 @@ void LoadScene::operator()(
         "\\s+smooth_radius=([\\w+-.]+)"
         "\\s+smooth_alpha=([\\w+-.]+)"
         "\\s+periodic=(0|1)$");
-    static const std::regex ui_background_reg("^(?:\\r?\\n|\\s)*ui_background texture=([\\w-. \\(\\)/+-]+) target_focus=(menu|loading|countdown|scene)$");
+    static const std::regex ui_background_reg(
+        "^(?:\\r?\\n|\\s)*ui_background"
+        "\\s+texture=([\\w-. \\(\\)/+-]+)"
+        "\\s+target_focus=(menu|loading|countdown|scene)$");
     static const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     static const std::regex ortho_camera_reg("^(?:\\r?\\n|\\s)*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
@@ -443,14 +447,26 @@ void LoadScene::operator()(
     static const std::regex set_preferred_car_spawner_reg("^(?:\\r?\\n|\\s)*set_preferred_car_spawner player=([\\w+-.]+)\\s+macro=(\\w+)\\s+parameters=([#: \\w+-.]*)$");
     static const std::regex set_vip_reg("^(?:\\r?\\n|\\s)*set_vip player=([\\w+-.]+)$");
     static const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
-    static const std::regex append_focus_reg("^(?:\\r?\\n|\\s)*append_focus (menu|loading|countdown|scene)$");
+    static const std::regex append_focus_reg(
+        "^(?:\\r?\\n|\\s)*append_focus"
+        "\\s+(menu|loading|countdown|scene)$");
     static const std::regex wayside_resource_names_reg(
         "(?:\\s*wayside_resource_names=\\r?\\n"
         "\\s*min_dist:([\\w+-.]+)\\r?\\n"
         "\\s*max_dist:([\\w+-.]+)\\r?\\n"
         "([\\s,:\\w-. \\(\\)/+-]*)\\r?\\n|(.+))");
-    static const std::regex set_spawn_points_reg("^(?:\\r?\\n|\\s)*set_spawn_points node=([\\w+-.]+) resource=([\\w+-.]+)$");
-    static const std::regex set_way_points_reg("^(?:\\r?\\n|\\s)*set_way_points player=([\\w+-.]+)\\s+node=([\\w+-.]+) resource=([\\w+-.]+)$");
+    static const std::regex set_spawn_points_reg("^(?:\\r?\\n|\\s)*"
+        "\\s+set_spawn_points"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+resource=([\\w+-.]+)$");
+    static const std::regex set_way_points_reg("^(?:\\r?\\n|\\s)*"
+        "set_way_points player=([\\w+-.]+)"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+resource=([\\w+-.]+)$");
+    static const std::regex pause_on_lose_focus_reg("^(?:\\r?\\n|\\s)*"
+        "pause_on_lose_focus"
+        "\\s+context=([\\w+-.]+)"
+        "\\s+target_focus=(menu|loading|countdown|scene)$");
 
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
@@ -1284,6 +1300,20 @@ void LoadScene::operator()(
                     .loop_begin = safe_stof(match[13].str()),
                     .loop_end = safe_stof(match[14].str()),
                     .loop_time = safe_stof(match[15].str())}});
+        } else if (std::regex_match(line, match, pause_on_lose_focus_reg)) {
+            std::string ctx = match[1].str();
+            Focus target_focus = focus_from_string(match[2].str());
+            auto it = renderable_scenes.find(ctx);
+            if (it == renderable_scenes.end()) {
+                throw std::runtime_error("Could not find context with name \"" + ctx + '"');
+            }
+            SetFps& set_fps = it->second->physics_set_fps_;
+            Focuses& focuses = ui_focus.focuses;
+            auto polf = std::make_shared<PauseOnLoseFocusLogic>(
+                set_fps,
+                focuses,
+                target_focus);
+            render_logics.append(nullptr, polf);
         } else if (std::regex_match(line, match, add_bvh_resource_reg)) {
             BvhConfig cfg = blender_bvh_config;
             cfg.smooth_radius = safe_stoz(match[3].str());
