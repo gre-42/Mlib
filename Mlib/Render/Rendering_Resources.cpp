@@ -123,13 +123,13 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
     assert_true(level - 1 == log2(std::max(si.width, si.height)));
 }
 
-RenderingResourcesGuard::RenderingResourcesGuard(SceneNodeResources& scene_node_resources) {
-    RenderingResources::rendering_resources_stack_.push_back(std::make_shared<RenderingResources>(scene_node_resources));
-}
-
 RenderingResourcesGuard::RenderingResourcesGuard(const std::shared_ptr<RenderingResources>& rr) {
     RenderingResources::rendering_resources_stack_.push_back(rr);
 }
+
+RenderingResourcesGuard::RenderingResourcesGuard(SceneNodeResources& scene_node_resources)
+: RenderingResourcesGuard{std::make_shared<RenderingResources>(scene_node_resources)}
+{}
 
 RenderingResourcesGuard::~RenderingResourcesGuard() {
     if (RenderingResources::rendering_resources_stack_.empty()) {

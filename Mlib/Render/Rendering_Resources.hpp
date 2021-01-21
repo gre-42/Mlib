@@ -27,8 +27,8 @@ class RenderingResources;
 
 class RenderingResourcesGuard {
 public:
-    explicit RenderingResourcesGuard(SceneNodeResources& scene_node_resources);
     explicit RenderingResourcesGuard(const std::shared_ptr<RenderingResources>& rr);
+    explicit RenderingResourcesGuard(SceneNodeResources& scene_node_resources);
     ~RenderingResourcesGuard();
 };
 
