@@ -263,7 +263,7 @@ void Scene::render(
             bool is_foreground_task =
                 (external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ||
                 (external_render_pass.pass == ExternalRenderPass::DIRTMAP);
-            auto small_sorted_aggregate_renderer = AggregateRenderer::small_sorted_aggregate_renderer();
+            std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer = AggregateRenderer::small_sorted_aggregate_renderer();
             if (small_sorted_aggregate_renderer != nullptr) {
                 // Contains continuous alpha and must therefore be rendered late.
                 LOG_INFO("Scene::render small_sorted_aggregate_renderer");
@@ -304,7 +304,7 @@ void Scene::render(
 
             // Contains continuous alpha and must therefore be rendered late.
             LOG_INFO("Scene::render instances_renderer");
-            auto* small_instances_renderer = InstancesRenderer::small_instances_renderer();
+            std::shared_ptr<InstancesRenderer> small_instances_renderer = InstancesRenderer::small_instances_renderer();
             if (small_instances_renderer != nullptr) {
                 auto small_instances_renderer_update_func = [&](){
                     // copy "vp" and "scene_graph_config"

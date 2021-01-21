@@ -5,6 +5,8 @@
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -18,7 +20,9 @@ StandardRenderLogic::StandardRenderLogic(
   child_logic_{child_logic},
   clear_mode_{clear_mode},
   focus_mask_{focus_mask},
-  rendering_resources_{RenderingResources::rendering_resources()}
+  rendering_resources_{RenderingResources::rendering_resources()},
+  small_sorted_aggregate_renderer_{AggregateRenderer::small_sorted_aggregate_renderer()},
+  small_instances_renderer_{InstancesRenderer::small_instances_renderer()}
 {}
 
 StandardRenderLogic::~StandardRenderLogic()
@@ -55,6 +59,8 @@ void StandardRenderLogic::render(
 
     {
         RenderingResourcesGuard rrg{rendering_resources_};
+        AggregateRendererGuard arg{small_sorted_aggregate_renderer_};
+        InstancesRendererGuard irg{small_instances_renderer_};
         child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
 
         render_config.apply();

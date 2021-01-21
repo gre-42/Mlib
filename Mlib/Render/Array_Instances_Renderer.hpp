@@ -9,12 +9,6 @@ namespace Mlib {
 
 class RenderingResources;
 
-class SmallInstancesRendererGuard {
-public:
-    explicit SmallInstancesRendererGuard();
-    ~SmallInstancesRendererGuard();
-};
-
 class ArrayInstancesRenderer: public InstancesRenderer {
 public:
     ArrayInstancesRenderer(const ArrayInstancesRenderer& other) = delete;

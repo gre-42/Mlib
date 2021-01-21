@@ -62,8 +62,8 @@ void LightmapLogic::render(
         CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_->frame_buffer));
         {
             RenderingResourcesGuard rrg{rendering_resources_};
-            SmallSortedAggregateRendererGuard small_aggregate_array_renderer;
-            SmallInstancesRendererGuard small_instances_renderer;
+            AggregateRendererGuard small_aggregate_array_renderer{std::make_shared<AggregateArrayRenderer>()};
+            InstancesRendererGuard small_instances_renderer{std::make_shared<ArrayInstancesRenderer>()};
             child_logic_.render(lightmap_width, lightmap_height, render_config, scene_graph_config, render_results, light_rsd);
         }
 

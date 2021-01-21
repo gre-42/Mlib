@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
-        SmallSortedAggregateRendererGuard small_sorted_aggregate_renderer_guard;
+        AggregateRendererGuard small_sorted_aggregate_renderer_guard{std::make_shared<AggregateArrayRenderer>()};
         AggregateArrayRenderer large_aggregate_renderer;
         Scene scene{&large_aggregate_renderer};
         std::string light_configuration = args.named_value("--light_configuration", "one");

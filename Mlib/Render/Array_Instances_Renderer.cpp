@@ -7,14 +7,6 @@
 
 using namespace Mlib;
 
-SmallInstancesRendererGuard::SmallInstancesRendererGuard() {
-    InstancesRenderer::small_instances_renderers_.push_back(new ArrayInstancesRenderer());
-}
-
-SmallInstancesRendererGuard::~SmallInstancesRendererGuard() {
-    InstancesRenderer::small_instances_renderers_.pop_back();
-}
-
 ArrayInstancesRenderer::ArrayInstancesRenderer()
 : rcva_{nullptr}
 {}

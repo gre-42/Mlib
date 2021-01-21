@@ -6,6 +6,8 @@ namespace Mlib {
 
 class Scene;
 class RenderingResources;
+class AggregateRenderer;
+class InstancesRenderer;
 enum class ClearMode;
 
 class StandardRenderLogic: public RenderLogic {
@@ -36,6 +38,8 @@ private:
     ClearMode clear_mode_;
     Focus focus_mask_;
     std::shared_ptr<RenderingResources> rendering_resources_;
+    std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
+    std::shared_ptr<InstancesRenderer> small_instances_renderer_;
 };
 
 }

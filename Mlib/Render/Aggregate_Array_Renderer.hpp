@@ -9,12 +9,6 @@ namespace Mlib {
 
 class RenderingResources;
 
-class SmallSortedAggregateRendererGuard {
-public:
-    explicit SmallSortedAggregateRendererGuard();
-    ~SmallSortedAggregateRendererGuard();
-};
-
 class AggregateArrayRenderer: public AggregateRenderer {
 public:
     AggregateArrayRenderer(const AggregateArrayRenderer& other) = delete;
@@ -28,6 +22,7 @@ private:
     mutable std::mutex mutex_;
     bool is_initialized_ = false;
     std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>> cva_instances_;
+    std::shared_ptr<RenderingResources> rendering_resources_;
 };
 
 }
