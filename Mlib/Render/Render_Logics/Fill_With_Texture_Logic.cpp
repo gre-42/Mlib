@@ -1,6 +1,7 @@
 #include "Fill_With_Texture_Logic.hpp"
 #include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <sstream>
 
@@ -22,7 +23,7 @@ FillWithTextureLogic::FillWithTextureLogic(const std::string& image_resource_nam
 {
     rp_.generate(vertex_shader_text, fragment_shader_text);
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
-    rp_.texture_id_ = RenderingResources::rendering_resources()->get_texture({color: image_resource_name, color_mode: ColorMode::RGBA});
+    rp_.texture_id_ = RenderingContextStack::rendering_resources()->get_texture({color: image_resource_name, color_mode: ColorMode::RGBA});
 }
 
 void FillWithTextureLogic::render(

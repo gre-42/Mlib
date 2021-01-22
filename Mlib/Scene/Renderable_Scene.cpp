@@ -78,8 +78,8 @@ RenderableScene::RenderableScene(
       players_,
       mutex_},
   scene_config_{scene_config},
-  primary_rendering_resources_{RenderingResources::primary_rendering_resources()},
-  secondary_rendering_resources_{RenderingResources::rendering_resources()}
+  primary_rendering_context_{RenderingContextStack::primary_rendering_context()},
+  secondary_rendering_context_{RenderingContextStack::rendering_context()}
 {
     if (config.with_flying_logic) {
         render_logics_.append(nullptr, flying_camera_logic_);
@@ -97,8 +97,8 @@ RenderableScene::RenderableScene(
 }
 
 RenderableScene::~RenderableScene() {
-    RenderingResourcesGuard rrg0{primary_rendering_resources_};
-    RenderingResourcesGuard rrg1{secondary_rendering_resources_};
+    RenderingContextGuard rrg0{primary_rendering_context_};
+    RenderingContextGuard rrg1{secondary_rendering_context_};
     scene_.shutdown();
 }
 
@@ -116,8 +116,9 @@ void RenderableScene::start_physics_loop() {
             physics_set_fps_,
             SIZE_MAX,  // nframes
             &fifo_log_,
-            RenderingResources::generate_thread_runner(
-                RenderingResources::primary_rendering_resources())});
+            RenderingContextStack::generate_thread_runner(
+                primary_rendering_context_,
+                secondary_rendering_context_)});
 }
 
 void RenderableScene::print_physics_engine_search_time() const {

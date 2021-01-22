@@ -14,6 +14,7 @@
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Waypoints.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Draw_Streets.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -281,7 +282,7 @@ RenderableOsmMap::RenderableOsmMap(
         }
     }
 
-    auto primary_rendering_resources = RenderingResources::primary_rendering_resources();
+    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
         .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture)},
         .dirt_texture = dirt_texture,

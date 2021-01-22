@@ -4,6 +4,7 @@
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/String.hpp>
@@ -31,7 +32,7 @@ int main(int argc, char** argv) {
         np.add_point({0.f, 0.f});
         np.add_point({float(img.shape(id1)) - 1, float(img.shape(id0)) - 1});
         SceneNodeResources scene_node_resources;
-        RenderingResourcesGuard rrg{scene_node_resources, "primary_rendering_resources"};
+        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
         size_t num_renderings = SIZE_MAX;
         Render2{num_renderings}.render_height_map(
             img.to_float_rgb(),

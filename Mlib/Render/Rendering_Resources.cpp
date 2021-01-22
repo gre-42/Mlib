@@ -123,77 +123,6 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
     assert_true(level - 1 == log2(std::max(si.width, si.height)));
 }
 
-RenderingResourcesGuard::RenderingResourcesGuard(const std::shared_ptr<RenderingResources>& rr) {
-    RenderingResources::rendering_resources_stack_.push_back(rr);
-}
-
-RenderingResourcesGuard::RenderingResourcesGuard(
-    SceneNodeResources& scene_node_resources,
-    const std::string& name)
-: RenderingResourcesGuard{std::make_shared<RenderingResources>(scene_node_resources, name)}
-{}
-
-RenderingResourcesGuard::~RenderingResourcesGuard() {
-    if (RenderingResources::rendering_resources_stack_.empty()) {
-        #pragma GCC push_options
-        #pragma GCC diagnostic ignored "-Wterminate"
-        throw std::runtime_error("~RenderingResourcesGuard but stack is empty");
-        #pragma GCC pop_options
-    }
-    RenderingResources::rendering_resources_stack_.pop_back();
-}
-
-thread_local std::list<std::shared_ptr<RenderingResources>> RenderingResources::rendering_resources_stack_;
-
-std::shared_ptr<RenderingResources> RenderingResources::primary_rendering_resources() {
-    if (RenderingResources::rendering_resources_stack_.empty()) {
-        throw std::runtime_error("Primary rendering resources on empty stack");
-    }
-    return RenderingResources::rendering_resources_stack_.front();
-}
-
-std::shared_ptr<RenderingResources> RenderingResources::rendering_resources() {
-    if (RenderingResources::rendering_resources_stack_.empty()) {
-        throw std::runtime_error("Rendering resources on empty stack");
-    }
-    return RenderingResources::rendering_resources_stack_.back();
-}
-
-std::function<std::function<void()>(std::function<void()>)>
-    RenderingResources::generate_thread_runner(
-        std::shared_ptr<RenderingResources> rendering_resources)
-{
-    return [rendering_resources](std::function<void()> f){
-        return [rendering_resources, f](){
-            RenderingResourcesGuard rrg{rendering_resources};
-            f();
-        };
-    };
-}
-
-std::function<std::function<void()>(std::function<void()>)>
-    RenderingResources::generate_thread_runner(
-        std::shared_ptr<RenderingResources> primary_rendering_resources,
-        std::shared_ptr<RenderingResources> secondary_rendering_resources)
-{
-    return [primary_rendering_resources, secondary_rendering_resources](std::function<void()> f){
-        return [primary_rendering_resources, secondary_rendering_resources, f](){
-            RenderingResourcesGuard rrg0{primary_rendering_resources};
-            RenderingResourcesGuard rrg1{secondary_rendering_resources};
-            f();
-        };
-    };
-}
-
-void RenderingResources::print_stack(std::ostream& ostr) {
-    ostr << "Rendering resource stack\n";
-    size_t i = 0;
-    for (const auto& e : rendering_resources_stack_) {
-        std::cerr << "Stack element " << i++ << '\n';
-        e->print(ostr, 2);
-    };
-}
-
 void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     std::string indent = std::string(indentation, ' ');
     ostr << indent << "Name: " << name_ << '\n';
@@ -427,8 +356,6 @@ const FixedArray<float, 4, 4>& RenderingResources::get_vp(const std::string& nam
     LOG_FUNCTION("RenderingResources::get_vp " + name);
     auto it = vps_.find(name);
     if (it == vps_.end()) {
-        RenderingResources::print_stack(std::cerr);
-        print(std::cerr, 10);
         throw std::runtime_error("Could not find vp with name " + name + ". Forgot to add a LightmapLogic for the light?");
     }
     return it->second;

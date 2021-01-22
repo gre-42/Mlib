@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <list>
 
 namespace Mlib {
@@ -48,7 +49,7 @@ public:
 
 private:
     RenderLogic& child_logic_;
-    std::shared_ptr<RenderingResources> rendering_resources_;
+    RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fb_;
     LightmapUpdateCycle update_cycle_;
     std::string light_node_name_;

@@ -2,6 +2,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -36,7 +37,7 @@ public:
     void set_filenames(const std::vector<std::string>& filenames, const std::string& alias);
 private:
     RenderLogic& child_logic_;
-    std::shared_ptr<RenderingResources> rendering_resources_;
+    RenderingContext rendering_context_;
     SRenderProgram rp_;
     VertexArray va_;
     std::vector<std::string> filenames_;

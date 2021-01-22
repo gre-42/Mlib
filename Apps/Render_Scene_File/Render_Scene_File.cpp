@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 
 using namespace Mlib;
@@ -187,7 +188,7 @@ int main(int argc, char** argv) {
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
 
             SceneNodeResources scene_node_resources;
-            RenderingResourcesGuard rrg{scene_node_resources, "primary_rendering_resources"};
+            RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
             RenderableSceneConfig config{
                 .fly = args.has_named("--fly"),
                 .rotate = args.has_named("--rotate"),

@@ -4,6 +4,7 @@
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Results.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -45,7 +46,10 @@ void test_render() {
     }
     {
         SceneNodeResources scene_node_resources;
-        RenderingResourcesGuard rrg{scene_node_resources, "primary_rendering_resources"};
+        RenderingContextGuard rrg{
+            scene_node_resources,
+            "primary_rendering_resources",
+            0};
         Array<float> output;
         RenderResults render_results{output: &output};
         size_t num_renderings = SIZE_MAX;

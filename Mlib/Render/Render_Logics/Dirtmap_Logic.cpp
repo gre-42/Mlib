@@ -10,7 +10,7 @@ using namespace Mlib;
 DirtmapLogic::DirtmapLogic(
     RenderLogic& child_logic)
 : child_logic_{child_logic},
-  rendering_resources_{RenderingResources::rendering_resources()},
+  rendering_context_{RenderingContextStack::rendering_context()},
   generated_{false}
 {}
 
@@ -34,18 +34,18 @@ void DirtmapLogic::render(
         }
         // Calculate camera position
         {
-            RenderingResourcesGuard rrg{rendering_resources_};
+            RenderingContextGuard rrg{rendering_context_};
             child_logic_.render(0, 0, render_config, scene_graph_config, render_results, {.external_render_pass = {ExternalRenderPass::DIRTMAP, ""}, .time_id = 0, .light_node_name = ""});
         }
         // Load texture and set alias
-        rendering_resources_->add_texture_descriptor(
+        rendering_context_.rendering_resources->add_texture_descriptor(
             "dirtmap",
             TextureDescriptor{
                 color: filename_,
                 color_mode: ColorMode::RGB,
                 mixed: "",
                 overlap_npixels: 0});
-        rendering_resources_->set_vp("dirtmap", vp());
+        rendering_context_.rendering_resources->set_vp("dirtmap", vp());
         generated_ = true;
     }
 }

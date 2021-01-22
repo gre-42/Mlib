@@ -356,7 +356,9 @@ void LoadScene::operator()(
         "\\s*font_height=([\\w+-.]+)\\r?\\n"
         "\\s*line_distance=([\\w+-.]+)$");
     static const std::regex create_scene_reg(
-        "^(?:\\r?\\n|\\s)*create_scene name=([\\w+-.]+)$");
+        "^(?:\\r?\\n|\\s)*create_scene"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+z_order=([\\d-]+)$");
     static const std::regex scene_selector_reg(
         "^(?:\\r?\\n|\\s)*scene_selector\\r?\\n"
         "\\s*id=([\\w+-.]+)\\r?\\n"
@@ -478,10 +480,10 @@ void LoadScene::operator()(
         if (cit == renderable_scenes.end()) {
             throw std::runtime_error("Could not find renderable scene with name \"" + context + '"');
         }
-        auto primary_rendering_resources = cit->second->primary_rendering_resources_;
-        auto secondary_rendering_resources = cit->second->secondary_rendering_resources_;
-        RenderingResourcesGuard rrg0{primary_rendering_resources};
-        RenderingResourcesGuard rrg1{secondary_rendering_resources};
+        auto primary_rendering_context = cit->second->primary_rendering_context_;
+        auto secondary_rendering_context = cit->second->secondary_rendering_context_;
+        RenderingContextGuard rrg0{primary_rendering_context};
+        RenderingContextGuard rrg1{secondary_rendering_context};
         auto& scene_node_resources = cit->second->scene_node_resources_;
         auto& players = cit->second->players_;
         auto& scene = cit->second->scene_;
@@ -1181,7 +1183,10 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
         } else if (std::regex_match(line, match, create_scene_reg)) {
-            RenderingResourcesGuard rrg{scene_node_resources, match[1].str() + ".rendering_resources"};
+            RenderingContextGuard rrg{
+                scene_node_resources,
+                match[1].str() + ".rendering_resources",
+                safe_stoi(match[2].str())};
             AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
             InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};
             auto rs = std::make_shared<RenderableScene>(
@@ -1458,7 +1463,7 @@ void LoadScene::operator()(
             linker.link_absolute_movable(*follower_node, follower);
             follower->initialize(*follower_node);
         } else if (std::regex_match(line, match, add_texture_descriptor_reg)) {
-            primary_rendering_resources->add_texture_descriptor(
+            primary_rendering_context.rendering_resources->add_texture_descriptor(
                 match[1].str(),
                 TextureDescriptor{
                     .color = fpath(match[2].str()),
@@ -1518,8 +1523,8 @@ void LoadScene::operator()(
             selected_cameras.set_camera_node_name(match[1].str());
         } else if (std::regex_match(line, match, set_dirtmap_reg)) {
             dirtmap_logic.set_filename(fpath(match[1].str()));
-            secondary_rendering_resources->set_discreteness("dirtmap", safe_stof(match[2].str()));
-            secondary_rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
+            secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[2].str()));
+            secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
         } else if (std::regex_match(line, match, set_skybox_reg)) {
             skybox_logic.set_filenames({
                 fpath(match[2].str()),
@@ -1535,9 +1540,9 @@ void LoadScene::operator()(
             std::string parameters = match[3].str();
             game_logic.set_preferred_car_spawner(
                 players.get_player(player),
-                [macro_line_executor, player, macro, parameters, primary_rendering_resources, secondary_rendering_resources, &rsc](const SpawnPoint& p){
-                    RenderingResourcesGuard rrg0{primary_rendering_resources};
-                    RenderingResourcesGuard rrg1{secondary_rendering_resources};
+                [macro_line_executor, player, macro, parameters, primary_rendering_context, secondary_rendering_context, &rsc](const SpawnPoint& p){
+                    RenderingContextGuard rrg0{primary_rendering_context};
+                    RenderingContextGuard rrg1{secondary_rendering_context};
                     auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
                     std::stringstream sstr;
                     sstr <<

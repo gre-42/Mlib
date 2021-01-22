@@ -6,8 +6,7 @@
 using namespace Mlib;
 
 AggregateArrayRenderer::AggregateArrayRenderer()
-: rcva_{nullptr},
-  rendering_resources_{RenderingResources::rendering_resources()}
+: rcva_{nullptr}
 {}
 
 void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& sorted_aggregate_queue) {

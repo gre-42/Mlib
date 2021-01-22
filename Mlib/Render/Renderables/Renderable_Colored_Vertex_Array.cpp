@@ -11,6 +11,7 @@
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array/Renderable_Colored_Vertex_Array_Instance.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array/Substitution_Info.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -430,7 +431,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
     std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances)
 : triangles_res_{triangles},
-  rendering_resources_{RenderingResources::primary_rendering_resources()},
+  rendering_resources_{RenderingContextStack::primary_rendering_resources()},
   instances_{instances},
   textures_preloaded_{false}
 {

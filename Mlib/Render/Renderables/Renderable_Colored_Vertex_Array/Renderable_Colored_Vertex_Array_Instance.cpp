@@ -8,6 +8,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array/Substitution_Info.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Light.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -21,7 +22,7 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     const std::shared_ptr<const RenderableColoredVertexArray>& rcva,
     const SceneNodeResourceFilter& resource_filter)
 : rcva_{rcva},
-  secondary_rendering_resources_{RenderingResources::rendering_resources()}
+  secondary_rendering_resources_{RenderingContextStack::rendering_resources()}
 {
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();

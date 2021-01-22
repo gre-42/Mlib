@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -37,7 +38,7 @@ private:
     RenderLogic& child_logic_;
     ClearMode clear_mode_;
     Focus focus_mask_;
-    std::shared_ptr<RenderingResources> rendering_resources_;
+    RenderingContext rendering_context_;
     std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
     std::shared_ptr<InstancesRenderer> small_instances_renderer_;
 };

@@ -18,6 +18,7 @@
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -98,8 +99,8 @@ public:
 
     std::unique_ptr<PhysicsLoop> physics_loop_;
     const SceneConfig& scene_config_;
-    std::shared_ptr<RenderingResources> primary_rendering_resources_;
-    std::shared_ptr<RenderingResources> secondary_rendering_resources_;
+    RenderingContext primary_rendering_context_;
+    RenderingContext secondary_rendering_context_;
 };
 
 }

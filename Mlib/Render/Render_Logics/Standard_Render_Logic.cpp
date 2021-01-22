@@ -20,7 +20,7 @@ StandardRenderLogic::StandardRenderLogic(
   child_logic_{child_logic},
   clear_mode_{clear_mode},
   focus_mask_{focus_mask},
-  rendering_resources_{RenderingResources::rendering_resources()},
+  rendering_context_{RenderingContextStack::rendering_context()},
   small_sorted_aggregate_renderer_{AggregateRenderer::small_sorted_aggregate_renderer()},
   small_instances_renderer_{InstancesRenderer::small_instances_renderer()}
 {}
@@ -58,7 +58,7 @@ void StandardRenderLogic::render(
     }
 
     {
-        RenderingResourcesGuard rrg{rendering_resources_};
+        RenderingContextGuard rrg{rendering_context_};
         AggregateRendererGuard arg{small_sorted_aggregate_renderer_};
         InstancesRendererGuard irg{small_instances_renderer_};
         child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
@@ -66,16 +66,16 @@ void StandardRenderLogic::render(
         render_config.apply();
 
         {
-            auto primary_rendering_resources = RenderingResources::primary_rendering_resources();
+            auto primary_rendering_context = RenderingContextStack::primary_rendering_context();
             scene_.render(
                 child_logic_.vp(),
                 child_logic_.iv(),
                 render_config,
                 scene_graph_config,
                 frame_id.external_render_pass,
-                RenderingResources::generate_thread_runner(
-                    primary_rendering_resources,
-                    rendering_resources_));
+                RenderingContextStack::generate_thread_runner(
+                    primary_rendering_context,
+                    rendering_context_));
         }
 
         render_config.unapply();

@@ -22,6 +22,7 @@
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Renderables/Renderable_Obj_File.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -112,7 +113,7 @@ void test_physics_engine() {
 
     SceneNodeResources scene_node_resources;
     Scene scene;
-    RenderingResourcesGuard rrg{scene_node_resources, "primary_rendering_resources"};
+    RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
     scene_node_resources.add_resource("obj0", std::make_shared<RenderableColoredVertexArray>(triangles0, nullptr));
     scene_node_resources.add_resource("obj1", std::make_shared<RenderableColoredVertexArray>(triangles1, nullptr));
     scene_node_resources.add_resource("beacon", std::make_shared<RenderableObjFile>(

@@ -25,15 +25,6 @@ struct ColoredRenderProgram;
 class SceneNodeResources;
 class RenderingResources;
 
-class RenderingResourcesGuard {
-public:
-    explicit RenderingResourcesGuard(const std::shared_ptr<RenderingResources>& rr);
-    explicit RenderingResourcesGuard(
-        SceneNodeResources& scene_node_resources,
-        const std::string& name);
-    ~RenderingResourcesGuard();
-};
-
 class RenderingResources {
 public:
     explicit RenderingResources(
@@ -64,17 +55,6 @@ public:
     const std::string& name() const;
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
-    static std::shared_ptr<RenderingResources> primary_rendering_resources();
-    static std::shared_ptr<RenderingResources> rendering_resources();
-    static thread_local std::list<std::shared_ptr<RenderingResources>> rendering_resources_stack_;
-    static std::function<std::function<void()>(std::function<void()>)>
-        generate_thread_runner(
-            std::shared_ptr<RenderingResources> rendering_resources);
-    static std::function<std::function<void()>(std::function<void()>)>
-        generate_thread_runner(
-            std::shared_ptr<RenderingResources> primary_rendering_resources,
-            std::shared_ptr<RenderingResources> secondary_rendering_resources);
-    static void print_stack(std::ostream& ostr);
 private:
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;

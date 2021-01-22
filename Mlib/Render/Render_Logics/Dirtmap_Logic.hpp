@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <memory>
 #include <string>
 
 namespace Mlib {
 
-class RenderingResources;
+class RenderingContext;
 
 class DirtmapLogic: public RenderLogic {
 public:
@@ -29,7 +30,7 @@ public:
     void set_filename(const std::string& filename);
 private:
     RenderLogic& child_logic_;
-    std::shared_ptr<RenderingResources> rendering_resources_;
+    RenderingContext rendering_context_;
     bool generated_;
     std::string filename_;
 };
