@@ -21,5 +21,5 @@ private:
     unsigned char* downsampled_data_;
     int width_;
     int height_;
-    std::unique_ptr<unsigned char> buffer_;
+    std::unique_ptr<unsigned char[]> buffer_;
 };
