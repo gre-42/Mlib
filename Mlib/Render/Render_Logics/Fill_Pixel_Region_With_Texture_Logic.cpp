@@ -8,11 +8,13 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
     ResourceUpdateCycle update_cycle,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    Focus focus_mask)
+    Focus focus_mask,
+    bool flip_y)
 : FillWithTextureLogic{image_resource_name, update_cycle},
   position_{position},
   size_{size},
-  focus_mask_{focus_mask}
+  focus_mask_{focus_mask},
+  flip_y_{flip_y}
 {}
 
 void FillPixelRegionWithTextureLogic::render(
@@ -28,6 +30,10 @@ void FillPixelRegionWithTextureLogic::render(
     FixedArray<float, 2> size_pix{(float)width, (float)height};
     auto small = 2.f * (position_ / size_pix) - 1.f;
     auto large = 2.f * (position_ + size_) / size_pix - 1.f;
+    if (flip_y_) {
+        small(1) *= -1;
+        large(1) *= -1;
+    }
     float vertices[] = {
         // positions        // texCoords
         small(0), large(1), 0.0f, 1.0f,

@@ -35,7 +35,9 @@ static const char* fragment_shader_text =
 
 RenderableText::RenderableText(
     const std::string& ttf_filename,
-    float font_height_pixels)
+    float font_height_pixels,
+    bool flip_y)
+: flip_y_{flip_y}
 {
     {
         std::unique_ptr<FILE, decltype(&fclose)> f{fopen(ttf_filename.c_str(), "rb"), fclose};
@@ -91,7 +93,14 @@ void RenderableText::render(
 
     CHK(glUseProgram(rp_.program));
     mat4x4 projection;
-    mat4x4_ortho(projection, 0, screen_width, 0, screen_height, -2, 2);
+    mat4x4_ortho(
+        projection,
+        0,
+        screen_width,
+        flip_y_ ? 0 : screen_height,
+        flip_y_ ? screen_height : 0,
+        -2,
+        2);
     CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*) projection));
     CHK(glBindTexture(GL_TEXTURE_2D, ftex_));
     CHK(glBindVertexArray(va_.vertex_array));

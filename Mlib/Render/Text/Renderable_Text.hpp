@@ -19,7 +19,8 @@ class RenderableText {
 public:
     RenderableText(
         const std::string& ttf_filename,
-        float font_height_pixels = 32.f);
+        float font_height_pixels = 32.f,
+        bool flip_y = true);
     void render(
         const FixedArray<float, 2>& position,
         const std::string& text,
@@ -32,7 +33,7 @@ private:
     VertexArray va_;
     stbtt_bakedchar cdata_[96]; // ASCII 32..126 is 95 glyphs
     GLuint ftex_;
-
+    bool flip_y_;
 };
 
 }

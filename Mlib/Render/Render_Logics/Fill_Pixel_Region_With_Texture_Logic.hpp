@@ -13,7 +13,8 @@ public:
         ResourceUpdateCycle update_cycle,
         const FixedArray<float, 2>& position,
         const FixedArray<float, 2>& size,
-        Focus focus_mask);
+        Focus focus_mask,
+        bool flip_y = true);
 
     virtual void render(
         int width,
@@ -29,6 +30,7 @@ private:
     FixedArray<float, 2> position_;
     FixedArray<float, 2> size_;
     Focus focus_mask_;
+    bool flip_y_;
 };
 
 }
