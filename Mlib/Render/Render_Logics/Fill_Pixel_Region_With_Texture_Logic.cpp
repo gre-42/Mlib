@@ -7,10 +7,12 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
     const std::string& image_resource_name,
     ResourceUpdateCycle update_cycle,
     const FixedArray<float, 2>& position,
-    const FixedArray<float, 2>& size)
+    const FixedArray<float, 2>& size,
+    Focus focus_mask)
 : FillWithTextureLogic{image_resource_name, update_cycle},
   position_{position},
-  size_{size}
+  size_{size},
+  focus_mask_{focus_mask}
 {}
 
 void FillPixelRegionWithTextureLogic::render(
@@ -57,4 +59,8 @@ void FillPixelRegionWithTextureLogic::render(
     CHK(glBindVertexArray(0));
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
+}
+
+Focus FillPixelRegionWithTextureLogic::focus_mask() const {
+    return focus_mask_;
 }

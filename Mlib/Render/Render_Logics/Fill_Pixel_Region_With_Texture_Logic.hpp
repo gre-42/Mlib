@@ -12,7 +12,8 @@ public:
         const std::string& image_resource_name,
         ResourceUpdateCycle update_cycle,
         const FixedArray<float, 2>& position,
-        const FixedArray<float, 2>& size);
+        const FixedArray<float, 2>& size,
+        Focus focus_mask);
 
     virtual void render(
         int width,
@@ -21,10 +22,13 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    
+    virtual Focus focus_mask() const override;
 
 private:
     FixedArray<float, 2> position_;
     FixedArray<float, 2> size_;
+    Focus focus_mask_;
 };
 
 }

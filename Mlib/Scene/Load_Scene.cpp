@@ -400,7 +400,8 @@ void LoadScene::operator()(
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
     static const std::regex clear_parameters_reg(
         "^(?:\\r?\\n|\\s)*clear_parameters$");
     static const std::regex parameter_setter_reg(
@@ -436,7 +437,7 @@ void LoadScene::operator()(
         "^(?:\\r?\\n|\\s)*ui_background"
         "\\s+texture=([\\w-. \\(\\)/+-]+)"
         "\\s+update=(once|always)"
-        "\\s+target_focus=(menu|loading|countdown|scene)$");
+        "\\s+focus_mask=(menu|loading|countdown|scene)$");
     static const std::regex hud_image_reg(
         "^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+)"
         "\\s+filename=([\\w-. \\(\\)/+-]+)"
@@ -517,7 +518,7 @@ void LoadScene::operator()(
         "\\s+resource=([\\w+-.]+)$");
     static const std::regex pause_on_lose_focus_reg(
         "^(?:\\r?\\n|\\s)*pause_on_lose_focus"
-        "\\s+target_focus=(menu|loading|countdown|scene)$");
+        "\\s+focus_mask=(menu|loading|countdown|scene)$");
 
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
@@ -1313,12 +1314,12 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
         } else if (std::regex_match(line, match, pause_on_lose_focus_reg)) {
-            Focus target_focus = focus_from_string(match[1].str());
+            Focus focus_mask = focus_from_string(match[1].str());
             Focuses& focuses = ui_focus.focuses;
             auto polf = std::make_shared<PauseOnLoseFocusLogic>(
                 physics_set_fps,
                 focuses,
-                target_focus);
+                focus_mask);
             render_logics.append(nullptr, polf);
         } else if (std::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
@@ -1373,7 +1374,8 @@ void LoadScene::operator()(
                         safe_stof(match[5].str())},
                     FixedArray<float, 2>{             // size
                         safe_stof(match[6].str()),
-                        safe_stof(match[7].str())});
+                        safe_stof(match[7].str())},
+                    focus_from_string(match[8].str()));
             }
             render_logics.append(nullptr, scene_window_logic);
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
