@@ -24,8 +24,8 @@ void FillPixelRegionWithTextureLogic::render(
     update_texture_id();
 
     FixedArray<float, 2> size_pix{(float)width, (float)height};
-    auto small = position_ / size_pix;
-    auto large = (position_ + size_) / size_pix;
+    auto small = 2.f * (position_ / size_pix) - 1.f;
+    auto large = 2.f * (position_ + size_) / size_pix - 1.f;
     float vertices[] = {
         // positions        // texCoords
         small(0), large(1), 0.0f, 1.0f,
