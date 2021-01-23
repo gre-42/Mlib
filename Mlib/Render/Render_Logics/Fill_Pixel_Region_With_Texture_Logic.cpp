@@ -31,6 +31,7 @@ void FillPixelRegionWithTextureLogic::render(
     auto small = 2.f * (position_ / size_pix) - 1.f;
     auto large = 2.f * (position_ + size_) / size_pix - 1.f;
     if (flip_y_) {
+        std::swap(small(1), large(1));
         small(1) *= -1;
         large(1) *= -1;
     }
