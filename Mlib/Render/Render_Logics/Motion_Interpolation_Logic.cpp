@@ -300,7 +300,7 @@ void MotionInterpolationLogic::render(
                 CHK(glUseProgram(rp_no_interpolate_.program));
 
                 CHK(glUniform1i(rp_no_interpolate_.screen_texture_color0_location, 0));
-                CHK(glBindTexture(GL_TEXTURE_2D, it->second.texture_color_buffer));
+                CHK(glBindTexture(GL_TEXTURE_2D, it->second.fb.texture_color_buffer));
 
                 CHK(glBindVertexArray(va_.vertex_buffer));
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -320,10 +320,10 @@ void MotionInterpolationLogic::render(
                     CHK(glUniform1i(rp_interpolate_mean_.screen_texture_color1_location, 1));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                    CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color_buffer));
+                    CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                    CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color_buffer));
+                    CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color_buffer));
 
                     CHK(glBindVertexArray(va_.vertex_buffer));
                     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -335,7 +335,7 @@ void MotionInterpolationLogic::render(
                     GLint of_width = 640;
                     GLint of_height = 480;
                     glViewport(0, 0, of_width, of_height);
-                    FrameBuffer fb_diff;
+                    FrameBufferMsaa fb_diff;
                     // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
                     fb_diff.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
                     {
@@ -348,10 +348,10 @@ void MotionInterpolationLogic::render(
                         CHK(glUniform1f(rp_interpolate_of_diff_.height_location, of_height));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color_buffer));
 
                         CHK(glBindVertexArray(va_.vertex_buffer));
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -360,7 +360,7 @@ void MotionInterpolationLogic::render(
                         // Reset to defaults
                         CHK(glActiveTexture(GL_TEXTURE0));
                     }
-                    FrameBuffer fb_flow;
+                    FrameBufferMsaa fb_flow;
                     // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
                     fb_flow.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
                     {
@@ -371,7 +371,7 @@ void MotionInterpolationLogic::render(
                         CHK(glUniform1i(rp_interpolate_of_finalize_.screen_texture_of_diff_location, 0));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                        CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.fb.texture_color_buffer));
 
                         CHK(glBindVertexArray(va_.vertex_buffer));
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -392,13 +392,13 @@ void MotionInterpolationLogic::render(
                         CHK(glUniform1i(rp_interpolate_of_apply_.screen_texture_of_location, 2));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color_buffer));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
-                        CHK(glBindTexture(GL_TEXTURE_2D, fb_flow.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, fb_flow.fb.texture_color_buffer));
 
                         CHK(glBindVertexArray(va_.vertex_buffer));
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

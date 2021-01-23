@@ -29,9 +29,22 @@ struct FrameBuffer {
     GLuint render_buffer = (GLuint)-1;
     void configure(const FrameBufferConfig& config = FrameBufferConfig{});
     void deallocate();
+    void bind() const;
+    void unbind() const;
 private:
     void gc_deallocate();
     void allocate(const FrameBufferConfig& config);
+    FrameBufferConfig config_;
+};
+
+struct FrameBufferMsaa {
+    FrameBuffer fb;
+    FrameBuffer ms_fb;
+    void configure(const FrameBufferConfig& config = FrameBufferConfig{});
+    void bind() const;
+    void unbind() const;
+    void deallocate();
+private:
     FrameBufferConfig config_;
 };
 

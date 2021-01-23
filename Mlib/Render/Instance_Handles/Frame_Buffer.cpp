@@ -128,3 +128,46 @@ void FrameBuffer::gc_deallocate() {
         render_buffer = (GLuint)-1;
     }
 }
+
+void FrameBuffer::bind() const {
+    CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
+}
+
+void FrameBuffer::unbind() const {
+    CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
+void FrameBufferMsaa::configure(const FrameBufferConfig& config) {
+    config_ = config;
+    auto config1 = config;
+    config1.nsamples_msaa = 1;
+    fb.configure(config1);
+    if (config_.nsamples_msaa != 1) {
+        ms_fb.configure({.width = config_.width, .height = config_.height, .with_depth_texture = config_.with_depth_texture, .nsamples_msaa = config_.nsamples_msaa});
+    }
+}
+
+void FrameBufferMsaa::bind() const {
+    if (config_.nsamples_msaa == 1) {
+        fb.bind();
+    } else {
+        ms_fb.bind();
+    }
+}
+
+void FrameBufferMsaa::unbind() const {
+    if (config_.nsamples_msaa == 1) {
+        fb.unbind();
+    } else {
+        ms_fb.unbind();
+        CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb.frame_buffer_));
+        CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.frame_buffer_));
+        CHK(glBlitFramebuffer(0, 0, config_.width, config_.height, 0, 0, config_.width, config_.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
+        CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    }
+}
+
+void FrameBufferMsaa::deallocate() {
+    fb.deallocate();
+    ms_fb.deallocate();
+}

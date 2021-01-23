@@ -31,7 +31,7 @@ RenderToTextureLogic::RenderToTextureLogic(
 {}
 
 RenderToTextureLogic::~RenderToTextureLogic() {
-    if (fb_ != nullptr) {
+    if (fbs_ != nullptr) {
         rendering_context_.rendering_resources->delete_texture(color_texture_name_);
         if (with_depth_texture_) {
             rendering_context_.rendering_resources->delete_texture(depth_texture_name_);
@@ -48,23 +48,23 @@ void RenderToTextureLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("RenderToTextureLogic::render");
-    if ((fb_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
+    if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
         CHK(glViewport(0, 0, texture_width_, texture_height_));
-        if (fb_ == nullptr) {
-            fb_ = std::make_unique<FrameBuffer>();
+        if (fbs_ == nullptr) {
+            fbs_ = std::make_unique<FrameBufferMsaa>();
         }
-        fb_->configure({.width = texture_width_, .height = texture_height_, .with_depth_texture = with_depth_texture_});
+        fbs_->configure({.width = texture_width_, .height = texture_height_, .color_filter_type = GL_NEAREST, .with_depth_texture = with_depth_texture_, .nsamples_msaa = 2});
         {
-            RenderToFrameBufferGuard fbg(*fb_);
+            RenderToFrameBufferGuard fbg(*fbs_);
             RenderingContextGuard rrg{rendering_context_};
             child_logic_.render(texture_width_, texture_height_, render_config, scene_graph_config, render_results, frame_id);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
-        rendering_context_.rendering_resources->set_texture(color_texture_name_, fb_->texture_color_buffer);
+        rendering_context_.rendering_resources->set_texture(color_texture_name_, fbs_->fb.texture_color_buffer);
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->set_texture(depth_texture_name_, fb_->texture_depth_buffer);
+            rendering_context_.rendering_resources->set_texture(depth_texture_name_, fbs_->fb.texture_depth_buffer);
         }
         CHK(glViewport(0, 0, width, height));
     }

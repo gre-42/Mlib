@@ -43,8 +43,7 @@ private:
     PPRenderProgram rp_;
     bool depth_fog_;
     bool low_pass_;
-    FrameBuffer fb_;
-    FrameBuffer ms_fb_;
+    FrameBufferMsaa fbs_;
 };
 
 }

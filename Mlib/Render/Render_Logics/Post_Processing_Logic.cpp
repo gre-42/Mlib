@@ -161,16 +161,9 @@ void PostProcessingLogic::render(
     } else {
         assert_true(render_config.nsamples_msaa > 0);
 
-        fb_.configure({.width = width, .height = height, .with_depth_texture = true});
+        fbs_.configure({.width = width, .height = height, .with_depth_texture = true, .nsamples_msaa = render_config.nsamples_msaa});
         {
-            FrameBuffer* fb0;
-            if (render_config.nsamples_msaa != 1) {
-                ms_fb_.configure({.width = width, .height = height, .with_depth_texture = true, .nsamples_msaa = render_config.nsamples_msaa});
-                fb0 = &ms_fb_;
-            } else {
-                fb0 = &fb_;
-            }
-            RenderToFrameBufferGuard rfg{*fb0};
+            RenderToFrameBufferGuard rfg{fbs_};
             RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
             child_logic_.render(
                 width,
@@ -179,12 +172,6 @@ void PostProcessingLogic::render(
                 scene_graph_config,
                 render_results,
                 fid);
-        }
-        if (render_config.nsamples_msaa != 1) {
-            CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb_.frame_buffer_));
-            CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb_.frame_buffer_));
-            CHK(glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
-            CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         }
 
         // Now draw a quad plane with the attached framebuffer color texture
@@ -208,11 +195,11 @@ void PostProcessingLogic::render(
                 CHK(glUniform3fv(rp_.background_color_location, 1, (GLfloat*)&render_config.background_color));
             }
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-            CHK(glBindTexture(GL_TEXTURE_2D, fb_.texture_color_buffer));  // use the color attachment texture as the texture of the quad plane
+            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_color_buffer));  // use the color attachment texture as the texture of the quad plane
 
             if (depth_fog_ || low_pass_) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                CHK(glBindTexture(GL_TEXTURE_2D, fb_.texture_depth_buffer));
+                CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_depth_buffer));
             }
 
             CHK(glBindVertexArray(va_.vertex_buffer));

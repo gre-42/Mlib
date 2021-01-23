@@ -27,7 +27,7 @@ LightmapLogic::LightmapLogic(
 {}
 
 LightmapLogic::~LightmapLogic() {
-    if (fb_ != nullptr) {
+    if (fbs_ != nullptr) {
         rendering_context_.rendering_resources->delete_texture("lightmap_color." + light_node_name_);
         rendering_context_.rendering_resources->delete_vp("lightmap_color." + light_node_name_);
         if (with_depth_texture_) {
@@ -49,7 +49,7 @@ void LightmapLogic::render(
     if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
         throw std::runtime_error("LightmapLogic received lightmap rendering");
     }
-    if ((fb_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
+    if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
         GLsizei lightmap_width = black_node_name_.empty()
             ? render_config.scene_lightmap_width
             : render_config.black_lightmap_width;
@@ -58,12 +58,12 @@ void LightmapLogic::render(
             : render_config.black_lightmap_height;
         CHK(glViewport(0, 0, lightmap_width, lightmap_height));
         RenderedSceneDescriptor light_rsd{external_render_pass: {ExternalRenderPass::LIGHTMAP_TO_TEXTURE, black_node_name_}, time_id: 0, light_node_name: light_node_name_};
-        if (fb_ == nullptr) {
-            fb_ = std::make_unique<FrameBuffer>();
+        if (fbs_ == nullptr) {
+            fbs_ = std::make_unique<FrameBufferMsaa>();
         }
-        fb_->configure({width: lightmap_width, height: lightmap_height, with_depth_texture: with_depth_texture_});
+        fbs_->configure({.width = lightmap_width, .height = lightmap_height, .with_depth_texture = true, .nsamples_msaa = 2});  // TODO Texture
         {
-            RenderToFrameBufferGuard rfg{*fb_};
+            RenderToFrameBufferGuard rfg{*fbs_};
             RenderingContextGuard rrg{rendering_context_};
             AggregateRendererGuard small_aggregate_array_renderer{std::make_shared<AggregateArrayRenderer>()};
             InstancesRendererGuard small_instances_renderer{std::make_shared<ArrayInstancesRenderer>()};
@@ -73,10 +73,10 @@ void LightmapLogic::render(
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
 
-        rendering_context_.rendering_resources->set_texture("lightmap_color." + light_node_name_, fb_->texture_color_buffer);
+        rendering_context_.rendering_resources->set_texture("lightmap_color." + light_node_name_, fbs_->fb.texture_color_buffer);
         rendering_context_.rendering_resources->set_vp("lightmap_color." + light_node_name_, vp());
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->set_texture("lightmap_depth" + light_node_name_, fb_->texture_depth_buffer);
+            rendering_context_.rendering_resources->set_texture("lightmap_depth" + light_node_name_, fbs_->fb.texture_depth_buffer);
             rendering_context_.rendering_resources->set_vp("lightmap_depth" + light_node_name_, vp());
         }
         CHK(glViewport(0, 0, width, height));

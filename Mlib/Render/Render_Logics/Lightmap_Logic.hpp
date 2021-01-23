@@ -9,7 +9,7 @@ class Scene;
 class RenderingResources;
 
 enum class ResourceUpdateCycle;
-struct FrameBuffer;
+struct FrameBufferMsaa;
 
 class LightmapLogic: public RenderLogic {
 public:
@@ -37,7 +37,7 @@ public:
 private:
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
-    std::unique_ptr<FrameBuffer> fb_;
+    std::unique_ptr<FrameBufferMsaa> fbs_;
     ResourceUpdateCycle update_cycle_;
     std::string light_node_name_;
     const std::string black_node_name_;

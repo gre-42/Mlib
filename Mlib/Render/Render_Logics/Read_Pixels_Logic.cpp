@@ -32,9 +32,10 @@ void ReadPixelsLogic::render(
             if (o->second.initialized()) {
                 throw std::runtime_error("ReadPixelsLogic::render detected multiple rendering calls");
             }
-            FrameBuffer fb;
-            fb.configure({.width = width, .height = height});
-            RenderToFrameBufferGuard rfg{fb};
+            FrameBufferMsaa fbs;
+            // Not setting MSAA
+            fbs.configure({.width = width, .height = height});
+            RenderToFrameBufferGuard rfg{fbs};
             child_logic_.render(
                 width,
                 height,

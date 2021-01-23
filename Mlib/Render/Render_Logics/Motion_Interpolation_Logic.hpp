@@ -49,7 +49,7 @@ private:
     MiRenderProgram rp_interpolate_of_finalize_;
     MiRenderProgram rp_interpolate_of_apply_;
     InterpolationType interpolation_type_;
-    std::map<RenderedSceneDescriptor, FrameBuffer> frame_buffers_;
+    std::map<RenderedSceneDescriptor, FrameBufferMsaa> frame_buffers_;
 };
 
 }
