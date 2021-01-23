@@ -1,6 +1,7 @@
 #include "Standard_Render_Logic.hpp"
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
@@ -37,6 +38,7 @@ void StandardRenderLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("StandardRenderLogic::render");
+    RenderToScreenGuard rg;
 
     if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
         CHK(glClearColor(1.f, 1.f, 1.f, 1.f));

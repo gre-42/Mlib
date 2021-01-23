@@ -4,6 +4,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
+#include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 
@@ -32,8 +33,8 @@ void ReadPixelsLogic::render(
                 throw std::runtime_error("ReadPixelsLogic::render detected multiple rendering calls");
             }
             FrameBuffer fb;
-            fb.configure({width: width, height: height});
-            CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb.frame_buffer));
+            fb.configure({.width = width, .height = height});
+            RenderToFrameBufferGuard rfg{fb};
             child_logic_.render(
                 width,
                 height,
@@ -44,7 +45,6 @@ void ReadPixelsLogic::render(
             VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
             CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
             render_results->outputs[frame_id] = reverted_axis(vp.to_array(), 1);
-            CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         }
     }
     child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);

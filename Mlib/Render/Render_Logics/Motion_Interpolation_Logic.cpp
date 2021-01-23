@@ -7,6 +7,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
+#include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Log.hpp>
@@ -282,7 +283,7 @@ void MotionInterpolationLogic::render(
         if (render_texture) {
             RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = frame_id.time_id, .light_node_name = ""};
             frame_buffers_[rsd].configure({width: width, height: height});
-            CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffers_[rsd].frame_buffer));
+            RenderToFrameBufferGuard rfg{frame_buffers_[rsd]};
             child_logic_.render(
                 width,
                 height,
@@ -290,7 +291,6 @@ void MotionInterpolationLogic::render(
                 scene_graph_config,
                 render_results,
                 rsd);
-            CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         }
 
         if (!interpolate) {
@@ -339,8 +339,7 @@ void MotionInterpolationLogic::render(
                     // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
                     fb_diff.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
                     {
-                        CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_diff.frame_buffer));
-
+                        RenderToFrameBufferGuard rfg{fb_diff};
                         CHK(glUseProgram(rp_interpolate_of_diff_.program));
 
                         CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color0_location, 0));
@@ -360,14 +359,12 @@ void MotionInterpolationLogic::render(
 
                         // Reset to defaults
                         CHK(glActiveTexture(GL_TEXTURE0));
-
-                        CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
                     }
                     FrameBuffer fb_flow;
                     // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
                     fb_flow.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
                     {
-                        CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_flow.frame_buffer));
+                        RenderToFrameBufferGuard rfg{fb_flow};
 
                         CHK(glUseProgram(rp_interpolate_of_finalize_.program));
 
@@ -384,8 +381,6 @@ void MotionInterpolationLogic::render(
 
                         // Reset to defaults
                         CHK(glActiveTexture(GL_TEXTURE0));
-
-                        CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
                     }
                     fb_diff.deallocate();
                     glViewport(0, 0, width, height);

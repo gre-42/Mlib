@@ -23,7 +23,7 @@ struct FrameBuffer {
     FrameBuffer(const FrameBuffer&) = delete;
     FrameBuffer& operator = (const FrameBuffer&) = delete;
     ~FrameBuffer();
-    GLuint frame_buffer = (GLuint)-1;
+    GLuint frame_buffer_ = (GLuint)-1;
     GLuint texture_color_buffer = (GLuint)-1;
     GLuint texture_depth_buffer = (GLuint)-1;
     GLuint render_buffer = (GLuint)-1;

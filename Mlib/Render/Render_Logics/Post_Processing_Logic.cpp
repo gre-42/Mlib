@@ -6,6 +6,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
+#include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Log.hpp>
@@ -160,25 +161,28 @@ void PostProcessingLogic::render(
     } else {
         assert_true(render_config.nsamples_msaa > 0);
 
-        RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
         fb_.configure({.width = width, .height = height, .with_depth_texture = true});
-        if (render_config.nsamples_msaa != 1) {
-            ms_fb_.configure({.width = width, .height = height, .with_depth_texture = true, .nsamples_msaa = render_config.nsamples_msaa});
-            CHK(glBindFramebuffer(GL_FRAMEBUFFER, ms_fb_.frame_buffer));
-        } else {
-            CHK(glBindFramebuffer(GL_FRAMEBUFFER, fb_.frame_buffer));
+        {
+            FrameBuffer* fb0;
+            if (render_config.nsamples_msaa != 1) {
+                ms_fb_.configure({.width = width, .height = height, .with_depth_texture = true, .nsamples_msaa = render_config.nsamples_msaa});
+                fb0 = &ms_fb_;
+            } else {
+                fb0 = &fb_;
+            }
+            RenderToFrameBufferGuard rfg{*fb0};
+            RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
+            child_logic_.render(
+                width,
+                height,
+                render_config,
+                scene_graph_config,
+                render_results,
+                fid);
         }
-        child_logic_.render(
-            width,
-            height,
-            render_config,
-            scene_graph_config,
-            render_results,
-            fid);
-        CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         if (render_config.nsamples_msaa != 1) {
-            CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb_.frame_buffer));
-            CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb_.frame_buffer));
+            CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb_.frame_buffer_));
+            CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb_.frame_buffer_));
             CHK(glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
             CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         }
@@ -190,31 +194,34 @@ void PostProcessingLogic::render(
         // CHK(glClearColor(1.0f, 1.0f, 1.0f, 1.0f)); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
         // CHK(glClear(GL_COLOR_BUFFER_BIT));
 
-        CHK(glUseProgram(rp_.program));
+        {
+            RenderToScreenGuard rgb;
+            CHK(glUseProgram(rp_.program));
 
-        CHK(glUniform1i(rp_.screen_texture_color_location, 0));
-        if (depth_fog_ || low_pass_) {
-            CHK(glUniform1i(rp_.screen_texture_depth_location, 1));
-            CHK(glUniform1f(rp_.z_near_location, near_plane()));
-            CHK(glUniform1f(rp_.z_far_location, far_plane()));
+            CHK(glUniform1i(rp_.screen_texture_color_location, 0));
+            if (depth_fog_ || low_pass_) {
+                CHK(glUniform1i(rp_.screen_texture_depth_location, 1));
+                CHK(glUniform1f(rp_.z_near_location, near_plane()));
+                CHK(glUniform1f(rp_.z_far_location, far_plane()));
+            }
+            if (depth_fog_) {
+                CHK(glUniform3fv(rp_.background_color_location, 1, (GLfloat*)&render_config.background_color));
+            }
+            CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
+            CHK(glBindTexture(GL_TEXTURE_2D, fb_.texture_color_buffer));  // use the color attachment texture as the texture of the quad plane
+
+            if (depth_fog_ || low_pass_) {
+                CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
+                CHK(glBindTexture(GL_TEXTURE_2D, fb_.texture_depth_buffer));
+            }
+
+            CHK(glBindVertexArray(va_.vertex_buffer));
+            CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+            CHK(glBindVertexArray(0));
+
+            // Reset to defaults
+            CHK(glActiveTexture(GL_TEXTURE0));
         }
-        if (depth_fog_) {
-            CHK(glUniform3fv(rp_.background_color_location, 1, (GLfloat*)&render_config.background_color));
-        }
-        CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-        CHK(glBindTexture(GL_TEXTURE_2D, fb_.texture_color_buffer));  // use the color attachment texture as the texture of the quad plane
-
-        if (depth_fog_ || low_pass_) {
-            CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-            CHK(glBindTexture(GL_TEXTURE_2D, fb_.texture_depth_buffer));
-        }
-
-        CHK(glBindVertexArray(va_.vertex_buffer));
-        CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
-        CHK(glBindVertexArray(0));
-
-        // Reset to defaults
-        CHK(glActiveTexture(GL_TEXTURE0));
     }
 }
 

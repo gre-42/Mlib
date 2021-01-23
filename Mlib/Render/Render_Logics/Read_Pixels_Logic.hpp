@@ -1,9 +1,10 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <memory>
 
 namespace Mlib {
 
-class Scene;
+struct FrameBuffer;
 
 class ReadPixelsLogic: public RenderLogic {
 public:

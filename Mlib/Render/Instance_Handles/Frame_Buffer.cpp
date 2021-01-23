@@ -35,8 +35,8 @@ void FrameBuffer::allocate(const FrameBufferConfig& config)
     }
 
     config_ = config;
-    CHK(glGenFramebuffers(1, &frame_buffer));
-    CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer));
+    CHK(glGenFramebuffers(1, &frame_buffer_));
+    CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
 
     // create a color attachment texture
     CHK(glGenTextures(1, &texture_color_buffer));
@@ -92,9 +92,9 @@ void FrameBuffer::allocate(const FrameBufferConfig& config)
 }
 
 void FrameBuffer::deallocate() {
-    if (frame_buffer != (GLuint)-1) {
-        WARN(glDeleteFramebuffers(1, &frame_buffer));
-        frame_buffer = (GLuint)-1;
+    if (frame_buffer_ != (GLuint)-1) {
+        WARN(glDeleteFramebuffers(1, &frame_buffer_));
+        frame_buffer_ = (GLuint)-1;
     }
     if (texture_color_buffer != (GLuint)-1) {
         WARN(glDeleteTextures(1, &texture_color_buffer));
@@ -111,9 +111,9 @@ void FrameBuffer::deallocate() {
 }
 
 void FrameBuffer::gc_deallocate() {
-    if (frame_buffer != (GLuint)-1) {
-        gc_frame_buffers.push_back(frame_buffer);
-        frame_buffer = (GLuint)-1;
+    if (frame_buffer_ != (GLuint)-1) {
+        gc_frame_buffers.push_back(frame_buffer_);
+        frame_buffer_ = (GLuint)-1;
     }
     if (texture_color_buffer != (GLuint)-1) {
         gc_texture_color_buffers.push_back(texture_color_buffer);
