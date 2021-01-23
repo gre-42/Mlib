@@ -206,7 +206,6 @@ int main(int argc, char** argv) {
                 substitutions.merge(SubstitutionString{sstr.str()});
             }
             std::recursive_mutex mutex;
-            RenderLogics render_logics{mutex, ui_focus};
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
             std::string next_scene_filename;
@@ -226,7 +225,6 @@ int main(int argc, char** argv) {
                 ui_focus,
                 selection_ids,
                 render2.window(),
-                render_logics,
                 mutex,
                 renderable_scenes);
 
@@ -248,19 +246,23 @@ int main(int argc, char** argv) {
                 std::cout << "Press enter to exit" << std::endl;
                 std::cin.get();
             } else {
+                auto rs = renderable_scenes.find("primary_scene");
+                if (rs == renderable_scenes.end()) {
+                    throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
+                }
                 render2(
-                    render_logics,
+                    rs->second->render_logics_,
                     mutex,
                     scene_config.scene_graph_config);
-            }
-            if (!render2.window_should_close()) {
-                ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
-                num_renderings = 1;
-                render2(
-                    render_logics,
-                    mutex,
-                    scene_config.scene_graph_config);
-                ui_focus.focuses.pop_back();
+                if (!render2.window_should_close()) {
+                    ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
+                    num_renderings = 1;
+                    render2(
+                        rs->second->render_logics_,
+                        mutex,
+                        scene_config.scene_graph_config);
+                    ui_focus.focuses.pop_back();
+                }
             }
 
             for (const auto& p : renderable_scenes) {

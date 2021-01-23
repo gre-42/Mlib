@@ -8,6 +8,7 @@ class Scene;
 class ReadPixelsLogic: public RenderLogic {
 public:
     explicit ReadPixelsLogic(RenderLogic& child_logic);
+    ~ReadPixelsLogic();
 
     virtual void render(
         int width,
@@ -23,6 +24,7 @@ public:
     virtual bool requires_postprocessing() const override;
 private:
     RenderLogic& child_logic_;
+    std::unique_ptr<FrameBuffer> fb_;
 };
 
 }

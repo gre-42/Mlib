@@ -9,11 +9,13 @@
 namespace Mlib {
 
 class RenderingResources;
+enum class ResourceUpdateCycle;
 
 class MainMenuBackgroundLogic: public FillWithTextureLogic {
 public:
     MainMenuBackgroundLogic(
         const std::string& image_resource_name,
+        ResourceUpdateCycle update_cycle,
         Focus focus_mask);
 
     virtual void render(

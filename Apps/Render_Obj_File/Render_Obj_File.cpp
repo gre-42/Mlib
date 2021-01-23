@@ -17,6 +17,7 @@
 #include <Mlib/Render/Render_Logics/Move_Scene_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
@@ -521,7 +522,7 @@ int main(int argc, char** argv) {
         for (const Light* l : lights) {
             lightmap_logics.push_back(std::make_shared<LightmapLogic>(
                 *read_pixels_logic,
-                LightmapUpdateCycle::ALWAYS,
+                ResourceUpdateCycle::ALWAYS,
                 l->node_name,
                 "",                           // black_node_name
                 true));                       // with_depth_texture

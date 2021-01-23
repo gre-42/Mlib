@@ -33,12 +33,15 @@
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Loading_Text_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Main_Menu_Background_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Pause_On_Lose_Focus_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Render_To_Texture_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Render/Renderables/Renderable_Binary_X.hpp>
 #include <Mlib/Render/Renderables/Renderable_Blending_X.hpp>
@@ -114,7 +117,6 @@ void LoadScene::operator()(
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
     GLFWwindow* window,
-    RenderLogics& render_logics,
     std::recursive_mutex& mutex,
     std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
 {
@@ -380,13 +382,25 @@ void LoadScene::operator()(
         "\\s+clear_mode=(off|color|depth|color_and_depth)"
         "\\s+scene_focus_mask=(none|base|menu|loading|countdown|scene|always)$");
     static const std::regex scene_selector_reg(
-        "^(?:\\r?\\n|\\s)*scene_selector\\r?\\n"
-        "\\s*id=([\\w+-.]+)\\r?\\n"
-        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*font_height=([\\w+-.]+)\\r?\\n"
-        "\\s*line_distance=([\\w+-.]+)\\r?\\n"
-        "\\s*scene_files=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
+        "^(?:\\r?\\n|\\s)*scene_selector"
+        "\\s+id=([\\w+-.]+)"
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+scene_files=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
+    static const std::regex scene_to_texture_reg(
+        "^(?:\\r?\\n|\\s)*scene_to_texture"
+        "\\s+texture_name=([\\w+-.]+)"
+        "\\s+update=(once|always)"
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
+    static const std::regex fill_pixel_region_with_texture_reg(
+        "^(?:\\r?\\n|\\s)*fill_pixel_region_with_texture"
+        "\\s+source_scene=([\\w+-.]+)"
+        "\\s+texture_name=([\\w+-.]+)"
+        "\\s+update=(once|always)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex clear_parameters_reg(
         "^(?:\\r?\\n|\\s)*clear_parameters$");
     static const std::regex parameter_setter_reg(
@@ -421,11 +435,27 @@ void LoadScene::operator()(
     static const std::regex ui_background_reg(
         "^(?:\\r?\\n|\\s)*ui_background"
         "\\s+texture=([\\w-. \\(\\)/+-]+)"
+        "\\s+update=(once|always)"
         "\\s+target_focus=(menu|loading|countdown|scene)$");
-    static const std::regex hud_image_reg("^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+) center=([\\w+-.]+) ([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+)$");
+    static const std::regex hud_image_reg(
+        "^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+)"
+        "\\s+filename=([\\w-. \\(\\)/+-]+)"
+        "\\s+update=(once|always)"
+        "\\s+center=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     static const std::regex ortho_camera_reg("^(?:\\r?\\n|\\s)*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
-    static const std::regex light_reg("^(?:\\r?\\n|\\s)*light node=([\\w+-.]+) black_node=([\\w+-.]*) update=(once|always) with_depth_texture=(0|1) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) shadow=(0|1)$");
+    static const std::regex light_reg(
+        "^(?:\\r?\\n|\\s)*light"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+black_node=([\\w+-.]*)"
+        "\\s+update=(once|always)"
+        "\\s+with_depth_texture=(0|1)"
+        "\\s+ambience=([\\w+-.]+)"
+        "\\s+([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+shadow=(0|1)$");
     static const std::regex look_at_node_reg("^(?:\\r?\\n|\\s)*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
     static const std::regex keep_offset_reg("^(?:\\r?\\n|\\s)*keep_offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex yaw_pitch_look_at_nodes_reg("^(?:\\r?\\n|\\s)*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
@@ -485,9 +515,8 @@ void LoadScene::operator()(
         "set_way_points player=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
-    static const std::regex pause_on_lose_focus_reg("^(?:\\r?\\n|\\s)*"
-        "pause_on_lose_focus"
-        "\\s+context=([\\w+-.]+)"
+    static const std::regex pause_on_lose_focus_reg(
+        "^(?:\\r?\\n|\\s)*pause_on_lose_focus"
         "\\s+target_focus=(menu|loading|countdown|scene)$");
 
     MacroLineExecutor::UserFunction user_function = [&](
@@ -511,7 +540,6 @@ void LoadScene::operator()(
                 ui_focus,
                 selection_ids,
                 window,
-                render_logics,
                 RenderableSceneConfig{
                     .fly = safe_stob(match[3].str()),
                     .rotate = safe_stob(match[4].str()),
@@ -751,22 +779,6 @@ void LoadScene::operator()(
             ui_focus.focuses.push_back(focus_from_string(match[1].str()));
             return true;
         }
-        if (std::regex_match(line, match, pause_on_lose_focus_reg)) {
-            std::string ctx = match[1].str();
-            Focus target_focus = focus_from_string(match[2].str());
-            auto it = renderable_scenes.find(ctx);
-            if (it == renderable_scenes.end()) {
-                throw std::runtime_error("Could not find context with name \"" + ctx + '"');
-            }
-            SetFps& set_fps = it->second->physics_set_fps_;
-            Focuses& focuses = ui_focus.focuses;
-            auto polf = std::make_shared<PauseOnLoseFocusLogic>(
-                set_fps,
-                focuses,
-                target_focus);
-            render_logics.append(nullptr, polf);
-            return true;
-        }
         if (std::regex_match(line, match, add_bvh_resource_reg)) {
             BvhConfig cfg = blender_bvh_config;
             cfg.smooth_radius = safe_stoz(match[3].str());
@@ -797,7 +809,7 @@ void LoadScene::operator()(
 
         auto cit = renderable_scenes.find(context);
         if (cit == renderable_scenes.end()) {
-            throw std::runtime_error("Error processing line \"" + line + "\". Could not find renderable scene with name \"" + context + '"');
+            throw std::runtime_error("Could not find renderable scene with name \"" + context + '"');
         }
         auto primary_rendering_context = cit->second->primary_rendering_context_;
         auto secondary_rendering_context = cit->second->secondary_rendering_context_;
@@ -812,6 +824,7 @@ void LoadScene::operator()(
         auto& selected_cameras = cit->second->selected_cameras_;
         auto& scene_config = cit->second->scene_config_;
         auto& render_logics = cit->second->render_logics_;
+        auto& physics_set_fps = cit->second->physics_set_fps_;
         auto& scene_logic = cit->second->standard_camera_logic_;
         auto& read_pixels_logic = cit->second->read_pixels_logic_;
         auto& dirtmap_logic = *cit->second->dirtmap_logic_;
@@ -1299,6 +1312,14 @@ void LoadScene::operator()(
                 safe_stof(match[4].str()),        // font_height_pixels
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
+        } else if (std::regex_match(line, match, pause_on_lose_focus_reg)) {
+            Focus target_focus = focus_from_string(match[1].str());
+            Focuses& focuses = ui_focus.focuses;
+            auto polf = std::make_shared<PauseOnLoseFocusLogic>(
+                physics_set_fps,
+                focuses,
+                target_focus);
+            render_logics.append(nullptr, polf);
         } else if (std::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
             for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
@@ -1321,6 +1342,40 @@ void LoadScene::operator()(
                 button_press,
                 selection_ids[match[1].str()]);
             render_logics.append(nullptr, scene_selector_logic);
+        } else if (std::regex_match(line, match, scene_to_texture_reg)) {
+            auto wit = renderable_scenes.find("primary_scene");
+            if (wit == renderable_scenes.end()) {
+                throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
+            }
+            auto scene_window_logic = std::make_shared<RenderToTextureLogic>(
+                render_logics,                    // child_logic
+                resource_update_cycle_from_string(match[2].str()),
+                false,                            // with_depth_texture
+                match[1].str(),                   // color_texture_name
+                "",                               // depth_texture_name
+                safe_stoi(match[3].str()),        // texture_width
+                safe_stoi(match[4].str()));       // texture_height
+            wit->second->render_logics_.prepend(nullptr, scene_window_logic);
+        } else if (std::regex_match(line, match, fill_pixel_region_with_texture_reg)) {
+            std::string source_scene = match[1].str();
+            auto wit = renderable_scenes.find(source_scene);
+            if (wit == renderable_scenes.end()) {
+                throw std::runtime_error("Could not find renderable scene with name \"" + source_scene + '"');
+            }
+            std::shared_ptr<FillPixelRegionWithTextureLogic> scene_window_logic;
+            {
+                RenderingContextGuard rcg{wit->second->secondary_rendering_context_};
+                scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
+                    match[2].str(),                   // texture name
+                    resource_update_cycle_from_string(match[3].str()),
+                    FixedArray<float, 2>{             // position
+                        safe_stof(match[4].str()),
+                        safe_stof(match[5].str())},
+                    FixedArray<float, 2>{             // size
+                        safe_stof(match[6].str()),
+                        safe_stof(match[7].str())});
+            }
+            render_logics.append(nullptr, scene_window_logic);
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
             substitutions.clear();
         } else if (std::regex_match(line, match, parameter_setter_reg)) {
@@ -1369,7 +1424,8 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 fpath(match[1].str()),
-                focus_from_string(match[2].str()));
+                resource_update_cycle_from_string(match[2].str()),
+                focus_from_string(match[3].str()));
             render_logics.append(nullptr, bg);
         } else if (std::regex_match(line, match, set_renderable_style_reg)) {
             auto node = scene.get_node(match[2].str());
@@ -1398,12 +1454,13 @@ void LoadScene::operator()(
                 *node,
                 physics_engine.advance_times_,
                 fpath(match[2].str()),
+                resource_update_cycle_from_string(match[3].str()),
                 FixedArray<float, 2>{
-                    safe_stof(match[3].str()),
-                    safe_stof(match[4].str())},
+                    safe_stof(match[4].str()),
+                    safe_stof(match[5].str())},
                 FixedArray<float, 2>{
-                    safe_stof(match[5].str()),
-                    safe_stof(match[6].str())});
+                    safe_stof(match[6].str()),
+                    safe_stof(match[7].str())});
             render_logics.append(node, hud_image);
             physics_engine.advance_times_.add_advance_time(hud_image);
         } else if (std::regex_match(line, match, perspective_camera_reg)) {
@@ -1429,7 +1486,7 @@ void LoadScene::operator()(
             SceneNode* node = scene.get_node(node_name);
             render_logics.prepend(node, std::make_shared<LightmapLogic>(
                 read_pixels_logic,
-                lightmap_update_cycle_from_string(match[3].str()),
+                resource_update_cycle_from_string(match[3].str()),
                 node_name,
                 match[2].str(),               // black_node_name
                 safe_stob(match[4].str())));  // with_depth_texture

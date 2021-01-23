@@ -1,25 +1,23 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <list>
 
 namespace Mlib {
-
-class Scene;
-class RenderingResources;
 
 enum class ResourceUpdateCycle;
 struct FrameBuffer;
 
-class LightmapLogic: public RenderLogic {
+class RenderToTextureLogic: public RenderLogic {
 public:
-    explicit LightmapLogic(
+    explicit RenderToTextureLogic(
         RenderLogic& child_logic,
         ResourceUpdateCycle update_cycle,
-        const std::string& light_node_name,
-        const std::string& black_node_name,
-        bool with_depth_texture);
-    ~LightmapLogic();
+        bool with_depth_texture,
+        const std::string& color_texture_name,
+        const std::string& depth_texture_name,
+        int texture_width,
+        int texture_height);
+    ~RenderToTextureLogic();
 
     virtual void render(
         int width,
@@ -28,20 +26,17 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
-    virtual float near_plane() const override;
-    virtual float far_plane() const override;
-    virtual const FixedArray<float, 4, 4>& vp() const override;
-    virtual const TransformationMatrix<float, 3>& iv() const override;
-    virtual bool requires_postprocessing() const override;
 
 private:
     RenderLogic& child_logic_;
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fb_;
     ResourceUpdateCycle update_cycle_;
-    std::string light_node_name_;
-    const std::string black_node_name_;
     bool with_depth_texture_;
+    std::string color_texture_name_;
+    std::string depth_texture_name_;
+    int texture_width_;
+    int texture_height_;
 };
 
 }

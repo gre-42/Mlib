@@ -1,6 +1,7 @@
 #include "Fill_With_Texture_Logic.hpp"
 #include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <sstream>
@@ -19,11 +20,23 @@ static const char* fragment_shader_text =
 "    color = texture(texture1, TexCoords).rgba;\n"
 "}";
 
-FillWithTextureLogic::FillWithTextureLogic(const std::string& image_resource_name)
+FillWithTextureLogic::FillWithTextureLogic(
+    const std::string& image_resource_name,
+    ResourceUpdateCycle update_cycle)
+: rendering_resources_{RenderingContextStack::rendering_resources()},
+  image_resource_name_{image_resource_name}
 {
     rp_.generate(vertex_shader_text, fragment_shader_text);
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
-    rp_.texture_id_ = RenderingContextStack::rendering_resources()->get_texture({color: image_resource_name, color_mode: ColorMode::RGBA});
+}
+
+FillWithTextureLogic::~FillWithTextureLogic()
+{}
+
+void FillWithTextureLogic::update_texture_id() {
+    if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
+        rp_.texture_id_ = rendering_resources_->get_texture({color: image_resource_name_, color_mode: ColorMode::RGBA});
+    }
 }
 
 void FillWithTextureLogic::render(
@@ -34,6 +47,8 @@ void FillWithTextureLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    update_texture_id();
+
     CHK(glEnable(GL_CULL_FACE));
     CHK(glEnable(GL_BLEND));
     CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));

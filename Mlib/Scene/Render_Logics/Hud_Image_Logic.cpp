@@ -11,9 +11,10 @@ HudImageLogic::HudImageLogic(
     SceneNode& scene_node,
     AdvanceTimes& advance_times,
     const std::string& image_resource_name,
+    ResourceUpdateCycle update_cycle,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size)
-: FillWithTextureLogic{image_resource_name},
+: FillWithTextureLogic{image_resource_name, update_cycle},
   advance_times_{advance_times},
   center_{center},
   size_{size}

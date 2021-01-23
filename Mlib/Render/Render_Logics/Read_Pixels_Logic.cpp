@@ -13,6 +13,9 @@ ReadPixelsLogic::ReadPixelsLogic(RenderLogic& child_logic)
 : child_logic_{child_logic}
 {}
 
+ReadPixelsLogic::~ReadPixelsLogic()
+{}
+
 void ReadPixelsLogic::render(
     int width,
     int height,

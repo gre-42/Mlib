@@ -2,11 +2,13 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
+#include <memory>
 #include <string>
 
 namespace Mlib {
 
 class RenderingResources;
+enum class ResourceUpdateCycle;
 
 struct FillWithTextureRenderProgram: public RenderProgram {
     GLint texture_location = -1;
@@ -15,7 +17,12 @@ struct FillWithTextureRenderProgram: public RenderProgram {
 
 class FillWithTextureLogic: public RenderLogic, public GenericPostProcessingLogic {
 public:
-    FillWithTextureLogic(const std::string& image_resource_name);
+    FillWithTextureLogic(
+        const std::string& image_resource_name,
+        ResourceUpdateCycle update_cycle);
+    ~FillWithTextureLogic();
+
+    void update_texture_id();
 
     virtual void render(
         int width,
@@ -27,6 +34,9 @@ public:
 
 protected:
     FillWithTextureRenderProgram rp_;
+    std::shared_ptr<RenderingResources> rendering_resources_;
+    std::string image_resource_name_;
+    ResourceUpdateCycle update_cycle_;
 };
 
 }

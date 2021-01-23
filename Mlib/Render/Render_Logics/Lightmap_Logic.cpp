@@ -3,7 +3,9 @@
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 
@@ -11,7 +13,7 @@ using namespace Mlib;
 
 LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
-    LightmapUpdateCycle update_cycle,
+    ResourceUpdateCycle update_cycle,
     const std::string& light_node_name,
     const std::string& black_node_name,
     bool with_depth_texture)
@@ -46,7 +48,7 @@ void LightmapLogic::render(
     if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
         throw std::runtime_error("LightmapLogic received lightmap rendering");
     }
-    if ((fb_ == nullptr) || (update_cycle_ == LightmapUpdateCycle::ALWAYS)) {
+    if ((fb_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
         GLsizei lightmap_width = black_node_name_.empty()
             ? render_config.scene_lightmap_width
             : render_config.black_lightmap_width;

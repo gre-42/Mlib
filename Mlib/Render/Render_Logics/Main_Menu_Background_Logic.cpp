@@ -6,8 +6,9 @@ using namespace Mlib;
 
 MainMenuBackgroundLogic::MainMenuBackgroundLogic(
     const std::string& image_resource_name,
+    ResourceUpdateCycle update_cycle,
     Focus focus_mask)
-: FillWithTextureLogic{image_resource_name},
+: FillWithTextureLogic{image_resource_name, update_cycle},
   focus_mask_{focus_mask}
 {}
 

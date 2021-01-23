@@ -11,7 +11,6 @@ RenderableScene::RenderableScene(
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
     GLFWwindow* window,
-    RenderLogics& render_logics,
     const RenderableSceneConfig& config,
     std::recursive_mutex& mutex)
 : scene_node_resources_{scene_node_resources},
@@ -70,7 +69,7 @@ RenderableScene::RenderableScene(
       config.low_pass,
       config.high_pass)},
   mutex_{mutex},
-  render_logics_{render_logics},
+  render_logics_{mutex, ui_focus},
   players_{physics_engine_.advance_times_},
   game_logic_{
       scene_,

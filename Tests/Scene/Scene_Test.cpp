@@ -17,6 +17,7 @@
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
@@ -241,7 +242,7 @@ void test_physics_engine() {
     auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
     auto lightmap_logic = std::make_shared<LightmapLogic>(
         *read_pixels_logic,
-        LightmapUpdateCycle::ALWAYS,
+        ResourceUpdateCycle::ALWAYS,
         shadow_light->node_name,
         "",    // black_node_name
         true); // with_depth_texture

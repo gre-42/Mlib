@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Macro_Recorder.hpp>
-#include <memory>
 #include <map>
+#include <memory>
 #include <mutex>
 
 struct GLFWwindow;
@@ -33,7 +33,6 @@ public:
         UiFocus& ui_focus,
         std::map<std::string, size_t>& selection_ids,
         GLFWwindow* window,
-        RenderLogics& render_logics,
         std::recursive_mutex& mutex,
         std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);
 private:
