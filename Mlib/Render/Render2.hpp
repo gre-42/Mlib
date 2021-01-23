@@ -1,12 +1,10 @@
 #pragma once
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <mutex>
+
+struct GLFWwindow;
 
 namespace Mlib {
 

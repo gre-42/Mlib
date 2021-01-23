@@ -88,6 +88,8 @@ inline Focus focus_from_string(const std::string& str) {
         return Focus::COUNTDOWN;
     } if (str == "scene") {
         return Focus::SCENE;
+    } if (str == "always") {
+        return Focus::ALWAYS;
     } else {
         throw std::runtime_error("Unknown focus name \"" + str + '"');
     }

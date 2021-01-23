@@ -108,6 +108,14 @@ void LoadScene::operator()(
     size_t& num_renderings,
     bool verbose,
     RegexSubstitutionCache& rsc,
+    SceneNodeResources& scene_node_resources,
+    const SceneConfig& scene_config,
+    ButtonStates& button_states,
+    UiFocus& ui_focus,
+    std::map<std::string, size_t>& selection_ids,
+    GLFWwindow* window,
+    RenderLogics& render_logics,
+    std::recursive_mutex& mutex,
     std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
 {
     std::ifstream ifs{script_filename};
@@ -358,7 +366,19 @@ void LoadScene::operator()(
     static const std::regex create_scene_reg(
         "^(?:\\r?\\n|\\s)*create_scene"
         "\\s+name=([\\w+-.]+)"
-        "\\s+z_order=([\\d-]+)$");
+        "\\s+z_order=([\\d-]+)"
+        "\\s+fly=(0|1)"
+        "\\s+rotate=(0|1)"
+        "\\s+print_gamepad_buttons=(0|1)"
+        "\\s+depth_fog=(0|1)"
+        "\\s+low_pass=(0|1)"
+        "\\s+high_pass=(0|1)"
+        "\\s+vfx=(0|1)"
+        "\\s+with_dirtmap=(0|1)"
+        "\\s+with_skybox=(0|1)"
+        "\\s+with_flying_logic=(0|1)"
+        "\\s+clear_mode=(off|color|depth|color_and_depth)"
+        "\\s+scene_focus_mask=(none|base|menu|loading|countdown|scene|always)$");
     static const std::regex scene_selector_reg(
         "^(?:\\r?\\n|\\s)*scene_selector\\r?\\n"
         "\\s*id=([\\w+-.]+)\\r?\\n"
@@ -476,38 +496,91 @@ void LoadScene::operator()(
         const MacroLineExecutor& macro_line_executor,
         const std::string& line) -> bool
     {
-        auto cit = renderable_scenes.find(context);
-        if (cit == renderable_scenes.end()) {
-            throw std::runtime_error("Could not find renderable scene with name \"" + context + '"');
-        }
-        auto primary_rendering_context = cit->second->primary_rendering_context_;
-        auto secondary_rendering_context = cit->second->secondary_rendering_context_;
-        RenderingContextGuard rrg0{primary_rendering_context};
-        RenderingContextGuard rrg1{secondary_rendering_context};
-        auto& scene_node_resources = cit->second->scene_node_resources_;
-        auto& players = cit->second->players_;
-        auto& scene = cit->second->scene_;
-        auto& physics_engine = cit->second->physics_engine_;
-        auto& button_press = cit->second->button_press_;
-        auto& key_bindings = *cit->second->key_bindings_;
-        auto& selected_cameras = cit->second->selected_cameras_;
-        auto& scene_config = cit->second->scene_config_;
-        auto& render_logics = cit->second->render_logics_;
-        auto& scene_logic = cit->second->standard_camera_logic_;
-        auto& read_pixels_logic = cit->second->read_pixels_logic_;
-        auto& dirtmap_logic = *cit->second->dirtmap_logic_;
-        auto& skybox_logic = cit->second->skybox_logic_;
-        auto& game_logic = cit->second->game_logic_;
-        auto& base_log = cit->second->fifo_log_;
-        auto& ui_focus = cit->second->ui_focus_;
-        auto& selection_ids = cit->second->selection_ids_;
-        auto& mutex = cit->second->mutex_;
-
-        auto& button_states = cit->second->button_states_;
-        auto& window = cit->second->window_;
-
-        Linker linker{physics_engine.advance_times_};
         std::smatch match;
+        if (std::regex_match(line, match, create_scene_reg)) {
+            RenderingContextGuard rrg{
+                scene_node_resources,
+                match[1].str() + ".rendering_resources",
+                safe_stoi(match[2].str())};
+            AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
+            InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};
+            auto rs = std::make_shared<RenderableScene>(
+                scene_node_resources,
+                scene_config,
+                button_states,
+                ui_focus,
+                selection_ids,
+                window,
+                render_logics,
+                RenderableSceneConfig{
+                    .fly = safe_stob(match[3].str()),
+                    .rotate = safe_stob(match[4].str()),
+                    .print_gamepad_buttons = safe_stob(match[5].str()),
+                    .depth_fog = safe_stob(match[6].str()),
+                    .low_pass = safe_stob(match[7].str()),
+                    .high_pass = safe_stob(match[8].str()),
+                    .vfx = safe_stob(match[9].str()),
+                    .with_dirtmap = safe_stob(match[10].str()),
+                    .with_skybox = safe_stob(match[11].str()),
+                    .with_flying_logic = safe_stob(match[12].str()),
+                    .clear_mode = clear_mode_from_string(match[13].str()),
+                    .scene_focus_mask = focus_from_string(match[14].str())},
+                mutex);
+            if (!renderable_scenes.insert({match[1].str(), rs}).second) {
+                throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");
+            }
+            return true;
+        }
+        if (std::regex_match(line, match, obj_resource_reg)) {
+            LoadMeshConfig load_mesh_config{
+                .position = FixedArray<float, 3>{
+                    safe_stof(match[3].str()),
+                    safe_stof(match[4].str()),
+                    safe_stof(match[5].str())},
+                .rotation = FixedArray<float, 3>{
+                    safe_stof(match[6].str()) / 180 * float(M_PI),
+                    safe_stof(match[7].str()) / 180 * float(M_PI),
+                    safe_stof(match[8].str()) / 180 * float(M_PI)},
+                .scale = FixedArray<float, 3>{
+                    safe_stof(match[9].str()),
+                    safe_stof(match[10].str()),
+                    safe_stof(match[11].str())},
+                .is_small = safe_stob(match[12].str()),
+                .blend_mode = blend_mode_from_string(match[13].str()),
+                .cull_faces = safe_stob(match[14].str()),
+                .occluded_type = occluded_type_from_string(match[15].str()),
+                .occluder_type = occluder_type_from_string(match[16].str()),
+                .occluded_by_black = safe_stob(match[17].str()),
+                .aggregate_mode = aggregate_mode_from_string(match[18].str()),
+                .transformation_mode = transformation_mode_from_string(match[19].str()),
+                .apply_static_lighting = false,
+                .werror = match[20].str() == ""};
+            std::string filename = fpath(match[2].str());
+            if (filename.ends_with(".obj")) {
+                scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
+                    filename,
+                    load_mesh_config));
+            } else if (filename.ends_with(".mhx2")) {
+                scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableMhx2File>(
+                    filename,
+                    load_mesh_config));
+            } else {
+                throw std::runtime_error("Unknown file type: " + filename);
+            }
+            return true;
+        }
+        if (std::regex_match(line, match, gen_triangle_rays_reg)) {
+            scene_node_resources.generate_triangle_rays(
+                match[1].str(),
+                safe_stoi(match[2].str()),
+                {
+                    safe_stof(match[3].str()),
+                    safe_stof(match[4].str()),
+                    safe_stof(match[5].str())
+                },
+                safe_stoi(match[6].str()));
+            return true;
+        }
         if (std::regex_match(line, match, osm_resource_reg)) {
             std::list<WaysideResourceNames> waysides;
             findall(
@@ -587,53 +660,9 @@ void LoadScene::operator()(
                     safe_stof(match[60].str()),                                   // street_edge_smoothness
                     safe_stof(match[61].str()),                                   // terrain_edge_smoothness
                     driving_direction_from_string(match[62].str())));             // driving_direction
-        } else if (std::regex_match(line, match, obj_resource_reg)) {
-            LoadMeshConfig load_mesh_config{
-                .position = FixedArray<float, 3>{
-                    safe_stof(match[3].str()),
-                    safe_stof(match[4].str()),
-                    safe_stof(match[5].str())},
-                .rotation = FixedArray<float, 3>{
-                    safe_stof(match[6].str()) / 180 * float(M_PI),
-                    safe_stof(match[7].str()) / 180 * float(M_PI),
-                    safe_stof(match[8].str()) / 180 * float(M_PI)},
-                .scale = FixedArray<float, 3>{
-                    safe_stof(match[9].str()),
-                    safe_stof(match[10].str()),
-                    safe_stof(match[11].str())},
-                .is_small = safe_stob(match[12].str()),
-                .blend_mode = blend_mode_from_string(match[13].str()),
-                .cull_faces = safe_stob(match[14].str()),
-                .occluded_type = occluded_type_from_string(match[15].str()),
-                .occluder_type = occluder_type_from_string(match[16].str()),
-                .occluded_by_black = safe_stob(match[17].str()),
-                .aggregate_mode = aggregate_mode_from_string(match[18].str()),
-                .transformation_mode = transformation_mode_from_string(match[19].str()),
-                .apply_static_lighting = false,
-                .werror = match[20].str() == ""};
-            std::string filename = fpath(match[2].str());
-            if (filename.ends_with(".obj")) {
-                scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
-                    filename,
-                    load_mesh_config));
-            } else if (filename.ends_with(".mhx2")) {
-                scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableMhx2File>(
-                    filename,
-                    load_mesh_config));
-            } else {
-                throw std::runtime_error("Unknown file type: " + filename);
-            }
-        } else if (std::regex_match(line, match, gen_triangle_rays_reg)) {
-            scene_node_resources.generate_triangle_rays(
-                match[1].str(),
-                safe_stoi(match[2].str()),
-                {
-                    safe_stof(match[3].str()),
-                    safe_stof(match[4].str()),
-                    safe_stof(match[5].str())
-                },
-                safe_stoi(match[6].str()));
-        } else if (std::regex_match(line, match, gen_ray_reg)) {
+            return true;
+        }
+        if (std::regex_match(line, match, gen_ray_reg)) {
             scene_node_resources.generate_ray(
                 match[1].str(),
                 FixedArray<float, 3>{
@@ -644,16 +673,22 @@ void LoadScene::operator()(
                     safe_stof(match[5].str()),
                     safe_stof(match[6].str()),
                     safe_stof(match[7].str())});
-        } else if (std::regex_match(line, match, downsample_reg)) {
+            return true;
+        }
+        if (std::regex_match(line, match, downsample_reg)) {
             scene_node_resources.downsample(
                 match[1].str(),
                 safe_stoz(match[2].str()));
-        } else if (std::regex_match(line, match, import_bone_weights_reg)) {
+            return true;
+        }
+        if (std::regex_match(line, match, import_bone_weights_reg)) {
             scene_node_resources.import_bone_weights(
                 match[1].str(),
                 match[2].str(),
                 safe_stof(match[3].str()));
-        } else if (std::regex_match(line, match, square_resource_reg)) {
+            return true;
+        }
+        if (std::regex_match(line, match, square_resource_reg)) {
             // 1: name
             // 2: texture_filename
             // 3, 4: min
@@ -688,13 +723,17 @@ void LoadScene::operator()(
                         safe_stof(match[12].str())},
                     .diffusivity = {0, 0, 0},
                     .specularity = {0, 0, 0}}.compute_color_mode()));
-        } else if (std::regex_match(line, match, blending_x_resource_reg)) {
+            return true;
+        }
+        if (std::regex_match(line, match, blending_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 fpath(match[2].str())));
-        } else if (std::regex_match(line, match, binary_x_resource_reg)) {
+            return true;
+        }
+        if (std::regex_match(line, match, binary_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBinaryX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -706,7 +745,85 @@ void LoadScene::operator()(
                     safe_stof(match[7].str()),
                     safe_stof(match[8].str()),
                     safe_stof(match[9].str())}));
-        } else if (std::regex_match(line, match, node_instance_reg)) {
+            return true;
+        }
+        if (std::regex_match(line, match, append_focus_reg)) {
+            ui_focus.focuses.push_back(focus_from_string(match[1].str()));
+            return true;
+        }
+        if (std::regex_match(line, match, pause_on_lose_focus_reg)) {
+            std::string ctx = match[1].str();
+            Focus target_focus = focus_from_string(match[2].str());
+            auto it = renderable_scenes.find(ctx);
+            if (it == renderable_scenes.end()) {
+                throw std::runtime_error("Could not find context with name \"" + ctx + '"');
+            }
+            SetFps& set_fps = it->second->physics_set_fps_;
+            Focuses& focuses = ui_focus.focuses;
+            auto polf = std::make_shared<PauseOnLoseFocusLogic>(
+                set_fps,
+                focuses,
+                target_focus);
+            render_logics.append(nullptr, polf);
+            return true;
+        }
+        if (std::regex_match(line, match, add_bvh_resource_reg)) {
+            BvhConfig cfg = blender_bvh_config;
+            cfg.smooth_radius = safe_stoz(match[3].str());
+            cfg.smooth_alpha = safe_stof(match[4].str());
+            cfg.periodic = safe_stob(match[5].str());
+            scene_node_resources.add_bvh_file(
+                match[1].str(),
+                fpath(match[2].str()),
+                cfg);
+            return true;
+        }
+        if (std::regex_match(line, match, add_texture_descriptor_reg)) {
+            RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
+                match[1].str(),
+                TextureDescriptor{
+                    .color = fpath(match[2].str()),
+                    .normal = fpath(match[3].str()),
+                    .color_mode = color_mode_from_string(match[4].str()),
+                    .histogram = fpath(match[5].str()),
+                    .mixed = match[6].str(),
+                    .overlap_npixels = safe_stoz(match[7].str()),
+                    .mean_color = OrderableFixedArray<float, 3>{
+                        safe_stof(match[8].str()),
+                        safe_stof(match[9].str()),
+                        safe_stof(match[10].str())}});
+            return true;
+        }
+
+        auto cit = renderable_scenes.find(context);
+        if (cit == renderable_scenes.end()) {
+            throw std::runtime_error("Error processing line \"" + line + "\". Could not find renderable scene with name \"" + context + '"');
+        }
+        auto primary_rendering_context = cit->second->primary_rendering_context_;
+        auto secondary_rendering_context = cit->second->secondary_rendering_context_;
+        RenderingContextGuard rrg0{primary_rendering_context};
+        RenderingContextGuard rrg1{secondary_rendering_context};
+        auto& scene_node_resources = cit->second->scene_node_resources_;
+        auto& players = cit->second->players_;
+        auto& scene = cit->second->scene_;
+        auto& physics_engine = cit->second->physics_engine_;
+        auto& button_press = cit->second->button_press_;
+        auto& key_bindings = *cit->second->key_bindings_;
+        auto& selected_cameras = cit->second->selected_cameras_;
+        auto& scene_config = cit->second->scene_config_;
+        auto& render_logics = cit->second->render_logics_;
+        auto& scene_logic = cit->second->standard_camera_logic_;
+        auto& read_pixels_logic = cit->second->read_pixels_logic_;
+        auto& dirtmap_logic = *cit->second->dirtmap_logic_;
+        auto& skybox_logic = cit->second->skybox_logic_;
+        auto& game_logic = cit->second->game_logic_;
+        auto& base_log = cit->second->fifo_log_;
+        auto& ui_focus = cit->second->ui_focus_;
+        auto& selection_ids = cit->second->selection_ids_;
+        auto& mutex = cit->second->mutex_;
+
+        Linker linker{physics_engine.advance_times_};
+        if (std::regex_match(line, match, node_instance_reg)) {
             auto node = new SceneNode(&scene);
             node->set_position(FixedArray<float, 3>{
                 safe_stof(match[3].str()),
@@ -1182,38 +1299,6 @@ void LoadScene::operator()(
                 safe_stof(match[4].str()),        // font_height_pixels
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
-        } else if (std::regex_match(line, match, create_scene_reg)) {
-            RenderingContextGuard rrg{
-                scene_node_resources,
-                match[1].str() + ".rendering_resources",
-                safe_stoi(match[2].str())};
-            AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
-            InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};
-            auto rs = std::make_shared<RenderableScene>(
-                scene_node_resources,
-                scene_config,
-                button_states,
-                ui_focus,
-                selection_ids,
-                window,
-                render_logics,
-                RenderableSceneConfig{
-                    .fly = false,
-                    .rotate = false,
-                    .print_gamepad_buttons = false,
-                    .depth_fog = false,
-                    .low_pass = false,
-                    .high_pass = false,
-                    .vfx = false,
-                    .with_dirtmap = false,
-                    .with_skybox = false,
-                    .with_flying_logic = false,
-                    .clear_mode = ClearMode::DEPTH,
-                    .scene_focus_mask = Focus::MENU},
-                mutex);
-            if (!renderable_scenes.insert({match[1].str(), rs}).second) {
-                throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");
-            }
         } else if (std::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
             for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
@@ -1307,29 +1392,6 @@ void LoadScene::operator()(
                     .loop_begin = safe_stof(match[13].str()),
                     .loop_end = safe_stof(match[14].str()),
                     .loop_time = safe_stof(match[15].str())}});
-        } else if (std::regex_match(line, match, pause_on_lose_focus_reg)) {
-            std::string ctx = match[1].str();
-            Focus target_focus = focus_from_string(match[2].str());
-            auto it = renderable_scenes.find(ctx);
-            if (it == renderable_scenes.end()) {
-                throw std::runtime_error("Could not find context with name \"" + ctx + '"');
-            }
-            SetFps& set_fps = it->second->physics_set_fps_;
-            Focuses& focuses = ui_focus.focuses;
-            auto polf = std::make_shared<PauseOnLoseFocusLogic>(
-                set_fps,
-                focuses,
-                target_focus);
-            render_logics.append(nullptr, polf);
-        } else if (std::regex_match(line, match, add_bvh_resource_reg)) {
-            BvhConfig cfg = blender_bvh_config;
-            cfg.smooth_radius = safe_stoz(match[3].str());
-            cfg.smooth_alpha = safe_stof(match[4].str());
-            cfg.periodic = safe_stob(match[5].str());
-            scene_node_resources.add_bvh_file(
-                match[1].str(),
-                fpath(match[2].str()),
-                cfg);
         } else if (std::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
@@ -1462,20 +1524,6 @@ void LoadScene::operator()(
                 scene_config.physics_engine_config.dt);
             linker.link_absolute_movable(*follower_node, follower);
             follower->initialize(*follower_node);
-        } else if (std::regex_match(line, match, add_texture_descriptor_reg)) {
-            primary_rendering_context.rendering_resources->add_texture_descriptor(
-                match[1].str(),
-                TextureDescriptor{
-                    .color = fpath(match[2].str()),
-                    .normal = fpath(match[3].str()),
-                    .color_mode = color_mode_from_string(match[4].str()),
-                    .histogram = fpath(match[5].str()),
-                    .mixed = match[6].str(),
-                    .overlap_npixels = safe_stoz(match[7].str()),
-                    .mean_color = OrderableFixedArray<float, 3>{
-                        safe_stof(match[8].str()),
-                        safe_stof(match[9].str()),
-                        safe_stof(match[10].str())}});
         } else if (std::regex_match(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
             auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());
@@ -1577,8 +1625,6 @@ void LoadScene::operator()(
             player.set_waypoints(*node, way_points);
         } else if (std::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
-        } else if (std::regex_match(line, match, append_focus_reg)) {
-            ui_focus.focuses.push_back(focus_from_string(match[1].str()));
         } else {
             return false;
         }
@@ -1589,7 +1635,7 @@ void LoadScene::operator()(
         script_filename,
         fs::path(scene_filename).parent_path().string(),
         user_function,
-        "default_context",
+        "no_scene_specified",
         substitutions,
         verbose};
     macro_file_executor_(lp2, rsc);

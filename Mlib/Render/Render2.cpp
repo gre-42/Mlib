@@ -1,3 +1,7 @@
+#include <glad/gl.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include "Render2.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Fps.hpp>
@@ -18,7 +22,6 @@
 #include <Mlib/Time_Guard.hpp>
 #include <fenv.h>
 #include <iostream>
-
 
 using namespace Mlib;
 

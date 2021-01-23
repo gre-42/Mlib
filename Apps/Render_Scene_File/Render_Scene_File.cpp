@@ -188,42 +188,27 @@ int main(int argc, char** argv) {
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
 
             SceneNodeResources scene_node_resources;
-            RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
-            RenderableSceneConfig config{
-                .fly = args.has_named("--fly"),
-                .rotate = args.has_named("--rotate"),
-                .print_gamepad_buttons = args.has_named("--print_gamepad_buttons"),
-                .depth_fog = !args.has_named("--no_depth_fog"),
-                .low_pass = args.has_named("--low_pass"),
-                .high_pass = args.has_named("--high_pass"),
-                .vfx = !args.has_named("--no_vfx"),
-                .with_dirtmap = true,
-                .with_skybox = true,
-                .with_flying_logic = true,
-                .clear_mode = ClearMode::COLOR_AND_DEPTH,
-                .scene_focus_mask = Focus::ALWAYS};
+            {
+                std::stringstream sstr;
+                sstr << 
+                    " PRIMARY_SCENE_FLY:" << args.has_named("--fly") <<
+                    " PRIMARY_SCENE_ROTATE:" << args.has_named("--rotate") <<
+                    " PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS:" << args.has_named("--print_gamepad_buttons") <<
+                    " PRIMARY_SCENE_DEPTH_FOG:" << !args.has_named("--no_depth_fog") <<
+                    " PRIMARY_SCENE_LOW_PASS:" << args.has_named("--low_pass") <<
+                    " PRIMARY_SCENE_HIGH_PASS:" << args.has_named("--high_pass") <<
+                    " PRIMARY_SCENE_VFX:" << !args.has_named("--no_vfx") <<
+                    " PRIMARY_SCENE_WITH_DIRTMAP:" << !args.has_named("--no_vfx") <<
+                    " PRIMARY_SCENE_WITH_SKYBOX:1" <<
+                    " PRIMARY_SCENE_WITH_FLYING_LOGIC:1" <<
+                    " PRIMARY_SCENE_CLEAR_MODE:color_and_depth" <<
+                    " PRIMARY_SCENE_SCENE_FOCUS_MASK:always";
+                substitutions.merge(SubstitutionString{sstr.str()});
+            }
             std::recursive_mutex mutex;
             RenderLogics render_logics{mutex, ui_focus};
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
-            {
-                AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
-                InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};
-                if (!renderable_scenes.insert({
-                    "default_context",
-                    std::make_shared<RenderableScene>(
-                        scene_node_resources,
-                        scene_config,
-                        button_states,
-                        ui_focus,
-                        selection_ids,
-                        render2.window(),
-                        render_logics,
-                        config,
-                        mutex)}).second)
-                {
-                    throw std::runtime_error("Could not insert default context");
-                }
-            }
+            RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;
             LoadScene load_scene;
@@ -235,6 +220,14 @@ int main(int argc, char** argv) {
                 num_renderings,
                 args.has_named("--verbose"),
                 rsc,
+                scene_node_resources,
+                scene_config,
+                button_states,
+                ui_focus,
+                selection_ids,
+                render2.window(),
+                render_logics,
+                mutex,
                 renderable_scenes);
 
             if (args.has_named("--print_search_time")) {
