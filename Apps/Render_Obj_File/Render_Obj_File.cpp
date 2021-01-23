@@ -503,8 +503,7 @@ int main(int argc, char** argv) {
         StandardRenderLogic standard_render_logic{
             scene,
             standard_camera_logic,
-            ClearMode::COLOR_AND_DEPTH,
-            Focus::ALWAYS};
+            ClearMode::COLOR_AND_DEPTH};
         FlyingCameraUserClass user_object{
             button_states: button_states,
             cameras: selected_cameras,

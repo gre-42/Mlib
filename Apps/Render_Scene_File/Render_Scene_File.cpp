@@ -204,8 +204,7 @@ int main(int argc, char** argv) {
                     " PRIMARY_SCENE_WITH_DIRTMAP:" << !args.has_named("--no_vfx") <<
                     " PRIMARY_SCENE_WITH_SKYBOX:1" <<
                     " PRIMARY_SCENE_WITH_FLYING_LOGIC:1" <<
-                    " PRIMARY_SCENE_CLEAR_MODE:color_and_depth" <<
-                    " PRIMARY_SCENE_SCENE_FOCUS_MASK:always";
+                    " PRIMARY_SCENE_CLEAR_MODE:color_and_depth";
                 substitutions.merge(SubstitutionString{sstr.str()});
             }
             std::recursive_mutex mutex;

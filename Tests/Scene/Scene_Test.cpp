@@ -223,8 +223,7 @@ void test_physics_engine() {
     StandardRenderLogic standard_render_logic{
         scene,
         standard_camera_logic,
-        ClearMode::COLOR_AND_DEPTH,
-        Focus::ALWAYS};
+        ClearMode::COLOR_AND_DEPTH};
     Focuses focuses = {Focus::SCENE};
     ButtonStates button_states;
     FlyingCameraUserClass user_object{

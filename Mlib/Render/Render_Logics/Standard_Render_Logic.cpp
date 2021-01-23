@@ -15,12 +15,10 @@ using namespace Mlib;
 StandardRenderLogic::StandardRenderLogic(
     const Scene& scene,
     RenderLogic& child_logic,
-    ClearMode clear_mode,
-    Focus focus_mask)
+    ClearMode clear_mode)
 : scene_{scene},
   child_logic_{child_logic},
   clear_mode_{clear_mode},
-  focus_mask_{focus_mask},
   rendering_context_{RenderingContextStack::rendering_context()},
   small_sorted_aggregate_renderer_{AggregateRenderer::small_sorted_aggregate_renderer()},
   small_instances_renderer_{InstancesRenderer::small_instances_renderer()}
@@ -125,8 +123,4 @@ const TransformationMatrix<float, 3>& StandardRenderLogic::iv() const {
 
 bool StandardRenderLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
-}
-
-Focus StandardRenderLogic::focus_mask() const {
-    return focus_mask_;
 }

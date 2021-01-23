@@ -16,8 +16,7 @@ public:
     StandardRenderLogic(
         const Scene& scene,
         RenderLogic& child_logic,
-        ClearMode clear_mode,
-        Focus focus_mask);
+        ClearMode clear_mode);
     ~StandardRenderLogic();
 
     virtual void render(
@@ -32,12 +31,10 @@ public:
     virtual const FixedArray<float, 4, 4>& vp() const override;
     virtual const TransformationMatrix<float, 3>& iv() const override;
     virtual bool requires_postprocessing() const override;
-    virtual Focus focus_mask() const override;
 private:
     const Scene& scene_;
     RenderLogic& child_logic_;
     ClearMode clear_mode_;
-    Focus focus_mask_;
     RenderingContext rendering_context_;
     std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;
     std::shared_ptr<InstancesRenderer> small_instances_renderer_;

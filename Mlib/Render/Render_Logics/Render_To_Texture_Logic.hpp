@@ -16,7 +16,8 @@ public:
         const std::string& color_texture_name,
         const std::string& depth_texture_name,
         int texture_width,
-        int texture_height);
+        int texture_height,
+        Focus focus_mask);
     ~RenderToTextureLogic();
 
     virtual void render(
@@ -26,6 +27,8 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+
+    virtual Focus focus_mask() const override;
 
 private:
     RenderLogic& child_logic_;
@@ -37,6 +40,7 @@ private:
     std::string depth_texture_name_;
     int texture_width_;
     int texture_height_;
+    Focus focus_mask_;
 };
 
 }

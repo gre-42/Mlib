@@ -19,7 +19,8 @@ RenderToTextureLogic::RenderToTextureLogic(
     const std::string& color_texture_name,
     const std::string& depth_texture_name,
     int texture_width,
-    int texture_height)
+    int texture_height,
+    Focus focus_mask)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::rendering_context()},
   update_cycle_{update_cycle},
@@ -27,7 +28,8 @@ RenderToTextureLogic::RenderToTextureLogic(
   color_texture_name_{color_texture_name},
   depth_texture_name_{depth_texture_name},
   texture_width_{texture_width},
-  texture_height_{texture_height}
+  texture_height_{texture_height},
+  focus_mask_{focus_mask}
 {}
 
 RenderToTextureLogic::~RenderToTextureLogic() {
@@ -73,4 +75,8 @@ void RenderToTextureLogic::render(
         }
         CHK(glViewport(0, 0, width, height));
     }
+}
+
+Focus RenderToTextureLogic::focus_mask() const {
+    return focus_mask_;
 }

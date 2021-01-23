@@ -379,8 +379,7 @@ void LoadScene::operator()(
         "\\s+with_dirtmap=(0|1)"
         "\\s+with_skybox=(0|1)"
         "\\s+with_flying_logic=(0|1)"
-        "\\s+clear_mode=(off|color|depth|color_and_depth)"
-        "\\s+scene_focus_mask=(none|base|menu|loading|countdown|scene|always)$");
+        "\\s+clear_mode=(off|color|depth|color_and_depth)$");
     static const std::regex scene_selector_reg(
         "^(?:\\r?\\n|\\s)*scene_selector"
         "\\s+id=([\\w+-.]+)"
@@ -393,7 +392,8 @@ void LoadScene::operator()(
         "^(?:\\r?\\n|\\s)*scene_to_texture"
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
     static const std::regex fill_pixel_region_with_texture_reg(
         "^(?:\\r?\\n|\\s)*fill_pixel_region_with_texture"
         "\\s+source_scene=([\\w+-.]+)"
@@ -552,8 +552,7 @@ void LoadScene::operator()(
                     .with_dirtmap = safe_stob(match[10].str()),
                     .with_skybox = safe_stob(match[11].str()),
                     .with_flying_logic = safe_stob(match[12].str()),
-                    .clear_mode = clear_mode_from_string(match[13].str()),
-                    .scene_focus_mask = focus_from_string(match[14].str())},
+                    .clear_mode = clear_mode_from_string(match[13].str())},
                 mutex);
             if (!renderable_scenes.insert({match[1].str(), rs}).second) {
                 throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");
@@ -1355,7 +1354,8 @@ void LoadScene::operator()(
                 match[1].str(),                   // color_texture_name
                 "",                               // depth_texture_name
                 safe_stoi(match[3].str()),        // texture_width
-                safe_stoi(match[4].str()));       // texture_height
+                safe_stoi(match[4].str()),        // texture_height
+                focus_from_string(match[5].str()));
             wit->second->render_logics_.prepend(nullptr, scene_window_logic);
         } else if (std::regex_match(line, match, fill_pixel_region_with_texture_reg)) {
             std::string source_scene = match[1].str();
