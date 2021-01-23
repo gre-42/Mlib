@@ -7,6 +7,7 @@ namespace Mlib {
 
 struct RenderConfig {
     int nsamples_msaa = 1;
+    int lightmap_nsamples_msaa = 4;
     bool cull_faces = true;
     bool wire_frame = false;
     std::string window_title = "Simple example";
@@ -14,8 +15,8 @@ struct RenderConfig {
     int screen_height = 480;
     int scene_lightmap_width = 2048;
     int scene_lightmap_height = 2048;
-    int black_lightmap_width = 1024;
-    int black_lightmap_height = 1024;
+    int black_lightmap_width = 512;
+    int black_lightmap_height = 512;
     bool motion_interpolation = false;
     bool full_screen = false;
     bool window_maximized = false;

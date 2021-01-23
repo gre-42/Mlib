@@ -76,10 +76,12 @@ void FrameBuffer::allocate(const FrameBufferConfig& config)
         // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
         CHK(glGenRenderbuffers(1, &render_buffer));
         CHK(glBindRenderbuffer(GL_RENDERBUFFER, render_buffer));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
         if (config.nsamples_msaa == 1) {
             CHK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, config.width, config.height)); // use a single renderbuffer object for both a depth AND stencil buffer.
         } else {
-            CHK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, config.width, config.height));
+            CHK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, config.nsamples_msaa, GL_DEPTH24_STENCIL8, config.width, config.height));
         }
         CHK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer)); // now actually attach it
     }

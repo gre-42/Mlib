@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
         "    [--rotate]\n"
         "    [--swap_interval <interval>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
+        "    [--lightmap_nsamples_msaa <nsamples>]\n"
         "    [--window_maximized]\n"
         "    [--max_distance_small <distance>]\n"
         "    [--aggregate_update_interval <interval>]\n"
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
          "--verbose"},
         {"--swap_interval",
          "--nsamples_msaa",
+         "--lightmap_nsamples_msaa",
          "--max_distance_small",
          "--aggregate_update_interval",
          "--screen_width",
@@ -119,6 +121,7 @@ int main(int argc, char** argv) {
         size_t num_renderings;
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
+            .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "4")),
             .cull_faces = !args.has_named("--no_cull_faces"),
             .wire_frame = args.has_named("--wire_frame"),
             .window_title = main_scene_filename,
@@ -126,8 +129,8 @@ int main(int argc, char** argv) {
             .screen_height = safe_stoi(args.named_value("--screen_height", "480")),
             .scene_lightmap_width = safe_stoi(args.named_value("--scene_lightmap_width", "2048")),
             .scene_lightmap_height = safe_stoi(args.named_value("--scene_lightmap_height", "2048")),
-            .black_lightmap_width = safe_stoi(args.named_value("--black_lightmap_width", "1024")),
-            .black_lightmap_height = safe_stoi(args.named_value("--black_lightmap_height", "1024")),
+            .black_lightmap_width = safe_stoi(args.named_value("--black_lightmap_width", "512")),
+            .black_lightmap_height = safe_stoi(args.named_value("--black_lightmap_height", "512")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
             .full_screen = args.has_named("--full_screen"),
             .window_maximized = args.has_named("--window_maximized"),

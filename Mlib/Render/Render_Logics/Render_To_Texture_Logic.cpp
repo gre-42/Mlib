@@ -53,7 +53,12 @@ void RenderToTextureLogic::render(
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
         }
-        fbs_->configure({.width = texture_width_, .height = texture_height_, .color_filter_type = GL_NEAREST, .with_depth_texture = with_depth_texture_, .nsamples_msaa = 2});
+        fbs_->configure({
+            .width = texture_width_,
+            .height = texture_height_,
+            .color_filter_type = GL_NEAREST,
+            .with_depth_texture = with_depth_texture_,
+            .nsamples_msaa = render_config.nsamples_msaa});
         {
             RenderToFrameBufferGuard fbg(*fbs_);
             RenderingContextGuard rrg{rendering_context_};

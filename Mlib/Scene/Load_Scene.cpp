@@ -1350,7 +1350,7 @@ void LoadScene::operator()(
             auto scene_window_logic = std::make_shared<RenderToTextureLogic>(
                 render_logics,                    // child_logic
                 resource_update_cycle_from_string(match[2].str()),
-                true,                             // with_depth_texture TODO Texture
+                false,                            // with_depth_texture
                 match[1].str(),                   // color_texture_name
                 "",                               // depth_texture_name
                 safe_stoi(match[3].str()),        // texture_width

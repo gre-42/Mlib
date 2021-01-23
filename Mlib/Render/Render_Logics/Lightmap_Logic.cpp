@@ -61,7 +61,11 @@ void LightmapLogic::render(
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
         }
-        fbs_->configure({.width = lightmap_width, .height = lightmap_height, .with_depth_texture = true, .nsamples_msaa = 2});  // TODO Texture
+        fbs_->configure({
+            .width = lightmap_width,
+            .height = lightmap_height,
+            .with_depth_texture = false,
+            .nsamples_msaa = render_config.lightmap_nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{*fbs_};
             RenderingContextGuard rrg{rendering_context_};
