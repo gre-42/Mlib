@@ -108,6 +108,7 @@ int main(int argc, char** argv) {
         "[--angle_y <angle_y>] "
         "[--angle_z <angle_z>] "
         "[--nsamples_msaa <nsamples>] "
+    "    [--lightmap_nsamples_msaa <nsamples>]\n"
         "[--blend_mode {off,continuous,binary,binary_add}] "
         "[--aggregate_mode {off, once, sorted}] "
         "[--no_cull_faces] "
@@ -180,6 +181,7 @@ int main(int argc, char** argv) {
          "--angle_y",
          "--angle_z",
         "--nsamples_msaa",
+        "--lightmap_nsamples_msaa",
         "--blend_mode",
         "--aggregate_mode",
         "--render_dt",
@@ -232,6 +234,7 @@ int main(int argc, char** argv) {
             &render_results,
             RenderConfig{
                 .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "1")),
+                .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
                 .cull_faces = !args.has_named("--no_cull_faces"),
                 .wire_frame = args.has_named("--wire_frame"),
                 .screen_width = safe_stoi(args.named_value("--width", "640")),
@@ -246,6 +249,7 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
+        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
         AggregateRendererGuard small_sorted_aggregate_renderer_guard{std::make_shared<AggregateArrayRenderer>()};
         AggregateArrayRenderer large_aggregate_renderer;
         Scene scene{&large_aggregate_renderer};
