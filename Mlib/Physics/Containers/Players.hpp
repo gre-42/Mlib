@@ -20,6 +20,7 @@ public:
     std::string get_score_board() const;
     std::map<std::string, Player*>& players();
     const std::map<std::string, Player*>& players() const;
+    void print(std::ostream& ostr) const;
 private:
     std::map<std::string, Player*> players_;
     std::map<const Player*, float> best_lap_time_;

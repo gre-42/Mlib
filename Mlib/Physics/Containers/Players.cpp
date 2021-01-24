@@ -63,3 +63,9 @@ std::map<std::string, Player*>& Players::players() {
 const std::map<std::string, Player*>& Players::players() const {
     return players_;
 }
+
+void Players::print(std::ostream& ostr) const {
+    for (const auto& p : players_) {
+        ostr << p.second->name() << '\n';
+    }
+}
