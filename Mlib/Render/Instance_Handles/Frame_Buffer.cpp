@@ -145,7 +145,13 @@ void FrameBufferMsaa::configure(const FrameBufferConfig& config) {
     config1.nsamples_msaa = 1;
     fb.configure(config1);
     if (config_.nsamples_msaa != 1) {
-        ms_fb.configure({.width = config_.width, .height = config_.height, .with_depth_texture = config_.with_depth_texture, .nsamples_msaa = config_.nsamples_msaa});
+        ms_fb.configure({
+            .width = config_.width,
+            .height = config_.height,
+            .color_internal_format = config.color_internal_format,
+            .color_format = config.color_format,
+            .with_depth_texture = config_.with_depth_texture,
+            .nsamples_msaa = config_.nsamples_msaa});
     }
 }
 
