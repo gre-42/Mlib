@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Texture_Descriptor.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Env.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
@@ -197,6 +198,12 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     const TextureDescriptor& desc = dit != texture_descriptors_.end()
         ? dit->second
         : descriptor;
+    if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+        std::cout << "Loading texture: " << desc.color << std::endl;
+        if (!desc.mixed.empty()) {
+            std::cout << "Loading texture: " << desc.mixed << std::endl;
+        }
+    }
     
     GLuint texture;
 
