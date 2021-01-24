@@ -86,6 +86,8 @@ public:
     void set_surface_power(float forward, float backward);
     void set_tire_angle_y(size_t tire_id, float angle_left, float angle_right);
     void set_angular_velocity(float angle_left, float angle_right);
+    void draw_waypoint_history(const std::string& filename) const;
+    void set_waypoint(const FixedArray<float, 2>& waypoint, size_t waypoint_id);
     void set_waypoint(const FixedArray<float, 2>& waypoint);
     void set_waypoint(size_t waypoint_id);
     void set_waypoints(
@@ -157,6 +159,7 @@ private:
     float angular_velocity_left_;
     float angular_velocity_right_;
     FixedArray<float, 2> waypoint_;
+    std::list<FixedArray<float, 2>> waypoint_history_;
     std::map<WayPointLocation, PointsAndAdjacency<float, 2>> all_waypoints_;
     std::map<WayPointLocation, Bvh<float, size_t, 2>> all_waypoints_bvh_;
     std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;
@@ -173,6 +176,8 @@ private:
     std::recursive_mutex& mutex_;
     std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
     bool spotted_;
+    size_t nunstucked_;
+    bool record_waypoints_;
 };
 
 };

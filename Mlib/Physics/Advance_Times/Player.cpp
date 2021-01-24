@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
@@ -14,6 +15,7 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <fstream>
 
 using namespace Mlib;
 
@@ -52,7 +54,9 @@ Player::Player(
   driving_mode_{driving_mode},
   driving_direction_{driving_direction},
   mutex_{mutex},
-  spotted_{false}
+  spotted_{false},
+  nunstucked_{0},
+  record_waypoints_{false}
 {}
 
 Player::~Player()
@@ -115,16 +119,21 @@ void Player::set_angular_velocity(float angular_velocity_left, float angular_vel
     angular_velocity_right_ = angular_velocity_right;
 }
 
-void Player::set_waypoint(const FixedArray<float, 2>& waypoint) {
+void Player::set_waypoint(const FixedArray<float, 2>& waypoint, size_t waypoint_id) {
     waypoint_ = waypoint;
-    waypoint_id_ = SIZE_MAX;
+    waypoint_id_ = waypoint_id;
+    if (record_waypoints_ && !any(isnan(waypoint))) {
+        waypoint_history_.push_back(waypoint);
+    }
     waypoint_reached_ = false;
 }
 
+void Player::set_waypoint(const FixedArray<float, 2>& waypoint) {
+    set_waypoint(waypoint, SIZE_MAX);
+}
+
 void Player::set_waypoint(size_t waypoint_id) {
-    waypoint_ = waypoints().points.at(waypoint_id);
-    waypoint_id_ = waypoint_id;
-    waypoint_reached_ = false;
+    set_waypoint(waypoints().points.at(waypoint_id), waypoint_id);
 }
 
 void Player::set_waypoints(
@@ -244,6 +253,7 @@ void Player::notify_spawn() {
     nwaypoints_reached_ = 0;
     spawn_time_ = std::chrono::steady_clock::now();
     spotted_ = false;
+    waypoint_history_.clear();
 }
 
 float Player::seconds_since_spawn() const {
@@ -293,6 +303,33 @@ void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody
     }
 }
 
+void Player::draw_waypoint_history(const std::string& filename) const {
+    if (!record_waypoints_) {
+        throw std::runtime_error("draw_waypoint_history but recording is not enabled");
+    }
+    std::ofstream ofstr{filename};
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not open \"" + filename + "\" for write");
+    }
+    Svg<float> svg{ofstr, 600, 600};
+    std::vector<float> x;
+    std::vector<float> y;
+    x.resize(waypoint_history_.size());
+    y.resize(waypoint_history_.size());
+    size_t i = 0;
+    for (const auto& w : waypoint_history_) {
+        x[i] = w(0);
+        y[i] = w(1);
+        ++i;
+    }
+    svg.plot(x, y);
+    svg.finish();
+    ofstr.flush();
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
+    }
+}
+
 bool Player::unstuck() {
     if (rb_ == nullptr) {
         return false;
@@ -313,6 +350,9 @@ bool Player::unstuck() {
         {
             unstuck_start_ = std::chrono::steady_clock::time_point();
         } else {
+            // if (!waypoint_history_.empty()) {
+            //     draw_waypoint_history("/tmp/" + name() + "_" + std::to_string(nunstucked_++) + ".svg");
+            // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
                 drive_backwards();
                 for (auto &tire : rb_->tires_) {
