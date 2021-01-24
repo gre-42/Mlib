@@ -38,6 +38,8 @@ void HudImageLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    update_texture_id();
+
     float aspect_ratio = width / (float)height;
 
     float vertices[] = {
