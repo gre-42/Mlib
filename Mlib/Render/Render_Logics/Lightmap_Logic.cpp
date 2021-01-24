@@ -65,7 +65,7 @@ void LightmapLogic::render(
         fbs_->configure({
             .width = lightmap_width,
             .height = lightmap_height,
-            .with_depth_texture = false,
+            .with_depth_texture = with_depth_texture_,
             .nsamples_msaa = render_config.lightmap_nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{*fbs_};
