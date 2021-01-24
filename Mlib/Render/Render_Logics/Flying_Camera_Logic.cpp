@@ -151,7 +151,9 @@ void FlyingCameraLogic::render(
     if (button_press_.key_pressed({key: "ESCAPE", gamepad_button: "START"})) {
         Focus focus = user_object_.focuses.focus();
         if (focus == Focus::MENU) {
-            user_object_.focuses.pop_back();
+            if (user_object_.focuses.size() > 1) {
+                user_object_.focuses.pop_back();
+            }
         } else if ((focus & (Focus::LOADING | Focus::COUNTDOWN | Focus::SCENE)) != Focus::NONE) {
             user_object_.focuses.push_back(Focus::MENU);
         } else if (focus != Focus::BASE) {

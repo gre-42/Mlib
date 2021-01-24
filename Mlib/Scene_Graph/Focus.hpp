@@ -59,6 +59,9 @@ public:
     bool contains(Focus focus) const {
         return find(focus) != end();
     }
+    size_t size() const {
+        return focuses_.size();
+    }
 private:
     std::list<Focus> focuses_;
 };

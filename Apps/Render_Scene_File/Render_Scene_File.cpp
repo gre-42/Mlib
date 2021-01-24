@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         ButtonStates button_states;
-        UiFocus ui_focus = UiFocus{.focuses = {Focus::SCENE}};
+        UiFocus ui_focus;
         SubstitutionString substitutions;
         std::map<std::string, size_t> selection_ids;
         // FifoLog fifo_log{10 * 1000};
