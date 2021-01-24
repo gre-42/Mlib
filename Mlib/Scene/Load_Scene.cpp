@@ -505,7 +505,11 @@ void LoadScene::operator()(
     static const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
     static const std::regex set_dirtmap_reg("^(?:\\r?\\n|\\s)*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
     static const std::regex set_skybox_reg("^(?:\\r?\\n|\\s)*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
-    static const std::regex set_preferred_car_spawner_reg("^(?:\\r?\\n|\\s)*set_preferred_car_spawner player=([\\w+-.]+)\\s+macro=(\\w+)\\s+parameters=([#: \\w+-.]*)$");
+    static const std::regex set_preferred_car_spawner_reg(
+        "^(?:\\r?\\n|\\s)*set_preferred_car_spawner"
+        "\\s+player=([\\w+-.]+)"
+        "\\s+macro=([\\w.]+)"
+        "\\s+parameters=([#: \\w+-.]*)$");
     static const std::regex set_vip_reg("^(?:\\r?\\n|\\s)*set_vip player=([\\w+-.]+)$");
     static const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
     static const std::regex append_focus_reg(
