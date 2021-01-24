@@ -502,8 +502,11 @@ void Player::select_next_waypoint() {
             [&](size_t i)
         {
             const auto& rs = wps.points.at(i);
-            if (dot0d(rs - pos2, z2) < 0) {
-                float dist2 = sum(squared(rs - pos2));
+            auto diff = rs - pos2;
+            auto dist2 = sum(squared(diff));
+            if ((dist2 < 1e-6) ||
+                (dot0d(diff / std::sqrt(dist2), z2) < -std::cos(45 * M_PI / 180)))
+            {
                 if (dist2 < closest_distance2) {
                     closest_distance2 = dist2;
                     closest_id = i;
