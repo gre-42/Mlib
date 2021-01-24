@@ -273,7 +273,7 @@ void LoadScene::operator()(
         "^(?:\\r?\\n|\\s)*player_create"
         "\\s+name=([\\w+-.]+)"
         "\\s+team=([\\w+-.]+)"
-        "\\s+mode=(ramming|racing|bystander)"
+        "\\s+game_mode=(ramming|racing|bystander)"
         "\\s+unstuck_mode=(off|reverse|delete)"
         "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");
