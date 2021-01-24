@@ -9,6 +9,7 @@
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 
 using namespace Mlib;
 
@@ -56,7 +57,7 @@ void LightmapLogic::render(
         GLsizei lightmap_height = black_node_name_.empty()
             ? render_config.scene_lightmap_height
             : render_config.black_lightmap_height;
-        CHK(glViewport(0, 0, lightmap_width, lightmap_height));
+        ViewportGuard vg{0, 0, lightmap_width, lightmap_height};
         RenderedSceneDescriptor light_rsd{external_render_pass: {ExternalRenderPass::LIGHTMAP_TO_TEXTURE, black_node_name_}, time_id: 0, light_node_name: light_node_name_};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
@@ -83,7 +84,6 @@ void LightmapLogic::render(
             rendering_context_.rendering_resources->set_texture("lightmap_depth" + light_node_name_, fbs_->fb.texture_depth_buffer);
             rendering_context_.rendering_resources->set_vp("lightmap_depth" + light_node_name_, vp());
         }
-        CHK(glViewport(0, 0, width, height));
     }
 }
 

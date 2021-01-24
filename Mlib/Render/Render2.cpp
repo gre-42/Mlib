@@ -16,6 +16,7 @@
 #include <Mlib/Render/Renderables/Renderable_Height_Map.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/linmath.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
@@ -129,7 +130,7 @@ void Render2::operator () (
 
         GLFW_CHK(glfwGetFramebufferSize(window_->window(), &width, &height));
 
-        CHK(glViewport(0, 0, width, height));
+        ViewportGuard vg{0, 0, width, height};
 
         logic.render(
             width,

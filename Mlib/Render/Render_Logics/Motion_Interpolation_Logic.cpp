@@ -10,6 +10,7 @@
 #include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Log.hpp>
 // #include <Mlib/Render/Save_Movie.hpp>
 
@@ -334,56 +335,57 @@ void MotionInterpolationLogic::render(
                 } else if (interpolation_type_ == InterpolationType::OPTICAL_FLOW) {
                     GLint of_width = 640;
                     GLint of_height = 480;
-                    glViewport(0, 0, of_width, of_height);
-                    FrameBufferMsaa fb_diff;
-                    // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
-                    fb_diff.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
-                    {
-                        RenderToFrameBufferGuard rfg{fb_diff};
-                        CHK(glUseProgram(rp_interpolate_of_diff_.program));
-
-                        CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color0_location, 0));
-                        CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color1_location, 1));
-                        CHK(glUniform1f(rp_interpolate_of_diff_.width_location, of_width));
-                        CHK(glUniform1f(rp_interpolate_of_diff_.height_location, of_height));
-
-                        CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
-
-                        CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color_buffer));
-
-                        CHK(glBindVertexArray(va_.vertex_buffer));
-                        CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
-                        CHK(glBindVertexArray(0));
-
-                        // Reset to defaults
-                        CHK(glActiveTexture(GL_TEXTURE0));
-                    }
                     FrameBufferMsaa fb_flow;
-                    // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
-                    fb_flow.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
                     {
-                        RenderToFrameBufferGuard rfg{fb_flow};
+                        ViewportGuard vg{0, 0, of_width, of_height};
+                        FrameBufferMsaa fb_diff;
+                        // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
+                        fb_diff.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
+                        {
+                            RenderToFrameBufferGuard rfg{fb_diff};
+                            CHK(glUseProgram(rp_interpolate_of_diff_.program));
 
-                        CHK(glUseProgram(rp_interpolate_of_finalize_.program));
+                            CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color0_location, 0));
+                            CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color1_location, 1));
+                            CHK(glUniform1f(rp_interpolate_of_diff_.width_location, of_width));
+                            CHK(glUniform1f(rp_interpolate_of_diff_.height_location, of_height));
 
-                        CHK(glUniform1i(rp_interpolate_of_finalize_.screen_texture_of_diff_location, 0));
+                            CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
+                            CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
 
-                        CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                        CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.fb.texture_color_buffer));
+                            CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
+                            CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color_buffer));
 
-                        CHK(glBindVertexArray(va_.vertex_buffer));
-                        CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
-                        CHK(glBindVertexArray(0));
+                            CHK(glBindVertexArray(va_.vertex_buffer));
+                            CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+                            CHK(glBindVertexArray(0));
 
-                        // save_movie.save("/tmp/mov-", "-f", of_width, of_height);
+                            // Reset to defaults
+                            CHK(glActiveTexture(GL_TEXTURE0));
+                        }
+                        // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
+                        fb_flow.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
+                        {
+                            RenderToFrameBufferGuard rfg{fb_flow};
 
-                        // Reset to defaults
-                        CHK(glActiveTexture(GL_TEXTURE0));
+                            CHK(glUseProgram(rp_interpolate_of_finalize_.program));
+
+                            CHK(glUniform1i(rp_interpolate_of_finalize_.screen_texture_of_diff_location, 0));
+
+                            CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
+                            CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.fb.texture_color_buffer));
+
+                            CHK(glBindVertexArray(va_.vertex_buffer));
+                            CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+                            CHK(glBindVertexArray(0));
+
+                            // save_movie.save("/tmp/mov-", "-f", of_width, of_height);
+
+                            // Reset to defaults
+                            CHK(glActiveTexture(GL_TEXTURE0));
+                        }
+                        fb_diff.deallocate();
                     }
-                    fb_diff.deallocate();
-                    glViewport(0, 0, width, height);
                     {
                         CHK(glUseProgram(rp_interpolate_of_apply_.program));
 

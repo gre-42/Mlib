@@ -40,6 +40,7 @@
 #include <Mlib/Render/Render_Logics/Pause_On_Lose_Focus_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Logics/Render_To_Pixel_Region_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_To_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
@@ -399,6 +400,12 @@ void LoadScene::operator()(
         "\\s+source_scene=([\\w+-.]+)"
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
+    static const std::regex scene_to_pixel_region_reg(
+        "^(?:\\r?\\n|\\s)*scene_to_pixel_region"
+        "\\s+target_scene=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
@@ -1378,6 +1385,23 @@ void LoadScene::operator()(
                     focus_from_string(match[8].str()));
             }
             render_logics.append(nullptr, scene_window_logic);
+        } else if (std::regex_match(line, match, scene_to_pixel_region_reg)) {
+            std::string target_scene = match[1].str();
+            auto wit = renderable_scenes.find(target_scene);
+            if (wit == renderable_scenes.end()) {
+                throw std::runtime_error("Could not find renderable scene with name \"" + target_scene + '"');
+            }
+            std::shared_ptr<RenderToPixelRegionLogic> render_scene_to_pixel_region_logic_;
+            render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPixelRegionLogic>(
+                render_logics,
+                FixedArray<int, 2>{             // position
+                    safe_stoi(match[2].str()),
+                    safe_stoi(match[3].str())},
+                FixedArray<int, 2>{             // size
+                    safe_stoi(match[4].str()),
+                    safe_stoi(match[5].str())},
+                focus_from_string(match[6].str()));
+            wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
         } else if (std::regex_match(line, match, clear_parameters_reg)) {
             substitutions.clear();
         } else if (std::regex_match(line, match, parameter_setter_reg)) {

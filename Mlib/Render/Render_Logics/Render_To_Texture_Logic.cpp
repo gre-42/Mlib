@@ -9,6 +9,7 @@
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 
 using namespace Mlib;
 
@@ -51,7 +52,7 @@ void RenderToTextureLogic::render(
 {
     LOG_FUNCTION("RenderToTextureLogic::render");
     if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
-        CHK(glViewport(0, 0, texture_width_, texture_height_));
+        ViewportGuard vg{0, 0, texture_width_, texture_height_};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
         }
@@ -73,7 +74,6 @@ void RenderToTextureLogic::render(
         if (with_depth_texture_) {
             rendering_context_.rendering_resources->set_texture(depth_texture_name_, fbs_->fb.texture_depth_buffer);
         }
-        CHK(glViewport(0, 0, width, height));
     }
 }
 
