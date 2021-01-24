@@ -187,21 +187,21 @@ void LoadScene::operator()(
         "\\s*terrain_edge_smoothness=([\\w+-.]+)\\r?\\n"
         "\\s*driving_direction=(center|left|right)$");
     static const std::regex obj_resource_reg(
-        "^(?:\\r?\\n|\\s)*obj_resource\\r?\\n"
-        "\\s*name=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*filename=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*scale=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*is_small=(0|1)\\r?\\n"
-        "\\s*blend_mode=(off|binary|continuous)\\r?\\n"
-        "\\s*cull_faces=(0|1)\\r?\\n"
-        "\\s*occluded_type=(off|color|depth)\\r?\\n"
-        "\\s*occluder_type=(off|white|black)\\r?\\n"
-        "\\s*occluded_by_black=(0|1)\\r?\\n"
-        "\\s*aggregate_mode=(off|once|sorted|instances_once|instances_sorted)\\r?\\n"
-        "\\s*transformation_mode=(all|position|position_lookat)(\\r?\\n"
-        "\\s*no_werror)?$");
+        "^(?:\\r?\\n|\\s)*obj_resource"
+        "\\s+name=([\\w-. \\(\\)/+-]+)"
+        "\\s+filename=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+scale=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+is_small=(0|1)"
+        "\\s+blend_mode=(off|binary|continuous)"
+        "\\s+cull_faces=(0|1)"
+        "\\s+occluded_type=(off|color|depth)"
+        "\\s+occluder_type=(off|white|black)"
+        "\\s+occluded_by_black=(0|1)"
+        "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
+        "\\s+transformation_mode=(all|position|position_lookat)"
+        "(\\s+no_werror)?$");
     static const std::regex gen_triangle_rays_reg("^(?:\\r?\\n|\\s)*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
     static const std::regex gen_ray_reg("^(?:\\r?\\n|\\s)*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex downsample_reg("^(?:\\r?\\n|\\s)*downsample name=([/\\w+-.]+) factor=(\\d+)$");
@@ -278,11 +278,11 @@ void LoadScene::operator()(
         "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");
     static const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
-    static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player-name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
-    static const std::regex player_set_surface_power_reg("^(?:\\r?\\n|\\s)*player_set_surface_power player-name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
-    static const std::regex player_set_tire_angle_reg("^(?:\\r?\\n|\\s)*player_set_tire_angle player-name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
-    static const std::regex player_set_angular_velocity_reg("^(?:\\r?\\n|\\s)*player_set_angular_velocity player-name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
-    static const std::regex player_set_waypoint_reg("^(?:\\r?\\n|\\s)*player_set_waypoint player-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
+    static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player_name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
+    static const std::regex player_set_surface_power_reg("^(?:\\r?\\n|\\s)*player_set_surface_power player_name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
+    static const std::regex player_set_tire_angle_reg("^(?:\\r?\\n|\\s)*player_set_tire_angle player_name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
+    static const std::regex player_set_angular_velocity_reg("^(?:\\r?\\n|\\s)*player_set_angular_velocity player_name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
+    static const std::regex player_set_waypoint_reg("^(?:\\r?\\n|\\s)*player_set_waypoint player_name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
     static const std::regex team_set_waypoint_reg("^(?:\\r?\\n|\\s)*team_set_waypoint team-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
     static const std::regex camera_key_binding_reg("^(?:\\r?\\n|\\s)*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
     static const std::regex abs_idle_binding_reg(
@@ -323,49 +323,49 @@ void LoadScene::operator()(
         "\\s*joystick_digital_axis_sign=([\\w+-.]+))?$");
     static const std::regex console_log_reg("^(?:\\r?\\n|\\s)*console_log node=([\\w+-.]+) format=(\\d+)$");
     static const std::regex visual_global_log_reg(
-        "^(?:\\r?\\n|\\s)*visual_global_log\\r?\\n"
-        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*font_height=([\\w+-.]+)\\r?\\n"
-        "\\s*line_distance=([\\w+-.]+)\\r?\\n"
-        "\\s*nentries=([\\d+]+)\\r?\\n"
-        "\\s*severity=(info|critical)$");
+        "^(?:\\r?\\n|\\s)*visual_global_log"
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+nentries=([\\d+]+)"
+        "\\s+severity=(info|critical)$");
     static const std::regex visual_node_status_reg(
-        "^(?:\\r?\\n|\\s)*visual_node_status\\r?\\n"
-        "\\s*node=([\\w+-.]+)\\r?\\n"
-        "\\s*format=(\\d+)\\r?\\n"
-        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*font_height=([\\w+-.]+)\\r?\\n"
-        "\\s*line_distance=([\\w+-.]+)$");
+        "^(?:\\r?\\n|\\s)*visual_node_status"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+format=(\\d+)"
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)$");
     static const std::regex visual_node_status_3rd_reg(
-        "^(?:\\r?\\n|\\s)*visual_node_status_3rd\\r?\\n"
-        "\\s*node=([\\w+-.]+)\\r?\\n"
-        "\\s*format=(\\d+)\\r?\\n"
-        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*offset=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*font_height=([\\w+-.]+)\\r?\\n"
-        "\\s*line_distance=([\\w+-.]+)$");
+        "^(?:\\r?\\n|\\s)*visual_node_status_3rd"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+format=(\\d+)"
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+offset=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)$");
     static const std::regex loading_reg(
         "^(?:\\r?\\n|\\s)*loading"
-        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*font_height=([\\w+-.]+)\\r?\\n"
-        "\\s*line_distance=([\\w+-.]+)\\r?\\n"
-        "\\s*text=(.*)$");
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+text=(.*)$");
     static const std::regex countdown_reg(
         "^(?:\\r?\\n|\\s)*countdown"
-        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*font_height=([\\w+-.]+)\\r?\\n"
-        "\\s*line_distance=([\\w+-.]+)\\r?\\n"
-        "\\s*nseconds=([\\w+-.]+)$");
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+nseconds=([\\w+-.]+)$");
     static const std::regex players_stats_reg(
-        "^(?:\\r?\\n|\\s)*players_stats\\r?\\n"
-        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*font_height=([\\w+-.]+)\\r?\\n"
-        "\\s*line_distance=([\\w+-.]+)$");
+        "^(?:\\r?\\n|\\s)*players_stats"
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)$");
     static const std::regex create_scene_reg(
         "^(?:\\r?\\n|\\s)*create_scene"
         "\\s+name=([\\w+-.]+)"
@@ -446,12 +446,13 @@ void LoadScene::operator()(
         "\\s+update=(once|always)"
         "\\s+focus_mask=(menu|loading|countdown|scene)$");
     static const std::regex hud_image_reg(
-        "^(?:\\r?\\n|\\s)*hud_image node=([\\w+-.]+)"
+        "^(?:\\r?\\n|\\s)*hud_image"
+        "\\s+node=([\\w+-.]+)"
         "\\s+filename=([\\w-. \\(\\)/+-]+)"
         "\\s+update=(once|always)"
         "\\s+center=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y-fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
+    static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y_fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     static const std::regex ortho_camera_reg("^(?:\\r?\\n|\\s)*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     static const std::regex light_reg(
         "^(?:\\r?\\n|\\s)*light"
