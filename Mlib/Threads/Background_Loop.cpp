@@ -3,10 +3,10 @@
 using namespace Mlib;
 
 BackgroundLoop::BackgroundLoop() {
-    task_ready_mutex_.lock();
     thread_ = std::thread{[this](){
         while (true) {
-            task_ready_mutex_.lock();
+            std::unique_lock lck{ mutex_ };
+            task_ready_cv_.wait(lck, [this]() { return !done_ || shutdown_requested_; });
             if (shutdown_requested_) {
                 return;
             }
@@ -17,8 +17,11 @@ BackgroundLoop::BackgroundLoop() {
 }
 
 BackgroundLoop::~BackgroundLoop() {
-    shutdown_requested_ = true;
-    task_ready_mutex_.unlock();
+    {
+        std::unique_lock lock{ mutex_ };
+        shutdown_requested_ = true;
+    }
+    task_ready_cv_.notify_one();
     thread_.join();
 }
 
@@ -42,9 +45,10 @@ void BackgroundLoop::run(const std::function<void()>& task) {
     if (!done_) {
         throw std::runtime_error("BackgroundLoop::run despite not done");
     }
+    std::unique_lock lck{ mutex_ };
     task_ = task;
     done_ = false;
-    task_ready_mutex_.unlock();
+    task_ready_cv_.notify_one();
 }
 
 bool BackgroundLoop::done() const {

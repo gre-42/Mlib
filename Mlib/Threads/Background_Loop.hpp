@@ -19,7 +19,8 @@ private:
     size_t i_ = 0;
     std::atomic_bool done_ = true;
     std::atomic_bool shutdown_requested_ = false;
-    std::mutex task_ready_mutex_;
+    std::condition_variable task_ready_cv_;
+    std::mutex mutex_;
 };
 
 }
