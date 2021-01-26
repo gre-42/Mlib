@@ -20,3 +20,8 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 else()
     target_link_libraries(MlibRender Mlib MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib glfw)
 endif()
+
+if (MSVC)
+    target_compile_definitions(MlibRender PUBLIC GLAD_API_CALL_EXPORT)
+    target_compile_definitions(MlibRender PRIVATE GLAD_API_CALL_EXPORT_BUILD)
+endif()
