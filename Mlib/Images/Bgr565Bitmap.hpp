@@ -136,6 +136,7 @@ struct Bgr565 {
 } PACKED;
 #include <Mlib/Packed_End.hpp>
 
+#include <Mlib/Packed_Begin.hpp>
 class Bgr565Bitmap: public Array<Bgr565> {
 public:
     Bgr565Bitmap();
@@ -163,5 +164,6 @@ public:
 private:
     void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, const Bgr565& color, bool infinite);
 };
+#include <Mlib/Packed_End.hpp>
 
 }

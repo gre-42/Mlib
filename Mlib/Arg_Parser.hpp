@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
 
 class CommandLineArgumentError: public std::runtime_error {
 public:

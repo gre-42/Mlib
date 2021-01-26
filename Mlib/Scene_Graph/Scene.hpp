@@ -5,8 +5,8 @@
 #include <iosfwd>
 #include <map>
 #include <memory>
-#include <shared_mutex>
 #include <regex>
+#include <shared_mutex>
 #include <thread>
 
 namespace Mlib {
