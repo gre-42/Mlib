@@ -63,7 +63,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
             bullet_start_offset_,
             bullet_velocity_,
             gravity_,
-            1e-6,
+            float(1e-6),
             10};
         t = aim.time;
         offset(1) = aim.aim_offset;

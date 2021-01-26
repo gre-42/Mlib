@@ -98,7 +98,7 @@ public:
         }
     }
     float search_time() const {
-        float res = children_.size();
+        float res = (float)children_.size();
         for (const auto& c : children_) {
             res += c.second.search_time() / children_.size();
         }

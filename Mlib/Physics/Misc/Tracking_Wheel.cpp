@@ -23,7 +23,9 @@ TrackingWheel::TrackingWheel(
   angle_x_{0},
   sum_stiction_force_{0},
   sum_friction_force_{0},
-  pose_initialized_{false}
+  pose_initialized_{false},
+  old_rotation_(NAN),
+  old_translation_(NAN)
 {}
 
 void TrackingWheel::notify_intersection(
@@ -85,7 +87,7 @@ void TrackingWheel::update_position(
         pose_initialized_ = true;
     }
     angle_x_ += w_ * dt;
-    angle_x_ = std::fmod(angle_x_, 2 * M_PI);
+    angle_x_ = std::fmod(angle_x_, float(2 * M_PI));
     power_internal = 0;
     power_external = 0;
     moment = 0;
@@ -157,7 +159,7 @@ void TrackingWheel::update_position(
             // std::cerr << "new3 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
             if (slip && (beacons != nullptr)) {
                 beacons->push_back({dot1d(rotation, s.spring.point_of_contact) + translation});
-                beacons->push_back({position: abs_pos, resource_name: "beacon1"});
+                beacons->push_back({.position = abs_pos, .resource_name = "beacon1"});
             }
         }
     }

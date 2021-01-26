@@ -112,7 +112,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             rb->tires_z_ = k.tires_z;
         }
         for (const auto& k : absolute_movable_key_bindings_) {
-            float alpha = button_press_.key_alpha(k.base_key, 0.05);
+            float alpha = button_press_.key_alpha(k.base_key, 0.05f);
             if (!std::isnan(alpha)) {
                 auto m = k.node->get_absolute_movable();
                 auto rb = dynamic_cast<RigidBody*>(m);
@@ -123,8 +123,8 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     rb->integrate_force(rb->abs_F(k.force));
                 } else if (cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
                     rb->rbi_.rbp_.integrate_impulse(rb->abs_F({
-                        vector: k.force.vector * (cfg.dt / cfg.oversampling),
-                        position: k.force.position}));
+                        .vector = k.force.vector * (cfg.dt / cfg.oversampling),
+                        .position = k.force.position}));
                 } else {
                     throw std::runtime_error("Unknown resolve collision type in key_bindings");
                 }
@@ -136,8 +136,8 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 rb->set_max_velocity(k.max_velocity);
                 if (k.tire_id != SIZE_MAX) {
                     if (false) {
-                        float a = 9.8 * 1;
-                        float l = 2.55;
+                        float a = 9.8f * 1;
+                        float l = 2.55f;
                         float r = sum(squared(rb->rbi_.rbp_.v_)) / a;
                         float angle = std::asin(std::clamp(l / r, 0.f, 1.f));
                         rb->set_tire_angle_y(k.tire_id, angle * alpha * sign(k.tire_angle_interp(0)));
@@ -146,7 +146,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     float v = std::abs(dot0d(
                         rb->rbi_.rbp_.v_,
                         rb->rbi_.rbp_.rotation_.column(2)));
-                    rb->set_tire_angle_y(k.tire_id, alpha * M_PI / 180.f * k.tire_angle_interp(v * 3.6f));
+                    rb->set_tire_angle_y(k.tire_id, alpha * float(M_PI) / 180.f * k.tire_angle_interp(v * 3.6f));
                     // rb->set_tire_accel_x(k.tire_id, alpha * sign(k.tire_angle_interp(0)));
                 }
                 rb->tires_z_ += k.tires_z;
@@ -161,7 +161,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             if (any(abs(rb->tires_z_) > float(1e-12))) {
                 rb->tires_z_ /= std::sqrt(sum(squared(rb->tires_z_)));
             } else {
-                rb->tires_z_ = {0, 0, 1};
+                rb->tires_z_ = {0.f, 0.f, 1.f };
                 rb->set_surface_power("main", NAN);
                 rb->set_surface_power("breaks", NAN);
             }

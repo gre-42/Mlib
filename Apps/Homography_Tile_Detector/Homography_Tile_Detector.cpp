@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
                     }
                 }
             }
-            if (any(isnan(x)) || any(isnan(p))) {
+            if (any(Mlib::isnan(x)) || any(Mlib::isnan(p))) {
                 throw std::runtime_error("Internal error, NAN");
             }
             // H: x -> p, p = x-prime = x'

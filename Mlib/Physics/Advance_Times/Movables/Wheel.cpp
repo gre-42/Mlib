@@ -70,8 +70,8 @@ void Wheel::advance_time(float dt) {
     }
     if (physics_type_ == PhysicsType::VERSION1) {
         // angle_x_ += dot0d(rigid_body_.rbi_.rbp_.v_, rigid_body_.rbi_.abs_z()) * dt / radius_;
-        angle_x_ += rigid_body_.get_angular_velocity_at_tire({0, 1, 0}, {0, 0, 0}, tire_id_) * dt;
-        angle_x_ = std::fmod(angle_x_, 2 * M_PI);
+        angle_x_ += rigid_body_.get_angular_velocity_at_tire({0.f, 1.f, 0.f }, {0.f, 0.f, 0.f }, tire_id_) * dt;
+        angle_x_ = std::fmod(angle_x_, float(2 * M_PI));
     }
     tire_angles(0) = angle_x_;
     transformation_matrix_.R() = tait_bryan_angles_2_matrix(tire_angles);

@@ -7,7 +7,7 @@ namespace Mlib {
 template <class TData>
 FixedArray<TData, 3, 3> lookat(const FixedArray<TData, 3>& dz)
 {
-    FixedArray<TData, 3> dy{0, 1, 0};
+    FixedArray<TData, 3> dy{0.f, 1.f, 0.f};
     auto dx = cross(dy, -dz);
     dx /= std::sqrt(sum(squared(dx)));
     dy = cross(-dz, dx);

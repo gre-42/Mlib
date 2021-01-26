@@ -10,7 +10,7 @@ namespace Mlib {
 
 class AdvanceTimes;
 class SceneNode;
-class RigidBodyIntegrator;
+struct RigidBodyIntegrator;
 
 class RigidBodyRecorder: public DestructionObserver, public AdvanceTime {
 public:

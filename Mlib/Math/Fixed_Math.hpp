@@ -97,7 +97,7 @@ auto dot(
 }
 
 template <class TData, size_t tsize_r, size_t tsize_c>
-auto dot1d(
+FixedArray<TData, tsize_c> dot1d(
     const FixedArray<TData, tsize_r, tsize_c>& a,
     const FixedArray<TData, tsize_c>& b)
 {

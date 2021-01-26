@@ -9,7 +9,7 @@ namespace Mlib {
 
 class ExternalForceProvider;
 struct Beacon;
-struct ContactInfo;
+class ContactInfo;
 class BaseLog;
 
 class PhysicsEngine {

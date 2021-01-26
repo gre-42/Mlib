@@ -86,7 +86,7 @@ bool CollisionQuery::can_see(
     float height_offset,
     float time_offset)
 {
-    FixedArray<float, 3> d = {0, height_offset, 0};
+    FixedArray<float, 3> d = {0.f, height_offset, 0.f};
     if (time_offset != 0) {
         RigidBodyPulses watcher_rbp = watcher.rbp_;
         RigidBodyPulses watched_rbp = watched.rbp_;
@@ -115,7 +115,7 @@ bool CollisionQuery::can_see(
     float height_offset,
     float time_offset)
 {
-    FixedArray<float, 3> d = {0, height_offset, 0};
+    FixedArray<float, 3> d = {0.f, height_offset, 0.f };
     if (time_offset != 0) {
         RigidBodyPulses rbp = watcher.rbp_;
         rbp.advance_time(time_offset);

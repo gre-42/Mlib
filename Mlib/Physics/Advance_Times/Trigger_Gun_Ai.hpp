@@ -7,7 +7,7 @@ namespace Mlib {
 class Gun;
 class PhysicsEngine;
 class SceneNode;
-class RigidBodyIntegrator;
+struct RigidBodyIntegrator;
 
 class TriggerGunAi: public DestructionObserver, public AdvanceTime {
 public:

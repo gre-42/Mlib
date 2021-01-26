@@ -13,7 +13,7 @@
 
 namespace Mlib {
 
-struct RigidBody;
+class RigidBody;
 struct RigidBodyIntegrator;
 class Players;
 class SceneNode;

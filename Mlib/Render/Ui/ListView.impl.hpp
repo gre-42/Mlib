@@ -33,25 +33,25 @@ ListView<TOption>::~ListView()
 template <class TOption>
 void ListView<TOption>::handle_input() {
     if (!options_.empty()) {
-        if (button_press_.key_pressed({key: "UP", joystick_axis: "2", joystick_axis_sign: -1})) {
+        if (button_press_.key_pressed({.key = "UP", .joystick_axis = "2", .joystick_axis_sign = -1})) {
             if (selection_index_ > 0) {
                 --selection_index_;
                 on_change_();
             }
         }
-        if (button_press_.key_pressed({key: "DOWN", joystick_axis: "2", joystick_axis_sign: 1})) {
+        if (button_press_.key_pressed({.key = "DOWN", .joystick_axis = "2", .joystick_axis_sign = 1})) {
             if (selection_index_ < options_.size() - 1) {
                 ++selection_index_;
                 on_change_();
             }
         }
-        if (button_press_.key_pressed({key: "HOME"})) {
+        if (button_press_.key_pressed({.key = "HOME"})) {
             if (selection_index_ != 0) {
                 selection_index_ = 0;
                 on_change_();
             }
         }
-        if (button_press_.key_pressed({key: "END"})) {
+        if (button_press_.key_pressed({.key = "END"})) {
             if (selection_index_ != options_.size() - 1) {
                 selection_index_ = options_.size() - 1;
                 on_change_();

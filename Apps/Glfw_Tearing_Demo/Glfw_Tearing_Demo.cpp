@@ -127,11 +127,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
             break;
 
         case GLFW_KEY_ENTER:
-            {
-                if (mods != GLFW_MOD_ALT) {
-                    break;
-                }
+            if (mods != GLFW_MOD_ALT) {
+                break;
             }
+            [[fallthrough]];
         case GLFW_KEY_F11:
         {
             static int x, y, width, height;

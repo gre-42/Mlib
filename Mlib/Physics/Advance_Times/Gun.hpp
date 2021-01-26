@@ -9,7 +9,7 @@
 namespace Mlib {
 
 class SceneNodeResources;
-class RigidBodyIntegrator;
+struct RigidBodyIntegrator;
 class Scene;
 class RigidBodies;
 class AdvanceTimes;

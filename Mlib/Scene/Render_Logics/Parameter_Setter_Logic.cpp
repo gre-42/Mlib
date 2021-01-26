@@ -54,16 +54,16 @@ void ParameterSetterLogic::render(
 {
     if (ui_focus_.submenu_id == submenu_id_) {
         scene_selector_list_view_.handle_input();
-        if (button_press_.key_pressed({key: "LEFT", joystick_axis: "1", joystick_axis_sign: -1})) {
+        if (button_press_.key_pressed({.key = "LEFT", .joystick_axis = "1", .joystick_axis_sign = -1})) {
             ui_focus_.goto_prev_submenu();
         }
-        if (button_press_.key_pressed({key: "RIGHT", joystick_axis: "1", joystick_axis_sign: 1})) {
+        if (button_press_.key_pressed({.key = "RIGHT", .joystick_axis = "1", .joystick_axis_sign = 1})) {
             ui_focus_.goto_next_submenu();
         }
         if (scene_selector_list_view_.has_selected_element()) {
             substitutions_.merge(scene_selector_list_view_.selected_element().substitutions);
         }
-        if (button_press_.key_pressed({key: "ENTER", gamepad_button: "A"})) {
+        if (button_press_.key_pressed({.key = "ENTER", .gamepad_button = "A"})) {
             // ui_focus_.focus.pop_back();
             num_renderings_ = 0;
         }

@@ -2,11 +2,12 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
+#include <string>
 
 namespace Mlib {
 
 class RigidBody;
-class RigidBodyIntegrator;
+struct RigidBodyIntegrator;
 class Scene;
 class SceneNode;
 class AdvanceTimes;

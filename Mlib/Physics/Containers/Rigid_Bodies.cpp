@@ -21,7 +21,7 @@ std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
     if (std::isnan(static_radius)) {
         throw std::runtime_error("Static objects require a non-NAN static_radius");
     }
-    if (any(isnan(tm.R())) || any(isnan(tm.t()))) {
+    if (any(Mlib::isnan(tm.R())) || any(Mlib::isnan(tm.t()))) {
         throw std::runtime_error("Transformation matrix contains NAN values. Forgot to add rigid body to scene node?");
     }
     std::list<std::pair<FixedArray<float, 3>, std::list<CollisionTriangleSphere>>> centers;
@@ -177,8 +177,8 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
                 msh.mesh.second)});
     }
     transformed_objects_.push_back({
-        rigid_body: o.rigid_body,
-        meshes: std::move(transformed_meshes)});
+        .rigid_body = o.rigid_body,
+        .meshes = std::move(transformed_meshes)});
 }
 
 void RigidBodies::print_search_time() const {

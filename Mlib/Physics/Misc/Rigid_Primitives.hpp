@@ -7,7 +7,7 @@ namespace Mlib {
 template <class TData, size_t n>
 class TransformationMatrix;
 class RigidBodyPulses;
-class RigidBodyIntegrator;
+struct RigidBodyIntegrator;
 class RigidBody;
 class RigidBodies;
 

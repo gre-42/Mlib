@@ -21,7 +21,7 @@ struct GameLogicConfig {
     float visible_after_spawn = 2;
     float visible_after_delete = 3;
     size_t max_nsee = 5;
-    float spawn_y_offset = 0.7;
+    float spawn_y_offset = 0.7f;
     bool only_terrain = true;
     float can_see_y_offset = 2;
     size_t max_spawn_points_searched = 100;

@@ -114,7 +114,7 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
         FixedArray<float, 3> lambda = relaxation * mc * v * n3;
         FixedArray<float, 3> lambda_total_old = lambda_total_;
         lambda_total_ += lambda;
-        if (!any(isnan(clamping_direction_))) {
+        if (!any(Mlib::isnan(clamping_direction_))) {
             float ld = dot0d(lambda_total_, clamping_direction_);
             FixedArray<float, 3> lt = lambda_total_ - ld * clamping_direction_;
             lambda_total_ =
@@ -324,7 +324,7 @@ void Mlib::solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt
     for (size_t i = 0; i < 10; ++i) {
         // std::cerr << "solve_contacts " << i << std::endl;
         for (const std::unique_ptr<ContactInfo>& ci : cis) {
-            ci->solve(dt, i < 1 ? 0.2 : 1);
+            ci->solve(dt, i < 1 ? 0.2f : 1.f);
         }
     }
     for (const std::unique_ptr<ContactInfo>& ci : cis) {

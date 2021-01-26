@@ -34,7 +34,7 @@ FollowMovable::FollowMovable(
   y_adaptivity_{y_adaptivity},
   y_adapt_{0},
   dt_dt_ref_{dt / dt_ref},
-  kalman_filter_{1e-5, 1e-2,  1, 0},
+  kalman_filter_{(float)1e-5, (float)1e-2,  1.f, 0.f},
   exponential_smoother_{1 - std::pow(1 - y_snappiness, dt_dt_ref_), 0},
   initialized_{false}
 {
@@ -58,7 +58,7 @@ void FollowMovable::advance_time(float dt) {
     if (followed_ == nullptr) {
         return;
     }
-    if (any(isnan(attachment_position_))) {
+    if (any(Mlib::isnan(attachment_position_))) {
         throw std::runtime_error("Attachment position is NAN, set_absolute_model_matrix not called?");
     }
     if (!initialized_) {

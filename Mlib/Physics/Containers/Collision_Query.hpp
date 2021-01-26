@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-class RigidBodyIntegrator;
+struct RigidBodyIntegrator;
 class PhysicsEngine;
 
 class CollisionQuery {

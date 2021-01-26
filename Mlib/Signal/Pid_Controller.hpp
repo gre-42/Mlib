@@ -11,7 +11,8 @@ public:
       i_{i},
       d_{d},
       a_{a},
-      I_(0)
+      I_(0),
+      e_old_{NAN}
     {}
     TData operator () (const TData& e) {
         I_ = (1 - a_) * I_ + a_ * e;

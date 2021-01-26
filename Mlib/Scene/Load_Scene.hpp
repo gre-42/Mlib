@@ -13,7 +13,7 @@ class SubstitutionString;
 
 class SceneNodeResources;
 struct SceneConfig;
-struct ButtonStates;
+class ButtonStates;
 struct UiFocus;
 class RenderLogics;
 

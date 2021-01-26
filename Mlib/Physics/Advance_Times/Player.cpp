@@ -122,7 +122,7 @@ void Player::set_angular_velocity(float angular_velocity_left, float angular_vel
 void Player::set_waypoint(const FixedArray<float, 2>& waypoint, size_t waypoint_id) {
     waypoint_ = waypoint;
     waypoint_id_ = waypoint_id;
-    if (record_waypoints_ && !any(isnan(waypoint))) {
+    if (record_waypoints_ && !any(Mlib::isnan(waypoint))) {
         waypoint_history_.push_back(waypoint);
     }
     waypoint_reached_ = false;
@@ -570,7 +570,7 @@ void Player::move_to_waypoint() {
     if (std::isnan(surface_power_backward_)) {
         return;
     }
-    if (any(isnan(waypoint_))) {
+    if (any(Mlib::isnan(waypoint_))) {
         step_on_breaks();
         return;
     }

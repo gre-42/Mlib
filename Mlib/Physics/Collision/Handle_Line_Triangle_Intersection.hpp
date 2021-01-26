@@ -16,7 +16,7 @@ class PlaneNd;
 struct PhysicsEngineConfig;
 class SatTracker;
 struct Beacon;
-struct ContactInfo;
+class ContactInfo;
 class BaseLog;
 
 struct IntersectionScene {

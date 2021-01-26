@@ -142,7 +142,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     // if (!std::isnan(P) && !(sign(P) * v < 0 && std::abs(v) > hand_brake_velocity) && !(P == 0 && std::abs(v) < roll_velocity)) {
     if (!std::isnan(P) && (sign(P) * v > 0 || ((P != 0) == (std::abs(v) < hand_brake_velocity)))) {
         // Handle acceleration and rolling.
-        float x = P / (std::abs(v) + 1e-6);
+        float x = P / (std::abs(v) + float(1e-6));
         // std::cerr << "y / a = " << (y * std::sqrt(sum(squared(sn3T))) / max_stiction_force) << std::endl;
         if (avoid_burnout) {
             x = correct_x_ortho(x, fT, max_stiction_force);

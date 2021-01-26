@@ -15,9 +15,9 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
 {
     // From: https://de.wikipedia.org/wiki/Steinerscher_Satz
     FixedArray<float, 3, 3> I{
-        1.f / 12 * mass * (squared(size(1)) + squared(size(2))), 0, 0,
-        0, 1.f / 12 * mass * (squared(size(0)) + squared(size(2))), 0,
-        0, 0, 1.f / 12 * mass * (squared(size(0)) + squared(size(1)))};
+        1.f / 12 * mass * float(squared(size(1)) + squared(size(2))), 0.f, 0.f,
+        0.f, 1.f / 12 * mass * float(squared(size(0)) + squared(size(2))), 0.f,
+        0.f, 0.f, 1.f / 12 * mass * float(squared(size(0)) + squared(size(1)))};
     
     if (mass != INFINITY) {
         FixedArray<float, 3, 3> a = cross(com);
@@ -45,9 +45,9 @@ RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
 {
     // From: https://de.wikipedia.org/wiki/Steinerscher_Satz
     FixedArray<float, 3, 3> I{
-        1.f / 12 * mass * (squared(size(1)) + squared(size(2))), 0, 0,
-        0, 1.f / 12 * mass * (squared(size(0)) + squared(size(2))), 0,
-        0, 0, 1.f / 12 * mass * (squared(size(0)) + squared(size(1)))};
+        1.f / 12 * mass * float(squared(size(1)) + squared(size(2))), 0.f, 0.f,
+        0.f, 1.f / 12 * mass * float(squared(size(0)) + squared(size(2))), 0.f,
+        0.f, 0.f, 1.f / 12 * mass * float(squared(size(0)) + squared(size(1)))};
     
     if (mass != INFINITY) {
         FixedArray<float, 3, 3> a = cross(com);

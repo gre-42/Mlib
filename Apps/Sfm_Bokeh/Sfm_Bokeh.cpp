@@ -195,12 +195,12 @@ void compute_z(const ParsedArgs& args) {
     //        bad_points.push_back(y0_2[r]);
     //    }
     //}
-    if (any(isnan(F))) {
+    if (any(Mlib::isnan(F))) {
         throw std::runtime_error("Could not determine fundamental matrix");
     }
     if (false) {
         Array<float> epipole3 = find_epipole(F);
-        if (any(isnan(epipole3))) {
+        if (any(Mlib::isnan(epipole3))) {
             throw std::runtime_error("Could not determine epipole");
         }
         Array<float> epipole2 = dehomogenized_2(epipole3 / epipole3(2));

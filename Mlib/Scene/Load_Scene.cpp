@@ -578,9 +578,9 @@ void LoadScene::operator()(
                     safe_stof(match[4].str()),
                     safe_stof(match[5].str())},
                 .rotation = FixedArray<float, 3>{
-                    safe_stof(match[6].str()) / 180 * float(M_PI),
-                    safe_stof(match[7].str()) / 180 * float(M_PI),
-                    safe_stof(match[8].str()) / 180 * float(M_PI)},
+                    safe_stof(match[6].str()) / 180.f * float(M_PI),
+                    safe_stof(match[7].str()) / 180.f * float(M_PI),
+                    safe_stof(match[8].str()) / 180.f * float(M_PI)},
                 .scale = FixedArray<float, 3>{
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
@@ -746,7 +746,7 @@ void LoadScene::operator()(
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 Material{
-                    .texture_descriptor = {color: fpath(match[2].str())},
+                    .texture_descriptor = {.color = fpath(match[2].str())},
                     .occluded_type =  occluded_type_from_string(match[8].str()),
                     .occluder_type = occluder_type_from_string(match[9].str()),
                     .blend_mode = blend_mode_from_string(match[13].str()),
@@ -761,8 +761,8 @@ void LoadScene::operator()(
                         safe_stof(match[10].str()),
                         safe_stof(match[11].str()),
                         safe_stof(match[12].str())},
-                    .diffusivity = {0, 0, 0},
-                    .specularity = {0, 0, 0}}.compute_color_mode()));
+                    .diffusivity = {0.f, 0.f, 0.f},
+                    .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
             return true;
         }
         if (std::regex_match(line, match, blending_x_resource_reg)) {
@@ -855,9 +855,9 @@ void LoadScene::operator()(
                 safe_stof(match[4].str()),
                 safe_stof(match[5].str())});
             node->set_rotation(FixedArray<float, 3>{
-                safe_stof(match[6].str()) / 180 * float(M_PI),
-                safe_stof(match[7].str()) / 180 * float(M_PI),
-                safe_stof(match[8].str()) / 180 * float(M_PI)});
+                safe_stof(match[6].str()) / 180.f * float(M_PI),
+                safe_stof(match[7].str()) / 180.f * float(M_PI),
+                safe_stof(match[8].str()) / 180.f * float(M_PI)});
             node->set_scale(
                 safe_stof(match[9].str()));
             bool aggregate = (match[10].str() == "true");
@@ -887,7 +887,7 @@ void LoadScene::operator()(
                 match[3].str(),
                 match[1].str(),
                 *node,
-                {regex: std::regex{match[4].str()}});
+                {.regex = std::regex{match[4].str()}});
         } else if (std::regex_match(line, match, register_geographic_mapping_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.register_geographic_mapping(
@@ -1004,13 +1004,13 @@ void LoadScene::operator()(
             rb->collision_observers_.push_back(d);
         } else if (std::regex_match(line, match, relative_transformer_reg)) {
             FixedArray<float, 3> v{
-                match[2].str().empty() ? 0 : safe_stof(match[2].str()),
-                match[3].str().empty() ? 0 : safe_stof(match[3].str()),
-                match[4].str().empty() ? 0 : safe_stof(match[4].str())};
+                match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
+                match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
+                match[4].str().empty() ? 0.f : safe_stof(match[4].str())};
             FixedArray<float, 3> w{
-                match[5].str().empty() ? 0 : safe_stof(match[5].str()) * float(M_PI / 180),
-                match[6].str().empty() ? 0 : safe_stof(match[6].str()) * float(M_PI / 180),
-                match[7].str().empty() ? 0 : safe_stof(match[7].str()) * float(M_PI / 180)};
+                match[5].str().empty() ? 0.f : safe_stof(match[5].str()) * float(M_PI / 180),
+                match[6].str().empty() ? 0.f : safe_stof(match[6].str()) * float(M_PI / 180),
+                match[7].str().empty() ? 0.f : safe_stof(match[7].str()) * float(M_PI / 180)};
             std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(
                 physics_engine.advance_times_, v, w);
             linker.link_relative_movable(*scene.get_node(match[1].str()), rt);
@@ -1143,12 +1143,12 @@ void LoadScene::operator()(
         } else if (std::regex_match(line, match, player_set_tire_angle_reg)) {
             players.get_player(match[1].str()).set_tire_angle_y(
                 safe_stoi(match[2].str()),
-                M_PI / 180.f * safe_stof(match[3].str()),
-                M_PI / 180.f * safe_stof(match[4].str()));
+                float(M_PI) / 180.f * safe_stof(match[3].str()),
+                float(M_PI) / 180.f * safe_stof(match[4].str()));
         } else if (std::regex_match(line, match, player_set_angular_velocity_reg)) {
             players.get_player(match[1].str()).set_angular_velocity(
-                M_PI / 180.f * safe_stof(match[2].str()),
-                M_PI / 180.f * safe_stof(match[3].str()));
+                float(M_PI) / 180.f * safe_stof(match[2].str()),
+                float(M_PI) / 180.f * safe_stof(match[3].str()));
         } else if (std::regex_match(line, match, player_set_waypoint_reg)) {
             players.get_player(match[1].str()).set_waypoint({
                 safe_stof(match[2].str()),
@@ -1160,74 +1160,74 @@ void LoadScene::operator()(
                     safe_stof(match[3].str())});
         } else if (std::regex_match(line, match, camera_key_binding_reg)) {
             key_bindings.add_camera_key_binding(CameraKeyBinding{
-                base: {
-                    key: match[1].str(),
-                    gamepad_button: match[2].str(),
-                    joystick_axis: match[3].str(),
-                    joystick_axis_sign: safe_stof(match[4].str())}});
+                .base = {
+                    .key = match[1].str(),
+                    .gamepad_button = match[2].str(),
+                    .joystick_axis = match[3].str(),
+                    .joystick_axis_sign = safe_stof(match[4].str())}});
         } else if (std::regex_match(line, match, abs_idle_binding_reg)) {
             key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
-                node: scene.get_node(match[1].str()),
-                tires_z: {
-                    match[2].str().empty() ? 0 : safe_stof(match[2].str()),
-                    match[3].str().empty() ? 0 : safe_stof(match[3].str()),
-                    match[4].str().empty() ? 1 : safe_stof(match[4].str())}});
+                .node = scene.get_node(match[1].str()),
+                .tires_z = {
+                    match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
+                    match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
+                    match[4].str().empty() ? 1.f : safe_stof(match[4].str())}});
         } else if (std::regex_match(line, match, abs_key_binding_reg)) {
             key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
-                base_key: {
-                    key: match[2].str(),
-                    gamepad_button: match[3].str(),
-                    joystick_axis: match[4].str(),
-                    joystick_axis_sign: match[5].str().empty() ? 0 : safe_stof(match[5].str())},
-                node: scene.get_node(match[1].str()),
-                force: {
-                    vector: {
-                        match[6].str().empty() ? 0 : safe_stof(match[6].str()),
-                        match[7].str().empty() ? 0 : safe_stof(match[7].str()),
-                        match[8].str().empty() ? 0 : safe_stof(match[8].str())},
-                    position: {
-                        match[9].str().empty() ? 0 : safe_stof(match[9].str()),
-                        match[10].str().empty() ? 0 : safe_stof(match[10].str()),
-                        match[11].str().empty() ? 0 : safe_stof(match[11].str())}},
-                rotate: {
-                    match[12].str().empty() ? 0 : safe_stof(match[12].str()),
-                    match[13].str().empty() ? 0 : safe_stof(match[13].str()),
-                    match[14].str().empty() ? 0 : safe_stof(match[14].str())},
-                surface_power: match[15].str().empty() ? 0 : safe_stof(match[15].str()),
-                max_velocity: match[16].str().empty() ? INFINITY : safe_stof(match[16].str()),
-                tire_id: match[17].str().empty() ? SIZE_MAX : safe_stoi(match[17].str()),
-                tire_angle_interp: Interp<float>{
+                .base_key = {
+                    .key = match[2].str(),
+                    .gamepad_button = match[3].str(),
+                    .joystick_axis = match[4].str(),
+                    .joystick_axis_sign = match[5].str().empty() ? 0 : safe_stof(match[5].str())},
+                .node = scene.get_node(match[1].str()),
+                .force = {
+                    .vector = {
+                        match[6].str().empty() ? 0.f : safe_stof(match[6].str()),
+                        match[7].str().empty() ? 0.f : safe_stof(match[7].str()),
+                        match[8].str().empty() ? 0.f : safe_stof(match[8].str())},
+                    .position = {
+                        match[9].str().empty() ? 0.f : safe_stof(match[9].str()),
+                        match[10].str().empty() ? 0.f : safe_stof(match[10].str()),
+                        match[11].str().empty() ? 0.f : safe_stof(match[11].str())}},
+                .rotate = {
+                    match[12].str().empty() ? 0.f : safe_stof(match[12].str()),
+                    match[13].str().empty() ? 0.f : safe_stof(match[13].str()),
+                    match[14].str().empty() ? 0.f : safe_stof(match[14].str())},
+                .surface_power = match[15].str().empty() ? 0 : safe_stof(match[15].str()),
+                .max_velocity = match[16].str().empty() ? INFINITY : safe_stof(match[16].str()),
+                .tire_id = match[17].str().empty() ? SIZE_MAX : safe_stoi(match[17].str()),
+                .tire_angle_interp = Interp<float>{
                     string_to_vector(match[18].str(), safe_stof),
                     string_to_vector(match[19].str(), safe_stof),
                     OutOfRangeBehavior::CLAMP},
-                tires_z: {
-                    match[20].str().empty() ? 0 : safe_stof(match[20].str()),
-                    match[21].str().empty() ? 0 : safe_stof(match[21].str()),
-                    match[22].str().empty() ? 0 : safe_stof(match[22].str())}});
+                .tires_z = {
+                    match[20].str().empty() ? 0.f : safe_stof(match[20].str()),
+                    match[21].str().empty() ? 0.f : safe_stof(match[21].str()),
+                    match[22].str().empty() ? 0.f : safe_stof(match[22].str())}});
         } else if (std::regex_match(line, match, rel_key_binding_reg)) {
             key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
-                base_key: {
-                    key: match[2].str(),
-                    gamepad_button: match[3].str(),
-                    joystick_axis: match[4].str(),
-                    joystick_axis_sign: safe_stof(match[5].str())},
-                node: scene.get_node(match[1].str()),
-                angular_velocity_press: {
+                .base_key = {
+                    .key = match[2].str(),
+                    .gamepad_button = match[3].str(),
+                    .joystick_axis = match[4].str(),
+                    .joystick_axis_sign = safe_stof(match[5].str())},
+                .node = scene.get_node(match[1].str()),
+                .angular_velocity_press = {
                     safe_stof(match[6].str()),
                     safe_stof(match[7].str()),
                     safe_stof(match[8].str())},
-                angular_velocity_repeat: {
+                .angular_velocity_repeat = {
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())}});
         } else if (std::regex_match(line, match, gun_key_binding_reg)) {
             key_bindings.add_gun_key_binding(GunKeyBinding{
-                base: {
-                    key: match[2].str(),
-                    gamepad_button: match[3].str(),
-                    joystick_axis: match[4].str(),
-                    joystick_axis_sign: match[5].str().empty() ? 0 : safe_stof(match[5].str())},
-                node: scene.get_node(match[1].str())});
+                .base = {
+                    .key = match[2].str(),
+                    .gamepad_button = match[3].str(),
+                    .joystick_axis = match[4].str(),
+                    .joystick_axis_sign = match[5].str().empty() ? 0 : safe_stof(match[5].str())},
+                .node = scene.get_node(match[1].str())});
         } else if (std::regex_match(line, match, console_log_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
@@ -1336,8 +1336,8 @@ void LoadScene::operator()(
             std::list<SceneEntry> scene_entries;
             for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
                 scene_entries.push_back(SceneEntry{
-                    name: e.first,
-                    filename: fpath(e.second)});
+                    .name = e.first,
+                    .filename = fpath(e.second)});
             }
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
                 std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
@@ -1687,10 +1687,10 @@ void LoadScene::operator()(
                         " CAR_NODE_X:" << p.position(0) <<
                         " CAR_NODE_Y:" << p.position(1) <<
                         " CAR_NODE_Z:" << p.position(2) <<
-                        " CAR_NODE_ANGLE_X:" << 180.f / M_PI * p.rotation(0) <<
-                        " CAR_NODE_ANGLE_Y:" << 180.f / M_PI * p.rotation(1) <<
-                        " CAR_NODE_ANGLE_Z:" << 180.f / M_PI * p.rotation(2) <<
-                        " HUMAN_NODE_ANGLE_Y:" << 180.f / M_PI * std::atan2(z(0), z(2)) <<
+                        " CAR_NODE_ANGLE_X:" << 180.f / float(M_PI) * p.rotation(0) <<
+                        " CAR_NODE_ANGLE_Y:" << 180.f / float(M_PI) * p.rotation(1) <<
+                        " CAR_NODE_ANGLE_Z:" << 180.f / float(M_PI) * p.rotation(2) <<
+                        " HUMAN_NODE_ANGLE_Y:" << 180.f / float(M_PI) * std::atan2(z(0), z(2)) <<
                         " " << parameters <<
                         " -SUFFIX:_" << player <<
                         " IF_WITH_PHYSICS:" << 

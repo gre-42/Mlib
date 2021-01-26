@@ -15,9 +15,9 @@ enum class MagicFormulaMode {
 template <class TData>
 struct MagicFormula {
     TData B = 41;
-    TData C = 1.4;
+    TData C = (TData)1.4;
     TData D = 1;
-    TData E = -0.2;
+    TData E = (TData)-0.2;
     TData operator () (const TData& x) const {
         return D * std::sin(C * std::atan(B * x - E * (B * x - std::atan(B * x))));
     }
@@ -38,11 +38,12 @@ struct MagicFormulaArgmax {
     : mf{magic_formula}
     {
         MagicFormula<double> mf2 = magic_formula.template casted<double>();
-        auto f = [&mf2](const TData& x){return mf2(x);};
-        auto df = [&f](const TData& x){return (f(x + 1e-3) - f(x - 1e-3)) / 2e-3;};
-        auto df2 = [&df](const TData& x){return (df(x + 1e-3) - df(x - 1e-3)) / 2e-3;};
+        double h = 1e-3;
+        auto f = [&mf2](const double& x){return (double)mf2(x);};
+        auto df = [&f, &h](const double& x){return (f(x + h) - f(x - h)) / (2 * h);};
+        auto df2 = [&df, &h](const double& x){return (df(x + h) - df(x - h)) / (2 * h);};
         double x0 = find_right_boundary_of_maximum<double>(f, 0, 1e-2);
-        argmax = newton_1d(df, df2, x0);
+        argmax = (TData)newton_1d(df, df2, x0);
         // return 1 / (B * std::sqrt(E - 1));
     }
     TData operator () (const TData& x, MagicFormulaMode mode = MagicFormulaMode::STANDARD) const {

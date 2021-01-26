@@ -22,7 +22,7 @@ RigidBody::RigidBody(
   power_{NAN},
   energy_old_{NAN},
 #endif
-  tires_z_{0, 0, -1},
+  tires_z_{0.f, 0.f, -1.f },
   rbi_{rbi},
   damageable_{nullptr},
   driver_{nullptr},
@@ -110,7 +110,7 @@ void RigidBody::advance_time(
             float P = consume_tire_surface_power(t.first).power;
             // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
             if (!std::isnan(P)) {
-                float dx_max = 0.1;
+                float dx_max = 0.1f;
                 float w_max = dx_max / (t.second.tracking_wheel.radius() * dt);
                 // std::cerr << "dx " << dx << std::endl;
                 if ((P != 0) && (std::abs(P) > -power_internal) && !slipping) {
@@ -163,8 +163,8 @@ FixedArray<float, 3, 3> RigidBody::abs_I() const {
 
 VectorAtPosition<float, 3> RigidBody::abs_F(const VectorAtPosition<float, 3>& F) const {
     return {
-        vector: dot1d(rbi_.rbp_.rotation_, F.vector),
-        position: dot1d(rbi_.rbp_.rotation_, F.position) + rbi_.rbp_.abs_com_};
+        .vector = dot1d(rbi_.rbp_.rotation_, F.vector),
+        .position = dot1d(rbi_.rbp_.rotation_, F.position) + rbi_.rbp_.abs_com_};
 }
 
 FixedArray<float, 3> RigidBody::velocity_at_position(const FixedArray<float, 3>& position) const {
@@ -200,7 +200,7 @@ void RigidBody::set_tire_angle_y(size_t id, float angle_y) {
 
 FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
-        return dot2d(rbi_.rbp_.rotation_, rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle_y));
+        return dot2d(rbi_.rbp_.rotation_, rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y));
     } else {
         return rbi_.rbp_.rotation_;
     }
@@ -209,7 +209,7 @@ FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const
 FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
     FixedArray<float, 3> z{tires_z_};
     if (auto t = tires_.find(id); t != tires_.end()) {
-        z = dot1d(rodrigues(FixedArray<float, 3>{0, 1, 0}, t->second.angle_y), z);
+        z = dot1d(rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y), z);
     }
     z = dot1d(rbi_.rbp_.rotation_, z);
     return z;
@@ -274,7 +274,7 @@ TrackingWheel& RigidBody::get_tire_tracking_wheel(size_t id) {
 }
 
 FixedArray<float, 3> RigidBody::get_abs_tire_contact_position(size_t id) const {
-    return rbi_.rbp_.transform_to_world_coordinates(get_tire(id).position - FixedArray<float, 3>{0, -get_tire(id).radius, 0});
+    return rbi_.rbp_.transform_to_world_coordinates(get_tire(id).position - FixedArray<float, 3>{0.f, -get_tire(id).radius, 0.f});
 }
 
 const Tire& RigidBody::get_tire(size_t id) const {
@@ -318,7 +318,7 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
         ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) << " m/s^2" << std::endl;
     }
     if (log_components & STATUS_ANGULAR_VELOCITY) {
-        ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) * 180 / M_PI << " °/s" << std::endl;
+        ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) * float(180 / M_PI) << " °/s" << std::endl;
     }
     if (log_components & STATUS_DIAMETER) {
         // T = 2 PI r / v, T = 2 PI / w
