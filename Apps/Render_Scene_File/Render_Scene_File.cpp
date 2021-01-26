@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
             .window_maximized = args.has_named("--window_maximized"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
-            .background_color = {0.68, 0.85, 1},
+            .background_color = {0.68f, 0.85f, 1.f},
             .print_fps = args.has_named("--print_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),
             .dt = safe_stof(args.named_value("--render_dt", "0.01667")),

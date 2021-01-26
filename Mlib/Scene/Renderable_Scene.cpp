@@ -31,7 +31,7 @@ RenderableScene::RenderableScene(
       .cameras = selected_cameras_,
       .focuses = ui_focus.focuses,
       .physics_set_fps = &physics_set_fps_},
-  gefp_{FixedArray<float, 3>{0, -9.8, 0}},
+  gefp_{FixedArray<float, 3>{0.f, -9.8f, 0.f}},
   standard_camera_logic_{
       scene_,
       selected_cameras_},

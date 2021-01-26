@@ -56,7 +56,7 @@ void accelerate_positive(
     float u = 1;
     if (float vc2 = sum(squared(vc)); vc2 > 1e-12) {
         if (-v0 > 1e-12) {
-            u = std::clamp<float>(-v0 / std::sqrt(vc2), 1e-1, 1e1);
+            u = std::clamp<float>(-v0 / std::sqrt(vc2), float(1e-1), float(1e1));
         }
     }
     float w;
@@ -83,7 +83,7 @@ void accelerate_negative(
     float u = 1;
     if (float vc2 = sum(squared(vc)); vc2 > 1e-12) {
         if (v0 > 1e-12) {
-            u = std::clamp<float>(v0 / std::sqrt(vc2), 1e-1, 1e1);
+            u = std::clamp<float>(v0 / std::sqrt(vc2), float(1e-1), float(1e1));
         }
     }
     float w;
