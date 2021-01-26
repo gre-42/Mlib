@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-class ColoredVertex;
+struct ColoredVertex;
 class PgmImage;
 template <class TSize>
 class Svg;

@@ -5,8 +5,10 @@
 #include <cmath>
 #include <iostream>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 namespace Mlib {
 
@@ -14,7 +16,7 @@ template <class TData>
 class Quaternion {
 public:
     static Quaternion identity() {
-        return Quaternion{1, FixedArray<TData, 3>{0, 0, 0}};
+        return Quaternion{TData{1}, FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}}};
     }
     Quaternion()
     {}
@@ -28,8 +30,8 @@ public:
     explicit Quaternion(const FixedArray<TData, 3, 3>& m) {
         TData trace = m(0, 0) + m(1, 1) + m(2, 2);
         if (trace > 0) {
-            TData k = 0.5 / std::sqrt(trace + 1);
-            s_ = 0.25 / k;
+            TData k = TData{0.5} / std::sqrt(trace + 1);
+            s_ = TData{0.25} / k;
             v_(0) = (m(2, 1) - m(1, 2) ) * k;
             v_(1) = (m(0, 2) - m(2, 0) ) * k;
             v_(2) = (m(1, 0) - m(0, 1) ) * k;
@@ -37,21 +39,21 @@ public:
             if (m(0, 0) > m(1, 1) && m(0, 0) > m(2, 2) ) {
                 TData k = 2 * std::sqrt(1 + m(0, 0) - m(1, 1) - m(2, 2));
                 s_ = (m(2, 1) - m(1, 2) ) / k;
-                v_(0) = 0.25 * k;
+                v_(0) = TData{0.25} * k;
                 v_(1) = (m(0, 1) + m(1, 0) ) / k;
                 v_(2) = (m(0, 2) + m(2, 0) ) / k;
             } else if (m(1, 1) > m(2, 2)) {
                 TData k = 2 * std::sqrt(1 + m(1, 1) - m(0, 0) - m(2, 2));
                 s_ = (m(0, 2) - m(2, 0) ) / k;
                 v_(0) = (m(0, 1) + m(1, 0) ) / k;
-                v_(1) = 0.25 * k;
+                v_(1) = TData{0.25} * k;
                 v_(2) = (m(1, 2) + m(2, 1) ) / k;
             } else {
                 TData k = 2 * std::sqrt(1 + m(2, 2) - m(0, 0) - m(1, 1));
                 s_ = (m(1, 0) - m(0, 1) ) / k;
                 v_(0) = (m(0, 2) + m(2, 0) ) / k;
                 v_(1) = (m(1, 2) + m(2, 1) ) / k;
-                v_(2) = 0.25 * k;
+                v_(2) = TData{0.25} * k;
             }
         }
     }
@@ -77,7 +79,7 @@ public:
             dot = -dot;
         }
 
-        TData DOT_THRESHOLD = 0.9995;
+        TData DOT_THRESHOLD = TData{0.9995};
         if (dot > DOT_THRESHOLD) {
             // If the inputs are too close for comfort, linearly interpolate
             // and normalize the result.
@@ -111,7 +113,7 @@ public:
         // pitch (y-axis rotation)
         TData sinp = 2 * (s_ * v_(1) - v_(2) * v_(0));
         if (std::abs(sinp) >= 1)
-            angles(1) = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+            angles(1) = std::copysign(TData{ M_PI / 2 }, sinp); // use 90 degrees if out of range
         else
             angles(1) = std::asin(sinp);
 
@@ -188,7 +190,7 @@ class OffsetAndQuaternion {
 public:
     static OffsetAndQuaternion identity() {
         return OffsetAndQuaternion{
-            fixed_zeros<float, 3>(),
+            fixed_zeros<TData, 3>(),
             Quaternion<TData>::identity()};
     }
     OffsetAndQuaternion()
@@ -197,7 +199,7 @@ public:
     : o_{o},
       q_{q}
     {}
-    explicit OffsetAndQuaternion(const FixedArray<float, 4, 4>& m)
+    explicit OffsetAndQuaternion(const FixedArray<TData, 4, 4>& m)
     : o_{t3_from_4x4(m)},
       q_{R3_from_4x4(m)}
     {}
@@ -253,4 +255,6 @@ std::ostream& operator << (std::ostream& ostr, const OffsetAndQuaternion<TData>&
 
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

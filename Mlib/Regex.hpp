@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include <list>
+#include <map>
 #include <regex>
 #include <string>
 

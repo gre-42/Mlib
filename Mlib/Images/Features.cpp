@@ -31,14 +31,14 @@ void Mlib::hessian_determinant_trace(
             //off_derivatives(1, 1) = (image[r + 1](c + 1) - image[r + 1](c - 1)) / 2.0;
             // d00 d01
             // d10 d11
-            hessian(0, 0) = (image[r - 1](c) - 2 * image(r, c) + image[r + 1](c)) / 4.0;
-            hessian(1, 1) = (image[r](c - 1) - 2 * image(r, c) + image[r](c + 1)) / 4.0;
+            hessian(0, 0) = (image[r - 1](c) - 2.f * image(r, c) + image[r + 1](c)) / 4.f;
+            hessian(1, 1) = (image[r](c - 1) - 2.f * image(r, c) + image[r](c + 1)) / 4.f;
             hessian(0, 1) = (
                 (image[r + 1](c + 1) - image[r - 1](c + 1)) -
-                (image[r + 1](c - 1) - image[r - 1](c - 1))) / 4.0;
+                (image[r + 1](c - 1) - image[r - 1](c - 1))) / 4.f;
             hessian(1, 0) = (
                 (image[r + 1](c + 1) - image[r + 1](c - 1)) -
-                (image[r - 1](c + 1) - image[r - 1](c - 1))) / 4.0;
+                (image[r - 1](c + 1) - image[r - 1](c - 1))) / 4.f;
             //Array<float> q;
             //Array<float> s;
             //qdq(hessian, q, s);
@@ -132,7 +132,7 @@ Array<float> Mlib::find_nfeatures(
     float distance_sigma)
 {
     assert(all(mask.shape() == featureness.shape()));
-    Array<bool> masked_maxima = find_local_maxima(gaussian_filter_NWE(featureness, distance_sigma, NAN), false) && mask && (!isnan(featureness));
+    Array<bool> masked_maxima = find_local_maxima(gaussian_filter_NWE(featureness, distance_sigma, NAN), false) && mask && (!Mlib::isnan(featureness));
 
     // negate to reverse sort-order
     Array<float> sorted_negated_featureness = -featureness[masked_maxima];

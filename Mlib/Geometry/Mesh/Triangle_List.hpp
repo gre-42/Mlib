@@ -10,8 +10,8 @@
 
 namespace Mlib {
 
-class ColoredVertex;
-class ColoredVertexArray;
+struct ColoredVertex;
+struct ColoredVertexArray;
 
 class TriangleList {
 public:

@@ -5,6 +5,12 @@
 #include <random>
 #include <sstream>
 
+#ifdef _MSC_VER
+    #define TEMPLATE ->
+#else
+    #define TEMPLATE ->template
+#endif
+
 //#define MM_DEBG(x) std::cerr << x << std::endl;
 //#define MM_DEB2(x) std::cerr << "  " << x << std::endl;
 //#define MM_DEBG(x)
@@ -739,7 +745,7 @@ void dot2d(
     assert(a->shape(1) == b->shape(0));
     assert(all(result->shape() == ArrayShape{a->shape(0), b->shape(1)}));
     #pragma omp parallel for if (result->nelements() > 200 * 200)
-    for (size_t r = 0; r < result->shape(0); ++r) {
+    for (int r = 0; r < (int)result->shape(0); ++r) {
         for (size_t c = 0; c < result->shape(1); ++c) {
             TData v = 0;
             for (size_t i = 0; i < a->shape(1); ++i) {
@@ -843,7 +849,7 @@ Array<TFloat> imag(const Array<std::complex<TFloat>>& a) {
 
 template <class TDerived, class TFloat>
 auto norm(const BaseDenseArray<TDerived, std::complex<TFloat>>& a) {
-    return a->template applied<TFloat>([](const std::complex<TFloat>& v){ return std::norm(v); });
+    return a TEMPLATE applied<TFloat>([](const std::complex<TFloat>& v){ return std::norm(v); });
 }
 
 template <class TDerived, class TFloat>
@@ -853,7 +859,7 @@ auto norm(const BaseDenseArray<TDerived, TFloat>& a) {
 
 template <class TDerived, class TFloat>
 auto abs(const BaseDenseArray<TDerived, std::complex<TFloat>>& a) {
-    return a->template applied<TFloat>([](const std::complex<TFloat>& v){ return std::abs(v); });
+    return a TEMPLATE applied<TFloat>([](const std::complex<TFloat>& v){ return std::abs(v); });
 }
 
 template <class TDerived, class TFloat>
@@ -899,32 +905,32 @@ auto operator / (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray
 
 template <class TDerivedA, class TDerivedB, class TData>
 auto operator < (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return a->template array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x < y; });
+    return a TEMPLATE array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x < y; });
 }
 
 template <class TDerivedA, class TDerivedB, class TData>
 auto operator > (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return a->template array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x > y; });
+    return a TEMPLATE array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x > y; });
 }
 
 template <class TDerivedA, class TDerivedB, class TData>
 auto operator <= (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return a->template array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x <= y; });
+    return a TEMPLATE array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x <= y; });
 }
 
 template <class TDerivedA, class TDerivedB, class TData>
 auto operator >= (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return a->template array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x >= y; });
+    return a TEMPLATE array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x >= y; });
 }
 
 template <class TDerivedA, class TDerivedB, class TData>
 auto operator == (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return a->template array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x == y; });
+    return a TEMPLATE array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x == y; });
 }
 
 template <class TDerivedA, class TDerivedB, class TData>
 auto operator != (const BaseDenseArray<TDerivedA, TData>& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return a->template array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x != y; });
+    return a TEMPLATE array_array_binop<bool>(*b, [](const TData& x, const TData& y) { return x != y; });
 }
 
 template <class TData>
@@ -939,27 +945,27 @@ Array<TData> operator || (const Array<TData>& a, const Array<TData>& b) {
 
 template <class TDerivedA, class TData>
 auto operator + (const BaseDenseArray<TDerivedA, TData>& a, const TData& b) {
-    return a->template applied([&](const TData& x){ return x + b; });
+    return a TEMPLATE applied([&](const TData& x){ return x + b; });
 }
 
 template <class TDerivedB, class TData>
 auto operator + (const TData& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return b->template applied([&](const TData& x){ return a + x; });
+    return b TEMPLATE applied([&](const TData& x){ return a + x; });
 }
 
 template <class TDerivedA, class TData>
 auto operator - (const BaseDenseArray<TDerivedA, TData>& a, const TData& b) {
-    return a->template applied([&](const TData& x){ return x - b; });
+    return a TEMPLATE applied([&](const TData& x){ return x - b; });
 }
 
 template <class TDerivedB, class TData>
 auto operator - (const TData& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return b->template applied([&](const TData& x){ return a - x; });
+    return b TEMPLATE applied([&](const TData& x){ return a - x; });
 }
 
 template <class TDerived, class TData>
 auto operator * (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
-    return a->template applied([&](const TData& x){ return x * b; });
+    return a TEMPLATE applied([&](const TData& x){ return x * b; });
 }
 
 template <class TDerived, class TData>
@@ -1004,7 +1010,7 @@ auto exp(const BaseDenseArray<TDerived, TData>& a) {
 
 template <class T>
 inline T sign(const T& a) {
-    return a == 0 ? 0 : (a < 0 ? -1 : 1);
+    return (T)(a == 0 ? 0 : a < 0 ? -1 : 1);
 }
 
 template <class TDerived, class TData>
@@ -1014,37 +1020,37 @@ inline auto sign(const BaseDenseArray<TDerived, TData>& a) {
 
 template <class TDerived, class TData>
 auto operator < (const BaseDenseArray<TDerived, TData>& a, const TData& b){
-    return a->template applied<bool>([&](const TData& x){ return x < b; });
+    return a TEMPLATE applied<bool>([&](const TData& x){ return x < b; });
 }
 
 template <class TDerived, class TData>
 auto operator <= (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
-    return a->template applied<bool>([&](const TData& x){ return x <= b; });
+    return a TEMPLATE applied<bool>([&](const TData& x){ return x <= b; });
 }
 
 template <class TDerived, class TData>
 auto operator > (const BaseDenseArray<TDerived, TData>& a, const TData& b){
-    return a->template applied<bool>([&](const TData& x){ return x > b; });
+    return a TEMPLATE applied<bool>([&](const TData& x){ return x > b; });
 }
 
 template <class TDerived, class TData>
 auto operator >= (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
-    return a->template applied<bool>([&](const TData& x){ return x >= b; });
+    return a TEMPLATE applied<bool>([&](const TData& x){ return x >= b; });
 }
 
 template <class TDerived, class TData>
 auto operator == (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
-    return a->template applied<bool>([&](const TData& x){ return x == b; });
+    return a TEMPLATE applied<bool>([&](const TData& x){ return x == b; });
 }
 
 template <class TDerived, class TData>
 auto operator != (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
-    return a->template applied<bool>([&](const TData& x){ return x != b; });
+    return a TEMPLATE applied<bool>([&](const TData& x){ return x != b; });
 }
 
 template <class TDerived, class TData>
 auto operator ! (const BaseDenseArray<TDerived, TData>& a) {
-    return a->template applied<bool>([&](const TData& x){ return !x; });
+    return a TEMPLATE applied<bool>([&](const TData& x){ return !x; });
 }
 
 template <class TCompare>
@@ -1283,17 +1289,17 @@ inline void assert_shape_equals(const ArrayShape& shape1, const ArrayShape& shap
 
 template <class TDerived, class TData>
 auto isnan(const BaseDenseArray<TDerived, TData>& a) {
-    return a->template applied<bool>([](const TData& v){ return std::isnan(v); });
+    return a TEMPLATE applied<bool>([](const TData& v){ return std::isnan(v); });
 }
 
 template <class TDerived, class TData>
 auto isinf(const BaseDenseArray<TDerived, TData>& a) {
-    return a->template applied<bool>([](const TData& v){ return std::isinf(v); });
+    return a TEMPLATE applied<bool>([](const TData& v){ return std::isinf(v); });
 }
 
 template <class TDerived, class TData>
 auto isfinite(const BaseDenseArray<TDerived, TData>& a) {
-    return a->template applied<bool>([](const TData& v){ return is_finite(v); });
+    return a TEMPLATE applied<bool>([](const TData& v){ return is_finite(v); });
 }
 
 template <class TData>

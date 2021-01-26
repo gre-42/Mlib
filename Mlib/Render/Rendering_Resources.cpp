@@ -245,7 +245,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
                     int i0 = (r * si0.width + c) * si0.nrChannels + d;
                     int i1 = (r * si0.width + c) * si1_raw.nrChannels + d;
                     si0.data.get()[i0] =
-                        fac * si0.data.get()[i0] + (1 - fac) * si1_resized.get()[i1];
+                        (unsigned char)(fac * si0.data.get()[i0] + (1 - fac) * si1_resized.get()[i1]);
                 }
             }
         }

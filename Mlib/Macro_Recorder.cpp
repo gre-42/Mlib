@@ -20,7 +20,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
         std::smatch match;
 
         if (std::regex_match(line, match, macro_begin_reg)) {
-            recording_macros.push_back(std::make_pair(match[1].str(), Macro{filename: macro_line_executor.script_filename_}));
+            recording_macros.push_back(std::make_pair(match[1].str(), Macro{.filename = macro_line_executor.script_filename_}));
         } else if (std::regex_match(line, match, macro_end_reg)) {
             if (recording_macros.empty()) {
                 throw std::runtime_error("Macro-end despite no active macro");

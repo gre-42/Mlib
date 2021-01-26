@@ -4,8 +4,10 @@
 #include <iosfwd>
 #include <string>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 namespace Mlib {
 
@@ -78,4 +80,6 @@ std::ostream& operator << (std::ostream& ostr, const AxisAlignedBoundingBox<TDat
 
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

@@ -4,8 +4,10 @@
 #include <cmath>
 #include <iostream>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 namespace Mlib {
 
@@ -109,4 +111,6 @@ private:
 
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

@@ -1,4 +1,5 @@
 #include "stb_image_load.h"
+#include <stdexcept>
 
 void stb_image_flip_horizontally(const StbInfo& image) {
     for (size_t r = 0; r < (size_t)image.height; ++r) {

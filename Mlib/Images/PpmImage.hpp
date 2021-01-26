@@ -6,6 +6,7 @@ namespace Mlib {
 
 class PpmImage;
 
+#include <Mlib/Packed_Begin.hpp>
 // 24-bit, 3 * 8 bytes
 struct Rgb24 {
     unsigned char r;
@@ -72,7 +73,8 @@ struct Rgb24 {
             (unsigned char)(g * 255 + 0.5f),
             (unsigned char)(b * 255 + 0.5f)};
     }
-} __attribute__((packed));
+} PACKED;
+#include <Mlib/Packed_End.hpp>
 
 class PpmImage: public Array<Rgb24> {
 public:

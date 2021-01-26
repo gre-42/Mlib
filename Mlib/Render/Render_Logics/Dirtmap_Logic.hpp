@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-class RenderingContext;
+struct RenderingContext;
 
 class DirtmapLogic: public RenderLogic {
 public:

@@ -9,7 +9,7 @@ namespace Mlib {
 
 class RenderingResources;
 class SceneNodeResources;
-class ResourceInstanceDescriptor;
+struct ResourceInstanceDescriptor;
 
 struct WaysideResourceNames {
     float min_dist;

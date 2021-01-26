@@ -172,14 +172,14 @@ void TriangleList::extrude(
                 vb->position,
                 (*t)(b).position,
                 (*t)(a).position,
-                {1, 1, 1},
-                {1, 1, 1},
-                {1, 1, 1},
-                {1, 1, 1},
+                {1.f, 1.f, 1.f},
+                {1.f, 1.f, 1.f},
+                {1.f, 1.f, 1.f},
+                {1.f, 1.f, 1.f},
                 va->uv,
                 vb->uv,
-                vb->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0},
-                va->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0});
+                vb->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f},
+                va->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f});
         };
         (*t)(0).position(2) += height;
         (*t)(1).position(2) += height;
@@ -200,7 +200,7 @@ void TriangleList::delete_backfacing_triangles() {
                 t(0).position,
                 t(1).position,
                 t(2).position}),
-            FixedArray<float, 3>{0, 0, 1}) <= 0;
+            FixedArray<float, 3>{0.f, 0.f, 1.f}) <= 0;
         if (erase) {
             // std::cerr << "Triangle at has negative normal direction" << std::endl;
             // draw_node(*triangles, {t(0).position(0), t(0).position(1)}, scale * 5);

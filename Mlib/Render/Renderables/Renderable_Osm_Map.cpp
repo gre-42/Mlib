@@ -276,7 +276,7 @@ RenderableOsmMap::RenderableOsmMap(
                         .type = SpawnPointType::SPAWN_LINE,
                         .location = WayPointLocation::UNKNOWN,
                         .position = {p(0), p(1), bu.building_top * scale},
-                        .rotation = {0, 0, std::atan2(dir(0), -dir(1))}});
+                        .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))}});
                 }
             }
         }
@@ -475,8 +475,8 @@ RenderableOsmMap::RenderableOsmMap(
                 .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
-                .ambience = {1, 1, 1},
-                .specularity = {0, 0, 0},
+                .ambience = {1.f, 1.f, 1.f},
+                .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             buildings,
             nodes,
@@ -530,7 +530,7 @@ RenderableOsmMap::RenderableOsmMap(
         //     plot_mesh_svg("/tmp/plt.svg", 800, 800, tf, {}, {});
         // }
         steiner_points = removed_duplicates(steiner_points, false);  // false = verbose
-        BoundingInfo bounding_info{map_outer_contour, nodes, 0.1};
+        BoundingInfo bounding_info{map_outer_contour, nodes, 0.1f};
         LOG_INFO("add_street_steiner_points");
         add_street_steiner_points(
             steiner_points,
@@ -559,7 +559,7 @@ RenderableOsmMap::RenderableOsmMap(
                 .texture_descriptor = {.color = roof_texture},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
-                .ambience = {1, 1, 1},
+                .ambience = {1.f, 1.f, 1.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             roof_color,
             buildings,
@@ -577,8 +577,8 @@ RenderableOsmMap::RenderableOsmMap(
                 .texture_descriptor = {.color = ceiling_texture},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
-                .ambience = {1, 1, 1},
-                .specularity = {0, 0, 0},
+                .ambience = {1.f, 1.f, 1.f},
+                .specularity = {0.f, 0.f, 0.f},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             buildings,
             nodes,
@@ -852,7 +852,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
             auto node = new SceneNode;
             node->set_position(p.position);
             node->set_scale(scale_ * p.scale);
-            node->set_rotation({M_PI / 2, 0, 0});
+            node->set_rotation({float{M_PI} / 2.f, 0.f, 0.f});
             scene_node_resources_.instantiate_renderable(p.name, p.name, *node, SceneNodeResourceFilter{});
             if (node->requires_render_pass()) {
                 scene_node.add_child(p.name + "-" + std::to_string(i++), node);
@@ -864,7 +864,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
     }
     for (auto& p : resource_instance_positions_) {
         auto node = new SceneNode;
-        node->set_rotation({M_PI / 2, 0, 0});
+        node->set_rotation({ float{M_PI} / 2.f, 0.f, 0.f });
         scene_node_resources_.instantiate_renderable(p.first, p.first, *node, SceneNodeResourceFilter{});
         if (node->requires_render_pass()) {
             throw std::runtime_error("Object " + p.first + " requires render pass");

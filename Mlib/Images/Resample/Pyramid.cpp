@@ -106,7 +106,7 @@ Array<bool> Mlib::multi_scale_harris(
     Array<float> laplaces(harris.shape());
     Array<bool> hmask(harris.shape());
     for (size_t l = 0; l < nlevels; ++l) {
-        float sigma = std::pow(2, l);
+        float sigma = std::pow(2.f, (float)l);
         harris[l] = harris_response(gaussian_filter_NWE(image, sigma, NAN)) * float(std::pow(sigma, 2 * std::sqrt(2)));
         laplaces[l] = gaussian_filter_NWE(laplace, sigma, NAN) * float(std::pow(sigma, std::sqrt(2)));
         // std::cerr << sum(abs(laplaces[l])) << std::endl;

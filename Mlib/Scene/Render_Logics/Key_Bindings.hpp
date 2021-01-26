@@ -10,7 +10,7 @@
 
 namespace Mlib {
 
-struct SelectedCameras;
+class SelectedCameras;
 class ButtonPress;
 class Scene;
 

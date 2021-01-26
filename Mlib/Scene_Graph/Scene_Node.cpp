@@ -16,9 +16,9 @@ SceneNode::SceneNode(Scene* scene)
   absolute_movable_{nullptr},
   relative_movable_{nullptr},
   absolute_observer_{nullptr},
-  position_{0, 0, 0},
-  rotation_{0, 0, 0},
-  scale_{1},
+  position_{0.f, 0.f, 0.f},
+  rotation_{0.f, 0.f, 0.f},
+  scale_{1.f},
   rotation_matrix_invalidated_{true}
 {}
 
@@ -253,7 +253,7 @@ void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
         relative_movable_->set_updated_relative_model_matrix(mr);
         relative_movable_->set_absolute_model_matrix(ma);
         auto mr2 = relative_movable_->get_new_relative_model_matrix();
-        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1);
+        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f);
         v2 = relative_view_matrix() * v;
         absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
     } else {
@@ -316,7 +316,7 @@ void SceneNode::render(
     for (const auto& r : renderables_) {
         if (r.second->requires_blending_pass())
         {
-            blended.push_back(Blended{mvp: mvp, m: m, renderable: r.second.get()});
+            blended.push_back(Blended{.mvp = mvp, .m = m, .renderable = r.second.get()});
         }
         r.second->render(
             mvp,

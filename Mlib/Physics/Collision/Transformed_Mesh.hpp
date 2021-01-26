@@ -9,7 +9,7 @@
 
 namespace Mlib {
 
-class ColoredVertexArray;
+struct ColoredVertexArray;
 
 class TransformedMesh {
 public:

@@ -281,7 +281,7 @@ Array<float> Mlib::Cv::reconstructed_point(
     //std::cerr << "M " << M << std::endl;
     //std::cerr << "B " << B << std::endl;
     if (condition_number != nullptr) {
-        *condition_number = cond4_x(M.casted<double>());
+        *condition_number = (float)cond4_x(M.casted<double>());
     }
     if (method2) {
         return lstsq_chol_1d(M, B).row_range(0, 3);

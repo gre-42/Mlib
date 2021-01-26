@@ -8,10 +8,10 @@ struct GLFWwindow;
 
 namespace Mlib {
 
+struct RenderResults;
 class SceneNodeResources;
 class RenderingResources;
 class RenderLogic;
-class RenderResults;
 class Scene;
 class Window;
 

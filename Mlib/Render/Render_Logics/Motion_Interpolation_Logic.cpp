@@ -266,7 +266,7 @@ void MotionInterpolationLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("MotionInterpolationLogic::render");
-    if (frame_id.external_render_pass.pass != ExternalRenderPass::UNDEFINED) {
+    if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
         throw std::runtime_error("MotionInterpolationLogic did not receive undefined rendering");
     }
     if (!child_logic_.requires_postprocessing()) {
@@ -277,13 +277,13 @@ void MotionInterpolationLogic::render(
             render_config,
             scene_graph_config,
             render_results,
-            RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::STANDARD_WO_POSTPROCESSING, ""}, .time_id = frame_id.time_id, .light_node_name =""});
+            RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPassType::STANDARD_WO_POSTPROCESSING, ""}, .time_id = frame_id.time_id, .light_node_name =""});
     } else {
         bool interpolate = ((frame_id.time_id % 2) == 1);
         bool render_texture = ((frame_id.time_id % 2) == 0);
         if (render_texture) {
-            RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = frame_id.time_id, .light_node_name = ""};
-            frame_buffers_[rsd].configure({width: width, height: height});
+            RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = frame_id.time_id, .light_node_name = ""};
+            frame_buffers_[rsd].configure({.width = width, .height = height});
             RenderToFrameBufferGuard rfg{frame_buffers_[rsd]};
             child_logic_.render(
                 width,
@@ -295,7 +295,7 @@ void MotionInterpolationLogic::render(
         }
 
         if (!interpolate) {
-            RenderedSceneDescriptor rsd_r{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 2) % 4, .light_node_name = ""};
+            RenderedSceneDescriptor rsd_r{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 2) % 4, .light_node_name = ""};
             auto it = frame_buffers_.find(rsd_r);
             if (it != frame_buffers_.end()) {
                 CHK(glUseProgram(rp_no_interpolate_.program));
@@ -309,8 +309,8 @@ void MotionInterpolationLogic::render(
                 // save_movie.save("/tmp/mov-", "-n", width, height);
             }
         } else {
-            RenderedSceneDescriptor rsd_r0{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 1) % 4, .light_node_name = ""};
-            RenderedSceneDescriptor rsd_r1{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 3) % 4, .light_node_name = ""};
+            RenderedSceneDescriptor rsd_r0{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 1) % 4, .light_node_name = ""};
+            RenderedSceneDescriptor rsd_r1{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = (frame_id.time_id + 3) % 4, .light_node_name = ""};
             auto it0 = frame_buffers_.find(rsd_r0);
             auto it1 = frame_buffers_.find(rsd_r1);
             if ((it0 != frame_buffers_.end()) && (it1 != frame_buffers_.end())) {
@@ -340,15 +340,15 @@ void MotionInterpolationLogic::render(
                         ViewportGuard vg{0, 0, of_width, of_height};
                         FrameBufferMsaa fb_diff;
                         // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
-                        fb_diff.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
+                        fb_diff.configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
                         {
                             RenderToFrameBufferGuard rfg{fb_diff};
                             CHK(glUseProgram(rp_interpolate_of_diff_.program));
 
                             CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color0_location, 0));
                             CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color1_location, 1));
-                            CHK(glUniform1f(rp_interpolate_of_diff_.width_location, of_width));
-                            CHK(glUniform1f(rp_interpolate_of_diff_.height_location, of_height));
+                            CHK(glUniform1f(rp_interpolate_of_diff_.width_location, (GLfloat)of_width));
+                            CHK(glUniform1f(rp_interpolate_of_diff_.height_location, (GLfloat)of_height));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
                             CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
@@ -364,7 +364,7 @@ void MotionInterpolationLogic::render(
                             CHK(glActiveTexture(GL_TEXTURE0));
                         }
                         // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
-                        fb_flow.configure(FrameBufferConfig{width: of_width, height: of_height, color_internal_format: GL_RGBA32F, color_type: GL_FLOAT});
+                        fb_flow.configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
                         {
                             RenderToFrameBufferGuard rfg{fb_flow};
 

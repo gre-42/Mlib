@@ -20,25 +20,25 @@ RenderableBinaryX::RenderableBinaryX(
     triangles.reserve(2);
 
     ColoredVertex v00{ // min(x), min(y)
-        {square(0, 0), square(0, 1), 0},
+        {square(0, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
-        {0, 0},
-        {0, 0, 1}};
+        {0.f, 0.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex v01{ // min(x), max(y)
-        {square(0, 0), square(1, 1), 0},
+        {square(0, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
-        {0, 1},
-        {0, 0, 1}};
+        {0.f, 1.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex v10{ // max(x), min(y)
-        {square(1, 0), square(0, 1), 0},
+        {square(1, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
-        {1,0},
-        {0, 0, 1}};
+        {1.f,0.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex v11{ // max(x), max(y)
-        {square(1, 0), square(1, 1), 0},
+        {square(1, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
-        {1, 1},
-        {0, 0, 1}};
+        {1.f, 1.f},
+        {0.f, 0.f, 1.f}};
 
     triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
@@ -57,8 +57,8 @@ RenderableBinaryX::RenderableBinaryX(
                 .is_small = is_small,
                 .cull_faces = false,
                 .ambience = OrderableFixedArray{ambience},
-                .diffusivity = {0, 0, 0},
-                .specularity = {0, 0, 0}}.compute_color_mode(),
+                .diffusivity = {0.f, 0.f, 0.f},
+                .specularity = {0.f, 0.f, 0.f}}.compute_color_mode(),
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
@@ -75,7 +75,7 @@ void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNod
     rva_->instantiate_renderable("plane", scene_node, SceneNodeResourceFilter{});
 
     auto node90 = new SceneNode;
-    node90->set_rotation({0, -M_PI / 2, 0});
+    node90->set_rotation({0.f, -float{M_PI} / 2.f, 0.f });
     rva_->instantiate_renderable("plane", *node90, SceneNodeResourceFilter{});
     scene_node.add_aggregate_child("node90", node90);
 }

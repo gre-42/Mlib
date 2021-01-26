@@ -16,7 +16,7 @@ void downsample_rgba_inplace(
         for (int c = 0; c < width; ++c) {
             int i = (r * width + c) * 4;
             for (int d = 0; d < 3; ++d) {
-                data[i + d] = data[i + d] * (float(data[i + 3]) / 255);
+                data[i + d] = (unsigned char)(data[i + d] * (float(data[i + 3]) / 255));
             }
         }
     }
@@ -38,7 +38,7 @@ void downsample_rgba_inplace(
             int i = r * (width / 2) * 4 + c * 4;
             for (int d = 0; d < 3; ++d) {
                 if (downsampled_data[i + 3] != 0) {
-                    downsampled_data[i + d] = std::clamp(downsampled_data[i + d] / (float(downsampled_data[i + 3]) / 255.f), 0.f, 255.f);
+                    downsampled_data[i + d] = (unsigned char)std::clamp(downsampled_data[i + d] / (float(downsampled_data[i + 3]) / 255.f), 0.f, 255.f);
                 } else {
                     downsampled_data[i + d] = ((d == 0) * 255);
                 }
@@ -64,9 +64,9 @@ RgbaImage RgbaDownsampler::next() {
     } else {
         if ((std::max(1, width_) == 1 && std::max(1, height_) == 1)) {
             return RgbaImage{
-                data: nullptr,
-                width: 0,
-                height: 0};
+                .data = nullptr,
+                .width = 0,
+                .height = 0};
         }
         downsample_rgba_inplace(
             data_,
@@ -78,7 +78,7 @@ RgbaImage RgbaDownsampler::next() {
         std::swap(data_, downsampled_data_);
     }
     return RgbaImage{
-        data: data_,
-        width: std::max(1, width_),
-        height: std::max(1, height_)};
+        .data = data_,
+        .width = std::max(1, width_),
+        .height = std::max(1, height_)};
 }

@@ -14,8 +14,8 @@
 
 namespace Mlib {
 
-class SceneGraphConfig;
-class RenderConfig;
+struct SceneGraphConfig;
+struct RenderConfig;
 class Scene;
 
 struct Blended {

@@ -69,10 +69,10 @@ void Rectangle::draw_z0(
     }
 
     tl.draw_rectangle_wo_normals(
-        FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0},
-        FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0},
-        FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0},
-        FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0},
+        FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
+        FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
+        FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
+        FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
         color,
         color,
         color,

@@ -4,8 +4,8 @@
 
 namespace Mlib {
 
-struct RenderableColoredVertexArray;
 struct LoadMeshConfig;
+class RenderableColoredVertexArray;
 class RenderingResources;
 
 class RenderableObjFile: public SceneNodeResource {

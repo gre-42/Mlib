@@ -39,7 +39,7 @@ Array<float> Mlib::patch_registration(
                 if (ssd(index) < best_ssd(index)) {
                     best_ssd(index) = ssd(index);
                     for (size_t j = 0; j < differences.ndim(); j++) {
-                        flow[j](index) = static_cast<int>(window_shape(j));
+                        flow[j](index) = static_cast<float>(window_shape(j));
                     }
                 }
             });
@@ -79,7 +79,7 @@ void Mlib::flow_registration(
         Array<float> registered_moving = apply_displacement(moving, displacement);
         // std::cerr << "r\n" << registered_moving << std::endl;
         Array<float> flow;
-        optical_flow(registered_moving, fixed, nullptr, window_shape, max_displacement, flow, mask);
+        optical_flow(registered_moving, fixed, nullptr, window_shape, (float)max_displacement, flow, mask);
         for (size_t d = 0; d < flow.shape(0); d++) {
             flow[d] = box_filter_nans_as_zeros_NWE(flow[d], box_shape);
         }

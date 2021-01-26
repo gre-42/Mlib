@@ -47,7 +47,7 @@ void LightmapLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("LightmapLogic::render");
-    if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
+    if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
         throw std::runtime_error("LightmapLogic received lightmap rendering");
     }
     if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
@@ -58,7 +58,7 @@ void LightmapLogic::render(
             ? render_config.scene_lightmap_height
             : render_config.black_lightmap_height;
         ViewportGuard vg{0, 0, lightmap_width, lightmap_height};
-        RenderedSceneDescriptor light_rsd{external_render_pass: {ExternalRenderPass::LIGHTMAP_TO_TEXTURE, black_node_name_}, time_id: 0, light_node_name: light_node_name_};
+        RenderedSceneDescriptor light_rsd{.external_render_pass = {ExternalRenderPassType::LIGHTMAP_TO_TEXTURE, black_node_name_}, .time_id = 0, .light_node_name = light_node_name_};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBufferMsaa>();
         }

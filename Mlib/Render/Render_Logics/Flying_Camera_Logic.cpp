@@ -23,49 +23,49 @@ static void flying_key_callback(GLFWwindow* window, int key, int scancode, int a
         if (mods & GLFW_MOD_CONTROL) {
             switch(key) {
                 case GLFW_KEY_LEFT:
-                    user_object->obj_angles(1) += 0.01;
+                    user_object->obj_angles(1) += 0.01f;
                     break;
                 case GLFW_KEY_RIGHT:
-                    user_object->obj_angles(1) -= 0.01;
+                    user_object->obj_angles(1) -= 0.01f;
                     break;
                 case GLFW_KEY_PAGE_UP:
-                    user_object->obj_angles(0) += 0.01;
+                    user_object->obj_angles(0) += 0.01f;
                     break;
                 case GLFW_KEY_PAGE_DOWN:
-                    user_object->obj_angles(0) -= 0.01;
+                    user_object->obj_angles(0) -= 0.01f;
                     break;
                 case GLFW_KEY_KP_ADD:
-                    user_object->obj_position(1) += 0.04;
+                    user_object->obj_position(1) += 0.04f;
                     break;
                 case GLFW_KEY_KP_SUBTRACT:
-                    user_object->obj_position(1) -= 0.04;
+                    user_object->obj_position(1) -= 0.04f;
                     break;
             }
         } else {
             switch(key) {
                 case GLFW_KEY_UP:
-                    user_object->position(2) -= 0.04;
+                    user_object->position(2) -= 0.04f;
                     break;
                 case GLFW_KEY_DOWN:
-                    user_object->position(2) += 0.04;
+                    user_object->position(2) += 0.04f;
                     break;
                 case GLFW_KEY_LEFT:
-                    user_object->angles(1) += 0.01;
+                    user_object->angles(1) += 0.01f;
                     break;
                 case GLFW_KEY_RIGHT:
-                    user_object->angles(1) -= 0.01;
+                    user_object->angles(1) -= 0.01f;
                     break;
                 case GLFW_KEY_PAGE_UP:
-                    user_object->angles(0) += 0.01;
+                    user_object->angles(0) += 0.01f;
                     break;
                 case GLFW_KEY_PAGE_DOWN:
-                    user_object->angles(0) -= 0.01;
+                    user_object->angles(0) -= 0.01f;
                     break;
                 case GLFW_KEY_KP_ADD:
-                    user_object->position(1) += 0.04;
+                    user_object->position(1) += 0.04f;
                     break;
                 case GLFW_KEY_KP_SUBTRACT:
-                    user_object->position(1) -= 0.04;
+                    user_object->position(1) -= 0.04f;
                     break;
             }
         }
@@ -148,7 +148,7 @@ void FlyingCameraLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     user_object_.button_states.update_gamepad_state();
-    if (button_press_.key_pressed({key: "ESCAPE", gamepad_button: "START"})) {
+    if (button_press_.key_pressed({.key = "ESCAPE", .gamepad_button = "START"})) {
         Focus focus = user_object_.focuses.focus();
         if (focus == Focus::MENU) {
             if (user_object_.focuses.size() > 1) {

@@ -6,9 +6,9 @@ namespace Mlib {
 template <class TData>
 FixedArray<TData, 3, 3> cross(const FixedArray<TData, 3>& k) {
     return FixedArray<TData, 3, 3>{
-        0, -k(2), k(1),
-        k(2), 0, -k(0),
-        -k(1), k(0), 0};
+        TData{0}, -k(2), k(1),
+        k(2), TData{0}, -k(0),
+        -k(1), k(0), TData{0}};
 }
 
 template <class TData>

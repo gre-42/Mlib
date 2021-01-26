@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-class Light;
+struct Light;
 
 template <class Func>
 class GenShaderText {

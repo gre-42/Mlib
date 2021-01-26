@@ -17,15 +17,15 @@ struct ColoredVertex;
 struct Material;
 struct ResourceInstanceDescriptor;
 struct ObjectResourceDescriptor;
-struct TriangleList;
+class TriangleList;
 struct ParsedResourceName;
 enum class DrivingDirection;
 enum class WayPointLocation;
 
-static const FixedArray<float, 3> way_color{1, 1, 1};      // replaced with texture
-static const FixedArray<float, 3> terrain_color{1, 1, 1};  // replaced with texture
-static const FixedArray<float, 3> building_color{1, 1, 1};
-static const FixedArray<float, 3> roof_color{1, 1, 1};
+static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
+static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
+static const FixedArray<float, 3> building_color{1.f, 1.f, 1.f };
+static const FixedArray<float, 3> roof_color{1.f, 1.f, 1.f };
 static const float roof_height0 = 5;
 static const float roof_height1 = 9;
 // grep highway map.osm | grep -v pedestrian | grep -v path | grep -v footway | grep -v cycleway

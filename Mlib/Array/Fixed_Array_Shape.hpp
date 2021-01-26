@@ -48,45 +48,49 @@ namespace RUtils {
 
 namespace FasUtils {
     template <size_t tsize_begin, size_t... tsize_end>
-    constexpr auto erased_first(const FixedArrayShape<tsize_begin, tsize_end...>&) {
+    constexpr auto erased_first(const FixedArrayShape<tsize_begin, tsize_end...>*) {
         return FixedArrayShape<tsize_end...>();
     }
 
     template <size_t... tsize>
-    constexpr auto erased_last(const FixedArrayShape<tsize...>&) {
+    constexpr auto erased_last(const FixedArrayShape<tsize...>*) {
         return typename RUtils::rstrip<tsize...>::type();
     }
 
     template <size_t... tsize>
-    constexpr auto last(const FixedArrayShape<tsize...>&) {
+    constexpr auto last(const FixedArrayShape<tsize...>*) {
         return RUtils::rget<tsize...>::value;
     }
 
     template <size_t... tsize_a, size_t... tsize_b>
-    constexpr auto concatenated(const FixedArrayShape<tsize_a...>&, const FixedArrayShape<tsize_b...>&) {
+    constexpr auto concatenated(const FixedArrayShape<tsize_a...>*, const FixedArrayShape<tsize_b...>&) {
         return FixedArrayShape<tsize_a..., tsize_b...>();
     };
 
     template <class TData, size_t... tsize>
-    constexpr auto make_shape(const FixedArray<TData, tsize...>&) {
+    constexpr auto make_shape(const FixedArray<TData, tsize...>*) {
         return FixedArrayShape<tsize...>();
     }
 
     template <class TData, size_t... tsize, size_t... tnew_size>
-    FixedArray<TData, tnew_size...> reshape_fixed(const FixedArray<TData, tsize...>& a, const FixedArrayShape<tnew_size...>&) {
+    FixedArray<TData, tnew_size...> reshape_fixed(const FixedArray<TData, tsize...>* a, const FixedArrayShape<tnew_size...>*) {
         return a.template reshaped<tnew_size...>();
     }
 
     template <size_t... tsize>
-    constexpr auto rows_as_1D(const FixedArrayShape<tsize...>&) {
-        constexpr const FixedArrayShape<tsize...> a;
-        return FixedArrayShape<a.erased_last().nelements()>().concatenated(FixedArrayShape<a.last()>());
+    constexpr auto rows_as_1D(const FixedArrayShape<tsize...>*) {
+        constexpr static const FixedArrayShape<tsize...>* a = (const FixedArrayShape<tsize...>*)nullptr;
+        return FixedArrayShape<a->erased_last().nelements()>().concatenated(FixedArrayShape<a->last()>());
     }
 
     template <size_t tsize0, size_t... tsize>
-    constexpr auto columns_as_1D(const FixedArrayShape<tsize0, tsize...>&) {
-        constexpr const FixedArrayShape<tsize...> a;
-        return FixedArrayShape<tsize0>().concatenated(FixedArrayShape<a.nelements()>());
+    constexpr auto columns_as_1D(const FixedArrayShape<tsize0, tsize...>*) {
+        constexpr static const FixedArrayShape<tsize...>* a = (const FixedArrayShape<tsize...>*)nullptr;
+        return FixedArrayShape<tsize0>().concatenated(FixedArrayShape<a->nelements()>());
+    }
+
+    constexpr auto nelements(const FixedArrayShape<>*) {
+        return 1;
     }
 
     constexpr auto nelements(const FixedArrayShape<>&) {
@@ -94,15 +98,20 @@ namespace FasUtils {
     }
 
     template <size_t tsize0, size_t... tsize>
-    constexpr auto nelements(const FixedArrayShape<tsize0, tsize...>&) {
+    constexpr auto nelements(const FixedArrayShape<tsize0, tsize...>*) {
         return tsize0 * nelements(FixedArrayShape<tsize...>());
     }
-}
+
+    template <size_t tsize0, size_t... tsize>
+    constexpr auto nelements(const FixedArrayShape<tsize0, tsize...> &) {
+        return tsize0 * nelements(FixedArrayShape<tsize...>());
+    }
+    }
 
 template <size_t... tsize>
 class FixedArrayShape {
 public:
-    constexpr static const FixedArrayShape<tsize...> a{};
+    constexpr static const FixedArrayShape<tsize...>* a = (const FixedArrayShape<tsize...>*)nullptr;
     constexpr auto erased_first() const { return ::Mlib::FasUtils::erased_first(a); }
     constexpr auto erased_last() const { return ::Mlib::FasUtils::erased_last(a); }
     template <size_t... tsize_b>

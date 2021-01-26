@@ -56,22 +56,22 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
         if (key == GLFW_KEY_UP) {
-            user_object->camera_z += 0.04;
+            user_object->camera_z += 0.04f;
         }
         if (key == GLFW_KEY_DOWN) {
-            user_object->camera_z -= 0.04;
+            user_object->camera_z -= 0.04f;
         }
         if (key == GLFW_KEY_LEFT) {
-            user_object->angle_y += 0.04;
+            user_object->angle_y += 0.04f;
         }
         if (key == GLFW_KEY_RIGHT) {
-            user_object->angle_y -= 0.04;
+            user_object->angle_y -= 0.04f;
         }
         if (key == GLFW_KEY_PAGE_UP) {
-            user_object->angle_x += 0.04;
+            user_object->angle_x += 0.04f;
         }
         if (key == GLFW_KEY_PAGE_DOWN) {
-            user_object->angle_x -= 0.04;
+            user_object->angle_x -= 0.04f;
         }
     }
 }
@@ -186,14 +186,14 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
         mat4x4_translate(v, 0, 0, user_object.camera_z);
         //mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, 10.f);
         //mat4x4_frustum(p, -ratio / 10, ratio / 10, -1.f / 10, 1.f / 10, 2.f, 10.f);
-        mat4x4_perspective(p, 0.1, ratio, 1.f, 100.f);
+        mat4x4_perspective(p, 0.1f, ratio, 1.f, 100.f);
 
         mat4x4_mul(mvp, p, v);
         mat4x4_mul(mvp, mvp, m);
 
         CHK(glUseProgram(program));
         CHK(glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp));
-        CHK(glDrawArrays(GL_TRIANGLES, 0, vertices.size()));
+        CHK(glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.size()));
 
         if (output != nullptr) {
             VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};

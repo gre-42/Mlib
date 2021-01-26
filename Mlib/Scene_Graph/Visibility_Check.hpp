@@ -15,7 +15,7 @@ public:
     {}
     inline bool is_visible(const Material& m, const SceneGraphConfig& scene_graph_config, const ExternalRenderPass& external_render_pass) const {
         return ((!m.is_small) ||
-                ((external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && (m.occluder_type != OccluderType::OFF)) ||
+                ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (m.occluder_type != OccluderType::OFF)) ||
                 (// (mvp(2, 3) > scene_graph_config.min_distance_small) && // no mvp-check to support rotations
                  !orthographic_ &&
                  (sum(squared(t3_from_4x4(mvp_))) > squared(scene_graph_config.min_distance_small)) &&

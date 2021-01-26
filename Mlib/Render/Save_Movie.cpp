@@ -19,7 +19,7 @@ void SaveMovie::save(
     bool normalize)
 {
     VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
-    CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
+    CHK(glReadPixels(0, 0, (GLsizei)width, (GLsizei)height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
     if (normalize) {
         draw_nan_masked_rgb(reverted_axis(vp.to_array(), 1), 0, 0).save_to_file(file_prefix + std::to_string(index_) + file_suffix + ".pgm");
     } else {

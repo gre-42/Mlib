@@ -4,8 +4,10 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 namespace Mlib {
 
@@ -42,7 +44,7 @@ public:
         if (nelements == 0) {
             throw std::runtime_error("Bounding sphere received no elements");
         }
-        center_ /= nelements;
+        center_ /= (TData)nelements;
         radius_ = 0;
         for (auto it = iterable_begin; it != iterable_end; ++it) {
             radius_ = std::max(radius_, sum(squared(*it - center_)));
@@ -69,4 +71,6 @@ private:
 
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

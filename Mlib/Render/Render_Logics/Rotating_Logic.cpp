@@ -19,28 +19,28 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
         switch (key) {
             case GLFW_KEY_UP:
-                user_object->camera_z -= 0.1;
+                user_object->camera_z -= 0.1f;
                 break;
             case GLFW_KEY_DOWN:
-                user_object->camera_z += 0.1;
+                user_object->camera_z += 0.1f;
                 break;
             case GLFW_KEY_LEFT:
-                user_object->angle_y += 0.04;
+                user_object->angle_y += 0.04f;
                 break;
             case GLFW_KEY_RIGHT:
-                user_object->angle_y -= 0.04;
+                user_object->angle_y -= 0.04f;
                 break;
             case GLFW_KEY_PAGE_UP:
-                user_object->angle_x += 0.04;
+                user_object->angle_x += 0.04f;
                 break;
             case GLFW_KEY_PAGE_DOWN:
-                user_object->angle_x -= 0.04;
+                user_object->angle_x -= 0.04f;
                 break;
             case GLFW_KEY_KP_ADD:
-                user_object->scale += 0.04;
+                user_object->scale += 0.04f;
                 break;
             case GLFW_KEY_KP_SUBTRACT:
-                user_object->scale -= 0.04;
+                user_object->scale -= 0.04f;
                 break;
         }
     }
@@ -70,7 +70,7 @@ void RotatingLogic::render(
     float aspect_ratio = width / (float) height;
 
     auto cn = scene_.get_node("camera");
-    cn->set_position(FixedArray<float, 3>{0, 0, user_object_.camera_z});
+    cn->set_position(FixedArray<float, 3>{0.f, 0.f, user_object_.camera_z});
     auto co = cn->get_camera()->copy();
     co->set_aspect_ratio(aspect_ratio);
     FixedArray<float, 4, 4> vp = dot2d(
@@ -84,7 +84,7 @@ void RotatingLogic::render(
         on->set_rotation(FixedArray<float, 3>{
             user_object_.angle_x,
             rotate_ ? (float)glfwGetTime() : user_object_.angle_y,
-            0});
+            0.f});
     }
 
     render_config.apply();

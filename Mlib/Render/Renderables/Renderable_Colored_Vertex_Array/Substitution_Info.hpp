@@ -7,8 +7,8 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-class ColoredVertexArray;
-class ColoredVertex;
+struct ColoredVertexArray;
+struct ColoredVertex;
 template <class TData, size_t tsize>
 class TransformationMatrix;
 class BackgroundLoop;

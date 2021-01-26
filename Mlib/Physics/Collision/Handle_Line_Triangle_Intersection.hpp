@@ -2,8 +2,10 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <memory>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 namespace Mlib {
 
@@ -39,4 +41,6 @@ void handle_line_triangle_intersection(const IntersectionScene& i);
 
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

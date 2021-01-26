@@ -1,7 +1,7 @@
 #include "Fps.hpp"
 #include <cmath>
 
-static float fps_alpha = 0.01;
+static float fps_alpha = 0.01f;
 
 using namespace Mlib;
 
@@ -14,7 +14,7 @@ Fps::Fps()
 void Fps::tick() {
     std::chrono::time_point current_time = std::chrono::steady_clock::now();
     int64_t delta_time = std::chrono::duration_cast<std::chrono::microseconds>(current_time - last_time_).count();
-    float current_fps = (1e6 / delta_time);
+    float current_fps = (1e6f / delta_time);
     mean_fps_ = (1 - fps_alpha) * mean_fps_ + fps_alpha * current_fps;
     mad_fps_ = (1 - fps_alpha) * mad_fps_ + fps_alpha * std::abs(current_fps - mean_fps_);
     last_time_ = current_time;

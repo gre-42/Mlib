@@ -6,12 +6,12 @@ namespace Mlib {
 
 struct LoadMeshConfig;
 struct Bone;
+struct AnimatedColoredVertexArrays;
 class RenderingResources;
-class AnimatedColoredVertexArrays;
 class RenderableColoredVertexArray;
 
 template <class TData>
-struct OffsetAndQuaternion;
+class OffsetAndQuaternion;
 
 class RenderableMhx2File: public SceneNodeResource {
 public:

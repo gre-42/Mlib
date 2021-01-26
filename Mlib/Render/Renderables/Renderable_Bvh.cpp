@@ -11,7 +11,7 @@ using namespace Mlib;
 RenderableBvh::RenderableBvh(
     const std::list<std::shared_ptr<ColoredVertexArray>>& cvas)
 : cvas_{cvas},
-  bvh_{{0.5, 0.5, 0.5}, 10}
+  bvh_{{0.5f, 0.5f, 0.5f}, 10}
 {
     for (const auto& cva : cvas) {
         for (const auto& t : cva->triangles) {

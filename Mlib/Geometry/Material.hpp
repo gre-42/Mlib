@@ -36,7 +36,7 @@ struct Material {
             : ColorMode::RGBA;
         return *this;
     }
-    std::strong_ordering operator <=> (const Material&) const = default;
+    std::partial_ordering operator <=> (const Material&) const = default;
 };
 
 }

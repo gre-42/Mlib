@@ -109,7 +109,7 @@ void DrawStreets::calculate_neighbors() {
                         node_no_way_length.insert(*it);
                         node_way_info.erase(*it);
                     } else {
-                        node_way_info.insert(std::make_pair(*it, NodeWayInfo{way_length: way_length, color: color}));
+                        node_way_info.insert(std::make_pair(*it, NodeWayInfo{.way_length = way_length, .color = color}));
                     }
                 }
                 auto s = it;
@@ -130,7 +130,7 @@ void DrawStreets::calculate_neighbors() {
 }
 
 void DrawStreets::draw_streets() {
-    Bvh<float, bool, 2> street_light_bvh{{0.1, 0.1}, 10};
+    Bvh<float, bool, 2> street_light_bvh{{0.1f, 0.1f}, 10};
 
     // Compute rectangles and holes for each pair of connected nodes.
     // To avoid duplicates, the computations are done at each lexicographically
@@ -177,17 +177,17 @@ void DrawStreets::draw_streets() {
                 }
                 size_t nlanes;
                 float lane_alpha;
-                float sidewalk_alpha0 = 0.75 * curb2_alpha + 0.25 * 1;
-                float sidewalk_alpha1 = 0.25 * curb2_alpha + 0.75 * 1;
+                float sidewalk_alpha0 = 0.75f * curb2_alpha + 0.25f * 1.f;
+                float sidewalk_alpha1 = 0.25f * curb2_alpha + 0.75f * 1.f;
                 float car_width = 2;
                 if (it->second.width < 4 * car_width * scale) {
                     nlanes = 2;
                     // alpha is in [-1 .. +1]
-                    lane_alpha = 0.5 * curb_alpha;
+                    lane_alpha = 0.5f * curb_alpha;
                 } else {
                     nlanes = 4;
                     // alpha is in [-1 .. +1]
-                    lane_alpha = 0.25 * curb_alpha;
+                    lane_alpha = 0.25f * curb_alpha;
                 }
                 if (driving_direction == DrivingDirection::CENTER) {
                     way_point_edges_1_lane_street.push_back({na.first, it->second.id});
@@ -195,11 +195,11 @@ void DrawStreets::draw_streets() {
                     auto add = [&rect](float start, float stop, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& lanes){
                         CurbedStreet c5{rect, start, stop};
                         lanes.push_back({
-                            FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0},
-                            FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0}});
+                            FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0.f},
+                            FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0.f}});
                         lanes.push_back({
-                            FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0},
-                            FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0}});
+                            FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0.f},
+                            FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0.f}});
                     };
                     add(-lane_alpha, lane_alpha, way_point_edges_2_lanes[WayPointLocation::STREET]);
                     if (curb2_alpha != 1) {
@@ -210,11 +210,11 @@ void DrawStreets::draw_streets() {
                     auto add = [&rect](float start, float stop, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& lanes){
                         CurbedStreet c5{rect, start, stop};
                         lanes.push_back({
-                            FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0},
-                            FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0}});
+                            FixedArray<float, 3>{c5.s10(0), c5.s10(1), 0.f},
+                            FixedArray<float, 3>{c5.s00(0), c5.s00(1), 0.f}});
                         lanes.push_back({
-                            FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0},
-                            FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0}});
+                            FixedArray<float, 3>{c5.s01(0), c5.s01(1), 0.f},
+                            FixedArray<float, 3>{c5.s11(0), c5.s11(1), 0.f}});
                     };
                     add(-lane_alpha, lane_alpha, way_point_edges_2_lanes[WayPointLocation::STREET]);
                     if (curb2_alpha != 1) {
@@ -236,10 +236,10 @@ void DrawStreets::draw_streets() {
                             .location = location,
                             .nlanes = nlanes,
                             .rectangle = FixedArray<FixedArray<float, 3>, 2, 2>{
-                                FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0},
-                                FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0},
-                                FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0},
-                                FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0}}});
+                                FixedArray<float, 3>{c1.s00(0), c1.s00(1), 0.f},
+                                FixedArray<float, 3>{c1.s01(0), c1.s01(1), 0.f},
+                                FixedArray<float, 3>{c1.s10(0), c1.s10(1), 0.f},
+                                FixedArray<float, 3>{c1.s11(0), c1.s11(1), 0.f}}});
                     };
                     add(-curb_alpha, curb_alpha, WayPointLocation::STREET, nlanes);
                     if (curb2_alpha != 1) {
@@ -413,8 +413,8 @@ void DrawStreets::draw_holes() {
                             continue;
                         }
                         way_point_edges_2_lanes.push_back({
-                            FixedArray<float, 3>{x.position(0), x.position(1), 0},
-                            FixedArray<float, 3>{y.position(0), y.position(1), 0}});
+                            FixedArray<float, 3>{x.position(0), x.position(1), 0.f},
+                            FixedArray<float, 3>{y.position(0), y.position(1), 0.f}});
                     }
                 }
             }
@@ -451,9 +451,9 @@ void DrawStreets::draw_holes() {
         // A single triangle does not work with curbs when an angle is ~90°
         if ((nh.second.size() == 3) && (curb_alpha == 1)) {
             crossings.draw_triangle_wo_normals(
-                FixedArray<float, 3>{hv(0)(0), hv(0)(1), 0},
-                FixedArray<float, 3>{hv(1)(0), hv(1)(1), 0},
-                FixedArray<float, 3>{hv(2)(0), hv(2)(1), 0});
+                FixedArray<float, 3>{hv(0)(0), hv(0)(1), 0.f},
+                FixedArray<float, 3>{hv(1)(0), hv(1)(1), 0.f},
+                FixedArray<float, 3>{hv(2)(0), hv(2)(1), 0.f});
         } else if (nh.second.size() >= 3) {
             // Draw center fan
             {
@@ -461,9 +461,9 @@ void DrawStreets::draw_holes() {
                 for (size_t i = 0; i < hv.length(); ++i) {
                     size_t j = (i + 1) % hv.length();
                     crossings.draw_triangle_wo_normals(
-                        FixedArray<float, 3>{hv(i)(0), hv(i)(1), 0},
-                        FixedArray<float, 3>{hv(j)(0), hv(j)(1), 0},
-                        FixedArray<float, 3>{center(0), center(1), 0});
+                        FixedArray<float, 3>{hv(i)(0), hv(i)(1), 0.f},
+                        FixedArray<float, 3>{hv(j)(0), hv(j)(1), 0.f},
+                        FixedArray<float, 3>{center(0), center(1), 0.f});
                 }
                 if (with_height_bindings) {
                     auto& tags = nodes.at(nh.first).tags;
@@ -495,18 +495,18 @@ void DrawStreets::draw_holes() {
                         float f = uv_x;
                         float g = len / scale * uv_scale;
                         tl.draw_rectangle_wo_normals(
-                            FixedArray<float, 3>{p00(0), p00(1), 0},
-                            FixedArray<float, 3>{p10(0), p10(1), 0},
-                            FixedArray<float, 3>{p11(0), p11(1), 0},
-                            FixedArray<float, 3>{p01(0), p01(1), 0},
-                            FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 2>{0, 0},
-                            FixedArray<float, 2>{f, 0},
-                            FixedArray<float, 2>{f, g},
-                            FixedArray<float, 2>{0, g});
+                            FixedArray<float, 3>{p00(0), p00(1), 0.f},
+                            FixedArray<float, 3>{p10(0), p10(1), 0.f},
+                            FixedArray<float, 3>{p11(0), p11(1), 0.f},
+                            FixedArray<float, 3>{p01(0), p01(1), 0.f},
+                            FixedArray<float, 3>{1.f, 1.f, 1.f},
+                            FixedArray<float, 3>{1.f, 1.f, 1.f},
+                            FixedArray<float, 3>{1.f, 1.f, 1.f},
+                            FixedArray<float, 3>{1.f, 1.f, 1.f},
+                            FixedArray<float, 2>{0.f, 0.f},
+                            FixedArray<float, 2>{f  , 0.f},
+                            FixedArray<float, 2>{f  , g  },
+                            FixedArray<float, 2>{0.f, g  });
                     };
                     auto draw_triangle = [&](TriangleList& tl, int curb0, int curb1, int curb2, float uv_x) {
                         auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
@@ -517,15 +517,15 @@ void DrawStreets::draw_holes() {
                         float g = len / scale * uv_scale;
                         float h = g / 2;
                         tl.draw_triangle_wo_normals(
-                            FixedArray<float, 3>{p00(0), p00(1), 0},
-                            FixedArray<float, 3>{p10(0), p10(1), 0},
-                            FixedArray<float, 3>{p01(0), p01(1), 0},
-                            FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 3>{1, 1, 1},
-                            FixedArray<float, 2>{0, 0},
-                            FixedArray<float, 2>{f, h},
-                            FixedArray<float, 2>{0, g});
+                            FixedArray<float, 3>{p00(0), p00(1), 0.f},
+                            FixedArray<float, 3>{p10(0), p10(1), 0.f},
+                            FixedArray<float, 3>{p01(0), p01(1), 0.f},
+                            FixedArray<float, 3>{1.f, 1.f, 1.f},
+                            FixedArray<float, 3>{1.f, 1.f, 1.f},
+                            FixedArray<float, 3>{1.f, 1.f, 1.f},
+                            FixedArray<float, 2>{0.f, 0.f},
+                            FixedArray<float, 2>{f  , h  },
+                            FixedArray<float, 2>{0.f, g  });
                     };
                     if (curb2_alpha != 1) {
                         draw_rect(tl_curb_street, 0, 1, -2, -1, curb_uv_x);

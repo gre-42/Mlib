@@ -96,9 +96,9 @@ void RenderableText::render(
     mat4x4_ortho(
         projection,
         0,
-        screen_width,
-        flip_y_ ? 0 : screen_height,
-        flip_y_ ? screen_height : 0,
+        (float)screen_width,
+        (float)(flip_y_ ? 0 : screen_height),
+        (float)(flip_y_ ? screen_height : 0),
         -2,
         2);
     CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*) projection));

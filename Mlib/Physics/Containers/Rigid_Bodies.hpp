@@ -10,7 +10,7 @@
 namespace Mlib {
 
 enum class CollidableMode;
-class ColoredVertexArray;
+struct ColoredVertexArray;
 class RigidBody;
 class TransformedMesh;
 

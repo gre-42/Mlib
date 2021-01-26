@@ -51,7 +51,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> specularity;
     bool orthographic;
     float dirtmap_discreteness;
-    std::strong_ordering operator <=> (const RenderProgramIdentifier&) const = default;
+    std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;
 };
 
 }

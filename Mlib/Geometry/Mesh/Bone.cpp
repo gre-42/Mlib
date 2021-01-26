@@ -19,7 +19,7 @@ std::vector<OffsetAndQuaternion<float>> Bone::absolutify(
         result);
 #ifndef NDEBUG
     for (const OffsetAndQuaternion<float>& r : result) {
-        if (any(isnan(r.offset()))) {
+        if (any(Mlib::isnan(r.offset()))) {
             throw std::runtime_error("Bone transformation contains NAN values");
         }
     }

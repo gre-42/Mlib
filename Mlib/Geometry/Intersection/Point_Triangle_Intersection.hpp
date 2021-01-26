@@ -2,8 +2,10 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 namespace Mlib {
 
@@ -68,4 +70,6 @@ TData distance_point_to_triangle (
 
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

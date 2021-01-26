@@ -25,7 +25,7 @@ void DirtmapLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("DirtmapLogic::render");
-    if (frame_id.external_render_pass.pass == ExternalRenderPass::DIRTMAP) {
+    if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         throw std::runtime_error("DirtmapLogic received dirtmap rendering");
     }
     if (!generated_) {
@@ -35,16 +35,16 @@ void DirtmapLogic::render(
         // Calculate camera position
         {
             RenderingContextGuard rrg{rendering_context_};
-            child_logic_.render(0, 0, render_config, scene_graph_config, render_results, {.external_render_pass = {ExternalRenderPass::DIRTMAP, ""}, .time_id = 0, .light_node_name = ""});
+            child_logic_.render(0, 0, render_config, scene_graph_config, render_results, {.external_render_pass = {ExternalRenderPassType::DIRTMAP, ""}, .time_id = 0, .light_node_name = ""});
         }
         // Load texture and set alias
         rendering_context_.rendering_resources->add_texture_descriptor(
             "dirtmap",
             TextureDescriptor{
-                color: filename_,
-                color_mode: ColorMode::RGB,
-                mixed: "",
-                overlap_npixels: 0});
+                .color = filename_,
+                .color_mode = ColorMode::RGB,
+                .mixed = "",
+                .overlap_npixels = 0});
         rendering_context_.rendering_resources->set_vp("dirtmap", vp());
         generated_ = true;
     }

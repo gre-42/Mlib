@@ -5,9 +5,9 @@
 namespace Mlib {
 
 struct Light {
-    FixedArray<float, 3> ambience{0.5, 0.5, 0.5};
-    FixedArray<float, 3> diffusivity{1, 1, 1};
-    FixedArray<float, 3> specularity{1, 1, 1};
+    FixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};
+    FixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
+    FixedArray<float, 3> specularity{1.f, 1.f, 1.f};
     std::string node_name;
     bool only_black;
     bool shadow;

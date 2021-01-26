@@ -43,7 +43,7 @@ Array<TData> normalized_and_clipped(const Array<TData>& a, const TData& low, con
 
 template <class TData>
 void normalize_and_clip(Array<TData>& a) {
-    Array<TData> va = a[isfinite(a)];
+    Array<TData> va = a[Mlib::isfinite(a)];
     normalize_and_clip(a, min(va), max(va));
 }
 

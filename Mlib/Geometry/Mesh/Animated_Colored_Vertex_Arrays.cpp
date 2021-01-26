@@ -22,7 +22,7 @@ std::vector<OffsetAndQuaternion<float>> AnimatedColoredVertexArrays::vectorize_j
     }
 #ifndef NDEBUG
     for (const auto& m : ms) {
-        if (any(isnan(m.offset()))) {
+        if (any(Mlib::isnan(m.offset()))) {
             throw std::runtime_error("Pose contains NAN values or was not set");
         }
     }

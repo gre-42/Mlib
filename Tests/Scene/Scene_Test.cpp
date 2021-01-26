@@ -40,7 +40,7 @@ using namespace Mlib;
 void test_physics_engine() {
     size_t num_renderings = SIZE_MAX;
     RenderResults render_results;
-    RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
+    RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
     bool is_interactive = getenv_default_bool("PHYSICS_INTERACTIVE", false);
     if (!is_interactive) {
         render_results.outputs[rsd] = Array<float>{};

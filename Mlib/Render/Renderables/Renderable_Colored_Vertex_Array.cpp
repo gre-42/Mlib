@@ -106,10 +106,14 @@ static GenShaderText vertex_shader_text_gen{[](
     if (nbones != 0) {
         sstr << "    vPosInstance = vec3(0, 0, 0);" << std::endl;
         for (size_t k = 0; k < ANIMATION_NINTERPOLATED; ++k) {
-            static std::map<char, char> m{{0, 'x'}, {1, 'y'}, {2, 'z'}, {3, 'w'}};
+            static std::map<unsigned char, char> m{
+                {(unsigned char)0, 'x'},
+                {(unsigned char)1, 'y'},
+                {(unsigned char)2, 'z'},
+                {(unsigned char)3, 'w'}};
             sstr << "    {" << std::endl;
-            sstr << "        lowp uint i = bone_ids." << m.at(k) << ";" << std::endl;
-            sstr << "        float weight = bone_weights." << m.at(k) << ";" << std::endl;
+            sstr << "        lowp uint i = bone_ids." << m.at((unsigned char)k) << ";" << std::endl;
+            sstr << "        float weight = bone_weights." << m.at((unsigned char)k) << ";" << std::endl;
             sstr << "        vec3 o = bone_positions[i];" << std::endl;
             sstr << "        vec4 v = bone_quaternions[i];" << std::endl;
             sstr << "        vec3 p = vPos;" << std::endl;
@@ -496,14 +500,14 @@ void RenderableColoredVertexArray::generate_triangle_rays(size_t npoints, const 
         for (const auto& l : r) {
             t->lines.push_back({
                 ColoredVertex{
-                    position: l(0),
-                    color: {1, 1, 1},
-                    uv: {0, 0}
+                    .position = l(0),
+                    .color = {1.f, 1.f, 1.f},
+                    .uv = {0.f, 0.f}
                 },
                 ColoredVertex{
-                    position: l(1),
-                    color: {1, 1, 1},
-                    uv: {0, 1}
+                    .position = l(1),
+                    .color = {1.f, 1.f, 1.f},
+                    .uv = {0.f, 1.f}
                 }
             });
         }
@@ -519,14 +523,14 @@ void RenderableColoredVertexArray::generate_ray(const FixedArray<float, 3>& from
     }
     triangles_res_->cvas.front()->lines.push_back({
         ColoredVertex{
-            position: from,
-            color: {1, 1, 1},
-            uv: {0, 0}
+            .position = from,
+            .color = {1.f, 1.f, 1.f},
+            .uv = {0.f, 0.f}
         },
         ColoredVertex{
-            position: to,
-            color: {1, 1, 1},
-            uv: {0, 1}
+            .position = to,
+            .color = {1.f, 1.f, 1.f},
+            .uv = {0.f, 1.f}
         }
     });
 }
@@ -613,8 +617,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.diffusivity,
             id.specularity,
             (id.blend_mode == BlendMode::BINARY) || (id.blend_mode == BlendMode::BINARY_ADD)
-                ? (id.calculate_lightmap ? 0.1 : 0.5)
-                : 1,
+                ? (id.calculate_lightmap ? 0.1f : 0.5f)
+                : 1.f,
             occlusion_type,
             id.reorient_normals,
             id.orthographic,
@@ -789,7 +793,10 @@ const SubstitutionInfo& RenderableColoredVertexArray::get_vertex_array(const std
                                 std::to_string(vd[i].bone_index) + " >= " +
                                 std::to_string(triangles_res_->bone_indices.size()));
                         }
-                        vs.indices[i] = vd[i].bone_index;
+                        if (vd[i].bone_index > 255) {
+                            throw std::runtime_error("Bone index too large for unsigned char");
+                        }
+                        vs.indices[i] = (unsigned char)vd[i].bone_index;
                         vs.weights[i] = vd[i].weight;
                         sum_weights += vs.weights[i];
                     } else {

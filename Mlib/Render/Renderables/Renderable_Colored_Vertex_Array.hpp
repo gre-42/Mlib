@@ -9,10 +9,10 @@
 
 namespace Mlib {
 
-struct SubstitutionInfo;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 struct Light;
+class SubstitutionInfo;
 class RenderingResources;
 
 class RenderableColoredVertexArray:

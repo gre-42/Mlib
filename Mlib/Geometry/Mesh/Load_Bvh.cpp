@@ -10,10 +10,10 @@ using namespace Mlib;
 FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& name) {
     if (name == "xz-y") {
         return FixedArray<float, 4, 4>{
-            1, 0, 0, 0,
-            0, 0, 1, 0,
-            0, -1, 0, 0,
-            0, 0, 0, 1};
+            1.f,  0.f, 0.f, 0.f,
+            0.f,  0.f, 1.f, 0.f,
+            0.f, -1.f, 0.f, 0.f,
+            0.f,  0.f, 0.f, 1.f};
     } else {
         throw std::runtime_error("Unknown parameter transformation: " + name);
     }
@@ -150,7 +150,7 @@ BvhLoader::BvhLoader(
         for (const auto& f : raw_frames) {
             center += f.at(columns_.begin()->joint_name)[0];
         }
-        center /= raw_frames.size();
+        center /= (float)raw_frames.size();
         for (auto& f : raw_frames) {
             f.at(columns_.begin()->joint_name)[0] -= center;
         }
@@ -235,17 +235,17 @@ void BvhLoader::smoothen() {
     }
     std::vector<std::map<std::string, OffsetAndQuaternion<float>>> smoothed_transformed_frames(transformed_frames_.size());
     auto get_cyclic_frame = [this](int i){
-        return transformed_frames_[mod(i, transformed_frames_.size())];
+        return transformed_frames_[(size_t)mod(i, (int)transformed_frames_.size())];
     };
     for (int t = 0; t < (int)transformed_frames_.size(); ++t) {
-        std::map<std::string, OffsetAndQuaternion<float>> fn = get_cyclic_frame(t - cfg_.smooth_radius);
-        for (int i = t - cfg_.smooth_radius + 1; i < t; ++i) {
+        std::map<std::string, OffsetAndQuaternion<float>> fn = get_cyclic_frame(t - (int)cfg_.smooth_radius);
+        for (int i = t - (int)cfg_.smooth_radius + 1; i < t; ++i) {
             for (const auto& f : get_cyclic_frame(i)) {
                 fn[f.first] = fn[f.first].slerp(f.second, cfg_.smooth_alpha);
             }
         }
-        std::map<std::string, OffsetAndQuaternion<float>> fp = get_cyclic_frame(t + cfg_.smooth_radius);
-        for (int i = t + cfg_.smooth_radius - 1; i > t; --i) {
+        std::map<std::string, OffsetAndQuaternion<float>> fp = get_cyclic_frame(t + (int)cfg_.smooth_radius);
+        for (int i = t + (int)cfg_.smooth_radius - 1; i > t; --i) {
             for (const auto& f : get_cyclic_frame(i)) {
                 fp[f.first] = fp[f.first].slerp(f.second, cfg_.smooth_alpha);
             }

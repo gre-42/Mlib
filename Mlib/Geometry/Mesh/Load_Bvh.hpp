@@ -15,7 +15,7 @@ struct ColumnDescription {
 
 struct BvhConfig {
     size_t smooth_radius = 20;
-    float smooth_alpha = 0.9;
+    float smooth_alpha = 0.9f;
     bool periodic = true;
     bool demean = false;
     float scale = 1;
@@ -23,24 +23,24 @@ struct BvhConfig {
     // v*R = v*YXZ
     FixedArray<size_t, 3> rotation_order = {1, 0, 2};
     FixedArray<float, 4, 4> parameter_transformation = {
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1};
+        1.f, 0.f, 0.f, 0.f,
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f,
+        0.f, 0.f, 0.f, 1.f };
 };
 
 static const BvhConfig blender_bvh_config{
     .smooth_radius = 20,
-    .smooth_alpha = 0.9,
+    .smooth_alpha = 0.9f,
     .periodic = true,
     .demean = false,
     .scale = 1,
     .rotation_order = {2, 1, 0},
     .parameter_transformation = {
-        1, 0, 0, 0,
-        0, 0, 1, 0,
-        0, -1, 0, 0,
-        0, 0, 0, 1}};
+        1.f,  0.f, 0.f, 0.f,
+        0.f,  0.f, 1.f, 0.f,
+        0.f, -1.f, 0.f, 0.f,
+        0.f,  0.f, 0.f, 1.f}};
 
 FixedArray<float, 4, 4> get_parameter_transformation(const std::string& name);
 

@@ -8,14 +8,14 @@
 namespace Mlib {
 
 template <class TData>
-struct OffsetAndQuaternion;
+class OffsetAndQuaternion;
 template <class TData, size_t tndim>
 struct PointsAndAdjacency;
 template <class TData, size_t n>
 class TransformationMatrix;
 
 struct AnimatedColoredVertexArrays;
-class ColoredVertexArray;
+struct ColoredVertexArray;
 class Scene;
 class SceneNode;
 enum class WayPointLocation;

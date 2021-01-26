@@ -1,8 +1,10 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 namespace Mlib {
 
@@ -40,4 +42,6 @@ FixedArray<TData, 2> transform_to_line_coordinates(
 
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

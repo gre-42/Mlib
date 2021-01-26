@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
         // Declared as first class to let destructors of other classes succeed.
         size_t num_renderings = SIZE_MAX;
         RenderResults render_results;
-        RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
+        RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
         if (args.has_named_value("--output")) {
             render_results.outputs[rsd] = Array<float>{};
         }
@@ -356,8 +356,8 @@ int main(int argc, char** argv) {
                         name,
                         *scene_node,
                         SceneNodeResourceFilter{
-                            min_num: safe_stoz(args.named_value("--min_num", "0")),
-                            regex: std::regex{args.named_value("--regex", "")}});
+                            .min_num = safe_stoz(args.named_value("--min_num", "0")),
+                            .regex = std::regex{args.named_value("--regex", "")}});
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     Interp<float> interp{
@@ -436,7 +436,7 @@ int main(int argc, char** argv) {
         if (light_configuration == "one") {
             scene.add_root_node("light_node0", new SceneNode);
             scene.get_node("light_node0")->set_position({0.f, 50.f, 0.f});
-            scene.get_node("light_node0")->set_rotation({-45.f * M_PI / 180.f, 0.f, 0.f});
+            scene.get_node("light_node0")->set_rotation({ -45.f * float{M_PI} / 180.f, 0.f, 0.f });
             lights.push_back(new Light{.node_name = "light_node0", .only_black = false, .shadow = true});
             scene.get_node("light_node0")->add_light(lights.back());
             scene.get_node("light_node0")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
@@ -453,7 +453,7 @@ int main(int argc, char** argv) {
             } else {
                 throw std::runtime_error("Unknown light configuration");
             }
-            for (float a : linspace<float>(0, 2 * M_PI, n).flat_iterable()) {
+            for (float a : linspace<float>(0.f, 2.f * float{ M_PI }, n).flat_iterable()) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, new SceneNode);
                 scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
@@ -463,12 +463,12 @@ int main(int argc, char** argv) {
                 lights.push_back(new Light{.node_name = name, .only_black = false, .shadow = true});
                 scene.get_node(name)->add_light(lights.back());
                 scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-                lights.back()->ambience *= 2.f / (n * (1 + with_diffusivity));
+                lights.back()->ambience *= 2.f / (n * (1 + (int)with_diffusivity));
                 lights.back()->diffusivity = 0;
                 lights.back()->specularity = 0;
             }
             if (with_diffusivity) {
-                for (float a : linspace<float>(0, 2 * M_PI, n).flat_iterable()) {
+                for (float a : linspace<float>(0.f, 2.f * float{ M_PI }, n).flat_iterable()) {
                     std::string name = "light_s" + std::to_string(i++);
                     scene.add_root_node(name, new SceneNode);
                     scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
@@ -479,7 +479,7 @@ int main(int argc, char** argv) {
                     scene.get_node(name)->add_light(lights.back());
                     scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
                     lights.back()->ambience = 0;
-                    lights.back()->diffusivity /= 2 * n;
+                    lights.back()->diffusivity /= (float)(2 * n);
                     lights.back()->specularity = 0;
                 }
             }
@@ -509,10 +509,10 @@ int main(int argc, char** argv) {
             standard_camera_logic,
             ClearMode::COLOR_AND_DEPTH};
         FlyingCameraUserClass user_object{
-            button_states: button_states,
-            cameras: selected_cameras,
-            focuses: focuses,
-            physics_set_fps: nullptr};
+            .button_states = button_states,
+            .cameras = selected_cameras,
+            .focuses = focuses,
+            .physics_set_fps = nullptr};
         auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
             render2.window(),
             button_states,

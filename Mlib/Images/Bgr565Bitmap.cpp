@@ -194,17 +194,17 @@ void Bgr565Bitmap::save_to_stream(std::ostream& ostream) const {
     }
     BitmapHeader header;
     header.type = 0x4d42;
-    header.fileSize = sizeof(off_bitmap_header_565) + sizeof(header) + aligned.nbytes();
+    header.fileSize = sizeof(off_bitmap_header_565) + sizeof(header) + (unsigned int)aligned.nbytes();
     header.reserved1 = 0;
     header.reserved2 = 0;
     header.offBytes = sizeof(off_bitmap_header_565) + sizeof(header);
     header.size = 0x7c;
-    header.width = shape(1);
-    header.height = shape(0);
+    header.width = (unsigned int)shape(1);
+    header.height = (unsigned int)shape(0);
     header.planes = 0x1;
     header.bitCount = 0x10;
     header.compression = 0x3;
-    header.sizeImage = aligned.nbytes();
+    header.sizeImage = (unsigned int)aligned.nbytes();
     header.xPelsPerMeter = 0xb13;
     header.yPelsPerMeter = 0xb13;
     header.clrUsed = 0;

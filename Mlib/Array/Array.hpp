@@ -145,8 +145,8 @@ public:
         resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
         reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
     {}
-    Array(Array&& rhs):
-        data_{std::move(rhs.data_)},
+    Array(Array&& rhs) noexcept
+       :data_{std::move(rhs.data_)},
         shape_{std::move(rhs.shape_)},
         offset_{rhs.offset_},
         resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
@@ -866,7 +866,7 @@ public:
     static Array from_shape(const ArrayShape& shape) {
         Array result(ArrayShape{shape.ndim()});
         for (size_t d = 0; d < shape.ndim(); ++d) {
-            result(d) = shape(d);
+            result(d) = (TData)shape(d);
         }
         return result;
     }
@@ -924,9 +924,9 @@ public:
         Array<TResultData> r{shape()};
         Array af = flattened();
         Array<TResultData> rf = r.flattened();
-        size_t len = rf.length();
+        int len = (int)rf.length();
         #pragma omp parallel for if (len > 25)
-        for (size_t i=0; i<len; i++) {
+        for (int i = 0; i < len; ++i) {
             rf(i) = operation(af(i));
         }
         return r;
@@ -976,9 +976,9 @@ public:
         Array af = a.flattened();
         Array<TDataB> bf = b.flattened();
         Array<TDataResult> rf = r.flattened();
-        size_t len = rf.length();
+        int len = (int)rf.length();
         #pragma omp parallel for if (len > 25)
-        for (size_t i=0; i<len; i++) {
+        for (int i = 0; i < len; ++i) {
             rf(i) = binop(af(i), bf(i));
         }
         return r;

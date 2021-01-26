@@ -62,7 +62,7 @@ FixedArray<TData, 3> matrix_2_tait_bryan_angles(FixedArray<TData, 3, 3> R, bool 
         return FixedArray<float, 3>{
             std::atan2(-R(1, 2), R(1, 1)),
             std::atan2(-R(2, 0), sy),
-            0};
+            0.f};
     }
 }
 

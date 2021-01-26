@@ -2,8 +2,10 @@
 
 using namespace Mlib;
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 /**
  * Source: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -14,7 +16,7 @@ bool Mlib::ray_intersects_triangle(const FixedArray<float, 3>& ray_origin,
                                    FixedArray<float, 3>& intersection_point,
                                    float t_max)
 {
-    const float EPSILON = 0.0000001;
+    const float EPSILON = 0.0000001f;
     const FixedArray<float, 3>& vertex0 = triangle(0);
     const FixedArray<float, 3>& vertex1 = triangle(1);
     const FixedArray<float, 3>& vertex2 = triangle(2);
@@ -27,15 +29,15 @@ bool Mlib::ray_intersects_triangle(const FixedArray<float, 3>& ray_origin,
     if (a > -EPSILON && a < EPSILON) {
         return false;    // This ray is parallel to this triangle.
     }
-    f = 1.0 / a;
+    f = 1.f / a;
     s = ray_origin - vertex0;
     u = f * dot0d(s, h);
-    if (u < 0.0 || u > 1.0) {
+    if (u < 0.f || u > 1.f) {
         return false;
     }
     q = cross(s, edge1);
     v = f * dot0d(ray_vector, q);
-    if (v < 0.0 || u + v > 1.0) {
+    if (v < 0.f || u + v > 1.f) {
         return false;
     }
     // At this stage we can compute t to find out where the intersection point is on the line.
@@ -81,4 +83,6 @@ bool Mlib::line_intersects_triangle(const ColoredVertex& ray_origin,
         intersection_point);
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

@@ -258,7 +258,7 @@ void Mlib::svd4(const Array<double>& a, Array<double>& u, Array<double>& s, Arra
 	u.resize[a.shape(0)](std::max(a.shape(0), a.shape(1)));  // ECON: ncols = s.length()
 	Array<double> v(ArrayShape{a.shape(1), a.shape(1)});  // ECON: nrows = s.length()
 
-	int retval = svd_hac(a.shape(0), a.shape(1), true, true, 1e-12, 1e-12, a, s, u, v);
+	int retval = svd_hac((int)a.shape(0), (int)a.shape(1), true, true, 1e-12, 1e-12, a, s, u, v);
 	if (retval != 0) {
 		throw std::runtime_error("svd_hac returned with code " + std::to_string(retval));
 	}
@@ -272,7 +272,8 @@ double Mlib::cond4(const Array<double>& a) {
 	Array<double> s{ArrayShape{a.shape(1)}};
 	Array<double> v;
 	Array<double> m = dot(a.T(), a);
-	int retval = svd_hac(a.shape(1), a.shape(1), false, false, 1e-12, 1e-12, m, s, u, v);
+    int retval =
+        svd_hac((int)a.shape(1), (int)a.shape(1), false, false, 1e-12, 1e-12, m, s, u, v);
 	if (retval != 0) {
 		throw std::runtime_error("svd_hac returned with code " + std::to_string(retval));
 	}
@@ -284,7 +285,8 @@ double Mlib::cond4_x(const Array<double>& a) {
 	Array<double> u{ArrayShape{a.shape(0), std::max(a.shape(0), a.shape(1))}};  // ECON: ncols = s.length()
 	Array<double> s{ArrayShape{std::min(a.shape(0), a.shape(1))}};
 	Array<double> v;
-	int retval = svd_hac(a.shape(0), a.shape(1), false, false, 1e-12, 1e-12, a, s, u, v);
+    int retval =
+        svd_hac((int)a.shape(0), (int)a.shape(1), false, false, 1e-12, 1e-12, a, s, u, v);
 	if (retval != 0) {
 		throw std::runtime_error("svd_hac returned with code " + std::to_string(retval));
 	}

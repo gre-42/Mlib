@@ -4,6 +4,7 @@
 
 namespace Mlib {
 
+#include <Mlib/Packed_Begin.hpp>
 struct BitmapHeader {
     // File info
     unsigned short type;        // 0
@@ -23,7 +24,8 @@ struct BitmapHeader {
     unsigned int yPelsPerMeter; // 42
     unsigned int clrUsed;       // 46
     unsigned int clrImportant;  // 50 - 54
-} __attribute__((packed));
+} PACKED;
+#include <Mlib/Packed_End.hpp>
 
 static const unsigned char off_bitmap_header_565[] = {
     0, 0xf8, 0, 0, 0xe0, 0x7, 0, 0, 0x1f, 0, 0, 0, 0, 0, 0, 0,
@@ -33,6 +35,7 @@ static const unsigned char off_bitmap_header_565[] = {
     0, 0, 0, 0, 0x2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0};
 
+#include <Mlib/Packed_Begin.hpp>
 // 16-bit, 2 * 8 bytes
 struct Bgr565 {
     unsigned short b:5;
@@ -94,8 +97,8 @@ struct Bgr565 {
             (unsigned short)(grayscale * ((1 << 5) - 1) + 0.5f)};
     }
     static inline Bgr565 from_float_rgb(const Array<float>& rgb) {
-        if (any(isnan(rgb))) {
-            if (!all(isnan(rgb))) {
+        if (any(Mlib::isnan(rgb))) {
+            if (!all(Mlib::isnan(rgb))) {
                 throw std::runtime_error("Bgr565Bitmap::from_float_rgb received inconsistent NANs");
             }
             return Bgr565::nan();
@@ -130,7 +133,8 @@ struct Bgr565 {
             (unsigned short)(g * ((1 << 6) - 1) + 0.5f),
             (unsigned short)(b * ((1 << 5) - 1) + 0.5f)};
     }
-} __attribute__((packed));
+} PACKED;
+#include <Mlib/Packed_End.hpp>
 
 class Bgr565Bitmap: public Array<Bgr565> {
 public:

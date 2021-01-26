@@ -25,8 +25,8 @@ struct RenderConfig {
     FixedArray<float, 3> background_color = fixed_zeros<float, 3>();
     bool print_fps = false;
     bool print_residual_time = false;
-    float dt = 0.01667;
-    float max_residual_time = 0.5;
+    float dt = 0.01667f;
+    float max_residual_time = 0.5f;
     float draw_distance_add = NAN;
     float draw_distance_slop = NAN;
     void apply() const;

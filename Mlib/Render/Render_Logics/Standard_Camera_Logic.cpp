@@ -29,9 +29,9 @@ void StandardCameraLogic::render(
     float aspect_ratio = width / (float) height;
 
     SceneNode* cn;
-    if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
+    if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
         cn = scene_.get_node(frame_id.light_node_name);
-    } else if (frame_id.external_render_pass.pass == ExternalRenderPass::DIRTMAP) {
+    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         cn = scene_.get_node(cameras_.dirtmap_node_name);
     } else {
         cn = scene_.get_node(cameras_.camera_node_name());

@@ -4,7 +4,7 @@
 #include <set>
 #include <string>
 #include <vector>
-
+#include <stdexcept>
 
 class CommandLineArgumentError: public std::runtime_error {
 public:

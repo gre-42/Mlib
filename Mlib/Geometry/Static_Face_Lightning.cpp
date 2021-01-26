@@ -4,9 +4,9 @@
 using namespace Mlib;
 
 StaticFaceLightning::StaticFaceLightning(bool swap_yz)
-: light_direction{0.2, 0.8, 0.4},
-  diffuse_color{0.6, 0.6, 0.6},
-  ambient_color{0.5, 0.5, 0.5}
+: light_direction{0.2f, 0.8f, 0.4f},
+  diffuse_color{0.6f, 0.6f, 0.6f},
+  ambient_color{0.5f, 0.5f, 0.5f}
 {
     light_direction /= std::sqrt(sum(squared(light_direction)));
     if (swap_yz) {

@@ -15,25 +15,25 @@ RenderableSquare::RenderableSquare(
     triangles.reserve(2);
 
     ColoredVertex v00{ // min(x), min(y)
-        {square(0, 0), square(0, 1), 0},
+        {square(0, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
-        {0, 0},
-        {0, 0, 1}};
+        {0.f, 0.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex v01{ // min(x), max(y)
-        {square(0, 0), square(1, 1), 0},
+        {square(0, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
-        {0, 1},
-        {0, 0, 1}};
+        {0.f, 1.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex v10{ // max(x), min(y)
-        {square(1, 0), square(0, 1), 0},
+        {square(1, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
-        {1, 0},
-        {0, 0, 1}};
+        {1.f, 0.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex v11{ // max(x), max(y)
-        {square(1, 0), square(1, 1), 0},
+        {square(1, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
-        {1, 1},
-        {0, 0, 1}};
+        {1.f, 1.f},
+        {0.f, 0.f, 1.f}};
 
     triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});

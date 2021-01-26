@@ -11,7 +11,7 @@ class Histogram {
 public:
     Histogram(const Array<TData>& data, size_t nbins = 10) {
         assert(nbins > 1);
-        Array<TData> fdata = data[isfinite(data)];
+        Array<TData> fdata = data[Mlib::isfinite(data)];
         mi_ = min(fdata);
         ma_ = max(fdata);
         // TData h = (ma - mi) / (nbins - 1);

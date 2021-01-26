@@ -33,6 +33,8 @@ template <typename TData, size_t tshape0, size_t... tshape>
 class FixedArray<TData, tshape0, tshape...>: public BaseDenseArray<FixedArray<TData, tshape0, tshape...>, TData>
 {
 public:
+    typedef TData value_type;
+
     FixedArray() = default;
     explicit FixedArray(const Array<TData>& a) {
         assert(all(a.shape() == ArrayShape{tshape0, tshape...}));
@@ -307,7 +309,7 @@ public:
     }
     template <typename TResultData>
     FixedArray<TResultData, tshape0, tshape...> casted() const {
-        return applied<TResultData>([&](const TData& v){ return v; });
+        return applied<TResultData>([&](const TData& v){ return (TResultData)v; });
     }
 private:
     FixedArray<TData, tshape...> data_[tshape0];
@@ -317,6 +319,8 @@ template <typename TData>
 class FixedArray<TData>: public BaseDenseArray<FixedArray<TData>, TData>
 {
 public:
+    typedef TData value_type;
+
     FixedArray() = default;
     explicit FixedArray(const TData& v)
     : value_(v)

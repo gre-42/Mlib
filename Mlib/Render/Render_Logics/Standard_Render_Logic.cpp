@@ -38,7 +38,7 @@ void StandardRenderLogic::render(
     LOG_FUNCTION("StandardRenderLogic::render");
     RenderToScreenGuard rg;
 
-    if (frame_id.external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) {
+    if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
         CHK(glClearColor(1.f, 1.f, 1.f, 1.f));
         CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     } else {
@@ -81,8 +81,8 @@ void StandardRenderLogic::render(
         render_config.unapply();
     }
 
-    // if (frame_id.external_render_pass.pass == ExternalRenderPass::Pass::STANDARD_WO_POSTPROCESSING ||
-    //     frame_id.external_render_pass.pass == ExternalRenderPass::Pass::STANDARD_WITH_POSTPROCESSING)
+    // if (frame_id.external_render_pass.pass == ExternalRenderPassType::Pass::STANDARD_WO_POSTPROCESSING ||
+    //     frame_id.external_render_pass.pass == ExternalRenderPassType::Pass::STANDARD_WITH_POSTPROCESSING)
     // {
     //     static Fps fps;
     //     fps.tick();

@@ -9,8 +9,10 @@
 
 namespace Mlib {
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 struct ColoredVertex {
     FixedArray<float, 3> position;
@@ -50,7 +52,9 @@ struct ColoredVertex {
     }
 };
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif
 
 inline std::ostream& operator << (std::ostream& ostr, const ColoredVertex& v) {
     ostr << "p " << v.position << " n " << v.normal << " c " << v.color << " t " << v.uv;

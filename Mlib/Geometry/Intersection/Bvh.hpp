@@ -6,8 +6,10 @@
 #include <ostream>
 #include <vector>
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 namespace Mlib {
 
@@ -126,4 +128,6 @@ std::ostream& operator << (std::ostream& ostr, const Bvh<TData, TPayload, tndim>
 
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

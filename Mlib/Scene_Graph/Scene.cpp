@@ -168,7 +168,7 @@ void Scene::render(
     LOG_FUNCTION("Scene::render");
     std::list<std::pair<TransformationMatrix<float, 3>, Light*>> lights;
     std::list<Blended> blended;
-    if ((external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) && !external_render_pass.black_node_name.empty()) {
+    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && !external_render_pass.black_node_name.empty()) {
         std::shared_lock lock{dynamic_mutex_};
         auto it = root_nodes_.find(external_render_pass.black_node_name);
         if (it == root_nodes_.end()) {
@@ -261,8 +261,8 @@ void Scene::render(
         }
         if (external_render_pass.black_node_name.empty()) {
             bool is_foreground_task =
-                (external_render_pass.pass == ExternalRenderPass::LIGHTMAP_TO_TEXTURE) ||
-                (external_render_pass.pass == ExternalRenderPass::DIRTMAP);
+                (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ||
+                (external_render_pass.pass == ExternalRenderPassType::DIRTMAP);
             std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer = AggregateRenderer::small_sorted_aggregate_renderer();
             if (small_sorted_aggregate_renderer != nullptr) {
                 // Contains continuous alpha and must therefore be rendered late.

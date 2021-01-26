@@ -31,7 +31,7 @@ void Mlib::add_parsed_resource_name(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes)
 {
     add_parsed_resource_name(
-        FixedArray<float, 3>{p(0), p(1), 0},
+        FixedArray<float, 3>{p(0), p(1), 0.f},
         prn,
         scale,
         resource_instance_positions,

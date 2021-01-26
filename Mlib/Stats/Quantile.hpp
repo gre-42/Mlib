@@ -41,12 +41,12 @@ TDataX quantile(const Array<TDataX>& x, const TDataQ& q) {
 
 template <class TDataX, class TDataQ>
 Array<TDataX> nanquantiles(const Array<TDataX>& x, const Array<TDataQ>& q) {
-    return quantiles(x[!isnan(x)], q);
+    return quantiles(x[!Mlib::isnan(x)], q);
 }
 
 template <class TDataX, class TDataQ>
 TDataX nanquantile(const Array<TDataX>& x, const TDataQ& q) {
-    return quantile(x[!isnan(x)], q);
+    return quantile(x[!Mlib::isnan(x)], q);
 }
 
 }

@@ -41,7 +41,7 @@ struct TextureDescriptor {
     std::string histogram = "";
     std::string mixed = "";
     size_t overlap_npixels = 5;
-    OrderableFixedArray<float, 3> mean_color = {-1, -1, -1};
+    OrderableFixedArray<float, 3> mean_color = {-1.f, -1.f, -1.f};
     std::strong_ordering operator <=> (const TextureDescriptor&) const = default;
 };
 

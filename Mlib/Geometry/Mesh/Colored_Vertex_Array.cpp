@@ -26,8 +26,10 @@ ColoredVertexArray::ColoredVertexArray(
     }
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#ifdef __GNU__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 std::vector<FixedArray<float, 3>> ColoredVertexArray::vertices() const {
     std::vector<FixedArray<float, 3>> res;
@@ -205,4 +207,6 @@ void Mlib::sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& co
         });
 }
 
-#pragma GCC pop_options
+#ifdef __GNU__
+    #pragma GCC pop_options
+#endif

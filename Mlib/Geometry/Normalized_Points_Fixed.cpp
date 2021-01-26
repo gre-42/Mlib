@@ -41,8 +41,8 @@ TransformationMatrix<float, 2> NormalizedPointsFixed::normalization_matrix() con
     // (p - sy) / dy = p/dy - sy/dy
     return TransformationMatrix<float, 2>{
         FixedArray<float, 2, 2>{
-            1 / d(0), 0,
-            0, 1 / d(1)},
+            1 / d(0), 0.f,
+            0.f, 1 / d(1)},
         FixedArray<float, 2>{
             -s(0) / d(0),
             -s(1) / d(1)}};

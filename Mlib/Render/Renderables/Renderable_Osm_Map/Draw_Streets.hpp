@@ -10,11 +10,11 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <typename TData, size_t... tshape>
 class OrderableFixedArray;
-struct TriangleList;
+class TriangleList;
 struct ResourceInstanceDescriptor;
 struct StreetRectangle;
 struct ObjectResourceDescriptor;
-struct ResourceNameCycle;
+class ResourceNameCycle;
 enum class DrivingDirection;
 struct Node;
 struct Way;

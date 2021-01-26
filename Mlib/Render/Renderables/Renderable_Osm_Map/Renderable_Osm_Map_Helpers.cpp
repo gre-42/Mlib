@@ -99,17 +99,17 @@ void Mlib::draw_node(
     float size)
 {
     ColoredVertex v00{
-        position: FixedArray<float, 3>{pos2d(0) - size, pos2d(1) - size, 0},
-        color: FixedArray<float, 3>{1, 1, 0}};
+        .position = FixedArray<float, 3>{pos2d(0) - size, pos2d(1) - size, 0.f},
+        .color = FixedArray<float, 3>{1.f, 1.f, 0.f}};
     ColoredVertex v01{
-        position: FixedArray<float, 3>{pos2d(0) - size, pos2d(1) + size, 0},
-        color: FixedArray<float, 3>{1, 0, 1}};
+        .position = FixedArray<float, 3>{pos2d(0) - size, pos2d(1) + size, 0.f},
+        .color = FixedArray<float, 3>{1.f, 0.f, 1.f}};
     ColoredVertex v10{
-        position: FixedArray<float, 3>{pos2d(0) + size, pos2d(1) - size, 0},
-        color: FixedArray<float, 3>{0, 1, 1}};
+        .position = FixedArray<float, 3>{pos2d(0) + size, pos2d(1) - size, 0.f},
+        .color = FixedArray<float, 3>{0.f, 1.f, 1.f}};
     ColoredVertex v11{
-        position: FixedArray<float, 3>{pos2d(0) + size, pos2d(1) + size, 0},
-        color: FixedArray<float, 3>{1, 1, 1}};
+        .position = FixedArray<float, 3>{pos2d(0) + size, pos2d(1) + size, 0.f},
+        .color = FixedArray<float, 3>{1.f, 1.f, 1.f}};
 
     triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
@@ -182,7 +182,7 @@ float Mlib::parse_meters(const std::map<std::string, std::string>& tags, const s
     if (std::regex_match(it->second, match, re)) {
         float res = safe_stof(match[1].str());
         if (match[2].str() == "'") {
-            res *= 0.3048;
+            res *= 0.3048f;
         }
         return res;
     } else {
@@ -225,10 +225,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         building_top = parse_meters(tags, "height", building_top);
         building_top = parse_meters(tags, "building:height", building_top);
         result.push_back(Building{
-            id: w.first,
-            way: w.second,
-            building_top: building_top,
-            building_bottom: building_bottom});
+            .id = w.first,
+            .way = w.second,
+            .building_top = building_top,
+            .building_bottom = building_bottom});
     }
     return result;
 }
@@ -333,7 +333,7 @@ void Mlib::draw_ceilings(
         outline = removed_duplicates(outline);
         //std::reverse(outline.begin(), outline.end());
         tls.push_back(std::make_shared<TriangleList>("ceilings", material));
-        BoundingInfo bounding_info{outline, {}, 0.1};
+        BoundingInfo bounding_info{outline, {}, 0.1f};
         triangulate_terrain_or_ceilings(
             *tls.back(),
             bounding_info,
@@ -469,7 +469,7 @@ void Mlib::raise_streets(
 class PTri {
 public:
     p2t::Point* operator () (size_t i) const {
-        return v->GetPoint(i);
+        return v->GetPoint((int)i);
     }
     bool operator < (const PTri& other) const {
         return v < other.v;
@@ -520,7 +520,7 @@ void Mlib::add_street_steiner_points(
         //     }
         //     std::cerr << "f " << f << " search_time " << bvh.search_time() << std::endl;
         // }
-        Bvh<float, Triangle2d, 2> bvh{{0.1, 0.1}, 10};
+        Bvh<float, Triangle2d, 2> bvh{{0.1f, 0.1f}, 10};
         for (const auto& t : triangles) {
             Triangle2d tri{
                 FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
@@ -540,7 +540,7 @@ void Mlib::add_street_steiner_points(
             }
         }
         size_t ix = 0;
-        NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
+        NormalRandomNumberGenerator<float> rng2{0, 0.f, 1.2f};
         for (float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
             size_t iy = 0;
             for (float y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
@@ -552,11 +552,11 @@ void Mlib::add_street_steiner_points(
                 if (min_distance > 0) {
                     float dist = interp(min_distance / scale);
                     if (dist != INFINITY) {
-                        size_t refinement = std::max<size_t>(1, (dist * scale) / dist0);
+                        size_t refinement = std::max<size_t>(1, (size_t)((dist * scale) / dist0));
                         bool is_included = (ix % refinement == 0) && (iy % refinement == 0);
                         if (is_included) {
                             steiner_points.push_back(SteinerPointInfo{
-                                .position = {pt(0), pt(1), 0},
+                                .position = {pt(0), pt(1), 0.f},
                                 .type = SteinerPointType::STREET_NEIGHBOR,
                                 .distance_to_road = min_distance});
                         }
@@ -673,15 +673,15 @@ void Mlib::triangulate_terrain_or_ceilings(
             continue;
         }
         tl_terrain.draw_triangle_wo_normals(
-            {float(t->GetPoint(0)->x), t->GetPoint(0)->y, z * scale},
-            {float(t->GetPoint(1)->x), t->GetPoint(1)->y, z * scale},
-            {float(t->GetPoint(2)->x), t->GetPoint(2)->y, z * scale},
+            {float(t->GetPoint(0)->x), float(t->GetPoint(0)->y), z * scale},
+            {float(t->GetPoint(1)->x), float(t->GetPoint(1)->y), z * scale},
+            {float(t->GetPoint(2)->x), float(t->GetPoint(2)->y), z * scale},
             terrain_color,
             terrain_color,
             terrain_color,
-            {float(t->GetPoint(0)->x) / scale * uv_scale, t->GetPoint(0)->y / scale * uv_scale},
-            {float(t->GetPoint(1)->x) / scale * uv_scale, t->GetPoint(1)->y / scale * uv_scale},
-            {float(t->GetPoint(2)->x) / scale * uv_scale, t->GetPoint(2)->y / scale * uv_scale});
+            {float(t->GetPoint(0)->x) / scale * uv_scale, float(t->GetPoint(0)->y) / scale * uv_scale},
+            {float(t->GetPoint(1)->x) / scale * uv_scale, float(t->GetPoint(1)->y) / scale * uv_scale},
+            {float(t->GetPoint(2)->x) / scale * uv_scale, float(t->GetPoint(2)->y) / scale * uv_scale});
     }
 }
 
@@ -796,7 +796,7 @@ void Mlib::add_grass_on_steiner_points(
     float dmin,
     float dmax)
 {
-    NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
+    NormalRandomNumberGenerator<float> rng{0, 1.f, 0.2f};
     for (const auto& p : steiner_points) {
         if ((p.type == SteinerPointType::STREET_NEIGHBOR) &&
             !std::isnan(p.distance_to_road) &&
@@ -820,14 +820,14 @@ void Mlib::add_grass_inside_triangles(
     if (distance == INFINITY) {
         return;
     }
-    NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
-    NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
+    NormalRandomNumberGenerator<float> rng{0, 1.f, 0.2f};
+    NormalRandomNumberGenerator<float> rng2{0, 0.f, 1.2f};
     size_t gid = 0;
     for (auto& t : triangles.triangles_) {
         float dist_a = std::sqrt(std::min(sum(squared(t(1).position - t(0).position)), sum(squared(t(2).position - t(0).position))));
         float dist_b = std::sqrt(std::min(sum(squared(t(1).position - t(0).position)), sum(squared(t(2).position - t(1).position))));
-        for (float a = 0.01; a < 0.99; a += distance * scale / dist_a) {
-            for (float b = 0.01; b < 1 - a; b += distance * scale / dist_b) {
+        for (float a = 0.01f; a < 0.99f; a += distance * scale / dist_a) {
+            for (float b = 0.01f; b < 1.f - a; b += distance * scale / dist_b) {
                 float aa = a + rng2() * distance * scale / dist_a;
                 float bb = b + rng2() * distance * scale / dist_b;
                 float c = 1 - aa - bb;
@@ -854,8 +854,8 @@ void Mlib::add_trees_to_forest_outlines(
     float tree_inwards_distance,
     float scale)
 {
-    NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
-    NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
+    NormalRandomNumberGenerator<float> rng{0, 1.f, 0.2f};
+    NormalRandomNumberGenerator<float> rng2{0, 0.f, 1.2f};
     // size_t rid = 0;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
@@ -874,9 +874,9 @@ void Mlib::add_trees_to_forest_outlines(
                 float len = std::sqrt(sum(squared(p0 - p1)));
                 FixedArray<float, 2> n{p0(1) - p1(1), p1(0) - p0(0)};
                 n /= len;
-                for (float a = 0.1; a < 0.91; a += tree_distance * scale / len) {
+                for (float a = 0.1f; a < 0.91f; a += tree_distance * scale / len) {
                     float aa = a + rng2() * tree_distance * scale / len;
-                    if (aa < 0 || aa > 0.91) {
+                    if (aa < 0 || aa > 0.91f) {
                         continue;
                     }
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + tree_inwards_distance * scale * n * sign(area);
@@ -887,7 +887,7 @@ void Mlib::add_trees_to_forest_outlines(
                     //     scale: rng()});
                     // if ((rid++) % 4 == 0) {
                     steiner_points.push_back({
-                        .position = {p(0), p(1), 0},
+                        .position = {p(0), p(1), 0.f},
                         .type = SteinerPointType::FOREST_OUTLINE,
                         .distance_to_road = NAN});
                     // }
@@ -910,7 +910,7 @@ void Mlib::add_beacons_to_raceways(
         {
             auto sw = smooth_way(nodes, w.second.nd, scale, raceway_beacon_distance);
             for (const auto p : sw) {
-                street_light_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0}, "raceway_beacon", 1});
+                street_light_positions.push_back({FixedArray<float, 3>{p(0), p(1), 0.f}, "raceway_beacon", 1.f});
             }
         }
     }
@@ -970,14 +970,14 @@ void Mlib::add_trees_to_tree_nodes(
     const std::map<std::string, Node>& nodes,
     float scale)
 {
-    NormalRandomNumberGenerator<float> rng{0, 1, 0.2};
+    NormalRandomNumberGenerator<float> rng{0, 1.f, 0.2f};
     for (const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
             const auto& p = n.second.position;
             add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
             steiner_points.push_back({
-                .position = {p(0), p(1), 0},
+                .position = {p(0), p(1), 0.f},
                 .type = SteinerPointType::TREE_NODE,
                 .distance_to_road = NAN});
         }
@@ -1017,21 +1017,21 @@ void Mlib::add_binary_vegetation_old(
         }
         auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
         tls.back()->draw_rectangle_wo_normals(
-            center + FixedArray<float, 3>{-scale * veg_size, 0, 0},
-            center + FixedArray<float, 3>{scale * veg_size, 0, 0},
-            center + FixedArray<float, 3>{scale * veg_size, 0, 2 * scale * veg_size},
-            center + FixedArray<float, 3>{-scale * veg_size, 0, 2 * scale * veg_size},
-            {1, 1, 1},
-            {1, 1, 1},
-            {1, 1, 1});
+            center + FixedArray<float, 3>{-scale * veg_size, 0.f, 0.f},
+            center + FixedArray<float, 3>{scale * veg_size, 0.f, 0.f},
+            center + FixedArray<float, 3>{scale * veg_size, 0.f, 2 * scale * veg_size},
+            center + FixedArray<float, 3>{-scale * veg_size, 0.f, 2 * scale * veg_size},
+            {1.f, 1.f, 1.f },
+            {1.f, 1.f, 1.f },
+            {1.f, 1.f, 1.f });
         tls.back()->draw_rectangle_wo_normals(
-            center + FixedArray<float, 3>{0, -scale * veg_size, 0},
-            center + FixedArray<float, 3>{0, scale * veg_size, 0},
-            center + FixedArray<float, 3>{0, scale * veg_size, 2 * scale * veg_size},
-            center + FixedArray<float, 3>{0, -scale * veg_size, 2 * scale * veg_size},
-            {1, 1, 1},
-            {1, 1, 1},
-            {1, 1, 1});
+            center + FixedArray<float, 3>{0.f, -scale * veg_size, 0.f},
+            center + FixedArray<float, 3>{0.f, scale * veg_size, 0.f},
+            center + FixedArray<float, 3>{0.f, scale * veg_size, 2 * scale * veg_size},
+            center + FixedArray<float, 3>{0.f, -scale * veg_size, 2 * scale * veg_size},
+            {1.f, 1.f, 1.f },
+            {1.f, 1.f, 1.f },
+            {1.f, 1.f, 1.f });
     }
 }
 
@@ -1115,7 +1115,7 @@ void Mlib::draw_building_walls(
                 float width = std::sqrt(sum(squared(p0 - p1)));
                 float height = (bu.building_top - bu.building_bottom) * scale;
                 steiner_points.push_back({
-                    .position = {p0(0), p0(1), 0},
+                    .position = {p0(0), p0(1), 0.f},
                     .type = SteinerPointType::WALL,
                     .distance_to_road = NAN});
                 // some buildings are clock-wise, others counter-clock-wise
@@ -1128,10 +1128,10 @@ void Mlib::draw_building_walls(
                     building_color,
                     building_color,
                     building_color,
-                    {0, 0},
-                    {width / scale * uv_scale, 0},
+                    {0.f, 0.f},
+                    {width / scale * uv_scale, 0.f},
                     {width / scale * uv_scale, height / scale * uv_scale},
-                    {0, height / scale * uv_scale});
+                    {0.f, height / scale * uv_scale});
             }
         }
     }

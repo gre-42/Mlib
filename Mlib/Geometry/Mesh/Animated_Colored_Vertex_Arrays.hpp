@@ -8,7 +8,7 @@
 namespace Mlib {
 
 template <class TData>
-struct OffsetAndQuaternion;
+class OffsetAndQuaternion;
 
 struct AnimatedColoredVertexArrays {
     std::shared_ptr<Bone> skeleton;

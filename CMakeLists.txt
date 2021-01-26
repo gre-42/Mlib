@@ -22,7 +22,13 @@ set (CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 #     set(glfw3_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/glfw)
 # endif()
 
-find_package(glfw3)
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+    set (glfw3_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/glfw_vc2019/lib/glfw3dll.lib)
+    set (glfw3_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw_vc2019/include)
+    set (glfw3_FOUND true)
+else()
+    find_package(glfw3)
+endif()
 find_package(SDL2)
 # MlibRender contains glad_gl.cpp and glad_vulkan.cpp
 find_package(Vulkan)
@@ -42,13 +48,21 @@ endif()
 # Set ouptut pathes #
 #####################
 
+# https://stackoverflow.com/questions/33062728/cmake-link-shared-library-on-windows
+if(MSVC)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+endif()
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
-if (MINGW)
+if (MINGW OR MSVC)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 endif()
 set(CMAKE_DEBUG_POSTFIX _d)
 set(Mlib_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(MSVC)
+    add_compile_definitions(_USE_MATH_DEFINES)
+endif()
 
 ######################
 # Add subdirectories #

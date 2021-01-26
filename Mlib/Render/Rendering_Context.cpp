@@ -1,5 +1,6 @@
 #include "Rendering_Context.hpp"
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <ostream>
 
 using namespace Mlib;
 
@@ -20,10 +21,14 @@ RenderingContextGuard::RenderingContextGuard(
 
 RenderingContextGuard::~RenderingContextGuard() {
     if (RenderingContextStack::context_stack_.empty()) {
-        #pragma GCC push_options
-        #pragma GCC diagnostic ignored "-Wterminate"
+        #ifdef __GNU__
+            #pragma GCC push_options
+            #pragma GCC diagnostic ignored "-Wterminate"
+        #endif
         throw std::runtime_error("~RenderingContextGuard but stack is empty");
-        #pragma GCC pop_options
+        #ifdef __GNU__
+            #pragma GCC pop_options
+        #endif
     }
     RenderingContextStack::context_stack_.pop_back();
 }

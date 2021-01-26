@@ -7,7 +7,7 @@
 namespace Mlib {
 
 class Scene;
-struct SelectedCameras;
+class SelectedCameras;
 
 class StandardCameraLogic: public RenderLogic {
 public:

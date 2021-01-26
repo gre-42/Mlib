@@ -15,4 +15,8 @@ set_source_files_properties(Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Re
 #     target_link_libraries(MlibRender MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib glfw)
 # endif()
 
-target_link_libraries(MlibRender Mlib MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib glfw)
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+    target_link_libraries(MlibRender Mlib MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib ${glfw3_LIBRARY})
+else()
+    target_link_libraries(MlibRender Mlib MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib glfw)
+endif()

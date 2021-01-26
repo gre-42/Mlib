@@ -147,7 +147,7 @@ void PostProcessingLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("PostProcessingLogic::render");
-    if (frame_id.external_render_pass.pass != ExternalRenderPass::UNDEFINED) {
+    if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
         throw std::runtime_error("PostProcessingLogic did not receive undefined rendering");
     }
     if (!child_logic_.requires_postprocessing()) {
@@ -164,7 +164,7 @@ void PostProcessingLogic::render(
         fbs_.configure({.width = width, .height = height, .with_depth_texture = true, .nsamples_msaa = render_config.nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{fbs_};
-            RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
+            RenderedSceneDescriptor fid{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
             child_logic_.render(
                 width,
                 height,

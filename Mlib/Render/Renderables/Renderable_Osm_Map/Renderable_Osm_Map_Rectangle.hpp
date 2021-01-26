@@ -34,7 +34,7 @@ public:
         std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
         const std::string& b,
         const std::string& c,
-        const FixedArray<float, 3>& color = {1, 1, 1},
+        const FixedArray<float, 3>& color = {1.f, 1.f, 1.f},
         float uv0_x = 0,
         float uv1_x = 1,
         float uv0_y = 0,
@@ -45,7 +45,7 @@ public:
         bool with_b_height_binding = false,
         bool with_c_height_binding = false);
 
-    void draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color = {1, 1, 1});
+    void draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
 
     FixedArray<float, 2> p00_;
     FixedArray<float, 2> p01_;

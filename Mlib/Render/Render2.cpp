@@ -139,8 +139,8 @@ void Render2::operator () (
             scene_graph_config,
             render_results_,
             (render_results_ != nullptr) && (!render_results_->outputs.empty())
-                ? RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = ""}
-                : RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPass::UNDEFINED, ""}, .time_id = time_id, .light_node_name = ""});
+                ? RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = ""}
+                : RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = ""});
 
         if (render_results_ != nullptr && render_results_->output != nullptr) {
             VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
@@ -248,9 +248,9 @@ void Render2::render_depth_map(
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
     scene.add_root_node("light", new SceneNode);
     scene.get_node("light")->add_light(new Light{
-        .ambience = {0.5, 0.5, 0.5},
-        .diffusivity = {1, 1, 1},
-        .specularity = {1, 1, 1},
+        .ambience = {0.5f, 0.5f, 0.5f},
+        .diffusivity = {1.f, 1.f, 1.f},
+        .specularity = {1.f, 1.f, 1.f},
         .node_name = "1234",
         .only_black = false,
         .shadow = false});
@@ -277,9 +277,9 @@ void Render2::render_height_map(
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
     scene.add_root_node("light", new SceneNode);
     scene.get_node("light")->add_light(new Light{
-        .ambience = {0.5, 0.5, 0.5},
-        .diffusivity = {1, 1, 1},
-        .specularity = {1, 1, 1},
+        .ambience = {0.5f, 0.5f, 0.5f},
+        .diffusivity = {1.f, 1.f, 1.f},
+        .specularity = {1.f, 1.f, 1.f},
         .node_name = "1234",
         .only_black = false,
         .shadow = false});

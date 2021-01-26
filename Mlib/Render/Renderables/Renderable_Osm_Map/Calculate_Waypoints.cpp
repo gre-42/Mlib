@@ -61,7 +61,7 @@ void Mlib::calculate_waypoints(
             insert_edge_1_lane(e.first, e.second);
         }
         for (size_t i = 0; i < indices_1_lane.size(); ++i) {
-            if (!way_points.adjacency.column(i).insert({i, 0}).second) {
+            if (!way_points.adjacency.column(i).insert({i, 0.f}).second) {
                 throw std::runtime_error("Could not insert waypoint (2)");
             }
         }
@@ -76,7 +76,7 @@ void Mlib::calculate_waypoints(
             }
         }
         for (size_t i = 0; i < indices_2_lanes.size(); ++i) {
-            if (!way_points.adjacency.column(indices_1_lane.size() + i).insert({indices_1_lane.size() + i, 0}).second) {
+            if (!way_points.adjacency.column(indices_1_lane.size() + i).insert({indices_1_lane.size() + i, 0.f}).second) {
                 throw std::runtime_error("Could not insert waypoint (4)");
             }
         }
