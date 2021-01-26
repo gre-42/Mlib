@@ -187,7 +187,7 @@ void LoadScene::operator()(
         "\\s*street_edge_smoothness=([\\w+-.]+)\\r?\\n"
         "\\s*terrain_edge_smoothness=([\\w+-.]+)\\r?\\n"
         "\\s*driving_direction=(center|left|right)$");
-    static const std::regex obj_resource_reg(
+    static const DECLARE_REGEX(obj_resource_reg,
         "^\\s*obj_resource"
         "\\s+name=([\\w-. \\(\\)/+-]+)"
         "\\s+filename=([\\w-. \\(\\)/+-]+)"
@@ -203,15 +203,15 @@ void LoadScene::operator()(
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat)"
         "(\\s+no_werror)?$");
-    static const std::regex gen_triangle_rays_reg("^\\s*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
-    static const std::regex gen_ray_reg("^\\s*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex downsample_reg("^\\s*downsample name=([/\\w+-.]+) factor=(\\d+)$");
-    static const std::regex import_bone_weights_reg(
+    static const DECLARE_REGEX(gen_triangle_rays_reg, "^\\s*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
+    static const DECLARE_REGEX(gen_ray_reg, "^\\s*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(downsample_reg, "^\\s*downsample name=([/\\w+-.]+) factor=(\\d+)$");
+    static const DECLARE_REGEX(import_bone_weights_reg,
         "^\\s*import_bone_weights"
         "\\s+destination=([/\\w+-.]+)"
         "\\s+source=([/\\w+-.]+)"
         "\\s+max_distance=([\\w+-.]+)$");
-    static const std::regex square_resource_reg(
+    static const DECLARE_REGEX(square_resource_reg,
         "^\\s*square_resource\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
         "\\s*texture_filename=(#?[\\w-. \\(\\)/+-]+)\\r?\\n"
@@ -225,9 +225,9 @@ void LoadScene::operator()(
         "\\s*cull_faces=(0|1)\\r?\\n"
         "\\s*aggregate_mode=(off|once|sorted|instances_once|instances_sorted)\\r?\\n"
         "\\s*transformation_mode=(all|position|position_lookat)$");
-    static const std::regex blending_x_resource_reg("^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex binary_x_resource_reg("^\\s*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
-    static const std::regex node_instance_reg(
+    static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(binary_x_resource_reg, "^\\s*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
+    static const DECLARE_REGEX(node_instance_reg,
         "^\\s*node_instance"
         "\\s+parent=([\\w-.<>]+)"
         "\\s+name=([\\w+-.]+)"
@@ -235,15 +235,15 @@ void LoadScene::operator()(
         "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
         "(?:\\s+aggregate=(true|false))?$");
-    static const std::regex delete_root_node_reg(
+    static const DECLARE_REGEX(delete_root_node_reg,
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)");
-    static const std::regex renderable_instance_reg("^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
-    static const std::regex register_geographic_mapping_reg(
+    static const DECLARE_REGEX(renderable_instance_reg, "^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
+    static const DECLARE_REGEX(register_geographic_mapping_reg,
         "^\\s*register_geographic_mapping"
         "\\s+name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w-. \\(\\)/+-]+)");
-    static const std::regex rigid_cuboid_reg(
+    static const DECLARE_REGEX(rigid_cuboid_reg,
         "^\\s*rigid_cuboid"
         "\\s+node=([\\w+-.]+)"
         "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
@@ -254,23 +254,23 @@ void LoadScene::operator()(
         "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+collidable_mode=(terrain|small_static|small_moving)$");
-    static const std::regex gun_reg("^\\s*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex trigger_gun_ai_reg("^\\s*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
-    static const std::regex damageable_reg("^\\s*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
-    static const std::regex crash_reg("^\\s*crash node=([\\w+-.]+) damage=([\\w+-.]+)$");
-    static const std::regex relative_transformer_reg(
+    static const DECLARE_REGEX(gun_reg, "^\\s*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(trigger_gun_ai_reg, "^\\s*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
+    static const DECLARE_REGEX(damageable_reg, "^\\s*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
+    static const DECLARE_REGEX(crash_reg, "^\\s*crash node=([\\w+-.]+) damage=([\\w+-.]+)$");
+    static const DECLARE_REGEX(relative_transformer_reg,
         "^\\s*relative_transformer"
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
-    static const std::regex wheel_reg("^\\s*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
-    static const std::regex create_engine_reg(
+    static const DECLARE_REGEX(wheel_reg, "^\\s*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
+    static const DECLARE_REGEX(create_engine_reg,
         "^\\s*create_engine"
         "\\s+rigid_body=([\\w+-.]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+power=([\\w+-.]+)"
         "(?:\\s+HAND_BRAKE_pulled=(0|1))?$");
-    static const std::regex player_create_reg(
+    static const DECLARE_REGEX(player_create_reg,
         "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
         "\\s+team=([\\w+-.]+)"
@@ -278,19 +278,19 @@ void LoadScene::operator()(
         "\\s+unstuck_mode=(off|reverse|delete)"
         "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");
-    static const std::regex player_set_node_reg("^\\s*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
-    static const std::regex player_set_aiming_gun_reg("^\\s*player_set_aiming_gun player_name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
-    static const std::regex player_set_surface_power_reg("^\\s*player_set_surface_power player_name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
-    static const std::regex player_set_tire_angle_reg("^\\s*player_set_tire_angle player_name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
-    static const std::regex player_set_angular_velocity_reg("^\\s*player_set_angular_velocity player_name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
-    static const std::regex player_set_waypoint_reg("^\\s*player_set_waypoint player_name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
-    static const std::regex team_set_waypoint_reg("^\\s*team_set_waypoint team-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
-    static const std::regex camera_key_binding_reg("^\\s*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
-    static const std::regex abs_idle_binding_reg(
+    static const DECLARE_REGEX(player_set_node_reg, "^\\s*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
+    static const DECLARE_REGEX(player_set_aiming_gun_reg, "^\\s*player_set_aiming_gun player_name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_surface_power_reg, "^\\s*player_set_surface_power player_name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_tire_angle_reg, "^\\s*player_set_tire_angle player_name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_angular_velocity_reg, "^\\s*player_set_angular_velocity player_name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_waypoint_reg, "^\\s*player_set_waypoint player_name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
+    static const DECLARE_REGEX(team_set_waypoint_reg, "^\\s*team_set_waypoint team-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
+    static const DECLARE_REGEX(camera_key_binding_reg, "^\\s*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
+    static const DECLARE_REGEX(abs_idle_binding_reg,
         "^\\s*abs_idle_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex abs_key_binding_reg(
+    static const DECLARE_REGEX(abs_key_binding_reg,
         "^\\s*abs_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*key=([\\w+-.]+)"
@@ -306,7 +306,7 @@ void LoadScene::operator()(
         "\\s*tire_angle_velocities=([ \\w+-.]+)\\r?\\n"
         "\\s*tire_angles=([ \\w+-.]+))?"
         "(?:\\r?\\n\\s*tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
-    static const std::regex rel_key_binding_reg(
+    static const DECLARE_REGEX(rel_key_binding_reg,
         "^\\s*rel_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*key=([\\w+-.]+)"
@@ -315,15 +315,15 @@ void LoadScene::operator()(
         "\\s*joystick_digital_axis_sign=([\\w+-.]+)\\r?\\n"
         "\\s*angular_velocity_press=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*angular_velocity_repeat=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex gun_key_binding_reg(
+    static const DECLARE_REGEX(gun_key_binding_reg,
         "^\\s*gun_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*key=([\\w+-.]+)"
         "(?:\\r?\\n\\s*gamepad_button=([\\w+-.]*))?"
         "(?:\\r?\\n\\s*joystick_digital_axis=([\\w+-.]+)\\r?\\n"
         "\\s*joystick_digital_axis_sign=([\\w+-.]+))?$");
-    static const std::regex console_log_reg("^\\s*console_log node=([\\w+-.]+) format=(\\d+)$");
-    static const std::regex visual_global_log_reg(
+    static const DECLARE_REGEX(console_log_reg, "^\\s*console_log node=([\\w+-.]+) format=(\\d+)$");
+    static const DECLARE_REGEX(visual_global_log_reg,
         "^\\s*visual_global_log"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
@@ -331,7 +331,7 @@ void LoadScene::operator()(
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+nentries=([\\d+]+)"
         "\\s+severity=(info|critical)$");
-    static const std::regex visual_node_status_reg(
+    static const DECLARE_REGEX(visual_node_status_reg,
         "^\\s*visual_node_status"
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
@@ -339,7 +339,7 @@ void LoadScene::operator()(
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
-    static const std::regex visual_node_status_3rd_reg(
+    static const DECLARE_REGEX(visual_node_status_3rd_reg,
         "^\\s*visual_node_status_3rd"
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
@@ -347,27 +347,27 @@ void LoadScene::operator()(
         "\\s+offset=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
-    static const std::regex loading_reg(
+    static const DECLARE_REGEX(loading_reg,
         "^\\s*loading"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+text=(.*)$");
-    static const std::regex countdown_reg(
+    static const DECLARE_REGEX(countdown_reg,
         "^\\s*countdown"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+nseconds=([\\w+-.]+)$");
-    static const std::regex players_stats_reg(
+    static const DECLARE_REGEX(players_stats_reg,
         "^\\s*players_stats"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
-    static const std::regex create_scene_reg(
+    static const DECLARE_REGEX(create_scene_reg,
         "^\\s*create_scene"
         "\\s+name=([\\w+-.]+)"
         "\\s+z_order=([\\d-]+)"
@@ -382,7 +382,7 @@ void LoadScene::operator()(
         "\\s+with_skybox=(0|1)"
         "\\s+with_flying_logic=(0|1)"
         "\\s+clear_mode=(off|color|depth|color_and_depth)$");
-    static const std::regex scene_selector_reg(
+    static const DECLARE_REGEX(scene_selector_reg,
         "^\\s*scene_selector"
         "\\s+id=([\\w+-.]+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
@@ -390,13 +390,13 @@ void LoadScene::operator()(
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+scene_files=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
-    static const std::regex scene_to_texture_reg(
+    static const DECLARE_REGEX(scene_to_texture_reg,
         "^\\s*scene_to_texture"
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
-    static const std::regex fill_pixel_region_with_texture_reg(
+    static const DECLARE_REGEX(fill_pixel_region_with_texture_reg,
         "^\\s*fill_pixel_region_with_texture"
         "\\s+source_scene=([\\w+-.]+)"
         "\\s+texture_name=([\\w+-.]+)"
@@ -404,15 +404,15 @@ void LoadScene::operator()(
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
-    static const std::regex scene_to_pixel_region_reg(
+    static const DECLARE_REGEX(scene_to_pixel_region_reg,
         "^\\s*scene_to_pixel_region"
         "\\s+target_scene=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
-    static const std::regex clear_parameters_reg(
+    static const DECLARE_REGEX(clear_parameters_reg,
         "^\\s*clear_parameters$");
-    static const std::regex parameter_setter_reg(
+    static const DECLARE_REGEX(parameter_setter_reg,
         "^\\s*parameter_setter\\r?\\n"
         "\\s*id=([\\w+-.]+)\\r?\\n"
         "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
@@ -423,7 +423,7 @@ void LoadScene::operator()(
         "\\s*on_init=([\\w+-.:= ]*)\\r?\\n"
         "\\s*on_change=([\\w+-.:= ]*)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
-    static const std::regex set_renderable_style_reg(
+    static const DECLARE_REGEX(set_renderable_style_reg,
         "^\\s*set_renderable_style\\r?\\n"
         "\\s*selector=([\\w+-.]*)\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
@@ -434,28 +434,28 @@ void LoadScene::operator()(
         "\\s*animation_loop_begin=([\\w+-.]+)\\r?\\n"
         "\\s*animation_loop_end=([\\w+-.]+)\\r?\\n"
         "\\s*animation_loop_time=([\\w+-.]+)$");
-    static const std::regex add_bvh_resource_reg(
+    static const DECLARE_REGEX(add_bvh_resource_reg,
         "^\\s*add_bvh_resource"
         "\\s+name=([\\w+-.]+)\\r?\\n"
         "\\s+filename=([\\w-. \\(\\)/+-]+)"
         "\\s+smooth_radius=([\\w+-.]+)"
         "\\s+smooth_alpha=([\\w+-.]+)"
         "\\s+periodic=(0|1)$");
-    static const std::regex ui_background_reg(
+    static const DECLARE_REGEX(ui_background_reg,
         "^\\s*ui_background"
         "\\s+texture=([\\w-. \\(\\)/+-]+)"
         "\\s+update=(once|always)"
         "\\s+focus_mask=(menu|loading|countdown|scene)$");
-    static const std::regex hud_image_reg(
+    static const DECLARE_REGEX(hud_image_reg,
         "^\\s*hud_image"
         "\\s+node=([\\w+-.]+)"
         "\\s+filename=([\\w-. \\(\\)/+-]+)"
         "\\s+update=(once|always)"
         "\\s+center=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex perspective_camera_reg("^\\s*perspective_camera node=([\\w+-.]+) y_fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
-    static const std::regex ortho_camera_reg("^\\s*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
-    static const std::regex light_reg(
+    static const DECLARE_REGEX(perspective_camera_reg, "^\\s*perspective_camera node=([\\w+-.]+) y_fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
+    static const DECLARE_REGEX(ortho_camera_reg, "^\\s*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
+    static const DECLARE_REGEX(light_reg,
         "^\\s*light"
         "\\s+node=([\\w+-.]+)"
         "\\s+black_node=([\\w+-.]*)"
@@ -466,10 +466,10 @@ void LoadScene::operator()(
         "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+shadow=(0|1)$");
-    static const std::regex look_at_node_reg("^\\s*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
-    static const std::regex keep_offset_reg("^\\s*keep_offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex yaw_pitch_look_at_nodes_reg("^\\s*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
-    static const std::regex follow_node_reg(
+    static const DECLARE_REGEX(look_at_node_reg, "^\\s*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
+    static const DECLARE_REGEX(keep_offset_reg, "^\\s*keep_offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(yaw_pitch_look_at_nodes_reg, "^\\s*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
+    static const DECLARE_REGEX(follow_node_reg,
         "^\\s*follow_node\\r?\\n"
         "\\s*follower=([\\w+-.]+)\\r?\\n"
         "\\s*followed=([\\w+-.]+)\\r?\\n"
@@ -479,7 +479,7 @@ void LoadScene::operator()(
         "\\s*snappiness=([\\w+-.]+)\\r?\\n"
         "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
         "\\s*y_snappiness=([\\w+-.]+)$");
-    static const std::regex add_texture_descriptor_reg(
+    static const DECLARE_REGEX(add_texture_descriptor_reg,
         "^\\s*add_texture_descriptor\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
         "\\s*color=([\\w-. \\(\\)/+-]+)"
@@ -489,9 +489,9 @@ void LoadScene::operator()(
         "\\s*mixed=([\\w-. \\(\\)/+-]*)"
         "\\s*overlap_npixels=(\\d+)"
         "\\s*mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex record_track_reg("^\\s*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
-    static const std::regex playback_track_reg("^\\s*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
-    static const std::regex check_points_reg(
+    static const DECLARE_REGEX(record_track_reg, "^\\s*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(playback_track_reg, "^\\s*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(check_points_reg,
         "^\\s*check_points\\r?\\n"
         "\\s*moving_node=([\\w+-.]+)\\r?\\n"
         "\\s*resource=([\\w-. \\(\\)/+-]+)\\r?\\n"
@@ -502,34 +502,34 @@ void LoadScene::operator()(
         "\\s*radius=([\\w+-.]+)\\r?\\n"
         "\\s*height_changed=(0|1)\\r?\\n"
         "\\s*track_filename=([\\w-. \\(\\)/+-]+)$");
-    static const std::regex set_camera_cycle_reg("^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
-    static const std::regex set_camera_reg("^\\s*set_camera ([\\w+-.]+)$");
-    static const std::regex set_dirtmap_reg("^\\s*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
-    static const std::regex set_skybox_reg("^\\s*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
-    static const std::regex set_preferred_car_spawner_reg(
+    static const DECLARE_REGEX(set_camera_cycle_reg, "^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
+    static const DECLARE_REGEX(set_camera_reg, "^\\s*set_camera ([\\w+-.]+)$");
+    static const DECLARE_REGEX(set_dirtmap_reg, "^\\s*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
+    static const DECLARE_REGEX(set_skybox_reg, "^\\s*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(set_preferred_car_spawner_reg,
         "^\\s*set_preferred_car_spawner"
         "\\s+player=([\\w+-.]+)"
         "\\s+macro=([\\w.]+)"
         "\\s+parameters=([#: \\w+-.]*)$");
-    static const std::regex set_vip_reg("^\\s*set_vip player=([\\w+-.]+)$");
-    static const std::regex burn_in_reg("^\\s*burn_in seconds=([\\w+-.]+)$");
-    static const std::regex append_focus_reg(
+    static const DECLARE_REGEX(set_vip_reg, "^\\s*set_vip player=([\\w+-.]+)$");
+    static const DECLARE_REGEX(burn_in_reg, "^\\s*burn_in seconds=([\\w+-.]+)$");
+    static const DECLARE_REGEX(append_focus_reg,
         "^\\s*append_focus"
         "\\s+(menu|loading|countdown|scene)$");
-    static const std::regex wayside_resource_names_reg(
+    static const std::regex wayside_resource_names_reg{
         "(?:\\s*wayside_resource_names=\\r?\\n"
         "\\s*min_dist:([\\w+-.]+)\\r?\\n"
         "\\s*max_dist:([\\w+-.]+)\\r?\\n"
-        "([\\s,:\\w-. \\(\\)/+-]*)\\r?\\n|(.+))");
-    static const std::regex set_spawn_points_reg("^\\s*"
+        "([\\s,:\\w-. \\(\\)/+-]*)\\r?\\n|(.+))"};
+    static const DECLARE_REGEX(set_spawn_points_reg, "^\\s*"
         "\\s+set_spawn_points"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
-    static const std::regex set_way_points_reg("^\\s*"
+    static const DECLARE_REGEX(set_way_points_reg, "^\\s*"
         "set_way_points player=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
-    static const std::regex pause_on_lose_focus_reg(
+    static const DECLARE_REGEX(pause_on_lose_focus_reg,
         "^\\s*pause_on_lose_focus"
         "\\s+focus_mask=(menu|loading|countdown|scene)$");
 
@@ -539,9 +539,8 @@ void LoadScene::operator()(
         const MacroLineExecutor& macro_line_executor,
         const std::string& line) -> bool
     {
-        std::smatch match;
-        Mlib::smatch what;
-        if (std::regex_match(line, match, create_scene_reg)) {
+        Mlib::smatch match;
+        if (REGEX_MATCH(line, match, create_scene_reg)) {
             RenderingContextGuard rrg{
                 scene_node_resources,
                 match[1].str() + ".rendering_resources",
@@ -573,7 +572,7 @@ void LoadScene::operator()(
             }
             return true;
         }
-        if (std::regex_match(line, match, obj_resource_reg)) {
+        if (REGEX_MATCH(line, match, obj_resource_reg)) {
             LoadMeshConfig load_mesh_config{
                 .position = FixedArray<float, 3>{
                     safe_stof(match[3].str()),
@@ -611,7 +610,7 @@ void LoadScene::operator()(
             }
             return true;
         }
-        if (std::regex_match(line, match, gen_triangle_rays_reg)) {
+        if (REGEX_MATCH(line, match, gen_triangle_rays_reg)) {
             scene_node_resources.generate_triangle_rays(
                 match[1].str(),
                 safe_stoi(match[2].str()),
@@ -623,15 +622,15 @@ void LoadScene::operator()(
                 safe_stoi(match[6].str()));
             return true;
         }
-        if (REGEX_MATCH(line, what, osm_resource_reg)) {
+        if (REGEX_MATCH(line, match, osm_resource_reg)) {
             std::list<WaysideResourceNames> waysides;
             findall(
-                what[21].str(),
+                match[21].str(),
                 wayside_resource_names_reg,
-                [&waysides, &what](const std::smatch& m){
+                [&waysides, &match](const std::smatch& m){
                     if (!m[4].str().empty()) {
-                        std::cerr << ("Could not parse \"" + what[21].str() + "\", unknown element: \"" + m[4].str() + '"') << std::endl;
-                        throw std::runtime_error("Could not parse \"" + what[21].str() + "\", unknown element: \"" + m[4].str() + '"');
+                        std::cerr << ("Could not parse \"" + match[21].str() + "\", unknown element: \"" + m[4].str() + '"') << std::endl;
+                        throw std::runtime_error("Could not parse \"" + match[21].str() + "\", unknown element: \"" + m[4].str() + '"');
                     }
                     waysides.push_back(WaysideResourceNames{
                         .min_dist = safe_stof(m[1].str()),
@@ -639,73 +638,73 @@ void LoadScene::operator()(
                         .resource_names = string_to_vector(m[3].str())});
                     });
             scene_node_resources.add_resource(
-                what[1].str(),                                                   // name
+                match[1].str(),                                                   // name
                 std::make_shared<RenderableOsmMap>(
                     scene_node_resources,
-                    fpath(what[2].str()),                                        // filename
-                    fpath(what[3].str()),                                        // heightmap
-                    fpath(what[4].str()),                                        // terrain_texture
-                    fpath(what[5].str()),                                        // dirt_texture
-                    fpath(what[6].str()),                                        // street_crossing_texture
-                    fpath(what[7].str()),                                        // street_texture
-                    fpath(what[8].str()),                                        // path_crossing_texture
-                    fpath(what[9].str()),                                        // path_texture
-                    fpath(what[10].str()),                                       // curb_street_texture
-                    fpath(what[11].str()),                                       // curb_path_texture
-                    fpath(what[12].str()),                                       // curb2_street_texture
-                    fpath(what[13].str()),                                       // curb2_path_texture
-                    string_to_vector(what[14].str(), fpath),                     // facade_textures
-                    fpath(what[15].str()),                                       // ceiling_texture
-                    fpath(what[16].str()),                                       // barrier_texture
-                    blend_mode_from_string(what[17].str()),                      // barrier_blend_mode
-                    fpath(what[18].str()),                                       // roof_texture
-                    string_to_vector(what[19].str()),                            // tree_resource_names
-                    string_to_vector(what[20].str()),                            // grass_resource_names
+                    fpath(match[2].str()),                                        // filename
+                    fpath(match[3].str()),                                        // heightmap
+                    fpath(match[4].str()),                                        // terrain_texture
+                    fpath(match[5].str()),                                        // dirt_texture
+                    fpath(match[6].str()),                                        // street_crossing_texture
+                    fpath(match[7].str()),                                        // street_texture
+                    fpath(match[8].str()),                                        // path_crossing_texture
+                    fpath(match[9].str()),                                        // path_texture
+                    fpath(match[10].str()),                                       // curb_street_texture
+                    fpath(match[11].str()),                                       // curb_path_texture
+                    fpath(match[12].str()),                                       // curb2_street_texture
+                    fpath(match[13].str()),                                       // curb2_path_texture
+                    string_to_vector(match[14].str(), fpath),                     // facade_textures
+                    fpath(match[15].str()),                                       // ceiling_texture
+                    fpath(match[16].str()),                                       // barrier_texture
+                    blend_mode_from_string(match[17].str()),                      // barrier_blend_mode
+                    fpath(match[18].str()),                                       // roof_texture
+                    string_to_vector(match[19].str()),                            // tree_resource_names
+                    string_to_vector(match[20].str()),                            // grass_resource_names
                     waysides,                                                     // wayside_resource_names
-                    safe_stof(what[22].str()),                                   // default_street_width
-                    safe_stof(what[23].str()),                                   // roof_width
-                    safe_stof(what[24].str()),                                   // scale
-                    safe_stof(what[25].str()),                                   // uv_scale_terrain
-                    safe_stof(what[26].str()),                                   // uv_scale_street
-                    safe_stof(what[27].str()),                                   // uv_scale_facade
-                    safe_stof(what[28].str()),                                   // uv_scale_ceiling
-                    safe_stof(what[29].str()),                                   // uv_scale_barrier_wall
-                    safe_stob(what[30].str()),                                   // with_roofs
-                    safe_stob(what[31].str()),                                   // with_ceilings
-                    safe_stof(what[32].str()),                                   // building_bottom
-                    safe_stof(what[33].str()),                                   // default_building_top
-                    safe_stof(what[34].str()),                                   // default_barrier_top
-                    safe_stob(what[35].str()),                                   // remove_backfacing_triangles
-                    safe_stob(what[36].str()),                                   // with_tree_nodes
-                    safe_stof(what[37].str()),                                   // forest_outline_tree_distance
-                    safe_stof(what[38].str()),                                   // forest_outline_tree_inwards_distance
-                    safe_stof(what[39].str()),                                   // much_grass_distance
-                    safe_stof(what[40].str()),                                   // raceway_beacon_distance
-                    safe_stob(what[41].str()),                                   // with_terrain
-                    safe_stob(what[42].str()),                                   // with_buildings
-                    safe_stob(what[43].str()),                                   // only_raceways
-                    what[44].str(),                                              // highway_name_pattern
-                    string_to_set(what[45].str()),                               // excluded_highways
-                    string_to_set(what[46].str()),                               // path_tags
-                    string_to_vector(what[47].str(), safe_stof),                 // steiner_point_distances_road
-                    string_to_vector(what[48].str(), safe_stof),                 // steiner_point_distances_steiner
-                    safe_stof(what[49].str()),                                   // curb_alpha
-                    safe_stof(what[50].str()),                                   // curb2_alpha
-                    safe_stof(what[51].str()),                                   // curb_uv_x
-                    safe_stof(what[52].str()),                                   // curb2_uv_x
-                    safe_stof(what[53].str()),                                   // raise_streets_amount
-                    safe_stof(what[54].str()),                                   // extrude_curb_amount
-                    safe_stof(what[55].str()),                                   // extrude_street_amount
-                    string_to_vector(what[56].str()),                            // street_light_resource_names
-                    safe_stof(what[57].str()),                                   // max_wall_width
-                    safe_stob(what[58].str()),                                   // with_height_bindings
-                    safe_stof(what[59].str()),                                   // street_node_smoothness
-                    safe_stof(what[60].str()),                                   // street_edge_smoothness
-                    safe_stof(what[61].str()),                                   // terrain_edge_smoothness
-                    driving_direction_from_string(what[62].str())));             // driving_direction
+                    safe_stof(match[22].str()),                                   // default_street_width
+                    safe_stof(match[23].str()),                                   // roof_width
+                    safe_stof(match[24].str()),                                   // scale
+                    safe_stof(match[25].str()),                                   // uv_scale_terrain
+                    safe_stof(match[26].str()),                                   // uv_scale_street
+                    safe_stof(match[27].str()),                                   // uv_scale_facade
+                    safe_stof(match[28].str()),                                   // uv_scale_ceiling
+                    safe_stof(match[29].str()),                                   // uv_scale_barrier_wall
+                    safe_stob(match[30].str()),                                   // with_roofs
+                    safe_stob(match[31].str()),                                   // with_ceilings
+                    safe_stof(match[32].str()),                                   // building_bottom
+                    safe_stof(match[33].str()),                                   // default_building_top
+                    safe_stof(match[34].str()),                                   // default_barrier_top
+                    safe_stob(match[35].str()),                                   // remove_backfacing_triangles
+                    safe_stob(match[36].str()),                                   // with_tree_nodes
+                    safe_stof(match[37].str()),                                   // forest_outline_tree_distance
+                    safe_stof(match[38].str()),                                   // forest_outline_tree_inwards_distance
+                    safe_stof(match[39].str()),                                   // much_grass_distance
+                    safe_stof(match[40].str()),                                   // raceway_beacon_distance
+                    safe_stob(match[41].str()),                                   // with_terrain
+                    safe_stob(match[42].str()),                                   // with_buildings
+                    safe_stob(match[43].str()),                                   // only_raceways
+                    match[44].str(),                                              // highway_name_pattern
+                    string_to_set(match[45].str()),                               // excluded_highways
+                    string_to_set(match[46].str()),                               // path_tags
+                    string_to_vector(match[47].str(), safe_stof),                 // steiner_point_distances_road
+                    string_to_vector(match[48].str(), safe_stof),                 // steiner_point_distances_steiner
+                    safe_stof(match[49].str()),                                   // curb_alpha
+                    safe_stof(match[50].str()),                                   // curb2_alpha
+                    safe_stof(match[51].str()),                                   // curb_uv_x
+                    safe_stof(match[52].str()),                                   // curb2_uv_x
+                    safe_stof(match[53].str()),                                   // raise_streets_amount
+                    safe_stof(match[54].str()),                                   // extrude_curb_amount
+                    safe_stof(match[55].str()),                                   // extrude_street_amount
+                    string_to_vector(match[56].str()),                            // street_light_resource_names
+                    safe_stof(match[57].str()),                                   // max_wall_width
+                    safe_stob(match[58].str()),                                   // with_height_bindings
+                    safe_stof(match[59].str()),                                   // street_node_smoothness
+                    safe_stof(match[60].str()),                                   // street_edge_smoothness
+                    safe_stof(match[61].str()),                                   // terrain_edge_smoothness
+                    driving_direction_from_string(match[62].str())));             // driving_direction
             return true;
         }
-        if (std::regex_match(line, match, gen_ray_reg)) {
+        if (REGEX_MATCH(line, match, gen_ray_reg)) {
             scene_node_resources.generate_ray(
                 match[1].str(),
                 FixedArray<float, 3>{
@@ -718,20 +717,20 @@ void LoadScene::operator()(
                     safe_stof(match[7].str())});
             return true;
         }
-        if (std::regex_match(line, match, downsample_reg)) {
+        if (REGEX_MATCH(line, match, downsample_reg)) {
             scene_node_resources.downsample(
                 match[1].str(),
                 safe_stoz(match[2].str()));
             return true;
         }
-        if (std::regex_match(line, match, import_bone_weights_reg)) {
+        if (REGEX_MATCH(line, match, import_bone_weights_reg)) {
             scene_node_resources.import_bone_weights(
                 match[1].str(),
                 match[2].str(),
                 safe_stof(match[3].str()));
             return true;
         }
-        if (std::regex_match(line, match, square_resource_reg)) {
+        if (REGEX_MATCH(line, match, square_resource_reg)) {
             // 1: name
             // 2: texture_filename
             // 3, 4: min
@@ -768,7 +767,7 @@ void LoadScene::operator()(
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
             return true;
         }
-        if (std::regex_match(line, match, blending_x_resource_reg)) {
+        if (REGEX_MATCH(line, match, blending_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -776,7 +775,7 @@ void LoadScene::operator()(
                 fpath(match[2].str())));
             return true;
         }
-        if (std::regex_match(line, match, binary_x_resource_reg)) {
+        if (REGEX_MATCH(line, match, binary_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBinaryX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -790,11 +789,11 @@ void LoadScene::operator()(
                     safe_stof(match[9].str())}));
             return true;
         }
-        if (std::regex_match(line, match, append_focus_reg)) {
+        if (REGEX_MATCH(line, match, append_focus_reg)) {
             ui_focus.focuses.push_back(focus_from_string(match[1].str()));
             return true;
         }
-        if (std::regex_match(line, match, add_bvh_resource_reg)) {
+        if (REGEX_MATCH(line, match, add_bvh_resource_reg)) {
             BvhConfig cfg = blender_bvh_config;
             cfg.smooth_radius = safe_stoz(match[3].str());
             cfg.smooth_alpha = safe_stof(match[4].str());
@@ -805,7 +804,7 @@ void LoadScene::operator()(
                 cfg);
             return true;
         }
-        if (std::regex_match(line, match, add_texture_descriptor_reg)) {
+        if (REGEX_MATCH(line, match, add_texture_descriptor_reg)) {
             RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
                 match[1].str(),
                 TextureDescriptor{
@@ -851,7 +850,7 @@ void LoadScene::operator()(
         auto& mutex = cit->second->mutex_;
 
         Linker linker{physics_engine.advance_times_};
-        if (std::regex_match(line, match, node_instance_reg)) {
+        if (REGEX_MATCH(line, match, node_instance_reg)) {
             auto node = new SceneNode(&scene);
             node->set_position(FixedArray<float, 3>{
                 safe_stof(match[3].str()),
@@ -882,22 +881,22 @@ void LoadScene::operator()(
                 }
                 scene.register_node(match[2].str(), node);
             }
-        } else if (std::regex_match(line, match, delete_root_node_reg)) {
+        } else if (REGEX_MATCH(line, match, delete_root_node_reg)) {
             scene.delete_root_node(match[1].str());
-        } else if (std::regex_match(line, match, renderable_instance_reg)) {
+        } else if (REGEX_MATCH(line, match, renderable_instance_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.instantiate_renderable(
                 match[3].str(),
                 match[1].str(),
                 *node,
                 {.regex = std::regex{match[4].str()}});
-        } else if (std::regex_match(line, match, register_geographic_mapping_reg)) {
+        } else if (REGEX_MATCH(line, match, register_geographic_mapping_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.register_geographic_mapping(
                 match[3].str(),
                 match[1].str(),
                 *node);
-        } else if (std::regex_match(line, match, rigid_cuboid_reg)) {
+        } else if (REGEX_MATCH(line, match, rigid_cuboid_reg)) {
             std::shared_ptr<RigidBody> rb = rigid_cuboid(
                 physics_engine.rigid_bodies_,
                 safe_stof(match[4].str()),
@@ -931,7 +930,7 @@ void LoadScene::operator()(
                 hitbox,
                 tirelines,
                 collidable_mode_from_string(match[17].str()));
-        } else if (std::regex_match(line, match, gun_reg)) {
+        } else if (REGEX_MATCH(line, match, gun_reg)) {
             auto parent_rb_node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBody*>(parent_rb_node->get_absolute_movable());
             if (rb == nullptr) {
@@ -955,7 +954,7 @@ void LoadScene::operator()(
                     safe_stof(match[11].str()),     // bullet-size-y
                     safe_stof(match[12].str())});   // bullet-size-z
             linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
-        } else if (std::regex_match(line, match, trigger_gun_ai_reg)) {
+        } else if (REGEX_MATCH(line, match, trigger_gun_ai_reg)) {
             auto base_shooter_node = scene.get_node(match[1].str());
             auto rb_shooter = dynamic_cast<RigidBody*>(base_shooter_node->get_absolute_movable());
             if (rb_shooter == nullptr) {
@@ -980,7 +979,7 @@ void LoadScene::operator()(
                 physics_engine,
                 *gun);
             physics_engine.advance_times_.add_advance_time(trigger_gun_ai);
-        } else if (std::regex_match(line, match, damageable_reg)) {
+        } else if (REGEX_MATCH(line, match, damageable_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
@@ -996,7 +995,7 @@ void LoadScene::operator()(
             }
             rb->damageable_ = d.get();
             physics_engine.advance_times_.add_advance_time(d);
-        } else if (std::regex_match(line, match, crash_reg)) {
+        } else if (REGEX_MATCH(line, match, crash_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
@@ -1005,7 +1004,7 @@ void LoadScene::operator()(
                 *rb,
                 safe_stof(match[2].str()));  // damage
             rb->collision_observers_.push_back(d);
-        } else if (std::regex_match(line, match, relative_transformer_reg)) {
+        } else if (REGEX_MATCH(line, match, relative_transformer_reg)) {
             FixedArray<float, 3> v{
                 match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
                 match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
@@ -1017,7 +1016,7 @@ void LoadScene::operator()(
             std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(
                 physics_engine.advance_times_, v, w);
             linker.link_relative_movable(*scene.get_node(match[1].str()), rt);
-        } else if (std::regex_match(line, match, wheel_reg)) {
+        } else if (REGEX_MATCH(line, match, wheel_reg)) {
             std::string rigid_body = match[1].str();
             std::string node = match[2].str();
             FixedArray<float, 3> position{
@@ -1089,7 +1088,7 @@ void LoadScene::operator()(
                     throw std::runtime_error("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
                 }
             }
-        } else if (std::regex_match(line, match, create_engine_reg)) {
+        } else if (REGEX_MATCH(line, match, create_engine_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
@@ -1102,7 +1101,7 @@ void LoadScene::operator()(
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }
-        } else if (std::regex_match(line, match, player_create_reg)) {
+        } else if (REGEX_MATCH(line, match, player_create_reg)) {
             auto player = std::make_shared<Player>(
                 scene,
                 physics_engine.collision_query_,
@@ -1117,14 +1116,14 @@ void LoadScene::operator()(
             players.add_player(*player);
             physics_engine.advance_times_.add_advance_time(player);
             physics_engine.add_external_force_provider(player.get());
-        } else if (std::regex_match(line, match, player_set_node_reg)) {
+        } else if (REGEX_MATCH(line, match, player_set_node_reg)) {
             auto node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBody*>(node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Follower movable is not a rigid body");
             }
             players.get_player(match[1].str()).set_rigid_body(match[2].str(), *node, *rb);
-        } else if (std::regex_match(line, match, player_set_aiming_gun_reg)) {
+        } else if (REGEX_MATCH(line, match, player_set_aiming_gun_reg)) {
             auto ypln_node = scene.get_node(match[2].str());
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(ypln_node->get_relative_movable());
             if (ypln == nullptr) {
@@ -1139,43 +1138,43 @@ void LoadScene::operator()(
                 }
             }
             players.get_player(match[1].str()).set_ypln(*ypln, gun);
-        } else if (std::regex_match(line, match, player_set_surface_power_reg)) {
+        } else if (REGEX_MATCH(line, match, player_set_surface_power_reg)) {
             players.get_player(match[1].str()).set_surface_power(
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str()));
-        } else if (std::regex_match(line, match, player_set_tire_angle_reg)) {
+        } else if (REGEX_MATCH(line, match, player_set_tire_angle_reg)) {
             players.get_player(match[1].str()).set_tire_angle_y(
                 safe_stoi(match[2].str()),
                 float(M_PI) / 180.f * safe_stof(match[3].str()),
                 float(M_PI) / 180.f * safe_stof(match[4].str()));
-        } else if (std::regex_match(line, match, player_set_angular_velocity_reg)) {
+        } else if (REGEX_MATCH(line, match, player_set_angular_velocity_reg)) {
             players.get_player(match[1].str()).set_angular_velocity(
                 float(M_PI) / 180.f * safe_stof(match[2].str()),
                 float(M_PI) / 180.f * safe_stof(match[3].str()));
-        } else if (std::regex_match(line, match, player_set_waypoint_reg)) {
+        } else if (REGEX_MATCH(line, match, player_set_waypoint_reg)) {
             players.get_player(match[1].str()).set_waypoint({
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str())});
-        } else if (std::regex_match(line, match, team_set_waypoint_reg)) {
+        } else if (REGEX_MATCH(line, match, team_set_waypoint_reg)) {
             players.set_team_waypoint(
                 match[1].str(), {
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())});
-        } else if (std::regex_match(line, match, camera_key_binding_reg)) {
+        } else if (REGEX_MATCH(line, match, camera_key_binding_reg)) {
             key_bindings.add_camera_key_binding(CameraKeyBinding{
                 .base = {
                     .key = match[1].str(),
                     .gamepad_button = match[2].str(),
                     .joystick_axis = match[3].str(),
                     .joystick_axis_sign = safe_stof(match[4].str())}});
-        } else if (std::regex_match(line, match, abs_idle_binding_reg)) {
+        } else if (REGEX_MATCH(line, match, abs_idle_binding_reg)) {
             key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
                 .node = scene.get_node(match[1].str()),
                 .tires_z = {
                     match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
                     match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
                     match[4].str().empty() ? 1.f : safe_stof(match[4].str())}});
-        } else if (std::regex_match(line, match, abs_key_binding_reg)) {
+        } else if (REGEX_MATCH(line, match, abs_key_binding_reg)) {
             key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
                 .base_key = {
                     .key = match[2].str(),
@@ -1207,7 +1206,7 @@ void LoadScene::operator()(
                     match[20].str().empty() ? 0.f : safe_stof(match[20].str()),
                     match[21].str().empty() ? 0.f : safe_stof(match[21].str()),
                     match[22].str().empty() ? 0.f : safe_stof(match[22].str())}});
-        } else if (std::regex_match(line, match, rel_key_binding_reg)) {
+        } else if (REGEX_MATCH(line, match, rel_key_binding_reg)) {
             key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
                 .base_key = {
                     .key = match[2].str(),
@@ -1223,7 +1222,7 @@ void LoadScene::operator()(
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())}});
-        } else if (std::regex_match(line, match, gun_key_binding_reg)) {
+        } else if (REGEX_MATCH(line, match, gun_key_binding_reg)) {
             key_bindings.add_gun_key_binding(GunKeyBinding{
                 .base = {
                     .key = match[2].str(),
@@ -1231,7 +1230,7 @@ void LoadScene::operator()(
                     .joystick_axis = match[4].str(),
                     .joystick_axis_sign = match[5].str().empty() ? 0 : safe_stof(match[5].str())},
                 .node = scene.get_node(match[1].str())});
-        } else if (std::regex_match(line, match, console_log_reg)) {
+        } else if (REGEX_MATCH(line, match, console_log_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
             auto lo = dynamic_cast<StatusWriter*>(mv);
@@ -1241,7 +1240,7 @@ void LoadScene::operator()(
             unsigned int log_components = safe_stoi(match[2].str());
             auto logger = std::make_shared<MovableLogger>(*node, physics_engine.advance_times_, lo, log_components);
             physics_engine.advance_times_.add_advance_time(logger);
-        } else if (std::regex_match(line, match, visual_global_log_reg)) {
+        } else if (REGEX_MATCH(line, match, visual_global_log_reg)) {
             auto logger = std::make_shared<VisualGlobalLog>(
                 base_log,
                 fpath(match[1].str()),
@@ -1253,7 +1252,7 @@ void LoadScene::operator()(
                 safe_stoz(match[6].str()),
                 log_entry_severity_from_string(match[7].str()));
             render_logics.append(nullptr, logger);
-        } else if (std::regex_match(line, match, visual_node_status_reg)) {
+        } else if (REGEX_MATCH(line, match, visual_node_status_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
             auto lo = dynamic_cast<StatusWriter*>(mv);
@@ -1274,7 +1273,7 @@ void LoadScene::operator()(
                 safe_stof(match[7].str()));
             render_logics.append(node, logger);
             physics_engine.advance_times_.add_advance_time(logger);
-        } else if (std::regex_match(line, match, visual_node_status_3rd_reg)) {
+        } else if (REGEX_MATCH(line, match, visual_node_status_3rd_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
             auto lo = dynamic_cast<StatusWriter*>(mv);
@@ -1296,7 +1295,7 @@ void LoadScene::operator()(
                 safe_stof(match[7].str()));
             render_logics.append(node, logger);
             physics_engine.advance_times_.add_advance_time(logger);
-        } else if (std::regex_match(line, match, countdown_reg)) {
+        } else if (REGEX_MATCH(line, match, countdown_reg)) {
             auto countdown_logic = std::make_shared<CountDownLogic>(
                 fpath(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
@@ -1307,7 +1306,7 @@ void LoadScene::operator()(
                 ui_focus.focuses,
                 safe_stof(match[6].str()));       // nseconds
             render_logics.append(nullptr, countdown_logic);
-        } else if (std::regex_match(line, match, loading_reg)) {
+        } else if (REGEX_MATCH(line, match, loading_reg)) {
             auto loading_logic = std::make_shared<LoadingTextLogic>(
                 fpath(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
@@ -1317,7 +1316,7 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()),        // line_distance_pixels
                 match[6].str());                  // text
             render_logics.append(nullptr, loading_logic);
-        } else if (std::regex_match(line, match, players_stats_reg)) {
+        } else if (REGEX_MATCH(line, match, players_stats_reg)) {
             auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
                 players,
                 fpath(match[1].str()),            // ttf_filename
@@ -1327,7 +1326,7 @@ void LoadScene::operator()(
                 safe_stof(match[4].str()),        // font_height_pixels
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
-        } else if (std::regex_match(line, match, pause_on_lose_focus_reg)) {
+        } else if (REGEX_MATCH(line, match, pause_on_lose_focus_reg)) {
             Focus focus_mask = focus_from_string(match[1].str());
             Focuses& focuses = ui_focus.focuses;
             auto polf = std::make_shared<PauseOnLoseFocusLogic>(
@@ -1335,7 +1334,7 @@ void LoadScene::operator()(
                 focuses,
                 focus_mask);
             render_logics.append(nullptr, polf);
-        } else if (std::regex_match(line, match, scene_selector_reg)) {
+        } else if (REGEX_MATCH(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
             for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
                 scene_entries.push_back(SceneEntry{
@@ -1357,7 +1356,7 @@ void LoadScene::operator()(
                 button_press,
                 selection_ids[match[1].str()]);
             render_logics.append(nullptr, scene_selector_logic);
-        } else if (std::regex_match(line, match, scene_to_texture_reg)) {
+        } else if (REGEX_MATCH(line, match, scene_to_texture_reg)) {
             auto wit = renderable_scenes.find("primary_scene");
             if (wit == renderable_scenes.end()) {
                 throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
@@ -1372,7 +1371,7 @@ void LoadScene::operator()(
                 safe_stoi(match[4].str()),        // texture_height
                 focus_from_string(match[5].str()));
             wit->second->render_logics_.prepend(nullptr, scene_window_logic);
-        } else if (std::regex_match(line, match, fill_pixel_region_with_texture_reg)) {
+        } else if (REGEX_MATCH(line, match, fill_pixel_region_with_texture_reg)) {
             std::string source_scene = match[1].str();
             auto wit = renderable_scenes.find(source_scene);
             if (wit == renderable_scenes.end()) {
@@ -1393,7 +1392,7 @@ void LoadScene::operator()(
                     focus_from_string(match[8].str()));
             }
             render_logics.append(nullptr, scene_window_logic);
-        } else if (std::regex_match(line, match, scene_to_pixel_region_reg)) {
+        } else if (REGEX_MATCH(line, match, scene_to_pixel_region_reg)) {
             std::string target_scene = match[1].str();
             auto wit = renderable_scenes.find(target_scene);
             if (wit == renderable_scenes.end()) {
@@ -1410,9 +1409,9 @@ void LoadScene::operator()(
                     safe_stoi(match[5].str())},
                 focus_from_string(match[6].str()));
             wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
-        } else if (std::regex_match(line, match, clear_parameters_reg)) {
+        } else if (REGEX_MATCH(line, match, clear_parameters_reg)) {
             substitutions.clear();
-        } else if (std::regex_match(line, match, parameter_setter_reg)) {
+        } else if (REGEX_MATCH(line, match, parameter_setter_reg)) {
             std::string id = match[1].str();
             std::string ttf_filename = fpath(match[2].str());
             FixedArray<float, 2> position{
@@ -1455,13 +1454,13 @@ void LoadScene::operator()(
                 macro_line_executor(on_init, rsc);
             }
             render_logics.append(nullptr, parameter_setter_logic);
-        } else if (std::regex_match(line, match, ui_background_reg)) {
+        } else if (REGEX_MATCH(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 fpath(match[1].str()),
                 resource_update_cycle_from_string(match[2].str()),
                 focus_from_string(match[3].str()));
             render_logics.append(nullptr, bg);
-        } else if (std::regex_match(line, match, set_renderable_style_reg)) {
+        } else if (REGEX_MATCH(line, match, set_renderable_style_reg)) {
             auto node = scene.get_node(match[2].str());
             node->set_style(new Style{
                 .selector = std::regex{match[1].str()},
@@ -1482,7 +1481,7 @@ void LoadScene::operator()(
                     .loop_begin = safe_stof(match[13].str()),
                     .loop_end = safe_stof(match[14].str()),
                     .loop_time = safe_stof(match[15].str())}});
-        } else if (std::regex_match(line, match, hud_image_reg)) {
+        } else if (REGEX_MATCH(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
                 *node,
@@ -1497,14 +1496,14 @@ void LoadScene::operator()(
                     safe_stof(match[7].str())});
             render_logics.append(node, hud_image);
             physics_engine.advance_times_.add_advance_time(hud_image);
-        } else if (std::regex_match(line, match, perspective_camera_reg)) {
+        } else if (REGEX_MATCH(line, match, perspective_camera_reg)) {
             auto node = scene.get_node(match[1].str());
             node->set_camera(std::make_shared<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::PERSPECTIVE));
             node->get_camera()->set_y_fov(safe_stof(match[2].str()));
             node->get_camera()->set_near_plane(safe_stof(match[3].str()));
             node->get_camera()->set_far_plane(safe_stof(match[4].str()));
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[5].str()));
-        } else if (std::regex_match(line, match, ortho_camera_reg)) {
+        } else if (REGEX_MATCH(line, match, ortho_camera_reg)) {
             auto node = scene.get_node(match[1].str());
             node->set_camera(std::make_shared<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::ORTHO));
             node->get_camera()->set_near_plane(safe_stof(match[2].str()));
@@ -1514,7 +1513,7 @@ void LoadScene::operator()(
             node->get_camera()->set_bottom_plane(safe_stof(match[6].str()));
             node->get_camera()->set_top_plane(safe_stof(match[7].str()));
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[8].str()));
-        } else if (std::regex_match(line, match, light_reg)) {
+        } else if (REGEX_MATCH(line, match, light_reg)) {
             std::lock_guard lock_guard{mutex};
             std::string node_name = match[1].str();
             SceneNode* node = scene.get_node(node_name);
@@ -1540,7 +1539,7 @@ void LoadScene::operator()(
                 .node_name = node_name,
                 .only_black = !match[2].str().empty(),
                 .shadow = safe_stob(match[14].str())});
-        } else if (std::regex_match(line, match, look_at_node_reg)) {
+        } else if (REGEX_MATCH(line, match, look_at_node_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());
             auto follower = std::make_shared<LookAtMovable>(
@@ -1550,7 +1549,7 @@ void LoadScene::operator()(
                 followed_node,
                 followed_node->get_absolute_movable());
             linker.link_absolute_movable(*follower_node, follower);
-        } else if (std::regex_match(line, match, keep_offset_reg)) {
+        } else if (REGEX_MATCH(line, match, keep_offset_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());
             auto follower = std::make_shared<KeepOffsetMovable>(
@@ -1564,7 +1563,7 @@ void LoadScene::operator()(
                     safe_stof(match[4].str()),
                     safe_stof(match[5].str())});
             linker.link_absolute_movable(*follower_node, follower);
-        } else if (std::regex_match(line, match, yaw_pitch_look_at_nodes_reg)) {
+        } else if (REGEX_MATCH(line, match, yaw_pitch_look_at_nodes_reg)) {
             auto yaw_node = scene.get_node(match[1].str());
             auto pitch_node = scene.get_node(match[2].str());
             auto follower_node = scene.get_node(match[3].str());
@@ -1592,7 +1591,7 @@ void LoadScene::operator()(
                 scene_config.physics_engine_config);
             linker.link_relative_movable(*yaw_node, follower);
             linker.link_relative_movable(*pitch_node, follower->pitch_look_at_node());
-        } else if (std::regex_match(line, match, follow_node_reg)) {
+        } else if (REGEX_MATCH(line, match, follow_node_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());
             auto distance = safe_stof(match[3].str());
@@ -1615,7 +1614,7 @@ void LoadScene::operator()(
                 scene_config.physics_engine_config.dt);
             linker.link_absolute_movable(*follower_node, follower);
             follower->initialize(*follower_node);
-        } else if (std::regex_match(line, match, record_track_reg)) {
+        } else if (REGEX_MATCH(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
             auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());
             if (rb == nullptr) {
@@ -1627,7 +1626,7 @@ void LoadScene::operator()(
                 recorder_node,
                 &rb->rbi_,
                 ui_focus.focuses));
-        } else if (std::regex_match(line, match, playback_track_reg)) {
+        } else if (REGEX_MATCH(line, match, playback_track_reg)) {
             auto playback_node = scene.get_node(match[1].str());
             auto playback = std::make_shared<RigidBodyPlayback>(
                 fpath(match[3].str()),
@@ -1635,7 +1634,7 @@ void LoadScene::operator()(
                 ui_focus.focuses,
                 safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
-        } else if (std::regex_match(line, match, check_points_reg)) {
+        } else if (REGEX_MATCH(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
             physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
                 fpath(match[9].str()),                  // filename
@@ -1652,19 +1651,19 @@ void LoadScene::operator()(
                 scene_node_resources,
                 scene,
                 safe_stob(match[8].str())));            // enable_height_changed_mode
-        } else if (std::regex_match(line, match, set_camera_cycle_reg)) {
+        } else if (REGEX_MATCH(line, match, set_camera_cycle_reg)) {
             std::string cameras = match[2].str();
             auto& cycle = (match[1].str() == "near")
                 ? selected_cameras.camera_cycle_near
                 : selected_cameras.camera_cycle_far;
             cycle = string_to_vector(cameras);
-        } else if (std::regex_match(line, match, set_camera_reg)) {
+        } else if (REGEX_MATCH(line, match, set_camera_reg)) {
             selected_cameras.set_camera_node_name(match[1].str());
-        } else if (std::regex_match(line, match, set_dirtmap_reg)) {
+        } else if (REGEX_MATCH(line, match, set_dirtmap_reg)) {
             dirtmap_logic.set_filename(fpath(match[1].str()));
             secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[2].str()));
             secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
-        } else if (std::regex_match(line, match, set_skybox_reg)) {
+        } else if (REGEX_MATCH(line, match, set_skybox_reg)) {
             skybox_logic.set_filenames({
                 fpath(match[2].str()),
                 fpath(match[3].str()),
@@ -1673,7 +1672,7 @@ void LoadScene::operator()(
                 fpath(match[6].str()),
                 fpath(match[7].str())},
                 match[1].str());
-        } else if (std::regex_match(line, match, set_preferred_car_spawner_reg)) {
+        } else if (REGEX_MATCH(line, match, set_preferred_car_spawner_reg)) {
             std::string player = match[1].str();
             std::string macro = match[2].str();
             std::string parameters = match[3].str();
@@ -1696,25 +1695,25 @@ void LoadScene::operator()(
                         " HUMAN_NODE_ANGLE_Y:" << 180.f / float(M_PI) * std::atan2(z(0), z(2)) <<
                         " " << parameters <<
                         " -SUFFIX:_" << player <<
-                        " IF_WITH_PHYSICS:" << 
-                        " IF_RACING:#" << 
+                        " IF_WITH_PHYSICS:" <<
+                        " IF_RACING:#" <<
                         " IF_RALLY:" <<
                         " PLAYER_NAME:" << player;
                     macro_line_executor(sstr.str(), rsc);
                 }
             );
-        } else if (std::regex_match(line, match, set_vip_reg)) {
+        } else if (REGEX_MATCH(line, match, set_vip_reg)) {
             game_logic.set_vip(&players.get_player(match[1].str()));
-        } else if (std::regex_match(line, match, set_spawn_points_reg)) {
+        } else if (REGEX_MATCH(line, match, set_spawn_points_reg)) {
             SceneNode* node = scene.get_node(match[1].str());
             std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[2].str());
             game_logic.set_spawn_points(*node, spawn_points);
-        } else if (std::regex_match(line, match, set_way_points_reg)) {
+        } else if (REGEX_MATCH(line, match, set_way_points_reg)) {
             Player& player = players.get_player(match[1].str());
             SceneNode* node = scene.get_node(match[2].str());
             std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points = scene_node_resources.way_points(match[3].str());
             player.set_waypoints(*node, way_points);
-        } else if (std::regex_match(line, match, burn_in_reg)) {
+        } else if (REGEX_MATCH(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
         } else {
             return false;
