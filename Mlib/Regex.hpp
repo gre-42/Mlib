@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-static const std::string substitute_pattern = "(?:\\S+:\\S*)?(?:(?:\\r?\\n|\\s)+\\S+:\\S*)*";
+static const std::string substitute_pattern = "(?:\\S+:\\S*)?(?:\\s+\\S+:\\S*)*";
 
 class RegexSubstitutionCache {
 public:

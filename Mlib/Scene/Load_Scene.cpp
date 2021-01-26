@@ -123,7 +123,7 @@ void LoadScene::operator()(
 {
     std::ifstream ifs{script_filename};
     static const std::regex osm_resource_reg(
-        "^(?:\\r?\\n|\\s)*osm_resource\\r?\\n"
+        "^\\s*osm_resource\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
         "\\s*filename=([\\w-. \\(\\)/+-]+)\\r?\\n"
         "\\s*heightmap=(#?[\\w-. \\(\\)/+-]*)\\r?\\n"
@@ -187,7 +187,7 @@ void LoadScene::operator()(
         "\\s*terrain_edge_smoothness=([\\w+-.]+)\\r?\\n"
         "\\s*driving_direction=(center|left|right)$");
     static const std::regex obj_resource_reg(
-        "^(?:\\r?\\n|\\s)*obj_resource"
+        "^\\s*obj_resource"
         "\\s+name=([\\w-. \\(\\)/+-]+)"
         "\\s+filename=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
@@ -202,16 +202,16 @@ void LoadScene::operator()(
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat)"
         "(\\s+no_werror)?$");
-    static const std::regex gen_triangle_rays_reg("^(?:\\r?\\n|\\s)*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
-    static const std::regex gen_ray_reg("^(?:\\r?\\n|\\s)*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex downsample_reg("^(?:\\r?\\n|\\s)*downsample name=([/\\w+-.]+) factor=(\\d+)$");
+    static const std::regex gen_triangle_rays_reg("^\\s*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
+    static const std::regex gen_ray_reg("^\\s*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const std::regex downsample_reg("^\\s*downsample name=([/\\w+-.]+) factor=(\\d+)$");
     static const std::regex import_bone_weights_reg(
-        "^(?:\\r?\\n|\\s)*import_bone_weights"
+        "^\\s*import_bone_weights"
         "\\s+destination=([/\\w+-.]+)"
         "\\s+source=([/\\w+-.]+)"
         "\\s+max_distance=([\\w+-.]+)$");
     static const std::regex square_resource_reg(
-        "^(?:\\r?\\n|\\s)*square_resource\\r?\\n"
+        "^\\s*square_resource\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
         "\\s*texture_filename=(#?[\\w-. \\(\\)/+-]+)\\r?\\n"
         "\\s*min=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
@@ -224,10 +224,10 @@ void LoadScene::operator()(
         "\\s*cull_faces=(0|1)\\r?\\n"
         "\\s*aggregate_mode=(off|once|sorted|instances_once|instances_sorted)\\r?\\n"
         "\\s*transformation_mode=(all|position|position_lookat)$");
-    static const std::regex blending_x_resource_reg("^(?:\\r?\\n|\\s)*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex binary_x_resource_reg("^(?:\\r?\\n|\\s)*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
+    static const std::regex blending_x_resource_reg("^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
+    static const std::regex binary_x_resource_reg("^\\s*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
     static const std::regex node_instance_reg(
-        "^(?:\\r?\\n|\\s)*node_instance"
+        "^\\s*node_instance"
         "\\s+parent=([\\w-.<>]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
@@ -235,15 +235,15 @@ void LoadScene::operator()(
         "\\s+scale=([\\w+-.]+)"
         "(?:\\s+aggregate=(true|false))?$");
     static const std::regex delete_root_node_reg(
-        "^(?:\\r?\\n|\\s)*delete_root_node\\s+name=([\\w+-.]+)");
-    static const std::regex renderable_instance_reg("^(?:\\r?\\n|\\s)*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
+        "^\\s*delete_root_node\\s+name=([\\w+-.]+)");
+    static const std::regex renderable_instance_reg("^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
     static const std::regex register_geographic_mapping_reg(
-        "^(?:\\r?\\n|\\s)*register_geographic_mapping"
+        "^\\s*register_geographic_mapping"
         "\\s+name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w-. \\(\\)/+-]+)");
     static const std::regex rigid_cuboid_reg(
-        "^(?:\\r?\\n|\\s)*rigid_cuboid"
+        "^\\s*rigid_cuboid"
         "\\s+node=([\\w+-.]+)"
         "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
         "(?:\\s+tirelines=([\\w-. \\(\\)/+-]+))?"
@@ -253,44 +253,44 @@ void LoadScene::operator()(
         "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+collidable_mode=(terrain|small_static|small_moving)$");
-    static const std::regex gun_reg("^(?:\\r?\\n|\\s)*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex trigger_gun_ai_reg("^(?:\\r?\\n|\\s)*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
-    static const std::regex damageable_reg("^(?:\\r?\\n|\\s)*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
-    static const std::regex crash_reg("^(?:\\r?\\n|\\s)*crash node=([\\w+-.]+) damage=([\\w+-.]+)$");
+    static const std::regex gun_reg("^\\s*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const std::regex trigger_gun_ai_reg("^\\s*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
+    static const std::regex damageable_reg("^\\s*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
+    static const std::regex crash_reg("^\\s*crash node=([\\w+-.]+) damage=([\\w+-.]+)$");
     static const std::regex relative_transformer_reg(
-        "^(?:\\r?\\n|\\s)*relative_transformer"
+        "^\\s*relative_transformer"
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
-    static const std::regex wheel_reg("^(?:\\r?\\n|\\s)*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
+    static const std::regex wheel_reg("^\\s*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
     static const std::regex create_engine_reg(
-        "^(?:\\r?\\n|\\s)*create_engine"
+        "^\\s*create_engine"
         "\\s+rigid_body=([\\w+-.]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+power=([\\w+-.]+)"
         "(?:\\s+HAND_BRAKE_pulled=(0|1))?$");
     static const std::regex player_create_reg(
-        "^(?:\\r?\\n|\\s)*player_create"
+        "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
         "\\s+team=([\\w+-.]+)"
         "\\s+game_mode=(ramming|racing|bystander)"
         "\\s+unstuck_mode=(off|reverse|delete)"
         "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");
-    static const std::regex player_set_node_reg("^(?:\\r?\\n|\\s)*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
-    static const std::regex player_set_aiming_gun_reg("^(?:\\r?\\n|\\s)*player_set_aiming_gun player_name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
-    static const std::regex player_set_surface_power_reg("^(?:\\r?\\n|\\s)*player_set_surface_power player_name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
-    static const std::regex player_set_tire_angle_reg("^(?:\\r?\\n|\\s)*player_set_tire_angle player_name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
-    static const std::regex player_set_angular_velocity_reg("^(?:\\r?\\n|\\s)*player_set_angular_velocity player_name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
-    static const std::regex player_set_waypoint_reg("^(?:\\r?\\n|\\s)*player_set_waypoint player_name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
-    static const std::regex team_set_waypoint_reg("^(?:\\r?\\n|\\s)*team_set_waypoint team-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
-    static const std::regex camera_key_binding_reg("^(?:\\r?\\n|\\s)*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
+    static const std::regex player_set_node_reg("^\\s*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
+    static const std::regex player_set_aiming_gun_reg("^\\s*player_set_aiming_gun player_name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
+    static const std::regex player_set_surface_power_reg("^\\s*player_set_surface_power player_name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
+    static const std::regex player_set_tire_angle_reg("^\\s*player_set_tire_angle player_name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
+    static const std::regex player_set_angular_velocity_reg("^\\s*player_set_angular_velocity player_name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
+    static const std::regex player_set_waypoint_reg("^\\s*player_set_waypoint player_name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
+    static const std::regex team_set_waypoint_reg("^\\s*team_set_waypoint team-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
+    static const std::regex camera_key_binding_reg("^\\s*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
     static const std::regex abs_idle_binding_reg(
-        "^(?:\\r?\\n|\\s)*abs_idle_binding\\r?\\n"
+        "^\\s*abs_idle_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex abs_key_binding_reg(
-        "^(?:\\r?\\n|\\s)*abs_key_binding\\r?\\n"
+        "^\\s*abs_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*key=([\\w+-.]+)"
         "(?:\\r?\\n\\s*gamepad_button=([\\w+-.]+))?"
@@ -306,7 +306,7 @@ void LoadScene::operator()(
         "\\s*tire_angles=([ \\w+-.]+))?"
         "(?:\\r?\\n\\s*tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
     static const std::regex rel_key_binding_reg(
-        "^(?:\\r?\\n|\\s)*rel_key_binding\\r?\\n"
+        "^\\s*rel_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*key=([\\w+-.]+)"
         "(?:\\r?\\n\\s*gamepad_button=([\\w+-.]*))?"
@@ -315,15 +315,15 @@ void LoadScene::operator()(
         "\\s*angular_velocity_press=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*angular_velocity_repeat=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const std::regex gun_key_binding_reg(
-        "^(?:\\r?\\n|\\s)*gun_key_binding\\r?\\n"
+        "^\\s*gun_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*key=([\\w+-.]+)"
         "(?:\\r?\\n\\s*gamepad_button=([\\w+-.]*))?"
         "(?:\\r?\\n\\s*joystick_digital_axis=([\\w+-.]+)\\r?\\n"
         "\\s*joystick_digital_axis_sign=([\\w+-.]+))?$");
-    static const std::regex console_log_reg("^(?:\\r?\\n|\\s)*console_log node=([\\w+-.]+) format=(\\d+)$");
+    static const std::regex console_log_reg("^\\s*console_log node=([\\w+-.]+) format=(\\d+)$");
     static const std::regex visual_global_log_reg(
-        "^(?:\\r?\\n|\\s)*visual_global_log"
+        "^\\s*visual_global_log"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
@@ -331,7 +331,7 @@ void LoadScene::operator()(
         "\\s+nentries=([\\d+]+)"
         "\\s+severity=(info|critical)$");
     static const std::regex visual_node_status_reg(
-        "^(?:\\r?\\n|\\s)*visual_node_status"
+        "^\\s*visual_node_status"
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
@@ -339,7 +339,7 @@ void LoadScene::operator()(
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
     static const std::regex visual_node_status_3rd_reg(
-        "^(?:\\r?\\n|\\s)*visual_node_status_3rd"
+        "^\\s*visual_node_status_3rd"
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
@@ -347,27 +347,27 @@ void LoadScene::operator()(
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
     static const std::regex loading_reg(
-        "^(?:\\r?\\n|\\s)*loading"
+        "^\\s*loading"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+text=(.*)$");
     static const std::regex countdown_reg(
-        "^(?:\\r?\\n|\\s)*countdown"
+        "^\\s*countdown"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+nseconds=([\\w+-.]+)$");
     static const std::regex players_stats_reg(
-        "^(?:\\r?\\n|\\s)*players_stats"
+        "^\\s*players_stats"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
     static const std::regex create_scene_reg(
-        "^(?:\\r?\\n|\\s)*create_scene"
+        "^\\s*create_scene"
         "\\s+name=([\\w+-.]+)"
         "\\s+z_order=([\\d-]+)"
         "\\s+fly=(0|1)"
@@ -382,7 +382,7 @@ void LoadScene::operator()(
         "\\s+with_flying_logic=(0|1)"
         "\\s+clear_mode=(off|color|depth|color_and_depth)$");
     static const std::regex scene_selector_reg(
-        "^(?:\\r?\\n|\\s)*scene_selector"
+        "^\\s*scene_selector"
         "\\s+id=([\\w+-.]+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
@@ -390,13 +390,13 @@ void LoadScene::operator()(
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+scene_files=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     static const std::regex scene_to_texture_reg(
-        "^(?:\\r?\\n|\\s)*scene_to_texture"
+        "^\\s*scene_to_texture"
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
     static const std::regex fill_pixel_region_with_texture_reg(
-        "^(?:\\r?\\n|\\s)*fill_pixel_region_with_texture"
+        "^\\s*fill_pixel_region_with_texture"
         "\\s+source_scene=([\\w+-.]+)"
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
@@ -404,15 +404,15 @@ void LoadScene::operator()(
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
     static const std::regex scene_to_pixel_region_reg(
-        "^(?:\\r?\\n|\\s)*scene_to_pixel_region"
+        "^\\s*scene_to_pixel_region"
         "\\s+target_scene=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
     static const std::regex clear_parameters_reg(
-        "^(?:\\r?\\n|\\s)*clear_parameters$");
+        "^\\s*clear_parameters$");
     static const std::regex parameter_setter_reg(
-        "^(?:\\r?\\n|\\s)*parameter_setter\\r?\\n"
+        "^\\s*parameter_setter\\r?\\n"
         "\\s*id=([\\w+-.]+)\\r?\\n"
         "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
         "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
@@ -423,7 +423,7 @@ void LoadScene::operator()(
         "\\s*on_change=([\\w+-.:= ]*)\\r?\\n"
         "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     static const std::regex set_renderable_style_reg(
-        "^(?:\\r?\\n|\\s)*set_renderable_style\\r?\\n"
+        "^\\s*set_renderable_style\\r?\\n"
         "\\s*selector=([\\w+-.]*)\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
         "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
@@ -434,28 +434,28 @@ void LoadScene::operator()(
         "\\s*animation_loop_end=([\\w+-.]+)\\r?\\n"
         "\\s*animation_loop_time=([\\w+-.]+)$");
     static const std::regex add_bvh_resource_reg(
-        "^(?:\\r?\\n|\\s)*add_bvh_resource"
+        "^\\s*add_bvh_resource"
         "\\s+name=([\\w+-.]+)\\r?\\n"
         "\\s+filename=([\\w-. \\(\\)/+-]+)"
         "\\s+smooth_radius=([\\w+-.]+)"
         "\\s+smooth_alpha=([\\w+-.]+)"
         "\\s+periodic=(0|1)$");
     static const std::regex ui_background_reg(
-        "^(?:\\r?\\n|\\s)*ui_background"
+        "^\\s*ui_background"
         "\\s+texture=([\\w-. \\(\\)/+-]+)"
         "\\s+update=(once|always)"
         "\\s+focus_mask=(menu|loading|countdown|scene)$");
     static const std::regex hud_image_reg(
-        "^(?:\\r?\\n|\\s)*hud_image"
+        "^\\s*hud_image"
         "\\s+node=([\\w+-.]+)"
         "\\s+filename=([\\w-. \\(\\)/+-]+)"
         "\\s+update=(once|always)"
         "\\s+center=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex perspective_camera_reg("^(?:\\r?\\n|\\s)*perspective_camera node=([\\w+-.]+) y_fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
-    static const std::regex ortho_camera_reg("^(?:\\r?\\n|\\s)*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
+    static const std::regex perspective_camera_reg("^\\s*perspective_camera node=([\\w+-.]+) y_fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
+    static const std::regex ortho_camera_reg("^\\s*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     static const std::regex light_reg(
-        "^(?:\\r?\\n|\\s)*light"
+        "^\\s*light"
         "\\s+node=([\\w+-.]+)"
         "\\s+black_node=([\\w+-.]*)"
         "\\s+update=(once|always)"
@@ -465,11 +465,11 @@ void LoadScene::operator()(
         "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+shadow=(0|1)$");
-    static const std::regex look_at_node_reg("^(?:\\r?\\n|\\s)*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
-    static const std::regex keep_offset_reg("^(?:\\r?\\n|\\s)*keep_offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex yaw_pitch_look_at_nodes_reg("^(?:\\r?\\n|\\s)*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
+    static const std::regex look_at_node_reg("^\\s*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
+    static const std::regex keep_offset_reg("^\\s*keep_offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const std::regex yaw_pitch_look_at_nodes_reg("^\\s*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
     static const std::regex follow_node_reg(
-        "^(?:\\r?\\n|\\s)*follow_node\\r?\\n"
+        "^\\s*follow_node\\r?\\n"
         "\\s*follower=([\\w+-.]+)\\r?\\n"
         "\\s*followed=([\\w+-.]+)\\r?\\n"
         "\\s*distance=([\\w+-.]+)\\r?\\n"
@@ -479,7 +479,7 @@ void LoadScene::operator()(
         "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
         "\\s*y_snappiness=([\\w+-.]+)$");
     static const std::regex add_texture_descriptor_reg(
-        "^(?:\\r?\\n|\\s)*add_texture_descriptor\\r?\\n"
+        "^\\s*add_texture_descriptor\\r?\\n"
         "\\s*name=([\\w+-.]+)\\r?\\n"
         "\\s*color=([\\w-. \\(\\)/+-]+)"
         "\\s*normal=([\\w-. \\(\\)/+-]*)"
@@ -488,10 +488,10 @@ void LoadScene::operator()(
         "\\s*mixed=([\\w-. \\(\\)/+-]*)"
         "\\s*overlap_npixels=(\\d+)"
         "\\s*mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const std::regex record_track_reg("^(?:\\r?\\n|\\s)*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
-    static const std::regex playback_track_reg("^(?:\\r?\\n|\\s)*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
+    static const std::regex record_track_reg("^\\s*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
+    static const std::regex playback_track_reg("^\\s*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     static const std::regex check_points_reg(
-        "^(?:\\r?\\n|\\s)*check_points\\r?\\n"
+        "^\\s*check_points\\r?\\n"
         "\\s*moving_node=([\\w+-.]+)\\r?\\n"
         "\\s*resource=([\\w-. \\(\\)/+-]+)\\r?\\n"
         "\\s*player=([\\w+-.]+)\\r?\\n"
@@ -501,35 +501,35 @@ void LoadScene::operator()(
         "\\s*radius=([\\w+-.]+)\\r?\\n"
         "\\s*height_changed=(0|1)\\r?\\n"
         "\\s*track_filename=([\\w-. \\(\\)/+-]+)$");
-    static const std::regex set_camera_cycle_reg("^(?:\\r?\\n|\\s)*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
-    static const std::regex set_camera_reg("^(?:\\r?\\n|\\s)*set_camera ([\\w+-.]+)$");
-    static const std::regex set_dirtmap_reg("^(?:\\r?\\n|\\s)*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
-    static const std::regex set_skybox_reg("^(?:\\r?\\n|\\s)*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
+    static const std::regex set_camera_cycle_reg("^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
+    static const std::regex set_camera_reg("^\\s*set_camera ([\\w+-.]+)$");
+    static const std::regex set_dirtmap_reg("^\\s*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
+    static const std::regex set_skybox_reg("^\\s*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
     static const std::regex set_preferred_car_spawner_reg(
-        "^(?:\\r?\\n|\\s)*set_preferred_car_spawner"
+        "^\\s*set_preferred_car_spawner"
         "\\s+player=([\\w+-.]+)"
         "\\s+macro=([\\w.]+)"
         "\\s+parameters=([#: \\w+-.]*)$");
-    static const std::regex set_vip_reg("^(?:\\r?\\n|\\s)*set_vip player=([\\w+-.]+)$");
-    static const std::regex burn_in_reg("^(?:\\r?\\n|\\s)*burn_in seconds=([\\w+-.]+)$");
+    static const std::regex set_vip_reg("^\\s*set_vip player=([\\w+-.]+)$");
+    static const std::regex burn_in_reg("^\\s*burn_in seconds=([\\w+-.]+)$");
     static const std::regex append_focus_reg(
-        "^(?:\\r?\\n|\\s)*append_focus"
+        "^\\s*append_focus"
         "\\s+(menu|loading|countdown|scene)$");
     static const std::regex wayside_resource_names_reg(
         "(?:\\s*wayside_resource_names=\\r?\\n"
         "\\s*min_dist:([\\w+-.]+)\\r?\\n"
         "\\s*max_dist:([\\w+-.]+)\\r?\\n"
         "([\\s,:\\w-. \\(\\)/+-]*)\\r?\\n|(.+))");
-    static const std::regex set_spawn_points_reg("^(?:\\r?\\n|\\s)*"
+    static const std::regex set_spawn_points_reg("^\\s*"
         "\\s+set_spawn_points"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
-    static const std::regex set_way_points_reg("^(?:\\r?\\n|\\s)*"
+    static const std::regex set_way_points_reg("^\\s*"
         "set_way_points player=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
     static const std::regex pause_on_lose_focus_reg(
-        "^(?:\\r?\\n|\\s)*pause_on_lose_focus"
+        "^\\s*pause_on_lose_focus"
         "\\s+focus_mask=(menu|loading|countdown|scene)$");
 
     MacroLineExecutor::UserFunction user_function = [&](

@@ -100,7 +100,7 @@ std::list<std::pair<std::string, std::string>> Mlib::find_all_name_values(
     const std::string& value_pattern)
 {
     std::list<std::pair<std::string, std::string>> res;
-    findall(str, std::regex{"(?:\\r?\\n|\\s)*name=(" + name_pattern + ") value=(" + value_pattern + ")|(.+)"}, [&](const std::smatch& m){
+    findall(str, std::regex{"\\s*name=(" + name_pattern + ") value=(" + value_pattern + ")|(.+)"}, [&](const std::smatch& m){
         if (!m[3].str().empty()) {
             throw std::runtime_error("Could not parse \"" + str + "\", unknown element: \"" + m[3].str() + '"');
         }

@@ -33,9 +33,9 @@ void MacroLineExecutor::operator () (
     const RegexSubstitutionCache& rsc) const
 {
     std::string subst_line = substitutions_.substitute(line, rsc);
-    static const std::regex comment_reg("^(?:\\r?\\n|\\s)*#[\\S\\s]*$");
-    static const std::regex macro_playback_reg("^(?:\\r?\\n|\\s)*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?(" + substitute_pattern + ")$");
-    static const std::regex include_reg("^(?:\\r?\\n|\\s)*include ([\\w-. \\(\\)/+-]+)$");
+    static const std::regex comment_reg("^\\s*#[\\S\\s]*$");
+    static const std::regex macro_playback_reg("^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?(" + substitute_pattern + ")$");
+    static const std::regex include_reg("^\\s*include ([\\w-. \\(\\)/+-]+)$");
     static const std::regex empty_reg("^[\\s]*$");
 
     auto fpath = [&](const fs::path& f) -> std::string {
