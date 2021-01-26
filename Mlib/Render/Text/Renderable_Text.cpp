@@ -37,27 +37,28 @@ RenderableText::RenderableText(
     const std::string& ttf_filename,
     float font_height_pixels,
     bool flip_y)
-: flip_y_{flip_y}
+: flip_y_{flip_y},
+  cdata_(96)  // ASCII 32..126 is 95 glyphs
 {
     {
         std::unique_ptr<FILE, decltype(&fclose)> f{fopen(ttf_filename.c_str(), "rb"), fclose};
         if (f == nullptr) {
             throw std::runtime_error("Could not open font file \"" + ttf_filename + '"');
         }
-        unsigned char temp_bitmap[512 * 512];
+        std::vector<unsigned char> temp_bitmap(512 * 512);
         {
             {
-                unsigned char ttf_buffer[1 << 20];
-                size_t nread = fread(ttf_buffer, 1, 1 << 20, f.get());
+                std::vector<unsigned char> ttf_buffer(1 << 20);
+                size_t nread = fread(ttf_buffer.data(), 1, 1 << 20, f.get());
                 if (nread == 0) {
                     throw std::runtime_error("Could not read from font file");
                 }
-                stbtt_BakeFontBitmap(ttf_buffer, 0, font_height_pixels, temp_bitmap, 512, 512, 32, 96, cdata_); // no guarantee this fits!
+                stbtt_BakeFontBitmap(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), 512, 512, 32, 96, cdata_.data()); // no guarantee this fits!
                 // can free ttf_buffer at this point
             }
             CHK(glGenTextures(1, &ftex_));
             CHK(glBindTexture(GL_TEXTURE_2D, ftex_));
-            CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap));
+            CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
             // can free temp_bitmap at this point
         }
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -115,7 +116,7 @@ void RenderableText::render(
     for (char c : text) {
         if (c >= 32 && c < 128) {
             stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(cdata_, 512, 512, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+            stbtt_GetBakedQuad(cdata_.data(), 512, 512, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
             // update VBO for each character
             float vertices[6][4] = {
                 { q.x0, screen_height - q.y0, q.s0, q.t0 },

@@ -8,6 +8,7 @@
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <stb_image/stb_truetype.h>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
@@ -31,7 +32,7 @@ public:
 private:
     TextRenderProgram rp_;
     VertexArray va_;
-    stbtt_bakedchar cdata_[96]; // ASCII 32..126 is 95 glyphs
+    std::vector<stbtt_bakedchar> cdata_;
     GLuint ftex_;
     bool flip_y_;
 };
