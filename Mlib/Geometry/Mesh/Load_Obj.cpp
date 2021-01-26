@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/String.hpp>
 #include <filesystem>
 #include <regex>
@@ -44,28 +45,28 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
 
     std::ifstream ifs{filename};
 
-    static const std::regex vertex_reg("^v +(\\S+) (\\S+) (\\S+)(?: (\\S+) (\\S+) (\\S+) (\\S+))?$");
-    static const std::regex vertex_normal_reg("^vn +(\\S+) (\\S+) (\\S+)$");
-    static const std::regex line_reg("^l +"
+    static const DECLARE_REGEX(vertex_reg, "^v +(\\S+) (\\S+) (\\S+)(?: (\\S+) (\\S+) (\\S+) (\\S+))?$");
+    static const DECLARE_REGEX(vertex_normal_reg, "^vn +(\\S+) (\\S+) (\\S+)$");
+    static const DECLARE_REGEX(line_reg, "^l +"
                               "(\\d+) "
                               "(\\d+) *$");
-    static const std::regex face3_reg("^f +"
+    static const DECLARE_REGEX(face3_reg, "^f +"
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? *$");
-    static const std::regex face4_reg("^f +"
+    static const DECLARE_REGEX(face4_reg, "^f +"
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? "
                               "(\\d+)(?:/(\\d*)(?:/(\\d+))?)? *$");
-    static const std::regex vertex_uv_texture_reg("^vt +(\\S+) (\\S+)$");
-    static const std::regex vertex_uvw_texture_reg("^vt +(\\S+) (\\S+) (\\S+)$");
-    static const std::regex comment_reg("^#.*$");
-    static const std::regex mtllib_reg("^mtllib (.+)$");
-    static const std::regex usemtl_reg("^usemtl (.+)$");
-    static const std::regex object_reg("^o .*$");
-    static const std::regex group_reg("^g(?: (.*))?$");
-    static const std::regex smooth_shading_reg("^s .*$");
+    static const DECLARE_REGEX(vertex_uv_texture_reg, "^vt +(\\S+) (\\S+)$");
+    static const DECLARE_REGEX(vertex_uvw_texture_reg, "^vt +(\\S+) (\\S+) (\\S+)$");
+    static const DECLARE_REGEX(comment_reg, "^#.*$");
+    static const DECLARE_REGEX(mtllib_reg, "^mtllib (.+)$");
+    static const DECLARE_REGEX(usemtl_reg, "^usemtl (.+)$");
+    static const DECLARE_REGEX(object_reg, "^o .*$");
+    static const DECLARE_REGEX(group_reg, "^g(?: (.*))?$");
+    static const DECLARE_REGEX(smooth_shading_reg, "^s .*$");
 
     ObjMaterial current_mtl;
 
@@ -78,8 +79,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             if (line.length() == 0) {
                 continue;
             }
-            std::smatch match;
-            if (std::regex_match(line, match, vertex_reg)) {
+            Mlib::smatch match;
+            if (REGEX_MATCH(line, match, vertex_reg)) {
                 float a = match[7].str().empty() ? 1 : safe_stof(match[7].str());
                 if (a != 1) {
                     throw std::runtime_error("vertex a != 1");
@@ -93,29 +94,29 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                         match[4].str().empty() ? 1 : safe_stof(match[4].str()),
                         match[5].str().empty() ? 1 : safe_stof(match[5].str()),
                         match[6].str().empty() ? 1 : safe_stof(match[6].str())}});
-            } else if (std::regex_match(line, match, vertex_uv_texture_reg)) {
+            } else if (REGEX_MATCH(line, match, vertex_uv_texture_reg)) {
                 FixedArray<float, 2> n{
                     safe_stof(match[1].str()),
                     safe_stof(match[2].str())};
                 obj_uvs.push_back(n);
-            } else if (std::regex_match(line, match, vertex_uvw_texture_reg)) {
+            } else if (REGEX_MATCH(line, match, vertex_uvw_texture_reg)) {
                 FixedArray<float, 2> n{
                     safe_stof(match[1].str()),
                     safe_stof(match[2].str())};
                 // assert_true(safe_stof(match[3].str()) == 0);
                 obj_uvs.push_back(n);
-            } else if (std::regex_match(line, match, vertex_normal_reg)) {
+            } else if (REGEX_MATCH(line, match, vertex_normal_reg)) {
                 FixedArray<float, 3> n{
                     safe_stof(match[1].str()),
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())};
                 obj_normals.push_back(n);
-            } else if (std::regex_match(line, match, line_reg)) {
+            } else if (REGEX_MATCH(line, match, line_reg)) {
                 // FixedArray<size_t, 3> vertex_ids{
                 //     safe_stoz(match[1].str()),
                 //     safe_stoz(match[2].str())};
                 // do nothing
-            } else if (std::regex_match(line, match, face3_reg)) {
+            } else if (REGEX_MATCH(line, match, face3_reg)) {
                 FixedArray<size_t, 3> vertex_ids{
                     safe_stoz(match[1].str()),
                     safe_stoz(match[4].str()),
@@ -163,7 +164,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0.f, 0.f},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1.f, 0.f},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{0.f, 1.f});
-            } else if (std::regex_match(line, match, face4_reg)) {
+            } else if (REGEX_MATCH(line, match, face4_reg)) {
                 FixedArray<size_t, 4> vertex_ids{
                     safe_stoz(match[1].str()),
                     safe_stoz(match[4].str()),
@@ -222,20 +223,20 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1.f, 0.f},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{1.f, 1.f},
                     (uv_ids(3) != SIZE_MAX) ? obj_uvs.at(uv_ids(3) - 1) : FixedArray<float, 2>{0.f, 1.f});
-            } else if (std::regex_match(line, match, comment_reg)) {
+            } else if (REGEX_MATCH(line, match, comment_reg)) {
                 // do nothing
-            } else if (std::regex_match(line, match, object_reg)) {
+            } else if (REGEX_MATCH(line, match, object_reg)) {
                 // do nothing
-            } else if (std::regex_match(line, match, group_reg)) {
+            } else if (REGEX_MATCH(line, match, group_reg)) {
                 if (!tl.triangles_.empty()) {
                     result.push_back(tl.triangle_array());
                     tl.triangles_.clear();
                 }
                 tl.name_ = match[1].str();
-            } else if (std::regex_match(line, match, mtllib_reg)) {
+            } else if (REGEX_MATCH(line, match, mtllib_reg)) {
                 std::string p = fs::path(filename).parent_path().string();
                 mtllib = load_mtllib(p == "" ? match[1].str() : p + "/" + match[1].str(), cfg.werror);
-            } else if (std::regex_match(line, match, usemtl_reg)) {
+            } else if (REGEX_MATCH(line, match, usemtl_reg)) {
                 current_mtl = mtllib.at(match[1].str());
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
@@ -260,7 +261,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 tl.material_.diffusivity = current_mtl.diffusivity;
                 tl.material_.specularity = current_mtl.specularity;
                 tl.material_.compute_color_mode();
-            } else if (std::regex_match(line, match, smooth_shading_reg)) {
+            } else if (REGEX_MATCH(line, match, smooth_shading_reg)) {
                 // do nothing
             } else {
                 if (cfg.werror) {
