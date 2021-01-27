@@ -276,6 +276,9 @@ int main(int argc, char** argv) {
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;
         return 1;
+    } catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
     }
     if (!TimeGuard::is_empty()) {
         TimeGuard::write_svg("/tmp/events.svg");
