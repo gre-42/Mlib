@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Regex_Select.hpp>
 #include <functional>
 #include <list>
 #include <map>
@@ -11,11 +12,11 @@ static const std::string substitute_pattern = "(?:\\S+:\\S*)?(?:\\s+\\S+:\\S*)*"
 
 class RegexSubstitutionCache {
 public:
-    const std::regex& get0(const std::string& key) const;
-    const std::regex& get1(const std::string& key) const;
+    const Mlib::regex& get0(const std::string& key) const;
+    const Mlib::regex& get1(const std::string& key) const;
 private:
-    mutable std::map<std::string, std::regex> c0_;
-    mutable std::map<std::string, std::regex> c1_;
+    mutable std::map<std::string, Mlib::regex> c0_;
+    mutable std::map<std::string, Mlib::regex> c1_;
 };
 
 std::string substitute(
@@ -25,7 +26,7 @@ std::string substitute(
 
 std::string merge_replacements(const std::initializer_list<const std::string>& replacements);
 
-void findall(
+void find_all(
     const std::string& str,
     const std::regex& pattern,
     const std::function<void(const std::smatch&)>& f);
