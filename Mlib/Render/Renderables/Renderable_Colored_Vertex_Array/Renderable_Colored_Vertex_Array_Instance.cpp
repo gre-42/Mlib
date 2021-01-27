@@ -395,7 +395,10 @@ void RenderableColoredVertexArrayInstance::render_cva(
     const SubstitutionInfo& si = rcva_->get_vertex_array(cva);
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
         (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) &&
-        cva->material.draw_distance_noperations > 0)
+        cva->material.draw_distance_noperations > 0 &&
+        !(
+            !std::isnan(render_config.draw_distance_add) &&
+            render_config.draw_distance_add == INFINITY))
     {
         if (!rcva_->triangles_res_->bone_indices.empty()) {
             throw std::runtime_error("Draw distance incompatible with animations");
