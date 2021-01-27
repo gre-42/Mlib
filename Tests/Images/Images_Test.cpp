@@ -294,8 +294,12 @@ void test_local_polynomial_regression() {
     std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN, 4.f, false);}, 2) << std::endl;
 }
 
+#ifdef _MSC_VER
+#pragma float_control(except, on)
+#endif
+
 int main(int argc, char **argv) {
-    #ifndef __MINGW32__
+    #ifdef __linux__
     feenableexcept(FE_INVALID);
     #endif
 

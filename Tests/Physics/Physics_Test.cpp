@@ -264,8 +264,12 @@ void test_magic_formula() {
     }
 }
 
-int main(int argc, const char** argv) {
-    #ifndef __MINGW32__
+#ifdef _MSC_VER
+#pragma float_control(except, on)
+#endif
+
+int main(int argc, char** argv) {
+    #ifdef __linux__
     feenableexcept(FE_INVALID);
     #endif
 

@@ -68,7 +68,8 @@ Array<TData> intensity_jacobian(
     Array<TData> result{space_shape.appended(6)};
     RigidMotionSampler hs{ki, Cv::k_external(kep), im_r_depth};
     #pragma omp parallel for
-    for (size_t r = 0; r < im_r_di.shape(1); ++r) {
+    for (int ri = 0; ri < (int)im_r_di.shape(1); ++ri) {
+        size_t r = (size_t)ri;
         for (size_t c = 0; c < im_r_di.shape(2); ++c) {
             if (std::isnan(im_r_depth(r, c))) {
                 result[r][c] = NAN;

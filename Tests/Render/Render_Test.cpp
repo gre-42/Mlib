@@ -51,7 +51,7 @@ void test_render() {
             "primary_rendering_resources",
             0};
         Array<float> output;
-        RenderResults render_results{output: &output};
+        RenderResults render_results{.output = &output};
         size_t num_renderings = SIZE_MAX;
         Render2{num_renderings, &render_results, RenderConfig{}}.render_depth_map(
             img.to_float_rgb(),
@@ -65,8 +65,12 @@ void test_render() {
     }
 }
 
+#ifdef _MSC_VER
+#pragma float_control(except, on)
+#endif
+
 int main(int argc, char **argv) {
-    #ifndef __MINGW32__
+    #ifdef __linux__
     feenableexcept(FE_INVALID);
     #endif
 

@@ -76,9 +76,9 @@ Bush generate_bush(size_t nplanes, unsigned int seed) {
         FixedArray<float, 3, 4> tf = dot2d(r, face);
         for (size_t v = 0; v < 4; ++v) {
             result.vertices.push_back(Vertex{
-                position: {tf(0, v), tf(1, v), tf(2, v)},
-                normal: dot1d(r, FixedArray<float, 3>{0, 0, 1}),
-                uv: {(face(0, v) + 1.f) * 0.5f, (face(1, v) + 1.f) * 0.5f}});
+                .position = {tf(0, v), tf(1, v), tf(2, v)},
+                .normal = dot1d(r, FixedArray<float, 3>{0, 0, 1}),
+                .uv = {(face(0, v) + 1.f) * 0.5f, (face(1, v) + 1.f) * 0.5f}});
         }
         result.faces.push_back({
             i * 4 + 0,

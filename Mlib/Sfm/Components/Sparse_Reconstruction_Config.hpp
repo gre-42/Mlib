@@ -30,27 +30,27 @@ struct ReconstructionConfig {
     bool interpolate_initial_cameras = true;
     bool append_with_bundle_adjustment = true;
     GlobalBundleConfig gb {
-        numerical_jacobian_x: false,
-        numerical_jacobian_k: false
+        .numerical_jacobian_x = false,
+        .numerical_jacobian_k = false
     };
     GlobalMarginalizationConfig gm {
-        bias_enabled: true,
-        nbundle_cameras: 10,
-        marginalization_target: MarginalizationTarget::POINTS
+        .bias_enabled = true,
+        .nbundle_cameras = 10,
+        .marginalization_target = MarginalizationTarget::POINTS
     };
     RansacOptions<float> ro_initial {
-        nelems_small: 20,
-        ncalls: 10,
-        inlier_distance_thresh: squared(10.f),
-        inlier_count_thresh: 10,
-        seed: 1
+        .nelems_small = 20,
+        .ncalls = 10,
+        .inlier_distance_thresh = squared(10.f),
+        .inlier_count_thresh = 10,
+        .seed = 1
     };
     RansacOptions<float> ro_append {
-        nelems_small: 10,
-        ncalls: 10,
-        inlier_distance_thresh: 1.f,
-        inlier_count_thresh: 10,
-        seed: 1
+        .nelems_small = 10,
+        .ncalls = 10,
+        .inlier_distance_thresh = 1.f,
+        .inlier_count_thresh = 10,
+        .seed = 1
     };
 };
 

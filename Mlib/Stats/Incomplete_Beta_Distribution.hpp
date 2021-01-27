@@ -33,7 +33,9 @@
 
 template <class TData>
 TData incbeta(TData a, TData b, TData x) {
-    if (x < 0.0 || x > 1.0) return 1.0/0.0;
+    if (x < 0.0 || x > 1.0) {
+        throw std::runtime_error("Invalid input for incbeta");
+    }
 
     /*The continued fraction converges nicely for x < (a+1)/(a+b+2)*/
     if (x > (a+1.0)/(a+b+2.0)) {
@@ -77,5 +79,5 @@ TData incbeta(TData a, TData b, TData x) {
         }
     }
 
-    return 1.0/0.0; /*Needed more loops, did not converge.*/
+    throw std::runtime_error("incbeta did not converge"); /*Needed more loops, did not converge.*/
 }

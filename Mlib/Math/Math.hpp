@@ -2,14 +2,9 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Rvalue_Address.hpp>
+#include <Mlib/Template.hpp>
 #include <random>
 #include <sstream>
-
-#ifdef _MSC_VER
-    #define TEMPLATE ->
-#else
-    #define TEMPLATE ->template
-#endif
 
 //#define MM_DEBG(x) std::cerr << x << std::endl;
 //#define MM_DEB2(x) std::cerr << "  " << x << std::endl;
@@ -24,6 +19,22 @@ public:
         std::runtime_error(what)
     {}
 };
+
+inline bool scalar_isnan(float s) {
+    return std::isnan(s);
+}
+
+inline bool scalar_isnan(double s) {
+    return std::isnan(s);
+}
+
+inline bool scalar_isnan(size_t s) {
+    return false;
+}
+
+inline bool scalar_isnan(bool s) {
+    return false;
+}
 
 template <class TData>
 void svd(
@@ -1231,7 +1242,7 @@ bool isclose(const std::complex<TData>& a, const std::complex<TData>& b, typenam
 
 
 template <class TData>
-void assert_isclose(const TData& a, const TData& b, typename FloatType<TData>::value_type atol = 1e-6) {
+void assert_isclose(const TData& a, const TData& b, typename FloatType<TData>::value_type atol = (typename FloatType<TData>::value_type)1e-6) {
     if (!isclose(a, b, atol)) {
         std::stringstream sstr;
         sstr << "Numbers not close (atol=" << atol << "): " <<
@@ -1276,7 +1287,7 @@ void assert_allequal(const Array<TData>& a, const Array<TData>& b) {
 
 template <class TData>
 void assert_isequal(const TData& a, const TData& b) {
-    if (!(a == b) && !(std::isnan(a) && std::isnan(b))) {
+    if (!(a == b) && !(scalar_isnan(a) && scalar_isnan(b))) {
         throw std::runtime_error(std::to_string(a) + " does not equal " + std::to_string(b));
     }
 }

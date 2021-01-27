@@ -31,7 +31,7 @@ using namespace Mlib::Sfm::Dm;
 
 
 static float xsum(const Array<float>& v) {
-    auto m = !isnan(v);
+    auto m = !Mlib::isnan(v);
     auto n = count_nonzero(m);
     if (n == 0) {
         throw std::runtime_error("n == 0");
@@ -186,7 +186,8 @@ Array<float> Mlib::Sfm::Dm::C(
     assert(all(a.shape() == dsi.shape().erased_first()));
     Array<float> res{a.shape()};
     #pragma omp parallel for
-    for (size_t r = 0; r < dsi.shape(1); ++r) {
+    for (int ri = 0; ri < (int)dsi.shape(1); ++ri) {
+        size_t r = (size_t)ri;
         for (size_t c = 0; c < dsi.shape(2); ++c) {
             if ((a(r, c) >= 0) &&
                 (a(r, c) < dsi.shape(0)))
@@ -358,7 +359,8 @@ Array<float> Mlib::Sfm::Dm::exhaustive_search(
     float sqrt_lambda_2_theta = std::sqrt(lambda * 2 * theta);
     Array<float> a{d.shape()};
     #pragma omp parallel for
-    for (size_t r = 0; r < dsi.shape(1); ++r) {
+    for (int ri = 0; ri < (int)dsi.shape(1); ++ri) {
+        size_t r = (size_t)ri;
         for (size_t c = 0; c < dsi.shape(2); ++c) {
             float best_h_f = NAN;
             if (!std::isnan(d(r, c)) &&

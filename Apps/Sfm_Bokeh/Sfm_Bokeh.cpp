@@ -239,11 +239,11 @@ void compute_z(const ParsedArgs& args) {
         intrinsic_matrix,
         0,
         RansacOptions<float> {
-            nelems_small: 20,
-            ncalls: 10,
-            inlier_distance_thresh: squared(100.f),
-            inlier_count_thresh: 10,
-            seed: 1
+            .nelems_small = 20,
+            .ncalls = 10,
+            .inlier_distance_thresh = squared(100.f),
+            .inlier_count_thresh = 10,
+            .seed = 1
         }};
 
     if (ptr.ptr == nullptr) {

@@ -624,7 +624,7 @@ void LoadScene::operator()(
         }
         if (REGEX_MATCH(line, match, osm_resource_reg)) {
             std::list<WaysideResourceNames> waysides;
-            findall(
+            find_all(
                 match[21].str(),
                 wayside_resource_names_reg,
                 [&waysides, &match](const std::smatch& m){

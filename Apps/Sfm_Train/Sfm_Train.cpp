@@ -51,8 +51,12 @@ static void run_reconstruction_pipeline(
     process_folder_with_pipeline(cache_dir, source_dir + "/1-video/ppm", load_cameras ? &camera_dir : nullptr, *pipeline, std::cout, nimages, ncameras);
 }
 
+#ifdef _MSC_VER
+#pragma float_control(except, on)
+#endif
+
 int main(int argc, char **argv) {
-    #ifndef __MINGW32__
+    #ifdef __linux__
     feenableexcept(FE_INVALID);
     #endif
 
@@ -81,8 +85,8 @@ int main(int argc, char **argv) {
             args.has_named_value("--nimages") ? safe_stoz(args.named_value("--nimages")) : SIZE_MAX,
             args.has_named_value("--ncameras") ? safe_stoz(args.named_value("--ncameras")) : SIZE_MAX,
             TemplatePatchPipelineConfig{
-                enable_dtam: !args.has_named("--no-dtam"),
-                track_using_dtam: !args.has_named("--no-dtam-tracking")});
+                .enable_dtam = !args.has_named("--no-dtam"),
+                .track_using_dtam = !args.has_named("--no-dtam-tracking")});
         return 0;
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;

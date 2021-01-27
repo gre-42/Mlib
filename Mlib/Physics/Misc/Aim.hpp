@@ -10,7 +10,7 @@ struct Aim {
         float velocity,
         float gravity,
         float eps,
-        float niterations);
+        size_t niterations);
 
     float angle0;
     float angle;

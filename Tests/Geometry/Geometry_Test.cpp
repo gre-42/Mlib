@@ -196,14 +196,14 @@ void test_bvh_performance() {
             svg.finish();
         }
         bvh.print(std::cout, BvhPrintingOptions{
-            level: false,
-            aabb: false});
+            .level = false,
+            .aabb = false});
         if (false) {
             FixedArray<float, 3> center{0.012, 0.023, 0.045};
             bvh.insert({{0.01, 0.02, 0.03}, center}, 4321);
             bvh.print(std::cout, BvhPrintingOptions{
-                level: false,
-                aabb: false});
+                .level = false,
+                .aabb = false});
             bvh.visit({center, 0.01}, [](int data){
                 std::cout << data << std::endl;
             });
@@ -264,8 +264,11 @@ void test_distance_point_triangle() {
 }
 
 int main(int argc, const char** argv) {
-    #ifndef __MINGW32__
+    #ifdef __linux__
     feenableexcept(FE_INVALID);
+    #endif
+    #ifdef _MSC_VER
+    #pragma float_control(except, on)
     #endif
 
     test_cross();

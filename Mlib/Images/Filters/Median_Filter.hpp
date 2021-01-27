@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Stats/Robust.hpp>
+#include <algorithm>
 
 namespace Mlib {
 
@@ -13,7 +14,7 @@ Array<TData> median_filter_2d(
 {
     assert(im.ndim() == 2);
     assert(minelements > 0);
-    TData values[(2 * window_size + 1) * (2 * window_size + 1)];
+    std::vector<TData> values((2 * window_size + 1) * (2 * window_size + 1));
     Array<TData> result = full(im.shape(), boundary_value);
     if (any(im.shape() < window_size)) {
         return result;

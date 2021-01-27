@@ -25,7 +25,7 @@ Aim::Aim(
     float velocity,
     float gravity,
     float eps,
-    float niterations)
+    size_t niterations)
 {
     // Maxima code
     // t(a) := (x - cos(a) * bullet_start_offset) / (cos(a) * velocity);
@@ -50,7 +50,7 @@ Aim::Aim(
             -(sin(a)*gravity*squared(x-cos(a)*bullet_start_offset))/(cubed(cos(a))*squared(velocity))-(sin(a)*bullet_start_offset*gravity*(x-cos(a)*bullet_start_offset))/(squared(cos(a)*velocity))+(squared(sin(a))*(x-cos(a)*bullet_start_offset))/squared(cos(a))+x+(squared(sin(a))*bullet_start_offset)/cos(a);
     };
     angle = NAN;
-    for (float a = angle0; a < M_PI / 2; a += 0.2) {
+    for (float a = angle0; a < float(M_PI / 2); a += 0.2) {
         if (f(a) > 0) {
             angle = newton_1d(f, df, a, eps, niterations, false);
             break;

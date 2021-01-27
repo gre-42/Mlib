@@ -121,7 +121,7 @@ void assert_allequal(const FixedArray<TData, tshape0, tshape...>& a, const Fixed
 
 template <class TData>
 void assert_allequal(const FixedArray<TData>& a, const FixedArray<TData>& b) {
-    if (!(a() == b()) && !(std::isnan(a()) && std::isnan(b()))) {
+    if (!(a() == b()) && !(scalar_isnan(a()) && scalar_isnan(b()))) {
         throw std::runtime_error("Numbers not identical: " + std::to_string(a()) + ", " + std::to_string(b()));
     }
 }

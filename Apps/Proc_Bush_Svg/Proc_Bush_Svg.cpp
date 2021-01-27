@@ -27,11 +27,11 @@ void generate_bush(
     float border_y = 100 + twig_height / 2;
     for (size_t i = 0; i < ntwigs; ++i) {
         SvgTransform t{ostr, SvgTransformationParameters<float>{
-            angle: float((dist(rng) - 0.5) * 45),
-            rotation_x: float(twig_width / 2),
-            rotation_y: float(twig_height / 2),
-            translation_x: border_x + float(dist(rng) * (width - 2 * border_x) - twig_width / 2),
-            translation_y: border_y + float(dist(rng) * (height- 2 * border_y) - twig_height / 2)}};
+            .angle = float((dist(rng) - 0.5) * 45),
+            .rotation_x = float(twig_width / 2),
+            .rotation_y = float(twig_height / 2),
+            .translation_x = border_x + float(dist(rng) * (width - 2 * border_x) - twig_width / 2),
+            .translation_y = border_y + float(dist(rng) * (height- 2 * border_y) - twig_height / 2)}};
         svg.draw_image(twig_filename, twig_width, twig_height);
         t.finish();
     }

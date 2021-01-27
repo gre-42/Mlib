@@ -65,7 +65,8 @@ void InverseDepthCostVolume::increment(
         FixedArray<size_t, 2> space_shape_f{space_shape_};
         HomographySampler<float> hs{homog_i};
         #pragma omp parallel for
-        for (size_t r = 0; r < im0_rgb.shape(1); ++r) {
+        for (int ri = 0; ri < (int)im0_rgb.shape(1); ++ri) {
+            size_t r = (size_t)ri;
             for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
                 if (e.initialized() && (std::abs(r - e(0)) < 80) && (std::abs(c - e(1)) < 80)) {
                     continue;

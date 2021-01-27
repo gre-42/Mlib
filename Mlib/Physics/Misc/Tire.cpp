@@ -34,5 +34,5 @@ Tire::Tire(
 
 void Tire::advance_time(float dt) {
     shock_absorber.advance_time(dt);
-    angle_x = std::fmod(angle_x + dt * angular_velocity, 2 * M_PI);
+    angle_x = std::fmod(angle_x + dt * angular_velocity, float(2 * M_PI));
 }

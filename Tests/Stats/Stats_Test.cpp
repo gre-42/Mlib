@@ -213,8 +213,12 @@ void test_t_cdf() {
     assert_isclose(student_t_sf<double>(3., 4), 0.019971, 1e-5);
 }
 
-int main(int argc, const char** argv) {
-    #ifndef __MINGW32__
+#ifdef _MSC_VER
+#pragma float_control(except, on)
+#endif
+
+int main(int argc, char** argv) {
+    #ifdef __linux__
     feenableexcept(FE_INVALID);
     #endif
 

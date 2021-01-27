@@ -73,19 +73,19 @@ void test_physics_engine() {
 
     std::vector<FixedArray<ColoredVertex, 3>> triangles0_raw{
         FixedArray<ColoredVertex, 3>{
-            ColoredVertex{position: {-10, -2, +10}, color: {0, 0, 1}, normal: {0, 1, 0}},
-            ColoredVertex{position: {+10, -2, -10}, color: {0, 1, 0}, normal: {0, 1, 0}},
-            ColoredVertex{position: {-10, -2, -10}, color: {1, 0, 0}, normal: {0, 1, 0}}},
+            ColoredVertex{.position = {-10, -2, +10}, .color = {0, 0, 1}, .normal = {0, 1, 0}},
+            ColoredVertex{.position = {+10, -2, -10}, .color = {0, 1, 0}, .normal = {0, 1, 0}},
+            ColoredVertex{.position = {-10, -2, -10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}},
         FixedArray<ColoredVertex, 3>{
-            ColoredVertex{position: {+10, -2, -10}, color: {0, 0, 1}, normal: {0, 1, 0}},
-            ColoredVertex{position: {-10, -2, +10}, color: {0, 1, 0}, normal: {0, 1, 0}},
-            ColoredVertex{position: {+10, -2, +10}, color: {1, 0, 0}, normal: {0, 1, 0}}}
+            ColoredVertex{.position = {+10, -2, -10}, .color = {0, 0, 1}, .normal = {0, 1, 0}},
+            ColoredVertex{.position = {-10, -2, +10}, .color = {0, 1, 0}, .normal = {0, 1, 0}},
+            ColoredVertex{.position = {+10, -2, +10}, .color = {1, 0, 0}, .normal = {0, 1, 0}}}
     };
     auto triangles0 = std::make_shared<ColoredVertexArray>(
         "test_physics_engine",
         Material{
-            occluded_type: OccludedType::LIGHT_MAP_DEPTH,
-            occluder_type: OccluderType::BLACK},
+            .occluded_type = OccludedType::LIGHT_MAP_DEPTH,
+            .occluder_type = OccluderType::BLACK},
         std::move(triangles0_raw),
         std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
         std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
@@ -227,10 +227,10 @@ void test_physics_engine() {
     Focuses focuses = {Focus::SCENE};
     ButtonStates button_states;
     FlyingCameraUserClass user_object{
-        button_states: button_states,
-        cameras: selected_cameras,
-        focuses: focuses,
-        physics_set_fps: &physics_set_fps};
+        .button_states = button_states,
+        .cameras = selected_cameras,
+        .focuses = focuses,
+        .physics_set_fps = &physics_set_fps};
     auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
         render2.window(),
         button_states,
@@ -264,8 +264,12 @@ void test_physics_engine() {
     }
 }
 
-int main(int argc, const char** argv) {
-    #ifndef __MINGW32__
+#ifdef _MSC_VER
+#pragma float_control(except, on)
+#endif
+
+int main(int argc, char** argv) {
+    #ifdef __linux__
     feenableexcept(FE_INVALID);
     #endif
 

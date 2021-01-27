@@ -118,7 +118,7 @@ void DtamKeyframe::append_camera_frame() {
             down_sampler_.ds_intrinsic_matrix_,
             ke);
         draw_nan_masked_grayscale(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-" + suffix + ".ppm");
-        float pixel_fraction = 1 - (float(count_nonzero(isnan(im1t))) / im1t.nelements());
+        float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
         can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
         std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
         if (cfg_.incremental_update_ && !can_track_) {

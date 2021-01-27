@@ -256,19 +256,23 @@ void test_power() {
 
 void test_fixed_shape() {
     Array<float> ad = uniform_random_array<float>(ArrayShape{3, 4}, 1);
-    FixedArray<float, 3, 4> a{ad};
+    FixedArray<float, 3, 4> a{ ad };
     // auto x = rm_last(a);
-    FasUtils::reshape_fixed(a, FasUtils::make_shape(a).erased_first().concatenated(FixedArrayShape<3>()));
-    FasUtils::make_shape(a).erased_last();
-    FasUtils::rows_as_1D(FasUtils::make_shape(a));
-    FasUtils::columns_as_1D(FasUtils::make_shape(a));
+    {
+        constexpr auto b = FixedArrayShape<3, 4, 3>();
+        constexpr auto c = FixedArrayShape<3, 4>();
+        FasUtils::rows_as_1D(c);
+        FasUtils::columns_as_1D(c);
+    }
 
-    Array<float> bd = uniform_random_array<float>(ArrayShape{4, 5, 6}, 2);
-    FixedArray<float, 4, 5, 6> b{bd};
-    assert_isequal(dot(a, b).ndim(), dot(ad, bd).ndim());
-    assert_isclose(
-        dot(a, b)(1, 2, 3),
-        dot(ad, bd)(1, 2, 3));
+    {
+        Array<float> bd = uniform_random_array<float>(ArrayShape{ 4, 5, 6 }, 2);
+        FixedArray<float, 4, 5, 6> b{ bd };
+        assert_isequal(dot(a, b).ndim(), dot(ad, bd).ndim());
+        assert_isclose(
+            dot(a, b)(1, 2, 3),
+            dot(ad, bd)(1, 2, 3));
+    }
 }
 
 void test_fixed_outer() {
