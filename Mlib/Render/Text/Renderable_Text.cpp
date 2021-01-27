@@ -37,8 +37,8 @@ RenderableText::RenderableText(
     const std::string& ttf_filename,
     float font_height_pixels,
     bool flip_y)
-: flip_y_{flip_y},
-  cdata_(96)  // ASCII 32..126 is 95 glyphs
+: cdata_(96),  // ASCII 32..126 is 95 glyphs
+  flip_y_{flip_y}
 {
     {
         std::unique_ptr<FILE, decltype(&fclose)> f{fopen(ttf_filename.c_str(), "rb"), fclose};

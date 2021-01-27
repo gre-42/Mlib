@@ -4,7 +4,7 @@
 #include <iosfwd>
 #include <string>
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -80,6 +80,6 @@ std::ostream& operator << (std::ostream& ostr, const AxisAlignedBoundingBox<TDat
 
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif

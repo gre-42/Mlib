@@ -4,7 +4,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -71,6 +71,6 @@ private:
 
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif

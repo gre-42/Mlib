@@ -5,7 +5,7 @@
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -152,6 +152,6 @@ void SubstitutionInfo::delete_triangles_far_away(
     }
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif

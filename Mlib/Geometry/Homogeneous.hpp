@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -279,6 +279,6 @@ inline FixedArray<double, 4, 4> assemble_homogeneous_NxN<double, 3>(
 
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif

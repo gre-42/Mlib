@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iostream>
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -111,6 +111,6 @@ private:
 
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif

@@ -8,7 +8,7 @@
 
 using namespace Mlib;
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -80,7 +80,7 @@ const BoundingSphere<float, 3>& TransformedMesh::transformed_bounding_sphere() c
     return transformed_bounding_sphere_;
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif
 

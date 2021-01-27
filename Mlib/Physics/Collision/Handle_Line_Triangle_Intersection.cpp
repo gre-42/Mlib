@@ -12,7 +12,7 @@
 
 using namespace Mlib;
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -384,6 +384,6 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     }
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif

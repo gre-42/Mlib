@@ -9,7 +9,7 @@
 
 namespace Mlib {
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -52,7 +52,7 @@ struct ColoredVertex {
     }
 };
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif
 

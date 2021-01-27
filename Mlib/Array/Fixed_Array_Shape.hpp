@@ -12,7 +12,7 @@ class FixedArrayShape;
 
 namespace FasUtils {
     template <size_t... tsize_a, size_t... tsize_b>
-    constexpr auto concatenated(const FixedArrayShape<tsize_a...>*, const FixedArrayShape<tsize_b...>&);
+    constexpr auto concatenated(const FixedArrayShape<tsize_a...>*, const FixedArrayShape<tsize_b...>*);
 }
 
 template <size_t... tsize>
@@ -22,7 +22,7 @@ public:
     constexpr auto erased_first() const;
     constexpr auto erased_last() const;
     template <size_t... tsize_b>
-    constexpr auto concatenated(const FixedArrayShape<tsize_b...>& b) const { return ::Mlib::FasUtils::concatenated(a, b); }
+    constexpr auto concatenated(const FixedArrayShape<tsize_b...>& b) const { return ::Mlib::FasUtils::concatenated(a, &b); }
     constexpr auto last() const;
     constexpr auto nelements() const;
     constexpr auto rows_as_1D() const;
@@ -83,88 +83,72 @@ namespace FasUtils {
     }
 
     template <size_t... tsize_a, size_t... tsize_b>
-    constexpr auto concatenated(const FixedArrayShape<tsize_a...>*, const FixedArrayShape<tsize_b...>&) {
+    constexpr auto concatenated(const FixedArrayShape<tsize_a...>*, const FixedArrayShape<tsize_b...>*) {
         return FixedArrayShape<tsize_a..., tsize_b...>();
     };
 
 #ifdef _MSC_VER
-    constexpr inline FixedArrayShape<1, 1> rows_as_1D(const FixedArrayShape<>&) {
+    constexpr inline FixedArrayShape<1, 1> rows_as_1D(const FixedArrayShape<>*) {
         return FixedArrayShape<1, 1>();
     }
 
     template <size_t tsize0>
-    constexpr FixedArrayShape<1, tsize0> rows_as_1D(const FixedArrayShape<tsize0>&) {
+    constexpr FixedArrayShape<1, tsize0> rows_as_1D(const FixedArrayShape<tsize0>*) {
         return FixedArrayShape<1, tsize0>();
     }
 
     template <size_t tsize0, size_t tsize1>
-    constexpr FixedArrayShape<tsize0, tsize1> rows_as_1D(const FixedArrayShape<tsize0, tsize1>&) {
+    constexpr FixedArrayShape<tsize0, tsize1> rows_as_1D(const FixedArrayShape<tsize0, tsize1>*) {
         return FixedArrayShape<tsize0, tsize1>();
     }
 
     template <size_t tsize0, size_t tsize1, size_t tsize2>
-    constexpr FixedArrayShape<tsize0 * tsize1, tsize2> rows_as_1D(const FixedArrayShape<tsize0, tsize1, tsize2>&) {
+    constexpr FixedArrayShape<tsize0 * tsize1, tsize2> rows_as_1D(const FixedArrayShape<tsize0, tsize1, tsize2>*) {
         return FixedArrayShape<tsize0 * tsize1, tsize2>();
     }
 #endif
 
     template <size_t... tsize>
-    constexpr auto rows_as_1D(const FixedArrayShape<tsize...>&) {
-        constexpr static const FixedArrayShape<tsize...>* a = (const FixedArrayShape<tsize...>*)nullptr;
+    constexpr auto rows_as_1D(const FixedArrayShape<tsize...>*) {
+        constexpr const FixedArrayShape<tsize...>* a = nullptr;
         return FixedArrayShape<a->erased_last().nelements()>().concatenated(FixedArrayShape<a->last()>());
     }
 
 #ifdef _MSC_VER
-    constexpr inline FixedArrayShape<1, 1> columns_as_1D(const FixedArrayShape<>&) {
+    constexpr inline FixedArrayShape<1, 1> columns_as_1D(const FixedArrayShape<>*) {
         return FixedArrayShape<1, 1>();
     }
 
     template <size_t tsize0>
-    constexpr FixedArrayShape<tsize0, 1> columns_as_1D(const FixedArrayShape<tsize0>&) {
+    constexpr FixedArrayShape<tsize0, 1> columns_as_1D(const FixedArrayShape<tsize0>*) {
         return FixedArrayShape<tsize0, 1>();
     }
 
     template <size_t tsize0, size_t tsize1>
-    constexpr FixedArrayShape<tsize0, tsize1> columns_as_1D(const FixedArrayShape<tsize0, tsize1>&) {
+    constexpr FixedArrayShape<tsize0, tsize1> columns_as_1D(const FixedArrayShape<tsize0, tsize1>*) {
         return FixedArrayShape<tsize0, tsize1>();
     }
 
     template <size_t tsize0, size_t tsize1, size_t tsize2>
-    constexpr FixedArrayShape<tsize0, tsize1 * tsize2> columns_as_1D(const FixedArrayShape<tsize0, tsize1, tsize2>&) {
+    constexpr FixedArrayShape<tsize0, tsize1 * tsize2> columns_as_1D(const FixedArrayShape<tsize0, tsize1, tsize2>*) {
         return FixedArrayShape<tsize0, tsize1 * tsize2>();
     }
 #endif
 
     template <size_t tsize0, size_t... tsize>
-    constexpr auto columns_as_1D(const FixedArrayShape<tsize0, tsize...>&) {
-        constexpr static const FixedArrayShape<tsize...>* a = (const FixedArrayShape<tsize...>*)nullptr;
+    constexpr auto columns_as_1D(const FixedArrayShape<tsize0, tsize...>*) {
+        constexpr const FixedArrayShape<tsize...>* a = nullptr;
         return FixedArrayShape<tsize0>().concatenated(FixedArrayShape<a->nelements()>());
     }
 
-    template <size_t... tsize>
-    constexpr size_t nelements(const FixedArrayShape<tsize...>*);
-
-    template <size_t... tsize>
-    constexpr size_t nelements(const FixedArrayShape<tsize...>&);
+    constexpr size_t nelements(const FixedArrayShape<>*) {
+        return 1;
+    }
 
     template <size_t tsize0, size_t... tsize>
     constexpr auto nelements(const FixedArrayShape<tsize0, tsize...>*) {
-        return tsize0 * nelements(FixedArrayShape<tsize...>());
-    }
-
-    template <size_t tsize0, size_t... tsize>
-    constexpr auto nelements(const FixedArrayShape<tsize0, tsize...> &) {
-        return tsize0 * nelements(FixedArrayShape<tsize...>());
-    }
-
-    template <>
-    constexpr size_t nelements<>(const FixedArrayShape<>*) {
-        return 1;
-    }
-
-    template <>
-    constexpr size_t nelements<>(const FixedArrayShape<>&) {
-        return 1;
+        constexpr const FixedArrayShape<tsize...>* a = nullptr;
+        return tsize0 * nelements(a);
     }
 }
 
@@ -181,9 +165,9 @@ template <size_t... tsize>
 constexpr auto FixedArrayShape<tsize...>::nelements() const { return ::Mlib::FasUtils::nelements(a); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::rows_as_1D() const { return ::Mlib::FasUtils::rows_as_1D(*a); }
+constexpr auto FixedArrayShape<tsize...>::rows_as_1D() const { return ::Mlib::FasUtils::rows_as_1D(a); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::columns_as_1D() const { return ::Mlib::FasUtils::columns_as_1D(*a); }
+constexpr auto FixedArrayShape<tsize...>::columns_as_1D() const { return ::Mlib::FasUtils::columns_as_1D(a); }
 
 }

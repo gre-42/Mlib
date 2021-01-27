@@ -21,12 +21,12 @@ RenderingContextGuard::RenderingContextGuard(
 
 RenderingContextGuard::~RenderingContextGuard() {
     if (RenderingContextStack::context_stack_.empty()) {
-        #ifdef __GNU__
+        #ifdef __GNUC__
             #pragma GCC push_options
             #pragma GCC diagnostic ignored "-Wterminate"
         #endif
         throw std::runtime_error("~RenderingContextGuard but stack is empty");
-        #ifdef __GNU__
+        #ifdef __GNUC__
             #pragma GCC pop_options
         #endif
     }

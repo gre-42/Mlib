@@ -261,8 +261,9 @@ void test_fixed_shape() {
     {
         constexpr auto b = FixedArrayShape<3, 4, 3>();
         constexpr auto c = FixedArrayShape<3, 4>();
-        FasUtils::rows_as_1D(c);
-        FasUtils::columns_as_1D(c);
+        FasUtils::rows_as_1D(&b);
+        FasUtils::rows_as_1D(&c);
+        FasUtils::columns_as_1D(&c);
     }
 
     {

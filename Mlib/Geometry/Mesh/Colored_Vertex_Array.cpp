@@ -26,7 +26,7 @@ ColoredVertexArray::ColoredVertexArray(
     }
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -207,6 +207,6 @@ void Mlib::sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& co
         });
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif

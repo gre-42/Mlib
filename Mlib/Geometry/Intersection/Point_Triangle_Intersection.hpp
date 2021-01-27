@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -70,6 +70,6 @@ TData distance_point_to_triangle (
 
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif

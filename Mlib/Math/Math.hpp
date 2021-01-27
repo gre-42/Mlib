@@ -32,6 +32,14 @@ inline bool scalar_isnan(size_t s) {
     return false;
 }
 
+inline bool scalar_isnan(int s) {
+    return false;
+}
+
+inline bool scalar_isnan(unsigned int s) {
+    return false;
+}
+
 inline bool scalar_isnan(bool s) {
     return false;
 }

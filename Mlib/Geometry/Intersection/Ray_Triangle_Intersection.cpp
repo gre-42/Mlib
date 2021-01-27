@@ -2,7 +2,7 @@
 
 using namespace Mlib;
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")
 #endif
@@ -83,6 +83,6 @@ bool Mlib::line_intersects_triangle(const ColoredVertex& ray_origin,
         intersection_point);
 }
 
-#ifdef __GNU__
+#ifdef __GNUC__
     #pragma GCC pop_options
 #endif
