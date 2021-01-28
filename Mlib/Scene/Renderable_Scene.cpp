@@ -97,6 +97,7 @@ RenderableScene::RenderableScene(
 RenderableScene::~RenderableScene() {
     RenderingContextGuard rrg0{primary_rendering_context_};
     RenderingContextGuard rrg1{secondary_rendering_context_};
+    stop_and_join();
     scene_.shutdown();
 }
 

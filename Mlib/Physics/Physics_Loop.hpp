@@ -25,7 +25,9 @@ public:
         size_t nframes = SIZE_MAX,
         BaseLog* base_log = nullptr,
         const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;});
+    ~PhysicsLoop();
     void stop_and_join();
+    //! Useful if nframes != SIZE_MAX
     void join();
 private:
     std::atomic_bool exit_physics_;

@@ -72,12 +72,18 @@ PhysicsLoop::PhysicsLoop(
     })}
 {}
 
+PhysicsLoop::~PhysicsLoop() {
+    stop_and_join();
+}
+
 void PhysicsLoop::stop_and_join() {
     exit_physics_ = true;
     set_fps_.resume();
-    physics_thread_.join();
+    join();
 }
 
 void PhysicsLoop::join() {
-    physics_thread_.join();
+    if (physics_thread_.joinable()) {
+        physics_thread_.join();
+    }
 }
