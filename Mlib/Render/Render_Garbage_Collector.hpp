@@ -12,6 +12,11 @@ extern std::list<GLuint> gc_texture_color_buffers;
 extern std::list<GLuint> gc_texture_depth_buffers;
 extern std::list<GLuint> gc_render_buffers;
 
+/**
+ * Garbage collector for abandoned rendering resources.
+ *
+ * Required when deleting objects in a different thread.
+ */
 void execute_gc_render();
 
 }
