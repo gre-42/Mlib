@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <iosfwd>
 #include <map>
 #include <string>
 #include <thread>
@@ -24,15 +25,17 @@ struct CalledFunction {
     std::chrono::time_point<std::chrono::steady_clock> start_time;
     std::chrono::time_point<std::chrono::steady_clock> end_time;
     const char* message = nullptr;
+    std::string group;
     size_t stack_size = SIZE_MAX;
 };
 
 class TimeGuard {
 public:
-    TimeGuard(const char* message);
+    TimeGuard(const char* message, const std::string& group);
     ~TimeGuard();
     static void initialize(size_t max_log_length);
     static void write_svg(const std::string& filename);
+    static void print_groups(std::ostream& ostr);
     static bool is_empty();
 private:
     static void insert_event(const TimeEvent& e);

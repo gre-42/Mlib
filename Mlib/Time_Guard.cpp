@@ -72,6 +72,26 @@ void TimeGuard::write_svg(const std::string& filename) {
     }
 }
 
+void TimeGuard::print_groups(std::ostream& ostr) {
+    std::map<std::thread::id, std::map<std::string, std::chrono::duration<double, std::milli>>> durations;
+    for (const auto& t : called_functions_) {
+        auto& d = durations[t.first];
+        for (const auto& f : t.second) {
+            std::chrono::duration<double, std::milli> dt = (f.end_time - f.start_time);
+            d[f.group] += dt;
+        }
+    }
+    for (const auto& t : durations) {
+        ostr << "Thread: " << t.first << '\n';
+        std::chrono::duration<double, std::milli> total{ 0 };
+        for (const auto& d : t.second) {
+            ostr << "  " << d.second.count() << ' ' << d.first << '\n';
+            total += d.second;
+        }
+        ostr << "Total: " << total.count() << '\n';
+    }
+}
+
 bool TimeGuard::is_empty() {
     return events_.empty();
 }
@@ -96,10 +116,11 @@ void TimeGuard::insert_called_function(const CalledFunction& called_function) {
     ++called_function_id_;
 }
 
-TimeGuard::TimeGuard(const char* message)
+TimeGuard::TimeGuard(const char* message, const std::string& group)
 : called_function_{
     .start_time = std::chrono::steady_clock::now(),
     .message = message,
+    .group = group,
     .stack_size = stack_size_}
 {
     if (max_log_length_ == 0) {
