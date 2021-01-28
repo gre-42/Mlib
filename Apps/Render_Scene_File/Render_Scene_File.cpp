@@ -255,7 +255,8 @@ int main(int argc, char** argv) {
                 render2(
                     rs->second->render_logics_,
                     mutex,
-                    scene_config.scene_graph_config);
+                    scene_config.scene_graph_config,
+                    &button_states);
                 if (!render2.window_should_close()) {
                     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
                     num_renderings = 1;

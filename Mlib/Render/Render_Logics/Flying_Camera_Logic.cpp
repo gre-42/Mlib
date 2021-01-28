@@ -147,7 +147,6 @@ void FlyingCameraLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    user_object_.button_states.update_gamepad_state();
     if (button_press_.key_pressed({.key = "ESCAPE", .gamepad_button = "START"})) {
         Focus focus = user_object_.focuses.focus();
         if (focus == Focus::MENU) {

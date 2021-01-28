@@ -16,6 +16,7 @@
 #include <Mlib/Render/Renderables/Renderable_Height_Map.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/linmath.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -110,7 +111,8 @@ void Render2::print_hardware_info() const {
 
 void Render2::operator () (
     RenderLogic& logic,
-    const SceneGraphConfig& scene_graph_config)
+    const SceneGraphConfig& scene_graph_config,
+    ButtonStates* button_states)
 {
     SetFps set_fps{"Render FPS: "};
     Fps fps;
@@ -121,58 +123,80 @@ void Render2::operator () (
     // std::this_thread::sleep_for(std::chrono::milliseconds(500));
     GLFW_CHK(glfwPollEvents());
     // std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    while (!glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0))
-    {
-        if (num_renderings_ != SIZE_MAX) {
-            --num_renderings_;
-        }
-        int width, height;
-
-        GLFW_CHK(glfwGetFramebufferSize(window_->window(), &width, &height));
-
-        ViewportGuard vg{0, 0, width, height};
-
-        logic.render(
-            width,
-            height,
-            render_config_,
-            scene_graph_config,
-            render_results_,
-            (render_results_ != nullptr) && (!render_results_->outputs.empty())
-                ? RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = ""}
-                : RenderedSceneDescriptor{.external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = ""});
-
-        if (render_results_ != nullptr && render_results_->output != nullptr) {
-            VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
-            CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
-            GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
-            *render_results_->output = reverted_axis(vp.to_array(), 1);
-        }
-        if (render_results_ != nullptr && !render_results_->outputs.empty()) {
-            GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
-        }
-        if (render_config_.dt != 0) {
-            // TimeGuard tg1{"render tick"};
-            set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
-        } else if (render_config_.motion_interpolation) {
-            throw std::runtime_error("Motion interpolation requires render_dt");
-        }
-        if (render_config_.print_fps) {
-            fps_i = (fps_i + 1) % fps_i_max;
-            fps.tick();
-            if (fps_i == 0) {
-                std::cerr << "Render FPS: Mean = " << fps.mean_fps() << ", MAD = " << fps.mad_fps() << std::endl;
+    // From: https://www.glfw.org/docs/latest/context_guide.html#context_current
+    CHK(glfwMakeContextCurrent(nullptr));
+    auto continue_rendering = [&]() { return !glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0); };
+    auto render_thread_func = [&]() {
+        CHK(glfwMakeContextCurrent(window_->window()));
+        while (continue_rendering())
+        {
+            if (num_renderings_ != SIZE_MAX) {
+                --num_renderings_;
             }
+            int width, height;
+
+            GLFW_CHK(glfwGetFramebufferSize(window_->window(), &width, &height));
+
+            ViewportGuard vg{ 0, 0, width, height };
+
+            logic.render(
+                width,
+                height,
+                render_config_,
+                scene_graph_config,
+                render_results_,
+                (render_results_ != nullptr) && (!render_results_->outputs.empty())
+                ? RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = "" }
+            : RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = "" });
+
+            if (render_results_ != nullptr && render_results_->output != nullptr) {
+                VectorialPixels<float, 3> vp{ ArrayShape{size_t(height), size_t(width)} };
+                CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
+                GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
+                *render_results_->output = reverted_axis(vp.to_array(), 1);
+            }
+            if (render_results_ != nullptr && !render_results_->outputs.empty()) {
+                GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
+            }
+            if (render_config_.dt != 0) {
+                // TimeGuard time_guard("set_fps", "set_fps");
+                set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
+            }
+            else if (render_config_.motion_interpolation) {
+                throw std::runtime_error("Motion interpolation requires render_dt");
+            }
+            if (render_config_.print_fps) {
+                fps_i = (fps_i + 1) % fps_i_max;
+                fps.tick();
+                if (fps_i == 0) {
+                    std::cerr << "Render FPS: Mean = " << fps.mean_fps() << ", MAD = " << fps.mad_fps() << std::endl;
+                }
+            }
+            {
+                // TimeGuard time_guard("glfwSwapBuffers", "glfwSwapBuffers");
+                GLFW_CHK(glfwSwapBuffers(window_->window()));
+            }
+            {
+                // TimeGuard time_guard("execute_gc_render", "execute_gc_render");
+                execute_gc_render();
+            }
+
+            if (render_config_.motion_interpolation) {
+                time_id = (time_id + 1) % 4;
+            }
+            TimeGuard::print_groups(std::cerr);
         }
-
-        GLFW_CHK(glfwSwapBuffers(window_->window()));
+        CHK(glfwMakeContextCurrent(nullptr));
+    };
+    std::thread render_thread{ render_thread_func };
+    while (continue_rendering()) {
         GLFW_CHK(glfwPollEvents());
-        execute_gc_render();
-
-        if (render_config_.motion_interpolation) {
-            time_id = (time_id + 1) % 4;
+        if (button_states != nullptr) {
+            button_states->update_gamepad_state();
         }
     }
+    render_thread.join();
+    CHK(glfwMakeContextCurrent(window_->window()));
 }
 
 class LockingRenderLogic: public RenderLogic {
@@ -208,10 +232,11 @@ private:
 void Render2::operator () (
     RenderLogic& logic,
     std::recursive_mutex& mutex,
-    const SceneGraphConfig& scene_graph_config)
+    const SceneGraphConfig& scene_graph_config,
+    ButtonStates* button_states)
 {
     LockingRenderLogic lrl{logic, mutex};
-    (*this)(lrl, scene_graph_config);
+    (*this)(lrl, scene_graph_config, button_states);
 }
 
 void Render2::operator () (

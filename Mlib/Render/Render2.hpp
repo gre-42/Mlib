@@ -14,6 +14,7 @@ class RenderingResources;
 class RenderLogic;
 class Scene;
 class Window;
+class ButtonStates;
 
 template <class TData, size_t n>
 class TransformationMatrix;
@@ -30,12 +31,14 @@ public:
 
     void operator () (
         RenderLogic& logic,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{});
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},
+        ButtonStates* button_states = nullptr);
 
     void operator () (
         RenderLogic& logic,
         std::recursive_mutex& mutex,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{});
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},
+        ButtonStates* button_states = nullptr);
 
     void operator () (
         const Scene& scene,
