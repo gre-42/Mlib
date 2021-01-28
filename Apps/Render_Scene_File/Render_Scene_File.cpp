@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
         // FifoLog fifo_log{10 * 1000};
 
         while (!render2.window_should_close()) {
-            // TimeGuard::initialize(5000);
+            TimeGuard::initialize(5 * 60);
             num_renderings = SIZE_MAX;
             ui_focus.n_submenus = 0;
 
@@ -273,15 +273,16 @@ int main(int argc, char** argv) {
             main_scene_filename = next_scene_filename;
         }
 
+        if (!TimeGuard::is_empty()) {
+            std::cerr << "write svg" << std::endl;
+            TimeGuard::write_svg("/tmp/events.svg");
+        }
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;
         return 1;
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;
-    }
-    if (!TimeGuard::is_empty()) {
-        TimeGuard::write_svg("/tmp/events.svg");
     }
     return 0;
 }
