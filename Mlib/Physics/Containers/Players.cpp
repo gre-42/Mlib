@@ -50,7 +50,11 @@ std::string Players::get_score_board() const {
     std::stringstream sstr;
     for (const auto& p : players_) {
         if (p.second->game_mode() != GameMode::BYSTANDER) {
-            sstr << "Player: " << p.first << ", team: " << p.second->team() << ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.second)) << ", car HP: " << p.second->car_health() << std::endl;
+            sstr <<
+                "Player: " << p.first <<
+                ", team: " << p.second->team() <<
+                ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.second)) <<
+                ", car HP: " << p.second->car_health() << std::endl;
         }
     }
     return sstr.str();
