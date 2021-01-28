@@ -69,12 +69,13 @@ void SubstitutionInfo::delete_triangles_far_away(
             }
         }
     }
-    size_t noperations2 = std::min(noperations, cva->triangles.size());
+    offset_ = current_triangle_id;
+    noperations2_ = std::min(current_triangle_id + noperations, cva->triangles.size()) - current_triangle_id;
     if (triangles_local_ids.size() != cva->triangles.size()) {
         throw std::runtime_error("Array length has changed");
     }
     typedef FixedArray<ColoredVertex, 3> Triangle;
-    auto func = [this, draw_distance_add, draw_distance_slop, noperations2, m, position, run_in_background, is_static](){
+    auto func = [this, draw_distance_add, draw_distance_slop, m, position, run_in_background, is_static](){
         Triangle* ptr = nullptr;
         if (!run_in_background) {
             // Must be inside here because CHK requires an OpenGL context
@@ -82,7 +83,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         }
         float add2 = squared(draw_distance_add);
         float remove2 = squared(draw_distance_add + draw_distance_slop);
-        for (size_t i = 0; i < noperations2; ++i) {
+        for (size_t i = 0; i < noperations2_; ++i) {
             FixedArray<float, 3> center;
             if (is_static) {
                 center = mean(transformed_triangles[current_triangle_id]);
@@ -120,16 +121,18 @@ void SubstitutionInfo::delete_triangles_far_away(
     if (run_in_background) {
         if (background_loop_ == nullptr) {
             background_loop_ = std::make_unique<BackgroundLoop>();
-            triangles_to_delete_.reserve(noperations2);
-            triangles_to_insert_.reserve(noperations2);
+            triangles_to_delete_.reserve(noperations2_);
+            triangles_to_insert_.reserve(noperations2_);
         }
-        if (triangles_to_delete_.capacity() != noperations2) {
+        if (triangles_to_delete_.capacity() < noperations2_) {
             throw std::runtime_error("noperations or triangle list changed");
         }
         if (background_loop_->done()) {
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
                 CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
-                CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+                // CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+                CHK(Triangle * ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, offset_ * sizeof(Triangle), noperations2_ * sizeof(Triangle), GL_MAP_WRITE_BIT));
+                ptr -= offset_;
                 for (size_t i : triangles_to_delete_) {
                     delete_triangle(i, ptr);
                 }

@@ -39,6 +39,9 @@ private:
 
     std::vector<size_t> triangles_to_delete_;
     std::vector<size_t> triangles_to_insert_;
+
+    size_t offset_;
+    size_t noperations2_;
 };
 
 }
