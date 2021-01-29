@@ -36,10 +36,12 @@ static const char* fragment_shader_text =
 RenderableText::RenderableText(
     const std::string& ttf_filename,
     float font_height_pixels,
-    bool flip_y)
+    bool flip_y,
+    size_t max_nchars)
 : cdata_(96),  // ASCII 32..126 is 95 glyphs
   flip_y_{flip_y}
 {
+    vdata_.reserve(max_nchars);
     {
         std::unique_ptr<FILE, decltype(&fclose)> f{fopen(ttf_filename.c_str(), "rb"), fclose};
         if (f == nullptr) {
@@ -72,7 +74,7 @@ RenderableText::RenderableText(
         CHK(glGenBuffers(1, &va_.vertex_buffer));
         CHK(glBindVertexArray(va_.vertex_array));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW));
+        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(vdata_[0]) * vdata_.capacity(), nullptr, GL_DYNAMIC_DRAW));
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -113,32 +115,34 @@ void RenderableText::render(
     float x = pos(0);
     float y = pos(1);
     size_t line_number = 0;
+    vdata_.clear();
     for (char c : text) {
+        if (vdata_.size() == vdata_.capacity()) {
+            break;
+        }
         if (c >= 32 && c < 128) {
             stbtt_aligned_quad q;
             stbtt_GetBakedQuad(cdata_.data(), 512, 512, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
             // update VBO for each character
-            float vertices[6][4] = {
-                { q.x0, screen_height - q.y0, q.s0, q.t0 },
-                { q.x0, screen_height - q.y1, q.s0, q.t1 },
-                { q.x1, screen_height - q.y1, q.s1, q.t1 },
+            vdata_.push_back(FixedArray<float, 2, 3, 4>{
+                q.x0, screen_height - q.y0, q.s0, q.t0,
+                q.x0, screen_height - q.y1, q.s0, q.t1,
+                q.x1, screen_height - q.y1, q.s1, q.t1,
 
-                { q.x0, screen_height - q.y0, q.s0, q.t0 },
-                { q.x1, screen_height - q.y1, q.s1, q.t1 },
-                { q.x1, screen_height - q.y0, q.s1, q.t0 }
-            };
-            // update content of VBO memory
-            CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-            CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices)); // be sure to use glBufferSubData and not glBufferData
-
-            CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
-            // render quad
-            CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
+                q.x0, screen_height - q.y0, q.s0, q.t0,
+                q.x1, screen_height - q.y1, q.s1, q.t1,
+                q.x1, screen_height - q.y0, q.s1, q.t0});
         } else if (c == '\n') {
             x = pos(0);
             y = pos(1) + (++line_number) * line_distance_pixels;
         }
-   }
-   CHK(glDisable(GL_CULL_FACE));
-   CHK(glDisable(GL_BLEND));
+    }
+    // update content of VBO memory
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
+    CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vdata_[0]) * vdata_.size(), vdata_.data())); // be sure to use glBufferSubData and not glBufferData
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    // render quad
+    CHK(glDrawArrays(GL_TRIANGLES, 0, vdata_.size() * 2 * 3));
+    CHK(glDisable(GL_CULL_FACE));
+    CHK(glDisable(GL_BLEND));
 }
