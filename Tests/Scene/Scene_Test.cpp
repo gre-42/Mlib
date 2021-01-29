@@ -141,10 +141,10 @@ void test_physics_engine() {
     auto scene_nodeR = new SceneNode;
     auto scene_nodeL = new SceneNode;
 
-    scene_node_resources.instantiate_renderable("obj0", "obj0", *scene_node0, SceneNodeResourceFilter{});
-    scene_node_resources.instantiate_renderable("obj1", "obj1_0", *scene_node1_0, SceneNodeResourceFilter{});
-    scene_node_resources.instantiate_renderable("obj1", "obj1_1", *scene_node1_1, SceneNodeResourceFilter{});
-    scene_node_resources.instantiate_renderable("obj1", "obj1_2", *scene_node1_2, SceneNodeResourceFilter{});
+    scene_node_resources.instantiate_renderable("obj0", "obj0", *scene_node0, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("obj1", "obj1_0", *scene_node1_0, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("obj1", "obj1_1", *scene_node1_1, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("obj1", "obj1_2", *scene_node1_2, SceneNodeResourceFilter());
     if (getenv_default_bool("STACK", false)) {
         scene_node1_1->set_position(FixedArray<float, 3>{0, 4, 0});
         scene_node1_2->set_position(FixedArray<float, 3>{0, 8, 0});

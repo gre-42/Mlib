@@ -48,7 +48,7 @@ void add_reference_bone(
         "reference_bone",
         "reference_bone",
         *bone_node,
-        SceneNodeResourceFilter{});
+        SceneNodeResourceFilter());
     parent_node->add_child("reference_bone" + std::to_string(b.index), bone_node);
     for (const auto& c : b.children) {
         add_reference_bone(*c, parent_node, scene_node_resources);
@@ -71,7 +71,7 @@ void add_bone_frame(
         "frame_bone",
         "frame_bone",
         *bone_node,
-        SceneNodeResourceFilter{});
+        SceneNodeResourceFilter());
     parent_node->add_child("frame_bone" + std::to_string(b.index), bone_node);
     for (const auto& c : b.children) {
         add_bone_frame(*c, frame, bone_node, scene_node_resources);
@@ -283,7 +283,7 @@ int main(int argc, char** argv) {
                         cfg);
                     scene_node_resources.add_resource(name, rmhx2);
                     scene_node->set_style(new Style{
-                        .selector = std::regex{""},
+                        .selector = Mlib::compile_regex(""),
                         .animation_frame = {
                             .name = "anim",
                             .loop_begin = safe_stof(args.named_value("--loop_begin", "0")),

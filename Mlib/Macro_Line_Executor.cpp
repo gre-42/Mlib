@@ -34,11 +34,11 @@ void MacroLineExecutor::operator () (
     const RegexSubstitutionCache& rsc) const
 {
     std::string subst_line = substitutions_.substitute(line, rsc);
-    static const std::regex comment_reg("^\\s*#[\\S\\s]*$");
+    static const DECLARE_REGEX(comment_reg, "^\\s*#[\\S\\s]*$");
     static const DECLARE_REGEX(macro_playback_reg, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?(" + substitute_pattern + ")$");
     // static const std::regex macro_playback_reg_fast("^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?([^;]*)$");
-    static const std::regex include_reg("^\\s*include ([\\w-. \\(\\)/+-]+)$");
-    static const std::regex empty_reg("^[\\s]*$");
+    static const DECLARE_REGEX(include_reg, "^\\s*include ([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(empty_reg, "^[\\s]*$");
 
     auto fpath = [&](const fs::path& f) -> std::string {
         if (f.empty()) {
@@ -65,16 +65,15 @@ void MacroLineExecutor::operator () (
     if (verbose_) {
         std::cerr << "Processing line \"" << subst_line << '"' << std::endl;
     }
-    std::smatch match;
-    Mlib::smatch what;
-    if (std::regex_match(subst_line, match, empty_reg)) {
+    Mlib::re::smatch match;
+    if (Mlib::re::regex_match(subst_line, match, empty_reg)) {
         // Do nothing
-    } else if (std::regex_match(subst_line, match, comment_reg)) {
+    } else if (Mlib::re::regex_match(subst_line, match, comment_reg)) {
         // Do nothing
-    } else if (REGEX_MATCH(subst_line, what, macro_playback_reg)) {
-        std::string name = what[1].str();
-        std::string context = what[2].str();
-        std::string subst_pattern = what[3].str();
+    } else if (Mlib::re::regex_match(subst_line, match, macro_playback_reg)) {
+        std::string name = match[1].str();
+        std::string context = match[2].str();
+        std::string subst_pattern = match[3].str();
         auto macro_it = macro_file_executor_.macros_.find(name);
         if (macro_it == macro_file_executor_.macros_.end()) {
             throw std::runtime_error("No macro with name " + name + " exists");
@@ -90,7 +89,7 @@ void MacroLineExecutor::operator () (
         for (const std::string& l : macro_it->second.lines) {
             mle2(substitute(l, subst_pattern, rsc), rsc);
         }
-    } else if (std::regex_match(subst_line, match, include_reg)) {
+    } else if (Mlib::re::regex_match(subst_line, match, include_reg)) {
         MacroLineExecutor mle2{
             macro_file_executor_,
             spath(match[1].str()),

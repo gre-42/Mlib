@@ -130,6 +130,7 @@ void Render2::operator () (
         CHK(glfwMakeContextCurrent(window_->window()));
         while (continue_rendering())
         {
+            // TimeGuard::initialize(5 * 60);
             if (num_renderings_ != SIZE_MAX) {
                 --num_renderings_;
             }
@@ -184,7 +185,10 @@ void Render2::operator () (
             if (render_config_.motion_interpolation) {
                 time_id = (time_id + 1) % 4;
             }
-            TimeGuard::print_groups(std::cerr);
+            // static size_t ii = 0;
+            // if (ii++ % 600 == 0) {
+            //     TimeGuard::print_groups(std::cerr);
+            // }
         }
         CHK(glfwMakeContextCurrent(nullptr));
     };
@@ -267,7 +271,7 @@ void Render2::render_depth_map(
     Scene scene;
     scene_node_resources.add_resource("RenderableDepthMap", r);
     auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("RenderableDepthMap", "RenderableDepthMap", *on, SceneNodeResourceFilter{});
+    scene_node_resources.instantiate_renderable("RenderableDepthMap", "RenderableDepthMap", *on, SceneNodeResourceFilter());
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
@@ -296,7 +300,7 @@ void Render2::render_height_map(
     Scene scene;
     scene_node_resources.add_resource("RenderableHeightMap", r);
     auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("RenderableHeightMap", "RenderableHeightMap", *on, SceneNodeResourceFilter{});
+    scene_node_resources.instantiate_renderable("RenderableHeightMap", "RenderableHeightMap", *on, SceneNodeResourceFilter());
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Regex_Select.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -25,9 +26,9 @@ struct SpawnPoint;
 struct SceneNodeResourceFilter {
     size_t min_num = 0;
     size_t max_num = SIZE_MAX;
-    std::regex regex{""};
+    DECLARE_REGEX(regex, "");
     inline bool matches(size_t num, const std::string& name) const {
-        return (num >= min_num) && (num <= max_num) && (std::regex_search(name, regex));
+        return (num >= min_num) && (num <= max_num) && (Mlib::re::regex_search(name, regex));
     }
 };
 

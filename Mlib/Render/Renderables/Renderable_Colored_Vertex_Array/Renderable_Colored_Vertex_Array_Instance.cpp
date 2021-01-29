@@ -452,6 +452,9 @@ void RenderableColoredVertexArrayInstance::render(
     std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations =
         calculate_absolute_bone_transformations(style);
     for (auto& cva : triangles_res_subset_) {
+        // TimeGuard time_guard{
+        //     "RenderableColoredVertexArrayInstance::render",
+        //     cva->material.texture_descriptor.color};
         render_cva(
             cva,
             absolute_bone_transformations,

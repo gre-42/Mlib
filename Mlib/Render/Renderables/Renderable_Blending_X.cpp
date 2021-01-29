@@ -75,28 +75,28 @@ void RenderableBlendingX::instantiate_renderable(const std::string& name, SceneN
         auto node = new SceneNode;
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
-        rva_(1)->instantiate_renderable("plane", *node, SceneNodeResourceFilter{});
+        rva_(1)->instantiate_renderable("plane", *node, SceneNodeResourceFilter());
         scene_node.add_aggregate_child(name + "+0", node);
     }
     {
         auto node = new SceneNode;
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({-(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f });
-        rva_(0)->instantiate_renderable("plane", *node, SceneNodeResourceFilter{});
+        rva_(0)->instantiate_renderable("plane", *node, SceneNodeResourceFilter());
         scene_node.add_aggregate_child(name + "-0", node);
     }
     {
         auto node = new SceneNode;
         node->set_rotation({0.f, -float{M_PI} / 2, 0.f });
         node->set_position({0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f });
-        rva_(1)->instantiate_renderable("plane", *node, SceneNodeResourceFilter{});
+        rva_(1)->instantiate_renderable("plane", *node, SceneNodeResourceFilter());
         scene_node.add_aggregate_child(name + "+1", node);
     }
     {
         auto node = new SceneNode;
         node->set_rotation({0.f, -float{M_PI} / 2, 0.f });
         node->set_position({0.f, 0.f, -(square_(1, 1) - square_(0, 1)) / 4.f });
-        rva_(0)->instantiate_renderable("plane", *node, SceneNodeResourceFilter{});
+        rva_(0)->instantiate_renderable("plane", *node, SceneNodeResourceFilter());
         scene_node.add_aggregate_child(name + "-1", node);
     }
 }

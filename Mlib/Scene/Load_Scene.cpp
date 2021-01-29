@@ -516,11 +516,11 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(append_focus_reg,
         "^\\s*append_focus"
         "\\s+(menu|loading|countdown|scene)$");
-    static const std::regex wayside_resource_names_reg{
+    static const DECLARE_REGEX(wayside_resource_names_reg,
         "(?:\\s*wayside_resource_names=\\r?\\n"
         "\\s*min_dist:([\\w+-.]+)\\r?\\n"
         "\\s*max_dist:([\\w+-.]+)\\r?\\n"
-        "([\\s,:\\w-. \\(\\)/+-]*)\\r?\\n|(.+))"};
+        "([\\s,:\\w-. \\(\\)/+-]*)\\r?\\n|(.+))");
     static const DECLARE_REGEX(set_spawn_points_reg, "^\\s*"
         "\\s+set_spawn_points"
         "\\s+node=([\\w+-.]+)"
@@ -539,8 +539,8 @@ void LoadScene::operator()(
         const MacroLineExecutor& macro_line_executor,
         const std::string& line) -> bool
     {
-        Mlib::smatch match;
-        if (REGEX_MATCH(line, match, create_scene_reg)) {
+        Mlib::re::smatch match;
+        if (Mlib::re::regex_match(line, match, create_scene_reg)) {
             RenderingContextGuard rrg{
                 scene_node_resources,
                 match[1].str() + ".rendering_resources",
@@ -572,7 +572,7 @@ void LoadScene::operator()(
             }
             return true;
         }
-        if (REGEX_MATCH(line, match, obj_resource_reg)) {
+        if (Mlib::re::regex_match(line, match, obj_resource_reg)) {
             LoadMeshConfig load_mesh_config{
                 .position = FixedArray<float, 3>{
                     safe_stof(match[3].str()),
@@ -610,7 +610,7 @@ void LoadScene::operator()(
             }
             return true;
         }
-        if (REGEX_MATCH(line, match, gen_triangle_rays_reg)) {
+        if (Mlib::re::regex_match(line, match, gen_triangle_rays_reg)) {
             scene_node_resources.generate_triangle_rays(
                 match[1].str(),
                 safe_stoi(match[2].str()),
@@ -622,12 +622,12 @@ void LoadScene::operator()(
                 safe_stoi(match[6].str()));
             return true;
         }
-        if (REGEX_MATCH(line, match, osm_resource_reg)) {
+        if (Mlib::re::regex_match(line, match, osm_resource_reg)) {
             std::list<WaysideResourceNames> waysides;
             find_all(
                 match[21].str(),
                 wayside_resource_names_reg,
-                [&waysides, &match](const std::smatch& m){
+                [&waysides, &match](const Mlib::re::smatch& m){
                     if (!m[4].str().empty()) {
                         std::cerr << ("Could not parse \"" + match[21].str() + "\", unknown element: \"" + m[4].str() + '"') << std::endl;
                         throw std::runtime_error("Could not parse \"" + match[21].str() + "\", unknown element: \"" + m[4].str() + '"');
@@ -704,7 +704,7 @@ void LoadScene::operator()(
                     driving_direction_from_string(match[62].str())));             // driving_direction
             return true;
         }
-        if (REGEX_MATCH(line, match, gen_ray_reg)) {
+        if (Mlib::re::regex_match(line, match, gen_ray_reg)) {
             scene_node_resources.generate_ray(
                 match[1].str(),
                 FixedArray<float, 3>{
@@ -717,20 +717,20 @@ void LoadScene::operator()(
                     safe_stof(match[7].str())});
             return true;
         }
-        if (REGEX_MATCH(line, match, downsample_reg)) {
+        if (Mlib::re::regex_match(line, match, downsample_reg)) {
             scene_node_resources.downsample(
                 match[1].str(),
                 safe_stoz(match[2].str()));
             return true;
         }
-        if (REGEX_MATCH(line, match, import_bone_weights_reg)) {
+        if (Mlib::re::regex_match(line, match, import_bone_weights_reg)) {
             scene_node_resources.import_bone_weights(
                 match[1].str(),
                 match[2].str(),
                 safe_stof(match[3].str()));
             return true;
         }
-        if (REGEX_MATCH(line, match, square_resource_reg)) {
+        if (Mlib::re::regex_match(line, match, square_resource_reg)) {
             // 1: name
             // 2: texture_filename
             // 3, 4: min
@@ -767,7 +767,7 @@ void LoadScene::operator()(
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
             return true;
         }
-        if (REGEX_MATCH(line, match, blending_x_resource_reg)) {
+        if (Mlib::re::regex_match(line, match, blending_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -775,7 +775,7 @@ void LoadScene::operator()(
                 fpath(match[2].str())));
             return true;
         }
-        if (REGEX_MATCH(line, match, binary_x_resource_reg)) {
+        if (Mlib::re::regex_match(line, match, binary_x_resource_reg)) {
             scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBinaryX>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -789,11 +789,11 @@ void LoadScene::operator()(
                     safe_stof(match[9].str())}));
             return true;
         }
-        if (REGEX_MATCH(line, match, append_focus_reg)) {
+        if (Mlib::re::regex_match(line, match, append_focus_reg)) {
             ui_focus.focuses.push_back(focus_from_string(match[1].str()));
             return true;
         }
-        if (REGEX_MATCH(line, match, add_bvh_resource_reg)) {
+        if (Mlib::re::regex_match(line, match, add_bvh_resource_reg)) {
             BvhConfig cfg = blender_bvh_config;
             cfg.smooth_radius = safe_stoz(match[3].str());
             cfg.smooth_alpha = safe_stof(match[4].str());
@@ -804,7 +804,7 @@ void LoadScene::operator()(
                 cfg);
             return true;
         }
-        if (REGEX_MATCH(line, match, add_texture_descriptor_reg)) {
+        if (Mlib::re::regex_match(line, match, add_texture_descriptor_reg)) {
             RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
                 match[1].str(),
                 TextureDescriptor{
@@ -850,7 +850,7 @@ void LoadScene::operator()(
         auto& mutex = cit->second->mutex_;
 
         Linker linker{physics_engine.advance_times_};
-        if (REGEX_MATCH(line, match, node_instance_reg)) {
+        if (Mlib::re::regex_match(line, match, node_instance_reg)) {
             auto node = new SceneNode(&scene);
             node->set_position(FixedArray<float, 3>{
                 safe_stof(match[3].str()),
@@ -881,22 +881,22 @@ void LoadScene::operator()(
                 }
                 scene.register_node(match[2].str(), node);
             }
-        } else if (REGEX_MATCH(line, match, delete_root_node_reg)) {
+        } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
             scene.delete_root_node(match[1].str());
-        } else if (REGEX_MATCH(line, match, renderable_instance_reg)) {
+        } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.instantiate_renderable(
                 match[3].str(),
                 match[1].str(),
                 *node,
-                {.regex = std::regex{match[4].str()}});
-        } else if (REGEX_MATCH(line, match, register_geographic_mapping_reg)) {
+                { .regex = Mlib::compile_regex(match[4].str()) });
+        } else if (Mlib::re::regex_match(line, match, register_geographic_mapping_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.register_geographic_mapping(
                 match[3].str(),
                 match[1].str(),
                 *node);
-        } else if (REGEX_MATCH(line, match, rigid_cuboid_reg)) {
+        } else if (Mlib::re::regex_match(line, match, rigid_cuboid_reg)) {
             std::shared_ptr<RigidBody> rb = rigid_cuboid(
                 physics_engine.rigid_bodies_,
                 safe_stof(match[4].str()),
@@ -930,7 +930,7 @@ void LoadScene::operator()(
                 hitbox,
                 tirelines,
                 collidable_mode_from_string(match[17].str()));
-        } else if (REGEX_MATCH(line, match, gun_reg)) {
+        } else if (Mlib::re::regex_match(line, match, gun_reg)) {
             auto parent_rb_node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBody*>(parent_rb_node->get_absolute_movable());
             if (rb == nullptr) {
@@ -954,7 +954,7 @@ void LoadScene::operator()(
                     safe_stof(match[11].str()),     // bullet-size-y
                     safe_stof(match[12].str())});   // bullet-size-z
             linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
-        } else if (REGEX_MATCH(line, match, trigger_gun_ai_reg)) {
+        } else if (Mlib::re::regex_match(line, match, trigger_gun_ai_reg)) {
             auto base_shooter_node = scene.get_node(match[1].str());
             auto rb_shooter = dynamic_cast<RigidBody*>(base_shooter_node->get_absolute_movable());
             if (rb_shooter == nullptr) {
@@ -979,7 +979,7 @@ void LoadScene::operator()(
                 physics_engine,
                 *gun);
             physics_engine.advance_times_.add_advance_time(trigger_gun_ai);
-        } else if (REGEX_MATCH(line, match, damageable_reg)) {
+        } else if (Mlib::re::regex_match(line, match, damageable_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
@@ -995,7 +995,7 @@ void LoadScene::operator()(
             }
             rb->damageable_ = d.get();
             physics_engine.advance_times_.add_advance_time(d);
-        } else if (REGEX_MATCH(line, match, crash_reg)) {
+        } else if (Mlib::re::regex_match(line, match, crash_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
@@ -1004,7 +1004,7 @@ void LoadScene::operator()(
                 *rb,
                 safe_stof(match[2].str()));  // damage
             rb->collision_observers_.push_back(d);
-        } else if (REGEX_MATCH(line, match, relative_transformer_reg)) {
+        } else if (Mlib::re::regex_match(line, match, relative_transformer_reg)) {
             FixedArray<float, 3> v{
                 match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
                 match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
@@ -1016,7 +1016,7 @@ void LoadScene::operator()(
             std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(
                 physics_engine.advance_times_, v, w);
             linker.link_relative_movable(*scene.get_node(match[1].str()), rt);
-        } else if (REGEX_MATCH(line, match, wheel_reg)) {
+        } else if (Mlib::re::regex_match(line, match, wheel_reg)) {
             std::string rigid_body = match[1].str();
             std::string node = match[2].str();
             FixedArray<float, 3> position{
@@ -1088,7 +1088,7 @@ void LoadScene::operator()(
                     throw std::runtime_error("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
                 }
             }
-        } else if (REGEX_MATCH(line, match, create_engine_reg)) {
+        } else if (Mlib::re::regex_match(line, match, create_engine_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
@@ -1101,7 +1101,7 @@ void LoadScene::operator()(
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }
-        } else if (REGEX_MATCH(line, match, player_create_reg)) {
+        } else if (Mlib::re::regex_match(line, match, player_create_reg)) {
             auto player = std::make_shared<Player>(
                 scene,
                 physics_engine.collision_query_,
@@ -1116,14 +1116,14 @@ void LoadScene::operator()(
             players.add_player(*player);
             physics_engine.advance_times_.add_advance_time(player);
             physics_engine.add_external_force_provider(player.get());
-        } else if (REGEX_MATCH(line, match, player_set_node_reg)) {
+        } else if (Mlib::re::regex_match(line, match, player_set_node_reg)) {
             auto node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBody*>(node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Follower movable is not a rigid body");
             }
             players.get_player(match[1].str()).set_rigid_body(match[2].str(), *node, *rb);
-        } else if (REGEX_MATCH(line, match, player_set_aiming_gun_reg)) {
+        } else if (Mlib::re::regex_match(line, match, player_set_aiming_gun_reg)) {
             auto ypln_node = scene.get_node(match[2].str());
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(ypln_node->get_relative_movable());
             if (ypln == nullptr) {
@@ -1138,43 +1138,43 @@ void LoadScene::operator()(
                 }
             }
             players.get_player(match[1].str()).set_ypln(*ypln, gun);
-        } else if (REGEX_MATCH(line, match, player_set_surface_power_reg)) {
+        } else if (Mlib::re::regex_match(line, match, player_set_surface_power_reg)) {
             players.get_player(match[1].str()).set_surface_power(
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str()));
-        } else if (REGEX_MATCH(line, match, player_set_tire_angle_reg)) {
+        } else if (Mlib::re::regex_match(line, match, player_set_tire_angle_reg)) {
             players.get_player(match[1].str()).set_tire_angle_y(
                 safe_stoi(match[2].str()),
                 float(M_PI) / 180.f * safe_stof(match[3].str()),
                 float(M_PI) / 180.f * safe_stof(match[4].str()));
-        } else if (REGEX_MATCH(line, match, player_set_angular_velocity_reg)) {
+        } else if (Mlib::re::regex_match(line, match, player_set_angular_velocity_reg)) {
             players.get_player(match[1].str()).set_angular_velocity(
                 float(M_PI) / 180.f * safe_stof(match[2].str()),
                 float(M_PI) / 180.f * safe_stof(match[3].str()));
-        } else if (REGEX_MATCH(line, match, player_set_waypoint_reg)) {
+        } else if (Mlib::re::regex_match(line, match, player_set_waypoint_reg)) {
             players.get_player(match[1].str()).set_waypoint({
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str())});
-        } else if (REGEX_MATCH(line, match, team_set_waypoint_reg)) {
+        } else if (Mlib::re::regex_match(line, match, team_set_waypoint_reg)) {
             players.set_team_waypoint(
                 match[1].str(), {
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())});
-        } else if (REGEX_MATCH(line, match, camera_key_binding_reg)) {
+        } else if (Mlib::re::regex_match(line, match, camera_key_binding_reg)) {
             key_bindings.add_camera_key_binding(CameraKeyBinding{
                 .base = {
                     .key = match[1].str(),
                     .gamepad_button = match[2].str(),
                     .joystick_axis = match[3].str(),
                     .joystick_axis_sign = safe_stof(match[4].str())}});
-        } else if (REGEX_MATCH(line, match, abs_idle_binding_reg)) {
+        } else if (Mlib::re::regex_match(line, match, abs_idle_binding_reg)) {
             key_bindings.add_absolute_movable_idle_binding(AbsoluteMovableIdleBinding{
                 .node = scene.get_node(match[1].str()),
                 .tires_z = {
                     match[2].str().empty() ? 0.f : safe_stof(match[2].str()),
                     match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
                     match[4].str().empty() ? 1.f : safe_stof(match[4].str())}});
-        } else if (REGEX_MATCH(line, match, abs_key_binding_reg)) {
+        } else if (Mlib::re::regex_match(line, match, abs_key_binding_reg)) {
             key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
                 .base_key = {
                     .key = match[2].str(),
@@ -1206,7 +1206,7 @@ void LoadScene::operator()(
                     match[20].str().empty() ? 0.f : safe_stof(match[20].str()),
                     match[21].str().empty() ? 0.f : safe_stof(match[21].str()),
                     match[22].str().empty() ? 0.f : safe_stof(match[22].str())}});
-        } else if (REGEX_MATCH(line, match, rel_key_binding_reg)) {
+        } else if (Mlib::re::regex_match(line, match, rel_key_binding_reg)) {
             key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
                 .base_key = {
                     .key = match[2].str(),
@@ -1222,7 +1222,7 @@ void LoadScene::operator()(
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())}});
-        } else if (REGEX_MATCH(line, match, gun_key_binding_reg)) {
+        } else if (Mlib::re::regex_match(line, match, gun_key_binding_reg)) {
             key_bindings.add_gun_key_binding(GunKeyBinding{
                 .base = {
                     .key = match[2].str(),
@@ -1230,7 +1230,7 @@ void LoadScene::operator()(
                     .joystick_axis = match[4].str(),
                     .joystick_axis_sign = match[5].str().empty() ? 0 : safe_stof(match[5].str())},
                 .node = scene.get_node(match[1].str())});
-        } else if (REGEX_MATCH(line, match, console_log_reg)) {
+        } else if (Mlib::re::regex_match(line, match, console_log_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
             auto lo = dynamic_cast<StatusWriter*>(mv);
@@ -1240,7 +1240,7 @@ void LoadScene::operator()(
             unsigned int log_components = safe_stoi(match[2].str());
             auto logger = std::make_shared<MovableLogger>(*node, physics_engine.advance_times_, lo, log_components);
             physics_engine.advance_times_.add_advance_time(logger);
-        } else if (REGEX_MATCH(line, match, visual_global_log_reg)) {
+        } else if (Mlib::re::regex_match(line, match, visual_global_log_reg)) {
             auto logger = std::make_shared<VisualGlobalLog>(
                 base_log,
                 fpath(match[1].str()),
@@ -1252,7 +1252,7 @@ void LoadScene::operator()(
                 safe_stoz(match[6].str()),
                 log_entry_severity_from_string(match[7].str()));
             render_logics.append(nullptr, logger);
-        } else if (REGEX_MATCH(line, match, visual_node_status_reg)) {
+        } else if (Mlib::re::regex_match(line, match, visual_node_status_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
             auto lo = dynamic_cast<StatusWriter*>(mv);
@@ -1273,7 +1273,7 @@ void LoadScene::operator()(
                 safe_stof(match[7].str()));
             render_logics.append(node, logger);
             physics_engine.advance_times_.add_advance_time(logger);
-        } else if (REGEX_MATCH(line, match, visual_node_status_3rd_reg)) {
+        } else if (Mlib::re::regex_match(line, match, visual_node_status_3rd_reg)) {
             auto node = scene.get_node(match[1].str());
             auto mv = node->get_absolute_movable();
             auto lo = dynamic_cast<StatusWriter*>(mv);
@@ -1295,7 +1295,7 @@ void LoadScene::operator()(
                 safe_stof(match[7].str()));
             render_logics.append(node, logger);
             physics_engine.advance_times_.add_advance_time(logger);
-        } else if (REGEX_MATCH(line, match, countdown_reg)) {
+        } else if (Mlib::re::regex_match(line, match, countdown_reg)) {
             auto countdown_logic = std::make_shared<CountDownLogic>(
                 fpath(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
@@ -1306,7 +1306,7 @@ void LoadScene::operator()(
                 ui_focus.focuses,
                 safe_stof(match[6].str()));       // nseconds
             render_logics.append(nullptr, countdown_logic);
-        } else if (REGEX_MATCH(line, match, loading_reg)) {
+        } else if (Mlib::re::regex_match(line, match, loading_reg)) {
             auto loading_logic = std::make_shared<LoadingTextLogic>(
                 fpath(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
@@ -1316,7 +1316,7 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()),        // line_distance_pixels
                 match[6].str());                  // text
             render_logics.append(nullptr, loading_logic);
-        } else if (REGEX_MATCH(line, match, players_stats_reg)) {
+        } else if (Mlib::re::regex_match(line, match, players_stats_reg)) {
             auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
                 players,
                 fpath(match[1].str()),            // ttf_filename
@@ -1326,7 +1326,7 @@ void LoadScene::operator()(
                 safe_stof(match[4].str()),        // font_height_pixels
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
-        } else if (REGEX_MATCH(line, match, pause_on_lose_focus_reg)) {
+        } else if (Mlib::re::regex_match(line, match, pause_on_lose_focus_reg)) {
             Focus focus_mask = focus_from_string(match[1].str());
             Focuses& focuses = ui_focus.focuses;
             auto polf = std::make_shared<PauseOnLoseFocusLogic>(
@@ -1334,7 +1334,7 @@ void LoadScene::operator()(
                 focuses,
                 focus_mask);
             render_logics.append(nullptr, polf);
-        } else if (REGEX_MATCH(line, match, scene_selector_reg)) {
+        } else if (Mlib::re::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
             for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
                 scene_entries.push_back(SceneEntry{
@@ -1356,7 +1356,7 @@ void LoadScene::operator()(
                 button_press,
                 selection_ids[match[1].str()]);
             render_logics.append(nullptr, scene_selector_logic);
-        } else if (REGEX_MATCH(line, match, scene_to_texture_reg)) {
+        } else if (Mlib::re::regex_match(line, match, scene_to_texture_reg)) {
             auto wit = renderable_scenes.find("primary_scene");
             if (wit == renderable_scenes.end()) {
                 throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
@@ -1371,7 +1371,7 @@ void LoadScene::operator()(
                 safe_stoi(match[4].str()),        // texture_height
                 focus_from_string(match[5].str()));
             wit->second->render_logics_.prepend(nullptr, scene_window_logic);
-        } else if (REGEX_MATCH(line, match, fill_pixel_region_with_texture_reg)) {
+        } else if (Mlib::re::regex_match(line, match, fill_pixel_region_with_texture_reg)) {
             std::string source_scene = match[1].str();
             auto wit = renderable_scenes.find(source_scene);
             if (wit == renderable_scenes.end()) {
@@ -1392,7 +1392,7 @@ void LoadScene::operator()(
                     focus_from_string(match[8].str()));
             }
             render_logics.append(nullptr, scene_window_logic);
-        } else if (REGEX_MATCH(line, match, scene_to_pixel_region_reg)) {
+        } else if (Mlib::re::regex_match(line, match, scene_to_pixel_region_reg)) {
             std::string target_scene = match[1].str();
             auto wit = renderable_scenes.find(target_scene);
             if (wit == renderable_scenes.end()) {
@@ -1409,9 +1409,9 @@ void LoadScene::operator()(
                     safe_stoi(match[5].str())},
                 focus_from_string(match[6].str()));
             wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
-        } else if (REGEX_MATCH(line, match, clear_parameters_reg)) {
+        } else if (Mlib::re::regex_match(line, match, clear_parameters_reg)) {
             substitutions.clear();
-        } else if (REGEX_MATCH(line, match, parameter_setter_reg)) {
+        } else if (Mlib::re::regex_match(line, match, parameter_setter_reg)) {
             std::string id = match[1].str();
             std::string ttf_filename = fpath(match[2].str());
             FixedArray<float, 2> position{
@@ -1454,16 +1454,16 @@ void LoadScene::operator()(
                 macro_line_executor(on_init, rsc);
             }
             render_logics.append(nullptr, parameter_setter_logic);
-        } else if (REGEX_MATCH(line, match, ui_background_reg)) {
+        } else if (Mlib::re::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 fpath(match[1].str()),
                 resource_update_cycle_from_string(match[2].str()),
                 focus_from_string(match[3].str()));
             render_logics.append(nullptr, bg);
-        } else if (REGEX_MATCH(line, match, set_renderable_style_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_renderable_style_reg)) {
             auto node = scene.get_node(match[2].str());
             node->set_style(new Style{
-                .selector = std::regex{match[1].str()},
+                .selector = Mlib::compile_regex(match[1].str()),
                 .ambience = {
                     safe_stof(match[3].str()),
                     safe_stof(match[4].str()),
@@ -1481,7 +1481,7 @@ void LoadScene::operator()(
                     .loop_begin = safe_stof(match[13].str()),
                     .loop_end = safe_stof(match[14].str()),
                     .loop_time = safe_stof(match[15].str())}});
-        } else if (REGEX_MATCH(line, match, hud_image_reg)) {
+        } else if (Mlib::re::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
                 *node,
@@ -1496,14 +1496,14 @@ void LoadScene::operator()(
                     safe_stof(match[7].str())});
             render_logics.append(node, hud_image);
             physics_engine.advance_times_.add_advance_time(hud_image);
-        } else if (REGEX_MATCH(line, match, perspective_camera_reg)) {
+        } else if (Mlib::re::regex_match(line, match, perspective_camera_reg)) {
             auto node = scene.get_node(match[1].str());
             node->set_camera(std::make_shared<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::PERSPECTIVE));
             node->get_camera()->set_y_fov(safe_stof(match[2].str()));
             node->get_camera()->set_near_plane(safe_stof(match[3].str()));
             node->get_camera()->set_far_plane(safe_stof(match[4].str()));
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[5].str()));
-        } else if (REGEX_MATCH(line, match, ortho_camera_reg)) {
+        } else if (Mlib::re::regex_match(line, match, ortho_camera_reg)) {
             auto node = scene.get_node(match[1].str());
             node->set_camera(std::make_shared<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::ORTHO));
             node->get_camera()->set_near_plane(safe_stof(match[2].str()));
@@ -1513,7 +1513,7 @@ void LoadScene::operator()(
             node->get_camera()->set_bottom_plane(safe_stof(match[6].str()));
             node->get_camera()->set_top_plane(safe_stof(match[7].str()));
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[8].str()));
-        } else if (REGEX_MATCH(line, match, light_reg)) {
+        } else if (Mlib::re::regex_match(line, match, light_reg)) {
             std::lock_guard lock_guard{mutex};
             std::string node_name = match[1].str();
             SceneNode* node = scene.get_node(node_name);
@@ -1539,7 +1539,7 @@ void LoadScene::operator()(
                 .node_name = node_name,
                 .only_black = !match[2].str().empty(),
                 .shadow = safe_stob(match[14].str())});
-        } else if (REGEX_MATCH(line, match, look_at_node_reg)) {
+        } else if (Mlib::re::regex_match(line, match, look_at_node_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());
             auto follower = std::make_shared<LookAtMovable>(
@@ -1549,7 +1549,7 @@ void LoadScene::operator()(
                 followed_node,
                 followed_node->get_absolute_movable());
             linker.link_absolute_movable(*follower_node, follower);
-        } else if (REGEX_MATCH(line, match, keep_offset_reg)) {
+        } else if (Mlib::re::regex_match(line, match, keep_offset_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());
             auto follower = std::make_shared<KeepOffsetMovable>(
@@ -1563,7 +1563,7 @@ void LoadScene::operator()(
                     safe_stof(match[4].str()),
                     safe_stof(match[5].str())});
             linker.link_absolute_movable(*follower_node, follower);
-        } else if (REGEX_MATCH(line, match, yaw_pitch_look_at_nodes_reg)) {
+        } else if (Mlib::re::regex_match(line, match, yaw_pitch_look_at_nodes_reg)) {
             auto yaw_node = scene.get_node(match[1].str());
             auto pitch_node = scene.get_node(match[2].str());
             auto follower_node = scene.get_node(match[3].str());
@@ -1591,7 +1591,7 @@ void LoadScene::operator()(
                 scene_config.physics_engine_config);
             linker.link_relative_movable(*yaw_node, follower);
             linker.link_relative_movable(*pitch_node, follower->pitch_look_at_node());
-        } else if (REGEX_MATCH(line, match, follow_node_reg)) {
+        } else if (Mlib::re::regex_match(line, match, follow_node_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());
             auto distance = safe_stof(match[3].str());
@@ -1614,7 +1614,7 @@ void LoadScene::operator()(
                 scene_config.physics_engine_config.dt);
             linker.link_absolute_movable(*follower_node, follower);
             follower->initialize(*follower_node);
-        } else if (REGEX_MATCH(line, match, record_track_reg)) {
+        } else if (Mlib::re::regex_match(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
             auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());
             if (rb == nullptr) {
@@ -1626,7 +1626,7 @@ void LoadScene::operator()(
                 recorder_node,
                 &rb->rbi_,
                 ui_focus.focuses));
-        } else if (REGEX_MATCH(line, match, playback_track_reg)) {
+        } else if (Mlib::re::regex_match(line, match, playback_track_reg)) {
             auto playback_node = scene.get_node(match[1].str());
             auto playback = std::make_shared<RigidBodyPlayback>(
                 fpath(match[3].str()),
@@ -1634,7 +1634,7 @@ void LoadScene::operator()(
                 ui_focus.focuses,
                 safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
-        } else if (REGEX_MATCH(line, match, check_points_reg)) {
+        } else if (Mlib::re::regex_match(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
             physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
                 fpath(match[9].str()),                  // filename
@@ -1651,19 +1651,19 @@ void LoadScene::operator()(
                 scene_node_resources,
                 scene,
                 safe_stob(match[8].str())));            // enable_height_changed_mode
-        } else if (REGEX_MATCH(line, match, set_camera_cycle_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_camera_cycle_reg)) {
             std::string cameras = match[2].str();
             auto& cycle = (match[1].str() == "near")
                 ? selected_cameras.camera_cycle_near
                 : selected_cameras.camera_cycle_far;
             cycle = string_to_vector(cameras);
-        } else if (REGEX_MATCH(line, match, set_camera_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_camera_reg)) {
             selected_cameras.set_camera_node_name(match[1].str());
-        } else if (REGEX_MATCH(line, match, set_dirtmap_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_dirtmap_reg)) {
             dirtmap_logic.set_filename(fpath(match[1].str()));
             secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[2].str()));
             secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
-        } else if (REGEX_MATCH(line, match, set_skybox_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_skybox_reg)) {
             skybox_logic.set_filenames({
                 fpath(match[2].str()),
                 fpath(match[3].str()),
@@ -1672,7 +1672,7 @@ void LoadScene::operator()(
                 fpath(match[6].str()),
                 fpath(match[7].str())},
                 match[1].str());
-        } else if (REGEX_MATCH(line, match, set_preferred_car_spawner_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_preferred_car_spawner_reg)) {
             std::string player = match[1].str();
             std::string macro = match[2].str();
             std::string parameters = match[3].str();
@@ -1703,18 +1703,18 @@ void LoadScene::operator()(
                     macro_line_executor(sstr.str(), rsc);
                 }
             );
-        } else if (REGEX_MATCH(line, match, set_vip_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_vip_reg)) {
             game_logic.set_vip(&players.get_player(match[1].str()));
-        } else if (REGEX_MATCH(line, match, set_spawn_points_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_spawn_points_reg)) {
             SceneNode* node = scene.get_node(match[1].str());
             std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[2].str());
             game_logic.set_spawn_points(*node, spawn_points);
-        } else if (REGEX_MATCH(line, match, set_way_points_reg)) {
+        } else if (Mlib::re::regex_match(line, match, set_way_points_reg)) {
             Player& player = players.get_player(match[1].str());
             SceneNode* node = scene.get_node(match[2].str());
             std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points = scene_node_resources.way_points(match[3].str());
             player.set_waypoints(*node, way_points);
-        } else if (REGEX_MATCH(line, match, burn_in_reg)) {
+        } else if (Mlib::re::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
         } else {
             return false;

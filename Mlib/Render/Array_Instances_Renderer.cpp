@@ -32,7 +32,7 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
         cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});
     }
     auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, cva_instances);
-    auto rcvai = std::make_unique<RenderableColoredVertexArrayInstance>(rcva, SceneNodeResourceFilter{});
+    auto rcvai = std::make_unique<RenderableColoredVertexArrayInstance>(rcva, SceneNodeResourceFilter());
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};
         std::swap(rcva_, rcva);

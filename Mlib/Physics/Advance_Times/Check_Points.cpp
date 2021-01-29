@@ -73,7 +73,7 @@ void CheckPoints::advance_time(float dt) {
                 checkpoints_ahead_.push_back({.position = position, .rotation = rotation});
                 if (i01_ == beacon_nodes_.size()) {
                     SceneNode* node = new SceneNode;
-                    scene_node_resources_.instantiate_renderable(resource_name_, "check_point_beacon_" + std::to_string(i01_), *node, SceneNodeResourceFilter{});
+                    scene_node_resources_.instantiate_renderable(resource_name_, "check_point_beacon_" + std::to_string(i01_), *node, SceneNodeResourceFilter());
                     scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), node);
                     beacon_nodes_.push_back(node);
                 }

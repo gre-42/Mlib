@@ -28,8 +28,8 @@ std::string merge_replacements(const std::initializer_list<const std::string>& r
 
 void find_all(
     const std::string& str,
-    const std::regex& pattern,
-    const std::function<void(const std::smatch&)>& f);
+    const Mlib::regex& pattern,
+    const std::function<void(const Mlib::re::smatch&)>& f);
 
 std::list<std::pair<std::string, std::string>> find_all_name_values(
     const std::string& str,

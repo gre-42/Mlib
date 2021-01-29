@@ -326,7 +326,7 @@ void SceneNode::render(
             scene_graph_config,
             render_config,
             {external_render_pass, InternalRenderPass::INITIAL},
-            (estyle != nullptr) && std::regex_search(r.first, estyle->selector)
+            (estyle != nullptr) && Mlib::re::regex_search(r.first, estyle->selector)
                 ? estyle
                 : nullptr);
     }

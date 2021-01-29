@@ -68,7 +68,7 @@ void Gun::advance_time(float dt) {
             bullet_renderable_resource_name_,
             "bullet",
             *node,
-            SceneNodeResourceFilter{});
+            SceneNodeResourceFilter());
         rigid_bodies_.add_rigid_body(
             rc,
             scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->cvas,

@@ -72,11 +72,11 @@ void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNod
     // std::unique_lock lock_guard1{scene.static_mutex_};
     // std::unique_lock lock_guard2{scene.aggregate_mutex_};
 
-    rva_->instantiate_renderable("plane", scene_node, SceneNodeResourceFilter{});
+    rva_->instantiate_renderable("plane", scene_node, SceneNodeResourceFilter());
 
     auto node90 = new SceneNode;
     node90->set_rotation({0.f, -float{M_PI} / 2.f, 0.f });
-    rva_->instantiate_renderable("plane", *node90, SceneNodeResourceFilter{});
+    rva_->instantiate_renderable("plane", *node90, SceneNodeResourceFilter());
     scene_node.add_aggregate_child("node90", node90);
 }
 
