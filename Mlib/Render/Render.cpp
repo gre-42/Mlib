@@ -136,7 +136,7 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
 
     CHK(glGenBuffers(1, &vertex_buffer));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer));
-    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(ColoredVertex) * vertices.size(), &*vertices.begin(), GL_STATIC_DRAW));
+    CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(ColoredVertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW));
 
     CHK(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
     CHK(glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL));
