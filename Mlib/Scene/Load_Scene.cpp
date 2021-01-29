@@ -1695,6 +1695,7 @@ void LoadScene::operator()(
                         " HUMAN_NODE_ANGLE_Y:" << 180.f / float(M_PI) * std::atan2(z(0), z(2)) <<
                         " " << parameters <<
                         " -SUFFIX:_" << player <<
+                        " IF_WITH_GRAPHICS:" <<
                         " IF_WITH_PHYSICS:" <<
                         " IF_RACING:#" <<
                         " IF_RALLY:" <<
