@@ -29,24 +29,28 @@ struct CalledFunction {
     size_t stack_size = SIZE_MAX;
 };
 
+struct ThreadTimeInfo {
+    std::vector<TimeEvent> events;
+    std::vector<CalledFunction> called_functions;
+    size_t stack_size = 0;
+    size_t event_id = 0;
+    size_t called_function_id = 0;
+};
+
 class TimeGuard {
 public:
     TimeGuard(const char* message, const std::string& group);
     ~TimeGuard();
     static void initialize(size_t max_log_length);
-    static void write_svg(const std::string& filename);
+    static void write_svg(const std::thread::id& tid, const std::string& filename);
     static void print_groups(std::ostream& ostr);
-    static bool is_empty();
+    static bool is_empty(const std::thread::id& tid);
 private:
     static void insert_event(const TimeEvent& e);
     static void insert_called_function(const CalledFunction& e);
     static std::chrono::time_point<std::chrono::steady_clock> global_start_time_;
-    static std::map<std::thread::id, std::vector<TimeEvent>> events_;
-    static std::map<std::thread::id, std::vector<CalledFunction>> called_functions_;
-    static thread_local size_t stack_size_;
+    static std::map<std::thread::id, ThreadTimeInfo> thread_time_infos_;
     static size_t max_log_length_;
-    static thread_local size_t event_id_;
-    static thread_local size_t called_function_id_;
     CalledFunction called_function_;
 };
 

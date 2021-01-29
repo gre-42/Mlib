@@ -274,9 +274,9 @@ int main(int argc, char** argv) {
             main_scene_filename = next_scene_filename;
         }
 
-        if (!TimeGuard::is_empty()) {
+        if (!TimeGuard::is_empty(std::this_thread::get_id())) {
             std::cerr << "write svg" << std::endl;
-            TimeGuard::write_svg("/tmp/events.svg");
+            TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");
         }
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;
