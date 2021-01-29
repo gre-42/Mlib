@@ -72,21 +72,27 @@ void TimeGuard::write_svg(const std::string& filename) {
     }
 }
 
+struct NAndDuration {
+    size_t n = 0;
+    std::chrono::duration<double, std::milli> total_duration{ 0 };
+};
+
 void TimeGuard::print_groups(std::ostream& ostr) {
-    std::map<std::thread::id, std::map<std::string, std::chrono::duration<double, std::milli>>> durations;
+    std::map<std::thread::id, std::map<std::string, NAndDuration>> durations;
     for (const auto& t : called_functions_) {
         auto& d = durations[t.first];
         for (const auto& f : t.second) {
             std::chrono::duration<double, std::milli> dt = (f.end_time - f.start_time);
-            d[f.group] += dt;
+            d[f.group].total_duration += dt;
+            ++d[f.group].n;
         }
     }
     for (const auto& t : durations) {
         ostr << "Thread: " << t.first << '\n';
         std::chrono::duration<double, std::milli> total{ 0 };
         for (const auto& d : t.second) {
-            ostr << "  " << d.second.count() << ' ' << d.first << '\n';
-            total += d.second;
+            ostr << "  " << d.second.total_duration.count() << " (" << d.second.n << ") " << d.first << '\n';
+            total += d.second.total_duration;
         }
         ostr << "Total: " << total.count() << '\n';
     }
