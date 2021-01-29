@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <atomic>
@@ -37,12 +38,12 @@ public:
         const std::string& name,
         SceneNode* scene_node);
     void delete_root_node(const std::string& name);
-    void delete_root_nodes(const std::regex& regex);
+    void delete_root_nodes(const Mlib::regex& regex);
     void register_node(
         const std::string& name,
         SceneNode* scene_node);
     void unregister_node(const std::string& name);
-    void unregister_nodes(const std::regex& regex);
+    void unregister_nodes(const Mlib::regex& regex);
     SceneNode* get_node(const std::string& name) const;
     void render(
         const FixedArray<float, 4, 4>& vp,

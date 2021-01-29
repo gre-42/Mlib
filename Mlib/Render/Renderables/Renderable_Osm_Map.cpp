@@ -10,6 +10,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Calculate_Waypoints.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Draw_Streets.hpp>
@@ -99,13 +100,13 @@ RenderableOsmMap::RenderableOsmMap(
 {
     LOG_FUNCTION("RenderableOsmMap::RenderableOsmMap");
     std::ifstream ifs{filename};
-    static const std::regex node_reg("^ +<node id=[\"'](-?\\w+)[\"'] .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
-    static const std::regex way_reg("^ +<way id=[\"'](-?\\w+)[\"'].* visible=[\"'](true|false)[\"'].*>$");
-    static const std::regex way_end_reg("^ +</way>$");
-    static const std::regex node_ref_reg("^  +<nd ref=[\"'](-?\\w+)[\"'] */>$");
-    static const std::regex bounds_reg(" +<bounds minlat=[\"']([\\w.-]+)[\"'] minlon=[\"']([\\w.-]+)[\"'] maxlat=[\"']([\\w.-]+)[\"'] maxlon=[\"']([\\w.-]+)[\"'](?: origin=[\"'].*[\"'])? */>$");
-    static const std::regex tag_reg("  +<tag k=[\"']([\\w:;.&|*=-]+)[\"'] v=[\"'](.*)[\"'] */>$");
-    static const std::regex ignored_reg(
+    static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'] .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
+    static const DECLARE_REGEX(way_reg, "^ +<way id=[\"'](-?\\w+)[\"'].* visible=[\"'](true|false)[\"'].*>$");
+    static const DECLARE_REGEX(way_end_reg, "^ +</way>$");
+    static const DECLARE_REGEX(node_ref_reg, "^  +<nd ref=[\"'](-?\\w+)[\"'] */>$");
+    static const DECLARE_REGEX(bounds_reg, " +<bounds minlat=[\"']([\\w.-]+)[\"'] minlon=[\"']([\\w.-]+)[\"'] maxlat=[\"']([\\w.-]+)[\"'] maxlon=[\"']([\\w.-]+)[\"'](?: origin=[\"'].*[\"'])? */>$");
+    static const DECLARE_REGEX(tag_reg, "  +<tag k=[\"']([\\w:;.&|*=-]+)[\"'] v=[\"'](.*)[\"'] */>$");
+    static const DECLARE_REGEX(ignored_reg,
         "^(?:"
         "<\\?xml .*|"
         "<osm .*|"
@@ -135,10 +136,10 @@ RenderableOsmMap::RenderableOsmMap(
         if (line.length() == 0) {
             continue;
         }
-        std::smatch match;
-        if (std::regex_match(line, ignored_reg)) {
+        Mlib::re::smatch match;
+        if (Mlib::re::regex_match(line, ignored_reg)) {
             // do nothing
-        } else if (std::regex_match(line, match, bounds_reg)) {
+        } else if (Mlib::re::regex_match(line, match, bounds_reg)) {
             FixedArray<double, 2> bounds_min{
                 safe_stod(match[1].str()),
                 safe_stod(match[2].str())};
@@ -165,7 +166,7 @@ RenderableOsmMap::RenderableOsmMap(
                 std::cerr << "max lon " << std::setprecision(15) << bounds_max_merged(1) << std::endl;
             }
             normalization_matrix_defined = true;
-        } else if (std::regex_match(line, match, node_reg)) {
+        } else if (Mlib::re::regex_match(line, match, node_reg)) {
             current_way = "<none>";
             current_node = match[1].str();
             if (!normalization_matrix_defined) {
@@ -193,7 +194,7 @@ RenderableOsmMap::RenderableOsmMap(
                 //     std::cerr << "err: " << dist << " " << match[1].str() << std::endl;
                 // }
             }
-        } else if (std::regex_match(line, match, way_reg)) {
+        } else if (Mlib::re::regex_match(line, match, way_reg)) {
             current_node = "<none>";
             if (match[2].str() == "true") {
                 current_way = match[1].str();
@@ -201,14 +202,14 @@ RenderableOsmMap::RenderableOsmMap(
             } else {
                 current_way = "<invisible>";
             }
-        } else if (std::regex_match(line, match, node_ref_reg)) {
+        } else if (Mlib::re::regex_match(line, match, node_ref_reg)) {
             if (current_way == "<none>") {
                 throw std::runtime_error("No current way");
             }
             if (current_way != "<invisible>") {
                 ways.at(current_way).nd.push_back(match[1].str());
             }
-        } else  if (std::regex_match(line, match, tag_reg)) {
+        } else  if (Mlib::re::regex_match(line, match, tag_reg)) {
             assert_true((current_node == "<none>") || (current_way == "<none>"));
             auto tag = std::make_pair(match[1].str(), match[2].str());
             if (current_node != "<none>") {
@@ -223,7 +224,7 @@ RenderableOsmMap::RenderableOsmMap(
                     }
                 }
             }
-        } else if (std::regex_match(line, way_end_reg)) {
+        } else if (Mlib::re::regex_match(line, way_end_reg)) {
             current_way = "<none>";
         } else {
             throw std::runtime_error("Could not parse line " + line);

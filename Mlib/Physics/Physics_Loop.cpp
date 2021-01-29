@@ -48,13 +48,13 @@ PhysicsLoop::PhysicsLoop(
         {
             std::lock_guard lock{mutex};
             {
-                static const std::regex re{"^beacon.*"};
+                static const DECLARE_REGEX(re, "^beacon.*");
                 scene.delete_root_nodes(re);
                 size_t i = 0;
                 for (const auto& beacon : beacons) {
                     SceneNode* node = new SceneNode;
                     scene.add_root_node("beacon" + std::to_string(i), new SceneNode);
-                    scene_node_resources.instantiate_renderable(beacon.resource_name, "box", *node, SceneNodeResourceFilter{});
+                    scene_node_resources.instantiate_renderable(beacon.resource_name, "box", *node, SceneNodeResourceFilter());
                     node->set_position(beacon.position);
                     // node->set_scale(0.05);
                     ++i;

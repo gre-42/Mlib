@@ -8,8 +8,8 @@ using namespace Mlib;
 void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
 {
     std::ifstream ifs{macro_line_executor.script_filename_};
-    static const std::regex macro_begin_reg("^\\s*macro_begin ([\\w+-.]+)$");
-    static const std::regex macro_end_reg("^\\s*macro_end$");
+    static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");
+    static const DECLARE_REGEX(macro_end_reg, "^\\s*macro_end$");
 
     std::string line;
     std::list<std::pair<std::string, Macro>> recording_macros;
@@ -17,11 +17,11 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
         if (line.length() > 0 && line[line.length() - 1] == '\r') {
             line = line.substr(0, line.length() - 1);
         }
-        std::smatch match;
+        Mlib::re::smatch match;
 
-        if (std::regex_match(line, match, macro_begin_reg)) {
+        if (Mlib::re::regex_match(line, match, macro_begin_reg)) {
             recording_macros.push_back(std::make_pair(match[1].str(), Macro{.filename = macro_line_executor.script_filename_}));
-        } else if (std::regex_match(line, match, macro_end_reg)) {
+        } else if (Mlib::re::regex_match(line, match, macro_end_reg)) {
             if (recording_macros.empty()) {
                 throw std::runtime_error("Macro-end despite no active macro");
             }

@@ -11,6 +11,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Rectangle.hpp>
 #include <Mlib/Render/Renderables/Resource_Instance_Descriptor.hpp>
@@ -177,9 +178,9 @@ float Mlib::parse_meters(const std::map<std::string, std::string>& tags, const s
     if (it == tags.end()) {
         return default_value;
     }
-    static const std::regex re{"^([\\d.-]+) *(m|')?"};
-    std::smatch match;
-    if (std::regex_match(it->second, match, re)) {
+    static const DECLARE_REGEX(re, "^([\\d.-]+) *(m|')?");
+    Mlib::re::smatch match;
+    if (Mlib::re::regex_match(it->second, match, re)) {
         float res = safe_stof(match[1].str());
         if (match[2].str() == "'") {
             res *= 0.3048f;
@@ -1203,11 +1204,11 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
 : rng0_{1, 0, names.size() - 1},
   rng_{2}
 {
-    static const std::regex re{"^(.*?)\\(p:([\\d+.e-]+)(?:,hitbox:(\\w+))?\\)$"};
+    static const DECLARE_REGEX(re, "^(.*?)\\(p:([\\d+.e-]+)(?:,hitbox:(\\w+))?\\)$");
     names_.reserve(names.size());
     for (const std::string& name : names) {
-        std::smatch match;
-        if (std::regex_match(name, match, re)) {
+        Mlib::re::smatch match;
+        if (Mlib::re::regex_match(name, match, re)) {
             names_.push_back(ParsedResourceName{
                 .name = match[1].str(),
                 .probability = safe_stof(match[2].str()),

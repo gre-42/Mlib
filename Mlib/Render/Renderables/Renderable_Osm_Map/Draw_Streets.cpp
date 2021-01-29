@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Rectangle.hpp>
@@ -61,7 +62,7 @@ void DrawStreets::initialize_arrays() {
 }
 
 void DrawStreets::calculate_neighbors() {
-    std::regex name_re{name_pattern};
+    DECLARE_REGEX(name_re, name_pattern);
     std::set<std::string> node_no_way_length;
     for (const auto& w : ways) {
         FixedArray<float, 3> color;
@@ -94,7 +95,7 @@ void DrawStreets::calculate_neighbors() {
             if (only_raceways && (tags.at("highway") != "raceway")) {
                 continue;
             }
-            if (!name_pattern.empty() && ((tags.find("name") == tags.end()) || !std::regex_match(tags.at("name"), name_re))) {
+            if (!name_pattern.empty() && ((tags.find("name") == tags.end()) || !Mlib::re::regex_match(tags.at("name"), name_re))) {
                 continue;
             }
             if (tags.find("area") != tags.end() && tags.at("area") == "yes") {

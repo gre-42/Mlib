@@ -1,6 +1,7 @@
 #include "Load_Bvh.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/String.hpp>
 #include <fstream>
 #include <regex>
@@ -39,17 +40,17 @@ BvhLoader::BvhLoader(
     size_t nframes = SIZE_MAX;
     while (std::getline(f, line)) {
         if (!in_data_section) {
-            static const std::regex name_re{"^[\\s\\n\\r]*(?:ROOT|JOINT)\\s+(\\w+)[\\s\\n\\r]*$"};
-            static const std::regex ends_re{"^[\\s\\n\\r]*End Site[\\s\\n\\r]*$"};
-            static const std::regex offs_re{"^[\\s\\n\\r]*OFFSET\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)[\\n\\r]*$"};
-            static const std::regex chan_re{"^[\\s\\n\\r]*CHANNELS\\s+(\\d+)\\s+(.+)[\\n\\r]*$"};
-            static const std::regex motion_re{"^[\\s\\n\\r]*MOTION[\\s\\n\\r]*$"};
-            std::smatch match;
-            if (std::regex_match(line, match, name_re)) {
+            static const DECLARE_REGEX(name_re, "^[\\s\\n\\r]*(?:ROOT|JOINT)\\s+(\\w+)[\\s\\n\\r]*$");
+            static const DECLARE_REGEX(ends_re, "^[\\s\\n\\r]*End Site[\\s\\n\\r]*$");
+            static const DECLARE_REGEX(offs_re, "^[\\s\\n\\r]*OFFSET\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)[\\n\\r]*$");
+            static const DECLARE_REGEX(chan_re, "^[\\s\\n\\r]*CHANNELS\\s+(\\d+)\\s+(.+)[\\n\\r]*$");
+            static const DECLARE_REGEX(motion_re, "^[\\s\\n\\r]*MOTION[\\s\\n\\r]*$");
+            Mlib::re::smatch match;
+            if (Mlib::re::regex_match(line, match, name_re)) {
                 joint_name = match[1].str();
-            } else if (std::regex_match(line, match, ends_re)) {
+            } else if (Mlib::re::regex_match(line, match, ends_re)) {
                 joint_name = "<end site>";
-            } else if (std::regex_match(line, match, offs_re)) {
+            } else if (Mlib::re::regex_match(line, match, offs_re)) {
                 if (joint_name != "<end site>") {
                     if (!offsets_.insert({joint_name, FixedArray<float, 3>{
                         safe_stof(match[1].str()),
@@ -59,7 +60,7 @@ BvhLoader::BvhLoader(
                         throw std::runtime_error("Could not insert offset for joint " + joint_name);
                     }
                 }
-            } else if (std::regex_match(line, match, chan_re)) {
+            } else if (Mlib::re::regex_match(line, match, chan_re)) {
                 size_t nchannels = safe_stoz(match[1].str());
                 auto channels = string_to_vector(match[2].str());
                 if (channels.size() != nchannels) {
@@ -91,13 +92,13 @@ BvhLoader::BvhLoader(
                     }
                     columns_.push_back(ColumnDescription{.joint_name = joint_name, .pose_index0 = cid0, .pose_index1 = cid1});
                 }
-            } else if (std::regex_match(line, match, motion_re)) {
-                static const std::regex frames_re{"^\\s*Frames:\\s*(\\d+)\\s*"};
-                static const std::regex frame_time_re{"^\\s*Frame Time:\\s*(\\S+)\\s*"};
+            } else if (Mlib::re::regex_match(line, match, motion_re)) {
+                static const DECLARE_REGEX(frames_re, "^\\s*Frames:\\s*(\\d+)\\s*");
+                static const DECLARE_REGEX(frame_time_re, "^\\s*Frame Time:\\s*(\\S+)\\s*");
                 if (!std::getline(f, line)) {
                     throw std::runtime_error("Could not get line");
                 }
-                if (!std::regex_match(line, match, frames_re)) {
+                if (!Mlib::re::regex_match(line, match, frames_re)) {
                     throw std::runtime_error("Could not match frames: \"" + line + '"');
                 }
                 nframes = safe_stoz(match[1].str());
@@ -105,7 +106,7 @@ BvhLoader::BvhLoader(
                 if (!std::getline(f, line)) {
                     throw std::runtime_error("Could not get line");
                 }
-                if (!std::regex_match(line, match, frame_time_re)) {
+                if (!Mlib::re::regex_match(line, match, frame_time_re)) {
                     throw std::runtime_error("Could not match frame time: \"" + line + '"');
                 }
                 frame_time_ = safe_stof(match[1].str());

@@ -36,7 +36,7 @@ void MacroLineExecutor::operator () (
     std::string subst_line = substitutions_.substitute(line, rsc);
     static const DECLARE_REGEX(comment_reg, "^\\s*#[\\S\\s]*$");
     static const DECLARE_REGEX(macro_playback_reg, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?(" + substitute_pattern + ")$");
-    // static const std::regex macro_playback_reg_fast("^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?([^;]*)$");
+    // static const DECLARE_REGEX(macro_playback_reg_fast, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?([^;]*)$");
     static const DECLARE_REGEX(include_reg, "^\\s*include ([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(empty_reg, "^[\\s]*$");
 

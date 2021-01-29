@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
                         *scene_node,
                         SceneNodeResourceFilter{
                             .min_num = safe_stoz(args.named_value("--min_num", "0")),
-                            .regex = std::regex{args.named_value("--regex", "")}});
+                            .regex = Mlib::compile_regex(args.named_value("--regex", ""))});
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     Interp<float> interp{
@@ -447,9 +447,9 @@ int main(int argc, char** argv) {
             bool with_diffusivity = true;
             FixedArray<float, 3> center;
             if (light_configuration == "circle") {
-                center = {0, 10, 0};
+                center = {0.f, 10.f, 0.f};
             } else if (light_configuration == "shifted_circle") {
-                center = {-50, 50, -20};
+                center = {-50.f, 50.f, -20.f};
             } else {
                 throw std::runtime_error("Unknown light configuration");
             }
@@ -492,9 +492,9 @@ int main(int argc, char** argv) {
             lights.push_back(new Light{.node_name = name, .only_black = false, .shadow = false});
             scene.get_node(name)->add_light(lights.back());
             scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-            lights.back()->ambience = FixedArray<float, 3>{1, 1, 1} * safe_stof(args.named_value("--background_light_ambience"));
-            lights.back()->diffusivity = 0;
-            lights.back()->specularity = 0;
+            lights.back()->ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
+            lights.back()->diffusivity = 0.f;
+            lights.back()->specularity = 0.f;
         }
         
         scene.add_root_node("follower_camera", new SceneNode);

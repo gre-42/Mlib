@@ -1,4 +1,5 @@
 #include "Bgr24Raw.hpp"
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/String.hpp>
 #include <fstream>
 #include <regex>
@@ -6,9 +7,9 @@
 using namespace Mlib;
 
 Bgr24Raw Bgr24Raw::load_from_file(const std::string& filename) {
-    static const std::regex re("^.*-(\\d+)x(\\d+)x(\\d+)\\.bgr$");
-    std::smatch match;
-    if (std::regex_match(filename, match, re)) {
+    static const DECLARE_REGEX(re, "^.*-(\\d+)x(\\d+)x(\\d+)\\.bgr$");
+    Mlib::re::smatch match;
+    if (Mlib::re::regex_match(filename, match, re)) {
         if (match[3] != "24") {
             throw std::runtime_error("Only 24-bit raw images are supported");
         }

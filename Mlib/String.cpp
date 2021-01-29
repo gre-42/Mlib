@@ -1,4 +1,5 @@
 #include <Mlib/String.hpp>
+#include <Mlib/Regex_Select.hpp>
 #include <regex>
 #include <stdexcept>
 
@@ -105,9 +106,9 @@ std::strong_ordering Mlib::operator <=> (const std::string& a, const std::string
 
 std::list<std::string> Mlib::string_to_list(const std::string& str) {
     std::list<std::string> res;
-    static const std::regex re{"\\s+"};
-    for (auto it = std::sregex_token_iterator(str.begin(), str.end(), re, -1, std::regex_constants::match_not_null);
-        it != std::sregex_token_iterator();
+    static const DECLARE_REGEX(re, "\\s+");
+    for (auto it = Mlib::re::sregex_token_iterator(str.begin(), str.end(), re, -1, Mlib::re::regex_constants::match_not_null);
+        it != Mlib::re::sregex_token_iterator();
         ++it)
     {
         if (!it->str().empty()) {

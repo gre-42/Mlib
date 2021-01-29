@@ -83,13 +83,13 @@ void Scene::delete_root_node(const std::string& name) {
     unregister_node(name);
 }
 
-void Scene::delete_root_nodes(const std::regex& regex) {
+void Scene::delete_root_nodes(const Mlib::regex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
     std::unique_lock lock{dynamic_mutex_};
     LOG_INFO("Lock acquired");
     for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
         auto n = it++;
-        if (std::regex_match(n->first, regex)) {
+        if (Mlib::re::regex_match(n->first, regex)) {
             root_nodes_.erase(n->first);
         }
     }
@@ -133,11 +133,11 @@ void Scene::unregister_node(const std::string& name) {
     }
 }
 
-void Scene::unregister_nodes(const std::regex& regex) {
+void Scene::unregister_nodes(const Mlib::regex& regex) {
     std::unique_lock lock{registration_mutex_};
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
-        if (std::regex_match(n.first, regex)) {
+        if (Mlib::re::regex_match(n.first, regex)) {
             if (nodes_.erase(n.first) != 1) {
                 throw std::runtime_error("Could not find node with name \"" + n.first + '"');
             }
