@@ -234,7 +234,7 @@ void LoadScene::operator()(
         "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
-        "(?:\\s+aggregate=(true|false))?$");
+        "(?:\\s+aggregate=(0|1))?$");
     static const DECLARE_REGEX(delete_root_node_reg,
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)");
     static const DECLARE_REGEX(renderable_instance_reg, "^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
@@ -862,7 +862,9 @@ void LoadScene::operator()(
                 safe_stof(match[8].str()) / 180.f * float(M_PI)});
             node->set_scale(
                 safe_stof(match[9].str()));
-            bool aggregate = (match[10].str() == "true");
+            bool aggregate = match[10].str().empty()
+                ? false
+                : safe_stob(match[10].str());
             if (match[1].str() == "<dynamic-root>") {
                 if (aggregate) {
                     scene.add_root_aggregate_node(match[2].str(), node);
