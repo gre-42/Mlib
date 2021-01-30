@@ -1059,7 +1059,7 @@ void LoadScene::operator()(
 
                 // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
                 size_t nsprings_tracking = 1;
-                float max_dist = 0.3;
+                float max_dist = 0.3f;
                 auto tp = rb->tires_.insert({
                     tire_id,
                     Tire{
@@ -1327,13 +1327,17 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()));       // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
         } else if (Mlib::re::regex_match(line, match, pause_on_lose_focus_reg)) {
+            auto wit = renderable_scenes.find("primary_scene");
+            if (wit == renderable_scenes.end()) {
+                throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
+            }
             Focus focus_mask = focus_from_string(match[1].str());
             Focuses& focuses = ui_focus.focuses;
             auto polf = std::make_shared<PauseOnLoseFocusLogic>(
                 physics_set_fps,
                 focuses,
                 focus_mask);
-            render_logics.append(nullptr, polf);
+            wit->second->render_logics_.append(nullptr, polf);
         } else if (Mlib::re::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
             for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {

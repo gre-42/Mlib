@@ -9,11 +9,16 @@ using namespace Mlib;
 std::chrono::time_point<std::chrono::steady_clock> TimeGuard::init_time_;
 std::map<std::thread::id, ThreadTimeInfo> TimeGuard::thread_time_infos_;
 size_t TimeGuard::max_log_length_ = 0;
+MaxLogLengthExceededBehavior TimeGuard::max_log_length_exceeded_behavior_;
 
-void TimeGuard::initialize(size_t max_log_length) {
+void TimeGuard::initialize(
+    size_t max_log_length,
+    MaxLogLengthExceededBehavior max_log_length_exceeded_behavior)
+{
     init_time_ = std::chrono::steady_clock::now();
     thread_time_infos_.clear();
     max_log_length_ = max_log_length;
+    max_log_length_exceeded_behavior_ = max_log_length_exceeded_behavior;
 }
 
 void TimeGuard::write_svg(const std::thread::id& tid, const std::string& filename) {
@@ -71,7 +76,7 @@ struct NAndDuration {
 };
 
 void TimeGuard::print_groups(std::ostream& ostr) {
-    std::chrono::duration<double> time_since_init = std::chrono::steady_clock::now() - init_time_;
+    std::chrono::duration<double, std::milli> time_since_init = std::chrono::steady_clock::now() - init_time_;
     std::map<std::thread::id, std::map<std::string, NAndDuration>> durations;
     for (const auto& t : thread_time_infos_) {
         auto& d = durations[t.first];
@@ -101,6 +106,8 @@ void TimeGuard::insert_event(const TimeEvent& e) {
     auto& ar = thread_time_infos_[std::this_thread::get_id()];
     if (ar.event_id < max_log_length_) {
         ar.events.push_back(e);
+    } else if (max_log_length_exceeded_behavior_ == MaxLogLengthExceededBehavior::THROW_EXCEPTION) {
+            throw std::runtime_error("Max log length exceeded");
     } else {
         ar.events[ar.event_id % max_log_length_] = e;
     }
@@ -111,6 +118,8 @@ void TimeGuard::insert_called_function(const CalledFunction& called_function) {
     auto& ar = thread_time_infos_[std::this_thread::get_id()];
     if (ar.called_function_id < max_log_length_) {
         ar.called_functions.push_back(called_function);
+    } else if (max_log_length_exceeded_behavior_ == MaxLogLengthExceededBehavior::THROW_EXCEPTION) {
+            throw std::runtime_error("Max log length exceeded");
     } else {
         ar.called_functions[ar.called_function_id % max_log_length_] = called_function;
     }

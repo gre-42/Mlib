@@ -1,9 +1,11 @@
 #include "Background_Loop.hpp"
+#include <Mlib/Threads/Set_Thread_Name.hpp>
 
 using namespace Mlib;
 
 BackgroundLoop::BackgroundLoop() {
     thread_ = std::thread{[this](){
+        set_thread_name("Background loop");
         while (true) {
             std::unique_lock lck{ mutex_ };
             task_ready_cv_.wait(lck, [this]() { return !done_ || shutdown_requested_; });

@@ -7,11 +7,19 @@ namespace Mlib {
 
 class Window {
 public:
-    Window(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share);
+    Window(
+        int width,
+        int height,
+        const char* title,
+        GLFWmonitor* monitor,
+        GLFWwindow* share,
+        bool use_double_buffering_);
     ~Window();
     GLFWwindow* window() const;
+    void draw() const;
 private:
     GLFWwindow* window_;
+    bool use_double_buffering_;
 };
 
 }

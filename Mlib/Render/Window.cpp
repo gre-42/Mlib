@@ -4,7 +4,18 @@
 
 using namespace Mlib;
 
-Window::Window(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share) {
+Window::Window(
+    int width,
+    int height,
+    const char* title,
+    GLFWmonitor* monitor,
+    GLFWwindow* share,
+    bool use_double_buffering)
+: use_double_buffering_{ use_double_buffering }
+{
+    if (!use_double_buffering_) {
+        GLFW_CHK(glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE));
+    }
     window_ = GLFW_CHK(glfwCreateWindow(
         width,
         height,
@@ -22,4 +33,12 @@ Window::~Window() {
 
 GLFWwindow* Window::window() const {
     return window_;
+}
+
+void Window::draw() const {
+    if (use_double_buffering_) {
+        GLFW_CHK(glfwSwapBuffers(window_));
+    } else {
+        CHK(glFlush());
+    }
 }
