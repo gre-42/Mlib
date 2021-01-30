@@ -33,6 +33,7 @@ int main(int argc, char** argv) {
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
+        "    [--far_plane <value>]\n"
         "    [--damping <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
@@ -111,7 +112,8 @@ int main(int argc, char** argv) {
          "--longitudinal_friction_steepness",
          "--lateral_friction_steepness",
          "--wheel_penetration_depth",
-         "--draw_distance_add"});
+         "--draw_distance_add",
+         "--far_plane"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -140,7 +142,7 @@ int main(int argc, char** argv) {
             .print_fps = args.has_named("--print_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),
             .dt = safe_stof(args.named_value("--render_dt", "0.01667")),
-            .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "NAN"))};
+            .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "INFINITY"))};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
             num_renderings,
@@ -203,7 +205,8 @@ int main(int argc, char** argv) {
                     " PRIMARY_SCENE_WITH_DIRTMAP:" << !args.has_named("--no_vfx") <<
                     " PRIMARY_SCENE_WITH_SKYBOX:1" <<
                     " PRIMARY_SCENE_WITH_FLYING_LOGIC:1" <<
-                    " PRIMARY_SCENE_CLEAR_MODE:color_and_depth";
+                    " PRIMARY_SCENE_CLEAR_MODE:color_and_depth" <<
+                    " FAR_PLANE:" << safe_stof(args.named_value("--far_plane", "1000"));
                 substitutions.merge(SubstitutionString{sstr.str()});
             }
             std::recursive_mutex mutex;
