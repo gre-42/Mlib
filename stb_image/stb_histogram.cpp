@@ -47,7 +47,7 @@ bool stb_match_color_rgb(
         for (int c = 0; c < width; ++c) {
             for (int d = 0; d < 3; ++d) {
                 int i = (r * width + c) * nrChannels + d;
-                data[i] = std::clamp(data[i] - means[d] + color[d], 0.f, 255.f);
+                data[i] = (unsigned char)std::clamp(data[i] - means[d] + color[d], 0.f, 255.f);
             }
         }
     }

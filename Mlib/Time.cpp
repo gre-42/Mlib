@@ -9,7 +9,7 @@ std::string Mlib::format_minutes_seconds(float seconds) {
     if (!std::isfinite(seconds)) {
         sstr << seconds;
     } else {
-        int minutes = seconds / 60;
+        unsigned int minutes = (unsigned int)(seconds / 60);
         float residual_seconds = seconds - 60 * minutes;
         sstr << minutes << " m, " << residual_seconds << " s";
     }
