@@ -6,12 +6,12 @@
 
 using namespace Mlib;
 
-std::chrono::time_point<std::chrono::steady_clock> TimeGuard::global_start_time_;
+std::chrono::time_point<std::chrono::steady_clock> TimeGuard::init_time_;
 std::map<std::thread::id, ThreadTimeInfo> TimeGuard::thread_time_infos_;
 size_t TimeGuard::max_log_length_ = 0;
 
 void TimeGuard::initialize(size_t max_log_length) {
-    global_start_time_ = std::chrono::steady_clock::now();
+    init_time_ = std::chrono::steady_clock::now();
     thread_time_infos_.clear();
     max_log_length_ = max_log_length;
 }
@@ -51,7 +51,7 @@ void TimeGuard::write_svg(const std::thread::id& tid, const std::string& filenam
         x[i].reserve(e.second.events.size());
         y[i].reserve(e.second.events.size());
         for (const auto& ee : sorted_events) {
-            float time = 1e-6f * std::chrono::duration_cast<std::chrono::microseconds>(ee.time - global_start_time_).count();
+            float time = 1e-6f * std::chrono::duration_cast<std::chrono::microseconds>(ee.time - init_time_).count();
             x[i].push_back(time);
             y[i].push_back((float)ee.stack_size);
         }
@@ -71,6 +71,7 @@ struct NAndDuration {
 };
 
 void TimeGuard::print_groups(std::ostream& ostr) {
+    std::chrono::duration<double> time_since_init = std::chrono::steady_clock::now() - init_time_;
     std::map<std::thread::id, std::map<std::string, NAndDuration>> durations;
     for (const auto& t : thread_time_infos_) {
         auto& d = durations[t.first];
@@ -89,6 +90,7 @@ void TimeGuard::print_groups(std::ostream& ostr) {
         }
         ostr << "Total: " << total.count() << '\n';
     }
+    ostr << "Time since init: " << time_since_init.count() << '\n';
 }
 
 bool TimeGuard::is_empty(const std::thread::id& tid) {

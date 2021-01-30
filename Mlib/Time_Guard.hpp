@@ -48,7 +48,7 @@ public:
 private:
     static void insert_event(const TimeEvent& e);
     static void insert_called_function(const CalledFunction& e);
-    static std::chrono::time_point<std::chrono::steady_clock> global_start_time_;
+    static std::chrono::time_point<std::chrono::steady_clock> init_time_;
     static std::map<std::thread::id, ThreadTimeInfo> thread_time_infos_;
     static size_t max_log_length_;
     CalledFunction called_function_;
