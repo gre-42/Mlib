@@ -152,8 +152,8 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
 RenderingResources::RenderingResources(
     SceneNodeResources& scene_node_resources,
     const std::string& name)
-: scene_node_resources_{scene_node_resources},
-  name_{name}
+: scene_node_resources_{ scene_node_resources },
+  name_{ name }
 {}
 
 RenderingResources::~RenderingResources() {
@@ -209,9 +209,10 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
 
     CHK(glGenTextures(1, &texture));
     CHK(glBindTexture(GL_TEXTURE_2D, texture));
-    {
+    if (descriptor.anisotropic_filtering_level != 0) {
         float aniso = 0.0f;
         CHK(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
+        aniso = std::min(aniso, (float)descriptor.anisotropic_filtering_level);
         CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
     }
     StbInfo si0 = stb_load_texture(
@@ -220,7 +221,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
         auto si1_raw = stb_load_texture(
             desc.mixed, desc.color_mode == ColorMode::RGBA, true, false); // true=flip_vertically, false=flip_horizontally
         std::unique_ptr<unsigned char[]> si1_resized{
-            new unsigned char[si0.width * si0.height * si1_raw.nrChannels]};
+            new unsigned char[(size_t)(si0.width * si0.height * si1_raw.nrChannels)]};
         stbir_resize_uint8(si1_raw.data.get(),
                             si1_raw.width,
                             si1_raw.height,

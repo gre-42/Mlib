@@ -6,6 +6,7 @@
 
 namespace Mlib {
 
+struct RenderConfig;
 struct RenderingContext;
 class SceneNodeResources;
 class RenderingResources;
@@ -41,7 +42,5 @@ public:
 private:
     static thread_local std::list<RenderingContext> context_stack_;
 };
-
-std::ostream& operator << (std::ostream& ostr, const RenderingContext& r);
 
 }

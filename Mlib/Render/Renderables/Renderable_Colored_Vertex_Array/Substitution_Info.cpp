@@ -14,29 +14,29 @@ using namespace Mlib;
 
 void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr) {
     assert(ntriangles > 0);
-    if (triangles_local_ids[id] == ntriangles - 1) {
-        triangles_local_ids[id] = SIZE_MAX;
-        triangles_global_ids[ntriangles - 1] = SIZE_MAX;
-    } else if (ntriangles > 1) {
-        size_t from = ntriangles - 1;
-        size_t to = triangles_local_ids[id];
+    if (triangles_local_ids_[id] == ntriangles_ - 1) {
+        triangles_local_ids_[id] = SIZE_MAX;
+        triangles_global_ids_[ntriangles_ - 1] = SIZE_MAX;
+    } else if (ntriangles_ > 1) {
+        size_t from = ntriangles_ - 1;
+        size_t to = triangles_local_ids_[id];
         assert(to != SIZE_MAX);
-        ptr[to] = cva->triangles[triangles_global_ids[from]];
-        triangles_local_ids[id] = SIZE_MAX;
-        triangles_local_ids[triangles_global_ids[from]] = to;
-        triangles_global_ids[to] = triangles_global_ids[from];
-        triangles_global_ids[from] = SIZE_MAX;
+        ptr[to] = cva_->triangles[triangles_global_ids_[from]];
+        triangles_local_ids_[id] = SIZE_MAX;
+        triangles_local_ids_[triangles_global_ids_[from]] = to;
+        triangles_global_ids_[to] = triangles_global_ids_[from];
+        triangles_global_ids_[from] = SIZE_MAX;
     }
-    --ntriangles;
+    --ntriangles_;
 }
 
 void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr) {
-    assert(triangles_global_ids[ntriangles] == SIZE_MAX);
-    assert(triangles_local_ids[id] == SIZE_MAX);
-    triangles_local_ids[id] = ntriangles;
-    triangles_global_ids[ntriangles] = id;
-    ptr[ntriangles] = cva->triangles[id];
-    ++ntriangles;
+    assert(triangles_global_ids_[ntriangles] == SIZE_MAX);
+    assert(triangles_local_ids_[id] == SIZE_MAX);
+    triangles_local_ids_[id] = ntriangles_;
+    triangles_global_ids_[ntriangles_] = id;
+    ptr[ntriangles_] = cva_->triangles[id];
+    ++ntriangles_;
 }
 
 /**
@@ -51,27 +51,33 @@ void SubstitutionInfo::delete_triangles_far_away(
     bool run_in_background,
     bool is_static)
 {
-    if (cva->triangles.empty()) {
+    assert_true(!std::isnan(draw_distance_add));
+    assert_true(!std::isnan(draw_distance_slop));
+    if (draw_distance_add == INFINITY) {
         return;
     }
-    if (triangles_local_ids.empty()) {
-        triangles_local_ids.resize(cva->triangles.size());
-        triangles_global_ids.resize(cva->triangles.size());
-        for (size_t i = 0; i < triangles_local_ids.size(); ++i) {
-            triangles_local_ids[i] = i;
-            triangles_global_ids[i] = i;
+    // TimeGuard tg{ "delete_triangles_far_away", "delete_triangles_far_away" };
+    if (cva_->triangles.empty()) {
+        return;
+    }
+    if (triangles_local_ids_.empty()) {
+        triangles_local_ids_.resize(cva_->triangles.size());
+        triangles_global_ids_.resize(cva_->triangles.size());
+        for (size_t i = 0; i < triangles_local_ids_.size(); ++i) {
+            triangles_local_ids_[i] = i;
+            triangles_global_ids_[i] = i;
         }
-        current_triangle_id = 0;
+        current_triangle_id_ = 0;
         if (is_static) {
-            transformed_triangles.resize(cva->triangles.size());
-            for (size_t i = 0; i < cva->triangles.size(); ++i) {
-                transformed_triangles[i] = cva->triangles[i].applied<FixedArray<float, 3>>([&m](const ColoredVertex& v){return m * v.position;});
+            transformed_triangles_.resize(cva_->triangles.size());
+            for (size_t i = 0; i < cva_->triangles.size(); ++i) {
+                transformed_triangles_[i] = cva_->triangles[i].applied<FixedArray<float, 3>>([&m](const ColoredVertex& v){return m * v.position;});
             }
         }
     }
-    offset_ = current_triangle_id;
-    noperations2_ = std::min(current_triangle_id + noperations, cva->triangles.size()) - current_triangle_id;
-    if (triangles_local_ids.size() != cva->triangles.size()) {
+    offset_ = current_triangle_id_;
+    noperations2_ = std::min(current_triangle_id_ + noperations, cva_->triangles.size()) - current_triangle_id_;
+    if (triangles_local_ids_.size() != cva_->triangles.size()) {
         throw std::runtime_error("Array length has changed");
     }
     typedef FixedArray<ColoredVertex, 3> Triangle;
@@ -86,21 +92,21 @@ void SubstitutionInfo::delete_triangles_far_away(
         for (size_t i = 0; i < noperations2_; ++i) {
             FixedArray<float, 3> center;
             if (is_static) {
-                center = mean(transformed_triangles[current_triangle_id]);
+                center = mean(transformed_triangles_[current_triangle_id_]);
             } else {
-                auto center_local = mean(cva->triangles[current_triangle_id].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
+                auto center_local = mean(cva_->triangles[current_triangle_id_].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
                 center = m * center_local;
             }
             float dist2 = sum(squared(center - position));
-            if (triangles_local_ids[current_triangle_id] != SIZE_MAX) {
+            if (triangles_local_ids_[current_triangle_id_] != SIZE_MAX) {
                 if (dist2 > remove2) {
                     if (run_in_background) {
                         if (triangles_to_delete_.size() == triangles_to_delete_.capacity()) {
                             return;
                         }
-                        triangles_to_delete_.push_back(current_triangle_id);
+                        triangles_to_delete_.push_back(current_triangle_id_);
                     } else {
-                        delete_triangle(current_triangle_id, ptr);
+                        delete_triangle(current_triangle_id_, ptr);
                     }
                 }
             } else {
@@ -109,13 +115,13 @@ void SubstitutionInfo::delete_triangles_far_away(
                         if (triangles_to_insert_.size() == triangles_to_insert_.capacity()) {
                             return;
                         }
-                        triangles_to_insert_.push_back(current_triangle_id);
+                        triangles_to_insert_.push_back(current_triangle_id_);
                     } else {
-                        insert_triangle(current_triangle_id, ptr);
+                        insert_triangle(current_triangle_id_, ptr);
                     }
                 }
             }
-            current_triangle_id = (current_triangle_id + 1) % triangles_local_ids.size();
+            current_triangle_id_ = (current_triangle_id_ + 1) % triangles_local_ids_.size();
         }
     };
     if (run_in_background) {
@@ -129,9 +135,10 @@ void SubstitutionInfo::delete_triangles_far_away(
         }
         if (background_loop_->done()) {
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
-                CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
-                // CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-                CHK(Triangle * ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, offset_ * sizeof(Triangle), noperations2_ * sizeof(Triangle), GL_MAP_WRITE_BIT));
+                // TimeGuard tg{ "deleting triangles", "deleting triangles" };
+                CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
+                CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+                // CHK(Triangle * ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, offset_ * sizeof(Triangle), noperations2_ * sizeof(Triangle), GL_MAP_WRITE_BIT));
                 ptr -= offset_;
                 for (size_t i : triangles_to_delete_) {
                     delete_triangle(i, ptr);
@@ -149,7 +156,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         if (background_loop_ != nullptr) {
             throw std::runtime_error("Substitution both in fg and bg");
         }
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
         func();
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
     }

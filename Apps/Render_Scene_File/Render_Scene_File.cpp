@@ -28,6 +28,8 @@ int main(int argc, char** argv) {
         "    [--window_maximized]\n"
         "    [--full_screen]\n"
         "    [--double_buffer]\n"
+        "    [--anisotropic_filtering_level <value>]\n"
+        "    [--no_normalmaps]\n"
         "    [--no_physics ]\n"
         "    [--physics_dt <dt> ]\n"
         "    [--render_dt <dt> ]\n"
@@ -71,6 +73,7 @@ int main(int argc, char** argv) {
          "--window_maximized",
          "--full_screen",
          "--double_buffer",
+         "--no_normalmaps",
          "--print_physics_residual_time",
          "--print_render_residual_time",
          "--print_fps",
@@ -90,6 +93,7 @@ int main(int argc, char** argv) {
         {"--swap_interval",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
+         "--anisotropic_filtering_level",
          "--max_distance_small",
          "--aggregate_update_interval",
          "--screen_width",
@@ -139,6 +143,8 @@ int main(int argc, char** argv) {
             .window_maximized = args.has_named("--window_maximized"),
             .full_screen = args.has_named("--full_screen"),
             .double_buffer = args.has_named("--double_buffer"),
+            .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "2")),
+            .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .background_color = {0.68f, 0.85f, 1.f},
@@ -228,6 +234,7 @@ int main(int argc, char** argv) {
                 rsc,
                 scene_node_resources,
                 scene_config,
+                render_config,
                 button_states,
                 ui_focus,
                 selection_ids,

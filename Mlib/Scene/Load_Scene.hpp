@@ -13,6 +13,7 @@ class SubstitutionString;
 
 class SceneNodeResources;
 struct SceneConfig;
+struct RenderConfig;
 class ButtonStates;
 struct UiFocus;
 class RenderLogics;
@@ -29,6 +30,7 @@ public:
         RegexSubstitutionCache& rsc,
         SceneNodeResources& scene_node_resources,
         const SceneConfig& scene_config,
+        const RenderConfig& render_config,
         ButtonStates& button_states,
         UiFocus& ui_focus,
         std::map<std::string, size_t>& selection_ids,

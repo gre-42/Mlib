@@ -276,6 +276,7 @@ bool GameLogic::delete_for_vip(
     }
     return false;
     delete_player:
+    // TimeGuard time_guard{"delete", "delete"};
     std::lock_guard lock_guard{mutex_};
     scene_.delete_root_node(player.scene_node_name());
     // ++ndelete_;
@@ -299,7 +300,9 @@ void GameLogic::spawn_at_spawn_point(
     }
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg.spawn_y_offset;
+    // TimeGuard time_guard{"spawn", "spawn"};
     std::lock_guard lock_guard{mutex_};
+    // TimeGuard time_guard2{"spawn2", "spawn2"};
     // ++nspawns_;
     spawn_macro->second(sp2);
     if (player.scene_node_name().empty()) {

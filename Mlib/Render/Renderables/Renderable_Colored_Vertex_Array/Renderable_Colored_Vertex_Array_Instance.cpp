@@ -32,9 +32,13 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     size_t i = 0;
     for (const auto& t : rcva->triangles_res_->cvas) {
         if (resource_filter.matches(i++, t->name)) {
-            triangles_res_subset_.push_back(t);
-            if (t->material.aggregate_mode == AggregateMode::OFF) {
+            if ((t->material.aggregate_mode == AggregateMode::OFF) ||
+                (rcva->instances_ != nullptr))
+            {
+                rendered_triangles_res_subset_.push_back(t);
                 requires_render_pass_ = true;
+            } else {
+                aggregate_triangles_res_subset_.push_back(t);
             }
             if ((t->material.blend_mode == BlendMode::CONTINUOUS) &&
                 (t->material.aggregate_mode == AggregateMode::OFF))
@@ -63,6 +67,7 @@ GLint get_wrap_param(WrapMode mode) {
 
 std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArrayInstance::calculate_absolute_bone_transformations(const Style* style) const
 {
+    // TimeGuard time_guard{ "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations" };
     if (!rcva_->triangles_res_->bone_indices.empty()) {
         if (style == nullptr) {
             throw std::runtime_error("Animation without style");
@@ -99,6 +104,8 @@ void RenderableColoredVertexArrayInstance::render_cva(
     const RenderPass& render_pass,
     const Style* style) const
 {
+    // TimeGuard time_guard{ "render_cva", cva->material.texture_descriptor.color };
+    assert_true((cva->material.aggregate_mode == AggregateMode::OFF) || (rcva_->instances_ != nullptr));
     if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {
         return;
     }
@@ -111,9 +118,6 @@ void RenderableColoredVertexArrayInstance::render_cva(
     VisibilityCheck vc{mvp};
     // Instance arrays are large and therefore do not need a visibility check.
     if (rcva_->instances_ == nullptr) {
-        if (cva->material.aggregate_mode != AggregateMode::OFF) {
-            return;
-        }
         if (!vc.is_visible(cva->material, scene_graph_config, render_pass.external))
         {
             return;
@@ -151,12 +155,12 @@ void RenderableColoredVertexArrayInstance::render_cva(
     bool has_texture = !cva->material.texture_descriptor.color.empty() && ((render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) || (cva->material.blend_mode != BlendMode::OFF));
     bool has_lightmap_color = (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
     bool has_lightmap_depth = (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
-    bool has_normalmap = (!cva->material.texture_descriptor.normal.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
+    bool has_normalmap = false && (!cva->material.texture_descriptor.normal.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
     bool has_dirtmap = (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     if (!has_texture && has_dirtmap) {
-        std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture_descriptor.color);
+        throw std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported. Texture: " + cva->material.texture_descriptor.color);
     }
     FixedArray<float, 3> ambience;
     FixedArray<float, 3> diffusivity;
@@ -396,9 +400,9 @@ void RenderableColoredVertexArrayInstance::render_cva(
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
         (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) &&
         cva->material.draw_distance_noperations > 0 &&
-        !(
-            !std::isnan(render_config.draw_distance_add) &&
-            render_config.draw_distance_add == INFINITY))
+        (
+            std::isnan(render_config.draw_distance_add) ||
+            (render_config.draw_distance_add != INFINITY)))
     {
         if (!rcva_->triangles_res_->bone_indices.empty()) {
             throw std::runtime_error("Draw distance incompatible with animations");
@@ -417,12 +421,12 @@ void RenderableColoredVertexArrayInstance::render_cva(
             true); // is_static
     }
     LOG_INFO("RenderableColoredVertexArrayInstance::render glBindVertexArray");
-    CHK(glBindVertexArray(si.va.vertex_array));
+    CHK(glBindVertexArray(si.va_.vertex_array));
     LOG_INFO("RenderableColoredVertexArrayInstance::render glDrawArrays");
     if (has_instances) {
-        CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles), (GLsizei)rcva_->instances_->at(si.cva.get()).size()));
+        CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_), (GLsizei)rcva_->instances_->at(si.cva_.get()).size()));
     } else {
-        CHK(glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles)));
+        CHK(glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_)));
     }
     CHK(glBindVertexArray(0));
     CHK(glDisable(GL_CULL_FACE));
@@ -451,10 +455,7 @@ void RenderableColoredVertexArrayInstance::render(
     #endif
     std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations =
         calculate_absolute_bone_transformations(style);
-    for (auto& cva : triangles_res_subset_) {
-        // TimeGuard time_guard{
-        //     "RenderableColoredVertexArrayInstance::render",
-        //     cva->material.texture_descriptor.color};
+    for (auto& cva : rendered_triangles_res_subset_) {
         render_cva(
             cva,
             absolute_bone_transformations,
@@ -484,7 +485,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
 {
-    for (const auto& cva : triangles_res_subset_) {
+    for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
             if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
@@ -502,7 +503,7 @@ void RenderableColoredVertexArrayInstance::append_large_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config,
     std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const
 {
-    for (const auto& cva : triangles_res_subset_) {
+    for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::ONCE) {
             aggregate_queue.push_back(std::move(cva->transformed(m)));
         }
@@ -516,7 +517,7 @@ void RenderableColoredVertexArrayInstance::append_sorted_instances_to_queue(
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
 {
-    for (const auto& cva : triangles_res_subset_) {
+    for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
             if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
@@ -534,7 +535,7 @@ void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
     const SceneGraphConfig& scene_graph_config,
     std::list<TransformedColoredVertexArray>& aggregate_queue) const
 {
-    for (const auto& cva : triangles_res_subset_) {
+    for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
             aggregate_queue.push_back({.cva = cva, .transformation_matrix = m});
         }
@@ -542,12 +543,17 @@ void RenderableColoredVertexArrayInstance::append_large_instances_to_queue(
 }
 
 void RenderableColoredVertexArrayInstance::print_stats(std::ostream& ostr) const {
-    ostr << "#triangle lists: " << triangles_res_subset_.size() << std::endl;
-    size_t i = 0;
-    for (auto& cva : triangles_res_subset_) {
-        ostr << "triangle list " << i << " #lines: " << cva->lines.size() << std::endl;
-        ostr << "triangle list " << i << " #tris:  " << cva->triangles.size() << std::endl;
-    }
+    auto print_list = [&ostr](const std::list<std::shared_ptr<ColoredVertexArray>>& cvas, const std::string& name) {
+        ostr << name << '\n';
+        ostr << "#triangle lists: " << cvas.size() << '\n';
+        size_t i = 0;
+        for (auto& cva : cvas) {
+            ostr << "triangle list " << i << " #lines: " << cva->lines.size() << '\n';
+            ostr << "triangle list " << i << " #tris:  " << cva->triangles.size() << '\n';
+        }
+    };
+    print_list(rendered_triangles_res_subset_, "rendered");
+    print_list(aggregate_triangles_res_subset_, "aggregate");
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const RenderableColoredVertexArrayInstance& rcvi)

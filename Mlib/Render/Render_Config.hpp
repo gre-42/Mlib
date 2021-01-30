@@ -21,6 +21,8 @@ struct RenderConfig {
     bool window_maximized = false;
     bool full_screen = false;
     bool double_buffer = false;
+    unsigned int anisotropic_filtering_level = 2;
+    bool normalmaps = true;
     bool show_mouse_cursor = false;
     int swap_interval = 1;
     FixedArray<float, 3> background_color = fixed_zeros<float, 3>();

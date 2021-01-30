@@ -12,7 +12,6 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Log.hpp>
-// #include <Mlib/Render/Save_Movie.hpp>
 
 using namespace Mlib;
 
@@ -265,6 +264,7 @@ void MotionInterpolationLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    // TimeGuard time_guard{"MotionInterpolationLogic::render", "MotionInterpolationLogic::render"};
     LOG_FUNCTION("MotionInterpolationLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
         throw std::runtime_error("MotionInterpolationLogic did not receive undefined rendering");

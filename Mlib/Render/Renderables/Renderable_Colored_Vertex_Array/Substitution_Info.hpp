@@ -15,10 +15,10 @@ class BackgroundLoop;
 
 class SubstitutionInfo {
 public:
-    VertexArray va;
-    std::shared_ptr<ColoredVertexArray> cva;
-    size_t ntriangles;
-    size_t nlines;
+    VertexArray va_;
+    std::shared_ptr<ColoredVertexArray> cva_;
+    size_t ntriangles_;
+    size_t nlines_;
     void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, 3>& m,
@@ -31,10 +31,10 @@ private:
     void delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
     void insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr);
 
-    std::vector<FixedArray<FixedArray<float, 3>, 3>> transformed_triangles;
-    std::vector<size_t> triangles_local_ids;
-    std::vector<size_t> triangles_global_ids;
-    size_t current_triangle_id = SIZE_MAX;
+    std::vector<FixedArray<FixedArray<float, 3>, 3>> transformed_triangles_;
+    std::vector<size_t> triangles_local_ids_;
+    std::vector<size_t> triangles_global_ids_;
+    size_t current_triangle_id_ = SIZE_MAX;
     std::unique_ptr<BackgroundLoop> background_loop_;
 
     std::vector<size_t> triangles_to_delete_;

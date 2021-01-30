@@ -66,7 +66,8 @@ private:
         const Style* style) const;
 
     std::shared_ptr<const RenderableColoredVertexArray> rcva_;
-    std::list<std::shared_ptr<ColoredVertexArray>> triangles_res_subset_;
+    std::list<std::shared_ptr<ColoredVertexArray>> rendered_triangles_res_subset_;
+    std::list<std::shared_ptr<ColoredVertexArray>> aggregate_triangles_res_subset_;
     bool requires_render_pass_;
     bool requires_blending_pass_;
     std::shared_ptr<RenderingResources> secondary_rendering_resources_;

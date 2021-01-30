@@ -96,6 +96,7 @@ void SkyboxLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
     if (!loaded_) {
         loaded_ = true;
         if (!filenames_.empty()) {

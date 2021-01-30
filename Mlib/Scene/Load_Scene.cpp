@@ -115,6 +115,7 @@ void LoadScene::operator()(
     RegexSubstitutionCache& rsc,
     SceneNodeResources& scene_node_resources,
     const SceneConfig& scene_config,
+    const RenderConfig& render_config,
     ButtonStates& button_states,
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
@@ -657,6 +658,7 @@ void LoadScene::operator()(
                     fpath(match[15].str()),                                       // ceiling_texture
                     fpath(match[16].str()),                                       // barrier_texture
                     blend_mode_from_string(match[17].str()),                      // barrier_blend_mode
+                    render_config.anisotropic_filtering_level,                    // anisotropic_filtering_level
                     fpath(match[18].str()),                                       // roof_texture
                     string_to_vector(match[19].str()),                            // tree_resource_names
                     string_to_vector(match[20].str()),                            // grass_resource_names

@@ -729,7 +729,7 @@ const SubstitutionInfo& RenderableColoredVertexArray::get_vertex_array(const std
     }
     std::lock_guard guard{mutex_};
     auto si = std::make_unique<SubstitutionInfo>();
-    auto& va = si->va;
+    auto& va = si->va_;
     // https://stackoverflow.com/a/13405205/2292832
     CHK(glGenVertexArrays(1, &va.vertex_array));
     CHK(glBindVertexArray(va.vertex_array));
@@ -827,9 +827,9 @@ const SubstitutionInfo& RenderableColoredVertexArray::get_vertex_array(const std
     }
 
     CHK(glBindVertexArray(0));
-    si->cva = cva;
-    si->ntriangles = cva->triangles.size();
-    si->nlines = cva->lines.size();
+    si->cva_ = cva;
+    si->ntriangles_ = cva->triangles.size();
+    si->nlines_ = cva->lines.size();
     auto& result = *si;  // store data before std::move (unique_ptr)
     vertex_arrays_.insert(std::make_pair(cva.get(), std::move(si)));
     return result;

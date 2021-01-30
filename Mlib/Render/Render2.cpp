@@ -23,7 +23,6 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
-#include <Mlib/Time_Guard.hpp>
 #include <fenv.h>
 #include <iostream>
 

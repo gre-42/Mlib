@@ -90,6 +90,7 @@ void RenderableText::render(
     float line_distance_pixels,
     bool periodic_position) const
 {
+    // TimeGuard time_guard{"RenderableText::render", "RenderableText::render"};
     CHK(glEnable(GL_CULL_FACE));
     CHK(glEnable(GL_BLEND));
     CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
