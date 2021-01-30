@@ -17,7 +17,6 @@ int main(int argc, char** argv) {
         "    [--swap_interval <interval>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
-        "    [--window_maximized]\n"
         "    [--max_distance_small <distance>]\n"
         "    [--aggregate_update_interval <interval>]\n"
         "    [--screen_width <width>]\n"
@@ -26,7 +25,9 @@ int main(int argc, char** argv) {
         "    [--scene_lightmap_height <height>]\n"
         "    [--black_lightmap_width <width>]\n"
         "    [--black_lightmap_height <height>]\n"
+        "    [--window_maximized]\n"
         "    [--full_screen]\n"
+        "    [--double_buffer]\n"
         "    [--no_physics ]\n"
         "    [--physics_dt <dt> ]\n"
         "    [--render_dt <dt> ]\n"
@@ -69,6 +70,7 @@ int main(int argc, char** argv) {
          "--no_physics",
          "--window_maximized",
          "--full_screen",
+         "--double_buffer",
          "--print_physics_residual_time",
          "--print_render_residual_time",
          "--print_fps",
@@ -134,8 +136,9 @@ int main(int argc, char** argv) {
             .black_lightmap_width = safe_stoi(args.named_value("--black_lightmap_width", "512")),
             .black_lightmap_height = safe_stoi(args.named_value("--black_lightmap_height", "512")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
-            .full_screen = args.has_named("--full_screen"),
             .window_maximized = args.has_named("--window_maximized"),
+            .full_screen = args.has_named("--full_screen"),
+            .double_buffer = args.has_named("--double_buffer"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .background_color = {0.68f, 0.85f, 1.f},

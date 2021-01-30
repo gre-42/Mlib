@@ -10,6 +10,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Render_Logics/Locking_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderables/Renderable_Depth_Map.hpp>
@@ -21,6 +22,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
+#include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Time_Guard.hpp>
 #include <fenv.h>
 #include <iostream>
@@ -81,7 +83,8 @@ Render2::Render2(
         render_config.screen_height,
         render_config.window_title.c_str(),
         monitor,
-        nullptr);
+        nullptr,
+        render_config.double_buffer);
 #ifndef WIN32
     feenableexcept(fpeflags);
 #endif
@@ -127,10 +130,11 @@ void Render2::operator () (
     CHK(glfwMakeContextCurrent(nullptr));
     auto continue_rendering = [&]() { return !glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0); };
     auto render_thread_func = [&]() {
+        set_thread_name("Render2");
         CHK(glfwMakeContextCurrent(window_->window()));
         while (continue_rendering())
         {
-            // TimeGuard::initialize(5 * 60);
+            // TimeGuard::initialize(1000 * 60, MaxLogLengthExceededBehavior::THROW_EXCEPTION);
             if (num_renderings_ != SIZE_MAX) {
                 --num_renderings_;
             }
@@ -140,15 +144,19 @@ void Render2::operator () (
 
             ViewportGuard vg{ 0, 0, width, height };
 
-            logic.render(
-                width,
-                height,
-                render_config_,
-                scene_graph_config,
-                render_results_,
-                (render_results_ != nullptr) && (!render_results_->outputs.empty())
-                ? RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = "" }
-            : RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = "" });
+            {
+                // TimeGuard time_guard("logic.render", "logic.render");
+                RenderedSceneDescriptor rsd = (render_results_ != nullptr) && (!render_results_->outputs.empty())
+                    ? RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = "" }
+                    : RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = "" };
+                logic.render(
+                    width,
+                    height,
+                    render_config_,
+                    scene_graph_config,
+                    render_results_,
+                    rsd);
+            }
 
             if (render_results_ != nullptr && render_results_->output != nullptr) {
                 VectorialPixels<float, 3> vp{ ArrayShape{size_t(height), size_t(width)} };
@@ -174,8 +182,8 @@ void Render2::operator () (
                 }
             }
             {
-                // TimeGuard time_guard("glfwSwapBuffers", "glfwSwapBuffers");
-                GLFW_CHK(glfwSwapBuffers(window_->window()));
+                // TimeGuard time_guard("window_->draw", "window_->draw");
+                window_->draw();
             }
             {
                 // TimeGuard time_guard("execute_gc_render", "execute_gc_render");
@@ -202,36 +210,6 @@ void Render2::operator () (
     render_thread.join();
     CHK(glfwMakeContextCurrent(window_->window()));
 }
-
-class LockingRenderLogic: public RenderLogic {
-public:
-    explicit LockingRenderLogic(
-        RenderLogic& child_logic,
-        std::recursive_mutex& mutex)
-    : child_logic_{child_logic},
-      mutex_{mutex}
-    {}
-    virtual void render(
-        int width,
-        int height,
-        const RenderConfig& render_config,
-        const SceneGraphConfig& scene_graph_config,
-        RenderResults* render_results,
-        const RenderedSceneDescriptor& frame_id)
-    {
-        std::lock_guard lock{mutex_}; // formerly shared_lock
-        child_logic_.render(
-            width,
-            height,
-            render_config,
-            scene_graph_config,
-            render_results,
-            frame_id);
-    }
-private:
-    RenderLogic& child_logic_;
-    std::recursive_mutex& mutex_;
-};
 
 void Render2::operator () (
     RenderLogic& logic,
