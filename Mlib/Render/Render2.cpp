@@ -144,7 +144,7 @@ void Render2::operator () (
             ViewportGuard vg{ 0, 0, width, height };
 
             {
-                // TimeGuard time_guard("logic.render", "logic.render");
+                // // TimeGuard time_guard("logic.render", "logic.render");
                 RenderedSceneDescriptor rsd = (render_results_ != nullptr) && (!render_results_->outputs.empty())
                     ? RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = "" }
                     : RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = "" };
@@ -166,20 +166,6 @@ void Render2::operator () (
             if (render_results_ != nullptr && !render_results_->outputs.empty()) {
                 GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
             }
-            if (render_config_.dt != 0) {
-                // TimeGuard time_guard("set_fps", "set_fps");
-                set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
-            }
-            else if (render_config_.motion_interpolation) {
-                throw std::runtime_error("Motion interpolation requires render_dt");
-            }
-            if (render_config_.print_fps) {
-                fps_i = (fps_i + 1) % fps_i_max;
-                fps.tick();
-                if (fps_i == 0) {
-                    std::cerr << "Render FPS: Mean = " << fps.mean_fps() << ", MAD = " << fps.mad_fps() << std::endl;
-                }
-            }
             {
                 // TimeGuard time_guard("window_->draw", "window_->draw");
                 window_->draw();
@@ -188,7 +174,22 @@ void Render2::operator () (
                 // TimeGuard time_guard("execute_gc_render", "execute_gc_render");
                 execute_gc_render();
             }
-
+            if (render_config_.print_fps) {
+                fps_i = (fps_i + 1) % fps_i_max;
+                fps.tick();
+                if (fps_i == 0) {
+                    std::cerr << "Render FPS: Mean = " << fps.mean_fps() << ", MAD = " << fps.mad_fps() << std::endl;
+                }
+                // if (fps.last_fps() < 55) {
+                //     std::cerr << "FPS < 55" << std::endl;
+                // }
+            }
+            if (render_config_.dt != 0) {
+                // TimeGuard time_guard("set_fps", "set_fps");
+                set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
+            } else if (render_config_.motion_interpolation) {
+                throw std::runtime_error("Motion interpolation requires render_dt");
+            }
             if (render_config_.motion_interpolation) {
                 time_id = (time_id + 1) % 4;
             }
