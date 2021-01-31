@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
                     " PRIMARY_SCENE_LOW_PASS:" << args.has_named("--low_pass") <<
                     " PRIMARY_SCENE_HIGH_PASS:" << args.has_named("--high_pass") <<
                     " PRIMARY_SCENE_VFX:" << !args.has_named("--no_vfx") <<
-                    " PRIMARY_SCENE_WITH_DIRTMAP:" << !args.has_named("--no_vfx") <<
+                    " PRIMARY_SCENE_WITH_DIRTMAP:1" <<
                     " PRIMARY_SCENE_WITH_SKYBOX:1" <<
                     " PRIMARY_SCENE_WITH_FLYING_LOGIC:1" <<
                     " PRIMARY_SCENE_CLEAR_MODE:color_and_depth" <<
