@@ -58,7 +58,7 @@ RgbaImage RgbaDownsampler::next() {
     if (downsampled_data_ == nullptr) {
         if ((width_ / 2 != 0) || (height_ / 2 != 0)) {
             buffer_.reset(new unsigned char[
-                (std::max(1, width_ / 2)) * (std::max(1, height_ / 2)) * 4]);
+                size_t(std::max(1, width_ / 2)) * size_t(std::max(1, height_ / 2)) * 4]);
             downsampled_data_ = buffer_.get();
         }
     } else {
