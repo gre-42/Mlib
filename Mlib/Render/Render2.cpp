@@ -84,7 +84,8 @@ Render2::Render2(
         render_config.window_title.c_str(),
         monitor,
         nullptr,
-        render_config.double_buffer);
+        render_config.double_buffer,
+        render_config.swap_interval);
 #ifndef WIN32
     feenableexcept(fpeflags);
 #endif
@@ -96,7 +97,6 @@ Render2::Render2(
     if (version == 0) {
         throw std::runtime_error("gladLoadGL failed");
     }
-    GLFW_CHK(glfwSwapInterval(render_config.swap_interval));
 }
 
 Render2::~Render2() {

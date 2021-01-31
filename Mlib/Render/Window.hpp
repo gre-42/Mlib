@@ -13,7 +13,8 @@ public:
         const char* title,
         GLFWmonitor* monitor,
         GLFWwindow* share,
-        bool use_double_buffering_);
+        bool use_double_buffering,
+        int swap_interval);
     ~Window();
     GLFWwindow* window() const;
     void draw() const;

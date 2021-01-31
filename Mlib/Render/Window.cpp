@@ -10,7 +10,8 @@ Window::Window(
     const char* title,
     GLFWmonitor* monitor,
     GLFWwindow* share,
-    bool use_double_buffering)
+    bool use_double_buffering,
+    int swap_interval)
 : use_double_buffering_{ use_double_buffering }
 {
     if (!use_double_buffering_) {
@@ -24,6 +25,9 @@ Window::Window(
         share));
     if (!window_) {
         throw std::runtime_error("Could not initialize window");
+    }
+    if (use_double_buffering) {
+        GLFW_CHK(glfwSwapInterval(swap_interval));
     }
 }
 
