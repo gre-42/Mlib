@@ -196,11 +196,11 @@ void PostProcessingLogic::render(
                 CHK(glUniform3fv(rp_.background_color_location, 1, (GLfloat*)&render_config.background_color));
             }
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_color_buffer));  // use the color attachment texture as the texture of the quad plane
+            CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_color));  // use the color attachment texture as the texture of the quad plane
 
             if (depth_fog_ || low_pass_) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_depth_buffer));
+                CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_depth));
             }
 
             CHK(glBindVertexArray(va_.vertex_buffer));

@@ -233,7 +233,7 @@ int main(int argc, char** argv) {
             num_renderings,
             &render_results,
             RenderConfig{
-                .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "1")),
+                .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "4")),
                 .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
                 .cull_faces = !args.has_named("--no_cull_faces"),
                 .wire_frame = args.has_named("--wire_frame"),

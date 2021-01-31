@@ -26,8 +26,8 @@ struct FrameBuffer {
     FrameBuffer& operator = (const FrameBuffer&) = delete;
     ~FrameBuffer();
     GLuint frame_buffer_ = (GLuint)-1;
-    GLuint texture_color_buffer = (GLuint)-1;
-    GLuint texture_depth_buffer = (GLuint)-1;
+    GLuint texture_color = (GLuint)-1;
+    GLuint texture_depth = (GLuint)-1;
     GLuint render_buffer = (GLuint)-1;
     void configure(const FrameBufferConfig& config = FrameBufferConfig{});
     void deallocate();

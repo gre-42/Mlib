@@ -6,6 +6,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
+#include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <iostream>
 #include <memory>
 #include <stb_image/stb_array.h>
@@ -159,7 +160,7 @@ RenderingResources::RenderingResources(
 RenderingResources::~RenderingResources() {
     for (const auto& t : textures_) {
         if (t.second.needs_gc) {
-            CHK(glDeleteTextures(1, &t.second.handle));
+            gc_textures_.push_back(t.second.handle);
         }
     }
 }

@@ -1,5 +1,10 @@
+#include <glad/gl.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include "Window.hpp"
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -27,6 +32,7 @@ Window::Window(
         throw std::runtime_error("Could not initialize window");
     }
     if (use_double_buffering) {
+        GlContextGuard gcg{ window_ };
         GLFW_CHK(glfwSwapInterval(swap_interval));
     }
 }

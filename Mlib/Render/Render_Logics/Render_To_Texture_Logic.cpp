@@ -70,9 +70,9 @@ void RenderToTextureLogic::render(
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
-        rendering_context_.rendering_resources->set_texture(color_texture_name_, fbs_->fb.texture_color_buffer);
+        rendering_context_.rendering_resources->set_texture(color_texture_name_, fbs_->fb.texture_color);
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->set_texture(depth_texture_name_, fbs_->fb.texture_depth_buffer);
+            rendering_context_.rendering_resources->set_texture(depth_texture_name_, fbs_->fb.texture_depth);
         }
     }
 }

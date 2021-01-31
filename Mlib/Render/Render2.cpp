@@ -9,6 +9,7 @@
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Render_Logics/Locking_Render_Logic.hpp>
@@ -51,22 +52,22 @@ Render2::Render2(
   render_results_{render_results},
   render_config_{render_config}
 {
-    GLFW_WARN(glfwSetErrorCallback(error_callback));
+    GLFW_CHK(glfwSetErrorCallback(error_callback));
 
     if (!glfwInit()) {
         throw std::runtime_error("glfwInit failed");
     }
 
-    GLFW_WARN(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3));
-    GLFW_WARN(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3));
+    GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3));
+    GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3));
     if (render_results != nullptr && (render_results->output != nullptr || !render_results->outputs.empty())) {
-        GLFW_WARN(glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE));
+        GLFW_CHK(glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE));
     }
     if (render_config.nsamples_msaa != 1) {
-        GLFW_WARN(glfwWindowHint(GLFW_SAMPLES, render_config.nsamples_msaa));
+        GLFW_CHK(glfwWindowHint(GLFW_SAMPLES, render_config.nsamples_msaa));
     }
     if (render_config.window_maximized) {
-        GLFW_WARN(glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE));
+        GLFW_CHK(glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE));
     }
 #ifndef WIN32
     int fpeflags = fegetexcept();
@@ -92,20 +93,22 @@ Render2::Render2(
     if (!render_config.show_mouse_cursor) {
         GLFW_CHK(glfwSetInputMode(window_->window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
     }
-    GLFW_WARN(glfwMakeContextCurrent(window_->window()));
-    CHK(int version = gladLoadGL(glfwGetProcAddress));
-    if (version == 0) {
-        throw std::runtime_error("gladLoadGL failed");
+    {
+        GlContextGuard gcg{window_->window()};
+        CHK(int version = gladLoadGL(glfwGetProcAddress));
+        if (version == 0) {
+            throw std::runtime_error("gladLoadGL failed");
+        }
     }
 }
 
 Render2::~Render2() {
-    execute_gc_render();
     window_.release();
     GLFW_WARN(glfwTerminate());
 }
 
 void Render2::print_hardware_info() const {
+    GlContextGuard gcg{ window_->window() };
     const char* vendor = CHK((const char*)glGetString(GL_VENDOR));
     const char* renderer = CHK((const char*)glGetString(GL_RENDERER));
     std::cerr << "Vendor: " << vendor << std::endl;
@@ -127,11 +130,10 @@ void Render2::operator () (
     GLFW_CHK(glfwPollEvents());
     // std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // From: https://www.glfw.org/docs/latest/context_guide.html#context_current
-    CHK(glfwMakeContextCurrent(nullptr));
     auto continue_rendering = [&]() { return !glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0); };
     auto render_thread_func = [&]() {
         set_thread_name("Render2");
-        CHK(glfwMakeContextCurrent(window_->window()));
+        GlContextGuard gcg{ window_->window() };
         while (continue_rendering())
         {
             // TimeGuard::initialize(1000 * 60, MaxLogLengthExceededBehavior::THROW_EXCEPTION);
@@ -199,7 +201,6 @@ void Render2::operator () (
             //     TimeGuard::print_groups(std::cerr);
             // }
         }
-        CHK(glfwMakeContextCurrent(nullptr));
     };
     auto thread_runner = RenderingContextStack::generate_thread_runner(
         RenderingContextStack::primary_rendering_context(),
@@ -212,7 +213,6 @@ void Render2::operator () (
         }
     }
     render_thread.join();
-    CHK(glfwMakeContextCurrent(window_->window()));
 }
 
 void Render2::operator () (

@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -143,7 +144,7 @@ int main(int argc, char** argv) {
             .window_maximized = args.has_named("--window_maximized"),
             .full_screen = args.has_named("--full_screen"),
             .double_buffer = args.has_named("--double_buffer"),
-            .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "2")),
+            .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "4")),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
@@ -224,23 +225,26 @@ int main(int argc, char** argv) {
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;
             LoadScene load_scene;
-            load_scene(
-                main_scene_filename,
-                main_scene_filename,
-                next_scene_filename,
-                substitutions,
-                num_renderings,
-                args.has_named("--verbose"),
-                rsc,
-                scene_node_resources,
-                scene_config,
-                render_config,
-                button_states,
-                ui_focus,
-                selection_ids,
-                render2.window(),
-                mutex,
-                renderable_scenes);
+            {
+                GlContextGuard gcg{ render2.window() };
+                load_scene(
+                    main_scene_filename,
+                    main_scene_filename,
+                    next_scene_filename,
+                    substitutions,
+                    num_renderings,
+                    args.has_named("--verbose"),
+                    rsc,
+                    scene_node_resources,
+                    scene_config,
+                    render_config,
+                    button_states,
+                    ui_focus,
+                    selection_ids,
+                    render2.window(),
+                    mutex,
+                    renderable_scenes);
+            }
 
             if (args.has_named("--print_search_time")) {
                 for (const auto& p : renderable_scenes) {

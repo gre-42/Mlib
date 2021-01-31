@@ -301,7 +301,7 @@ void MotionInterpolationLogic::render(
                 CHK(glUseProgram(rp_no_interpolate_.program));
 
                 CHK(glUniform1i(rp_no_interpolate_.screen_texture_color0_location, 0));
-                CHK(glBindTexture(GL_TEXTURE_2D, it->second.fb.texture_color_buffer));
+                CHK(glBindTexture(GL_TEXTURE_2D, it->second.fb.texture_color));
 
                 CHK(glBindVertexArray(va_.vertex_buffer));
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -321,10 +321,10 @@ void MotionInterpolationLogic::render(
                     CHK(glUniform1i(rp_interpolate_mean_.screen_texture_color1_location, 1));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                    CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
+                    CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color));
 
                     CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                    CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color_buffer));
+                    CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color));
 
                     CHK(glBindVertexArray(va_.vertex_buffer));
                     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -351,10 +351,10 @@ void MotionInterpolationLogic::render(
                             CHK(glUniform1f(rp_interpolate_of_diff_.height_location, (GLfloat)of_height));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                            CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
+                            CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                            CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color_buffer));
+                            CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color));
 
                             CHK(glBindVertexArray(va_.vertex_buffer));
                             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -373,7 +373,7 @@ void MotionInterpolationLogic::render(
                             CHK(glUniform1i(rp_interpolate_of_finalize_.screen_texture_of_diff_location, 0));
 
                             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                            CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.fb.texture_color_buffer));
+                            CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.fb.texture_color));
 
                             CHK(glBindVertexArray(va_.vertex_buffer));
                             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -394,13 +394,13 @@ void MotionInterpolationLogic::render(
                         CHK(glUniform1i(rp_interpolate_of_apply_.screen_texture_of_location, 2));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
-                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it0->second.fb.texture_color));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
-                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, it1->second.fb.texture_color));
 
                         CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
-                        CHK(glBindTexture(GL_TEXTURE_2D, fb_flow.fb.texture_color_buffer));
+                        CHK(glBindTexture(GL_TEXTURE_2D, fb_flow.fb.texture_color));
 
                         CHK(glBindVertexArray(va_.vertex_buffer));
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
