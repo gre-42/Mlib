@@ -278,10 +278,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    if ((alpha_threshold < 1) || has_texture) {
+    if ((alpha_threshold != 0) || has_texture) {
         sstr << "    vec4 texture1_color = texture(texture1, tex_coord);" << std::endl;
     }
-    if (alpha_threshold < 1) {
+    if (alpha_threshold != 0) {
         if (!has_texture) {
             throw std::runtime_error("Alpha threshold requires texture");
         }
@@ -618,7 +618,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.specularity,
             (id.blend_mode == BlendMode::BINARY) || (id.blend_mode == BlendMode::BINARY_ADD)
                 ? (id.calculate_lightmap ? 0.1f : 0.5f)
-                : 1.f,
+                : 0.f,
             occlusion_type,
             id.reorient_normals,
             id.orthographic,
