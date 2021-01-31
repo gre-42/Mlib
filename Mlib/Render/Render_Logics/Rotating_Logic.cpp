@@ -87,19 +87,19 @@ void RotatingLogic::render(
             0.f});
     }
 
-    render_config.apply();
+    {
+        RenderConfigGuard rcg{ render_config };
 
-    // make sure we clear the framebuffer's content
-    CHK(glClearColor(
-        render_config.background_color(0),
-        render_config.background_color(1),
-        render_config.background_color(2),
-        1));
-    CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+        // make sure we clear the framebuffer's content
+        CHK(glClearColor(
+            render_config.background_color(0),
+            render_config.background_color(1),
+            render_config.background_color(2),
+            1));
+        CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    scene_.render(vp, iv, render_config, scene_graph_config, frame_id.external_render_pass);
-
-    render_config.unapply();
+        scene_.render(vp, iv, render_config, scene_graph_config, frame_id.external_render_pass);
+    }
 }
 
 float RotatingLogic::near_plane() const {

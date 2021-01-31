@@ -36,4 +36,13 @@ struct RenderConfig {
     void unapply() const;
 };
 
+class RenderConfigGuard {
+public:
+    explicit RenderConfigGuard(const RenderConfig& render_config);
+    ~RenderConfigGuard();
+private:
+    const RenderConfig& render_config_;
+    static thread_local bool applied_;
+};
+
 }

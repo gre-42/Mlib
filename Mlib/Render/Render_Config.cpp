@@ -28,3 +28,20 @@ void RenderConfig::unapply() const {
         CHK(glDisable(GL_MULTISAMPLE));
     }
 }
+
+thread_local bool RenderConfigGuard::applied_ = false;
+
+RenderConfigGuard::RenderConfigGuard(const RenderConfig& render_config)
+: render_config_{ render_config }
+{
+    if (applied_) {
+        throw std::runtime_error("Detected recursive application of render config");
+    }
+    applied_ = true;
+    render_config.apply();
+}
+
+RenderConfigGuard::~RenderConfigGuard() {
+    applied_ = false;
+    render_config_.unapply();
+}
