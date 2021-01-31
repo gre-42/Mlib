@@ -309,9 +309,9 @@ GLuint RenderingResources::get_cubemap(const std::string& name,
     for (GLuint i = 0; i < filenames.size(); i++) {
         StbInfo info =
             stb_load_texture(filenames[i],
-                                false,
-                                false,
-                                true); // false=rgba, false=flip_vertically, true=flip_horizontally
+                             false,  // false=rgba
+                             false,  // false=flip_vertically
+                             true);  // true=flip_horizontally
         CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                             0,
                             GL_RGB,
