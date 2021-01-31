@@ -160,7 +160,7 @@ RenderingResources::RenderingResources(
 RenderingResources::~RenderingResources() {
     for (const auto& t : textures_) {
         if (t.second.needs_gc) {
-            gc_textures_.push_back(t.second.handle);
+            gc_textures.push_back(t.second.handle);
         }
     }
 }

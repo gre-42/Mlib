@@ -8,7 +8,7 @@
 namespace Mlib {
 
 extern std::list<GLuint> gc_frame_buffers;
-extern std::list<GLuint> gc_textures_;
+extern std::list<GLuint> gc_textures;
 extern std::list<GLuint> gc_render_buffers;
 
 /**

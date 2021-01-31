@@ -118,11 +118,11 @@ void FrameBuffer::gc_deallocate() {
         frame_buffer_ = (GLuint)-1;
     }
     if (texture_color != (GLuint)-1) {
-        gc_textures_.push_back(texture_color);
+        gc_textures.push_back(texture_color);
         texture_color = (GLuint)-1;
     }
     if (texture_depth != (GLuint)-1) {
-        gc_textures_.push_back(texture_depth);
+        gc_textures.push_back(texture_depth);
         texture_depth = (GLuint)-1;
     }
     if (render_buffer != (GLuint)-1) {
