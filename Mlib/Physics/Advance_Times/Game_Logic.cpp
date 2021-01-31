@@ -39,7 +39,8 @@ GameLogic::GameLogic(
   players_{players},
   vip_{nullptr},
   mutex_{mutex},
-  spawn_point_id_{SIZE_MAX}
+  spawn_point_id_{SIZE_MAX},
+  current_bystander_rng_{0}
 {
     advance_times_.add_advance_time(*this);
 }
@@ -119,37 +120,37 @@ void GameLogic::handle_bystanders() {
     if (vip_->scene_node_name().empty()) {
         return;
     }
+    if (players_.players().empty()) {
+        return;
+    }
     TransformationMatrix<float, 3> vip_m = scene_.get_node(vip_->scene_node_name())->absolute_model_matrix();
     const FixedArray<float, 3>& vip_pos = vip_m.t();
     FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R());
     size_t nsee = 0;
-    for (auto& player : players_.players()) {
-        if (player.second == vip_) {
-            continue;
+    auto it = players_.players().begin();
+    std::advance(it, current_bystander_rng_() % players_.players().size());
+    auto handle_bystander = [&](Player& player) {
+        if (&player == vip_) {
+            return;
         }
-        if (nsee > cfg.max_nsee) {
-            break;
+        if (player.game_mode() != GameMode::BYSTANDER) {
+            return;
         }
-        if (player.second->game_mode() == GameMode::BYSTANDER) {
-            if (player.second->scene_node_name().empty()) {
-                spawn_for_vip(
-                    *player.second,
-                    vip_z,
-                    vip_pos,
-                    nsee);
-                break;
-            } else {
-                if (delete_for_vip(
-                    *player.second,
-                    vip_z,
-                    vip_pos,
-                    nsee))
-                {
-                    break;
-                }
-            }
+        if (player.scene_node_name().empty()) {
+            spawn_for_vip(
+                player,
+                vip_z,
+                vip_pos,
+                nsee);
+        } else {
+            delete_for_vip(
+                player,
+                vip_z,
+                vip_pos,
+                nsee);
         }
-    }
+    };
+    handle_bystander(*it->second);
 }
 
 bool GameLogic::spawn_for_vip(
