@@ -9,6 +9,7 @@
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Render_Logics/Locking_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
@@ -200,7 +201,10 @@ void Render2::operator () (
         }
         CHK(glfwMakeContextCurrent(nullptr));
     };
-    std::thread render_thread{ render_thread_func };
+    auto thread_runner = RenderingContextStack::generate_thread_runner(
+        RenderingContextStack::primary_rendering_context(),
+        RenderingContextStack::rendering_context());
+    std::thread render_thread{ thread_runner(render_thread_func) };
     while (continue_rendering()) {
         GLFW_CHK(glfwPollEvents());
         if (button_states != nullptr) {
