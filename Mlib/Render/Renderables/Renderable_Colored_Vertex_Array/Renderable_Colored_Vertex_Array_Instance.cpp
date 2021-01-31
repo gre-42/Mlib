@@ -16,6 +16,11 @@
 #include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Scene_Graph/Visibility_Check.hpp>
 
+// #undef LOG_FUNCTION
+// #undef LOG_INFO
+// #define LOG_FUNCTION(msg) ::Mlib::Log log(msg)
+// #define LOG_INFO(msg) log.info(msg)
+
 using namespace Mlib;
 
 RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
@@ -104,6 +109,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
     const RenderPass& render_pass,
     const Style* style) const
 {
+    LOG_FUNCTION("render_cva");
     // TimeGuard time_guard{ "render_cva", cva->material.texture_descriptor.color };
     assert_true((cva->material.aggregate_mode == AggregateMode::OFF) || (rcva_->instances_ != nullptr));
     if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {
@@ -289,11 +295,11 @@ void RenderableColoredVertexArrayInstance::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture");
     if (has_texture) {
-        LOG_INFO("RenderableColoredVertexArrayInstance::render get texture \"" + cva->material.texture + '"');
+        LOG_INFO("RenderableColoredVertexArrayInstance::render get texture \"" + cva->material.texture_descriptor.color + '"');
         GLuint texture = rcva_->rendering_resources_->get_texture(cva->material.texture_descriptor);
-        LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture \"" + cva->material.texture + '"');
+        LOG_INFO("RenderableColoredVertexArrayInstance::render bind texture \"" + cva->material.texture_descriptor.color + '"');
         CHK(glBindTexture(GL_TEXTURE_2D, texture));
-        LOG_INFO("RenderableColoredVertexArrayInstance::render clamp texture \"" + cva->material.texture + '"');
+        LOG_INFO("RenderableColoredVertexArrayInstance::render clamp texture \"" + cva->material.texture_descriptor.color + '"');
         if (cva->material.wrap_mode_s == WrapMode::REPEAT) {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
         } else {
@@ -433,6 +439,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
     CHK(glDisable(GL_BLEND));
     CHK(glBlendFunc(GL_ONE, GL_ZERO));
     CHK(glDepthMask(GL_TRUE));
+    // CHK(glFlush());
     LOG_INFO("RenderableColoredVertexArrayInstance::render glDrawArrays finished");
 }
 
