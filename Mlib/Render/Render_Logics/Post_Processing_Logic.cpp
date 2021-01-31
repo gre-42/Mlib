@@ -203,7 +203,7 @@ void PostProcessingLogic::render(
                 CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_depth));
             }
 
-            CHK(glBindVertexArray(va_.vertex_buffer));
+            CHK(glBindVertexArray(va_.vertex_array));
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
             CHK(glBindVertexArray(0));
 
