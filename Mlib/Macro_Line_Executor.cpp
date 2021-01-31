@@ -99,7 +99,16 @@ void MacroLineExecutor::operator () (
             substitutions_,
             verbose_};
         macro_file_executor_(mle2, rsc);
-    } else if (!user_function_(context_, fpath, *this, subst_line)) {
-        throw std::runtime_error("Could not parse line: \"" + subst_line + '"');
+    } else {
+        bool success = false;
+        try {
+            success = user_function_(context_, fpath, *this, subst_line);
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Could not parse line: \"" + subst_line + "\". :" + e.what());
+        }
+        if (!success) {
+            throw std::runtime_error("Could not parse line: \"" + subst_line + '"');
+        }
+        
     }
 }
