@@ -1,10 +1,10 @@
 #include "Set_Thread_Name.hpp"
+#include <stdexcept>
 
 #ifdef _WIN32
 
 #include <windows.h>
 #include <processthreadsapi.h>
-#include <stdexcept>
 
 using namespace Mlib;
 
@@ -18,4 +18,17 @@ void Mlib::set_thread_name(const std::string& name) {
         throw std::runtime_error("Could not set thread name \"" + name + '"');
     }
 }
+
+#else
+
+#include <pthread.h>
+#include <cstring>
+
+void Mlib::set_thread_name(const std::string& name) {
+    int rc = pthread_setname_np(pthread_self(), name.c_str());
+    if (rc != 0) {
+        throw std::runtime_error(std::string("Could not set thread name: ") + strerror(rc));
+    }
+}
+
 #endif

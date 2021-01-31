@@ -104,7 +104,7 @@ void MacroLineExecutor::operator () (
         try {
             success = user_function_(context_, fpath, *this, subst_line);
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Exception while parsing line: \"" + subst_line + "\". :" + e.what());
+            throw std::runtime_error("Exception while processing line: \"" + subst_line + "\"\n\n" + e.what());
         }
         if (!success) {
             throw std::runtime_error("Could not parse line: \"" + subst_line + '"');

@@ -482,15 +482,15 @@ void LoadScene::operator()(
         "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
         "\\s*y_snappiness=([\\w+-.]+)$");
     static const DECLARE_REGEX(add_texture_descriptor_reg,
-        "^\\s*add_texture_descriptor\\r?\\n"
-        "\\s*name=([\\w+-.]+)\\r?\\n"
-        "\\s*color=([\\w-. \\(\\)/+-]+)"
-        "\\s*normal=([\\w-. \\(\\)/+-]*)"
-        "\\s*color_mode=(rgb|rgba)"
-        "\\s*histogram=([\\w-. \\(\\)/+-]*)"
-        "\\s*mixed=([\\w-. \\(\\)/+-]*)"
-        "\\s*overlap_npixels=(\\d+)"
-        "\\s*mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "^\\s*add_texture_descriptor"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+color=([\\w-. \\(\\)/+-]+)"
+        "\\s+normal=([\\w-. \\(\\)/+-]*)"
+        "\\s+color_mode=(rgb|rgba)"
+        "\\s+histogram=([\\w-. \\(\\)/+-]*)"
+        "\\s+mixed=([\\w-. \\(\\)/+-]*)"
+        "\\s+overlap_npixels=(\\d+)"
+        "\\s+mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(record_track_reg, "^\\s*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(playback_track_reg, "^\\s*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(check_points_reg,
