@@ -65,16 +65,18 @@ void StandardRenderLogic::render(
 
         RenderConfigGuard rcg{ render_config };
 
-        auto primary_rendering_context = RenderingContextStack::primary_rendering_context();
-        scene_.render(
-            child_logic_.vp(),
-            child_logic_.iv(),
-            render_config,
-            scene_graph_config,
-            frame_id.external_render_pass,
-            RenderingContextStack::generate_thread_runner(
-                primary_rendering_context,
-                rendering_context_));
+        {
+            auto primary_rendering_context = RenderingContextStack::primary_rendering_context();
+            scene_.render(
+                child_logic_.vp(),
+                child_logic_.iv(),
+                render_config,
+                scene_graph_config,
+                frame_id.external_render_pass,
+                RenderingContextStack::generate_thread_runner(
+                    primary_rendering_context,
+                    rendering_context_));
+        }
     }
 
     // if (frame_id.external_render_pass.pass == ExternalRenderPassType::Pass::STANDARD_WO_POSTPROCESSING ||
