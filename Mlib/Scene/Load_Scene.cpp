@@ -213,19 +213,20 @@ void LoadScene::operator()(
         "\\s+source=([/\\w+-.]+)"
         "\\s+max_distance=([\\w+-.]+)$");
     static const DECLARE_REGEX(square_resource_reg,
-        "^\\s*square_resource\\r?\\n"
-        "\\s*name=([\\w+-.]+)\\r?\\n"
-        "\\s*texture_filename=(#?[\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*min=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*max=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*is_small=(0|1)\\r?\\n"
-        "\\s*occluded_type=(off|color|depth)\\r?\\n"
-        "\\s*occluder_type=(off|white|black)\\r?\\n"
-        "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*blend_mode=(off|binary|continuous)\\r?\\n"
-        "\\s*cull_faces=(0|1)\\r?\\n"
-        "\\s*aggregate_mode=(off|once|sorted|instances_once|instances_sorted)\\r?\\n"
-        "\\s*transformation_mode=(all|position|position_lookat)$");
+        "^\\s*square_resource"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+texture_filename=(#?[\\w-. \\(\\)/+-]+)"
+        "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+max=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+is_small=(0|1)"
+        "\\s+occluded_type=(off|color|depth)"
+        "\\s+occluder_type=(off|white|black)"
+        "\\s+occluded_by_black=(0|1)"
+        "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+blend_mode=(off|binary|continuous)"
+        "\\s+cull_faces=(0|1)"
+        "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
+        "\\s+transformation_mode=(all|position|position_lookat)$");
     static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(binary_x_resource_reg, "^\\s*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
     static const DECLARE_REGEX(node_instance_reg,
@@ -753,18 +754,19 @@ void LoadScene::operator()(
                     .texture_descriptor = {.color = fpath(match[2].str())},
                     .occluded_type =  occluded_type_from_string(match[8].str()),
                     .occluder_type = occluder_type_from_string(match[9].str()),
-                    .blend_mode = blend_mode_from_string(match[13].str()),
+                    .occluded_by_black = safe_stob(match[10].str()),
+                    .blend_mode = blend_mode_from_string(match[14].str()),
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .collide = false,
-                    .aggregate_mode = aggregate_mode_from_string(match[15].str()),
-                    .transformation_mode = transformation_mode_from_string(match[16].str()),
+                    .aggregate_mode = aggregate_mode_from_string(match[16].str()),
+                    .transformation_mode = transformation_mode_from_string(match[17].str()),
                     .is_small = safe_stob(match[7].str()),
-                    .cull_faces = safe_stob(match[14].str()),
+                    .cull_faces = safe_stob(match[15].str()),
                     .ambience = {
-                        safe_stof(match[10].str()),
                         safe_stof(match[11].str()),
-                        safe_stof(match[12].str())},
+                        safe_stof(match[12].str()),
+                        safe_stof(match[13].str())},
                     .diffusivity = {0.f, 0.f, 0.f},
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
             return true;
