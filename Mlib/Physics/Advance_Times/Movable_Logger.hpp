@@ -16,14 +16,14 @@ public:
         SceneNode& scene_node,
         AdvanceTimes& advance_times,
         StatusWriter* status_writer,
-        unsigned int log_components);
+        StatusComponents log_components);
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;
 private:
     SceneNode& scene_node_;
     AdvanceTimes& advance_times_;
     StatusWriter* status_writer_;
-    unsigned int log_components_;
+    StatusComponents log_components_;
 };
 
 }
