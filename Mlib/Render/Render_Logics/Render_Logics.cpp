@@ -40,6 +40,7 @@ void RenderLogics::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    std::lock_guard lock{ mutex_ };
     Focus current_focus = ui_focus_.focuses.focus();
     
     LOG_FUNCTION("RenderLogics::render");
@@ -76,7 +77,7 @@ void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLog
 }
 
 void RenderLogics::notify_destroyed(void* destroyed_object) {
-    std::lock_guard lock{mutex_};
+    std::lock_guard lock{ mutex_ };
     size_t nfound = 0;
     while(true) {
         auto del = [this, destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {

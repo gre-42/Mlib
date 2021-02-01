@@ -11,8 +11,7 @@ RenderableScene::RenderableScene(
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
     GLFWwindow* window,
-    const RenderableSceneConfig& config,
-    std::recursive_mutex& mutex)
+    const RenderableSceneConfig& config)
 : scene_node_resources_{scene_node_resources},
   small_sorted_aggregate_renderer_{AggregateArrayRenderer::small_sorted_aggregate_renderer()},
   small_instances_renderer_{ArrayInstancesRenderer::small_instances_renderer()},
@@ -67,8 +66,7 @@ RenderableScene::RenderableScene(
       config.depth_fog,
       config.low_pass,
       config.high_pass)},
-  mutex_{mutex},
-  render_logics_{mutex, ui_focus},
+  render_logics_{mutex_, ui_focus},
   players_{physics_engine_.advance_times_},
   game_logic_{
       scene_,

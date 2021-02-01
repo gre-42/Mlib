@@ -2,7 +2,6 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
-#include <mutex>
 
 struct GLFWwindow;
 
@@ -31,12 +30,6 @@ public:
 
     void operator () (
         RenderLogic& logic,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},
-        ButtonStates* button_states = nullptr);
-
-    void operator () (
-        RenderLogic& logic,
-        std::recursive_mutex& mutex,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},
         ButtonStates* button_states = nullptr);
 

@@ -219,7 +219,6 @@ int main(int argc, char** argv) {
                     " FAR_PLANE:" << safe_stof(args.named_value("--far_plane", "1000"));
                 substitutions.merge(SubstitutionString{sstr.str()});
             }
-            std::recursive_mutex mutex;
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
             std::string next_scene_filename;
@@ -242,7 +241,6 @@ int main(int argc, char** argv) {
                     ui_focus,
                     selection_ids,
                     render2.window(),
-                    mutex,
                     renderable_scenes);
             }
 
@@ -270,7 +268,6 @@ int main(int argc, char** argv) {
                 }
                 render2(
                     rs->second->render_logics_,
-                    mutex,
                     scene_config.scene_graph_config,
                     &button_states);
                 if (!render2.window_should_close()) {
@@ -278,7 +275,6 @@ int main(int argc, char** argv) {
                     num_renderings = 1;
                     render2(
                         rs->second->render_logics_,
-                        mutex,
                         scene_config.scene_graph_config);
                     ui_focus.focuses.pop_back();
                 }

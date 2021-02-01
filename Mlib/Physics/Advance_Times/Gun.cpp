@@ -29,7 +29,8 @@ Gun::Gun(
     float bullet_velocity,
     float bullet_lifetime,
     float bullet_damage,
-    const FixedArray<float, 3>& bullet_size)
+    const FixedArray<float, 3>& bullet_size,
+    std::recursive_mutex& mutex)
 : scene_{scene},
   scene_node_resources_{scene_node_resources},
   rigid_bodies_{rigid_bodies},
@@ -45,7 +46,8 @@ Gun::Gun(
   triggered_{false},
   cool_down_{cool_down},
   seconds_since_last_shot_{0},
-  absolute_model_matrix_{fixed_nans<float, 4, 4>()}
+  absolute_model_matrix_{fixed_nans<float, 4, 4>()},
+  mutex_{mutex}
 {}
 
 void Gun::advance_time(float dt) {
@@ -82,7 +84,8 @@ void Gun::advance_time(float dt) {
             *rc,
             bullet_node_name,
             bullet_lifetime_,
-            bullet_damage_);
+            bullet_damage_,
+            mutex_);
         rc->collision_observers_.push_back(bullet);
         advance_times_.add_advance_time(bullet);
         scene_.add_root_node(bullet_node_name, node);

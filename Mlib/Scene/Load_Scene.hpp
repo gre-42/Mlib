@@ -35,7 +35,6 @@ public:
         UiFocus& ui_focus,
         std::map<std::string, size_t>& selection_ids,
         GLFWwindow* window,
-        std::recursive_mutex& mutex,
         std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;

@@ -57,8 +57,7 @@ public:
         UiFocus& ui_focus,
         std::map<std::string, size_t>& selection_ids,
         GLFWwindow* window,
-        const RenderableSceneConfig& config,
-        std::recursive_mutex& mutex);
+        const RenderableSceneConfig& config);
     ~RenderableScene();
     void start_physics_loop();
     void print_physics_engine_search_time() const;
@@ -89,7 +88,7 @@ public:
     std::shared_ptr<DirtmapLogic> dirtmap_logic_;
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
-    std::recursive_mutex& mutex_;
+    std::recursive_mutex mutex_;
     RenderLogics render_logics_;
     Players players_;
     GameLogic game_logic_;

@@ -12,7 +12,6 @@
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
-#include <Mlib/Render/Render_Logics/Locking_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Renderables/Renderable_Depth_Map.hpp>
@@ -218,26 +217,14 @@ void Render2::operator () (
 }
 
 void Render2::operator () (
-    RenderLogic& logic,
-    std::recursive_mutex& mutex,
-    const SceneGraphConfig& scene_graph_config,
-    ButtonStates* button_states)
-{
-    LockingRenderLogic lrl{logic, mutex};
-    (*this)(lrl, scene_graph_config, button_states);
-}
-
-void Render2::operator () (
     const Scene& scene,
     bool rotate,
     float scale,
     const SceneGraphConfig& scene_graph_config)
 {
     RotatingLogic rotating_logic{window_->window(), scene, rotate, scale};
-    std::recursive_mutex mutex;
     (*this)(
         rotating_logic,
-        mutex,
         scene_graph_config);
 }
 

@@ -6,12 +6,12 @@ using namespace Mlib;
 
 RigidBodyEngine::RigidBodyEngine(
     float max_surface_power,
-    bool HAND_BRAKE_pulled)
+    bool hand_brake_pulled)
 : surface_power_{0},
   surface_power_nconsumed_{0},
   max_surface_power_{max_surface_power},
   ntires_{0},
-  HAND_BRAKE_pulled_{HAND_BRAKE_pulled}
+  hand_brake_pulled_{hand_brake_pulled}
 {}
 
 void RigidBodyEngine::reset_forces() {
@@ -19,7 +19,7 @@ void RigidBodyEngine::reset_forces() {
 }
 
 PowerIntent RigidBodyEngine::consume_abs_surface_power() {
-    if (HAND_BRAKE_pulled_ || std::isnan(surface_power_)) {
+    if (hand_brake_pulled_ || std::isnan(surface_power_)) {
         return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
     }
     if (max_surface_power_ == 0) {

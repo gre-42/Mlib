@@ -20,7 +20,7 @@ class RigidBodyEngine {
 public:
     explicit RigidBodyEngine(
         float max_surface_power,
-        bool HAND_BRAKE_pulled);
+        bool hand_brake_pulled);
     void set_surface_power(float surface_power);
     PowerIntent consume_abs_surface_power();
     void increment_ntires();
@@ -31,7 +31,7 @@ private:
     size_t surface_power_nconsumed_;
     float max_surface_power_;
     size_t ntires_;
-    bool HAND_BRAKE_pulled_;
+    bool hand_brake_pulled_;
 };
 
 }

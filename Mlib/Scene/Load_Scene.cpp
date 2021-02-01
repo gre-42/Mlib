@@ -120,7 +120,6 @@ void LoadScene::operator()(
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
     GLFWwindow* window,
-    std::recursive_mutex& mutex,
     std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
 {
     std::ifstream ifs{script_filename};
@@ -271,7 +270,7 @@ void LoadScene::operator()(
         "\\s+rigid_body=([\\w+-.]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+power=([\\w+-.]+)"
-        "(?:\\s+HAND_BRAKE_pulled=(0|1))?$");
+        "(?:\\s+hand_brake_pulled=(0|1))?$");
     static const DECLARE_REGEX(player_create_reg,
         "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
@@ -567,8 +566,7 @@ void LoadScene::operator()(
                     .with_dirtmap = safe_stob(match[10].str()),
                     .with_skybox = safe_stob(match[11].str()),
                     .with_flying_logic = safe_stob(match[12].str()),
-                    .clear_mode = clear_mode_from_string(match[13].str())},
-                mutex);
+                    .clear_mode = clear_mode_from_string(match[13].str())});
             if (!renderable_scenes.insert({match[1].str(), rs}).second) {
                 throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");
             }
@@ -958,7 +956,8 @@ void LoadScene::operator()(
                 FixedArray<float, 3>{               // bullet-size
                     safe_stof(match[10].str()),     // bullet-size-x
                     safe_stof(match[11].str()),     // bullet-size-y
-                    safe_stof(match[12].str())});   // bullet-size-z
+                    safe_stof(match[12].str())},    // bullet-size-z
+                mutex);                             // mutex
             linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
         } else if (Mlib::re::regex_match(line, match, trigger_gun_ai_reg)) {
             auto base_shooter_node = scene.get_node(match[1].str());
@@ -1103,7 +1102,7 @@ void LoadScene::operator()(
                 match[2].str(),
                 RigidBodyEngine{
                     safe_stof(match[3].str()),
-                    match[4].str().empty() ? false : safe_stob(match[4].str())}});  // HAND_BRAKE_pulled
+                    match[4].str().empty() ? false : safe_stob(match[4].str())}});  // hand_brake_pulled
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }

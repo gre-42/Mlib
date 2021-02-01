@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
 #include <atomic>
+#include <mutex>
 
 namespace Mlib {
 
@@ -28,7 +29,8 @@ public:
         float bullet_velocity,
         float bullet_lifetime,
         float bullet_damage,
-        const FixedArray<float, 3>& bullet_size);
+        const FixedArray<float, 3>& bullet_size,
+        std::recursive_mutex& mutex);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
@@ -50,6 +52,7 @@ private:
     float cool_down_;
     float seconds_since_last_shot_;
     TransformationMatrix<float, 3> absolute_model_matrix_;
+    std::recursive_mutex& mutex_;
 };
 
 }

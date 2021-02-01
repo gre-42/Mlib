@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
+#include <mutex>
 #include <string>
 
 namespace Mlib {
@@ -21,7 +22,8 @@ public:
         RigidBody& rigid_body,
         const std::string& bullet_node_name,
         float max_lifetime,
-        float damage);
+        float damage,
+        std::recursive_mutex& mutex);
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
@@ -37,6 +39,7 @@ private:
     float max_lifetime_;
     float lifetime_;
     float damage_;
+    std::recursive_mutex& mutex_;
 };
 
 }
