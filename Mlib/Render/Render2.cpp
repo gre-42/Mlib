@@ -169,14 +169,18 @@ void Render2::operator () (
             if (render_results_ != nullptr && !render_results_->outputs.empty()) {
                 GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
             }
+            // Set FPS, assuming that "window_->draw();" below will take 0 time.
+            if (render_config_.dt != 0) {
+                // TimeGuard time_guard("set_fps", "set_fps");
+                set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
+            } else if (render_config_.motion_interpolation) {
+                throw std::runtime_error("Motion interpolation requires render_dt");
+            }
             {
                 // TimeGuard time_guard("window_->draw", "window_->draw");
                 window_->draw();
             }
-            {
-                // TimeGuard time_guard("execute_gc_render", "execute_gc_render");
-                execute_gc_render();
-            }
+            // Compute FPS, including the time that "window_->draw();" took.
             if (render_config_.print_fps) {
                 fps_i = (fps_i + 1) % fps_i_max;
                 fps.tick();
@@ -187,11 +191,9 @@ void Render2::operator () (
                 //     std::cerr << "FPS < 55" << std::endl;
                 // }
             }
-            if (render_config_.dt != 0) {
-                // TimeGuard time_guard("set_fps", "set_fps");
-                set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
-            } else if (render_config_.motion_interpolation) {
-                throw std::runtime_error("Motion interpolation requires render_dt");
+            {
+                // TimeGuard time_guard("execute_gc_render", "execute_gc_render");
+                execute_gc_render();
             }
             if (render_config_.motion_interpolation) {
                 time_id = (time_id + 1) % 4;
