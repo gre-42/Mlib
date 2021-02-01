@@ -1,5 +1,6 @@
 #include "Renderable_Scene.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 
 using namespace Mlib;
@@ -74,6 +75,13 @@ RenderableScene::RenderableScene(
       players_,
       mutex_},
   scene_config_{scene_config},
+  physics_iteration_{
+      scene_node_resources_,
+      scene_,
+      physics_engine_,
+      mutex_,
+      scene_config_.physics_engine_config,
+      &fifo_log_},
   primary_rendering_context_{RenderingContextStack::primary_rendering_context()},
   secondary_rendering_context_{RenderingContextStack::rendering_context()}
 {
@@ -105,14 +113,10 @@ void RenderableScene::start_physics_loop() {
     }
     physics_loop_.reset(
         new PhysicsLoop{
-            scene_node_resources_,
-            scene_,
-            physics_engine_,
-            mutex_,
+            physics_iteration_,
             scene_config_.physics_engine_config,
             physics_set_fps_,
             SIZE_MAX,  // nframes
-            &fifo_log_,
             RenderingContextStack::generate_thread_runner(
                 primary_rendering_context_,
                 secondary_rendering_context_)});

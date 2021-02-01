@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
-#include <Mlib/Physics/Physics_Loop.hpp>
+#include <Mlib/Physics/Physics_Iteration.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Array_Instances_Renderer.hpp>
@@ -33,6 +33,8 @@
 #include <vector>
 
 namespace Mlib {
+
+class PhysicsLoop;
 
 struct RenderableSceneConfig {
     bool fly;
@@ -93,8 +95,9 @@ public:
     Players players_;
     GameLogic game_logic_;
 
-    std::unique_ptr<PhysicsLoop> physics_loop_;
     const SceneConfig& scene_config_;
+    PhysicsIteration physics_iteration_;
+    std::unique_ptr<PhysicsLoop> physics_loop_;
     RenderingContext primary_rendering_context_;
     RenderingContext secondary_rendering_context_;
 };

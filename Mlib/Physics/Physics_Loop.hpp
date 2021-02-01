@@ -1,29 +1,21 @@
 #pragma once
 #include <atomic>
 #include <functional>
-#include <mutex>
 #include <thread>
 
 namespace Mlib {
 
-class SceneNodeResources;
-class Scene;
-class PhysicsEngine;
+class PhysicsIteration;
 struct PhysicsEngineConfig;
 class SetFps;
-class BaseLog;
 
 class PhysicsLoop {
 public:
     PhysicsLoop(
-        SceneNodeResources& scene_node_resources,
-        Scene& scene,
-        PhysicsEngine& physics_engine,
-        std::recursive_mutex& mutex,
+        PhysicsIteration& physics_iteration,
         const PhysicsEngineConfig& physics_cfg,
         SetFps& set_fps,
         size_t nframes = SIZE_MAX,
-        BaseLog* base_log = nullptr,
         const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;});
     ~PhysicsLoop();
     void stop_and_join();
