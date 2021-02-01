@@ -7,7 +7,6 @@
 #include <map>
 #include <memory>
 #include <regex>
-#include <shared_mutex>
 #include <thread>
 
 namespace Mlib {
@@ -58,11 +57,6 @@ public:
     void shutdown();
     bool shutting_down() const;
 private:
-    mutable std::shared_mutex dynamic_mutex_;
-    mutable std::shared_mutex static_mutex_;
-    mutable std::shared_mutex aggregate_mutex_;
-    mutable std::shared_mutex instances_mutex_;
-    mutable std::shared_mutex registration_mutex_;
     // Must be above garbage-collected members
     // for deregistration in dtors to work.
     std::map<std::string, SceneNode*> nodes_;
