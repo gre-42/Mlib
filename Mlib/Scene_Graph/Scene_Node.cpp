@@ -19,7 +19,7 @@ SceneNode::SceneNode(Scene* scene)
   position_{0.f, 0.f, 0.f},
   rotation_{0.f, 0.f, 0.f},
   scale_{1.f},
-  rotation_matrix_invalidated_{true}
+  rotation_matrix_{fixed_identity_array<float, 3>()}
 {}
 
 SceneNode::~SceneNode() {
@@ -467,7 +467,7 @@ void SceneNode::set_position(const FixedArray<float, 3>& position) {
 
 void SceneNode::set_rotation(const FixedArray<float, 3>& rotation) {
     rotation_ = rotation;
-    rotation_matrix_invalidated_ = true;
+    rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
 }
 
 void SceneNode::set_scale(float scale) {
@@ -485,11 +485,6 @@ void SceneNode::set_relative_pose(
 }
 
 TransformationMatrix<float, 3> SceneNode::relative_model_matrix() const {
-    if (rotation_matrix_invalidated_) {
-        rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
-        assert_true(rotation_matrix_invalidated_);
-        rotation_matrix_invalidated_ = false;
-    }
     return TransformationMatrix{rotation_matrix_ * scale_, position_};
 }
 
@@ -503,11 +498,6 @@ TransformationMatrix<float, 3> SceneNode::absolute_model_matrix() const {
 }
 
 TransformationMatrix<float, 3> SceneNode::relative_view_matrix() const {
-    if (rotation_matrix_invalidated_) {
-        rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
-        assert_true(rotation_matrix_invalidated_);
-        rotation_matrix_invalidated_ = false;
-    }
     return TransformationMatrix<float, 3>::inverse(rotation_matrix_ / scale_, position_);
 }
 

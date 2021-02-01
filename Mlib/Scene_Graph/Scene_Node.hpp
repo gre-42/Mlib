@@ -145,7 +145,6 @@ private:
     FixedArray<float, 3> rotation_;
     float scale_;
     mutable FixedArray<float, 3, 3> rotation_matrix_;
-    mutable bool rotation_matrix_invalidated_;
     std::unique_ptr<Style> style_;
 };
 
