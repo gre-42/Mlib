@@ -27,7 +27,7 @@ void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
                 current_time = std::chrono::steady_clock::now();
                 residual_time = sim_time_ - current_time;
             }
-            // std::this_thread::sleep_for(std::chrono::microseconds(residual_time));
+            // std::this_thread::sleep_for(residual_time);
         } else if (print_residual_time) {
             std::cerr <<
                 prefix_ <<
