@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
         "    [--no_slip <x>]\n"
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
-        "    [--print_fps]\n"
+        "    [--print_render_fps]\n"
         "    [--vfx]\n"
         "    [--no_depth_fog]\n"
         "    [--low_pass]\n"
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
          "--no_normalmaps",
          "--print_physics_residual_time",
          "--print_render_residual_time",
-         "--print_fps",
+         "--print_render_fps",
          "--no_vfx",
          "--no_depth_fog",
          "--low_pass",
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .background_color = {0.68f, 0.85f, 1.f},
-            .print_fps = args.has_named("--print_fps"),
+            .print_fps = args.has_named("--print_render_fps"),
             .print_residual_time = args.has_named("--print_render_residual_time"),
             .dt = safe_stof(args.named_value("--render_dt", "0.01667")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "INFINITY"))};
