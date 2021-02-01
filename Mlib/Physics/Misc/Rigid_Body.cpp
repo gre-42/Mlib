@@ -304,23 +304,23 @@ float RigidBody::energy() const {
 //     return false;
 // }
 
-void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) const {
-    if (log_components & STATUS_TIME) {
+void RigidBody::write_status(std::ostream& ostr, StatusComponents log_components) const {
+    if (log_components & StatusComponents::TIME) {
         static const std::chrono::steady_clock::time_point epoch_time = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
         int64_t milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - epoch_time).count();
         ostr << "t: " << milliseconds << " ms" << std::endl;
     }
-    if (log_components & STATUS_SPEED) {
+    if (log_components & StatusComponents::SPEED) {
         ostr << "v: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) * 3.6 << " km/h" << std::endl;
     }
-    if (log_components & STATUS_ACCELERATION) {
+    if (log_components & StatusComponents::ACCELERATION) {
         ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) << " m/s^2" << std::endl;
     }
-    if (log_components & STATUS_ANGULAR_VELOCITY) {
+    if (log_components & StatusComponents::ANGULAR_VELOCITY) {
         ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) * float(180 / M_PI) << " °/s" << std::endl;
     }
-    if (log_components & STATUS_DIAMETER) {
+    if (log_components & StatusComponents::DIAMETER) {
         // T = 2 PI r / v, T = 2 PI / w
         // r = v / w
         // r / r2 = v * a / (w * v^2) = a / (w * v)
@@ -332,7 +332,7 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
             ostr << "d / d2(9.8): undefined" << std::endl;
         }
     }
-    if (log_components & STATUS_DIAMETER2) {
+    if (log_components & StatusComponents::DIAMETER2) {
         // F = m * a = m v^2 / r
         // r = v^2 / a
         if (float a2 = sum(squared(rbi_.a_)); a2 > 1e-2) {
@@ -343,7 +343,7 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
         // Not implemented: https://de.wikipedia.org/wiki/Wendekreis_(Fahrzeug)
         // D = 2 L / sin(alpha)
     }
-    if (log_components & STATUS_POSITION) {
+    if (log_components & StatusComponents::POSITION) {
         auto pos = rbi_.abs_position();
         ostr << "x: " << pos(0) << " m" << std::endl;
         ostr << "y: " << pos(1) << " m" << std::endl;
@@ -355,7 +355,7 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
             ostr << "height: " << height_to_string(gpos(2)) << std::endl;
         }
     }
-    if (log_components & STATUS_ENERGY) {
+    if (log_components & StatusComponents::ENERGY) {
         ostr << "E: " << energy() / 1e3 << " kJ" << std::endl;
 #ifdef COMPUTE_POWER
         // ostr << "P: " << power_ / 1e3 << " W" << std::endl;
@@ -364,7 +364,7 @@ void RigidBody::write_status(std::ostream& ostr, unsigned int log_components) co
         }
 #endif
     }
-    if ((log_components & STATUS_DRIVER_NAME) && (driver_ != nullptr)) {
+    if ((log_components & StatusComponents::DRIVER_NAME) && (driver_ != nullptr)) {
         ostr << "Driver: " << driver_->name() << std::endl;
     }
     for (const auto& o : collision_observers_) {

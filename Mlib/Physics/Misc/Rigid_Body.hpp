@@ -83,7 +83,7 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
-    virtual void write_status(std::ostream& ostr, unsigned int log_components) const override;
+    virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
 
     RigidBodies& rigid_bodies_;
 

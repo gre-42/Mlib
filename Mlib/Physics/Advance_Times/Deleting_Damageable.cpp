@@ -30,8 +30,8 @@ void DeletingDamageable::advance_time(float dt) {
     }
 }
 
-void DeletingDamageable::write_status(std::ostream& ostr, unsigned int log_components) const {
-    if (log_components & STATUS_HEALTH) {
+void DeletingDamageable::write_status(std::ostream& ostr, StatusComponents log_components) const {
+    if (log_components & StatusComponents::HEALTH) {
         ostr << "HP: " << health_ << std::endl;
     }
 }
