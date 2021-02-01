@@ -270,6 +270,16 @@ int main(int argc, char** argv) {
                     rs->second->render_logics_,
                     scene_config.scene_graph_config,
                     &button_states);
+                // LambdaRenderLogic lrl{
+                //     rs->second->render_logics_,
+                //     [&]() {
+                //         for (const auto& p : renderable_scenes) {
+                //             p.second->physics_iteration_();
+                //         }} };
+                // render2(
+                //     lrl,
+                //     scene_config.scene_graph_config,
+                //     &button_states);
                 if (!render2.window_should_close()) {
                     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
                     num_renderings = 1;
