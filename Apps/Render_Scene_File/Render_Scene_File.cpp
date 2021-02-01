@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
                 .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .static_radius = safe_stof(args.named_value("--static_radius", "100")),
+                .static_radius = safe_stof(args.named_value("--static_radius", "10")),
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "builtin")),
                 .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collision_type", "sequential_pulses")),
                 .bvh = !args.has_named("--no_bvh"),
@@ -266,6 +266,7 @@ int main(int argc, char** argv) {
                 if (rs == renderable_scenes.end()) {
                     throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
                 }
+                // rs->second->physics_engine_.rigid_bodies_.optimize_search_time();
                 render2(
                     rs->second->render_logics_,
                     scene_config.scene_graph_config,

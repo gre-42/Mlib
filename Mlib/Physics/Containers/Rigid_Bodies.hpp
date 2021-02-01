@@ -40,6 +40,7 @@ public:
         const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
         CollidableMode collidable_mode);
     void delete_rigid_body(const RigidBody* rigid_body);
+    void optimize_search_time() const;
     void print_search_time() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);

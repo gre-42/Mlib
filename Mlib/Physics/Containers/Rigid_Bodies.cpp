@@ -9,7 +9,7 @@
 using namespace Mlib;
 
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
-: bvh_{{cfg.static_radius, cfg.static_radius, cfg.static_radius}, 10},
+: bvh_{{cfg.static_radius, cfg.static_radius, cfg.static_radius}, 7},
   cfg_{cfg}
 {}
 
@@ -73,7 +73,7 @@ void RigidBodies::add_rigid_body(
             }
             static_rigid_bodies_.push_back(rigid_body);
         } else {
-            auto xx = split_with_static_radius(hitbox, rigid_body->get_new_absolute_model_matrix(), cfg_.static_radius);
+            auto xx = split_with_static_radius(hitbox, rigid_body->get_new_absolute_model_matrix(), 10 * cfg_.static_radius);
             RigidBodyAndTransformedMeshes rbtm;
             rbtm.rigid_body = rigid_body;
             
@@ -179,6 +179,10 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     transformed_objects_.push_back({
         .rigid_body = o.rigid_body,
         .meshes = std::move(transformed_meshes)});
+}
+
+void RigidBodies::optimize_search_time() const {
+    bvh_.optimize_search_time(std::cout);
 }
 
 void RigidBodies::print_search_time() const {
