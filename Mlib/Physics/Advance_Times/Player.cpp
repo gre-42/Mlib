@@ -154,6 +154,7 @@ void Player::set_waypoints(
             p = dot1d(m2, homogenized_3(p));
             bvh.insert(p, i++);
         }
+        // bvh.optimize_search_time(std::cout);
         if (!all_waypoints_bvh_.insert({wps.first, std::move(bvh)}).second) {
             throw std::runtime_error("Could not insert waypoints");
         }
