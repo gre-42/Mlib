@@ -260,7 +260,7 @@ float Player::seconds_since_spawn() const {
     if (spawn_time_ == std::chrono::time_point<std::chrono::steady_clock>()) {
         throw std::runtime_error("Seconds since spawn requires previous call to notify_spawn");
     }
-    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - spawn_time_).count() / 1000.f;
+    return std::chrono::duration<float>(std::chrono::steady_clock::now() - spawn_time_).count();
 }
 
 bool Player::spotted() const {
@@ -341,12 +341,12 @@ bool Player::unstuck() {
     } else if (
         (stuck_start_ != std::chrono::steady_clock::time_point()) &&
         (unstuck_start_ == std::chrono::steady_clock::time_point()) &&
-        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - stuck_start_).count() > driving_mode_.stuck_seconds * 1000)
+        std::chrono::duration<float>(std::chrono::steady_clock::now() - stuck_start_).count() > driving_mode_.stuck_seconds)
     {
         unstuck_start_ = std::chrono::steady_clock::now();
     }
     if (unstuck_start_ != std::chrono::steady_clock::time_point()) {
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - unstuck_start_).count() > driving_mode_.unstuck_seconds * 1000)
+        if (std::chrono::duration<float>(std::chrono::steady_clock::now() - unstuck_start_).count() > driving_mode_.unstuck_seconds)
         {
             unstuck_start_ = std::chrono::steady_clock::time_point();
         } else {

@@ -12,27 +12,28 @@ SetFps::SetFps(const std::string& prefix)
 {}
 
 void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
-    sim_time_ += std::chrono::microseconds(int64_t(dt * 1000 * 1000));
+    sim_time_ += std::chrono::nanoseconds(int64_t(double(dt) * 1000 * 1000 * 1000));
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
-    int64_t residual_time = std::chrono::duration_cast<std::chrono::microseconds>(sim_time_ - current_time).count();
-    int64_t min_residual_time = std::isnan(max_residual_time)
-        ? 1
-        : -std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<float>{max_residual_time}).count();
-    if ((min_residual_time <= 0) && (residual_time < min_residual_time)) {
+    std::chrono::steady_clock::duration residual_time = sim_time_ - current_time;
+    if (!std::isnan(max_residual_time) && (std::chrono::duration<float>(residual_time).count() < -max_residual_time)) {
         sim_time_ = current_time;
         if (print_residual_time) {
             std::cerr << prefix_ << "resetting sim time" << std::endl;
         }
     } else {
-        if (residual_time > 0) {
+        if (residual_time.count() > 0) {
             // busy wait
-            while(residual_time > 0) {
+            while(residual_time.count() > 0) {
                 current_time = std::chrono::steady_clock::now();
-                residual_time = std::chrono::duration_cast<std::chrono::microseconds>(sim_time_ - current_time).count();
+                residual_time = sim_time_ - current_time;
             }
             // std::this_thread::sleep_for(std::chrono::microseconds(residual_time));
         } else if (print_residual_time) {
-            std::cerr << prefix_ << "residual time: " << residual_time << std::endl;
+            std::cerr <<
+                prefix_ <<
+                "residual time: " <<
+                std::chrono::duration_cast<std::chrono::milliseconds>(-residual_time).count() <<
+                " ms" << std::endl;
         }
     }
     if (paused()) {

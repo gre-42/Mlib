@@ -56,7 +56,7 @@ void TimeGuard::write_svg(const std::thread::id& tid, const std::string& filenam
         x[i].reserve(e.second.events.size());
         y[i].reserve(e.second.events.size());
         for (const auto& ee : sorted_events) {
-            float time = 1e-6f * std::chrono::duration_cast<std::chrono::microseconds>(ee.time - init_time_).count();
+            float time = std::chrono::duration<float>(ee.time - init_time_).count();
             x[i].push_back(time);
             y[i].push_back((float)ee.stack_size);
         }
