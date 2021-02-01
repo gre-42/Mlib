@@ -886,6 +886,7 @@ void LoadScene::operator()(
                 scene.register_node(match[2].str(), node);
             }
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
+            std::lock_guard lock{ mutex };
             scene.delete_root_node(match[1].str());
         } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {
             auto node = scene.get_node(match[2].str());

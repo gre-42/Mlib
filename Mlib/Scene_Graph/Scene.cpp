@@ -27,6 +27,9 @@ void Scene::add_root_node(
     SceneNode* scene_node)
 {
     LOG_FUNCTION("Scene::add_root_node");
+    if (root_nodes_to_delete_.contains(name)) {
+        throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
+    }
     register_node(name, scene_node);
     if (!root_nodes_.insert(std::make_pair(name, scene_node)).second) {
         throw std::runtime_error("add_root_node could not insert node");
@@ -60,6 +63,27 @@ void Scene::add_root_instances_node(
     register_node(name, scene_node);
     if (!root_instances_nodes_.insert(std::make_pair(name, scene_node)).second) {
         throw std::runtime_error("add_root_instances_node could not insert node");
+    }
+}
+
+void Scene::schedule_delete_root_node(const std::string& name) {
+    std::lock_guard lock{ root_nodes_to_delete_mutex_ };
+    if (root_nodes_.find(name) == root_nodes_.end()) {
+        throw std::runtime_error("No root node with name \"" + name + "\" exists");
+    }
+    if (!root_nodes_to_delete_.insert(name).second) {
+        throw std::runtime_error("Node \"" + name + "\" is already scheduled for deletion");
+    }
+}
+
+void Scene::delete_scheduled_root_nodes() const {
+    auto self = const_cast<Scene*>(this);
+    std::lock_guard lock{ self->root_nodes_to_delete_mutex_ };
+    while (!root_nodes_to_delete_.empty()) {
+        // Temporary name variable to allow recursive calls to delete_root_node.
+        auto name = *self->root_nodes_to_delete_.begin();
+        self->root_nodes_to_delete_.erase(name);
+        self->delete_root_node(name);
     }
 }
 
@@ -97,6 +121,7 @@ void Scene::shutdown() {
     root_aggregate_nodes_.clear();
     static_root_nodes_.clear();
     root_nodes_.clear();
+    root_nodes_to_delete_.clear();
     nodes_.clear();
 }
 
@@ -134,6 +159,9 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
 }
 
 SceneNode* Scene::get_node(const std::string& name) const {
+    if (root_nodes_to_delete_.contains(name)) {
+        throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
+    }
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
         throw std::runtime_error("Could not find node with name \"" + name + '"');
@@ -297,6 +325,9 @@ void Scene::render(
 
 void Scene::move(float dt) {
     LOG_FUNCTION("Scene::move");
+    if (!root_nodes_to_delete_.empty()) {
+        throw std::runtime_error("Moving with root nodes scheduled for deletion");
+    }
     for (const auto& n : root_nodes_) {
         n.second->move(TransformationMatrix<float, 3>::identity(), dt);
     }

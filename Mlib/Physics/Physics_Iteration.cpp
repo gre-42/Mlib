@@ -58,6 +58,7 @@ void PhysicsIteration::operator()() {
             }
         }
         // TimeGuard tg1{"scene.move"};
+        scene_.delete_scheduled_root_nodes();
         scene_.move(physics_cfg_.dt);
     }
     physics_engine_.move_advance_times();

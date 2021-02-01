@@ -93,7 +93,7 @@ void GameLogic::handle_team_deathmatch() {
         (spawn_points_.size() > 1))
     {
         {
-            std::lock_guard lock_guard{mutex_};
+            // std::lock_guard lock_guard{mutex_};
             for (auto& p : players_.players()) {
                 if (p.second->team() == *winner_teams.begin()) {
                     ++p.second->stats().nwins;
@@ -102,7 +102,7 @@ void GameLogic::handle_team_deathmatch() {
             for (auto& p : players_.players()) {
                 const std::string& node_name = p.second->scene_node_name();
                 if (!node_name.empty()) {
-                    scene_.delete_root_node(node_name);
+                    scene_.schedule_delete_root_node(node_name);
                     // ++ndelete_;
                 }
             }
@@ -280,8 +280,8 @@ bool GameLogic::delete_for_vip(
     return false;
     delete_player:
     // TimeGuard time_guard{"delete", "delete"};
-    std::lock_guard lock_guard{mutex_};
-    scene_.delete_root_node(player.scene_node_name());
+    // std::lock_guard lock_guard{mutex_};
+    scene_.schedule_delete_root_node(player.scene_node_name());
     // ++ndelete_;
     return true;
 }
