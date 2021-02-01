@@ -484,6 +484,7 @@ void SceneNode::set_relative_pose(
 TransformationMatrix<float, 3> SceneNode::relative_model_matrix() const {
     if (rotation_matrix_invalidated_) {
         rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
+        assert_true(rotation_matrix_invalidated_);
         rotation_matrix_invalidated_ = false;
     }
     return TransformationMatrix{rotation_matrix_ * scale_, position_};
@@ -501,6 +502,7 @@ TransformationMatrix<float, 3> SceneNode::absolute_model_matrix() const {
 TransformationMatrix<float, 3> SceneNode::relative_view_matrix() const {
     if (rotation_matrix_invalidated_) {
         rotation_matrix_ = tait_bryan_angles_2_matrix(rotation_);
+        assert_true(rotation_matrix_invalidated_);
         rotation_matrix_invalidated_ = false;
     }
     return TransformationMatrix<float, 3>::inverse(rotation_matrix_ / scale_, position_);
