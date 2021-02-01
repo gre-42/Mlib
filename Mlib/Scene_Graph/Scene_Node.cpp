@@ -213,6 +213,9 @@ void SceneNode::add_light(Light* light) {
 }
 
 void SceneNode::set_style(Style* style) {
+    if (!renderables_.empty()) {
+        throw std::runtime_error("Style was set after renderables, this leads to a race condition");
+    }
     style_.reset(style);
 }
 

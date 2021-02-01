@@ -92,17 +92,19 @@ void GameLogic::handle_team_deathmatch() {
         (all_teams.size() > 1) &&
         (spawn_points_.size() > 1))
     {
-        std::lock_guard lock_guard{mutex_};
-        for (auto& p : players_.players()) {
-            if (p.second->team() == *winner_teams.begin()) {
-                ++p.second->stats().nwins;
+        {
+            std::lock_guard lock_guard{mutex_};
+            for (auto& p : players_.players()) {
+                if (p.second->team() == *winner_teams.begin()) {
+                    ++p.second->stats().nwins;
+                }
             }
-        }
-        for (auto& p : players_.players()) {
-            const std::string& node_name = p.second->scene_node_name();
-            if (!node_name.empty()) {
-                scene_.delete_root_node(node_name);
-                // ++ndelete_;
+            for (auto& p : players_.players()) {
+                const std::string& node_name = p.second->scene_node_name();
+                if (!node_name.empty()) {
+                    scene_.delete_root_node(node_name);
+                    // ++ndelete_;
+                }
             }
         }
         auto sit = spawn_points_.begin();
@@ -302,7 +304,7 @@ void GameLogic::spawn_at_spawn_point(
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg.spawn_y_offset;
     // TimeGuard time_guard{"spawn", "spawn"};
-    std::lock_guard lock_guard{mutex_};
+    // std::lock_guard lock_guard{mutex_};
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // ++nspawns_;
     spawn_macro->second(sp2);
