@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
         RenderResults render_results;
         RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
         if (args.has_named_value("--output")) {
-            render_results.outputs[rsd] = Array<float>{};
+            render_results.outputs[rsd] = Array<float>();
         }
         Render2 render2{
             num_renderings,
@@ -439,7 +439,7 @@ int main(int argc, char** argv) {
             scene.get_node("light_node0")->set_rotation({ -45.f * float{M_PI} / 180.f, 0.f, 0.f });
             lights.push_back(new Light{.node_name = "light_node0", .only_black = false, .shadow = true});
             scene.get_node("light_node0")->add_light(lights.back());
-            scene.get_node("light_node0")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+            scene.get_node("light_node0")->set_camera(std::make_shared<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
@@ -462,7 +462,7 @@ int main(int argc, char** argv) {
                     scene.get_node("obj")->position())));
                 lights.push_back(new Light{.node_name = name, .only_black = false, .shadow = true});
                 scene.get_node(name)->add_light(lights.back());
-                scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+                scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
                 lights.back()->ambience *= 2.f / (n * (1 + (int)with_diffusivity));
                 lights.back()->diffusivity = 0;
                 lights.back()->specularity = 0;
@@ -477,7 +477,7 @@ int main(int argc, char** argv) {
                         scene.get_node("obj")->position())));
                     lights.push_back(new Light{.node_name = name, .shadow = false});
                     scene.get_node(name)->add_light(lights.back());
-                    scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+                    scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
                     lights.back()->ambience = 0;
                     lights.back()->diffusivity /= (float)(2 * n);
                     lights.back()->specularity = 0;
@@ -491,14 +491,14 @@ int main(int argc, char** argv) {
             scene.add_root_node(name, new SceneNode);
             lights.push_back(new Light{.node_name = name, .only_black = false, .shadow = false});
             scene.get_node(name)->add_light(lights.back());
-            scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+            scene.get_node(name)->set_camera(std::make_shared<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
             lights.back()->ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
             lights.back()->diffusivity = 0.f;
             lights.back()->specularity = 0.f;
         }
         
         scene.add_root_node("follower_camera", new SceneNode);
-        scene.get_node("follower_camera")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+        scene.get_node("follower_camera")->set_camera(std::make_shared<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
         
         // scene.print();
         Focuses focuses = {Focus::SCENE};
@@ -543,8 +543,7 @@ int main(int argc, char** argv) {
 
         render2(
             render_logics,
-            mutex,
-            SceneGraphConfig{});
+            SceneGraphConfig());
         if (args.has_named_value("--output")) {
             PpmImage::from_float_rgb(render_results.outputs.at(rsd)).save_to_file(args.named_value("--output"));
         }

@@ -11,7 +11,7 @@ VisualMovableLogger::VisualMovableLogger(
     SceneNode& scene_node,
     AdvanceTimes& advance_times,
     StatusWriter* status_writer,
-    unsigned int log_components,
+    StatusComponents log_components,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     float font_height_pixels,

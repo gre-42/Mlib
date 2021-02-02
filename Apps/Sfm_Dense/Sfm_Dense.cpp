@@ -380,7 +380,7 @@ int main(int argc, char **argv) {
             }
             Array<size_t> hist;
             Array<float> bins;
-            histogram(disparity_0[isfinite(disparity_0)], hist, bins);
+            histogram(disparity_0[Mlib::isfinite(disparity_0)], hist, bins);
             std::cerr << bins << std::endl;
             std::cerr << hist << std::endl;
         }

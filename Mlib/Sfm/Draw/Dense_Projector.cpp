@@ -18,7 +18,7 @@ static Array<float> remove_nan_x_transposed(const Array<float>& x) {
     assert_true(x.ndim() == 3);
     assert_true(x.shape(0) == 3);
     Array<float> xx = x.columns_as_1D().T();
-    Array<float> xv = xx[!isnan(xx)];
+    Array<float> xv = xx[!Mlib::isnan(xx)];
     if (xv.nelements() % 3 != 0) {
         throw std::runtime_error("xv not divisible by 3");
     }
@@ -28,7 +28,7 @@ static Array<float> remove_nan_x_transposed(const Array<float>& x) {
 
 static Array<float> remove_nan_cond(const Array<float>& condition_number) {
     assert_true(condition_number.ndim() == 2);
-    Array<float> cn = condition_number[!isnan(condition_number)];
+    Array<float> cn = condition_number[!Mlib::isnan(condition_number)];
     return cn;
 }
 

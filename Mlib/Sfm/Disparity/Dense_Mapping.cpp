@@ -319,7 +319,7 @@ float Mlib::Sfm::Dm::prox_tau_gs(
     bool zero_sum)
 {
     auto zum = [zero_sum](const Array<float>& v) {
-        return zero_sum ? sum(v[!isnan(v)]) : xsum(v);
+        return zero_sum ? sum(v[!Mlib::isnan(v)]) : xsum(v);
     };
     if (verbose) {
         std::cerr << "prox_tau_gs " <<

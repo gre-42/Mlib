@@ -85,12 +85,12 @@ TData min(const BaseDenseArray<TDerived, TData>& a) {
 
 template <class TData>
 TData nanmax(const Array<TData>& a) {
-    return max(a[!isnan(a)]);
+    return max(a[!Mlib::isnan(a)]);
 }
 
 template <class TData>
 TData nanmin(const Array<TData>& a) {
-    return min(a[!isnan(a)]);
+    return min(a[!Mlib::isnan(a)]);
 }
 
 }

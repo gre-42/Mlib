@@ -43,7 +43,8 @@ Array<TData> d_pr_bilinear(
     FixedArray<size_t, 2> shape{result.shape()};
     RigidMotionSampler rs{ki, ke, im_r_depth};
     #pragma omp parallel for
-    for (size_t r = 0; r < result.shape(0); ++r) {
+    for (int i = 0; i < (int)result.shape(0); ++i) {
+        size_t r = (size_t)i;
         for (size_t c = 0; c < result.shape(1); ++c) {
             BilinearInterpolator<TData> bi;
             if (!std::isnan(im_r_depth(r, c)) && rs.sample_destination(r, c, bi)) {
@@ -122,7 +123,8 @@ Array<TData> intensity_jacobian_fast(
     Array<TData> result{space_shape.appended(6)};
     RigidMotionSampler hs{ki, Cv::k_external(kep), im_r_depth};
     #pragma omp parallel for
-    for (size_t r = 0; r < im_r_di.shape(1); ++r) {
+    for (int i = 0; i < (int)im_r_di.shape(1); ++i) {
+        size_t r = (size_t)i;
         for (size_t c = 0; c < im_r_di.shape(2); ++c) {
             if (std::isnan(im_r_depth(r, c))) {
                 for (size_t i = 0; i < 6; ++i) {

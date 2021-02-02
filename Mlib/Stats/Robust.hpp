@@ -26,7 +26,7 @@ TData median_inplace(Array<TData>& a) {
 
 template <class TData>
 TData nanmedian(const Array<TData>& a) {
-    return median(a[!isnan(a)]);
+    return median(a[!Mlib::isnan(a)]);
 }
 
 /**

@@ -8,6 +8,7 @@
 #include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix.hpp>
 
 using namespace Mlib;
+using namespace Mlib::Sfm;
 
 void Mlib::Sfm::draw_epilines_from_epipole(
     const Array<float>& epipole,

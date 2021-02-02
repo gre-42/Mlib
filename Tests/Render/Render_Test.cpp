@@ -59,8 +59,8 @@ void test_render() {
             FixedArray<float, 3, 3>{intrinsic_matrix},
             false,  // rotate
             1,      // scale
-            SceneGraphConfig{},
-            CameraConfig{});
+            SceneGraphConfig(),
+            CameraConfig());
         draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered2.ppm");
     }
 }

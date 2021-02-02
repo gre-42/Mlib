@@ -9,7 +9,7 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 static float xsum(const Array<float>& v) {
-    auto m = !isnan(v);
+    auto m = !Mlib::isnan(v);
     auto n = count_nonzero(m);
     if (n == 0) {
         throw std::runtime_error("n == 0");

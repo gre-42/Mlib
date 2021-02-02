@@ -1265,7 +1265,7 @@ void LoadScene::operator()(
             if (lo == nullptr) {
                 throw std::runtime_error("Could not find loggable");
             }
-            unsigned int log_components = safe_stoi(match[2].str());
+            StatusComponents log_components = (StatusComponents)safe_stoi(match[2].str());
             auto logger = std::make_shared<VisualMovableLogger>(
                 *node,
                 physics_engine.advance_times_,
@@ -1286,7 +1286,7 @@ void LoadScene::operator()(
             if (lo == nullptr) {
                 throw std::runtime_error("Could not find loggable");
             }
-            unsigned int log_components = safe_stoi(match[2].str());
+            StatusComponents log_components = (StatusComponents)safe_stoi(match[2].str());
             auto logger = std::make_shared<VisualMovable3rdLogger>(
                 scene_logic,
                 *node,

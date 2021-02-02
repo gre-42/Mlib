@@ -10,7 +10,7 @@ TData var(const Array<TData>& a) {
 
 template <class TData>
 TData nanvar(const Array<TData>& a) {
-    return var(a[!isnan(a)]);
+    return var(a[!Mlib::isnan(a)]);
 }
 
 template <class TData>
@@ -20,7 +20,7 @@ TData stddev(const Array<TData>& a) {
 
 template <class TData>
 TData nanstddev(const Array<TData>& a) {
-    return stddev(a[!isnan(a)]);
+    return stddev(a[!Mlib::isnan(a)]);
 }
 
 template <class TData>

@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Iteration.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -182,8 +183,8 @@ void test_physics_engine() {
     scene.add_root_node("obj", scene_nodeR);
     scene.add_root_node("follower_camera", new SceneNode);
     scene.add_root_node("light_node", scene_nodeL);
-    scene.get_node("follower_camera")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
-    scene.get_node("light_node")->set_camera(std::make_shared<GenericCamera>(CameraConfig{}, GenericCamera::Mode::PERSPECTIVE));
+    scene.get_node("follower_camera")->set_camera(std::make_shared<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+    scene.get_node("light_node")->set_camera(std::make_shared<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
 
     // Must be done when node is already linked to its parents.
     scene_node0->set_absolute_movable(rb0.get());
@@ -207,11 +208,14 @@ void test_physics_engine() {
 
     std::recursive_mutex mutex;
     SetFps physics_set_fps{"Physics FPS: "};
-    PhysicsLoop pl{
+    PhysicsIteration pi{
         scene_node_resources,
         scene,
         pe,
         mutex,
+        physics_cfg};
+    PhysicsLoop pl{
+        pi,
         physics_cfg,
         physics_set_fps,
         is_interactive ? SIZE_MAX : 20};
@@ -254,8 +258,7 @@ void test_physics_engine() {
 
     render2(
         render_logics,
-        mutex,
-        SceneGraphConfig{});
+        SceneGraphConfig());
 
     if (!is_interactive) {
         draw_nan_masked_rgb(render_results.outputs.at(rsd), 0, 1).save_to_file("TestOut/scene_test.ppm");

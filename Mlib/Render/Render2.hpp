@@ -30,14 +30,14 @@ public:
 
     void operator () (
         RenderLogic& logic,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
         ButtonStates* button_states = nullptr);
 
     void operator () (
         const Scene& scene,
         bool rotate = false,
         float scale = 1,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{});
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
 
     void render_depth_map(
         const Array<float>& rgb_picture,
@@ -45,8 +45,8 @@ public:
         const FixedArray<float, 3, 3>& intrinsic_matrix,
         bool rotate = false,
         float scale = 1,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},
-        const CameraConfig& camera_config = CameraConfig{});
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
+        const CameraConfig& camera_config = CameraConfig());
 
     void render_height_map(
         const Array<float>& rgb_picture,
@@ -54,8 +54,8 @@ public:
         const TransformationMatrix<float, 2>& normalization_matrix,
         bool rotate = false,
         float scale = 1,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig{},
-        const CameraConfig& camera_config = CameraConfig{});
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
+        const CameraConfig& camera_config = CameraConfig());
     
     GLFWwindow* window() const;
 

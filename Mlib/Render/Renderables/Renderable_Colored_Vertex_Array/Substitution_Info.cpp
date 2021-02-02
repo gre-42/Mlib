@@ -13,7 +13,7 @@
 using namespace Mlib;
 
 void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr) {
-    assert(ntriangles > 0);
+    // assert(ntriangles > 0);
     if (triangles_local_ids_[id] == ntriangles_ - 1) {
         triangles_local_ids_[id] = SIZE_MAX;
         triangles_global_ids_[ntriangles_ - 1] = SIZE_MAX;
@@ -31,7 +31,7 @@ void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex, 3>* 
 }
 
 void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex, 3>* ptr) {
-    assert(triangles_global_ids_[ntriangles] == SIZE_MAX);
+    // assert(triangles_global_ids_[ntriangles] == SIZE_MAX);
     assert(triangles_local_ids_[id] == SIZE_MAX);
     triangles_local_ids_[id] = ntriangles_;
     triangles_global_ids_[ntriangles_] = id;

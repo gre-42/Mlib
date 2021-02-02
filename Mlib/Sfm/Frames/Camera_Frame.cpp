@@ -8,7 +8,7 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
-const Array<float> CameraFrame::undefined_kep;
+const Array<float> CameraFrame::undefined_kep = Array<float>();
 
 CameraFrame::CameraFrame(
     const Array<float>& rotation,
