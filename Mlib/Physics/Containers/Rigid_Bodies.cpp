@@ -9,7 +9,7 @@
 using namespace Mlib;
 
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
-: bvh_{{cfg.static_radius, cfg.static_radius, cfg.static_radius}, 7},
+: bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, 7},
   cfg_{cfg}
 {}
 

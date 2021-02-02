@@ -43,8 +43,8 @@ public:
         for (auto& c : children_) {
             AxisAlignedBoundingBox<TData, tndim> bb = c.first;
             bb.extend(aabb);
-            if (all(bb.size() <= TData(level_) * max_size_)) {
-            // if (all(bb.size() <= max_size_ * std::pow(TData(2), TData(level_)))) {
+            // if (all(bb.size() <= TData(level_) * max_size_)) {
+            if (all(bb.size() <= max_size_ * std::pow(TData(2), TData(level_)))) {
                 c.first = bb;
                 c.second.insert(aabb, data);
                 return;
@@ -131,7 +131,7 @@ public:
     }
 
     void optimize_search_time(std::ostream& ostr) const {
-        for (TData max_size_fac = (TData)0.1; max_size_fac < 10; max_size_fac *= 2) {
+        for (TData max_size_fac = (TData)0.5; max_size_fac < 10; max_size_fac *= 2) {
             for (size_t level = 5; level < 20; ++level) {
                 std::cout << "Max size fac: " << std::setw(5) << max_size_fac;
                 std::cout << " Level: " << std::setw(5) << level;
