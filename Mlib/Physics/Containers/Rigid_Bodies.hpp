@@ -42,6 +42,7 @@ public:
     void delete_rigid_body(const RigidBody* rigid_body);
     void optimize_search_time(std::ostream& ostr) const;
     void print_search_time() const;
+    void plot_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
     std::list<std::shared_ptr<RigidBody>> static_rigid_bodies_;

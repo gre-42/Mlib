@@ -58,6 +58,7 @@ int main(int argc, char** argv) {
         "    [--motion_interpolation]\n"
         "    [--no_render]\n"
         "    [--optimize_search_time]\n"
+        "    [--plot_bvh]\n"
         "    [--print_gamepad_buttons]\n"
         "    [--show_mouse_cursor]\n"
         "    [--physics_type {version1, tracking_springs, builtin}]\n"
@@ -87,6 +88,7 @@ int main(int argc, char** argv) {
          "--motion_interpolation",
          "--no_render",
          "--optimize_search_time",
+         "--plot_bvh",
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
          "--no_bvh",
@@ -249,12 +251,21 @@ int main(int argc, char** argv) {
                     renderable_scenes);
             }
 
-            if (args.has_named("--print_search_time") || args.has_named("--optimize_search_time")) {
+            if (args.has_named("--print_search_time") ||
+                args.has_named("--optimize_search_time") ||
+                args.has_named("--plot_bvh"))
+            {
                 for (const auto& p : renderable_scenes) {
-                    std::cerr << p.first << " search time" << std::endl;
+                    if (args.has_named("--print_search_time")) {
+                        std::cerr << p.first << " search time" << std::endl;
+                    }
                     p.second->print_physics_engine_search_time();
                     if (args.has_named("--optimize_search_time")) {
                         p.second->physics_engine_.rigid_bodies_.optimize_search_time(std::cerr);
+                    }
+                    if (args.has_named("--plot_bvh")) {
+                        p.second->plot_physics_bvh_svg(p.first + "_xz.svg", 0, 2);
+                        p.second->plot_physics_bvh_svg(p.first + "_xy.svg", 0, 1);
                     }
                 }
             }

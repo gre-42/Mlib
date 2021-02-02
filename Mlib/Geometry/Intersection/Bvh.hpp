@@ -14,6 +14,9 @@
 
 namespace Mlib {
 
+template <class TSize>
+class Svg;
+
 struct BvhPrintingOptions {
     bool level = true;
     bool aabb = true;
@@ -140,6 +143,42 @@ public:
                     repackaged(max_size_fac * max_size_, level).search_time() <<
                     std::endl;
             }
+        }
+    }
+
+    template <class TSize>
+    void plot_bvh(const FixedArray<TData, tndim>& origin, Svg<TSize>& svg, size_t axis0, size_t axis1) const {
+        static_assert(tndim >= 2);
+        auto plot_aabb = [&](const AxisAlignedBoundingBox<TData, tndim>& aabb) {
+            FixedArray<TData, tndim> a = aabb.min() - origin;
+            FixedArray<TData, tndim> b = aabb.max() - origin;
+            // svg.template draw_path<TData>(
+            //     { a(axis0), b(axis0), b(axis0), a(axis0), a(axis0) },
+            //     { a(axis1), a(axis1), b(axis1), b(axis1), a(axis1) },
+            //     (TData)0.05);
+            svg.template draw_rectangle<TData>(
+                a(axis0), a(axis1), b(axis0), b(axis1),
+                (TData)0.05);
+        };
+        for (const std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>& d : data_) {
+            plot_aabb(d.first);
+        }
+        for (const auto& child : children_) {
+            plot_aabb(child.first);
+            child.second.plot_bvh(origin, svg, axis0, axis1);
+        }
+    }
+
+    template <class TSize>
+    void plot_svg(const std::string& filename, size_t axis0, size_t axis1) const {
+        std::ofstream ofs{ filename };
+        auto ab = aabb();
+        Svg<TSize> svg{ ofs, ab.size()(axis0), ab.size()(axis1) };
+        plot_bvh(ab.min(), svg, axis0, axis1);
+        svg.finish();
+        ofs.flush();
+        if (ofs.fail()) {
+            throw std::runtime_error("Could not write to file \"" + filename + '"');
         }
     }
 

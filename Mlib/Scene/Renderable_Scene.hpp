@@ -63,6 +63,7 @@ public:
     ~RenderableScene();
     void start_physics_loop();
     void print_physics_engine_search_time() const;
+    void plot_physics_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();
     SceneNodeResources& scene_node_resources_;
     std::shared_ptr<AggregateRenderer> small_sorted_aggregate_renderer_;

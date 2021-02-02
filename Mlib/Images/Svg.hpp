@@ -132,6 +132,27 @@ public:
     }
 
     template <class TData>
+    void draw_rectangle(
+        const TData& x0,
+        const TData& y0,
+        const TData& x1,
+        const TData& y1,
+        const TData& stroke_width = 1.5,
+        const std::string& fill = "black",
+        const TData& fill_opacity = 0.1)
+    {
+        ostr_ <<
+            "  <rect x=\"" << x0 <<
+            "\" y=\"" << y0 <<
+            "\" width=\"" << (x1 - x0) <<
+            "\" height=\"" << (y1 - y0) <<
+            "\" style=\"fill:" << fill <<
+            ";fill-opacity:" << fill_opacity <<
+            ";stroke:black;stroke-width:" << stroke_width <<
+            "\" />\n";
+    }
+
+    template <class TData>
     void draw_text(const TData& x, const TData& y, const std::string& text, const std::string& color = "black") {
         ostr_ <<
             "  <text x=\"" << x << "\" y=\"" << y << "\" fill=\"" << color << "\">" << text << "</text>\n";

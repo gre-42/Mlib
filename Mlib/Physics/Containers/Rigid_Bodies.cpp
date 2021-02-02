@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Images/Svg.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
@@ -187,4 +188,8 @@ void RigidBodies::optimize_search_time(std::ostream& ostr) const {
 
 void RigidBodies::print_search_time() const {
     std::cout << "Search time: " << bvh_.search_time() << std::endl;
+}
+
+void RigidBodies::plot_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
+    bvh_.plot_svg<float>(filename, axis0, axis1);
 }
