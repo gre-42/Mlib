@@ -812,7 +812,7 @@ public:
         for (size_t i = 0; i < ndim(); ++i) {
             ofs << " " << shape(i);
         }
-        ofs << std::endl << sizeof(TData) << std::endl;
+        ofs << '\n' << sizeof(TData) << '\n';
         ofs.write((const char*)flat_iterable().begin(), nbytes());
         ofs.flush();
         if (ofs.fail()) {

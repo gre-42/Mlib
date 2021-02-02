@@ -182,6 +182,11 @@ void test_rigid_body_physics_rbi_multiple() {
         Svg svg{f, 600, 500};
         svg.plot(xs, ys);
         svg.finish();
+        f.flush();
+        if (f.fail()) {
+            throw std::runtime_error("Could not write plot file");
+        }
+
     }
 }
 

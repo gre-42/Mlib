@@ -194,6 +194,10 @@ void test_bvh_performance() {
             Svg svg{ostr, 800, 600};
             svg.plot(nelements, search_times);
             svg.finish();
+            ostr.flush();
+            if (ostr.fail()) {
+                throw std::runtime_error("Could not write perf file");
+            }
         }
         bvh.print(std::cout, BvhPrintingOptions{
             .level = false,
@@ -214,6 +218,10 @@ void test_bvh_performance() {
         Svg svg{ostr, 800, 600};
         svg.plot(std::vector<int>{0, 1, 2, 3, 4}, std::vector<int>{0*0, 1*1, 2*2, 3*3, 4*4});
         svg.finish();
+        ostr.flush();
+        if (ostr.fail()) {
+            throw std::runtime_error("Could not write img file");
+        }
     }
 }
 

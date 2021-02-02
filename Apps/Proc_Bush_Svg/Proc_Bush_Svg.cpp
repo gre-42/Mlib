@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
         safe_stoi(args.named_value("--twig_height")),
         safe_stoi(args.named_value("--ntwigs")),
         safe_stoi(args.named_value("--seed", "0")));
+    f.flush();
     if (f.fail()) {
         throw std::runtime_error("Could not write " + svg_filename);
     }
