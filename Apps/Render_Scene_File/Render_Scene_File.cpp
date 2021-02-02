@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
         "    [--high_pass]\n"
         "    [--motion_interpolation]\n"
         "    [--no_render]\n"
+        "    [--optimize_search_time]\n"
         "    [--print_gamepad_buttons]\n"
         "    [--show_mouse_cursor]\n"
         "    [--physics_type {version1, tracking_springs, builtin}]\n"
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
          "--high_pass",
          "--motion_interpolation",
          "--no_render",
+         "--optimize_search_time",
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
          "--no_bvh",
@@ -247,12 +249,14 @@ int main(int argc, char** argv) {
                     renderable_scenes);
             }
 
-            if (args.has_named("--print_search_time")) {
+            if (args.has_named("--print_search_time") || args.has_named("--optimize_search_time")) {
                 for (const auto& p : renderable_scenes) {
                     std::cerr << p.first << " search time" << std::endl;
                     p.second->print_physics_engine_search_time();
+                    if (args.has_named("--optimize_search_time")) {
+                        p.second->physics_engine_.rigid_bodies_.optimize_search_time(std::cerr);
+                    }
                 }
-                return 0;
             }
 
             if (!args.has_named("--no_physics")) {
@@ -269,7 +273,6 @@ int main(int argc, char** argv) {
                 if (rs == renderable_scenes.end()) {
                     throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
                 }
-                // rs->second->physics_engine_.rigid_bodies_.optimize_search_time();
                 render2(
                     rs->second->render_logics_,
                     scene_config.scene_graph_config,

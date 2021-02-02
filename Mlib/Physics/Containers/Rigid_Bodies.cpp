@@ -181,8 +181,8 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
         .meshes = std::move(transformed_meshes)});
 }
 
-void RigidBodies::optimize_search_time() const {
-    bvh_.optimize_search_time(std::cout);
+void RigidBodies::optimize_search_time(std::ostream& ostr) const {
+    bvh_.optimize_search_time(ostr);
 }
 
 void RigidBodies::print_search_time() const {
