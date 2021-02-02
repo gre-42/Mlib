@@ -64,39 +64,39 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
     std::string new_line = "";
     // 1. Substitute expressions with and without default value, assigning default values.
     // 2. Substitute simple expressions.
-    static const DECLARE_REGEX(s0, "(?::(-?\\w+)(?:=(\\S*)|(?!:))|(-?\\w+)(?!:)|(.))");
-    // if (str.find("FAR_PLANE") != std::string::npos) {
-    //     std::cerr << "y" << std::endl;
-    // }
+    static const DECLARE_REGEX(s0, "(?:(-?\\w+):(-?\\w*)(?:=(\\S*))?|(-?\\w+)|(-?[^-\\w]+)|(.))");
     find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
         // if (v[1].str() == "-DECIMATE") {
         //     std::cerr << "x" << std::endl;
         // }
         if (v[1].matched) {
-            auto it = replacements.find(v[1].str());
+            auto it = replacements.find(v[2].str());
             if (it != replacements.end()) {
-                new_line += ':' + it->second;
+                new_line += v[1].str() + ':' + it->second;
             }
             else {
-                if (v[2].matched) {
-                    new_line += ':' + v[2].str();
+                if (v[3].matched) {
+                    new_line += v[1].str() + ':' + v[3].str();
                 }
                 else {
-                    new_line += ':' + v[1].str();
+                    new_line += v[1].str() + ':' + v[2].str();
                 }
             }
         }
-        else if (v[3].matched) {
-            auto it = replacements.find(v[3].str());
+        else if (v[4].matched) {
+            auto it = replacements.find(v[4].str());
             if (it != replacements.end()) {
                 new_line += it->second;
             }
             else {
-                new_line += v[3].str();
+                new_line += v[4].str();
             }
         }
+        else if (v[5].matched) {
+            new_line += v[5].str();
+        }
         else {
-            new_line += v[4].str();
+            new_line += v[6].str();
         }
         });
     return new_line;
