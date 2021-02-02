@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 
@@ -81,6 +82,7 @@ int main(int argc, char** argv) {
          "--print_physics_residual_time",
          "--print_render_residual_time",
          "--print_render_fps",
+         "--single_threaded",
          "--no_vfx",
          "--no_depth_fog",
          "--low_pass",
@@ -272,7 +274,9 @@ int main(int argc, char** argv) {
                 }
             }
 
-            if (!args.has_named("--no_physics")) {
+            if (!args.has_named("--no_physics") &&
+                !args.has_named("--single_threaded"))
+            {
                 for (const auto& p : renderable_scenes) {
                     p.second->start_physics_loop();
                 }
@@ -286,22 +290,25 @@ int main(int argc, char** argv) {
                 if (rs == renderable_scenes.end()) {
                     throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
                 }
-                render2(
-                    rs->second->render_logics_,
-                    scene_config.scene_graph_config,
-                    &button_states);
-                // LambdaRenderLogic lrl{
-                //     rs->second->render_logics_,
-                //     [&]() {
-                //         for (const auto& p : renderable_scenes) {
-                //             if (!p.second->physics_set_fps_.paused()) {
-                //                 p.second->physics_iteration_();
-                //             }
-                //         }} };
-                // render2(
-                //     lrl,
-                //     scene_config.scene_graph_config,
-                //     &button_states);
+                if (!args.has_named("--single_threaded")) {
+                    render2(
+                        rs->second->render_logics_,
+                        scene_config.scene_graph_config,
+                        &button_states);
+                } else {
+                    LambdaRenderLogic lrl{
+                        rs->second->render_logics_,
+                        [&]() {
+                            for (const auto& p : renderable_scenes) {
+                                if (!p.second->physics_set_fps_.paused()) {
+                                    p.second->physics_iteration_();
+                                }
+                            }} };
+                    render2(
+                        lrl,
+                        scene_config.scene_graph_config,
+                        &button_states);
+                }
                 if (!render2.window_should_close()) {
                     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
                     num_renderings = 1;
