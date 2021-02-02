@@ -19,11 +19,19 @@ static void iterate_replacements(
         if (s.empty()) {
             continue;
         }
-        Mlib::re::smatch match2;
-        if (Mlib::re::regex_match(s, match2, re2)) {
-            op(match2[1].str(), match2[2].str());
+        if (true) {
+            size_t pos = s.find(':');
+            if (pos == std::string::npos) {
+                throw std::runtime_error("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
+            }
+            op(s.substr(0, pos), s.substr(pos + 1));
         } else {
-            throw std::runtime_error("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
+            Mlib::re::smatch match2;
+            if (Mlib::re::regex_match(s, match2, re2)) {
+                op(match2[1].str(), match2[2].str());
+            } else {
+                throw std::runtime_error("Could not match replacement \"" + s + "\" from \"" + replacements + '"');
+            }
         }
     }
 }
@@ -48,9 +56,15 @@ const Mlib::regex& RegexSubstitutionCache::get1(const std::string& key) const {
     }
 }
 
-std::string Mlib::substitute(const std::string& str, const std::string& replacements, const RegexSubstitutionCache& rsc) {
+std::string Mlib::substitute(const std::string& str, const std::map<std::string, std::string>& replacements, const RegexSubstitutionCache& rsc) {
+    // std::cerr << str << std::endl;
+    // for (const auto& e : replacements) {
+    //     std::cerr << e.first << " -> " << e.second << '\n';
+    // }
     std::string new_line = str;
-    iterate_replacements(replacements, [&new_line, &rsc](const std::string& key, const std::string& value){
+    for (const auto& e : replacements) {
+        const auto& key = e.first;
+        const auto& value = e.second;
         try {
             // Substitute expressions with and without default value.
             new_line = std::move(Mlib::re::regex_replace(new_line, rsc.get0(key), ':' + value));
@@ -59,26 +73,29 @@ std::string Mlib::substitute(const std::string& str, const std::string& replacem
         } catch (const std::regex_error&) {
             throw std::runtime_error("Error in regex " + key);
         }
-    });
+    }
     // Assign default values to remainders.
     static const DECLARE_REGEX(re, "(\\S+:)\\S+=");
     new_line = Mlib::re::regex_replace(new_line, re, "$1");
     return new_line;
 }
 
-std::string Mlib::merge_replacements(const std::initializer_list<const std::string>& replacements) {
+std::map<std::string, std::string> Mlib::replacements_to_map(const std::string& replacements) {
     std::map<std::string, std::string> repls;
-    for (const auto& r : replacements) {
-        iterate_replacements(r, [&repls](const std::string& key, const std::string& value){
-            repls[key] = value;
-        });
-    }
-    std::string res;
-    for (const auto& p : repls) {
-        res += ' ' + p.first + ':' + p.second;
+    iterate_replacements(replacements, [&repls](const std::string& key, const std::string& value){
+        repls[key] = value;
+    });
+    return repls;
+}
+
+std::map<std::string, std::string> Mlib::merge_replacements(const std::initializer_list<std::map<std::string, std::string>>& replacements) {
+    std::map<std::string, std::string> res;
+    for (const auto& p : replacements) {
+        for (const auto& e : p) {
+            res[e.first] = e.second;
+        }
     }
     return res;
-
 }
 
 void Mlib::find_all(
@@ -113,7 +130,7 @@ std::list<std::pair<std::string, std::string>> Mlib::find_all_name_values(
 SubstitutionString::SubstitutionString()
 {}
 
-SubstitutionString::SubstitutionString(const std::string& s)
+SubstitutionString::SubstitutionString(const std::map<std::string, std::string>& s)
 : s_{s}
 {}
 
@@ -129,6 +146,9 @@ void SubstitutionString::clear() {
     s_.clear();
 }
 
-SubstitutionString::operator const std::string& () const {
-    return s_;
+std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionString& s) {
+    for (const auto& e : s.s_) {
+        ostr << e.first << " -> " << e.second << '\n';
+    }
+    return ostr;
 }

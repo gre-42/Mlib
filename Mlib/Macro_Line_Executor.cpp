@@ -87,7 +87,7 @@ void MacroLineExecutor::operator () (
             substitutions_,
             verbose_};
         for (const std::string& l : macro_it->second.lines) {
-            mle2(substitute(l, subst_pattern, rsc), rsc);
+            mle2(substitute(l, replacements_to_map(subst_pattern), rsc), rsc);
         }
     } else if (Mlib::re::regex_match(subst_line, match, include_reg)) {
         MacroLineExecutor mle2{

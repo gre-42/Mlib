@@ -1437,7 +1437,7 @@ void LoadScene::operator()(
             for (const auto& e : find_all_name_values(parameters, "[\\w+-. ]+", substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
                     .name = e.first,
-                    .substitutions = SubstitutionString{e.second}});
+                    .substitutions = SubstitutionString{ replacements_to_map(e.second) } });
             }
             // If the selection_ids array is not yet initialized, apply the default value.
             if (selection_ids.find(id) == selection_ids.end()) {

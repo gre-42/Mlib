@@ -206,21 +206,21 @@ int main(int argc, char** argv) {
 
             SceneNodeResources scene_node_resources;
             {
-                std::stringstream sstr;
-                sstr << 
-                    " PRIMARY_SCENE_FLY:" << args.has_named("--fly") <<
-                    " PRIMARY_SCENE_ROTATE:" << args.has_named("--rotate") <<
-                    " PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS:" << args.has_named("--print_gamepad_buttons") <<
-                    " PRIMARY_SCENE_DEPTH_FOG:" << !args.has_named("--no_depth_fog") <<
-                    " PRIMARY_SCENE_LOW_PASS:" << args.has_named("--low_pass") <<
-                    " PRIMARY_SCENE_HIGH_PASS:" << args.has_named("--high_pass") <<
-                    " PRIMARY_SCENE_VFX:" << !args.has_named("--no_vfx") <<
-                    " PRIMARY_SCENE_WITH_DIRTMAP:1" <<
-                    " PRIMARY_SCENE_WITH_SKYBOX:1" <<
-                    " PRIMARY_SCENE_WITH_FLYING_LOGIC:1" <<
-                    " PRIMARY_SCENE_CLEAR_MODE:color_and_depth" <<
-                    " FAR_PLANE:" << safe_stof(args.named_value("--far_plane", "1000"));
-                substitutions.merge(SubstitutionString{sstr.str()});
+                std::map<std::string, std::string> sstr{
+                    {"PRIMARY_SCENE_FLY", std::to_string(args.has_named("--fly"))},
+                    {"PRIMARY_SCENE_ROTATE", std::to_string(args.has_named("--rotate"))},
+                    {"PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS", std::to_string(args.has_named("--print_gamepad_buttons"))},
+                    {"PRIMARY_SCENE_DEPTH_FOG", std::to_string(!args.has_named("--no_depth_fog"))},
+                    {"PRIMARY_SCENE_LOW_PASS", std::to_string(args.has_named("--low_pass"))},
+                    {"PRIMARY_SCENE_HIGH_PASS", std::to_string(args.has_named("--high_pass"))},
+                    {"PRIMARY_SCENE_VFX", std::to_string(!args.has_named("--no_vfx"))},
+                    {"PRIMARY_SCENE_WITH_DIRTMAP", "1"},
+                    {"PRIMARY_SCENE_WITH_SKYBOX", "1"},
+                    {"PRIMARY_SCENE_WITH_FLYING_LOGIC", "1"},
+                    {"PRIMARY_SCENE_CLEAR_MODE", "color_and_depth"},
+                    {"FAR_PLANE:", std::to_string(safe_stof(args.named_value("--far_plane", "1000")))}
+                };
+                substitutions.merge(SubstitutionString{sstr});
             }
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
