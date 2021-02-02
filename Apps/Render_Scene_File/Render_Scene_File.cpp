@@ -38,6 +38,7 @@ int main(int argc, char** argv) {
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
         "    [--far_plane <value>]\n"
+        "    [--record_track]\n"
         "    [--damping <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
@@ -89,9 +90,10 @@ int main(int argc, char** argv) {
          "--no_render",
          "--optimize_search_time",
          "--plot_bvh",
+         "--no_bvh",
+         "--record_track",
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
-         "--no_bvh",
          "--no_slip",
          "--no_avoid_burnout",
          "--print_search_time",
@@ -222,7 +224,8 @@ int main(int argc, char** argv) {
                     {"PRIMARY_SCENE_WITH_SKYBOX", "1"},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", "1"},
                     {"PRIMARY_SCENE_CLEAR_MODE", "color_and_depth"},
-                    {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "1000")))}
+                    {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "1000")))},
+                    {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"}
                 };
                 substitutions.merge(SubstitutionString{sstr});
             }
