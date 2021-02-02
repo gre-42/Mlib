@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
                     {"PRIMARY_SCENE_WITH_SKYBOX", "1"},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", "1"},
                     {"PRIMARY_SCENE_CLEAR_MODE", "color_and_depth"},
-                    {"FAR_PLANE:", std::to_string(safe_stof(args.named_value("--far_plane", "1000")))}
+                    {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "1000")))}
                 };
                 substitutions.merge(SubstitutionString{sstr});
             }

@@ -308,9 +308,9 @@ void GameLogic::spawn_at_spawn_point(
     // std::lock_guard lock_guard{mutex_};
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // ++nspawns_;
-    auto start = std::chrono::steady_clock::now();
+    // auto start = std::chrono::steady_clock::now();
     spawn_macro->second(sp2);
-    std::cerr << "time " << 1000 * std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() << std::endl;
+    // std::cerr << "Spawn time " << 1000 * std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() << std::endl;
     if (player.scene_node_name().empty()) {
         throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
     }

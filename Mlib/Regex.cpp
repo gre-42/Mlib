@@ -57,26 +57,48 @@ const Mlib::regex& RegexSubstitutionCache::get1(const std::string& key) const {
 }
 
 std::string Mlib::substitute(const std::string& str, const std::map<std::string, std::string>& replacements, const RegexSubstitutionCache& rsc) {
-    // std::cerr << str << std::endl;
+    // std::cerr << "in: " << str << std::endl;
     // for (const auto& e : replacements) {
     //     std::cerr << e.first << " -> " << e.second << '\n';
     // }
-    std::string new_line = str;
-    for (const auto& e : replacements) {
-        const auto& key = e.first;
-        const auto& value = e.second;
-        try {
-            // Substitute expressions with and without default value.
-            new_line = std::move(Mlib::re::regex_replace(new_line, rsc.get0(key), ':' + value));
-            // Substitute simple expressions.
-            new_line = std::move(Mlib::re::regex_replace(new_line, rsc.get1(key), value));
-        } catch (const std::regex_error&) {
-            throw std::runtime_error("Error in regex " + key);
+    std::string new_line = "";
+    // 1. Substitute expressions with and without default value, assigning default values.
+    // 2. Substitute simple expressions.
+    static const DECLARE_REGEX(s0, "(?::(-?\\w+)(?:=(\\S*)|(?!:))|(-?\\w+)(?!:)|(.))");
+    // if (str.find("FAR_PLANE") != std::string::npos) {
+    //     std::cerr << "y" << std::endl;
+    // }
+    find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
+        // if (v[1].str() == "-DECIMATE") {
+        //     std::cerr << "x" << std::endl;
+        // }
+        if (v[1].matched) {
+            auto it = replacements.find(v[1].str());
+            if (it != replacements.end()) {
+                new_line += ':' + it->second;
+            }
+            else {
+                if (v[2].matched) {
+                    new_line += ':' + v[2].str();
+                }
+                else {
+                    new_line += ':' + v[1].str();
+                }
+            }
         }
-    }
-    // Assign default values to remainders.
-    static const DECLARE_REGEX(re, "(\\S+:)\\S+=");
-    new_line = Mlib::re::regex_replace(new_line, re, "$1");
+        else if (v[3].matched) {
+            auto it = replacements.find(v[3].str());
+            if (it != replacements.end()) {
+                new_line += it->second;
+            }
+            else {
+                new_line += v[3].str();
+            }
+        }
+        else {
+            new_line += v[4].str();
+        }
+        });
     return new_line;
 }
 
