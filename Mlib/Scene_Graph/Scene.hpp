@@ -36,6 +36,7 @@ public:
     void add_root_instances_node(
         const std::string& name,
         SceneNode* scene_node);
+    bool root_node_scheduled_for_deletion(const std::string& name) const;
     void schedule_delete_root_node(const std::string& name);
     void delete_scheduled_root_nodes() const;
     void delete_root_node(const std::string& name);
@@ -83,7 +84,7 @@ private:
     bool shutting_down_;
     std::unique_ptr<const Style> style_;
     std::set<std::string> root_nodes_to_delete_;
-    std::mutex root_nodes_to_delete_mutex_;
+    mutable std::mutex root_nodes_to_delete_mutex_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

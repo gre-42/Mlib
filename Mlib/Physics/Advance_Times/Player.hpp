@@ -120,6 +120,7 @@ public:
     void set_spotted();
     bool has_waypoints() const;
     bool is_pedestrian() const;
+    bool has_rigid_body() const;
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;

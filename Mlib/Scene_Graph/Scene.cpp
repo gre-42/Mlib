@@ -66,6 +66,14 @@ void Scene::add_root_instances_node(
     }
 }
 
+bool Scene::root_node_scheduled_for_deletion(const std::string& name) const {
+    std::lock_guard lock{ root_nodes_to_delete_mutex_ };
+    if (root_nodes_.find(name) == root_nodes_.end()) {
+        throw std::runtime_error("No root node with name \"" + name + "\" exists");
+    }
+    return root_nodes_to_delete_.contains(name);
+}
+
 void Scene::schedule_delete_root_node(const std::string& name) {
     std::lock_guard lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {

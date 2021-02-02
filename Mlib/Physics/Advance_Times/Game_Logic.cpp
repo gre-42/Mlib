@@ -103,7 +103,7 @@ void GameLogic::handle_team_deathmatch() {
             for (auto& p : players_.players()) {
                 const std::string& node_name = p.second->scene_node_name();
                 if (!node_name.empty()) {
-                    scene_.schedule_delete_root_node(node_name);
+                    scene_.delete_root_node(node_name);
                     // ++ndelete_;
                 }
             }
@@ -120,7 +120,7 @@ void GameLogic::handle_bystanders() {
     if (vip_ == nullptr) {
         return;
     }
-    if (vip_->scene_node_name().empty()) {
+    if (!vip_->has_rigid_body()) {
         return;
     }
     if (players_.players().empty()) {
@@ -246,6 +246,9 @@ bool GameLogic::delete_for_vip(
     const FixedArray<float, 3>& vip_pos,
     size_t& nsee)
 {
+    if (!player.has_rigid_body()) {
+        return false;
+    }
     FixedArray<float, 3> player_pos = scene_.get_node(player.scene_node_name())->position();
     float dist2 = sum(squared(player_pos - vip_pos));
     if (dist2 > squared(cfg.r_delete_near)) {

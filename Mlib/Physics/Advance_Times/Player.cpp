@@ -69,6 +69,9 @@ void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene
     if (scene_node_name.empty()) {
         throw std::runtime_error("Player received empty node name");
     }
+    if (scene_.root_node_scheduled_for_deletion(scene_node_name)) {
+        throw std::runtime_error("Player received root node scheduled for deletion");
+    }
     scene_node_name_ = scene_node_name;
     scene_node_ = &scene_node;
     if (rb_ != nullptr) {
@@ -181,7 +184,7 @@ const PlayerStats& Player::stats() const {
 }
 
 float Player::car_health() const {
-    if (rb_ != nullptr && rb_->damageable_ != nullptr) {
+    if (has_rigid_body() && (rb_->damageable_ != nullptr)) {
         return rb_->damageable_->health();
     } else {
         return NAN;
@@ -198,7 +201,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         throw std::runtime_error("Player::can_see requires rb");
     }
     return collision_query_.can_see(
@@ -215,7 +218,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         throw std::runtime_error("Player::can_see requires rb");
     }
     return collision_query_.can_see(
@@ -232,11 +235,11 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         throw std::runtime_error("Player::can_see requires rb");
     }
-    if (player.rb_ == nullptr) {
-        throw std::runtime_error("Player::can_see requires rb");
+    if (!player.has_rigid_body()) {
+        throw std::runtime_error("Player::can_see requires target rb");
     }
     return collision_query_.can_see(
         rb_->rbi_,
@@ -332,7 +335,7 @@ void Player::draw_waypoint_history(const std::string& filename) const {
 }
 
 bool Player::unstuck() {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         return false;
     }
     if ((sum(squared(rb_->rbi_.rbp_.v_)) > squared(driving_mode_.stuck_velocity)) ||
@@ -360,8 +363,9 @@ bool Player::unstuck() {
                     rb_->set_tire_angle_y(tire.first, 0);
                 }
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
-                std::lock_guard lock{mutex_};
-                scene_.delete_root_node(scene_node_name_);
+                // std::lock_guard lock{mutex_};
+                // scene_.delete_root_node(scene_node_name_);
+                scene_.schedule_delete_root_node(scene_node_name_);
                 stuck_start_ = std::chrono::steady_clock::time_point();
                 unstuck_start_ = std::chrono::steady_clock::time_point();
             } else {
@@ -374,7 +378,7 @@ bool Player::unstuck() {
 }
 
 void Player::step_on_breaks() {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         throw std::runtime_error("step_on_breaks despite nullptr");
     }
     rb_->set_surface_power("main", NAN);    // NAN=break
@@ -382,7 +386,7 @@ void Player::step_on_breaks() {
 }
 
 void Player::drive_forward() {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         throw std::runtime_error("drive_forward despite nullptr");
     }
     rb_->set_surface_power("main", surface_power_forward_);
@@ -390,7 +394,7 @@ void Player::drive_forward() {
 }
 
 void Player::drive_backwards() {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         throw std::runtime_error("drive_backwards despite nullptr");
     }
     rb_->set_surface_power("main", surface_power_backward_);
@@ -398,7 +402,7 @@ void Player::drive_backwards() {
 }
 
 void Player::roll() {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         throw std::runtime_error("roll despite nullptr");
     }
     rb_->set_surface_power("main", 0);
@@ -445,6 +449,17 @@ void Player::steer_right_partial(float angle) {
     }
 }
 
+bool Player::has_rigid_body() const {
+    if (rb_ == nullptr) {
+        return false;
+    }
+    if (scene_.root_node_scheduled_for_deletion(scene_node_name_))
+    {
+        return false;
+    }
+    return true;
+}
+
 const PointsAndAdjacency<float, 2>& Player::waypoints() const {
     auto it = all_waypoints_.find((Mlib::WayPointLocation)driving_mode_.way_point_location);
     if (it == all_waypoints_.end()) {
@@ -467,7 +482,7 @@ bool Player::is_pedestrian() const {
 
 void Player::aim_and_shoot() {
     assert_true(!target_scene_node_ == !target_rbi_);
-    if (rb_ != nullptr && ((target_rbi_ == nullptr) || !can_see(*target_rbi_))) {
+    if (has_rigid_body() && ((target_rbi_ == nullptr) || !can_see(*target_rbi_))) {
         select_opponent();
     }
     if (ypln_ == nullptr) {
@@ -487,7 +502,7 @@ void Player::select_next_waypoint() {
     if (!waypoints().adjacency.initialized()) {
         return;
     }
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         return;
     }
     FixedArray<float, 2> z2{rb_->rbi_.abs_z()(0), rb_->rbi_.abs_z()(2)};
@@ -562,7 +577,7 @@ bool Player::ramming() const {
 }
 
 void Player::move_to_waypoint() {
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         return;
     }
     if (std::isnan(surface_power_forward_)) {
@@ -594,7 +609,7 @@ void Player::move_to_waypoint() {
         if (p.second == this) {
             continue;
         }
-        if (p.second->rb_ == nullptr) {
+        if (!p.second->has_rigid_body()) {
             continue;
         }
         if (ramming() &&
@@ -676,7 +691,7 @@ void Player::move_to_waypoint() {
 
 void Player::select_opponent() {
     assert_true(!scene_node_ == !rb_);
-    if (rb_ == nullptr) {
+    if (!has_rigid_body()) {
         return;
     }
     if (target_scene_node_ != nullptr) {
@@ -687,7 +702,7 @@ void Player::select_opponent() {
     for (const auto& p : players_.players()) {
         if (p.second->team_ != team_) {
             assert_true(!p.second->scene_node_ == !p.second->rb_);
-            if (p.second->rb_ == nullptr) {
+            if (!p.second->has_rigid_body()) {
                 continue;
             }
             if (can_see(p.second->rb_->rbi_)) {
