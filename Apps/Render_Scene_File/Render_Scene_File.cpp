@@ -1,7 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
-#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 
@@ -295,7 +294,9 @@ int main(int argc, char** argv) {
                 //     rs->second->render_logics_,
                 //     [&]() {
                 //         for (const auto& p : renderable_scenes) {
-                //             p.second->physics_iteration_();
+                //             if (!p.second->physics_set_fps_.paused()) {
+                //                 p.second->physics_iteration_();
+                //             }
                 //         }} };
                 // render2(
                 //     lrl,
