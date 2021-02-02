@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-class Rgb24;
+struct Rgb24;
 class PpmImage;
 
 namespace Sfm {

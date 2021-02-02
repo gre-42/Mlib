@@ -5,7 +5,7 @@ namespace Mlib { namespace Sfm {
 
 class CameraFrame {
 public:
-    static const Array<float> undefined_kep;
+    static inline const Array<float> undefined_kep = Array<float>();
     CameraFrame(
         const Array<float>& rotation,
         const Array<float>& position,
