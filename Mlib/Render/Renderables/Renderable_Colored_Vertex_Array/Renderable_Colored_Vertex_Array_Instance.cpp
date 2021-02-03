@@ -111,6 +111,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
 {
     LOG_FUNCTION("render_cva");
     // TimeGuard time_guard{ "render_cva", cva->material.texture_descriptor.color };
+    // This check passes because the arrays are filtered in the constructor.
     assert_true((cva->material.aggregate_mode == AggregateMode::OFF) || (rcva_->instances_ != nullptr));
     if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {
         return;
