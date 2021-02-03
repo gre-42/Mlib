@@ -21,6 +21,7 @@ class Renderable {
 public:
     virtual bool requires_render_pass() const = 0;
     virtual bool requires_blending_pass() const = 0;
+    virtual int continuous_blending_z_order() const = 0;
     virtual void render(
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float, 3>& m,

@@ -316,7 +316,7 @@ RenderableOsmMap::RenderableOsmMap(
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
-        .z_order = blend_street ? -1 : 0,
+        .continuous_blending_z_order = blend_street ? 1 : 0,
         .texture_descriptor = {.color = street_texture, .normal = primary_rendering_resources->get_normalmap(street_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
@@ -324,7 +324,7 @@ RenderableOsmMap::RenderableOsmMap(
         .depth_func_equal = blend_street,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_path = std::make_shared<TriangleList>("path", Material{
-        .z_order = blend_street ? -1 : 0,
+        .continuous_blending_z_order = blend_street ? 1 : 0,
         .texture_descriptor = {.color = path_texture, .normal = primary_rendering_resources->get_normalmap(path_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,

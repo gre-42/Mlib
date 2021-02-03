@@ -19,9 +19,13 @@ struct RenderConfig;
 class Scene;
 
 struct Blended {
+    int z_order;
     FixedArray<float, 4, 4> mvp;
     TransformationMatrix<float, 3> m;
     const Renderable* renderable;
+    inline std::pair<int, float> sorting_key() const {
+        return std::make_pair(z_order, mvp(2, 3));
+    }
 };
 
 struct SceneNodeInstances {

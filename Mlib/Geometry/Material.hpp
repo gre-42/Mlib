@@ -11,7 +11,8 @@
 namespace Mlib {
 
 struct Material {
-    int z_order = 0;
+    // First element to support sorting.
+    int continuous_blending_z_order = 0;
     TextureDescriptor texture_descriptor;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;

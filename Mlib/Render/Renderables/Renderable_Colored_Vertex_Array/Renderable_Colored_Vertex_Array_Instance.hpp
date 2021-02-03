@@ -21,6 +21,7 @@ public:
     ~RenderableColoredVertexArrayInstance();
     virtual bool requires_render_pass() const override;
     virtual bool requires_blending_pass() const override;
+    virtual int continuous_blending_z_order() const override;
     virtual void render(
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float, 3>& m,
@@ -70,6 +71,7 @@ private:
     std::list<std::shared_ptr<ColoredVertexArray>> aggregate_triangles_res_subset_;
     bool requires_render_pass_;
     bool requires_blending_pass_;
+    int continuous_blending_z_order_;
     std::shared_ptr<RenderingResources> secondary_rendering_resources_;
 };
 

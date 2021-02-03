@@ -15,6 +15,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Scene_Graph/Visibility_Check.hpp>
+#include <climits>
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -27,6 +28,7 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
     const std::shared_ptr<const RenderableColoredVertexArray>& rcva,
     const SceneNodeResourceFilter& resource_filter)
 : rcva_{rcva},
+  continuous_blending_z_order_{INT_MAX},
   secondary_rendering_resources_{RenderingContextStack::rendering_resources()}
 {
 #ifdef DEBUG
@@ -49,6 +51,11 @@ RenderableColoredVertexArrayInstance::RenderableColoredVertexArrayInstance(
                 (t->material.aggregate_mode == AggregateMode::OFF))
             {
                 requires_blending_pass_ = true;
+                if (continuous_blending_z_order_ == INT_MAX) {
+                    continuous_blending_z_order_ = t->material.continuous_blending_z_order;
+                } else if (continuous_blending_z_order_ != t->material.continuous_blending_z_order) {
+                    throw std::runtime_error("Conflicting z_orders");
+                }
             }
         }
     }
@@ -488,6 +495,10 @@ bool RenderableColoredVertexArrayInstance::requires_render_pass() const {
 
 bool RenderableColoredVertexArrayInstance::requires_blending_pass() const {
     return requires_blending_pass_;
+}
+
+int RenderableColoredVertexArrayInstance::continuous_blending_z_order() const {
+    return continuous_blending_z_order_;
 }
 
 void RenderableColoredVertexArrayInstance::append_sorted_aggregates_to_queue(

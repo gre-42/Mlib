@@ -319,7 +319,7 @@ void SceneNode::render(
     for (const auto& r : renderables_) {
         if (r.second->requires_blending_pass())
         {
-            blended.push_back(Blended{.mvp = mvp, .m = m, .renderable = r.second.get()});
+            blended.push_back(Blended{.z_order = r.second->continuous_blending_z_order(), .mvp = mvp, .m = m, .renderable = r.second.get()});
         }
         r.second->render(
             mvp,

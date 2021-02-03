@@ -320,7 +320,7 @@ void Scene::render(
     }
     // Contains continuous alpha and must therefore be rendered late.
     LOG_INFO("Scene::render blended");
-    blended.sort([](Blended& a, Blended& b){ return a.mvp(2, 3) > b.mvp(2, 3); });
+    blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
     for (const auto& b : blended) {
         b.renderable->render(
             b.mvp,
