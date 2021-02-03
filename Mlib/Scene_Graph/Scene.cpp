@@ -125,6 +125,8 @@ Scene::~Scene() {
 
 void Scene::shutdown() {
     shutting_down_ = true;
+    aggregation_bg_worker_.shutdown();
+    instances_bg_worker_.shutdown();
     root_instances_nodes_.clear();
     root_aggregate_nodes_.clear();
     static_root_nodes_.clear();

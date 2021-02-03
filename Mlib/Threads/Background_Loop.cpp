@@ -19,6 +19,13 @@ BackgroundLoop::BackgroundLoop() {
 }
 
 BackgroundLoop::~BackgroundLoop() {
+    shutdown();
+}
+
+void BackgroundLoop::shutdown() {
+    if (shutdown_requested_) {
+        return;
+    }
     {
         std::unique_lock lock{ mutex_ };
         shutdown_requested_ = true;
