@@ -82,7 +82,8 @@ public:
         float street_node_smoothness = 0,
         float street_edge_smoothness = 0,
         float terrain_edge_smoothness = 0,
-        DrivingDirection driving_direction = DrivingDirection::CENTER);
+        DrivingDirection driving_direction = DrivingDirection::CENTER,
+        bool blend_street = false);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual TransformationMatrix<double, 3> get_geographic_mapping(SceneNode& scene_node) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;

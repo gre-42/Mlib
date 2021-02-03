@@ -189,6 +189,7 @@ void raise_streets(
     TriangleList& tl_curb2_street,
     TriangleList& tl_curb2_path,
     TriangleList& tl_terrain,
+    TriangleList& tl_terrain_visuals,
     float scale,
     float amount);
 
@@ -212,6 +213,8 @@ void add_street_steiner_points(
 
 void triangulate_terrain_or_ceilings(
     TriangleList& tl_terrain,
+    TriangleList* tl_terrain_visuals,
+    const std::list<std::list<FixedArray<ColoredVertex, 3>>>& tl_insert,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,

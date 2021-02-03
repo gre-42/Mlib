@@ -46,9 +46,9 @@ RenderableBlendingX::RenderableBlendingX(
             std::make_shared<ColoredVertexArray>(
                 "RenderableBlendingX",
                 Material{
+                    .blend_mode = BlendMode::CONTINUOUS,
                     .texture_descriptor = {.color = texture},
                     .occluder_type = OccluderType::OFF,
-                    .blend_mode = BlendMode::CONTINUOUS,
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .collide = false,

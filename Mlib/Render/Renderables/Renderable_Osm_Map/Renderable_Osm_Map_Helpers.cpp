@@ -337,6 +337,8 @@ void Mlib::draw_ceilings(
         BoundingInfo bounding_info{outline, {}, 0.1f};
         triangulate_terrain_or_ceilings(
             *tls.back(),
+            nullptr,
+            {},
             bounding_info,
             {},
             outline,
@@ -432,6 +434,7 @@ void Mlib::raise_streets(
     TriangleList& tl_curb2_street,
     TriangleList& tl_curb2_path,
     TriangleList& tl_terrain,
+    TriangleList& tl_terrain_visuals,
     float scale,
     float amount)
 {
@@ -465,15 +468,13 @@ void Mlib::raise_streets(
     raise(tl_curb2_street.triangles_);
     raise(tl_curb2_path.triangles_);
     raise(tl_terrain.triangles_);
+    raise(tl_terrain_visuals.triangles_);
 }
 
 class PTri {
 public:
     p2t::Point* operator () (size_t i) const {
         return v->GetPoint((int)i);
-    }
-    bool operator < (const PTri& other) const {
-        return v < other.v;
     }
 private:
     p2t::Triangle* v;
@@ -572,6 +573,8 @@ void Mlib::add_street_steiner_points(
 
 void Mlib::triangulate_terrain_or_ceilings(
     TriangleList& tl_terrain,
+    TriangleList* tl_terrain_visuals,
+    const std::list<std::list<FixedArray<ColoredVertex, 3>>>& tl_insert,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
@@ -643,13 +646,18 @@ void Mlib::triangulate_terrain_or_ceilings(
         cdt.AddPoint(&p2t_grid_nodes.back());
     }
     std::vector<p2t::Point> p2t_triangle_centers;
-    p2t_triangle_centers.reserve(hole_triangles.size());
+    p2t_triangle_centers.reserve(hole_triangles.size() * 3);
     std::set<p2t::Point*> p2t_hole_triangle_centers_set;
     for (const auto& t : hole_triangles) {
-        auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
-        p2t_triangle_centers.push_back(p2t::Point{center(0), center(1)});
-        cdt.AddPoint(&*p2t_triangle_centers.rbegin());
-        p2t_hole_triangle_centers_set.insert(&*p2t_triangle_centers.rbegin());
+        auto add = [&](float a, float b, float c){
+            auto center = a * t(0).position + b * t(1).position + c * t(2).position;
+            p2t_triangle_centers.push_back(p2t::Point{center(0), center(1)});
+            cdt.AddPoint(&*p2t_triangle_centers.rbegin());
+            p2t_hole_triangle_centers_set.insert(&*p2t_triangle_centers.rbegin());
+        };
+        add(0.6, 0.2, 0.2);
+        add(0.2, 0.6, 0.2);
+        add(0.2, 0.2, 0.6);
     }
     //triangles.clear();
     cdt.Triangulate();
@@ -683,6 +691,25 @@ void Mlib::triangulate_terrain_or_ceilings(
             {float(t->GetPoint(0)->x) / scale * uv_scale, float(t->GetPoint(0)->y) / scale * uv_scale},
             {float(t->GetPoint(1)->x) / scale * uv_scale, float(t->GetPoint(1)->y) / scale * uv_scale},
             {float(t->GetPoint(2)->x) / scale * uv_scale, float(t->GetPoint(2)->y) / scale * uv_scale});
+    }
+    if (!tl_insert.empty() && (tl_terrain_visuals == nullptr)) {
+        throw std::runtime_error("tl_insert without tl_terrain_visuals");
+    }
+    if (tl_terrain_visuals != nullptr) {
+        for (const auto& l : tl_insert) {
+            for (const auto& t : l) {
+                tl_terrain_visuals->draw_triangle_wo_normals(
+                    {t(0).position(0), t(0).position(1), z * scale},
+                    {t(1).position(0), t(1).position(1), z * scale},
+                    {t(2).position(0), t(2).position(1), z * scale},
+                    terrain_color,
+                    terrain_color,
+                    terrain_color,
+                    {t(0).position(0) / scale * uv_scale, t(0).position(1) / scale * uv_scale},
+                    {t(1).position(0) / scale * uv_scale, t(1).position(1) / scale * uv_scale},
+                    {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale});
+            }
+        }
     }
 }
 
@@ -1253,8 +1280,8 @@ bool ResourceNameCycle::empty() const {
 }
 
 void Mlib::check_curb_validity(float curb_alpha, float curb2_alpha) {
-    if (curb_alpha >= curb2_alpha) {
-        throw std::runtime_error("curb_alpha >= curb2_alpha");
+    if (curb_alpha > curb2_alpha) {
+        throw std::runtime_error("curb_alpha > curb2_alpha");
     }
     if (curb_alpha <= 0.5) {
         throw std::runtime_error("curb_alpha <= 0.5");

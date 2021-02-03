@@ -398,6 +398,9 @@ void RenderableColoredVertexArrayInstance::render_cva(
             CHK(glEnable(GL_BLEND));
             CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
             CHK(glDepthMask(GL_FALSE));
+            if (cva->material.depth_func_equal) {
+                CHK(glDepthFunc(GL_EQUAL));
+            }
             break;
         default:
             throw std::runtime_error("Unknown blend_mode");
@@ -439,6 +442,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
     CHK(glDisable(GL_BLEND));
     CHK(glBlendFunc(GL_ONE, GL_ZERO));
     CHK(glDepthMask(GL_TRUE));
+    CHK(glDepthFunc(GL_LESS));
     // CHK(glFlush());
     LOG_INFO("RenderableColoredVertexArrayInstance::render glDrawArrays finished");
 }

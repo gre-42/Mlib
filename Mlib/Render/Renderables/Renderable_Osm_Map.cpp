@@ -95,7 +95,8 @@ RenderableOsmMap::RenderableOsmMap(
     float street_node_smoothness,
     float street_edge_smoothness,
     float terrain_edge_smoothness,
-    DrivingDirection driving_direction)
+    DrivingDirection driving_direction,
+    bool blend_street)
 : scene_node_resources_{scene_node_resources},
   scale_{scale}
 {
@@ -291,6 +292,13 @@ RenderableOsmMap::RenderableOsmMap(
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
+    auto tl_terrain_visuals = std::make_shared<TriangleList>("tl_terrain_visuals", Material{
+        .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture)},
+        .dirt_texture = dirt_texture,
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .collide = false,
+        .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_terrain_street_extrusion = std::make_shared<TriangleList>("terrain_street_extrusion", Material{
         .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .dirt_texture = dirt_texture,
@@ -308,11 +316,15 @@ RenderableOsmMap::RenderableOsmMap(
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
+        .blend_mode = blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
+        .depth_func_equal = blend_street,
         .texture_descriptor = {.color = street_texture, .normal = primary_rendering_resources->get_normalmap(street_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_path = std::make_shared<TriangleList>("path", Material{
+        .blend_mode = blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
+        .depth_func_equal = blend_street,
         .texture_descriptor = {.color = path_texture, .normal = primary_rendering_resources->get_normalmap(path_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
@@ -342,6 +354,7 @@ RenderableOsmMap::RenderableOsmMap(
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     std::list<std::shared_ptr<TriangleList>> tls_ground{
         tl_terrain,
+        tl_terrain_visuals,
         tl_terrain_street_extrusion,
         tl_street_crossing,
         tl_path_crossing,
@@ -353,6 +366,7 @@ RenderableOsmMap::RenderableOsmMap(
         tl_curb2_path};
     std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb{
         tl_terrain,
+        tl_terrain_visuals,
         tl_street_crossing,
         tl_path_crossing,
         tl_street,
@@ -493,9 +507,9 @@ RenderableOsmMap::RenderableOsmMap(
             tls_wall_barriers,
             steiner_points,
             Material{
+                .blend_mode = barrier_blend_mode,
                 .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
-                .blend_mode = barrier_blend_mode,
                 .aggregate_mode = AggregateMode::ONCE,
                 .is_small = false,
                 .cull_faces = false,
@@ -544,6 +558,10 @@ RenderableOsmMap::RenderableOsmMap(
         LOG_INFO("triangulate_terrain_or_ceilings");
         triangulate_terrain_or_ceilings(
             *tl_terrain,
+            tl_terrain_visuals.get(),
+            blend_street
+                ? std::list<std::list<FixedArray<ColoredVertex, 3>>>{tl_street->triangles_, tl_path->triangles_}
+                : std::list<std::list<FixedArray<ColoredVertex, 3>>>{},
             bounding_info,
             steiner_points,
             map_outer_contour,
@@ -715,6 +733,7 @@ RenderableOsmMap::RenderableOsmMap(
         *tl_curb2_street,
         *tl_curb2_path,
         *tl_terrain,
+        *tl_terrain_visuals,
         scale,
         raise_streets_amount);
     if (extrude_curb_amount != 0) {
