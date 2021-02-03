@@ -316,18 +316,20 @@ RenderableOsmMap::RenderableOsmMap(
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
-        .blend_mode = blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
-        .depth_func_equal = blend_street,
+        .z_order = blend_street ? -1 : 0,
         .texture_descriptor = {.color = street_texture, .normal = primary_rendering_resources->get_normalmap(street_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
-    auto tl_path = std::make_shared<TriangleList>("path", Material{
         .blend_mode = blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
         .depth_func_equal = blend_street,
+        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
+    auto tl_path = std::make_shared<TriangleList>("path", Material{
+        .z_order = blend_street ? -1 : 0,
         .texture_descriptor = {.color = path_texture, .normal = primary_rendering_resources->get_normalmap(path_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
+        .blend_mode = blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
+        .depth_func_equal = blend_street,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     WrapMode curb_wrap_mode_s = (extrude_curb_amount != 0) || ((curb_alpha != 1) && (extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
     auto tl_curb_street = std::make_shared<TriangleList>("curb_street", Material{
@@ -507,9 +509,9 @@ RenderableOsmMap::RenderableOsmMap(
             tls_wall_barriers,
             steiner_points,
             Material{
-                .blend_mode = barrier_blend_mode,
                 .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
+                .blend_mode = barrier_blend_mode,
                 .aggregate_mode = AggregateMode::ONCE,
                 .is_small = false,
                 .cull_faces = false,

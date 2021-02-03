@@ -11,14 +11,14 @@
 namespace Mlib {
 
 struct Material {
-    // blend_mode is the first element for correct sorting.
-    BlendMode blend_mode = BlendMode::OFF;
-    bool depth_func_equal = false;
+    int z_order = 0;
     TextureDescriptor texture_descriptor;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::OFF;
     bool occluded_by_black = true;
+    BlendMode blend_mode = BlendMode::OFF;
+    bool depth_func_equal = false;
     WrapMode wrap_mode_s = WrapMode::REPEAT;
     WrapMode wrap_mode_t = WrapMode::REPEAT;
     bool collide = true;
