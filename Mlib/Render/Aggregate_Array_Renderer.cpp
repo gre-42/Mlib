@@ -9,23 +9,23 @@ AggregateArrayRenderer::AggregateArrayRenderer()
 : rcva_{nullptr}
 {}
 
-void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& sorted_aggregate_queue) {
+void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) {
     // size_t ntris = 0;
-    // for (const auto& a : sorted_aggregate_queue) {
+    // for (const auto& a : aggregate_queue) {
     //     ntris += a->triangles.size();
     // }
     // std::cerr << "Update aggregates: " << ntris << std::endl;
 
     //std::map<Material, size_t> material_ids;
     //size_t ntriangles = 0;
-    //for (const auto& a : sorted_aggregate_queue) {
+    //for (const auto& a : aggregate_queue) {
     //    if (material_ids.find(a.second.material) == material_ids.end()) {
     //        material_ids.insert(std::make_pair(a.second.material, material_ids.size()));
     //    }
     //    ntriangles += a.second.triangles->size();
     //}
     std::map<Material, std::list<FixedArray<ColoredVertex, 3>>> mat_lists;
-    for (const auto& a : sorted_aggregate_queue) {
+    for (const auto& a : aggregate_queue) {
         auto mat = a->material;
         mat.aggregate_mode = AggregateMode::OFF;
         mat.is_small = false;
