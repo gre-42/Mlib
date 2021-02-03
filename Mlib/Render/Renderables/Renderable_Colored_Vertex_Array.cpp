@@ -584,7 +584,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         occlusion_type = OcclusionType::OFF;
     }
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
-    rp->generate(
+    rp->allocate(
         vertex_shader_text_gen(
             filtered_lights,
             light_noshadow_indices,

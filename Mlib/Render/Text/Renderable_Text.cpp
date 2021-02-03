@@ -65,7 +65,7 @@ RenderableText::RenderableText(
         }
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     }
-    rp_.generate(vertex_shader_text, fragment_shader_text);
+    rp_.allocate(vertex_shader_text, fragment_shader_text);
     rp_.projection_location = checked_glGetUniformLocation(rp_.program, "projection");
     {
         // configure VAO/VBO for texture quads

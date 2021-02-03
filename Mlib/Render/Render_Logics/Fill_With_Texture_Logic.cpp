@@ -27,7 +27,7 @@ FillWithTextureLogic::FillWithTextureLogic(
   image_resource_name_{image_resource_name},
   update_cycle_{update_cycle}
 {
-    rp_.generate(vertex_shader_text, fragment_shader_text);
+    rp_.allocate(vertex_shader_text, fragment_shader_text);
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
 }
 

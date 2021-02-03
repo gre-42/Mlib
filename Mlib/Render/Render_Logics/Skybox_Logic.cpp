@@ -100,7 +100,7 @@ void SkyboxLogic::render(
     if (!loaded_) {
         loaded_ = true;
         if (!filenames_.empty()) {
-            rp_.generate(vertex_shader_text, fragment_shader_text);
+            rp_.allocate(vertex_shader_text, fragment_shader_text);
             rp_.skybox_location = checked_glGetUniformLocation(rp_.program, "skybox");
             rp_.vp_location = checked_glGetUniformLocation(rp_.program, "vp");
 

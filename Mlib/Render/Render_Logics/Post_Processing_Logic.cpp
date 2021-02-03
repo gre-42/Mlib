@@ -116,7 +116,7 @@ PostProcessingLogic::PostProcessingLogic(RenderLogic& child_logic, bool depth_fo
   depth_fog_{depth_fog},
   low_pass_{low_pass}
 {
-    rp_.generate(vertex_shader_text, fragment_shader_text({}, {}, {}, {}, low_pass_, high_pass, depth_fog_));
+    rp_.allocate(vertex_shader_text, fragment_shader_text({}, {}, {}, {}, low_pass_, high_pass, depth_fog_));
 
     // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
     rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");
