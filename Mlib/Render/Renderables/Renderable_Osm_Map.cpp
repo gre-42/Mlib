@@ -287,13 +287,13 @@ RenderableOsmMap::RenderableOsmMap(
 
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
-        .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture)},
+        .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_terrain_visuals = std::make_shared<TriangleList>("tl_terrain_visuals", Material{
-        .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture)},
+        .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
