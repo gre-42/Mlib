@@ -2,11 +2,11 @@
 
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-function exit_error() { echo "Usage: $(basename "$0") {Debug|Release} [distclean|test] [--verbose] [source-dirs...]" >&2; exit 1; }
+function exit_error() { echo "Usage: $(basename "$0") {Debug|Release|RelWithDebInfo} [distclean|test] [--verbose] [source-dirs...]" >&2; exit 1; }
 
 if [ $# -lt 1 ]; then exit_error; fi
 
-if [[ "$1" == Debug || "$1" == Release ]]; then
+if [[ "$1" == Debug || "$1" == Release || "$1" == RelWithDebInfo ]]; then
     CMAKE_BUILD_TYPE=$1
     shift
 else

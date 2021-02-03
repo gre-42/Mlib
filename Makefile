@@ -20,6 +20,9 @@ debug10:
 release10:
 	CXX=g++-10 ./build.sh Release
 
+release10_dbg:
+	CXX=g++-10 ./build.sh RelWithDebInfo
+
 test_debug10: debug10
 	CXX=g++-10 ./build.sh Debug test
 
