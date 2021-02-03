@@ -195,6 +195,9 @@ void Scene::render(
         }
         it->second->render(vp, TransformationMatrix<float, 3>::identity(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
     } else {
+        if (!external_render_pass.black_node_name.empty()) {
+            throw std::runtime_error("Expected empty black node");
+        }
         // |         |Lights|Blended|Large|Small|Move|
         // |---------|------|-------|-----|-----|----|
         // |Dynamic  |x     |x      |     |     |x   |
@@ -244,7 +247,7 @@ void Scene::render(
             }
             large_instances_renderer_->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
         }
-        if (external_render_pass.black_node_name.empty()) {
+        {
             bool is_foreground_task =
                 (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ||
                 (external_render_pass.pass == ExternalRenderPassType::DIRTMAP);
