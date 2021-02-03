@@ -25,7 +25,13 @@ public:
 class InstancesRenderer {
 public:
     virtual void update_instances(const std::list<TransformedColoredVertexArray>& sorted_aggregate_queue) = 0;
-    virtual void render_instances(const FixedArray<float, 4, 4>& vp, const TransformationMatrix<float, 3>& iv, const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights, const SceneGraphConfig& scene_graph_config, const RenderConfig& render_config, const ExternalRenderPass& external_render_pass) const = 0;
+    virtual void render_instances(
+        const FixedArray<float, 4, 4>& vp,
+        const TransformationMatrix<float, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
+        const SceneGraphConfig& scene_graph_config,
+        const RenderConfig& render_config,
+        const ExternalRenderPass& external_render_pass) const = 0;
     static std::shared_ptr<InstancesRenderer> small_instances_renderer();
     static thread_local std::list<std::shared_ptr<InstancesRenderer>> small_instances_renderers_;
 };
