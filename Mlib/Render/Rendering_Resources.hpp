@@ -41,6 +41,8 @@ public:
 
     const FixedArray<float, 4, 4>& get_vp(const std::string& name) const;
     void set_vp(const std::string& name, const FixedArray<float, 4, 4>& vp);
+    float get_offset(const std::string& name) const;
+    void set_offset(const std::string& name, float value);
     float get_discreteness(const std::string& name) const;
     void set_discreteness(const std::string& name, float value);
     WrapMode get_texture_wrap(const std::string& name) const;
@@ -60,6 +62,7 @@ private:
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
     mutable std::recursive_mutex mutex_;
     std::map<std::string, FixedArray<float, 4, 4>> vps_;
+    std::map<std::string, float> offsets_;
     std::map<std::string, float> discreteness_;
     std::map<std::string, WrapMode> texture_wrap_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;

@@ -378,6 +378,20 @@ void RenderingResources::set_vp(const std::string& name, const FixedArray<float,
     vps_[name] = vp;
 }
 
+float RenderingResources::get_offset(const std::string& name) const {
+    LOG_FUNCTION("RenderingResources::get_discreteness " + name);
+    auto it = offsets_.find(name);
+    if (it == offsets_.end()) {
+        throw std::runtime_error("Could not find offset with name " + name);
+    }
+    return it->second;
+}
+
+void RenderingResources::set_offset(const std::string& name, float value) {
+    LOG_FUNCTION("RenderingResources::set_offset " + name);
+    offsets_[name] = value;
+}
+
 float RenderingResources::get_discreteness(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_discreteness " + name);
     auto it = discreteness_.find(name);

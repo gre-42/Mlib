@@ -193,6 +193,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     OcclusionType occlusion_type,
     bool reorient_normals,
     bool orthographic,
+    float dirtmap_offset,
     float dirtmap_discreteness)
 {
     assert_true(nlights == lights.size());
@@ -402,6 +403,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    vec4 dirtiness = texture(texture_dirtmap, tex_coord_dirtmap);" << std::endl;
+        sstr << "    dirtiness.r += " << dirtmap_offset << ";" << std::endl;
+        sstr << "    dirtiness.g += " << dirtmap_offset << ";" << std::endl;
+        sstr << "    dirtiness.b += " << dirtmap_offset << ";" << std::endl;
         sstr << "    dirtiness.r = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.r - 0.5), 0, 1);" << std::endl;
         sstr << "    dirtiness.g = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.g - 0.5), 0, 1);" << std::endl;
         sstr << "    dirtiness.b = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.b - 0.5), 0, 1);" << std::endl;
@@ -622,6 +626,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             occlusion_type,
             id.reorient_normals,
             id.orthographic,
+            id.dirtmap_offset,
             id.dirtmap_discreteness));
 
     rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");

@@ -506,7 +506,11 @@ void LoadScene::operator()(
         "\\s*track_filename=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(set_camera_cycle_reg, "^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
     static const DECLARE_REGEX(set_camera_reg, "^\\s*set_camera ([\\w+-.]+)$");
-    static const DECLARE_REGEX(set_dirtmap_reg, "^\\s*set_dirtmap filename=([\\w-. \\(\\)/+-]+) discreteness=([\\w+-.]+) wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
+    static const DECLARE_REGEX(set_dirtmap_reg,
+        "^\\s*set_dirtmap filename=([\\w-. \\(\\)/+-]+)"
+        "\\s+offset=([\\w+-.]+)"
+        "\\s+discreteness=([\\w+-.]+)"
+        "\\s+wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
     static const DECLARE_REGEX(set_skybox_reg, "^\\s*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(set_preferred_car_spawner_reg,
         "^\\s*set_preferred_car_spawner"
@@ -1673,8 +1677,9 @@ void LoadScene::operator()(
             selected_cameras.set_camera_node_name(match[1].str());
         } else if (Mlib::re::regex_match(line, match, set_dirtmap_reg)) {
             dirtmap_logic.set_filename(fpath(match[1].str()));
-            secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[2].str()));
-            secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[3].str()));
+            secondary_rendering_context.rendering_resources->set_offset("dirtmap", safe_stof(match[2].str()));
+            secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[3].str()));
+            secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[4].str()));
         } else if (Mlib::re::regex_match(line, match, set_skybox_reg)) {
             skybox_logic.set_filenames({
                 fpath(match[2].str()),
