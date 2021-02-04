@@ -420,14 +420,22 @@ void RenderingResources::set_texture_wrap(const std::string& name, WrapMode mode
     texture_wrap_[name] = mode;
 }
 
-void RenderingResources::delete_vp(const std::string& name) {
+void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode) {
     if (vps_.erase(name) != 1) {
-        throw std::runtime_error("Could not delete VP " + name);
+        if (deletion_failure_mode == DeletionFailureMode::WARN) {
+            std::cerr << "WARNING: Could not delete VP " << name << std::endl;
+        } else {
+            throw std::runtime_error("Could not delete VP " + name);
+        }
     }
 }
-void RenderingResources::delete_texture(const std::string& name) {
+void RenderingResources::delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode) {
     if (textures_.erase(name) != 1) {
-        throw std::runtime_error("Could not delete texture " + name);
+        if (deletion_failure_mode == DeletionFailureMode::WARN) {
+            std::cerr << "WARNING: Could not delete texture " << name << std::endl;
+        } else {
+            throw std::runtime_error("Could not delete texture " + name);
+        }
     }
 }
 

@@ -47,7 +47,7 @@ RenderableBinaryX::RenderableBinaryX(
         std::make_shared<ColoredVertexArray>(
             "RenderableBinaryX",
             Material{
-                .texture_descriptor = {.color = texture},
+                .textures = {{.texture_descriptor = {.color = texture}}},
                 .occluder_type = occluder_type,
                 .blend_mode = BlendMode::BINARY,
                 .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,

@@ -25,6 +25,11 @@ struct ColoredRenderProgram;
 class SceneNodeResources;
 class RenderingResources;
 
+enum class DeletionFailureMode {
+    WARN,
+    ERROR
+};
+
 class RenderingResources {
 public:
     explicit RenderingResources(
@@ -48,8 +53,8 @@ public:
     WrapMode get_texture_wrap(const std::string& name) const;
     void set_texture_wrap(const std::string& name, WrapMode mode);
 
-    void delete_vp(const std::string& name);
-    void delete_texture(const std::string& name);
+    void delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode);
+    void delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode);
 
     std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
 

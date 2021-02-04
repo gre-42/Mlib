@@ -29,11 +29,12 @@ LightmapLogic::LightmapLogic(
 
 LightmapLogic::~LightmapLogic() {
     if (fbs_ != nullptr) {
-        rendering_context_.rendering_resources->delete_texture("lightmap_color." + light_node_name_);
-        rendering_context_.rendering_resources->delete_vp("lightmap_color." + light_node_name_);
+        // Warning in case of exception during child_logic_.render.
+        rendering_context_.rendering_resources->delete_texture("lightmap_color." + light_node_name_, DeletionFailureMode::WARN);
+        rendering_context_.rendering_resources->delete_vp("lightmap_color." + light_node_name_, DeletionFailureMode::WARN);
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->delete_texture("lightmap_depth" + light_node_name_);
-            rendering_context_.rendering_resources->delete_vp("lightmap_depth" + light_node_name_);
+            rendering_context_.rendering_resources->delete_texture("lightmap_depth" + light_node_name_, DeletionFailureMode::WARN);
+            rendering_context_.rendering_resources->delete_vp("lightmap_depth" + light_node_name_, DeletionFailureMode::WARN);
         }
     }
 }

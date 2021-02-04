@@ -23,7 +23,7 @@ public:
         SceneNodeResources& scene_node_resources,
         const std::string& filename,
         const std::string& heightmap,
-        const std::string& terrain_texture,
+        const std::vector<std::string>& terrain_textures,
         const std::string& dirt_texture,
         const std::string& street_crossing_texture,
         const std::string& street_texture,

@@ -655,9 +655,9 @@ void Mlib::triangulate_terrain_or_ceilings(
             cdt.AddPoint(&*p2t_triangle_centers.rbegin());
             p2t_hole_triangle_centers_set.insert(&*p2t_triangle_centers.rbegin());
         };
-        add(0.6, 0.2, 0.2);
-        add(0.2, 0.6, 0.2);
-        add(0.2, 0.2, 0.6);
+        add(0.6f, 0.2f, 0.2f);
+        add(0.2f, 0.6f, 0.2f);
+        add(0.2f, 0.2f, 0.6f);
     }
     //triangles.clear();
     cdt.Triangulate();
@@ -1028,15 +1028,15 @@ void Mlib::add_binary_vegetation_old(
         float veg_size;
         switch (tid % 10) {
             case 0:
-                tls.back()->material_.texture_descriptor.color = grass_texture;
+                tls.back()->material_.textures = { {.texture_descriptor = {.color = grass_texture}} };
                 veg_size = 1;
                 break;
             case 2:
-                tls.back()->material_.texture_descriptor.color = tree_texture;
+                tls.back()->material_.textures = { {.texture_descriptor = {.color = tree_texture}} };
                 veg_size = 5;
                 break;
             case 4:
-                tls.back()->material_.texture_descriptor.color = tree_texture_2;
+                tls.back()->material_.textures = { {.texture_descriptor = {.color = tree_texture_2 }} };
                 veg_size = 5;
                 break;
             default:
@@ -1132,7 +1132,8 @@ void Mlib::draw_building_walls(
     for (const auto& bu : buildings) {
         ++bid;
         tls.push_back(std::make_shared<TriangleList>("building_walls", material));
-        tls.back()->material_.texture_descriptor.color = facade_textures.at(bid % facade_textures.size());
+        tls.back()->material_.textures = { {.texture_descriptor = {.color = facade_textures.at(bid % facade_textures.size())}} };
+        tls.back()->material_.compute_color_mode();
         auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
         for (auto it = sw.begin(); it != sw.end(); ++it) {
             auto s = it;

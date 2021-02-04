@@ -168,9 +168,9 @@ void LoadScene::operator()(
         "\\s+with_terrain=(0|1)"
         "\\s+with_buildings=(0|1)"
         "\\s+only_raceways=(0|1)"
-        "\\s+highway_name_pattern=(.*)"
-        "\\s+excluded_highways=(.*)"
-        "\\s+path_tags=(.*)"
+        "\\s+highway_name_pattern=(.*?)"
+        "\\s+excluded_highways=(.*?)"
+        "\\s+path_tags=(.*?)"
         "\\s+steiner_point_distances_road=([ \\w+-.]*)"
         "\\s+steiner_point_distances_steiner=([ \\w+-.]*)"
         "\\s+curb_alpha=([\\w+-.]+)"
@@ -648,7 +648,7 @@ void LoadScene::operator()(
                     scene_node_resources,
                     fpath(match[2].str()),                                        // filename
                     fpath(match[3].str()),                                        // heightmap
-                    fpath(match[4].str()),                                        // terrain_texture
+                    string_to_vector(match[4].str(), fpath),                      // terrain_textures
                     fpath(match[5].str()),                                        // dirt_texture
                     fpath(match[6].str()),                                        // street_crossing_texture
                     fpath(match[7].str()),                                        // street_texture
@@ -755,7 +755,7 @@ void LoadScene::operator()(
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 Material{
-                    .texture_descriptor = {.color = fpath(match[2].str())},
+                    .textures = {{.texture_descriptor = {.color = fpath(match[2].str())}}},
                     .occluded_type =  occluded_type_from_string(match[8].str()),
                     .occluder_type = occluder_type_from_string(match[9].str()),
                     .occluded_by_black = safe_stob(match[10].str()),

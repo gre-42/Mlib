@@ -36,7 +36,7 @@ RenderableOsmMap::RenderableOsmMap(
     SceneNodeResources& scene_node_resources,
     const std::string& filename,
     const std::string& heightmap,
-    const std::string& terrain_texture,
+    const std::vector<std::string>& terrain_textures,
     const std::string& dirt_texture,
     const std::string& street_crossing_texture,
     const std::string& street_texture,
@@ -287,37 +287,43 @@ RenderableOsmMap::RenderableOsmMap(
 
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
-        .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_terrain_visuals = std::make_shared<TriangleList>("tl_terrain_visuals", Material{
-        .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .collide = false,
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_terrain_street_extrusion = std::make_shared<TriangleList>("terrain_street_extrusion", Material{
-        .texture_descriptor = {.color = terrain_texture, .normal = primary_rendering_resources->get_normalmap(terrain_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
+    for (auto& t : terrain_textures) {
+        BlendedTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
+        tl_terrain->material_.textures.push_back(bt);
+        tl_terrain_visuals->material_.textures.push_back(bt);
+        tl_terrain_street_extrusion->material_.textures.push_back(bt);
+    }
+    tl_terrain->material_.compute_color_mode();
+    tl_terrain_visuals->material_.compute_color_mode();
+    tl_terrain_street_extrusion->material_.compute_color_mode();
     auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
-        .texture_descriptor = {.color = street_crossing_texture, .normal = primary_rendering_resources->get_normalmap(street_crossing_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
+        .textures = {{.texture_descriptor = {.color = street_crossing_texture, .normal = primary_rendering_resources->get_normalmap(street_crossing_texture), .anisotropic_filtering_level = anisotropic_filtering_level}}},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
-        .texture_descriptor = {.color = path_crossing_texture, .normal = primary_rendering_resources->get_normalmap(path_crossing_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
+        .textures = {{.texture_descriptor = {.color = path_crossing_texture, .normal = primary_rendering_resources->get_normalmap(path_crossing_texture), .anisotropic_filtering_level = anisotropic_filtering_level}}},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_street = std::make_shared<TriangleList>("street", Material{
         .continuous_blending_z_order = blend_street ? 1 : 0,
-        .texture_descriptor = {.color = street_texture, .normal = primary_rendering_resources->get_normalmap(street_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
+        .textures = {{.texture_descriptor = {.color = street_texture, .normal = primary_rendering_resources->get_normalmap(street_texture), .anisotropic_filtering_level = anisotropic_filtering_level}}},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .blend_mode = blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
@@ -325,7 +331,7 @@ RenderableOsmMap::RenderableOsmMap(
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_path = std::make_shared<TriangleList>("path", Material{
         .continuous_blending_z_order = blend_street ? 1 : 0,
-        .texture_descriptor = {.color = path_texture, .normal = primary_rendering_resources->get_normalmap(path_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
+        .textures = {{.texture_descriptor = {.color = path_texture, .normal = primary_rendering_resources->get_normalmap(path_texture), .anisotropic_filtering_level = anisotropic_filtering_level}}},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .blend_mode = blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
@@ -333,24 +339,24 @@ RenderableOsmMap::RenderableOsmMap(
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     WrapMode curb_wrap_mode_s = (extrude_curb_amount != 0) || ((curb_alpha != 1) && (extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
     auto tl_curb_street = std::make_shared<TriangleList>("curb_street", Material{
-        .texture_descriptor = {.color = curb_street_texture, .normal = primary_rendering_resources->get_normalmap(curb_street_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
+        .textures = {{.texture_descriptor = {.color = curb_street_texture, .normal = primary_rendering_resources->get_normalmap(curb_street_texture), .anisotropic_filtering_level = anisotropic_filtering_level}}},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = curb_wrap_mode_s,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
-        .texture_descriptor = {.color = curb_path_texture, .normal = primary_rendering_resources->get_normalmap(curb_path_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
+        .textures = {{.texture_descriptor = {.color = curb_path_texture, .normal = primary_rendering_resources->get_normalmap(curb_path_texture), .anisotropic_filtering_level = anisotropic_filtering_level}}},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = curb_wrap_mode_s,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb2_street = std::make_shared<TriangleList>("curb_street", Material{
-        .texture_descriptor = {.color = curb2_street_texture, .normal = primary_rendering_resources->get_normalmap(curb2_street_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
+        .textures = {{.texture_descriptor = {.color = curb2_street_texture, .normal = primary_rendering_resources->get_normalmap(curb2_street_texture), .anisotropic_filtering_level = anisotropic_filtering_level}}},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb2_path = std::make_shared<TriangleList>("curb_path", Material{
-        .texture_descriptor = {.color = curb2_path_texture, .normal = primary_rendering_resources->get_normalmap(curb2_path_texture), .anisotropic_filtering_level = anisotropic_filtering_level},
+        .textures = {{.texture_descriptor = {.color = curb2_path_texture, .normal = primary_rendering_resources->get_normalmap(curb2_path_texture), .anisotropic_filtering_level = anisotropic_filtering_level}}},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
@@ -490,12 +496,11 @@ RenderableOsmMap::RenderableOsmMap(
             tls_buildings,
             steiner_points,
             Material{
-                .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1.f, 1.f, 1.f},
                 .specularity = {0.f, 0.f, 0.f},
-                .draw_distance_noperations = 1000}.compute_color_mode(),
+                .draw_distance_noperations = 1000},
             buildings,
             nodes,
             scale,
@@ -509,13 +514,12 @@ RenderableOsmMap::RenderableOsmMap(
             tls_wall_barriers,
             steiner_points,
             Material{
-                .texture_descriptor = {.color = "<tbd>"},
                 .occluder_type = OccluderType::BLACK,
                 .blend_mode = barrier_blend_mode,
                 .aggregate_mode = AggregateMode::ONCE,
                 .is_small = false,
                 .cull_faces = false,
-                .draw_distance_noperations = 1000}.compute_color_mode(),
+                .draw_distance_noperations = 1000},
             wall_barriers,
             nodes,
             scale,
@@ -578,7 +582,7 @@ RenderableOsmMap::RenderableOsmMap(
         draw_roofs(
             tls_buildings,
             Material{
-                .texture_descriptor = {.color = roof_texture},
+                .textures = {{.texture_descriptor = {.color = roof_texture}}},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1.f, 1.f, 1.f},
@@ -596,7 +600,7 @@ RenderableOsmMap::RenderableOsmMap(
         draw_ceilings(
             tls_buildings,
             Material{
-                .texture_descriptor = {.color = ceiling_texture},
+                .textures = {{.texture_descriptor = {.color = ceiling_texture}}},
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
                 .ambience = {1.f, 1.f, 1.f},

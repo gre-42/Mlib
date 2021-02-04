@@ -10,10 +10,35 @@
 
 namespace Mlib {
 
+struct BlendedTexture {
+    TextureDescriptor texture_descriptor;
+    float min_height = -INFINITY;
+    float max_height = INFINITY;
+    std::partial_ordering operator <=> (const BlendedTexture&) const = default;
+};
+
+inline std::strong_ordering operator <=> (const std::vector<BlendedTexture>& a, const std::vector<BlendedTexture>& b) {
+    if (a.size() < b.size()) {
+        return std::strong_ordering::less;
+    }
+    if (a.size() > b.size()) {
+        return std::strong_ordering::greater;
+    }
+    for (size_t i = 0; i < a.size(); ++i) {
+        if (a[i] < b[i]) {
+            return std::strong_ordering::less;
+        }
+        if (a[i] > b[i]) {
+            return std::strong_ordering::greater;
+        }
+    }
+    return std::strong_ordering::equal;
+}
+
 struct Material {
     // First element to support sorting.
     int continuous_blending_z_order = 0;
-    TextureDescriptor texture_descriptor;
+    std::vector<BlendedTexture> textures;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::OFF;
@@ -34,10 +59,20 @@ struct Material {
     float draw_distance_slop = 10;
     size_t draw_distance_noperations = 0;
     inline Material& compute_color_mode() {
-        texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)
-            ? ColorMode::RGB
-            : ColorMode::RGBA;
+        for (auto& t : textures) {
+            t.texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)
+                ? ColorMode::RGB
+                : ColorMode::RGBA;
+        }
         return *this;
+    }
+    bool has_normalmap() const {
+        for (const auto& t : textures) {
+            if (!t.texture_descriptor.normal.empty()) {
+                return true;
+            }
+        }
+        return false;
     }
     std::partial_ordering operator <=> (const Material&) const = default;
 };

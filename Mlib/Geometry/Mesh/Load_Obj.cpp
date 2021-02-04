@@ -34,7 +34,6 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     TriangleList tl{
         filename,
         Material{
-            .texture_descriptor = TextureDescriptor{.color = ""},
             .occluded_type = cfg.occluded_type,
             .occluder_type = cfg.occluder_type,
             .occluded_by_black = cfg.occluded_by_black,
@@ -238,17 +237,17 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 mtllib = load_mtllib(p == "" ? match[1].str() : p + "/" + match[1].str(), cfg.werror);
             } else if (Mlib::re::regex_match(line, match, usemtl_reg)) {
                 current_mtl = mtllib.at(match[1].str());
+                TextureDescriptor td;
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    tl.material_.texture_descriptor.color = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string();
-                } else {
-                    tl.material_.texture_descriptor.color.clear();
+                    td.color = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string();
                 }
                 if (!current_mtl.bump_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    tl.material_.texture_descriptor.normal = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string();
-                } else {
-                    tl.material_.texture_descriptor.normal.clear();
+                    td.normal = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string();
+                }
+                if (!td.color.empty() || !td.normal.empty()) {
+                    tl.material_.textures.push_back({ .texture_descriptor = td });
                 }
                 if (current_mtl.has_alpha_texture) {
                     tl.material_.blend_mode = cfg.blend_mode;

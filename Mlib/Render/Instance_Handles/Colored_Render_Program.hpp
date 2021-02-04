@@ -25,10 +25,10 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> light_ambiences;
     std::map<size_t, GLint> light_diffusivities;
     std::map<size_t, GLint> light_specularities;
-    GLint texture1_location;
+    std::map<size_t, GLint> texture_color_locations;
     std::map<size_t, GLint> texture_lightmap_color_locations;
     std::map<size_t, GLint> texture_lightmap_depth_locations;
-    GLint texture_normalmap_location;
+    std::map<size_t, GLint> texture_normalmap_locations;
     GLint texture_dirtmap_location;
     GLint texture_dirt_location;
 };
@@ -37,10 +37,10 @@ struct RenderProgramIdentifier {
     OccluderType occluder_type;
     size_t nlights;
     BlendMode blend_mode;
-    bool has_texture;
+    size_t ntextures_color;
+    size_t ntextures_normal;
     bool has_lightmap_color;
     bool has_lightmap_depth;
-    bool has_normalmap;
     bool has_dirtmap;
     bool has_instances;
     bool has_lookat;

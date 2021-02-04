@@ -59,7 +59,7 @@ int main(int argc, char** argv)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        renderable_text.render({100, 100}, "This is sample text", width, height);
+        renderable_text.render({100.f, 100.f}, "This is sample text", width, height);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------

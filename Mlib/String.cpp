@@ -127,14 +127,3 @@ std::set<std::string> Mlib::string_to_set(const std::string& str) {
     auto l = string_to_list(str);
     return {l.begin(), l.end()};
 }
-
-std::string Mlib::join(const std::string& delimiter, const std::list<std::string>& lst) {
-    std::string res;
-    int i = 0;
-    for (const std::string& s : lst) {
-        res += (i++ == 0)
-            ? s
-            : delimiter + s;
-    }
-    return res;
-}

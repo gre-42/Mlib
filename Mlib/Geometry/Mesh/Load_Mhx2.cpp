@@ -205,8 +205,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         // "viewPortColor" : [0.75089,0.57281,0.45185],
         // "viewPortAlpha" : 1
         if (!materials.insert({material.at("name"), Material{
-            .texture_descriptor{
-                .color = gen_filename(filename, material.at("diffuse_texture"))
+            .textures{
+                BlendedTexture{.texture_descriptor = {.color = gen_filename(filename, material.at("diffuse_texture"))}}
             },
             .ambience = OrderableFixedArray{get_fixed_array<float, 3>(material.at("ambient_color"))},
             .diffusivity = OrderableFixedArray{get_fixed_array<float, 3>(material.at("diffuse_color"))},
@@ -226,7 +226,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         TriangleList tl{
             filename,
             Material{
-                .texture_descriptor = m.texture_descriptor,
+                .textures = m.textures,
                 .occluded_type = cfg.occluded_type,
                 .occluder_type = cfg.occluder_type,
                 .occluded_by_black = cfg.occluded_by_black,

@@ -31,7 +31,9 @@ static GenShaderText vertex_shader_text_gen{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
+    const std::vector<BlendedTexture*>& textures,
     size_t nlights,
+    size_t ntextures_color,
     bool has_lightmap_color,
     bool has_lightmap_depth,
     bool has_normalmap,
@@ -155,7 +157,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
-    if (reorient_normals || has_specularity) {
+    if (reorient_normals || has_specularity || (ntextures_color > 1)) {
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
@@ -166,6 +168,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << "Vertex" << std::endl;
+    std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -180,8 +187,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
+    const std::vector<BlendedTexture*>& textures,
     size_t nlights,
-    bool has_texture,
+    size_t ntextures_color,
+    size_t ntextures_normal,
     bool has_lightmap_color,
     bool has_lightmap_depth,
     bool has_normalmap,
@@ -200,11 +209,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
     sstr << "in vec3 color;" << std::endl;
-    if (has_texture) {
+    if (ntextures_color != 0) {
         sstr << "in vec2 tex_coord;" << std::endl;
     }
     sstr << "out vec4 frag_color;" << std::endl;
-    sstr << "uniform sampler2D texture1;" << std::endl;
+    if (ntextures_color != 0) {
+        sstr << "uniform sampler2D textures_color[" << ntextures_color << "];" << std::endl;
+    }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
             throw std::runtime_error("No lights despite has_lightmap_color or has_lightmap_depth");
@@ -221,7 +232,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_normalmap) {
         sstr << "in vec3 tangent;" << std::endl;
         sstr << "in vec3 bitangent;" << std::endl;
-        sstr << "uniform sampler2D texture_normalmap;" << std::endl;
+        sstr << "uniform sampler2D texture_normalmap[" << ntextures_normal << "];" << std::endl;
     }
     if (has_dirtmap) {
         sstr << "in vec2 tex_coord_dirtmap;" << std::endl;
@@ -243,7 +254,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!specularity.all_equal(0)) {
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
-    if (reorient_normals || !specularity.all_equal(0)) {
+    if (reorient_normals || !specularity.all_equal(0) || (ntextures_color > 1)) {
         sstr << "in vec3 FragPos;" << std::endl;
         if (orthographic) {
             sstr << "uniform vec3 viewDir;" << std::endl;
@@ -279,15 +290,34 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    if ((alpha_threshold != 0) || has_texture) {
-        sstr << "    vec4 texture1_color = texture(texture1, tex_coord);" << std::endl;
+    if (ntextures_color != 0) {
+        sstr << "    vec4 texture_color = texture(textures_color[0], tex_coord);" << std::endl;
     }
     if (alpha_threshold != 0) {
-        if (!has_texture) {
+        if (ntextures_color == 0) {
             throw std::runtime_error("Alpha threshold requires texture");
         }
-        sstr << "    if (texture1_color.a < " << alpha_threshold << ")" << std::endl;
+        sstr << "    if (texture_color.a < " << alpha_threshold << ")" << std::endl;
         sstr << "        discard;" << std::endl;
+    }
+    if (ntextures_color > 1) {
+        size_t i = 0;
+        for (const auto& t : textures) {
+            if (i++ == 0) {
+                continue;
+            }
+            if (t->min_height != -INFINITY) {
+                sstr << "    if (FragPos.y < " << t->min_height << ") {";
+                sstr << "        continue;";
+                sstr << "    }";
+            }
+            if (t->max_height != INFINITY) {
+                sstr << "    if (FragPos.y > " << t->max_height << ") {";
+                sstr << "        continue;";
+                sstr << "    }";
+            }
+            sstr << "    texture_color.rgb += texture(textures_color[i], tex_coord)";
+        }
     }
     sstr << "    vec3 fragBrightness = vec3(0, 0, 0);" << std::endl;
     if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
@@ -307,7 +337,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
         sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
         // sstr << "    mat3 TBN = mat3(tangent, bitangent, norm);" << std::endl;
-        sstr << "    vec3 tnorm = 2 * texture(texture_normalmap, tex_coord).rgb - 1;" << std::endl;
+        sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
+        size_t i = 0;
+        for (const auto& t : textures) {
+            if (!t->texture_descriptor.normal.empty()) {
+                sstr << "    tnorm += 2 * texture(texture_normalmap[" << i << "], tex_coord).rgb - 1;" << std::endl;
+            }
+            ++i;
+        }
         sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
     }
     if (!ambience.all_equal(0) || !diffusivity.all_equal(0) || !specularity.all_equal(0)) {
@@ -398,8 +435,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_lightmap_color && !black_shadow_indices.empty()) {
         sstr << "    fragBrightness *= color_fac;" << std::endl;
     }
-    if (!has_texture && has_dirtmap) {
-        std::runtime_error("Combination of (!has_texture && has_dirtmap) is not supported");
+    if ((ntextures_color == 0) && has_dirtmap) {
+        throw std::runtime_error("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
     }
     if (has_dirtmap) {
         sstr << "    vec4 dirtiness = texture(texture_dirtmap, tex_coord_dirtmap);" << std::endl;
@@ -412,11 +449,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         // sstr << "    dirtiness.r += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
         // sstr << "    dirtiness.g += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
         // sstr << "    dirtiness.b += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
-        sstr << "    frag_color = texture1_color * (1 - dirtiness)" << std::endl;
+        sstr << "    frag_color = texture_color * (1 - dirtiness)" << std::endl;
         sstr << "               + texture(texture_dirt, tex_coord) * dirtiness;" << std::endl;
         sstr << "    frag_color *= vec4(color, 1.0);" << std::endl;
-    } else if (has_texture) {
-        sstr << "    frag_color = texture1_color * vec4(color, 1.0);" << std::endl;
+    } else if (ntextures_color != 0) {
+        sstr << "    frag_color = texture_color * vec4(color, 1.0);" << std::endl;
     } else {
         sstr << "    frag_color = vec4(color, 1.0);" << std::endl;
     }
@@ -432,6 +469,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << "Fragment" << std::endl;
+    std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -484,7 +526,9 @@ void RenderableColoredVertexArray::instantiate_renderable(const std::string& nam
 #endif
     if (!textures_preloaded_ && (glfwGetCurrentContext() != nullptr)) {
         for (auto& cva : triangles_res_->cvas) {
-            rendering_resources_->preload(cva->material.texture_descriptor);
+            for (auto& t : cva->material.textures) {
+                rendering_resources_->preload(t.texture_descriptor);
+            }
         }
         textures_preloaded_ = true;
     }
@@ -564,7 +608,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& filtered_lights,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices) const
+    const std::vector<size_t>& black_shadow_indices,
+    const std::vector<BlendedTexture*>& textures) const
 {
     auto& rps = rendering_resources_->render_programs();
     if (auto it = rps.find(id); it != rps.end()) {
@@ -594,10 +639,12 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             light_noshadow_indices,
             light_shadow_indices,
             black_shadow_indices,
+            textures,
             filtered_lights.size(),
+            id.ntextures_color,
             id.has_lightmap_color,
             id.has_lightmap_depth,
-            id.has_normalmap,
+            id.ntextures_normal != 0,
             id.has_dirtmap,
             !id.diffusivity.all_equal(0),
             !id.specularity.all_equal(0),
@@ -611,11 +658,13 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             light_noshadow_indices,
             light_shadow_indices,
             black_shadow_indices,
+            textures,
             filtered_lights.size(),
-            id.has_texture,
+            id.ntextures_color,
+            id.ntextures_normal,
             id.has_lightmap_color,
             id.has_lightmap_depth,
-            id.has_normalmap,
+            id.ntextures_normal != 0,
             id.has_dirtmap,
             id.ambience,
             id.diffusivity,
@@ -630,10 +679,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             id.dirtmap_discreteness));
 
     rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");
-    if (id.has_texture) {
-        rp->texture1_location = checked_glGetUniformLocation(rp->program, "texture1");
-    } else {
-        rp->texture1_location = 0;
+    for (size_t i = 0; i < id.ntextures_color; ++i) {
+        rp->texture_color_locations[i] = checked_glGetUniformLocation(rp->program, ("textures_color[" + std::to_string(i) + "]").c_str());
     }
     if (id.has_lightmap_color || id.has_lightmap_depth) {
         for (size_t i = 0; i < filtered_lights.size(); ++i) {
@@ -664,10 +711,14 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         // Do nothing
         // rp->texture_lightmap_depth_location = 0;
     }
-    if (id.has_normalmap) {
-        rp->texture_normalmap_location = checked_glGetUniformLocation(rp->program, "texture_normalmap");
-    } else {
-        rp->texture_normalmap_location = 0;
+    if (id.ntextures_normal != 0) {
+        size_t i = 0;
+        for (const auto& r : textures) {
+            if (!r->texture_descriptor.normal.empty()) {
+                rp->texture_normalmap_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_normalmap[" + std::to_string(i) + "]").c_str());
+            }
+            ++i;
+        }
     }
     if (id.has_dirtmap) {
         rp->mvp_dirtmap_location = checked_glGetUniformLocation(rp->program, "MVP_dirtmap");
@@ -756,7 +807,7 @@ const SubstitutionInfo& RenderableColoredVertexArray::get_vertex_array(const std
         CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->normal));
     }
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
-    if (!cva->material.texture_descriptor.normal.empty()) {
+    if (cva->material.has_normalmap()) {
         CHK(glEnableVertexAttribArray(4));
         CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
     }
