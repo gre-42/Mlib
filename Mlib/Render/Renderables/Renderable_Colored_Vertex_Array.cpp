@@ -339,7 +339,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "            float weight = 1;" << std::endl;
             sstr << "            float scale = " << t->scale << ';' << std::endl;
             if (!t->normal.all_equal(0.f)) {
-                sstr << "            weight = abs(dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << ")));" << std::endl;
+                sstr << "            weight = pow(dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << ")), 2);" << std::endl;
+                sstr << "            weight = pow(sin(100 * scale * weight), 2);" << std::endl;
             }
             sstr << "            texture_color.rgb += weight * texture(textures_color[" << i << "], tex_coord * scale).rgb;" << std::endl;
             if (!t->texture_descriptor.normal.empty()) {
