@@ -35,7 +35,8 @@ class RenderingResources {
 public:
     explicit RenderingResources(
         SceneNodeResources& scene_node_resources,
-        const std::string& name);
+        const std::string& name,
+        unsigned int max_anisotropic_filtering_level);
     ~RenderingResources();
     void preload(const TextureDescriptor& descriptor) const;
     GLuint get_texture(const TextureDescriptor& descriptor) const;
@@ -79,6 +80,7 @@ private:
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     SceneNodeResources& scene_node_resources_;
     std::string name_;
+    unsigned int max_anisotropic_filtering_level_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderingResources& r);

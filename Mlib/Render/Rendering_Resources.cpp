@@ -153,9 +153,11 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
 
 RenderingResources::RenderingResources(
     SceneNodeResources& scene_node_resources,
-    const std::string& name)
+    const std::string& name,
+    unsigned int max_anisotropic_filtering_level)
 : scene_node_resources_{ scene_node_resources },
-  name_{ name }
+  name_{ name },
+  max_anisotropic_filtering_level_{ max_anisotropic_filtering_level }
 {}
 
 RenderingResources::~RenderingResources() {
@@ -221,7 +223,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     if (descriptor.anisotropic_filtering_level != 0) {
         float aniso = 0.0f;
         CHK(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
-        aniso = std::min(aniso, (float)descriptor.anisotropic_filtering_level);
+        aniso = std::min({ aniso, (float)descriptor.anisotropic_filtering_level, float(max_anisotropic_filtering_level_) });
         CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
     }
     StbInfo si0 = stb_load_texture(

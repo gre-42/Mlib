@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
         np.add_point({0.f, 0.f});
         np.add_point({float(img.shape(id1)) - 1, float(img.shape(id0)) - 1});
         SceneNodeResources scene_node_resources;
-        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
+        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
         size_t num_renderings = SIZE_MAX;
         Render2{num_renderings}.render_height_map(
             img.to_float_rgb(),

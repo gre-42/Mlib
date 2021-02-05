@@ -13,9 +13,10 @@ RenderingContextGuard::RenderingContextGuard(const RenderingContext& context) {
 RenderingContextGuard::RenderingContextGuard(
     SceneNodeResources& scene_node_resources,
     const std::string& name,
+    unsigned int max_anisotropic_filtering_level,
     int z_order)
 : RenderingContextGuard{RenderingContext{
-    .rendering_resources = std::make_shared<RenderingResources>(scene_node_resources, name),
+    .rendering_resources = std::make_shared<RenderingResources>(scene_node_resources, name, max_anisotropic_filtering_level),
     .z_order = z_order}}
 {}
 

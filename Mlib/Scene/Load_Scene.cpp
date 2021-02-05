@@ -562,6 +562,7 @@ void LoadScene::operator()(
             RenderingContextGuard rrg{
                 scene_node_resources,
                 match[1].str() + ".rendering_resources",
+                render_config.anisotropic_filtering_level,
                 safe_stoi(match[2].str())};
             AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
             InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};

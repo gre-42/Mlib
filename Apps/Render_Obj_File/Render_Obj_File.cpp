@@ -229,27 +229,28 @@ int main(int argc, char** argv) {
         if (args.has_named_value("--output")) {
             render_results.outputs[rsd] = Array<float>();
         }
+        RenderConfig render_config{
+            .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "4")),
+            .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
+            .cull_faces = !args.has_named("--no_cull_faces"),
+            .wire_frame = args.has_named("--wire_frame"),
+            .screen_width = safe_stoi(args.named_value("--width", "640")),
+            .screen_height = safe_stoi(args.named_value("--height", "480")),
+            .show_mouse_cursor = true,
+            .background_color = {
+                safe_stof(args.named_value("--background_r", "1")),
+                safe_stof(args.named_value("--background_g", "0")),
+                safe_stof(args.named_value("--background_b", "1"))},
+            .dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
         Render2 render2{
             num_renderings,
             &render_results,
-            RenderConfig{
-                .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "4")),
-                .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
-                .cull_faces = !args.has_named("--no_cull_faces"),
-                .wire_frame = args.has_named("--wire_frame"),
-                .screen_width = safe_stoi(args.named_value("--width", "640")),
-                .screen_height = safe_stoi(args.named_value("--height", "480")),
-                .show_mouse_cursor = true,
-                .background_color = {
-                    safe_stof(args.named_value("--background_r", "1")),
-                    safe_stof(args.named_value("--background_g", "0")),
-                    safe_stof(args.named_value("--background_b", "1"))},
-                .dt = safe_stof(args.named_value("--render_dt", "0.01667"))}};
+            render_config};
 
         render2.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
-        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
+        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
         AggregateRendererGuard small_sorted_aggregate_renderer_guard{std::make_shared<AggregateArrayRenderer>()};
         AggregateArrayRenderer large_aggregate_renderer;
         Scene scene{&large_aggregate_renderer};

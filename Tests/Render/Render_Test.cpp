@@ -49,6 +49,7 @@ void test_render() {
         RenderingContextGuard rrg{
             scene_node_resources,
             "primary_rendering_resources",
+            16,
             0};
         Array<float> output;
         RenderResults render_results{.output = &output};

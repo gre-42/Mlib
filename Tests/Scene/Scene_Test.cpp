@@ -115,7 +115,7 @@ void test_physics_engine() {
 
     SceneNodeResources scene_node_resources;
     Scene scene;
-    RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
+    RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
     scene_node_resources.add_resource("obj0", std::make_shared<RenderableColoredVertexArray>(triangles0, nullptr));
     scene_node_resources.add_resource("obj1", std::make_shared<RenderableColoredVertexArray>(triangles1, nullptr));
     scene_node_resources.add_resource("beacon", std::make_shared<RenderableObjFile>(

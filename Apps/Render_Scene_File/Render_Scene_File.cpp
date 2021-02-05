@@ -232,7 +232,7 @@ int main(int argc, char** argv) {
                 substitutions.merge(SubstitutionString{sstr});
             }
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
-            RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 0};
+            RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;
             LoadScene load_scene;

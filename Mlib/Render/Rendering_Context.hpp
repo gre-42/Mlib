@@ -17,6 +17,7 @@ public:
     explicit RenderingContextGuard(
         SceneNodeResources& scene_node_resources,
         const std::string& name,
+        unsigned int max_anisotropic_filtering_level,
         int z_order);
     ~RenderingContextGuard();
 };
