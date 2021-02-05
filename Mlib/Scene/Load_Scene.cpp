@@ -491,7 +491,8 @@ void LoadScene::operator()(
         "\\s+histogram=([\\w-. \\(\\)/+-]*)"
         "\\s+mixed=([\\w-. \\(\\)/+-]*)"
         "\\s+overlap_npixels=(\\d+)"
-        "\\s+mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+anisotropic_filtering_level=(\\d+)$");
     static const DECLARE_REGEX(add_blend_map_texture_reg,
         "^\\s*add_blend_map_texture"
         "\\s+name=([\\w-. \\(\\)/+-]+)"
@@ -673,7 +674,6 @@ void LoadScene::operator()(
                     fpath(match[15].str()),                                       // ceiling_texture
                     fpath(match[16].str()),                                       // barrier_texture
                     blend_mode_from_string(match[17].str()),                      // barrier_blend_mode
-                    render_config.anisotropic_filtering_level,                    // anisotropic_filtering_level
                     fpath(match[18].str()),                                       // roof_texture
                     string_to_vector(match[19].str()),                            // tree_resource_names
                     string_to_vector(match[20].str()),                            // grass_resource_names
@@ -836,7 +836,8 @@ void LoadScene::operator()(
                     .mean_color = OrderableFixedArray<float, 3>{
                         safe_stof(match[8].str()),
                         safe_stof(match[9].str()),
-                        safe_stof(match[10].str())}});
+                        safe_stof(match[10].str())},
+                    .anisotropic_filtering_level = safe_stou(match[11].str())});
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_blend_map_texture_reg)) {

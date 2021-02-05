@@ -387,7 +387,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
         for (const auto& t : cva->material.textures) {
             if (!t.texture_descriptor.normal.empty()) {
                 CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + filtered_lights.size() + i)));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({ .color = t.texture_descriptor.normal, .color_mode = ColorMode::RGB })));
+                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_normalmap_texture(t.texture_descriptor)));
                 setup_texture();
                 CHK(glActiveTexture(GL_TEXTURE0));
             }

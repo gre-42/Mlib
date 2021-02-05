@@ -37,7 +37,6 @@ public:
         const std::string& ceiling_texture,
         const std::string& barrier_texture,
         BlendMode barrier_blend_mode,
-        unsigned int anisotropic_filtering_level,
         const std::string& roof_texture,
         const std::vector<std::string>& tree_resource_names,
         const std::vector<std::string>& grass_resource_names,

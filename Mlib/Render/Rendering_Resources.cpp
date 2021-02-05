@@ -177,14 +177,19 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
         get_texture(descriptor);
     }
     if (!desc.normal.empty()) {
-        get_texture({
-            .color = desc.normal,
-            .anisotropic_filtering_level = desc.anisotropic_filtering_level});
+        get_normalmap_texture(desc);
     }
 }
 
 GLuint RenderingResources::get_texture(const TextureDescriptor& descriptor) const {
     return get_texture(descriptor.color, descriptor);
+}
+
+GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descriptor) const {
+    return get_texture(TextureDescriptor{
+        .color = descriptor.normal,
+        .color_mode = ColorMode::RGB,
+        .anisotropic_filtering_level = descriptor.anisotropic_filtering_level});
 }
 
 // From: https://gamedev.stackexchange.com/questions/70829/why-is-gl-texture-max-anisotropy-ext-undefined/75816#75816?newreg=a7ddca6a76bf40b794c36dbe189c64b6
@@ -362,15 +367,6 @@ TextureDescriptor RenderingResources::get_texture_descriptor(const std::string& 
     }
     else {
         return it->second;
-    }
-}
-
-std::string RenderingResources::get_normalmap(const std::string& name) const {
-    LOG_FUNCTION("RenderingResources::has_normalmap " + name);
-    if (auto it = texture_descriptors_.find(name); it == texture_descriptors_.end()) {
-        return "";
-    } else {
-        return it->second.normal;
     }
 }
 

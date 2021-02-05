@@ -40,11 +40,11 @@ public:
     void preload(const TextureDescriptor& descriptor) const;
     GLuint get_texture(const TextureDescriptor& descriptor) const;
     GLuint get_texture(const std::string& name, const TextureDescriptor& descriptor) const;
+    GLuint get_normalmap_texture(const TextureDescriptor& descriptor) const;
     GLuint get_cubemap(const std::string& name, const std::vector<std::string>& filenames) const;
     void set_texture(const std::string& name, GLuint id);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_texture_descriptor(const std::string& name) const;
-    std::string get_normalmap(const std::string& name) const;
 
     BlendMapTexture get_blend_map_texture(const std::string& name) const;
     void set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt);
