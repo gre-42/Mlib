@@ -12,6 +12,7 @@ struct BlendMapTexture {
     OrderableFixedArray<float, 4> distances = { 0.f, 0.f, INFINITY, INFINITY };
     OrderableFixedArray<float, 3> normal = { 0.f, 0.f, 0.f };
     float scale = 1;
+    float weight = 1;
     std::partial_ordering operator <=> (const BlendMapTexture&) const = default;
 };
 

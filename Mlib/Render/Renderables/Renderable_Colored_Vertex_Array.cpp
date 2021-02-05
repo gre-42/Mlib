@@ -352,20 +352,21 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             if (!checks.empty()) {
                 sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
             }
-            sstr << "            float weight = 1;" << std::endl;
+            sstr << "            float weight = " << t->weight << ";" << std::endl;
             sstr << "            float scale = " << t->scale << ';' << std::endl;
             if (!t->normal.all_equal(0.f)) {
-                sstr << "            weight = pow(dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << ")), 2);" << std::endl;
-                sstr << "            weight = pow(sin(100 * scale * weight), 2);" << std::endl;
+                sstr << "            float w = pow(dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << ")), 2);" << std::endl;
+                // sstr << "            weight *= pow(sin(100 * w), 2);" << std::endl;
+                sstr << "            weight *= w;" << std::endl;
             }
             if (t->distances(0) != t->distances(1)) {
                 sstr << "            if (dist < " << t->distances(1) << ") {" << std::endl;
-                sstr << "                weight = (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ";" << std::endl;
+                sstr << "                weight *= (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ";" << std::endl;
                 sstr << "            }" << std::endl;
             }
             if (t->distances(3) != t->distances(2)) {
                 sstr << "            if (dist > " << t->distances(2) << ") {" << std::endl;
-                sstr << "                weight = (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ";" << std::endl;
+                sstr << "                weight *= (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ";" << std::endl;
                 sstr << "            }" << std::endl;
             }
             sstr << "            texture_color.rgb += weight * texture(textures_color[" << i << "], tex_coord * scale).rgb;" << std::endl;
