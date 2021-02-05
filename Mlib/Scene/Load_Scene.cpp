@@ -501,6 +501,7 @@ void LoadScene::operator()(
         "\\s+max_height=([\\w+-.]+)"
         "\\s+distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+normal=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+cosine=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
         "\\s+weight=([\\w+-.]+)$");
     static const DECLARE_REGEX(record_track_reg, "^\\s*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
@@ -858,8 +859,13 @@ void LoadScene::operator()(
                         safe_stof(match[9].str()),
                         safe_stof(match[10].str()),
                         safe_stof(match[11].str())},
-                    .scale = safe_stof(match[12].str()),
-                    .weight = safe_stof(match[13].str()) });
+                    .cosine = {
+                        safe_stof(match[12].str()),
+                        safe_stof(match[13].str()),
+                        safe_stof(match[14].str()),
+                        safe_stof(match[15].str())},
+                    .scale = safe_stof(match[16].str()),
+                    .weight = safe_stof(match[17].str()) });
             return true;
         }
 
