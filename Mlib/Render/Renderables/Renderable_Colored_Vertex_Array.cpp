@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Stats/Mean.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <iostream>
 
 static const size_t ANIMATION_NINTERPOLATED = 4;

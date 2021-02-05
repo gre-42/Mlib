@@ -20,7 +20,7 @@
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <fstream>
 #include <poly2tri/poly2tri.h>
 #include <regex>

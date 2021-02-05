@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Render/Render.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <vector>
 
 using namespace Mlib;

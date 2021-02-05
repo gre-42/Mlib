@@ -2,7 +2,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Stats/Fixed_Random_Arrays.hpp>
-#include <Mlib/String.cpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>

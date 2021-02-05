@@ -4,6 +4,7 @@
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;
 

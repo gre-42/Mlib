@@ -29,7 +29,6 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
-#include <Mlib/String.hpp>
 #include <vector>
 
 namespace Mlib {

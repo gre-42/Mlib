@@ -3,7 +3,7 @@
 #include <Mlib/Images/Optical_Flow.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Images/Registration.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;
 

@@ -3,7 +3,7 @@
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <fenv.h>
 #include <iostream>
 

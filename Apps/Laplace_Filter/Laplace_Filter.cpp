@@ -4,7 +4,7 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PpmImage.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;

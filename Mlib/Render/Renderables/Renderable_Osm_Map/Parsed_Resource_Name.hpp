@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
+#include <list>
 #include <map>
 #include <string>
 

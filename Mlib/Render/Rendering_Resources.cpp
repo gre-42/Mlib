@@ -377,7 +377,7 @@ std::string RenderingResources::get_normalmap(const std::string& name) const {
 BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_blending_min " + name);
     if (auto it = blend_map_textures_.find(name); it == blend_map_textures_.end()) {
-        return BlendMapTexture();
+        return BlendMapTexture{ .texture_descriptor = get_texture_descriptor(name) };
     }
     else {
         return it->second;

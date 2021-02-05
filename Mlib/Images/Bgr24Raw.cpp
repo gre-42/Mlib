@@ -1,6 +1,6 @@
 #include "Bgr24Raw.hpp"
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <fstream>
 #include <regex>
 

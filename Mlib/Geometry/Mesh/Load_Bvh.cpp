@@ -2,7 +2,8 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <fstream>
 #include <regex>
 

@@ -31,7 +31,7 @@
 #include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <vector>
 
 using namespace Mlib;

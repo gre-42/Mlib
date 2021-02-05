@@ -15,6 +15,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
 #include <Mlib/Scene_Graph/Visibility_Check.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <climits>
 
 // #undef LOG_FUNCTION
@@ -172,7 +173,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
     }
     for (const auto& t : cva->material.textures) {
         if (t.texture_descriptor.color.empty()) {
-            throw std::runtime_error("Empty colors not supported");
+            throw std::runtime_error("Empty colors not supported, cva: " + cva->name);
         }
         if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
             throw std::runtime_error("Material's color texture \"" + t.texture_descriptor.color + "\" has undefined color mode");

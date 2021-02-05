@@ -69,7 +69,8 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <filesystem>
 #include <fstream>
 #include <regex>

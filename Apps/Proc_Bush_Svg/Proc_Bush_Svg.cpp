@@ -1,6 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Svg.hpp>
-#include <Mlib/String.cpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <fstream>
 #include <iosfwd>
 #include <random>

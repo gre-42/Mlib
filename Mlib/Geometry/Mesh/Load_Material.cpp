@@ -1,6 +1,6 @@
 #include "Load_Material.hpp"
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/String.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <regex>
 
 using namespace Mlib;
