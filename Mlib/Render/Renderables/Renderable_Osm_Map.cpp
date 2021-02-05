@@ -303,7 +303,8 @@ RenderableOsmMap::RenderableOsmMap(
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode());
     for (auto& t : terrain_textures) {
-        BlendedTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
+        // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
+        BlendMapTexture bt = primary_rendering_resources->get_blend_map_texture(t);
         tl_terrain->material_.textures.push_back(bt);
         tl_terrain_visuals->material_.textures.push_back(bt);
         tl_terrain_street_extrusion->material_.textures.push_back(bt);

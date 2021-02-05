@@ -50,7 +50,7 @@ private:
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
-        const std::vector<BlendedTexture*>& textures) const;
+        const std::vector<BlendMapTexture*>& textures) const;
     const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;

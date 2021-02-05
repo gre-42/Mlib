@@ -23,7 +23,7 @@ static GenShaderText fragment_shader_text{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures,
+    const std::vector<BlendMapTexture*>& textures,
     bool low_pass,
     bool high_pass,
     bool depth_fog)

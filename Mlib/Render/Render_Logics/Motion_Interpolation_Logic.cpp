@@ -27,7 +27,7 @@ static GenShaderText fragment_shader_text{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures,
+    const std::vector<BlendMapTexture*>& textures,
     bool interpolate)
 {
     std::stringstream sstr;
@@ -57,7 +57,7 @@ static GenShaderText optical_flow_diff_fragment_shader_text{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures)
+    const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
@@ -106,7 +106,7 @@ static GenShaderText optical_flow_diff1_fragment_shader_text{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures)
+    const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
@@ -147,7 +147,7 @@ static GenShaderText optical_flow_fragment_shader_text{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures)
+    const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
@@ -186,7 +186,7 @@ static GenShaderText optical_flow_apply_fragment_shader_text{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures)
+    const std::vector<BlendMapTexture*>& textures)
 {
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;

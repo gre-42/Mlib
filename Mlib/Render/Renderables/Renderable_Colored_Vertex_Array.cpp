@@ -31,7 +31,7 @@ static GenShaderText vertex_shader_text_gen{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures,
+    const std::vector<BlendMapTexture*>& textures,
     size_t nlights,
     size_t ntextures_color,
     bool has_lightmap_color,
@@ -168,11 +168,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "Vertex" << std::endl;
-    std::cerr << sstr.str() << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << "Vertex" << std::endl;
+    // std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -187,7 +187,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures,
+    const std::vector<BlendMapTexture*>& textures,
     size_t nlights,
     size_t ntextures_color,
     size_t ntextures_normal,
@@ -290,8 +290,37 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    if (ntextures_color != 0) {
+    if (ntextures_color == 1) {
         sstr << "    vec4 texture_color = texture(textures_color[0], tex_coord);" << std::endl;
+    } else if (ntextures_color > 1) {
+        if (alpha_threshold != 0) {
+            throw std::runtime_error("Alpha-threshold not supported for multiple textures");
+        }
+        sstr << "    vec4 texture_color = vec4(0, 0, 0, 1);" << std::endl;
+        if (has_normalmap) {
+            sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
+        }
+        size_t i = 0;
+        for (const auto& t : textures) {
+            std::list<std::string> checks;
+            if (t->min_height != -INFINITY) {
+                checks.push_back("(FragPos.y > " + std::to_string(t->min_height) + ')');
+            }
+            if (t->max_height != INFINITY) {
+                checks.push_back("(FragPos.y < " + std::to_string(t->max_height) + ')');
+            }
+            if (checks.empty()) {
+                sstr << "    texture_color.rgb += texture(textures_color[" << i << "], tex_coord).rgb;" << std::endl;
+            } else {
+                sstr << "    if (" << join(" && ", checks) << ") {" << std::endl;
+                sstr << "        texture_color.rgb += texture(textures_color[" << i << "], tex_coord).rgb;" << std::endl;
+                if (!t->texture_descriptor.normal.empty()) {
+                    sstr << "        tnorm += 2 * texture(texture_normalmap[" << i << "], tex_coord).rgb - 1;" << std::endl;
+                }
+                sstr << "    }" << std::endl;
+            }
+            ++i;
+        }
     }
     if (alpha_threshold != 0) {
         if (ntextures_color == 0) {
@@ -299,25 +328,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         sstr << "    if (texture_color.a < " << alpha_threshold << ")" << std::endl;
         sstr << "        discard;" << std::endl;
-    }
-    if (ntextures_color > 1) {
-        size_t i = 0;
-        for (const auto& t : textures) {
-            if (i++ == 0) {
-                continue;
-            }
-            if (t->min_height != -INFINITY) {
-                sstr << "    if (FragPos.y < " << t->min_height << ") {";
-                sstr << "        continue;";
-                sstr << "    }";
-            }
-            if (t->max_height != INFINITY) {
-                sstr << "    if (FragPos.y > " << t->max_height << ") {";
-                sstr << "        continue;";
-                sstr << "    }";
-            }
-            sstr << "    texture_color.rgb += texture(textures_color[i], tex_coord)";
-        }
     }
     sstr << "    vec3 fragBrightness = vec3(0, 0, 0);" << std::endl;
     if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
@@ -337,13 +347,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
         sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
         // sstr << "    mat3 TBN = mat3(tangent, bitangent, norm);" << std::endl;
-        sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
-        size_t i = 0;
-        for (const auto& t : textures) {
-            if (!t->texture_descriptor.normal.empty()) {
-                sstr << "    tnorm += 2 * texture(texture_normalmap[" << i << "], tex_coord).rgb - 1;" << std::endl;
-            }
-            ++i;
+        if (ntextures_color == 1) {
+            sstr << "    vec3 tnorm = 2 * texture(texture_normalmap[0], tex_coord).rgb - 1;" << std::endl;
         }
         sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
     }
@@ -469,11 +474,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "Fragment" << std::endl;
-    std::cerr << sstr.str() << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << "Fragment" << std::endl;
+    // std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -609,7 +614,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
     const std::vector<size_t>& black_shadow_indices,
-    const std::vector<BlendedTexture*>& textures) const
+    const std::vector<BlendMapTexture*>& textures) const
 {
     auto& rps = rendering_resources_->render_programs();
     if (auto it = rps.find(id); it != rps.end()) {

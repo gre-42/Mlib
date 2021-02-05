@@ -1,5 +1,5 @@
 #include "Fill_With_Texture_Logic.hpp"
-#include <Mlib/Geometry/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>

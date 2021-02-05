@@ -166,7 +166,7 @@ void RenderableColoredVertexArrayInstance::render_cva(
             }
         }
     }
-    std::vector<BlendedTexture*> blended_textures(cva->material.textures.size());
+    std::vector<BlendMapTexture*> blended_textures(cva->material.textures.size());
     for (size_t i = 0; i < blended_textures.size(); ++i) {
         blended_textures[i] = &cva->material.textures[i];
     }

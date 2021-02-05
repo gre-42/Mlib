@@ -1,5 +1,5 @@
 #include "Dirtmap_Logic.hpp"
-#include <Mlib/Geometry/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>

@@ -15,15 +15,16 @@
 
 namespace Mlib {
 
-struct TextureDescriptor;
 struct TextureHandleAndNeedsGc {
     GLuint handle;
     bool needs_gc;
 };
+struct TextureDescriptor;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 class SceneNodeResources;
 class RenderingResources;
+struct BlendMapTexture;
 
 enum class DeletionFailureMode {
     WARN,
@@ -42,7 +43,11 @@ public:
     GLuint get_cubemap(const std::string& name, const std::vector<std::string>& filenames) const;
     void set_texture(const std::string& name, GLuint id);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
+    TextureDescriptor get_texture_descriptor(const std::string& name) const;
     std::string get_normalmap(const std::string& name) const;
+
+    BlendMapTexture get_blend_map_texture(const std::string& name) const;
+    void set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt);
 
     const FixedArray<float, 4, 4>& get_vp(const std::string& name) const;
     void set_vp(const std::string& name, const FixedArray<float, 4, 4>& vp);
@@ -70,6 +75,7 @@ private:
     std::map<std::string, float> offsets_;
     std::map<std::string, float> discreteness_;
     std::map<std::string, WrapMode> texture_wrap_;
+    std::map<std::string, BlendMapTexture> blend_map_textures_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     SceneNodeResources& scene_node_resources_;
     std::string name_;

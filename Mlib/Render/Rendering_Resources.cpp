@@ -1,6 +1,7 @@
 #include "Rendering_Resources.hpp"
 #include <Mlib/Env.hpp>
-#include <Mlib/Geometry/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
+#include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Math.hpp>
@@ -176,7 +177,9 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
         get_texture(descriptor);
     }
     if (!desc.normal.empty()) {
-        get_texture({.color = desc.normal});
+        get_texture({
+            .color = desc.normal,
+            .anisotropic_filtering_level = desc.anisotropic_filtering_level});
     }
 }
 
@@ -352,12 +355,38 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
     }
 }
 
+TextureDescriptor RenderingResources::get_texture_descriptor(const std::string& name) const {
+    auto it = texture_descriptors_.find(name);
+    if (it == texture_descriptors_.end()) {
+        return TextureDescriptor{ .color = name };
+    }
+    else {
+        return it->second;
+    }
+}
+
 std::string RenderingResources::get_normalmap(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::has_normalmap " + name);
     if (auto it = texture_descriptors_.find(name); it == texture_descriptors_.end()) {
         return "";
     } else {
         return it->second.normal;
+    }
+}
+
+BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {
+    LOG_FUNCTION("RenderingResources::get_blending_min " + name);
+    if (auto it = blend_map_textures_.find(name); it == blend_map_textures_.end()) {
+        return BlendMapTexture();
+    }
+    else {
+        return it->second;
+    }
+}
+
+void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
+    if (!blend_map_textures_.insert({ name, bmt }).second) {
+        throw std::runtime_error("Blend map texture with name \"" + name + "\" already exist");
     }
 }
 

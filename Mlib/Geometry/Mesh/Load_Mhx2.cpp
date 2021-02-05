@@ -206,7 +206,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         // "viewPortAlpha" : 1
         if (!materials.insert({material.at("name"), Material{
             .textures{
-                BlendedTexture{.texture_descriptor = {.color = gen_filename(filename, material.at("diffuse_texture"))}}
+                BlendMapTexture{.texture_descriptor = {.color = gen_filename(filename, material.at("diffuse_texture"))}}
             },
             .ambience = OrderableFixedArray{get_fixed_array<float, 3>(material.at("ambient_color"))},
             .diffusivity = OrderableFixedArray{get_fixed_array<float, 3>(material.at("diffuse_color"))},

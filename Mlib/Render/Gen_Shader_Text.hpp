@@ -7,7 +7,7 @@
 namespace Mlib {
 
 struct Light;
-struct BlendedTexture;
+struct BlendMapTexture;
 
 template <class Func>
 class GenShaderText {
@@ -21,7 +21,7 @@ public:
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
-        const std::vector<BlendedTexture*>& textures,
+        const std::vector<BlendMapTexture*>& textures,
         const Args... args) {
         static std::map<std::tuple<Args...>, std::pair<std::string, const char*>> texts;
         auto key = std::tuple(args...);

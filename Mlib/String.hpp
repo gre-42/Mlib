@@ -1,5 +1,6 @@
 #pragma once
 #include <compare>
+#include <functional>
 #include <list>
 #include <set>
 #include <string>
@@ -17,8 +18,8 @@ std::strong_ordering operator <=> (const std::string& a, const std::string& b);
 std::list<std::string> string_to_list(const std::string& str);
 std::vector<std::string> string_to_vector(const std::string& str);
 std::set<std::string> string_to_set(const std::string& str);
-template <class TContainer, class TOperation>
-std::string join(const std::string& delimiter, const TContainer& lst, const TOperation& op = [](const std::string& s) { return s; }) {
+template <class TContainer, class TOperation = std::identity>
+std::string join(const std::string& delimiter, const TContainer& lst, const TOperation& op = {}) {
     std::string res;
     int i = 0;
     for (const auto& s : lst) {

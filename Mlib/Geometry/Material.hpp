@@ -1,23 +1,18 @@
 #pragma once
+#include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Occluded_Type.hpp>
 #include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
-#include <Mlib/Geometry/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
+#include <compare>
 
 namespace Mlib {
 
-struct BlendedTexture {
-    TextureDescriptor texture_descriptor;
-    float min_height = -INFINITY;
-    float max_height = INFINITY;
-    std::partial_ordering operator <=> (const BlendedTexture&) const = default;
-};
-
-inline std::strong_ordering operator <=> (const std::vector<BlendedTexture>& a, const std::vector<BlendedTexture>& b) {
+inline std::strong_ordering operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b) {
     if (a.size() < b.size()) {
         return std::strong_ordering::less;
     }
@@ -38,7 +33,7 @@ inline std::strong_ordering operator <=> (const std::vector<BlendedTexture>& a, 
 struct Material {
     // First element to support sorting.
     int continuous_blending_z_order = 0;
-    std::vector<BlendedTexture> textures;
+    std::vector<BlendMapTexture> textures;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::OFF;
