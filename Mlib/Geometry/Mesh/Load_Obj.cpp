@@ -248,7 +248,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     td.normal = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string();
                 }
                 if (!td.color.empty() || !td.normal.empty()) {
-                    tl.material_.textures.push_back({ .texture_descriptor = td });
+                    tl.material_.textures = { {.texture_descriptor = td } };
                 }
                 if (current_mtl.has_alpha_texture) {
                     tl.material_.blend_mode = cfg.blend_mode;

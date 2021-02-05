@@ -683,143 +683,152 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         occlusion_type = OcclusionType::OFF;
     }
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
-    rp->allocate(
-        vertex_shader_text_gen(
-            filtered_lights,
-            light_noshadow_indices,
-            light_shadow_indices,
-            black_shadow_indices,
-            textures,
-            filtered_lights.size(),
-            id.ntextures_color,
-            id.has_lightmap_color,
-            id.has_lightmap_depth,
-            id.ntextures_normal != 0,
-            id.has_dirtmap,
-            !id.diffusivity.all_equal(0),
-            !id.specularity.all_equal(0),
-            id.has_instances,
-            id.has_lookat,
-            triangles_res_->bone_indices.size(),
-            id.reorient_normals,
-            id.orthographic),
-        fragment_shader_text_textured_rgb_gen(
-            filtered_lights,
-            light_noshadow_indices,
-            light_shadow_indices,
-            black_shadow_indices,
-            textures,
-            filtered_lights.size(),
-            id.ntextures_color,
-            id.ntextures_normal,
-            id.has_lightmap_color,
-            id.has_lightmap_depth,
-            id.ntextures_normal != 0,
-            id.has_dirtmap,
-            id.ambience,
-            id.diffusivity,
-            id.specularity,
-            (id.blend_mode == BlendMode::BINARY) || (id.blend_mode == BlendMode::BINARY_ADD)
-                ? (id.calculate_lightmap ? 0.1f : 0.5f)
-                : 0.f,
-            occlusion_type,
-            id.reorient_normals,
-            id.orthographic,
-            id.dirtmap_offset,
-            id.dirtmap_discreteness));
+    const char* vs_text = vertex_shader_text_gen(
+        filtered_lights,
+        light_noshadow_indices,
+        light_shadow_indices,
+        black_shadow_indices,
+        textures,
+        filtered_lights.size(),
+        id.ntextures_color,
+        id.has_lightmap_color,
+        id.has_lightmap_depth,
+        id.ntextures_normal != 0,
+        id.has_dirtmap,
+        !id.diffusivity.all_equal(0),
+        !id.specularity.all_equal(0),
+        id.has_instances,
+        id.has_lookat,
+        triangles_res_->bone_indices.size(),
+        id.reorient_normals,
+        id.orthographic);
+    const char* fs_text = fragment_shader_text_textured_rgb_gen(
+        filtered_lights,
+        light_noshadow_indices,
+        light_shadow_indices,
+        black_shadow_indices,
+        textures,
+        filtered_lights.size(),
+        id.ntextures_color,
+        id.ntextures_normal,
+        id.has_lightmap_color,
+        id.has_lightmap_depth,
+        id.ntextures_normal != 0,
+        id.has_dirtmap,
+        id.ambience,
+        id.diffusivity,
+        id.specularity,
+        (id.blend_mode == BlendMode::BINARY) || (id.blend_mode == BlendMode::BINARY_ADD)
+        ? (id.calculate_lightmap ? 0.1f : 0.5f)
+        : 0.f,
+        occlusion_type,
+        id.reorient_normals,
+        id.orthographic,
+        id.dirtmap_offset,
+        id.dirtmap_discreteness);
+    try {
+        rp->allocate(vs_text, fs_text);
 
-    rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");
-    for (size_t i = 0; i < id.ntextures_color; ++i) {
-        rp->texture_color_locations[i] = checked_glGetUniformLocation(rp->program, ("textures_color[" + std::to_string(i) + "]").c_str());
-    }
-    if (id.has_lightmap_color || id.has_lightmap_depth) {
-        for (size_t i = 0; i < filtered_lights.size(); ++i) {
-            rp->mvp_light_locations[i] = checked_glGetUniformLocation(rp->program, ("MVP_light[" + std::to_string(i) + "]").c_str());
+        rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");
+        for (size_t i = 0; i < id.ntextures_color; ++i) {
+            rp->texture_color_locations[i] = checked_glGetUniformLocation(rp->program, ("textures_color[" + std::to_string(i) + "]").c_str());
         }
-    } else {
-        // Do nothing
-        // rp->mvp_light_location = 0;
-    }
-    assert(!(id.has_lightmap_color && id.has_lightmap_depth));
-    if (id.has_lightmap_color) {
-        size_t i = 0;
-        for (const auto& l : filtered_lights) {
-            if (l.second->shadow) {
-                rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color[" + std::to_string(i) + "]").c_str());
+        if (id.has_lightmap_color || id.has_lightmap_depth) {
+            for (size_t i = 0; i < filtered_lights.size(); ++i) {
+                rp->mvp_light_locations[i] = checked_glGetUniformLocation(rp->program, ("MVP_light[" + std::to_string(i) + "]").c_str());
             }
-            ++i;
+        } else {
+            // Do nothing
+            // rp->mvp_light_location = 0;
         }
-    } else {
-        // Do nothing
-        // rp->texture_lightmap_color_location = 0;
-    }
-    if (id.has_lightmap_depth) {
-        for (size_t i = 0; i < filtered_lights.size(); ++i) {
-            rp->texture_lightmap_depth_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_depth[" + std::to_string(i) + "]").c_str());
-        }
-    } else {
-        // Do nothing
-        // rp->texture_lightmap_depth_location = 0;
-    }
-    if (id.ntextures_normal != 0) {
-        size_t i = 0;
-        for (const auto& r : textures) {
-            if (!r->texture_descriptor.normal.empty()) {
-                rp->texture_normalmap_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_normalmap[" + std::to_string(i) + "]").c_str());
+        assert(!(id.has_lightmap_color && id.has_lightmap_depth));
+        if (id.has_lightmap_color) {
+            size_t i = 0;
+            for (const auto& l : filtered_lights) {
+                if (l.second->shadow) {
+                    rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color[" + std::to_string(i) + "]").c_str());
+                }
+                ++i;
             }
-            ++i;
+        } else {
+            // Do nothing
+            // rp->texture_lightmap_color_location = 0;
         }
-    }
-    if (id.has_dirtmap) {
-        rp->mvp_dirtmap_location = checked_glGetUniformLocation(rp->program, "MVP_dirtmap");
-        rp->texture_dirtmap_location = checked_glGetUniformLocation(rp->program, "texture_dirtmap");
-        rp->texture_dirt_location = checked_glGetUniformLocation(rp->program, "texture_dirt");
-    } else {
-        rp->mvp_dirtmap_location = 0;
-        rp->texture_dirtmap_location = 0;
-        rp->texture_dirt_location = 0;
-    }
-    if (!id.diffusivity.all_equal(0) || !id.specularity.all_equal(0)) {
-        rp->m_location = checked_glGetUniformLocation(rp->program, "M");
+        if (id.has_lightmap_depth) {
+            for (size_t i = 0; i < filtered_lights.size(); ++i) {
+                rp->texture_lightmap_depth_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_depth[" + std::to_string(i) + "]").c_str());
+            }
+        } else {
+            // Do nothing
+            // rp->texture_lightmap_depth_location = 0;
+        }
+        if (id.ntextures_normal != 0) {
+            size_t i = 0;
+            for (const auto& r : textures) {
+                if (!r->texture_descriptor.normal.empty()) {
+                    rp->texture_normalmap_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_normalmap[" + std::to_string(i) + "]").c_str());
+                }
+                ++i;
+            }
+        }
+        if (id.has_dirtmap) {
+            rp->mvp_dirtmap_location = checked_glGetUniformLocation(rp->program, "MVP_dirtmap");
+            rp->texture_dirtmap_location = checked_glGetUniformLocation(rp->program, "texture_dirtmap");
+            rp->texture_dirt_location = checked_glGetUniformLocation(rp->program, "texture_dirt");
+        } else {
+            rp->mvp_dirtmap_location = 0;
+            rp->texture_dirtmap_location = 0;
+            rp->texture_dirt_location = 0;
+        }
+        if (!id.diffusivity.all_equal(0) || !id.specularity.all_equal(0)) {
+            rp->m_location = checked_glGetUniformLocation(rp->program, "M");
+            for (size_t i = 0; i < filtered_lights.size(); ++i) {
+                rp->light_dir_locations[i] = checked_glGetUniformLocation(rp->program, ("lightDir[" + std::to_string(i) + "]").c_str());
+            }
+        } else {
+            rp->m_location = 0;
+        }
+        // rp->light_position_location = checked_glGetUniformLocation(rp->program, "lightPos");
+        assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
+        for (size_t i = 0; i < triangles_res_->bone_indices.size(); ++i) {
+            rp->pose_positions[i] = checked_glGetUniformLocation(rp->program, ("bone_positions[" + std::to_string(i) + "]").c_str());
+            rp->pose_quaternions[i] = checked_glGetUniformLocation(rp->program, ("bone_quaternions[" + std::to_string(i) + "]").c_str());
+        }
         for (size_t i = 0; i < filtered_lights.size(); ++i) {
-            rp->light_dir_locations[i] = checked_glGetUniformLocation(rp->program, ("lightDir[" + std::to_string(i) + "]").c_str());
+            if (!id.ambience.all_equal(0)) {
+                rp->light_ambiences[i] = checked_glGetUniformLocation(rp->program, ("lightAmbience[" + std::to_string(i) + "]").c_str());
+            }
+            if (!id.diffusivity.all_equal(0)) {
+                rp->light_diffusivities[i] = checked_glGetUniformLocation(rp->program, ("lightDiffusivity[" + std::to_string(i) + "]").c_str());
+            }
+            if (!id.specularity.all_equal(0)) {
+                rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
+            }
         }
-    } else {
-        rp->m_location = 0;
-    }
-    // rp->light_position_location = checked_glGetUniformLocation(rp->program, "lightPos");
-    assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
-    for (size_t i = 0; i < triangles_res_->bone_indices.size(); ++i) {
-        rp->pose_positions[i] = checked_glGetUniformLocation(rp->program, ("bone_positions[" + std::to_string(i) + "]").c_str());
-        rp->pose_quaternions[i] = checked_glGetUniformLocation(rp->program, ("bone_quaternions[" + std::to_string(i) + "]").c_str());
-    }
-    for (size_t i = 0; i < filtered_lights.size(); ++i) {
-        if (!id.ambience.all_equal(0)) {
-            rp->light_ambiences[i] = checked_glGetUniformLocation(rp->program, ("lightAmbience[" + std::to_string(i) + "]").c_str());
-        }
-        if (!id.diffusivity.all_equal(0)) {
-            rp->light_diffusivities[i] = checked_glGetUniformLocation(rp->program, ("lightDiffusivity[" + std::to_string(i) + "]").c_str());
-        }
-        if (!id.specularity.all_equal(0)) {
-            rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
-        }
-    }
-    if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_normals) {
-        if (id.orthographic) {
-            rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
-            rp->view_pos = 0;
+        if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_normals) {
+            if (id.orthographic) {
+                rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
+                rp->view_pos = 0;
+            } else {
+                rp->view_dir = 0;
+                rp->view_pos = checked_glGetUniformLocation(rp->program, "viewPos");
+            }
         } else {
             rp->view_dir = 0;
-            rp->view_pos = checked_glGetUniformLocation(rp->program, "viewPos");
+            rp->view_pos = 0;
         }
-    } else {
-        rp->view_dir = 0;
-        rp->view_pos = 0;
-    }
 
-    auto& result = *rp;
-    rps.insert(std::make_pair(id, std::move(rp)));
-    return result;
+        auto& result = *rp;
+        rps.insert(std::make_pair(id, std::move(rp)));
+        return result;
+    }
+    catch (const std::runtime_error& e) {
+        throw std::runtime_error(
+            std::string("Could not generate render program.\n") +
+            e.what() +
+            "\nCould not generate render program.\nVertex shader:\n" + vs_text +
+            "\nFragment shader:\n" + fs_text);
+    }
 }
 
 const SubstitutionInfo& RenderableColoredVertexArray::get_vertex_array(const std::shared_ptr<ColoredVertexArray>& cva) const
