@@ -326,6 +326,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    float sum_weights = 0;" << std::endl;
         size_t i = 0;
         for (const BlendMapTexture* t : textures) {
+            if (t->distances(0) != 0 || t->distances(3) != INFINITY) {
+                if (orthographic) {
+                    throw std::runtime_error("Distances not supported by orthographic projection");
+                }
+                sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
+                break;
+            }
+        }
+        for (const BlendMapTexture* t : textures) {
             sstr << "    {" << std::endl;
             std::list<std::string> checks;
             if (t->min_height != -INFINITY) {
@@ -333,6 +342,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
             if (t->max_height != INFINITY) {
                 checks.push_back("(FragPos.y < " + std::to_string(t->max_height) + ')');
+            }
+            if (t->distances(0) != 0) {
+                checks.push_back("(dist > " + std::to_string(t->distances(0)) + ')');
+            }
+            if (t->distances(3) != INFINITY) {
+                checks.push_back("(dist < " + std::to_string(t->distances(3)) + ')');
             }
             if (!checks.empty()) {
                 sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
@@ -343,8 +358,18 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "            weight = pow(dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << ")), 2);" << std::endl;
                 sstr << "            weight = pow(sin(100 * scale * weight), 2);" << std::endl;
             }
+            if (t->distances(0) != t->distances(1)) {
+                sstr << "            if (dist < " << t->distances(1) << ") {" << std::endl;
+                sstr << "                weight = (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ";" << std::endl;
+                sstr << "            }" << std::endl;
+            }
+            if (t->distances(3) != t->distances(2)) {
+                sstr << "            if (dist > " << t->distances(2) << ") {" << std::endl;
+                sstr << "                weight = (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ";" << std::endl;
+                sstr << "            }" << std::endl;
+            }
             sstr << "            texture_color.rgb += weight * texture(textures_color[" << i << "], tex_coord * scale).rgb;" << std::endl;
-            if (!t->texture_descriptor.normal.empty()) {
+            if (has_normalmap && !t->texture_descriptor.normal.empty()) {
                 sstr << "            tnorm += weight * (2 * texture(texture_normalmap[" << i << "], tex_coord * scale).rgb - 1);" << std::endl;
             }
             sstr << "            sum_weights += weight;" << std::endl;
@@ -354,7 +379,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    }" << std::endl;
             ++i;
         }
-        sstr << "    texture_color.rgb /= max(1e-6, sum_weights);" << std::endl;
+        sstr << "    if (sum_weights < 1e-1) {" << std::endl;
+        sstr << "        texture_color.rgb = vec3(1, 0, 1);" << std::endl;
+        sstr << "    } else {" << std::endl;
+        sstr << "        texture_color.rgb /= sum_weights;" << std::endl;
+        sstr << "    }" << std::endl;
+        // sstr << "    texture_color.rgb /= max(1e-6, sum_weights);" << std::endl;
     }
     if (has_normalmap) {
         sstr << "    vec3 tang = normalize(tangent);" << std::endl;
