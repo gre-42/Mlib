@@ -346,12 +346,14 @@ RenderableOsmMap::RenderableOsmMap(
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = curb_wrap_mode_s,
+        .specularity = OrderableFixedArray{fixed_full<float, 3>((float)(extrude_curb_amount != 0))},
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
         .textures = {primary_rendering_resources->get_blend_map_texture(curb_path_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = curb_wrap_mode_s,
+        .specularity = OrderableFixedArray{fixed_full<float, 3>((float)(extrude_curb_amount != 0))},
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     auto tl_curb2_street = std::make_shared<TriangleList>("curb_street", Material{
         .textures = {primary_rendering_resources->get_blend_map_texture(curb2_street_texture)},
