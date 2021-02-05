@@ -144,6 +144,12 @@ void Render2::operator () (
 
                 GLFW_CHK(glfwGetFramebufferSize(window_->window(), &width, &height));
 
+                // Check if window is minimized.
+                if ((width == 0) && (height == 0)) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds{ 100 });
+                    continue;
+                }
+
                 ViewportGuard vg{ 0, 0, width, height };
 
                 {
