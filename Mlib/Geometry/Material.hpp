@@ -12,23 +12,7 @@
 
 namespace Mlib {
 
-inline std::strong_ordering operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b) {
-    if (a.size() < b.size()) {
-        return std::strong_ordering::less;
-    }
-    if (a.size() > b.size()) {
-        return std::strong_ordering::greater;
-    }
-    for (size_t i = 0; i < a.size(); ++i) {
-        if (a[i] < b[i]) {
-            return std::strong_ordering::less;
-        }
-        if (a[i] > b[i]) {
-            return std::strong_ordering::greater;
-        }
-    }
-    return std::strong_ordering::equal;
-}
+std::strong_ordering operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b);
 
 struct Material {
     // First element to support sorting.
@@ -53,23 +37,10 @@ struct Material {
     float draw_distance_add = 500;
     float draw_distance_slop = 10;
     size_t draw_distance_noperations = 0;
-    inline Material& compute_color_mode() {
-        for (auto& t : textures) {
-            t.texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)
-                ? ColorMode::RGB
-                : ColorMode::RGBA;
-        }
-        return *this;
-    }
-    bool has_normalmap() const {
-        for (const auto& t : textures) {
-            if (!t.texture_descriptor.normal.empty()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    std::partial_ordering operator <=> (const Material&) const = default;
+    Material& compute_color_mode();
+    bool has_normalmap() const;
+    bool textures_depend_on_distance() const;
+    std::partial_ordering operator <=> (const Material&) const;
 };
 
 }

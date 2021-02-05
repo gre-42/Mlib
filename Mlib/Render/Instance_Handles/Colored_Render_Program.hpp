@@ -50,6 +50,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> diffusivity;
     OrderableFixedArray<float, 3> specularity;
     bool orthographic;
+    bool textures_depend_on_distance;
     float dirtmap_offset;
     float dirtmap_discreteness;
     std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;

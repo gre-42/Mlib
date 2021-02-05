@@ -45,19 +45,20 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_lookat,
     size_t nbones,
     bool reorient_normals,
-    bool orthographic)
+    bool orthographic,
+    bool textures_depend_on_distance)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
     sstr << "uniform mat4 MVP;" << std::endl;
-    if (has_diffusivity || has_specularity) {
+    if (has_diffusivity || has_specularity || textures_depend_on_distance) {
         sstr << "uniform mat4 M;" << std::endl;
     }
     sstr << "layout (location=0) in vec3 vPos;" << std::endl;
     sstr << "layout (location=1) in vec3 vCol;" << std::endl;
     sstr << "layout (location=2) in vec2 vTexCoord;" << std::endl;
-    if (has_diffusivity || has_specularity) {
+    if (has_diffusivity || has_specularity || has_normalmap) {
         sstr << "layout (location=3) in vec3 vNormal;" << std::endl;
     }
     if (has_normalmap) {
@@ -90,7 +91,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
     }
-    if (reorient_normals || has_specularity) {
+    if (reorient_normals || has_specularity || textures_depend_on_distance) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
@@ -158,7 +159,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
-    if (reorient_normals || has_specularity || (ntextures_color > 1)) {
+    if (reorient_normals || has_specularity || textures_depend_on_distance) {
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
@@ -203,6 +204,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     OcclusionType occlusion_type,
     bool reorient_normals,
     bool orthographic,
+    bool textures_depend_on_distance,
     float dirtmap_offset,
     float dirtmap_discreteness)
 {
@@ -255,7 +257,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!specularity.all_equal(0)) {
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
-    if (reorient_normals || !specularity.all_equal(0) || (ntextures_color > 1)) {
+    if (reorient_normals || !specularity.all_equal(0) || textures_depend_on_distance) {
         sstr << "in vec3 FragPos;" << std::endl;
         if (orthographic) {
             sstr << "uniform vec3 viewDir;" << std::endl;
@@ -701,7 +703,8 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         id.has_lookat,
         triangles_res_->bone_indices.size(),
         id.reorient_normals,
-        id.orthographic);
+        id.orthographic,
+        id.textures_depend_on_distance);
     const char* fs_text = fragment_shader_text_textured_rgb_gen(
         filtered_lights,
         light_noshadow_indices,
@@ -724,6 +727,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
         occlusion_type,
         id.reorient_normals,
         id.orthographic,
+        id.textures_depend_on_distance,
         id.dirtmap_offset,
         id.dirtmap_discreteness);
     try {
@@ -780,7 +784,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
             rp->texture_dirtmap_location = 0;
             rp->texture_dirt_location = 0;
         }
-        if (!id.diffusivity.all_equal(0) || !id.specularity.all_equal(0)) {
+        if (!id.diffusivity.all_equal(0) || !id.specularity.all_equal(0) || id.textures_depend_on_distance) {
             rp->m_location = checked_glGetUniformLocation(rp->program, "M");
             for (size_t i = 0; i < filtered_lights.size(); ++i) {
                 rp->light_dir_locations[i] = checked_glGetUniformLocation(rp->program, ("lightDir[" + std::to_string(i) + "]").c_str());
@@ -805,7 +809,7 @@ const ColoredRenderProgram& RenderableColoredVertexArray::get_render_program(
                 rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
             }
         }
-        if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_normals) {
+        if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_normals || id.textures_depend_on_distance) {
             if (id.orthographic) {
                 rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
                 rp->view_pos = 0;

@@ -289,17 +289,20 @@ RenderableOsmMap::RenderableOsmMap(
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
+        .specularity = {0.f, 0.f, 0.f},
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_terrain_visuals = std::make_shared<TriangleList>("tl_terrain_visuals", Material{
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .collide = false,
+        .specularity = {0.f, 0.f, 0.f},
         .draw_distance_noperations = 1000}.compute_color_mode());
     auto tl_terrain_street_extrusion = std::make_shared<TriangleList>("terrain_street_extrusion", Material{
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
+        .specularity = {0.f, 0.f, 0.f},
         .draw_distance_noperations = 1000}.compute_color_mode());
     for (auto& t : terrain_textures) {
         // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
