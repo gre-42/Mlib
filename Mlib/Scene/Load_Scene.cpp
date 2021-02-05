@@ -496,7 +496,9 @@ void LoadScene::operator()(
         "\\s+name=([\\w-. \\(\\)/+-]+)"
         "\\s+texture=(#?[\\w-. \\(\\)/+-]+)"
         "\\s+min_height=([\\w+-.]+)"
-        "\\s+max_height=([\\w+-.]+)$");
+        "\\s+max_height=([\\w+-.]+)"
+        "\\s+normal=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+scale=([\\w+-.]+)$");
     static const DECLARE_REGEX(record_track_reg, "^\\s*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(playback_track_reg, "^\\s*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(check_points_reg,
@@ -835,13 +837,18 @@ void LoadScene::operator()(
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_blend_map_texture_reg)) {
-            auto& rr = *RenderingContextStack::primary_rendering_resources();
-            rr.set_blend_map_texture(
+            auto rr = RenderingContextStack::primary_rendering_resources();
+            rr->set_blend_map_texture(
                 match[1].str(),
                 BlendMapTexture{
-                    .texture_descriptor = rr.get_texture_descriptor(fpath(match[2].str())),
+                    .texture_descriptor = rr->get_texture_descriptor(fpath(match[2].str())),
                     .min_height = safe_stof(match[3].str()),
-                    .max_height = safe_stof(match[4].str()) });
+                    .max_height = safe_stof(match[4].str()),
+                    .normal = {
+                        safe_stof(match[5].str()),
+                        safe_stof(match[6].str()),
+                        safe_stof(match[7].str())},
+                    .scale = safe_stof(match[8].str()) });
             return true;
         }
 

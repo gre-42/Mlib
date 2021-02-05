@@ -296,31 +296,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (alpha_threshold != 0) {
             throw std::runtime_error("Alpha-threshold not supported for multiple textures");
         }
-        sstr << "    vec4 texture_color = vec4(0, 0, 0, 1);" << std::endl;
-        if (has_normalmap) {
-            sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
-        }
-        size_t i = 0;
-        for (const auto& t : textures) {
-            std::list<std::string> checks;
-            if (t->min_height != -INFINITY) {
-                checks.push_back("(FragPos.y > " + std::to_string(t->min_height) + ')');
-            }
-            if (t->max_height != INFINITY) {
-                checks.push_back("(FragPos.y < " + std::to_string(t->max_height) + ')');
-            }
-            if (checks.empty()) {
-                sstr << "    texture_color.rgb += texture(textures_color[" << i << "], tex_coord).rgb;" << std::endl;
-            } else {
-                sstr << "    if (" << join(" && ", checks) << ") {" << std::endl;
-                sstr << "        texture_color.rgb += texture(textures_color[" << i << "], tex_coord).rgb;" << std::endl;
-                if (!t->texture_descriptor.normal.empty()) {
-                    sstr << "        tnorm += 2 * texture(texture_normalmap[" << i << "], tex_coord).rgb - 1;" << std::endl;
-                }
-                sstr << "    }" << std::endl;
-            }
-            ++i;
-        }
     }
     if (alpha_threshold != 0) {
         if (ntextures_color == 0) {
@@ -341,6 +316,43 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         } else {
             sstr << "    norm *= sign(dot(norm, viewPos - FragPos));" << std::endl;
         }
+    }
+    if (ntextures_color > 1) {
+        sstr << "    vec4 texture_color = vec4(0, 0, 0, 1);" << std::endl;
+        if (has_normalmap) {
+            sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
+        }
+        sstr << "    float sum_weights = 0;" << std::endl;
+        size_t i = 0;
+        for (const BlendMapTexture* t : textures) {
+            sstr << "    {" << std::endl;
+            std::list<std::string> checks;
+            if (t->min_height != -INFINITY) {
+                checks.push_back("(FragPos.y > " + std::to_string(t->min_height) + ')');
+            }
+            if (t->max_height != INFINITY) {
+                checks.push_back("(FragPos.y < " + std::to_string(t->max_height) + ')');
+            }
+            if (!checks.empty()) {
+                sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
+            }
+            sstr << "            float weight = 1;" << std::endl;
+            sstr << "            float scale = " << t->scale << ';' << std::endl;
+            if (!t->normal.all_equal(0.f)) {
+                sstr << "            weight = abs(dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << ")));" << std::endl;
+            }
+            sstr << "            texture_color.rgb += weight * texture(textures_color[" << i << "], tex_coord * scale).rgb;" << std::endl;
+            if (!t->texture_descriptor.normal.empty()) {
+                sstr << "            tnorm += weight * (2 * texture(texture_normalmap[" << i << "], tex_coord * scale).rgb - 1);" << std::endl;
+            }
+            sstr << "            sum_weights += weight;" << std::endl;
+            if (!checks.empty()) {
+                sstr << "        }" << std::endl;
+            }
+            sstr << "    }" << std::endl;
+            ++i;
+        }
+        sstr << "    texture_color.rgb /= max(1e-6, sum_weights);" << std::endl;
     }
     if (has_normalmap) {
         sstr << "    vec3 tang = normalize(tangent);" << std::endl;
