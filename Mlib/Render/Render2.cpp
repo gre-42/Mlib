@@ -24,6 +24,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
+#include <Mlib/Threads/Termination_Manager.hpp>
 #include <fenv.h>
 #include <iostream>
 
@@ -129,7 +130,7 @@ void Render2::operator () (
     GLFW_CHK(glfwPollEvents());
     // std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // From: https://www.glfw.org/docs/latest/context_guide.html#context_current
-    auto continue_rendering = [&]() { return !glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0); };
+    auto continue_rendering = [&]() { return !glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0) && !unhandled_exceptions_occured(); };
     std::exception_ptr teptr = nullptr;
     auto render_thread_func = [&]() {
         try {
