@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
-#include <Mlib/Render/Renderables/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <set>

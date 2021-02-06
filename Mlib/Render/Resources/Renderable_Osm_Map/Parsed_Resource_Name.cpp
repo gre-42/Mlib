@@ -1,6 +1,6 @@
 #include "Parsed_Resource_Name.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Render/Renderables/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 
 using namespace Mlib;
 

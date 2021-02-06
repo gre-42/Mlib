@@ -14,8 +14,8 @@
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
-#include <Mlib/Render/Renderables/Renderable_Depth_Map.hpp>
-#include <Mlib/Render/Renderables/Renderable_Height_Map.hpp>
+#include <Mlib/Render/Resources/Renderable_Depth_Map.hpp>
+#include <Mlib/Render/Resources/Renderable_Height_Map.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>

@@ -2,7 +2,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
-#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 
 #ifdef __GNUC__

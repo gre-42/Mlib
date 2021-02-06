@@ -1,12 +1,17 @@
 #include "Aggregate_Array_Renderer.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array_Instance.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
 #include <map>
 
 using namespace Mlib;
 
 AggregateArrayRenderer::AggregateArrayRenderer()
 : rcva_{nullptr}
+{}
+
+AggregateArrayRenderer::~AggregateArrayRenderer()
 {}
 
 void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) {

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 
 namespace Mlib {

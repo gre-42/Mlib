@@ -1,7 +1,7 @@
 #include "Calculate_Waypoints.hpp"
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Render/Renderables/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
+#include <Mlib/Render/Resources/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
 
 using namespace Mlib;
 

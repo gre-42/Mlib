@@ -1,7 +1,7 @@
 #include "Renderable_Obj_File.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
-#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
 
 using namespace Mlib;
 

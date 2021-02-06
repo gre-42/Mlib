@@ -2,13 +2,18 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array_Instance.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
 #include <map>
 
 using namespace Mlib;
 
 ArrayInstancesRenderer::ArrayInstancesRenderer()
 : rcva_{nullptr}
+{}
+
+ArrayInstancesRenderer::~ArrayInstancesRenderer()
 {}
 
 void ArrayInstancesRenderer::update_instances(const std::list<TransformedColoredVertexArray>& instances_queue) {
