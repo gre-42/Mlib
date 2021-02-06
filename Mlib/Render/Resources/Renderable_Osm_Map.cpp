@@ -885,7 +885,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
             node->set_position(p.position);
             node->set_scale(scale_ * p.scale);
             node->set_rotation({float{M_PI} / 2.f, 0.f, 0.f});
-            scene_node_resources_.instantiate_renderable(p.name, p.name, *node, SceneNodeResourceFilter());
+            scene_node_resources_.instantiate_renderable(p.name, p.name, *node, resource_filter);
             if (node->requires_render_pass()) {
                 scene_node.add_child(p.name + "-" + std::to_string(i++), node);
             } else {
@@ -897,7 +897,7 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
     for (auto& p : resource_instance_positions_) {
         auto node = new SceneNode;
         node->set_rotation({ float{M_PI} / 2.f, 0.f, 0.f });
-        scene_node_resources_.instantiate_renderable(p.first, p.first, *node, SceneNodeResourceFilter());
+        scene_node_resources_.instantiate_renderable(p.first, p.first, *node, resource_filter);
         if (node->requires_render_pass()) {
             throw std::runtime_error("Object " + p.first + " requires render pass");
         }
