@@ -1,8 +1,8 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <iostream>
 #include <stb_image/stb_image.h>
 #include <stb_image/stb_image_write.h>
 #include <stb_image/stb_mipmaps.h>
-#include <iostream>
 
 void downsample_file(const char* in_filename, const char* out_prefix) {
     int width, height, channels;

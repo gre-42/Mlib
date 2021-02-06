@@ -1,7 +1,7 @@
 #pragma once
-#include <cmath>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <cmath>
 
 namespace Mlib {
 

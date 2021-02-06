@@ -3,8 +3,27 @@
 import os.path
 
 for path, dirs, files in os.walk('.'):
-    dirs[:] = [d for d in dirs if d not in ['MRelease', 'MDebug', 'LUDebug', 'LURelease', 'UDebug', 'URelease', 'TestOut', 'Data', '.git', 'poly2tri']]
-    files[:] = [f for f in files if f not in ['Array.hpp', 'linmath.hpp', 'glad_gl.cpp', 'glad_vulkan.cpp', 'Svd4.cpp', 'Incomplete_Beta_Distribution.hpp']]
+    dirs[:] = [d for d in dirs if d not in [
+        'MRelease',
+        'MDebug',
+        'LUDebug',
+        'LURelease',
+        'UDebug',
+        'URelease',
+        'VRelease'
+        'TestOut',
+        'Data',
+        '.git',
+        'poly2tri',
+        'cpp-httplib',
+        'boost']]
+    files[:] = [f for f in files if f not in [
+        'Array.hpp',
+        'linmath.hpp',
+        'glad_gl.cpp',
+        'glad_vulkan.cpp',
+        'Svd4.cpp',
+        'Incomplete_Beta_Distribution.hpp']]
     for file in files:
         filename = os.path.join(path, file)
         if filename.endswith('.cpp') or filename.endswith('.hpp'):
@@ -24,9 +43,15 @@ for path, dirs, files in os.walk('.'):
                         rest_reached = True
                     elif l.startswith('/'):
                         rest_reached = True
+                    elif l == '#include <Mlib/Packed_Begin.hpp>':
+                        rest_reached = True
                     if rest_reached:
                         rest.append(l)
-                    elif l in ['#pragma once', '#include <glad/gl.h>', '#define GLFW_INCLUDE_NONE', '#include <GLFW/glfw3.h>']:
+                    elif l in [
+                        '#pragma once',
+                        '#include <glad/gl.h>',
+                        '#define GLFW_INCLUDE_NONE',
+                        '#include <GLFW/glfw3.h>']:
                         top.append(l)
                     elif l.startswith('#include'):
                         inc.append(l)

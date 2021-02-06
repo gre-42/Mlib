@@ -3,8 +3,8 @@
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Occluded_Type.hpp>
 #include <Mlib/Geometry/Material/Occluder_Type.hpp>
-#include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
