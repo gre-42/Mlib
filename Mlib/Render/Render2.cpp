@@ -130,7 +130,10 @@ void Render2::operator () (
     GLFW_CHK(glfwPollEvents());
     // std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // From: https://www.glfw.org/docs/latest/context_guide.html#context_current
-    auto continue_rendering = [&]() { return !glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0) && !unhandled_exceptions_occured(); };
+    auto continue_rendering = [&]() { return
+            !glfwWindowShouldClose(window_->window()) &&
+            (num_renderings_ != 0) &&
+            !unhandled_exceptions_occured(); };
     std::exception_ptr teptr = nullptr;
     auto render_thread_func = [&]() {
         try {
