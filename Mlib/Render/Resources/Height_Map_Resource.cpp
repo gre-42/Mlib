@@ -1,4 +1,4 @@
-#include "Renderable_Height_Map.hpp"
+#include "Height_Map_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -7,7 +7,7 @@
 
 using namespace Mlib;
 
-RenderableHeightMap::RenderableHeightMap(
+HeightMapResource::HeightMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
     const TransformationMatrix<float, 2>& normalization_matrix)
@@ -81,9 +81,9 @@ RenderableHeightMap::RenderableHeightMap(
             add_triangle(v11, v00, v10);
         }
     }
-    rva_ = std::make_shared<RenderableColoredVertexArray>(
+    rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(
-            "RenderableHeightMap",
+            "HeightMapResource",
             Material{},
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
@@ -92,16 +92,16 @@ RenderableHeightMap::RenderableHeightMap(
         nullptr);
 }
 
-void RenderableHeightMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void HeightMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> RenderableHeightMap::get_animated_arrays() const
+std::shared_ptr<AnimatedColoredVertexArrays> HeightMapResource::get_animated_arrays() const
 {
     return rva_->get_animated_arrays();
 }
 
-void RenderableHeightMap::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
+void HeightMapResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
     return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
 }

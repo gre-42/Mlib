@@ -2,9 +2,9 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array_Instance.hpp>
+#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <map>
 
 using namespace Mlib;
@@ -36,8 +36,8 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
     for (const auto& a : cva_lists) {
         cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});
     }
-    auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, cva_instances);
-    auto rcvai = std::make_unique<RenderableColoredVertexArrayInstance>(rcva, SceneNodeResourceFilter());
+    auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors, cva_instances);
+    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, SceneNodeResourceFilter());
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};
         std::swap(rcva_, rcva);

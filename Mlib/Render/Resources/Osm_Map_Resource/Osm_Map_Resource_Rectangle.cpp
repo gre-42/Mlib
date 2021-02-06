@@ -1,4 +1,4 @@
-#include "Renderable_Osm_Map_Rectangle.hpp"
+#include "Osm_Map_Resource_Rectangle.hpp"
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Math.hpp>

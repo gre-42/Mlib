@@ -16,9 +16,9 @@ struct TextRenderProgram: public RenderProgram {
     GLint projection_location;
 };
 
-class RenderableText {
+class TextResource {
 public:
-    RenderableText(
+    TextResource(
         const std::string& ttf_filename,
         float font_height_pixels = 32.f,
         bool flip_y = true,

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
 #include <atomic>
 #include <mutex>
@@ -7,8 +7,8 @@
 namespace Mlib {
 
 class RenderingResources;
-class RenderableColoredVertexArrayInstance;
 class RenderableColoredVertexArray;
+class ColoredVertexArrayResource;
 
 class AggregateArrayRenderer: public AggregateRenderer {
 public:
@@ -25,8 +25,8 @@ public:
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const override;
 private:
-    std::shared_ptr<RenderableColoredVertexArray> rcva_;
-    std::unique_ptr<RenderableColoredVertexArrayInstance> rcvai_;
+    std::shared_ptr<ColoredVertexArrayResource> rcva_;
+    std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     mutable std::mutex mutex_;
     bool is_initialized_ = false;
     std::map<std::shared_ptr<ColoredVertexArray>, std::vector<FixedArray<float, 4, 4>>> cva_instances_;

@@ -1,14 +1,14 @@
-#include "Renderable_Bvh.hpp"
+#include "Bvh_Resource.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
 using namespace Mlib;
 
-RenderableBvh::RenderableBvh(
+BvhResource::BvhResource(
     const std::list<std::shared_ptr<ColoredVertexArray>>& cvas)
 : cvas_{cvas},
   bvh_{{0.5f, 0.5f, 0.5f}, 10}
@@ -61,7 +61,7 @@ static void instantiate_bvh(
             lcvas.back()->material.is_small = true;
             lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }
-        std::make_shared<RenderableColoredVertexArray>(lcvas, nullptr)->
+        std::make_shared<ColoredVertexArrayResource>(lcvas, nullptr)->
             instantiate_renderable("renderable_bvh", *node, resource_filter);
         scene_node.add_child(name + "_data", node);
     }
@@ -80,7 +80,7 @@ static void instantiate_bvh(
     }
 }
 
-void RenderableBvh::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void BvhResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     instantiate_bvh(name, scene_node, fixed_zeros<float, 3>(), resource_filter, bvh_);
     std::cerr << scene_node << std::endl;

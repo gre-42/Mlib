@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-class RenderableText;
+class TextResource;
 
 class RenderTextLogic {
 public:
@@ -16,13 +16,13 @@ public:
     ~RenderTextLogic();
 
 protected:
-    RenderableText& renderable_text() const;
+    TextResource& renderable_text() const;
     FixedArray<float, 2> position_;
     float line_distance_pixels_;
 private:
     std::string ttf_filename_;
     float font_height_pixels_;
-    mutable std::unique_ptr<RenderableText> renderable_text_;
+    mutable std::unique_ptr<TextResource> renderable_text_;
 };
 
 }

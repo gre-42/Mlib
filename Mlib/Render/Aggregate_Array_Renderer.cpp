@@ -1,8 +1,8 @@
 #include "Aggregate_Array_Renderer.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array_Instance.hpp>
+#include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <map>
 
 using namespace Mlib;
@@ -50,8 +50,8 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
             std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
     }
     sort_for_rendering(mat_vectors);
-    auto rcva = std::make_shared<RenderableColoredVertexArray>(mat_vectors, nullptr);
-    auto rcvai = std::make_unique<RenderableColoredVertexArrayInstance>(rcva, SceneNodeResourceFilter());
+    auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors, nullptr);
+    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, SceneNodeResourceFilter());
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};
         std::swap(rcva_, rcva);

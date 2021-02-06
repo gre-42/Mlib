@@ -10,7 +10,7 @@
 
 namespace Mlib {
 
-class RenderableText;
+class TextResource;
 class ButtonPress;
 
 template <class TOption>
@@ -33,7 +33,7 @@ public:
     const TOption& selected_element() const;
 
 private:
-    std::unique_ptr<RenderableText> renderable_text_;
+    std::unique_ptr<TextResource> renderable_text_;
     std::vector<TOption> options_;
     FixedArray<float, 2> position_;
     float line_distance_pixels_;

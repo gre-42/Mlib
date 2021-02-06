@@ -16,7 +16,7 @@ ListView<TOption>::ListView(
     float line_distance_pixels,
     const std::function<std::string(const TOption&)>& transformation,
     const std::function<void()>& on_change)
-: renderable_text_{new RenderableText{ttf_filename, font_height_pixels}},
+: renderable_text_{new TextResource{ttf_filename, font_height_pixels}},
   options_{options},
   position_{position},
   line_distance_pixels_{line_distance_pixels},

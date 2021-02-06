@@ -1,4 +1,4 @@
-#include "Renderable_Osm_Map.hpp"
+#include "Osm_Map_Resource.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -13,10 +13,10 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map/Calculate_Spawn_Points.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map/Calculate_Waypoints.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map/Draw_Streets.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoints.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -32,7 +32,7 @@
 
 using namespace Mlib;
 
-RenderableOsmMap::RenderableOsmMap(
+OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const std::string& filename,
     const std::string& heightmap,
@@ -99,7 +99,7 @@ RenderableOsmMap::RenderableOsmMap(
 : scene_node_resources_{scene_node_resources},
   scale_{scale}
 {
-    LOG_FUNCTION("RenderableOsmMap::RenderableOsmMap");
+    LOG_FUNCTION("OsmMapResource::OsmMapResource");
     std::ifstream ifs{filename};
     static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'] .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
     static const DECLARE_REGEX(way_reg, "^ +<way id=[\"'](-?\\w+)[\"'].* visible=[\"'](true|false)[\"'].*>$");
@@ -876,7 +876,7 @@ RenderableOsmMap::RenderableOsmMap(
     }
 }
 
-void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     {
         size_t i = 0;
@@ -907,16 +907,16 @@ void RenderableOsmMap::instantiate_renderable(const std::string& name, SceneNode
         }
     }
     // if (rbvh_ == nullptr) {
-    //     rbvh_ = std::make_shared<RenderableBvh>(cvas_);
+    //     rbvh_ = std::make_shared<BvhResource>(cvas_);
     // }
     // rbvh_->instantiate_renderable(name, scene_node, resource_filter);
     if (rcva_ == nullptr) {
-        rcva_ = std::make_shared<RenderableColoredVertexArray>(cvas_, nullptr);
+        rcva_ = std::make_shared<ColoredVertexArrayResource>(cvas_, nullptr);
     }
     rcva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> RenderableOsmMap::get_animated_arrays() const {
+std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays() const {
     auto res = std::make_shared<AnimatedColoredVertexArrays>();
     res->cvas = cvas_;
     // Append scaled hitboxes
@@ -933,7 +933,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> RenderableOsmMap::get_animated_arra
     return res;
 }
 
-TransformationMatrix<double, 3> RenderableOsmMap::get_geographic_mapping(SceneNode& scene_node) const
+TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(SceneNode& scene_node) const
 {
     TransformationMatrix<double, 3> m3;
     const auto& R2 = normalization_matrix_.R();
@@ -949,10 +949,10 @@ TransformationMatrix<double, 3> RenderableOsmMap::get_geographic_mapping(SceneNo
     return TransformationMatrix<double, 3>{inv((scene_node.absolute_model_matrix().casted<double>() * m3).affine())};
 }
 
-std::list<SpawnPoint> RenderableOsmMap::spawn_points() const {
+std::list<SpawnPoint> OsmMapResource::spawn_points() const {
     return spawn_points_;
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<float, 2>> RenderableOsmMap::way_points() const {
+std::map<WayPointLocation, PointsAndAdjacency<float, 2>> OsmMapResource::way_points() const {
     return way_points_;
 }

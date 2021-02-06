@@ -1,4 +1,4 @@
-#include "Renderable_Square.hpp"
+#include "Square_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -7,7 +7,7 @@
 
 using namespace Mlib;
 
-RenderableSquare::RenderableSquare(
+SquareResource::SquareResource(
     const FixedArray<float, 2, 2>& square,
     const Material& material)
 {
@@ -38,9 +38,9 @@ RenderableSquare::RenderableSquare(
     triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
 
-    rva_ = std::make_shared<RenderableColoredVertexArray>(
+    rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(
-            "RenderableSquare",
+            "SquareResource",
             material,
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
@@ -49,20 +49,20 @@ RenderableSquare::RenderableSquare(
         nullptr);
 }
 
-void RenderableSquare::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void SquareResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> RenderableSquare::get_animated_arrays() const
+std::shared_ptr<AnimatedColoredVertexArrays> SquareResource::get_animated_arrays() const
 {
     return rva_->get_animated_arrays();
 }
 
-void RenderableSquare::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
+void SquareResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
     return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
 }
 
-AggregateMode RenderableSquare::aggregate_mode() const {
+AggregateMode SquareResource::aggregate_mode() const {
     return rva_->aggregate_mode();
 }

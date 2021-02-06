@@ -12,7 +12,7 @@ RenderableScene::RenderableScene(
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
     GLFWwindow* window,
-    const RenderableSceneConfig& config)
+    const SceneConfigResource& config)
 : scene_node_resources_{scene_node_resources},
   small_sorted_aggregate_renderer_{AggregateArrayRenderer::small_sorted_aggregate_renderer()},
   small_instances_renderer_{ArrayInstancesRenderer::small_instances_renderer()},

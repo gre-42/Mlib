@@ -546,7 +546,7 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     ostr << " " << ind1 << " Position " << position() << '\n';
     ostr << " " << ind1 << " Rotation " << rotation() << '\n';
     if (!renderables_.empty()) {
-        ostr << " " << ind1 << " Renderables (" << renderables_.size() << ")\n";
+        ostr << " " << ind1 << " sResource (" << renderables_.size() << ")\n";
         for (const auto& r : renderables_) {
             ostr << " " << ind2 << " " << r.first << '\n';
         }

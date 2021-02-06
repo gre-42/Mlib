@@ -53,7 +53,7 @@ void VisualMovable3rdLogger::render(
     const RenderedSceneDescriptor& frame_id)
 {
     if (renderable_text_ == nullptr) {
-        renderable_text_.reset(new RenderableText{ttf_filename_, font_height_pixels_});
+        renderable_text_.reset(new TextResource{ttf_filename_, font_height_pixels_});
     }
     FixedArray<float, 3> node_pos = scene_node_.absolute_model_matrix().t();
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));

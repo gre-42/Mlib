@@ -10,9 +10,9 @@ struct Material;
 struct ColoredVertex;
 class RenderingResources;
 
-class RenderableBvh: public SceneNodeResource {
+class BvhResource: public SceneNodeResource {
 public:
-    RenderableBvh(
+    BvhResource(
         const std::list<std::shared_ptr<ColoredVertexArray>>& cvas);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
 private:

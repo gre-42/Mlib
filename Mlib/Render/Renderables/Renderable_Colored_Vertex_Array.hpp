@@ -8,17 +8,17 @@ namespace Mlib {
 
 template <class TData>
 class OffsetAndQuaternion;
-class RenderableColoredVertexArray;
+class ColoredVertexArrayResource;
 struct SceneNodeResourceFilter;
 class RenderingResources;
 
-class RenderableColoredVertexArrayInstance: public Renderable
+class RenderableColoredVertexArray: public Renderable
 {
 public:
-    RenderableColoredVertexArrayInstance(
-        const std::shared_ptr<const RenderableColoredVertexArray>& rcva,
+    RenderableColoredVertexArray(
+        const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
         const SceneNodeResourceFilter& resource_filter);
-    ~RenderableColoredVertexArrayInstance();
+    ~RenderableColoredVertexArray();
     virtual bool requires_render_pass() const override;
     virtual bool requires_blending_pass() const override;
     virtual int continuous_blending_z_order() const override;
@@ -66,7 +66,7 @@ private:
         const RenderPass& render_pass,
         const Style* style) const;
 
-    std::shared_ptr<const RenderableColoredVertexArray> rcva_;
+    std::shared_ptr<const ColoredVertexArrayResource> rcva_;
     std::list<std::shared_ptr<ColoredVertexArray>> rendered_triangles_res_subset_;
     std::list<std::shared_ptr<ColoredVertexArray>> aggregate_triangles_res_subset_;
     bool requires_render_pass_;
@@ -75,6 +75,6 @@ private:
     std::shared_ptr<RenderingResources> secondary_rendering_resources_;
 };
 
-std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArrayInstance& rcvi);
+std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi);
 
 }

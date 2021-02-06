@@ -17,9 +17,9 @@ RenderTextLogic::RenderTextLogic(
 RenderTextLogic::~RenderTextLogic()
 {}
 
-RenderableText& RenderTextLogic::renderable_text() const {
+TextResource& RenderTextLogic::renderable_text() const {
     if (renderable_text_ == nullptr) {
-        renderable_text_.reset(new RenderableText{ttf_filename_, font_height_pixels_});
+        renderable_text_.reset(new TextResource{ttf_filename_, font_height_pixels_});
     }
     return *renderable_text_;
 }

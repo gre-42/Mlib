@@ -22,8 +22,8 @@
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Renderable_Mhx2_File.hpp>
-#include <Mlib/Render/Resources/Renderable_Obj_File.hpp>
+#include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
+#include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -275,11 +275,11 @@ int main(int argc, char** argv) {
                     .apply_static_lighting = args.has_named("--apply_static_lighting"),
                     .werror = !args.has_named("--no_werror")};
                 if (filename.ends_with(".obj")) {
-                    scene_node_resources.add_resource(name, std::make_shared<RenderableObjFile>(
+                    scene_node_resources.add_resource(name, std::make_shared<ObjFileResource>(
                         filename,
                         cfg));
                 } else if (filename.ends_with(".mhx2")) {
-                    auto rmhx2 = std::make_shared<RenderableMhx2File>(
+                    auto rmhx2 = std::make_shared<Mhx2FileResource>(
                         filename,
                         cfg);
                     scene_node_resources.add_resource(name, rmhx2);
@@ -305,7 +305,7 @@ int main(int argc, char** argv) {
                         .apply_static_lighting = false,
                         .werror = !args.has_named("--no_werror")};
                     if (args.has_named_value("--reference_bone")) {
-                        scene_node_resources.add_resource("reference_bone", std::make_shared<RenderableObjFile>(
+                        scene_node_resources.add_resource("reference_bone", std::make_shared<ObjFileResource>(
                             args.named_value("--reference_bone"),
                             bone_cfg));
                         add_reference_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
@@ -324,7 +324,7 @@ int main(int argc, char** argv) {
                         scene_node_resources.add_bvh_file("anim", args.named_value("--bvh"), bvh_config);
                         if (args.has_named_value("--frame_bone")) {
                             float bone_frame = safe_stof(args.named_value("--bone_frame"));
-                            scene_node_resources.add_resource("frame_bone", std::make_shared<RenderableObjFile>(
+                            scene_node_resources.add_resource("frame_bone", std::make_shared<ObjFileResource>(
                                 args.named_value("--frame_bone"),
                                 bone_cfg));
                             add_bone_frame(

@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Render/Resources/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -18,9 +18,9 @@ struct WaysideResourceNames {
     std::vector<std::string> resource_names;
 };
 
-class RenderableOsmMap: public SceneNodeResource {
+class OsmMapResource: public SceneNodeResource {
 public:
-    RenderableOsmMap(
+    OsmMapResource(
         SceneNodeResources& scene_node_resources,
         const std::string& filename,
         const std::string& heightmap,
@@ -91,7 +91,7 @@ public:
     virtual std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points() const override;
 private:
     std::list<std::shared_ptr<ColoredVertexArray>> cvas_;
-    mutable std::shared_ptr<RenderableColoredVertexArray> rcva_;
+    mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     std::map<std::string, std::list<FixedArray<float, 3>>> hitboxes_;

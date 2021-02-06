@@ -8,7 +8,7 @@
 namespace Mlib {
 
 class Players;
-class RenderableText;
+class TextResource;
 
 class PlayersStatsLogic: public RenderLogic, public RenderTextLogic {
 public:

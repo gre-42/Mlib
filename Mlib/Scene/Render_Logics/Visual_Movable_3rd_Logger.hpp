@@ -11,7 +11,7 @@ namespace Mlib {
 enum class StatusComponents;
 class AdvanceTimes;
 class SceneNode;
-class RenderableText;
+class TextResource;
 
 class VisualMovable3rdLogger: public DestructionObserver, public RenderLogic, public AdvanceTime {
 public:
@@ -40,7 +40,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
 
 private:
-    std::unique_ptr<RenderableText> renderable_text_;
+    std::unique_ptr<TextResource> renderable_text_;
     RenderLogic& scene_logic_;
     SceneNode& scene_node_;
     AdvanceTimes& advance_times_;

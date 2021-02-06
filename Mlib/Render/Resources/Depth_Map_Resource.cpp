@@ -1,4 +1,4 @@
-#include "Renderable_Depth_Map.hpp"
+#include "Depth_Map_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -8,7 +8,7 @@
 
 using namespace Mlib;
 
-RenderableDepthMap::RenderableDepthMap(
+DepthMapResource::DepthMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
     const FixedArray<float, 3, 3>& intrinsic_matrix)
@@ -86,9 +86,9 @@ RenderableDepthMap::RenderableDepthMap(
             add_triangle(v11, v00, v10);
         }
     }
-    rva_ = std::make_shared<RenderableColoredVertexArray>(
+    rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(
-            "RenderableDepthMap",
+            "DepthMapResource",
             Material{},
             std::move(triangles),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
@@ -97,16 +97,16 @@ RenderableDepthMap::RenderableDepthMap(
         nullptr);
 }
 
-void RenderableDepthMap::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void DepthMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     rva_->instantiate_renderable(name, scene_node, resource_filter);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> RenderableDepthMap::get_animated_arrays() const
+std::shared_ptr<AnimatedColoredVertexArrays> DepthMapResource::get_animated_arrays() const
 {
     return rva_->get_animated_arrays();
 }
 
-void RenderableDepthMap::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
+void DepthMapResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
     return rva_->generate_triangle_rays(npoints, lengths, delete_triangles);
 }

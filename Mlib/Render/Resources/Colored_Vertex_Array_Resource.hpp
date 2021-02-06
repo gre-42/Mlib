@@ -15,24 +15,24 @@ struct Light;
 class SubstitutionInfo;
 class RenderingResources;
 
-class RenderableColoredVertexArray:
+class ColoredVertexArrayResource:
     public SceneNodeResource,
-    public std::enable_shared_from_this<RenderableColoredVertexArray>
+    public std::enable_shared_from_this<ColoredVertexArrayResource>
 {
-    friend class RenderableColoredVertexArrayInstance;
+    friend class RenderableColoredVertexArray;
 public:
-    RenderableColoredVertexArray(const RenderableColoredVertexArray& other) = delete;
-    RenderableColoredVertexArray& operator = (const RenderableColoredVertexArray& other) = delete;
-    explicit RenderableColoredVertexArray(
+    ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
+    ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
+    explicit ColoredVertexArrayResource(
         const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
         std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
-    explicit RenderableColoredVertexArray(
+    explicit ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
         std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
-    explicit RenderableColoredVertexArray(
+    explicit ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray>& triangles,
         std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
-    ~RenderableColoredVertexArray();
+    ~ColoredVertexArrayResource();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;

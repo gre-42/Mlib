@@ -33,7 +33,7 @@ static const char* fragment_shader_text =
 "    color = vec4(1.0, 1.0, 1.0, texture(texture1, TexCoords).r);\n"
 "}";
 
-RenderableText::RenderableText(
+TextResource::TextResource(
     const std::string& ttf_filename,
     float font_height_pixels,
     bool flip_y,
@@ -82,7 +82,7 @@ RenderableText::RenderableText(
     }
 }
 
-void RenderableText::render(
+void TextResource::render(
     const FixedArray<float, 2>& position,
     const std::string& text,
     int screen_width,
@@ -90,7 +90,7 @@ void RenderableText::render(
     float line_distance_pixels,
     bool periodic_position) const
 {
-    // TimeGuard time_guard{"RenderableText::render", "RenderableText::render"};
+    // TimeGuard time_guard{"TextResource::render", "TextResource::render"};
     CHK(glEnable(GL_CULL_FACE));
     CHK(glEnable(GL_BLEND));
     CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));

@@ -6,8 +6,8 @@
 namespace Mlib {
 
 class RenderingResources;
+class ColoredVertexArrayResource;
 class RenderableColoredVertexArray;
-class RenderableColoredVertexArrayInstance;
 
 class ArrayInstancesRenderer: public InstancesRenderer {
 public:
@@ -24,8 +24,8 @@ public:
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const override;
 private:
-    std::shared_ptr<RenderableColoredVertexArray> rcva_;
-    std::unique_ptr<RenderableColoredVertexArrayInstance> rcvai_;
+    std::shared_ptr<ColoredVertexArrayResource> rcva_;
+    std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     mutable std::mutex mutex_;
     bool is_initialized_ = false;
 };

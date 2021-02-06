@@ -1,4 +1,4 @@
-#include "Renderable_Blending_X.hpp"
+#include "Blending_X_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -10,7 +10,7 @@
 
 using namespace Mlib;
 
-RenderableBlendingX::RenderableBlendingX(
+BlendingXResource::BlendingXResource(
     const FixedArray<float, 2, 2>& square,
     const std::string& texture)
 : square_{square}
@@ -42,9 +42,9 @@ RenderableBlendingX::RenderableBlendingX(
         triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
         triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
 
-        rva_(i) = std::make_shared<RenderableColoredVertexArray>(
+        rva_(i) = std::make_shared<ColoredVertexArrayResource>(
             std::make_shared<ColoredVertexArray>(
-                "RenderableBlendingX",
+                "BlendingXResource",
                 Material{
                     .textures = {{.texture_descriptor = {.color = texture}}},
                     .occluder_type = OccluderType::OFF,
@@ -66,7 +66,7 @@ RenderableBlendingX::RenderableBlendingX(
     }
 }
 
-void RenderableBlendingX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void BlendingXResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     // std::unique_lock lock_guard0{scene.dynamic_mutex_};
     // std::unique_lock lock_guard1{scene.static_mutex_};

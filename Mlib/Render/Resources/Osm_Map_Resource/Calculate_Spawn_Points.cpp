@@ -1,6 +1,6 @@
 #include "Calculate_Spawn_Points.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>

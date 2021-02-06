@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 
     // OpenGL state
     // ------------
-    RenderableText renderable_text{argv[1]};
+    TextResource renderable_text{argv[1]};
 
     // render loop
     // -----------

@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-class RenderableText;
+class TextResource;
 class BaseLog;
 enum class LogEntrySeverity;
 

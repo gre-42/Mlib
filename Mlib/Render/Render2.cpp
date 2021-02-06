@@ -14,8 +14,8 @@
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
-#include <Mlib/Render/Resources/Renderable_Depth_Map.hpp>
-#include <Mlib/Render/Resources/Renderable_Height_Map.hpp>
+#include <Mlib/Render/Resources/Depth_Map_Resource.hpp>
+#include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/linmath.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -257,12 +257,12 @@ void Render2::render_depth_map(
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
-    const auto r = std::make_shared<RenderableDepthMap>(rgb_picture, depth_picture, intrinsic_matrix);
+    const auto r = std::make_shared<DepthMapResource>(rgb_picture, depth_picture, intrinsic_matrix);
     SceneNodeResources scene_node_resources;
     Scene scene;
-    scene_node_resources.add_resource("RenderableDepthMap", r);
+    scene_node_resources.add_resource("DepthMapResource", r);
     auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("RenderableDepthMap", "RenderableDepthMap", *on, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
@@ -286,12 +286,12 @@ void Render2::render_height_map(
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
-    const auto r = std::make_shared<RenderableHeightMap>(rgb_picture, height_picture, normalization_matrix);
+    const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix);
     SceneNodeResources scene_node_resources;
     Scene scene;
-    scene_node_resources.add_resource("RenderableHeightMap", r);
+    scene_node_resources.add_resource("HeightMapResource", r);
     auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("RenderableHeightMap", "RenderableHeightMap", *on, SceneNodeResourceFilter());
+    scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, SceneNodeResourceFilter());
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));

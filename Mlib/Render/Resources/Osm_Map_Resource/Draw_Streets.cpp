@@ -3,9 +3,9 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Regex_Select.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map/Parsed_Resource_Name.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map/Renderable_Osm_Map_Helpers.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map/Renderable_Osm_Map_Rectangle.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>

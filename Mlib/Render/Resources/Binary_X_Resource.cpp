@@ -1,4 +1,4 @@
-#include "Renderable_Binary_X.hpp"
+#include "Binary_X_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -9,7 +9,7 @@
 
 using namespace Mlib;
 
-RenderableBinaryX::RenderableBinaryX(
+BinaryXResource::BinaryXResource(
     const FixedArray<float, 2, 2>& square,
     const std::string& texture,
     bool is_small,
@@ -43,9 +43,9 @@ RenderableBinaryX::RenderableBinaryX(
     triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
 
-    rva_ = std::make_shared<RenderableColoredVertexArray>(
+    rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(
-            "RenderableBinaryX",
+            "BinaryXResource",
             Material{
                 .textures = {{.texture_descriptor = {.color = texture}}},
                 .occluder_type = occluder_type,
@@ -66,7 +66,7 @@ RenderableBinaryX::RenderableBinaryX(
         nullptr);  // instances
 }
 
-void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
+void BinaryXResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
     // std::unique_lock lock_guard0{scene.dynamic_mutex_};
     // std::unique_lock lock_guard1{scene.static_mutex_};
@@ -80,6 +80,6 @@ void RenderableBinaryX::instantiate_renderable(const std::string& name, SceneNod
     scene_node.add_aggregate_child("node90", node90);
 }
 
-AggregateMode RenderableBinaryX::aggregate_mode() const {
+AggregateMode BinaryXResource::aggregate_mode() const {
     return rva_->aggregate_mode();
 }

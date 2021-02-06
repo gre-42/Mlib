@@ -10,7 +10,7 @@ namespace Mlib {
 enum class StatusComponents;
 class AdvanceTimes;
 class SceneNode;
-class RenderableText;
+class TextResource;
 class StatusWriter;
 
 class VisualMovableLogger: public RenderLogic, public DestructionObserver, public RenderTextLogic, public AdvanceTime {

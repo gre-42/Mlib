@@ -19,7 +19,7 @@
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Renderable_Obj_File.hpp>
+#include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
@@ -35,7 +35,7 @@ namespace Mlib {
 
 class PhysicsLoop;
 
-struct RenderableSceneConfig {
+struct SceneConfigResource {
     bool fly;
     bool rotate;
     bool print_gamepad_buttons;
@@ -58,7 +58,7 @@ public:
         UiFocus& ui_focus,
         std::map<std::string, size_t>& selection_ids,
         GLFWwindow* window,
-        const RenderableSceneConfig& config);
+        const SceneConfigResource& config);
     ~RenderableScene();
     void start_physics_loop();
     void print_physics_engine_search_time() const;

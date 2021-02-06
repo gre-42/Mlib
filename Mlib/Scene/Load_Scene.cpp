@@ -46,12 +46,12 @@
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Renderable_Binary_X.hpp>
-#include <Mlib/Render/Resources/Renderable_Blending_X.hpp>
-#include <Mlib/Render/Resources/Renderable_Mhx2_File.hpp>
-#include <Mlib/Render/Resources/Renderable_Obj_File.hpp>
-#include <Mlib/Render/Resources/Renderable_Osm_Map.hpp>
-#include <Mlib/Render/Resources/Renderable_Square.hpp>
+#include <Mlib/Render/Resources/Binary_X_Resource.hpp>
+#include <Mlib/Render/Resources/Blending_X_Resource.hpp>
+#include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
+#include <Mlib/Render/Resources/Obj_File_Resource.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
+#include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
@@ -574,7 +574,7 @@ void LoadScene::operator()(
                 ui_focus,
                 selection_ids,
                 window,
-                RenderableSceneConfig{
+                SceneConfigResource{
                     .fly = safe_stob(match[3].str()),
                     .rotate = safe_stob(match[4].str()),
                     .print_gamepad_buttons = safe_stob(match[5].str()),
@@ -617,11 +617,11 @@ void LoadScene::operator()(
                 .werror = match[20].str() == ""};
             std::string filename = fpath(match[2].str());
             if (filename.ends_with(".obj")) {
-                scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableObjFile>(
+                scene_node_resources.add_resource(match[1].str(), std::make_shared<ObjFileResource>(
                     filename,
                     load_mesh_config));
             } else if (filename.ends_with(".mhx2")) {
-                scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableMhx2File>(
+                scene_node_resources.add_resource(match[1].str(), std::make_shared<Mhx2FileResource>(
                     filename,
                     load_mesh_config));
             } else {
@@ -658,7 +658,7 @@ void LoadScene::operator()(
                     });
             scene_node_resources.add_resource(
                 match[1].str(),                                                   // name
-                std::make_shared<RenderableOsmMap>(
+                std::make_shared<OsmMapResource>(
                     scene_node_resources,
                     fpath(match[2].str()),                                        // filename
                     fpath(match[3].str()),                                        // heightmap
@@ -763,7 +763,7 @@ void LoadScene::operator()(
             // 14: cull_faces
             // 15: aggregate_mode
             // 16: transformation_mode
-            scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableSquare>(
+            scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
@@ -789,7 +789,7 @@ void LoadScene::operator()(
             return true;
         }
         if (Mlib::re::regex_match(line, match, blending_x_resource_reg)) {
-            scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBlendingX>(
+            scene_node_resources.add_resource(match[1].str(), std::make_shared<BlendingXResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
@@ -797,7 +797,7 @@ void LoadScene::operator()(
             return true;
         }
         if (Mlib::re::regex_match(line, match, binary_x_resource_reg)) {
-            scene_node_resources.add_resource(match[1].str(), std::make_shared<RenderableBinaryX>(
+            scene_node_resources.add_resource(match[1].str(), std::make_shared<BinaryXResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
