@@ -130,6 +130,7 @@ void Render2::operator () (
     // std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // From: https://www.glfw.org/docs/latest/context_guide.html#context_current
     auto continue_rendering = [&]() { return !glfwWindowShouldClose(window_->window()) && (num_renderings_ != 0); };
+    std::exception_ptr teptr = nullptr;
     auto render_thread_func = [&]() {
         try {
             set_thread_name("Render2");
@@ -210,9 +211,9 @@ void Render2::operator () (
                 //     TimeGuard::print_groups(std::cerr);
                 // }
             }
-        } catch (const std::runtime_error& e) {
-            std::cerr << "Error in rendering thread: " << e.what() << std::endl;
+        } catch (const std::runtime_error&) {
             GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
+            teptr = std::current_exception();
         }
     };
     auto thread_runner = RenderingContextStack::generate_thread_runner(
@@ -226,6 +227,9 @@ void Render2::operator () (
         }
     }
     render_thread.join();
+    if (teptr != nullptr) {
+        std::rethrow_exception(teptr);
+    }
 }
 
 void Render2::operator () (

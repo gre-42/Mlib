@@ -4,6 +4,7 @@
 #include <Mlib/Render/Renderables/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+#include <set>
 
 namespace Mlib {
 
