@@ -8,6 +8,8 @@
 
 namespace Mlib {
 
+class TriangleList;
+class Renderable;
 class RenderingResources;
 class SceneNodeResources;
 struct ResourceInstanceDescriptor;
@@ -19,6 +21,7 @@ struct WaysideResourceNames {
 };
 
 class OsmMapResource: public SceneNodeResource {
+    friend class RenderableOsmMap;
 public:
     OsmMapResource(
         SceneNodeResources& scene_node_resources,
@@ -41,6 +44,7 @@ public:
         const std::string& roof_texture,
         const std::vector<std::string>& tree_resource_names,
         const std::vector<std::string>& grass_resource_names,
+        const std::vector<std::string>& near_grass_resource_names,
         const std::list<WaysideResourceNames>& waysides,
         float default_street_width = 2,
         float roof_width = 2,
@@ -60,6 +64,7 @@ public:
         float forest_outline_tree_distance = 0.15,
         float forest_outline_tree_inwards_distance = 0,
         float much_grass_distance = 5,
+        float much_near_grass_distance = 2,
         float raceway_beacon_distance = INFINITY,
         bool with_terrain = true,
         bool with_buildings = true,
@@ -100,6 +105,10 @@ private:
     std::list<SpawnPoint> spawn_points_;
     std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points_;
     TransformationMatrix<double, 2> normalization_matrix_;
+
+    std::shared_ptr<TriangleList> tl_terrain_;
+    std::vector<std::string> near_grass_resource_names_;
+    float much_near_grass_distance_ = 2;
 };
 
 }

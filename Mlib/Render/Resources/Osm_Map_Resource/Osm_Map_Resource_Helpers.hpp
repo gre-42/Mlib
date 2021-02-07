@@ -100,6 +100,7 @@ public:
     ~ResourceNameCycle();
     const ParsedResourceName& operator () ();
     bool empty() const;
+    void seed(unsigned int seed);
 private:
     std::vector<ParsedResourceName> names_;
     UniformIntRandomNumberGenerator<size_t> rng0_;

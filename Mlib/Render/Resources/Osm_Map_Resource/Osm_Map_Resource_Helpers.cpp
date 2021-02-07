@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Sampler.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
@@ -848,25 +849,20 @@ void Mlib::add_grass_inside_triangles(
     if (distance == INFINITY) {
         return;
     }
+    TriangleSampler<float> ts;
     NormalRandomNumberGenerator<float> rng{0, 1.f, 0.2f};
-    NormalRandomNumberGenerator<float> rng2{0, 0.f, 1.2f};
     size_t gid = 0;
     for (auto& t : triangles.triangles_) {
-        float dist_a = std::sqrt(std::min(sum(squared(t(1).position - t(0).position)), sum(squared(t(2).position - t(0).position))));
-        float dist_b = std::sqrt(std::min(sum(squared(t(1).position - t(0).position)), sum(squared(t(2).position - t(1).position))));
-        for (float a = 0.01f; a < 0.99f; a += distance * scale / dist_a) {
-            for (float b = 0.01f; b < 1.f - a; b += distance * scale / dist_b) {
-                float aa = a + rng2() * distance * scale / dist_a;
-                float bb = b + rng2() * distance * scale / dist_b;
-                float c = 1 - aa - bb;
-                if (c < 0 || aa < 0 || bb < 0) {
-                    continue;
-                }
-                auto p = aa * t(0).position + bb * t(1).position + c * t(2).position;
+        ts.sample_triangle_interior<3>(
+            t(0).position,
+            t(1).position,
+            t(2).position,
+            distance * scale,
+            [&](const FixedArray<float, 3>& p)
+            {
                 ++gid;
                 add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
-            }
-        }
+            });
     }
 }
 
@@ -1278,6 +1274,11 @@ const ParsedResourceName& ResourceNameCycle::operator() () {
 
 bool ResourceNameCycle::empty() const {
     return names_.empty();
+}
+
+void ResourceNameCycle::seed(unsigned int seed) {
+    rng0_.seed(seed);
+    rng_.seed(seed);
 }
 
 void Mlib::check_curb_validity(float curb_alpha, float curb2_alpha) {

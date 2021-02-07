@@ -11,6 +11,7 @@
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Regex_Select.hpp>
+#include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
@@ -53,6 +54,7 @@ OsmMapResource::OsmMapResource(
     const std::string& roof_texture,
     const std::vector<std::string>& tree_resource_names,
     const std::vector<std::string>& grass_resource_names,
+    const std::vector<std::string>& near_grass_resource_names,
     const std::list<WaysideResourceNames>& waysides,
     float default_street_width,
     float roof_width,
@@ -72,6 +74,7 @@ OsmMapResource::OsmMapResource(
     float forest_outline_tree_distance,
     float forest_outline_tree_inwards_distance,
     float much_grass_distance,
+    float much_near_grass_distance,
     float raceway_beacon_distance,
     bool with_terrain,
     bool with_buildings,
@@ -97,7 +100,9 @@ OsmMapResource::OsmMapResource(
     DrivingDirection driving_direction,
     bool blend_street)
 : scene_node_resources_{scene_node_resources},
-  scale_{scale}
+  scale_{scale},
+  near_grass_resource_names_{ near_grass_resource_names },
+  much_near_grass_distance_{ much_near_grass_distance }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     std::ifstream ifs{filename};
@@ -285,7 +290,7 @@ OsmMapResource::OsmMapResource(
     }
 
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
-    auto tl_terrain = std::make_shared<TriangleList>("terrain", Material{
+    tl_terrain_ = std::make_shared<TriangleList>("terrain", Material{
         .dirt_texture = dirt_texture,
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
@@ -307,11 +312,11 @@ OsmMapResource::OsmMapResource(
     for (auto& t : terrain_textures) {
         // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
         BlendMapTexture bt = primary_rendering_resources->get_blend_map_texture(t);
-        tl_terrain->material_.textures.push_back(bt);
+        tl_terrain_->material_.textures.push_back(bt);
         tl_terrain_visuals->material_.textures.push_back(bt);
         tl_terrain_street_extrusion->material_.textures.push_back(bt);
     }
-    tl_terrain->material_.compute_color_mode();
+    tl_terrain_->material_.compute_color_mode();
     tl_terrain_visuals->material_.compute_color_mode();
     tl_terrain_street_extrusion->material_.compute_color_mode();
     auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
@@ -366,7 +371,7 @@ OsmMapResource::OsmMapResource(
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
     std::list<std::shared_ptr<TriangleList>> tls_ground{
-        tl_terrain,
+        tl_terrain_,
         tl_terrain_visuals,
         tl_terrain_street_extrusion,
         tl_street_crossing,
@@ -378,7 +383,7 @@ OsmMapResource::OsmMapResource(
         tl_curb2_street,
         tl_curb2_path};
     std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb{
-        tl_terrain,
+        tl_terrain_,
         tl_terrain_visuals,
         tl_street_crossing,
         tl_path_crossing,
@@ -568,7 +573,7 @@ OsmMapResource::OsmMapResource(
             steiner_point_distances_steiner);
         LOG_INFO("triangulate_terrain_or_ceilings");
         triangulate_terrain_or_ceilings(
-            *tl_terrain,
+            *tl_terrain_,
             tl_terrain_visuals.get(),
             blend_street
                 ? std::list<std::list<FixedArray<ColoredVertex, 3>>>{tl_street->triangles_, tl_path->triangles_}
@@ -743,7 +748,7 @@ OsmMapResource::OsmMapResource(
         *tl_curb_path,
         *tl_curb2_street,
         *tl_curb2_path,
-        *tl_terrain,
+        *tl_terrain_,
         *tl_terrain_visuals,
         scale,
         raise_streets_amount);
@@ -838,7 +843,7 @@ OsmMapResource::OsmMapResource(
             object_resource_descriptors_,
             hitboxes_,
             rnc,
-            *tl_terrain,
+            *tl_terrain_,
             scale,
             much_grass_distance);
     }
@@ -905,6 +910,9 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
         for (const auto& r : p.second) {
             scene_node.add_instances_position(p.first, r.position);
         }
+    }
+    if (!near_grass_resource_names_.empty() && much_near_grass_distance_ != INFINITY) {
+        scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
     }
     // if (rbvh_ == nullptr) {
     //     rbvh_ = std::make_shared<BvhResource>(cvas_);

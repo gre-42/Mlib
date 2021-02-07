@@ -572,12 +572,11 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
 {
     for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
-            if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
+            VisibilityCheck vc{ mvp };
+            if (vc.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
-                float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
-                    ? -mvp(2, 3)
-                    : -INFINITY;
-                instances_queue.push_back(std::make_pair(sorting_key, TransformedColoredVertexArray{.cva = cva, .transformation_matrix = m}));
+                float sorting_key = vc.sorting_key(cva->material, scene_graph_config);
+                instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{.cva = cva, .transformation_matrix = m} });
             }
         }
     }
