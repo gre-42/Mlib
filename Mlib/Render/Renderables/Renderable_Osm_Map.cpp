@@ -77,7 +77,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
         auto mvp_center = dot2d(mvp, TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), center }.affine());
         VisibilityCheck vc_center{ mvp_center };
-        if (vc_center.is_visible(omr_->tl_terrain_->material_, scene_graph_config, external_render_pass, 400))
+        if (vc_center.is_visible(omr_->tl_terrain_->material_, scene_graph_config, external_render_pass, 2 * 400))
         {
             ts.seed(392743);
             rnc.seed(4624052);

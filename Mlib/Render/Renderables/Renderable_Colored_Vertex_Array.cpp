@@ -282,12 +282,17 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform1i(rp.texture_dirt_location, (GLint)(ntextures_color + filtered_lights.size() + ntextures_normal + 1)));
     }
     LOG_INFO("RenderableColoredVertexArray::render lights");
-    if (any(diffusivity != 0.f) || any(specularity != 0.f)) {
-        CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, (const GLfloat*) m.affine().flat_begin()));
-        // CHK(glUniform3fv(rp.light_position_location, 1, (const GLfloat*) t3_from_4x4(filtered_lights.front().first).flat_begin()));
-        size_t i = 0;
-        for (const auto& l : filtered_lights) {
-            CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, (const GLfloat*) z3_from_3x3(l.first.R()).flat_begin()));
+    {
+        bool light_dir_required = (any(diffusivity != 0.f) || any(specularity != 0.f));
+        if (light_dir_required || fragments_depend_on_distance) {
+            CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, (const GLfloat*)m.affine().flat_begin()));
+            // CHK(glUniform3fv(rp.light_position_location, 1, (const GLfloat*) t3_from_4x4(filtered_lights.front().first).flat_begin()));
+            if (light_dir_required) {
+                size_t i = 0;
+                for (const auto& l : filtered_lights) {
+                    CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, (const GLfloat*)z3_from_3x3(l.first.R()).flat_begin()));
+                }
+            }
         }
     }
     {

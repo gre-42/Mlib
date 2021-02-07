@@ -170,11 +170,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "Vertex" << std::endl;
-    std::cerr << sstr.str() << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << "Vertex" << std::endl;
+    // std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -299,8 +299,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     sstr << "    float alpha_fac = 1;" << std::endl;
     if (alpha_distances != default_dist) {
         sstr << "    float dist = distance(FragPos, viewPos);" << std::endl;
-        // sstr << "    if (FragPos.x == 1234) discard;" << std::endl;
-        // sstr << "    if (viewPos.x == 1234) discard;" << std::endl;
     }
     if (alpha_distances(0) != 0) {
         sstr << "    if (dist < " << alpha_distances(0) << ')' << std::endl;
@@ -570,11 +568,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << std::endl;
-    std::cerr << "Fragment" << std::endl;
-    std::cerr << sstr.str() << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << std::endl;
+    // std::cerr << "Fragment" << std::endl;
+    // std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
