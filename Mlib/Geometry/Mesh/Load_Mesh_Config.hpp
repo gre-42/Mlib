@@ -15,6 +15,7 @@ struct LoadMeshConfig {
     FixedArray<float, 3> scale = FixedArray<float, 3>(1);
     bool is_small;
     BlendMode blend_mode;
+    FixedArray<float, 4> alpha_distances;
     bool cull_faces;
     OccludedType occluded_type;
     OccluderType occluder_type;

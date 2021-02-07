@@ -37,6 +37,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             .occluded_type = cfg.occluded_type,
             .occluder_type = cfg.occluder_type,
             .occluded_by_black = cfg.occluded_by_black,
+            .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
             .is_small = cfg.is_small}};

@@ -46,13 +46,13 @@ static GenShaderText vertex_shader_text_gen{[](
     size_t nbones,
     bool reorient_normals,
     bool orthographic,
-    bool textures_depend_on_distance)
+    bool fragments_depend_on_distance)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
     sstr << "uniform mat4 MVP;" << std::endl;
-    if (has_diffusivity || has_specularity || textures_depend_on_distance) {
+    if (has_diffusivity || has_specularity || fragments_depend_on_distance) {
         sstr << "uniform mat4 M;" << std::endl;
     }
     sstr << "layout (location=0) in vec3 vPos;" << std::endl;
@@ -91,7 +91,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
     }
-    if (reorient_normals || has_specularity || textures_depend_on_distance) {
+    if (reorient_normals || has_specularity || fragments_depend_on_distance) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
@@ -159,7 +159,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
-    if (reorient_normals || has_specularity || textures_depend_on_distance) {
+    if (reorient_normals || has_specularity || fragments_depend_on_distance) {
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (has_diffusivity || has_specularity) {
@@ -170,11 +170,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    bitangent = cross(Normal, tangent);" << std::endl;
     }
     sstr << "}" << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << "Vertex" << std::endl;
-    // std::cerr << sstr.str() << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << "Vertex" << std::endl;
+    std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -183,6 +183,8 @@ enum class OcclusionType {
     OCCLUDED,
     OCCLUDER
 };
+
+static const OrderableFixedArray<float, 4> default_dist{0, 0, INFINITY, INFINITY};
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const std::vector<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
@@ -201,10 +203,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& diffusivity,
     const OrderableFixedArray<float, 3>& specularity,
     float alpha_threshold,
+    const OrderableFixedArray<float, 4>& alpha_distances,
     OcclusionType occlusion_type,
     bool reorient_normals,
     bool orthographic,
-    bool textures_depend_on_distance,
+    bool fragments_depend_on_distance,
     float dirtmap_offset,
     float dirtmap_discreteness)
 {
@@ -257,7 +260,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!specularity.all_equal(0)) {
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
-    if (reorient_normals || !specularity.all_equal(0) || textures_depend_on_distance) {
+    if (reorient_normals || !specularity.all_equal(0) || fragments_depend_on_distance) {
         sstr << "in vec3 FragPos;" << std::endl;
         if (orthographic) {
             sstr << "uniform vec3 viewDir;" << std::endl;
@@ -293,8 +296,33 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
+    sstr << "    float alpha_fac = 1;" << std::endl;
+    if (alpha_distances != default_dist) {
+        sstr << "    float dist = distance(FragPos, viewPos);" << std::endl;
+        // sstr << "    if (FragPos.x == 1234) discard;" << std::endl;
+        // sstr << "    if (viewPos.x == 1234) discard;" << std::endl;
+    }
+    if (alpha_distances(0) != 0) {
+        sstr << "    if (dist < " << alpha_distances(0) << ')' << std::endl;
+        sstr << "        discard;" << std::endl;
+    }
+    if (alpha_distances(3) != INFINITY) {
+        sstr << "    if (dist > " << alpha_distances(3) << ')' << std::endl;
+        sstr << "        discard;" << std::endl;
+    }
+    if (alpha_distances(0) != alpha_distances(1)) {
+        sstr << "    if (dist < " << alpha_distances(1) << ") {" << std::endl;
+        sstr << "        alpha_fac = (dist - " << alpha_distances(0) << ") / " << (alpha_distances(1) - alpha_distances(0)) << ";" << std::endl;
+        sstr << "    }" << std::endl;
+    }
+    if (alpha_distances(3) != alpha_distances(2)) {
+        sstr << "    if (dist > " << alpha_distances(2) << ") {" << std::endl;
+        sstr << "        alpha_fac = (" << alpha_distances(3) << " - dist) / " << (alpha_distances(3) - alpha_distances(2)) << ";" << std::endl;
+        sstr << "    }" << std::endl;
+    }
     if (ntextures_color == 1) {
         sstr << "    vec4 texture_color = texture(textures_color[0], tex_coord);" << std::endl;
+        sstr << "    texture_color.a *= alpha_fac;" << std::endl;
     } else if (ntextures_color > 1) {
         if (alpha_threshold != 0) {
             throw std::runtime_error("Alpha-threshold not supported for multiple textures");
@@ -326,78 +354,82 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
         }
         sstr << "    float sum_weights = 0;" << std::endl;
-        size_t i = 0;
         for (const BlendMapTexture* t : textures) {
-            if (t->distances(0) != 0 || t->distances(3) != INFINITY) {
-                if (orthographic) {
-                    throw std::runtime_error("Distances not supported by orthographic projection");
+            if (alpha_distances == default_dist) {
+                for (const BlendMapTexture* t : textures) {
+                    if (t->distances != default_dist) {
+                        if (orthographic) {
+                            throw std::runtime_error("Distances not supported by orthographic projection");
+                        }
+                        sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
+                        break;
+                    }
                 }
-                sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
-                break;
             }
-        }
-        for (const BlendMapTexture* t : textures) {
-            if (t->cosine(0) != 0 || t->cosine(3) != 1) {
+            if (t->cosine != default_dist) {
                 sstr << "    float cosine = dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << "));" << std::endl;
                 break;
             }
         }
-        for (const BlendMapTexture* t : textures) {
-            sstr << "    {" << std::endl;
-            std::list<std::string> checks;
-            if (t->min_height != -INFINITY) {
-                checks.push_back("(FragPos.y > " + std::to_string(t->min_height) + ')');
+        {
+            size_t i = 0;
+            for (const BlendMapTexture* t : textures) {
+                sstr << "    {" << std::endl;
+                std::list<std::string> checks;
+                if (t->min_height != -INFINITY) {
+                    checks.push_back("(FragPos.y > " + std::to_string(t->min_height) + ')');
+                }
+                if (t->max_height != INFINITY) {
+                    checks.push_back("(FragPos.y < " + std::to_string(t->max_height) + ')');
+                }
+                if (t->distances(0) != 0) {
+                    checks.push_back("(dist > " + std::to_string(t->distances(0)) + ')');
+                }
+                if (t->distances(3) != INFINITY) {
+                    checks.push_back("(dist < " + std::to_string(t->distances(3)) + ')');
+                }
+                if (t->cosine(0) != 0) {
+                    checks.push_back("(cosine > " + std::to_string(t->cosine(0)) + ')');
+                }
+                if (t->cosine(3) != 1) {
+                    checks.push_back("(cosine < " + std::to_string(t->cosine(3)) + ')');
+                }
+                if (!checks.empty()) {
+                    sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
+                }
+                sstr << "            float weight = " << t->weight << ";" << std::endl;
+                sstr << "            float scale = " << t->scale << ';' << std::endl;
+                if (t->distances(0) != t->distances(1)) {
+                    sstr << "            if (dist < " << t->distances(1) << ") {" << std::endl;
+                    sstr << "                weight *= (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ";" << std::endl;
+                    sstr << "            }" << std::endl;
+                }
+                if (t->distances(3) != t->distances(2)) {
+                    sstr << "            if (dist > " << t->distances(2) << ") {" << std::endl;
+                    sstr << "                weight *= (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ";" << std::endl;
+                    sstr << "            }" << std::endl;
+                }
+                if (t->cosine(0) != t->cosine(1)) {
+                    sstr << "            if (cosine < " << t->cosine(1) << ") {" << std::endl;
+                    sstr << "                weight *= (cosine - " << t->cosine(0) << ") / " << (t->cosine(1) - t->cosine(0)) << ";" << std::endl;
+                    sstr << "            }" << std::endl;
+                }
+                if (t->cosine(3) != t->cosine(2)) {
+                    sstr << "            if (cosine > " << t->cosine(2) << ") {" << std::endl;
+                    sstr << "                weight *= (" << t->cosine(3) << " - cosine) / " << (t->cosine(3) - t->cosine(2)) << ";" << std::endl;
+                    sstr << "            }" << std::endl;
+                }
+                sstr << "            texture_color.rgb += weight * texture(textures_color[" << i << "], tex_coord * scale).rgb;" << std::endl;
+                if (has_normalmap && !t->texture_descriptor.normal.empty()) {
+                    sstr << "            tnorm += weight * (2 * texture(texture_normalmap[" << i << "], tex_coord * scale).rgb - 1);" << std::endl;
+                }
+                sstr << "            sum_weights += weight;" << std::endl;
+                if (!checks.empty()) {
+                    sstr << "        }" << std::endl;
+                }
+                sstr << "    }" << std::endl;
+                ++i;
             }
-            if (t->max_height != INFINITY) {
-                checks.push_back("(FragPos.y < " + std::to_string(t->max_height) + ')');
-            }
-            if (t->distances(0) != 0) {
-                checks.push_back("(dist > " + std::to_string(t->distances(0)) + ')');
-            }
-            if (t->distances(3) != INFINITY) {
-                checks.push_back("(dist < " + std::to_string(t->distances(3)) + ')');
-            }
-            if (t->cosine(0) != 0) {
-                checks.push_back("(cosine > " + std::to_string(t->cosine(0)) + ')');
-            }
-            if (t->cosine(3) != 1) {
-                checks.push_back("(cosine < " + std::to_string(t->cosine(3)) + ')');
-            }
-            if (!checks.empty()) {
-                sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
-            }
-            sstr << "            float weight = " << t->weight << ";" << std::endl;
-            sstr << "            float scale = " << t->scale << ';' << std::endl;
-            if (t->distances(0) != t->distances(1)) {
-                sstr << "            if (dist < " << t->distances(1) << ") {" << std::endl;
-                sstr << "                weight *= (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ";" << std::endl;
-                sstr << "            }" << std::endl;
-            }
-            if (t->distances(3) != t->distances(2)) {
-                sstr << "            if (dist > " << t->distances(2) << ") {" << std::endl;
-                sstr << "                weight *= (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ";" << std::endl;
-                sstr << "            }" << std::endl;
-            }
-            if (t->cosine(0) != t->cosine(1)) {
-                sstr << "            if (cosine < " << t->cosine(1) << ") {" << std::endl;
-                sstr << "                weight *= (cosine - " << t->cosine(0) << ") / " << (t->cosine(1) - t->cosine(0)) << ";" << std::endl;
-                sstr << "            }" << std::endl;
-            }
-            if (t->cosine(3) != t->cosine(2)) {
-                sstr << "            if (cosine > " << t->cosine(2) << ") {" << std::endl;
-                sstr << "                weight *= (" << t->cosine(3) << " - cosine) / " << (t->cosine(3) - t->cosine(2)) << ";" << std::endl;
-                sstr << "            }" << std::endl;
-            }
-            sstr << "            texture_color.rgb += weight * texture(textures_color[" << i << "], tex_coord * scale).rgb;" << std::endl;
-            if (has_normalmap && !t->texture_descriptor.normal.empty()) {
-                sstr << "            tnorm += weight * (2 * texture(texture_normalmap[" << i << "], tex_coord * scale).rgb - 1);" << std::endl;
-            }
-            sstr << "            sum_weights += weight;" << std::endl;
-            if (!checks.empty()) {
-                sstr << "        }" << std::endl;
-            }
-            sstr << "    }" << std::endl;
-            ++i;
         }
         sstr << "    if (sum_weights < 1e-1) {" << std::endl;
         sstr << "        texture_color.rgb = vec3(1, 0, 1);" << std::endl;
@@ -538,11 +570,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.b = 0.5;" << std::endl;
     }
     sstr << "}" << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // std::cerr << "Fragment" << std::endl;
-    // std::cerr << sstr.str() << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+    std::cerr << "Fragment" << std::endl;
+    std::cerr << sstr.str() << std::endl;
     return sstr.str();
 }};
 
@@ -721,7 +753,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         triangles_res_->bone_indices.size(),
         id.reorient_normals,
         id.orthographic,
-        id.textures_depend_on_distance);
+        id.fragments_depend_on_distance);
     const char* fs_text = fragment_shader_text_textured_rgb_gen(
         filtered_lights,
         light_noshadow_indices,
@@ -741,10 +773,11 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         (id.blend_mode == BlendMode::BINARY) || (id.blend_mode == BlendMode::BINARY_ADD)
         ? (id.calculate_lightmap ? 0.1f : 0.5f)
         : 0.f,
+        id.alpha_distances,
         occlusion_type,
         id.reorient_normals,
         id.orthographic,
-        id.textures_depend_on_distance,
+        id.fragments_depend_on_distance,
         id.dirtmap_offset,
         id.dirtmap_discreteness);
     try {
@@ -801,13 +834,18 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->texture_dirtmap_location = 0;
             rp->texture_dirt_location = 0;
         }
-        if (!id.diffusivity.all_equal(0) || !id.specularity.all_equal(0) || id.textures_depend_on_distance) {
-            rp->m_location = checked_glGetUniformLocation(rp->program, "M");
-            for (size_t i = 0; i < filtered_lights.size(); ++i) {
-                rp->light_dir_locations[i] = checked_glGetUniformLocation(rp->program, ("lightDir[" + std::to_string(i) + "]").c_str());
+        {
+            bool light_dir_required = !id.diffusivity.all_equal(0) || !id.specularity.all_equal(0);
+            if (light_dir_required || id.fragments_depend_on_distance) {
+                rp->m_location = checked_glGetUniformLocation(rp->program, "M");
+                if (light_dir_required) {
+                    for (size_t i = 0; i < filtered_lights.size(); ++i) {
+                        rp->light_dir_locations[i] = checked_glGetUniformLocation(rp->program, ("lightDir[" + std::to_string(i) + "]").c_str());
+                    }
+                }
+            } else {
+                rp->m_location = 0;
             }
-        } else {
-            rp->m_location = 0;
         }
         // rp->light_position_location = checked_glGetUniformLocation(rp->program, "lightPos");
         assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
@@ -826,7 +864,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
             }
         }
-        if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_normals || id.textures_depend_on_distance) {
+        if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_normals || id.fragments_depend_on_distance) {
             if (id.orthographic) {
                 rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
                 rp->view_pos = 0;

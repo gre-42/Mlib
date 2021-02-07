@@ -200,6 +200,7 @@ void LoadScene::operator()(
         "\\s+scale=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+is_small=(0|1)"
         "\\s+blend_mode=(off|binary|continuous)"
+        "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
         "\\s+occluded_type=(off|color|depth)"
         "\\s+occluder_type=(off|white|black)"
@@ -227,6 +228,7 @@ void LoadScene::operator()(
         "\\s+occluded_by_black=(0|1)"
         "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+blend_mode=(off|binary|continuous)"
+        "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat)$");
@@ -609,14 +611,19 @@ void LoadScene::operator()(
                     safe_stof(match[11].str())},
                 .is_small = safe_stob(match[12].str()),
                 .blend_mode = blend_mode_from_string(match[13].str()),
-                .cull_faces = safe_stob(match[14].str()),
-                .occluded_type = occluded_type_from_string(match[15].str()),
-                .occluder_type = occluder_type_from_string(match[16].str()),
-                .occluded_by_black = safe_stob(match[17].str()),
-                .aggregate_mode = aggregate_mode_from_string(match[18].str()),
-                .transformation_mode = transformation_mode_from_string(match[19].str()),
+                .alpha_distances = {
+                    safe_stof(match[14].str()),
+                    safe_stof(match[15].str()),
+                    safe_stof(match[16].str()),
+                    safe_stof(match[17].str())},
+                .cull_faces = safe_stob(match[18].str()),
+                .occluded_type = occluded_type_from_string(match[19].str()),
+                .occluder_type = occluder_type_from_string(match[20].str()),
+                .occluded_by_black = safe_stob(match[21].str()),
+                .aggregate_mode = aggregate_mode_from_string(match[22].str()),
+                .transformation_mode = transformation_mode_from_string(match[23].str()),
                 .apply_static_lighting = false,
-                .werror = match[20].str() == ""};
+                .werror = match[24].str() == ""};
             std::string filename = fpath(match[2].str());
             if (filename.ends_with(".obj")) {
                 scene_node_resources.add_resource(match[1].str(), std::make_shared<ObjFileResource>(
@@ -777,13 +784,18 @@ void LoadScene::operator()(
                     .occluder_type = occluder_type_from_string(match[9].str()),
                     .occluded_by_black = safe_stob(match[10].str()),
                     .blend_mode = blend_mode_from_string(match[14].str()),
+                    .alpha_distances = {
+                        safe_stof(match[15].str()),
+                        safe_stof(match[16].str()),
+                        safe_stof(match[17].str()),
+                        safe_stof(match[18].str())},
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .collide = false,
-                    .aggregate_mode = aggregate_mode_from_string(match[16].str()),
-                    .transformation_mode = transformation_mode_from_string(match[17].str()),
+                    .aggregate_mode = aggregate_mode_from_string(match[20].str()),
+                    .transformation_mode = transformation_mode_from_string(match[21].str()),
                     .is_small = safe_stob(match[7].str()),
-                    .cull_faces = safe_stob(match[15].str()),
+                    .cull_faces = safe_stob(match[19].str()),
                     .ambience = {
                         safe_stof(match[11].str()),
                         safe_stof(match[12].str()),

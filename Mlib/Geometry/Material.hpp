@@ -23,6 +23,7 @@ struct Material {
     OccluderType occluder_type = OccluderType::OFF;
     bool occluded_by_black = true;
     BlendMode blend_mode = BlendMode::OFF;
+    OrderableFixedArray<float, 4> alpha_distances = { 0.f, 0.f, INFINITY, INFINITY };
     bool depth_func_equal = false;
     WrapMode wrap_mode_s = WrapMode::REPEAT;
     WrapMode wrap_mode_t = WrapMode::REPEAT;
@@ -39,7 +40,7 @@ struct Material {
     size_t draw_distance_noperations = 0;
     Material& compute_color_mode();
     bool has_normalmap() const;
-    bool textures_depend_on_distance() const;
+    bool fragments_depend_on_distance() const;
     std::partial_ordering operator <=> (const Material&) const;
 };
 

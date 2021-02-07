@@ -37,6 +37,7 @@ struct RenderProgramIdentifier {
     OccluderType occluder_type;
     size_t nlights;
     BlendMode blend_mode;
+    OrderableFixedArray<float, 4> alpha_distances;
     size_t ntextures_color;
     size_t ntextures_normal;
     bool has_lightmap_color;
@@ -50,7 +51,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> diffusivity;
     OrderableFixedArray<float, 3> specularity;
     bool orthographic;
-    bool textures_depend_on_distance;
+    bool fragments_depend_on_distance;
     float dirtmap_offset;
     float dirtmap_discreteness;
     std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;

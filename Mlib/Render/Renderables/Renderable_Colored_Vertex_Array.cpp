@@ -192,7 +192,7 @@ void RenderableColoredVertexArray::render_cva(
     bool has_dirtmap = (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
-    bool textures_depend_on_distance = (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && cva->material.textures_depend_on_distance();
+    bool fragments_depend_on_distance = (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && cva->material.fragments_depend_on_distance();
     if ((ntextures_color == 0) && has_dirtmap) {
         throw std::runtime_error(
             "Combination of ((ntextures_color == 0) && has_dirtmap) is not supported. Textures: " +
@@ -222,6 +222,7 @@ void RenderableColoredVertexArray::render_cva(
             .occluder_type = render_pass.external.black_node_name.empty() ? cva->material.occluder_type : OccluderType::BLACK,
             .nlights = filtered_lights.size(),
             .blend_mode = cva->material.blend_mode,
+            .alpha_distances = cva->material.alpha_distances,
             .ntextures_color = ntextures_color,
             .ntextures_normal = ntextures_normal,
             .has_lightmap_color = has_lightmap_color,
@@ -235,7 +236,7 @@ void RenderableColoredVertexArray::render_cva(
             .diffusivity = OrderableFixedArray{diffusivity},
             .specularity = OrderableFixedArray{specularity},
             .orthographic = vc.orthographic(),
-            .textures_depend_on_distance = textures_depend_on_distance,
+            .fragments_depend_on_distance = fragments_depend_on_distance,
             // Not using NAN for ordering.
             .dirtmap_offset = has_dirtmap ? secondary_rendering_resources_->get_offset("dirtmap") : -1234,
             .dirtmap_discreteness = has_dirtmap ? secondary_rendering_resources_->get_discreteness("dirtmap") : -1234},
@@ -304,7 +305,7 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    if (has_lookat || any(specularity != 0.f) || textures_depend_on_distance) {
+    if (has_lookat || any(specularity != 0.f) || fragments_depend_on_distance) {
         if (vc.orthographic()) {
             auto d = z3_from_3x3(iv.R());
             d /= std::sqrt(sum(squared(d)));
