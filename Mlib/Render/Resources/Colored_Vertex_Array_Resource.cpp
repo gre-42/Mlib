@@ -298,6 +298,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     sstr << "{" << std::endl;
     sstr << "    float alpha_fac = 1;" << std::endl;
     if (alpha_distances != default_dist) {
+        if (orthographic) {
+            throw std::runtime_error("Orthographic not supported with alpha distances");
+        }
         sstr << "    float dist = distance(FragPos, viewPos);" << std::endl;
     }
     if (alpha_distances(0) != 0) {

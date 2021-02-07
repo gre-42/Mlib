@@ -91,16 +91,13 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     auto mvp_instance = dot2d(mvp, TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), p }.affine());
                     auto m_instance = m * TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), p };
                     VisibilityCheck vc_instance{ mvp_instance };
-                    if (vc_instance.is_visible(omr_->tl_terrain_->material_, scene_graph_config, external_render_pass, 400))
-                    {
-                        for (const auto& cva : omr_->scene_node_resources_.get_animated_arrays(rnc().name)->cvas) {
+                    for (const auto& cva : omr_->scene_node_resources_.get_animated_arrays(rnc().name)->cvas) {
+                        if (vc_instance.is_visible(cva->material, scene_graph_config, external_render_pass, 400))
+                        {
                             instances_queue.push_back({
-                                vc_instance.sorting_key(omr_->tl_terrain_->material_, scene_graph_config),
+                                vc_instance.sorting_key(cva->material, scene_graph_config),
                                 TransformedColoredVertexArray{ cva, m_instance } });
                         }
-                    }
-                    else {
-                        rnc();
                     }
                 });
         }
