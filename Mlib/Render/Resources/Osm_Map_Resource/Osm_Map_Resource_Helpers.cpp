@@ -849,8 +849,8 @@ void Mlib::add_grass_inside_triangles(
     if (distance == INFINITY) {
         return;
     }
-    TriangleSampler<float> ts;
-    NormalRandomNumberGenerator<float> rng{0, 1.f, 0.2f};
+    TriangleSampler<float> ts{ 0 };
+    NormalRandomNumberGenerator<float> rng{ 0, 1.f, 0.2f };
     size_t gid = 0;
     for (auto& t : triangles.triangles_) {
         ts.sample_triangle_interior<3>(

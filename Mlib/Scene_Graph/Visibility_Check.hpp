@@ -7,12 +7,6 @@
 
 namespace Mlib {
 
-enum class IsSmall {
-    YES,
-    NO,
-    MATERIAL
-};
-
 class VisibilityCheck {
 public:
     inline explicit VisibilityCheck(const FixedArray<float, 4, 4>& mvp)
@@ -23,17 +17,24 @@ public:
         const Material& m,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
-        IsSmall is_small = IsSmall::MATERIAL) const
+        float max_distance = NAN) const
     {
-        return ((is_small == IsSmall::MATERIAL ? !m.is_small : (is_small == IsSmall::NO)) ||
-                ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (m.occluder_type != OccluderType::OFF)) ||
-                (// (mvp(2, 3) > scene_graph_config.min_distance_small) && // no mvp-check to support rotations
-                 !orthographic_ &&
-                 (sum(squared(t3_from_4x4(mvp_))) > squared(scene_graph_config.min_distance_small)) &&
-                 (sum(squared(t3_from_4x4(mvp_))) < squared(scene_graph_config.max_distance_small))));
+        if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (m.occluder_type != OccluderType::OFF)) {
+            return true;
         }
+        if (std::isnan(max_distance) && !m.is_small) {
+            return true;
+        }
+        if (orthographic_) {
+            return false;
+        }
+        float max_dist2 = std::isnan(max_distance)
+            ? squared(scene_graph_config.max_distance_small)
+            : squared(max_distance);
+        return sum(squared(t3_from_4x4(mvp_))) < max_dist2;
+    }
     inline float sorting_key(const Material& m, const SceneGraphConfig& scene_graph_config) const {
-        return (m.blend_mode == BlendMode::CONTINUOUS)
+        return ((m.blend_mode == BlendMode::CONTINUOUS) && !orthographic_)
             ? -mvp_(2, 3)
             : -INFINITY;
     }

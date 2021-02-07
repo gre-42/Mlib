@@ -187,7 +187,6 @@ int main(int argc, char** argv) {
             scene_config.render_config = render_config;
 
             scene_config.scene_graph_config = SceneGraphConfig{
-                .min_distance_small = 1,
                 .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),
                 .aggregate_update_interval = safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
 
