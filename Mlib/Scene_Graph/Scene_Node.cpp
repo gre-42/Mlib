@@ -408,8 +408,8 @@ void SceneNode::append_small_instances_to_queue(
         n.second.scene_node->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
     }
     for (const auto& i : instances_children_) {
-        // Nested loop because each instance position is to
-        // be handled like a child node, not a renderable.
+        // The transformation is swapped, meaning
+        // y = P * V * M * INSTANCE * NODE * x.
         for (const auto& j : i.second.instances) {
             i.second.scene_node->append_small_instances_to_queue(mvp, m, j, instances_queue, scene_graph_config, external_render_pass);
         }
@@ -433,8 +433,8 @@ void SceneNode::append_large_instances_to_queue(
     }
     for (const auto& i : instances_children_) {
         for (const auto& j : i.second.instances) {
-            // Nested loop because each instance position is to
-            // be handled like a child node, not a renderable.
+            // The transformation is swapped, meaning
+            // y = P * V * M * INSTANCE * NODE * x.
             i.second.scene_node->append_large_instances_to_queue(m, j, instances_queue, scene_graph_config);
         }
     }
