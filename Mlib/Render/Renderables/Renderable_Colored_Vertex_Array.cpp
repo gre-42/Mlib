@@ -551,7 +551,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
                 float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
                     ? -mvp(2, 3)
                     : -INFINITY;
-                aggregate_queue.push_back(std::make_pair(sorting_key, std::move(cva->transformed(m))));
+                aggregate_queue.push_back({ sorting_key, std::move(cva->transformed(m)) });
             }
         }
     }
