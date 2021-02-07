@@ -5,6 +5,7 @@ namespace Mlib { namespace cpx {
 
 class Renderable {
 public:
+    virtual ~Renderable() = default;
     virtual void render(std::ostream& ostream) const = 0;
 };
 
