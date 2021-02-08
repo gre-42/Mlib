@@ -875,7 +875,7 @@ void LoadScene::operator()(
                         safe_stof(match[9].str()),
                         safe_stof(match[10].str()),
                         safe_stof(match[11].str())},
-                    .cosine = {
+                    .cosines = {
                         safe_stof(match[12].str()),
                         safe_stof(match[13].str()),
                         safe_stof(match[14].str()),
