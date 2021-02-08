@@ -17,7 +17,7 @@ public:
         const FixedArray<TData, tshape>& t1,
         const FixedArray<TData, tshape>& t2,
         const TData& distance,
-        const std::function<void(const FixedArray<TData, tshape>& p)>& func)
+        const std::function<void(const TData& a, const TData& b, const TData& c)>& func)
     {
         float dist_a = std::sqrt(std::min(sum(squared(t1 - t0)), sum(squared(t2 - t0))));
         float dist_b = std::sqrt(std::min(sum(squared(t1 - t0)), sum(squared(t2 - t1))));
@@ -29,8 +29,7 @@ public:
                 if (c < 0 || aa < 0 || bb < 0) {
                     continue;
                 }
-                auto p = aa * t0 + bb * t1 + c * t2;
-                func(p);
+                func(aa, bb, c);
             }
         }
     }

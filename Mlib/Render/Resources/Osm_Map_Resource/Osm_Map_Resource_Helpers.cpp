@@ -857,8 +857,9 @@ void Mlib::add_grass_inside_triangles(
             t(1).position,
             t(2).position,
             distance * scale,
-            [&](const FixedArray<float, 3>& p)
+            [&](float a, float b, float c)
             {
+                FixedArray<float, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
                 add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
             });
     }

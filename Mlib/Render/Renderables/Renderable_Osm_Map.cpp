@@ -86,8 +86,14 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                 t(1).position,
                 t(2).position,
                 omr_->much_near_grass_distance_ * omr_->scale_,
-                [&](const FixedArray<float, 3>& p)
+                [&](float a, float b, float c)
                 {
+                    FixedArray<float, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
+                    FixedArray<float, 3> n = t(0).normal * a + t(1).normal * b + t(2).normal * c;
+                    n /= std::sqrt(sum(squared(n)));
+                    if (n(2) < 0.9) {
+                        return;
+                    }
                     auto mvp_instance = dot2d(mvp, TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), p }.affine());
                     auto m_instance = m * TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), p };
                     VisibilityCheck vc_instance{ mvp_instance };
