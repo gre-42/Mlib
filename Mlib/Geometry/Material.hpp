@@ -23,7 +23,7 @@ struct Material {
     OccluderType occluder_type = OccluderType::OFF;
     bool occluded_by_black = true;
     BlendMode blend_mode = BlendMode::OFF;
-    OrderableFixedArray<float, 4> alpha_distances = { 0.f, 0.f, INFINITY, INFINITY };
+    OrderableFixedArray<float, 4> alpha_distances = { default_distances };
     bool depth_func_equal = false;
     WrapMode wrap_mode_s = WrapMode::REPEAT;
     WrapMode wrap_mode_t = WrapMode::REPEAT;
