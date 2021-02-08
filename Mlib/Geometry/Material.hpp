@@ -41,6 +41,7 @@ struct Material {
     Material& compute_color_mode();
     bool has_normalmap() const;
     bool fragments_depend_on_distance() const;
+    bool fragments_depend_on_normal() const;
     std::partial_ordering operator <=> (const Material&) const;
 };
 

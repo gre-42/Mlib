@@ -39,11 +39,20 @@ bool Material::has_normalmap() const {
 }
 
 bool Material::fragments_depend_on_distance() const {
-    if (alpha_distances != OrderableFixedArray<float, 4>{0.f, 0.f, INFINITY, INFINITY}) {
+    if (alpha_distances != default_distances) {
         return true;
     }
     for (const auto& t : textures) {
-        if (t.distances != OrderableFixedArray<float, 4>{0.f, 0.f, INFINITY, INFINITY}) {
+        if (t.distances != default_distances) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Material::fragments_depend_on_normal() const {
+    for (const auto& t : textures) {
+        if (t.cosines != default_cosines) {
             return true;
         }
     }
