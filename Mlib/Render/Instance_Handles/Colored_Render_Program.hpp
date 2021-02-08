@@ -52,6 +52,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> specularity;
     bool orthographic;
     bool fragments_depend_on_distance;
+    bool fragments_depend_on_normal;
     float dirtmap_offset;
     float dirtmap_discreteness;
     std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;

@@ -46,19 +46,20 @@ static GenShaderText vertex_shader_text_gen{[](
     size_t nbones,
     bool reorient_normals,
     bool orthographic,
-    bool fragments_depend_on_distance)
+    bool fragments_depend_on_distance,
+    bool fragments_depend_on_normal)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
     sstr << "#version 330 core" << std::endl;
     sstr << "uniform mat4 MVP;" << std::endl;
-    if (has_diffusivity || has_specularity || fragments_depend_on_distance) {
+    if (has_diffusivity || has_specularity || fragments_depend_on_distance || fragments_depend_on_normal) {
         sstr << "uniform mat4 M;" << std::endl;
     }
     sstr << "layout (location=0) in vec3 vPos;" << std::endl;
     sstr << "layout (location=1) in vec3 vCol;" << std::endl;
     sstr << "layout (location=2) in vec2 vTexCoord;" << std::endl;
-    if (has_diffusivity || has_specularity || has_normalmap) {
+    if (has_diffusivity || has_specularity || has_normalmap || fragments_depend_on_normal) {
         sstr << "layout (location=3) in vec3 vNormal;" << std::endl;
     }
     if (has_normalmap) {
@@ -94,7 +95,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_normals || has_specularity || fragments_depend_on_distance) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
-    if (has_diffusivity || has_specularity) {
+    if (has_diffusivity || has_specularity || fragments_depend_on_normal) {
         sstr << "out vec3 Normal;" << std::endl;
     }
     if (has_lookat) {
@@ -162,7 +163,7 @@ static GenShaderText vertex_shader_text_gen{[](
     if (reorient_normals || has_specularity || fragments_depend_on_distance) {
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
-    if (has_diffusivity || has_specularity) {
+    if (has_diffusivity || has_specularity || fragments_depend_on_normal) {
         sstr << "    Normal = mat3(M) * vNormal;" << std::endl;
     }
     if (has_normalmap) {
@@ -206,6 +207,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool reorient_normals,
     bool orthographic,
     bool fragments_depend_on_distance,
+    bool fragments_depend_on_normal,
     float dirtmap_offset,
     float dirtmap_discreteness)
 {
@@ -243,7 +245,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform sampler2D texture_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirt;" << std::endl;
     }
-    if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
+    if (!diffusivity.all_equal(0) || !specularity.all_equal(0) || fragments_depend_on_normal) {
         sstr << "in vec3 Normal;" << std::endl;
 
         // sstr << "uniform vec3 lightPos;" << std::endl;
@@ -335,7 +337,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        discard;" << std::endl;
     }
     sstr << "    vec3 fragBrightness = vec3(0, 0, 0);" << std::endl;
-    if (!diffusivity.all_equal(0) || !specularity.all_equal(0)) {
+    if (!diffusivity.all_equal(0) || !specularity.all_equal(0) || fragments_depend_on_normal) {
         // sstr << "    vec3 norm = normalize(Normal);" << std::endl;
         sstr << "    vec3 norm = normalize(Normal);" << std::endl;
         // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
@@ -749,7 +751,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         triangles_res_->bone_indices.size(),
         id.reorient_normals,
         id.orthographic,
-        id.fragments_depend_on_distance);
+        id.fragments_depend_on_distance,
+        id.fragments_depend_on_normal);
     const char* fs_text = fragment_shader_text_textured_rgb_gen(
         filtered_lights,
         light_noshadow_indices,
@@ -774,6 +777,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.reorient_normals,
         id.orthographic,
         id.fragments_depend_on_distance,
+        id.fragments_depend_on_normal,
         id.dirtmap_offset,
         id.dirtmap_discreteness);
     try {
@@ -832,7 +836,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         }
         {
             bool light_dir_required = !id.diffusivity.all_equal(0) || !id.specularity.all_equal(0);
-            if (light_dir_required || id.fragments_depend_on_distance) {
+            if (light_dir_required || id.fragments_depend_on_distance || id.fragments_depend_on_normal) {
                 rp->m_location = checked_glGetUniformLocation(rp->program, "M");
                 if (light_dir_required) {
                     for (size_t i = 0; i < filtered_lights.size(); ++i) {
@@ -916,7 +920,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     CHK(glEnableVertexAttribArray(2));
     CHK(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
-    if (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0)) {
+    if (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0) || cva->material.fragments_depend_on_normal()) {
         CHK(glEnableVertexAttribArray(3));
         CHK(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->normal));
     }

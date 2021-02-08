@@ -185,14 +185,16 @@ void RenderableColoredVertexArray::render_cva(
             throw std::runtime_error("Transparent material's color texture \"" + t.texture_descriptor.color + "\" was not loaded as RGB");
         }
     }
+    bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
     size_t ntextures_color = ((render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) || (cva->material.blend_mode != BlendMode::OFF)) ? cva->material.textures.size() : 0;
     bool has_lightmap_color = (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
     bool has_lightmap_depth = (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
-    size_t ntextures_normal = render_config.normalmaps && cva->material.has_normalmap() && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? cva->material.textures.size() : 0;
+    size_t ntextures_normal = color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? cva->material.textures.size() : 0;
     bool has_dirtmap = (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool fragments_depend_on_distance = (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && cva->material.fragments_depend_on_distance();
+    bool fragments_depend_on_normal = (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && cva->material.fragments_depend_on_normal();
     if ((ntextures_color == 0) && has_dirtmap) {
         throw std::runtime_error(
             "Combination of ((ntextures_color == 0) && has_dirtmap) is not supported. Textures: " +
@@ -237,6 +239,7 @@ void RenderableColoredVertexArray::render_cva(
             .specularity = OrderableFixedArray{specularity},
             .orthographic = vc.orthographic(),
             .fragments_depend_on_distance = fragments_depend_on_distance,
+            .fragments_depend_on_normal = fragments_depend_on_normal,
             // Not using NAN for ordering.
             .dirtmap_offset = has_dirtmap ? secondary_rendering_resources_->get_offset("dirtmap") : -1234,
             .dirtmap_discreteness = has_dirtmap ? secondary_rendering_resources_->get_discreteness("dirtmap") : -1234},
@@ -284,7 +287,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render lights");
     {
         bool light_dir_required = (any(diffusivity != 0.f) || any(specularity != 0.f));
-        if (light_dir_required || fragments_depend_on_distance) {
+        if (light_dir_required || fragments_depend_on_distance || fragments_depend_on_normal) {
             CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, (const GLfloat*)m.affine().flat_begin()));
             // CHK(glUniform3fv(rp.light_position_location, 1, (const GLfloat*) t3_from_4x4(filtered_lights.front().first).flat_begin()));
             if (light_dir_required) {
