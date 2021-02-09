@@ -832,7 +832,10 @@ void Mlib::add_grass_on_steiner_points(
             ((p.distance_to_road > dmin * scale) &&
              (p.distance_to_road < dmax * scale)))
         {
-            add_parsed_resource_name(p.position, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+            const ParsedResourceName* prn = rnc.try_once();
+            if (prn != nullptr) {
+                add_parsed_resource_name(p.position, *prn, rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+            }
         }
     }
 }
@@ -1223,7 +1226,9 @@ std::list<SteinerPointInfo> Mlib::removed_duplicates(
     return result;
 }
 
-ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const std::vector<std::string>& names)
+ResourceNameCycle::ResourceNameCycle(
+    const SceneNodeResources& resources,
+    const std::vector<std::string>& names)
 : rng0_{1, 0, names.size() - 1},
   rng_{2}
 {
@@ -1255,20 +1260,25 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
 ResourceNameCycle::~ResourceNameCycle()
 {}
 
+const ParsedResourceName* ResourceNameCycle::try_once() {
+    const ParsedResourceName& prn = names_[rng0_()];
+    if (prn.probability != 1) {
+        if (rng_() > prn.probability) {
+            return nullptr;
+        }
+    }
+    return &prn;
+}
+
 const ParsedResourceName& ResourceNameCycle::operator() () {
     if (names_.empty()) {
         throw std::runtime_error("ResourceNameCycle called with empty names");
     }
-    while(true) {
-        const ParsedResourceName& prn = names_[rng0_()];
-        if (prn.probability != 1) {
-            if (rng_() < prn.probability) {
-                return prn;
-            }
-        } else {
-            return prn;
-        }
+    const ParsedResourceName* res = nullptr;
+    while(res == nullptr) {
+        res = try_once();
     }
+    return *res;
 }
 
 bool ResourceNameCycle::empty() const {

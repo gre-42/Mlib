@@ -96,8 +96,11 @@ enum class BuildingType {
 
 class ResourceNameCycle {
 public:
-    ResourceNameCycle(const SceneNodeResources& resources, const std::vector<std::string>& names);
+    ResourceNameCycle(
+        const SceneNodeResources& resources,
+        const std::vector<std::string>& names);
     ~ResourceNameCycle();
+    const ParsedResourceName* try_once();
     const ParsedResourceName& operator () ();
     bool empty() const;
     void seed(unsigned int seed);

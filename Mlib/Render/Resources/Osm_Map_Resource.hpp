@@ -57,7 +57,7 @@ struct OsmMapResourceConfig {
     float default_barrier_top = 3;
     bool remove_backfacing_triangles = true;
     bool with_tree_nodes = true;
-    float forest_outline_tree_distance = 0.15;
+    float forest_outline_tree_distance = 0.15f;
     float forest_outline_tree_inwards_distance = 0;
     float much_grass_distance = 5;
     float much_near_grass_distance = 2;
@@ -70,11 +70,11 @@ struct OsmMapResourceConfig {
     std::set<std::string> path_tags = { "track", "tertiary" };
     std::vector<float> steiner_point_distances_road = { 100.f };
     std::vector<float> steiner_point_distances_steiner = { 100.f };
-    float curb_alpha = 0.9;
-    float curb2_alpha = 0.95;
+    float curb_alpha = 0.9f;
+    float curb2_alpha = 0.95f;
     float curb_uv_x = 1;
     float curb2_uv_x = 1;
-    float raise_streets_amount = 0.2;
+    float raise_streets_amount = 0.2f;
     float extrude_curb_amount = 0;
     float extrude_street_amount = 0;
     std::vector<std::string> street_light_resource_names = {};
