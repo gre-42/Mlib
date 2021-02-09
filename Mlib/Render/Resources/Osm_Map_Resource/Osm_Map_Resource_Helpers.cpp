@@ -1227,7 +1227,7 @@ ResourceNameCycle::ResourceNameCycle(const SceneNodeResources& resources, const 
 : rng0_{1, 0, names.size() - 1},
   rng_{2}
 {
-    static const DECLARE_REGEX(re, "^(.*?)\\(p:([\\d+.e-]+)(?:,hitbox:(\\w+))?\\)$");
+    static const DECLARE_REGEX(re, "^(.*?)\\(p:([\\d+.e-]+)\\)(?:\\(hitbox:(\\w+)\\))?$");
     names_.reserve(names.size());
     for (const std::string& name : names) {
         Mlib::re::smatch match;
