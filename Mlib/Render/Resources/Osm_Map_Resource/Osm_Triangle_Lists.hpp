@@ -4,10 +4,10 @@
 namespace Mlib {
 
 class TriangleList;
-struct OsmMapResourceConfig;
+struct OsmResourceConfig;
 
 struct OsmTriangleLists {
-    explicit OsmTriangleLists(const OsmMapResourceConfig& config);
+    explicit OsmTriangleLists(const OsmResourceConfig& config);
     ~OsmTriangleLists();
     std::shared_ptr<TriangleList> tl_terrain;
     std::shared_ptr<TriangleList> tl_terrain_visuals;

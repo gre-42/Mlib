@@ -19,10 +19,10 @@ class NormalizedPointsFixed;
 struct ObjectResourceDescriptor;
 struct ResourceInstanceDescriptor;
 enum class WayPointLocation;
-struct OsmMapResourceConfig;
+struct OsmResourceConfig;
 
 std::list<std::shared_ptr<TriangleList>> smoothen_and_apply_heightmap(
-    const OsmMapResourceConfig& config,
+    const OsmResourceConfig& config,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,

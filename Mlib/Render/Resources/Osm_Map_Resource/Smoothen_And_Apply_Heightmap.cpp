@@ -3,8 +3,8 @@
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <list>
@@ -13,7 +13,7 @@
 using namespace Mlib;
 
 std::list<std::shared_ptr<TriangleList>> Mlib::smoothen_and_apply_heightmap(
-    const OsmMapResourceConfig& config,
+    const OsmResourceConfig& config,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,

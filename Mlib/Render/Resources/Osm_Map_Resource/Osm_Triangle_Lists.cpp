@@ -2,11 +2,11 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 
 using namespace Mlib;
 
-OsmTriangleLists::OsmTriangleLists(const OsmMapResourceConfig& config)
+OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
 {
     tl_terrain = std::make_shared<TriangleList>("terrain", Material{
         .dirt_texture = config.dirt_texture,

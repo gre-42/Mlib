@@ -13,9 +13,11 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoints.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parse_Osm_Xml.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -30,7 +32,7 @@ using namespace Mlib;
 
 OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
-    const OsmMapResourceConfig& config)
+    const OsmResourceConfig& config)
 : scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
   near_grass_resource_names_{ config.near_grass_resource_names },

@@ -51,6 +51,8 @@
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -586,7 +588,7 @@ void LoadScene::operator()(
             return true;
         }
         if (Mlib::re::regex_match(line, match, osm_resource_reg)) {
-            OsmMapResourceConfig config;
+            OsmResourceConfig config;
             static const DECLARE_REGEX(key_value_reg, "(?:\\s*([^=]+)=([^,]*),?|\\s+|([\\s\\S]+))");
             std::string resource_name;
             find_all(match[1].str(), key_value_reg, [&fpath, &config, &resource_name](const Mlib::re::smatch& match2) {
