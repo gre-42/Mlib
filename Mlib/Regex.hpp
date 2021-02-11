@@ -44,6 +44,7 @@ class SubstitutionString {
 public:
     SubstitutionString();
     explicit SubstitutionString(const std::map<std::string, std::string>& s);
+    explicit SubstitutionString(std::map<std::string, std::string>&& s);
     std::string substitute(const std::string& t, const RegexSubstitutionCache& rsc) const;
     void merge(const SubstitutionString& other);
     void clear();

@@ -230,7 +230,7 @@ int main(int argc, char** argv) {
                     {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "10000")))},
                     {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"}
                 };
-                substitutions.merge(SubstitutionString{sstr});
+                substitutions.merge(SubstitutionString{std::move(sstr)});
             }
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};

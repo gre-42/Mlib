@@ -156,6 +156,10 @@ SubstitutionString::SubstitutionString(const std::map<std::string, std::string>&
 : s_{s}
 {}
 
+SubstitutionString::SubstitutionString(std::map<std::string, std::string>&& s)
+: s_{s}
+{}
+
 std::string SubstitutionString::substitute(const std::string& t, const RegexSubstitutionCache& rsc) const {
     return Mlib::substitute(t, s_, rsc);
 }

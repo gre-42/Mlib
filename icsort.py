@@ -10,6 +10,7 @@ for path, dirs, files in os.walk('.'):
         'LURelease',
         'UDebug',
         'URelease',
+        'URelWithDebInfo',
         'VRelease'
         'TestOut',
         'Data',
