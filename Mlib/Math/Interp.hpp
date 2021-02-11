@@ -40,7 +40,7 @@ public:
         }
     }
     TData operator () (const TData& vx) const {
-        if (x_.size() < 1) {
+        if (x_.empty()) {
             throw std::runtime_error("size must be >= 1");
         }
         if (vx < x_[0]) {
@@ -74,6 +74,12 @@ public:
         size_t i = it - x_.begin();
         TData alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
         return y_[i - 1] * (1 - alpha) + y_[i] * alpha;
+    }
+    bool is_within_range(const TData& vx) const {
+        if (x_.empty()) {
+            return false;
+        }
+        return (vx >= x_[0]) && (vx <= x_[x_.size() - 1]);
     }
 private:
     std::vector<TData> x_;
