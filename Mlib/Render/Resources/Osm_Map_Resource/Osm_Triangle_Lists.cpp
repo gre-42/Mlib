@@ -94,3 +94,18 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
 
 OsmTriangleLists::~OsmTriangleLists()
 {}
+
+#define INSERT(a) a->triangles_.insert(a->triangles_.end(), other.a->triangles_.begin(), other.a->triangles_.end())
+void OsmTriangleLists::insert(const OsmTriangleLists& other) {
+    INSERT(tl_terrain);
+    INSERT(tl_terrain_visuals);
+    INSERT(tl_terrain_street_extrusion);
+    INSERT(tl_street_crossing);
+    INSERT(tl_path_crossing);
+    INSERT(tl_street);
+    INSERT(tl_path);
+    INSERT(tl_curb_street);
+    INSERT(tl_curb_path);
+    INSERT(tl_curb2_street);
+    INSERT(tl_curb2_path);
+}

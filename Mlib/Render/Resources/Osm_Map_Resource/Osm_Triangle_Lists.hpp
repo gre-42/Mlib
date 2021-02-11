@@ -20,6 +20,7 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_curb_path;
     std::shared_ptr<TriangleList> tl_curb2_street;
     std::shared_ptr<TriangleList> tl_curb2_path;
+    void insert(const OsmTriangleLists& other);
 };
 
 }
