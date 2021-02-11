@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
-#include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -14,7 +13,9 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoints.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parse_Osm_Xml.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -96,106 +97,27 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
-    tl_terrain_ = std::make_shared<TriangleList>("terrain", Material{
-        .dirt_texture = config.dirt_texture,
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .specularity = {0.f, 0.f, 0.f},
-        .draw_distance_noperations = 1000}.compute_color_mode());
-    auto tl_terrain_visuals = std::make_shared<TriangleList>("tl_terrain_visuals", Material{
-        .dirt_texture = config.dirt_texture,
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .collide = false,
-        .specularity = {0.f, 0.f, 0.f},
-        .draw_distance_noperations = 1000}.compute_color_mode());
-    auto tl_terrain_street_extrusion = std::make_shared<TriangleList>("terrain_street_extrusion", Material{
-        .dirt_texture = config.dirt_texture,
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .specularity = {0.f, 0.f, 0.f},
-        .draw_distance_noperations = 1000}.compute_color_mode());
-    for (auto& t : config.terrain_textures) {
-        // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
-        BlendMapTexture bt = primary_rendering_resources->get_blend_map_texture(t);
-        tl_terrain_->material_.textures.push_back(bt);
-        tl_terrain_visuals->material_.textures.push_back(bt);
-        tl_terrain_street_extrusion->material_.textures.push_back(bt);
-    }
-    tl_terrain_->material_.compute_color_mode();
-    tl_terrain_visuals->material_.compute_color_mode();
-    tl_terrain_street_extrusion->material_.compute_color_mode();
-    auto tl_street_crossing = std::make_shared<TriangleList>("street_crossing", Material{
-        .textures = {primary_rendering_resources->get_blend_map_texture(config.street_crossing_texture)},
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 1000}.compute_color_mode());
-    auto tl_path_crossing = std::make_shared<TriangleList>("path_crossing", Material{
-        .textures = {primary_rendering_resources->get_blend_map_texture(config.path_crossing_texture)},
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 1000}.compute_color_mode());
-    auto tl_street = std::make_shared<TriangleList>("street", Material{
-        .continuous_blending_z_order = config.blend_street ? 1 : 0,
-        .textures = {primary_rendering_resources->get_blend_map_texture(config.street_texture)},
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .blend_mode = config.blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
-        .depth_func_equal = config.blend_street,
-        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
-    auto tl_path = std::make_shared<TriangleList>("path", Material{
-        .continuous_blending_z_order = config.blend_street ? 1 : 0,
-        .textures = {primary_rendering_resources->get_blend_map_texture(config.path_texture)},
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .blend_mode = config.blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
-        .depth_func_equal = config.blend_street,
-        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
-    WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || ((config.curb_alpha != 1) && (config.extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
-    auto tl_curb_street = std::make_shared<TriangleList>("curb_street", Material{
-        .textures = {primary_rendering_resources->get_blend_map_texture(config.curb_street_texture)},
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .wrap_mode_s = curb_wrap_mode_s,
-        .specularity = OrderableFixedArray{fixed_full<float, 3>((float)(config.extrude_curb_amount == 0))},
-        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
-    auto tl_curb_path = std::make_shared<TriangleList>("curb_path", Material{
-        .textures = {primary_rendering_resources->get_blend_map_texture(config.curb_path_texture)},
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .wrap_mode_s = curb_wrap_mode_s,
-        .specularity = OrderableFixedArray{fixed_full<float, 3>((float)(config.extrude_curb_amount == 0))},
-        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
-    auto tl_curb2_street = std::make_shared<TriangleList>("curb_street", Material{
-        .textures = {primary_rendering_resources->get_blend_map_texture(config.curb2_street_texture)},
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
-    auto tl_curb2_path = std::make_shared<TriangleList>("curb_path", Material{
-        .textures = {primary_rendering_resources->get_blend_map_texture(config.curb2_path_texture)},
-        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-        .occluder_type = OccluderType::WHITE,
-        .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
+    OsmTriangleLists osm_triangle_lists{config};
+    tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_ground{
-        tl_terrain_,
-        tl_terrain_visuals,
-        tl_terrain_street_extrusion,
-        tl_street_crossing,
-        tl_path_crossing,
-        tl_street,
-        tl_path,
-        tl_curb_street,
-        tl_curb_path,
-        tl_curb2_street,
-        tl_curb2_path};
+        osm_triangle_lists.tl_terrain,
+        osm_triangle_lists.tl_terrain_visuals,
+        osm_triangle_lists.tl_terrain_street_extrusion,
+        osm_triangle_lists.tl_street_crossing,
+        osm_triangle_lists.tl_path_crossing,
+        osm_triangle_lists.tl_street,
+        osm_triangle_lists.tl_path,
+        osm_triangle_lists.tl_curb_street,
+        osm_triangle_lists.tl_curb_path,
+        osm_triangle_lists.tl_curb2_street,
+        osm_triangle_lists.tl_curb2_path};
     std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb{
-        tl_terrain_,
-        tl_terrain_visuals,
-        tl_street_crossing,
-        tl_path_crossing,
-        tl_street,
-        tl_path};
+        osm_triangle_lists.tl_terrain,
+        osm_triangle_lists.tl_terrain_visuals,
+        osm_triangle_lists.tl_street_crossing,
+        osm_triangle_lists.tl_path_crossing,
+        osm_triangle_lists.tl_street,
+        osm_triangle_lists.tl_path};
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;
@@ -210,14 +132,14 @@ OsmMapResource::OsmMapResource(
         // draw_test_lines(vertices, 0.02);
         // draw_ways(vertices, nodes, ways, 0.002);
         DrawStreets{DrawStreetsInput{
-            *tl_street_crossing,
-            *tl_path_crossing,
-            *tl_street,
-            *tl_path,
-            *tl_curb_street,
-            *tl_curb_path,
-            *tl_curb2_street,
-            *tl_curb2_path,
+            *osm_triangle_lists.tl_street_crossing,
+            *osm_triangle_lists.tl_path_crossing,
+            *osm_triangle_lists.tl_street,
+            *osm_triangle_lists.tl_path,
+            *osm_triangle_lists.tl_curb_street,
+            *osm_triangle_lists.tl_curb_path,
+            *osm_triangle_lists.tl_curb2_street,
+            *osm_triangle_lists.tl_curb2_path,
             resource_instance_positions_,
             object_resource_descriptors_,
             hitboxes_,
@@ -352,14 +274,14 @@ OsmMapResource::OsmMapResource(
             nodes,
             ways);
 
-        auto hole_triangles = tl_street_crossing->triangles_;
-        hole_triangles.insert(hole_triangles.end(), tl_path_crossing->triangles_.begin(), tl_path_crossing->triangles_.end());
-        hole_triangles.insert(hole_triangles.end(), tl_street->triangles_.begin(), tl_street->triangles_.end());
-        hole_triangles.insert(hole_triangles.end(), tl_path->triangles_.begin(), tl_path->triangles_.end());
-        hole_triangles.insert(hole_triangles.end(), tl_curb_street->triangles_.begin(), tl_curb_street->triangles_.end());
-        hole_triangles.insert(hole_triangles.end(), tl_curb_path->triangles_.begin(), tl_curb_path->triangles_.end());
-        hole_triangles.insert(hole_triangles.end(), tl_curb2_street->triangles_.begin(), tl_curb2_street->triangles_.end());
-        hole_triangles.insert(hole_triangles.end(), tl_curb2_path->triangles_.begin(), tl_curb2_path->triangles_.end());
+        auto hole_triangles = osm_triangle_lists.tl_street_crossing->triangles_;
+        hole_triangles.insert(hole_triangles.end(), osm_triangle_lists.tl_path_crossing->triangles_.begin(), osm_triangle_lists.tl_path_crossing->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), osm_triangle_lists.tl_street->triangles_.begin(), osm_triangle_lists.tl_street->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), osm_triangle_lists.tl_path->triangles_.begin(), osm_triangle_lists.tl_path->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), osm_triangle_lists.tl_curb_street->triangles_.begin(), osm_triangle_lists.tl_curb_street->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), osm_triangle_lists.tl_curb_path->triangles_.begin(), osm_triangle_lists.tl_curb_path->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), osm_triangle_lists.tl_curb2_street->triangles_.begin(), osm_triangle_lists.tl_curb2_street->triangles_.end());
+        hole_triangles.insert(hole_triangles.end(), osm_triangle_lists.tl_curb2_path->triangles_.begin(), osm_triangle_lists.tl_curb2_path->triangles_.end());
         // plot_mesh(ArrayShape{2000, 2000}, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
         // {
         //     std::list<FixedArray<ColoredVertex, 3>*> tf;
@@ -381,9 +303,9 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("triangulate_terrain_or_ceilings");
         triangulate_terrain_or_ceilings(
             *tl_terrain_,
-            tl_terrain_visuals.get(),
+            osm_triangle_lists.tl_terrain_visuals.get(),
             config.blend_street
-                ? std::list<std::list<FixedArray<ColoredVertex, 3>>>{tl_street->triangles_, tl_path->triangles_}
+                ? std::list<std::list<FixedArray<ColoredVertex, 3>>>{osm_triangle_lists.tl_street->triangles_, osm_triangle_lists.tl_path->triangles_}
                 : std::list<std::list<FixedArray<ColoredVertex, 3>>>{},
             bounding_info,
             steiner_points,
@@ -435,142 +357,48 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    auto tls_all = tls_ground;
-    tls_all.insert(tls_all.end(), tls_buildings.begin(), tls_buildings.end());
-    tls_all.insert(tls_all.end(), tls_wall_barriers.begin(), tls_wall_barriers.end());
+    auto tls_all = smoothen_and_apply_heightmap(
+        config,
+        height_bindings,
+        nodes,
+        ways,
+        normalized_points,
+        tls_ground,
+        tls_buildings,
+        tls_wall_barriers,
+        osm_triangle_lists,
+        object_resource_descriptors_,
+        resource_instance_positions_,
+        hitboxes_,
+        steiner_points,
+        street_rectangles,
+        way_point_edges_2_lanes);
 
-    if (!config.heightmap.empty() || config.street_edge_smoothness > 0 || config.terrain_edge_smoothness > 0) {
-        std::list<FixedArray<float, 3>*> smoothed_vertices;
-        for (auto& l : tls_all) {
-            for (auto& t : l->triangles_) {
-                for (auto& v : t.flat_iterable()) {
-                    smoothed_vertices.push_back(&v.position);
-                }
-            }
-        }
-        for (auto& d : object_resource_descriptors_) {
-            smoothed_vertices.push_back(&d.position);
-        }
-        for (auto& i : resource_instance_positions_) {
-            for (auto& d : i.second) {
-                smoothed_vertices.push_back(&d.position);
-            }
-        }
-        for (auto& h : hitboxes_) {
-            for (auto& d : h.second) {
-                smoothed_vertices.push_back(&d);
-            }
-        }
-        for (SteinerPointInfo& p : steiner_points) {
-            smoothed_vertices.push_back(&p.position);
-        }
-        for (auto& r : street_rectangles) {
-            for (auto& p : r.rectangle.flat_iterable()) {
-                smoothed_vertices.push_back(&p);
-            }
-        }
-        for (auto& w : way_point_edges_2_lanes) {
-            for (auto& e : w.second) {
-                smoothed_vertices.push_back(&e.first);
-                smoothed_vertices.push_back(&e.second);
-            }
-        }
-        {
-            std::set<FixedArray<float, 3>*> svs(smoothed_vertices.begin(), smoothed_vertices.end());
-            if (svs.size() != smoothed_vertices.size()) {
-                throw std::runtime_error("Found duplicate smoothed vertices");
-            }
-        }
-        if (!config.heightmap.empty()) {
-            LOG_INFO("apply_height_map");
-            std::set<const FixedArray<float, 3>*> vertices_to_delete;
-            apply_height_map(
-                smoothed_vertices,
-                vertices_to_delete,
-                PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX),
-                normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
-                config.scale,
-                nodes,
-                ways,
-                height_bindings,
-                config.street_node_smoothness);
-            for (auto& l : tls_all) {
-                l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
-                    bool del =
-                        vertices_to_delete.contains(&v(0).position) ||
-                        vertices_to_delete.contains(&v(1).position) ||
-                        vertices_to_delete.contains(&v(2).position);
-                    if (del) {
-                        vertices_to_delete.insert(&v(0).position);
-                        vertices_to_delete.insert(&v(1).position);
-                        vertices_to_delete.insert(&v(2).position);
-                    }
-                    return del;
-                });
-            }
-            object_resource_descriptors_.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
-                return vertices_to_delete.contains(&d.position);
-            });
-            for (auto& i : resource_instance_positions_) {
-                i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
-                    return vertices_to_delete.contains(&d.position);
-                });
-            }
-            for (auto& h : hitboxes_) {
-                h.second.remove_if([&vertices_to_delete](const FixedArray<float, 3>& p){
-                    return vertices_to_delete.contains(&p);
-                });
-            }
-            steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
-                return vertices_to_delete.contains(&p.position);});
-            smoothed_vertices.remove_if([&vertices_to_delete](const FixedArray<float, 3>* p){
-                return vertices_to_delete.contains(p);});
-        }
-        if (config.street_edge_smoothness > 0 || config.terrain_edge_smoothness > 0) {
-            std::list<std::shared_ptr<TriangleList>> tls_street{
-                tl_street_crossing,
-                tl_path_crossing,
-                tl_street,
-                tl_path,
-                tl_curb_street,
-                tl_curb_path,
-                tl_curb2_street,
-                tl_curb2_path};
-            if (config.street_edge_smoothness > 0) {
-                LOG_INFO("smoothen_edges (street)");
-                TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, config.street_edge_smoothness, 100);
-            }
-            if (config.terrain_edge_smoothness > 0) {
-                LOG_INFO("smoothen_edges (ground)");
-                TriangleList::smoothen_edges(tls_ground, tls_street, smoothed_vertices, config.terrain_edge_smoothness, 10);
-            }
-        }
-    }
     raise_streets(
-        *tl_street_crossing,
-        *tl_path_crossing,
-        *tl_street,
-        *tl_path,
-        *tl_curb_street,
-        *tl_curb_path,
-        *tl_curb2_street,
-        *tl_curb2_path,
-        *tl_terrain_,
-        *tl_terrain_visuals,
+        *osm_triangle_lists.tl_street_crossing,
+        *osm_triangle_lists.tl_path_crossing,
+        *osm_triangle_lists.tl_street,
+        *osm_triangle_lists.tl_path,
+        *osm_triangle_lists.tl_curb_street,
+        *osm_triangle_lists.tl_curb_path,
+        *osm_triangle_lists.tl_curb2_street,
+        *osm_triangle_lists.tl_curb2_path,
+        *osm_triangle_lists.tl_terrain,
+        *osm_triangle_lists.tl_terrain_visuals,
         config.scale,
         config.raise_streets_amount);
     if (config.extrude_curb_amount != 0) {
         TriangleList::extrude(
-            *tl_curb_street,
-            {tl_curb_street},
+            *osm_triangle_lists.tl_curb_street,
+            {osm_triangle_lists.tl_curb_street},
             nullptr,
             config.extrude_curb_amount * config.scale,
             config.scale,
             config.uv_scale_street,
             config.uv_scale_street);
         TriangleList::extrude(
-            *tl_curb_path,
-            {tl_curb_path},
+            *osm_triangle_lists.tl_curb_path,
+            {osm_triangle_lists.tl_curb_path},
             nullptr,
             config.extrude_curb_amount * config.scale,
             config.scale,
@@ -581,8 +409,12 @@ OsmMapResource::OsmMapResource(
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (config.curb_alpha == 1) {
             TriangleList::extrude(
-                *tl_terrain_street_extrusion,
-                {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
+                *osm_triangle_lists.tl_terrain_street_extrusion,
+                {
+                    osm_triangle_lists.tl_street,
+                    osm_triangle_lists.tl_path,
+                    osm_triangle_lists.tl_street_crossing,
+                    osm_triangle_lists.tl_path_crossing},
                 nullptr,
                 config.extrude_street_amount * config.scale,
                 config.scale,
@@ -606,10 +438,16 @@ OsmMapResource::OsmMapResource(
             //     1,
             //     uv_scale_terrain,
             //     *tl_curb_street);
-            std::list<std::shared_ptr<TriangleList>> source_vertices{tl_curb_street, tl_curb_path};
+            std::list<std::shared_ptr<TriangleList>> source_vertices{
+                osm_triangle_lists.tl_curb_street,
+                osm_triangle_lists.tl_curb_path};
             TriangleList::extrude(
-                *tl_curb_street,
-                {tl_street, tl_path, tl_street_crossing, tl_path_crossing},
+                *osm_triangle_lists.tl_curb_street,
+                {
+                    osm_triangle_lists.tl_street,
+                    osm_triangle_lists.tl_path,
+                    osm_triangle_lists.tl_street_crossing,
+                    osm_triangle_lists.tl_path_crossing},
                 &source_vertices,
                 config.extrude_street_amount * config.scale,
                 config.scale,
