@@ -24,16 +24,11 @@ struct NeighborWay;
 struct AngleCurb;
 struct HoleWaypoint;
 struct NodeWayInfo;
+struct OsmTriangleLists;
 
 struct DrawStreetsInput {
-    TriangleList& tl_street_crossing;
-    TriangleList& tl_path_crossing;
-    TriangleList& tl_street;
-    TriangleList& tl_path;
-    TriangleList& tl_curb_street;
-    TriangleList& tl_curb_path;
-    TriangleList& tl_curb2_street;
-    TriangleList& tl_curb2_path;
+    OsmTriangleLists& ground_triangles;
+    OsmTriangleLists& air_triangles;
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions;
     std::list<ObjectResourceDescriptor>& object_resource_descriptors;
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes;

@@ -100,6 +100,7 @@ OsmMapResource::OsmMapResource(
     }
 
     OsmTriangleLists osm_triangle_lists{config};
+    OsmTriangleLists air_triangle_lists{config};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_ground{
         osm_triangle_lists.tl_terrain,
@@ -134,14 +135,8 @@ OsmMapResource::OsmMapResource(
         // draw_test_lines(vertices, 0.02);
         // draw_ways(vertices, nodes, ways, 0.002);
         DrawStreets{DrawStreetsInput{
-            *osm_triangle_lists.tl_street_crossing,
-            *osm_triangle_lists.tl_path_crossing,
-            *osm_triangle_lists.tl_street,
-            *osm_triangle_lists.tl_path,
-            *osm_triangle_lists.tl_curb_street,
-            *osm_triangle_lists.tl_curb_path,
-            *osm_triangle_lists.tl_curb2_street,
-            *osm_triangle_lists.tl_curb2_path,
+            osm_triangle_lists,
+            air_triangle_lists,
             resource_instance_positions_,
             object_resource_descriptors_,
             hitboxes_,
