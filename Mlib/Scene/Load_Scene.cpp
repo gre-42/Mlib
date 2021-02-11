@@ -108,7 +108,7 @@ private:
 };
 
 void LoadScene::operator()(
-    const std::string& scene_filename,
+    const std::string& working_directory,
     const std::string& script_filename,
     std::string& next_scene_filename,
     SubstitutionString& substitutions,
@@ -1873,7 +1873,7 @@ void LoadScene::operator()(
     MacroLineExecutor lp2{
         macro_file_executor_,
         script_filename,
-        fs::path(scene_filename).parent_path().string(),
+        working_directory,
         user_function,
         "no_scene_specified",
         substitutions,

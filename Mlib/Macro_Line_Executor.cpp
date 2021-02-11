@@ -26,6 +26,7 @@ MacroLineExecutor::MacroLineExecutor(
   user_function_{user_function},
   context_{context},
   substitutions_{substitutions},
+  builtin_substitutions_{SubstitutionString({{"__DIR__", fs::path(script_filename_).parent_path()}})},
   verbose_{verbose}
 {}
 
@@ -34,6 +35,7 @@ void MacroLineExecutor::operator () (
     const RegexSubstitutionCache& rsc) const
 {
     std::string subst_line = substitutions_.substitute(line, rsc);
+    subst_line = builtin_substitutions_.substitute(subst_line, rsc);
     static const DECLARE_REGEX(comment_reg, "^\\s*#[\\S\\s]*$");
     static const DECLARE_REGEX(macro_playback_reg, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?(" + substitute_pattern + ")$");
     // static const DECLARE_REGEX(macro_playback_reg_fast, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?([^;]*)$");
@@ -54,7 +56,7 @@ void MacroLineExecutor::operator () (
 
     auto spath = [&](const fs::path& f) -> std::string {
         if (f.empty()) {
-            return "";
+            throw std::runtime_error("Received empty script path");
         } else if (f.is_absolute()) {
             return f.string();
         } else {

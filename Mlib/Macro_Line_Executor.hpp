@@ -7,7 +7,6 @@
 
 namespace Mlib {
 
-class SubstitutionString;
 class MacroRecorder;
 
 class MacroLineExecutor {
@@ -36,6 +35,7 @@ private:
     UserFunction user_function_;
     std::string context_;
     const SubstitutionString& substitutions_;
+    SubstitutionString builtin_substitutions_;
     bool verbose_;
 };
 

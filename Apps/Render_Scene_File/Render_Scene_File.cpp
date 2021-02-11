@@ -12,7 +12,7 @@ using namespace Mlib;
 int main(int argc, char** argv) {
 
     const ArgParser parser(
-        "Usage: render_scene_file scene.scn\n"
+        "Usage: render_scene_file working_directory scene.scn\n"
         "    [--wire_frame]\n"
         "    [--no_cull_faces]\n"
         "    [--fly]\n"
@@ -135,8 +135,9 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
 
-        args.assert_num_unamed(1);
-        std::string main_scene_filename = args.unnamed_value(0);
+        args.assert_num_unamed(2);
+        std::string working_directory = args.unnamed_value(0);
+        std::string main_scene_filename = args.unnamed_value(1);
 
         size_t num_renderings;
         RenderConfig render_config{
@@ -239,7 +240,7 @@ int main(int argc, char** argv) {
             {
                 GlContextGuard gcg{ render2.window() };
                 load_scene(
-                    main_scene_filename,
+                    working_directory,
                     main_scene_filename,
                     next_scene_filename,
                     substitutions,

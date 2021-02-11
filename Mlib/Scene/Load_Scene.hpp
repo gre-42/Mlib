@@ -21,7 +21,7 @@ class RenderLogics;
 class LoadScene {
 public:
     void operator () (
-        const std::string& scene_filename,
+        const std::string& working_directory,
         const std::string& script_filename,
         std::string& next_scene_filename,
         SubstitutionString& substitutions,
