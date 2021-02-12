@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Interp.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <cmath>
 #include <list>
@@ -12,6 +13,8 @@ namespace Mlib {
 enum class BlendMode;
 enum class DrivingDirection;
 struct WaysideResourceNames;
+template <class TData>
+class Interp;
 
 struct OsmResourceConfig {
     OsmResourceConfig();
@@ -80,6 +83,7 @@ struct OsmResourceConfig {
     float terrain_edge_smoothness = 0;
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     bool blend_street = false;
+    Interp<float> layer_heights{std::vector<float>{}, std::vector<float>{}};
 };
 
 }

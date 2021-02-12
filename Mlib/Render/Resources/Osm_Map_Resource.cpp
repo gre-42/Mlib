@@ -159,7 +159,8 @@ OsmMapResource::OsmMapResource(
             config.curb2_uv_x,
             street_lights,
             config.with_height_bindings,
-            config.driving_direction
+            config.driving_direction,
+            config.layer_heights
         }};
     }
 
@@ -348,6 +349,7 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_ceiling,
             config.max_wall_width);
     }
+    osm_triangle_lists.insert(air_triangle_lists);
     if (config.remove_backfacing_triangles) {
         for (auto& l : tls_ground) {
             l->delete_backfacing_triangles();

@@ -89,7 +89,8 @@ std::list<std::shared_ptr<TriangleList>> Mlib::smoothen_and_apply_heightmap(
                 nodes,
                 ways,
                 height_bindings,
-                config.street_node_smoothness);
+                config.street_node_smoothness,
+                config.layer_heights);
             for (auto& l : tls_all) {
                 l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
                     bool del =

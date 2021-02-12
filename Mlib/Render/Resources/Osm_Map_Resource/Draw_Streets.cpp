@@ -107,6 +107,9 @@ void DrawStreets::calculate_neighbors() {
             float width = scale * parse_meters(tags, "width", default_street_width);
             RoadType road_type = path_tags.contains(tags.at("highway")) ? RoadType::PATH : RoadType::STREET;
             int layer = (tags.find("layer") == tags.end()) ? 0 : safe_stoi(tags.at("layer"));
+            if ((layer != 0) && !layer_heights.is_within_range(layer)) {
+                continue;
+            }
             float way_length = 0;
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 if (node_no_way_length.find(*it) == node_no_way_length.end()) {

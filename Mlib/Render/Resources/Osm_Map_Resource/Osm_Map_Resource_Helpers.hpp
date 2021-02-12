@@ -21,6 +21,8 @@ class TriangleList;
 struct ParsedResourceName;
 enum class DrivingDirection;
 enum class WayPointLocation;
+template <class TData>
+class Interp;
 
 static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
@@ -238,7 +240,8 @@ void apply_height_map(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
-    float street_node_smoothness);
+    float street_node_smoothness,
+    const Interp<float>& layer_height);
 
 void add_grass_on_steiner_points(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,

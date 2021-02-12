@@ -717,11 +717,13 @@ void Mlib::triangulate_terrain_or_ceilings(
 struct NodeHeight {
     float height;
     float smooth_height;
+    float layer;
 };
 
 struct NeighborWeight {
     std::string id;
     float weight;
+    int layer;
 };
 
 void Mlib::apply_height_map(
@@ -733,29 +735,52 @@ void Mlib::apply_height_map(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
-    float street_node_smoothness)
+    float street_node_smoothness,
+    const Interp<float>& layer_height)
 {
+    // Smoothen raw 2D street nodes, ignoring which triangles they contributed to.
     std::map<std::string, NodeHeight> node_height;
     if (street_node_smoothness != 0) {
         std::map<std::string, std::list<NeighborWeight>> node_neighbors;
         for (const auto& w : ways) {
+            auto layer_it = w.second.tags.find("layer");
+            int layer = (layer_it == w.second.tags.end()) ? 0 : safe_stoi(layer_it->second);
+            if ((layer != 0) && !layer_height.is_within_range(layer)) {
+                continue;
+            }
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s != w.second.nd.end()) {
                     float weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
-                    node_neighbors[*s].push_back({.id = *it, .weight = weight});
-                    node_neighbors[*it].push_back({.id = *s, .weight = weight});
+                    node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer});
+                    node_neighbors[*it].push_back({.id = *s, .weight = weight, .layer = layer});
                 }
             }
         }
+        // Iterate over the nodes with at least one neighbor.
         for (const auto& n : node_neighbors) {
-            FixedArray<float, 2> p = normalization_matrix * nodes.at(n.first).position;
-            float z;
-            if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+            float layer = 0;
+            for (const auto& nn : n.second) {
+                layer += nn.layer;
+            }
+            layer /= n.second.size();
+            if (layer == 0) {
+                // If the ways to all all neighbors are on the ground (or they cancel out to 0),
+                // pick the height of the height of the heightmap exactly on the observer node.
+                FixedArray<float, 2> p = normalization_matrix * nodes.at(n.first).position;
+                float z;
+                if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+                    node_height[n.first] = {
+                        .height = z,
+                        .smooth_height = z};
+                }
+            } else {
+                // If some ways are not on the ground, and the heights don't cancel out to 0,
+                // interpolate the height using the "layer_height" interpolator.
                 node_height[n.first] = {
-                    .height = z,
-                    .smooth_height = z};
+                    .height = layer_height(layer),
+                    .smooth_height = layer_height(layer)};
             }
         }
         for (size_t i = 0; i < 50; ++i) {
@@ -780,14 +805,21 @@ void Mlib::apply_height_map(
             }
         }
     }
+    // Transfer smoothening of street nodes to the triangles they produced.
+    // The mapping node -> triangle vertices is stored in the "height_bindings" mapping.
+    // Note that the 2D coordinates of OSM nodes are garantueed to be unique to exactly one height.
+    // Also, duplicate nodes were already removed while parsing the OSM XML-file.
     std::map<OrderableFixedArray<float, 2>, std::list<FixedArray<float, 3>*>> vertex_instances_map;
     for (FixedArray<float, 3>* iv : in_vertices) {
         vertex_instances_map[OrderableFixedArray<float, 2>{(*iv)(0), (*iv)(1)}].push_back(iv);
     }
     for (auto& position : vertex_instances_map) {
         FixedArray<float, 2> vc;
+        // Try to apply height bindings.
         auto it = height_bindings.find(OrderableFixedArray<float, 2>{position.first(0), position.first(1)});
         if ((it != height_bindings.end()) && (it->second.size() == 1)) {
+            // Note that node_height is empty if street_node_smoothness == 0,
+            // so this test will then always return false.
             if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
                 for (auto& pc : position.second) {
                     (*pc)(2) += hit->second.smooth_height * scale;
@@ -798,6 +830,7 @@ void Mlib::apply_height_map(
         } else {
             vc = {position.first(0), position.first(1)};
         }
+        // If no height binding could be applied, use the raw heightmap value.
         FixedArray<float, 2> p = normalization_matrix * vc;
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {

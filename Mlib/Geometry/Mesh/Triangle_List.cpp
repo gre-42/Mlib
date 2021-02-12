@@ -128,6 +128,8 @@ void TriangleList::extrude(
 {
     using O = OrderableFixedArray<float, 3>;
 
+    // Only relevant if "source_vertices != nullptr".
+    // Map "edge -> vertices" for different uv-coordinates.
     std::map<std::pair<O, O>, std::pair<const ColoredVertex*, const ColoredVertex*>> edge_map;
     if (source_vertices != nullptr) {
         for (const auto& l : *source_vertices) {

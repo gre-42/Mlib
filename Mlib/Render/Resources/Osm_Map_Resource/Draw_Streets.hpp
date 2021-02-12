@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Interp.hpp>
 #include <list>
 #include <map>
 #include <set>
@@ -52,6 +53,7 @@ struct DrawStreetsInput {
     ResourceNameCycle& street_lights;
     bool with_height_bindings;
     DrivingDirection driving_direction;
+    Interp<float> layer_heights;
 };
 
 class DrawStreets: private DrawStreetsInput {

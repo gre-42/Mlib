@@ -591,7 +591,9 @@ void LoadScene::operator()(
             OsmResourceConfig config;
             static const DECLARE_REGEX(key_value_reg, "(?:\\s*([^=]+)=([^,]*),?|\\s+|([\\s\\S]+))");
             std::string resource_name;
-            find_all(match[1].str(), key_value_reg, [&fpath, &config, &resource_name](const Mlib::re::smatch& match2) {
+            std::vector<float> layer_heights_layer;
+            std::vector<float> layer_heights_height;
+            find_all(match[1].str(), key_value_reg, [&](const Mlib::re::smatch& match2) {
                 if (match2[3].matched) {
                     throw std::runtime_error("Unknown element: \"" + match2[3].str() + '"');
                 }
@@ -799,13 +801,22 @@ void LoadScene::operator()(
                 else if (key == "blend_street") {
                     config.blend_street = safe_stob(value);
                 }
+                else if (key == "layer_heights_layer") {
+                    layer_heights_layer = string_to_vector(value, safe_stof);
+                }
+                else if (key == "layer_heights_height") {
+                    layer_heights_height = string_to_vector(value, safe_stof);
+                }
                 else {
                     throw std::runtime_error("Unknown osm key: \"" + key + '"');
                 }
-                });
-                if (resource_name.empty()) {
-                    throw std::runtime_error("Osm resource name not set");
-                }
+            });
+            if (resource_name.empty()) {
+                throw std::runtime_error("Osm resource name not set");
+            }
+            config.layer_heights = Interp<float>(
+                layer_heights_layer,
+                layer_heights_height);
             scene_node_resources.add_resource(
                 resource_name,
                 std::make_shared<OsmMapResource>(
