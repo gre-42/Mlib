@@ -391,6 +391,7 @@ OsmMapResource::OsmMapResource(
             *osm_triangle_lists.tl_curb_street,
             {osm_triangle_lists.tl_curb_street},
             nullptr,
+            nullptr,
             config.extrude_curb_amount * config.scale,
             config.scale,
             config.uv_scale_street,
@@ -398,6 +399,7 @@ OsmMapResource::OsmMapResource(
         TriangleList::extrude(
             *osm_triangle_lists.tl_curb_path,
             {osm_triangle_lists.tl_curb_path},
+            nullptr,
             nullptr,
             config.extrude_curb_amount * config.scale,
             config.scale,
@@ -414,6 +416,7 @@ OsmMapResource::OsmMapResource(
                     osm_triangle_lists.tl_path,
                     osm_triangle_lists.tl_street_crossing,
                     osm_triangle_lists.tl_path_crossing},
+                nullptr,
                 nullptr,
                 config.extrude_street_amount * config.scale,
                 config.scale,
@@ -440,6 +443,20 @@ OsmMapResource::OsmMapResource(
             std::list<std::shared_ptr<TriangleList>> source_vertices{
                 osm_triangle_lists.tl_curb_street,
                 osm_triangle_lists.tl_curb_path};
+            std::set<OrderableFixedArray<float, 3>> terrain_vertices;
+            for (const auto& t : osm_triangle_lists.tl_terrain->triangles_) {
+                for (const auto& v : t.flat_iterable()) {
+                    terrain_vertices.insert(OrderableFixedArray{v.position});
+                }
+            }
+            std::set<OrderableFixedArray<float, 3>> boundary_vertices;
+            for (const auto& t : osm_triangle_lists.tl_street->triangles_) {
+                for (const auto& v : t.flat_iterable()) {
+                    if (terrain_vertices.contains(OrderableFixedArray{v.position})) {
+                        boundary_vertices.insert(OrderableFixedArray{v.position});
+                    }
+                }
+            }
             TriangleList::extrude(
                 *osm_triangle_lists.tl_curb_street,
                 {
@@ -448,6 +465,7 @@ OsmMapResource::OsmMapResource(
                     osm_triangle_lists.tl_street_crossing,
                     osm_triangle_lists.tl_path_crossing},
                 &source_vertices,
+                &boundary_vertices,
                 config.extrude_street_amount * config.scale,
                 config.scale,
                 1,

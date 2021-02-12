@@ -121,6 +121,7 @@ void TriangleList::extrude(
     TriangleList& dest,
     const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>* source_vertices,
+    const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
     float height,
     float scale,
     float uv_scale_x,
@@ -150,7 +151,14 @@ void TriangleList::extrude(
     std::set<std::pair<O, O>> contour_edges = find_contour_edges(tris);
     for (auto& t : tris) {
         FixedArray<ColoredVertex, 3> t_old = *t;
+        FixedArray<bool, 3> is_clamped{
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{(*t)(0).position}),
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{(*t)(1).position}),
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{(*t)(2).position})};
         auto connect_extruded = [&](size_t a, size_t b){
+            if (is_clamped(a) && is_clamped(b)) {
+                return;
+            }
             auto edge = std::make_pair(O{t_old(a).position}, O{t_old(b).position});
             if (!contour_edges.contains(edge)) {
                 return;
@@ -169,26 +177,50 @@ void TriangleList::extrude(
                 va = &t_old(a);
                 vb = &t_old(b);
             }
-            dest.draw_rectangle_wo_normals(
-                va->position,
-                vb->position,
-                (*t)(b).position,
-                (*t)(a).position,
-                {1.f, 1.f, 1.f},
-                {1.f, 1.f, 1.f},
-                {1.f, 1.f, 1.f},
-                {1.f, 1.f, 1.f},
-                va->uv,
-                vb->uv,
-                vb->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f},
-                va->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f});
+            if (is_clamped(a)) {
+                dest.draw_triangle_wo_normals(
+                    va->position,
+                    vb->position,
+                    (*t)(b).position,
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    va->uv,
+                    vb->uv,
+                    vb->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f});
+            } else if (is_clamped(b)) {
+                dest.draw_triangle_wo_normals(
+                    va->position,
+                    vb->position,
+                    (*t)(a).position,
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    va->uv,
+                    vb->uv,
+                    va->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f});
+            } else {
+                dest.draw_rectangle_wo_normals(
+                    va->position,
+                    vb->position,
+                    (*t)(b).position,
+                    (*t)(a).position,
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    {1.f, 1.f, 1.f},
+                    va->uv,
+                    vb->uv,
+                    vb->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f},
+                    va->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f});
+            }
         };
-        (*t)(0).position(2) += height;
-        (*t)(1).position(2) += height;
-        (*t)(2).position(2) += height;
-        (*t)(0).uv(0) *= uv_scale_x;
-        (*t)(1).uv(0) *= uv_scale_x;
-        (*t)(2).uv(0) *= uv_scale_x;
+        for (size_t i = 0; i < 3; ++i) {
+            if (!is_clamped(i)) {
+                (*t)(i).position(2) += height;
+                (*t)(i).uv(0) *= uv_scale_x;
+            }
+        }
 
         connect_extruded(0, 1);
         connect_extruded(1, 2);

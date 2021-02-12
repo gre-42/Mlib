@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 namespace Mlib {
@@ -90,6 +91,7 @@ public:
         TriangleList& dest,
         const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>* source_vertices,
+        const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
         float height,
         float scale,
         float uv_scale_x,
