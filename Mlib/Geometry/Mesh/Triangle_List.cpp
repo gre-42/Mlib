@@ -228,6 +228,15 @@ void TriangleList::extrude(
     }
 }
 
+std::list<std::shared_ptr<TriangleList>> TriangleList::concatenated(
+    const std::list<std::shared_ptr<TriangleList>>& a,
+    const std::list<std::shared_ptr<TriangleList>>& b)
+{
+    std::list<std::shared_ptr<TriangleList>> result = a;
+    result.insert(result.end(), b.begin(), b.end());
+    return result;
+}
+
 void TriangleList::delete_backfacing_triangles() {
     std::erase_if(triangles_, [](const FixedArray<ColoredVertex, 3>& t) -> bool{
         bool erase = dot0d(scaled_triangle_normal({

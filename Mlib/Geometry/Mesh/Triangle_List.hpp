@@ -98,6 +98,9 @@ public:
         float scale,
         float uv_scale_x,
         float uv_scale_y);
+    static std::list<std::shared_ptr<TriangleList>> concatenated(
+        const std::list<std::shared_ptr<TriangleList>>& a,
+        const std::list<std::shared_ptr<TriangleList>>& b);
     void delete_backfacing_triangles();
     void calculate_triangle_normals();
     void convert_triangle_to_vertex_normals();
