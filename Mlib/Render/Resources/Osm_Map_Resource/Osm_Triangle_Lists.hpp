@@ -1,4 +1,5 @@
 #pragma once
+#include <list>
 #include <memory>
 
 namespace Mlib {
@@ -21,6 +22,10 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_curb2_street;
     std::shared_ptr<TriangleList> tl_curb2_path;
     void insert(const OsmTriangleLists& other);
+    std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
+    std::list<std::shared_ptr<TriangleList>> tls_street() const;
+    std::list<std::shared_ptr<TriangleList>> tls_ground() const;
+    std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb() const;
 };
 
 }

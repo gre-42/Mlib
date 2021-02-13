@@ -21,16 +21,16 @@ struct ResourceInstanceDescriptor;
 enum class WayPointLocation;
 struct OsmResourceConfig;
 
-std::list<std::shared_ptr<TriangleList>> smoothen_and_apply_heightmap(
+void smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const NormalizedPointsFixed& normalized_points,
-    const std::list<std::shared_ptr<TriangleList>>& tls_ground,
     const std::list<std::shared_ptr<TriangleList>>& tls_buildings,
     const std::list<std::shared_ptr<TriangleList>>& tls_wall_barriers,
     const OsmTriangleLists& osm_triangle_lists,
+    const OsmTriangleLists& air_triangle_lists,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,

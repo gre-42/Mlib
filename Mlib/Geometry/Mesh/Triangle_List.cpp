@@ -264,7 +264,7 @@ void TriangleList::convert_triangle_to_vertex_normals() {
     }
 }
 
-void TriangleList::convert_triangle_to_vertex_normals(std::list<std::shared_ptr<TriangleList>>& triangle_lists) {
+void TriangleList::convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists) {
     VertexNormals vertex_normals;
     for (const auto& l : triangle_lists) {
         vertex_normals.add_triangles(

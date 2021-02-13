@@ -426,50 +426,28 @@ void Mlib::get_map_outer_contour(
 }
 
 void Mlib::raise_streets(
-    TriangleList& tl_street_crossing,
-    TriangleList& tl_path_crossing,
-    TriangleList& tl_street,
-    TriangleList& tl_path,
-    TriangleList& tl_curb_street,
-    TriangleList& tl_curb_path,
-    TriangleList& tl_curb2_street,
-    TriangleList& tl_curb2_path,
-    TriangleList& tl_terrain,
-    TriangleList& tl_terrain_visuals,
+    const std::list<std::shared_ptr<TriangleList>>& tls_street_wo_curb,
+    const std::list<std::shared_ptr<TriangleList>>& tls_ground,
     float scale,
     float amount)
 {
     std::set<OrderableFixedArray<float, 3>> raised_nodes;
-    auto ins = [&](const std::list<FixedArray<ColoredVertex, 3>>& l){
-        for (const auto& n : l) {
+    for (auto& l : tls_street_wo_curb) {
+        for (const auto& n : l->triangles_) {
             raised_nodes.insert(OrderableFixedArray{n(0).position});
             raised_nodes.insert(OrderableFixedArray{n(1).position});
             raised_nodes.insert(OrderableFixedArray{n(2).position});
         }
-    };
-    ins(tl_street_crossing.triangles_);
-    ins(tl_path_crossing.triangles_);
-    ins(tl_street.triangles_);
-    ins(tl_path.triangles_);
-    auto raise = [&](std::list<FixedArray<ColoredVertex, 3>>& l){
-        for (auto& n : l) {
+    }
+    for (auto& l : tls_ground) {
+        for (auto& n : l->triangles_) {
             for (auto& v : n.flat_iterable()) {
                 if (raised_nodes.find(OrderableFixedArray{v.position}) != raised_nodes.end()) {
                     v.position(2) += scale * amount;
                 }
             }
         }
-    };
-    raise(tl_street_crossing.triangles_);
-    raise(tl_path_crossing.triangles_);
-    raise(tl_street.triangles_);
-    raise(tl_path.triangles_);
-    raise(tl_curb_street.triangles_);
-    raise(tl_curb_path.triangles_);
-    raise(tl_curb2_street.triangles_);
-    raise(tl_curb2_path.triangles_);
-    raise(tl_terrain.triangles_);
-    raise(tl_terrain_visuals.triangles_);
+    }
 }
 
 class PTri {

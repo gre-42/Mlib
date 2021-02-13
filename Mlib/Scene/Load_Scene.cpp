@@ -777,6 +777,9 @@ void LoadScene::operator()(
                 else if (key == "extrude_curb_amount") {
                     config.extrude_curb_amount = safe_stof(value);
                 }
+                else if (key == "extrude_air_curb_amount") {
+                    config.extrude_air_curb_amount = safe_stof(value);
+                }
                 else if (key == "extrude_street_amount") {
                     config.extrude_street_amount = safe_stof(value);
                 }

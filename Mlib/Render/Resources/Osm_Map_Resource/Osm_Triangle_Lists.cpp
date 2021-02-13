@@ -109,3 +109,49 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
     INSERT(tl_curb2_street);
     INSERT(tl_curb2_path);
 }
+#undef INSERT
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_street_wo_curb() const {
+    return std::list<std::shared_ptr<TriangleList>>{
+        tl_street_crossing,
+        tl_path_crossing,
+        tl_street,
+        tl_path};
+}
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_street() const {
+    return std::list<std::shared_ptr<TriangleList>>{
+        tl_street_crossing,
+        tl_path_crossing,
+        tl_street,
+        tl_path,
+        tl_curb_street,
+        tl_curb_path,
+        tl_curb2_street,
+        tl_curb2_path};
+}
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_ground() const {
+    return std::list<std::shared_ptr<TriangleList>>{
+        tl_terrain,
+        tl_terrain_visuals,
+        tl_terrain_street_extrusion,
+        tl_street_crossing,
+        tl_path_crossing,
+        tl_street,
+        tl_path,
+        tl_curb_street,
+        tl_curb_path,
+        tl_curb2_street,
+        tl_curb2_path};
+}
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_ground_wo_curb() const {
+    return std::list<std::shared_ptr<TriangleList>>{
+        tl_terrain,
+        tl_terrain_visuals,
+        tl_street_crossing,
+        tl_path_crossing,
+        tl_street,
+        tl_path};
+}

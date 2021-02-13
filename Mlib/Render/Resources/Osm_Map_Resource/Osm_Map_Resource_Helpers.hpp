@@ -23,6 +23,7 @@ enum class DrivingDirection;
 enum class WayPointLocation;
 template <class TData>
 class Interp;
+struct OsmTriangleLists;
 
 static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
@@ -187,16 +188,8 @@ void get_map_outer_contour(
     const std::map<std::string, Way>& ways);
 
 void raise_streets(
-    TriangleList& tl_street_crossing,
-    TriangleList& tl_path_crossing,
-    TriangleList& tl_street,
-    TriangleList& tl_path,
-    TriangleList& tl_curb_street,
-    TriangleList& tl_curb_path,
-    TriangleList& tl_curb2_street,
-    TriangleList& tl_curb2_path,
-    TriangleList& tl_terrain,
-    TriangleList& tl_terrain_visuals,
+    const std::list<std::shared_ptr<TriangleList>>& tls_street_wo_curb,
+    const std::list<std::shared_ptr<TriangleList>>& tls_ground,
     float scale,
     float amount);
 

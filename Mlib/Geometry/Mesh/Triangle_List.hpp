@@ -16,6 +16,8 @@ struct ColoredVertexArray;
 
 class TriangleList {
 public:
+    TriangleList(const TriangleList&) = delete;
+    TriangleList& operator = (const TriangleList&) = delete;
     explicit TriangleList(const std::string& name, const Material& material)
     : name_{name},
       material_{material}
@@ -99,7 +101,7 @@ public:
     void delete_backfacing_triangles();
     void calculate_triangle_normals();
     void convert_triangle_to_vertex_normals();
-    static void convert_triangle_to_vertex_normals(std::list<std::shared_ptr<TriangleList>>& triangle_lists);
+    static void convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists);
     static void smoothen_edges(
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,

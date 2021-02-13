@@ -12,16 +12,16 @@
 
 using namespace Mlib;
 
-std::list<std::shared_ptr<TriangleList>> Mlib::smoothen_and_apply_heightmap(
+void Mlib::smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
     const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const NormalizedPointsFixed& normalized_points,
-    const std::list<std::shared_ptr<TriangleList>>& tls_ground,
     const std::list<std::shared_ptr<TriangleList>>& tls_buildings,
     const std::list<std::shared_ptr<TriangleList>>& tls_wall_barriers,
     const OsmTriangleLists& osm_triangle_lists,
+    const OsmTriangleLists& air_triangle_lists,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
@@ -29,9 +29,12 @@ std::list<std::shared_ptr<TriangleList>> Mlib::smoothen_and_apply_heightmap(
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes)
 {
-    std::list<std::shared_ptr<TriangleList>> tls_all;
+    auto tls_ground = osm_triangle_lists.tls_ground();
+    auto air_tls_ground = air_triangle_lists.tls_ground();
+    tls_ground.insert(tls_ground.end(), air_tls_ground.begin(), air_tls_ground.end());
 
-    tls_all = tls_ground;
+    std::list<std::shared_ptr<TriangleList>> tls_all;
+    tls_all.insert(tls_all.end(), tls_ground.begin(), tls_ground.end());
     tls_all.insert(tls_all.end(), tls_buildings.begin(), tls_buildings.end());
     tls_all.insert(tls_all.end(), tls_wall_barriers.begin(), tls_wall_barriers.end());
 
@@ -124,15 +127,9 @@ std::list<std::shared_ptr<TriangleList>> Mlib::smoothen_and_apply_heightmap(
                 return vertices_to_delete.contains(p);});
         }
         if (config.street_edge_smoothness > 0 || config.terrain_edge_smoothness > 0) {
-            std::list<std::shared_ptr<TriangleList>> tls_street{
-                osm_triangle_lists.tl_street_crossing,
-                osm_triangle_lists.tl_path_crossing,
-                osm_triangle_lists.tl_street,
-                osm_triangle_lists.tl_path,
-                osm_triangle_lists.tl_curb_street,
-                osm_triangle_lists.tl_curb_path,
-                osm_triangle_lists.tl_curb2_street,
-                osm_triangle_lists.tl_curb2_path};
+            std::list<std::shared_ptr<TriangleList>> tls_street = osm_triangle_lists.tls_street();
+            std::list<std::shared_ptr<TriangleList>> tls_air_street = air_triangle_lists.tls_street();
+            tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
             if (config.street_edge_smoothness > 0) {
                 LOG_INFO("smoothen_edges (street)");
                 TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, config.street_edge_smoothness, 100);
@@ -143,5 +140,4 @@ std::list<std::shared_ptr<TriangleList>> Mlib::smoothen_and_apply_heightmap(
             }
         }
     }
-    return tls_all;
 }
