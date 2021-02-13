@@ -90,6 +90,18 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
         .draw_distance_noperations = 1000}.compute_color_mode()); // mixed_texture: terrain_texture
+    tl_air_curb_street = std::make_shared<TriangleList>("air_curb_street", Material{
+        .textures = {primary_rendering_resources->get_blend_map_texture(config.air_curb_street_texture)},
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .wrap_mode_s = curb_wrap_mode_s,
+        .draw_distance_noperations = 1000}.compute_color_mode());
+    tl_air_curb_path = std::make_shared<TriangleList>("air_curb_path", Material{
+        .textures = {primary_rendering_resources->get_blend_map_texture(config.air_curb_path_texture)},
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .wrap_mode_s = curb_wrap_mode_s,
+        .draw_distance_noperations = 1000}.compute_color_mode());
 }
 
 OsmTriangleLists::~OsmTriangleLists()
@@ -108,6 +120,8 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
     INSERT(tl_curb_path);
     INSERT(tl_curb2_street);
     INSERT(tl_curb2_path);
+    INSERT(tl_air_curb_street);
+    INSERT(tl_air_curb_path);
 }
 #undef INSERT
 
@@ -143,7 +157,9 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_ground() const {
         tl_curb_street,
         tl_curb_path,
         tl_curb2_street,
-        tl_curb2_path};
+        tl_curb2_path,
+        tl_air_curb_street,
+        tl_air_curb_path};
 }
 
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_ground_wo_curb() const {

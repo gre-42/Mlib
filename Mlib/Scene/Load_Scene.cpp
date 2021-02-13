@@ -638,6 +638,12 @@ void LoadScene::operator()(
                 else if (key == "curb2_path_texture") {
                     config.curb2_path_texture = fpath(value);
                 }
+                else if (key == "air_curb_street_texture") {
+                    config.air_curb_street_texture = fpath(value);
+                }
+                else if (key == "air_curb_path_texture") {
+                    config.air_curb_path_texture = fpath(value);
+                }
                 else if (key == "facade_textures") {
                     config.facade_textures = string_to_vector(value, fpath);
                 }
