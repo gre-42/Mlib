@@ -766,8 +766,8 @@ void Mlib::apply_height_map(
             }
             layer /= n.second.size();
             if (layer == 0) {
-                // If the ways to all all neighbors are on the ground (or they cancel out to 0),
-                // pick the height of the height of the heightmap exactly on the observer node.
+                // If the ways to all neighbors are on the ground (or they cancel out to 0),
+                // pick the height of the heightmap exactly on the node.
                 FixedArray<float, 2> p = normalization_matrix * nodes.at(n.first).position;
                 float z;
                 if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
@@ -784,7 +784,6 @@ void Mlib::apply_height_map(
             }
         }
         for (size_t i = 0; i < 50; ++i) {
-            // std::cerr << i << " " << node_neighbors.size() << std::endl;
             for (const auto& n : node_neighbors) {
                 auto hit = node_height.find(n.first);
                 if (hit != node_height.end()) {
