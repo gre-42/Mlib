@@ -398,24 +398,29 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_street,
             config.uv_scale_street);
     }
-    if (!std::isnan(config.extrude_air_curb_amount)) {
-        osm_triangle_lists.insert(air_triangle_lists);
+    if (std::isnan(config.extrude_air_curb_amount)) {
+        raise_streets(
+            osm_triangle_lists.tls_street_wo_curb(),
+            osm_triangle_lists.tls_ground(),
+            config.scale,
+            config.raise_streets_amount);
+    } else {
+        raise_streets(
+            TriangleList::concatenated(
+                osm_triangle_lists.tls_street_wo_curb(),
+                air_triangle_lists.tls_street_wo_curb()),
+            TriangleList::concatenated(
+                osm_triangle_lists.tls_ground(),
+                air_triangle_lists.tls_ground()),
+            config.scale,
+            config.raise_streets_amount);
     }
-    raise_streets(
-        osm_triangle_lists.tls_street_wo_curb(),
-        osm_triangle_lists.tls_ground(),
-        config.scale,
-        config.raise_streets_amount);
     if (config.extrude_street_amount != 0) {
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (config.curb_alpha == 1) {
             TriangleList::extrude(
                 *osm_triangle_lists.tl_terrain_street_extrusion,
-                {
-                    osm_triangle_lists.tl_street,
-                    osm_triangle_lists.tl_path,
-                    osm_triangle_lists.tl_street_crossing,
-                    osm_triangle_lists.tl_path_crossing},
+                osm_triangle_lists.tls_street_wo_curb(),
                 nullptr,
                 nullptr,
                 config.extrude_street_amount * config.scale,
@@ -440,9 +445,6 @@ OsmMapResource::OsmMapResource(
             //     1,
             //     uv_scale_terrain,
             //     *tl_curb_street);
-            std::list<std::shared_ptr<TriangleList>> source_vertices{
-                osm_triangle_lists.tl_curb_street,
-                osm_triangle_lists.tl_curb_path};
             std::set<OrderableFixedArray<float, 3>> terrain_vertices;
             for (const auto& t : osm_triangle_lists.tl_terrain->triangles_) {
                 for (const auto& v : t.flat_iterable()) {
@@ -462,30 +464,34 @@ OsmMapResource::OsmMapResource(
                     }
                 }
             }
-            TriangleList::extrude(
-                *osm_triangle_lists.tl_curb_street,
-                {
-                    osm_triangle_lists.tl_street,
-                    osm_triangle_lists.tl_path,
-                    osm_triangle_lists.tl_street_crossing,
-                    osm_triangle_lists.tl_path_crossing},
-                &source_vertices,
-                &boundary_vertices,
-                config.extrude_street_amount * config.scale,
-                config.scale,
-                1,
-                config.uv_scale_terrain);
+            auto do_extrude = [&config, &boundary_vertices]
+                (OsmTriangleLists& triangle_lists)
+            {
+                std::list<std::shared_ptr<TriangleList>> source_vertices{
+                    triangle_lists.tl_curb_street,
+                    triangle_lists.tl_curb_path};
+                TriangleList::extrude(
+                    *triangle_lists.tl_curb_street,
+                    {
+                        triangle_lists.tl_street,
+                        triangle_lists.tl_path,
+                        triangle_lists.tl_street_crossing,
+                        triangle_lists.tl_path_crossing},
+                    &source_vertices,
+                    &boundary_vertices,
+                    config.extrude_street_amount * config.scale,
+                    config.scale,
+                    1,
+                    config.uv_scale_terrain);
+            };
+            if (std::isnan(config.extrude_air_curb_amount)) {
+                do_extrude(osm_triangle_lists);
+            } else {
+                do_extrude(osm_triangle_lists);
+                do_extrude(air_triangle_lists);
+            }
         }
     }
-    // Normals are invalid after "apply_height_map"
-    for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
-        for (auto& l2 : l->tls_ground()) {
-            l2->calculate_triangle_normals();
-        }
-        TriangleList::convert_triangle_to_vertex_normals(l->tls_ground_wo_curb());
-    }
-
-    TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
     // for (auto& l : tls_ground) {
     //     colorize_height_map(l->triangles_);
@@ -542,6 +548,19 @@ OsmMapResource::OsmMapResource(
     }
     // way_points_.at(WayPointLocation::STREET).plot("/tmp/way_points_street.svg", 600, 600, 0.1);
     // way_points_.at(WayPointLocation::SIDEWALK).plot("/tmp/way_points_sidewalk.svg", 600, 600, 0.1);
+
+    if (!std::isnan(config.extrude_air_curb_amount)) {
+        air_triangle_lists.tl_air_curb_street->triangles_ = std::move(air_triangle_lists.tl_curb_street->triangles_);
+        air_triangle_lists.tl_air_curb_path->triangles_ = std::move(air_triangle_lists.tl_curb_path->triangles_);
+        osm_triangle_lists.insert(air_triangle_lists);
+    }
+
+    // Normals are invalid after "apply_height_map"
+    for (auto& l2 : osm_triangle_lists.tls_ground()) {
+        l2->calculate_triangle_normals();
+    }
+    TriangleList::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_ground_wo_curb());
+    TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
     auto tls_ground = osm_triangle_lists.tls_ground();
     for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList>>*>{
