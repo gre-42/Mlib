@@ -149,6 +149,7 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_street,
             config.default_street_width,
+            config.default_lane_width,
             config.only_raceways,
             config.highway_name_pattern,
             config.excluded_highways,
@@ -450,10 +451,15 @@ OsmMapResource::OsmMapResource(
                 }
             }
             std::set<OrderableFixedArray<float, 3>> boundary_vertices;
-            for (const auto& t : osm_triangle_lists.tl_street->triangles_) {
-                for (const auto& v : t.flat_iterable()) {
-                    if (terrain_vertices.contains(OrderableFixedArray{v.position})) {
-                        boundary_vertices.insert(OrderableFixedArray{v.position});
+            for (const auto& l : std::list{
+                osm_triangle_lists.tl_street,
+                osm_triangle_lists.tl_path})
+            {
+                for (const auto& t : l->triangles_) {
+                    for (const auto& v : t.flat_iterable()) {
+                        if (terrain_vertices.contains(OrderableFixedArray{v.position})) {
+                            boundary_vertices.insert(OrderableFixedArray{v.position});
+                        }
                     }
                 }
             }

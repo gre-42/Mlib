@@ -40,7 +40,8 @@ struct OsmResourceConfig {
     std::vector<std::string> grass_resource_names;
     std::vector<std::string> near_grass_resource_names;
     std::list<WaysideResourceNames> waysides;
-    float default_street_width = 2;
+    float default_street_width = 7;
+    float default_lane_width = 4;
     float roof_width = 2;
     float scale = 1;
     float uv_scale_terrain = 1;

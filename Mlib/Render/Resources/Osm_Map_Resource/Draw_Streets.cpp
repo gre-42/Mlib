@@ -104,8 +104,14 @@ void DrawStreets::calculate_neighbors() {
             if (tags.find("area") != tags.end() && tags.at("area") == "yes") {
                 continue;
             }
-            float width = scale * parse_meters(tags, "width", default_street_width);
-            RoadType road_type = path_tags.contains(tags.at("highway")) ? RoadType::PATH : RoadType::STREET;
+            float width = ((tags.find("lanes") != tags.end()) && (tags.find("width") == tags.end()))
+                ? scale * default_lane_width * safe_stou(tags.at("lanes"))
+                : scale * parse_meters(tags, "width", default_street_width);
+            RoadType road_type =
+                path_tags.contains(tags.at("highway")) ||
+                ((tags.find("lanes") != tags.end()) && tags.at("lanes") == "1")
+                    ? RoadType::PATH
+                    : RoadType::STREET;
             int layer = (tags.find("layer") == tags.end()) ? 0 : safe_stoi(tags.at("layer"));
             if ((layer != 0) && !layer_heights.is_within_range(layer)) {
                 continue;

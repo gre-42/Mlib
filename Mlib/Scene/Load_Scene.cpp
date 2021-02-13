@@ -675,6 +675,9 @@ void LoadScene::operator()(
                 else if (key == "default_street_width") {
                     config.default_street_width = safe_stof(value);
                 }
+                else if (key == "default_lane_width") {
+                    config.default_lane_width = safe_stof(value);
+                }
                 else if (key == "roof_width") {
                     config.roof_width = safe_stof(value);
                 }

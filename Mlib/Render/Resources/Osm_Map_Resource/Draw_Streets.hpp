@@ -42,6 +42,7 @@ struct DrawStreetsInput {
     float scale;
     float uv_scale;
     float default_street_width;
+    float default_lane_width;
     bool only_raceways;
     const std::string& name_pattern;
     const std::set<std::string>& excluded_highways;
