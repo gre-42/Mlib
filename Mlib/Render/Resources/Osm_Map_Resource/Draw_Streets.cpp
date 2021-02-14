@@ -477,8 +477,7 @@ void DrawStreets::draw_holes() {
         ground_triangles.tl_street_crossing.get(),
         ground_triangles.tl_path_crossing.get(),
         air_triangles.tl_street_crossing.get(),
-        air_triangles.tl_path_crossing.get(),
-        air_triangles.tl_air_support.get()})
+        air_triangles.tl_path_crossing.get()})
     {
         for (auto& t : l->triangles_) {
             t(0).color = way_color;
@@ -487,6 +486,15 @@ void DrawStreets::draw_holes() {
             t(0).uv = {t(0).position(0) / scale * uv_scale, t(0).position(1) / scale * uv_scale};
             t(1).uv = {t(1).position(0) / scale * uv_scale, t(1).position(1) / scale * uv_scale};
             t(2).uv = {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale};
+        }
+    }
+    for (TriangleList* l : std::list<TriangleList*>{
+        air_triangles.tl_air_support.get()})
+    {
+        for (auto& t : l->triangles_) {
+            t(0).color = way_color;
+            t(1).color = way_color;
+            t(2).color = way_color;
         }
     }
 }
