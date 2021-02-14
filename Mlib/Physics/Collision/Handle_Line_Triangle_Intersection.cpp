@@ -92,14 +92,16 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         if (c.lines_are_normals) {
             penetrating_id = 1;
             dist = -(dot0d(c.l1(1), plane.normal) + plane.intercept);
-            if (dist < 0) {
-                if (c.mesh0_two_sided) {
+            if (c.mesh0_two_sided) {
+                if (dist < 0) {
                     plane.intercept *= -1;
                     plane.normal *= -1;
                     dist *= -1;
-                } else {
-                    return;
                 }
+            } else if (dist < 1e-6) {
+                // Epsilon enables two overlapping one-sided planes with
+                // opposing normals.
+                return;
             }
         } else {
             if (c.mesh0_two_sided && (dot0d(c.o1.abs_com(), plane.normal) + plane.intercept < 0)) {
