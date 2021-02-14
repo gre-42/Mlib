@@ -79,11 +79,15 @@ private:
         const Rectangle& rect,
         const std::string& node_id,
         const AngleWay& angle_way);
-    void draw_streets_find_hole_contours_waypoints(
+    void draw_streets_find_hole_contours(
         const Rectangle& rect,
         const std::string& node_id,
         const std::string& neighbor_id,
-        float node_angle,
+        float node_angle);
+    void draw_streets_find_hole_waypoints(
+        const Rectangle& rect,
+        const std::string& node_id,
+        const std::string& neighbor_id,
         float lane_alpha,
         float sidewalk_alpha0,
         float sidewalk_alpha1);
