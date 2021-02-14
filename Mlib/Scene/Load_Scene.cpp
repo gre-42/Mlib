@@ -786,11 +786,14 @@ void LoadScene::operator()(
                 else if (key == "extrude_curb_amount") {
                     config.extrude_curb_amount = safe_stof(value);
                 }
+                else if (key == "extrude_street_amount") {
+                    config.extrude_street_amount = safe_stof(value);
+                }
                 else if (key == "extrude_air_curb_amount") {
                     config.extrude_air_curb_amount = safe_stof(value);
                 }
-                else if (key == "extrude_street_amount") {
-                    config.extrude_street_amount = safe_stof(value);
+                else if (key == "extrude_air_support_amount") {
+                    config.extrude_air_support_amount = safe_stof(value);
                 }
                 else if (key == "street_light_resource_names") {
                     config.street_light_resource_names = string_to_vector(value);

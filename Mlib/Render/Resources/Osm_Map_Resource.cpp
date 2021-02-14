@@ -485,15 +485,6 @@ OsmMapResource::OsmMapResource(
                     config.scale,
                     1,
                     config.uv_scale_terrain);
-                TriangleList::extrude(
-                    *triangle_lists.tl_air_support,
-                    {triangle_lists.tl_air_support},
-                    nullptr,
-                    &boundary_vertices,
-                    config.extrude_street_amount * config.scale,
-                    config.scale,
-                    1,
-                    config.uv_scale_terrain);
             };
             if (std::isnan(config.extrude_air_curb_amount)) {
                 do_extrude(osm_triangle_lists);
@@ -502,6 +493,18 @@ OsmMapResource::OsmMapResource(
                 do_extrude(air_triangle_lists);
             }
         }
+    }
+
+    if (config.extrude_air_support_amount != 0) {
+        TriangleList::extrude(
+            *air_triangle_lists.tl_air_support,
+            {air_triangle_lists.tl_air_support},
+            nullptr,
+            nullptr,
+            config.extrude_air_support_amount * config.scale,
+            config.scale,
+            1,
+            config.uv_scale_terrain);
     }
 
     // for (auto& l : tls_ground) {
