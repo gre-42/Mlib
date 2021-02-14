@@ -55,7 +55,7 @@ void Rectangle::draw_z0(
     float stop,
     bool rotate_texture,
     bool with_b_height_binding,
-    bool with_c_height_binding)
+    bool with_c_height_binding) const
 {
     CurbedStreet cs{*this, start, stop};
 

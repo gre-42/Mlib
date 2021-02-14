@@ -43,7 +43,7 @@ public:
         float stop = 1,
         bool rotate_texture = false,
         bool with_b_height_binding = false,
-        bool with_c_height_binding = false);
+        bool with_c_height_binding = false) const;
 
     void draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
 
