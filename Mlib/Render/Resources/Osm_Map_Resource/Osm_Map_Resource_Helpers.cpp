@@ -351,33 +351,6 @@ void Mlib::draw_ceilings(
     }
 }
 
-void Mlib::get_neighbors(
-    const std::string& center,
-    const std::map<std::string, NeighborWay>& neighbors,
-    const std::map<float, AngleWay>& angles,
-    const std::string** l,
-    const std::string** r)
-{
-    float angle = neighbors.at(center).angle;
-    auto it = angles.find(angle);
-    if (it == angles.end()) {
-        throw std::runtime_error("Could not find angle");
-    }
-    if (it == angles.begin()) {
-        *l = &angles.rbegin()->second.id;
-    } else {
-        auto itL = it;
-        *l = &(--itL)->second.id;
-    }
-    auto itR = it;
-    ++itR;
-    if (itR == angles.end()) {
-        *r = &angles.begin()->second.id;
-    } else {
-        *r = &itR->second.id;
-    }
-}
-
 //class PolygonDrawer {
 //public:
 //    void draw_line(const p2t::Point& from, const p2t::Point& to, size_t nsteps) {

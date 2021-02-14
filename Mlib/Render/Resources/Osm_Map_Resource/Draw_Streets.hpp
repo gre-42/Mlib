@@ -26,6 +26,7 @@ struct AngleCurb;
 struct HoleWaypoint;
 struct NodeWayInfo;
 struct OsmTriangleLists;
+struct Rectangle;
 
 struct DrawStreetsInput {
     OsmTriangleLists& ground_triangles;
@@ -66,6 +67,26 @@ private:
     void calculate_neighbors();
     void draw_streets();
     void draw_holes();
+    void draw_streets_add_waypoints(
+        const Rectangle& rect,
+        unsigned int nlanes,
+        float lane_alpha,
+        float sidewalk_alpha0,
+        float sidewalk_alpha1,
+        const std::string& node_id,
+        const std::string& neighbor_id);
+    void draw_streets_draw_ways(
+        const Rectangle& rect,
+        const std::string& node_id,
+        const AngleWay& angle_way);
+    void draw_streets_find_hole_contours_waypoints(
+        const Rectangle& rect,
+        const std::string& node_id,
+        const std::string& neighbor_id,
+        float node_angle,
+        float lane_alpha,
+        float sidewalk_alpha0,
+        float sidewalk_alpha1);
     std::map<std::string, std::map<float, AngleWay>> node_angles;
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;
     std::map<std::string, std::map<AngleCurb, FixedArray<float, 2>>> node_hole_contours;

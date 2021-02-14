@@ -139,35 +139,6 @@ void draw_ceilings(
     float uv_scale,
     float max_width);
 
-enum class RoadType {
-    STREET,
-    PATH
-};
-
-struct AngleWay {
-    std::string id;
-    float width;
-    RoadType road_type;
-    int layer;
-};
-
-struct NeighborWay {
-    float angle;
-    float width;
-};
-
-struct NodeWayInfo {
-    float way_length;
-    FixedArray<float, 3> color;
-};
-
-void get_neighbors(
-    const std::string& center,
-    const std::map<std::string, NeighborWay>& neighbors,
-    const std::map<float, AngleWay>& angles,
-    const std::string** l,
-    const std::string** r);
-
 //class PolygonDrawer {
 //public:
 //    void draw_line(const p2t::Point& from, const p2t::Point& to, size_t nsteps) {
