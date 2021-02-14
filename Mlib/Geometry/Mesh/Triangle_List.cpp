@@ -273,6 +273,15 @@ void TriangleList::convert_triangle_to_vertex_normals() {
     }
 }
 
+void TriangleList::flip() {
+    for (auto& l : triangles_) {
+        for (auto& v : l.flat_iterable()) {
+            v.normal = -v.normal;
+        }
+        std::swap(l(0), l(1));
+    }
+}
+
 void TriangleList::convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists) {
     VertexNormals vertex_normals;
     for (const auto& l : triangle_lists) {

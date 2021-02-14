@@ -338,6 +338,8 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
+    // Must be after "delete_backfacing_triangles".
+    air_triangle_lists.tl_air_support->flip();
 
     smoothen_and_apply_heightmap(
         config,
@@ -478,6 +480,15 @@ OsmMapResource::OsmMapResource(
                         triangle_lists.tl_street_crossing,
                         triangle_lists.tl_path_crossing},
                     &source_vertices,
+                    &boundary_vertices,
+                    config.extrude_street_amount * config.scale,
+                    config.scale,
+                    1,
+                    config.uv_scale_terrain);
+                TriangleList::extrude(
+                    *triangle_lists.tl_air_support,
+                    {triangle_lists.tl_air_support},
+                    nullptr,
                     &boundary_vertices,
                     config.extrude_street_amount * config.scale,
                     config.scale,

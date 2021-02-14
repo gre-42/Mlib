@@ -104,6 +104,7 @@ void DrawStreets::initialize_arrays() {
         node_angles.insert(std::make_pair(n.first, std::map<float, AngleWay>()));
         node_neighbors.insert(std::make_pair(n.first, std::map<std::string, NeighborWay>()));
         node_hole_contours.insert(std::make_pair(n.first, std::map<AngleCurb, FixedArray<float, 2>>()));
+        air_support_node_hole_contours.insert(std::make_pair(n.first, std::map<AngleCurb, FixedArray<float, 2>>()));
         if (driving_direction == DrivingDirection::LEFT || driving_direction == DrivingDirection::RIGHT) {
             node_hole_waypoints_street.insert(std::make_pair(n.first, HoleWaypoint()));
             node_hole_waypoints_sidewalk.insert(std::make_pair(n.first, HoleWaypoint()));
@@ -245,7 +246,7 @@ void DrawStreets::draw_streets() {
                 draw_streets_find_hole_contours(
                     rect,
                     na.first,
-                    it->second.neighbor_id,
+                    it->second,
                     it->first);
                 {
                     unsigned int nlanes;
@@ -326,6 +327,32 @@ void DrawStreets::draw_holes() {
     } else if (driving_direction != DrivingDirection::CENTER) {
         throw std::runtime_error("Only 1 or 2 lanes are supported");
     }
+    for (const auto& nh : air_support_node_hole_contours) {
+        Array<FixedArray<float, 2>> hv{ArrayShape{nh.second.size()}};
+        {
+            size_t i = 0;
+            for (const auto& h : nh.second) {
+                hv(i++) = h.second;
+            }
+            hv.reshape(ArrayShape{i});
+        }
+        if (nh.second.size() == 3) {
+            air_triangles.tl_air_support->draw_triangle_wo_normals(
+                FixedArray<float, 3>{hv(0)(0), hv(0)(1), 0.f},
+                FixedArray<float, 3>{hv(1)(0), hv(1)(1), 0.f},
+                FixedArray<float, 3>{hv(2)(0), hv(2)(1), 0.f});
+        } else {
+            // Draw center fan
+            const FixedArray<float, 2>& center = mean(hv);
+            for (size_t i = 0; i < hv.length(); ++i) {
+                size_t j = (i + 1) % hv.length();
+                air_triangles.tl_air_support->draw_triangle_wo_normals(
+                    FixedArray<float, 3>{hv(i)(0), hv(i)(1), 0.f},
+                    FixedArray<float, 3>{hv(j)(0), hv(j)(1), 0.f},
+                    FixedArray<float, 3>{center(0), center(1), 0.f});
+            }
+        }
+    }
     for (const auto& nh : node_hole_contours) {
         Array<FixedArray<float, 2>> hv{ArrayShape{nh.second.size()}};
         {
@@ -374,7 +401,9 @@ void DrawStreets::draw_holes() {
                 if (with_height_bindings) {
                     auto& tags = nodes.at(nh.first).tags;
                     if (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes") {
-                        height_bindings[OrderableFixedArray{center}].insert(nh.first);
+                        if (!height_bindings[OrderableFixedArray{center}].insert(nh.first).second) {
+                            throw std::runtime_error("Could not register ground height binding");
+                        }
                     }
                 }
             }
@@ -448,7 +477,8 @@ void DrawStreets::draw_holes() {
         ground_triangles.tl_street_crossing.get(),
         ground_triangles.tl_path_crossing.get(),
         air_triangles.tl_street_crossing.get(),
-        air_triangles.tl_path_crossing.get()})
+        air_triangles.tl_path_crossing.get(),
+        air_triangles.tl_air_support.get()})
     {
         for (auto& t : l->triangles_) {
             t(0).color = way_color;
@@ -556,6 +586,9 @@ void DrawStreets::draw_streets_draw_ways(
         (len1 != node_way_info.end()))
     {
         rect.draw_z0(street_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+        if (angle_way.layer != 0) {
+            rect.draw_z0(*air_triangles.tl_air_support, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding);
+        }
         if (curb_alpha != 1) {
             rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
             rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
@@ -567,6 +600,9 @@ void DrawStreets::draw_streets_draw_ways(
     } else {
         float len = std::sqrt(sum(squared(nodes.at(node_id).position - nodes.at(angle_way.neighbor_id).position)));
         rect.draw_z0(street_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+        if (angle_way.layer != 0) {
+            rect.draw_z0(*air_triangles.tl_air_support, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding);
+        }
         if (curb_alpha != 1) {
             rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
             rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
@@ -582,7 +618,7 @@ void DrawStreets::draw_streets_draw_ways(
 void DrawStreets::draw_streets_find_hole_contours(
     const Rectangle& rect,
     const std::string& node_id,
-    const std::string& neighbor_id,
+    const AngleWay& angle_way,
     float node_angle)
 {
     const std::map<std::string, NeighborWay>& na = node_neighbors.at(node_id);
@@ -590,6 +626,9 @@ void DrawStreets::draw_streets_find_hole_contours(
         {
             CurbedStreet c0{rect, -curb_alpha, curb_alpha};
             node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, c0.s00));
+        }
+        if (angle_way.layer != 0) {
+            air_support_node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, rect.p00_));
         }
         if (curb_alpha != 1) {
             CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
@@ -604,24 +643,27 @@ void DrawStreets::draw_streets_find_hole_contours(
             node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = -2}, cP.s00));
         }
     }
-    const std::map<std::string, NeighborWay>& nn = node_neighbors.at(neighbor_id);
+    const std::map<std::string, NeighborWay>& nn = node_neighbors.at(angle_way.neighbor_id);
     if (nn.size() >= 3) {
         {
             CurbedStreet c0{rect, -curb_alpha, curb_alpha};
             // Left and right are swapped for the neighbor, so we use p11_ instead of p10_.
-            node_hole_contours.at(neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, c0.s11));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, c0.s11));
+        }
+        if (angle_way.layer != 0) {
+            air_support_node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, rect.p11_));
         }
         if (curb_alpha != 1) {
             CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
             CurbedStreet cP{rect, curb_alpha, curb2_alpha};
-            node_hole_contours.at(neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -1}, cN.s11));
-            node_hole_contours.at(neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = +1}, cP.s11));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -1}, cN.s11));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = +1}, cP.s11));
         }
         if (curb2_alpha != 1) {
             CurbedStreet cN{rect, -1, -curb2_alpha};
             CurbedStreet cP{rect, curb2_alpha, 1};
-            node_hole_contours.at(neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -2}, cN.s11));
-            node_hole_contours.at(neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = +2}, cP.s11));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -2}, cN.s11));
+            node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = +2}, cP.s11));
         }
     }
 }

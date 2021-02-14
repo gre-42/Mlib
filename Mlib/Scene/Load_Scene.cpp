@@ -644,6 +644,9 @@ void LoadScene::operator()(
                 else if (key == "air_curb_path_texture") {
                     config.air_curb_path_texture = fpath(value);
                 }
+                else if (key == "air_support_texture") {
+                    config.air_support_texture = fpath(value);
+                }
                 else if (key == "facade_textures") {
                     config.facade_textures = string_to_vector(value, fpath);
                 }

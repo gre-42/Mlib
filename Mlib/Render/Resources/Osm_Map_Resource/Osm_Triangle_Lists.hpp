@@ -23,6 +23,7 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_curb2_path;
     std::shared_ptr<TriangleList> tl_air_curb_street;
     std::shared_ptr<TriangleList> tl_air_curb_path;
+    std::shared_ptr<TriangleList> tl_air_support;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;
