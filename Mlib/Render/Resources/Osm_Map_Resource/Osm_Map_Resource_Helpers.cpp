@@ -4,7 +4,7 @@
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/Geometry/Mesh/Triangle_Sampler.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
@@ -835,7 +835,7 @@ void Mlib::add_grass_inside_triangles(
     if (distance == INFINITY) {
         return;
     }
-    TriangleSampler<float> ts{ 0 };
+    TriangleSampler2<float> ts{ 0 };
     NormalRandomNumberGenerator<float> rng{ 0, 1.f, 0.2f };
     for (auto& t : triangles.triangles_) {
         ts.sample_triangle_interior<3>(

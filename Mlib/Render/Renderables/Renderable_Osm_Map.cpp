@@ -1,7 +1,7 @@
 #include "Renderable_Osm_Map.hpp"
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/Geometry/Mesh/Triangle_Sampler.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
@@ -71,7 +71,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     }
     assert_true(!omr_->near_grass_resource_names_.empty());
     assert_true(omr_->much_near_grass_distance_ != INFINITY);
-    TriangleSampler<float> ts{ 392743 };
+    TriangleSampler2<float> ts{ 392743 };
     ResourceNameCycle rnc{ omr_->scene_node_resources_, omr_->near_grass_resource_names_ };
     for (const auto& t : omr_->tl_terrain_->triangles_) {
         auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
