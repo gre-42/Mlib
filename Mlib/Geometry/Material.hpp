@@ -17,12 +17,13 @@ std::strong_ordering operator <=> (const std::vector<BlendMapTexture>& a, const 
 struct Material {
     // First element to support sorting.
     int continuous_blending_z_order = 0;
+    // Second element to support sorting.
+    BlendMode blend_mode = BlendMode::OFF;
     std::vector<BlendMapTexture> textures;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::OFF;
     bool occluded_by_black = true;
-    BlendMode blend_mode = BlendMode::OFF;
     OrderableFixedArray<float, 4> alpha_distances = { default_distances };
     bool depth_func_equal = false;
     WrapMode wrap_mode_s = WrapMode::REPEAT;

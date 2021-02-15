@@ -47,9 +47,9 @@ BinaryXResource::BinaryXResource(
         std::make_shared<ColoredVertexArray>(
             "BinaryXResource",
             Material{
+                .blend_mode = BlendMode::BINARY,
                 .textures = {{.texture_descriptor = {.color = texture}}},
                 .occluder_type = occluder_type,
-                .blend_mode = BlendMode::BINARY,
                 .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                 .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                 .collide = false,

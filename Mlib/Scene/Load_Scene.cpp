@@ -886,11 +886,11 @@ void LoadScene::operator()(
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
                 Material{
+                    .blend_mode = blend_mode_from_string(match[14].str()),
                     .textures = {{.texture_descriptor = {.color = fpath(match[2].str())}}},
                     .occluded_type =  occluded_type_from_string(match[8].str()),
                     .occluder_type = occluder_type_from_string(match[9].str()),
                     .occluded_by_black = safe_stob(match[10].str()),
-                    .blend_mode = blend_mode_from_string(match[14].str()),
                     .alpha_distances = {
                         safe_stof(match[15].str()),
                         safe_stof(match[16].str()),
