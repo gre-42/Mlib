@@ -145,7 +145,10 @@ void DrawStreets::calculate_neighbors() {
             }
         }
         if (tags.find("highway") != tags.end() && (!excluded_highways.contains(tags.at("highway")))) {
-            if (only_raceways && (tags.at("highway") != "raceway")) {
+            if (only_raceways &&
+                    (tags.at("highway") != "raceway") &&
+                    ((tags.find("raceway") == tags.end()) || (tags.at("raceway") != "yes")))
+            {
                 continue;
             }
             if (!name_pattern.empty() && ((tags.find("name") == tags.end()) || !Mlib::re::regex_match(tags.at("name"), name_re))) {
