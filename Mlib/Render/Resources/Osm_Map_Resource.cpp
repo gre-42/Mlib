@@ -358,6 +358,9 @@ OsmMapResource::OsmMapResource(
         street_rectangles,
         way_point_edges_2_lanes);
 
+    // If extrude_air_curb_amount is not NAN,
+    // boundaries have to be calculated at the ends of
+    // ends of air and ground street.
     if (std::isnan(config.extrude_air_curb_amount)) {
         osm_triangle_lists.insert(air_triangle_lists);
     } else if (config.extrude_air_curb_amount != 0) {
@@ -417,6 +420,25 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.raise_streets_amount);
     }
+    std::set<OrderableFixedArray<float, 3>> boundary_vertices;
+    if ((config.extrude_street_amount != 0) || (config.extrude_air_support_amount != 0))
+    {
+        std::set<OrderableFixedArray<float, 3>> terrain_vertices;
+        for (const auto& t : osm_triangle_lists.tl_terrain->triangles_) {
+            for (const auto& v : t.flat_iterable()) {
+                terrain_vertices.insert(OrderableFixedArray{v.position});
+            }
+        }
+        for (const auto& l : osm_triangle_lists.tls_street()) {
+            for (const auto& t : l->triangles_) {
+                for (const auto& v : t.flat_iterable()) {
+                    if (terrain_vertices.contains(OrderableFixedArray{v.position})) {
+                        boundary_vertices.insert(OrderableFixedArray{v.position});
+                    }
+                }
+            }
+        }
+    }
     if (config.extrude_street_amount != 0) {
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (config.curb_alpha == 1) {
@@ -447,25 +469,6 @@ OsmMapResource::OsmMapResource(
             //     1,
             //     uv_scale_terrain,
             //     *tl_curb_street);
-            std::set<OrderableFixedArray<float, 3>> terrain_vertices;
-            for (const auto& t : osm_triangle_lists.tl_terrain->triangles_) {
-                for (const auto& v : t.flat_iterable()) {
-                    terrain_vertices.insert(OrderableFixedArray{v.position});
-                }
-            }
-            std::set<OrderableFixedArray<float, 3>> boundary_vertices;
-            for (const auto& l : std::list{
-                osm_triangle_lists.tl_street,
-                osm_triangle_lists.tl_path})
-            {
-                for (const auto& t : l->triangles_) {
-                    for (const auto& v : t.flat_iterable()) {
-                        if (terrain_vertices.contains(OrderableFixedArray{v.position})) {
-                            boundary_vertices.insert(OrderableFixedArray{v.position});
-                        }
-                    }
-                }
-            }
             auto do_extrude = [&config, &boundary_vertices]
                 (OsmTriangleLists& triangle_lists)
             {
@@ -500,7 +503,7 @@ OsmMapResource::OsmMapResource(
             *air_triangle_lists.tl_air_support,
             {air_triangle_lists.tl_air_support},
             nullptr,
-            nullptr,
+            &boundary_vertices,
             config.extrude_air_support_amount * config.scale,
             config.scale,
             1,
