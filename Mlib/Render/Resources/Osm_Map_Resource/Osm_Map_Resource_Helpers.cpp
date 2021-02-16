@@ -205,19 +205,19 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             continue;
         }
         if (tags.find("building") != tags.end()) {
-            if (building_type != BuildingType::BUILDING) {
+            if ((building_type != BuildingType::BUILDING) || excluded_buildings.contains(tags.at("building"))) {
                 continue;
             }
-        } else if ((tags.find("barrier") != tags.end()) && (included_barriers.contains(tags.at("barrier")))) {
-            if (building_type != BuildingType::WALL_BARRIER) {
+        } else if (tags.find("barrier") != tags.end()) {
+            if ((building_type != BuildingType::WALL_BARRIER) || !included_barriers.contains(tags.at("barrier"))) {
                 continue;
             }
-        } else if ((tags.find("spawn_line") != tags.end()) && (tags.at("spawn_line") == "yes")) {
-            if (building_type != BuildingType::SPAWN_LINE) {
+        } else if (tags.find("spawn_line") != tags.end()) {
+            if ((building_type != BuildingType::SPAWN_LINE) || (tags.at("spawn_line") != "yes")) {
                 continue;
             }
-        } else if ((tags.find("way_points") != tags.end()) && (tags.at("way_points") == "yes")) {
-            if (building_type != BuildingType::WAYPOINTS) {
+        } else if (tags.find("way_points") != tags.end()) {
+            if ((building_type != BuildingType::WAYPOINTS) || (tags.at("way_points") != "yes")) {
                 continue;
             }
         } else {
@@ -675,6 +675,7 @@ struct NeighborWeight {
     std::string id;
     float weight;
     int layer;
+    float bridge_height;
 };
 
 void Mlib::apply_height_map(
@@ -699,13 +700,18 @@ void Mlib::apply_height_map(
             if ((layer != 0) && !layer_height.is_within_range(layer)) {
                 continue;
             }
+            float bridge_height = NAN;
+            auto bridge_height_it = w.second.tags.find("bridge_height");
+            if (bridge_height_it != w.second.tags.end()) {
+                bridge_height = safe_stof(bridge_height_it->second);
+            }
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s != w.second.nd.end()) {
                     float weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
-                    node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer});
-                    node_neighbors[*it].push_back({.id = *s, .weight = weight, .layer = layer});
+                    node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer, .bridge_height = bridge_height});
+                    node_neighbors[*it].push_back({.id = *s, .weight = weight, .layer = layer, .bridge_height = bridge_height});
                 }
             }
         }
@@ -716,22 +722,39 @@ void Mlib::apply_height_map(
                 layer += nn.layer;
             }
             layer /= n.second.size();
-            if (layer == 0) {
-                // If the ways to all neighbors are on the ground (or they cancel out to 0),
-                // pick the height of the heightmap exactly on the node.
-                FixedArray<float, 2> p = normalization_matrix * nodes.at(n.first).position;
-                float z;
-                if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
-                    node_height[n.first] = {
-                        .height = z,
-                        .smooth_height = z};
+            size_t nbridge_heights = 0;
+            float bridge_height = 0;
+            for (const auto& nn : n.second) {
+                if (!std::isnan(nn.bridge_height)) {
+                    bridge_height += nn.bridge_height;
+                    ++nbridge_heights;
                 }
-            } else {
-                // If some ways are not on the ground, and the heights don't cancel out to 0,
-                // interpolate the height using the "layer_height" interpolator.
+            }
+            if (nbridge_heights != 0) {
+                bridge_height /= nbridge_heights;
+            }
+            if (nbridge_heights != 0) {
                 node_height[n.first] = {
-                    .height = layer_height(layer),
-                    .smooth_height = layer_height(layer)};
+                    .height = layer_height(layer) + bridge_height - layer_height(0),
+                    .smooth_height = layer_height(layer) + bridge_height - layer_height(0)};
+            } else {
+                if (layer == 0) {
+                    // If the ways to all neighbors are on the ground (or they cancel out to 0),
+                    // pick the height of the heightmap exactly on the node.
+                    FixedArray<float, 2> p = normalization_matrix * nodes.at(n.first).position;
+                    float z;
+                    if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+                        node_height[n.first] = {
+                            .height = z,
+                            .smooth_height = z};
+                    }
+                } else {
+                    // If some ways are not on the ground, and the heights don't cancel out to 0,
+                    // interpolate the height using the "layer_height" interpolator.
+                    node_height[n.first] = {
+                        .height = layer_height(layer),
+                        .smooth_height = layer_height(layer)};
+                }
             }
         }
         for (size_t i = 0; i < 50; ++i) {
