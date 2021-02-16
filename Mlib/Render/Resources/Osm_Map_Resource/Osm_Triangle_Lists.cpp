@@ -154,7 +154,10 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_street() const {
         tl_curb_street,
         tl_curb_path,
         tl_curb2_street,
-        tl_curb2_path};
+        tl_curb2_path,
+        tl_air_curb_street,
+        tl_air_curb_path,
+        tl_air_support};
 }
 
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_ground() const {
