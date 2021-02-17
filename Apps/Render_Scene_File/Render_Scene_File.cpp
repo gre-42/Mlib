@@ -285,8 +285,8 @@ int main(int argc, char** argv) {
             }
 
             if (args.has_named("--no_render")) {
-                std::cout << "Press enter to exit" << std::endl;
-                std::cin.get();
+                std::cout << "Exiting because of --no_render" << std::endl;
+                return 0;
             } else {
                 auto rs = renderable_scenes.find("primary_scene");
                 if (rs == renderable_scenes.end()) {

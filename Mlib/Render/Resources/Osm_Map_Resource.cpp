@@ -332,12 +332,14 @@ OsmMapResource::OsmMapResource(
             config.max_wall_width);
     }
     if (config.remove_backfacing_triangles) {
+        LOG_INFO("remove_backfacing_triangles");
         for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
             for (auto& l2 : l->tls_ground()) {
                 l2->delete_backfacing_triangles();
             }
         }
     }
+    LOG_INFO("flip air-support normals");
     // Must be after "delete_backfacing_triangles".
     air_triangle_lists.tl_air_support->flip();
 

@@ -127,8 +127,12 @@ void Mlib::plot_mesh(
         svg.draw_line(a(0), a(1), b(0), b(1), 1.f, "red");
 
     }
-    if (!highlighted_nodes.empty()) {
-        throw std::runtime_error("Highlighted nodes not implemented");
+    for (const auto& n : highlighted_nodes) {
+        auto a = trafo(n);
+        svg.draw_rectangle(
+            a(0) - 0.05f, a(1) - 0.05f,
+            a(0) + 0.05f, a(1) + 0.05f,
+            0.05f);
     }
     // if (!contour.empty()) {
     //     auto a = trafo(contour.front());

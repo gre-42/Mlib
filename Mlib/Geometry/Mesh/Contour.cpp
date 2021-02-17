@@ -11,9 +11,11 @@ std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>
 
     std::set<std::pair<O, O>> edges;
     for (const auto& t : triangles) {
-        auto safe_insert_edge = [&edges, &t](size_t a, size_t b){
+        auto safe_insert_edge = [&edges, &t, &triangles](size_t a, size_t b){
             auto edge = std::make_pair(O((*t)(a).position), O((*t)(b).position));
             if (!edges.insert(edge).second) {
+                // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, {}, {edge.first, edge.second});
+                // plot_mesh(ArrayShape{8000, 8000}, triangles, {}, {edge.first, edge.second}).save_to_file("/tmp/cc.ppm");
                 throw std::runtime_error("Detected duplicate edge");
             }
         };
