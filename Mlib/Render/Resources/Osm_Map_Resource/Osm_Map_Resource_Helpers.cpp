@@ -719,7 +719,6 @@ void Mlib::apply_height_map(
                         float z;
                         if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
                             bridge_height_ref += z;
-                            std::cerr << bridge_height_ref << std::endl;
                         } else {
                             std::cerr << "Bridge with ref=ground is not inside heightmap. Way ID: " << w.first << std::endl;
                         }
