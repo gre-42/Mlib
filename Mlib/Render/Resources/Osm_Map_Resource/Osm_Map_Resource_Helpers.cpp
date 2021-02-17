@@ -705,13 +705,28 @@ void Mlib::apply_height_map(
             if (bridge_height_it != w.second.tags.end()) {
                 bridge_height = safe_stof(bridge_height_it->second);
             }
+            bool ref_is_ground =
+                !std::isnan(bridge_height) &&
+                (w.second.tags.find("bridge_height_reference") != w.second.tags.end()) &&
+                w.second.tags.at("bridge_height_reference") == "ground";
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;
                 if (s != w.second.nd.end()) {
+                    float bridge_height_ref = bridge_height;
+                    if (ref_is_ground) {
+                        FixedArray<float, 2> p = normalization_matrix * ((nodes.at(*it).position + nodes.at(*s).position) / 2.f);
+                        float z;
+                        if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+                            bridge_height_ref += z;
+                            std::cerr << bridge_height_ref << std::endl;
+                        } else {
+                            std::cerr << "Bridge with ref=ground is not inside heightmap. Way ID: " << w.first << std::endl;
+                        }
+                    }
                     float weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
-                    node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer, .bridge_height = bridge_height});
-                    node_neighbors[*it].push_back({.id = *s, .weight = weight, .layer = layer, .bridge_height = bridge_height});
+                    node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer, .bridge_height = bridge_height_ref});
+                    node_neighbors[*it].push_back({.id = *s, .weight = weight, .layer = layer, .bridge_height = bridge_height_ref});
                 }
             }
         }
