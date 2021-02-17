@@ -51,7 +51,7 @@ TransformationMatrix<float, 2> NormalizedPointsFixed::normalization_matrix() con
 NormalizedPointsFixed NormalizedPointsFixed::chained(ScaleMode scale_mode, OffsetMode offset_mode) const {
     NormalizedPointsFixed result{scale_mode, offset_mode};
     auto n = normalization_matrix();
-    result.min_ = n * min_;
-    result.max_ = n * max_;
+    result.min_ = n.transform(min_);
+    result.max_ = n.transform(max_);
     return result;
 }

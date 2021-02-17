@@ -56,7 +56,7 @@ void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoi
     TransformationMatrix tm{node.absolute_model_matrix()};
     FixedArray<float, 3, 3> R = tm.R() / node.scale();
     for (SpawnPoint& p : spawn_points_) {
-        p.position = tm * p.position;
+        p.position = tm.transform(p.position);
         p.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(p.rotation)), R.T()));
     }
 }

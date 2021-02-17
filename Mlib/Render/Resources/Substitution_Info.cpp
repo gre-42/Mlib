@@ -71,7 +71,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         if (is_static) {
             transformed_triangles_.resize(cva_->triangles.size());
             for (size_t i = 0; i < cva_->triangles.size(); ++i) {
-                transformed_triangles_[i] = cva_->triangles[i].applied<FixedArray<float, 3>>([&m](const ColoredVertex& v){return m * v.position;});
+                transformed_triangles_[i] = cva_->triangles[i].applied<FixedArray<float, 3>>([&m](const ColoredVertex& v){return m.transform(v.position);});
             }
         }
     }
@@ -95,7 +95,7 @@ void SubstitutionInfo::delete_triangles_far_away(
                 center = mean(transformed_triangles_[current_triangle_id_]);
             } else {
                 auto center_local = mean(cva_->triangles[current_triangle_id_].applied<FixedArray<float, 3>>([](const ColoredVertex& c){return c.position;}));
-                center = m * center_local;
+                center = m.transform(center_local);
             }
             float dist2 = sum(squared(center - position));
             if (triangles_local_ids_[current_triangle_id_] != SIZE_MAX) {

@@ -715,7 +715,7 @@ void Mlib::apply_height_map(
                 if (s != w.second.nd.end()) {
                     float bridge_height_ref = bridge_height;
                     if (ref_is_ground) {
-                        FixedArray<float, 2> p = normalization_matrix * ((nodes.at(*it).position + nodes.at(*s).position) / 2.f);
+                        FixedArray<float, 2> p = normalization_matrix.transform((nodes.at(*it).position + nodes.at(*s).position) / 2.f);
                         float z;
                         if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
                             bridge_height_ref += z;
@@ -756,7 +756,7 @@ void Mlib::apply_height_map(
                 if (layer == 0) {
                     // If the ways to all neighbors are on the ground (or they cancel out to 0),
                     // pick the height of the heightmap exactly on the node.
-                    FixedArray<float, 2> p = normalization_matrix * nodes.at(n.first).position;
+                    FixedArray<float, 2> p = normalization_matrix.transform(nodes.at(n.first).position);
                     float z;
                     if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
                         node_height[n.first] = {
@@ -819,7 +819,7 @@ void Mlib::apply_height_map(
             vc = {position.first(0), position.first(1)};
         }
         // If no height binding could be applied, use the raw heightmap value.
-        FixedArray<float, 2> p = normalization_matrix * vc;
+        FixedArray<float, 2> p = normalization_matrix.transform(vc);
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
             // std::cerr << "Height out of bounds." << std::endl;

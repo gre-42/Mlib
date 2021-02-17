@@ -23,7 +23,7 @@ struct ColoredVertex {
 
     ColoredVertex transformed(const TransformationMatrix<float, 3>& m) const {
         return ColoredVertex{
-            .position = m * position,
+            .position = m.transform(position),
             .color = color,
             .uv = uv,
             .normal = m.rotate(normal),

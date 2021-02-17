@@ -70,8 +70,8 @@ void Mlib::parse_osm_xml(
             auto m = latitude_longitude_2_meters_mapping(
                 coords_ref(0),
                 coords_ref(1)).pre_scaled(scale);
-            FixedArray<float, 2> min = (m * bounds_min_merged).casted<float>();
-            FixedArray<float, 2> max = (m * bounds_max_merged).casted<float>();
+            FixedArray<float, 2> min = m.transform(bounds_min_merged).casted<float>();
+            FixedArray<float, 2> max = m.transform(bounds_max_merged).casted<float>();
             // Scale converts from meters to e.g. kilometers
             normalized_points.set_min(min);
             normalized_points.set_max(max);
@@ -94,11 +94,10 @@ void Mlib::parse_osm_xml(
                 if (nodes.find(match[1].str()) != nodes.end()) {
                     throw std::runtime_error("Found duplicate node id: " + match[1].str());
                 }
-                auto pos = (
-                    normalization_matrix *
-                    FixedArray<double, 2>{
-                        safe_stod(match[3].str()),
-                        safe_stod(match[4].str())}).casted<float>();
+                auto pos = normalization_matrix.transform(
+                        FixedArray<double, 2>{
+                            safe_stod(match[3].str()),
+                            safe_stod(match[4].str())}).casted<float>();
                 auto opos = OrderableFixedArray<float, 2>{pos};
                 auto it = ordered_node_positions.find(opos);
                 if (it != ordered_node_positions.end()) {

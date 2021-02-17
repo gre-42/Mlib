@@ -39,7 +39,7 @@ public:
       t_{t_from_NxN(m)}
     {}
 
-    inline FixedArray<TData, n> operator * (const FixedArray<TData, n>& rhs) const {
+    inline FixedArray<TData, n> transform(const FixedArray<TData, n>& rhs) const {
         return dot1d(R_, rhs) + t_;
     }
 

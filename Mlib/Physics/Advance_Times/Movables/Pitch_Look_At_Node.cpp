@@ -73,7 +73,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
         rbi.a_ = 0;
         rbi.rbp_.v_ -= follower_.rbp_.v_;
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
-        FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled() * (offset + rbi.abs_position());
+        FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
         pitch_ += std::atan2(p(1), -p(2));
     }
 }

@@ -129,9 +129,9 @@ std::vector<CollisionTriangleSphere> ColoredVertexArray::transformed_triangles_s
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
         FixedArray<FixedArray<float, 3>, 3> pt{
-            tm * t(0).position,
-            tm * t(1).position,
-            tm * t(2).position};
+            tm.transform(t(0).position),
+            tm.transform(t(1).position),
+            tm.transform(t(2).position)};
         res.push_back(CollisionTriangleSphere{
             .bounding_sphere = BoundingSphere<float, 3>{pt},
             .plane = PlaneNd<float, 3>{pt},
@@ -146,9 +146,9 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray::transformed_triangles_bbo
     res.reserve(triangles.size());
     for (const auto& t : triangles) {
         FixedArray<FixedArray<float, 3>, 3> pt{
-            tm * t(0).position,
-            tm * t(1).position,
-            tm * t(2).position};
+            tm.transform(t(0).position),
+            tm.transform(t(1).position),
+            tm.transform(t(2).position)};
         res.push_back(CollisionTriangleAabb{
             .base = CollisionTriangleSphere{
                 .bounding_sphere = BoundingSphere<float, 3>{pt},
@@ -166,8 +166,8 @@ std::vector<FixedArray<FixedArray<float, 3>, 2>> ColoredVertexArray::transformed
     res.reserve(lines.size());
     for (const auto& t : lines) {
         res.push_back(FixedArray<FixedArray<float, 3>, 2>{
-            tm * t(0).position,
-            tm * t(1).position});
+            tm.transform(t(0).position),
+            tm.transform(t(1).position)});
     }
     return res;
 }

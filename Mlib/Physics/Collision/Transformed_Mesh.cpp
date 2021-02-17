@@ -18,7 +18,7 @@ TransformedMesh::TransformedMesh(
     const std::shared_ptr<ColoredVertexArray>& mesh)
 : transformation_matrix_{transformation_matrix},
   transformed_bounding_sphere_{
-    transformation_matrix * bounding_sphere.center(),
+    transformation_matrix.transform(bounding_sphere.center()),
     bounding_sphere.radius() * std::sqrt(sum(squared(transformation_matrix_.R())) / 3)},
   mesh_{mesh}
 {}

@@ -349,7 +349,7 @@ void RigidBody::write_status(std::ostream& ostr, StatusComponents log_components
         ostr << "y: " << pos(1) << " m" << std::endl;
         ostr << "z: " << pos(2) << " m" << std::endl;
         if (geographic_mapping_ != nullptr) {
-            auto gpos = (*geographic_mapping_) * pos.casted<double>();
+            auto gpos = geographic_mapping_->transform(pos.casted<double>());
             ostr << "lat: " << latitude_to_string(gpos(0)) << std::endl;
             ostr << "lon: " << longitude_to_string(gpos(1)) << std::endl;
             ostr << "height: " << height_to_string(gpos(2)) << std::endl;

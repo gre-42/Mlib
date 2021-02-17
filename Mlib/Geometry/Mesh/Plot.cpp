@@ -52,7 +52,7 @@ PpmImage Mlib::plot_mesh(
     PpmImage im{image_size, Rgb24::white()};
     auto normalization_matrix = np.normalization_matrix();
     auto trafo = [&](const FixedArray<float, 2>& p){
-        return 0.5f + (normalization_matrix * p).to_array() * (Array<float>::from_shape(im.shape()) - 1.f);
+        return 0.5f + (normalization_matrix.transform(p)).to_array() * (Array<float>::from_shape(im.shape()) - 1.f);
     };
     for (const auto& t : triangles) {
         auto a = trafo(t(0));
@@ -104,7 +104,7 @@ void Mlib::plot_mesh(
     }
     auto normalization_matrix = np.normalization_matrix();
     auto trafo = [&](const FixedArray<float, 2>& p){
-        return 0.5f + (normalization_matrix * p) * FixedArray<float, 2>{svg.width(), svg.height()};
+        return 0.5f + (normalization_matrix.transform(p)) * FixedArray<float, 2>{svg.width(), svg.height()};
     };
     for (const auto& t : triangles) {
         auto a = trafo(t(0));

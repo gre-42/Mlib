@@ -31,8 +31,8 @@ HeightMapResource::HeightMapResource(
             }
             FixedArray<size_t, 2> id0{r, c};
             FixedArray<size_t, 2> id1{r + 1, c + 1};
-            FixedArray<float, 2> pos0 = normalization_matrix * i2a(id0);
-            FixedArray<float, 2> pos1 = normalization_matrix * i2a(id1);
+            FixedArray<float, 2> pos0 = normalization_matrix.transform(i2a(id0));
+            FixedArray<float, 2> pos1 = normalization_matrix.transform(i2a(id1));
             ColoredVertex v00{
                 FixedArray<float, 3>{
                     pos0(0),
