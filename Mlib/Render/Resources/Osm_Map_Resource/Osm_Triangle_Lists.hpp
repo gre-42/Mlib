@@ -24,11 +24,12 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_air_curb_street;
     std::shared_ptr<TriangleList> tl_air_curb_path;
     std::shared_ptr<TriangleList> tl_air_support;
+    std::shared_ptr<TriangleList> tl_tunnel_pipe;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;
     std::list<std::shared_ptr<TriangleList>> tls_ground() const;
-    std::list<std::shared_ptr<TriangleList>> tls_ground_wo_curb() const;
+    std::list<std::shared_ptr<TriangleList>> tls_with_vertex_normals() const;
 };
 
 }

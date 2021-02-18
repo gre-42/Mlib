@@ -113,6 +113,10 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = curb_wrap_mode_s,
         .draw_distance_noperations = 1000}.compute_color_mode());
+    tl_tunnel_pipe = std::make_shared<TriangleList>("tunnel_pipe", Material{
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .draw_distance_noperations = 1000}.compute_color_mode());
 }
 
 OsmTriangleLists::~OsmTriangleLists()
@@ -134,6 +138,7 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
     INSERT(tl_air_curb_street);
     INSERT(tl_air_curb_path);
     INSERT(tl_air_support);
+    INSERT(tl_tunnel_pipe);
 }
 #undef INSERT
 
@@ -175,10 +180,11 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_ground() const {
         tl_curb2_path,
         tl_air_curb_street,
         tl_air_curb_path,
-        tl_air_support};
+        tl_air_support,
+        tl_tunnel_pipe};
 }
 
-std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_ground_wo_curb() const {
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_with_vertex_normals() const {
     return std::list<std::shared_ptr<TriangleList>>{
         tl_terrain,
         tl_terrain_visuals,

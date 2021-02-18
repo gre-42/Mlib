@@ -27,6 +27,7 @@ struct HoleWaypoint;
 struct NodeWayInfo;
 struct OsmTriangleLists;
 struct Rectangle;
+struct ColoredVertex;
 
 struct DrawStreetsInput {
     OsmTriangleLists& ground_triangles;
@@ -38,6 +39,7 @@ struct DrawStreetsInput {
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings;
     std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane_street;
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes;
+    std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;
     const std::map<std::string, Node>& nodes;
     const std::map<std::string, Way>& ways;
     float scale;

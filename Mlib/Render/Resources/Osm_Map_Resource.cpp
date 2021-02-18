@@ -111,6 +111,11 @@ OsmMapResource::OsmMapResource(
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>> way_point_edges_2_lanes;
     {
         ResourceNameCycle street_lights{scene_node_resources, config.street_light_resource_names};
+        auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays("pipe")->cvas;
+        if (tunnel_pipe_cvas.size() != 1) {
+            throw std::runtime_error("Pipe does not have exactly one mesh");
+        }
+        auto& tunnel_pipe_triangles = tunnel_pipe_cvas.front()->triangles;
 
         // draw_nodes(vertices, nodes, ways);
         // draw_test_lines(vertices, 0.02);
@@ -125,6 +130,7 @@ OsmMapResource::OsmMapResource(
             height_bindings,
             way_point_edges_1_lane,
             way_point_edges_2_lanes,
+            tunnel_pipe_triangles,
             nodes,
             ways,
             config.scale,
@@ -578,7 +584,7 @@ OsmMapResource::OsmMapResource(
     for (auto& l2 : osm_triangle_lists.tls_ground()) {
         l2->calculate_triangle_normals();
     }
-    TriangleList::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_ground_wo_curb());
+    TriangleList::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
     TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
     auto tls_ground = osm_triangle_lists.tls_ground();

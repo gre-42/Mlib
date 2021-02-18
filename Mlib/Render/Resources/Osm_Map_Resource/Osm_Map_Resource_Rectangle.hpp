@@ -8,6 +8,7 @@ namespace Mlib {
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
 class TriangleList;
+struct ColoredVertex;
 
 class Rectangle {
 public:
@@ -44,6 +45,15 @@ public:
         bool rotate_texture = false,
         bool with_b_height_binding = false,
         bool with_c_height_binding = false) const;
+    
+    void draw(
+        TriangleList& tl,
+        std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
+        const std::string& b,
+        const std::string& c,
+        const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
+        float scale,
+        float radius) const;
 
     void draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
 
@@ -51,6 +61,20 @@ public:
     FixedArray<float, 2> p01_;
     FixedArray<float, 2> p10_;
     FixedArray<float, 2> p11_;
+};
+
+class WarpedSegment {
+public:
+    explicit WarpedSegment(const Rectangle& r);
+    FixedArray<float, 2> warp_0(float x) const;
+    FixedArray<float, 2> warp_1(float x) const;
+    FixedArray<float, 3> warp_0(const FixedArray<float, 3>& p, float scale, float radius) const;
+    FixedArray<float, 3> warp_1(const FixedArray<float, 3>& p, float scale, float radius) const;
+private:
+    FixedArray<float, 2> c0_;
+    FixedArray<float, 2> c1_;
+    FixedArray<float, 2> d0_;
+    FixedArray<float, 2> d1_;
 };
 
 struct CurbedStreet {
