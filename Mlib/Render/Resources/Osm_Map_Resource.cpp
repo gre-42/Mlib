@@ -99,7 +99,7 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays("pipe")->cvas;
+    auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays(config.tunnel_pipe_resource_name)->cvas;
     if (tunnel_pipe_cvas.size() != 1) {
         throw std::runtime_error("Pipe does not have exactly one mesh");
     }
