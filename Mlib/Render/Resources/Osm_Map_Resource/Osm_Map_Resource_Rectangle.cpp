@@ -100,14 +100,15 @@ void Rectangle::draw(
         for (size_t i = 0; i < 3; ++i) {
             if (t(i).position(1) == -1) {
                 p(i) = ws.warp_0(t(i).position, scale, width, height);
+                height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}].insert(b);
             } else if (t(i).position(1) == 1) {
                 p(i) = ws.warp_1(t(i).position, scale, width, height);
+                height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}].insert(c);
             } else {
                 std::stringstream sstr;
                 sstr << "Position.y not -1 or +1: " << t(i).position;
                 throw std::runtime_error(sstr.str());
             }
-            height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}].insert(b);
         }
         tl.draw_triangle_wo_normals(
             p(0),

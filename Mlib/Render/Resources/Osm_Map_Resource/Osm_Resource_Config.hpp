@@ -46,6 +46,8 @@ struct OsmResourceConfig {
     std::list<WaysideResourceNames> waysides;
     float default_street_width = 7;
     float default_lane_width = 4;
+    float default_tunnel_pipe_width = 1.1f;
+    float default_tunnel_pipe_height = 4.f;
     float roof_width = 2;
     float scale = 1;
     float uv_scale_terrain = 1;

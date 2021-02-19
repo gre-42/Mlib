@@ -690,6 +690,12 @@ void LoadScene::operator()(
                 else if (key == "default_lane_width") {
                     config.default_lane_width = safe_stof(value);
                 }
+                else if (key == "default_tunnel_pipe_width") {
+                    config.default_tunnel_pipe_width = safe_stof(value);
+                }
+                else if (key == "default_tunnel_pipe_height") {
+                    config.default_tunnel_pipe_height = safe_stof(value);
+                }
                 else if (key == "roof_width") {
                     config.roof_width = safe_stof(value);
                 }
