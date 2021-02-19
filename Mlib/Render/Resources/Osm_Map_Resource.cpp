@@ -99,8 +99,13 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    OsmTriangleLists osm_triangle_lists{config};
-    OsmTriangleLists air_triangle_lists{config};
+    auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays("pipe_box")->cvas;
+    if (tunnel_pipe_cvas.size() != 1) {
+        throw std::runtime_error("Pipe does not have exactly one mesh");
+    }
+    auto& tunnel_pipe_cva = tunnel_pipe_cvas.front();
+    OsmTriangleLists osm_triangle_lists{config, tunnel_pipe_cva->material};
+    OsmTriangleLists air_triangle_lists{config, tunnel_pipe_cva->material};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
@@ -111,11 +116,6 @@ OsmMapResource::OsmMapResource(
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>> way_point_edges_2_lanes;
     {
         ResourceNameCycle street_lights{scene_node_resources, config.street_light_resource_names};
-        auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays("pipe")->cvas;
-        if (tunnel_pipe_cvas.size() != 1) {
-            throw std::runtime_error("Pipe does not have exactly one mesh");
-        }
-        auto& tunnel_pipe_triangles = tunnel_pipe_cvas.front()->triangles;
 
         // draw_nodes(vertices, nodes, ways);
         // draw_test_lines(vertices, 0.02);
@@ -130,7 +130,7 @@ OsmMapResource::OsmMapResource(
             height_bindings,
             way_point_edges_1_lane,
             way_point_edges_2_lanes,
-            tunnel_pipe_triangles,
+            tunnel_pipe_cva->triangles,
             nodes,
             ways,
             config.scale,

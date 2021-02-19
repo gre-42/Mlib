@@ -6,7 +6,9 @@
 
 using namespace Mlib;
 
-OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
+OsmTriangleLists::OsmTriangleLists(
+    const OsmResourceConfig& config,
+    const Material& tunnel_pipe_material)
 {
     tl_terrain = std::make_shared<TriangleList>("terrain", Material{
         .dirt_texture = config.dirt_texture,
@@ -116,6 +118,9 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     tl_tunnel_pipe = std::make_shared<TriangleList>("tunnel_pipe", Material{
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
+        .ambience = tunnel_pipe_material.ambience,
+        .diffusivity = tunnel_pipe_material.diffusivity,
+        .specularity = tunnel_pipe_material.specularity,
         .draw_distance_noperations = 1000}.compute_color_mode());
 }
 

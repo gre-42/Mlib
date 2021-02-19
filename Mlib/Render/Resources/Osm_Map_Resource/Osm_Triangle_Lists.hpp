@@ -6,9 +6,12 @@ namespace Mlib {
 
 class TriangleList;
 struct OsmResourceConfig;
+struct Material;
 
 struct OsmTriangleLists {
-    explicit OsmTriangleLists(const OsmResourceConfig& config);
+    explicit OsmTriangleLists(
+        const OsmResourceConfig& config,
+        const Material& tunnel_pipe_material);
     ~OsmTriangleLists();
     std::shared_ptr<TriangleList> tl_terrain;
     std::shared_ptr<TriangleList> tl_terrain_visuals;
