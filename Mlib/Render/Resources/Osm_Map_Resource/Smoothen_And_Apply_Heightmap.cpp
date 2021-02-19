@@ -29,8 +29,8 @@ void Mlib::smoothen_and_apply_heightmap(
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes)
 {
-    auto tls_ground = osm_triangle_lists.tls_ground();
-    auto air_tls_ground = air_triangle_lists.tls_ground();
+    auto tls_ground = osm_triangle_lists.tls_all();
+    auto air_tls_ground = air_triangle_lists.tls_all();
     tls_ground.insert(tls_ground.end(), air_tls_ground.begin(), air_tls_ground.end());
 
     std::list<std::shared_ptr<TriangleList>> tls_all;

@@ -37,6 +37,7 @@ struct OsmResourceConfig {
     std::vector<std::string> facade_textures;
     std::string ceiling_texture;
     std::string barrier_texture;
+    std::string tunnel_pipe_resource_name = "pipe";
     BlendMode barrier_blend_mode;
     std::string roof_texture;
     std::vector<std::string> tree_resource_names;

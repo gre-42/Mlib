@@ -31,7 +31,8 @@ struct OsmTriangleLists {
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;
-    std::list<std::shared_ptr<TriangleList>> tls_ground() const;
+    std::list<std::shared_ptr<TriangleList>> tls_all() const;
+    std::list<std::shared_ptr<TriangleList>> tls_flat() const;
     std::list<std::shared_ptr<TriangleList>> tls_with_vertex_normals() const;
 };
 

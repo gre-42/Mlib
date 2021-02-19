@@ -90,7 +90,8 @@ void Rectangle::draw(
     const std::string& c,
     const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
     float scale,
-    float radius) const
+    float width,
+    float height) const
 {
     WarpedSegment ws{*this};
 
@@ -98,18 +99,16 @@ void Rectangle::draw(
         FixedArray<FixedArray<float, 3>, 3> p;
         for (size_t i = 0; i < 3; ++i) {
             if (t(i).position(1) == -1) {
-                p(i) = ws.warp_0(t(i).position, scale, radius);
+                p(i) = ws.warp_0(t(i).position, scale, width, height);
             } else if (t(i).position(1) == 1) {
-                p(i) = ws.warp_1(t(i).position, scale, radius);
+                p(i) = ws.warp_1(t(i).position, scale, width, height);
             } else {
                 std::stringstream sstr;
                 sstr << "Position.y not -1 or +1: " << t(i).position;
                 throw std::runtime_error(sstr.str());
             }
+            height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}].insert(b);
         }
-        height_bindings[OrderableFixedArray<float, 2>{p(0)(0), p(0)(1)}].insert(b);
-        height_bindings[OrderableFixedArray<float, 2>{p(1)(0), p(1)(1)}].insert(b);
-        height_bindings[OrderableFixedArray<float, 2>{p(2)(0), p(2)(1)}].insert(b);
         tl.draw_triangle_wo_normals(
             p(0),
             p(1),
@@ -152,16 +151,16 @@ FixedArray<float, 2> WarpedSegment::warp_1(float x) const
     return c1_ + (x / 2) * d1_;
 }
 
-FixedArray<float, 3> WarpedSegment::warp_0(const FixedArray<float, 3>& p, float scale, float radius) const
+FixedArray<float, 3> WarpedSegment::warp_0(const FixedArray<float, 3>& p, float scale, float width, float height) const
 {
-    auto w = warp_0(radius * p(0));
-    return FixedArray<float, 3>(w(0), w(1), scale * p(2));
+    auto w = warp_0(width * p(0));
+    return FixedArray<float, 3>(w(0), w(1), height * scale * p(2));
 }
 
-FixedArray<float, 3> WarpedSegment::warp_1(const FixedArray<float, 3>& p, float scale, float radius) const
+FixedArray<float, 3> WarpedSegment::warp_1(const FixedArray<float, 3>& p, float scale, float width, float height) const
 {
-    auto w = warp_1(radius * p(0));
-    return FixedArray<float, 3>(w(0), w(1), scale * p(2));
+    auto w = warp_1(width * p(0));
+    return FixedArray<float, 3>(w(0), w(1), height * scale * p(2));
 }
 
 CurbedStreet::CurbedStreet(const Rectangle& r, float start, float stop) {

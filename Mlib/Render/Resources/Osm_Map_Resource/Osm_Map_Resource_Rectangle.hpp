@@ -53,7 +53,8 @@ public:
         const std::string& c,
         const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
         float scale,
-        float radius) const;
+        float width,
+        float height) const;
 
     void draw_z(TriangleList& tl, float z0, float z1, const FixedArray<float, 3>& color = {1.f, 1.f, 1.f });
 
@@ -68,8 +69,8 @@ public:
     explicit WarpedSegment(const Rectangle& r);
     FixedArray<float, 2> warp_0(float x) const;
     FixedArray<float, 2> warp_1(float x) const;
-    FixedArray<float, 3> warp_0(const FixedArray<float, 3>& p, float scale, float radius) const;
-    FixedArray<float, 3> warp_1(const FixedArray<float, 3>& p, float scale, float radius) const;
+    FixedArray<float, 3> warp_0(const FixedArray<float, 3>& p, float scale, float width, float height) const;
+    FixedArray<float, 3> warp_1(const FixedArray<float, 3>& p, float scale, float width, float height) const;
 private:
     FixedArray<float, 2> c0_;
     FixedArray<float, 2> c1_;

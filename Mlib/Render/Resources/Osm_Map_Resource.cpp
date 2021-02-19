@@ -99,7 +99,7 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays("pipe_box")->cvas;
+    auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays("pipe")->cvas;
     if (tunnel_pipe_cvas.size() != 1) {
         throw std::runtime_error("Pipe does not have exactly one mesh");
     }
@@ -340,7 +340,7 @@ OsmMapResource::OsmMapResource(
     if (config.remove_backfacing_triangles) {
         LOG_INFO("remove_backfacing_triangles");
         for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
-            for (auto& l2 : l->tls_ground()) {
+            for (auto& l2 : l->tls_flat()) {
                 l2->delete_backfacing_triangles();
             }
         }
@@ -414,7 +414,7 @@ OsmMapResource::OsmMapResource(
     if (std::isnan(config.extrude_air_curb_amount)) {
         raise_streets(
             osm_triangle_lists.tls_street_wo_curb(),
-            osm_triangle_lists.tls_ground(),
+            osm_triangle_lists.tls_all(),
             config.scale,
             config.raise_streets_amount);
     } else {
@@ -423,8 +423,8 @@ OsmMapResource::OsmMapResource(
                 osm_triangle_lists.tls_street_wo_curb(),
                 air_triangle_lists.tls_street_wo_curb()),
             TriangleList::concatenated(
-                osm_triangle_lists.tls_ground(),
-                air_triangle_lists.tls_ground()),
+                osm_triangle_lists.tls_all(),
+                air_triangle_lists.tls_all()),
             config.scale,
             config.raise_streets_amount);
     }
@@ -581,15 +581,15 @@ OsmMapResource::OsmMapResource(
     }
 
     // Normals are invalid after "apply_height_map"
-    for (auto& l2 : osm_triangle_lists.tls_ground()) {
+    for (auto& l2 : osm_triangle_lists.tls_all()) {
         l2->calculate_triangle_normals();
     }
     TriangleList::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
     TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
-    auto tls_ground = osm_triangle_lists.tls_ground();
+    auto tls_all = osm_triangle_lists.tls_all();
     for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList>>*>{
-            &tls_ground,
+            &tls_all,
             &tls_buildings,
             &tls_wall_barriers})
     {
