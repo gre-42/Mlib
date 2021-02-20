@@ -1,6 +1,8 @@
 #include "Osm_Map_Resource.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Mesh/Mesh_Subtract.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Log.hpp>
@@ -108,6 +110,7 @@ OsmMapResource::OsmMapResource(
     if (tunnel_bdry_cvas.size() != 1) {
         throw std::runtime_error("bdry does not have exactly one mesh");
     }
+    auto& tunnel_bdry_cva = tunnel_bdry_cvas.front();
 
     OsmTriangleLists osm_triangle_lists{config, tunnel_pipe_cva->material};
     OsmTriangleLists air_triangle_lists{config, tunnel_pipe_cva->material};
@@ -136,6 +139,7 @@ OsmMapResource::OsmMapResource(
             way_point_edges_1_lane,
             way_point_edges_2_lanes,
             tunnel_pipe_cva->triangles,
+            tunnel_bdry_cva->triangles,
             nodes,
             ways,
             config.scale,
@@ -373,9 +377,11 @@ OsmMapResource::OsmMapResource(
         street_rectangles,
         way_point_edges_2_lanes);
 
-    // if (!air_triangle_lists.tl_tunnel_bdry->triangles_.empty()) {
-    //     mesh_subtract(osm_triangle_lists.tl_terrain->triangles_, air_triangle_lists.tl_tunnel_bdry->triangles_);
-    // }
+    if (!air_triangle_lists.tl_tunnel_bdry->triangles_.empty()) {
+        // mesh_subtract(osm_triangle_lists.tl_terrain->triangles_, air_triangle_lists.tl_tunnel_bdry->triangles_);
+        // save_obj("/tmp/terrain.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
+        // save_obj("/tmp/tunnels.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
+    }
     // If extrude_air_curb_amount is not NAN,
     // boundaries have to be calculated at the ends of
     // ends of air and ground street.
@@ -424,7 +430,7 @@ OsmMapResource::OsmMapResource(
     if (std::isnan(config.extrude_air_curb_amount)) {
         raise_streets(
             osm_triangle_lists.tls_street_wo_curb(),
-            osm_triangle_lists.tls_all(),
+            osm_triangle_lists.tls_wo_subtraction(),
             config.scale,
             config.raise_streets_amount);
     } else {
@@ -433,8 +439,8 @@ OsmMapResource::OsmMapResource(
                 osm_triangle_lists.tls_street_wo_curb(),
                 air_triangle_lists.tls_street_wo_curb()),
             TriangleList::concatenated(
-                osm_triangle_lists.tls_all(),
-                air_triangle_lists.tls_all()),
+                osm_triangle_lists.tls_wo_subtraction(),
+                air_triangle_lists.tls_wo_subtraction()),
             config.scale,
             config.raise_streets_amount);
     }
@@ -591,13 +597,13 @@ OsmMapResource::OsmMapResource(
     }
 
     // Normals are invalid after "apply_height_map"
-    for (auto& l2 : osm_triangle_lists.tls_all()) {
+    for (auto& l2 : osm_triangle_lists.tls_wo_subtraction()) {
         l2->calculate_triangle_normals();
     }
     TriangleList::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
     TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
-    auto tls_all = osm_triangle_lists.tls_all();
+    auto tls_all = osm_triangle_lists.tls_wo_subtraction();
     for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList>>*>{
             &tls_all,
             &tls_buildings,
