@@ -379,6 +379,7 @@ OsmMapResource::OsmMapResource(
 
     if (!air_triangle_lists.tl_tunnel_bdry->triangles_.empty()) {
         // mesh_subtract(osm_triangle_lists.tl_terrain->triangles_, air_triangle_lists.tl_tunnel_bdry->triangles_);
+        // osm_triangle_lists.tl_terrain->calculate_triangle_normals();
         // save_obj("/tmp/terrain.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
         // save_obj("/tmp/tunnels.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
     }

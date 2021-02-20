@@ -13,8 +13,19 @@ void save_obj(const std::string& filename, const IndexedFaceSet<TData, TIndex>& 
     for (const auto v : data.vertices) {
         ostr << "v " << v << '\n';
     }
+    for (const auto n : data.normals) {
+        ostr << "vn " << n << '\n';
+    }
     for (const auto& t : data.triangles) {
-        ostr << "f " << (t + TIndex(1)) << '\n';
+        ostr << "f ";
+        size_t i = 0;
+        for (const auto& v : t.flat_iterable()) {
+            if (i++ != 0) {
+                ostr << ' ';
+            }
+            ostr << (v.position + 1) << '/' << '/' << (v.normal + 1);
+        }
+        ostr << '\n';
     }
     ostr.flush();
     if (ostr.fail()) {
