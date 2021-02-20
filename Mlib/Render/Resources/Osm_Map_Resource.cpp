@@ -104,6 +104,11 @@ OsmMapResource::OsmMapResource(
         throw std::runtime_error("Pipe does not have exactly one mesh");
     }
     auto& tunnel_pipe_cva = tunnel_pipe_cvas.front();
+    auto& tunnel_bdry_cvas = scene_node_resources.get_animated_arrays(config.tunnel_bdry_resource_name)->cvas;
+    if (tunnel_bdry_cvas.size() != 1) {
+        throw std::runtime_error("bdry does not have exactly one mesh");
+    }
+
     OsmTriangleLists osm_triangle_lists{config, tunnel_pipe_cva->material};
     OsmTriangleLists air_triangle_lists{config, tunnel_pipe_cva->material};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
@@ -368,6 +373,9 @@ OsmMapResource::OsmMapResource(
         street_rectangles,
         way_point_edges_2_lanes);
 
+    // if (!air_triangle_lists.tl_tunnel_bdry->triangles_.empty()) {
+    //     mesh_subtract(osm_triangle_lists.tl_terrain->triangles_, air_triangle_lists.tl_tunnel_bdry->triangles_);
+    // }
     // If extrude_air_curb_amount is not NAN,
     // boundaries have to be calculated at the ends of
     // ends of air and ground street.

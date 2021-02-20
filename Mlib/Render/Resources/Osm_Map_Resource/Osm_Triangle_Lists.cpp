@@ -122,6 +122,7 @@ OsmTriangleLists::OsmTriangleLists(
         .diffusivity = tunnel_pipe_material.diffusivity,
         .specularity = tunnel_pipe_material.specularity,
         .draw_distance_noperations = 1000}.compute_color_mode());
+    tl_tunnel_bdry = std::make_shared<TriangleList>("tunnel_bdry", Material());
 }
 
 OsmTriangleLists::~OsmTriangleLists()

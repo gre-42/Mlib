@@ -134,7 +134,7 @@ void corkTriMesh2CorkMesh(
                                  in.triangles[3*i+2])
                       );
     }
-    if(max_ref_idx > in.n_vertices) {
+    if(max_ref_idx >= in.n_vertices) {
         CORK_ERROR("mesh input to Cork routine has an out of range reference "
               "to a vertex.");
         raw.vertices.clear();

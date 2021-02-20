@@ -602,6 +602,7 @@ void DrawStreets::draw_streets_draw_ways(
         }
         if (angle_way.layer == -1) {
             rect.draw(*air_triangles.tl_tunnel_pipe, height_bindings, node_id, angle_way.neighbor_id, tunnel_pipe_triangles, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);
+            rect.draw(*air_triangles.tl_tunnel_bdry, height_bindings, node_id, angle_way.neighbor_id, tunnel_pipe_triangles, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);
         }
         if (curb_alpha != 1) {
             rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
@@ -619,6 +620,7 @@ void DrawStreets::draw_streets_draw_ways(
         }
         if (angle_way.layer == -1) {
             rect.draw(*air_triangles.tl_tunnel_pipe, height_bindings, node_id, angle_way.neighbor_id, tunnel_pipe_triangles, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);
+            rect.draw(*air_triangles.tl_tunnel_bdry, height_bindings, node_id, angle_way.neighbor_id, tunnel_pipe_triangles, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);
         }
         if (curb_alpha != 1) {
             rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
