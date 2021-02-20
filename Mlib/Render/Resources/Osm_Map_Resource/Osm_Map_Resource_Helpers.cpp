@@ -693,6 +693,8 @@ void Mlib::apply_height_map(
     // Smoothen raw 2D street nodes, ignoring which triangles they contributed to.
     std::map<std::string, NodeHeight> node_height;
     if (street_node_smoothness != 0) {
+        // Find all node neighbors and compute a weight for each
+        // neighbor based on the distance.
         std::map<std::string, std::list<NeighborWeight>> node_neighbors;
         for (const auto& w : ways) {
             auto layer_it = w.second.tags.find("layer");
@@ -729,7 +731,8 @@ void Mlib::apply_height_map(
                 }
             }
         }
-        // Iterate over the nodes with at least one neighbor.
+        // Iterate over the nodes with at least one neighbor
+        // and compute its initial height.
         for (const auto& n : node_neighbors) {
             float layer = 0;
             for (const auto& nn : n.second) {
@@ -771,6 +774,7 @@ void Mlib::apply_height_map(
                 }
             }
         }
+        // Smoothen the heights.
         for (size_t i = 0; i < 50; ++i) {
             for (const auto& n : node_neighbors) {
                 auto hit = node_height.find(n.first);
