@@ -69,10 +69,11 @@ endif()
 ######################
 
 add_subdirectory(Apps)
+add_subdirectory(cork)
 add_subdirectory(cpp-httplib)
 add_subdirectory(Mlib)
 add_subdirectory(poly2tri)
 add_subdirectory(stb_image)
 add_subdirectory(Tests)
 # Requires 32 bit or disabled warnings.
-# add_subdirectory(Triangle)
+add_subdirectory(Triangle)

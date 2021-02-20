@@ -210,7 +210,7 @@
 /*   recommend double precision unless you want to generate a mesh for which */
 /*   you do not have enough memory.                                          */
 
-#define SINGLE
+// #define SINGLE
 
 #ifdef SINGLE
 #define REAL float
