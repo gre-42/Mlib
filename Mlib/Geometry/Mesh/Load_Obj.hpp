@@ -1,3 +1,4 @@
+#pragma once
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <list>
 #include <memory>
