@@ -123,7 +123,7 @@ OsmTriangleLists::OsmTriangleLists(
         .specularity = tunnel_pipe_material.specularity,
         .draw_distance_noperations = 1000}.compute_color_mode());
     tl_tunnel_bdry = std::make_shared<TriangleList>("tunnel_bdry", Material());
-    tl_tunnel_entry = std::make_shared<TriangleList>("tunnel_entry", Material());
+    tl_tunnel_entrance = std::make_shared<TriangleList>("tunnel_entrance", Material());
 }
 
 OsmTriangleLists::~OsmTriangleLists()

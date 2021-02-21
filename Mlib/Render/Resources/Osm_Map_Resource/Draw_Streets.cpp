@@ -610,7 +610,7 @@ void DrawStreets::draw_streets_draw_ways(
             auto draw = [&](auto& lst, bool bte, bool cte){rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
             draw(street_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
             if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
-                draw(*ground_triangles.tl_tunnel_entry, false, false);
+                draw(*ground_triangles.tl_tunnel_entrance, false, false);
             }
         }
         if (angle_way.layer != 0) {
@@ -627,7 +627,7 @@ void DrawStreets::draw_streets_draw_ways(
                 rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
             draw(curb_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
             if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
-                draw(*ground_triangles.tl_tunnel_entry, false, false);
+                draw(*ground_triangles.tl_tunnel_entrance, false, false);
             }
         }
         if (curb2_alpha != 1) {
@@ -637,7 +637,7 @@ void DrawStreets::draw_streets_draw_ways(
             };
             draw(curb2_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
             if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
-                draw(*ground_triangles.tl_tunnel_entry, false, false);
+                draw(*ground_triangles.tl_tunnel_entrance, false, false);
             }
         }
     } else {
@@ -646,7 +646,7 @@ void DrawStreets::draw_streets_draw_ways(
             auto draw = [&](auto& lst, bool bte, bool cte){rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
             draw(street_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
             if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
-                draw(*ground_triangles.tl_tunnel_entry, false, false);
+                draw(*ground_triangles.tl_tunnel_entrance, false, false);
             }
         }
         if (angle_way.layer != 0) {
@@ -664,7 +664,7 @@ void DrawStreets::draw_streets_draw_ways(
             };
             draw(curb_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
             if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
-                draw(*ground_triangles.tl_tunnel_entry, false, false);
+                draw(*ground_triangles.tl_tunnel_entrance, false, false);
             }
         }
         if (curb2_alpha != 1) {
@@ -673,7 +673,7 @@ void DrawStreets::draw_streets_draw_ways(
                 rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);};
             draw(curb2_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
             if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
-                draw(*ground_triangles.tl_tunnel_entry, false, false);
+                draw(*ground_triangles.tl_tunnel_entrance, false, false);
             }
         }
         // rect.draw_z0(tl_street_crossing);
