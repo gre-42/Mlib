@@ -119,6 +119,7 @@ OsmMapResource::OsmMapResource(
     OsmTriangleLists air_triangle_lists{config, tunnel_pipe_cva->material};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     tl_street_ = osm_triangle_lists.tl_street;
+    tl_tunnel_pipe_ = osm_triangle_lists.tl_tunnel_pipe;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;

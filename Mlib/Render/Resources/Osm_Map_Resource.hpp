@@ -40,6 +40,7 @@ private:
 
     std::shared_ptr<TriangleList> tl_terrain_;
     std::shared_ptr<TriangleList> tl_street_;
+    std::shared_ptr<TriangleList> tl_tunnel_pipe_;
     std::vector<std::string> near_grass_resource_names_;
     float much_near_grass_distance_ = 2;
 };
