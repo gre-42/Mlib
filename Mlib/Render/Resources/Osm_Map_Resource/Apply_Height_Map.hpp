@@ -23,6 +23,7 @@ class Interp;
 void apply_height_map(
     const TriangleList& tl_terrain,
     const std::set<OrderableFixedArray<float, 2>>& tunnel_entrances,
+    float tunnel_height,
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,

@@ -29,6 +29,7 @@ using namespace Mlib;
 void Mlib::apply_height_map(
     const TriangleList& tl_terrain,
     const std::set<OrderableFixedArray<float, 2>>& tunnel_entrances,
+    float tunnel_height,
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
@@ -155,20 +156,22 @@ void Mlib::apply_height_map(
             }
         }
     }
-    std::list<FixedArray<ColoredVertex, 3>> tcp;
-    for (const auto& t : tl_terrain.triangles_) {
-        bool found = false;
-        for (const auto& v : t.flat_iterable()) {
-            OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
-            if (tunnel_entrances.contains(vc)) {
-                found = true;
+    if (true) {
+        std::list<FixedArray<ColoredVertex, 3>> tcp;
+        for (const auto& t : tl_terrain.triangles_) {
+            bool found = false;
+            for (const auto& v : t.flat_iterable()) {
+                OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
+                if (tunnel_entrances.contains(vc)) {
+                    found = true;
+                }
+            }
+            if (found) {
+                tcp.push_back(t);
             }
         }
-        if (found) {
-            tcp.push_back(t);
-        }
+        save_obj("/tmp/terrain_entraces.obj", IndexedFaceSet<float, size_t>{tcp});
     }
-    save_obj("/tmp/terrain_entraces.obj", IndexedFaceSet<float, size_t>{tcp});
     // Transfer smoothening of street nodes to the triangles they produced.
     // The mapping node -> triangle vertices is stored in the "height_bindings" mapping.
     // Note that the 2D coordinates of OSM nodes are garantueed to be unique to exactly one height.
@@ -184,7 +187,7 @@ void Mlib::apply_height_map(
                     throw std::runtime_error("Could not insert vertex to delete");
                 }
             } else {
-                (*iv)(2) += (z + 10) * scale;
+                (*iv)(2) += (z + tunnel_height) * scale;
             }
         } else {
             vertex_instances_map[vc].push_back(iv);

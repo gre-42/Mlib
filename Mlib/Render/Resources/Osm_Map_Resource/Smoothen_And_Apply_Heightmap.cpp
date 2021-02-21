@@ -87,6 +87,7 @@ void Mlib::smoothen_and_apply_heightmap(
             apply_height_map(
                 *osm_triangle_lists.tl_terrain,
                 osm_triangle_lists.tunnel_entrances,
+                config.default_tunnel_pipe_height,
                 smoothed_vertices,
                 vertices_to_delete,
                 PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX),
