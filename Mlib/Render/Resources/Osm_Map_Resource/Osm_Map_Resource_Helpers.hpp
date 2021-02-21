@@ -24,6 +24,8 @@ enum class WayPointLocation;
 template <class TData>
 class Interp;
 struct OsmTriangleLists;
+struct BoundingInfo;
+struct SteinerPointInfo;
 
 static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
@@ -46,19 +48,6 @@ struct Node {
 struct Way {
     std::list<std::string> nd;
     std::map<std::string, std::string> tags;
-};
-
-enum class SteinerPointType {
-    STREET_NEIGHBOR,
-    FOREST_OUTLINE,
-    WALL,
-    TREE_NODE
-};
-
-struct SteinerPointInfo {
-    FixedArray<float, 3> position;
-    SteinerPointType type;
-    float distance_to_road;
 };
 
 struct StreetRectangle {
@@ -164,24 +153,6 @@ void raise_streets(
     const std::list<std::shared_ptr<TriangleList>>& tls_ground,
     float scale,
     float amount);
-
-struct BoundingInfo {
-    BoundingInfo(
-        const std::vector<FixedArray<float, 2>>& bounding_contour,
-        const std::map<std::string, Node>& nodes,
-        float border_width);
-    FixedArray<float, 2> boundary_min;
-    FixedArray<float, 2> boundary_max;
-    float border_width;
-};
-
-void add_street_steiner_points(
-    std::list<SteinerPointInfo>& steiner_points,
-    const std::list<FixedArray<ColoredVertex, 3>>& triangles,
-    const BoundingInfo& bounding_info,
-    float scale,
-    const std::vector<float>& steiner_point_distances_road,
-    const std::vector<float>& steiner_point_distances_steiner);
 
 void triangulate_terrain_or_ceilings(
     TriangleList& tl_terrain,
