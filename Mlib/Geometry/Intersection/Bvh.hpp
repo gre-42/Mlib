@@ -126,6 +126,19 @@ public:
         }
     }
 
+    template <class TComputeDistance>
+    TData min_distance(
+        const FixedArray<TData, tndim>& p,
+        const TData& max_distance,
+        const TComputeDistance& compute_distance)
+    {
+        TData min_distance = INFINITY;
+        visit(BoundingSphere<TData, tndim>(p, max_distance), [&min_distance, &compute_distance](const TPayload& playload) {
+            min_distance = std::min(min_distance, compute_distance(playload));
+        });
+        return min_distance;
+    }
+
     Bvh repackaged(const FixedArray<TData, tndim>& max_size, size_t level) const
     {
         Bvh<TData, TPayload, tndim> result{ max_size, level };

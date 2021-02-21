@@ -284,9 +284,20 @@ OsmMapResource::OsmMapResource(
         INSERT(tl_curb_path);
         INSERT(tl_curb2_street);
         INSERT(tl_curb2_path);
-        INSERT(tl_tunnel_entry);
+        INSERT(tl_tunnel_entrance);
         #undef INSERT
-        // save_obj("/tmp/tl_tunnel_entry.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entry->triangles_});
+        #define INSERT(a) air_hole_triangles.insert(air_hole_triangles.end(), air_triangle_lists.a->triangles_.begin(), air_triangle_lists.a->triangles_.end())
+        std::list<FixedArray<ColoredVertex, 3>> air_hole_triangles;
+        INSERT(tl_street_crossing);
+        INSERT(tl_path_crossing);
+        INSERT(tl_street);
+        INSERT(tl_path);
+        INSERT(tl_curb_street);
+        INSERT(tl_curb_path);
+        INSERT(tl_curb2_street);
+        INSERT(tl_curb2_path);
+        #undef INSERT
+        // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
         // plot_mesh(ArrayShape{2000, 2000}, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
@@ -303,6 +314,7 @@ OsmMapResource::OsmMapResource(
         add_street_steiner_points(
             steiner_points,
             hole_triangles,
+            air_hole_triangles,
             bounding_info,
             config.scale,
             config.steiner_point_distances_road,

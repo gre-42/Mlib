@@ -12,7 +12,8 @@ using namespace Mlib;
 
 void Mlib::add_street_steiner_points(
     std::list<SteinerPointInfo>& steiner_points,
-    const std::list<FixedArray<ColoredVertex, 3>>& triangles,
+    const std::list<FixedArray<ColoredVertex, 3>>& ground_triangles,
+    const std::list<FixedArray<ColoredVertex, 3>>& air_triangles,
     const BoundingInfo& bounding_info,
     float scale,
     const std::vector<float>& steiner_point_distances_road,
@@ -31,16 +32,21 @@ void Mlib::add_street_steiner_points(
         //     }
         //     std::cerr << "f " << f << " search_time " << bvh.search_time() << std::endl;
         // }
-        Bvh<float, Triangle2d, 2> bvh{{0.1f, 0.1f}, 10};
-        for (const auto& t : triangles) {
-            Triangle2d tri{
-                FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
-                FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
-                FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
-            if (triangle_is_right_handed(tri(0), tri(1), tri(2))) {
-                bvh.insert(tri, tri);
+        Bvh<float, Triangle2d, 2> ground_bvh{{0.1f, 0.1f}, 10};
+        Bvh<float, Triangle2d, 2> air_bvh{{0.1f, 0.1f}, 10};
+        auto insert = [](auto& bvh, auto& triangles) {
+            for (const auto& t : triangles) {
+                Triangle2d tri{
+                    FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
+                    FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
+                    FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
+                if (triangle_is_right_handed(tri(0), tri(1), tri(2))) {
+                    bvh.insert(tri, tri);
+                }
             }
-        }
+        };
+        insert(ground_bvh, ground_triangles);
+        insert(air_bvh, air_triangles);
         Interp<float> interp{steiner_point_distances_road, steiner_point_distances_steiner, OutOfRangeBehavior::CLAMP};
         // std::cerr << "search_time " << bvh.search_time() << std::endl;
         float dist0 = (*std::min_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale;
@@ -55,11 +61,15 @@ void Mlib::add_street_steiner_points(
         for (float x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
             size_t iy = 0;
             for (float y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
-                float min_distance = INFINITY;
                 FixedArray<float, 2> pt{x + rng2() * scale, y + rng2() * scale};
-                bvh.visit(BoundingSphere<float, 2>(pt, dist1), [&min_distance, &pt](const Triangle2d& tri) {
-                    min_distance = std::min(min_distance, distance_point_to_triangle(pt, tri(0), tri(1), tri(2)));
-                });
+                auto get_min_dist = [&pt, &dist1](auto& bvh){
+                    float min_distance = bvh.min_distance(pt, dist1, [&pt](const Triangle2d& tri) {
+                        return distance_point_to_triangle(pt, tri(0), tri(1), tri(2));
+                    });
+                    return min_distance;
+                };
+                float min_distance = get_min_dist(ground_bvh);
+                float air_min_distance = get_min_dist(air_bvh);
                 if (min_distance > 0) {
                     float dist = interp(min_distance / scale);
                     if (dist != INFINITY) {
@@ -69,7 +79,8 @@ void Mlib::add_street_steiner_points(
                             steiner_points.push_back(SteinerPointInfo{
                                 .position = {pt(0), pt(1), 0.f},
                                 .type = SteinerPointType::STREET_NEIGHBOR,
-                                .distance_to_road = min_distance});
+                                .distance_to_road = min_distance,
+                                .distance_to_air_road = air_min_distance});
                         }
                     }
                 }

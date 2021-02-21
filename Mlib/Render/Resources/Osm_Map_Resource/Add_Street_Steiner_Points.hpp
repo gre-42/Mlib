@@ -12,7 +12,8 @@ struct BoundingInfo;
 
 void add_street_steiner_points(
     std::list<SteinerPointInfo>& steiner_points,
-    const std::list<FixedArray<ColoredVertex, 3>>& triangles,
+    const std::list<FixedArray<ColoredVertex, 3>>& ground_triangles,
+    const std::list<FixedArray<ColoredVertex, 3>>& air_triangles,
     const BoundingInfo& bounding_info,
     float scale,
     const std::vector<float>& steiner_point_distances_road,

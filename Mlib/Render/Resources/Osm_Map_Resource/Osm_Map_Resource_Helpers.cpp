@@ -613,7 +613,8 @@ void Mlib::add_grass_on_steiner_points(
         if ((p.type == SteinerPointType::STREET_NEIGHBOR) &&
             !std::isnan(p.distance_to_road) &&
             ((p.distance_to_road > dmin * scale) &&
-             (p.distance_to_road < dmax * scale)))
+             (p.distance_to_road < dmax * scale) &&
+             (p.distance_to_air_road > dmin * scale)))
         {
             const ParsedResourceName* prn = rnc.try_once();
             if (prn != nullptr) {
