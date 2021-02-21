@@ -39,6 +39,7 @@ private:
     TransformationMatrix<double, 2> normalization_matrix_;
 
     std::shared_ptr<TriangleList> tl_terrain_;
+    std::shared_ptr<TriangleList> tl_street_;
     std::vector<std::string> near_grass_resource_names_;
     float much_near_grass_distance_ = 2;
 };

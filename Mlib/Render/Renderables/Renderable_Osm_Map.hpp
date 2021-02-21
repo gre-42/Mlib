@@ -4,6 +4,10 @@
 namespace Mlib {
 
 class OsmMapResource;
+template <class TData, class TPayload, size_t tndim>
+class Bvh;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class RenderableOsmMap: public Renderable
 {
@@ -44,6 +48,7 @@ public:
         std::list<TransformedColoredVertexArray>& instances_queue) const override;
 private:
     const OsmMapResource* omr_;
+    mutable std::unique_ptr<Bvh<float, FixedArray<FixedArray<float, 3>, 3>, 3>> street_bvh_;
 };
 
 }

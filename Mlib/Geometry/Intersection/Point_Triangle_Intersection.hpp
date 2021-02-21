@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
+#include <Mlib/Geometry/Triangle_Normal.hpp>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -66,6 +67,42 @@ TData distance_point_to_triangle (
         TData sp3 = sum(squared(v3 - pt));
         return std::sqrt(std::min(std::min(sp1, sp2), sp3));
     }
+}
+
+template <class TData>
+TData distance_point_to_triangle_3d (
+    const FixedArray<TData, 3>& pt,
+    const FixedArray<TData, 3>& v1,
+    const FixedArray<TData, 3>& v2,
+    const FixedArray<TData, 3>& v3,
+    const FixedArray<TData, 3>& normal)
+{
+    FixedArray<TData, 2, 3> m;
+    m[0] = v2 - v1;
+    m[0] /= std::sqrt(sum(squared(m[0])));
+    m[1] = cross(normal, m[0]);
+    TData dist0 = dot0d(pt - v1, normal);
+    TData dist1 = distance_point_to_triangle(
+        dot1d(m, pt),
+        dot1d(m, v1),
+        dot1d(m, v2),
+        dot1d(m, v3));
+    return std::sqrt(squared(dist0) + squared(dist1));
+}
+
+template <class TData>
+TData distance_point_to_triangle_3d (
+    const FixedArray<TData, 3>& pt,
+    const FixedArray<TData, 3>& v1,
+    const FixedArray<TData, 3>& v2,
+    const FixedArray<TData, 3>& v3)
+{
+    return distance_point_to_triangle_3d(
+        pt,
+        v1,
+        v2,
+        v3,
+        triangle_normal(FixedArray<FixedArray<TData, 3>, 3>{v1, v2, v3}));
 }
 
 }
