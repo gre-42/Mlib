@@ -178,20 +178,7 @@ void Mlib::apply_height_map(
     // Also, duplicate nodes were already removed while parsing the OSM XML-file.
     std::map<OrderableFixedArray<float, 2>, std::list<FixedArray<float, 3>*>> vertex_instances_map;
     for (FixedArray<float, 3>* iv : in_vertices) {
-        OrderableFixedArray<float, 2> vc{(*iv)(0), (*iv)(1)};
-        if (terrain_entrance_vertices.contains(iv)) {
-            FixedArray<float, 2> p = normalization_matrix.transform(vc);
-            float z;
-            if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
-                if (!vertices_to_delete.insert(iv).second) {
-                    throw std::runtime_error("Could not insert vertex to delete");
-                }
-            } else {
-                (*iv)(2) += (z + tunnel_height) * scale;
-            }
-        } else {
-            vertex_instances_map[vc].push_back(iv);
-        }
+        vertex_instances_map[{(*iv)(0), (*iv)(1)}].push_back(iv);
     }
     for (auto& position : vertex_instances_map) {
         FixedArray<float, 2> vc;
@@ -203,6 +190,9 @@ void Mlib::apply_height_map(
             if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
                 for (auto& pc : position.second) {
                     (*pc)(2) += hit->second.smooth_height * scale;
+                    if (terrain_entrance_vertices.contains(pc)) {
+                        (*pc)(2) += tunnel_height * scale;
+                    }
                 }
                 continue;
             }
