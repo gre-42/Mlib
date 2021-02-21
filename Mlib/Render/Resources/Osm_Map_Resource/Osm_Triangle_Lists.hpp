@@ -33,13 +33,15 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_tunnel_pipe;
     std::shared_ptr<TriangleList> tl_tunnel_bdry;
     std::shared_ptr<TriangleList> tl_tunnel_entrance;
+    std::shared_ptr<TriangleList> tl_tunnel_crossing;
     std::set<OrderableFixedArray<float, 2>> tunnel_entrances;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;
     std::list<std::shared_ptr<TriangleList>> tls_wo_subtraction() const;
     std::list<std::shared_ptr<TriangleList>> tls_all() const;
-    std::list<std::shared_ptr<TriangleList>> tls_flat() const;
+    std::list<std::shared_ptr<TriangleList>> tls_smooth() const;
+    std::list<std::shared_ptr<TriangleList>> tls_no_backfaces() const;
     std::list<std::shared_ptr<TriangleList>> tls_with_vertex_normals() const;
 };
 

@@ -100,6 +100,7 @@ private:
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;
     std::map<std::string, std::map<AngleCurb, FixedArray<float, 2>>> node_hole_contours;
     std::map<std::string, std::map<AngleCurb, FixedArray<float, 2>>> air_support_node_hole_contours;
+    std::map<std::string, std::map<AngleCurb, FixedArray<float, 2>>> tunnel_node_hole_contours;
     std::map<std::string, HoleWaypoint> node_hole_waypoints_street;
     std::map<std::string, HoleWaypoint> node_hole_waypoints_sidewalk;
     std::map<std::string, NodeWayInfo> node_way_info;

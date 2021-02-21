@@ -376,16 +376,11 @@ OsmMapResource::OsmMapResource(
     if (config.remove_backfacing_triangles) {
         LOG_INFO("remove_backfacing_triangles");
         for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
-            for (auto& l2 : l->tls_flat()) {
+            for (auto& l2 : l->tls_no_backfaces()) {
                 l2->delete_backfacing_triangles();
             }
         }
     }
-    LOG_INFO("flip air-support normals");
-    // Must be after "delete_backfacing_triangles".
-    air_triangle_lists.tl_air_support->flip();
-
-    // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
 
     smoothen_and_apply_heightmap(
         config,
@@ -552,6 +547,17 @@ OsmMapResource::OsmMapResource(
         }
     }
 
+    LOG_INFO("flip air-support normals");
+    // Must be after "delete_backfacing_triangles".
+    air_triangle_lists.tl_air_support->flip();
+    air_triangle_lists.tl_tunnel_crossing->flip();
+    for (auto& t : air_triangle_lists.tl_tunnel_crossing->triangles_) {
+        for (auto& v : t.flat_iterable()) {
+            v.position(2) += config.default_tunnel_pipe_height * config.scale;
+        }
+    }
+
+    // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     if (config.extrude_air_support_amount != 0) {
         TriangleList::extrude(
             *air_triangle_lists.tl_air_support,

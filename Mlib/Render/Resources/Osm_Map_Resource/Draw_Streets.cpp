@@ -105,6 +105,7 @@ void DrawStreets::initialize_arrays() {
         node_neighbors.insert(std::make_pair(n.first, std::map<std::string, NeighborWay>()));
         node_hole_contours.insert(std::make_pair(n.first, std::map<AngleCurb, FixedArray<float, 2>>()));
         air_support_node_hole_contours.insert(std::make_pair(n.first, std::map<AngleCurb, FixedArray<float, 2>>()));
+        tunnel_node_hole_contours.insert(std::make_pair(n.first, std::map<AngleCurb, FixedArray<float, 2>>()));
         if (driving_direction == DrivingDirection::LEFT || driving_direction == DrivingDirection::RIGHT) {
             node_hole_waypoints_street.insert(std::make_pair(n.first, HoleWaypoint()));
             node_hole_waypoints_sidewalk.insert(std::make_pair(n.first, HoleWaypoint()));
@@ -330,32 +331,36 @@ void DrawStreets::draw_holes() {
     } else if (driving_direction != DrivingDirection::CENTER) {
         throw std::runtime_error("Only 1 or 2 lanes are supported");
     }
-    for (const auto& nh : air_support_node_hole_contours) {
-        Array<FixedArray<float, 2>> hv{ArrayShape{nh.second.size()}};
-        {
-            size_t i = 0;
-            for (const auto& h : nh.second) {
-                hv(i++) = h.second;
+    auto draw_air_holes = [](const auto& hole_contours, auto& hole_triangles) {
+        for (const auto& nh : hole_contours) {
+            Array<FixedArray<float, 2>> hv{ArrayShape{nh.second.size()}};
+            {
+                size_t i = 0;
+                for (const auto& h : nh.second) {
+                    hv(i++) = h.second;
+                }
+                hv.reshape(ArrayShape{i});
             }
-            hv.reshape(ArrayShape{i});
-        }
-        if (nh.second.size() == 3) {
-            air_triangles.tl_air_support->draw_triangle_wo_normals(
-                FixedArray<float, 3>{hv(0)(0), hv(0)(1), 0.f},
-                FixedArray<float, 3>{hv(1)(0), hv(1)(1), 0.f},
-                FixedArray<float, 3>{hv(2)(0), hv(2)(1), 0.f});
-        } else {
-            // Draw center fan
-            const FixedArray<float, 2>& center = mean(hv);
-            for (size_t i = 0; i < hv.length(); ++i) {
-                size_t j = (i + 1) % hv.length();
-                air_triangles.tl_air_support->draw_triangle_wo_normals(
-                    FixedArray<float, 3>{hv(i)(0), hv(i)(1), 0.f},
-                    FixedArray<float, 3>{hv(j)(0), hv(j)(1), 0.f},
-                    FixedArray<float, 3>{center(0), center(1), 0.f});
+            if (nh.second.size() == 3) {
+                hole_triangles->draw_triangle_wo_normals(
+                    FixedArray<float, 3>{hv(0)(0), hv(0)(1), 0.f},
+                    FixedArray<float, 3>{hv(1)(0), hv(1)(1), 0.f},
+                    FixedArray<float, 3>{hv(2)(0), hv(2)(1), 0.f});
+            } else {
+                // Draw center fan
+                const FixedArray<float, 2>& center = mean(hv);
+                for (size_t i = 0; i < hv.length(); ++i) {
+                    size_t j = (i + 1) % hv.length();
+                    hole_triangles->draw_triangle_wo_normals(
+                        FixedArray<float, 3>{hv(i)(0), hv(i)(1), 0.f},
+                        FixedArray<float, 3>{hv(j)(0), hv(j)(1), 0.f},
+                        FixedArray<float, 3>{center(0), center(1), 0.f});
+                }
             }
         }
-    }
+    };
+    draw_air_holes(air_support_node_hole_contours, air_triangles.tl_air_support);
+    draw_air_holes(tunnel_node_hole_contours, air_triangles.tl_tunnel_crossing);
     for (const auto& nh : node_hole_contours) {
         Array<FixedArray<float, 2>> hv{ArrayShape{nh.second.size()}};
         {
@@ -476,7 +481,7 @@ void DrawStreets::draw_holes() {
         }
     }
 
-    for (TriangleList* l : std::list<TriangleList*>{
+    for (TriangleList* l : std::vector<TriangleList*>{
         ground_triangles.tl_street_crossing.get(),
         ground_triangles.tl_path_crossing.get(),
         air_triangles.tl_street_crossing.get(),
@@ -491,8 +496,9 @@ void DrawStreets::draw_holes() {
             t(2).uv = {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale};
         }
     }
-    for (TriangleList* l : std::list<TriangleList*>{
-        air_triangles.tl_air_support.get()})
+    for (TriangleList* l : std::vector<TriangleList*>{
+        air_triangles.tl_air_support.get(),
+        air_triangles.tl_tunnel_crossing.get()})
     {
         for (auto& t : l->triangles_) {
             t(0).color = way_color;
@@ -613,7 +619,7 @@ void DrawStreets::draw_streets_draw_ways(
                 draw(*ground_triangles.tl_tunnel_entrance, false, false);
             }
         }
-        if (angle_way.layer != 0) {
+        if (angle_way.layer > 0) {
             rect.draw_z0(*air_triangles.tl_air_support, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding, b_is_tunnel_entrance, c_is_tunnel_entrance);
         }
         if (angle_way.layer < 0) {
@@ -649,7 +655,7 @@ void DrawStreets::draw_streets_draw_ways(
                 draw(*ground_triangles.tl_tunnel_entrance, false, false);
             }
         }
-        if (angle_way.layer != 0) {
+        if (angle_way.layer > 0) {
             rect.draw_z0(*air_triangles.tl_air_support, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding, b_is_tunnel_entrance, c_is_tunnel_entrance);
         }
         if (angle_way.layer < 0) {
@@ -686,6 +692,9 @@ void DrawStreets::draw_streets_find_hole_contours(
     const AngleWay& angle_way,
     float node_angle)
 {
+    auto& air_hole_list = (angle_way.layer > 0)
+        ? air_support_node_hole_contours
+        : tunnel_node_hole_contours;
     const std::map<std::string, NeighborWay>& na = node_neighbors.at(node_id);
     if (na.size() >= 3) {
         {
@@ -693,7 +702,7 @@ void DrawStreets::draw_streets_find_hole_contours(
             node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, c0.s00));
         }
         if (angle_way.layer != 0) {
-            air_support_node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, rect.p00_));
+            air_hole_list.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, rect.p00_));
         }
         if (curb_alpha != 1) {
             CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};
@@ -716,7 +725,7 @@ void DrawStreets::draw_streets_find_hole_contours(
             node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, c0.s11));
         }
         if (angle_way.layer != 0) {
-            air_support_node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, rect.p11_));
+            air_hole_list.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, rect.p11_));
         }
         if (curb_alpha != 1) {
             CurbedStreet cN{rect, -curb2_alpha, -curb_alpha};

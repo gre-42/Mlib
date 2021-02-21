@@ -115,6 +115,13 @@ OsmTriangleLists::OsmTriangleLists(
         .occluder_type = OccluderType::WHITE,
         .wrap_mode_s = curb_wrap_mode_s,
         .draw_distance_noperations = 1000}.compute_color_mode());
+    tl_tunnel_crossing = std::make_shared<TriangleList>("tunnel_crossing", Material{
+        .occluded_type = OccludedType::LIGHT_MAP_COLOR,
+        .occluder_type = OccluderType::WHITE,
+        .ambience = tunnel_pipe_material.ambience,
+        .diffusivity = tunnel_pipe_material.diffusivity,
+        .specularity = tunnel_pipe_material.specularity,
+        .draw_distance_noperations = 1000}.compute_color_mode());
     tl_tunnel_pipe = std::make_shared<TriangleList>("tunnel_pipe", Material{
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
@@ -145,6 +152,7 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
     INSERT(tl_air_curb_street);
     INSERT(tl_air_curb_path);
     INSERT(tl_air_support);
+    INSERT(tl_tunnel_crossing);
     INSERT(tl_tunnel_pipe);
 }
 #undef INSERT
@@ -172,7 +180,24 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_street() const {
         tl_air_support};
 }
 
-std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_flat() const {
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_smooth() const {
+    return std::list<std::shared_ptr<TriangleList>>{
+        tl_terrain,
+        tl_terrain_visuals,
+        tl_terrain_street_extrusion,
+        tl_street_crossing,
+        tl_path_crossing,
+        tl_street,
+        tl_path,
+        tl_curb_street,
+        tl_curb_path,
+        tl_curb2_street,
+        tl_curb2_path,
+        tl_air_curb_street,
+        tl_air_curb_path};
+}
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_no_backfaces() const {
     return std::list<std::shared_ptr<TriangleList>>{
         tl_terrain,
         tl_terrain_visuals,
@@ -187,7 +212,8 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_flat() const {
         tl_curb2_path,
         tl_air_curb_street,
         tl_air_curb_path,
-        tl_air_support};
+        tl_air_support,
+        tl_tunnel_crossing};
 }
 
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction() const {
@@ -206,6 +232,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction() 
         tl_air_curb_street,
         tl_air_curb_path,
         tl_air_support,
+        tl_tunnel_crossing,
         tl_tunnel_pipe};
 }
 
@@ -225,6 +252,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_all() const {
         tl_air_curb_street,
         tl_air_curb_path,
         tl_air_support,
+        tl_tunnel_crossing,
         tl_tunnel_pipe,
         tl_tunnel_bdry};
 }
@@ -236,5 +264,6 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_with_vertex_norma
         tl_street_crossing,
         tl_path_crossing,
         tl_street,
-        tl_path};
+        tl_path,
+        tl_tunnel_crossing};
 }

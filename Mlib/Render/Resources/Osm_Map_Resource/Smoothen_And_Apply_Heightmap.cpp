@@ -141,10 +141,10 @@ void Mlib::smoothen_and_apply_heightmap(
             }
             if (config.terrain_edge_smoothness > 0) {
                 LOG_INFO("smoothen_edges (ground)");
-                auto tls_flat = osm_triangle_lists.tls_flat();
-                auto air_tls_flat = air_triangle_lists.tls_flat();
-                tls_flat.insert(tls_flat.end(), air_tls_flat.begin(), air_tls_flat.end());
-                TriangleList::smoothen_edges(tls_flat, tls_street, smoothed_vertices, config.terrain_edge_smoothness, 10);
+                auto tls_smooth = osm_triangle_lists.tls_smooth();
+                auto air_tls_smooth = air_triangle_lists.tls_smooth();
+                tls_smooth.insert(tls_smooth.end(), air_tls_smooth.begin(), air_tls_smooth.end());
+                TriangleList::smoothen_edges(tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness, 10);
             }
         }
     }
