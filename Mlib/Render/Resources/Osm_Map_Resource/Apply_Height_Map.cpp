@@ -53,11 +53,7 @@ void Mlib::apply_height_map(
             if ((layer != 0) && !layer_height.is_within_range(layer)) {
                 continue;
             }
-            float bridge_height = NAN;
-            auto bridge_height_it = w.second.tags.find("bridge_height");
-            if (bridge_height_it != w.second.tags.end()) {
-                bridge_height = safe_stof(bridge_height_it->second);
-            }
+            float bridge_height = parse_meters(w.second.tags, "bridge_height", NAN);
             bool ref_is_ground =
                 !std::isnan(bridge_height) &&
                 (w.second.tags.find("bridge_height_reference") != w.second.tags.end()) &&
