@@ -1,12 +1,15 @@
 #pragma once
 #include <list>
 #include <memory>
+#include <set>
 
 namespace Mlib {
 
 class TriangleList;
 struct OsmResourceConfig;
 struct Material;
+template <class TData, size_t... tshape>
+class OrderableFixedArray;
 
 struct OsmTriangleLists {
     explicit OsmTriangleLists(
@@ -29,6 +32,8 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_air_support;
     std::shared_ptr<TriangleList> tl_tunnel_pipe;
     std::shared_ptr<TriangleList> tl_tunnel_bdry;
+    std::shared_ptr<TriangleList> tl_tunnel_entry;
+    std::set<OrderableFixedArray<float, 2>> tunnel_entrances;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;

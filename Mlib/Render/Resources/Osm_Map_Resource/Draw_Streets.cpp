@@ -593,42 +593,88 @@ void DrawStreets::draw_streets_draw_ways(
         const auto& tags = nodes.at(angle_way.neighbor_id).tags;
         with_c_height_binding = with_height_bindings && (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes");
     }
+    bool b_is_tunnel_entrance = false;
+    bool c_is_tunnel_entrance = false;
+    if (angle_way.layer == -1) {
+        for (const auto& e : node_angles.at(node_id)) {
+            c_is_tunnel_entrance |= (e.second.layer == 0);
+        }
+        for (const auto& e : node_angles.at(angle_way.neighbor_id)) {
+            b_is_tunnel_entrance |= (e.second.layer == 0);
+        }
+    }
     if ((len0 != node_way_info.end()) &&
         (len1 != node_way_info.end()))
     {
-        rect.draw_z0(street_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+        {
+            auto draw = [&](auto& lst, bool bte, bool cte){rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
+            draw(street_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
+            if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
+                draw(*ground_triangles.tl_tunnel_entry, false, false);
+            }
+        }
         if (angle_way.layer != 0) {
-            rect.draw_z0(*air_triangles.tl_air_support, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding);
+            rect.draw_z0(*air_triangles.tl_air_support, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding, b_is_tunnel_entrance, c_is_tunnel_entrance);
         }
         if (angle_way.layer == -1) {
-            rect.draw(*air_triangles.tl_tunnel_pipe, height_bindings, node_id, angle_way.neighbor_id, tunnel_pipe_triangles, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);
-            rect.draw(*air_triangles.tl_tunnel_bdry, height_bindings, node_id, angle_way.neighbor_id, tunnel_bdry_triangles, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);
+            auto draw = [&](auto& lst, auto& mesh){rect.draw(lst, height_bindings, node_id, angle_way.neighbor_id, mesh, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);};
+            draw(*air_triangles.tl_tunnel_pipe, tunnel_pipe_triangles);
+            draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
         }
         if (curb_alpha != 1) {
-            rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
-            rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
+            auto draw = [&](auto& lst, bool bte, bool cte){
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
+            draw(curb_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
+            if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
+                draw(*ground_triangles.tl_tunnel_entry, false, false);
+            }
         }
         if (curb2_alpha != 1) {
-            rect.draw_z0(curb2_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
-            rect.draw_z0(curb2_lst, height_bindings, node_id, angle_way.neighbor_id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
+            auto draw = [&](auto& lst, bool bte, bool cte){
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);
+            };
+            draw(curb2_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
+            if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
+                draw(*ground_triangles.tl_tunnel_entry, false, false);
+            }
         }
     } else {
         float len = std::sqrt(sum(squared(nodes.at(node_id).position - nodes.at(angle_way.neighbor_id).position)));
-        rect.draw_z0(street_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding);
+        {
+            auto draw = [&](auto& lst, bool bte, bool cte){rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -curb_alpha, curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
+            draw(street_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
+            if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
+                draw(*ground_triangles.tl_tunnel_entry, false, false);
+            }
+        }
         if (angle_way.layer != 0) {
-            rect.draw_z0(*air_triangles.tl_air_support, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding);
+            rect.draw_z0(*air_triangles.tl_air_support, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding, b_is_tunnel_entrance, c_is_tunnel_entrance);
         }
         if (angle_way.layer == -1) {
-            rect.draw(*air_triangles.tl_tunnel_pipe, height_bindings, node_id, angle_way.neighbor_id, tunnel_pipe_triangles, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);
-            rect.draw(*air_triangles.tl_tunnel_bdry, height_bindings, node_id, angle_way.neighbor_id, tunnel_bdry_triangles, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);
+            auto draw = [&](auto& lst, auto& mesh){rect.draw(lst, height_bindings, node_id, angle_way.neighbor_id, mesh, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);};
+            draw(*air_triangles.tl_tunnel_pipe, tunnel_pipe_triangles);
+            draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
         }
         if (curb_alpha != 1) {
-            rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding);
-            rect.draw_z0(curb_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding);
+            auto draw = [&](auto& lst, bool bte, bool cte){
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, -curb2_alpha, -curb_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, curb_uv_x, 0, len / scale * uv_scale, curb_alpha, curb2_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);
+            };
+            draw(curb_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
+            if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
+                draw(*ground_triangles.tl_tunnel_entry, false, false);
+            }
         }
         if (curb2_alpha != 1) {
-            rect.draw_z0(curb2_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding);
-            rect.draw_z0(curb2_lst, height_bindings, node_id, angle_way.neighbor_id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding);
+            auto draw = [&](auto& lst, bool bte, bool cte){
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -curb2_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, curb2_uv_x, 0, len / scale * uv_scale, curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);};
+            draw(curb2_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
+            if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
+                draw(*ground_triangles.tl_tunnel_entry, false, false);
+            }
         }
         // rect.draw_z0(tl_street_crossing);
     }

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
@@ -679,6 +680,8 @@ struct NeighborWeight {
 };
 
 void Mlib::apply_height_map(
+    const TriangleList& tl_terrain,
+    const std::set<OrderableFixedArray<float, 2>>& tunnel_entrances,
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
@@ -796,13 +799,49 @@ void Mlib::apply_height_map(
             }
         }
     }
+    std::set<const FixedArray<float, 3>*> terrain_entrance_vertices;
+    for (const auto& t : tl_terrain.triangles_) {
+        for (const auto& v : t.flat_iterable()) {
+            OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
+            if (tunnel_entrances.contains(vc)) {
+                terrain_entrance_vertices.insert(&v.position);
+            }
+        }
+    }
+    std::list<FixedArray<ColoredVertex, 3>> tcp;
+    for (const auto& t : tl_terrain.triangles_) {
+        bool found = false;
+        for (const auto& v : t.flat_iterable()) {
+            OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
+            if (tunnel_entrances.contains(vc)) {
+                found = true;
+            }
+        }
+        if (found) {
+            tcp.push_back(t);
+        }
+    }
+    save_obj("/tmp/terrain_entraces.obj", IndexedFaceSet<float, size_t>{tcp});
     // Transfer smoothening of street nodes to the triangles they produced.
     // The mapping node -> triangle vertices is stored in the "height_bindings" mapping.
     // Note that the 2D coordinates of OSM nodes are garantueed to be unique to exactly one height.
     // Also, duplicate nodes were already removed while parsing the OSM XML-file.
     std::map<OrderableFixedArray<float, 2>, std::list<FixedArray<float, 3>*>> vertex_instances_map;
     for (FixedArray<float, 3>* iv : in_vertices) {
-        vertex_instances_map[OrderableFixedArray<float, 2>{(*iv)(0), (*iv)(1)}].push_back(iv);
+        OrderableFixedArray<float, 2> vc{(*iv)(0), (*iv)(1)};
+        if (terrain_entrance_vertices.contains(iv)) {
+            FixedArray<float, 2> p = normalization_matrix.transform(vc);
+            float z;
+            if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+                if (!vertices_to_delete.insert(iv).second) {
+                    throw std::runtime_error("Could not insert vertex to delete");
+                }
+            } else {
+                (*iv)(2) += (z + 10) * scale;
+            }
+        } else {
+            vertex_instances_map[vc].push_back(iv);
+        }
     }
     for (auto& position : vertex_instances_map) {
         FixedArray<float, 2> vc;

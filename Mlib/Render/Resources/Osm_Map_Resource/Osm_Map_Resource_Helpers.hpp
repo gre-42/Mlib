@@ -197,6 +197,8 @@ void triangulate_terrain_or_ceilings(
     float z);
 
 void apply_height_map(
+    const TriangleList& tl_terrain,
+    const std::set<OrderableFixedArray<float, 2>>& tunnel_entrances,
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
