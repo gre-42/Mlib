@@ -595,7 +595,7 @@ void DrawStreets::draw_streets_draw_ways(
     }
     bool b_is_tunnel_entrance = false;
     bool c_is_tunnel_entrance = false;
-    if (angle_way.layer == -1) {
+    if (angle_way.layer < 0) {
         for (const auto& e : node_angles.at(node_id)) {
             c_is_tunnel_entrance |= (e.second.layer == 0);
         }
@@ -616,7 +616,7 @@ void DrawStreets::draw_streets_draw_ways(
         if (angle_way.layer != 0) {
             rect.draw_z0(*air_triangles.tl_air_support, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, len0->second.color, 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding, b_is_tunnel_entrance, c_is_tunnel_entrance);
         }
-        if (angle_way.layer == -1) {
+        if (angle_way.layer < 0) {
             auto draw = [&](auto& lst, auto& mesh){rect.draw(lst, height_bindings, node_id, angle_way.neighbor_id, mesh, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);};
             draw(*air_triangles.tl_tunnel_pipe, tunnel_pipe_triangles);
             draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
@@ -652,7 +652,7 @@ void DrawStreets::draw_streets_draw_ways(
         if (angle_way.layer != 0) {
             rect.draw_z0(*air_triangles.tl_air_support, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, way_color, 0, 1, 0, len / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding, b_is_tunnel_entrance, c_is_tunnel_entrance);
         }
-        if (angle_way.layer == -1) {
+        if (angle_way.layer < 0) {
             auto draw = [&](auto& lst, auto& mesh){rect.draw(lst, height_bindings, node_id, angle_way.neighbor_id, mesh, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);};
             draw(*air_triangles.tl_tunnel_pipe, tunnel_pipe_triangles);
             draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
