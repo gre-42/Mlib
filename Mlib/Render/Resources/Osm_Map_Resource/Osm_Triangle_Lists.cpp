@@ -209,7 +209,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction() 
         tl_tunnel_pipe};
 }
 
-std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_all_all() const {
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_all() const {
     return std::list<std::shared_ptr<TriangleList>>{
         tl_terrain,
         tl_terrain_visuals,

@@ -30,12 +30,12 @@ void Mlib::smoothen_and_apply_heightmap(
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes)
 {
-    auto tls_ground = osm_triangle_lists.tls_all_all();
-    auto air_tls_ground = air_triangle_lists.tls_all_all();
-    tls_ground.insert(tls_ground.end(), air_tls_ground.begin(), air_tls_ground.end());
+    auto tls_ground_all = osm_triangle_lists.tls_all();
+    auto air_tls_all = air_triangle_lists.tls_all();
 
     std::list<std::shared_ptr<TriangleList>> tls_all;
-    tls_all.insert(tls_all.end(), tls_ground.begin(), tls_ground.end());
+    tls_all.insert(tls_all.end(), tls_ground_all.begin(), tls_ground_all.end());
+    tls_all.insert(tls_all.end(), air_tls_all.begin(), air_tls_all.end());
     tls_all.insert(tls_all.end(), tls_buildings.begin(), tls_buildings.end());
     tls_all.insert(tls_all.end(), tls_wall_barriers.begin(), tls_wall_barriers.end());
 
@@ -140,7 +140,10 @@ void Mlib::smoothen_and_apply_heightmap(
             }
             if (config.terrain_edge_smoothness > 0) {
                 LOG_INFO("smoothen_edges (ground)");
-                TriangleList::smoothen_edges(tls_ground, tls_street, smoothed_vertices, config.terrain_edge_smoothness, 10);
+                auto tls_flat = osm_triangle_lists.tls_flat();
+                auto air_tls_flat = air_triangle_lists.tls_flat();
+                tls_flat.insert(tls_flat.end(), air_tls_flat.begin(), air_tls_flat.end());
+                TriangleList::smoothen_edges(tls_flat, tls_street, smoothed_vertices, config.terrain_edge_smoothness, 10);
             }
         }
     }
