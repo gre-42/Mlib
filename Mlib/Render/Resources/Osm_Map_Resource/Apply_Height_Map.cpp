@@ -156,7 +156,7 @@ void Mlib::apply_height_map(
             }
         }
     }
-    if (true) {
+    if (false) {
         std::list<FixedArray<ColoredVertex, 3>> tcp;
         for (const auto& t : tl_terrain.triangles_) {
             bool found = false;

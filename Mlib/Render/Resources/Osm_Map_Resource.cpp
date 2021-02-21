@@ -283,9 +283,9 @@ OsmMapResource::OsmMapResource(
         INSERT(tl_curb2_path);
         INSERT(tl_tunnel_entry);
         #undef INSERT
-        save_obj("/tmp/tl_tunnel_entry.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entry->triangles_});
-        save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
-        save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
+        // save_obj("/tmp/tl_tunnel_entry.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entry->triangles_});
+        // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
+        // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
         // plot_mesh(ArrayShape{2000, 2000}, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
         // {
         //     std::list<FixedArray<ColoredVertex, 3>*> tf;
@@ -319,7 +319,7 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_terrain,
             0);
-        save_obj("/tmp/tl_terrain.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
+        // save_obj("/tmp/tl_terrain.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     }
     if (config.with_roofs) {
         LOG_INFO("draw_roofs");
@@ -368,7 +368,7 @@ OsmMapResource::OsmMapResource(
     // Must be after "delete_backfacing_triangles".
     air_triangle_lists.tl_air_support->flip();
 
-    save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
+    // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
 
     smoothen_and_apply_heightmap(
         config,
@@ -387,7 +387,7 @@ OsmMapResource::OsmMapResource(
         street_rectangles,
         way_point_edges_2_lanes);
 
-    save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
+    // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
 
     if (!air_triangle_lists.tl_tunnel_bdry->triangles_.empty()) {
         // mesh_subtract(osm_triangle_lists.tl_terrain->triangles_, air_triangle_lists.tl_tunnel_bdry->triangles_);
@@ -616,9 +616,9 @@ OsmMapResource::OsmMapResource(
     TriangleList::convert_triangle_to_vertex_normals(osm_triangle_lists.tls_with_vertex_normals());
     TriangleList::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
-    save_obj("/tmp/tl_terrain_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
-    save_obj("/tmp/tl_tunnel_pipe_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_pipe->triangles_});
-    save_obj("/tmp/tl_street_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
+    // save_obj("/tmp/tl_terrain_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
+    // save_obj("/tmp/tl_tunnel_pipe_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_pipe->triangles_});
+    // save_obj("/tmp/tl_street_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
 
     auto tls_all = osm_triangle_lists.tls_wo_subtraction();
     for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList>>*>{
