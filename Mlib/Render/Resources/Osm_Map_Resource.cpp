@@ -115,8 +115,8 @@ OsmMapResource::OsmMapResource(
     }
     auto& tunnel_bdry_cva = tunnel_bdry_cvas.front();
 
-    OsmTriangleLists osm_triangle_lists{config, tunnel_pipe_cva->material};
-    OsmTriangleLists air_triangle_lists{config, tunnel_pipe_cva->material};
+    OsmTriangleLists osm_triangle_lists{config};
+    OsmTriangleLists air_triangle_lists{config};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;

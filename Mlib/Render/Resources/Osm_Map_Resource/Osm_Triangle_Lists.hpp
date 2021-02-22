@@ -12,9 +12,7 @@ template <class TData, size_t... tshape>
 class OrderableFixedArray;
 
 struct OsmTriangleLists {
-    explicit OsmTriangleLists(
-        const OsmResourceConfig& config,
-        const Material& tunnel_pipe_material);
+    explicit OsmTriangleLists(const OsmResourceConfig& config);
     ~OsmTriangleLists();
     std::shared_ptr<TriangleList> tl_terrain;
     std::shared_ptr<TriangleList> tl_terrain_visuals;

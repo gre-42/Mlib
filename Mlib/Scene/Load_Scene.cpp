@@ -662,6 +662,9 @@ void LoadScene::operator()(
                 else if (key == "roof_texture") {
                     config.roof_texture = fpath(value);
                 }
+                else if (key == "tunnel_pipe_texture") {
+                    config.tunnel_pipe_texture = fpath(value);
+                }
                 else if (key == "tunnel_pipe_resource_name") {
                     config.tunnel_pipe_resource_name = value;
                 }

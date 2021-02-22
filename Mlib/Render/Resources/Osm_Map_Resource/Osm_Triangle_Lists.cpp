@@ -6,9 +6,7 @@
 
 using namespace Mlib;
 
-OsmTriangleLists::OsmTriangleLists(
-    const OsmResourceConfig& config,
-    const Material& tunnel_pipe_material)
+OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
 {
     tl_terrain = std::make_shared<TriangleList>("terrain", Material{
         .dirt_texture = config.dirt_texture,
@@ -116,18 +114,16 @@ OsmTriangleLists::OsmTriangleLists(
         .wrap_mode_s = curb_wrap_mode_s,
         .draw_distance_noperations = 1000}.compute_color_mode());
     tl_tunnel_crossing = std::make_shared<TriangleList>("tunnel_crossing", Material{
+        .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .ambience = tunnel_pipe_material.ambience,
-        .diffusivity = tunnel_pipe_material.diffusivity,
-        .specularity = tunnel_pipe_material.specularity,
+        .specularity = {0.f, 0.f, 0.f},
         .draw_distance_noperations = 1000}.compute_color_mode());
     tl_tunnel_pipe = std::make_shared<TriangleList>("tunnel_pipe", Material{
+        .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .ambience = tunnel_pipe_material.ambience,
-        .diffusivity = tunnel_pipe_material.diffusivity,
-        .specularity = tunnel_pipe_material.specularity,
+        .specularity = {0.f, 0.f, 0.f},
         .draw_distance_noperations = 1000}.compute_color_mode());
     tl_tunnel_bdry = std::make_shared<TriangleList>("tunnel_bdry", Material());
     tl_tunnel_entrance = std::make_shared<TriangleList>("tunnel_entrance", Material());
