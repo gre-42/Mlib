@@ -60,6 +60,10 @@ void SubstitutionInfo::delete_triangles_far_away(
     if (cva_->triangles.empty()) {
         return;
     }
+    auto update_counters = [this, noperations](){
+        offset_ = current_triangle_id_;
+        noperations2_ = std::min(current_triangle_id_ + noperations, cva_->triangles.size()) - current_triangle_id_;
+    };
     if (triangles_local_ids_.empty()) {
         triangles_local_ids_.resize(cva_->triangles.size());
         triangles_global_ids_.resize(cva_->triangles.size());
@@ -68,6 +72,7 @@ void SubstitutionInfo::delete_triangles_far_away(
             triangles_global_ids_[i] = i;
         }
         current_triangle_id_ = 0;
+        update_counters();
         if (is_static) {
             transformed_triangles_.resize(cva_->triangles.size());
             for (size_t i = 0; i < cva_->triangles.size(); ++i) {
@@ -75,8 +80,6 @@ void SubstitutionInfo::delete_triangles_far_away(
             }
         }
     }
-    offset_ = current_triangle_id_;
-    noperations2_ = std::min(current_triangle_id_ + noperations, cva_->triangles.size()) - current_triangle_id_;
     if (triangles_local_ids_.size() != cva_->triangles.size()) {
         throw std::runtime_error("Array length has changed");
     }
@@ -137,8 +140,8 @@ void SubstitutionInfo::delete_triangles_far_away(
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
                 // TimeGuard tg{ "deleting triangles", "deleting triangles" };
                 CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-                CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-                // CHK(Triangle * ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, offset_ * sizeof(Triangle), noperations2_ * sizeof(Triangle), GL_MAP_WRITE_BIT));
+                // CHK(Triangle* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+                CHK(Triangle * ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, offset_ * sizeof(Triangle), noperations2_ * sizeof(Triangle), GL_MAP_WRITE_BIT));
                 ptr -= offset_;
                 for (size_t i : triangles_to_delete_) {
                     delete_triangle(i, ptr);
@@ -150,12 +153,14 @@ void SubstitutionInfo::delete_triangles_far_away(
                 triangles_to_insert_.clear();
                 CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
             }
+            update_counters();
             background_loop_->run(func);
         }
     } else {
         if (background_loop_ != nullptr) {
             throw std::runtime_error("Substitution both in fg and bg");
         }
+        update_counters();
         CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
         func();
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
