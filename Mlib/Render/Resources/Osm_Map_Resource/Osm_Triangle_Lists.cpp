@@ -154,6 +154,7 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
     INSERT(tl_air_support);
     INSERT(tl_tunnel_crossing);
     INSERT(tl_tunnel_pipe);
+    INSERT(tl_tunnel_bdry);
 }
 #undef INSERT
 
@@ -266,4 +267,21 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_with_vertex_norma
         tl_street,
         tl_path,
         tl_tunnel_crossing};
+}
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_no_grass() const {
+    return std::list<std::shared_ptr<TriangleList>>{
+        tl_street_crossing,
+        tl_path_crossing,
+        tl_street,
+        tl_path,
+        tl_curb_street,
+        tl_curb_path,
+        tl_curb2_street,
+        tl_curb2_path,
+        tl_air_curb_street,
+        tl_air_curb_path,
+        tl_air_support,
+        tl_tunnel_crossing,
+        tl_tunnel_bdry};
 }

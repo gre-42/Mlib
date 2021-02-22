@@ -43,6 +43,7 @@ struct OsmTriangleLists {
     std::list<std::shared_ptr<TriangleList>> tls_smooth() const;
     std::list<std::shared_ptr<TriangleList>> tls_no_backfaces() const;
     std::list<std::shared_ptr<TriangleList>> tls_with_vertex_normals() const;
+    std::list<std::shared_ptr<TriangleList>> tls_no_grass() const;
 };
 
 }

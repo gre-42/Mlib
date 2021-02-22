@@ -73,7 +73,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     }
     if (street_bvh_ == nullptr) {
         street_bvh_.reset(new Bvh<float, FixedArray<FixedArray<float, 3>, 3>, 3>{{0.1f, 0.1f, 0.1f}, 10});
-        for (const auto& lst : std::vector{omr_->tl_street_, omr_->tl_tunnel_pipe_}) {
+        for (const auto& lst : omr_->tls_no_grass_) {
             for (const auto& t : lst->triangles_) {
                 FixedArray<FixedArray<float, 3>, 3> tri{
                     t(0).position,

@@ -118,8 +118,6 @@ OsmMapResource::OsmMapResource(
     OsmTriangleLists osm_triangle_lists{config, tunnel_pipe_cva->material};
     OsmTriangleLists air_triangle_lists{config, tunnel_pipe_cva->material};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
-    tl_street_ = osm_triangle_lists.tl_street;
-    tl_tunnel_pipe_ = osm_triangle_lists.tl_tunnel_pipe;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;
@@ -642,6 +640,8 @@ OsmMapResource::OsmMapResource(
     // save_obj("/tmp/tl_terrain_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
     // save_obj("/tmp/tl_tunnel_pipe_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_pipe->triangles_});
     // save_obj("/tmp/tl_street_final.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
+
+    tls_no_grass_ = osm_triangle_lists.tls_no_grass();
 
     auto tls_all = osm_triangle_lists.tls_wo_subtraction();
     for (auto& l : std::list<const std::list<std::shared_ptr<TriangleList>>*>{
