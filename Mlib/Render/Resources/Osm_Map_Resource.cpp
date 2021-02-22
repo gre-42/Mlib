@@ -545,27 +545,36 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    LOG_INFO("flip air-support normals");
-    // Must be after "delete_backfacing_triangles".
-    air_triangle_lists.tl_air_support->flip();
-    air_triangle_lists.tl_tunnel_crossing->flip();
-    for (auto& t : air_triangle_lists.tl_tunnel_crossing->triangles_) {
-        for (auto& v : t.flat_iterable()) {
-            v.position(2) += config.default_tunnel_pipe_height * config.scale;
-        }
-    }
+    {
+        const auto& air_or_osm = std::isnan(config.extrude_air_curb_amount)
+            ? osm_triangle_lists
+            : air_triangle_lists;
 
-    // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
-    if (config.extrude_air_support_amount != 0) {
-        TriangleList::extrude(
-            *air_triangle_lists.tl_air_support,
-            {air_triangle_lists.tl_air_support},
-            nullptr,
-            &boundary_vertices,
-            config.extrude_air_support_amount * config.scale,
-            config.scale,
-            1,
-            config.uv_scale_terrain);
+        LOG_INFO("flip air-support normals");
+        // Must be after "delete_backfacing_triangles".
+        air_or_osm.tl_air_support->flip();
+        air_or_osm.tl_tunnel_crossing->flip();
+        for (auto& t : air_or_osm.tl_tunnel_crossing->triangles_) {
+            for (auto& v : t.flat_iterable()) {
+                v.position(2) += config.default_tunnel_pipe_height * config.scale;
+            }
+        }
+
+        // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
+        if (config.extrude_air_support_amount != 0) {
+            const auto& lst = std::isnan(config.extrude_air_curb_amount)
+                ? air_or_osm.tl_air_support
+                : air_or_osm.tl_air_support;
+            TriangleList::extrude(
+                *lst,
+                {lst},
+                nullptr,
+                &boundary_vertices,
+                config.extrude_air_support_amount * config.scale,
+                config.scale,
+                1,
+                config.uv_scale_terrain);
+        }
     }
 
     // for (auto& l : tls_ground) {
