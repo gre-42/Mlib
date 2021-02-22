@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
         "    [--print_render_fps]\n"
-        "    [--vfx]\n"
+        "    [--no_vfx]\n"
         "    [--no_depth_fog]\n"
         "    [--low_pass]\n"
         "    [--high_pass]\n"
