@@ -1,12 +1,9 @@
 #pragma once
+#include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
-#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <cmath>
 
 namespace Mlib {
-
-static const OrderableFixedArray<float, 4> default_distances{ 0.f, 0.f, float(INFINITY), float(INFINITY) };
-static const OrderableFixedArray<float, 4> default_cosines{ -1.f, -1.f, 1.f, 1.f };
 
 struct BlendMapTexture {
     TextureDescriptor texture_descriptor;
