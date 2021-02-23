@@ -10,6 +10,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Substitution_Info.hpp>
+#include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Scene_Graph/Light.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -80,7 +81,7 @@ GLint get_wrap_param(WrapMode mode) {
 
 std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_absolute_bone_transformations(const Style* style) const
 {
-    // TimeGuard time_guard{ "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations" };
+    TIME_GUARD_DECLARE(time_guard, "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations");
     if (!rcva_->triangles_res_->bone_indices.empty()) {
         if (style == nullptr) {
             throw std::runtime_error("Animation without style");
@@ -118,7 +119,7 @@ void RenderableColoredVertexArray::render_cva(
     const Style* style) const
 {
     LOG_FUNCTION("render_cva");
-    // TimeGuard time_guard{ "render_cva", (cva->material.textures.size() > 0) ? cva->material.textures.front().texture_descriptor.color : cva->name };
+    TIME_GUARD_DECLARE(time_guard, "render_cva", (cva->material.textures.size() > 0) ? cva->material.textures.front().texture_descriptor.color : cva->name);
     // This check passes because the arrays are filtered in the constructor.
     assert_true((cva->material.aggregate_mode == AggregateMode::OFF) || (rcva_->instances_ != nullptr));
     if (render_pass.internal == InternalRenderPass::INITIAL && cva->material.blend_mode == BlendMode::CONTINUOUS) {

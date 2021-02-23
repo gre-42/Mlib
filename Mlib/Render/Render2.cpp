@@ -15,6 +15,7 @@
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Resources/Depth_Map_Resource.hpp>
+#include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Render/linmath.hpp>
@@ -141,7 +142,7 @@ void Render2::operator () (
             GlContextGuard gcg{ window_->window() };
             while (continue_rendering())
             {
-                // TimeGuard::initialize(1000 * 60, MaxLogLengthExceededBehavior::THROW_EXCEPTION);
+                TIME_GUARD_INITIALIZE(1000 * 60, MaxLogLengthExceededBehavior::THROW_EXCEPTION);
                 if (num_renderings_ != SIZE_MAX) {
                     --num_renderings_;
                 }
@@ -158,7 +159,7 @@ void Render2::operator () (
                 ViewportGuard vg{ 0, 0, width, height };
 
                 {
-                    // // TimeGuard time_guard("logic.render", "logic.render");
+                    // TimeGuard time_guard("logic.render", "logic.render");
                     RenderedSceneDescriptor rsd = (render_results_ != nullptr) && (!render_results_->outputs.empty())
                         ? RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = "" }
                     : RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = "" };
@@ -182,14 +183,14 @@ void Render2::operator () (
                 }
                 // Set FPS, assuming that "window_->draw();" below will take 0 time.
                 if (render_config_.dt != 0) {
-                    // TimeGuard time_guard("set_fps", "set_fps");
+                    TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
                     set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
                 }
                 else if (render_config_.motion_interpolation) {
                     throw std::runtime_error("Motion interpolation requires render_dt");
                 }
                 {
-                    // TimeGuard time_guard("window_->draw", "window_->draw");
+                    TIME_GUARD_DECLARE(time_guard, "window_->draw", "window_->draw");
                     window_->draw();
                 }
                 // Compute FPS, including the time that "window_->draw();" took.
@@ -204,16 +205,18 @@ void Render2::operator () (
                     // }
                 }
                 {
-                    // TimeGuard time_guard("execute_gc_render", "execute_gc_render");
+                    TIME_GUARD_DECLARE(time_guard, "execute_gc_render", "execute_gc_render");
                     execute_gc_render();
                 }
                 if (render_config_.motion_interpolation) {
                     time_id = (time_id + 1) % 4;
                 }
-                // static size_t ii = 0;
-                // if (ii++ % 600 == 0) {
-                //     TimeGuard::print_groups(std::cerr);
-                // }
+                #ifdef BENCHMARK_RENDERING_ENABLED
+                static size_t ii = 0;
+                if (ii++ % 600 == 0) {
+                    TimeGuard::print_groups(std::cerr);
+                }
+                #endif
             }
         } catch (const std::runtime_error&) {
             GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
