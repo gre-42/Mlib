@@ -194,7 +194,15 @@ void RenderableColoredVertexArray::render_cva(
     bool has_dirtmap = (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
-    bool fragments_depend_on_distance = (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && cva->material.fragments_depend_on_distance();
+    OrderableFixedArray<float, 4> alpha_distances;
+    bool fragments_depend_on_distance;
+    if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
+        fragments_depend_on_distance = false;
+        alpha_distances = default_distances;
+    } else {
+        fragments_depend_on_distance = cva->material.fragments_depend_on_distance();
+        alpha_distances = cva->material.alpha_distances;
+    }
     bool fragments_depend_on_normal = (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && cva->material.fragments_depend_on_normal();
     if ((ntextures_color == 0) && has_dirtmap) {
         throw std::runtime_error(
@@ -225,7 +233,7 @@ void RenderableColoredVertexArray::render_cva(
             .occluder_type = render_pass.external.black_node_name.empty() ? cva->material.occluder_type : OccluderType::BLACK,
             .nlights = filtered_lights.size(),
             .blend_mode = cva->material.blend_mode,
-            .alpha_distances = cva->material.alpha_distances,
+            .alpha_distances = alpha_distances,
             .ntextures_color = ntextures_color,
             .ntextures_normal = ntextures_normal,
             .has_lightmap_color = has_lightmap_color,
