@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <cmath>
@@ -81,6 +82,7 @@ struct OsmResourceConfig {
     float curb2_alpha = 0.95f;
     float curb_uv_x = 1;
     float curb2_uv_x = 1;
+    FixedArray<float, 3> curb_color = FixedArray<float, 3>{ 1.f, 1.f, 1.f };
     float raise_streets_amount = 0.2f;
     float extrude_curb_amount = 0;
     float extrude_street_amount = 0;

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <list>
 #include <map>
@@ -57,6 +58,7 @@ struct DrawStreetsInput {
     float curb2_alpha_;
     float curb_uv_x;
     float curb2_uv_x;
+    FixedArray<float, 3> curb_color_;
     ResourceNameCycle& street_lights;
     bool with_height_bindings;
     DrivingDirection driving_direction;

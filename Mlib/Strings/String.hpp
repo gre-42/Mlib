@@ -9,7 +9,7 @@
 namespace Mlib {
 
 std::strong_ordering operator <=> (const std::string& a, const std::string& b);
-std::list<std::string> string_to_list(const std::string& str);
+std::list<std::string> string_to_list(const std::string& str, size_t expected_length = SIZE_MAX);
 std::vector<std::string> string_to_vector(const std::string& str);
 std::set<std::string> string_to_set(const std::string& str);
 template <class TContainer, class TOperation = std::identity>
@@ -25,8 +25,8 @@ std::string join(const std::string& delimiter, const TContainer& lst, const TOpe
 }
 
 template <class TOperation>
-auto string_to_vector(const std::string& str, const TOperation& op) {
-    std::list<std::string> sresult = string_to_list(str);
+auto string_to_vector(const std::string& str, const TOperation& op, size_t expected_length = SIZE_MAX) {
+    std::list<std::string> sresult = string_to_list(str, expected_length);
     std::vector<decltype(op(""))> result;
     result.reserve(sresult.size());
     for (const std::string& s : sresult) {

@@ -16,7 +16,7 @@ std::strong_ordering Mlib::operator <=> (const std::string& a, const std::string
     return std::strong_ordering::greater;
 }
 
-std::list<std::string> Mlib::string_to_list(const std::string& str) {
+std::list<std::string> Mlib::string_to_list(const std::string& str, size_t expected_length) {
     std::list<std::string> res;
     static const DECLARE_REGEX(re, "\\s+");
     for (auto it = Mlib::re::sregex_token_iterator(str.begin(), str.end(), re, -1, Mlib::re::regex_constants::match_not_null);
@@ -26,6 +26,9 @@ std::list<std::string> Mlib::string_to_list(const std::string& str) {
         if (!it->str().empty()) {
             res.push_back(*it);
         }
+    }
+    if ((expected_length != SIZE_MAX) && (res.size() != expected_length)) {
+        throw std::runtime_error("Expected " + std::to_string(expected_length) + " elements, but got " + std::to_string(res.size()));
     }
     return res;
 }

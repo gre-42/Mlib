@@ -795,6 +795,10 @@ void LoadScene::operator()(
                 else if (key == "curb2_uv_x") {
                     config.curb2_uv_x = safe_stof(value);
                 }
+                else if (key == "curb_color") {
+                    auto curb_color = string_to_vector(value, safe_stof, 3);
+                    config.curb_color = FixedArray<float, 3>{ curb_color[0], curb_color[1], curb_color[2] };
+                }
                 else if (key == "raise_streets_amount") {
                     config.raise_streets_amount = safe_stof(value);
                 }

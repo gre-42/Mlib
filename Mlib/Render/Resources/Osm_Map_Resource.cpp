@@ -159,6 +159,7 @@ OsmMapResource::OsmMapResource(
             config.curb2_alpha,
             config.curb_uv_x,
             config.curb2_uv_x,
+            config.curb_color,
             street_lights,
             config.with_height_bindings,
             config.driving_direction,
