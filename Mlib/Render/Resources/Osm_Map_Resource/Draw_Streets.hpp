@@ -53,8 +53,8 @@ struct DrawStreetsInput {
     const std::string& name_pattern;
     const std::set<std::string>& excluded_highways;
     const std::set<std::string>& path_tags;
-    float curb_alpha;
-    float curb2_alpha;
+    float curb_alpha_;
+    float curb2_alpha_;
     float curb_uv_x;
     float curb2_uv_x;
     ResourceNameCycle& street_lights;
@@ -74,6 +74,8 @@ private:
     void draw_holes();
     void draw_streets_add_waypoints(
         const Rectangle& rect,
+        float curb_alpha,
+        float curb2_alpha,
         unsigned int nlanes,
         float lane_alpha,
         float sidewalk_alpha0,
@@ -93,6 +95,8 @@ private:
         const Rectangle& rect,
         const std::string& node_id,
         const std::string& neighbor_id,
+        float curb_alpha,
+        float curb2_alpha,
         float lane_alpha,
         float sidewalk_alpha0,
         float sidewalk_alpha1);

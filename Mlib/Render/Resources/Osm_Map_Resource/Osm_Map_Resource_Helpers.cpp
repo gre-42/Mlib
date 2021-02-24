@@ -25,6 +25,7 @@
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <fstream>
 #include <poly2tri/poly2tri.h>
 #include <regex>
@@ -177,7 +178,11 @@ void Mlib::draw_nodes(
 //     rect.draw_z0(tl);
 // }
 
-float Mlib::parse_meters(const std::map<std::string, std::string>& tags, const std::string& key, float default_value) {
+float Mlib::parse_meters(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    float default_value)
+{
     auto it = tags.find(key);
     if (it == tags.end()) {
         return default_value;
@@ -192,6 +197,36 @@ float Mlib::parse_meters(const std::map<std::string, std::string>& tags, const s
         return res;
     } else {
         throw std::runtime_error("Could not parse height value: " + it->second);
+    }
+}
+
+FixedArray<float, 3> Mlib::parse_color(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    const FixedArray<float, 3>& default_value)
+{
+    auto rgb_it = tags.find("color");
+    if (rgb_it != tags.end()) {
+        auto l = string_to_vector(rgb_it->second, safe_stof);
+        if (l.size() != 3) {
+            throw std::runtime_error("\"color\" tag does not have 3 values");
+        }
+        return FixedArray<float, 3>{l[0], l[1], l[2]};
+    } else {
+        return default_value;
+    }
+}
+
+float Mlib::parse_float(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    float default_value)
+{
+    auto it = tags.find(key);
+    if (it != tags.end()) {
+        return safe_stof(it->second);
+    } else {
+        return default_value;
     }
 }
 
@@ -350,7 +385,8 @@ void Mlib::draw_ceilings(
             {},
             scale,
             uv_scale,
-            bu.building_top);
+            bu.building_top,
+            parse_color(bu.way.tags, "color", building_color));
     }
 }
 
@@ -467,7 +503,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     const std::map<std::string, Node>& nodes,
     float scale,
     float uv_scale,
-    float z)
+    float z,
+    const FixedArray<float, 3>& color)
 {
     p2t::Point p00{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width};
     p2t::Point p01{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width};
@@ -570,9 +607,9 @@ void Mlib::triangulate_terrain_or_ceilings(
             {float(t->GetPoint(0)->x), float(t->GetPoint(0)->y), z * scale},
             {float(t->GetPoint(1)->x), float(t->GetPoint(1)->y), z * scale},
             {float(t->GetPoint(2)->x), float(t->GetPoint(2)->y), z * scale},
-            terrain_color,
-            terrain_color,
-            terrain_color,
+            color,
+            color,
+            color,
             {float(t->GetPoint(0)->x) / scale * uv_scale, float(t->GetPoint(0)->y) / scale * uv_scale},
             {float(t->GetPoint(1)->x) / scale * uv_scale, float(t->GetPoint(1)->y) / scale * uv_scale},
             {float(t->GetPoint(2)->x) / scale * uv_scale, float(t->GetPoint(2)->y) / scale * uv_scale});
@@ -587,9 +624,9 @@ void Mlib::triangulate_terrain_or_ceilings(
                     {t(0).position(0), t(0).position(1), z * scale},
                     {t(1).position(0), t(1).position(1), z * scale},
                     {t(2).position(0), t(2).position(1), z * scale},
-                    terrain_color,
-                    terrain_color,
-                    terrain_color,
+                    color,
+                    color,
+                    color,
                     {t(0).position(0) / scale * uv_scale, t(0).position(1) / scale * uv_scale},
                     {t(1).position(0) / scale * uv_scale, t(1).position(1) / scale * uv_scale},
                     {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale});
@@ -916,6 +953,7 @@ void Mlib::draw_building_walls(
         tls.push_back(std::make_shared<TriangleList>("building_walls", material));
         tls.back()->material_.textures = { {.texture_descriptor = {.color = facade_textures.at(bid % facade_textures.size())}} };
         tls.back()->material_.compute_color_mode();
+        FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
         auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
         for (auto it = sw.begin(); it != sw.end(); ++it) {
             auto s = it;
@@ -935,10 +973,10 @@ void Mlib::draw_building_walls(
                     {p0(0), p0(1), bu.building_bottom * scale},
                     {p0(0), p0(1), bu.building_top * scale},
                     {p1(0), p1(1), bu.building_top * scale},
-                    building_color,
-                    building_color,
-                    building_color,
-                    building_color,
+                    color,
+                    color,
+                    color,
+                    color,
                     {0.f, 0.f},
                     {width / scale * uv_scale, 0.f},
                     {width / scale * uv_scale, height / scale * uv_scale},

@@ -70,7 +70,20 @@ void draw_nodes(
 //     TriangleList& tl,
 //     float width);
 
-float parse_meters(const std::map<std::string, std::string>& tags, const std::string& key, float default_value);
+float parse_meters(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    float default_value);
+
+FixedArray<float, 3> parse_color(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    const FixedArray<float, 3>& default_value);
+
+float parse_float(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    float default_value);
 
 struct Building {
     std::string id;
@@ -165,7 +178,8 @@ void triangulate_terrain_or_ceilings(
     const std::map<std::string, Node>& nodes,
     float scale,
     float uv_scale,
-    float z);
+    float z,
+    const FixedArray<float, 3>& color);
 
 void add_grass_on_steiner_points(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,

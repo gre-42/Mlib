@@ -333,7 +333,8 @@ OsmMapResource::OsmMapResource(
             nodes,
             config.scale,
             config.uv_scale_terrain,
-            0);
+            0,
+            terrain_color);
         // save_obj("/tmp/tl_terrain.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     }
     if (config.with_roofs) {
