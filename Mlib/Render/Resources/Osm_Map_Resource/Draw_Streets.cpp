@@ -518,24 +518,24 @@ void DrawStreets::draw_holes() {
         air_triangles.tl_path_crossing.get()})
     {
         for (auto& t : l->triangles_) {
-            t(0).color = way_color;
-            t(1).color = way_color;
-            t(2).color = way_color;
+            // t(0).color = way_color;
+            // t(1).color = way_color;
+            // t(2).color = way_color;
             t(0).uv = {t(0).position(0) / scale * uv_scale, t(0).position(1) / scale * uv_scale};
             t(1).uv = {t(1).position(0) / scale * uv_scale, t(1).position(1) / scale * uv_scale};
             t(2).uv = {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale};
         }
     }
-    for (TriangleList* l : std::vector<TriangleList*>{
-        air_triangles.tl_air_support.get(),
-        air_triangles.tl_tunnel_crossing.get()})
-    {
-        for (auto& t : l->triangles_) {
-            t(0).color = way_color;
-            t(1).color = way_color;
-            t(2).color = way_color;
-        }
-    }
+    // for (TriangleList* l : std::vector<TriangleList*>{
+    //     air_triangles.tl_air_support.get(),
+    //     air_triangles.tl_tunnel_crossing.get()})
+    // {
+    //     for (auto& t : l->triangles_) {
+    //         t(0).color = way_color;
+    //         t(1).color = way_color;
+    //         t(2).color = way_color;
+    //     }
+    // }
 }
 
 void DrawStreets::draw_streets_add_waypoints(
@@ -671,8 +671,8 @@ void DrawStreets::draw_streets_draw_ways(
         }
         if (wi.curb2_alpha != 1) {
             auto draw = [&](auto& lst, bool bte, bool cte){
-                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -wi.curb2_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
-                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, wi.curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -wi.curb2_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, wi.curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);
             };
             draw(curb2_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
             if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
@@ -708,8 +708,8 @@ void DrawStreets::draw_streets_draw_ways(
         }
         if (wi.curb2_alpha != 1) {
             auto draw = [&](auto& lst, bool bte, bool cte){
-                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -wi.curb2_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
-                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, curb2_uv_x, 0, len / scale * uv_scale, wi.curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);};
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -wi.curb2_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
+                rect.draw_z0(lst, height_bindings, ground_triangles.tunnel_entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, 0, len / scale * uv_scale, wi.curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);};
             draw(curb2_lst, b_is_tunnel_entrance, c_is_tunnel_entrance);
             if (b_is_tunnel_entrance || c_is_tunnel_entrance) {
                 draw(*ground_triangles.tl_tunnel_entrance, false, false);
