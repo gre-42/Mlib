@@ -333,7 +333,6 @@ OsmMapResource::OsmMapResource(
             steiner_points,
             map_outer_contour,
             hole_triangles,
-            nodes,
             config.scale,
             config.uv_scale_terrain,
             0,
