@@ -1,5 +1,7 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <map>
+#include <string>
 #include <vector>
 
 namespace Mlib {
