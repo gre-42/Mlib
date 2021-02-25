@@ -22,8 +22,8 @@ void Mlib::parse_osm_xml(
     std::map<std::string, Way>& ways)
 {
     std::ifstream ifs{ filename };
-    static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'] .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
-    static const DECLARE_REGEX(way_reg, "^ +<way id=[\"'](-?\\w+)[\"'].* visible=[\"'](true|false)[\"'].*>$");
+    static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
+    static const DECLARE_REGEX(way_reg, "^ +<way id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].*>$");
     static const DECLARE_REGEX(way_end_reg, "^ +</way>$");
     static const DECLARE_REGEX(node_ref_reg, "^  +<nd ref=[\"'](-?\\w+)[\"'] */>$");
     static const DECLARE_REGEX(bounds_reg, " +<bounds minlat=[\"']([\\w.-]+)[\"'] minlon=[\"']([\\w.-]+)[\"'] maxlat=[\"']([\\w.-]+)[\"'] maxlon=[\"']([\\w.-]+)[\"'](?: origin=[\"'].*[\"'])? */>$");
@@ -86,35 +86,54 @@ void Mlib::parse_osm_xml(
             normalization_matrix_defined = true;
         } else if (Mlib::re::regex_match(line, match, node_reg)) {
             current_way = "<none>";
-            current_node = match[1].str();
+            std::string action = match[2].str();
+            std::string visible = match[3].str();
             if (!normalization_matrix_defined) {
                 throw std::runtime_error("Normalization-matrix undefined, bounds-section?");
             }
-            if (match[2].str() == "true") {
-                if (nodes.find(match[1].str()) != nodes.end()) {
-                    throw std::runtime_error("Found duplicate node id: " + match[1].str());
+            if ((action != "delete") && (visible == "true")) {
+                current_node = match[1].str();
+                std::string lat = match[4].str();
+                std::string lon = match[5].str();
+                if (nodes.find(current_node) != nodes.end()) {
+                    throw std::runtime_error("Found duplicate node id: " + current_node);
                 }
-                auto pos = normalization_matrix.transform(
-                        FixedArray<double, 2>{
-                            safe_stod(match[3].str()),
-                            safe_stod(match[4].str())}).casted<float>();
+                auto rpos = FixedArray<double, 2>{
+                    safe_stod(lat),
+                    safe_stod(lon)};
+                if (any(rpos < bounds_min_merged - FixedArray<double, 2>{0.01, 0.01})) {
+                    std::stringstream sstr;
+                    sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of minimum bounds " << bounds_min_merged << std::endl;
+                    throw std::runtime_error(sstr.str());
+                }
+                if (any(rpos > bounds_max_merged + FixedArray<double, 2>{0.01, 0.01})) {
+                    std::stringstream sstr;
+                    sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of maximum bounds " << bounds_max_merged << std::endl;
+                    throw std::runtime_error(sstr.str());
+                }
+                auto pos = normalization_matrix.transform(rpos).casted<float>();
                 auto opos = OrderableFixedArray<float, 2>{pos};
                 auto it = ordered_node_positions.find(opos);
                 if (it != ordered_node_positions.end()) {
-                    std::cerr << "Detected duplicate points: " + match[1].str() + ", " + it->second << std::endl;
+                    std::cerr << "Detected duplicate points: " + current_node + ", " + it->second << std::endl;
                 } else {
-                    ordered_node_positions.insert(std::make_pair(opos, match[1].str()));
+                    ordered_node_positions.insert(std::make_pair(opos, current_node));
                 }
-                nodes.insert(std::make_pair(match[1].str(), Node{.position = pos}));
+                nodes.insert(std::make_pair(current_node, Node{.position = pos}));
                 // float dist = sum(squared(pos - FixedArray<float, 2>{-0.801262, 0.0782831}));
                 // if (dist < 1e-3) {
                 //     std::cerr << "err: " << dist << " " << match[1].str() << std::endl;
                 // }
+            } else {
+                current_node = "<none>";
             }
         } else if (Mlib::re::regex_match(line, match, way_reg)) {
             current_node = "<none>";
-            if (match[2].str() == "true") {
-                current_way = match[1].str();
+            std::string action = match[2].str();
+            std::string visible = match[3].str();
+            if ((action != "delete") && (visible == "true")) {
+                std::string way_id = match[1].str();
+                current_way = way_id;
                 ways.insert(std::make_pair(current_way, Way()));
             } else {
                 current_way = "<invisible>";
@@ -124,19 +143,31 @@ void Mlib::parse_osm_xml(
                 throw std::runtime_error("No current way");
             }
             if (current_way != "<invisible>") {
-                ways.at(current_way).nd.push_back(match[1].str());
+                auto it = ways.find(current_way);
+                if (it == ways.end()) {
+                    throw std::runtime_error("Could not find way with ID " + current_way);
+                }
+                it->second.nd.push_back(match[1].str());
             }
         } else  if (Mlib::re::regex_match(line, match, tag_reg)) {
             assert_true((current_node == "<none>") || (current_way == "<none>"));
             auto tag = std::make_pair(match[1].str(), match[2].str());
             if (current_node != "<none>") {
-                if (!nodes.at(current_node).tags.insert(tag).second) {
-                    throw std::runtime_error("Duplicate node tag " + tag.first);
+                auto it = nodes.find(current_node);
+                if (it == nodes.end()) {
+                    throw std::runtime_error("Could not find node with ID " + current_node);
+                }
+                if (!it->second.tags.insert(tag).second) {
+                    throw std::runtime_error("Duplicate node tag " + tag.first + " for node with ID " + current_node);
                 }
             }
             if (current_way != "<none>") {
                 if (current_way != "<invisible>") {
-                    if (!ways.at(current_way).tags.insert(tag).second) {
+                    auto it = ways.find(current_way);
+                    if (it == ways.end()) {
+                        throw std::runtime_error("Could not find way with ID " + current_way);
+                    }
+                    if (!it->second.tags.insert(tag).second) {
                         throw std::runtime_error("Duplicate way tag " + tag.first);
                     }
                 }

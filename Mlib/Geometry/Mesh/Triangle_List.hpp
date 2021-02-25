@@ -112,7 +112,7 @@ public:
         const std::list<FixedArray<float, 3>*>& smoothed_vertices,
         float smoothness,
         size_t niterations);
-    std::list<FixedArray<ColoredVertex, 3>> get_triangles_around(const FixedArray<float, 2>& pt, float radius) const;
+    std::list<const FixedArray<ColoredVertex, 3>*> get_triangles_around(const FixedArray<float, 2>& pt, float radius) const;
     std::shared_ptr<ColoredVertexArray> triangle_array() const;
     std::string name_;
     Material material_;

@@ -303,7 +303,7 @@ OsmMapResource::OsmMapResource(
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
-        // plot_mesh(ArrayShape{2000, 2000}, 1, 4, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
+        // plot_mesh(ArrayShape{2000, 2000}, 1, 4, osm_triangle_lists.tl_street->get_triangles_around({2.95704f, -0.783734f}, 0.5f), {}, {{2.95704f, -0.783734f, 0.f}}).save_to_file("/tmp/plt.pgm");
         // {
         //     std::list<FixedArray<ColoredVertex, 3>*> tf;
         //     for (auto& t : hole_triangles) {
@@ -378,7 +378,12 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("remove_backfacing_triangles");
         size_t i = 0;
         for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
-            delete_backfacing_triangles(l->tls_no_backfaces(), "/tmp/plt-" + std::to_string(i) + ".ppm");
+            const char* prefix = getenv("BACKFACING_TRIANGLES_PREFIX");
+            delete_backfacing_triangles(
+                l->tls_no_backfaces(),
+                prefix == nullptr
+                    ? ""
+                    : prefix + std::to_string(i) + ".ppm");
             ++i;
         }
     }
