@@ -84,8 +84,8 @@ public:
     explicit PpmImage(const ArrayShape& shape);
 
     void draw_fill_rect(const ArrayShape& center, size_t size, const Rgb24& color);
-    void draw_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgb24& color);
-    void draw_infinite_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgb24& color);
+    void draw_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgb24& color, const Rgb24* short_line_color = nullptr);
+    void draw_infinite_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgb24& color, const Rgb24* short_line_color = nullptr);
     void draw_mask(const Array<bool>& mask, const Rgb24& color);
     void draw_streamline(const ArrayShape& center, const Array<float>& velocity, size_t size, size_t length, const Rgb24& color);
 
@@ -101,7 +101,7 @@ public:
     Array<float> to_float_grayscale() const;
     Array<float> to_float_rgb() const;
 private:
-    void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgb24& color, bool infinite);
+    void draw_line_ext(const Array<float>& from, const Array<float>& to, size_t thickness, const Rgb24& color, bool infinite, const Rgb24* short_line_color = nullptr);
 };
 
 }

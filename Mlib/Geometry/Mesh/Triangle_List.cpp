@@ -1,4 +1,5 @@
 #include "Triangle_List.hpp"
+#include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
@@ -237,14 +238,19 @@ std::list<std::shared_ptr<TriangleList>> TriangleList::concatenated(
     return result;
 }
 
-void TriangleList::delete_backfacing_triangles() {
-    std::erase_if(triangles_, [](const FixedArray<ColoredVertex, 3>& t) -> bool{
+void TriangleList::delete_backfacing_triangles(
+    std::list<FixedArray<ColoredVertex, 3>>* deleted_triangles)
+{
+    std::erase_if(triangles_, [deleted_triangles](const FixedArray<ColoredVertex, 3>& t) -> bool{
         bool erase = dot0d(scaled_triangle_normal({
                 t(0).position,
                 t(1).position,
                 t(2).position}),
             FixedArray<float, 3>{0.f, 0.f, 1.f}) <= 0;
         if (erase) {
+            if (deleted_triangles != nullptr) {
+                deleted_triangles->push_back(t);
+            }
             // std::cerr << "Triangle at has negative normal direction" << std::endl;
             // draw_node(*triangles, {t(0).position(0), t(0).position(1)}, scale * 5);
             // draw_node(*triangles, {t(1).position(0), t(1).position(1)}, scale * 5);
@@ -369,10 +375,7 @@ std::list<FixedArray<ColoredVertex, 3>> TriangleList::get_triangles_around(const
         FixedArray<float, 2> a{t(0).position(0), t(0).position(1)};
         FixedArray<float, 2> b{t(1).position(0), t(1).position(1)};
         FixedArray<float, 2> c{t(2).position(0), t(2).position(1)};
-        if ((sum(squared(a - pt)) < squared(radius)) ||
-            (sum(squared(b - pt)) < squared(radius)) ||
-            (sum(squared(c - pt)) < squared(radius)))
-        {
+        if (distance_point_to_triangle(pt, a, b, c) < radius) {
             tf.push_back(t);
         }
     }

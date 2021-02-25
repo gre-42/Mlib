@@ -13,7 +13,7 @@ static void convert_to_2d(
     std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles_2d,
     std::list<FixedArray<float, 2>>& contour_2d,
     std::list<FixedArray<float, 2>>& highlighted_nodes_2d,
-    const std::list<FixedArray<ColoredVertex, 3>*>& triangles_3d,
+    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles_3d,
     const std::list<FixedArray<float, 3>>& contour_3d,
     const std::list<FixedArray<float, 3>>& highlighted_nodes)
 {
@@ -33,6 +33,8 @@ static void convert_to_2d(
 
 PpmImage Mlib::plot_mesh(
     const ArrayShape& image_size,
+    size_t line_thickness,
+    size_t point_size,
     const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
     const std::list<FixedArray<float, 2>>& contour,
     const std::list<FixedArray<float, 2>>& highlighted_nodes)
@@ -58,28 +60,28 @@ PpmImage Mlib::plot_mesh(
         auto a = trafo(t(0));
         auto b = trafo(t(1));
         auto c = trafo(t(2));
-        im.draw_line(a, b, 1, Rgb24::black());
-        im.draw_line(b, c, 1, Rgb24::black());
-        im.draw_line(c, a, 1, Rgb24::black());
-        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, 4, Rgb24::blue());
-        im.draw_fill_rect(ArrayShape{a2i(b(0)), a2i(b(1))}, 4, Rgb24::blue());
-        im.draw_fill_rect(ArrayShape{a2i(c(0)), a2i(c(1))}, 4, Rgb24::blue());
+        im.draw_line(a, b, line_thickness, Rgb24::black(), rvalue_address(Rgb24::nan()));
+        im.draw_line(b, c, line_thickness, Rgb24::black(), rvalue_address(Rgb24::nan()));
+        im.draw_line(c, a, line_thickness, Rgb24::black(), rvalue_address(Rgb24::nan()));
+        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::blue());
+        im.draw_fill_rect(ArrayShape{a2i(b(0)), a2i(b(1))}, point_size, Rgb24::blue());
+        im.draw_fill_rect(ArrayShape{a2i(c(0)), a2i(c(1))}, point_size, Rgb24::blue());
     }
     for (auto it = contour.begin(); ; ) {
         auto it0 = it++;
         if (it == contour.end()) {
             break;
         }
-        im.draw_line(trafo(*it0), trafo(*it), 1, Rgb24::red());
+        im.draw_line(trafo(*it0), trafo(*it), 1, Rgb24::red(), rvalue_address(Rgb24::nan()));
 
     }
     if (!contour.empty()) {
         auto a = trafo(contour.front());
-        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, 4, Rgb24::green());
+        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::green());
     }
     for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);
-        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, 4, Rgb24::red());
+        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::red());
     }
     return im;
 }
@@ -146,7 +148,9 @@ void Mlib::plot_mesh(
 
 PpmImage Mlib::plot_mesh(
     const ArrayShape& image_size,
-    const std::list<FixedArray<ColoredVertex, 3>*>& triangles,
+    size_t line_thickness,
+    size_t point_size,
+    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
     const std::list<FixedArray<float, 3>>& contour,
     const std::list<FixedArray<float, 3>>& highlighted_nodes)
 {
@@ -160,12 +164,12 @@ PpmImage Mlib::plot_mesh(
         triangles,
         contour,
         highlighted_nodes);
-    return plot_mesh(image_size, triangles2d, contour2d, highlighted_nodes2d);
+    return plot_mesh(image_size, line_thickness, point_size, triangles2d, contour2d, highlighted_nodes2d);
 }
 
 void Mlib::plot_mesh(
     Svg<float>& svg,
-    const std::list<FixedArray<ColoredVertex, 3>*>& triangles,
+    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
     const std::list<FixedArray<float, 3>>& contour,
     const std::list<FixedArray<float, 3>>& highlighted_nodes)
 {
@@ -186,7 +190,7 @@ void Mlib::plot_mesh_svg(
     const std::string& filename,
     float width,
     float height,
-    const std::list<FixedArray<ColoredVertex, 3>*>& triangles,
+    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
     const std::list<FixedArray<float, 3>>& contour,
     const std::list<FixedArray<float, 3>>& highlighted_nodes)
 {

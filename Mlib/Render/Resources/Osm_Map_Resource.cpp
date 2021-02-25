@@ -1,6 +1,7 @@
 #include "Osm_Map_Resource.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Mesh_Subtract.hpp>
+#include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -15,6 +16,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoints.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -301,7 +303,7 @@ OsmMapResource::OsmMapResource(
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
-        // plot_mesh(ArrayShape{2000, 2000}, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
+        // plot_mesh(ArrayShape{2000, 2000}, 1, 4, tl_street->get_triangles_around({-1.59931f, 0.321109f}, 0.01f), {}, {{-1.59931f, 0.321109f, 0.f}}).save_to_file("/tmp/plt.pgm");
         // {
         //     std::list<FixedArray<ColoredVertex, 3>*> tf;
         //     for (auto& t : hole_triangles) {
@@ -375,10 +377,10 @@ OsmMapResource::OsmMapResource(
     }
     if (config.remove_backfacing_triangles) {
         LOG_INFO("remove_backfacing_triangles");
+        size_t i = 0;
         for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
-            for (auto& l2 : l->tls_no_backfaces()) {
-                l2->delete_backfacing_triangles();
-            }
+            delete_backfacing_triangles(l->tls_no_backfaces(), "/tmp/plt-" + std::to_string(i) + ".ppm");
+            ++i;
         }
     }
 

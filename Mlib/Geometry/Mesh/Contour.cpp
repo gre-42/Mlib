@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
-    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex, 3>*>& triangles)
+    Mlib::find_contour_edges(const std::list<const FixedArray<ColoredVertex, 3>*>& triangles)
 {
     using O = OrderableFixedArray<float, 3>;
 
@@ -18,7 +18,7 @@ std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, {}, {edge.first, edge.second});
                 const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
                 if (debug_filename != nullptr) {
-                    plot_mesh(ArrayShape{8000, 8000}, triangles, {}, {edge.first, edge.second}).save_to_file(debug_filename);
+                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {edge.first, edge.second}).save_to_file(debug_filename);
                     throw std::runtime_error("Detected duplicate edge, debug image saved");
                 } else {
                     throw std::runtime_error("Detected duplicate edge, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
@@ -37,8 +37,18 @@ std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>
     return edges;
 }
 
+std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
+    Mlib::find_contour_edges(const std::list<FixedArray<ColoredVertex, 3>*>& triangles)
+{
+    std::list<const FixedArray<ColoredVertex, 3>*> t2;
+    for (const auto& t : triangles) {
+        t2.push_back(t);
+    }
+    return find_contour_edges(t2);
+}
+
 std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
-    const std::list<FixedArray<ColoredVertex, 3>*>& triangles)
+    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles)
 {
     using O = OrderableFixedArray<float, 3>;
 
@@ -89,7 +99,7 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
 std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
     const std::list<FixedArray<ColoredVertex, 3>>& triangles)
 {
-    std::list<FixedArray<ColoredVertex, 3>*> tris;
+    std::list<const FixedArray<ColoredVertex, 3>*> tris;
     for (auto& t : triangles) {
         tris.push_back(const_cast<FixedArray<ColoredVertex, 3>*>(&t));
     }

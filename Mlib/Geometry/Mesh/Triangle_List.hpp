@@ -101,7 +101,7 @@ public:
     static std::list<std::shared_ptr<TriangleList>> concatenated(
         const std::list<std::shared_ptr<TriangleList>>& a,
         const std::list<std::shared_ptr<TriangleList>>& b);
-    void delete_backfacing_triangles();
+    void delete_backfacing_triangles(std::list<FixedArray<ColoredVertex, 3>>* deleted_triangles = nullptr);
     void calculate_triangle_normals();
     void convert_triangle_to_vertex_normals();
     void flip();

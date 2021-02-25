@@ -30,18 +30,20 @@ void PpmImage::draw_line(
     const Array<float>& from,
     const Array<float>& to,
     size_t thickness,
-    const Rgb24& color)
+    const Rgb24& color,
+    const Rgb24* short_line_color)
 {
-    draw_line_ext(from, to, thickness, color, false); // false = infinite
+    draw_line_ext(from, to, thickness, color, false, short_line_color); // false = infinite
 }
 
 void PpmImage::draw_infinite_line(
     const Array<float>& from,
     const Array<float>& to,
     size_t thickness,
-    const Rgb24& color)
+    const Rgb24& color,
+    const Rgb24* short_line_color)
 {
-    draw_line_ext(from, to, thickness, color, true); // true = infinite
+    draw_line_ext(from, to, thickness, color, true, short_line_color); // true = infinite
 }
 
 void PpmImage::draw_line_ext(
@@ -49,7 +51,8 @@ void PpmImage::draw_line_ext(
     const Array<float>& to,
     size_t thickness,
     const Rgb24& color,
-    bool infinite)
+    bool infinite,
+    const Rgb24* short_line_color)
 {
     Mlib::draw_line_ext(
         *this,
@@ -57,7 +60,8 @@ void PpmImage::draw_line_ext(
         to,
         thickness,
         color,
-        infinite);
+        infinite,
+        short_line_color);
 }
 
 void PpmImage::draw_mask(const Array<bool>& mask, const Rgb24& color) {

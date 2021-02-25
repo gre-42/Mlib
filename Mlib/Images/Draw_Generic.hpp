@@ -100,24 +100,35 @@ void draw_line_ext(
     const Array<float>& to,
     size_t thickness,
     const TColor& color,
-    bool infinite)
+    bool infinite,
+    const TColor* short_line_color = nullptr)
 {
     assert(all(from.shape() == ArrayShape{2}));
     assert(all(to.shape() == ArrayShape{2}));
+    auto draw_point = [&image, &thickness](const Array<float>& p, const TColor& color){
+        ArrayShape index{fi2i(p(0)), fi2i(p(1))};
+        if (any(index >= image.shape())) {
+            return false;
+        }
+        draw_fill_rect(image, index, thickness, color);
+        return true;
+    };
     Array<float> v = to - from;
     float len = max(abs(v));
     if (std::abs(len) < 1e-12) {
-        throw std::runtime_error("draw_infinite_line: from ~= to");
+        if (short_line_color == nullptr) {
+            throw std::runtime_error("draw_infinite_line: from ~= to");
+        }
+        draw_point(from, *short_line_color);
+        return;
     }
     v /= len;
     Array<float> p;
     p = from;
     for (size_t i = 0; infinite || i < len; ++i) {
-        ArrayShape index{fi2i(p(0)), fi2i(p(1))};
-        if (any(index >= image.shape())) {
+        if (!draw_point(p, color)) {
             break;
         }
-        draw_fill_rect(image, index, thickness, color);
         p += v;
     }
 }
