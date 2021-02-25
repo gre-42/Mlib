@@ -66,7 +66,7 @@ void Mlib::parse_osm_xml(
                 safe_stod(match[4].str())};
             bounds_min_merged = minimum(bounds_min, bounds_min_merged);
             bounds_max_merged = maximum(bounds_max, bounds_max_merged);
-            coords_ref = (bounds_max_merged + bounds_min_merged) / 2.0;
+            coords_ref = (bounds_min_merged + bounds_max_merged) / 2.0;
             auto m = latitude_longitude_2_meters_mapping(
                 coords_ref(0),
                 coords_ref(1)).pre_scaled(scale);
