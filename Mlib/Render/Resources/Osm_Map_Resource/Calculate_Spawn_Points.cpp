@@ -17,6 +17,7 @@ void Mlib::calculate_spawn_points(
     for (const auto& r : street_rectangles) {
         FixedArray<float, 3> x = r.rectangle(0, 0) - r.rectangle(0, 1);
         FixedArray<float, 3> y = r.rectangle(0, 0) - r.rectangle(1, 0);
+        float ly;
         {
             float lx2 = sum(squared(x));
             float ly2 = sum(squared(y));
@@ -26,8 +27,9 @@ void Mlib::calculate_spawn_points(
             if (ly2 < squared(3 * scale)) {
                 continue;
             }
+            ly = std::sqrt(ly2);
             x /= std::sqrt(lx2);
-            y /= std::sqrt(ly2);
+            y /= ly;
             x -= y * dot0d(y, x);
             x /= std::sqrt(sum(squared(x)));
         }
@@ -38,16 +40,20 @@ void Mlib::calculate_spawn_points(
             x(2), y(2), z(2)};
         auto r0 = matrix_2_tait_bryan_angles(R0);
         auto r1 = matrix_2_tait_bryan_angles(dot2d(rodrigues(z, float(M_PI)), R0));
-        auto create_spawn_point = [&spawn_points, &r](
+        auto create_spawn_point = [&spawn_points, &r, &ly, &scale](
             SpawnPointType spawn_point_type,
             float alpha,
             const FixedArray<float, 3>& rotation)
         {
-            spawn_points.push_back(SpawnPoint{
-                .type = spawn_point_type,
-                .location = r.location,
-                .position = alpha * (r.rectangle(0, 0) + r.rectangle(1, 0)) / 2.f + (1 - alpha) * (r.rectangle(0, 1) + r.rectangle(1, 1)) / 2.f,
-                .rotation = rotation});
+            for (float beta = 0; beta < 1; beta += (10 * scale) / ly) {
+                spawn_points.push_back(SpawnPoint{
+                    .type = spawn_point_type,
+                    .location = r.location,
+                    .position =
+                        alpha * (beta * r.rectangle(0, 0) + (1 - beta) * r.rectangle(1, 0)) +
+                        (1 - alpha) * (beta * r.rectangle(0, 1) + (1 - beta) * r.rectangle(1, 1)),
+                    .rotation = rotation});
+            }
         };
         if (driving_direction == DrivingDirection::CENTER) {
             create_spawn_point(SpawnPointType::ROAD, 0.5, r0);

@@ -619,6 +619,12 @@ OsmMapResource::OsmMapResource(
         street_rectangles,
         config.scale,
         config.driving_direction);
+    if (false) {
+        resource_instance_positions_.clear();
+        for (const auto& p : spawn_points_) {
+            resource_instance_positions_["grass12y"].push_back(ResourceInstanceDescriptor{.position = p.position});
+        }
+    }
     {
         std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
             BuildingType::WAYPOINTS,
@@ -704,7 +710,7 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
             scene_node.add_instances_position(p.first, r.position);
         }
     }
-    if (!near_grass_resource_names_.empty() && much_near_grass_distance_ != INFINITY) {
+    if (!near_grass_resource_names_.empty() && (much_near_grass_distance_ != INFINITY)) {
         scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
     }
     // if (rbvh_ == nullptr) {
