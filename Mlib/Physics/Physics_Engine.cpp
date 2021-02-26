@@ -310,6 +310,7 @@ void PhysicsEngine::collide(
                             beacons,
                             contact_infos,
                             base_log);
+                        return true;
                     });
             }
         }

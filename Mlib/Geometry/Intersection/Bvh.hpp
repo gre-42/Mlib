@@ -59,17 +59,22 @@ public:
     }
 
     template <class TVisitor>
-    void visit(const BoundingSphere<TData, tndim>& sphere, const TVisitor& visitor) const {
+    bool visit(const BoundingSphere<TData, tndim>& sphere, const TVisitor& visitor) const {
         for (const auto& d : data_) {
             if (d.first.intersects(sphere)) {
-                visitor(d.second);
+                if (!visitor(d.second)) {
+                    return false;
+                }
             }
         }
         for (const auto& c : children_) {
             if (c.first.intersects(sphere)) {
-                c.second.visit(sphere, visitor);
+                if (!c.second.visit(sphere, visitor)) {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
     AxisAlignedBoundingBox<TData, tndim> aabb() const {
@@ -117,13 +122,18 @@ public:
     }
 
     template <class TVisitor>
-    void visit_all(const TVisitor& visitor) const {
+    bool visit_all(const TVisitor& visitor) const {
         for (const auto& x : data_) {
-            visitor(x);
+            if (!visitor(x)) {
+                return false;
+            }
         }
         for (const auto& c : children_) {
-            c.second.visit_all(visitor);
+            if (!c.second.visit_all(visitor)) {
+                return false;
+            }
         }
+        return true;
     }
 
     template <class TComputeDistance>
@@ -135,6 +145,7 @@ public:
         TData min_distance = INFINITY;
         visit(BoundingSphere<TData, tndim>(p, max_distance), [&min_distance, &compute_distance](const TPayload& playload) {
             min_distance = std::min(min_distance, compute_distance(playload));
+            return true;
         });
         return min_distance;
     }
@@ -142,7 +153,7 @@ public:
     Bvh repackaged(const FixedArray<TData, tndim>& max_size, size_t level) const
     {
         Bvh<TData, TPayload, tndim> result{ max_size, level };
-        visit_all([&](const auto& d) { result.insert(d.first, d.second); });
+        visit_all([&](const auto& d) { result.insert(d.first, d.second); return true; });
         return result;
     }
 

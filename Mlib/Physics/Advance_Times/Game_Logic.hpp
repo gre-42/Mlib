@@ -15,6 +15,8 @@ enum class Focus;
 class Scene;
 class SceneNode;
 class AdvanceTimes;
+template <class TData, class TPayload, size_t tndim>
+class Bvh;
 
 class GameLogic: public AdvanceTime {
 public:
@@ -41,22 +43,21 @@ private:
     bool spawn_for_vip(
         Player& player,
         const FixedArray<float, 3>& vip_z,
-        const FixedArray<float, 3>& vip_pos,
-        size_t& nsee);
+        const FixedArray<float, 3>& vip_pos);
     bool delete_for_vip(
         Player& player,
         const FixedArray<float, 3>& vip_z,
-        const FixedArray<float, 3>& vip_pos,
-        size_t& nsee);
+        const FixedArray<float, 3>& vip_pos);
     Scene& scene_;
     AdvanceTimes& advance_times_;
     Players& players_;
     Player* vip_;
-    std::vector<SpawnPoint> spawn_points_;
     std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
     std::recursive_mutex& mutex_;
-    size_t spawn_point_id_;
     std::default_random_engine current_bystander_rng_;
+    std::vector<SpawnPoint> spawn_points_;
+    std::vector<std::unique_ptr<Bvh<float, const SpawnPoint*, 3>>> spawn_points_bvhs_;
+    size_t current_bvh_;
     // size_t nspawns_;
     // size_t ndelete_;
 };

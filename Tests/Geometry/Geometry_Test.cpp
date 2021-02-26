@@ -164,6 +164,7 @@ void test_bvh_performance() {
         bvh.insert({{1, 3, 3}, {2, 4, 4}}, 46);    
         bvh.visit({{0, 1, 2}, 4}, [](int data){
             std::cout << data << std::endl;
+            return true;
         });
         std::cout << bvh << std::endl;
     }
@@ -210,6 +211,7 @@ void test_bvh_performance() {
                 .aabb = false});
             bvh.visit({center, 0.01}, [](int data){
                 std::cout << data << std::endl;
+                return true;
             });
         }
     }

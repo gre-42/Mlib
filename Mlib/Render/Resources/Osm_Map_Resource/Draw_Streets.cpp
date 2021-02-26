@@ -302,8 +302,7 @@ void DrawStreets::draw_streets() {
                 if (!street_lights.empty()) {
                     float radius = 10 * scale;
                     auto add_distant_point = [&](const FixedArray<float, 2>& p) {
-                        bool p_found = false;
-                        street_light_bvh.visit(BoundingSphere(p, radius), [&p_found](bool){p_found=true;});
+                        bool p_found = !street_light_bvh.visit(BoundingSphere(p, radius), [&p_found](bool){return false;});
                         if (!p_found) {
                             street_light_bvh.insert(p, true);
                             add_parsed_resource_name(p, street_lights(), 1, resource_instance_positions, object_resource_descriptors, hitboxes);

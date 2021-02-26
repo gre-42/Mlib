@@ -46,6 +46,7 @@ void Mlib::import_bone_weights(
                         best_distance2 = dist2;
                         best_weights = nv.weights;
                     }
+                    return true;
                 });
                 if (best_weights == nullptr) {
                     throw std::runtime_error("Could not find weight");

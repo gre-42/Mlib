@@ -528,6 +528,7 @@ void Player::select_next_waypoint() {
                     closest_id = i;
                 }
             }
+            return true;
         });
         if (closest_id != SIZE_MAX) {
             set_waypoint(closest_id);

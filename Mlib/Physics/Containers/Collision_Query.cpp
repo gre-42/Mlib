@@ -70,6 +70,7 @@ bool CollisionQuery::can_see(
                             t0.ctp.triangle,
                             intersection_point));
                     }
+                    return true;
                 });
             if (intersects) {
                 return false;
