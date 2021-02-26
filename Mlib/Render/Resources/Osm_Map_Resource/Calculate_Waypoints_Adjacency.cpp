@@ -1,11 +1,11 @@
-#include "Calculate_Waypoints.hpp"
+#include "Calculate_Waypoint_Adjacency.hpp"
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 
 using namespace Mlib;
 
-void Mlib::calculate_waypoints(
+void Mlib::calculate_waypoint_adjacency(
     PointsAndAdjacency<float, 2>& way_points,
     const std::list<Building>& way_point_lines,
     const std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,

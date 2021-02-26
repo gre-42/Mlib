@@ -15,7 +15,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Street_Steiner_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoints.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -631,13 +631,13 @@ OsmMapResource::OsmMapResource(
             ways,
             0,  // building_bottom
             0); // default_building_top
-        calculate_waypoints(
+        calculate_waypoint_adjacency(
             way_points_[WayPointLocation::STREET],
             way_point_lines,
             way_point_edges_1_lane,
             way_point_edges_2_lanes[WayPointLocation::STREET],
             nodes);
-        calculate_waypoints(
+        calculate_waypoint_adjacency(
             way_points_[WayPointLocation::SIDEWALK],
             way_point_lines,
             {},

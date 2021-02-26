@@ -13,7 +13,7 @@ class FixedArray;
 struct Building;
 struct Node;
 
-void calculate_waypoints(
+void calculate_waypoint_adjacency(
     PointsAndAdjacency<float, 2>& way_points,
     const std::list<Building>& way_point_lines,
     const std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
