@@ -325,7 +325,7 @@ void DrawStreets::draw_holes() {
         driving_direction == DrivingDirection::RIGHT)
     {
         auto connect = [](
-            std::map<std::string, HoleWaypoint>& node_hole_waypoints,
+            const std::map<std::string, HoleWaypoint>& node_hole_waypoints,
             std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes)
         {
             for (const auto& nw : node_hole_waypoints) {
