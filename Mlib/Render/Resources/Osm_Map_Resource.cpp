@@ -636,13 +636,15 @@ OsmMapResource::OsmMapResource(
             way_point_lines,
             way_point_edges_1_lane,
             way_point_edges_2_lanes[WayPointLocation::STREET],
-            nodes);
+            nodes,
+            config.scale);
         calculate_waypoint_adjacency(
             way_points_[WayPointLocation::SIDEWALK],
             way_point_lines,
             {},
             way_point_edges_2_lanes[WayPointLocation::SIDEWALK],
-            nodes);
+            nodes,
+            config.scale);
     }
     // way_points_.at(WayPointLocation::STREET).plot("/tmp/way_points_street.svg", 600, 600, 0.1);
     // way_points_.at(WayPointLocation::SIDEWALK).plot("/tmp/way_points_sidewalk.svg", 600, 600, 0.1);

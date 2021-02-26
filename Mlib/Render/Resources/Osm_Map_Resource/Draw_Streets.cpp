@@ -584,6 +584,8 @@ void DrawStreets::draw_streets_add_waypoints(
         throw std::runtime_error("Unknown driving direction");
     }
     {
+        // Separate from waypoints, because the vertices must survive
+        // application of the height-map.
         auto add = [this, &rect](
             float start,
             float stop,

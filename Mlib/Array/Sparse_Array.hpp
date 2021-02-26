@@ -15,8 +15,7 @@ public:
 
     explicit SparseArrayCcs(const ArrayShape& shape) {
         assert(shape.ndim() == 2);
-        data_ = std::make_shared<std::vector<std::map<size_t, TData>>>();
-        data_->resize(shape(1));
+        data_ = std::make_shared<std::vector<std::map<size_t, TData>>>(shape(1));
         shape_ = std::make_shared<ArrayShape>(shape);
     }
 
@@ -31,6 +30,15 @@ public:
                 }
             }
         }
+    }
+
+    void resize(const ArrayShape& shape) {
+        assert(shape.ndim() == 2);
+        if (shape(0) < (*shape_)(0)) {
+            throw std::runtime_error("Cannot reduce the number of rows in SparseArrayCcs");
+        }
+        data_->resize(shape(1));
+        *shape_ = shape;
     }
 
     SparseArrayCcs copy() const {

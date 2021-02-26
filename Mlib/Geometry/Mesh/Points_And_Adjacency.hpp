@@ -10,6 +10,45 @@ struct PointsAndAdjacency {
     std::vector<FixedArray<TData, tndim>> points;
     SparseArrayCcs<TData> adjacency;
 
+    void subdivide(const TData& max_length) {
+        std::list<FixedArray<TData, tndim>> new_points;
+        std::map<size_t, std::map<size_t, TData>> new_columns;
+        {
+            size_t c = 0;
+            for (std::map<size_t, TData>& col : adjacency.columns()) {
+                for (typename std::map<size_t, TData>::iterator row = col.begin(); row != col.end();) {
+                    size_t npoints = 1 + (size_t)(row->second / max_length);
+                    if (npoints > 2) {
+                        size_t r = row->first;
+                        col.erase(row++);
+                        Linspace<float> ls{0, 1, npoints};
+                        size_t old_id = c;
+                        FixedArray<TData, tndim> old_point = points.at(c);
+                        for (size_t i = 1; i < ls.length(); ++i) {
+                            float alpha = ls[i];
+                            FixedArray<TData, tndim> pn = points.at(c) * (1 - alpha) + points.at(r) * alpha;
+                            size_t new_id = points.size() + new_points.size();
+                            new_columns[old_id].insert({new_id, std::sqrt(sum(squared(pn - old_point)))});
+                            new_points.push_back(pn);
+                            old_id = new_id;
+                        }
+                        new_columns[old_id].insert({r, std::sqrt(sum(squared(points.at(r) - old_point)))});
+                    } else {
+                        ++row;
+                    }
+                }
+                ++c;
+            }
+        }
+        points.insert(points.end(), new_points.begin(), new_points.end());
+        adjacency.resize(ArrayShape{points.size(), points.size()});
+        for (const auto& c : new_columns) {
+            for (const auto& r : c.second) {
+                adjacency(r.first, c.first) = r.second;
+            }
+        }
+    }
+
     template <class TSize>
     void plot(Svg<TSize>& svg, float line_width = 1.5) const {
         static_assert(tndim == 2);

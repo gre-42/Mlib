@@ -10,7 +10,8 @@ void Mlib::calculate_waypoint_adjacency(
     const std::list<Building>& way_point_lines,
     const std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
     const std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes,
-    const std::map<std::string, Node>& nodes)
+    const std::map<std::string, Node>& nodes,
+    float scale)
 {
     std::map<std::string, size_t> indices_1_lane;
     for (const Building& bu : way_point_lines) {
@@ -81,4 +82,5 @@ void Mlib::calculate_waypoint_adjacency(
             }
         }
     }
+    way_points.subdivide(50 * scale);
 }
