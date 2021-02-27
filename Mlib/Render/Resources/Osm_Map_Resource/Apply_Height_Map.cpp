@@ -186,6 +186,10 @@ void Mlib::apply_height_map(
             if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
                 for (auto& pc : position.second) {
                     (*pc)(2) += hit->second.smooth_height * scale;
+                    // Both the tunnel and the street vertices are part of the in_vertices.
+                    // The terrain vertices lying on the tunnel vertices are therefore
+                    // first moving down with the tunnel vertices in the line above,
+                    // and then moved up by the line below.
                     if (terrain_entrance_vertices.contains(pc)) {
                         (*pc)(2) += tunnel_height * scale;
                     }
