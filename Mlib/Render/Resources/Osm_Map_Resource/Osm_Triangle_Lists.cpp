@@ -131,6 +131,10 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList>("bridge_entrance", Material());
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
+    tl_water = std::make_shared<TriangleList>("water", Material{
+        .textures = {primary_rendering_resources->get_blend_map_texture(config.water_texture)},
+        .collide = false,
+        .draw_distance_noperations = 1000}.compute_color_mode());
 }
 
 OsmTriangleLists::~OsmTriangleLists()
@@ -217,7 +221,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_no_backfaces() co
         tl_tunnel_crossing};
 }
 
-std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction() const {
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction_and_water() const {
     return std::list<std::shared_ptr<TriangleList>>{
         tl_terrain,
         tl_terrain_visuals,
@@ -235,6 +239,27 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction() 
         tl_air_support,
         tl_tunnel_crossing,
         tl_tunnel_pipe};
+}
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction_w_water() const {
+    return std::list<std::shared_ptr<TriangleList>>{
+        tl_terrain,
+        tl_terrain_visuals,
+        tl_terrain_street_extrusion,
+        tl_street_crossing,
+        tl_path_crossing,
+        tl_street,
+        tl_path,
+        tl_curb_street,
+        tl_curb_path,
+        tl_curb2_street,
+        tl_curb2_path,
+        tl_air_curb_street,
+        tl_air_curb_path,
+        tl_air_support,
+        tl_tunnel_crossing,
+        tl_tunnel_pipe,
+        tl_water};
 }
 
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_all() const {

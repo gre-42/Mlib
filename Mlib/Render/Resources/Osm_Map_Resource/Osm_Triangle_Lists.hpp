@@ -35,10 +35,12 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_tunnel_crossing;
     std::map<EntranceType, std::shared_ptr<TriangleList>> tl_entrance;
     std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>> entrances;
+    std::shared_ptr<TriangleList> tl_water;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;
-    std::list<std::shared_ptr<TriangleList>> tls_wo_subtraction() const;
+    std::list<std::shared_ptr<TriangleList>> tls_wo_subtraction_and_water() const;
+    std::list<std::shared_ptr<TriangleList>> tls_wo_subtraction_w_water() const;
     std::list<std::shared_ptr<TriangleList>> tls_all() const;
     std::list<std::shared_ptr<TriangleList>> tls_smooth() const;
     std::list<std::shared_ptr<TriangleList>> tls_no_backfaces() const;

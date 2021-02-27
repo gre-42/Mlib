@@ -671,6 +671,9 @@ void LoadScene::operator()(
                 else if (key == "tunnel_bdry_resource_name") {
                     config.tunnel_bdry_resource_name = value;
                 }
+                else if (key == "water_texture") {
+                    config.water_texture = fpath(value);
+                }
                 else if (key == "tree_resource_names") {
                     config.tree_resource_names = string_to_vector(value);
                 }
