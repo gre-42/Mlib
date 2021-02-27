@@ -55,3 +55,11 @@ NormalizedPointsFixed NormalizedPointsFixed::chained(ScaleMode scale_mode, Offse
     result.max_ = n.transform(max_);
     return result;
 }
+
+const FixedArray<float, 2>& NormalizedPointsFixed::min() const {
+    return min_;
+}
+
+const FixedArray<float, 2>& NormalizedPointsFixed::max() const {
+    return max_;
+}

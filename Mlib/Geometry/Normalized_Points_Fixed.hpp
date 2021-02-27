@@ -25,6 +25,8 @@ public:
     void set_max(const FixedArray<float, 2>& p);
     TransformationMatrix<float, 2> normalization_matrix() const;
     NormalizedPointsFixed chained(ScaleMode scale_mode, OffsetMode offset_mode) const;
+    const FixedArray<float, 2>& min() const;
+    const FixedArray<float, 2>& max() const;
 private:
     FixedArray<float, 2> min_{float(INFINITY), float(INFINITY)};
     FixedArray<float, 2> max_{-float(INFINITY), -float(INFINITY)};
