@@ -556,6 +556,7 @@ OsmMapResource::OsmMapResource(
     }
 
     {
+        // Extrude air support and raise tunnel crossings.
         const auto& air_or_osm = std::isnan(config.extrude_air_curb_amount)
             ? osm_triangle_lists
             : air_triangle_lists;
@@ -564,6 +565,7 @@ OsmMapResource::OsmMapResource(
         // Must be after "delete_backfacing_triangles".
         air_or_osm.tl_air_support->flip();
         air_or_osm.tl_tunnel_crossing->flip();
+        // Raise tunnel crossings.
         for (auto& t : air_or_osm.tl_tunnel_crossing->triangles_) {
             for (auto& v : t.flat_iterable()) {
                 v.position(2) += config.default_tunnel_pipe_height * config.scale;
@@ -571,19 +573,28 @@ OsmMapResource::OsmMapResource(
         }
 
         // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
+        std::set<const FixedArray<ColoredVertex, 3>*> triangles_to_delete;
+        for (const auto& t : air_or_osm.tl_air_support->triangles_) {
+            if (boundary_vertices.contains(OrderableFixedArray{t(0).position}) ||
+                boundary_vertices.contains(OrderableFixedArray{t(1).position}) ||
+                boundary_vertices.contains(OrderableFixedArray{t(2).position}))
+            {
+                triangles_to_delete.insert(&t);
+            }
+        }
         if (config.extrude_air_support_amount != 0) {
-            const auto& lst = std::isnan(config.extrude_air_curb_amount)
-                ? air_or_osm.tl_air_support
-                : air_or_osm.tl_air_support;
             TriangleList::extrude(
-                *lst,
-                {lst},
+                *air_or_osm.tl_air_support,
+                {air_or_osm.tl_air_support},
                 nullptr,
                 &boundary_vertices,
                 config.extrude_air_support_amount * config.scale,
                 config.scale,
                 1,
                 config.uv_scale_terrain);
+            air_or_osm.tl_air_support->triangles_.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex, 3>& t){
+                return triangles_to_delete.contains(&t);
+            });
         }
     }
 
