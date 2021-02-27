@@ -18,6 +18,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -287,7 +288,8 @@ OsmMapResource::OsmMapResource(
         INSERT(tl_curb_path);
         INSERT(tl_curb2_street);
         INSERT(tl_curb2_path);
-        INSERT(tl_tunnel_entrance);
+        INSERT(tl_entrance[EntranceType::TUNNEL]);
+        INSERT(tl_entrance[EntranceType::BRIDGE]);
         #undef INSERT
         #define INSERT(a) air_hole_triangles.insert(air_hole_triangles.end(), air_triangle_lists.a->triangles_.begin(), air_triangle_lists.a->triangles_.end())
         std::list<FixedArray<ColoredVertex, 3>> air_hole_triangles;

@@ -9,6 +9,7 @@ template <class TData, size_t... tshape>
 class OrderableFixedArray;
 class TriangleList;
 struct ColoredVertex;
+enum class EntranceType;
 
 class Rectangle {
 public:
@@ -33,21 +34,21 @@ public:
     void draw_z0(
         TriangleList& tl,
         std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
-        std::set<OrderableFixedArray<float, 2>>& tunnel_entrances,
+        std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
         const std::string& b,
         const std::string& c,
-        const FixedArray<float, 3>& color = {1.f, 1.f, 1.f},
-        float uv0_x = 0,
-        float uv1_x = 1,
-        float uv0_y = 0,
-        float uv1_y = 1,
-        float start = -1,
-        float stop = 1,
-        bool rotate_texture = false,
-        bool with_b_height_binding = false,
-        bool with_c_height_binding = false,
-        bool b_is_tunnel_entrance = false,
-        bool c_is_tunnel_entrance = false) const;
+        const FixedArray<float, 3>& color,
+        float uv0_x,
+        float uv1_x,
+        float uv0_y,
+        float uv1_y,
+        float start,
+        float stop,
+        bool rotate_texture,
+        bool with_b_height_binding,
+        bool with_c_height_binding,
+        EntranceType b_entrance_type,
+        EntranceType c_entrance_type) const;
     
     void draw(
         TriangleList& tl,

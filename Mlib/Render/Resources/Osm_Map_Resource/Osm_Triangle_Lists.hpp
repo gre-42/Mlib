@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include <map>
 #include <memory>
 #include <set>
 
@@ -10,6 +11,7 @@ struct OsmResourceConfig;
 struct Material;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
+enum class EntranceType;
 
 struct OsmTriangleLists {
     explicit OsmTriangleLists(const OsmResourceConfig& config);
@@ -30,9 +32,9 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_air_support;
     std::shared_ptr<TriangleList> tl_tunnel_pipe;
     std::shared_ptr<TriangleList> tl_tunnel_bdry;
-    std::shared_ptr<TriangleList> tl_tunnel_entrance;
     std::shared_ptr<TriangleList> tl_tunnel_crossing;
-    std::set<OrderableFixedArray<float, 2>> tunnel_entrances;
+    std::map<EntranceType, std::shared_ptr<TriangleList>> tl_entrance;
+    std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>> entrances;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;

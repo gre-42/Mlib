@@ -4,6 +4,7 @@
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Strings/From_Number.cpp>
 
@@ -28,8 +29,9 @@ using namespace Mlib;
 
 void Mlib::apply_height_map(
     const TriangleList& tl_terrain,
-    const std::set<OrderableFixedArray<float, 2>>& tunnel_entrances,
+    const std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     float tunnel_height,
+    float extrude_air_support_amount,
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
@@ -143,12 +145,14 @@ void Mlib::apply_height_map(
             }
         }
     }
-    std::set<const FixedArray<float, 3>*> terrain_entrance_vertices;
+    std::map<EntranceType, std::set<const FixedArray<float, 3>*>> terrain_entrance_vertices;
     for (const auto& t : tl_terrain.triangles_) {
         for (const auto& v : t.flat_iterable()) {
             OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
-            if (tunnel_entrances.contains(vc)) {
-                terrain_entrance_vertices.insert(&v.position);
+            for (const auto& e : entrances) {
+                if (e.second.contains(vc)) {
+                    terrain_entrance_vertices[e.first].insert(&v.position);
+                }
             }
         }
     }
@@ -158,7 +162,7 @@ void Mlib::apply_height_map(
             bool found = false;
             for (const auto& v : t.flat_iterable()) {
                 OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
-                if (tunnel_entrances.contains(vc)) {
+                if (entrances.at(EntranceType::TUNNEL).contains(vc)) {
                     found = true;
                 }
             }
@@ -166,7 +170,7 @@ void Mlib::apply_height_map(
                 tcp.push_back(t);
             }
         }
-        save_obj("/tmp/terrain_entraces.obj", IndexedFaceSet<float, size_t>{tcp});
+        save_obj("/tmp/terrain_tunnel_entraces.obj", IndexedFaceSet<float, size_t>{tcp});
     }
     // Transfer smoothening of street nodes to the triangles they produced.
     // The mapping node -> triangle vertices is stored in the "height_bindings" mapping.
@@ -190,8 +194,11 @@ void Mlib::apply_height_map(
                     // The terrain vertices lying on the tunnel vertices are therefore
                     // first moving down with the tunnel vertices in the line above,
                     // and then moved up by the line below.
-                    if (terrain_entrance_vertices.contains(pc)) {
+                    if (terrain_entrance_vertices.at(EntranceType::TUNNEL).contains(pc)) {
                         (*pc)(2) += tunnel_height * scale;
+                    }
+                    if (terrain_entrance_vertices.at(EntranceType::BRIDGE).contains(pc)) {
+                        (*pc)(2) += extrude_air_support_amount * scale;
                     }
                 }
                 continue;

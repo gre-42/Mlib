@@ -87,8 +87,9 @@ void Mlib::smoothen_and_apply_heightmap(
             std::set<const FixedArray<float, 3>*> vertices_to_delete;
             apply_height_map(
                 *osm_triangle_lists.tl_terrain,
-                osm_triangle_lists.tunnel_entrances,
+                osm_triangle_lists.entrances,
                 config.default_tunnel_pipe_height,
+                config.extrude_air_support_amount,
                 smoothed_vertices,
                 vertices_to_delete,
                 PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX),

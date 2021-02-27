@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 
 using namespace Mlib;
@@ -126,7 +127,10 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
         .specularity = {0.f, 0.f, 0.f},
         .draw_distance_noperations = 1000}.compute_color_mode());
     tl_tunnel_bdry = std::make_shared<TriangleList>("tunnel_bdry", Material());
-    tl_tunnel_entrance = std::make_shared<TriangleList>("tunnel_entrance", Material());
+    tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList>("tunnel_entrance", Material());
+    tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList>("bridge_entrance", Material());
+    entrances[EntranceType::TUNNEL];
+    entrances[EntranceType::BRIDGE];
 }
 
 OsmTriangleLists::~OsmTriangleLists()

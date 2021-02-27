@@ -19,11 +19,13 @@ struct Node;
 struct Way;
 template <class TData>
 class Interp;
+enum class EntranceType;
 
 void apply_height_map(
     const TriangleList& tl_terrain,
-    const std::set<OrderableFixedArray<float, 2>>& tunnel_entrances,
+    const std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     float tunnel_height,
+    float extrude_air_support_amount,
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 
 using namespace Mlib;
 
@@ -44,7 +45,7 @@ bool Rectangle::from_line(
 void Rectangle::draw_z0(
     TriangleList& tl,
     std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
-    std::set<OrderableFixedArray<float, 2>>& tunnel_entrances,
+    std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     const std::string& b,
     const std::string& c,
     const FixedArray<float, 3>& color,
@@ -57,8 +58,8 @@ void Rectangle::draw_z0(
     bool rotate_texture,
     bool with_b_height_binding,
     bool with_c_height_binding,
-    bool b_is_tunnel_entrance,
-    bool c_is_tunnel_entrance) const
+    EntranceType b_entrance_type,
+    EntranceType c_entrance_type) const
 {
     CurbedStreet cs{*this, start, stop};
 
@@ -70,13 +71,13 @@ void Rectangle::draw_z0(
         height_bindings[OrderableFixedArray{cs.s10}].insert(c);
         height_bindings[OrderableFixedArray{cs.s11}].insert(c);
     }
-    if (b_is_tunnel_entrance) {
-        tunnel_entrances.insert(OrderableFixedArray{cs.s00});
-        tunnel_entrances.insert(OrderableFixedArray{cs.s01});
+    if (b_entrance_type != EntranceType::NONE) {
+        entrances[b_entrance_type].insert(OrderableFixedArray{cs.s00});
+        entrances[b_entrance_type].insert(OrderableFixedArray{cs.s01});
     }
-    if (c_is_tunnel_entrance) {
-        tunnel_entrances.insert(OrderableFixedArray{cs.s10});
-        tunnel_entrances.insert(OrderableFixedArray{cs.s11});
+    if (c_entrance_type != EntranceType::NONE) {
+        entrances[c_entrance_type].insert(OrderableFixedArray{cs.s10});
+        entrances[c_entrance_type].insert(OrderableFixedArray{cs.s11});
     }
 
     tl.draw_rectangle_wo_normals(
