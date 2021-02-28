@@ -205,7 +205,7 @@ FixedArray<float, 3> Mlib::parse_color(
     const std::string& key,
     const FixedArray<float, 3>& default_value)
 {
-    auto rgb_it = tags.find("color");
+    auto rgb_it = tags.find(key);
     if (rgb_it != tags.end()) {
         auto l = string_to_vector(rgb_it->second, safe_stof);
         if (l.size() != 3) {
