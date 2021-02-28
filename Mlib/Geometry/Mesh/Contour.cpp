@@ -56,11 +56,17 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
 
     std::map<O, O> neighbors;
     for (const auto& t : triangles) {
-        auto safe_insert_neighbor = [&edges, &neighbors, &t](size_t a, size_t b) {
+        auto safe_insert_neighbor = [&edges, &neighbors, &t, &triangles](size_t a, size_t b) {
             auto v = std::make_pair(O((*t)(a).position), O((*t)(b).position));
             if (edges.find(v) != edges.end()) {
                 if (!neighbors.insert(v).second) {
-                    throw std::runtime_error("Contour neighbor already set");
+                    const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
+                    if (debug_filename != nullptr) {
+                        plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {v.first, v.second}).save_to_file(debug_filename);
+                        throw std::runtime_error("Contour neighbor already set, debug image saved");
+                    } else {
+                        throw std::runtime_error("Contour neighbor already set, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                    }
                 }
             }
         };
