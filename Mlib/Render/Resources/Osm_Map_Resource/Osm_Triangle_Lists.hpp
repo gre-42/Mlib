@@ -12,6 +12,29 @@ struct Material;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
 enum class EntranceType;
+struct RoadProperties;
+enum class RoadType;
+struct ColoredVertex;
+template <typename TData, size_t... tshape>
+class FixedArray;
+
+class RoadPropertiesTriangleList {
+public:
+    void insert(const RoadProperties& rp, const std::shared_ptr<TriangleList>& lst);
+    const std::shared_ptr<TriangleList>& operator [] (RoadProperties road_properties) const;
+    const std::map<RoadProperties, std::shared_ptr<TriangleList>>& map() const;
+private:
+    std::map<RoadProperties, std::shared_ptr<TriangleList>> lst_;
+};
+
+class RoadTypeTriangleList {
+public:
+    void insert(RoadType road_type, const std::shared_ptr<TriangleList>& lst);
+    const std::shared_ptr<TriangleList>& operator [] (RoadType road_type) const;
+    const std::map<RoadType, std::shared_ptr<TriangleList>>& map() const;
+private:
+    std::map<RoadType, std::shared_ptr<TriangleList>> lst_;
+};
 
 struct OsmTriangleLists {
     explicit OsmTriangleLists(const OsmResourceConfig& config);
@@ -19,16 +42,11 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_terrain;
     std::shared_ptr<TriangleList> tl_terrain_visuals;
     std::shared_ptr<TriangleList> tl_terrain_street_extrusion;
-    std::shared_ptr<TriangleList> tl_street_crossing;
-    std::shared_ptr<TriangleList> tl_path_crossing;
-    std::shared_ptr<TriangleList> tl_street;
-    std::shared_ptr<TriangleList> tl_path;
-    std::shared_ptr<TriangleList> tl_curb_street;
-    std::shared_ptr<TriangleList> tl_curb_path;
-    std::shared_ptr<TriangleList> tl_curb2_street;
-    std::shared_ptr<TriangleList> tl_curb2_path;
-    std::shared_ptr<TriangleList> tl_air_curb_street;
-    std::shared_ptr<TriangleList> tl_air_curb_path;
+    RoadPropertiesTriangleList tl_street;
+    RoadTypeTriangleList tl_street_crossing;
+    RoadTypeTriangleList tl_street_curb;
+    RoadTypeTriangleList tl_street_curb2;
+    RoadTypeTriangleList tl_air_street_curb;
     std::shared_ptr<TriangleList> tl_air_support;
     std::shared_ptr<TriangleList> tl_tunnel_pipe;
     std::shared_ptr<TriangleList> tl_tunnel_bdry;
@@ -46,6 +64,10 @@ struct OsmTriangleLists {
     std::list<std::shared_ptr<TriangleList>> tls_no_backfaces() const;
     std::list<std::shared_ptr<TriangleList>> tls_with_vertex_normals() const;
     std::list<std::shared_ptr<TriangleList>> tls_no_grass() const;
+    std::list<std::shared_ptr<TriangleList>> tls_curb_only() const;
+    std::list<std::shared_ptr<TriangleList>> tls_crossing_only() const;
+    std::list<FixedArray<ColoredVertex, 3>> hole_triangles() const;
+    std::list<FixedArray<ColoredVertex, 3>> street_triangles() const;
 };
 
 }

@@ -23,6 +23,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parse_Osm_Xml.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
@@ -278,30 +279,7 @@ OsmMapResource::OsmMapResource(
             nodes,
             ways);
 
-        #define INSERT(a) hole_triangles.insert(hole_triangles.end(), osm_triangle_lists.a->triangles_.begin(), osm_triangle_lists.a->triangles_.end())
-        std::list<FixedArray<ColoredVertex, 3>> hole_triangles;
-        INSERT(tl_street_crossing);
-        INSERT(tl_path_crossing);
-        INSERT(tl_street);
-        INSERT(tl_path);
-        INSERT(tl_curb_street);
-        INSERT(tl_curb_path);
-        INSERT(tl_curb2_street);
-        INSERT(tl_curb2_path);
-        INSERT(tl_entrance[EntranceType::TUNNEL]);
-        INSERT(tl_entrance[EntranceType::BRIDGE]);
-        #undef INSERT
-        #define INSERT(a) air_hole_triangles.insert(air_hole_triangles.end(), air_triangle_lists.a->triangles_.begin(), air_triangle_lists.a->triangles_.end())
-        std::list<FixedArray<ColoredVertex, 3>> air_hole_triangles;
-        INSERT(tl_street_crossing);
-        INSERT(tl_path_crossing);
-        INSERT(tl_street);
-        INSERT(tl_path);
-        INSERT(tl_curb_street);
-        INSERT(tl_curb_path);
-        INSERT(tl_curb2_street);
-        INSERT(tl_curb2_path);
-        #undef INSERT
+        auto hole_triangles = osm_triangle_lists.hole_triangles();
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
@@ -319,7 +297,7 @@ OsmMapResource::OsmMapResource(
         add_street_steiner_points(
             steiner_points,
             hole_triangles,
-            air_hole_triangles,
+            air_triangle_lists.hole_triangles(),
             bounding_info,
             config.scale,
             config.steiner_point_distances_road,
@@ -329,7 +307,7 @@ OsmMapResource::OsmMapResource(
             *tl_terrain_,
             osm_triangle_lists.tl_terrain_visuals.get(),
             config.blend_street
-                ? std::list<std::list<FixedArray<ColoredVertex, 3>>>{osm_triangle_lists.tl_street->triangles_, osm_triangle_lists.tl_path->triangles_}
+                ? std::list<std::list<FixedArray<ColoredVertex, 3>>>{osm_triangle_lists.street_triangles()}
                 : std::list<std::list<FixedArray<ColoredVertex, 3>>>{},
             bounding_info,
             steiner_points,
@@ -422,8 +400,8 @@ OsmMapResource::OsmMapResource(
         osm_triangle_lists.insert(air_triangle_lists);
     } else if (config.extrude_air_curb_amount != 0) {
         TriangleList::extrude(
-            *air_triangle_lists.tl_curb_street,
-            {air_triangle_lists.tl_curb_street},
+            *air_triangle_lists.tl_street_curb[RoadType::STREET],
+            {air_triangle_lists.tl_street_curb[RoadType::STREET]},
             nullptr,
             nullptr,
             config.extrude_air_curb_amount * config.scale,
@@ -431,8 +409,8 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_street,
             config.uv_scale_street);
         TriangleList::extrude(
-            *air_triangle_lists.tl_curb_path,
-            {air_triangle_lists.tl_curb_path},
+            *air_triangle_lists.tl_street_curb[RoadType::PATH],
+            {air_triangle_lists.tl_street_curb[RoadType::PATH]},
             nullptr,
             nullptr,
             config.extrude_air_curb_amount * config.scale,
@@ -442,8 +420,8 @@ OsmMapResource::OsmMapResource(
     }
     if (config.extrude_curb_amount != 0) {
         TriangleList::extrude(
-            *osm_triangle_lists.tl_curb_street,
-            {osm_triangle_lists.tl_curb_street},
+            *osm_triangle_lists.tl_street_curb[RoadType::STREET],
+            {osm_triangle_lists.tl_street_curb[RoadType::STREET]},
             nullptr,
             nullptr,
             config.extrude_curb_amount * config.scale,
@@ -451,8 +429,8 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_street,
             config.uv_scale_street);
         TriangleList::extrude(
-            *osm_triangle_lists.tl_curb_path,
-            {osm_triangle_lists.tl_curb_path},
+            *osm_triangle_lists.tl_street_curb[RoadType::PATH],
+            {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
             nullptr,
             nullptr,
             config.extrude_curb_amount * config.scale,
@@ -529,16 +507,10 @@ OsmMapResource::OsmMapResource(
             auto do_extrude = [&config, &boundary_vertices]
                 (OsmTriangleLists& triangle_lists)
             {
-                std::list<std::shared_ptr<TriangleList>> source_vertices{
-                    triangle_lists.tl_curb_street,
-                    triangle_lists.tl_curb_path};
+                std::list<std::shared_ptr<TriangleList>> source_vertices{triangle_lists.tls_curb_only()};
                 TriangleList::extrude(
-                    *triangle_lists.tl_curb_street,
-                    {
-                        triangle_lists.tl_street,
-                        triangle_lists.tl_path,
-                        triangle_lists.tl_street_crossing,
-                        triangle_lists.tl_path_crossing},
+                    *triangle_lists.tl_street_curb[RoadType::STREET],
+                    triangle_lists.tls_street_wo_curb(),
                     &source_vertices,
                     &boundary_vertices,
                     config.extrude_street_amount * config.scale,
@@ -663,8 +635,9 @@ OsmMapResource::OsmMapResource(
     // way_points_.at(WayPointLocation::SIDEWALK).plot("/tmp/way_points_sidewalk.svg", 600, 600, 0.1);
 
     if (!std::isnan(config.extrude_air_curb_amount)) {
-        air_triangle_lists.tl_air_curb_street->triangles_ = std::move(air_triangle_lists.tl_curb_street->triangles_);
-        air_triangle_lists.tl_air_curb_path->triangles_ = std::move(air_triangle_lists.tl_curb_path->triangles_);
+        for (auto& l : air_triangle_lists.tl_street_curb.map()) {
+            air_triangle_lists.tl_air_street_curb[l.first]->triangles_ = std::move(l.second->triangles_);
+        }
         osm_triangle_lists.insert(air_triangle_lists);
     }
 

@@ -58,28 +58,32 @@ void Mlib::calculate_spawn_points(
         if (driving_direction == DrivingDirection::CENTER) {
             create_spawn_point(SpawnPointType::ROAD, 0.5, r0);
         } else if (driving_direction == DrivingDirection::LEFT) {
-            if (r.nlanes == 2) {
+            if (r.nlanes == 1) {
+                // Do nothing
+            } else if (r.nlanes == 2 || r.nlanes == 3) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.25, r0);
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.25, r1);
-            } else if (r.nlanes == 4) {
+            } else if (r.nlanes >= 4) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.125, r0);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 - 0.25 - 0.125, r0);
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.125, r1);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 + 0.25 + 0.125, r1);
             } else {
-                throw std::runtime_error("Unsupported number of lanes");
+                throw std::runtime_error("Unsupported number of lanes: " + std::to_string(r.nlanes));
             }
         } else if (driving_direction == DrivingDirection::RIGHT) {
-            if (r.nlanes == 2) {
+            if (r.nlanes == 1) {
+                // Do nothing
+            } else if (r.nlanes == 2 || r.nlanes == 3) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.25, r0);
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.25, r1);
-            } else if (r.nlanes == 4) {
+            } else if (r.nlanes >= 4) {
                 create_spawn_point(SpawnPointType::ROAD, 0.5 + 0.125, r0);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 + 0.25 + 0.125, r0);
                 create_spawn_point(SpawnPointType::ROAD, 0.5 - 0.125, r1);
                 create_spawn_point(SpawnPointType::PARKING, 0.5 - 0.25 - 0.125, r1);
             } else {
-                throw std::runtime_error("Unsupported number of lanes");
+                throw std::runtime_error("Unsupported number of lanes: " + std::to_string(r.nlanes));
             }
         } else {
             throw std::runtime_error("Unknown driving direction");

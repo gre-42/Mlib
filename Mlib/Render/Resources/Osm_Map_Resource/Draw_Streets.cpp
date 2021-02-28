@@ -8,6 +8,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
@@ -20,14 +21,10 @@ using namespace Mlib;
 
 namespace Mlib {
 
-enum class RoadType {
-    STREET,
-    PATH
-};
-
 struct AngleWay {
     std::string neighbor_id;
     float width;
+    unsigned int nlanes;
     RoadType road_type;
     int layer;
     std::string way_id;
@@ -160,6 +157,17 @@ void DrawStreets::calculate_neighbors() {
             float width = ((tags.find("lanes") != tags.end()) && (tags.find("width") == tags.end()))
                 ? scale * default_lane_width * safe_stou(tags.at("lanes"))
                 : scale * parse_meters(tags, "width", default_street_width);
+            unsigned int nlanes;
+            if (tags.find("lanes") != tags.end()) {
+                nlanes = safe_stou(tags.at("lanes"));
+            } else {
+                float car_width = 2;
+                if (width < 4 * car_width * scale) {
+                    nlanes = 2;
+                } else {
+                    nlanes = 4;
+                }
+            }
             RoadType road_type =
                 path_tags.contains(tags.at("highway")) ||
                 ((tags.find("lanes") != tags.end()) && tags.at("lanes") == "1")
@@ -185,8 +193,8 @@ void DrawStreets::calculate_neighbors() {
                     FixedArray<float, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
                     float angle0 = std::atan2(dir(1), dir(0));
                     float angle1 = std::atan2(-dir(1), -dir(0));
-                    node_angles.at(*it).insert({angle0, AngleWay{*s, width, road_type, layer, w.first}});
-                    node_angles.at(*s).insert({angle1, AngleWay{*it, width, road_type, layer, w.first}});
+                    node_angles.at(*it).insert({angle0, AngleWay{*s, width, nlanes, road_type, layer, w.first}});
+                    node_angles.at(*s).insert({angle1, AngleWay{*it, width, nlanes, road_type, layer, w.first}});
                     node_neighbors.at(*it).insert({*s, NeighborWay{angle0, width}});
                     node_neighbors.at(*s).insert({*it, NeighborWay{angle1, width}});
                     way_length += std::sqrt(sum(squared(nodes.at(*s).position - nodes.at(*it).position)));
@@ -266,17 +274,13 @@ void DrawStreets::draw_streets() {
                     it->first);
                 {
                     const auto& wi = way_infos.at(it->second.way_id);
-                    unsigned int nlanes;
                     float lane_alpha;
                     float sidewalk_alpha0 = 0.75f * wi.curb2_alpha + 0.25f * 1.f;
                     float sidewalk_alpha1 = 0.25f * wi.curb2_alpha + 0.75f * 1.f;
-                    float car_width = 2;
-                    if (it->second.width < 4 * car_width * scale) {
-                        nlanes = 2;
+                    if (it->second.nlanes <= 2) {
                         // alpha is in [-1 .. +1]
                         lane_alpha = 0.5f * wi.curb_alpha;
                     } else {
-                        nlanes = 4;
                         // alpha is in [-1 .. +1]
                         lane_alpha = 0.25f * wi.curb_alpha;
                     }
@@ -284,7 +288,7 @@ void DrawStreets::draw_streets() {
                         rect,
                         wi.curb_alpha,
                         wi.curb2_alpha,
-                        nlanes,
+                        it->second.nlanes,
                         lane_alpha,
                         sidewalk_alpha0,
                         sidewalk_alpha1,
@@ -409,9 +413,7 @@ void DrawStreets::draw_holes() {
                 tlist2 = &ground_triangles;
             }
         }
-        auto& crossings = (road_type == RoadType::STREET)
-            ? *tlist2->tl_street_crossing
-            : *tlist2->tl_path_crossing;
+        auto& crossings = *tlist2->tl_street_crossing[road_type];
         // A single triangle does not work with curbs when an angle is ~90°
         if ((nh.second.size() == 3) && (curb_alpha_ == 1)) {
             crossings.draw_triangle_wo_normals(
@@ -501,29 +503,29 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 2>{0.f, g  });
                     };
                     if (curb2_alpha_ != 1) {
-                        draw_rect(*tlist2->tl_curb_street, 0, 1, -2, -1, curb_uv_x, 1);
-                        draw_triangle(*tlist2->tl_curb2_street, 1, 2, -2, curb2_uv_x, 2);
+                        draw_rect(*tlist2->tl_street_curb[RoadType::STREET], 0, 1, -2, -1, curb_uv_x, 1);
+                        draw_triangle(*tlist2->tl_street_curb2[RoadType::STREET], 1, 2, -2, curb2_uv_x, 2);
                     } else {
-                        draw_triangle(*tlist2->tl_curb_street, 0, 1, -1, curb_uv_x, 1);
+                        draw_triangle(*tlist2->tl_street_curb[RoadType::STREET], 0, 1, -1, curb_uv_x, 1);
                     }
                 }
             }
         }
     }
 
-    for (TriangleList* l : std::vector<TriangleList*>{
-        ground_triangles.tl_street_crossing.get(),
-        ground_triangles.tl_path_crossing.get(),
-        air_triangles.tl_street_crossing.get(),
-        air_triangles.tl_path_crossing.get()})
+    for (std::list<std::shared_ptr<TriangleList>>& l : std::vector<std::list<std::shared_ptr<TriangleList>>>{
+        ground_triangles.tls_crossing_only(),
+        air_triangles.tls_crossing_only()})
     {
-        for (auto& t : l->triangles_) {
-            // t(0).color = way_color;
-            // t(1).color = way_color;
-            // t(2).color = way_color;
-            t(0).uv = {t(0).position(0) / scale * uv_scale, t(0).position(1) / scale * uv_scale};
-            t(1).uv = {t(1).position(0) / scale * uv_scale, t(1).position(1) / scale * uv_scale};
-            t(2).uv = {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale};
+        for (auto l2 : l) {
+            for (auto& t : l2->triangles_) {
+                // t(0).color = way_color;
+                // t(1).color = way_color;
+                // t(2).color = way_color;
+                t(0).uv = {t(0).position(0) / scale * uv_scale, t(0).position(1) / scale * uv_scale};
+                t(1).uv = {t(1).position(0) / scale * uv_scale, t(1).position(1) / scale * uv_scale};
+                t(2).uv = {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale};
+            }
         }
     }
     // for (TriangleList* l : std::vector<TriangleList*>{
@@ -620,9 +622,9 @@ void DrawStreets::draw_streets_draw_ways(
     auto len0 = node_way_info.find(node_id);
     auto len1 = node_way_info.find(angle_way.neighbor_id);
     auto& tlists = angle_way.layer == 0 ? ground_triangles : air_triangles;
-    auto& street_lst = angle_way.road_type == RoadType::STREET ? *tlists.tl_street : *tlists.tl_path;
-    auto& curb_lst = angle_way.road_type == RoadType::STREET ? *tlists.tl_curb_street : *tlists.tl_curb_path;
-    auto& curb2_lst = angle_way.road_type == RoadType::STREET ? *tlists.tl_curb2_street : *tlists.tl_curb2_path;
+    auto& street_lst = *tlists.tl_street[RoadProperties{angle_way.road_type, angle_way.nlanes}];
+    auto& curb_lst = *tlists.tl_street_curb[angle_way.road_type];
+    auto& curb2_lst = *tlists.tl_street_curb2[angle_way.road_type];
     bool with_b_height_binding;
     bool with_c_height_binding;
     {

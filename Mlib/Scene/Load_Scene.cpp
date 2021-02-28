@@ -52,6 +52,7 @@
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
@@ -615,34 +616,34 @@ void LoadScene::operator()(
                     config.dirt_texture = fpath(value);
                 }
                 else if (key == "street_crossing_texture") {
-                    config.street_crossing_texture = fpath(value);
+                    config.street_crossing_texture[RoadType::STREET] = fpath(value);
                 }
                 else if (key == "street_texture") {
-                    config.street_texture = fpath(value);
+                    config.street_texture[RoadProperties{.type=RoadType::STREET, .nlanes = 1}] = fpath(value);
                 }
                 else if (key == "path_crossing_texture") {
-                    config.path_crossing_texture = fpath(value);
+                    config.street_crossing_texture[RoadType::PATH] = fpath(value);
                 }
                 else if (key == "path_texture") {
-                    config.path_texture = fpath(value);
+                    config.street_texture[RoadProperties{.type=RoadType::PATH, .nlanes = 1}] = fpath(value);
                 }
                 else if (key == "curb_street_texture") {
-                    config.curb_street_texture = fpath(value);
+                    config.curb_street_texture[RoadType::STREET] = fpath(value);
                 }
                 else if (key == "curb_path_texture") {
-                    config.curb_path_texture = fpath(value);
+                    config.curb_street_texture[RoadType::PATH] = fpath(value);
                 }
                 else if (key == "curb2_street_texture") {
-                    config.curb2_street_texture = fpath(value);
+                    config.curb2_street_texture[RoadType::STREET] = fpath(value);
                 }
                 else if (key == "curb2_path_texture") {
-                    config.curb2_path_texture = fpath(value);
+                    config.curb2_street_texture[RoadType::PATH] = fpath(value);
                 }
                 else if (key == "air_curb_street_texture") {
-                    config.air_curb_street_texture = fpath(value);
+                    config.air_curb_street_texture[RoadType::STREET] = fpath(value);
                 }
                 else if (key == "air_curb_path_texture") {
-                    config.air_curb_path_texture = fpath(value);
+                    config.air_curb_street_texture[RoadType::PATH] = fpath(value);
                 }
                 else if (key == "air_support_texture") {
                     config.air_support_texture = fpath(value);

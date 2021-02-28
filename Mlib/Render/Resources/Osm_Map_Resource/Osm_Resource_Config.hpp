@@ -16,6 +16,8 @@ enum class DrivingDirection;
 struct WaysideResourceNames;
 template <class TData>
 class Interp;
+enum class RoadType;
+struct RoadProperties;
 
 struct OsmResourceConfig {
     OsmResourceConfig();
@@ -24,16 +26,11 @@ struct OsmResourceConfig {
     std::string heightmap;
     std::vector<std::string> terrain_textures;
     std::string dirt_texture;
-    std::string street_crossing_texture;
-    std::string street_texture;
-    std::string path_crossing_texture;
-    std::string path_texture;
-    std::string curb_street_texture;
-    std::string curb_path_texture;
-    std::string curb2_street_texture;
-    std::string curb2_path_texture;
-    std::string air_curb_street_texture;
-    std::string air_curb_path_texture;
+    std::map<RoadProperties, std::string> street_texture;
+    std::map<RoadType, std::string> street_crossing_texture;
+    std::map<RoadType, std::string> curb_street_texture;
+    std::map<RoadType, std::string> curb2_street_texture;
+    std::map<RoadType, std::string> air_curb_street_texture;
     std::string air_support_texture;
     std::vector<std::string> facade_textures;
     std::string ceiling_texture;
