@@ -55,6 +55,7 @@ private:
     std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
     std::recursive_mutex& mutex_;
     std::default_random_engine current_bystander_rng_;
+    std::default_random_engine current_bvh_rng_;
     std::vector<SpawnPoint> spawn_points_;
     std::vector<std::unique_ptr<Bvh<float, const SpawnPoint*, 3>>> spawn_points_bvhs_;
     size_t current_bvh_;

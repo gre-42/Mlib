@@ -41,6 +41,7 @@ GameLogic::GameLogic(
   vip_{nullptr},
   mutex_{mutex},
   current_bystander_rng_{0},
+  current_bvh_rng_{0},
   current_bvh_{0}
 {
     advance_times_.add_advance_time(*this);
@@ -238,7 +239,8 @@ bool GameLogic::spawn_for_vip(
         succees = true;
         return false;
     });
-    current_bvh_ = (current_bvh_ + 1) % spawn_points_bvhs_.size();
+    // current_bvh_ = (current_bvh_ + 1) % spawn_points_bvhs_.size();
+    current_bvh_ = current_bvh_rng_() % spawn_points_bvhs_.size();
     return succees;
 }
 
