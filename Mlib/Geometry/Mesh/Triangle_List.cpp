@@ -350,10 +350,10 @@ void TriangleList::smoothen_edges(
                         if (n0n1 >=0 && n0n1 < 1) {
                             float shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
                             if (!excluded_vertices.contains(ei)) {
-                                vertex_movement[Vertex2{ei(0), ei(1)}] += smoothness * 0.0001f * n01 * shift;
+                                vertex_movement[Vertex2{ei(0), ei(1)}] += smoothness * n01 * shift;
                             }
                             if (!excluded_vertices.contains(ej)) {
-                                vertex_movement[Vertex2{ej(0), ej(1)}] += smoothness * 0.0001f * n01 * shift;
+                                vertex_movement[Vertex2{ej(0), ej(1)}] += smoothness * n01 * shift;
                             }
                         }
                     }
