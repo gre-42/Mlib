@@ -158,7 +158,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(square_resource_reg,
         "^\\s*square_resource"
         "\\s+name=([\\w+-.]+)"
-        "\\s+texture_filename=(#?[\\w-. \\(\\)/+-]+)"
+        "\\s+texture_filename=(#?[\\w-.\\(\\)/+-]+)"
         "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+max=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+is_small=(0|1)"
@@ -439,7 +439,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(add_blend_map_texture_reg,
         "^\\s*add_blend_map_texture"
         "\\s+name=([\\w-. \\(\\)/+-]+)"
-        "\\s+texture=(#?[\\w-. \\(\\)/+-]+)"
+        "\\s+texture=(#?[\\w-.\\(\\)/+-]+)"
         "\\s+min_height=([\\w+-.]+)"
         "\\s+max_height=([\\w+-.]+)"
         "\\s+distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
@@ -590,7 +590,7 @@ void LoadScene::operator()(
         }
         if (Mlib::re::regex_match(line, match, osm_resource_reg)) {
             OsmResourceConfig config;
-            static const DECLARE_REGEX(key_value_reg, "(?:\\s*([^=]+)=([^,]*),?|\\s+|([\\s\\S]+))");
+            static const DECLARE_REGEX(key_value_reg, "(?:\\s*([^=]+)=([^,]*),?|([\\s\\S]+))");
             std::string resource_name;
             std::vector<float> layer_heights_layer;
             std::vector<float> layer_heights_height;
@@ -619,13 +619,32 @@ void LoadScene::operator()(
                     config.street_crossing_texture[RoadType::STREET] = fpath(value);
                 }
                 else if (key == "street_texture") {
-                    config.street_texture[RoadProperties{.type=RoadType::STREET, .nlanes = 1}] = fpath(value);
+                    RoadProperties rp{.type=RoadType::STREET, .nlanes = 1};
+                    RoadStyle rs{.texture = fpath(value), .uvx = 1.f};
+                    config.street_texture[rp] = rs;
+                }
+                else if (key == "street_textures") {
+                    static const DECLARE_REGEX(street_texture_reg, "(?:\\s*lanes:(\\d+) texture:(#?[\\w-.\\(\\)/+-]+)(?: uvx:([\\w+-.]+))?|([\\s\\S]+))");
+                    find_all(value, street_texture_reg, [&](const Mlib::re::smatch& match3) {
+                        if (match3[4].matched) {
+                            throw std::runtime_error("Unknown element: \"" + match3[4].str() + '"');
+                        }
+                        RoadProperties rp{.type=RoadType::STREET, .nlanes = safe_stoz(match3[1].str())};
+                        RoadStyle rs{.texture = fpath(
+                            match3[2].str()),
+                            .uvx = match3[3].matched
+                                ? safe_stof(match3[3].str())
+                                : 1.f};
+                        config.street_texture[rp] = rs;
+                    });
                 }
                 else if (key == "path_crossing_texture") {
                     config.street_crossing_texture[RoadType::PATH] = fpath(value);
                 }
                 else if (key == "path_texture") {
-                    config.street_texture[RoadProperties{.type=RoadType::PATH, .nlanes = 1}] = fpath(value);
+                    RoadProperties rp{.type=RoadType::PATH, .nlanes = 1};
+                    RoadStyle rs{.texture = fpath(value), .uvx = 1.f};
+                    config.street_texture[rp] = rs;
                 }
                 else if (key == "curb_street_texture") {
                     config.curb_street_texture[RoadType::STREET] = fpath(value);

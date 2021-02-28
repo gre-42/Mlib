@@ -19,6 +19,11 @@ class Interp;
 enum class RoadType;
 struct RoadProperties;
 
+struct RoadStyle {
+    std::string texture;
+    float uvx;
+};
+
 struct OsmResourceConfig {
     OsmResourceConfig();
     ~OsmResourceConfig();
@@ -26,7 +31,7 @@ struct OsmResourceConfig {
     std::string heightmap;
     std::vector<std::string> terrain_textures;
     std::string dirt_texture;
-    std::map<RoadProperties, std::string> street_texture;
+    std::map<RoadProperties, RoadStyle> street_texture;
     std::map<RoadType, std::string> street_crossing_texture;
     std::map<RoadType, std::string> curb_street_texture;
     std::map<RoadType, std::string> curb2_street_texture;

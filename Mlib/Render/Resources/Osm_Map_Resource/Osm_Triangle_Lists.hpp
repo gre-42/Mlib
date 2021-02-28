@@ -17,14 +17,16 @@ enum class RoadType;
 struct ColoredVertex;
 template <typename TData, size_t... tshape>
 class FixedArray;
+struct StyledRoad;
+struct StyledRoadEntry;
 
 class RoadPropertiesTriangleList {
 public:
-    void insert(const RoadProperties& rp, const std::shared_ptr<TriangleList>& lst);
-    const std::shared_ptr<TriangleList>& operator [] (RoadProperties road_properties) const;
-    const std::map<RoadProperties, std::shared_ptr<TriangleList>>& map() const;
+    void append(const StyledRoadEntry& entry);
+    const StyledRoad& operator [] (const RoadProperties& road_properties) const;
+    const std::list<StyledRoadEntry>& list() const;
 private:
-    std::map<RoadProperties, std::shared_ptr<TriangleList>> lst_;
+    std::list<StyledRoadEntry> lst_;
 };
 
 class RoadTypeTriangleList {

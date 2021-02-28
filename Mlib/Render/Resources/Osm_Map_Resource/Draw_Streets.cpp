@@ -9,6 +9,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
@@ -622,7 +623,7 @@ void DrawStreets::draw_streets_draw_ways(
     auto len0 = node_way_info.find(node_id);
     auto len1 = node_way_info.find(angle_way.neighbor_id);
     auto& tlists = angle_way.layer == 0 ? ground_triangles : air_triangles;
-    auto& street_lst = *tlists.tl_street[RoadProperties{angle_way.road_type, angle_way.nlanes}];
+    auto& street_lst = tlists.tl_street[RoadProperties{angle_way.road_type, angle_way.nlanes}];
     auto& curb_lst = *tlists.tl_street_curb[angle_way.road_type];
     auto& curb2_lst = *tlists.tl_street_curb2[angle_way.road_type];
     bool with_b_height_binding;
@@ -673,10 +674,10 @@ void DrawStreets::draw_streets_draw_ways(
         (len1 != node_way_info.end()))
     {
         {
-            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte){rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
-            draw(street_lst, b_entrance_type, c_entrance_type);
+            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte, float uvx){rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, uvx, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
+            draw(*street_lst.triangle_list, b_entrance_type, c_entrance_type, street_lst.uvx);
             if (et != EntranceType::NONE) {
-                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE);
+                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE, 1.f);
             }
         }
         if (angle_way.layer > 0) {
@@ -709,10 +710,10 @@ void DrawStreets::draw_streets_draw_ways(
     } else {
         float len = std::sqrt(sum(squared(nodes.at(node_id).position - nodes.at(angle_way.neighbor_id).position)));
         {
-            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte){rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, 1, 0, len / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
-            draw(street_lst, b_entrance_type, c_entrance_type);
+            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte, float uvx){rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, uvx, 0, len / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);};
+            draw(*street_lst.triangle_list, b_entrance_type, c_entrance_type, street_lst.uvx);
             if (et != EntranceType::NONE) {
-                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE);
+                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE, 1.f);
             }
         }
         if (angle_way.layer > 0) {
