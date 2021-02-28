@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 
 using namespace Mlib;
 
@@ -44,7 +45,7 @@ bool Rectangle::from_line(
 
 void Rectangle::draw_z0(
     TriangleList& tl,
-    std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
+    std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
     std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     const std::string& b,
     const std::string& c,
@@ -64,12 +65,12 @@ void Rectangle::draw_z0(
     CurbedStreet cs{*this, start, stop};
 
     if (with_b_height_binding) {
-        height_bindings[OrderableFixedArray{cs.s00}].insert(b);
-        height_bindings[OrderableFixedArray{cs.s01}].insert(b);
+        height_bindings[OrderableFixedArray{cs.s00}] = b;
+        height_bindings[OrderableFixedArray{cs.s01}] = b;
     }
     if (with_c_height_binding) {
-        height_bindings[OrderableFixedArray{cs.s10}].insert(c);
-        height_bindings[OrderableFixedArray{cs.s11}].insert(c);
+        height_bindings[OrderableFixedArray{cs.s10}] = c;
+        height_bindings[OrderableFixedArray{cs.s11}] = c;
     }
     if (b_entrance_type != EntranceType::NONE) {
         entrances[b_entrance_type].insert(OrderableFixedArray{cs.s00});
@@ -97,7 +98,7 @@ void Rectangle::draw_z0(
 
 void Rectangle::draw(
     TriangleList& tl,
-    std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
+    std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
     const std::string& b,
     const std::string& c,
     const std::vector<FixedArray<ColoredVertex, 3>>& triangles,
@@ -112,10 +113,10 @@ void Rectangle::draw(
         for (size_t i = 0; i < 3; ++i) {
             if (t(i).position(1) == -1) {
                 p(i) = ws.warp_0(t(i).position, scale, width, height);
-                height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}].insert(b);
+                height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}] = b;
             } else if (t(i).position(1) == 1) {
                 p(i) = ws.warp_1(t(i).position, scale, width, height);
-                height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}].insert(c);
+                height_bindings[OrderableFixedArray<float, 2>{p(i)(0), p(i)(1)}] = c;
             } else {
                 std::stringstream sstr;
                 sstr << "Position.y not -1 or +1: " << t(i).position;

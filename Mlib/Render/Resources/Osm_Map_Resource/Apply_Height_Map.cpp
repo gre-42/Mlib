@@ -5,6 +5,7 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Strings/From_Number.cpp>
 
@@ -39,7 +40,7 @@ void Mlib::apply_height_map(
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
+    const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
     float street_node_smoothness,
     const Interp<float>& layer_height)
 {
@@ -184,10 +185,10 @@ void Mlib::apply_height_map(
         FixedArray<float, 2> vc;
         // Try to apply height bindings.
         auto it = height_bindings.find(OrderableFixedArray<float, 2>{position.first(0), position.first(1)});
-        if ((it != height_bindings.end()) && (it->second.size() == 1)) {
+        if (it != height_bindings.end()) {
             // Note that node_height is empty if street_node_smoothness == 0,
             // so this test will then always return false.
-            if (auto hit = node_height.find(*it->second.begin()); hit != node_height.end()) {
+            if (auto hit = node_height.find(it->second.str()); hit != node_height.end()) {
                 for (auto& pc : position.second) {
                     (*pc)(2) += hit->second.smooth_height * scale;
                     // Both the tunnel and the street vertices are part of the in_vertices.
@@ -203,7 +204,7 @@ void Mlib::apply_height_map(
                 }
                 continue;
             }
-            vc = nodes.at(*it->second.begin()).position;
+            vc = nodes.at(it->second.str()).position;
         } else {
             vc = {position.first(0), position.first(1)};
         }

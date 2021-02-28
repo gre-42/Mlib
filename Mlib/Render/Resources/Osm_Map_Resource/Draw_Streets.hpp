@@ -31,6 +31,7 @@ struct Rectangle;
 struct ColoredVertex;
 struct WayInfo;
 struct NodeHoleVertex;
+class HeightBinding;
 
 struct DrawStreetsInput {
     OsmTriangleLists& ground_triangles;
@@ -39,7 +40,7 @@ struct DrawStreetsInput {
     std::list<ObjectResourceDescriptor>& object_resource_descriptors;
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes;
     std::list<StreetRectangle>& street_rectangles;
-    std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings;
+    std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings;
     std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane_street;
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;

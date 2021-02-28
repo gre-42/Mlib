@@ -19,6 +19,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -124,7 +125,7 @@ OsmMapResource::OsmMapResource(
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
-    std::map<OrderableFixedArray<float, 2>, std::set<std::string>> height_bindings;
+    std::map<OrderableFixedArray<float, 2>, HeightBinding> height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::list<std::pair<std::string, std::string>> way_point_edges_1_lane;
@@ -386,6 +387,17 @@ OsmMapResource::OsmMapResource(
         way_point_edges_2_lanes);
 
     // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
+    // {
+    //     auto plot = [](const std::string& prefix, const OsmTriangleLists& lsts){
+    //         for (const auto& l : lsts.tl_street.list()) {
+    //             save_obj(
+    //                 prefix + std::to_string((unsigned int)l.road_properties.type) + "-" + std::to_string(l.road_properties.nlanes) + ".obj",
+    //                 IndexedFaceSet<float, size_t>{l.styled_road.triangle_list->triangles_});
+    //         }
+    //     };
+    //     plot("/tmp/tl_street_ground", osm_triangle_lists);
+    //     plot("/tmp/tl_street_air", air_triangle_lists);
+    // }
 
     if (!air_triangle_lists.tl_tunnel_bdry->triangles_.empty()) {
         // mesh_subtract(osm_triangle_lists.tl_terrain->triangles_, air_triangle_lists.tl_tunnel_bdry->triangles_);
@@ -608,6 +620,18 @@ OsmMapResource::OsmMapResource(
         resource_instance_positions_.clear();
         for (const auto& p : spawn_points_) {
             resource_instance_positions_["grass12y"].push_back(ResourceInstanceDescriptor{.position = p.position});
+        }
+        for (const auto& p : osm_triangle_lists.tls_street()) {
+            for (const auto& t : p->triangles_) {
+                for (const auto& v : t.flat_iterable()) {
+                    auto it = height_bindings.find(OrderableFixedArray<float, 2>{v.position(0), v.position(1)});
+                    if (it != height_bindings.end()) {
+                        if (it->second == "1792772911") {  // node 1792772911 4002287619
+                            resource_instance_positions_["grass12y"].push_back(ResourceInstanceDescriptor{.position = v.position});
+                        }
+                    }
+                }
+            }
         }
     }
     {

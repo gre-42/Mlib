@@ -4,6 +4,7 @@
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Apply_Height_Map.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -16,7 +17,7 @@ using namespace Mlib;
 
 void Mlib::smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
-    const std::map<OrderableFixedArray<float, 2>, std::set<std::string>>& height_bindings,
+    const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const NormalizedPointsFixed& normalized_points,
