@@ -81,7 +81,7 @@ void Mlib::apply_height_map(
             }
         }
         // Iterate over the nodes with at least one neighbor
-        // and compute its initial height.
+        // and compute their initial heights.
         for (const auto& n : node_neighbors) {
             float layer = 0;
             for (const auto& nn : n.second) {
