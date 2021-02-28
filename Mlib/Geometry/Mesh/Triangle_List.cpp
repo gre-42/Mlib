@@ -312,7 +312,8 @@ void TriangleList::smoothen_edges(
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
     const std::list<FixedArray<float, 3>*>& smoothed_vertices,
     float smoothness,
-    size_t niterations)
+    size_t niterations,
+    bool move_only_z)
 {
     std::set<OrderableFixedArray<float, 3>> excluded_vertices;
     for (const auto& tl : excluded_triangle_lists) {
@@ -365,7 +366,11 @@ void TriangleList::smoothen_edges(
         for (const auto& s : smoothed_vertices) {
             auto it = vertex_movement.find(Vertex2{(*s)(0), (*s)(1)});
             if (it != vertex_movement.end()) {
-                *s += it->second;
+                if (move_only_z) {
+                    (*s)(2) += 0.1f * it->second(2);
+                } else {
+                    *s += it->second;
+                }
             }
         }
     }

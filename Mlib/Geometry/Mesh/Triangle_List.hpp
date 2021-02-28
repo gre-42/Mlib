@@ -111,7 +111,8 @@ public:
         const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
         const std::list<FixedArray<float, 3>*>& smoothed_vertices,
         float smoothness,
-        size_t niterations);
+        size_t niterations,
+        bool move_only_z = true);
     std::list<const FixedArray<ColoredVertex, 3>*> get_triangles_around(const FixedArray<float, 2>& pt, float radius) const;
     std::shared_ptr<ColoredVertexArray> triangle_array() const;
     std::string name_;
