@@ -66,10 +66,10 @@ bool Mlib::lines_to_rectangles(
     }
 
     // Set rectangle points.
-    p00 = FixedArray<float, 2>{b(0) - n_bL(0) / 2, b(1) - n_bL(1) / 2};
-    p01 = FixedArray<float, 2>{b(0) + n_bR(0) / 2, b(1) + n_bR(1) / 2};
-    p10 = FixedArray<float, 2>{c(0) - n_cL(0) / 2, c(1) - n_cL(1) / 2};
-    p11 = FixedArray<float, 2>{c(0) + n_cR(0) / 2, c(1) + n_cR(1) / 2};
+    p00 = b - n_bL / 2.f;
+    p01 = b + n_bR / 2.f;
+    p10 = c - n_cL / 2.f;
+    p11 = c + n_cR / 2.f;
 
     // return true;
 
