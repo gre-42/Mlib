@@ -415,6 +415,21 @@ void DrawStreets::draw_holes() {
                 tlist2 = &ground_triangles;
             }
         }
+        float curb_alpha = NAN;
+        float curb2_alpha = NAN;
+        for (const auto& e : nh.second) {
+            const auto& wi = way_infos.at(e.second.way_id);
+            if (std::isnan(curb_alpha)) {
+                curb_alpha = wi.curb_alpha;
+            } else if ((curb_alpha != 1) != (wi.curb_alpha != 1)) {
+                throw std::runtime_error("Incompatible curb alpha");
+            }
+            if (std::isnan(curb2_alpha)) {
+                curb2_alpha = wi.curb2_alpha;
+            } else if ((curb2_alpha != 1) != (wi.curb2_alpha != 1)) {
+                throw std::runtime_error("Incompatible curb2 alpha");
+            }
+        }
         auto& crossings = *tlist2->tl_street_crossing[road_type];
         // A single triangle does not work with curbs when an angle is ~90°
         if ((nh.second.size() == 3) && (curb_alpha_ == 1)) {
@@ -502,10 +517,11 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 2>{f  , h  },
                             FixedArray<float, 2>{0.f, g  });
                     };
-                    if (curb2_alpha_ != 1) {
+                    if (curb2_alpha != 1) {
                         draw_rect(*tlist2->tl_street_curb[RoadType::STREET], 0, 1, -2, -1, curb_uv_x, 1);
                         draw_triangle(*tlist2->tl_street_curb2[RoadType::STREET], 1, 2, -2, curb2_uv_x, 2);
                     } else {
+                        // "if (curb_alpha != 1)" already checked above.
                         draw_triangle(*tlist2->tl_street_curb[RoadType::STREET], 0, 1, -1, curb_uv_x, 1);
                     }
                 }
