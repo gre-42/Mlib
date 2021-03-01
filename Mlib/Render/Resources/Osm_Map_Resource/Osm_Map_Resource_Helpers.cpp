@@ -230,6 +230,19 @@ float Mlib::parse_float(
     }
 }
 
+bool Mlib::parse_bool(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    bool default_value)
+{
+    auto it = tags.find(key);
+    if (it != tags.end()) {
+        return safe_stob(it->second);
+    } else {
+        return default_value;
+    }
+}
+
 std::list<Building> Mlib::get_buildings_or_wall_barriers(
     BuildingType building_type,
     const std::map<std::string, Way>& ways,

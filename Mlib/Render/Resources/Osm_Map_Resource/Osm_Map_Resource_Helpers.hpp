@@ -85,6 +85,11 @@ float parse_float(
     const std::string& key,
     float default_value);
 
+bool parse_bool(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    bool default_value);
+
 struct Building {
     std::string id;
     const Way& way;
