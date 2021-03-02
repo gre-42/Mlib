@@ -484,9 +484,9 @@ void DrawStreets::draw_holes() {
                         const auto& p10 = nh.second.at(AngleCurb{angles[i], curb1});
                         const auto& p11 = nh.second.at(AngleCurb{angles[j], curb2});
                         const auto& p01 = nh.second.at(AngleCurb{angles[j], curb3});
-                        if (way_infos.at(p00.way_id).roads_delete(road_id) ||
-                            way_infos.at(p10.way_id).roads_delete(road_id) ||
-                            way_infos.at(p11.way_id).roads_delete(road_id) ||
+                        if (way_infos.at(p00.way_id).roads_delete(road_id) &&
+                            way_infos.at(p10.way_id).roads_delete(road_id) &&
+                            way_infos.at(p11.way_id).roads_delete(road_id) &&
                             way_infos.at(p01.way_id).roads_delete(road_id))
                         {
                             return;
@@ -514,8 +514,8 @@ void DrawStreets::draw_holes() {
                         auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
                         auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
                         auto p01 = nh.second.at(AngleCurb{angles[j], curb2});
-                        if (way_infos.at(p00.way_id).roads_delete(road_id) ||
-                            way_infos.at(p10.way_id).roads_delete(road_id) ||
+                        if (way_infos.at(p00.way_id).roads_delete(road_id) &&
+                            way_infos.at(p10.way_id).roads_delete(road_id) &&
                             way_infos.at(p01.way_id).roads_delete(road_id))
                         {
                             return;
