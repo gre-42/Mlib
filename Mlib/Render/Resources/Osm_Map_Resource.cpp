@@ -655,8 +655,10 @@ OsmMapResource::OsmMapResource(
             nodes,
             config.scale);
     }
-    // way_points_.at(WayPointLocation::STREET).plot("/tmp/way_points_street.svg", 600, 600, 0.1);
-    // way_points_.at(WayPointLocation::SIDEWALK).plot("/tmp/way_points_sidewalk.svg", 600, 600, 0.1);
+    if (const char* wf = getenv("WAYPOINT_DEBUG_PREFIX"); (wf != nullptr)) {
+        way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1);
+        way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1);
+    }
 
     if (!std::isnan(config.extrude_air_curb_amount)) {
         for (auto& l : air_triangle_lists.tl_street_curb.map()) {
