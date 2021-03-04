@@ -195,10 +195,10 @@ void Mlib::apply_height_map(
                     // The terrain vertices lying on the tunnel vertices are therefore
                     // first moving down with the tunnel vertices in the line above,
                     // and then moved up by the line below.
-                    if (terrain_entrance_vertices.at(EntranceType::TUNNEL).contains(pc)) {
+                    if (terrain_entrance_vertices[EntranceType::TUNNEL].contains(pc)) {
                         (*pc)(2) += tunnel_height * scale;
                     }
-                    if (terrain_entrance_vertices.at(EntranceType::BRIDGE).contains(pc)) {
+                    if (terrain_entrance_vertices[EntranceType::BRIDGE].contains(pc)) {
                         (*pc)(2) += extrude_air_support_amount * scale;
                     }
                 }
