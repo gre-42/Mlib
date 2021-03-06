@@ -11,7 +11,8 @@
 #include <iostream>
 #include <memory>
 #include <stb_image/stb_array.h>
-#include <stb_image/stb_histogram.hpp>
+#include <stb_image/stb_colorize.hpp>
+#include <stb_image/stb_desaturate.hpp>
 #include <stb_image/stb_image_load.h>
 #include <stb_image/stb_image_resize.h>
 #include <stb_image/stb_mipmaps.h>
@@ -262,8 +263,15 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
             }
         }
     }
+    if (desc.desaturate) {
+        stb_desaturate(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels);
+    }
     if (!desc.mean_color.all_equal(-1.f)) {
-        if (!stb_match_color_rgb(
+        if (!stb_colorize(
             si0.data.get(),
             si0.width,
             si0.height,

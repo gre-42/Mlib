@@ -1,4 +1,6 @@
-bool stb_match_color_rgb(
+#pragma once
+
+bool stb_colorize(
     unsigned char* data,
     int width,
     int height,

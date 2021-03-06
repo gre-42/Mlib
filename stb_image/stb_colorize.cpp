@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdexcept>
 
-bool stb_match_color_rgb(
+bool stb_colorize(
     unsigned char* data,
     int width,
     int height,

@@ -37,6 +37,7 @@ struct TextureDescriptor {
     std::string color;
     std::string normal;
     ColorMode color_mode = ColorMode::UNDEFINED;
+    bool desaturate = false;
     std::string histogram = "";
     std::string mixed = "";
     size_t overlap_npixels = 5;
