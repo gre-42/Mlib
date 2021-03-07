@@ -42,7 +42,7 @@ void Mlib::apply_height_map(
     const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
     float street_node_smoothness,
-    const Interp<float>& layer_height)
+    const Interp<float>& layer_heights)
 {
     // Smoothen raw 2D street nodes, ignoring which triangles they contributed to.
     std::map<std::string, NodeHeight> node_height;
@@ -53,7 +53,7 @@ void Mlib::apply_height_map(
         for (const auto& w : ways) {
             auto layer_it = w.second.tags.find("layer");
             int layer = (layer_it == w.second.tags.end()) ? 0 : safe_stoi(layer_it->second);
-            if ((layer != 0) && !layer_height.is_within_range(layer)) {
+            if ((layer != 0) && !layer_heights.is_within_range(layer)) {
                 continue;
             }
             float bridge_height = parse_meters(w.second.tags, "bridge_height", NAN);
@@ -102,8 +102,8 @@ void Mlib::apply_height_map(
             }
             if (nbridge_heights != 0) {
                 node_height[n.first] = {
-                    .height = layer_height(layer) + bridge_height - layer_height(0),
-                    .smooth_height = layer_height(layer) + bridge_height - layer_height(0)};
+                    .height = layer_heights(layer) + bridge_height - layer_heights(0),
+                    .smooth_height = layer_heights(layer) + bridge_height - layer_heights(0)};
             } else {
                 if (layer == 0) {
                     // If the ways to all neighbors are on the ground (or they cancel out to 0),
@@ -117,10 +117,10 @@ void Mlib::apply_height_map(
                     }
                 } else {
                     // If some ways are not on the ground, and the heights don't cancel out to 0,
-                    // interpolate the height using the "layer_height" interpolator.
+                    // interpolate the height using the "layer_heights" interpolator.
                     node_height[n.first] = {
-                        .height = layer_height(layer),
-                        .smooth_height = layer_height(layer)};
+                        .height = layer_heights(layer),
+                        .smooth_height = layer_heights(layer)};
                 }
             }
         }
