@@ -61,7 +61,8 @@ struct OsmTriangleLists {
     std::list<std::shared_ptr<TriangleList>> tls_street() const;
     std::list<std::shared_ptr<TriangleList>> tls_wo_subtraction_and_water() const;
     std::list<std::shared_ptr<TriangleList>> tls_wo_subtraction_w_water() const;
-    std::list<std::shared_ptr<TriangleList>> tls_all() const;
+    std::list<std::shared_ptr<TriangleList>> tls_raised() const;
+    std::list<std::shared_ptr<TriangleList>> tls_smoothed() const;
     std::list<std::shared_ptr<TriangleList>> tls_smooth() const;
     std::list<std::shared_ptr<TriangleList>> tls_no_backfaces() const;
     std::list<std::shared_ptr<TriangleList>> tls_with_vertex_normals() const;

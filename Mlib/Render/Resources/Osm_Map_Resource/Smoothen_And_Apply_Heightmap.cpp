@@ -15,6 +15,11 @@
 
 using namespace Mlib;
 
+enum class SmoothingClass {
+    RAISED,
+    SMOOTHED
+};
+
 void Mlib::smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
     const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
@@ -32,18 +37,30 @@ void Mlib::smoothen_and_apply_heightmap(
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes)
 {
-    auto tls_ground_all = osm_triangle_lists.tls_all();
-    auto air_tls_all = air_triangle_lists.tls_all();
+    if (config.heightmap.empty() && config.street_edge_smoothness == 0 && config.terrain_edge_smoothness == 0) {
+        return;
+    }
 
-    std::list<std::shared_ptr<TriangleList>> tls_all;
-    tls_all.insert(tls_all.end(), tls_ground_all.begin(), tls_ground_all.end());
-    tls_all.insert(tls_all.end(), air_tls_all.begin(), air_tls_all.end());
-    tls_all.insert(tls_all.end(), tls_buildings.begin(), tls_buildings.end());
-    tls_all.insert(tls_all.end(), tls_wall_barriers.begin(), tls_wall_barriers.end());
+    auto get_smoothed_vertices = [&](
+        std::list<std::shared_ptr<TriangleList>>& tls_smoothed,
+        std::list<FixedArray<float, 3>*>& smoothed_vertices,
+        SmoothingClass sc)
+    {
+        auto tls_ground_smoothed =
+            sc == SmoothingClass::RAISED
+                ? osm_triangle_lists.tls_raised()
+                : osm_triangle_lists.tls_smoothed();
+        auto air_tls_smoothed =
+            sc == SmoothingClass::RAISED
+                ? air_triangle_lists.tls_raised()
+                : air_triangle_lists.tls_smoothed();
 
-    if (!config.heightmap.empty() || config.street_edge_smoothness > 0 || config.terrain_edge_smoothness > 0) {
-        std::list<FixedArray<float, 3>*> smoothed_vertices;
-        for (auto& l : tls_all) {
+        tls_smoothed.insert(tls_smoothed.end(), tls_ground_smoothed.begin(), tls_ground_smoothed.end());
+        tls_smoothed.insert(tls_smoothed.end(), air_tls_smoothed.begin(), air_tls_smoothed.end());
+        tls_smoothed.insert(tls_smoothed.end(), tls_buildings.begin(), tls_buildings.end());
+        tls_smoothed.insert(tls_smoothed.end(), tls_wall_barriers.begin(), tls_wall_barriers.end());
+
+        for (auto& l : tls_smoothed) {
             for (auto& t : l->triangles_) {
                 for (auto& v : t.flat_iterable()) {
                     smoothed_vertices.push_back(&v.position);
@@ -83,71 +100,77 @@ void Mlib::smoothen_and_apply_heightmap(
                 throw std::runtime_error("Found duplicate smoothed vertices");
             }
         }
-        if (!config.heightmap.empty()) {
-            LOG_INFO("apply_height_map");
-            std::set<const FixedArray<float, 3>*> vertices_to_delete;
-            apply_height_map(
-                *osm_triangle_lists.tl_terrain,
-                osm_triangle_lists.entrances,
-                config.default_tunnel_pipe_height,
-                config.extrude_air_support_amount,
-                smoothed_vertices,
-                vertices_to_delete,
-                PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX),
-                normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
-                config.scale,
-                nodes,
-                ways,
-                height_bindings,
-                config.street_node_smoothness,
-                config.layer_heights);
-            for (auto& l : tls_all) {
-                l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
-                    bool del =
-                        vertices_to_delete.contains(&v(0).position) ||
-                        vertices_to_delete.contains(&v(1).position) ||
-                        vertices_to_delete.contains(&v(2).position);
-                    if (del) {
-                        vertices_to_delete.insert(&v(0).position);
-                        vertices_to_delete.insert(&v(1).position);
-                        vertices_to_delete.insert(&v(2).position);
-                    }
-                    return del;
-                });
-            }
-            object_resource_descriptors.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
+    };
+    if (!config.heightmap.empty()) {
+        LOG_INFO("apply_height_map");
+        std::list<std::shared_ptr<TriangleList>> tls_smoothed;
+        std::list<FixedArray<float, 3>*> smoothed_vertices;
+        get_smoothed_vertices(tls_smoothed, smoothed_vertices, SmoothingClass::RAISED);
+        std::set<const FixedArray<float, 3>*> vertices_to_delete;
+        apply_height_map(
+            *osm_triangle_lists.tl_terrain,
+            osm_triangle_lists.entrances,
+            config.default_tunnel_pipe_height,
+            config.extrude_air_support_amount,
+            smoothed_vertices,
+            vertices_to_delete,
+            PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX),
+            normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
+            config.scale,
+            nodes,
+            ways,
+            height_bindings,
+            config.street_node_smoothness,
+            config.layer_heights);
+        for (auto& l : tls_smoothed) {
+            l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
+                bool del =
+                    vertices_to_delete.contains(&v(0).position) ||
+                    vertices_to_delete.contains(&v(1).position) ||
+                    vertices_to_delete.contains(&v(2).position);
+                if (del) {
+                    vertices_to_delete.insert(&v(0).position);
+                    vertices_to_delete.insert(&v(1).position);
+                    vertices_to_delete.insert(&v(2).position);
+                }
+                return del;
+            });
+        }
+        object_resource_descriptors.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
+            return vertices_to_delete.contains(&d.position);
+        });
+        for (auto& i : resource_instance_positions) {
+            i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
                 return vertices_to_delete.contains(&d.position);
             });
-            for (auto& i : resource_instance_positions) {
-                i.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& d){
-                    return vertices_to_delete.contains(&d.position);
-                });
-            }
-            for (auto& h : hitboxes) {
-                h.second.remove_if([&vertices_to_delete](const FixedArray<float, 3>& p){
-                    return vertices_to_delete.contains(&p);
-                });
-            }
-            steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
-                return vertices_to_delete.contains(&p.position);});
-            smoothed_vertices.remove_if([&vertices_to_delete](const FixedArray<float, 3>* p){
-                return vertices_to_delete.contains(p);});
         }
-        if (config.street_edge_smoothness > 0 || config.terrain_edge_smoothness > 0) {
-            std::list<std::shared_ptr<TriangleList>> tls_street = osm_triangle_lists.tls_street();
-            std::list<std::shared_ptr<TriangleList>> tls_air_street = air_triangle_lists.tls_street();
-            tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
-            if (config.street_edge_smoothness > 0) {
-                LOG_INFO("smoothen_edges (street)");
-                TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, config.street_edge_smoothness * config.scale, 100);
-            }
-            if (config.terrain_edge_smoothness > 0) {
-                LOG_INFO("smoothen_edges (ground)");
-                auto tls_smooth = osm_triangle_lists.tls_smooth();
-                auto air_tls_smooth = air_triangle_lists.tls_smooth();
-                tls_smooth.insert(tls_smooth.end(), air_tls_smooth.begin(), air_tls_smooth.end());
-                TriangleList::smoothen_edges(tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 10);
-            }
+        for (auto& h : hitboxes) {
+            h.second.remove_if([&vertices_to_delete](const FixedArray<float, 3>& p){
+                return vertices_to_delete.contains(&p);
+            });
+        }
+        steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){
+            return vertices_to_delete.contains(&p.position);});
+        smoothed_vertices.remove_if([&vertices_to_delete](const FixedArray<float, 3>* p){
+            return vertices_to_delete.contains(p);});
+    }
+    if (config.street_edge_smoothness > 0 || config.terrain_edge_smoothness > 0) {
+        std::list<std::shared_ptr<TriangleList>> tls_smoothed;
+        std::list<FixedArray<float, 3>*> smoothed_vertices;
+        get_smoothed_vertices(tls_smoothed, smoothed_vertices, SmoothingClass::SMOOTHED);
+        std::list<std::shared_ptr<TriangleList>> tls_street = osm_triangle_lists.tls_street();
+        std::list<std::shared_ptr<TriangleList>> tls_air_street = air_triangle_lists.tls_street();
+        tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
+        if (config.street_edge_smoothness > 0) {
+            LOG_INFO("smoothen_edges (street)");
+            TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, config.street_edge_smoothness * config.scale, 100);
+        }
+        if (config.terrain_edge_smoothness > 0) {
+            LOG_INFO("smoothen_edges (ground)");
+            auto tls_smooth = osm_triangle_lists.tls_smooth();
+            auto air_tls_smooth = air_triangle_lists.tls_smooth();
+            tls_smooth.insert(tls_smooth.end(), air_tls_smooth.begin(), air_tls_smooth.end());
+            TriangleList::smoothen_edges(tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 10);
         }
     }
 }
