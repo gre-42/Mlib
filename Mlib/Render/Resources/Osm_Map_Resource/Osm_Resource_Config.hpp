@@ -44,6 +44,7 @@ struct OsmResourceConfig {
     std::string tunnel_pipe_resource_name = "pipe_box";
     std::string tunnel_bdry_resource_name = "pipe_box_boundary";
     std::string water_texture;
+    float water_height = 0;
     BlendMode barrier_blend_mode;
     std::string roof_texture;
     std::vector<std::string> tree_resource_names;

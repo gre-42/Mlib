@@ -683,14 +683,14 @@ OsmMapResource::OsmMapResource(
     std::list<std::shared_ptr<TriangleList>> tls_all;
     if (!config.water_texture.empty()) {
         osm_triangle_lists.tl_water->draw_rectangle_wo_normals(
-            FixedArray<float, 3>{normalized_points.min()(0), normalized_points.min()(1), config.scale * 5.f},
-            FixedArray<float, 3>{normalized_points.max()(0), normalized_points.min()(1), config.scale * 5.f},
-            FixedArray<float, 3>{normalized_points.max()(0), normalized_points.max()(1), config.scale * 5.f},
-            FixedArray<float, 3>{normalized_points.min()(0), normalized_points.max()(1), config.scale * 5.f},
-            fixed_ones<float, 3>(),
-            fixed_ones<float, 3>(),
-            fixed_ones<float, 3>(),
-            fixed_ones<float, 3>(),
+            FixedArray<float, 3>{normalized_points.min()(0), normalized_points.min()(1), config.scale * config.water_height},
+            FixedArray<float, 3>{normalized_points.max()(0), normalized_points.min()(1), config.scale * config.water_height},
+            FixedArray<float, 3>{normalized_points.max()(0), normalized_points.max()(1), config.scale * config.water_height},
+            FixedArray<float, 3>{normalized_points.min()(0), normalized_points.max()(1), config.scale * config.water_height},
+            fixed_ones<float, 3>(),  // color
+            fixed_ones<float, 3>(),  // color
+            fixed_ones<float, 3>(),  // color
+            fixed_ones<float, 3>(),  // color
             FixedArray<float, 2>{normalized_points.min()(0), normalized_points.min()(1)} / config.scale / 100.f,
             FixedArray<float, 2>{normalized_points.max()(0), normalized_points.min()(1)} / config.scale / 100.f,
             FixedArray<float, 2>{normalized_points.max()(0), normalized_points.max()(1)} / config.scale / 100.f,

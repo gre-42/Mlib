@@ -695,6 +695,9 @@ void LoadScene::operator()(
                 else if (key == "water_texture") {
                     config.water_texture = fpath(value);
                 }
+                else if (key == "water_height") {
+                    config.water_height = safe_stof(value);
+                }
                 else if (key == "tree_resource_names") {
                     config.tree_resource_names = string_to_vector(value);
                 }
