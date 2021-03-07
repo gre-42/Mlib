@@ -109,7 +109,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     }
     WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || ((config.curb_alpha != 1) && (config.extrude_street_amount != 0)) ? WrapMode::REPEAT : WrapMode::CLAMP_TO_EDGE;
     for (const auto& s : config.curb_street_texture) {
-        tl_street_curb.insert(s.first, std::make_shared<TriangleList>(road_type_to_string(s.first), Material{
+        tl_street_curb.insert(s.first, std::make_shared<TriangleList>("curb_" + road_type_to_string(s.first), Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
             .occluder_type = OccluderType::WHITE,
@@ -118,14 +118,14 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .draw_distance_noperations = 1000}.compute_color_mode())); // mixed_texture: terrain_texture
     }
     for (const auto& s : config.curb2_street_texture) {
-        tl_street_curb2.insert(s.first, std::make_shared<TriangleList>(road_type_to_string(s.first), Material{
+        tl_street_curb2.insert(s.first, std::make_shared<TriangleList>("curb2_" + road_type_to_string(s.first), Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
             .occluder_type = OccluderType::WHITE,
             .draw_distance_noperations = 1000}.compute_color_mode())); // mixed_texture: terrain_texture
     }
     for (const auto& s : config.air_curb_street_texture) {
-        tl_air_street_curb.insert(s.first, std::make_shared<TriangleList>(road_type_to_string(s.first), Material{
+        tl_air_street_curb.insert(s.first, std::make_shared<TriangleList>("air_curb_" + road_type_to_string(s.first), Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
             .occluder_type = OccluderType::WHITE,
