@@ -32,6 +32,7 @@ void Mlib::parse_osm_xml(
         "^(?:"
         "<\\?xml .*|"
         "<osm .*|"
+        " +<node.*action=[\"']delete[\"'].*/>|"
         " +</node>|"
         " +<relation .*|"
         "  +<member .*|"
