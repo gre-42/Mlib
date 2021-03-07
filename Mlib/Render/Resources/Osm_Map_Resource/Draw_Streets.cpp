@@ -193,6 +193,12 @@ void DrawStreets::calculate_neighbors() {
                 auto s = it;
                 ++s;
                 if (s != w.second.nd.end()) {
+                    if (nodes.find(*it) == nodes.end()) {
+                        throw std::runtime_error("Way " + w.first + ": Could not find node with ID " + *it);
+                    }
+                    if (nodes.find(*s) == nodes.end()) {
+                        throw std::runtime_error("Way " + w.first + ": Could not find node with ID " + *s);
+                    }
                     FixedArray<float, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
                     float angle0 = std::atan2(dir(1), dir(0));
                     float angle1 = std::atan2(-dir(1), -dir(0));
