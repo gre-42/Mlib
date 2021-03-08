@@ -286,7 +286,7 @@ OsmMapResource::OsmMapResource(
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
         // plot_mesh(ArrayShape{2000, 2000}, 1, 4, osm_triangle_lists.tl_street->get_triangles_around({2.95704f, -0.783734f}, 0.5f), {}, {{2.95704f, -0.783734f, 0.f}}).save_to_file("/tmp/plt.pgm");
         // {
-        //     std::list<FixedArray<ColoredVertex, 3>*> tf;
+        //     std::list<const FixedArray<ColoredVertex, 3>*> tf;
         //     for (auto& t : hole_triangles) {
         //         tf.push_back(&t);
         //     }
