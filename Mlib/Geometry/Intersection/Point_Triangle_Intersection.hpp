@@ -65,7 +65,7 @@ TData distance_point_to_triangle (
         TData sp1 = sum(squared(v1 - pt));
         TData sp2 = sum(squared(v2 - pt));
         TData sp3 = sum(squared(v3 - pt));
-        return std::sqrt(std::min(std::min(sp1, sp2), sp3));
+        return std::sqrt(std::min({sp1, sp2, sp3}));
     }
 }
 
