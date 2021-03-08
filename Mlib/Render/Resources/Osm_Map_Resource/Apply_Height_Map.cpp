@@ -124,6 +124,14 @@ void Mlib::apply_height_map(
                 }
             }
         }
+        for (auto nnit = node_neighbors.begin(); nnit != node_neighbors.end();) {
+            auto nit = nodes.find(nnit->first);
+            if (auto tit = nit->second.tags.find("smoothing"); (tit != nit->second.tags.end()) && (!safe_stob(tit->second))) {
+                nnit = node_neighbors.erase(nnit);
+            } else {
+                ++nnit;
+            }
+        }
         // Smoothen the heights.
         for (size_t i = 0; i < 50; ++i) {
             for (const auto& n : node_neighbors) {
