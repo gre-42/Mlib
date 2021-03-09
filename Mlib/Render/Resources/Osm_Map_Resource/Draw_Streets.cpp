@@ -709,20 +709,12 @@ void DrawStreets::draw_streets_draw_ways(
         ? b_entrance_type
         : c_entrance_type;
     const auto& wi = way_infos.at(angle_way.way_id);
-    if ((len0 != node_way_info.end()) &&
+    if (false && (len0 != node_way_info.end()) &&
         (len1 != node_way_info.end()))
     {
-        {
-            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte, float uvx){
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, uvx, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);
-            };
-            draw(*street_lst.triangle_list, b_entrance_type, c_entrance_type, street_lst.uvx);
-            if (et != EntranceType::NONE) {
-                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE, 1.f);
-            }
-        }
+        rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
         if (angle_way.layer > 0) {
-            rect.draw_z0(*air_triangles.tl_air_support, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
+            rect.draw_z0(*air_triangles.tl_air_support, nullptr, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, 1, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, 1, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
         }
         if (angle_way.layer < 0) {
             auto draw = [&](auto& lst, auto& mesh){rect.draw(lst, height_bindings, node_id, angle_way.neighbor_id, mesh, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);};
@@ -730,38 +722,18 @@ void DrawStreets::draw_streets_draw_ways(
             draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
         }
         if ((wi.curb_alpha != 1) && !wi.roads_delete(1)) {
-            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte, const FixedArray<float, 3>& color){
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -wi.curb2_alpha, -wi.curb_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, color, 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, wi.curb_alpha, wi.curb2_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);
-            };
-            draw(curb_lst, b_entrance_type, c_entrance_type, wi.colors(1));
-            if (et != EntranceType::NONE) {
-                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE, wi.colors(0));
-            }
+            rect.draw_z0(curb_lst, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(1), 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -wi.curb2_alpha, -wi.curb_alpha, RectangleOrientation::RIGHT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
+            rect.draw_z0(curb_lst, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(1), 0, curb_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, wi.curb_alpha, wi.curb2_alpha, RectangleOrientation::LEFT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
         }
         if ((wi.curb2_alpha != 1) && !wi.roads_delete(2)) {
-            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte){
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -wi.curb2_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, wi.curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);
-            };
-            draw(curb2_lst, b_entrance_type, c_entrance_type);
-            if (et != EntranceType::NONE) {
-                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE);
-            }
+            rect.draw_z0(curb2_lst, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -1, -wi.curb2_alpha, RectangleOrientation::RIGHT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
+            rect.draw_z0(curb2_lst, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, wi.curb2_alpha, 1, RectangleOrientation::LEFT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
         }
     } else {
         float len = std::sqrt(sum(squared(nodes.at(node_id).position - nodes.at(angle_way.neighbor_id).position)));
-        {
-            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte, float uvx){
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, uvx, 0, len / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);
-            };
-            draw(*street_lst.triangle_list, b_entrance_type, c_entrance_type, street_lst.uvx);
-            if (et != EntranceType::NONE) {
-                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE, 1.f);
-            }
-        }
+        rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, 0, len / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
         if (angle_way.layer > 0) {
-            rect.draw_z0(*air_triangles.tl_air_support, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, 1, 0, len / scale * uv_scale, -1, 1, false, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
+            rect.draw_z0(*air_triangles.tl_air_support, nullptr, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, 1, 0, len / scale * uv_scale, -1, 1, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
         }
         if (angle_way.layer < 0) {
             auto draw = [&](auto& lst, auto& mesh){rect.draw(lst, height_bindings, node_id, angle_way.neighbor_id, mesh, scale, default_tunnel_pipe_width, default_tunnel_pipe_height);};
@@ -769,24 +741,12 @@ void DrawStreets::draw_streets_draw_ways(
             draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
         }
         if ((wi.curb_alpha != 1) && !wi.roads_delete(1)) {
-            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte, const FixedArray<float, 3>& color){
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, color, 0, curb_uv_x, 0, len / scale * uv_scale, -wi.curb2_alpha, -wi.curb_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, color, 0, curb_uv_x, 0, len / scale * uv_scale, wi.curb_alpha, wi.curb2_alpha, false, with_b_height_binding, with_c_height_binding, bte, cte);
-            };
-            draw(curb_lst, b_entrance_type, c_entrance_type, wi.colors(1));
-            if (et != EntranceType::NONE) {
-                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE, wi.colors(0));
-            }
+            rect.draw_z0(curb_lst, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(1), 0, curb_uv_x, 0, len / scale * uv_scale, -wi.curb2_alpha, -wi.curb_alpha, RectangleOrientation::RIGHT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
+            rect.draw_z0(curb_lst, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(1), 0, curb_uv_x, 0, len / scale * uv_scale, wi.curb_alpha, wi.curb2_alpha, RectangleOrientation::LEFT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
         }
         if ((wi.curb2_alpha != 1) && !wi.roads_delete(2)) {
-            auto draw = [&](auto& lst, EntranceType bte, EntranceType cte){
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -wi.curb2_alpha, true, with_b_height_binding, with_c_height_binding, bte, cte);
-                rect.draw_z0(lst, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, 0, len / scale * uv_scale, wi.curb2_alpha, 1, false, with_b_height_binding, with_c_height_binding, bte, cte);
-            };
-            draw(curb2_lst, b_entrance_type, c_entrance_type);
-            if (et != EntranceType::NONE) {
-                draw(*ground_triangles.tl_entrance[et], EntranceType::NONE, EntranceType::NONE);
-            }
+            rect.draw_z0(curb2_lst, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, 0, len / scale * uv_scale, -1, -wi.curb2_alpha, RectangleOrientation::RIGHT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
+            rect.draw_z0(curb2_lst, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(2), 0, curb2_uv_x, 0, len / scale * uv_scale, wi.curb2_alpha, 1, RectangleOrientation::LEFT, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
         }
         // rect.draw_z0(tl_street_crossing);
     }

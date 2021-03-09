@@ -303,6 +303,17 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.steiner_point_distances_road,
             config.steiner_point_distances_steiner);
+        // {
+        //     std::list<const FixedArray<ColoredVertex, 3>*> tf;
+        //     for (auto& t : osm_triangle_lists.tl_entrance.at(EntranceType::BRIDGE)->triangles_) {
+        //         tf.push_back(&t);
+        //     }
+        //     std::list<FixedArray<float, 3>> highlighted_nodes;
+        //     for (auto& si : steiner_points) {
+        //         highlighted_nodes.push_back(si.position);
+        //     }
+        //     plot_mesh_svg("/tmp/plt.svg", 800, 800, tf, {}, highlighted_nodes);
+        // }
         LOG_INFO("triangulate_terrain_or_ceilings");
         triangulate_terrain_or_ceilings(
             *tl_terrain_,

@@ -12,6 +12,12 @@ struct ColoredVertex;
 enum class EntranceType;
 class HeightBinding;
 
+enum class RectangleOrientation {
+    LEFT,
+    CENTER,
+    RIGHT
+};
+
 class Rectangle {
 public:
     /**
@@ -33,7 +39,8 @@ public:
         float width_cdR);
 
     void draw_z0(
-        TriangleList& tl,
+        TriangleList& tl_road,
+        TriangleList* tl_entrance,
         std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
         std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
         const std::string& b,
@@ -45,7 +52,7 @@ public:
         float uv1_y,
         float start,
         float stop,
-        bool rotate_texture,
+        RectangleOrientation orientation,
         bool with_b_height_binding,
         bool with_c_height_binding,
         EntranceType b_entrance_type,

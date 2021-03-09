@@ -44,7 +44,8 @@ bool Rectangle::from_line(
 }
 
 void Rectangle::draw_z0(
-    TriangleList& tl,
+    TriangleList& tl_road,
+    TriangleList* tl_entrance,
     std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
     std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     const std::string& b,
@@ -56,13 +57,17 @@ void Rectangle::draw_z0(
     float uv1_y,
     float start,
     float stop,
-    bool rotate_texture,
+    RectangleOrientation orientation,
     bool with_b_height_binding,
     bool with_c_height_binding,
     EntranceType b_entrance_type,
     EntranceType c_entrance_type) const
 {
     CurbedStreet cs{*this, start, stop};
+
+    // Road:
+    // b, 00 >-->-->-->-->--> c, 10
+    // b, 01 >-->-->-->-->--> c, 11
 
     if (with_b_height_binding) {
         height_bindings[OrderableFixedArray{cs.s00}] = b;
@@ -81,19 +86,72 @@ void Rectangle::draw_z0(
         entrances[c_entrance_type].insert(OrderableFixedArray{cs.s11});
     }
 
-    tl.draw_rectangle_wo_normals(
+    tl_road.draw_rectangle_wo_normals(
         FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
         FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
         FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
         FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
-        color,
-        color,
-        color,
-        color,
-        rotate_texture ? FixedArray<float, 2>{uv1_x, uv1_y} : FixedArray<float, 2>{uv0_x, uv0_y},
-        rotate_texture ? FixedArray<float, 2>{uv0_x, uv1_y} : FixedArray<float, 2>{uv1_x, uv0_y},
-        rotate_texture ? FixedArray<float, 2>{uv0_x, uv0_y} : FixedArray<float, 2>{uv1_x, uv1_y},
-        rotate_texture ? FixedArray<float, 2>{uv1_x, uv0_y} : FixedArray<float, 2>{uv0_x, uv1_y});
+        /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
+        /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
+        /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
+        /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
+        orientation >= RectangleOrientation::CENTER ? FixedArray<float, 2>{uv1_x, uv1_y} : FixedArray<float, 2>{uv0_x, uv0_y},
+        orientation >= RectangleOrientation::CENTER ? FixedArray<float, 2>{uv0_x, uv1_y} : FixedArray<float, 2>{uv1_x, uv0_y},
+        orientation >= RectangleOrientation::CENTER ? FixedArray<float, 2>{uv0_x, uv0_y} : FixedArray<float, 2>{uv1_x, uv1_y},
+        orientation >= RectangleOrientation::CENTER ? FixedArray<float, 2>{uv1_x, uv0_y} : FixedArray<float, 2>{uv0_x, uv1_y});
+
+    if (b_entrance_type != EntranceType::NONE && c_entrance_type != EntranceType::NONE) {
+        throw std::runtime_error("Detected duplicate entrance types");
+    }
+    if (tl_entrance != nullptr) {
+        if ((b_entrance_type == EntranceType::TUNNEL) ||
+            (c_entrance_type == EntranceType::TUNNEL))
+        {
+            tl_entrance->draw_rectangle_wo_normals(
+                FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
+                FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
+                FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
+                FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f});
+        } else if (c_entrance_type == EntranceType::BRIDGE)
+        {
+            if (orientation == RectangleOrientation::RIGHT) {
+                tl_entrance->draw_triangle_wo_normals(
+                    FixedArray<float, 3>{p10_(0), p10_(1), 0.f},
+                    FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
+                    FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f});
+            } else if (orientation == RectangleOrientation::LEFT) {
+                tl_entrance->draw_triangle_wo_normals(
+                    FixedArray<float, 3>{p11_(0), p11_(1), 0.f},
+                    FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
+                    FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f});
+            } else {
+                tl_entrance->draw_rectangle_wo_normals(
+                    FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
+                    FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
+                    FixedArray<float, 3>{p11_(0), p11_(1), 0.f},
+                    FixedArray<float, 3>{p10_(0), p10_(1), 0.f});
+            }
+        } else if (b_entrance_type == EntranceType::BRIDGE)
+        {
+            if (orientation == RectangleOrientation::LEFT) {
+                tl_entrance->draw_triangle_wo_normals(
+                    FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
+                    FixedArray<float, 3>{p01_(0), p01_(1), 0.f},
+                    FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f});
+            } else if (orientation == RectangleOrientation::RIGHT) {
+                tl_entrance->draw_triangle_wo_normals(
+                    FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f},
+                    FixedArray<float, 3>{p00_(0), p00_(1), 0.f},
+                    FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f});
+            } else {
+                tl_entrance->draw_rectangle_wo_normals(
+                    FixedArray<float, 3>{p00_(0), p00_(1), 0.f},
+                    FixedArray<float, 3>{p01_(0), p01_(1), 0.f},
+                    FixedArray<float, 3>{cs.s11(0), cs.s11(1), 0.f},
+                    FixedArray<float, 3>{cs.s10(0), cs.s10(1), 0.f});
+            }
+        }
+    }
 }
 
 void Rectangle::draw(
