@@ -27,6 +27,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -172,6 +173,9 @@ OsmMapResource::OsmMapResource(
         }};
     }
 
+    auto hole_triangles = osm_triangle_lists.hole_triangles();
+    StreetBvh ground_steet_bvh{hole_triangles};
+
     if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
         ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
         LOG_INFO("add_trees_to_forest_outlines");
@@ -181,6 +185,8 @@ OsmMapResource::OsmMapResource(
             hitboxes_,
             steiner_points,
             rnc,
+            config.min_dist_to_road,
+            ground_steet_bvh,
             nodes,
             ways,
             config.forest_outline_tree_distance,
@@ -231,6 +237,8 @@ OsmMapResource::OsmMapResource(
             hitboxes_,
             steiner_points,
             rnc,
+            config.min_dist_to_road,
+            ground_steet_bvh,
             nodes,
             config.scale);
     }
@@ -280,7 +288,6 @@ OsmMapResource::OsmMapResource(
             nodes,
             ways);
 
-        auto hole_triangles = osm_triangle_lists.hole_triangles();
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
@@ -297,8 +304,8 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("add_street_steiner_points");
         add_street_steiner_points(
             steiner_points,
-            hole_triangles,
-            air_triangle_lists.hole_triangles(),
+            ground_steet_bvh,
+            StreetBvh{air_triangle_lists.hole_triangles()},
             bounding_info,
             config.scale,
             config.steiner_point_distances_road,

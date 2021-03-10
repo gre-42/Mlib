@@ -18,6 +18,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -685,6 +686,8 @@ void Mlib::add_trees_to_forest_outlines(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
+    float min_dist_to_road,
+    const StreetBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float tree_distance,
@@ -717,17 +720,19 @@ void Mlib::add_trees_to_forest_outlines(
                         continue;
                     }
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + tree_inwards_distance * scale * n * sign(area);
-                    add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
-                    // object_resource_descriptors.push_back({
-                    //     position: FixedArray<float, 3>{p(0), p(1), 0},
-                    //     name: rnc(),
-                    //     scale: rng()});
-                    // if ((rid++) % 4 == 0) {
-                    steiner_points.push_back({
-                        .position = {p(0), p(1), 0.f},
-                        .type = SteinerPointType::FOREST_OUTLINE,
-                        .distance_to_road = NAN});
-                    // }
+                    if (std::isnan(min_dist_to_road) || !ground_bvh.has_neighbor(p, min_dist_to_road * scale)) {
+                        add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+                        // object_resource_descriptors.push_back({
+                        //     position: FixedArray<float, 3>{p(0), p(1), 0},
+                        //     name: rnc(),
+                        //     scale: rng()});
+                        // if ((rid++) % 4 == 0) {
+                        steiner_points.push_back({
+                            .position = {p(0), p(1), 0.f},
+                            .type = SteinerPointType::FOREST_OUTLINE,
+                            .distance_to_road = NAN});
+                        // }
+                    }
                 }
             }
         }
@@ -804,6 +809,8 @@ void Mlib::add_trees_to_tree_nodes(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
+    float min_dist_to_road,
+    const StreetBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     float scale)
 {
@@ -812,11 +819,13 @@ void Mlib::add_trees_to_tree_nodes(
         const auto& tags = n.second.tags;
         if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
             const auto& p = n.second.position;
-            add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
-            steiner_points.push_back({
-                .position = {p(0), p(1), 0.f},
-                .type = SteinerPointType::TREE_NODE,
-                .distance_to_road = NAN});
+            if (std::isnan(min_dist_to_road) || !ground_bvh.has_neighbor(p, min_dist_to_road * scale)) {
+                add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+                steiner_points.push_back({
+                    .position = {p(0), p(1), 0.f},
+                    .type = SteinerPointType::TREE_NODE,
+                    .distance_to_road = NAN});
+            }
         }
     }
 }

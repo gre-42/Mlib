@@ -140,7 +140,7 @@ public:
     TData min_distance(
         const FixedArray<TData, tndim>& p,
         const TData& max_distance,
-        const TComputeDistance& compute_distance)
+        const TComputeDistance& compute_distance) const
     {
         TData min_distance = INFINITY;
         visit(BoundingSphere<TData, tndim>(p, max_distance), [&min_distance, &compute_distance](const TPayload& playload) {
@@ -148,6 +148,17 @@ public:
             return true;
         });
         return min_distance;
+    }
+
+    template <class TComputeDistance>
+    bool has_neighbor(
+        const FixedArray<TData, tndim>& p,
+        const TData& max_distance,
+        const TComputeDistance& compute_distance) const
+    {
+        return !visit(BoundingSphere<TData, tndim>(p, max_distance), [&max_distance, &compute_distance](const TPayload& playload) {
+            return compute_distance(playload) > max_distance;
+        });
     }
 
     Bvh repackaged(const FixedArray<TData, tndim>& max_size, size_t level) const

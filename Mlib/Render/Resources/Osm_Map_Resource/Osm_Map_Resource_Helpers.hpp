@@ -26,6 +26,7 @@ class Interp;
 struct OsmTriangleLists;
 struct BoundingInfo;
 struct SteinerPointInfo;
+class StreetBvh;
 
 static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
@@ -210,6 +211,8 @@ void add_trees_to_forest_outlines(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
+    float min_dist_to_road,
+    const StreetBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float tree_distance,
@@ -239,6 +242,8 @@ void add_trees_to_tree_nodes(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
+    float min_dist_to_road,
+    const StreetBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     float scale);
 
