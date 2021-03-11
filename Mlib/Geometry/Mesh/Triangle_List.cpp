@@ -315,16 +315,16 @@ void TriangleList::smoothen_edges(
     size_t niterations,
     bool move_only_z)
 {
-    std::set<OrderableFixedArray<float, 3>> excluded_vertices;
+    typedef OrderableFixedArray<float, 2> Vertex2;
+    std::set<Vertex2> excluded_vertices;
     for (const auto& tl : excluded_triangle_lists) {
         for (const auto& t : tl->triangles_) {
             for (const auto& v : t.flat_iterable()) {
-                excluded_vertices.insert(OrderableFixedArray{v.position});
+                excluded_vertices.insert(Vertex2{v.position(0), v.position(1)});
             }
         }
     }
     for (size_t i = 0; i < niterations; ++i) {
-        typedef OrderableFixedArray<float, 2> Vertex2;
         typedef OrderableFixedArray<float, 3> Vertex3;
         typedef OrderableFixedArray<Vertex3, 2> Edge3;
         std::map<Edge3, Vertex3> edge_neighbors;
@@ -349,10 +349,10 @@ void TriangleList::smoothen_edges(
                         float n0n1 = dot0d(n0, n1);
                         if (n0n1 >=0 && n0n1 < 1) {
                             float shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
-                            if (!excluded_vertices.contains(ei)) {
+                            if (!excluded_vertices.contains(Vertex2{ei(0), ei(1)})) {
                                 vertex_movement[Vertex2{ei(0), ei(1)}] += smoothness * n01 * shift;
                             }
-                            if (!excluded_vertices.contains(ej)) {
+                            if (!excluded_vertices.contains(Vertex2{ej(0), ej(1)})) {
                                 vertex_movement[Vertex2{ej(0), ej(1)}] += smoothness * n01 * shift;
                             }
                         }
