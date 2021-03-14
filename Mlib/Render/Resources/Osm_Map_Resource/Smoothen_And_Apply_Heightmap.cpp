@@ -163,14 +163,14 @@ void Mlib::smoothen_and_apply_heightmap(
         tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
         if (config.street_edge_smoothness > 0) {
             LOG_INFO("smoothen_edges (street)");
-            TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, config.street_edge_smoothness * config.scale, 100);
+            TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, config.street_edge_smoothness * config.scale, 100, true);
         }
         if (config.terrain_edge_smoothness > 0) {
             LOG_INFO("smoothen_edges (ground)");
             auto tls_smooth = osm_triangle_lists.tls_smooth();
             auto air_tls_smooth = air_triangle_lists.tls_smooth();
             tls_smooth.insert(tls_smooth.end(), air_tls_smooth.begin(), air_tls_smooth.end());
-            TriangleList::smoothen_edges(tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 10);
+            TriangleList::smoothen_edges(tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 10, false);
         }
     }
 }
