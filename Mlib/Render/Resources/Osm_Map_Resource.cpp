@@ -538,11 +538,11 @@ OsmMapResource::OsmMapResource(
             auto do_extrude = [&config, &boundary_vertices]
                 (OsmTriangleLists& triangle_lists)
             {
-                std::list<std::shared_ptr<TriangleList>> source_vertices{triangle_lists.tls_curb_only()};
+                std::list<std::shared_ptr<TriangleList>> source_triangles{triangle_lists.tls_curb_only()};
                 TriangleList::extrude(
                     *triangle_lists.tl_street_curb[RoadType::STREET],
                     triangle_lists.tls_street_wo_curb(),
-                    &source_vertices,
+                    &source_triangles,
                     &boundary_vertices,
                     config.extrude_street_amount * config.scale,
                     config.scale,

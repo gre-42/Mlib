@@ -178,9 +178,9 @@ void TriangleList::extrude(
                 va = &t_old(a);
                 vb = &t_old(b);
             }
-            if (is_clamped(a) && is_clamped(b)) {
-                // Do nothing.
-            } else if (is_clamped(a)) {
+            // Already checked above:
+            // (is_clamped(a) && is_clamped(b))
+            if (is_clamped(a)) {
                 dest.draw_triangle_wo_normals(
                     va->position,
                     vb->position,
