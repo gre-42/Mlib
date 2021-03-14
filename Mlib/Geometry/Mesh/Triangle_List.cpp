@@ -121,7 +121,7 @@ void TriangleList::draw_rectangle_wo_normals(
 void TriangleList::extrude(
     TriangleList& dest,
     const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
-    const std::list<std::shared_ptr<TriangleList>>* source_vertices,
+    const std::list<std::shared_ptr<TriangleList>>* source_triangles,
     const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
     float height,
     float scale,
@@ -130,11 +130,11 @@ void TriangleList::extrude(
 {
     using O = OrderableFixedArray<float, 3>;
 
-    // Only relevant if "source_vertices != nullptr".
+    // Only relevant if "source_triangles != nullptr".
     // Map "edge -> vertices" for different uv-coordinates.
     std::map<std::pair<O, O>, std::pair<const ColoredVertex*, const ColoredVertex*>> edge_map;
-    if (source_vertices != nullptr) {
-        for (const auto& l : *source_vertices) {
+    if (source_triangles != nullptr) {
+        for (const auto& l : *source_triangles) {
             for (const auto& t : l->triangles_) {
                 edge_map[{O{t(1).position}, O{t(0).position}}] = {&t(1), &t(0)};
                 edge_map[{O{t(2).position}, O{t(1).position}}] = {&t(2), &t(1)};
@@ -166,7 +166,7 @@ void TriangleList::extrude(
             }
             const ColoredVertex* va;
             const ColoredVertex* vb;
-            if (source_vertices != nullptr) {
+            if (source_triangles != nullptr) {
                 auto it = edge_map.find(edge);
                 if (it == edge_map.end()) {
                     return;

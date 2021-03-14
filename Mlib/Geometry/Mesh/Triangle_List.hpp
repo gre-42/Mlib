@@ -92,7 +92,7 @@ public:
     static void extrude(
         TriangleList& dest,
         const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
-        const std::list<std::shared_ptr<TriangleList>>* source_vertices,
+        const std::list<std::shared_ptr<TriangleList>>* source_triangles,
         const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
         float height,
         float scale,
