@@ -486,6 +486,7 @@ OsmMapResource::OsmMapResource(
             config.raise_streets_amount);
     }
     std::set<OrderableFixedArray<float, 3>> boundary_vertices;
+    // Compute boundary vertices.
     if ((config.extrude_street_amount != 0) || (config.extrude_air_support_amount != 0))
     {
         std::set<OrderableFixedArray<float, 3>> terrain_vertices;
