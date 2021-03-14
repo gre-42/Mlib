@@ -709,7 +709,7 @@ void DrawStreets::draw_streets_draw_ways(
         ? b_entrance_type
         : c_entrance_type;
     const auto& wi = way_infos.at(angle_way.way_id);
-    if (false && (len0 != node_way_info.end()) &&
+    if ((len0 != node_way_info.end()) &&
         (len1 != node_way_info.end()))
     {
         rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, len0->second.way_length / scale * uv_scale, len1->second.way_length / scale * uv_scale, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type);
