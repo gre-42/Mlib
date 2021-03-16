@@ -140,11 +140,20 @@ public:
     TData min_distance(
         const FixedArray<TData, tndim>& p,
         const TData& max_distance,
-        const TComputeDistance& compute_distance) const
+        const TComputeDistance& compute_distance,
+        const TPayload** nearest_payload = nullptr) const
     {
         TData min_distance = INFINITY;
-        visit(BoundingSphere<TData, tndim>(p, max_distance), [&min_distance, &compute_distance](const TPayload& playload) {
-            min_distance = std::min(min_distance, compute_distance(playload));
+        visit(BoundingSphere<TData, tndim>(p, max_distance),
+            [&min_distance, &compute_distance, nearest_payload](const TPayload& playload)
+        {
+            TData dist = compute_distance(playload);
+            if (dist < min_distance) {
+                min_distance = dist;
+                if (nearest_payload != nullptr) {
+                    *nearest_payload = &playload;
+                }
+            }
             return true;
         });
         return min_distance;
