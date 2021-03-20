@@ -142,7 +142,6 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
         .textures = {primary_rendering_resources->get_blend_map_texture(config.air_support_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
         .occluder_type = OccluderType::WHITE,
-        .wrap_mode_s = curb_wrap_mode_s,
         .draw_distance_noperations = 1000}.compute_color_mode());
     tl_tunnel_crossing = std::make_shared<TriangleList>("tunnel_crossing", Material{
         .textures = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
