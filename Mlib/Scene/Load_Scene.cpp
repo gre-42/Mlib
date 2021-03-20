@@ -647,17 +647,28 @@ void LoadScene::operator()(
                     RoadStyle rs{.texture = fpath(value), .uvx = 1.f};
                     config.street_texture[rp] = rs;
                 }
+                else if (key == "wall_texture") {
+                    RoadProperties rp{.type=RoadType::WALL, .nlanes = 1};
+                    RoadStyle rs{.texture = fpath(value), .uvx = 1.f};
+                    config.street_texture[rp] = rs;
+                }
                 else if (key == "curb_street_texture") {
                     config.curb_street_texture[RoadType::STREET] = fpath(value);
                 }
                 else if (key == "curb_path_texture") {
                     config.curb_street_texture[RoadType::PATH] = fpath(value);
                 }
+                else if (key == "curb_wall_texture") {
+                    config.curb_street_texture[RoadType::WALL] = fpath(value);
+                }
                 else if (key == "curb2_street_texture") {
                     config.curb2_street_texture[RoadType::STREET] = fpath(value);
                 }
                 else if (key == "curb2_path_texture") {
                     config.curb2_street_texture[RoadType::PATH] = fpath(value);
+                }
+                else if (key == "curb2_wall_texture") {
+                    config.curb2_street_texture[RoadType::WALL] = fpath(value);
                 }
                 else if (key == "air_curb_street_texture") {
                     config.air_curb_street_texture[RoadType::STREET] = fpath(value);
@@ -840,6 +851,9 @@ void LoadScene::operator()(
                 }
                 else if (key == "extrude_air_support_amount") {
                     config.extrude_air_support_amount = safe_stof(value);
+                }
+                else if (key == "extrude_wall_amount") {
+                    config.extrude_wall_amount = safe_stof(value);
                 }
                 else if (key == "street_light_resource_names") {
                     config.street_light_resource_names = string_to_vector(value);

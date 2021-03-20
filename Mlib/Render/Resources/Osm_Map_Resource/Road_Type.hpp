@@ -8,7 +8,8 @@ namespace Mlib {
 
 enum class RoadType {
     PATH,
-    STREET
+    STREET,
+    WALL
 };
 
 inline std::string road_type_to_string(RoadType st) {
@@ -16,6 +17,8 @@ inline std::string road_type_to_string(RoadType st) {
         return "path";
     } else if (st == RoadType::STREET) {
         return "street";
+    } else if (st == RoadType::WALL) {
+        return "wall";
     } else {
         throw std::runtime_error("Unknown street type");
     }

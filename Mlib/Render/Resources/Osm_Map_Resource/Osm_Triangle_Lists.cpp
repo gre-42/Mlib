@@ -192,8 +192,15 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
 
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_street_wo_curb() const {
     auto res = std::list<std::shared_ptr<TriangleList>>{};
-    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
+    for (const auto& e : tl_street_crossing.map()) {if (e.first != RoadType::WALL) res.push_back(e.second);}
+    for (const auto& e : tl_street.list()) {if (e.road_properties.type != RoadType::WALL) res.push_back(e.styled_road.triangle_list);}
+    return res;
+}
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wall_wo_curb() const {
+    auto res = std::list<std::shared_ptr<TriangleList>>{};
+    for (const auto& e : tl_street_crossing.map()) {if (e.first == RoadType::WALL) res.push_back(e.second);}
+    for (const auto& e : tl_street.list()) {if (e.road_properties.type == RoadType::WALL) res.push_back(e.styled_road.triangle_list);}
     return res;
 }
 

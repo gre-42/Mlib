@@ -28,6 +28,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -123,6 +124,7 @@ OsmMapResource::OsmMapResource(
 
     OsmTriangleLists osm_triangle_lists{config};
     OsmTriangleLists air_triangle_lists{config};
+    OsmTriangleLists wall_triangle_lists{config};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
@@ -140,6 +142,7 @@ OsmMapResource::OsmMapResource(
         DrawStreets{DrawStreetsInput{
             osm_triangle_lists,
             air_triangle_lists,
+            wall_triangle_lists,
             resource_instance_positions_,
             object_resource_descriptors_,
             hitboxes_,
@@ -471,6 +474,17 @@ OsmMapResource::OsmMapResource(
                 config.uv_scale_street,
                 config.uv_scale_street);
         }
+    }
+    if (config.extrude_wall_amount != 0) {
+        TriangleList::extrude(
+            *osm_triangle_lists.tl_street[RoadProperties{.type = RoadType::WALL, .nlanes = 1}].triangle_list,
+            {osm_triangle_lists.tls_wall_wo_curb()},
+            nullptr,
+            nullptr,
+            config.extrude_wall_amount * config.scale,
+            config.scale,
+            config.uv_scale_street,
+            config.uv_scale_street);
     }
     if (std::isnan(config.extrude_air_curb_amount)) {
         raise_streets(

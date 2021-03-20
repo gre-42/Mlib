@@ -173,11 +173,16 @@ void DrawStreets::calculate_neighbors() {
                     nlanes = 4;
                 }
             }
-            RoadType road_type =
-                path_tags.contains(tags.at("highway")) ||
-                ((tags.find("lanes") != tags.end()) && tags.at("lanes") == "1")
-                    ? RoadType::PATH
-                    : RoadType::STREET;
+            RoadType road_type = RoadType::STREET;
+            if (path_tags.contains(tags.at("highway")) ||
+                ((tags.find("lanes") != tags.end()) && tags.at("lanes") == "1"))
+            {
+                road_type = RoadType::PATH;
+            }
+            if (tags.at("highway") == "wall")
+            {
+                road_type = RoadType::WALL;
+            }
             int layer = (tags.find("layer") == tags.end()) ? 0 : safe_stoi(tags.at("layer"));
             if ((layer != 0) && !layer_heights.is_within_range(layer)) {
                 continue;
@@ -299,16 +304,18 @@ void DrawStreets::draw_streets() {
                         // alpha is in [-1 .. +1]
                         lane_alpha = 0.25f * wi.curb_alpha;
                     }
-                    draw_streets_add_waypoints(
-                        rect,
-                        wi.curb_alpha,
-                        wi.curb2_alpha,
-                        it->second.nlanes,
-                        lane_alpha,
-                        sidewalk_alpha0,
-                        sidewalk_alpha1,
-                        na.first,
-                        it->second.neighbor_id);
+                    if (it->second.road_type != RoadType::WALL) {
+                        draw_streets_add_waypoints(
+                            rect,
+                            wi.curb_alpha,
+                            wi.curb2_alpha,
+                            it->second.nlanes,
+                            lane_alpha,
+                            sidewalk_alpha0,
+                            sidewalk_alpha1,
+                            na.first,
+                            it->second.neighbor_id);
+                    }
                     draw_streets_find_hole_waypoints(
                         rect,
                         na.first,
@@ -319,7 +326,7 @@ void DrawStreets::draw_streets() {
                         sidewalk_alpha0,
                         sidewalk_alpha1);
                 }
-                if (!street_lights.empty()) {
+                if ((it->second.road_type != RoadType::WALL) && (!street_lights.empty())) {
                     float radius = 10 * scale;
                     auto add_distant_point = [&](const FixedArray<float, 2>& p) {
                         bool p_found = !street_light_bvh.visit(BoundingSphere(p, radius), [&p_found](bool){return false;});
