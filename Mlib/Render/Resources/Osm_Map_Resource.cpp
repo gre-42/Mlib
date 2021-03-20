@@ -278,7 +278,7 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_barrier_wall,
             config.max_wall_width,
-            { config.barrier_texture});
+            { config.barrier_texture });
     }
 
     if (config.with_terrain) {

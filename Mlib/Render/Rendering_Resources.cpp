@@ -221,10 +221,10 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
 
     CHK(glGenTextures(1, &texture));
     CHK(glBindTexture(GL_TEXTURE_2D, texture));
-    if (descriptor.anisotropic_filtering_level != 0) {
+    if (desc.anisotropic_filtering_level != 0) {
         float aniso = 0.0f;
         CHK(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
-        aniso = std::min({ aniso, (float)descriptor.anisotropic_filtering_level, float(max_anisotropic_filtering_level_) });
+        aniso = std::min({ aniso, (float)desc.anisotropic_filtering_level, float(max_anisotropic_filtering_level_) });
         CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
     }
     StbInfo si0 = stb_load_texture(
