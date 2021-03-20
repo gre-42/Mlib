@@ -299,7 +299,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
                      si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
                      GL_UNSIGNED_BYTE,
                      si0.data.get()));
-    if (desc.color_mode == ColorMode::RGBA) {
+    if (si0.nrChannels == 4) {
         generate_rgba_mipmaps_inplace(si0);
     } else {
         CHK(glGenerateMipmap(GL_TEXTURE_2D));
