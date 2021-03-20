@@ -32,6 +32,7 @@ private:
 class RoadTypeTriangleList {
 public:
     void insert(RoadType road_type, const std::shared_ptr<TriangleList>& lst);
+    bool contains(RoadType road_type) const;
     const std::shared_ptr<TriangleList>& operator [] (RoadType road_type) const;
     const std::map<RoadType, std::shared_ptr<TriangleList>>& map() const;
 private:

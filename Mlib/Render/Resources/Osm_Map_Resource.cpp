@@ -438,15 +438,17 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_street,
             config.uv_scale_street);
-        TriangleList::extrude(
-            *air_triangle_lists.tl_street_curb[RoadType::PATH],
-            {air_triangle_lists.tl_street_curb[RoadType::PATH]},
-            nullptr,
-            nullptr,
-            config.extrude_air_curb_amount * config.scale,
-            config.scale,
-            config.uv_scale_street,
-            config.uv_scale_street);
+        if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
+            TriangleList::extrude(
+                *air_triangle_lists.tl_street_curb[RoadType::PATH],
+                {air_triangle_lists.tl_street_curb[RoadType::PATH]},
+                nullptr,
+                nullptr,
+                config.extrude_air_curb_amount * config.scale,
+                config.scale,
+                config.uv_scale_street,
+                config.uv_scale_street);
+        }
     }
     if (config.extrude_curb_amount != 0) {
         TriangleList::extrude(
@@ -458,15 +460,17 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_street,
             config.uv_scale_street);
-        TriangleList::extrude(
-            *osm_triangle_lists.tl_street_curb[RoadType::PATH],
-            {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
-            nullptr,
-            nullptr,
-            config.extrude_curb_amount * config.scale,
-            config.scale,
-            config.uv_scale_street,
-            config.uv_scale_street);
+        if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
+            TriangleList::extrude(
+                *osm_triangle_lists.tl_street_curb[RoadType::PATH],
+                {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
+                nullptr,
+                nullptr,
+                config.extrude_curb_amount * config.scale,
+                config.scale,
+                config.uv_scale_street,
+                config.uv_scale_street);
+        }
     }
     if (std::isnan(config.extrude_air_curb_amount)) {
         raise_streets(

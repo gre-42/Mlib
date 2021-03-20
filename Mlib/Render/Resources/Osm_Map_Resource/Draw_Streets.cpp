@@ -164,7 +164,7 @@ void DrawStreets::calculate_neighbors() {
             if (tags.find("lanes") != tags.end()) {
                 nlanes = safe_stou(tags.at("lanes"));
             } else {
-                float car_width = 2;
+                float car_width = 3;
                 if (width < 4 * car_width * scale) {
                     nlanes = 2;
                 } else {
@@ -402,6 +402,9 @@ void DrawStreets::draw_holes() {
     draw_air_holes(air_support_node_hole_contours, air_triangles.tl_air_support);
     draw_air_holes(tunnel_node_hole_contours, air_triangles.tl_tunnel_crossing);
     for (const auto& nh : node_hole_contours) {
+        if (nh.second.empty()) {
+            continue;
+        }
         Array<NodeHoleVertex> hv{ArrayShape{nh.second.size()}};
         {
             size_t i = 0;

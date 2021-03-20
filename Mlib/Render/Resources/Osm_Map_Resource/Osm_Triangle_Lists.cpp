@@ -38,6 +38,11 @@ void RoadTypeTriangleList::insert(RoadType road_type, const std::shared_ptr<Tria
         throw std::runtime_error("Could not insert triangle list");
     }
 }
+
+bool RoadTypeTriangleList::contains(RoadType road_type) const {
+    return lst_.find(road_type) != lst_.end();
+}
+
 const std::shared_ptr<TriangleList>& RoadTypeTriangleList::operator [] (RoadType road_type) const {
     auto it = lst_.find(road_type);
     if (it == lst_.end()) {
@@ -45,6 +50,7 @@ const std::shared_ptr<TriangleList>& RoadTypeTriangleList::operator [] (RoadType
     }
     return it->second;
 }
+
 const std::map<RoadType, std::shared_ptr<TriangleList>>& RoadTypeTriangleList::map() const {
     return lst_;
 }
