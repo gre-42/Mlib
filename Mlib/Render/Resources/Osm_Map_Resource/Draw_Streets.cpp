@@ -165,7 +165,9 @@ void DrawStreets::calculate_neighbors() {
                 nlanes = safe_stou(tags.at("lanes"));
             } else {
                 float car_width = 3;
-                if (width < 4 * car_width * scale) {
+                if (width < 2 * car_width * scale) {
+                    nlanes = 1;
+                } else if (width < 4 * car_width * scale) {
                     nlanes = 2;
                 } else {
                     nlanes = 4;
