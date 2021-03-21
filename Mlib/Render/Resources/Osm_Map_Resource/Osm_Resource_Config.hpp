@@ -62,6 +62,7 @@ struct OsmResourceConfig {
     float uv_scale_facade = 1;
     float uv_scale_ceiling = 1;
     float uv_scale_barrier_wall = 1;
+    float uv_scale_highway_wall = 1;
     bool with_roofs = true;
     bool with_ceilings = false;
     float building_bottom = -3;

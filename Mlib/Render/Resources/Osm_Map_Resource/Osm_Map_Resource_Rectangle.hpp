@@ -11,6 +11,7 @@ class TriangleList;
 struct ColoredVertex;
 enum class EntranceType;
 class HeightBinding;
+enum class RoadType;
 
 enum class RectangleOrientation {
     LEFT,
@@ -56,7 +57,8 @@ public:
         bool with_b_height_binding,
         bool with_c_height_binding,
         EntranceType b_entrance_type,
-        EntranceType c_entrance_type) const;
+        EntranceType c_entrance_type,
+        RoadType road_type) const;
     
     void draw(
         TriangleList& tl,

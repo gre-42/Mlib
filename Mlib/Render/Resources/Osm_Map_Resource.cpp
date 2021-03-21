@@ -481,8 +481,8 @@ OsmMapResource::OsmMapResource(
             nullptr,
             config.extrude_wall_amount * config.scale,
             config.scale,
-            config.uv_scale_street,
-            config.uv_scale_street);
+            1.f,
+            config.uv_scale_highway_wall);
     }
     if (std::isnan(config.extrude_air_curb_amount)) {
         raise_streets(

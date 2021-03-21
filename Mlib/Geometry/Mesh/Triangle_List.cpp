@@ -178,6 +178,10 @@ void TriangleList::extrude(
                 va = &t_old(a);
                 vb = &t_old(b);
             }
+            auto duv = FixedArray<float, 2>{height / scale * uv_scale_y, 0.f};
+            if (va->uv(0) != vb->uv(0)) {
+                duv = FixedArray<float, 2>{duv(1), duv(0)};
+            }
             // Already checked above:
             // (is_clamped(a) && is_clamped(b))
             if (is_clamped(a)) {
@@ -190,7 +194,7 @@ void TriangleList::extrude(
                     vb->color,
                     va->uv,
                     vb->uv,
-                    vb->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f});
+                    vb->uv + duv);
             } else if (is_clamped(b)) {
                 dest.draw_triangle_wo_normals(
                     va->position,
@@ -201,7 +205,7 @@ void TriangleList::extrude(
                     va->color,
                     va->uv,
                     vb->uv,
-                    va->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f});
+                    va->uv + duv);
             } else {
                 dest.draw_rectangle_wo_normals(
                     va->position,
@@ -214,8 +218,8 @@ void TriangleList::extrude(
                     va->color,
                     va->uv,
                     vb->uv,
-                    vb->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f},
-                    va->uv + FixedArray<float, 2>{height / scale * uv_scale_y, 0.f});
+                    vb->uv + duv,
+                    va->uv + duv);
             }
         };
         for (size_t i = 0; i < 3; ++i) {

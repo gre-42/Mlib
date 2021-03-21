@@ -4,6 +4,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 
 using namespace Mlib;
 
@@ -61,7 +62,8 @@ void Rectangle::draw_z0(
     bool with_b_height_binding,
     bool with_c_height_binding,
     EntranceType b_entrance_type,
-    EntranceType c_entrance_type) const
+    EntranceType c_entrance_type,
+    RoadType road_type) const
 {
     CurbedStreet cs{*this, start, stop};
 
@@ -86,6 +88,12 @@ void Rectangle::draw_z0(
         entrances[c_entrance_type].insert(OrderableFixedArray{cs.s11});
     }
 
+    typedef FixedArray<float, 2> V2;
+    auto swp = [road_type](const FixedArray<float, 2>&uv ) {
+        return road_type == RoadType::WALL
+            ? V2{uv(1), uv(0)}
+            : uv;
+    };
     tl_road.draw_rectangle_wo_normals(
         FixedArray<float, 3>{cs.s00(0), cs.s00(1), 0.f},
         FixedArray<float, 3>{cs.s01(0), cs.s01(1), 0.f},
@@ -95,10 +103,10 @@ void Rectangle::draw_z0(
         /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
         /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
         /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color,
-        orientation >= RectangleOrientation::CENTER ? FixedArray<float, 2>{uv1_x, uv1_y} : FixedArray<float, 2>{uv0_x, uv0_y},
-        orientation >= RectangleOrientation::CENTER ? FixedArray<float, 2>{uv0_x, uv1_y} : FixedArray<float, 2>{uv1_x, uv0_y},
-        orientation >= RectangleOrientation::CENTER ? FixedArray<float, 2>{uv0_x, uv0_y} : FixedArray<float, 2>{uv1_x, uv1_y},
-        orientation >= RectangleOrientation::CENTER ? FixedArray<float, 2>{uv1_x, uv0_y} : FixedArray<float, 2>{uv0_x, uv1_y});
+        swp(orientation >= RectangleOrientation::CENTER ? V2{uv1_x, uv1_y} : V2{uv0_x, uv0_y}),
+        swp(orientation >= RectangleOrientation::CENTER ? V2{uv0_x, uv1_y} : V2{uv1_x, uv0_y}),
+        swp(orientation >= RectangleOrientation::CENTER ? V2{uv0_x, uv0_y} : V2{uv1_x, uv1_y}),
+        swp(orientation >= RectangleOrientation::CENTER ? V2{uv1_x, uv0_y} : V2{uv0_x, uv1_y}));
 
     if (b_entrance_type != EntranceType::NONE && c_entrance_type != EntranceType::NONE) {
         throw std::runtime_error("Detected duplicate entrance types");
