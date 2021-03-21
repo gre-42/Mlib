@@ -346,7 +346,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (orthographic) {
             sstr << "    norm *= sign(dot(norm, viewDir));" << std::endl;
         } else {
-            sstr << "    norm *= sign(dot(norm, viewPos - FragPos));" << std::endl;
+            // From: https://stackoverflow.com/questions/2523439/ipad-glsl-from-within-a-fragment-shader-how-do-i-get-the-surface-not-vertex
+            sstr << "    vec3 normalvector = cross(dFdx(FragPos), dFdy(FragPos));" << std::endl;
+            sstr << "    vec3 nv = normalvector * sign(dot(norm, normalvector));" << std::endl;
+            sstr << "    norm *= sign(dot(nv, viewPos - FragPos));" << std::endl;
         }
     }
     if (ntextures_color > 1) {
