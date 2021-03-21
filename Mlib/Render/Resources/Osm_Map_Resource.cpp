@@ -124,7 +124,6 @@ OsmMapResource::OsmMapResource(
 
     OsmTriangleLists osm_triangle_lists{config};
     OsmTriangleLists air_triangle_lists{config};
-    OsmTriangleLists wall_triangle_lists{config};
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
@@ -142,7 +141,6 @@ OsmMapResource::OsmMapResource(
         DrawStreets{DrawStreetsInput{
             osm_triangle_lists,
             air_triangle_lists,
-            wall_triangle_lists,
             resource_instance_positions_,
             object_resource_descriptors_,
             hitboxes_,
