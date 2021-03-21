@@ -94,8 +94,8 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     for (const auto& s : config.street_crossing_texture) {
         tl_street_crossing.insert(s.first, std::make_shared<TriangleList>(road_type_to_string(s.first), Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
-            .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-            .occluder_type = OccluderType::WHITE,
+            .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
+            .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
             .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
             .draw_distance_noperations = 1000}.compute_color_mode()));
     }
@@ -107,8 +107,8 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                     .continuous_blending_z_order = config.blend_street ? 1 : 0,
                     .blend_mode = config.blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
                     .textures = {primary_rendering_resources->get_blend_map_texture(s.second.texture)},
-                    .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-                    .occluder_type = OccluderType::WHITE,
+                    .occluded_type = (s.first.type != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
+                    .occluder_type = (s.first.type != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
                     .depth_func_equal = config.blend_street,
                     .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
                     .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
@@ -119,8 +119,8 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     for (const auto& s : config.curb_street_texture) {
         tl_street_curb.insert(s.first, std::make_shared<TriangleList>("curb_" + road_type_to_string(s.first), Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
-            .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-            .occluder_type = OccluderType::WHITE,
+            .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
+            .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
             .wrap_mode_s = curb_wrap_mode_s,
             .specularity = OrderableFixedArray{fixed_full<float, 3>((float)(config.extrude_curb_amount == 0 && s.first != RoadType::WALL))},
             .draw_distance_noperations = 1000}.compute_color_mode())); // mixed_texture: terrain_texture
@@ -128,8 +128,8 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     for (const auto& s : config.curb2_street_texture) {
         tl_street_curb2.insert(s.first, std::make_shared<TriangleList>("curb2_" + road_type_to_string(s.first), Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
-            .occluded_type = OccludedType::LIGHT_MAP_COLOR,
-            .occluder_type = OccluderType::WHITE,
+            .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
+            .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
             .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
             .draw_distance_noperations = 1000}.compute_color_mode())); // mixed_texture: terrain_texture
     }
