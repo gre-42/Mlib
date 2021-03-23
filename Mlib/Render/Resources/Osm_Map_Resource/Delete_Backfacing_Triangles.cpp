@@ -15,10 +15,10 @@ void Mlib::delete_backfacing_triangles(
         l->delete_backfacing_triangles(debug_filename.empty() ? nullptr : &deleted_triangles);
     }
     if (!deleted_triangles.empty()) {
-        std::set<OrderableFixedArray<float, 3>> highlighted_nodes;
+        std::set<OrderableFixedArray<float, 3>> crossed_nodes;
         for (const auto& t : deleted_triangles) {
             for (const auto& v : t.flat_iterable()) {
-                highlighted_nodes.insert(OrderableFixedArray{v.position});
+                crossed_nodes.insert(OrderableFixedArray{v.position});
             }
         }
         std::list<const FixedArray<ColoredVertex, 3>*> good_triangles;
@@ -33,7 +33,8 @@ void Mlib::delete_backfacing_triangles(
             0,                       // point_size
             good_triangles,          // triangles
             {},                      // contour
-            std::list<FixedArray<float, 3>>(highlighted_nodes.begin(), highlighted_nodes.end()))
+            {},
+            std::list<FixedArray<float, 3>>(crossed_nodes.begin(), crossed_nodes.end()))
         .save_to_file(debug_filename);
     }
 }
