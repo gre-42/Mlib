@@ -22,6 +22,16 @@ PpmImage::PpmImage(const Array<Rgb24>& other)
 PpmImage::PpmImage(const ArrayShape& shape)
     : Array<Rgb24>(shape) {}
 
+PpmImage PpmImage::T() const {
+    const Array<Rgb24>& t = *this;
+    return PpmImage(t.T());
+}
+
+PpmImage PpmImage::reversed(size_t axis) const {
+    const Array<Rgb24>& t = *this;
+    return PpmImage(t.reversed());
+}
+
 void PpmImage::draw_fill_rect(const ArrayShape& center, size_t size, const Rgb24& color) {
     Mlib::draw_fill_rect(*this, center, size, color);
 }

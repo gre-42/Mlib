@@ -663,6 +663,15 @@ public:
         }
         return result;
     }
+    Array reversed(size_t axis) const {
+        return apply_over_axis(axis, ApplyOverAxisType::NOREDUCE,
+            [&, this](size_t i, size_t k, const Array<TData>& xf, Array<TData>& rf)
+            {
+                for (size_t h = 0; h < shape(axis); ++h) {
+                    rf(i, h, k) = xf(i, shape(axis) - 1 - h, k);
+                }
+            });
+    }
     std::string str() const {
         std::stringstream sstr;
         sstr << *this;

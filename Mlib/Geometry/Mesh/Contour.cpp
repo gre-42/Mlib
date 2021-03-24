@@ -18,7 +18,7 @@ std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, {}, {edge.first, edge.second});
                 const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
                 if (debug_filename != nullptr) {
-                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {edge.first, edge.second}).save_to_file(debug_filename);
+                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {edge.first, edge.second}).T().reversed(0).save_to_file(debug_filename);
                     throw std::runtime_error("Detected duplicate edge, debug image saved");
                 } else {
                     throw std::runtime_error("Detected duplicate edge, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
@@ -62,7 +62,7 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                 if (!neighbors.insert(v).second) {
                     const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
                     if (debug_filename != nullptr) {
-                        plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {v.first, v.second}).save_to_file(debug_filename);
+                        plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {v.first, v.second}).T().reversed(0).save_to_file(debug_filename);
                         throw std::runtime_error("Contour neighbor already set, debug image saved");
                     } else {
                         throw std::runtime_error("Contour neighbor already set, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
