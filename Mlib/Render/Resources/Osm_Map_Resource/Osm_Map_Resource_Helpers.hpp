@@ -139,14 +139,20 @@ void draw_roofs(
     float z0,
     float z1);
 
-void draw_ceilings(
+enum class DrawBuildingPartType {
+    CEILING,
+    GROUND
+};
+
+void draw_buildings_ceiling_or_ground(
     std::list<std::shared_ptr<TriangleList>>& tls,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
     float uv_scale,
-    float max_width);
+    float max_width,
+    DrawBuildingPartType tpe);
 
 //class PolygonDrawer {
 //public:
@@ -296,7 +302,7 @@ void compute_building_area(
 
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
-    std::list<SteinerPointInfo>& steiner_points,
+    std::list<SteinerPointInfo>* steiner_points,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,

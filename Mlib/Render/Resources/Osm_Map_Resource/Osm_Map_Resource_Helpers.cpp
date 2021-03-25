@@ -47,12 +47,12 @@ static std::list<FixedArray<float, 2>> smooth_way(
             auto p0 = nodes.at(*it).position;
             auto p1 = nodes.at(*s).position;
             float width = std::sqrt(sum(squared(p0 - p1)));
-            auto refined = linspace(0.f, 1.f, std::max(2, int(width / scale / max_width))).flat_iterable();
+            auto refined = linspace_multipliers<float>(std::max(2, int(width / scale / max_width))).flat_iterable();
             for (auto a = refined.begin(); a != refined.end(); ++a) {
                 auto b = a;
                 ++b;
                 if (b != refined.end() || &*s == &nd.back()) {
-                    auto pp0 = (1 - *a) * p0 + (*a) * p1;
+                    auto pp0 = a->first * p0 + a->second * p1;
                     result.push_back(pp0);
                 }
             }
@@ -359,14 +359,15 @@ void Mlib::draw_roofs(
     }
 }
 
-void Mlib::draw_ceilings(
+void Mlib::draw_buildings_ceiling_or_ground(
     std::list<std::shared_ptr<TriangleList>>& tls,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
     float uv_scale,
-    float max_width)
+    float max_width,
+    DrawBuildingPartType tpe)
 {
     for (const auto& bu : buildings) {
         if (bu.way.nd.empty()) {
@@ -375,6 +376,12 @@ void Mlib::draw_ceilings(
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {
             throw std::runtime_error("Building " + bu.id + ": outline not closed");
+        }
+        if ((tpe == DrawBuildingPartType::GROUND) &&
+            bu.way.tags.contains("layer") &&
+            (safe_stoi(bu.way.tags.at("layer")) != 0))
+        {
+            continue;
         }
         auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
         std::vector<FixedArray<float, 2>> outline;
@@ -398,7 +405,7 @@ void Mlib::draw_ceilings(
             {},
             scale,
             uv_scale,
-            bu.building_top,
+            tpe == DrawBuildingPartType::CEILING ? bu.building_top : 0,
             parse_color(bu.way.tags, "color", building_color));
     }
 }
@@ -934,7 +941,7 @@ void Mlib::compute_building_area(
 
 void Mlib::draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
-    std::list<SteinerPointInfo>& steiner_points,
+    std::list<SteinerPointInfo>* steiner_points,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
@@ -962,10 +969,12 @@ void Mlib::draw_building_walls(
                 const auto& p1 = bu.area > 0 ? *it : *s;
                 float width = std::sqrt(sum(squared(p0 - p1)));
                 float height = (bu.building_top - bu.building_bottom) * scale;
-                steiner_points.push_back({
-                    .position = {p0(0), p0(1), 0.f},
-                    .type = SteinerPointType::WALL,
-                    .distance_to_road = NAN});
+                if (steiner_points != nullptr) {
+                    steiner_points->push_back({
+                        .position = {p0(0), p0(1), 0.f},
+                        .type = SteinerPointType::WALL,
+                        .distance_to_road = NAN});
+                }
                 // some buildings are clock-wise, others counter-clock-wise
                 tls.back()->draw_rectangle_wo_normals(
                     {p1(0), p1(1), bu.building_bottom * scale},

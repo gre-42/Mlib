@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Mesh/Triangles_Around.cpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
@@ -34,6 +35,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -174,6 +176,35 @@ OsmMapResource::OsmMapResource(
         }};
     }
 
+    if (config.with_buildings) {
+        LOG_INFO("draw_building_walls (facade)");
+        draw_building_walls(
+            tls_buildings,
+            nullptr,            // Steiner points not required due to existance of ground triangles.
+            Material{
+                .occluder_type = OccluderType::BLACK,
+                .aggregate_mode = AggregateMode::ONCE,
+                .ambience = {1.f, 1.f, 1.f},
+                .specularity = {0.f, 0.f, 0.f},
+                .draw_distance_noperations = 1000},
+            buildings,
+            nodes,
+            config.scale,
+            config.uv_scale_facade,
+            config.max_wall_width,
+            config.facade_textures);
+        LOG_INFO("draw building ground");
+        draw_buildings_ceiling_or_ground(
+            osm_triangle_lists.tls_buildings_ground,
+            Material(),
+            buildings,
+            nodes,
+            config.scale,
+            config.uv_scale_ceiling,
+            config.max_wall_width,
+            DrawBuildingPartType::GROUND);
+    }
+
     auto hole_triangles = osm_triangle_lists.hole_triangles();
     StreetBvh ground_steet_bvh{hole_triangles};
 
@@ -243,30 +274,11 @@ OsmMapResource::OsmMapResource(
             nodes,
             config.scale);
     }
-
-    if (config.with_buildings) {
-        LOG_INFO("draw_building_walls (facade)");
-        draw_building_walls(
-            tls_buildings,
-            steiner_points,
-            Material{
-                .occluder_type = OccluderType::BLACK,
-                .aggregate_mode = AggregateMode::ONCE,
-                .ambience = {1.f, 1.f, 1.f},
-                .specularity = {0.f, 0.f, 0.f},
-                .draw_distance_noperations = 1000},
-            buildings,
-            nodes,
-            config.scale,
-            config.uv_scale_facade,
-            config.max_wall_width,
-            config.facade_textures);
-    }
     {
         LOG_INFO("draw_building_walls (barrier)");
         draw_building_walls(
             tls_wall_barriers,
-            steiner_points,
+            &steiner_points,
             Material{
                 .blend_mode = config.barrier_blend_mode,
                 .occluder_type = OccluderType::BLACK,
@@ -292,7 +304,23 @@ OsmMapResource::OsmMapResource(
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
-        // plot_mesh(ArrayShape{2000, 2000}, 1, 4, osm_triangle_lists.tl_street->get_triangles_around({2.95704f, -0.783734f}, 0.5f), {}, {{2.95704f, -0.783734f, 0.f}}).save_to_file("/tmp/plt.pgm");
+        if (const char* filename = getenv("MESH_AROUND_FILENAME"); filename != nullptr) {
+            float x = safe_stof(getenv("MESH_AROUND_X"));
+            float y = safe_stof(getenv("MESH_AROUND_Y"));
+            float r = safe_stof(getenv("MESH_AROUND_RADIUS"));
+            plot_mesh(                         
+                ArrayShape{2000, 2000}, // image_size
+                1,                      // line_thickness
+                4,                      // point_size
+                get_triangles_around(   // triangles
+                    hole_triangles,
+                    {x, y},
+                    r),
+                {},                     // contour
+                {{x, y, 0.f}},          // highlighted_nodes
+                {}                      // crossed_nodes
+                ).T().reversed(0).save_to_file(filename);
+        }
         // {
         //     std::list<const FixedArray<ColoredVertex, 3>*> tf;
         //     for (auto& t : hole_triangles) {
@@ -359,7 +387,7 @@ OsmMapResource::OsmMapResource(
     }
     if (config.with_ceilings) {
         LOG_INFO("draw_ceilings");
-        draw_ceilings(
+        draw_buildings_ceiling_or_ground(
             tls_buildings,
             Material{
                 .textures = {{.texture_descriptor = {.color = config.ceiling_texture}}},
@@ -372,7 +400,8 @@ OsmMapResource::OsmMapResource(
             nodes,
             config.scale,
             config.uv_scale_ceiling,
-            config.max_wall_width);
+            config.max_wall_width,
+            DrawBuildingPartType::CEILING);
     }
     if (config.remove_backfacing_triangles) {
         LOG_INFO("remove_backfacing_triangles");

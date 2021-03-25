@@ -57,6 +57,7 @@ struct OsmTriangleLists {
     std::map<EntranceType, std::shared_ptr<TriangleList>> tl_entrance;
     std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>> entrances;
     std::shared_ptr<TriangleList> tl_water;
+    std::list<std::shared_ptr<TriangleList>> tls_buildings_ground;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_wall_wo_curb() const;

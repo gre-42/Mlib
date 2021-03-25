@@ -382,19 +382,6 @@ void TriangleList::smoothen_edges(
     }
 }
 
-std::list<const FixedArray<ColoredVertex, 3>*> TriangleList::get_triangles_around(const FixedArray<float, 2>& pt, float radius) const {
-    std::list<const FixedArray<ColoredVertex, 3>*> tf;
-    for (const auto& t : triangles_) {
-        FixedArray<float, 2> a{t(0).position(0), t(0).position(1)};
-        FixedArray<float, 2> b{t(1).position(0), t(1).position(1)};
-        FixedArray<float, 2> c{t(2).position(0), t(2).position(1)};
-        if (distance_point_to_triangle(pt, a, b, c) < radius) {
-            tf.push_back(&t);
-        }
-    }
-    return tf;
-}
-
 std::shared_ptr<ColoredVertexArray> TriangleList::triangle_array() const {
     return std::make_shared<ColoredVertexArray>(
         name_,

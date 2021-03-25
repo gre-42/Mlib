@@ -358,6 +358,13 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_crossing_only() c
         e.styled_road.triangle_list->triangles_.begin(), \
         e.styled_road.triangle_list->triangles_.end()); \
 }
+#define INSERT4(a) for (const auto& e : a) { \
+    result.insert( \
+        result.end(), \
+        e->triangles_.begin(), \
+        e->triangles_.end()); \
+}
+
 std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::hole_triangles() const {
     std::list<FixedArray<ColoredVertex, 3>> result;
     INSERT2(tl_street_crossing);
@@ -366,6 +373,7 @@ std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::hole_triangles() const
     INSERT2(tl_street_curb2);
     INSERT(tl_entrance.at(EntranceType::TUNNEL));
     INSERT(tl_entrance.at(EntranceType::BRIDGE));
+    INSERT4(tls_buildings_ground);
     return result;
 }
 

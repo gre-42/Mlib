@@ -114,7 +114,6 @@ public:
         size_t niterations,
         bool move_only_z = false,
         float decay = 0.97);
-    std::list<const FixedArray<ColoredVertex, 3>*> get_triangles_around(const FixedArray<float, 2>& pt, float radius) const;
     std::shared_ptr<ColoredVertexArray> triangle_array() const;
     std::string name_;
     Material material_;
