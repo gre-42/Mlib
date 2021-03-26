@@ -36,6 +36,7 @@
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/String.hpp>
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -304,22 +305,25 @@ OsmMapResource::OsmMapResource(
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
-        if (const char* filename = getenv("MESH_AROUND_FILENAME"); filename != nullptr) {
-            float x = safe_stof(getenv("MESH_AROUND_X"));
-            float y = safe_stof(getenv("MESH_AROUND_Y"));
-            float r = safe_stof(getenv("MESH_AROUND_RADIUS"));
-            plot_mesh(                         
-                ArrayShape{2000, 2000}, // image_size
-                1,                      // line_thickness
-                4,                      // point_size
-                get_triangles_around(   // triangles
-                    hole_triangles,
-                    {x, y},
-                    r),
-                {},                     // contour
-                {{x, y, 0.f}},          // highlighted_nodes
-                {}                      // crossed_nodes
-                ).T().reversed(0).save_to_file(filename);
+        if (const char* prefix = getenv("MESH_AROUND_PREFIX"); prefix != nullptr) {
+            std::vector<float> coords = string_to_vector(getenv("MESH_AROUND_POS"), safe_stof);
+            if (coords.size() != 2) {
+                throw std::runtime_error("MESH_AROUND_POS does not have length 2");
+            }
+            for (float r : string_to_vector(getenv("MESH_AROUND_RADIUSES"), safe_stof)) {
+                plot_mesh(                         
+                    ArrayShape{2000, 2000},         // image_size
+                    1,                              // line_thickness
+                    4,                              // point_size
+                    get_triangles_around(           // triangles
+                        hole_triangles,
+                        {coords[0], coords[1]},
+                        r),
+                    {},                             // contour
+                    {{coords[0], coords[1], 0.f}},  // highlighted_nodes
+                    {}                              // crossed_nodes
+                    ).T().reversed(0).save_to_file(std::string(prefix) + "_r_" + std::to_string(r) + ".ppm");
+            }
         }
         // {
         //     std::list<const FixedArray<ColoredVertex, 3>*> tf;
