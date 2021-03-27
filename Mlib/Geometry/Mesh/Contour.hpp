@@ -8,6 +8,11 @@ namespace Mlib {
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
 
+enum class ContourDetectionStrategy {
+    NODE_NEIGHBOR,
+    EDGE_NEIGHBOR
+};
+
 std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
     find_contour_edges(const std::list<const FixedArray<ColoredVertex, 3>*>& triangles);
 
@@ -15,10 +20,12 @@ std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>
     find_contour_edges(const std::list<FixedArray<ColoredVertex, 3>*>& triangles);
 
 std::list<std::list<FixedArray<float, 3>>> find_contours(
-    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles);
+    const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
+    ContourDetectionStrategy strategy);
 
 std::list<std::list<FixedArray<float, 3>>> find_contours(
-    const std::list<FixedArray<ColoredVertex, 3>>& triangles);
+    const std::list<FixedArray<ColoredVertex, 3>>& triangles,
+    ContourDetectionStrategy strategy);
 
 template <class TPoint, class TTriangle>
 void delete_triangles_outside_contour(
@@ -27,6 +34,7 @@ void delete_triangles_outside_contour(
 {
     using O = TPoint;
 
+    // Convert contour path to edges, asserting that the contour is closed.
     std::set<std::pair<O, O>> contour_edges;
     for (auto it = contour.begin(); it != contour.end(); ++it) {
         auto s = it;
@@ -38,6 +46,8 @@ void delete_triangles_outside_contour(
             O{*it},
             O{s == contour.end() ? contour.front() : *s}));
     }
+    // Delete outsider triangles touching a contour,
+    // and add their vertices to the "outer_vertices" set.
     std::set<O> contour_vertices{contour.begin(), contour.end()};
     std::set<O> outer_vertices;
     for (auto it = triangles.begin(); it != triangles.end(); ) {
@@ -54,6 +64,9 @@ void delete_triangles_outside_contour(
             triangles.erase(s);
         }
     }
+    // Add all vertices touching an outsider vertex
+    // to the "outer_vertices" set,
+    // and loop until nothing changes.
     while(true) {
         size_t old_size = outer_vertices.size();
         for (auto& t : triangles) {
@@ -71,6 +84,7 @@ void delete_triangles_outside_contour(
             break;
         }
     }
+    // Delete all triangles containing an outer vertex.
     for (auto it = triangles.begin(); it != triangles.end(); ) {
         auto s = it++;
         if (outer_vertices.find(O{(*s)(0)}) != outer_vertices.end() ||

@@ -71,7 +71,7 @@ void Mlib::triangulate_terrain_or_ceilings(
                 &p2t_nodes[p2t_nodes.size() - 1]});
         }
     }
-    auto hole_contours = find_contours(hole_triangles);
+    auto hole_contours = find_contours(hole_triangles, ContourDetectionStrategy::EDGE_NEIGHBOR);
 
     std::vector<std::vector<p2t::Point>> p2t_hole_nodes;
     p2t_hole_nodes.reserve(hole_contours.size());

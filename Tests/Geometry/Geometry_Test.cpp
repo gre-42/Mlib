@@ -52,6 +52,24 @@ void test_contour() {
     assert_true(triangles.size() == 0);
 }
 
+void test_contour2() {
+    OrderableFixedArray<float, 2> v00{FixedArray<float, 2>{0.f, 0.f}};
+    OrderableFixedArray<float, 2> v10{FixedArray<float, 2>{1.f, 0.f}};
+    OrderableFixedArray<float, 2> v11{FixedArray<float, 2>{1.f, 1.f}};
+    OrderableFixedArray<float, 2> v01{FixedArray<float, 2>{0.f, 1.f}};
+    std::list<FixedArray<OrderableFixedArray<float, 2>, 3>> triangles{
+        {v00, v01, v11},
+        {v00, v11, v10}};
+    std::list<FixedArray<ColoredVertex, 3>> otriangles;
+    for (const auto& t : triangles) {
+        otriangles.push_back(FixedArray<ColoredVertex, 3>{
+            ColoredVertex{.position = {t(0)(0), t(0)(1), 0.f}},
+            ColoredVertex{.position = {t(1)(0), t(1)(1), 0.f}},
+            ColoredVertex{.position = {t(2)(0), t(2)(1), 0.f}}});
+    }
+    find_contours(otriangles, ContourDetectionStrategy::EDGE_NEIGHBOR);
+}
+
 void test_invert_scaled_4x4() {
     auto R = tait_bryan_angles_2_matrix<float>({3.f, 2.f, 4.f});
     auto t = FixedArray<float, 3>{5, 1, 2};
@@ -283,6 +301,7 @@ int main(int argc, const char** argv) {
 
     test_cross();
     test_contour();
+    test_contour2();
     // test_octree();
     test_invert_scaled_4x4();
     test_intersect_lines();
