@@ -46,7 +46,8 @@ TData distance_point_to_triangle (
         FixedArray<TData, 2> dl = transform_to_line_coordinates(pt, a, b);
         if (dl(1) >= 0) {
             is_inside = false;
-            if ((dl(0) >= 0) && (dl(0) <= 1)) {
+            // Using "< 1" instead of "<= 1" to support pt=v1 or pt=v2 or pt=v3.
+            if ((dl(0) >= 0) && (dl(0) < 1)) {
                 if (!std::isnan(result_edge)) {
                     throw std::runtime_error("distance_point_to_triangle detected left-handed triangle");
                 }
