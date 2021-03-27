@@ -60,7 +60,7 @@ void test_contour2() {
     std::list<FixedArray<OrderableFixedArray<float, 2>, 3>> triangles{
         {v00, v01, v11},
         {v00, v11, v10}};
-    std::list<FixedArray<ColoredVertex, 3>> otriangles;
+    std::vector<FixedArray<ColoredVertex, 3>> otriangles;
     for (const auto& t : triangles) {
         otriangles.push_back(FixedArray<ColoredVertex, 3>{
             ColoredVertex{.position = {t(0)(0), t(0)(1), 0.f}},
@@ -73,7 +73,8 @@ void test_contour2() {
             ColoredVertex{.position = {t(1)(0) + 1.f, t(1)(1), 0.f}},
             ColoredVertex{.position = {t(2)(0) + 1.f, t(2)(1), 0.f}}});
     }
-    find_contours(otriangles, ContourDetectionStrategy::EDGE_NEIGHBOR);
+    std::swap(otriangles[1], otriangles[2]);
+    find_contours(std::list(otriangles.begin(), otriangles.end()), ContourDetectionStrategy::EDGE_NEIGHBOR);
 }
 
 void test_invert_scaled_4x4() {
