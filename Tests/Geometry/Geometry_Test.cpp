@@ -67,6 +67,12 @@ void test_contour2() {
             ColoredVertex{.position = {t(1)(0), t(1)(1), 0.f}},
             ColoredVertex{.position = {t(2)(0), t(2)(1), 0.f}}});
     }
+    for (const auto& t : triangles) {
+        otriangles.push_back(FixedArray<ColoredVertex, 3>{
+            ColoredVertex{.position = {t(0)(0) + 1.f, t(0)(1), 0.f}},
+            ColoredVertex{.position = {t(1)(0) + 1.f, t(1)(1), 0.f}},
+            ColoredVertex{.position = {t(2)(0) + 1.f, t(2)(1), 0.f}}});
+    }
     find_contours(otriangles, ContourDetectionStrategy::EDGE_NEIGHBOR);
 }
 

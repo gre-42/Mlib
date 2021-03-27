@@ -105,33 +105,55 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
         std::map<std::pair<O, O>, O> edge_neighbors;
         std::map<std::pair<O, O>, std::pair<O, O>> parent_edges;
         for (const auto& t : triangles) {
-            auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles](size_t a, size_t b, size_t c) {
-                auto ep = std::make_pair(O((*t)(c).position), O((*t)(a).position));
-                auto en = std::make_pair(O((*t)(a).position), O((*t)(b).position));
-                auto ei = std::make_pair(O((*t)(b).position), O((*t)(a).position));
-                std::cerr << std::endl;
-                std::cerr << "insert " << en.first << " | " << en.second << std::endl;
-                auto it = edge_neighbors.find(ei);
-                if (it == edge_neighbors.end()) {
-                    if (!edge_neighbors.insert({en, O((*t)(c).position)}).second) {
-                        const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
-                        if (debug_filename != nullptr) {
-                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {en.first, en.second, (*t)(c).position}).T().reversed(0).save_to_file(debug_filename);
-                            throw std::runtime_error("Detected duplicate edge (0), debug image saved");
-                        } else {
-                            throw std::runtime_error("Detected duplicate edge (0), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+            auto it0 = edge_neighbors.find({O((*t)(1).position), O((*t)(0).position)});
+            auto it1 = edge_neighbors.find({O((*t)(2).position), O((*t)(1).position)});
+            auto it2 = edge_neighbors.find({O((*t)(0).position), O((*t)(2).position)});
+            unsigned int nedges =
+                (unsigned int)(it0 != edge_neighbors.end()) +
+                (unsigned int)(it1 != edge_neighbors.end()) +
+                (unsigned int)(it2 != edge_neighbors.end());
+            if (nedges == 0) {
+                auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles](size_t a, size_t b, size_t c) {
+                    auto ep = std::make_pair(O((*t)(c).position), O((*t)(a).position));
+                    auto en = std::make_pair(O((*t)(a).position), O((*t)(b).position));
+                    auto ei = std::make_pair(O((*t)(b).position), O((*t)(a).position));
+                    std::cerr << std::endl;
+                    std::cerr << "insert " << en.first << " | " << en.second << std::endl;
+                    auto it = edge_neighbors.find(ei);
+                    if (it == edge_neighbors.end()) {
+                        if (!edge_neighbors.insert({en, O((*t)(c).position)}).second) {
+                            const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
+                            if (debug_filename != nullptr) {
+                                plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {en.first, en.second, (*t)(c).position}).T().reversed(0).save_to_file(debug_filename);
+                                throw std::runtime_error("Detected duplicate edge (0), debug image saved");
+                            } else {
+                                throw std::runtime_error("Detected duplicate edge (0), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                            }
+                        }
+                        if (!parent_edges.insert({en, ep}).second) {
+                            const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
+                            if (debug_filename != nullptr) {
+                                plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {en.first, en.second, (*t)(c).position}).T().reversed(0).save_to_file(debug_filename);
+                                throw std::runtime_error("Could not set parent edge (1), debug image saved");
+                            } else {
+                                throw std::runtime_error("Could not set parent edge (1), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                            }
                         }
                     }
-                    if (!parent_edges.insert({en, ep}).second) {
-                        const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
-                        if (debug_filename != nullptr) {
-                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {en.first, en.second, (*t)(c).position}).T().reversed(0).save_to_file(debug_filename);
-                            throw std::runtime_error("Could not set parent edge (1), debug image saved");
-                        } else {
-                            throw std::runtime_error("Could not set parent edge (1), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
-                        }
+                    for (const auto& e : edge_neighbors) {
+                        std::cerr << "e " << e.first.first << " | " << e.first.second << " -> " << e.second << std::endl;
                     }
-                } else {
+                };
+                safe_insert_neighbor(0, 1, 2);
+                safe_insert_neighbor(1, 2, 0);
+                safe_insert_neighbor(2, 0, 1);
+            } else if (nedges == 1) {
+                auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles](size_t a, size_t b, size_t c) {
+                    auto en = std::make_pair(O((*t)(a).position), O((*t)(b).position));
+                    auto ei = std::make_pair(O((*t)(b).position), O((*t)(a).position));
+                    std::cerr << std::endl;
+                    std::cerr << "insert " << en.first << " | " << en.second << std::endl;
+                    auto it = edge_neighbors.find(ei);
                     auto old = it->second;
                     edge_neighbors.erase(it);
                     auto pit = parent_edges.find(ei);
@@ -147,29 +169,45 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                             throw std::runtime_error("Detected duplicate edge (2), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
                         }
                     }
-                    auto e1 = std::make_pair(O((*t)(c).position), O((*t)(a).position));
-                    if (!edge_neighbors.insert({e1, O(old)}).second) {
+                    auto e_bc = std::make_pair(O((*t)(b).position), O((*t)(c).position));
+                    if (!edge_neighbors.insert({e_bc, O((*t)(a).position)}).second) {
                         const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
                         if (debug_filename != nullptr) {
-                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {en.first, en.second, e1.first}).T().reversed(0).save_to_file(debug_filename);
+                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {en.first, en.second, e_bc.first}).T().reversed(0).save_to_file(debug_filename);
                             throw std::runtime_error("Detected duplicate edge (3), debug image saved");
                         } else {
                             throw std::runtime_error("Detected duplicate edge (3), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
                         }
                     }
-                    parent_edges.insert({e1, pit->second});
+                    parent_edges.insert({e_bc, pit->second});
+                    {
+                        auto e_ca = std::make_pair(O((*t)(c).position), O((*t)(a).position));
+                        if (!edge_neighbors.insert({e_ca, O(old)}).second) {
+                            const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
+                            if (debug_filename != nullptr) {
+                                plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {en.first, en.second, e_ca.first}).T().reversed(0).save_to_file(debug_filename);
+                                throw std::runtime_error("Detected duplicate edge (3), debug image saved");
+                            } else {
+                                throw std::runtime_error("Detected duplicate edge (3), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                            }
+                        }
+                        parent_edges.insert({e_ca, e_bc});
+                    }
                     parent_edges.erase(pit);
+                    for (const auto& e : edge_neighbors) {
+                        std::cerr << "e " << e.first.first << " | " << e.first.second << " -> " << e.second << std::endl;
+                    }
+                };
+                if (it0 != edge_neighbors.end()) {
+                    safe_insert_neighbor(0, 1, 2);
+                } else if (it1 != edge_neighbors.end()) {
+                    safe_insert_neighbor(1, 2, 0);
+                } else {
+                    safe_insert_neighbor(2, 0, 1);
                 }
-                for (const auto& e : edge_neighbors) {
-                    std::cerr << "e " << e.first.first << " | " << e.first.second << " -> " << e.second << std::endl;
-                }
-            };
-            safe_insert_neighbor(0, 1, 2);
-            safe_insert_neighbor(1, 2, 0);
-            safe_insert_neighbor(2, 0, 1);
-        }
-        for (const auto& e : edge_neighbors) {
-            std::cerr << "e " << e.first.first << " | " << e.first.second << " -> " << e.second << std::endl;
+            } else {
+                throw std::runtime_error("asd");
+            }
         }
         std::list<std::list<FixedArray<float, 3>>> result;
         while(!edge_neighbors.empty()) {
@@ -185,7 +223,7 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                 edge_neighbors.erase(old_v);
             }
             // Get around comparison-operator ambiguity.
-            const FixedArray<float, 3>& vv = v.second;
+            const FixedArray<float, 3>& vv = v.first;
             const FixedArray<float, 3>& vv0 = v0.first;
             if (any(vv != vv0)) {
                 // plot_mesh(ArrayShape{8000, 8000}, triangles, contour, {}).save_to_file("/tmp/cc.pgm");
