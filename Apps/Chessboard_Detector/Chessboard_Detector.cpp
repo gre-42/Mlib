@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;

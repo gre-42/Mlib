@@ -7,7 +7,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Strings/From_Number.cpp>
+#include <Mlib/Strings/To_Number.hpp>
 
 namespace Mlib {
 

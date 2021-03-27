@@ -3,7 +3,7 @@
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Math.hpp>
-#include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;
