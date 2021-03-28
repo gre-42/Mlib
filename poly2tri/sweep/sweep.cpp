@@ -699,7 +699,6 @@ void Sweep::FillLeftConcaveEdgeEvent(SweepContext& tcx, Edge* edge, Node& node)
 
 void Sweep::FlipEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* t, Point& p, unsigned int recursion)
 {
-  std::cerr << "rec " << recursion << std::endl;
   if (recursion > 100) {
     std::stringstream sstr;
     sstr << ep.x << " " << ep.y << " | " << eq.x << " " << eq.y << " | " << p.x << " " << p.y;
