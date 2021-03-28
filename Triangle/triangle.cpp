@@ -359,13 +359,15 @@
 #include "triangle.hpp"
 #endif /* TRILIBRARY */
 
+#ifdef TRILIBRARY
 namespace triangle {
+#endif
 
 /* A few forward declarations.                                               */
 
 #ifndef TRILIBRARY
-char *readline();
-char *findfield();
+char *readline(char *string, FILE *infile, char *infilename);
+char *findfield(char *string);
 #endif /* not TRILIBRARY */
 
 /* Labels that signify the result of point location.  The result of a        */
@@ -16005,4 +16007,6 @@ char **argv;
 #endif /* not TRILIBRARY */
 }
 
+#ifdef TRILIBRARY
 }
+#endif
