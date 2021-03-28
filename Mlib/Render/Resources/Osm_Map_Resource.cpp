@@ -25,6 +25,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parse_Osm_Xml.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Report_Osm_Problems.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
@@ -66,6 +67,8 @@ OsmMapResource::OsmMapResource(
         normalization_matrix_,
         nodes,
         ways);
+    
+    report_osm_problems(nodes, ways);
 
     std::list<Building> buildings;
     std::list<Building> wall_barriers;

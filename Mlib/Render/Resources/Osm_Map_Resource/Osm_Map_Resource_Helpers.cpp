@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Static_Face_Lightning.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
@@ -44,25 +45,6 @@ static std::list<FixedArray<float, 2>> smooth_way(
         }
     }
     return result;
-}
-
-static float compute_area(
-    const std::list<std::string>& nd,
-    const std::map<std::string, Node>& nodes,
-    float scale)
-{
-    // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
-    float area2 = 0;
-    for (auto it = nd.begin(); it != nd.end(); ++it) {
-        auto s = it;
-        ++s;
-        if (s != nd.end()) {
-            const auto& a = nodes.at(*s).position;
-            const auto& b = nodes.at(*it).position;
-            area2 += (b(0) - a(0)) * (b(1) + a(1));
-        }
-    }
-    return area2 / 2 / squared(scale);
 }
 
 // std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> Mlib::gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points) {
