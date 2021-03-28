@@ -142,8 +142,9 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                     auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles, &print_debug_info](size_t a, size_t b, size_t c) {
                         auto en = std::make_pair(O((*t)(a).position), O((*t)(b).position));
                         auto ei = std::make_pair(O((*t)(b).position), O((*t)(a).position));
+                        auto e_ca = std::make_pair(O((*t)(c).position), O((*t)(a).position));
                         std::cerr << std::endl;
-                        std::cerr << "insert (1) " << en.first << " | " << en.second << std::endl;
+                        std::cerr << "insert (1) " << en.first << " | " << en.second << " | " << e_ca.first << std::endl;
                         auto it = edge_neighbors.find(ei);
                         auto old = it->second;
                         edge_neighbors.erase(it);
@@ -159,13 +160,10 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                             throw std::runtime_error("Detected duplicate edge (3)");
                         }
                         parent_edges.insert({e_bc, pit->second});
-                        {
-                            auto e_ca = std::make_pair(O((*t)(c).position), O((*t)(a).position));
-                            if (!edge_neighbors.insert({e_ca, O(old)}).second) {
-                                throw std::runtime_error("Detected duplicate edge (4)");
-                            }
-                            parent_edges.insert({e_ca, e_bc});
+                        if (!edge_neighbors.insert({e_ca, O(old)}).second) {
+                            throw std::runtime_error("Detected duplicate edge (4)");
                         }
+                        parent_edges.insert({e_ca, e_bc});
                         parent_edges.erase(pit);
                         print_debug_info();
                     };
@@ -216,6 +214,9 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                             throw std::runtime_error("Detected duplicate edge (4)");
                         }
                         parent_edges.insert({e_ca, p_bc->second});
+                        if (edge_neighbors.insert_or_assign(p_bc->second, O((*t)(a).position)).second) {
+                            throw std::runtime_error("Expected edge (1)");
+                        }
                         // ab
                         if (edge_neighbors.erase(ei_ab) == 0) {
                             throw std::runtime_error("Could not delete edge ab");
