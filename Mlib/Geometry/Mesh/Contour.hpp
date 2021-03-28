@@ -10,7 +10,8 @@ class OrderableFixedArray;
 
 enum class ContourDetectionStrategy {
     NODE_NEIGHBOR,
-    EDGE_NEIGHBOR
+    EDGE_NEIGHBOR,
+    TRIANGLE
 };
 
 std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>

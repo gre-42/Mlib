@@ -55,7 +55,13 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
 {
     using O = OrderableFixedArray<float, 3>;
 
-    if (strategy == ContourDetectionStrategy::NODE_NEIGHBOR) {
+    if (strategy == ContourDetectionStrategy::TRIANGLE) {
+        std::list<std::list<FixedArray<float, 3>>> result;
+        for (const auto& t : triangles) {
+            result.push_back({(*t)(0).position, (*t)(1).position, (*t)(2).position});
+        }
+        return result;
+    } else if (strategy == ContourDetectionStrategy::NODE_NEIGHBOR) {
         std::set<std::pair<O, O>> edges = find_contour_edges(triangles);
         std::map<O, O> neighbors;
         for (const auto& t : triangles) {
