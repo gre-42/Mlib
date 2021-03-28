@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Strings/To_Number.cpp>
 
 using namespace Mlib;
 
@@ -14,6 +15,11 @@ void Mlib::report_osm_problems(
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         if (tags.find("building") == tags.end()) {
+            continue;
+        }
+        if (tags.contains("layer") &&
+            (safe_stoi(tags.at("layer")) != 0))
+        {
             continue;
         }
         float area = compute_area(w.second.nd, nodes, 1.f);
