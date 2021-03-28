@@ -281,7 +281,42 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                     }
                     C_DEBUG(check_consistency());
                 } else {
-                    throw std::runtime_error("asd");
+                    auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles, &print_debug_info, &check_consistency](size_t a, size_t b, size_t c) {
+                        auto ei_ab = std::make_pair(O((*t)(b).position), O((*t)(a).position));
+                        auto ei_bc = std::make_pair(O((*t)(c).position), O((*t)(b).position));
+                        auto en_b = edge_neighbors.find(ei_bc);
+                        if (en_b == edge_neighbors.end()) {
+                            throw std::runtime_error("Could not find en_b");
+                        }
+                        // ab
+                        auto p_ab = parent_edges.find(ei_ab);
+                        if (p_ab == parent_edges.end()) {
+                            throw std::runtime_error("Could not find p_ab");
+                        }
+                        if (edge_neighbors.insert_or_assign(p_ab->second, en_b->second).second) {
+                            throw std::runtime_error("Expected edge (7)");
+                        }
+                        // bx
+                        auto e_bx = std::make_pair(ei_ab.first, en_b->second);
+                        if (parent_edges.insert_or_assign(e_bx, p_ab->second).second) {
+                            throw std::runtime_error("Expected edge (8)");
+                        }
+                        parent_edges.erase(p_ab);
+                    };
+                    auto safe_erase = [&edge_neighbors, &t](size_t a, size_t b, size_t c) {
+                        auto ei_ab = std::make_pair(O((*t)(b).position), O((*t)(a).position));
+                        if (edge_neighbors.erase(ei_ab) == 0) {
+                            throw std::runtime_error("Could not delete ei_ab");
+                        }
+                    };
+                    safe_insert_neighbor(0, 1, 2);
+                    safe_insert_neighbor(1, 2, 0);
+                    safe_insert_neighbor(2, 0, 1);
+
+                    safe_erase(0, 1, 2);
+                    safe_erase(1, 2, 0);
+                    safe_erase(2, 0, 1);
+                    C_DEBUG(check_consistency());
                 }
             } catch (const std::runtime_error& e) {
                 const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
