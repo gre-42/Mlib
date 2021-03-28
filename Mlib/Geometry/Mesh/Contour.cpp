@@ -3,6 +3,8 @@
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
+#define C_DEBUG(a)
+
 using namespace Mlib;
 
 std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>>
@@ -112,6 +114,15 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                 std::cerr << "p " << p.first.first << " | " << p.first.second << " -> " << p.second.first << " | " << p.second.second << std::endl;
             }
         };
+        auto check_consistency = [&](){
+            for (const auto& p : parent_edges) {
+                if (edge_neighbors.find(p.second) == edge_neighbors.end()) {
+                    std::stringstream sstr;
+                    sstr << "Edge neighbor not found: " << p.second.first << " | " << p.second.second;
+                    throw std::runtime_error(sstr.str());
+                }
+            }
+        };
         for (const auto& t : triangles) {
             try {
                 auto it0 = edge_neighbors.find({O((*t)(1).position), O((*t)(0).position)});
@@ -121,51 +132,62 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                     (unsigned int)(it0 != edge_neighbors.end()) +
                     (unsigned int)(it1 != edge_neighbors.end()) +
                     (unsigned int)(it2 != edge_neighbors.end());
+                C_DEBUG(std::cerr << "start" << std::endl);
+                C_DEBUG(check_consistency());
                 if (nedges == 0) {
                     auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles, &print_debug_info](size_t a, size_t b, size_t c) {
                         auto ep = std::make_pair(O((*t)(c).position), O((*t)(a).position));
                         auto en = std::make_pair(O((*t)(a).position), O((*t)(b).position));
-                        std::cerr << std::endl;
-                        std::cerr << "insert (0) " << en.first << " | " << en.second << std::endl;
+                        C_DEBUG(std::cerr << std::endl);
+                        C_DEBUG(std::cerr << "insert (0) " << en.first << " | " << en.second << std::endl);
                         if (!edge_neighbors.insert({en, O((*t)(c).position)}).second) {
                             throw std::runtime_error("Detected duplicate edge (0)");
                         }
                         if (!parent_edges.insert({en, ep}).second) {
                             throw std::runtime_error("Could not set parent edge (1)");
                         }
-                        print_debug_info();
+                        C_DEBUG(print_debug_info());
                     };
                     safe_insert_neighbor(0, 1, 2);
                     safe_insert_neighbor(1, 2, 0);
                     safe_insert_neighbor(2, 0, 1);
+                    C_DEBUG(std::cerr << "nedges=0" << std::endl);
+                    C_DEBUG(check_consistency());
                 } else if (nedges == 1) {
-                    auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles, &print_debug_info](size_t a, size_t b, size_t c) {
-                        auto en = std::make_pair(O((*t)(a).position), O((*t)(b).position));
-                        auto ei = std::make_pair(O((*t)(b).position), O((*t)(a).position));
+                    auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles, &print_debug_info, &check_consistency](size_t a, size_t b, size_t c) {
+                        auto ei_ab = std::make_pair(O((*t)(b).position), O((*t)(a).position));
+                        auto e_bc = std::make_pair(O((*t)(b).position), O((*t)(c).position));
                         auto e_ca = std::make_pair(O((*t)(c).position), O((*t)(a).position));
-                        std::cerr << std::endl;
-                        std::cerr << "insert (1) " << en.first << " | " << en.second << " | " << e_ca.first << std::endl;
-                        auto it = edge_neighbors.find(ei);
-                        auto old = it->second;
-                        edge_neighbors.erase(it);
-                        auto pit = parent_edges.find(ei);
-                        if (pit == parent_edges.end()) {
+                        C_DEBUG(std::cerr << std::endl);
+                        C_DEBUG(std::cerr << "insert (1) " << ei_ab.second << " | " << ei_ab.first << " | " << e_ca.first << std::endl);
+                        auto it_ab = edge_neighbors.find(ei_ab);
+                        auto z = it_ab->second;
+                        edge_neighbors.erase(it_ab);
+                        auto e_az = std::make_pair(ei_ab.second, z);
+                        if (parent_edges.insert_or_assign(e_az, e_ca).second) {
+                            throw std::runtime_error("Expected edge (6)");
+                        }
+                        auto p_ab = parent_edges.find(ei_ab);
+                        if (p_ab == parent_edges.end()) {
                             throw std::runtime_error("Could not find parent edge");
                         }
-                        if (edge_neighbors.insert_or_assign(pit->second, O((*t)(c).position)).second) {
+                        if (edge_neighbors.insert_or_assign(p_ab->second, O((*t)(c).position)).second) {
+                            throw std::runtime_error("Expected edge (5)");
+                        }
+                        if (!edge_neighbors.insert({e_bc, O((*t)(a).position)}).second) {
                             throw std::runtime_error("Detected duplicate edge (2)");
                         }
-                        auto e_bc = std::make_pair(O((*t)(b).position), O((*t)(c).position));
-                        if (!edge_neighbors.insert({e_bc, O((*t)(a).position)}).second) {
+                        if (!parent_edges.insert({e_bc, p_ab->second}).second) {
                             throw std::runtime_error("Detected duplicate edge (3)");
                         }
-                        parent_edges.insert({e_bc, pit->second});
-                        if (!edge_neighbors.insert({e_ca, O(old)}).second) {
+                        if (!edge_neighbors.insert({e_ca, O(z)}).second) {
                             throw std::runtime_error("Detected duplicate edge (4)");
                         }
                         parent_edges.insert({e_ca, e_bc});
-                        parent_edges.erase(pit);
-                        print_debug_info();
+                        parent_edges.erase(p_ab);
+                        C_DEBUG(print_debug_info());
+                        C_DEBUG(std::cerr << "nedges=1" << std::endl);
+                        C_DEBUG(check_consistency());
                     };
                     if (it0 != edge_neighbors.end()) {
                         safe_insert_neighbor(0, 1, 2);
@@ -175,12 +197,14 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                         safe_insert_neighbor(2, 0, 1);
                     }
                 } else if (nedges == 2) {
-                    auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles, &print_debug_info](size_t a, size_t b, size_t c) {
+                    auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t, &triangles, &print_debug_info, &check_consistency](size_t a, size_t b, size_t c) {
                         auto ei_ab = std::make_pair(O((*t)(b).position), O((*t)(a).position));
                         auto ei_bc = std::make_pair(O((*t)(c).position), O((*t)(b).position));
                         auto e_ca = std::make_pair(O((*t)(c).position), O((*t)(a).position));
-                        std::cerr << std::endl;
-                        std::cerr << "insert (2) " << ei_ab.second << " | " << ei_ab.first << " | " << ei_bc.first << std::endl;
+                        C_DEBUG(std::cerr << std::endl);
+                        C_DEBUG(std::cerr << "insert (2) " << ei_ab.second << " | " << ei_ab.first << " | " << ei_bc.first << std::endl);
+                        C_DEBUG(std::cerr << "nedges=2" << std::endl);
+                        C_DEBUG(check_consistency());
                         // bx
                         {
                             auto it_bc = edge_neighbors.find(ei_bc);
@@ -200,6 +224,8 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                             if (edge_neighbors.insert_or_assign(p_ab->second, it_bc->second).second) {
                                 throw std::runtime_error("Expected edge (0)");
                             }
+                            C_DEBUG(std::cerr << "a " << std::endl);
+                            C_DEBUG(check_consistency());
                         }
                         // ca
                         auto p_bc = parent_edges.find(ei_bc);
@@ -211,12 +237,14 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                             throw std::runtime_error("Could not find it_ab");
                         }
                         if (!edge_neighbors.insert({e_ca, it_ab->second}).second) {
-                            throw std::runtime_error("Detected duplicate edge (4)");
+                            throw std::runtime_error("Detected duplicate edge (5)");
                         }
                         parent_edges.insert({e_ca, p_bc->second});
                         if (edge_neighbors.insert_or_assign(p_bc->second, O((*t)(a).position)).second) {
                             throw std::runtime_error("Expected edge (1)");
                         }
+                        C_DEBUG(std::cerr << "b " << std::endl);
+                        C_DEBUG(check_consistency());
                         // ab
                         if (edge_neighbors.erase(ei_ab) == 0) {
                             throw std::runtime_error("Could not delete edge ab");
@@ -224,6 +252,15 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                         if (parent_edges.erase(ei_ab) == 0) {
                             throw std::runtime_error("Could not delete parent ab");
                         }
+                        // az
+                        {
+                            auto e_az = std::make_pair(ei_ab.second, it_ab->second);
+                            if (parent_edges.insert_or_assign(e_az, e_ca).second) {
+                                throw std::runtime_error("Expected edge (2)");
+                            }
+                        }
+                        C_DEBUG(std::cerr << "4" << std::endl);
+                        C_DEBUG(check_consistency());
                         // bc
                         if (edge_neighbors.erase(ei_bc) == 0) {
                             throw std::runtime_error("Could not delete edge bc");
@@ -231,7 +268,9 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                         if (parent_edges.erase(ei_bc) == 0) {
                             throw std::runtime_error("Could not delete parent bc");
                         }
-                        print_debug_info();
+                        C_DEBUG(std::cerr << "c" << std::endl);
+                        C_DEBUG(check_consistency());
+                        C_DEBUG(print_debug_info());
                     };
                     if (it0 != edge_neighbors.end() && it1 != edge_neighbors.end()) {
                         safe_insert_neighbor(0, 1, 2);
@@ -240,6 +279,7 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                     } else if (it2 != edge_neighbors.end() && it0 != edge_neighbors.end()) {
                         safe_insert_neighbor(2, 0, 1);
                     }
+                    C_DEBUG(check_consistency());
                 } else {
                     throw std::runtime_error("asd");
                 }
