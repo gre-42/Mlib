@@ -55,7 +55,7 @@ void Sweep::SweepPoints(SweepContext& tcx)
     Point& point = *tcx.GetPoint(i);
     Node* node = &PointEvent(tcx, point);
     for (unsigned int i = 0; i < point.edge_list.size(); i++) {
-      EdgeEvent(tcx, point.edge_list[i], node);
+      EdgeEvent(tcx, point.edge_list[i], node, 0);
     }
   }
 }
@@ -90,7 +90,7 @@ Node& Sweep::PointEvent(SweepContext& tcx, Point& point)
   return new_node;
 }
 
-void Sweep::EdgeEvent(SweepContext& tcx, Edge* edge, Node* node)
+void Sweep::EdgeEvent(SweepContext& tcx, Edge* edge, Node* node, unsigned int recursion)
 {
   tcx.edge_event.constrained_edge = edge;
   tcx.edge_event.right = (edge->p->x > edge->q->x);
@@ -103,10 +103,10 @@ void Sweep::EdgeEvent(SweepContext& tcx, Edge* edge, Node* node)
   // TODO: integrate with flip process might give some better performance
   //       but for now this avoid the issue with cases that needs both flips and fills
   FillEdgeEvent(tcx, edge, node);
-  EdgeEvent(tcx, *edge->p, *edge->q, node->triangle, *edge->q);
+  EdgeEvent(tcx, *edge->p, *edge->q, node->triangle, *edge->q, recursion + 1);
 }
 
-void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangle, Point& point)
+void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangle, Point& point, unsigned int recursion)
 {
   if (IsEdgeSideOfTriangle(*triangle, ep, eq)) {
     return;
@@ -121,7 +121,7 @@ void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangl
       // not change the given constraint and just keep a variable for the new constraint
       tcx.edge_event.constrained_edge->q = p1;
       triangle = &triangle->NeighborAcross(point);
-      EdgeEvent( tcx, ep, *p1, triangle, *p1 );
+      EdgeEvent( tcx, ep, *p1, triangle, *p1, recursion + 1 );
     } else {
       throw std::runtime_error("EdgeEvent - collinear points not supported");
     }
@@ -137,7 +137,7 @@ void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangl
       // not change the given constraint and just keep a variable for the new constraint
       tcx.edge_event.constrained_edge->q = p2;
       triangle = &triangle->NeighborAcross(point);
-      EdgeEvent( tcx, ep, *p2, triangle, *p2 );
+      EdgeEvent( tcx, ep, *p2, triangle, *p2, recursion + 1 );
     } else {
       throw std::runtime_error("EdgeEvent - collinear points not supported");
     }
@@ -152,10 +152,10 @@ void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangl
     }       else{
       triangle = triangle->NeighborCW(point);
     }
-    EdgeEvent(tcx, ep, eq, triangle, point);
+    EdgeEvent(tcx, ep, eq, triangle, point, recursion + 1);
   } else {
     // This triangle crosses constraint so lets flippin start!
-    FlipEdgeEvent(tcx, ep, eq, triangle, point);
+    FlipEdgeEvent(tcx, ep, eq, triangle, point, recursion + 1);
   }
 }
 
@@ -697,8 +697,14 @@ void Sweep::FillLeftConcaveEdgeEvent(SweepContext& tcx, Edge* edge, Node& node)
 
 }
 
-void Sweep::FlipEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* t, Point& p)
+void Sweep::FlipEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* t, Point& p, unsigned int recursion)
 {
+  std::cerr << "rec " << recursion << std::endl;
+  if (recursion > 100) {
+    std::stringstream sstr;
+    sstr << ep.x << " " << ep.y << " | " << eq.x << " " << eq.y << " | " << p.x << " " << p.y;
+    throw std::runtime_error("FlipEdgeEvent recursion depth exceeded: " + sstr.str());
+  }
   Triangle& ot = t->NeighborAcross(p);
   Point& op = *ot.OppositePoint(*t, p);
 
@@ -727,12 +733,12 @@ void Sweep::FlipEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* t, 
     } else {
       Orientation o = Orient2d(eq, op, ep);
       t = &NextFlipTriangle(tcx, (int)o, *t, ot, p, op);
-      FlipEdgeEvent(tcx, ep, eq, t, p);
+      FlipEdgeEvent(tcx, ep, eq, t, p, recursion + 1);
     }
   } else {
     Point& newP = NextFlipPoint(ep, eq, ot, op);
-    FlipScanEdgeEvent(tcx, ep, eq, *t, ot, newP);
-    EdgeEvent(tcx, ep, eq, t, p);
+    FlipScanEdgeEvent(tcx, ep, eq, *t, ot, newP, recursion + 1);
+    EdgeEvent(tcx, ep, eq, t, p, recursion + 1);
   }
 }
 
@@ -775,7 +781,7 @@ Point& Sweep::NextFlipPoint(Point& ep, Point& eq, Triangle& ot, Point& op)
 }
 
 void Sweep::FlipScanEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle& flip_triangle,
-                              Triangle& t, Point& p)
+                              Triangle& t, Point& p, unsigned int recursion)
 {
   Triangle& ot = t.NeighborAcross(p);
   Point& op = *ot.OppositePoint(t, p);
@@ -783,13 +789,13 @@ void Sweep::FlipScanEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle&
   if (&t.NeighborAcross(p) == NULL) {
     // If we want to integrate the fillEdgeEvent do it here
     // With current implementation we should never get here
-    //throw new RuntimeException( "[BUG:FIXME] FLIP failed due to missing triangle");
+    throw new std::runtime_error("[BUG:FIXME] FLIP failed due to missing triangle");
     assert(0);
   }
 
   if (InScanArea(eq, *flip_triangle.PointCCW(eq), *flip_triangle.PointCW(eq), op)) {
     // flip with new edge op->eq
-    FlipEdgeEvent(tcx, eq, op, &ot, op);
+    FlipEdgeEvent(tcx, eq, op, &ot, op, recursion + 1);
     // TODO: Actually I just figured out that it should be possible to
     //       improve this by getting the next ot and op before the the above
     //       flip and continue the flipScanEdgeEvent here
@@ -799,7 +805,7 @@ void Sweep::FlipScanEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle&
     // so it will have to wait.
   } else{
     Point& newP = NextFlipPoint(ep, eq, ot, op);
-    FlipScanEdgeEvent(tcx, ep, eq, flip_triangle, ot, newP);
+    FlipScanEdgeEvent(tcx, ep, eq, flip_triangle, ot, newP, recursion + 1);
   }
 }
 

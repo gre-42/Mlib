@@ -92,9 +92,9 @@ private:
      * @param edge
      * @param node
      */
-  void EdgeEvent(SweepContext& tcx, Edge* edge, Node* node);
+  void EdgeEvent(SweepContext& tcx, Edge* edge, Node* node, unsigned int recursion);
 
-  void EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangle, Point& point);
+  void EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangle, Point& point, unsigned int recursion);
 
   /**
    * Creates a new front triangle and legalize it
@@ -230,7 +230,7 @@ private:
 
   void FillLeftConvexEdgeEvent(SweepContext& tcx, Edge* edge, Node& node);
 
-  void FlipEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* t, Point& p);
+  void FlipEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* t, Point& p, unsigned int recursion);
 
   /**
    * After a flip we have two triangles and know that only one will still be
@@ -272,7 +272,7 @@ private:
      * @param t
      * @param p
      */
-  void FlipScanEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle& flip_triangle, Triangle& t, Point& p);
+  void FlipScanEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle& flip_triangle, Triangle& t, Point& p, unsigned int recursion);
 
   void FinalizationPolygon(SweepContext& tcx);
 
