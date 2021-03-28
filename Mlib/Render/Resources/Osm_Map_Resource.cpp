@@ -410,9 +410,9 @@ OsmMapResource::OsmMapResource(
     }
     if (config.remove_backfacing_triangles) {
         LOG_INFO("remove_backfacing_triangles");
+        const char* prefix = getenv("BACKFACING_TRIANGLES_PREFIX");
         size_t i = 0;
         for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
-            const char* prefix = getenv("BACKFACING_TRIANGLES_PREFIX");
             delete_backfacing_triangles(
                 l->tls_no_backfaces(),
                 prefix == nullptr
