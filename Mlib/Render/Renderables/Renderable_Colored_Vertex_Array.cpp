@@ -523,6 +523,12 @@ void RenderableColoredVertexArray::render(
     std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations =
         calculate_absolute_bone_transformations(style);
     for (auto& cva : rendered_triangles_res_subset_) {
+        if (cva->name.find("street") != std::string::npos) {
+            continue;
+        }
+        if (cva->name.find("path") != std::string::npos) {
+            continue;
+        }
         render_cva(
             cva,
             absolute_bone_transformations,

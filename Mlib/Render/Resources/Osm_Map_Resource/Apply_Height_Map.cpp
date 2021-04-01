@@ -7,6 +7,8 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 namespace Mlib {
@@ -29,7 +31,7 @@ struct NeighborWeight {
 using namespace Mlib;
 
 void Mlib::apply_height_map(
-    const TriangleList& tl_terrain,
+    const TerrainTypeTriangleList& tl_terrain,
     const std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     float tunnel_height,
     float extrude_air_support_amount,
@@ -155,28 +157,32 @@ void Mlib::apply_height_map(
         }
     }
     std::map<EntranceType, std::set<const FixedArray<float, 3>*>> terrain_entrance_vertices;
-    for (const auto& t : tl_terrain.triangles_) {
-        for (const auto& v : t.flat_iterable()) {
-            OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
-            for (const auto& e : entrances) {
-                if (e.second.contains(vc)) {
-                    terrain_entrance_vertices[e.first].insert(&v.position);
+    for (const auto& tt : tl_terrain.map()) {
+        for (const auto& t : tt.second->triangles_) {
+            for (const auto& v : t.flat_iterable()) {
+                OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
+                for (const auto& e : entrances) {
+                    if (e.second.contains(vc)) {
+                        terrain_entrance_vertices[e.first].insert(&v.position);
+                    }
                 }
             }
         }
     }
     if (false) {
         std::list<FixedArray<ColoredVertex, 3>> tcp;
-        for (const auto& t : tl_terrain.triangles_) {
-            bool found = false;
-            for (const auto& v : t.flat_iterable()) {
-                OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
-                if (entrances.at(EntranceType::TUNNEL).contains(vc)) {
-                    found = true;
+        for (const auto& tt : tl_terrain.map()) {
+            for (const auto& t : tt.second->triangles_) {
+                bool found = false;
+                for (const auto& v : t.flat_iterable()) {
+                    OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
+                    if (entrances.at(EntranceType::TUNNEL).contains(vc)) {
+                        found = true;
+                    }
                 }
-            }
-            if (found) {
-                tcp.push_back(t);
+                if (found) {
+                    tcp.push_back(t);
+                }
             }
         }
         save_obj("/tmp/terrain_tunnel_entraces.obj", IndexedFaceSet<float, size_t>{tcp});

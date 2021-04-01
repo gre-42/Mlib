@@ -46,9 +46,11 @@ void test_contour() {
         {v00, v10, v01},
         {v00, v11, v01},
         {v01, v11, v02}};
-    delete_triangles_outside_contour(
-        contour,
-        triangles);
+    std::vector<std::list<FixedArray<OrderableFixedArray<float, 2>, 3>>> inner_triangles;
+    delete_triangles_inside_contours(
+        std::vector<std::vector<OrderableFixedArray<float, 2>>>{contour},
+        triangles,
+        inner_triangles);
     assert_true(triangles.size() == 0);
 }
 

@@ -19,6 +19,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 struct StyledRoad;
 struct StyledRoadEntry;
+enum class TerrainType;
 
 class RoadPropertiesTriangleList {
 public:
@@ -29,22 +30,26 @@ private:
     std::list<StyledRoadEntry> lst_;
 };
 
-class RoadTypeTriangleList {
+template <class EntityType>
+class EntityTypeTriangleList {
 public:
-    void insert(RoadType road_type, const std::shared_ptr<TriangleList>& lst);
-    bool contains(RoadType road_type) const;
-    const std::shared_ptr<TriangleList>& operator [] (RoadType road_type) const;
-    const std::map<RoadType, std::shared_ptr<TriangleList>>& map() const;
+    void insert(EntityType road_type, const std::shared_ptr<TriangleList>& lst);
+    bool contains(EntityType road_type) const;
+    const std::shared_ptr<TriangleList>& operator [] (EntityType road_type) const;
+    const std::map<EntityType, std::shared_ptr<TriangleList>>& map() const;
 private:
-    std::map<RoadType, std::shared_ptr<TriangleList>> lst_;
+    std::map<EntityType, std::shared_ptr<TriangleList>> lst_;
 };
+
+typedef EntityTypeTriangleList<RoadType> RoadTypeTriangleList;
+typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 
 struct OsmTriangleLists {
     explicit OsmTriangleLists(const OsmResourceConfig& config);
     ~OsmTriangleLists();
-    std::shared_ptr<TriangleList> tl_terrain;
-    std::shared_ptr<TriangleList> tl_terrain_visuals;
-    std::shared_ptr<TriangleList> tl_terrain_street_extrusion;
+    std::shared_ptr<TerrainTypeTriangleList> tl_terrain;
+    TerrainTypeTriangleList tl_terrain_visuals;
+    TerrainTypeTriangleList tl_terrain_street_extrusion;
     RoadPropertiesTriangleList tl_street;
     RoadTypeTriangleList tl_street_crossing;
     RoadTypeTriangleList tl_street_curb;

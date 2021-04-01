@@ -31,6 +31,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -361,18 +362,30 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("triangulate_terrain_or_ceilings");
         triangulate_terrain_or_ceilings(
             *tl_terrain_,
-            osm_triangle_lists.tl_terrain_visuals.get(),
-            config.blend_street
-                ? std::list<std::list<FixedArray<ColoredVertex, 3>>>{osm_triangle_lists.street_triangles()}
-                : std::list<std::list<FixedArray<ColoredVertex, 3>>>{},
             bounding_info,
             steiner_points,
             map_outer_contour,
             hole_triangles,
+            {},                     // region_contours
             config.scale,
             config.uv_scale_terrain,
             0,
             terrain_color);
+        if (config.blend_street) {
+            auto& tl = *osm_triangle_lists.tl_terrain_visuals[TerrainType::UNDEFINED];
+            for (const auto& t : osm_triangle_lists.street_triangles()) {
+                tl.draw_triangle_wo_normals(
+                    {t(0).position(0), t(0).position(1), 0.f},
+                    {t(1).position(0), t(1).position(1), 0.f},
+                    {t(2).position(0), t(2).position(1), 0.f},
+                    terrain_color,
+                    terrain_color,
+                    terrain_color,
+                    {t(0).position(0) / config.scale * config.uv_scale_terrain, t(0).position(1) / config.scale * config.uv_scale_terrain},
+                    {t(1).position(0) / config.scale * config.uv_scale_terrain, t(1).position(1) / config.scale * config.uv_scale_terrain},
+                    {t(2).position(0) / config.scale * config.uv_scale_terrain, t(2).position(1) / config.scale * config.uv_scale_terrain});
+            }
+        }
         // save_obj("/tmp/tl_terrain.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     }
     if (config.with_roofs) {
@@ -543,9 +556,11 @@ OsmMapResource::OsmMapResource(
     if ((config.extrude_street_amount != 0) || (config.extrude_air_support_amount != 0))
     {
         std::set<OrderableFixedArray<float, 3>> terrain_vertices;
-        for (const auto& t : osm_triangle_lists.tl_terrain->triangles_) {
-            for (const auto& v : t.flat_iterable()) {
-                terrain_vertices.insert(OrderableFixedArray{v.position});
+        for (const auto& l : osm_triangle_lists.tl_terrain->map()) {
+            for (const auto& t : l.second->triangles_) {
+                for (const auto& v : t.flat_iterable()) {
+                    terrain_vertices.insert(OrderableFixedArray{v.position});
+                }
             }
         }
         for (const auto& l : osm_triangle_lists.tls_street()) {
@@ -562,7 +577,7 @@ OsmMapResource::OsmMapResource(
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (config.curb_alpha == 1) {
             TriangleList::extrude(
-                *osm_triangle_lists.tl_terrain_street_extrusion,
+                *osm_triangle_lists.tl_terrain_street_extrusion[TerrainType::UNDEFINED],
                 osm_triangle_lists.tls_street_wo_curb(),
                 nullptr,
                 nullptr,
@@ -679,7 +694,7 @@ OsmMapResource::OsmMapResource(
             object_resource_descriptors_,
             hitboxes_,
             rnc,
-            *tl_terrain_,
+            *(*tl_terrain_)[TerrainType::GRASS],
             config.scale,
             config.much_grass_distance);
     }
@@ -783,6 +798,9 @@ OsmMapResource::OsmMapResource(
         }
     }
 }
+
+OsmMapResource::~OsmMapResource()
+{}
 
 void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {

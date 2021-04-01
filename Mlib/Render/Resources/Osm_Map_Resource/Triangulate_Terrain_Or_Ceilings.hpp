@@ -1,5 +1,7 @@
 #pragma once
 #include <list>
+#include <map>
+#include <memory>
 #include <vector>
 
 namespace Mlib {
@@ -10,15 +12,18 @@ struct ColoredVertex;
 struct SteinerPointInfo;
 template <typename TData, size_t... tshape>
 class FixedArray;
+enum class TerrainType;
+template <class EntityType>
+class EntityTypeTriangleList;
+typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 
 void triangulate_terrain_or_ceilings(
-    TriangleList& tl_terrain,
-    TriangleList* tl_terrain_visuals,
-    const std::list<std::list<FixedArray<ColoredVertex, 3>>>& tl_insert,
+    TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
     const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
+    const std::map<TerrainType, std::list<FixedArray<float, 3>>>& region_contours,
     float scale,
     float uv_scale,
     float z,

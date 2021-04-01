@@ -10,7 +10,10 @@
             "request": "launch",
             "program": "${workspaceFolder}/UDebug/Apps/Render_Scene_File/render_scene_file",
             "args": [
-                "/media/HomeSSD1/MySrc/mgame/scripts/main.scn",
+                "/media/HomeSSD1/MySrc/mgame",
+                "/media/HomeSSD1/MySrc/mgame/levels/main/main.scn",
+                "--print_render_residual_time",
+                "--print_physics_residual_time",
                 "--show_mouse_cursor"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

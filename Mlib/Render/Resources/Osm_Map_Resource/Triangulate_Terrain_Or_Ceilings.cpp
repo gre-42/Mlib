@@ -2,8 +2,12 @@
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <poly2tri/poly2tri.h>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
+#include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 
 using namespace Mlib;
 
@@ -21,13 +25,12 @@ private:
 }
 
 void Mlib::triangulate_terrain_or_ceilings(
-    TriangleList& tl_terrain,
-    TriangleList* tl_terrain_visuals,
-    const std::list<std::list<FixedArray<ColoredVertex, 3>>>& tl_insert,
+    TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
     const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
+    const std::map<TerrainType, std::list<FixedArray<float, 3>>>& region_contours,
     float scale,
     float uv_scale,
     float z,
@@ -74,90 +77,86 @@ void Mlib::triangulate_terrain_or_ceilings(
     auto hole_contours = find_contours(hole_triangles, ContourDetectionStrategy::NODE_NEIGHBOR);
 
     std::vector<std::vector<p2t::Point>> p2t_hole_nodes;
-    p2t_hole_nodes.reserve(hole_contours.size());
-    for (const std::list<FixedArray<float, 3>>& c : hole_contours) {
+    std::vector<std::vector<p2t::Point*>> p2t_hole_contours;
+    std::vector<TerrainType> p2t_region_types;
+    p2t_hole_nodes.reserve(hole_contours.size() + region_contours.size());
+    p2t_hole_contours.reserve(p2t_hole_nodes.size());
+    p2t_region_types.reserve(p2t_hole_nodes.size());
+    auto add_contour = [&p2t_hole_nodes, &p2t_hole_contours, &p2t_region_types, &cdt](TerrainType region_type, const std::list<FixedArray<float, 3>>& contour){
         p2t_hole_nodes.push_back(std::vector<p2t::Point>());
+        p2t_hole_contours.push_back(std::vector<p2t::Point*>());
+        p2t_region_types.push_back(region_type);
         auto& pts = p2t_hole_nodes.back();
-        pts.reserve(c.size());
-        std::vector<p2t::Point*> hole_contour;
-        hole_contour.reserve(c.size());
+        auto& cnt = p2t_hole_contours.back();
+        pts.reserve(contour.size());
+        cnt.reserve(contour.size());
         // size_t i = 0;
-        for (const auto& p : c) {
+        for (const auto& p : contour) {
             pts.push_back(p2t::Point{p(0), p(1)});
-            hole_contour.push_back(&pts.back());
+            cnt.push_back(&pts.back());
             // draw_node(triangles, FixedArray<float, 2>{p(0), p(1)}, 0.1 * float(i++) / c.size());
         }
-        cdt.AddHole(hole_contour);
+        cdt.AddHole(cnt);
+    };
+    for (const std::list<FixedArray<float, 3>>& c : hole_contours) {
+        add_contour(TerrainType::HOLE, c);
+    }
+    for (const auto& r : region_contours) {
+        add_contour(r.first, r.second);
     }
     std::list<p2t::Point> p2t_grid_nodes;
     for (const auto& p : steiner_points) {
         p2t_grid_nodes.push_back(p2t::Point{p.position(0), p.position(1)});
         cdt.AddPoint(&p2t_grid_nodes.back());
     }
-    std::vector<p2t::Point> p2t_triangle_centers;
-    p2t_triangle_centers.reserve(hole_triangles.size() * 3);
-    std::set<p2t::Point*> p2t_hole_triangle_centers_set;
-    for (const auto& t : hole_triangles) {
-        auto add = [&](float a, float b, float c){
-            auto center = a * t(0).position + b * t(1).position + c * t(2).position;
-            p2t_triangle_centers.push_back(p2t::Point{center(0), center(1)});
-            cdt.AddPoint(&*p2t_triangle_centers.rbegin());
-            p2t_hole_triangle_centers_set.insert(&*p2t_triangle_centers.rbegin());
-        };
-        add(0.6f, 0.2f, 0.2f);
-        add(0.2f, 0.6f, 0.2f);
-        add(0.2f, 0.2f, 0.6f);
-    }
     //triangles.clear();
     cdt.Triangulate();
     std::list<p2t::Triangle*> tris;
-    if (hole_contours.empty()) {
+    std::vector<std::list<p2t::Triangle*>> inner_triangles;
+    if (p2t_hole_nodes.empty()) {
         auto tris0 = cdt.GetTriangles();
         tris.insert(tris.end(), tris0.begin(), tris0.end());
     } else {
         auto tris0 = cdt.GetMap();
         tris.insert(tris.end(), tris0.begin(), tris0.end());
         std::list<PTri>& wrapped_tris = reinterpret_cast<std::list<PTri>&>(tris);
-        delete_triangles_outside_contour(final_bounding_contour, wrapped_tris);
+        std::vector<std::list<PTri>>& wrapped_itris = reinterpret_cast<std::vector<std::list<PTri>>&>(inner_triangles);
+        auto all_contours = p2t_hole_contours;
+        all_contours.push_back(final_bounding_contour);
+        delete_triangles_inside_contours(all_contours, wrapped_tris, wrapped_itris);
+        std::list<FixedArray<ColoredVertex, 3>> triangles;
+        for (const auto& t : wrapped_tris) {
+            triangles.push_back(FixedArray<ColoredVertex, 3>{
+                ColoredVertex{.position = {(float)t(0)->x, (float)t(0)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
+                ColoredVertex{.position = {(float)t(1)->x, (float)t(1)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
+                ColoredVertex{.position = {(float)t(2)->x, (float)t(2)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}}
+            });
+        }
+        save_obj("/tmp/wrapped_tris1.obj", IndexedFaceSet<float, size_t>{triangles});
     }
-    for (const auto& t : tris) {
-        if (p2t_hole_triangle_centers_set.find(t->GetPoint(0)) != p2t_hole_triangle_centers_set.end()) {
-            continue;
+    auto draw_tris = [z, scale, color, uv_scale](auto& tl, const auto& tris){
+        for (const auto& t : tris) {
+            tl->draw_triangle_wo_normals(
+                {float(t->GetPoint(0)->x), float(t->GetPoint(0)->y), z * scale},
+                {float(t->GetPoint(1)->x), float(t->GetPoint(1)->y), z * scale},
+                {float(t->GetPoint(2)->x), float(t->GetPoint(2)->y), z * scale},
+                color,
+                color,
+                color,
+                {float(t->GetPoint(0)->x) / scale * uv_scale, float(t->GetPoint(0)->y) / scale * uv_scale},
+                {float(t->GetPoint(1)->x) / scale * uv_scale, float(t->GetPoint(1)->y) / scale * uv_scale},
+                {float(t->GetPoint(2)->x) / scale * uv_scale, float(t->GetPoint(2)->y) / scale * uv_scale});
         }
-        if (p2t_hole_triangle_centers_set.find(t->GetPoint(1)) != p2t_hole_triangle_centers_set.end()) {
-            continue;
+    };
+    if (p2t_hole_nodes.empty()) {
+        draw_tris(tl_terrain[TerrainType::UNDEFINED], tris);
+    } else {
+        if (inner_triangles.empty()) {
+            throw std::runtime_error("Triangulate internal error");
         }
-        if (p2t_hole_triangle_centers_set.find(t->GetPoint(2)) != p2t_hole_triangle_centers_set.end()) {
-            continue;
+        for (size_t i = 0; i < inner_triangles.size() - 1; ++i) {
+            draw_tris(tl_terrain[p2t_region_types[i]], inner_triangles[i]);
         }
-        tl_terrain.draw_triangle_wo_normals(
-            {float(t->GetPoint(0)->x), float(t->GetPoint(0)->y), z * scale},
-            {float(t->GetPoint(1)->x), float(t->GetPoint(1)->y), z * scale},
-            {float(t->GetPoint(2)->x), float(t->GetPoint(2)->y), z * scale},
-            color,
-            color,
-            color,
-            {float(t->GetPoint(0)->x) / scale * uv_scale, float(t->GetPoint(0)->y) / scale * uv_scale},
-            {float(t->GetPoint(1)->x) / scale * uv_scale, float(t->GetPoint(1)->y) / scale * uv_scale},
-            {float(t->GetPoint(2)->x) / scale * uv_scale, float(t->GetPoint(2)->y) / scale * uv_scale});
-    }
-    if (!tl_insert.empty() && (tl_terrain_visuals == nullptr)) {
-        throw std::runtime_error("tl_insert without tl_terrain_visuals");
-    }
-    if (tl_terrain_visuals != nullptr) {
-        for (const auto& l : tl_insert) {
-            for (const auto& t : l) {
-                tl_terrain_visuals->draw_triangle_wo_normals(
-                    {t(0).position(0), t(0).position(1), z * scale},
-                    {t(1).position(0), t(1).position(1), z * scale},
-                    {t(2).position(0), t(2).position(1), z * scale},
-                    color,
-                    color,
-                    color,
-                    {t(0).position(0) / scale * uv_scale, t(0).position(1) / scale * uv_scale},
-                    {t(1).position(0) / scale * uv_scale, t(1).position(1) / scale * uv_scale},
-                    {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale});
-            }
-        }
+        draw_tris(tl_terrain[TerrainType::UNDEFINED], inner_triangles.back());
     }
 }

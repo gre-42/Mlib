@@ -18,6 +18,7 @@ template <class TData>
 class Interp;
 enum class RoadType;
 struct RoadProperties;
+enum class TerrainType;
 
 struct RoadStyle {
     std::string texture;
@@ -29,7 +30,7 @@ struct OsmResourceConfig {
     ~OsmResourceConfig();
     std::string filename;
     std::string heightmap;
-    std::vector<std::string> terrain_textures;
+    std::map<TerrainType, std::vector<std::string>> terrain_textures;
     std::string dirt_texture;
     std::map<RoadProperties, RoadStyle> street_texture;
     std::map<RoadType, std::string> street_crossing_texture;

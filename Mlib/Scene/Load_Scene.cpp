@@ -53,6 +53,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
@@ -625,8 +626,11 @@ void LoadScene::operator()(
                 else if (key == "heightmap") {
                     config.heightmap = fpath(value);
                 }
-                else if (key == "terrain_textures") {
-                    config.terrain_textures = string_to_vector(value, fpath);
+                else if (key == "terrain_undefined_textures") {
+                    config.terrain_textures[TerrainType::UNDEFINED] = string_to_vector(value, fpath);
+                }
+                else if (key == "terrain_grass_textures") {
+                    config.terrain_textures[TerrainType::GRASS] = string_to_vector(value, fpath);
                 }
                 else if (key == "dirt_texture") {
                     config.dirt_texture = fpath(value);

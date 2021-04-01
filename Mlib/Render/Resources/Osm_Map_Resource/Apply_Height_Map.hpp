@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -21,9 +22,13 @@ template <class TData>
 class Interp;
 enum class EntranceType;
 class HeightBinding;
+enum class TerrainType;
+template <class EntityType>
+class EntityTypeTriangleList;
+typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 
 void apply_height_map(
-    const TriangleList& tl_terrain,
+    const TerrainTypeTriangleList& tl_terrain,
     const std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     float tunnel_height,
     float extrude_air_support_amount,

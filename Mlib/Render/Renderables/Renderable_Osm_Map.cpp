@@ -6,7 +6,9 @@
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Visibility_Check.hpp>
 
@@ -71,6 +73,10 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     if (VisibilityCheck{ mvp }.orthographic()) {
         return;
     }
+    auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS);
+    if (tit == omr_->tl_terrain_->map().end()) {
+        return;
+    }
     if (street_bvh_ == nullptr) {
         street_bvh_.reset(new Bvh<float, FixedArray<FixedArray<float, 3>, 3>, 3>{{0.1f, 0.1f, 0.1f}, 10});
         for (const auto& lst : omr_->tls_no_grass_) {
@@ -87,11 +93,11 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     assert_true(omr_->much_near_grass_distance_ != INFINITY);
     TriangleSampler2<float> ts{ 392743 };
     ResourceNameCycle rnc{ omr_->scene_node_resources_, omr_->near_grass_resource_names_ };
-    for (const auto& t : omr_->tl_terrain_->triangles_) {
+    for (const auto& t : tit->second->triangles_) {
         auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
         auto mvp_center = dot2d(mvp, TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), center }.affine());
         VisibilityCheck vc_center{ mvp_center };
-        if (vc_center.is_visible(omr_->tl_terrain_->material_, scene_graph_config, external_render_pass, 2 * scene_graph_config.max_distance_near))
+        if (vc_center.is_visible(tit->second->material_, scene_graph_config, external_render_pass, 2 * scene_graph_config.max_distance_near))
         {
             ts.seed(392743);
             rnc.seed(4624052);

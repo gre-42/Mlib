@@ -6,9 +6,11 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -361,19 +363,20 @@ void Mlib::draw_buildings_ceiling_or_ground(
         outline = removed_duplicates(outline);
         //std::reverse(outline.begin(), outline.end());
         tls.push_back(std::make_shared<TriangleList>("ceilings", material));
+        TerrainTypeTriangleList tl_terrain;
+        tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
         BoundingInfo bounding_info{outline, {}, 0.1f};
         triangulate_terrain_or_ceilings(
-            *tls.back(),
-            nullptr,
-            {},
-            bounding_info,
-            {},
-            outline,
-            {},
-            scale,
-            uv_scale,
-            tpe == DrawBuildingPartType::CEILING ? bu.building_top : 0,
-            parse_color(bu.way.tags, "color", building_color));
+            tl_terrain,                                                // tl_terrain
+            bounding_info,                                              // bounding_info
+            {},                                                         // steiner_points
+            outline,                                                    // bounding_contour
+            {},                                                         // hole_triangles
+            {},                                                         // region_contours
+            scale,                                                      // scale
+            uv_scale,                                                   // uv_scale
+            tpe == DrawBuildingPartType::CEILING ? bu.building_top : 0, // z
+            parse_color(bu.way.tags, "color", building_color));         // color
     }
 }
 

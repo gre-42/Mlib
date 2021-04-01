@@ -24,6 +24,10 @@ inline std::string road_type_to_string(RoadType st) {
     }
 }
 
+inline std::string to_string(RoadType st) {
+    return road_type_to_string(st);
+}
+
 struct RoadProperties {
     RoadType type;
     size_t nlanes;
