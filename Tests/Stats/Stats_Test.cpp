@@ -7,6 +7,7 @@
 #include <Mlib/Stats/Mean_Variance_Iterator.hpp>
 #include <Mlib/Stats/Neighbor_Db.hpp>
 #include <Mlib/Stats/Quantile.hpp>
+#include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Stats/Ransac.hpp>
 #include <Mlib/Stats/Robust.hpp>
 #include <Mlib/Stats/Sort.hpp>
@@ -213,6 +214,11 @@ void test_t_cdf() {
     assert_isclose(student_t_sf<double>(3., 4), 0.019971, 1e-5);
 }
 
+void test_random_number_generators() {
+    UniformRandomNumberGenerator<float> rng{1, 0.f, 1.f};
+    assert_isclose(rng(), 0.131538f);
+}
+
 #ifdef _MSC_VER
 #pragma float_control(except, on)
 #endif
@@ -239,5 +245,6 @@ int main(int argc, char** argv) {
     test_mean_variance_iterator();
     test_incomplete_beta();
     test_t_cdf();
+    test_random_number_generators();
     return 0;
 }
