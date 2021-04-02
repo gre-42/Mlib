@@ -372,7 +372,7 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_terrain,
             0,
             terrain_color,
-            getenv_default("CONTOUR_PREFIX", ""));
+            getenv_default("CONTOUR_FILENAME", ""));
         if (config.blend_street) {
             auto& tl = *osm_triangle_lists.tl_terrain_visuals[TerrainType::UNDEFINED];
             for (const auto& t : osm_triangle_lists.street_triangles()) {
