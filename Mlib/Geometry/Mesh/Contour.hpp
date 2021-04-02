@@ -39,11 +39,10 @@ void delete_triangles_inside_contours(
     inner_triangles.resize(contours.size());
 
     std::map<std::pair<TPoint, TPoint>, size_t> contour_edges;
-    std::set<O> contour_vertices;
-    std::map<O, size_t> inner_vertices;
+    std::map<std::pair<TPoint, TPoint>, size_t> inner_edges;
+    // Convert contour pathes to edges, asserting that the contours are closed.
     for (size_t contour_id = 0; contour_id < contours.size(); ++contour_id) {
         const auto& contour = contours[contour_id];
-        // Convert contour path to edges, asserting that the contour is closed.
         for (auto it = contour.begin(); it != contour.end(); ++it) {
             auto s = it;
             ++s;
@@ -58,57 +57,68 @@ void delete_triangles_inside_contours(
                 throw std::runtime_error("Could not insert contour edge");
             }
         }
-        // Delete inside triangles touching a contour,
-        // and add their inner vertices to the "inner_vertices" set.
-        triangles.remove_if([contour_id, &contour_edges, &inner_vertices, &inner_triangles](const TTriangle& t){
-            for (size_t i = 0; i < 3; ++i) {
-                const auto& a = t(i);
-                const auto& b = t((i + 1) % 3);
-                const auto& c = t((i + 2) % 3);
-                auto it = contour_edges.find(std::make_pair(O{b}, O{a}));
-                if (it != contour_edges.end()) {
-                    // ignore result
-                    inner_vertices.insert(std::make_pair(O{c}, it->second));
-                    inner_triangles[contour_id].push_back(t);
-                    return true;
-                }
-            }
-            return false;
-        });
-        contour_vertices.insert(contour.begin(), contour.end());
     }
-    // Add all vertices touching an inside vertex
-    // to the "inner_vertices" set,
-    // and loop until nothing changes.
-    while(true) {
-        size_t old_size = inner_vertices.size();
-        for (const auto& t : triangles) {
-            for (size_t iv = 0; iv < 3; ++iv) {
-                auto it = inner_vertices.find(O{t(iv)});
-                if (it != inner_vertices.end()) {
-                    for (size_t iv1 = 0; iv1 < 3; ++iv1) {
-                        if (!contour_vertices.contains(O{t(iv1)})) {
-                            inner_vertices.insert(std::make_pair(O{t(iv1)}, it->second));
-                        }
-                    }
-                }
-            }
-        }
-        if (inner_vertices.size() == old_size) {
-            break;
-        }
-    }
-    // Delete all triangles containing an inner vertex.
-    triangles.remove_if([&inner_vertices, &inner_triangles](const TTriangle& t){
+    // Delete inside triangles having a contour edge,
+    // and add their inner edges to the "inner_edges" set.
+    triangles.remove_if([&contour_edges, &inner_edges, &inner_triangles](const TTriangle& t){
         for (size_t i = 0; i < 3; ++i) {
-            const auto a = inner_vertices.find(O{t(i)});
-            if (a != inner_vertices.end()) {
-                inner_triangles[a->second].push_back(t);
+            const auto& a = t(i);
+            const auto& b = t((i + 1) % 3);
+            const auto& c = t((i + 2) % 3);
+            auto it = contour_edges.find(std::make_pair(O{a}, O{b}));
+            if (it != contour_edges.end()) {
+                if (auto bc = std::make_pair(O{b}, O{c}); contour_edges.find(bc) == contour_edges.end()) {
+                    inner_edges.insert(std::make_pair(bc, it->second));
+                }
+                if (auto ca = std::make_pair(O{c}, O{a}); contour_edges.find(ca) == contour_edges.end()) {
+                    inner_edges.insert(std::make_pair(ca, it->second));
+                }
+                inner_triangles[it->second].push_back(t);
                 return true;
             }
         }
         return false;
     });
+    // Add all vertices touching an inside vertex
+    // to the "inner_vertices" set,
+    // and loop until nothing changes.
+    while(true) {
+        size_t old_size = inner_edges.size();
+        triangles.remove_if([&inner_edges, &inner_triangles, &contour_edges](const TTriangle& t){
+            size_t contour_id = SIZE_MAX;
+            for (size_t i = 0; i < 3; ++i) {
+                const auto& a = t(i);
+                const auto& b = t((i + 1) % 3);
+                auto ba = std::make_pair(O{b}, O{a});
+                auto it = inner_edges.find(ba);
+                if (it != inner_edges.end()) {
+                    if (contour_id == SIZE_MAX) {
+                        contour_id = it->second;
+                    } else {
+                        if (contour_id != it->second) {
+                            throw std::runtime_error("Could not determine contour ID");
+                        }
+                    }
+                }
+            }
+            if (contour_id != SIZE_MAX) {
+                for (size_t i = 0; i < 3; ++i) {
+                    const auto& a = t(i);
+                    const auto& b = t((i + 1) % 3);
+                    auto ab = std::make_pair(O{a}, O{b});
+                    if (contour_edges.find(ab) == contour_edges.end()) {
+                        inner_edges.insert(std::make_pair(ab, contour_id));
+                    }
+                }
+                inner_triangles[contour_id].push_back(t);
+                return true;
+            }
+            return false;
+        });
+        if (inner_edges.size() == old_size) {
+            break;
+        }
+    }
 }
 
 }
