@@ -280,7 +280,7 @@ void Mlib::draw_roofs(
         way1.erase(way1.begin());
         float zz0 = z0;
         float zz1 = z1;
-        if (bu.area > 0) {
+        if (bu.area < 0) {
             std::swap(zz0, zz1);
         }
         auto a = way1.begin();
@@ -796,8 +796,8 @@ void Mlib::draw_building_walls(
             auto s = it;
             ++s;
             if (s != sw.end()) {
-                const auto& p0 = bu.area > 0 ? *s : *it;
-                const auto& p1 = bu.area > 0 ? *it : *s;
+                const auto& p0 = bu.area < 0 ? *s : *it;
+                const auto& p1 = bu.area < 0 ? *it : *s;
                 float width = std::sqrt(sum(squared(p0 - p1)));
                 float height = (bu.building_top - bu.building_bottom) * scale;
                 if (steiner_points != nullptr) {
