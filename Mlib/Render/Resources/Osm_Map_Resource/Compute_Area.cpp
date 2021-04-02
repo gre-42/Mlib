@@ -4,7 +4,7 @@
 
 using namespace Mlib;
 
-float Mlib::compute_area(
+float Mlib::compute_area_clockwise(
     const std::list<std::string>& nd,
     const std::map<std::string, Node>& nodes,
     float scale)
@@ -15,8 +15,8 @@ float Mlib::compute_area(
         auto s = it;
         ++s;
         if (s != nd.end()) {
-            const auto& a = nodes.at(*s).position;
-            const auto& b = nodes.at(*it).position;
+            const auto& a = nodes.at(*it).position;
+            const auto& b = nodes.at(*s).position;
             area2 += (b(0) - a(0)) * (b(1) + a(1));
         }
     }

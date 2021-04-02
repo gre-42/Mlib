@@ -1,13 +1,13 @@
 #include "Triangulate_Terrain_Or_Ceilings.hpp"
 #include <Mlib/Geometry/Mesh/Contour.hpp>
+#include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <poly2tri/poly2tri.h>
-#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
-#include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 
 using namespace Mlib;
 
@@ -22,6 +22,66 @@ private:
     p2t::Triangle* v;
 };
 
+std::ostream& operator << (std::ostream& ostr, const p2t::Point& p) {
+    ostr << p.x << " " << p.y;
+    return ostr;
+}
+
+}
+
+void plot_tris(const std::string& filename, const std::list<p2t::Triangle*>& tris) {
+    std::list<FixedArray<ColoredVertex, 3>> triangles;
+    for (const auto& t : tris) {
+        triangles.push_back(FixedArray<ColoredVertex, 3>{
+            ColoredVertex{.position = {(float)t->GetPoint(0)->x, (float)t->GetPoint(0)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
+            ColoredVertex{.position = {(float)t->GetPoint(1)->x, (float)t->GetPoint(1)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
+            ColoredVertex{.position = {(float)t->GetPoint(2)->x, (float)t->GetPoint(2)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}}
+        });
+    }
+    save_obj(filename, IndexedFaceSet<float, size_t>{triangles});
+}
+
+float compute_area_ccw(
+    const std::vector<p2t::Point*>& polygon,
+    float scale)
+{
+    // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
+    float area2 = 0;
+    for (auto it = polygon.begin(); it != polygon.end(); ++it) {
+        auto s = it;
+        ++s;
+        const p2t::Point& a = **it;
+        const p2t::Point& b = (s != polygon.end()) ? **s : *polygon.front();
+        area2 += (a.x - b.x) * (b.y + a.y);
+    }
+    return area2 / 2 / squared(scale);
+}
+
+float compute_area_ccw(
+    const std::list<FixedArray<float, 3>>& polygon,
+    float scale)
+{
+    // Source: https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
+    float area2 = 0;
+    for (auto it = polygon.begin(); it != polygon.end(); ++it) {
+        auto s = it;
+        ++s;
+        const auto& a = *it;
+        const auto& b = (s != polygon.end()) ? **s : *polygon.front();
+        area2 += (a(0) - b(0)) * (b(1) + a(1));
+    }
+    return area2 / 2 / squared(scale);
+}
+
+void check_contour(const std::vector<p2t::Point*>& contour) {
+    if ((contour.front()->x == contour.back()->x) &&
+        (contour.front()->y == contour.back()->y))
+    {
+        throw std::runtime_error("Triangulation boundary contour is closed");
+    }
+    if (compute_area_ccw(contour, 1.f) < 0.f) {
+        throw std::runtime_error("Contour is not counterclockwise");
+    }
 }
 
 void Mlib::triangulate_terrain_or_ceilings(
@@ -51,6 +111,15 @@ void Mlib::triangulate_terrain_or_ceilings(
     auto final_bounding_contour = bounding_contour.empty()
         ? std::vector<p2t::Point*>{&p00, &p01, &p11, &p10}
         : p2t_bounding_contour;
+    std::reverse(final_bounding_contour.begin(), final_bounding_contour.end());
+    // for (const auto& p : final_bounding_contour) {
+    //     std::cerr << "c " << p->x << " " << p->y << std::endl;
+    // }
+    try {
+        check_contour(final_bounding_contour);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("Could not add bounding contour: " + std::string(e.what()));
+    }
     p2t::CDT cdt{final_bounding_contour};
     //PolygonDrawer pd;
     //pd.draw_line(p00, p01, 10);
@@ -96,13 +165,27 @@ void Mlib::triangulate_terrain_or_ceilings(
             cnt.push_back(&pts.back());
             // draw_node(triangles, FixedArray<float, 2>{p(0), p(1)}, 0.1 * float(i++) / c.size());
         }
+        check_contour(cnt);
         cdt.AddHole(cnt);
     };
-    for (const std::list<FixedArray<float, 3>>& c : hole_contours) {
-        add_contour(TerrainType::HOLE, c);
+    for (std::list<FixedArray<float, 3>>& c : hole_contours) {
+        try {
+            if (compute_area_ccw(c, scale) > 0) {
+                add_contour(TerrainType::HOLE, c);
+            } else {
+                std::reverse(c.begin(), c.end());
+                add_contour(TerrainType::UNDEFINED, c);
+            }
+        } catch (std::runtime_error& e) {
+            throw std::runtime_error("Could not add hole contour: " + std::string(e.what()));
+        }
     }
     for (const auto& r : region_contours) {
-        add_contour(r.first, r.second);
+        try {
+            add_contour(r.first, r.second);
+        } catch (std::runtime_error& e) {
+            throw std::runtime_error("Could not add region contour: " + std::string(e.what()));
+        }
     }
     std::list<p2t::Point> p2t_grid_nodes;
     for (const auto& p : steiner_points) {
@@ -119,20 +202,18 @@ void Mlib::triangulate_terrain_or_ceilings(
     } else {
         auto tris0 = cdt.GetMap();
         tris.insert(tris.end(), tris0.begin(), tris0.end());
+        // plot_tris("/tmp/wrapped_tris0.obj", tris);
         std::list<PTri>& wrapped_tris = reinterpret_cast<std::list<PTri>&>(tris);
         std::vector<std::list<PTri>>& wrapped_itris = reinterpret_cast<std::vector<std::list<PTri>>&>(inner_triangles);
         auto all_contours = p2t_hole_contours;
         all_contours.push_back(final_bounding_contour);
         delete_triangles_inside_contours(all_contours, wrapped_tris, wrapped_itris);
-        std::list<FixedArray<ColoredVertex, 3>> triangles;
-        for (const auto& t : wrapped_tris) {
-            triangles.push_back(FixedArray<ColoredVertex, 3>{
-                ColoredVertex{.position = {(float)t(0)->x, (float)t(0)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
-                ColoredVertex{.position = {(float)t(1)->x, (float)t(1)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
-                ColoredVertex{.position = {(float)t(2)->x, (float)t(2)->y, 0.f}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}}
-            });
-        }
-        save_obj("/tmp/wrapped_tris1.obj", IndexedFaceSet<float, size_t>{triangles});
+        // plot_tris("/tmp/wrapped_tris1.obj", tris);
+        // save_obj("/tmp/holes.obj", IndexedFaceSet<float, size_t>{hole_triangles});
+        // std::cerr << "nresidual " << wrapped_tris.size() << std::endl;
+        // for (const auto& l : wrapped_itris) {
+        //     std::cerr << "ninner " << l.size() << std::endl;
+        // }
     }
     auto draw_tris = [z, scale, color, uv_scale](auto& tl, const auto& tris){
         for (const auto& t : tris) {
@@ -155,8 +236,16 @@ void Mlib::triangulate_terrain_or_ceilings(
             throw std::runtime_error("Triangulate internal error");
         }
         for (size_t i = 0; i < inner_triangles.size() - 1; ++i) {
-            draw_tris(tl_terrain[p2t_region_types[i]], inner_triangles[i]);
+            if (p2t_region_types[i] != TerrainType::HOLE) {
+                draw_tris(tl_terrain[p2t_region_types[i]], inner_triangles[i]);
+            }
         }
         draw_tris(tl_terrain[TerrainType::UNDEFINED], inner_triangles.back());
     }
+    // for (const auto& l : tl_terrain.map()) {
+    //     save_obj("/tmp/" + to_string(l.first) + ".obj", IndexedFaceSet<float, size_t>{l.second->triangles_});
+    //     for (const auto& t : l.second->triangles_) {
+    //         std::cerr << t << std::endl;
+    //     }
+    // }
 }

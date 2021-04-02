@@ -96,7 +96,7 @@ void delete_triangles_inside_contours(
                         contour_id = it->second;
                     } else {
                         if (contour_id != it->second) {
-                            throw std::runtime_error("Could not determine contour ID");
+                            std::cerr << "Could not determine contour ID" << std::endl;
                         }
                     }
                 }

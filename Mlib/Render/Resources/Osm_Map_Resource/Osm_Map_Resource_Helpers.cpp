@@ -361,22 +361,31 @@ void Mlib::draw_buildings_ceiling_or_ground(
             outline.push_back(*it);
         }
         outline = removed_duplicates(outline);
-        //std::reverse(outline.begin(), outline.end());
+        if (bu.area == 0.f) {
+            throw std::runtime_error("Building area not computed");
+        }
+        if (bu.area < 0.f) {
+            std::reverse(outline.begin(), outline.end());
+        }
         tls.push_back(std::make_shared<TriangleList>("ceilings", material));
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
         BoundingInfo bounding_info{outline, {}, 0.1f};
-        triangulate_terrain_or_ceilings(
-            tl_terrain,                                                // tl_terrain
-            bounding_info,                                              // bounding_info
-            {},                                                         // steiner_points
-            outline,                                                    // bounding_contour
-            {},                                                         // hole_triangles
-            {},                                                         // region_contours
-            scale,                                                      // scale
-            uv_scale,                                                   // uv_scale
-            tpe == DrawBuildingPartType::CEILING ? bu.building_top : 0, // z
-            parse_color(bu.way.tags, "color", building_color));         // color
+        try {
+            triangulate_terrain_or_ceilings(
+                tl_terrain,                                                // tl_terrain
+                bounding_info,                                              // bounding_info
+                {},                                                         // steiner_points
+                outline,                                                    // bounding_contour
+                {},                                                         // hole_triangles
+                {},                                                         // region_contours
+                scale,                                                      // scale
+                uv_scale,                                                   // uv_scale
+                tpe == DrawBuildingPartType::CEILING ? bu.building_top : 0, // z
+                parse_color(bu.way.tags, "color", building_color));         // color
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Could not triangulate building " + bu.id + ": " + e.what());
+        }
     }
 }
 
@@ -528,7 +537,7 @@ void Mlib::add_trees_to_forest_outlines(
         if ((tags.find("landuse") != tags.end() && tags.at("landuse") == "forest") ||
             (tags.find("natural") != tags.end() && tags.at("natural") == "wood"))
         {
-            float area = compute_area(w.second.nd, nodes, scale);
+            float area = compute_area_clockwise(w.second.nd, nodes, scale);
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;
@@ -545,7 +554,7 @@ void Mlib::add_trees_to_forest_outlines(
                     if (aa < 0 || aa > 0.91f) {
                         continue;
                     }
-                    FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) + tree_inwards_distance * scale * n * sign(area);
+                    FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * n * sign(area);
                     if (std::isnan(min_dist_to_road) || !ground_bvh.has_neighbor(p, min_dist_to_road * scale)) {
                         add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
                         // object_resource_descriptors.push_back({
@@ -603,7 +612,7 @@ void Mlib::add_beacons_to_raceways(
 //             const auto& tags = w.second.tags;
 //             if ((tags.find("landuse") != tags.end() && (tags.at("landuse") == "farmland" || tags.at("landuse") == "meadow")))
 //             {
-//                 float area = compute_area(w.second.nd, nodes, scale);
+//                 float area = compute_area_clockwise(w.second.nd, nodes, scale);
 //                 for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
 //                     auto s = it;
 //                     ++s;
@@ -754,7 +763,10 @@ void Mlib::compute_building_area(
     float scale)
 {
     for (auto& b : buildings) {
-        b.area = compute_area(b.way.nd, nodes, scale);
+        b.area = compute_area_clockwise(b.way.nd, nodes, scale);
+        if (b.area < 0.f) {
+            std::cerr << "Negative building area: ID " << b.id << " area " << b.area << std::endl;
+        }
     }
 }
 

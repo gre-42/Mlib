@@ -22,7 +22,7 @@ void Mlib::report_osm_problems(
         {
             continue;
         }
-        float area = compute_area(w.second.nd, nodes, 1.f);
+        float area = compute_area_clockwise(w.second.nd, nodes, 1.f);
         std::string n_old;
         for (const auto& n : w.second.nd) {
             if (n.empty()) {
@@ -31,7 +31,7 @@ void Mlib::report_osm_problems(
             if (!n_old.empty()) {
                 auto edge = std::make_pair(n_old, n);
                 auto iedge = std::make_pair(n, n_old);
-                if (area < 0) {
+                if (area > 0) {
                     std::swap(edge.first, edge.second);
                     std::swap(iedge.first, iedge.second);
                 }
