@@ -754,7 +754,7 @@ OsmMapResource::OsmMapResource(
         osm_triangle_lists.insert(air_triangle_lists);
     }
 
-    // Normals are invalid after "apply_height_map"
+    // Normals are invalid after "apply_heightmap"
     for (auto& l2 : osm_triangle_lists.tls_wo_subtraction_and_water()) {
         l2->calculate_triangle_normals();
     }

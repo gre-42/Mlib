@@ -1,4 +1,4 @@
-#include "Apply_Height_Map.hpp"
+#include "Apply_Heightmap.hpp"
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
@@ -30,7 +30,7 @@ struct NeighborWeight {
 
 using namespace Mlib;
 
-void Mlib::apply_height_map(
+void Mlib::apply_heightmap(
     const TerrainTypeTriangleList& tl_terrain,
     const std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     float tunnel_height,
@@ -226,6 +226,7 @@ void Mlib::apply_height_map(
         FixedArray<float, 2> p = normalization_matrix.transform(vc);
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+            std::cerr << "del " << p << std::endl;
             // std::cerr << "Height out of bounds." << std::endl;
             for (auto& pc : position.second) {
                 if (!vertices_to_delete.insert(pc).second) {

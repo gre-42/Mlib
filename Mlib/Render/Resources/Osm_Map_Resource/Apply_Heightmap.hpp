@@ -27,7 +27,7 @@ template <class EntityType>
 class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
 
-void apply_height_map(
+void apply_heightmap(
     const TerrainTypeTriangleList& tl_terrain,
     const std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
     float tunnel_height,

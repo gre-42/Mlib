@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Apply_Height_Map.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Apply_Heightmap.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -102,12 +102,12 @@ void Mlib::smoothen_and_apply_heightmap(
         }
     };
     if (!config.heightmap.empty()) {
-        LOG_INFO("apply_height_map");
+        LOG_INFO("apply_heightmap");
         std::list<std::shared_ptr<TriangleList>> tls_smoothed;
         std::list<FixedArray<float, 3>*> smoothed_vertices;
         get_smoothed_vertices(tls_smoothed, smoothed_vertices, SmoothingClass::RAISED);
         std::set<const FixedArray<float, 3>*> vertices_to_delete;
-        apply_height_map(
+        apply_heightmap(
             *osm_triangle_lists.tl_terrain,
             osm_triangle_lists.entrances,
             config.default_tunnel_pipe_height,
