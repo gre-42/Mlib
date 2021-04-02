@@ -11,11 +11,11 @@ using namespace Mlib;
 
 static void convert_to_2d(
     std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles_2d,
-    std::list<FixedArray<float, 2>>& contour_2d,
+    std::list<std::list<FixedArray<float, 2>>>& contours_2d,
     std::list<FixedArray<float, 2>>& highlighted_nodes_2d,
     std::list<FixedArray<float, 2>>& crossed_nodes_2d,
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles_3d,
-    const std::list<FixedArray<float, 3>>& contour_3d,
+    const std::list<std::list<FixedArray<float, 3>>>& contours_3d,
     const std::list<FixedArray<float, 3>>& highlighted_nodes,
     const std::list<FixedArray<float, 3>>& crossed_nodes)
 {
@@ -25,8 +25,11 @@ static void convert_to_2d(
             FixedArray<float, 2>{(*t)(1).position(0), (*t)(1).position(1)},
             FixedArray<float, 2>{(*t)(2).position(0), (*t)(2).position(1)}});
     }
-    for (const auto& c : contour_3d) {
-        contour_2d.push_back({c(0), c(1)});
+    for (const auto& c : contours_3d) {
+        contours_2d.emplace_back();
+        for (const auto& p : c) {
+            contours_2d.back().push_back({p(0), p(1)});
+        }
     }
     for (const auto& n : highlighted_nodes) {
         highlighted_nodes_2d.push_back(FixedArray<float, 2>{n(0), n(1)});
@@ -41,7 +44,7 @@ PpmImage Mlib::plot_mesh(
     size_t line_thickness,
     size_t point_size,
     const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
-    const std::list<FixedArray<float, 2>>& contour,
+    const std::list<std::list<FixedArray<float, 2>>>& contours,
     const std::list<FixedArray<float, 2>>& highlighted_nodes,
     const std::list<FixedArray<float, 2>>& crossed_nodes)
 {
@@ -51,8 +54,10 @@ PpmImage Mlib::plot_mesh(
         np.add_point(t(1));
         np.add_point(t(2));
     }
-    for (const auto& c : contour) {
-        np.add_point(c);
+    for (const auto& c : contours) {
+        for (const auto& p : c) {
+            np.add_point(p);
+        }
     }
     for (const auto& n : highlighted_nodes) {
         np.add_point(n);
@@ -73,17 +78,19 @@ PpmImage Mlib::plot_mesh(
         im.draw_fill_rect(ArrayShape{a2i(b(0)), a2i(b(1))}, point_size, Rgb24::blue());
         im.draw_fill_rect(ArrayShape{a2i(c(0)), a2i(c(1))}, point_size, Rgb24::blue());
     }
-    for (auto it = contour.begin(); ; ) {
-        auto it0 = it++;
-        if (it == contour.end()) {
-            break;
-        }
-        im.draw_line(trafo(*it0), trafo(*it), 1, Rgb24::red(), rvalue_address(Rgb24::nan()));
+    for (const auto& c : contours) {
+        for (auto it = c.begin(); ; ) {
+            auto it0 = it++;
+            if (it == c.end()) {
+                break;
+            }
+            im.draw_line(trafo(*it0), trafo(*it), 1, Rgb24::red(), rvalue_address(Rgb24::nan()));
 
-    }
-    if (!contour.empty()) {
-        auto a = trafo(contour.front());
-        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::green());
+        }
+        if (!c.empty()) {
+            auto a = trafo(c.front());
+            im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::green());
+        }
     }
     for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);
@@ -100,7 +107,7 @@ PpmImage Mlib::plot_mesh(
 void Mlib::plot_mesh(
     Svg<float>& svg,
     const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
-    const std::list<FixedArray<float, 2>>& contour,
+    const std::list<std::list<FixedArray<float, 2>>>& contours,
     const std::list<FixedArray<float, 2>>& highlighted_nodes)
 {
     NormalizedPointsFixed np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::MINIMUM};
@@ -109,8 +116,10 @@ void Mlib::plot_mesh(
         np.add_point(t(1));
         np.add_point(t(2));
     }
-    for (const auto& c : contour) {
-        np.add_point(c);
+    for (const auto& c : contours) {
+        for (const auto& p : c) {
+            np.add_point(p);
+        }
     }
     for (const auto& n : highlighted_nodes) {
         np.add_point(n);
@@ -130,15 +139,16 @@ void Mlib::plot_mesh(
         // im.draw_fill_rect(ArrayShape{a2i(b(0)), a2i(b(1))}, 4, Rgb24::blue());
         // im.draw_fill_rect(ArrayShape{a2i(c(0)), a2i(c(1))}, 4, Rgb24::blue());
     }
-    for (auto it = contour.begin(); ; ) {
-        auto it0 = it++;
-        if (it == contour.end()) {
-            break;
+    for (const auto& c : contours) {
+        for (auto it = c.begin(); ; ) {
+            auto it0 = it++;
+            if (it == c.end()) {
+                break;
+            }
+            auto a = trafo(*it0);
+            auto b = trafo(*it);
+            svg.draw_line(a(0), a(1), b(0), b(1), 1.f, "red");
         }
-        auto a = trafo(*it0);
-        auto b = trafo(*it);
-        svg.draw_line(a(0), a(1), b(0), b(1), 1.f, "red");
-
     }
     for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);
@@ -162,47 +172,47 @@ PpmImage Mlib::plot_mesh(
     size_t line_thickness,
     size_t point_size,
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
-    const std::list<FixedArray<float, 3>>& contour,
+    const std::list<std::list<FixedArray<float, 3>>>& contours,
     const std::list<FixedArray<float, 3>>& highlighted_nodes,
     const std::list<FixedArray<float, 3>>& crossed_nodes)
 {
     std::list<FixedArray<FixedArray<float, 2>, 3>> triangles_2d;
-    std::list<FixedArray<float, 2>> contour_2d;
+    std::list<std::list<FixedArray<float, 2>>> contours_2d;
     std::list<FixedArray<float, 2>> highlighted_nodes_2d;
     std::list<FixedArray<float, 2>> crossed_nodes_2d;
     convert_to_2d(
         triangles_2d,
-        contour_2d,
+        contours_2d,
         highlighted_nodes_2d,
         crossed_nodes_2d,
         triangles,
-        contour,
+        contours,
         highlighted_nodes,
         crossed_nodes);
-    return plot_mesh(image_size, line_thickness, point_size, triangles_2d, contour_2d, highlighted_nodes_2d, crossed_nodes_2d);
+    return plot_mesh(image_size, line_thickness, point_size, triangles_2d, contours_2d, highlighted_nodes_2d, crossed_nodes_2d);
 }
 
 void Mlib::plot_mesh(
     Svg<float>& svg,
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
-    const std::list<FixedArray<float, 3>>& contour,
+    const std::list<std::list<FixedArray<float, 3>>>& contours,
     const std::list<FixedArray<float, 3>>& highlighted_nodes)
 {
     std::list<FixedArray<FixedArray<float, 2>, 3>> triangles_2d;
-    std::list<FixedArray<float, 2>> contour_2d;
+    std::list<std::list<FixedArray<float, 2>>> contours_2d;
     std::list<FixedArray<float, 2>> highlighted_nodes_2d;
     std::list<FixedArray<float, 2>> crossed_nodes_2d;
     std::list<FixedArray<float, 3>> crossed_nodes;
     convert_to_2d(
         triangles_2d,
-        contour_2d,
+        contours_2d,
         highlighted_nodes_2d,
         crossed_nodes_2d,
         triangles,
-        contour,
+        contours,
         highlighted_nodes,
         crossed_nodes);
-    plot_mesh(svg, triangles_2d, contour_2d, highlighted_nodes_2d);
+    plot_mesh(svg, triangles_2d, contours_2d, highlighted_nodes_2d);
 }
 
 void Mlib::plot_mesh_svg(
@@ -210,7 +220,7 @@ void Mlib::plot_mesh_svg(
     float width,
     float height,
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
-    const std::list<FixedArray<float, 3>>& contour,
+    const std::list<std::list<FixedArray<float, 3>>>& contour,
     const std::list<FixedArray<float, 3>>& highlighted_nodes)
 {
     std::ofstream ofstr{filename};

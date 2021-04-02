@@ -226,7 +226,6 @@ void Mlib::apply_heightmap(
         FixedArray<float, 2> p = normalization_matrix.transform(vc);
         float z;
         if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
-            std::cerr << "del " << p << std::endl;
             // std::cerr << "Height out of bounds." << std::endl;
             for (auto& pc : position.second) {
                 if (!vertices_to_delete.insert(pc).second) {

@@ -1,6 +1,9 @@
 #include "Triangulate_Terrain_Or_Ceilings.hpp"
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
+#include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
@@ -39,6 +42,47 @@ void plot_tris(const std::string& filename, const std::list<p2t::Triangle*>& tri
         });
     }
     save_obj(filename, IndexedFaceSet<float, size_t>{triangles});
+}
+
+void plot_contours(const std::string& filename, const std::vector<std::vector<p2t::Point*>>& p2t_hole_contours) {
+    std::list<std::list<FixedArray<float, 3>>> contours;
+    std::list<FixedArray<float, 3>> highlighted_nodes;
+    for (const auto& c : p2t_hole_contours) {
+        contours.emplace_back();
+        for (const auto& p : c) {
+            contours.back().push_back({(float)p->x, -(float)p->y, 0.f});
+        }
+        contours.back().push_back({(float)c.front()->x, -(float)c.front()->y, 0.f});
+    }
+    typedef FixedArray<float, 2> P2;
+    typedef FixedArray<P2, 2> Edge;
+    Bvh<float, Edge, 2> bvh{{0.1f, 0.1f}, 10};
+    for (const auto& c : p2t_hole_contours) {
+        for (auto it = c.begin(); it != c.end(); ++it) {
+            auto s = it;
+            ++s;
+            auto edge = Edge{
+                P2{(float)(*it)->x, -(float)(*it)->y},
+                (s == c.end())
+                    ? P2{(float)c.front()->x, -(float)c.front()->y}
+                    : P2{(float)(*s)->x, -(float)(*s)->y}};
+            if (bvh.visit(BoundingSphere{edge}, [&edge, &highlighted_nodes](const Edge& data){
+                FixedArray<float, 2> intersection;
+                if (intersect_lines(intersection, edge, data, 0.f, 0.f, false, true)) {
+                    highlighted_nodes.push_back({intersection(0), intersection(1), 0.f});
+                }
+                return true;
+            }));
+            bvh.insert(edge, edge);
+        }
+    }
+    plot_mesh_svg(
+        filename,
+        4200,
+        4000,
+        {},
+        contours,
+        highlighted_nodes);
 }
 
 float compute_area_ccw(
@@ -214,6 +258,7 @@ void Mlib::triangulate_terrain_or_ceilings(
         // for (const auto& l : wrapped_itris) {
         //     std::cerr << "ninner " << l.size() << std::endl;
         // }
+        plot_contours("/tmp/contours.svg", all_contours);
     }
     auto draw_tris = [z, scale, color, uv_scale](auto& tl, const auto& tris){
         for (const auto& t : tris) {
