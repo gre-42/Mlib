@@ -2,7 +2,6 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
-#include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
