@@ -1,4 +1,5 @@
 #include "Osm_Map_Resource.hpp"
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Mesh_Subtract.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
@@ -370,7 +371,8 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_terrain,
             0,
-            terrain_color);
+            terrain_color,
+            getenv_default("CONTOUR_PREFIX", ""));
         if (config.blend_street) {
             auto& tl = *osm_triangle_lists.tl_terrain_visuals[TerrainType::UNDEFINED];
             for (const auto& t : osm_triangle_lists.street_triangles()) {

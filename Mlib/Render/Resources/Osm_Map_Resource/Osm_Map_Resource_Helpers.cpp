@@ -373,7 +373,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
         BoundingInfo bounding_info{outline, {}, 0.1f};
         try {
             triangulate_terrain_or_ceilings(
-                tl_terrain,                                                // tl_terrain
+                tl_terrain,                                                 // tl_terrain
                 bounding_info,                                              // bounding_info
                 {},                                                         // steiner_points
                 outline,                                                    // bounding_contour
@@ -382,7 +382,8 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 scale,                                                      // scale
                 uv_scale,                                                   // uv_scale
                 tpe == DrawBuildingPartType::CEILING ? bu.building_top : 0, // z
-                parse_color(bu.way.tags, "color", building_color));         // color
+                parse_color(bu.way.tags, "color", building_color),          // color
+                "");                                                        // contour_filename
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Could not triangulate building " + bu.id + ": " + e.what());
         }

@@ -78,8 +78,8 @@ void plot_contours(const std::string& filename, const std::vector<std::vector<p2
     }
     plot_mesh_svg(
         filename,
-        4200,
-        4000,
+        600,
+        500,
         {},
         contours,
         highlighted_nodes);
@@ -138,7 +138,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     float scale,
     float uv_scale,
     float z,
-    const FixedArray<float, 3>& color)
+    const FixedArray<float, 3>& color,
+    const std::string& contour_filename)
 {
     p2t::Point p00{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width};
     p2t::Point p01{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width};
@@ -258,7 +259,9 @@ void Mlib::triangulate_terrain_or_ceilings(
         // for (const auto& l : wrapped_itris) {
         //     std::cerr << "ninner " << l.size() << std::endl;
         // }
-        plot_contours("/tmp/contours.svg", all_contours);
+        if (!contour_filename.empty()) {
+            plot_contours(contour_filename, all_contours);
+        }
     }
     auto draw_tris = [z, scale, color, uv_scale](auto& tl, const auto& tris){
         for (const auto& t : tris) {

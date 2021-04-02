@@ -27,6 +27,7 @@ void triangulate_terrain_or_ceilings(
     float scale,
     float uv_scale,
     float z,
-    const FixedArray<float, 3>& color);
+    const FixedArray<float, 3>& color,
+    const std::string& contour_filename);
 
 }

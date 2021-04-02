@@ -147,7 +147,7 @@ void Mlib::plot_mesh(
             }
             auto a = trafo(*it0);
             auto b = trafo(*it);
-            svg.draw_line(a(0), a(1), b(0), b(1), 1.f, "red");
+            svg.draw_line(a(0), a(1), b(0), b(1), 0.05f, "red");
         }
     }
     for (const auto& n : highlighted_nodes) {
