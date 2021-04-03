@@ -21,6 +21,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Region_Contours.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -41,6 +42,7 @@
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <poly2tri/point_exception.hpp>
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -119,6 +121,9 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
+
+    std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> region_contours =
+        get_region_contours(nodes, ways);
 
     auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays(config.tunnel_pipe_resource_name)->cvas;
     if (tunnel_pipe_cvas.size() != 1) {
@@ -316,6 +321,12 @@ OsmMapResource::OsmMapResource(
             if (coords.size() != 2) {
                 throw std::runtime_error("MESH_AROUND_POS does not have length 2");
             }
+            {
+                FixedArray<double, 3> pos{coords[0], coords[1], 0.f};
+                auto m = get_geographic_mapping(SceneNode());
+                std::cerr.precision(15);
+                std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
+            }
             for (float r : string_to_vector(getenv("MESH_AROUND_RADIUSES"), safe_stof)) {
                 plot_mesh(                         
                     ArrayShape{2000, 2000},         // image_size
@@ -361,19 +372,28 @@ OsmMapResource::OsmMapResource(
         //     plot_mesh_svg("/tmp/plt.svg", 800, 800, tf, {}, highlighted_nodes);
         // }
         LOG_INFO("triangulate_terrain_or_ceilings");
-        triangulate_terrain_or_ceilings(
-            *tl_terrain_,
-            bounding_info,
-            steiner_points,
-            map_outer_contour,
-            hole_triangles,
-            {},                     // region_contours
-            config.scale,
-            config.uv_scale_terrain,
-            0,
-            terrain_color,
-            getenv_default("CONTOUR_FILENAME", ""),
-            config.default_terrain_type);
+        try {
+            triangulate_terrain_or_ceilings(
+                *tl_terrain_,
+                bounding_info,
+                steiner_points,
+                map_outer_contour,
+                hole_triangles,
+                region_contours,
+                config.scale,
+                config.uv_scale_terrain,
+                0,
+                terrain_color,
+                getenv_default("CONTOUR_FILENAME", ""),
+                config.default_terrain_type);
+        } catch (const p2t::PointException& e) {
+            FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
+            auto m = get_geographic_mapping(SceneNode());
+            std::stringstream sstr;
+            sstr.precision(15);
+            sstr << "Could not triangulate terrain at position " << m.transform(pos) << ": " << e.what() << std::endl;
+            throw std::runtime_error(sstr.str());
+        }
         if (config.blend_street) {
             auto& tl = *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type];
             for (const auto& t : osm_triangle_lists.street_triangles()) {
@@ -865,7 +885,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays
     return res;
 }
 
-TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(SceneNode& scene_node) const
+TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(const SceneNode& scene_node) const
 {
     TransformationMatrix<double, 3> m3;
     const auto& R2 = normalization_matrix_.R();
