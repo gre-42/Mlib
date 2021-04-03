@@ -897,7 +897,7 @@ TransformationMatrix<double, 3> OsmMapResource::get_geographic_mapping(const Sce
     m3.t() = FixedArray<double, 3>{
         t2(0),
         t2(1),
-        scale_};
+        0.f};
     return TransformationMatrix<double, 3>{inv((scene_node.absolute_model_matrix().casted<double>() * m3).affine())};
 }
 
