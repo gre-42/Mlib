@@ -39,6 +39,12 @@ struct Rgb24 {
     static inline Rgb24 gray() {
         return Rgb24{127, 127, 127};
     }
+    static inline Rgb24 yellow() {
+        return Rgb24{255, 255, 0};
+    }
+    static inline Rgb24 orange() {
+        return Rgb24{255, 127, 0};
+    }
     static inline Rgb24 from_float_grayscale(float grayscale) {
         if (std::isnan(grayscale)) {
             return Rgb24::nan();
