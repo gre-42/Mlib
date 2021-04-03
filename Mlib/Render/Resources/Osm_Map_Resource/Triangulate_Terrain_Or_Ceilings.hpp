@@ -23,7 +23,7 @@ void triangulate_terrain_or_ceilings(
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
     const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
-    const std::map<TerrainType, std::list<FixedArray<float, 3>>>& region_contours,
+    const std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>>& region_contours,
     float scale,
     float uv_scale,
     float z,

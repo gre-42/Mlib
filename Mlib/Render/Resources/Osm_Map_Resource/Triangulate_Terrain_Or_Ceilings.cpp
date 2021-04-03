@@ -128,13 +128,32 @@ void check_contour(const std::vector<p2t::Point*>& contour) {
     }
 }
 
+// class VertexPointer {
+// public:
+//     p2t::Point* operator () (const p2t::Point& p) {
+//         const OrderableFixedArray<double, 2>& f = reinterpret_cast<const OrderableFixedArray<double, 2>&>(p);
+//         auto it = pts_.find(f);
+//         if (it == pts_.end()) {
+//             pts_.insert(f);
+//             return const_cast<p2t::Point*>(reinterpret_cast<const p2t::Point*>(&*pts_.find(f)));
+//         } else {
+//             return const_cast<p2t::Point*>(reinterpret_cast<const p2t::Point*>(&*it));
+//         }
+//     }
+//     bool empty() const {
+//         return pts_.empty();
+//     }
+// private:
+//     std::set<OrderableFixedArray<double, 2>> pts_;
+// };
+
 void Mlib::triangulate_terrain_or_ceilings(
     TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
     const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
-    const std::map<TerrainType, std::list<FixedArray<float, 3>>>& region_contours,
+    const std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>>& region_contours,
     float scale,
     float uv_scale,
     float z,
