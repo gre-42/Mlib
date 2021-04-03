@@ -399,6 +399,10 @@ OsmMapResource::OsmMapResource(
             std::stringstream sstr;
             sstr.precision(15);
             sstr << "Could not triangulate terrain at edge " <<
+                e.a <<
+                " -> " <<
+                e.b <<
+                " | " <<
                 m.transform(e.a.casted<double>()) <<
                 " -> " <<
                 m.transform(e.b.casted<double>()) <<
