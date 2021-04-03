@@ -35,7 +35,7 @@ struct SceneNodeResourceFilter {
 class SceneNodeResource {
 public:
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const;
-    virtual TransformationMatrix<double, 3> get_geographic_mapping(SceneNode& scene_node) const;
+    virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false);
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to);

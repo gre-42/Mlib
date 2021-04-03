@@ -6,7 +6,7 @@ using namespace Mlib;
 void SceneNodeResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const {
     throw std::runtime_error("instantiate_renderable not implemented");
 }
-TransformationMatrix<double, 3> SceneNodeResource::get_geographic_mapping(SceneNode& scene_node) const {
+TransformationMatrix<double, 3> SceneNodeResource::get_geographic_mapping(const SceneNode& scene_node) const {
     throw std::runtime_error("get_geographic_coordinates not implemented");
 }
 std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResource::get_animated_arrays() const {
