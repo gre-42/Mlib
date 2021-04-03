@@ -6,6 +6,8 @@
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/PTri.hpp>
 
 using namespace Mlib;
 
@@ -78,19 +80,20 @@ PpmImage Mlib::plot_mesh(
         im.draw_fill_rect(ArrayShape{a2i(b(0)), a2i(b(1))}, point_size, Rgb24::blue());
         im.draw_fill_rect(ArrayShape{a2i(c(0)), a2i(c(1))}, point_size, Rgb24::blue());
     }
+    size_t i = 0;
     for (const auto& c : contours) {
         for (auto it = c.begin(); ; ) {
             auto it0 = it++;
             if (it == c.end()) {
                 break;
             }
-            im.draw_line(trafo(*it0), trafo(*it), 1, Rgb24::red(), rvalue_address(Rgb24::nan()));
-
+            im.draw_line(trafo(*it0), trafo(*it), 1, (i % 2 == 0) ? Rgb24::red() : Rgb24::orange(), rvalue_address(Rgb24::nan()));
         }
         if (!c.empty()) {
             auto a = trafo(c.front());
             im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::green());
         }
+        ++i;
     }
     for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);
@@ -236,4 +239,72 @@ void Mlib::plot_mesh_svg(
     if (ofstr.fail()) {
         throw std::runtime_error("Could not write to file \"" + filename + '"');
     }
+}
+
+PpmImage Mlib::plot_mesh(
+    const ArrayShape& image_size,
+    size_t line_thickness,
+    size_t point_size,
+    const std::list<FixedArray<OrderableFixedArray<float, 2>, 3>>& triangles,
+    const std::list<std::vector<OrderableFixedArray<float, 2>>>& contours,
+    const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes,
+    const std::list<OrderableFixedArray<float, 2>>& crossed_nodes)
+{
+    std::list<std::list<FixedArray<float, 2>>> contoursR;
+    for (const auto& c : contours) {
+        contoursR.emplace_back();
+        for (const auto& p : c) {
+            contoursR.back().push_back(p);
+        }
+    }
+    return plot_mesh(
+        image_size,
+        line_thickness,
+        point_size,
+        reinterpret_cast<const std::list<FixedArray<FixedArray<float, 2>, 3>>&>(triangles),
+        contoursR,
+        reinterpret_cast<const std::list<FixedArray<float, 2>>&>(highlighted_nodes),
+        reinterpret_cast<const std::list<FixedArray<float, 2>>&>(crossed_nodes));
+}
+
+PpmImage Mlib::plot_mesh(
+    const ArrayShape& image_size,
+    size_t line_thickness,
+    size_t point_size,
+    const std::list<PTri>& triangles,
+    const std::list<std::vector<p2t::Point*>>& contours,
+    const std::list<p2t::Point*>& highlighted_nodes,
+    const std::list<p2t::Point*>& crossed_nodes)
+{
+    std::list<FixedArray<FixedArray<float, 2>, 3>> triangles_2d;
+    std::list<std::list<FixedArray<float, 2>>> contours_2d;
+    std::list<FixedArray<float, 2>> highlighted_nodes_2d;
+    std::list<FixedArray<float, 2>> crossed_nodes_2d;
+    typedef FixedArray<double, 2>* P;
+    for (const auto& t : triangles) {
+        triangles_2d.push_back(FixedArray<FixedArray<float, 2>, 3>{
+            FixedArray<float, 2>{(float)t(0)->x, (float)t(0)->y},
+            FixedArray<float, 2>{(float)t(1)->x, (float)t(1)->y},
+            FixedArray<float, 2>{(float)t(2)->x, (float)t(2)->y}});
+    }
+    for (const auto& c : reinterpret_cast<const std::list<std::vector<P>>&>(contours)) {
+        contours_2d.emplace_back();
+        for (const auto& p : c) {
+            contours_2d.back().push_back(FixedArray<float, 2>{p->casted<float>()});
+        };
+    }
+    for (const auto& p : reinterpret_cast<const std::list<P>&>(highlighted_nodes)) {
+        highlighted_nodes_2d.push_back(p->casted<float>());
+    }
+    for (const auto& p : reinterpret_cast<const std::list<P>&>(crossed_nodes)) {
+        crossed_nodes_2d.push_back(p->casted<float>());
+    }
+    return plot_mesh(
+        image_size,
+        line_thickness,
+        point_size,
+        triangles_2d,
+        contours_2d,
+        highlighted_nodes_2d,
+        crossed_nodes_2d);
 }

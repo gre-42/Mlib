@@ -8,29 +8,11 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/PTri.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
-#include <poly2tri/poly2tri.h>
 
 using namespace Mlib;
-
-namespace Mlib {
-
-class PTri {
-public:
-    p2t::Point* operator () (size_t i) const {
-        return v->GetPoint((int)i);
-    }
-private:
-    p2t::Triangle* v;
-};
-
-std::ostream& operator << (std::ostream& ostr, const p2t::Point& p) {
-    ostr << p.x << " " << p.y;
-    return ostr;
-}
-
-}
 
 void plot_tris(const std::string& filename, const std::list<p2t::Triangle*>& tris) {
     std::list<FixedArray<ColoredVertex, 3>> triangles;
