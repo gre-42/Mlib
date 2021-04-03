@@ -1,6 +1,7 @@
 #include "Osm_Map_Resource.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Mesh_Subtract.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
@@ -392,6 +393,16 @@ OsmMapResource::OsmMapResource(
             std::stringstream sstr;
             sstr.precision(15);
             sstr << "Could not triangulate terrain at position " << m.transform(pos) << ": " << e.what() << std::endl;
+            throw std::runtime_error(sstr.str());
+        } catch (const EdgeException& e) {
+            auto m = get_geographic_mapping(SceneNode());
+            std::stringstream sstr;
+            sstr.precision(15);
+            sstr << "Could not triangulate terrain at edge " <<
+                m.transform(e.a.casted<double>()) <<
+                " -> " <<
+                m.transform(e.b.casted<double>()) <<
+                ": " << e.what() << std::endl;
             throw std::runtime_error(sstr.str());
         }
         if (config.blend_street) {

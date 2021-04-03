@@ -16,9 +16,14 @@ std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> Mlib::get_reg
             continue;
         }
         TerrainType terrain_type;
-        if (auto it = tags.find("leisure"); it != tags.end() && it->second == "park") {
-            terrain_type = TerrainType::GRASS;
-        } else if (auto it = tags.find("landuse"); it != tags.end() && (it->second == "grass" || it->second == "meadow")) {
+        // if (auto it = tags.find("leisure"); it != tags.end() && it->second == "park") {
+        //     terrain_type = TerrainType::GRASS;
+        // } else if (auto it = tags.find("landuse"); it != tags.end() && (it->second == "grass" || it->second == "meadow")) {
+        //     terrain_type = TerrainType::GRASS;
+        // } else {
+        //     continue;
+        // }
+        if (auto it = tags.find("terrain_region"); it != tags.end() && it->second == "park") {
             terrain_type = TerrainType::GRASS;
         } else {
             continue;

@@ -1,5 +1,6 @@
 #include "Contour.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
@@ -21,9 +22,9 @@ std::set<std::pair<OrderableFixedArray<float, 3>, OrderableFixedArray<float, 3>>
                 const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
                 if (debug_filename != nullptr) {
                     plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {edge.first, edge.second}).T().reversed(0).save_to_file(debug_filename);
-                    throw std::runtime_error("Detected duplicate edge, debug image saved");
+                    throw EdgeException(edge.first, edge.second, "Detected duplicate edge, debug image saved");
                 } else {
-                    throw std::runtime_error("Detected duplicate edge, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                    throw EdgeException(edge.first, edge.second, "Detected duplicate edge, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
                 }
             }
         };
@@ -72,9 +73,9 @@ std::list<std::list<FixedArray<float, 3>>> Mlib::find_contours(
                         const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
                         if (debug_filename != nullptr) {
                             plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {v.first, v.second}).T().reversed(0).save_to_file(debug_filename);
-                            throw std::runtime_error("Contour neighbor already set, debug image saved");
+                            throw EdgeException(v.first, v.second, "Contour neighbor already set, debug image saved");
                         } else {
-                            throw std::runtime_error("Contour neighbor already set, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                            throw EdgeException(v.first, v.second, "Contour neighbor already set, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
                         }
                     }
                 }
