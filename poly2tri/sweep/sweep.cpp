@@ -32,6 +32,7 @@
 #include "sweep.h"
 #include "sweep_context.h"
 #include "advancing_front.h"
+#include "../point_exception.hpp"
 #include "../common/utils.h"
 #include <sstream>
 #include <iostream>
@@ -123,7 +124,7 @@ void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangl
       triangle = &triangle->NeighborAcross(point);
       EdgeEvent( tcx, ep, *p1, triangle, *p1, recursion + 1 );
     } else {
-      throw std::runtime_error("EdgeEvent - collinear points not supported");
+      throw PointException(ep, "EdgeEvent - collinear points not supported");
     }
     return;
   }
@@ -139,7 +140,7 @@ void Sweep::EdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* triangl
       triangle = &triangle->NeighborAcross(point);
       EdgeEvent( tcx, ep, *p2, triangle, *p2, recursion + 1 );
     } else {
-      throw std::runtime_error("EdgeEvent - collinear points not supported");
+      throw PointException(ep, "EdgeEvent - collinear points not supported");
     }
     return;
   }
@@ -702,7 +703,7 @@ void Sweep::FlipEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle* t, 
   if (recursion > 1000) {
     std::stringstream sstr;
     sstr << ep.x << " " << ep.y << " | " << eq.x << " " << eq.y << " | " << p.x << " " << p.y;
-    throw std::runtime_error("FlipEdgeEvent recursion depth exceeded: " + sstr.str());
+    throw PointException(ep, "FlipEdgeEvent recursion depth exceeded: " + sstr.str());
   }
   Triangle& ot = t->NeighborAcross(p);
   Point& op = *ot.OppositePoint(*t, p);
@@ -772,7 +773,7 @@ Point& Sweep::NextFlipPoint(Point& ep, Point& eq, Triangle& ot, Point& op)
     if (o2d != CCW) {
       std::stringstream sstr;
       sstr << ep.x << " " << ep.y << " | " << eq.x << " " << eq.y << " | " << op.x << " " << op.y;
-      throw std::runtime_error("NextFlipPoint detected an error at point " + sstr.str());
+      throw PointException(ep, "NextFlipPoint detected an error at point " + sstr.str());
     }
     assert(o2d == CCW);
     return *ot.PointCW(op);
@@ -788,7 +789,7 @@ void Sweep::FlipScanEdgeEvent(SweepContext& tcx, Point& ep, Point& eq, Triangle&
   if (&t.NeighborAcross(p) == NULL) {
     // If we want to integrate the fillEdgeEvent do it here
     // With current implementation we should never get here
-    throw new std::runtime_error("[BUG:FIXME] FLIP failed due to missing triangle");
+    throw PointException(ep, "[BUG:FIXME] FLIP failed due to missing triangle");
     assert(0);
   }
 
