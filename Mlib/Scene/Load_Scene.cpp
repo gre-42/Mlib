@@ -733,6 +733,9 @@ void LoadScene::operator()(
                         .max_dist = safe_stof(match2[2].str()),
                         .resource_names = string_to_vector(match2[3].str()) });
                 }
+                else if (key == "default_terrain_type") {
+                    config.default_terrain_type = terrain_type_from_string(value);
+                }
                 else if (key == "default_street_width") {
                     config.default_street_width = safe_stof(value);
                 }

@@ -9,6 +9,20 @@ enum class TerrainType {
     UNDEFINED
 };
 
+inline TerrainType terrain_type_from_string(const std::string& tt) {
+    if (tt == "grass") {
+        return TerrainType::GRASS;
+    } else if (tt == "stone") {
+        return TerrainType::STONE;
+    } else if (tt == "hole") {
+        return TerrainType::HOLE;
+    } else if (tt == "undefined") {
+        return TerrainType::UNDEFINED;
+    } else {
+        throw std::runtime_error("Unknown terrain type");
+    }
+}
+
 inline std::string terrain_type_to_string(TerrainType tt) {
     if (tt == TerrainType::GRASS) {
         return "grass";

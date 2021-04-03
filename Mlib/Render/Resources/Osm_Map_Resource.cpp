@@ -372,9 +372,10 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_terrain,
             0,
             terrain_color,
-            getenv_default("CONTOUR_FILENAME", ""));
+            getenv_default("CONTOUR_FILENAME", ""),
+            config.default_terrain_type);
         if (config.blend_street) {
-            auto& tl = *osm_triangle_lists.tl_terrain_visuals[TerrainType::UNDEFINED];
+            auto& tl = *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type];
             for (const auto& t : osm_triangle_lists.street_triangles()) {
                 tl.draw_triangle_wo_normals(
                     {t(0).position(0), t(0).position(1), 0.f},
@@ -579,7 +580,7 @@ OsmMapResource::OsmMapResource(
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (config.curb_alpha == 1) {
             TriangleList::extrude(
-                *osm_triangle_lists.tl_terrain_street_extrusion[TerrainType::UNDEFINED],
+                *osm_triangle_lists.tl_terrain_street_extrusion[config.default_terrain_type],
                 osm_triangle_lists.tls_street_wo_curb(),
                 nullptr,
                 nullptr,

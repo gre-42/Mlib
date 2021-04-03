@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <cmath>
 #include <list>
@@ -52,6 +53,7 @@ struct OsmResourceConfig {
     std::vector<std::string> grass_resource_names;
     std::vector<std::string> near_grass_resource_names;
     std::list<WaysideResourceNames> waysides;
+    TerrainType default_terrain_type = TerrainType::UNDEFINED;
     float default_street_width = 7;
     float default_lane_width = 4;
     float default_tunnel_pipe_width = 1.f;

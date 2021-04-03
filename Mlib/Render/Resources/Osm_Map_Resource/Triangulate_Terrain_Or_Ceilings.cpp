@@ -139,7 +139,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     float uv_scale,
     float z,
     const FixedArray<float, 3>& color,
-    const std::string& contour_filename)
+    const std::string& contour_filename,
+    TerrainType default_terrain_type)
 {
     p2t::Point p00{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width};
     p2t::Point p01{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width};
@@ -219,7 +220,7 @@ void Mlib::triangulate_terrain_or_ceilings(
                 add_contour(TerrainType::HOLE, c);
             } else {
                 std::reverse(c.begin(), c.end());
-                add_contour(TerrainType::UNDEFINED, c);
+                add_contour(default_terrain_type, c);
             }
         } catch (std::runtime_error& e) {
             throw std::runtime_error("Could not add hole contour: " + std::string(e.what()));
@@ -278,7 +279,7 @@ void Mlib::triangulate_terrain_or_ceilings(
         }
     };
     if (p2t_hole_nodes.empty()) {
-        draw_tris(tl_terrain[TerrainType::UNDEFINED], tris);
+        draw_tris(tl_terrain[default_terrain_type], tris);
     } else {
         if (inner_triangles.empty()) {
             throw std::runtime_error("Triangulate internal error");
@@ -288,7 +289,7 @@ void Mlib::triangulate_terrain_or_ceilings(
                 draw_tris(tl_terrain[p2t_region_types[i]], inner_triangles[i]);
             }
         }
-        draw_tris(tl_terrain[TerrainType::UNDEFINED], inner_triangles.back());
+        draw_tris(tl_terrain[default_terrain_type], inner_triangles.back());
     }
     // for (const auto& l : tl_terrain.map()) {
     //     save_obj("/tmp/" + to_string(l.first) + ".obj", IndexedFaceSet<float, size_t>{l.second->triangles_});
