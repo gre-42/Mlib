@@ -383,7 +383,9 @@ void DrawStreets::draw_holes() {
                 }
                 hv.reshape(ArrayShape{i});
             }
-            if (nh.second.size() == 3) {
+            if (nh.second.size() == 0) {
+                // do nothing
+            } else if (nh.second.size() == 3) {
                 hole_triangles->draw_triangle_wo_normals(
                     FixedArray<float, 3>{hv(0).position(0), hv(0).position(1), 0.f},
                     FixedArray<float, 3>{hv(1).position(0), hv(1).position(1), 0.f},
@@ -391,7 +393,7 @@ void DrawStreets::draw_holes() {
                     way_infos.at(hv(0).way_id).colors(0),
                     way_infos.at(hv(1).way_id).colors(0),
                     way_infos.at(hv(2).way_id).colors(0));
-            } else {
+            } else if (nh.second.size() > 3) {
                 // Draw center fan
                 FixedArray<float, 2> center = mean(hv TEMPLATE applied<FixedArray<float, 2>>([](auto& v){return v.position;}));
                 FixedArray<float, 3> center_color = mean(hv TEMPLATE applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors(0);}));
@@ -405,6 +407,8 @@ void DrawStreets::draw_holes() {
                         way_infos.at(hv(j).way_id).colors(0),
                         center_color);
                 }
+            } else {
+                throw std::runtime_error("Unexpected air hole size");
             }
         }
     };
