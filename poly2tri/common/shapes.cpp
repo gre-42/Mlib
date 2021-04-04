@@ -29,6 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "shapes.h"
+#include "../point_exception.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -357,9 +358,7 @@ Triangle& Triangle::NeighborAcross(Point& opoint)
     res = neighbors_[2];
   }
   if (res == nullptr) {
-    std::stringstream sstr;
-    sstr << opoint.x << " " << opoint.y;
-    throw std::runtime_error("Could not find neightbor accross at point " + sstr.str());
+    throw PointException(opoint, "Could not find neightbor accross");
   }
   return *res;
 }
