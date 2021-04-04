@@ -148,6 +148,9 @@ void Render2::operator () (
                     std::this_thread::sleep_for(std::chrono::milliseconds{ 100 });
                     continue;
                 }
+                if ((width == 0) || (height == 0)) {
+                    throw std::runtime_error("Render2::operator () received zero width or height");
+                }
 
                 ViewportGuard vg{ 0, 0, width, height };
 

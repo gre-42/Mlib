@@ -26,6 +26,9 @@ void StandardCameraLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("StandardCameraLogic::render");
+    if ((width == 0) || (height == 0)) {
+        throw std::runtime_error("StandardCameraLogic::render received zero width or height");
+    }
     float aspect_ratio = width / (float) height;
 
     SceneNode* cn;
