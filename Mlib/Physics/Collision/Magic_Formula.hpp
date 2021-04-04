@@ -71,6 +71,9 @@ struct CombinedMagicFormula {
             x(0) / f(0).argmax,
             x(1) / f(1).argmax};
         TData p = std::sqrt(sum(squared(s)));
+        if (p < 1e-12) {
+            return FixedArray<TData, 2>{0, 0};
+        }
         return {
             s(0) / p * f(0)(p * f(0).argmax, mode),
             s(1) / p * f(1)(p * f(1).argmax, mode)};
