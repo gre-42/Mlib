@@ -126,8 +126,13 @@ void FrictionContactInfo1::solve(float dt, float relaxation) {
                     lt,
                     ortho_clamping_max_l2_);
         }
-        if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
-            lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
+        if (std::isnan(stiction_coefficient_) != std::isnan(friction_coefficient_)) {
+            throw std::runtime_error("Differing stiction/friction NAN-ness");
+        }
+        if (!std::isnan(stiction_coefficient_)) {
+            if (float ll2 = sum(squared(lambda_total_)); ll2 > squared(max_impulse_stiction())) {
+                lambda_total_ *= max_impulse_friction() / std::sqrt(ll2);
+            }
         }
         lambda = lambda_total_ - lambda_total_old;
         rbp_.integrate_impulse({

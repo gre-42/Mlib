@@ -20,10 +20,18 @@ FixedArray<TData, 3> triangle_tangent(
     FixedArray<TData, 2> deltaUV0 = uv1 - uv0;
     FixedArray<TData, 2> deltaUV1 = uv2 - uv0;
 
-    TData f = 1.0f / (deltaUV0(0) * deltaUV1(1) - deltaUV1(0) * deltaUV0(1));
+    TData a = deltaUV0(0) * deltaUV1(1) - deltaUV1(0) * deltaUV0(1);
+    if (a < 1e-12) {
+        return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
+    }
+    TData f = TData{1} / a;
 
     FixedArray<TData, 3> tangent1 = f * (deltaUV1(1) * edge0 - deltaUV0(1) * edge1);
-    tangent1 /= std::sqrt(sum(squared(tangent1)));
+    TData len2 = sum(squared(tangent1));
+    if (len2 < 1e-12) {
+        return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
+    }
+    tangent1 /= std::sqrt(len2);
     return tangent1;
 }
 

@@ -6,10 +6,14 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <fenv.h>
 
 using namespace Mlib;
 
 int main(int argc, char** argv) {
+    #ifdef __linux__
+    feenableexcept(FE_INVALID);
+    #endif
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn\n"
