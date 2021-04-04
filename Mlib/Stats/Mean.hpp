@@ -6,6 +6,7 @@ namespace Mlib {
 
 template <class TDerived, class TData>
 TData mean(const BaseDenseArray<TDerived, TData>& a) {
+    assert(a->nelements() > 0);
     typedef typename ScalarType<TData>::value_type ScalarType;
     return sum(a) / (ScalarType)a->nelements();
 }
