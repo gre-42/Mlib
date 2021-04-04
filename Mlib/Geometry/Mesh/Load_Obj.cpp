@@ -164,7 +164,11 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     current_mtl.has_alpha_texture || !cfg.apply_static_lighting ? v2.color : sfl.get_color(current_mtl.diffusivity, n2),
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0.f, 0.f},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1.f, 0.f},
-                    (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{0.f, 1.f});
+                    (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{0.f, 1.f},
+                    {},
+                    {},
+                    {},
+                    TriangleTangentErrorBehavior::WARN);
             } else if (Mlib::re::regex_match(line, match, face4_reg)) {
                 FixedArray<size_t, 4> vertex_ids{
                     safe_stoz(match[1].str()),
@@ -224,7 +228,12 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     (uv_ids(0) != SIZE_MAX) ? obj_uvs.at(uv_ids(0) - 1) : FixedArray<float, 2>{0.f, 0.f},
                     (uv_ids(1) != SIZE_MAX) ? obj_uvs.at(uv_ids(1) - 1) : FixedArray<float, 2>{1.f, 0.f},
                     (uv_ids(2) != SIZE_MAX) ? obj_uvs.at(uv_ids(2) - 1) : FixedArray<float, 2>{1.f, 1.f},
-                    (uv_ids(3) != SIZE_MAX) ? obj_uvs.at(uv_ids(3) - 1) : FixedArray<float, 2>{0.f, 1.f});
+                    (uv_ids(3) != SIZE_MAX) ? obj_uvs.at(uv_ids(3) - 1) : FixedArray<float, 2>{0.f, 1.f},
+                    {},
+                    {},
+                    {},
+                    {},
+                    TriangleTangentErrorBehavior::WARN);
             } else if (Mlib::re::regex_match(line, match, comment_reg)) {
                 // do nothing
             } else if (Mlib::re::regex_match(line, match, object_reg)) {

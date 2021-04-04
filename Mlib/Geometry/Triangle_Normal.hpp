@@ -23,6 +23,7 @@ inline FixedArray<float, 3> triangle_normal(
             return FixedArray<float, 3>{0, 0, 0};
         } else if (error_behavior == TriangleNormalErrorBehavior::WARN) {
             std::cerr << "Cannot calculate triangle normal" << std::endl;
+            return FixedArray<float, 3>{0, 0, 0};
         } else {
             throw TriangleException(t(0), t(1), t(2), "Cannot calculate triangle normal");
         }

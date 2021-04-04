@@ -297,7 +297,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     std::vector(vertex_bone_weights.at(f[0]).begin(), vertex_bone_weights.at(f[0]).end()),
                     std::vector(vertex_bone_weights.at(f[1]).begin(), vertex_bone_weights.at(f[1]).end()),
                     std::vector(vertex_bone_weights.at(f[2]).begin(), vertex_bone_weights.at(f[2]).end()),
-                    TriangleNormalErrorBehavior::WARN);
+                    TriangleNormalErrorBehavior::WARN,
+                    TriangleTangentErrorBehavior::WARN);
             } else if (f.size() == 4) {
                 tl.draw_rectangle_wo_normals(
                     (vertices.at(f[0]) + so_geometry.offset) / so_geometry.scale10,
@@ -320,7 +321,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     std::vector(vertex_bone_weights.at(f[1]).begin(), vertex_bone_weights.at(f[1]).end()),
                     std::vector(vertex_bone_weights.at(f[2]).begin(), vertex_bone_weights.at(f[2]).end()),
                     std::vector(vertex_bone_weights.at(f[3]).begin(), vertex_bone_weights.at(f[3]).end()),
-                    TriangleNormalErrorBehavior::WARN);
+                    TriangleNormalErrorBehavior::WARN,
+                    TriangleTangentErrorBehavior::WARN);
             } else {
                 throw std::runtime_error("Unsupported dimensionality");
             }

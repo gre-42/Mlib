@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/BoneWeight.hpp>
 #include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
+#include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -38,7 +39,8 @@ public:
         const FixedArray<float, 2>& u01 = {0.f, 1.f},
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
-        const std::vector<BoneWeight>& b01 = {});
+        const std::vector<BoneWeight>& b01 = {},
+        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE);
     void draw_triangle_wo_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -52,7 +54,8 @@ public:
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b01 = {},
-        TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE);
+        TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
+        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE);
     void draw_rectangle_with_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -73,7 +76,8 @@ public:
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b11 = {},
-        const std::vector<BoneWeight>& b01 = {});
+        const std::vector<BoneWeight>& b01 = {},
+        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE);
     void draw_rectangle_wo_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -91,7 +95,8 @@ public:
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b11 = {},
         const std::vector<BoneWeight>& b01 = {},
-        TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE);
+        TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
+        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE);
     static void extrude(
         TriangleList& dest,
         const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
