@@ -73,6 +73,49 @@ OsmMapResource::OsmMapResource(
         nodes,
         ways);
     
+    auto handle_point_exception = [this](const p2t::PointException& e, const std::string& message) {
+        FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
+        auto m = get_geographic_mapping(SceneNode());
+        std::stringstream sstr;
+        sstr.precision(15);
+        sstr << message << " at position " << m.transform(pos) << ": " << e.what() << std::endl;
+        throw std::runtime_error(sstr.str());
+    };
+    auto handle_edge_exception = [this](const EdgeException& e, const std::string& message){
+        auto m = get_geographic_mapping(SceneNode());
+        std::stringstream sstr;
+        sstr.precision(15);
+        sstr << message << " at edge " <<
+            e.a <<
+            " -> " <<
+            e.b <<
+            " | " <<
+            m.transform(e.a.casted<double>()) <<
+            " -> " <<
+            m.transform(e.b.casted<double>()) <<
+            ": " << e.what() << std::endl;
+        throw std::runtime_error(sstr.str());
+    };
+    auto handle_triangle_exception = [this](const TriangleException& e, const std::string& message){
+        auto m = get_geographic_mapping(SceneNode());
+        std::stringstream sstr;
+        sstr.precision(15);
+        sstr << message << " at triangle " <<
+            e.a <<
+            " <-> " <<
+            e.b <<
+            " <-> " <<
+            e.c <<
+            " | " <<
+            m.transform(e.a.casted<double>()) <<
+            " <-> " <<
+            m.transform(e.b.casted<double>()) <<
+            " <-> " <<
+            m.transform(e.c.casted<double>()) <<
+            ": " << e.what() << std::endl;
+        throw std::runtime_error(sstr.str());
+    };
+
     report_osm_problems(nodes, ways);
 
     std::list<Building> buildings;
@@ -153,40 +196,44 @@ OsmMapResource::OsmMapResource(
         // draw_nodes(vertices, nodes, ways);
         // draw_test_lines(vertices, 0.02);
         // draw_ways(vertices, nodes, ways, 0.002);
-        DrawStreets{DrawStreetsInput{
-            osm_triangle_lists,
-            air_triangle_lists,
-            resource_instance_positions_,
-            object_resource_descriptors_,
-            hitboxes_,
-            street_rectangles,
-            height_bindings,
-            way_point_edges_1_lane,
-            way_point_edges_2_lanes,
-            tunnel_pipe_cva->triangles,
-            tunnel_bdry_cva->triangles,
-            nodes,
-            ways,
-            config.scale,
-            config.uv_scale_street,
-            config.default_street_width,
-            config.default_lane_width,
-            config.default_tunnel_pipe_width,
-            config.default_tunnel_pipe_height,
-            config.only_raceways,
-            config.highway_name_pattern,
-            config.excluded_highways,
-            config.path_tags,
-            config.curb_alpha,
-            config.curb2_alpha,
-            config.curb_uv_x,
-            config.curb2_uv_x,
-            config.curb_color,
-            street_lights,
-            config.with_height_bindings,
-            config.driving_direction,
-            config.layer_heights
-        }};
+        try {
+            DrawStreets{DrawStreetsInput{
+                osm_triangle_lists,
+                air_triangle_lists,
+                resource_instance_positions_,
+                object_resource_descriptors_,
+                hitboxes_,
+                street_rectangles,
+                height_bindings,
+                way_point_edges_1_lane,
+                way_point_edges_2_lanes,
+                tunnel_pipe_cva->triangles,
+                tunnel_bdry_cva->triangles,
+                nodes,
+                ways,
+                config.scale,
+                config.uv_scale_street,
+                config.default_street_width,
+                config.default_lane_width,
+                config.default_tunnel_pipe_width,
+                config.default_tunnel_pipe_height,
+                config.only_raceways,
+                config.highway_name_pattern,
+                config.excluded_highways,
+                config.path_tags,
+                config.curb_alpha,
+                config.curb2_alpha,
+                config.curb_uv_x,
+                config.curb2_uv_x,
+                config.curb_color,
+                street_lights,
+                config.with_height_bindings,
+                config.driving_direction,
+                config.layer_heights
+            }};
+        } catch (const TriangleException& e) {
+            handle_triangle_exception(e, "Could not draw streets");
+        }
     }
 
     if (config.with_buildings) {
@@ -307,30 +354,6 @@ OsmMapResource::OsmMapResource(
             { config.barrier_texture });
     }
 
-    auto handle_point_exception = [this](const p2t::PointException& e, const std::string& message) {
-        FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
-        auto m = get_geographic_mapping(SceneNode());
-        std::stringstream sstr;
-        sstr.precision(15);
-        sstr << message << " at position " << m.transform(pos) << ": " << e.what() << std::endl;
-        throw std::runtime_error(sstr.str());
-    };
-    auto handle_edge_exception = [this](const EdgeException& e, const std::string& message){
-        auto m = get_geographic_mapping(SceneNode());
-        std::stringstream sstr;
-        sstr.precision(15);
-        sstr << message << " at edge " <<
-            e.a <<
-            " -> " <<
-            e.b <<
-            " | " <<
-            m.transform(e.a.casted<double>()) <<
-            " -> " <<
-            m.transform(e.b.casted<double>()) <<
-            ": " << e.what() << std::endl;
-        throw std::runtime_error(sstr.str());
-    };
-
     if (config.with_terrain) {
         std::vector<FixedArray<float, 2>> map_outer_contour;
         get_map_outer_contour(
@@ -415,6 +438,8 @@ OsmMapResource::OsmMapResource(
             handle_point_exception(e, "Could not triangulate terrain");
         } catch (const EdgeException& e) {
             handle_edge_exception(e, "Could not triangulate terrain");
+        } catch (const TriangleException& e) {
+            handle_triangle_exception(e, "Could not triangulate terrain");
         }
         if (config.blend_street) {
             auto& tl = *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type];
@@ -599,6 +624,8 @@ OsmMapResource::OsmMapResource(
         }
     } catch (const EdgeException& e) {
         handle_edge_exception(e, "Extrusion failed");
+    } catch (const TriangleException& e) {
+        handle_triangle_exception(e, "Extrusion failed");
     }
     std::set<OrderableFixedArray<float, 3>> boundary_vertices;
     // Compute boundary vertices.

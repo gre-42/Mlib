@@ -64,9 +64,10 @@ void TriangleList::draw_triangle_wo_normals(
     const FixedArray<float, 2>& u01,
     const std::vector<BoneWeight>& b00,
     const std::vector<BoneWeight>& b10,
-    const std::vector<BoneWeight>& b01)
+    const std::vector<BoneWeight>& b01,
+    TriangleNormalErrorBehavior normal_error_behavior)
 {
-    auto n = triangle_normal({p00, p10, p01});
+    auto n = triangle_normal({p00, p10, p01}, normal_error_behavior);
     draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01);
 }
 
@@ -112,10 +113,11 @@ void TriangleList::draw_rectangle_wo_normals(
     const std::vector<BoneWeight>& b00,
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b11,
-    const std::vector<BoneWeight>& b01)
+    const std::vector<BoneWeight>& b01,
+    TriangleNormalErrorBehavior normal_error_behavior)
 {
-    draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01);
-    draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11);
+    draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior);
+    draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior);
 }
 
 void TriangleList::extrude(
