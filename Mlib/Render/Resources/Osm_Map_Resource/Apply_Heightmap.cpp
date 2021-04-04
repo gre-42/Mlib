@@ -77,6 +77,9 @@ void Mlib::apply_heightmap(
                             std::cerr << "Bridge with ref=ground is not inside heightmap. Way ID: " << w.first << std::endl;
                         }
                     }
+                    if (all(nodes.at(*it).position == nodes.at(*s).position)) {
+                        throw std::runtime_error("Duplicates in neighboring points: " + *it + " - " + *s);
+                    }
                     float weight = 1 / std::sqrt(sum(squared(nodes.at(*it).position - nodes.at(*s).position)));
                     node_neighbors[*s].push_back({.id = *it, .weight = weight, .layer = layer, .bridge_height = bridge_height_ref});
                     node_neighbors[*it].push_back({.id = *s, .weight = weight, .layer = layer, .bridge_height = bridge_height_ref});
