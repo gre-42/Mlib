@@ -1,26 +1,23 @@
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "Render2.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Fps.hpp>
+#include <Mlib/Ignore_Except.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Depth_Map_Resource.hpp>
-#include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
-#include <Mlib/Render/Window.hpp>
-#include <Mlib/Render/linmath.hpp>
+#include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Render/Window.hpp>
+#include <Mlib/Render/linmath.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
@@ -70,27 +67,23 @@ Render2::Render2(
     if (render_config.window_maximized) {
         GLFW_CHK(glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE));
     }
-#ifndef WIN32
-    int fpeflags = fegetexcept();
-    fedisableexcept(FE_ALL_EXCEPT);
-#endif
-    if (window_ != nullptr) {
-        throw std::runtime_error("Multiple calls to render2");
+    {
+        IgnoreExcept ignore_except;
+        if (window_ != nullptr) {
+            throw std::runtime_error("Multiple calls to render2");
+        }
+        GLFWmonitor* monitor = !render_config.full_screen
+            ? nullptr
+            : GLFW_CHK(glfwGetPrimaryMonitor());
+        window_ = std::make_unique<Window>(
+            render_config.screen_width,
+            render_config.screen_height,
+            render_config.window_title.c_str(),
+            monitor,
+            nullptr,
+            render_config.double_buffer,
+            render_config.swap_interval);
     }
-    GLFWmonitor* monitor = !render_config.full_screen
-        ? nullptr
-        : GLFW_CHK(glfwGetPrimaryMonitor());
-    window_ = std::make_unique<Window>(
-        render_config.screen_width,
-        render_config.screen_height,
-        render_config.window_title.c_str(),
-        monitor,
-        nullptr,
-        render_config.double_buffer,
-        render_config.swap_interval);
-#ifndef WIN32
-    feenableexcept(fpeflags);
-#endif
     if (!render_config.show_mouse_cursor) {
         GLFW_CHK(glfwSetInputMode(window_->window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
     }

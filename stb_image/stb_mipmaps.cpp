@@ -1,3 +1,4 @@
+#include "../Mlib/Ignore_Except.hpp"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
@@ -20,18 +21,21 @@ void downsample_rgba_inplace(
             }
         }
     }
-    if (!stbir_resize_uint8(
-        data,
-        width,
-        height,
-        0,
-        downsampled_data,
-        (width == 0 || height == 0) ? 1 : width / 2,
-        (width == 0 || height == 0) ? 1 : height / 2,
-        0,
-        4))
     {
-        throw std::runtime_error("could not resize image");
+        Mlib::IgnoreExcept ignore_except;
+        if (!stbir_resize_uint8(
+            data,
+            width,
+            height,
+            0,
+            downsampled_data,
+            (width == 0 || height == 0) ? 1 : width / 2,
+            (width == 0 || height == 0) ? 1 : height / 2,
+            0,
+            4))
+        {
+            throw std::runtime_error("could not resize image");
+        }
     }
     for (int r = 0; r < height / 2; ++r) {
         for (int c = 0; c < width / 2; ++c) {
