@@ -1,5 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
+#include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <map>
 #include <set>
 
@@ -84,7 +86,7 @@ void delete_triangles_inside_contours(
     // and loop until nothing changes.
     while(true) {
         size_t old_size = inner_edges.size();
-        triangles.remove_if([&inner_edges, &inner_triangles, &contour_edges](const TTriangle& t){
+        triangles.remove_if([&inner_edges, &inner_triangles, &contour_edges, &triangles, &contours](const TTriangle& t){
             size_t contour_id = SIZE_MAX;
             for (size_t i = 0; i < 3; ++i) {
                 const auto& a = t(i);
@@ -96,8 +98,19 @@ void delete_triangles_inside_contours(
                         contour_id = it->second;
                     } else {
                         if (contour_id != it->second) {
-                            std::cerr << "Could not determine contour ID" << std::endl;
-                            return false;
+                            if (true) {
+                                const auto& c = t((i + 2) % 3);
+                                const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
+                                if (debug_filename != nullptr) {
+                                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {contours[contour_id], contours[it->second]}, {O{a}, O{b}, O{c}}, {}).T().reversed(0).save_to_file(debug_filename);
+                                    throw EdgeException(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), debug image saved");
+                                } else {
+                                    throw EdgeException(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
+                                }
+                            } else {
+                                std::cerr << "Could not determine contour ID" << std::endl;
+                                return false;
+                            }
                         }
                     }
                 }

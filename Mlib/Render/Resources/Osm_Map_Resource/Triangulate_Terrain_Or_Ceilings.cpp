@@ -254,6 +254,9 @@ void Mlib::triangulate_terrain_or_ceilings(
         std::vector<std::list<PTri>>& wrapped_itris = reinterpret_cast<std::vector<std::list<PTri>>&>(inner_triangles);
         auto all_contours = p2t_hole_contours;
         all_contours.push_back(final_bounding_contour);
+        if (!contour_filename.empty()) {
+            plot_contours(contour_filename, all_contours);
+        }
         delete_triangles_inside_contours(all_contours, wrapped_tris, wrapped_itris);
         // plot_tris("/tmp/wrapped_tris1.obj", tris);
         // save_obj("/tmp/holes.obj", IndexedFaceSet<float, size_t>{hole_triangles});
@@ -261,9 +264,6 @@ void Mlib::triangulate_terrain_or_ceilings(
         // for (const auto& l : wrapped_itris) {
         //     std::cerr << "ninner " << l.size() << std::endl;
         // }
-        if (!contour_filename.empty()) {
-            plot_contours(contour_filename, all_contours);
-        }
     }
     auto draw_tris = [z, scale, color, uv_scale](auto& tl, const auto& tris){
         for (const auto& t : tris) {

@@ -307,6 +307,30 @@ OsmMapResource::OsmMapResource(
             { config.barrier_texture });
     }
 
+    auto handle_point_exception = [this](const p2t::PointException& e, const std::string& message) {
+        FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
+        auto m = get_geographic_mapping(SceneNode());
+        std::stringstream sstr;
+        sstr.precision(15);
+        sstr << message << " at position " << m.transform(pos) << ": " << e.what() << std::endl;
+        throw std::runtime_error(sstr.str());
+    };
+    auto handle_edge_exception = [this](const EdgeException& e, const std::string& message){
+        auto m = get_geographic_mapping(SceneNode());
+        std::stringstream sstr;
+        sstr.precision(15);
+        sstr << message << " at edge " <<
+            e.a <<
+            " -> " <<
+            e.b <<
+            " | " <<
+            m.transform(e.a.casted<double>()) <<
+            " -> " <<
+            m.transform(e.b.casted<double>()) <<
+            ": " << e.what() << std::endl;
+        throw std::runtime_error(sstr.str());
+    };
+
     if (config.with_terrain) {
         std::vector<FixedArray<float, 2>> map_outer_contour;
         get_map_outer_contour(
@@ -388,26 +412,9 @@ OsmMapResource::OsmMapResource(
                 getenv_default("CONTOUR_FILENAME", ""),
                 config.default_terrain_type);
         } catch (const p2t::PointException& e) {
-            FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
-            auto m = get_geographic_mapping(SceneNode());
-            std::stringstream sstr;
-            sstr.precision(15);
-            sstr << "Could not triangulate terrain at position " << m.transform(pos) << ": " << e.what() << std::endl;
-            throw std::runtime_error(sstr.str());
+            handle_point_exception(e, "Could not triangulate terrain");
         } catch (const EdgeException& e) {
-            auto m = get_geographic_mapping(SceneNode());
-            std::stringstream sstr;
-            sstr.precision(15);
-            sstr << "Could not triangulate terrain at edge " <<
-                e.a <<
-                " -> " <<
-                e.b <<
-                " | " <<
-                m.transform(e.a.casted<double>()) <<
-                " -> " <<
-                m.transform(e.b.casted<double>()) <<
-                ": " << e.what() << std::endl;
-            throw std::runtime_error(sstr.str());
+            handle_edge_exception(e, "Could not triangulate terrain");
         }
         if (config.blend_street) {
             auto& tl = *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type];
@@ -515,79 +522,83 @@ OsmMapResource::OsmMapResource(
     // If extrude_air_curb_amount is not NAN,
     // boundaries have to be calculated at the ends of
     // ends of air and ground street.
-    if (std::isnan(config.extrude_air_curb_amount)) {
-        osm_triangle_lists.insert(air_triangle_lists);
-    } else if (config.extrude_air_curb_amount != 0) {
-        TriangleList::extrude(
-            *air_triangle_lists.tl_street_curb[RoadType::STREET],
-            {air_triangle_lists.tl_street_curb[RoadType::STREET]},
-            nullptr,
-            nullptr,
-            config.extrude_air_curb_amount * config.scale,
-            config.scale,
-            config.uv_scale_street,
-            config.uv_scale_street);
-        if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
+    try {
+        if (std::isnan(config.extrude_air_curb_amount)) {
+            osm_triangle_lists.insert(air_triangle_lists);
+        } else if (config.extrude_air_curb_amount != 0) {
             TriangleList::extrude(
-                *air_triangle_lists.tl_street_curb[RoadType::PATH],
-                {air_triangle_lists.tl_street_curb[RoadType::PATH]},
+                *air_triangle_lists.tl_street_curb[RoadType::STREET],
+                {air_triangle_lists.tl_street_curb[RoadType::STREET]},
                 nullptr,
                 nullptr,
                 config.extrude_air_curb_amount * config.scale,
                 config.scale,
                 config.uv_scale_street,
                 config.uv_scale_street);
+            if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
+                TriangleList::extrude(
+                    *air_triangle_lists.tl_street_curb[RoadType::PATH],
+                    {air_triangle_lists.tl_street_curb[RoadType::PATH]},
+                    nullptr,
+                    nullptr,
+                    config.extrude_air_curb_amount * config.scale,
+                    config.scale,
+                    config.uv_scale_street,
+                    config.uv_scale_street);
+            }
         }
-    }
-    if (config.extrude_curb_amount != 0) {
-        TriangleList::extrude(
-            *osm_triangle_lists.tl_street_curb[RoadType::STREET],
-            {osm_triangle_lists.tl_street_curb[RoadType::STREET]},
-            nullptr,
-            nullptr,
-            config.extrude_curb_amount * config.scale,
-            config.scale,
-            config.uv_scale_street,
-            config.uv_scale_street);
-        if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
+        if (config.extrude_curb_amount != 0) {
             TriangleList::extrude(
-                *osm_triangle_lists.tl_street_curb[RoadType::PATH],
-                {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
+                *osm_triangle_lists.tl_street_curb[RoadType::STREET],
+                {osm_triangle_lists.tl_street_curb[RoadType::STREET]},
                 nullptr,
                 nullptr,
                 config.extrude_curb_amount * config.scale,
                 config.scale,
                 config.uv_scale_street,
                 config.uv_scale_street);
+            if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
+                TriangleList::extrude(
+                    *osm_triangle_lists.tl_street_curb[RoadType::PATH],
+                    {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
+                    nullptr,
+                    nullptr,
+                    config.extrude_curb_amount * config.scale,
+                    config.scale,
+                    config.uv_scale_street,
+                    config.uv_scale_street);
+            }
         }
-    }
-    if (config.extrude_wall_amount != 0) {
-        TriangleList::extrude(
-            *osm_triangle_lists.tl_street[RoadProperties{.type = RoadType::WALL, .nlanes = 1}].triangle_list,
-            {osm_triangle_lists.tls_wall_wo_curb()},
-            nullptr,
-            nullptr,
-            config.extrude_wall_amount * config.scale,
-            config.scale,
-            1.f,
-            config.uv_scale_highway_wall);
-    }
-    if (std::isnan(config.extrude_air_curb_amount)) {
-        raise_streets(
-            osm_triangle_lists.tls_street_wo_curb(),
-            osm_triangle_lists.tls_wo_subtraction_and_water(),
-            config.scale,
-            config.raise_streets_amount);
-    } else {
-        raise_streets(
-            TriangleList::concatenated(
+        if (config.extrude_wall_amount != 0) {
+            TriangleList::extrude(
+                *osm_triangle_lists.tl_street[RoadProperties{.type = RoadType::WALL, .nlanes = 1}].triangle_list,
+                {osm_triangle_lists.tls_wall_wo_curb()},
+                nullptr,
+                nullptr,
+                config.extrude_wall_amount * config.scale,
+                config.scale,
+                1.f,
+                config.uv_scale_highway_wall);
+        }
+        if (std::isnan(config.extrude_air_curb_amount)) {
+            raise_streets(
                 osm_triangle_lists.tls_street_wo_curb(),
-                air_triangle_lists.tls_street_wo_curb()),
-            TriangleList::concatenated(
                 osm_triangle_lists.tls_wo_subtraction_and_water(),
-                air_triangle_lists.tls_wo_subtraction_and_water()),
-            config.scale,
-            config.raise_streets_amount);
+                config.scale,
+                config.raise_streets_amount);
+        } else {
+            raise_streets(
+                TriangleList::concatenated(
+                    osm_triangle_lists.tls_street_wo_curb(),
+                    air_triangle_lists.tls_street_wo_curb()),
+                TriangleList::concatenated(
+                    osm_triangle_lists.tls_wo_subtraction_and_water(),
+                    air_triangle_lists.tls_wo_subtraction_and_water()),
+                config.scale,
+                config.raise_streets_amount);
+        }
+    } catch (const EdgeException& e) {
+        handle_edge_exception(e, "Extrusion failed");
     }
     std::set<OrderableFixedArray<float, 3>> boundary_vertices;
     // Compute boundary vertices.
