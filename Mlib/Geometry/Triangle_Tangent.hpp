@@ -21,7 +21,7 @@ FixedArray<TData, 3> triangle_tangent(
     FixedArray<TData, 2> deltaUV1 = uv2 - uv0;
 
     TData a = deltaUV0(0) * deltaUV1(1) - deltaUV1(0) * deltaUV0(1);
-    if (a < 1e-12) {
+    if (std::abs(a) < 1e-12) {
         return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
     }
     TData f = TData{1} / a;
