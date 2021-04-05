@@ -1,11 +1,11 @@
-#include "Get_Region_Contours.hpp"
+#include "Get_Terrain_Region_Contours.hpp"
 #include <Mlib/Render/Resources/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 
 using namespace Mlib;
 
-std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> Mlib::get_region_contours(
+std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> Mlib::get_terrain_region_contours(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways)
 {

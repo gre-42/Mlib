@@ -24,7 +24,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Region_Contours.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -169,7 +169,7 @@ OsmMapResource::OsmMapResource(
     }
 
     std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> region_contours =
-        get_region_contours(nodes, ways);
+        get_terrain_region_contours(nodes, ways);
 
     auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays(config.tunnel_pipe_resource_name)->cvas;
     if (tunnel_pipe_cvas.size() != 1) {
