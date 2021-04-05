@@ -869,6 +869,9 @@ void LoadScene::operator()(
                 else if (key == "extrude_wall_amount") {
                     config.extrude_wall_amount = safe_stof(value);
                 }
+                else if (key == "extrude_grass_amount") {
+                    config.extrude_grass_amount = safe_stof(value);
+                }
                 else if (key == "street_light_resource_names") {
                     config.street_light_resource_names = string_to_vector(value);
                 }

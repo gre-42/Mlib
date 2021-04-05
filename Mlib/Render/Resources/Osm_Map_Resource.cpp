@@ -622,6 +622,17 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 config.raise_streets_amount);
         }
+        if (config.extrude_grass_amount != 0) {
+            TriangleList::extrude(
+                *(*osm_triangle_lists.tl_terrain)[TerrainType::GRASS],
+                {(*osm_triangle_lists.tl_terrain)[TerrainType::GRASS]},
+                nullptr,
+                nullptr,
+                config.extrude_grass_amount * config.scale,
+                config.scale,
+                config.uv_scale_street,
+                config.uv_scale_street);
+        }
     } catch (const EdgeException& e) {
         handle_edge_exception(e, "Extrusion failed");
     } catch (const TriangleException& e) {

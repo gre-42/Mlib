@@ -98,6 +98,7 @@ struct OsmResourceConfig {
     float extrude_air_curb_amount = NAN;
     float extrude_air_support_amount = 0;
     float extrude_wall_amount = 0;
+    float extrude_grass_amount = 0;
     std::vector<std::string> street_light_resource_names = {};
     float max_wall_width = 5;
     bool with_height_bindings = false;
