@@ -1,30 +1,20 @@
-#include "Get_Terrain_Region_Contours.hpp"
+#include "Get_Water_Region_Contours.hpp"
 #include <Mlib/Render/Resources/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
 
 using namespace Mlib;
 
-std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> Mlib::get_terrain_region_contours(
+std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>> Mlib::get_water_region_contours(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways)
 {
-    std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> result;
+    std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>> result;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
-        if (tags.find("level") != tags.end()) {
-            continue;
-        }
-        TerrainType terrain_type;
-        // if (auto it = tags.find("leisure"); (it != tags.end()) && (it->second == "park")) {
-        //     terrain_type = TerrainType::GRASS;
-        // } else if (auto it = tags.find("landuse"); it != tags.end() && (it->second == "grass" || it->second == "meadow")) {
-        //     terrain_type = TerrainType::GRASS;
-        // } else {
-        //     continue;
-        // }
-        if (auto it = tags.find("terrain_region"); (it != tags.end()) && (it->second == "park")) {
-            terrain_type = TerrainType::GRASS;
+        WaterType terrain_type;
+        if (auto it = tags.find("water_region"); (it != tags.end()) && (it->second == "hole")) {
+            terrain_type = WaterType::HOLE;
         } else {
             continue;
         }

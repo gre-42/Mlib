@@ -7,6 +7,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
 
 using namespace Mlib;
 
@@ -171,10 +172,10 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList>("bridge_entrance", Material());
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
-    tl_water = std::make_shared<TriangleList>("water", Material{
+    tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList>("water", Material{
         .textures = {primary_rendering_resources->get_blend_map_texture(config.water_texture)},
         .collide = false,
-        .draw_distance_noperations = 1000}.compute_color_mode());
+        .draw_distance_noperations = 1000}.compute_color_mode()));
 }
 
 OsmTriangleLists::~OsmTriangleLists()
@@ -276,8 +277,8 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction_w_
     auto res = std::list<std::shared_ptr<TriangleList>>{
         tl_air_support,
         tl_tunnel_crossing,
-        tl_tunnel_pipe,
-        tl_water};
+        tl_tunnel_pipe};
+    for (const auto& e : tl_water.map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
@@ -399,3 +400,4 @@ std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::street_triangles() con
 
 template class EntityTypeTriangleList<RoadType>;
 template class EntityTypeTriangleList<TerrainType>;
+template class EntityTypeTriangleList<WaterType>;

@@ -20,6 +20,7 @@ class FixedArray;
 struct StyledRoad;
 struct StyledRoadEntry;
 enum class TerrainType;
+enum class WaterType;
 
 class RoadPropertiesTriangleList {
 public:
@@ -43,6 +44,7 @@ private:
 
 typedef EntityTypeTriangleList<RoadType> RoadTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
+typedef EntityTypeTriangleList<WaterType> WaterTypeTriangleList;
 
 struct OsmTriangleLists {
     explicit OsmTriangleLists(const OsmResourceConfig& config);
@@ -61,7 +63,7 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_tunnel_crossing;
     std::map<EntranceType, std::shared_ptr<TriangleList>> tl_entrance;
     std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>> entrances;
-    std::shared_ptr<TriangleList> tl_water;
+    WaterTypeTriangleList tl_water;
     std::list<std::shared_ptr<TriangleList>> tls_buildings_ground;
     void insert(const OsmTriangleLists& other);
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;

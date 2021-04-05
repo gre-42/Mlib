@@ -25,6 +25,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -38,6 +39,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -168,7 +170,7 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> region_contours =
+    std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> terrain_region_contours =
         get_terrain_region_contours(nodes, ways);
 
     auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays(config.tunnel_pipe_resource_name)->cvas;
@@ -356,11 +358,12 @@ OsmMapResource::OsmMapResource(
             { config.barrier_texture });
     }
 
-    if (config.with_terrain) {
-        std::vector<FixedArray<float, 2>> map_outer_contour = get_map_outer_contour(
-            nodes,
-            ways);
+    std::vector<FixedArray<float, 2>> map_outer_contour = get_map_outer_contour(
+        nodes,
+        ways);
+    BoundingInfo bounding_info{map_outer_contour, nodes, 0.1f};
 
+    if (config.with_terrain) {
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
         // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
@@ -398,7 +401,6 @@ OsmMapResource::OsmMapResource(
         //     plot_mesh_svg("/tmp/plt.svg", 800, 800, tf, {}, {});
         // }
         steiner_points = removed_duplicates(steiner_points, false);  // false = verbose
-        BoundingInfo bounding_info{map_outer_contour, nodes, 0.1f};
         LOG_INFO("add_street_steiner_points");
         add_street_steiner_points(
             steiner_points,
@@ -427,7 +429,7 @@ OsmMapResource::OsmMapResource(
                 steiner_points,
                 map_outer_contour,
                 hole_triangles,
-                region_contours,
+                terrain_region_contours,
                 config.scale,
                 config.uv_scale_terrain,
                 0,
@@ -856,19 +858,30 @@ OsmMapResource::OsmMapResource(
 
     std::list<std::shared_ptr<TriangleList>> tls_all;
     if (!config.water_texture.empty()) {
-        osm_triangle_lists.tl_water->draw_rectangle_wo_normals(
-            FixedArray<float, 3>{normalized_points.min()(0), normalized_points.min()(1), config.scale * config.water_height},
-            FixedArray<float, 3>{normalized_points.max()(0), normalized_points.min()(1), config.scale * config.water_height},
-            FixedArray<float, 3>{normalized_points.max()(0), normalized_points.max()(1), config.scale * config.water_height},
-            FixedArray<float, 3>{normalized_points.min()(0), normalized_points.max()(1), config.scale * config.water_height},
-            fixed_ones<float, 3>(),  // color
-            fixed_ones<float, 3>(),  // color
-            fixed_ones<float, 3>(),  // color
-            fixed_ones<float, 3>(),  // color
-            FixedArray<float, 2>{normalized_points.min()(0), normalized_points.min()(1)} / config.scale / 100.f,
-            FixedArray<float, 2>{normalized_points.max()(0), normalized_points.min()(1)} / config.scale / 100.f,
-            FixedArray<float, 2>{normalized_points.max()(0), normalized_points.max()(1)} / config.scale / 100.f,
-            FixedArray<float, 2>{normalized_points.min()(0), normalized_points.max()(1)} / config.scale / 100.f);
+        std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>> water_contours =
+            get_water_region_contours(nodes, ways);
+        LOG_INFO("triangulate_water");
+        try {
+            triangulate_water(
+                osm_triangle_lists.tl_water,
+                bounding_info,
+                {},                     // steiner_points
+                map_outer_contour,
+                {},                     // hole_triangles
+                water_contours,
+                config.scale,
+                1 / 100.f,              // uv_scale
+                config.water_height,
+                terrain_color,
+                getenv_default("CONTOUR_FILENAME", ""),
+                WaterType::UNDEFINED);
+        } catch (const p2t::PointException& e) {
+            handle_point_exception(e, "Could not triangulate water");
+        } catch (const EdgeException& e) {
+            handle_edge_exception(e, "Could not triangulate water");
+        } catch (const TriangleException& e) {
+            handle_triangle_exception(e, "Could not triangulate water");
+        }
         tls_all = std::move(osm_triangle_lists.tls_wo_subtraction_w_water());
     } else {
         tls_all = std::move(osm_triangle_lists.tls_wo_subtraction_and_water());
