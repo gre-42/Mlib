@@ -49,7 +49,7 @@ struct OsmTriangleLists {
     ~OsmTriangleLists();
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain;
     TerrainTypeTriangleList tl_terrain_visuals;
-    TerrainTypeTriangleList tl_terrain_street_extrusion;
+    TerrainTypeTriangleList tl_terrain_extrusion;
     RoadPropertiesTriangleList tl_street;
     RoadTypeTriangleList tl_street_crossing;
     RoadTypeTriangleList tl_street_curb;

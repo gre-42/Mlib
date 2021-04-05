@@ -624,7 +624,7 @@ OsmMapResource::OsmMapResource(
         }
         if (config.extrude_grass_amount != 0) {
             TriangleList::extrude(
-                *(*osm_triangle_lists.tl_terrain)[TerrainType::GRASS],
+                *osm_triangle_lists.tl_terrain_extrusion[TerrainType::GRASS],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::GRASS]},
                 nullptr,
                 nullptr,
@@ -664,7 +664,7 @@ OsmMapResource::OsmMapResource(
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
         if (config.curb_alpha == 1) {
             TriangleList::extrude(
-                *osm_triangle_lists.tl_terrain_street_extrusion[config.default_terrain_type],
+                *osm_triangle_lists.tl_terrain_extrusion[config.default_terrain_type],
                 osm_triangle_lists.tls_street_wo_curb(),
                 nullptr,
                 nullptr,
