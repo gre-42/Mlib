@@ -343,8 +343,9 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 uv_scale,                                                   // uv_scale
                 tpe == DrawBuildingPartType::CEILING ? bu.building_top : 0, // z
                 parse_color(bu.way.tags, "color", building_color),          // color
-                "",
-                TerrainType::UNDEFINED);                                                        // contour_filename
+                "",                                                         // contour_filename
+                "",                                                         // triangle_filename
+                TerrainType::UNDEFINED);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Could not triangulate building " + bu.id + ": " + e.what());
         }

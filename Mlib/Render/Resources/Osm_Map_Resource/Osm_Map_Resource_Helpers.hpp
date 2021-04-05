@@ -38,7 +38,7 @@ static const float roof_height1 = 9;
 // static const std::set<std::string> excluded_highways = {"pedestrian", "path", "footway", "cycleway", "steps"};
 // static const std::set<std::string> path_tags = {"track", "tertiary"};
 static const std::set<std::string> excluded_highway_tags = {};
-static const std::set<std::string> included_barriers = {"wall", "guard_rail"};
+static const std::set<std::string> included_barriers = {"wall", "guard_rail", "fence"};
 static const std::set<std::string> excluded_buildings = {"roof"};
 
 struct Node {

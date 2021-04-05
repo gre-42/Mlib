@@ -435,6 +435,7 @@ OsmMapResource::OsmMapResource(
                 0,
                 terrain_color,
                 getenv_default("TERRAIN_CONTOUR_FILENAME", ""),
+                getenv_default("TERRAIN_TRIANGLE_FILENAME", ""),
                 config.default_terrain_type);
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate terrain");
@@ -874,6 +875,7 @@ OsmMapResource::OsmMapResource(
                 config.water_height,
                 terrain_color,
                 getenv_default("WATER_CONTOUR_FILENAME", ""),
+                getenv_default("WATER_TRIANGLE_FILENAME", ""),
                 WaterType::UNDEFINED);
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate water");

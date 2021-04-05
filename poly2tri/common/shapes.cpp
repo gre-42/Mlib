@@ -358,7 +358,7 @@ Triangle& Triangle::NeighborAcross(Point& opoint)
     res = neighbors_[2];
   }
   if (res == nullptr) {
-    throw PointException(opoint, "Could not find neightbor accross");
+    throw PointException(opoint, "Could not find neighbor accross");
   }
   return *res;
 }
