@@ -22,6 +22,8 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Region_Contours.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -355,9 +357,7 @@ OsmMapResource::OsmMapResource(
     }
 
     if (config.with_terrain) {
-        std::vector<FixedArray<float, 2>> map_outer_contour;
-        get_map_outer_contour(
-            map_outer_contour,
+        std::vector<FixedArray<float, 2>> map_outer_contour = get_map_outer_contour(
             nodes,
             ways);
 

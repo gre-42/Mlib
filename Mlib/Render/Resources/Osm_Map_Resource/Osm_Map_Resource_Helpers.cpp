@@ -213,49 +213,6 @@ bool Mlib::parse_bool(
     }
 }
 
-std::list<Building> Mlib::get_buildings_or_wall_barriers(
-    BuildingType building_type,
-    const std::map<std::string, Way>& ways,
-    float building_bottom,
-    float default_building_top)
-{
-    std::list<Building> result;
-    for (const auto& w : ways) {
-        const auto& tags = w.second.tags;
-        if (tags.find("level") != tags.end()) {
-            continue;
-        }
-        if (tags.find("building") != tags.end()) {
-            if ((building_type != BuildingType::BUILDING) || excluded_buildings.contains(tags.at("building"))) {
-                continue;
-            }
-        } else if (tags.find("barrier") != tags.end()) {
-            if ((building_type != BuildingType::WALL_BARRIER) || !included_barriers.contains(tags.at("barrier"))) {
-                continue;
-            }
-        } else if (tags.find("spawn_line") != tags.end()) {
-            if ((building_type != BuildingType::SPAWN_LINE) || (tags.at("spawn_line") != "yes")) {
-                continue;
-            }
-        } else if (tags.find("way_points") != tags.end()) {
-            if ((building_type != BuildingType::WAYPOINTS) || (tags.at("way_points") != "yes")) {
-                continue;
-            }
-        } else {
-            continue;
-        }
-        float building_top = default_building_top;
-        building_top = parse_meters(tags, "height", building_top);
-        building_top = parse_meters(tags, "building:height", building_top);
-        result.push_back(Building{
-            .id = w.first,
-            .way = w.second,
-            .building_top = building_top,
-            .building_bottom = building_bottom});
-    }
-    return result;
-}
-
 void Mlib::draw_roofs(
     std::list<std::shared_ptr<TriangleList>>& tls,
     const Material& material,
@@ -407,39 +364,6 @@ void Mlib::draw_buildings_ceiling_or_ground(
 //private:
 //    std::list<p2t::Point> point_list_;
 //};
-
-void Mlib::get_map_outer_contour(
-    std::vector<FixedArray<float, 2>>& contour,
-    const std::map<std::string, Node>& nodes,
-    const std::map<std::string, Way>& ways)
-{
-    if (!contour.empty()) {
-        throw std::runtime_error("Initial map contour not empty");
-    }
-    for (const auto& w : ways) {
-        const auto& tags = w.second.tags;
-        if (tags.find("name") != tags.end() && tags.at("name") == "map-outer-contour") {
-            if (!contour.empty()) {
-                throw std::runtime_error("Found multiple map contours");
-            }
-            contour.reserve(w.second.nd.size());
-            if (w.second.nd.empty()) {
-                throw std::runtime_error("Map outer contour is empty");
-            }
-            for (auto it = w.second.nd.begin(); ; ++it) {
-                auto s = it;
-                ++s;
-                if (s == w.second.nd.end()) {
-                    if (*it != *w.second.nd.begin()) {
-                        throw std::runtime_error("Map outer contour not closed");
-                    }
-                    break;
-                }
-                contour.push_back(nodes.at(*it).position);
-           }
-        }
-    }
-}
 
 void Mlib::raise_streets(
     const std::list<std::shared_ptr<TriangleList>>& tls_street_wo_curb,

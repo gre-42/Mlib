@@ -122,12 +122,6 @@ private:
     UniformRandomNumberGenerator<float> rng_;
 };
 
-std::list<Building> get_buildings_or_wall_barriers(
-    BuildingType building_type,
-    const std::map<std::string, Way>& ways,
-    float building_bottom,
-    float default_building_top);
-
 void draw_roofs(
     std::list<std::shared_ptr<TriangleList>>& tls,
     const Material& material,
@@ -167,11 +161,6 @@ void draw_buildings_ceiling_or_ground(
 //private:
 //    std::list<p2t::Point> point_list_;
 //};
-
-void get_map_outer_contour(
-    std::vector<FixedArray<float, 2>>& contour,
-    const std::map<std::string, Node>& nodes,
-    const std::map<std::string, Way>& ways);
 
 void raise_streets(
     const std::list<std::shared_ptr<TriangleList>>& tls_street_wo_curb,
