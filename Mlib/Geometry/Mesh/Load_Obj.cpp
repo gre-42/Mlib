@@ -168,7 +168,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     {},
                     {},
                     {},
-                    TriangleTangentErrorBehavior::WARN);
+                    cfg.triangle_tangent_error_behavior);
             } else if (Mlib::re::regex_match(line, match, face4_reg)) {
                 FixedArray<size_t, 4> vertex_ids{
                     safe_stoz(match[1].str()),
@@ -233,7 +233,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     {},
                     {},
                     {},
-                    TriangleTangentErrorBehavior::WARN);
+                    cfg.triangle_tangent_error_behavior);
             } else if (Mlib::re::regex_match(line, match, comment_reg)) {
                 // do nothing
             } else if (Mlib::re::regex_match(line, match, object_reg)) {

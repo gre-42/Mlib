@@ -147,6 +147,7 @@ void LoadScene::operator()(
         "\\s+occluded_by_black=(0|1)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat)"
+        "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
         "(\\s+no_werror)?$");
     static const DECLARE_REGEX(gen_triangle_rays_reg, "^\\s*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
     static const DECLARE_REGEX(gen_ray_reg, "^\\s*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
@@ -562,8 +563,11 @@ void LoadScene::operator()(
                 .occluded_by_black = safe_stob(match[21].str()),
                 .aggregate_mode = aggregate_mode_from_string(match[22].str()),
                 .transformation_mode = transformation_mode_from_string(match[23].str()),
+                .triangle_tangent_error_behavior = match[24].matched
+                    ? triangle_tangent_error_behavior_from_string(match[24].str())
+                    : TriangleTangentErrorBehavior::RAISE,
                 .apply_static_lighting = false,
-                .werror = match[24].str() == ""};
+                .werror = !match[25].matched};
             std::string filename = fpath(match[2].str());
             if (filename.ends_with(".obj")) {
                 scene_node_resources.add_resource(match[1].str(), std::make_shared<ObjFileResource>(
