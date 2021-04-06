@@ -273,6 +273,7 @@ int main(int argc, char** argv) {
                     .occluded_by_black = true,
                     .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
                     .transformation_mode = TransformationMode::ALL,
+                    .triangle_tangent_error_behavior = TriangleTangentErrorBehavior::WARN,
                     .apply_static_lighting = args.has_named("--apply_static_lighting"),
                     .werror = !args.has_named("--no_werror")};
                 if (filename.ends_with(".obj")) {
