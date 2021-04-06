@@ -401,7 +401,7 @@ void Mlib::add_grass_on_steiner_points(
     float dmin,
     float dmax)
 {
-    NormalRandomNumberGenerator<float> rng{0, 1.f, 0.2f};
+    NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
     for (const auto& p : steiner_points) {
         if ((p.type == SteinerPointType::STREET_NEIGHBOR) &&
             !std::isnan(p.distance_to_road) &&
@@ -411,7 +411,7 @@ void Mlib::add_grass_on_steiner_points(
         {
             const ParsedResourceName* prn = rnc.try_once();
             if (prn != nullptr) {
-                add_parsed_resource_name(p.position, *prn, rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+                add_parsed_resource_name(p.position, *prn, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
             }
         }
     }
