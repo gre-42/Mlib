@@ -820,8 +820,8 @@ std::list<SteinerPointInfo> Mlib::removed_duplicates(
 ResourceNameCycle::ResourceNameCycle(
     const SceneNodeResources& resources,
     const std::vector<std::string>& names)
-: rng0_{1, 0, names.size() - 1},
-  rng_{2}
+: index_{1, 0, names.size() - 1},
+  probability_{1234321}
 {
     static const DECLARE_REGEX(re, "^(.*?)\\(p:([\\d+.e-]+)\\)(?:\\(hitbox:(\\w+)\\))?$");
     names_.reserve(names.size());
@@ -852,9 +852,9 @@ ResourceNameCycle::~ResourceNameCycle()
 {}
 
 const ParsedResourceName* ResourceNameCycle::try_once() {
-    const ParsedResourceName& prn = names_[rng0_()];
+    const ParsedResourceName& prn = names_[index_()];
     if (prn.probability != 1) {
-        if (rng_() > prn.probability) {
+        if (probability_() > prn.probability) {
             return nullptr;
         }
     }
@@ -877,8 +877,8 @@ bool ResourceNameCycle::empty() const {
 }
 
 void ResourceNameCycle::seed(unsigned int seed) {
-    rng0_.seed(seed);
-    rng_.seed(seed);
+    index_.seed(seed);
+    probability_.seed(seed);
 }
 
 void Mlib::check_curb_validity(float curb_alpha, float curb2_alpha) {

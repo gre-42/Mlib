@@ -118,8 +118,8 @@ public:
     void seed(unsigned int seed);
 private:
     std::vector<ParsedResourceName> names_;
-    UniformIntRandomNumberGenerator<size_t> rng0_;
-    UniformRandomNumberGenerator<float> rng_;
+    UniformIntRandomNumberGenerator<size_t> index_;
+    UniformRandomNumberGenerator<float> probability_;
 };
 
 void draw_roofs(
