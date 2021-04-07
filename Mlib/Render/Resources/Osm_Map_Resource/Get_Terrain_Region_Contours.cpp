@@ -2,6 +2,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Compute_Area.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;
 
@@ -12,7 +13,8 @@ std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> Mlib::get_ter
     std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> result;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
-        if (tags.find("level") != tags.end()) {
+        if (tags.contains("layer") &&
+            (safe_stoi(tags.at("layer")) != 0)) {
             continue;
         }
         TerrainType terrain_type;

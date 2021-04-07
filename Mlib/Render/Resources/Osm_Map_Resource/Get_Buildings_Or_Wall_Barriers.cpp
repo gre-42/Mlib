@@ -1,5 +1,6 @@
 #include "Get_Buildings_Or_Wall_Barriers.hpp"
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;
 
@@ -12,7 +13,8 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     std::list<Building> result;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
-        if (tags.find("level") != tags.end()) {
+        if (tags.contains("layer") &&
+            (safe_stoi(tags.at("layer")) != 0)) {
             continue;
         }
         if (tags.find("building") != tags.end()) {
