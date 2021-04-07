@@ -65,7 +65,8 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
 {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     tl_terrain = std::make_shared<TerrainTypeTriangleList>();
-    tl_terrain->insert(TerrainType::HOLE, std::make_shared<TriangleList>(terrain_type_to_string(TerrainType::HOLE), Material()));
+    tl_terrain->insert(TerrainType::STREET_HOLE, std::make_shared<TriangleList>(terrain_type_to_string(TerrainType::STREET_HOLE), Material()));
+    tl_terrain->insert(TerrainType::BUILDING_HOLE, std::make_shared<TriangleList>(terrain_type_to_string(TerrainType::BUILDING_HOLE), Material()));
     for (auto& ttt : config.terrain_textures) {
         tl_terrain->insert(ttt.first, std::make_shared<TriangleList>(terrain_type_to_string(ttt.first), Material{
             .dirt_texture = config.dirt_texture,
@@ -262,7 +263,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction_an
         tl_air_support,
         tl_tunnel_crossing,
         tl_tunnel_pipe};
-    for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
+    for (const auto& e : tl_terrain->map()) {if (e.first != TerrainType::BUILDING_HOLE) res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
     for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
@@ -279,7 +280,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wo_subtraction_w_
         tl_tunnel_crossing,
         tl_tunnel_pipe};
     for (const auto& e : tl_water.map()) {res.push_back(e.second);}
-    for (const auto& e : tl_terrain->map()) {res.push_back(e.second);}
+    for (const auto& e : tl_terrain->map()) {if (e.first != TerrainType::BUILDING_HOLE) res.push_back(e.second);}
     for (const auto& e : tl_terrain_visuals.map()) {res.push_back(e.second);}
     for (const auto& e : tl_terrain_extrusion.map()) {res.push_back(e.second);}
     for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
@@ -377,7 +378,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_crossing_only() c
         e->triangles_.end()); \
 }
 
-std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::hole_triangles() const {
+std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::all_hole_triangles() const {
     std::list<FixedArray<ColoredVertex, 3>> result;
     INSERT2(tl_street_crossing);
     INSERT3(tl_street);
@@ -385,6 +386,23 @@ std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::hole_triangles() const
     INSERT2(tl_street_curb2);
     INSERT(tl_entrance.at(EntranceType::TUNNEL));
     INSERT(tl_entrance.at(EntranceType::BRIDGE));
+    INSERT4(tls_buildings_ground);
+    return result;
+}
+
+std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::street_hole_triangles() const {
+    std::list<FixedArray<ColoredVertex, 3>> result;
+    INSERT2(tl_street_crossing);
+    INSERT3(tl_street);
+    INSERT2(tl_street_curb);
+    INSERT2(tl_street_curb2);
+    INSERT(tl_entrance.at(EntranceType::TUNNEL));
+    INSERT(tl_entrance.at(EntranceType::BRIDGE));
+    return result;
+}
+
+std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::building_hole_triangles() const {
+    std::list<FixedArray<ColoredVertex, 3>> result;
     INSERT4(tls_buildings_ground);
     return result;
 }

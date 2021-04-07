@@ -1,4 +1,5 @@
 #include "Smoothen_And_Apply_Heightmap.hpp"
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/PgmImage.hpp>
@@ -170,7 +171,34 @@ void Mlib::smoothen_and_apply_heightmap(
             auto tls_smooth = osm_triangle_lists.tls_smooth();
             auto air_tls_smooth = air_triangle_lists.tls_smooth();
             tls_smooth.insert(tls_smooth.end(), air_tls_smooth.begin(), air_tls_smooth.end());
-            TriangleList::smoothen_edges(tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 10, false);
+            TriangleList::smoothen_edges(tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 100, false);
+            // {
+            //     std::list<FixedArray<ColoredVertex, 3>> tcp;
+            //     for (const auto& l : tls_smooth) {
+            //         for (const auto& t : l->triangles_) {
+            //             tcp.push_back(t);
+            //         }
+            //     }
+            //     save_obj("/tmp/tls_smooth.obj", IndexedFaceSet<float, size_t>{tcp});
+            // }
+            // {
+            //     std::list<FixedArray<ColoredVertex, 3>> tcp;
+            //     for (const auto& l : tls_street) {
+            //         for (const auto& t : l->triangles_) {
+            //             tcp.push_back(t);
+            //         }
+            //     }
+            //     save_obj("/tmp/tls_street.obj", IndexedFaceSet<float, size_t>{tcp});
+            // }
+            // {
+            //     std::list<FixedArray<ColoredVertex, 3>> tcp;
+            //     for (const auto& l : tls_smoothed) {
+            //         for (const auto& t : l->triangles_) {
+            //             tcp.push_back(t);
+            //         }
+            //     }
+            //     save_obj("/tmp/tls_smoothed.obj", IndexedFaceSet<float, size_t>{tcp});
+            // }
         }
     }
 }

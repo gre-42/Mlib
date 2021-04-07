@@ -2,6 +2,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 namespace Mlib {
@@ -24,7 +25,7 @@ void triangulate_terrain_or_ceilings(
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
+    const std::map<TerrainType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
     const std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>>& region_contours,
     float scale,
     float uv_scale,
@@ -32,14 +33,15 @@ void triangulate_terrain_or_ceilings(
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
-    TerrainType default_terrain_type);
+    TerrainType default_terrain_type,
+    const std::set<TerrainType>& excluded_terrain_types);
 
 void triangulate_water(
     WaterTypeTriangleList& tl_water,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
+    const std::map<WaterType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
     const std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>>& region_contours,
     float scale,
     float uv_scale,

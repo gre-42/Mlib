@@ -7,7 +7,8 @@ namespace Mlib {
 enum class TerrainType {
     GRASS,
     STONE,
-    HOLE,
+    STREET_HOLE,
+    BUILDING_HOLE,
     UNDEFINED
 };
 
@@ -16,8 +17,10 @@ inline TerrainType terrain_type_from_string(const std::string& tt) {
         return TerrainType::GRASS;
     } else if (tt == "stone") {
         return TerrainType::STONE;
-    } else if (tt == "hole") {
-        return TerrainType::HOLE;
+    } else if (tt == "street_hole") {
+        return TerrainType::STREET_HOLE;
+    } else if (tt == "building_hole") {
+        return TerrainType::BUILDING_HOLE;
     } else if (tt == "undefined") {
         return TerrainType::UNDEFINED;
     } else {
@@ -30,8 +33,10 @@ inline std::string terrain_type_to_string(TerrainType tt) {
         return "grass";
     } else if (tt == TerrainType::STONE) {
         return "stone";
-    } else if (tt == TerrainType::HOLE) {
-        return "hole";
+    } else if (tt == TerrainType::STREET_HOLE) {
+        return "street_hole";
+    } else if (tt == TerrainType::BUILDING_HOLE) {
+        return "building_hole";
     } else if (tt == TerrainType::UNDEFINED) {
         return "undefined";
     } else {

@@ -175,7 +175,7 @@ void triangulate_entity_list(
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
+    const std::map<EntityType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
     const std::list<std::pair<EntityType, std::list<FixedArray<float, 3>>>>& region_contours,
     float scale,
     float uv_scale,
@@ -183,7 +183,8 @@ void triangulate_entity_list(
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
-    EntityType default_terrain_type)
+    EntityType default_terrain_type,
+    const std::set<EntityType>& excluded_entitities)
 {
     PointSet points{steiner_points};
     p2t::Point p00{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width};
@@ -207,14 +208,19 @@ void triangulate_entity_list(
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Could not add bounding contour: " + std::string(e.what()));
     }
-    p2t::CDT cdt{final_bounding_contour};
-    auto hole_contours = find_contours(hole_triangles, ContourDetectionStrategy::NODE_NEIGHBOR);
 
+    size_t ncontours = region_contours.size();
+    std::map<EntityType, std::list<std::list<FixedArray<float, 3>>>> hole_contours;
+    for (const auto& t : hole_triangles) {
+        hole_contours[t.first] = find_contours(t.second, ContourDetectionStrategy::NODE_NEIGHBOR);
+        ncontours += hole_contours[t.first].size();
+    }
     std::vector<std::vector<p2t::Point*>> p2t_hole_contours;
     std::vector<EntityType> p2t_region_types;
-    size_t ncontours = hole_contours.size() + region_contours.size();
-    p2t_hole_contours.reserve(ncontours);
+    p2t_hole_contours.reserve(ncontours + 1);  // include bounding contour
     p2t_region_types.reserve(ncontours);
+
+    p2t::CDT cdt{final_bounding_contour};
     auto add_contour = [&](EntityType region_type, const std::list<FixedArray<float, 3>>& contour){
         p2t_hole_contours.emplace_back();
         p2t_region_types.push_back(region_type);
@@ -228,18 +234,20 @@ void triangulate_entity_list(
         check_contour(cnt);
         cdt.AddHole(cnt);
     };
-    for (std::list<FixedArray<float, 3>>& c : hole_contours) {
-        try {
-            if (compute_area_ccw(c, scale) > 0) {
-                add_contour(EntityType::HOLE, c);
-            } else {
-                std::reverse(c.begin(), c.end());
-                add_contour(default_terrain_type, c);
+    for (auto& hc : hole_contours) {
+        for (std::list<FixedArray<float, 3>>& c : hc.second) {
+            try {
+                if (compute_area_ccw(c, scale) > 0) {
+                    add_contour(hc.first, c);
+                } else {
+                    std::reverse(c.begin(), c.end());
+                    add_contour(default_terrain_type, c);
+                }
+            } catch (const p2t::PointException& e) {
+                throw p2t::PointException(e.point, "Could not add hole contour: " + std::string(e.what()));
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Could not add hole contour: " + std::string(e.what()));
             }
-        } catch (const p2t::PointException& e) {
-            throw p2t::PointException(e.point, "Could not add hole contour: " + std::string(e.what()));
-        } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Could not add hole contour: " + std::string(e.what()));
         }
     }
     for (const auto& r : region_contours) {
@@ -303,7 +311,7 @@ void triangulate_entity_list(
             throw std::runtime_error("Triangulate internal error");
         }
         for (size_t i = 0; i < inner_triangles.size() - 1; ++i) {
-            if (p2t_region_types[i] != EntityType::HOLE) {
+            if (!excluded_entitities.contains(p2t_region_types[i])) {
                 draw_tris(tl_terrain[p2t_region_types[i]], inner_triangles[i]);
             }
         }
@@ -322,7 +330,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
+    const std::map<TerrainType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
     const std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>>& region_contours,
     float scale,
     float uv_scale,
@@ -330,7 +338,8 @@ void Mlib::triangulate_terrain_or_ceilings(
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
-    TerrainType default_terrain_type)
+    TerrainType default_terrain_type,
+    const std::set<TerrainType>& excluded_terrain_types)
 {
     triangulate_entity_list(
         tl_terrain,
@@ -345,7 +354,8 @@ void Mlib::triangulate_terrain_or_ceilings(
         color,
         contour_filename,
         triangle_filename,
-        default_terrain_type);
+        default_terrain_type,
+        excluded_terrain_types);
 }
 
 void Mlib::triangulate_water(
@@ -353,7 +363,7 @@ void Mlib::triangulate_water(
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
     const std::vector<FixedArray<float, 2>>& bounding_contour,
-    const std::list<FixedArray<ColoredVertex, 3>>& hole_triangles,
+    const std::map<WaterType, std::list<FixedArray<ColoredVertex, 3>>>& hole_triangles,
     const std::list<std::pair<WaterType, std::list<FixedArray<float, 3>>>>& region_contours,
     float scale,
     float uv_scale,
@@ -376,5 +386,6 @@ void Mlib::triangulate_water(
         color,
         contour_filename,
         triangle_filename,
-        default_water_type);
+        default_water_type,
+        {WaterType::HOLE});
 }

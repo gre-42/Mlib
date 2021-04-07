@@ -269,8 +269,11 @@ OsmMapResource::OsmMapResource(
             DrawBuildingPartType::GROUND);
     }
 
-    auto hole_triangles = osm_triangle_lists.hole_triangles();
-    StreetBvh ground_steet_bvh{hole_triangles};
+    auto all_hole_triangles = osm_triangle_lists.all_hole_triangles();
+    auto street_hole_triangles = osm_triangle_lists.street_hole_triangles();
+    auto building_hole_triangles = osm_triangle_lists.building_hole_triangles();
+    StreetBvh all_holes_bvh{all_hole_triangles};
+    StreetBvh ground_street_bvh{street_hole_triangles};
 
     if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
         ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
@@ -282,7 +285,7 @@ OsmMapResource::OsmMapResource(
             steiner_points,
             rnc,
             config.min_dist_to_road,
-            ground_steet_bvh,
+            all_holes_bvh,
             nodes,
             ways,
             config.forest_outline_tree_distance,
@@ -334,7 +337,7 @@ OsmMapResource::OsmMapResource(
             steiner_points,
             rnc,
             config.min_dist_to_road,
-            ground_steet_bvh,
+            all_holes_bvh,
             nodes,
             config.scale);
     }
@@ -384,7 +387,7 @@ OsmMapResource::OsmMapResource(
                     1,                              // line_thickness
                     4,                              // point_size
                     get_triangles_around(           // triangles
-                        hole_triangles,
+                        all_hole_triangles,
                         {coords[0], coords[1]},
                         r),
                     {},                             // contour
@@ -404,8 +407,8 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("add_street_steiner_points");
         add_street_steiner_points(
             steiner_points,
-            ground_steet_bvh,
-            StreetBvh{air_triangle_lists.hole_triangles()},
+            ground_street_bvh,
+            StreetBvh{air_triangle_lists.street_hole_triangles()},
             bounding_info,
             config.scale,
             config.steiner_point_distances_road,
@@ -428,7 +431,8 @@ OsmMapResource::OsmMapResource(
                 bounding_info,
                 steiner_points,
                 map_outer_contour,
-                hole_triangles,
+                {{TerrainType::STREET_HOLE, street_hole_triangles},
+                 {TerrainType::BUILDING_HOLE, building_hole_triangles}},
                 terrain_region_contours,
                 config.scale,
                 config.uv_scale_terrain,
@@ -436,7 +440,8 @@ OsmMapResource::OsmMapResource(
                 terrain_color,
                 getenv_default("TERRAIN_CONTOUR_FILENAME", ""),
                 getenv_default("TERRAIN_TRIANGLE_FILENAME", ""),
-                config.default_terrain_type);
+                config.default_terrain_type,
+                {TerrainType::STREET_HOLE});
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate terrain");
         } catch (const EdgeException& e) {
