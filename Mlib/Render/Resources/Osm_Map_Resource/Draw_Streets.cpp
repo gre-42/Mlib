@@ -15,8 +15,8 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Stats/Mean.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 #include <regex>
 
 using namespace Mlib;

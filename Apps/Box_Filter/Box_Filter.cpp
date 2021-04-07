@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <iostream>
 
 using namespace Mlib;

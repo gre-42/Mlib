@@ -73,8 +73,8 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/Trim.hpp>
 #include <filesystem>
 #include <fstream>

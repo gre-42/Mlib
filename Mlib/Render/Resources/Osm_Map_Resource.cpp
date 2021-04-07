@@ -45,8 +45,8 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 #include <poly2tri/point_exception.hpp>
 
 // #undef LOG_FUNCTION

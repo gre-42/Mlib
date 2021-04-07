@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <fenv.h>
 
 using namespace Mlib;

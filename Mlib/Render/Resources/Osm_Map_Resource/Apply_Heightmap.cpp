@@ -9,7 +9,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 
 namespace Mlib {
 
