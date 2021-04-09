@@ -392,32 +392,6 @@ void Mlib::raise_streets(
     }
 }
 
-void Mlib::add_grass_on_steiner_points(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
-    ResourceNameCycle& rnc,
-    const std::list<SteinerPointInfo>& steiner_points,
-    float scale,
-    float dmin,
-    float dmax)
-{
-    NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
-    for (const auto& p : steiner_points) {
-        if ((p.type == SteinerPointType::STREET_NEIGHBOR) &&
-            !std::isnan(p.distance_to_road) &&
-            ((p.distance_to_road > dmin * scale) &&
-             (p.distance_to_road < dmax * scale) &&
-             (p.distance_to_air_road > dmin * scale)))
-        {
-            const ParsedResourceName* prn = rnc.try_once();
-            if (prn != nullptr) {
-                add_parsed_resource_name(p.position, *prn, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
-            }
-        }
-    }
-}
-
 void Mlib::add_grass_inside_triangles(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
@@ -568,33 +542,6 @@ void Mlib::add_beacons_to_raceways(
 //         }
 //     }
 // }
-
-void Mlib::add_trees_to_tree_nodes(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
-    std::list<SteinerPointInfo>& steiner_points,
-    ResourceNameCycle& rnc,
-    float min_dist_to_road,
-    const StreetBvh& ground_bvh,
-    const std::map<std::string, Node>& nodes,
-    float scale)
-{
-    NormalRandomNumberGenerator<float> rng{0, 1.f, 0.2f};
-    for (const auto& n : nodes) {
-        const auto& tags = n.second.tags;
-        if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
-            const auto& p = n.second.position;
-            if (std::isnan(min_dist_to_road) || !ground_bvh.has_neighbor(p, min_dist_to_road * scale)) {
-                add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
-                steiner_points.push_back({
-                    .position = {p(0), p(1), 0.f},
-                    .type = SteinerPointType::TREE_NODE,
-                    .distance_to_road = NAN});
-            }
-        }
-    }
-}
 
 void Mlib::add_binary_vegetation_old(
     std::list<std::shared_ptr<TriangleList>>& tls,

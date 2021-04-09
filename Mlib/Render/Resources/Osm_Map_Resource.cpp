@@ -7,7 +7,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/Geometry/Mesh/Triangles_Around.cpp>
+#include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
@@ -15,7 +15,9 @@
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Street_Steiner_Points.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Add_Trees_To_Tree_Nodes.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>

@@ -1,8 +1,9 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Geometry/Normalized_Points_Fixed.cpp>
+#include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
