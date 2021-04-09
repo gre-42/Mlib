@@ -11,7 +11,7 @@ std::vector<FixedArray<float, 2>> Mlib::get_map_outer_contour(
     std::vector<FixedArray<float, 2>> contour;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
-        if (tags.find("name") != tags.end() && tags.at("name") == "map-outer-contour") {
+        if (tags.contains("name", "map-outer-contour")) {
             if (!contour.empty()) {
                 throw std::runtime_error("Found multiple map contours");
             }

@@ -27,8 +27,8 @@ void Mlib::add_trees_to_forest_outlines(
     // size_t rid = 0;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
-        if ((tags.find("landuse") != tags.end() && tags.at("landuse") == "forest") ||
-            (tags.find("natural") != tags.end() && tags.at("natural") == "wood"))
+        if (tags.contains("landuse", "forest") ||
+            tags.contains("natural", "wood"))
         {
             float area = compute_area_clockwise(w.second.nd, nodes, scale);
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {

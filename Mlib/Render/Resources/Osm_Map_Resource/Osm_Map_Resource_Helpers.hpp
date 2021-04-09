@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Map.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <list>
@@ -43,12 +44,12 @@ static const std::set<std::string> excluded_buildings = {"roof"};
 
 struct Node {
     FixedArray<float, 2> position;
-    std::map<std::string, std::string> tags;
+    Map<std::string, std::string> tags;
 };
 
 struct Way {
     std::list<std::string> nd;
-    std::map<std::string, std::string> tags;
+    Map<std::string, std::string> tags;
 };
 
 struct StreetRectangle {

@@ -61,8 +61,7 @@ void Mlib::apply_heightmap(
             float bridge_height = parse_meters(w.second.tags, "bridge_height", NAN);
             bool ref_is_ground =
                 !std::isnan(bridge_height) &&
-                (w.second.tags.find("bridge_height_reference") != w.second.tags.end()) &&
-                w.second.tags.at("bridge_height_reference") == "ground";
+                w.second.tags.contains("bridge_height_reference", "ground");
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;

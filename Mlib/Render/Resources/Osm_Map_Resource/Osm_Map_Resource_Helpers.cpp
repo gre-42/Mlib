@@ -401,7 +401,7 @@ void Mlib::add_beacons_to_raceways(
 {
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
-        if (tags.find("raceway") != tags.end() && tags.at("raceway") == "yes")
+        if (tags.contains("raceway", "yes"))
         {
             auto sw = smooth_way(nodes, w.second.nd, scale, raceway_beacon_distance);
             for (const auto p : sw) {

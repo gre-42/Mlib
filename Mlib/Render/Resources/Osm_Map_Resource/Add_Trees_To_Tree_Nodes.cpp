@@ -21,7 +21,7 @@ void Mlib::add_trees_to_tree_nodes(
     NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
     for (const auto& n : nodes) {
         const auto& tags = n.second.tags;
-        if (tags.find("natural") != tags.end() && tags.at("natural") == "tree") {
+        if (tags.contains("natural", "tree")) {
             const auto& p = n.second.position;
             if (std::isnan(min_dist_to_road) || !ground_bvh.has_neighbor(p, min_dist_to_road * scale)) {
                 add_parsed_resource_name(p, rnc(), scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
