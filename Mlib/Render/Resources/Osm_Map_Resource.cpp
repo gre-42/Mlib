@@ -14,6 +14,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Street_Steiner_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Trees_To_Forest_Outlines.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Trees_To_Tree_Nodes.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Add_Models_To_Model_Nodes.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
@@ -334,6 +335,17 @@ OsmMapResource::OsmMapResource(
             rnc,
             config.min_dist_to_road,
             all_holes_bvh,
+            nodes,
+            config.scale);
+    }
+    if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
+        LOG_INFO("add_models_to_model_nodes");
+        add_models_to_model_nodes(
+            resource_instance_positions_,
+            object_resource_descriptors_,
+            hitboxes_,
+            steiner_points,
+            scene_node_resources,
             nodes,
             config.scale);
     }
