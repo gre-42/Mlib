@@ -168,29 +168,6 @@ void raise_streets(
     float scale,
     float amount);
 
-void add_grass_inside_triangles(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
-    ResourceNameCycle& rnc,
-    const TriangleList& triangles,
-    float scale,
-    float distance);
-
-void add_trees_to_forest_outlines(
-    std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
-    std::list<SteinerPointInfo>& steiner_points,
-    ResourceNameCycle& rnc,
-    float min_dist_to_road,
-    const StreetBvh& ground_bvh,
-    const std::map<std::string, Node>& nodes,
-    const std::map<std::string, Way>& ways,
-    float tree_distance,
-    float tree_inwards_distance,
-    float scale);
-
 void add_beacons_to_raceways(
     std::list<ObjectResourceDescriptor>& street_light_positions,
     const std::map<std::string, Node>& nodes,
