@@ -150,6 +150,7 @@ int main(int argc, char** argv) {
         "    [--background_light_ambience <background_light_ambience>]\n"
         "    [--no_shadows]\n"
         "    [--light_configuration {none, one, shifted_circle, circle}]\n"
+        "    [--triangle_tangent_error_behavior {zero, warn, raise}]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
          "--no_cull_faces",
@@ -181,16 +182,16 @@ int main(int argc, char** argv) {
          "--angle_x",
          "--angle_y",
          "--angle_z",
-        "--nsamples_msaa",
-        "--lightmap_nsamples_msaa",
-        "--blend_mode",
-        "--aggregate_mode",
-        "--render_dt",
-        "--width",
-        "--height",
-        "--output",
-        "--min_num",
-        "--regex",
+         "--nsamples_msaa",
+         "--lightmap_nsamples_msaa",
+         "--blend_mode",
+         "--aggregate_mode",
+         "--render_dt",
+         "--width",
+         "--height",
+         "--output",
+         "--min_num",
+         "--regex",
          "--background_light_ambience",
          "--light_configuration",
          "--color_gradient_min_x",
@@ -217,7 +218,8 @@ int main(int argc, char** argv) {
          "--color_b",
          "--background_r",
          "--background_g",
-         "--background_b"});
+         "--background_b",
+         "--triangle_tangent_error_behavior"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -273,7 +275,7 @@ int main(int argc, char** argv) {
                     .occluded_by_black = true,
                     .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "off")),
                     .transformation_mode = TransformationMode::ALL,
-                    .triangle_tangent_error_behavior = TriangleTangentErrorBehavior::WARN,
+                    .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
                     .apply_static_lighting = args.has_named("--apply_static_lighting"),
                     .werror = !args.has_named("--no_werror")};
                 if (filename.ends_with(".obj")) {
