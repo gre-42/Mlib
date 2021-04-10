@@ -150,13 +150,13 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_instances && (has_lookat || has_yangle)) {
         if (has_yangle) {
-            sstr << "    vec2 dxz = vec2(cos(instancePosition.w), sin(instancePosition.w));" << std::endl;
+            sstr << "    vec2 dz_xz = vec2(sin(instancePosition.w), cos(instancePosition.w));" << std::endl;
         } else if (orthographic) {
-            sstr << "    vec2 dxz = viewDir.xz;" << std::endl;
+            sstr << "    vec2 dz_xz = viewDir.xz;" << std::endl;
         } else {
-            sstr << "    vec2 dxz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
+            sstr << "    vec2 dz_xz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
         }
-        sstr << "    vec3 dz = vec3(dxz.x, 0, dxz.y);" << std::endl;
+        sstr << "    vec3 dz = vec3(dz_xz.x, 0, dz_xz.y);" << std::endl;
         sstr << "    vec3 dy = vec3(0, 1, 0);" << std::endl;
         sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
         sstr << "    mat3 lookat;" << std::endl;
@@ -965,7 +965,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             for (const TransformationMatrix<float, 3>& m : inst) {
                 positions.push_back(PositionAndYAngle{
                     .position = m.t(),
-                    .yangle = std::atan2(m.R()(2, 0), m.R()(0, 0))});
+                    .yangle = std::atan2(-m.R()(2, 0), m.R()(0, 0))});
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
