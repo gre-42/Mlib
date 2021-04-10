@@ -249,7 +249,8 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                 std::string p = fs::path(filename).parent_path().string();
                 mtllib = load_mtllib(p == "" ? match[1].str() : p + "/" + match[1].str(), cfg.werror);
             } else if (Mlib::re::regex_match(line, match, usemtl_reg)) {
-                current_mtl = mtllib.at(match[1].str());
+                std::string material_name = match[1].str();
+                current_mtl = mtllib.at(material_name);
                 TextureDescriptor td;
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
@@ -267,7 +268,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
                     tl.material_.cull_faces = cfg.cull_faces;
                 } else {
                     tl.material_.blend_mode = BlendMode::OFF;
-                    tl.material_.cull_faces = true;
+                    tl.material_.cull_faces = (material_name.find(".NoCullFaces") == std::string::npos);
                 }
                 tl.material_.ambience = current_mtl.ambience;
                 tl.material_.diffusivity = current_mtl.diffusivity;
