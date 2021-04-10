@@ -26,7 +26,7 @@ void Mlib::add_grass_on_steiner_points(
         {
             const ParsedResourceName* prn = rnc.try_once();
             if (prn != nullptr) {
-                add_parsed_resource_name(p.position, *prn, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+                add_parsed_resource_name(p.position, *prn, 0.f, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
             }
         }
     }

@@ -177,7 +177,7 @@ void SceneNode::add_instances_child(
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = is_registered,
         .scene_node = std::move(std::unique_ptr<SceneNode>{node}),
-        .instances = std::move(std::list<FixedArray<float, 3>>())})).second)
+        .instances = std::move(std::list<PositionAndYAngle>())})).second)
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
     }
@@ -185,13 +185,17 @@ void SceneNode::add_instances_child(
 
 void SceneNode::add_instances_position(
     const std::string& name,
-    const FixedArray<float, 3>& position)
+    const FixedArray<float, 3>& position,
+    float yangle)
 {
     auto it = instances_children_.find(name);
     if (it == instances_children_.end()) {
         throw std::runtime_error("Could not find instance node with name " + name);
     }
-    it->second.instances.push_back(position);
+    it->second.instances.push_back(PositionAndYAngle{position, yangle});
+    if (yangle != 0) {
+        std::cerr << "yang " << yangle << std::endl;
+    }
 }
 
 void SceneNode::set_camera(const std::shared_ptr<Camera>& camera) {
@@ -392,20 +396,23 @@ void SceneNode::append_large_aggregates_to_queue(
 void SceneNode::append_small_instances_to_queue(
     const FixedArray<float, 4, 4>& vp,
     const TransformationMatrix<float, 3>& parent_m,
-    const FixedArray<float, 3>& delta_position,
+    const PositionAndYAngle& delta_pose,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
     TransformationMatrix<float, 3> rel = relative_model_matrix();
-    rel.t() += delta_position;
+    rel.t() += delta_pose.position;
+    if (delta_pose.yangle != 0) {
+        rel.R() = dot2d(rodrigues(FixedArray<float, 3>{0.f, 0.f, 1.f}, delta_pose.yangle), rel.R());
+    }
     FixedArray<float, 4, 4> mvp = dot2d(vp, rel.affine());
     TransformationMatrix<float, 3> m = parent_m * rel;
     for (const auto& r : renderables_) {
         r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, external_render_pass, instances_queue);
     }
     for (const auto& n : children_) {
-        n.second.scene_node->append_small_instances_to_queue(mvp, m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config, external_render_pass);
+        n.second.scene_node->append_small_instances_to_queue(mvp, m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f}, instances_queue, scene_graph_config, external_render_pass);
     }
     for (const auto& i : instances_children_) {
         // The transformation is swapped, meaning
@@ -418,18 +425,21 @@ void SceneNode::append_small_instances_to_queue(
 
 void SceneNode::append_large_instances_to_queue(
     const TransformationMatrix<float, 3>& parent_m,
-    const FixedArray<float, 3>& delta_position,
+    const PositionAndYAngle& delta_pose,
     std::list<TransformedColoredVertexArray>& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
     TransformationMatrix<float, 3> rel = relative_model_matrix();
-    rel.t() += delta_position;
+    rel.t() += delta_pose.position;
+    if (delta_pose.yangle != 0) {
+        rel.R() = dot2d(rel.R(), rodrigues(FixedArray<float, 3>{0.f, 0.f, 1.f}, delta_pose.yangle));
+    }
     TransformationMatrix<float, 3> m = parent_m * rel;
     for (const auto& r : renderables_) {
         r.second->append_large_instances_to_queue(m, scene_graph_config, instances_queue);
     }
     for (const auto& n : children_) {
-        n.second.scene_node->append_large_instances_to_queue(m, fixed_zeros<float, 3>(), instances_queue, scene_graph_config);
+        n.second.scene_node->append_large_instances_to_queue(m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f}, instances_queue, scene_graph_config);
     }
     for (const auto& i : instances_children_) {
         for (const auto& j : i.second.instances) {

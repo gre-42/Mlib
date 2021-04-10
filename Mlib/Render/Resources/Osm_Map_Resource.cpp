@@ -944,7 +944,7 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
         }
         scene_node.add_instances_child(p.first, node);
         for (const auto& r : p.second) {
-            scene_node.add_instances_position(p.first, r.position);
+            scene_node.add_instances_position(p.first, r.position, r.yangle);
         }
     }
     if (!near_grass_resource_names_.empty() && (much_near_grass_distance_ != INFINITY)) {

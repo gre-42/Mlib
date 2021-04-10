@@ -4,6 +4,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -19,14 +20,22 @@ void Mlib::add_models_to_model_nodes(
 {
     for (const auto& n : nodes) {
         const auto& tags = n.second.tags;
-        if (auto it = tags.find("model"); it != tags.end()) {
+        if (auto mit = tags.find("model"); mit != tags.end()) {
             const auto& p = n.second.position;
             ParsedResourceName prn{
-                .name = it->second,
+                .name = mit->second,
                 .probability = NAN,
-                .aggregate_mode = resources.aggregate_mode(it->second),
+                .aggregate_mode = resources.aggregate_mode(mit->second),
                 .hitbox = ""};
-            add_parsed_resource_name(p, prn, 1.f, resource_instance_positions, object_resource_descriptors, hitboxes);
+            auto yit = tags.find("yangle");
+            add_parsed_resource_name(
+                p,
+                prn,
+                yit == tags.end() ? 0.f : safe_stof(yit->second) * float{M_PI} / 180.f,
+                1.f,
+                resource_instance_positions,
+                object_resource_descriptors,
+                hitboxes);
             steiner_points.push_back({
                 .position = {p(0), p(1), 0.f},
                 .type = SteinerPointType::MODEL_NODE,

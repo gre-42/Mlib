@@ -45,6 +45,7 @@ struct RenderProgramIdentifier {
     bool has_dirtmap;
     bool has_instances;
     bool has_lookat;
+    bool has_yangle;
     bool reorient_normals;
     bool calculate_lightmap;
     OrderableFixedArray<float, 3> ambience;

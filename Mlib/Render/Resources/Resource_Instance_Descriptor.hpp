@@ -7,12 +7,13 @@ namespace Mlib {
 struct ObjectResourceDescriptor {
     FixedArray<float, 3> position;
     std::string name;
-    float scale = 1;
+    float scale = 1.f;
 };
 
 struct ResourceInstanceDescriptor {
     FixedArray<float, 3> position;
-    float scale = 1;  // Currently not used
+    float yangle = 0.f;
+    float scale = 1.f;  // Currently not used
 };
 
 }

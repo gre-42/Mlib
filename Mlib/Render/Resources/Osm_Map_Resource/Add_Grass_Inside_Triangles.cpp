@@ -19,7 +19,7 @@ void Mlib::add_grass_inside_triangles(
         return;
     }
     TriangleSampler2<float> ts{ 1 };
-    NormalRandomNumberGenerator<float> rng{ 0, 1.f, 0.2f };
+    NormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
     for (auto& t : triangles.triangles_) {
         ts.sample_triangle_interior<3>(
             t(0).position,
@@ -29,7 +29,7 @@ void Mlib::add_grass_inside_triangles(
             [&](float a, float b, float c)
             {
                 FixedArray<float, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
-                add_parsed_resource_name(p, rnc(), rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+                add_parsed_resource_name(p, rnc(), 0.f, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
             });
     }
 }

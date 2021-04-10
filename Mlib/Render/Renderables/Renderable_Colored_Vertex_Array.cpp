@@ -194,6 +194,7 @@ void RenderableColoredVertexArray::render_cva(
     bool has_dirtmap = (!cva->material.dirt_texture.empty()) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
+    bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
     OrderableFixedArray<float, 4> alpha_distances;
     bool fragments_depend_on_distance;
     if (render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
@@ -241,6 +242,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_dirtmap = has_dirtmap,
             .has_instances = has_instances,
             .has_lookat = has_lookat,
+            .has_yangle = has_yangle,
             .reorient_normals = reorient_normals,
             .calculate_lightmap = render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE,
             .ambience = OrderableFixedArray{ambience},

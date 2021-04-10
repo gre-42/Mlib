@@ -146,7 +146,7 @@ void LoadScene::operator()(
         "\\s+occluder_type=(off|white|black)"
         "\\s+occluded_by_black=(0|1)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
-        "\\s+transformation_mode=(all|position|position_lookat)"
+        "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
         "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
         "(\\s+no_werror)?$");
     static const DECLARE_REGEX(gen_triangle_rays_reg, "^\\s*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
@@ -172,7 +172,7 @@ void LoadScene::operator()(
         "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
-        "\\s+transformation_mode=(all|position|position_lookat)$");
+        "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
     static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(binary_x_resource_reg, "^\\s*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
     static const DECLARE_REGEX(node_instance_reg,

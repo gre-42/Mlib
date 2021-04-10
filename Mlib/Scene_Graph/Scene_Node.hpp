@@ -28,10 +28,15 @@ struct Blended {
     }
 };
 
+struct PositionAndYAngle {
+    FixedArray<float, 3> position;
+    float yangle;
+};
+
 struct SceneNodeInstances {
     bool is_registered;
     std::unique_ptr<SceneNode> scene_node;
-    std::list<FixedArray<float, 3>> instances;
+    std::list<PositionAndYAngle> instances;
 };
 
 struct SceneNodeChild {
@@ -71,7 +76,8 @@ public:
         bool is_registered = false);
     void add_instances_position(
         const std::string& name,
-        const FixedArray<float, 3>& position);
+        const FixedArray<float, 3>& position,
+        float yangle);
     void set_camera(const std::shared_ptr<Camera>& camera);
     std::shared_ptr<Camera> get_camera() const;
     void add_light(Light* light);
@@ -100,13 +106,13 @@ public:
     void append_small_instances_to_queue(
         const FixedArray<float, 4, 4>& vp,
         const TransformationMatrix<float, 3>& parent_m,
-        const FixedArray<float, 3>& delta_position,
+        const PositionAndYAngle& delta_pose,
         std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;
     void append_large_instances_to_queue(
         const TransformationMatrix<float, 3>& parent_m,
-        const FixedArray<float, 3>& delta_position,
+        const PositionAndYAngle& delta_pose,
         std::list<TransformedColoredVertexArray>& instances_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_lights_to_queue(

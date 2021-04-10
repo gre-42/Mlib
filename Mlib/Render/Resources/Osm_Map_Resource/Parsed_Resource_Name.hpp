@@ -21,6 +21,7 @@ struct ParsedResourceName {
 void add_parsed_resource_name(
     const FixedArray<float, 3>& p,
     const ParsedResourceName& prn,
+    float yangle,
     float scale,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
@@ -29,6 +30,7 @@ void add_parsed_resource_name(
 void add_parsed_resource_name(
     const FixedArray<float, 2>& p,
     const ParsedResourceName& prn,
+    float yangle,
     float scale,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,

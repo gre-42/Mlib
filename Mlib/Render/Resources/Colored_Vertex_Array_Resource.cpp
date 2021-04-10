@@ -43,6 +43,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_specularity,
     bool has_instances,
     bool has_lookat,
+    bool has_yangle,
     size_t nbones,
     bool reorient_normals,
     bool orthographic,
@@ -66,7 +67,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "layout (location=4) in vec3 vTangent;" << std::endl;
     }
     if (has_instances) {
-        sstr << "layout (location=5) in vec3 instancePosition;" << std::endl;
+        if (has_yangle) {
+            sstr << "layout (location=5) in vec4 instancePosition;" << std::endl;
+        } else {
+            sstr << "layout (location=5) in vec3 instancePosition;" << std::endl;
+        }
     }
     if (nbones != 0) {
         sstr << "layout (location=6) in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
@@ -131,8 +136,13 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_lookat && !has_instances) {
         throw std::runtime_error("has_lookat requires has_instances");
     }
-    if (has_instances && has_lookat) {
-        if (orthographic) {
+    if (has_yangle && !has_instances) {
+        throw std::runtime_error("has_yangle requires has_instances");
+    }
+    if (has_instances && (has_lookat || has_yangle)) {
+        if (has_yangle) {
+            sstr << "    vec2 dxz = vec2(cos(instancePosition.w), sin(instancePosition.w));" << std::endl;
+        } else if (orthographic) {
             sstr << "    vec2 dxz = viewDir.xz;" << std::endl;
         } else {
             sstr << "    vec2 dxz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
@@ -144,7 +154,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    lookat[0] = dx;" << std::endl;
         sstr << "    lookat[1] = dy;" << std::endl;
         sstr << "    lookat[2] = dz;" << std::endl;
-        sstr << "    vPosInstance = lookat * vPosInstance + instancePosition;" << std::endl;
+        sstr << "    vPosInstance = lookat * vPosInstance + instancePosition.xyz;" << std::endl;
     } else if (has_instances && !has_lookat) {
         sstr << "    vPosInstance = vPosInstance + instancePosition;" << std::endl;
     }
@@ -750,6 +760,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         !id.specularity.all_equal(0),
         id.has_instances,
         id.has_lookat,
+        id.has_yangle,
         triangles_res_->bone_indices.size(),
         id.reorient_normals,
         id.orthographic,
@@ -936,18 +947,39 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         if (inst.empty()) {
             throw std::runtime_error("ColoredVertexArrayResource::get_vertex_array received empty instances \"" + cva->name + '"');
         }
-        std::vector<FixedArray<float, 3>> positions;
-        positions.reserve(inst.size());
-        for (const TransformationMatrix<float, 3>& m : inst) {
-            positions.push_back(m.t());
-        }
-        CHK(glGenBuffers(1, &va.position_buffer));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
+        if (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE) {
+            std::vector<PositionAndYAngle> positions;
+            positions.reserve(inst.size());
+            for (const TransformationMatrix<float, 3>& m : inst) {
+                positions.push_back(PositionAndYAngle{
+                    .position = m.t(),
+                    .yangle = std::atan2(m.R()(2, 0), m.R()(0, 0))});
+            }
+            CHK(glGenBuffers(1, &va.position_buffer));
+            CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
+            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
 
-        CHK(glEnableVertexAttribArray(5));
-        CHK(glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
-        CHK(glVertexAttribDivisor(5, 1));
+            CHK(glEnableVertexAttribArray(5));
+            CHK(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
+            CHK(glVertexAttribDivisor(5, 1));
+        } else if ((cva->material.transformation_mode == TransformationMode::POSITION) ||
+                   (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT))
+        {
+            std::vector<FixedArray<float, 3>> positions;
+            positions.reserve(inst.size());
+            for (const TransformationMatrix<float, 3>& m : inst) {
+                positions.push_back(m.t());
+            }
+            CHK(glGenBuffers(1, &va.position_buffer));
+            CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
+            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
+
+            CHK(glEnableVertexAttribArray(5));
+            CHK(glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
+            CHK(glVertexAttribDivisor(5, 1));
+        } else {
+            throw std::runtime_error("Unsupported transformation mode for instances");
+        }
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
     if (triangles_res_->skeleton != nullptr) {
