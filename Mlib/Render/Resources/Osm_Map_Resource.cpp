@@ -347,6 +347,7 @@ OsmMapResource::OsmMapResource(
             steiner_points,
             scene_node_resources,
             nodes,
+            ways,
             config.scale);
     }
     {

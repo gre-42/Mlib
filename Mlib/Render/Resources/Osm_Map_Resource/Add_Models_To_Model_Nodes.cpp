@@ -16,8 +16,30 @@ void Mlib::add_models_to_model_nodes(
     std::list<SteinerPointInfo>& steiner_points,
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
+    const std::map<std::string, Way>& ways,
     float scale)
 {
+    std::map<std::string, std::string> prev_neighbor;
+    std::map<std::string, std::string> next_neighbor;
+    for (const auto& w : ways) {
+        for (auto it = w.second.nd.begin();;) {
+            if (it == w.second.nd.end()) {
+                break;
+            }
+            const auto& prev = *it++;
+            if (it == w.second.nd.end()) {
+                break;
+            }
+            const auto& prev_tags = nodes.at(prev).tags;
+            const auto& next_tags = nodes.at(*it).tags;
+            if (next_tags.find("model") != next_tags.end() && !prev_neighbor.insert({*it, prev}).second) {
+                throw std::runtime_error("Could not insert prev neighbor of node " + *it);
+            }
+            if (prev_tags.find("model") != prev_tags.end() &&!next_neighbor.insert({prev, *it}).second) {
+                throw std::runtime_error("Could not insert next neighbor of node " + prev);
+            }
+        }
+    }
     for (const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (auto mit = tags.find("model"); mit != tags.end()) {
@@ -28,10 +50,29 @@ void Mlib::add_models_to_model_nodes(
                 .aggregate_mode = resources.aggregate_mode(mit->second),
                 .hitbox = ""};
             auto yit = tags.find("yangle");
+            float yangle;
+            if (yit == tags.end()) {
+                auto np = prev_neighbor.find(n.first);
+                auto nn = next_neighbor.find(n.first);
+                if (np == prev_neighbor.end() && nn == next_neighbor.end()) {
+                    yangle = 0.f;
+                } else if (np != prev_neighbor.end() && nn != next_neighbor.end()) {
+                    FixedArray<float, 2> dir = nodes.at(nn->second).position - nodes.at(np->second).position;
+                    yangle = std::atan2(-dir(1), -dir(0));
+                } else if (np != prev_neighbor.end()) {
+                    FixedArray<float, 2> dir = nodes.at(n.first).position - nodes.at(np->second).position;
+                    yangle = std::atan2(-dir(1), -dir(0));
+                } else {
+                    FixedArray<float, 2> dir = nodes.at(nn->second).position - nodes.at(n.first).position;
+                    yangle = std::atan2(-dir(1), -dir(0));
+                }
+            } else {
+                yangle = safe_stof(yit->second) * float{M_PI} / 180.f;
+            }
             add_parsed_resource_name(
                 p,
                 prn,
-                yit == tags.end() ? 0.f : safe_stof(yit->second) * float{M_PI} / 180.f,
+                yangle,
                 1.f,
                 resource_instance_positions,
                 object_resource_descriptors,

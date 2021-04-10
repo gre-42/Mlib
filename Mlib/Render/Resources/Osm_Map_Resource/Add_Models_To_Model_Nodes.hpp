@@ -13,6 +13,7 @@ class FixedArray;
 struct SteinerPointInfo;
 class StreetBvh;
 struct Node;
+struct Way;
 class SceneNodeResources;
 
 void add_models_to_model_nodes(
@@ -22,6 +23,7 @@ void add_models_to_model_nodes(
     std::list<SteinerPointInfo>& steiner_points,
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
+    const std::map<std::string, Way>& ways,
     float scale);
 
 }
