@@ -193,9 +193,6 @@ void SceneNode::add_instances_position(
         throw std::runtime_error("Could not find instance node with name " + name);
     }
     it->second.instances.push_back(PositionAndYAngle{position, yangle});
-    if (yangle != 0) {
-        std::cerr << "yang " << yangle << std::endl;
-    }
 }
 
 void SceneNode::set_camera(const std::shared_ptr<Camera>& camera) {
