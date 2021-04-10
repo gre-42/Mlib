@@ -113,8 +113,14 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     sstr << "    vec3 vPosInstance;" << std::endl;
+    if (has_diffusivity || has_specularity || fragments_depend_on_normal) {
+        sstr << "    vec3 vNormalInstance;" << std::endl;
+    }
     if (nbones != 0) {
         sstr << "    vPosInstance = vec3(0, 0, 0);" << std::endl;
+        if (has_diffusivity || has_specularity || fragments_depend_on_normal) {
+            sstr << "    vNormalInstance = vNormal;" << std::endl;
+        }
         for (size_t k = 0; k < ANIMATION_NINTERPOLATED; ++k) {
             static std::map<unsigned char, char> m{
                 {(unsigned char)0, 'x'},
@@ -132,6 +138,9 @@ static GenShaderText vertex_shader_text_gen{[](
         }
     } else {
         sstr << "    vPosInstance = vPos;" << std::endl;
+        if (has_diffusivity || has_specularity || fragments_depend_on_normal) {
+            sstr << "    vNormalInstance = vNormal;" << std::endl;
+        }
     }
     if (has_lookat && !has_instances) {
         throw std::runtime_error("has_lookat requires has_instances");
@@ -155,6 +164,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    lookat[1] = dy;" << std::endl;
         sstr << "    lookat[2] = dz;" << std::endl;
         sstr << "    vPosInstance = lookat * vPosInstance + instancePosition.xyz;" << std::endl;
+        if (has_diffusivity || has_specularity || fragments_depend_on_normal) {
+            sstr << "    vNormalInstance = lookat * vNormalInstance;" << std::endl;
+        }
     } else if (has_instances && !has_lookat) {
         sstr << "    vPosInstance = vPosInstance + instancePosition;" << std::endl;
     }
@@ -174,7 +186,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (has_diffusivity || has_specularity || fragments_depend_on_normal) {
-        sstr << "    Normal = mat3(M) * vNormal;" << std::endl;
+        sstr << "    Normal = mat3(M) * vNormalInstance;" << std::endl;
     }
     if (has_normalmap) {
         sstr << "    tangent = mat3(M) * vTangent;" << std::endl;
