@@ -49,7 +49,7 @@ void Mlib::add_trees_to_forest_outlines(
                     }
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * n * sign(area);
                     if (std::isnan(min_dist_to_road) || !ground_bvh.has_neighbor(p, min_dist_to_road * scale)) {
-                        add_parsed_resource_name(p, rnc(), 0.f, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
+                        add_parsed_resource_name(p, 0.f, rnc(), 0.f, scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
                         // object_resource_descriptors.push_back({
                         //     position: FixedArray<float, 3>{p(0), p(1), 0},
                         //     name: rnc(),

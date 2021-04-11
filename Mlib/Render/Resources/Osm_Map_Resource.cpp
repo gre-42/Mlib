@@ -11,10 +11,10 @@
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Add_Models_To_Model_Nodes.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Street_Steiner_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Trees_To_Forest_Outlines.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Trees_To_Tree_Nodes.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Add_Models_To_Model_Nodes.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
@@ -24,6 +24,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -338,18 +339,6 @@ OsmMapResource::OsmMapResource(
             nodes,
             config.scale);
     }
-    if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
-        LOG_INFO("add_models_to_model_nodes");
-        add_models_to_model_nodes(
-            resource_instance_positions_,
-            object_resource_descriptors_,
-            hitboxes_,
-            steiner_points,
-            scene_node_resources,
-            nodes,
-            ways,
-            config.scale);
-    }
     {
         LOG_INFO("draw_building_walls (barrier)");
         draw_building_walls(
@@ -541,6 +530,20 @@ OsmMapResource::OsmMapResource(
         steiner_points,
         street_rectangles,
         way_point_edges_2_lanes);
+
+    GroundBvh ground_bvh{osm_triangle_lists.tls_smooth()};
+    if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
+        LOG_INFO("add_models_to_model_nodes");
+        add_models_to_model_nodes(
+            resource_instance_positions_,
+            object_resource_descriptors_,
+            hitboxes_,
+            ground_bvh,
+            scene_node_resources,
+            nodes,
+            ways,
+            config.scale);
+    }
 
     // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     // {

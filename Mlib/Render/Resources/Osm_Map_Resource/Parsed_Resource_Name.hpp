@@ -29,6 +29,7 @@ void add_parsed_resource_name(
 
 void add_parsed_resource_name(
     const FixedArray<float, 2>& p,
+    float height,
     const ParsedResourceName& prn,
     float yangle,
     float scale,

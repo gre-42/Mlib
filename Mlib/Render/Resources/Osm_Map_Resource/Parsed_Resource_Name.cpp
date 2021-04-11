@@ -28,6 +28,7 @@ void Mlib::add_parsed_resource_name(
 
 void Mlib::add_parsed_resource_name(
     const FixedArray<float, 2>& p,
+    float height,
     const ParsedResourceName& prn,
     float yangle,
     float scale,
@@ -36,7 +37,7 @@ void Mlib::add_parsed_resource_name(
     std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes)
 {
     add_parsed_resource_name(
-        FixedArray<float, 3>{p(0), p(1), 0.f},
+        FixedArray<float, 3>{p(0), p(1), height},
         prn,
         yangle,
         scale,

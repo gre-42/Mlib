@@ -10,8 +10,7 @@ enum class SteinerPointType {
     STREET_NEIGHBOR,
     FOREST_OUTLINE,
     WALL,
-    TREE_NODE,
-    MODEL_NODE
+    TREE_NODE
 };
 
 struct SteinerPointInfo {
