@@ -117,6 +117,7 @@ int main(int argc, char** argv) {
         "    [--render_dt <dt>]\n"
         "    [--width <width>]\n"
         "    [--height <height>]\n"
+        "    [--double_buffer]\n"
         "    [--output <file.ppm>]\n"
         "    [--apply_static_lighting]\n"
         "    [--min_num] <min_num>\n"
@@ -155,6 +156,7 @@ int main(int argc, char** argv) {
         {"--hide_object",
          "--no_cull_faces",
          "--wire_frame",
+         "--double_buffer",
          "--no_werror",
          "--apply_static_lighting",
          "--no_shadows",
@@ -239,6 +241,7 @@ int main(int argc, char** argv) {
             .wire_frame = args.has_named("--wire_frame"),
             .screen_width = safe_stoi(args.named_value("--width", "640")),
             .screen_height = safe_stoi(args.named_value("--height", "480")),
+            .double_buffer = args.has_named("--double_buffer"),
             .show_mouse_cursor = true,
             .background_color = {
                 safe_stof(args.named_value("--background_r", "1")),
