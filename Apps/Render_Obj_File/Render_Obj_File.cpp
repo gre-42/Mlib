@@ -550,7 +550,11 @@ int main(int argc, char** argv) {
             render_logics,
             SceneGraphConfig());
         if (args.has_named_value("--output")) {
-            PpmImage::from_float_rgb(render_results.outputs.at(rsd)).save_to_file(args.named_value("--output"));
+            const Array<float>& array = render_results.outputs.at(rsd);
+            if (!array.initialized()) {
+                throw std::runtime_error("Rendered scene descriptor not initialized");
+            }
+            PpmImage::from_float_rgb(array).save_to_file(args.named_value("--output"));
         }
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;
