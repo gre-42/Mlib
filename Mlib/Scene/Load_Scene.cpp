@@ -31,6 +31,11 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>

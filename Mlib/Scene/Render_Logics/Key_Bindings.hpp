@@ -1,18 +1,18 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 
 namespace Mlib {
 
+struct CameraKeyBinding;
+struct AbsoluteMovableIdleBinding;
+struct AbsoluteMovableKeyBinding;
+struct RelativeMovableKeyBinding;
+struct GunKeyBinding;
 class SelectedCameras;
 class ButtonPress;
 class Scene;
+class Focuses;
 
 class KeyBindings: public DestructionObserver, public ExternalForceProvider {
 public:
@@ -20,8 +20,7 @@ public:
         ButtonPress& button_press,
         bool print_gamepad_buttons,
         SelectedCameras& selected_cameras,
-        const Focuses& focuses,
-        const Scene& scene);
+        const Focuses& focuses);
     ~KeyBindings();
 
     virtual void notify_destroyed(void* destroyed_object) override;
@@ -42,7 +41,6 @@ private:
 
     ButtonPress& button_press_;
     bool print_gamepad_buttons_;
-    const Scene& scene_;
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
 };

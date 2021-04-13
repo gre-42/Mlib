@@ -4,8 +4,14 @@
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -14,11 +20,9 @@ KeyBindings::KeyBindings(
     ButtonPress& button_press,
     bool print_gamepad_buttons,
     SelectedCameras& selected_cameras,
-    const Focuses& focuses,
-    const Scene& scene)
+    const Focuses& focuses)
 : button_press_{button_press},
   print_gamepad_buttons_{print_gamepad_buttons},
-  scene_{scene},
   selected_cameras_{selected_cameras},
   focuses_{focuses}
 {}
