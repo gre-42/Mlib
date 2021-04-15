@@ -108,6 +108,7 @@ struct OsmResourceConfig {
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     bool blend_street = false;
     Interp<float> layer_heights{std::vector<float>{}, std::vector<float>{}};
+    std::string game_level;
 };
 
 }

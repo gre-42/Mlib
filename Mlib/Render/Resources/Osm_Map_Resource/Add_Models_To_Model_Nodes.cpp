@@ -18,7 +18,8 @@ void Mlib::add_models_to_model_nodes(
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    float scale)
+    float scale,
+    const std::string& game_level)
 {
     std::map<std::string, std::string> prev_neighbor;
     std::map<std::string, std::string> next_neighbor;
@@ -44,6 +45,9 @@ void Mlib::add_models_to_model_nodes(
     for (const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (auto mit = tags.find("model"); mit != tags.end()) {
+            if (auto lit = tags.find("game:level"); (lit != tags.end()) && (lit->second != game_level)) {
+                continue;
+            }
             const auto& p = n.second.position;
             ParsedResourceName prn{
                 .name = mit->second,

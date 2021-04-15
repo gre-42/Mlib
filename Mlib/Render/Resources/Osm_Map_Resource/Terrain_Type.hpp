@@ -24,7 +24,7 @@ inline TerrainType terrain_type_from_string(const std::string& tt) {
     } else if (tt == "undefined") {
         return TerrainType::UNDEFINED;
     } else {
-        throw std::runtime_error("Unknown terrain type");
+        throw std::runtime_error("Unknown terrain type: " + tt);
     }
 }
 

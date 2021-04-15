@@ -542,7 +542,8 @@ OsmMapResource::OsmMapResource(
             scene_node_resources,
             nodes,
             ways,
-            config.scale);
+            config.scale,
+            config.game_level);
     }
 
     // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});

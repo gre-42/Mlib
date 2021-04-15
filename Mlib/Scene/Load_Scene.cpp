@@ -911,6 +911,9 @@ void LoadScene::operator()(
                 else if (key == "layer_heights_height") {
                     layer_heights_height = string_to_vector(value, safe_stof);
                 }
+                else if (key == "game_level") {
+                    config.game_level = value;
+                }
                 else {
                     throw std::runtime_error("Unknown osm key: \"" + key + '"');
                 }

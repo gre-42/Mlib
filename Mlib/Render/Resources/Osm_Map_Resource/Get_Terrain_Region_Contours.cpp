@@ -25,8 +25,8 @@ std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> Mlib::get_ter
         // } else {
         //     continue;
         // }
-        if (tags.contains("terrain_region", "park")) {
-            terrain_type = TerrainType::GRASS;
+        if (auto it = tags.find("terrain_region"); it != tags.end()) {
+            terrain_type = terrain_type_from_string(it->second);
         } else {
             continue;
         }

@@ -24,6 +24,7 @@ void add_models_to_model_nodes(
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    float scale);
+    float scale,
+    const std::string& game_level);
 
 }
