@@ -181,6 +181,6 @@ void Mlib::parse_osm_xml(
     }
 
     if (!ifs.eof() && ifs.fail()) {
-        throw std::runtime_error("Error reading from file \"" + filename + '"');
+        throw std::runtime_error("Parse OSM XML: Error reading from file \"" + filename + '"');
     }
 }
