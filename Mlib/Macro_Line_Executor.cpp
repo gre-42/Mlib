@@ -34,8 +34,17 @@ void MacroLineExecutor::operator () (
     const std::string& line,
     const RegexSubstitutionCache& rsc) const
 {
+    if (verbose_) {
+        std::cerr << "Processing line \"" << line << '"' << std::endl;
+    }
+
     std::string subst_line = substitutions_.substitute(line, rsc);
     subst_line = builtin_substitutions_.substitute(subst_line, rsc);
+
+    if (verbose_) {
+        std::cerr << "Substituted line: \"" << subst_line << '"' << std::endl;
+    }
+
     static const DECLARE_REGEX(comment_reg, "^\\s*#[\\S\\s]*$");
     static const DECLARE_REGEX(macro_playback_reg, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?(" + substitute_pattern + ")$");
     // static const DECLARE_REGEX(macro_playback_reg_fast, "^\\s*macro_playback\\s+([\\w+-.]+)(?:\\s+context=([\\w+-.]+))?([^;]*)$");
@@ -64,9 +73,6 @@ void MacroLineExecutor::operator () (
         }
     };
 
-    if (verbose_) {
-        std::cerr << "Processing line \"" << subst_line << '"' << std::endl;
-    }
     Mlib::re::smatch match;
     if (Mlib::re::regex_match(subst_line, match, empty_reg)) {
         // Do nothing

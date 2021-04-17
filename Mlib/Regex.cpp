@@ -64,39 +64,47 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
     std::string new_line = "";
     // 1. Substitute expressions with and without default value, assigning default values.
     // 2. Substitute simple expressions.
-    static const DECLARE_REGEX(s0, "(?:(-?\\w+):(-?\\w*)(?:=(\\S*))?|(-?\\w+)|(-?[^-\\w]+)|(.))");
+    //                                  1         2        3         4           5   6       7          8
+    static const DECLARE_REGEX(s0, "(?:(\\w+):(?:(\\w+)-)?(\\w*)(?:=(\\S*))?|(?:(-?)(\\w+))|([^-\\w]+)|(.))");
     find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
         // if (v[1].str() == "-DECIMATE") {
         //     std::cerr << "x" << std::endl;
         // }
         if (v[1].matched) {
-            auto it = replacements.find(v[2].str());
+            auto it = replacements.find(v[3].str());
             if (it != replacements.end()) {
-                new_line += v[1].str() + ':' + it->second;
+                new_line += v[1].str() + ':' + v[2].str() + it->second;
             }
             else {
-                if (v[3].matched) {
-                    new_line += v[1].str() + ':' + v[3].str();
+                if (v[2].matched) {
+                    throw std::runtime_error("Could not find variable \"" + v[3].str() + "\" despite concatenation");
+                }
+                if (v[4].matched) {
+                    // If a default argument is given and the variable did not match,
+                    // apply the default argument.
+                    new_line += v[1].str() + ':' + v[4].str();
                 }
                 else {
-                    new_line += v[1].str() + ':' + v[2].str();
+                    // If no default argument is given and the variable did not match,
+                    // do not modify anything.
+                    new_line += v[1].str() + ':' + v[3].str();
                 }
             }
         }
-        else if (v[4].matched) {
-            auto it = replacements.find(v[4].str());
+        else if (v[6].matched) {
+            auto it = replacements.find(v[6].str());
             if (it != replacements.end()) {
                 new_line += it->second;
             }
             else {
-                new_line += v[4].str();
+                new_line += v[5].str() + v[6].str();
             }
         }
-        else if (v[5].matched) {
-            new_line += v[5].str();
+        else if (v[7].matched) {
+            new_line += v[7].str();
         }
         else {
-            new_line += v[6].str();
+            new_line += v[8].str();
         }
         });
     return new_line;

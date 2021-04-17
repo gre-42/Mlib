@@ -23,9 +23,9 @@ void test_resource_ptr() {
 
 void test_substitute() {
     {
-        std::string str = "macro_playback create-CAR_NAME -SUFFIX:-SUFFIX IF_WITH_PHYSICS: IF_RACING:IF_RACING IF_RALLY:IF_RALLY";
-        std::string replacements = "-CAR_NAME:_XZ -SUFFIX:_npc1 IF_WITH_PHYSICS: IF_RACING:# IF_RALLY:";
-        assert_true(substitute(str, replacements_to_map(replacements)) == "macro_playback create_XZ -SUFFIX:_npc1 IF_WITH_PHYSICS: IF_RACING:# IF_RALLY:");
+        std::string str = "macro_playback create-CAR_NAME SUFFIX:SUFFIX IF_WITH_PHYSICS: IF_RACING:IF_RACING IF_RALLY:IF_RALLY";
+        std::string replacements = "CAR_NAME:_XZ SUFFIX:_npc1 IF_WITH_PHYSICS: IF_RACING:# IF_RALLY:";
+        assert_true(substitute(str, replacements_to_map(replacements)) == "macro_playback create_XZ SUFFIX:_npc1 IF_WITH_PHYSICS: IF_RACING:# IF_RALLY:");
     }
     {
         std::string str = "IS_SMALL";
