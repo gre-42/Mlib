@@ -38,6 +38,7 @@ public:
         SceneNodeResources& scene_node_resources,
         Scene& scene,
         bool enable_height_changed_mode = false);
+    ~CheckPoints();
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
 private:

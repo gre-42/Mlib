@@ -51,8 +51,17 @@ CheckPoints::CheckPoints(
         throw std::runtime_error("nth is 0");
     }
     beacon_nodes_.reserve(nbeacons);
-    moving_node_->add_destruction_observer(this);
     advance_time(0);
+    // "moving_node_->add_destruction_observer" must be at the end of the constructor
+    // in case the ctor throws an exception, because in this case CheckPoints object is not
+    // added to the "advance_times" list.
+    moving_node_->add_destruction_observer(this);
+}
+
+CheckPoints::~CheckPoints() {
+    for (size_t i = 0; i < beacon_nodes_.size(); ++i) {
+        scene_.delete_root_node("check_point_beacon_" + std::to_string(i));
+    }
 }
 
 void CheckPoints::advance_time(float dt) {
@@ -72,10 +81,10 @@ void CheckPoints::advance_time(float dt) {
             {
                 checkpoints_ahead_.push_back({.position = position, .rotation = rotation});
                 if (i01_ == beacon_nodes_.size()) {
-                    SceneNode* node = new SceneNode;
+                    std::unique_ptr<SceneNode> node{new SceneNode};
                     scene_node_resources_.instantiate_renderable(resource_name_, "check_point_beacon_" + std::to_string(i01_), *node, SceneNodeResourceFilter());
-                    scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), node);
-                    beacon_nodes_.push_back(node);
+                    scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), node.get());
+                    beacon_nodes_.push_back(node.release());
                 }
                 beacon_nodes_[i01_]->set_relative_pose(position, rotation, 1);
                 i01_ = (i01_ + 1) % nbeacons_;
@@ -109,6 +118,7 @@ void CheckPoints::advance_time(float dt) {
 }
 
 void CheckPoints::notify_destroyed(void* obj) {
+    std::cerr << "notified: " << obj << std::endl;
     moving_node_ = nullptr;
     moving_ = nullptr;
     advance_times_.schedule_delete_advance_time(this);
