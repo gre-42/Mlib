@@ -59,9 +59,10 @@ CheckPoints::CheckPoints(
 }
 
 CheckPoints::~CheckPoints() {
-    for (size_t i = 0; i < beacon_nodes_.size(); ++i) {
-        scene_.delete_root_node("check_point_beacon_" + std::to_string(i));
-    }
+    // Scene destruction happens before physics destruction,
+    // so the checkpoints might already have been deleted.
+    static const DECLARE_REGEX(re, "^check_point_beacon_.*");
+    scene_.delete_root_nodes(re);
 }
 
 void CheckPoints::advance_time(float dt) {
@@ -118,7 +119,6 @@ void CheckPoints::advance_time(float dt) {
 }
 
 void CheckPoints::notify_destroyed(void* obj) {
-    std::cerr << "notified: " << obj << std::endl;
     moving_node_ = nullptr;
     moving_ = nullptr;
     advance_times_.schedule_delete_advance_time(this);

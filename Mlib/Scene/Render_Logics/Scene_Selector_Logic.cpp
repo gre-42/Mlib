@@ -16,10 +16,12 @@ SceneSelectorLogic::SceneSelectorLogic(
     float line_distance_pixels,
     UiFocus& ui_focus,
     size_t submenu_id,
-    std::string& scene_filename,
+    const std::string& previous_scene_filename,
+    std::string& next_scene_filename,
     size_t& num_renderings,
     ButtonPress& button_press,
-    size_t& selection_index)
+    size_t& selection_index,
+    const std::function<void()>& reload_transient_objects)
 : scene_selector_list_view_{
     button_press,
     selection_index,
@@ -32,11 +34,13 @@ SceneSelectorLogic::SceneSelectorLogic(
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
   button_press_{button_press},
-  scene_filename_{scene_filename},
-  num_renderings_{num_renderings}
+  previous_scene_filename_{previous_scene_filename},
+  next_scene_filename_{next_scene_filename},
+  num_renderings_{num_renderings},
+  reload_transient_objects_{reload_transient_objects}
 {
     // Initialize the reference
-    scene_filename_ = scene_selector_list_view_.selected_element().filename;
+    next_scene_filename_ = scene_selector_list_view_.selected_element().filename;
 }
 
 SceneSelectorLogic::~SceneSelectorLogic()
@@ -59,11 +63,15 @@ void SceneSelectorLogic::render(
             ui_focus_.goto_next_submenu();
         }
         if (scene_selector_list_view_.has_selected_element()) {
-            scene_filename_ = scene_selector_list_view_.selected_element().filename;
+            next_scene_filename_ = scene_selector_list_view_.selected_element().filename;
         }
         if (button_press_.key_pressed({.key = "ENTER", .gamepad_button = "A"})) {
             // ui_focus_.focus.pop_back();
-            num_renderings_ = 0;
+            if (previous_scene_filename_ != next_scene_filename_) {
+                num_renderings_ = 0;
+            } else {
+                reload_transient_objects_();
+            }
         }
     }
     scene_selector_list_view_.render(width, height, true); // true=periodic_position

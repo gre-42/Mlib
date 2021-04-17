@@ -133,7 +133,6 @@ void LoadScene::operator()(
     GLFWwindow* window,
     std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
 {
-    std::ifstream ifs{script_filename};
     static const DECLARE_REGEX(osm_resource_reg,
         "^\\s*osm_resource\\s+([\\s\\S]+)");
     static const DECLARE_REGEX(obj_resource_reg,
@@ -190,6 +189,8 @@ void LoadScene::operator()(
         "(?:\\s+aggregate=(0|1))?$");
     static const DECLARE_REGEX(delete_root_node_reg,
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)");
+    static const DECLARE_REGEX(wait_until_no_advance_times_to_delete_reg,
+        "^\\s*wait_until_no_advance_times_to_delete");
     static const DECLARE_REGEX(renderable_instance_reg, "^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
     static const DECLARE_REGEX(register_geographic_mapping_reg,
         "^\\s*register_geographic_mapping"
@@ -342,6 +343,7 @@ void LoadScene::operator()(
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
+        "\\s+reload_transient_objects=([\\w+-.:= ]*)"
         "\\s+scene_files=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     static const DECLARE_REGEX(scene_to_texture_reg,
         "^\\s*scene_to_texture"
@@ -366,16 +368,16 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(clear_parameters_reg,
         "^\\s*clear_parameters$");
     static const DECLARE_REGEX(parameter_setter_reg,
-        "^\\s*parameter_setter\\r?\\n"
-        "\\s*id=([\\w+-.]+)\\r?\\n"
-        "\\s*ttf_file=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*font_height=([\\w+-.]+)\\r?\\n"
-        "\\s*line_distance=([\\w+-.]+)\\r?\\n"
-        "\\s*default=([\\d]+)\\r?\\n"
-        "\\s*on_init=([\\w+-.:= ]*)\\r?\\n"
-        "\\s*on_change=([\\w+-.:= ]*)\\r?\\n"
-        "\\s*parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
+        "^\\s*parameter_setter"
+        "\\s+id=([\\w+-.]+)"
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+default=([\\d]+)"
+        "\\s+on_init=([\\w+-.:= ]*)"
+        "\\s+on_change=([\\w+-.:= ]*)"
+        "\\s+parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
     static const DECLARE_REGEX(set_renderable_style_reg,
         "^\\s*set_renderable_style\\r?\\n"
         "\\s*selector=([\\w+-.]*)\\r?\\n"
@@ -1148,6 +1150,8 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
             std::lock_guard lock{ mutex };
             scene.delete_root_node(match[1].str());
+        } else if (Mlib::re::regex_match(line, match, wait_until_no_advance_times_to_delete_reg)) {
+            physics_engine.advance_times_.wait_until_no_advance_times_to_delete();
         } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.instantiate_renderable(
@@ -1606,11 +1610,12 @@ void LoadScene::operator()(
             wit->second->render_logics_.append(nullptr, polf);
         } else if (Mlib::re::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
-            for (const auto& e : find_all_name_values(match[7].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
+            for (const auto& e : find_all_name_values(match[8].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
                 scene_entries.push_back(SceneEntry{
                     .name = e.first,
                     .filename = fpath(e.second)});
             }
+            std::string reload_transient_objects = match[7].str();
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
                 std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
                 fpath(match[2].str()),            // ttf_filename
@@ -1621,10 +1626,16 @@ void LoadScene::operator()(
                 safe_stof(match[6].str()),        // line_distance_pixels
                 ui_focus,
                 ui_focus.n_submenus++,
+                script_filename,
                 next_scene_filename,
                 num_renderings,
                 button_press,
-                selection_ids[match[1].str()]);
+                selection_ids[match[1].str()],
+                [macro_line_executor, reload_transient_objects, &rsc](){
+                    if (!reload_transient_objects.empty()) {
+                        macro_line_executor(reload_transient_objects, rsc);
+                    }
+                });
             render_logics.append(nullptr, scene_selector_logic);
         } else if (Mlib::re::regex_match(line, match, scene_to_texture_reg)) {
             auto wit = renderable_scenes.find("primary_scene");

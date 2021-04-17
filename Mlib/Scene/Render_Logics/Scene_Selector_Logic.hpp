@@ -23,10 +23,12 @@ public:
         float line_distance_pixels,
         UiFocus& ui_focus,
         size_t submenu_id_,
-        std::string& scene_filename,
+        const std::string& previous_scene_filename,
+        std::string& next_scene_filename,
         size_t& num_renderings,
         ButtonPress& button_press,
-        size_t& selection_index);
+        size_t& selection_index,
+        const std::function<void()>& reload_transient_objects);
     ~SceneSelectorLogic();
 
     virtual void render(
@@ -44,8 +46,10 @@ private:
     UiFocus& ui_focus_;
     size_t submenu_id_;
     ButtonPress& button_press_;
-    std::string& scene_filename_;
+    std::string previous_scene_filename_;
+    std::string& next_scene_filename_;
     size_t& num_renderings_;
+    std::function<void()> reload_transient_objects_;
 };
 
 }
