@@ -81,7 +81,7 @@ void MacroLineExecutor::operator () (
     } else if (Mlib::re::regex_match(subst_line, match, macro_playback_reg)) {
         std::string name = match[1].str();
         std::string context = match[2].str();
-        std::string subst_pattern = match[3].str();
+        std::map<std::string, std::string> replacement_map = replacements_to_map(match[3].str());
         auto macro_it = macro_file_executor_.macros_.find(name);
         if (macro_it == macro_file_executor_.macros_.end()) {
             throw std::runtime_error("No macro with name " + name + " exists");
@@ -95,7 +95,7 @@ void MacroLineExecutor::operator () (
             substitutions_,
             verbose_};
         for (const std::string& l : macro_it->second.lines) {
-            mle2(substitute(l, replacements_to_map(subst_pattern), rsc), rsc);
+            mle2(substitute(l, replacement_map, rsc), rsc);
         }
     } else if (Mlib::re::regex_match(subst_line, match, include_reg)) {
         MacroLineExecutor mle2{
