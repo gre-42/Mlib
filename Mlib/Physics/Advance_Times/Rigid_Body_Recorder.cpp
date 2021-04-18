@@ -27,7 +27,7 @@ void RigidBodyRecorder::advance_time(float dt) {
     if (recorded_node_ == nullptr) {
         return;
     }
-    if (focuses_.contains(Focus::COUNTDOWN)) {
+    if (focuses_.countdown_active()) {
         return;
     }
     auto rotation = matrix_2_tait_bryan_angles(rbi_->rbp_.rotation_);

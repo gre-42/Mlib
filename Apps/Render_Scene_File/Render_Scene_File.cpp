@@ -321,7 +321,7 @@ int main(int argc, char** argv) {
                     render2(
                         rs->second->render_logics_,
                         scene_config.scene_graph_config);
-                    ui_focus.focuses.pop_back();
+                    ui_focus.focuses = {};
                 }
             }
 

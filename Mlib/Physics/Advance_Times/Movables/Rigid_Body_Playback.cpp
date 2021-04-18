@@ -20,7 +20,7 @@ RigidBodyPlayback::~RigidBodyPlayback()
 {}
 
 void RigidBodyPlayback::advance_time(float dt) {
-    if (focuses_.contains(Focus::COUNTDOWN)) {
+    if (focuses_.countdown_active()) {
         return;
     }
     float time;

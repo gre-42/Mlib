@@ -15,7 +15,6 @@ CountDownLogic::CountDownLogic(
     position,
     font_height_pixels,
     line_distance_pixels},
-  timeout_started_{false},
   nseconds_{nseconds},
   focuses_{focuses}
 {}
@@ -31,11 +30,11 @@ void CountDownLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (auto it = focuses_.find(Focus::COUNTDOWN); it != focuses_.end()) {
-        if (!timeout_started_) {
-            start_time_ = std::chrono::steady_clock::now();
-            timeout_started_ = true;
-        }
+    if (auto it = focuses_.find(Focus::COUNTDOWN_PENDING); it != focuses_.end()) {
+        start_time_ = std::chrono::steady_clock::now();
+        *it = Focus::COUNTDOWN_COUNTING;
+    }
+    if (auto it = focuses_.find(Focus::COUNTDOWN_COUNTING); it != focuses_.end()) {
         std::chrono::duration<float> elapsed_time = std::chrono::steady_clock::now() - start_time_;
         if (elapsed_time.count() >= nseconds_) {
             focuses_.erase(it);

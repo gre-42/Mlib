@@ -351,7 +351,7 @@ void LoadScene::operator()(
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)$");
     static const DECLARE_REGEX(fill_pixel_region_with_texture_reg,
         "^\\s*fill_pixel_region_with_texture"
         "\\s+source_scene=([\\w+-.]+)"
@@ -359,13 +359,13 @@ void LoadScene::operator()(
         "\\s+update=(once|always)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)$");
     static const DECLARE_REGEX(scene_to_pixel_region_reg,
         "^\\s*scene_to_pixel_region"
         "\\s+target_scene=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown|scene|always)$");
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)$");
     static const DECLARE_REGEX(clear_parameters_reg,
         "^\\s*clear_parameters$");
     static const DECLARE_REGEX(parameter_setter_reg,
@@ -401,7 +401,7 @@ void LoadScene::operator()(
         "^\\s*ui_background"
         "\\s+texture=([\\w-. \\(\\)/+-]+)"
         "\\s+update=(once|always)"
-        "\\s+focus_mask=(menu|loading|countdown|scene)$");
+        "\\s+focus_mask=(menu|loading|countdown_any|scene)$");
     static const DECLARE_REGEX(hud_image_reg,
         "^\\s*hud_image"
         "\\s+node=([\\w+-.]+)"
@@ -488,7 +488,10 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(burn_in_reg, "^\\s*burn_in seconds=([\\w+-.]+)$");
     static const DECLARE_REGEX(append_focus_reg,
         "^\\s*append_focus"
-        "\\s+(menu|loading|countdown|scene)$");
+        "\\s+(menu|loading|countdown_pending|scene)$");
+    static const DECLARE_REGEX(set_focuses_reg,
+        "^\\s*set_focuses"
+        "((\\s+(?:menu|loading|countdown_pending|scene))+)$");
     static const DECLARE_REGEX(wayside_resource_names_reg,
         "^\\s+min_dist:([\\w+-.]+)"
         "\\s+max_dist:([\\w+-.]+)"
@@ -503,7 +506,7 @@ void LoadScene::operator()(
         "\\s+resource=([\\w+-.]+)$");
     static const DECLARE_REGEX(pause_on_lose_focus_reg,
         "^\\s*pause_on_lose_focus"
-        "\\s+focus_mask=(menu|loading|countdown|scene)$");
+        "\\s+focus_mask=(menu|loading|countdown_any|scene)$");
 
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
@@ -1027,6 +1030,10 @@ void LoadScene::operator()(
         }
         if (Mlib::re::regex_match(line, match, append_focus_reg)) {
             ui_focus.focuses.push_back(focus_from_string(match[1].str()));
+            return true;
+        }
+        if (Mlib::re::regex_match(line, match, set_focuses_reg)) {
+            ui_focus.focuses = string_to_vector(match[1].str(), focus_from_string);
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_bvh_resource_reg)) {
