@@ -1,6 +1,10 @@
 #include "Env.hpp"
 #include <Mlib/Strings/From_Number.hpp>
 #include <cstdlib>
+#include <filesystem>
+#include <stdexcept>
+
+namespace fs = std::filesystem;
 
 using namespace Mlib;
 
@@ -43,4 +47,22 @@ bool Mlib::getenv_default_bool(const char* n, bool deflt) {
         return deflt;
     }
     return Mlib::safe_stob(v);
+}
+
+std::string Mlib::get_home_directory() {
+#if defined(__linux__) || defined(__APPLE__)
+    const char* res = getenv("HOME");
+#elif _WIN32
+    const char* res = getenv("APPDATA");
+#else
+    #error Could not determine OS
+#endif
+    if (res == nullptr) {
+        throw std::runtime_error("Could not determine home directory");
+    }
+    return res;
+}
+
+std::string Mlib::get_path_in_home_directory(const std::string& child_path) {
+    return (fs::path(get_home_directory()) / fs::path(child_path)).string();
 }

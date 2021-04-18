@@ -58,7 +58,8 @@ public:
         UiFocus& ui_focus,
         std::map<std::string, size_t>& selection_ids,
         GLFWwindow* window,
-        const SceneConfigResource& config);
+        const SceneConfigResource& config,
+        const std::string& level_name);
     ~RenderableScene();
     void start_physics_loop();
     void print_physics_engine_search_time() const;

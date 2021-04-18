@@ -12,7 +12,8 @@ RenderableScene::RenderableScene(
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
     GLFWwindow* window,
-    const SceneConfigResource& config)
+    const SceneConfigResource& config,
+    const std::string& level_name)
 : scene_node_resources_{scene_node_resources},
   small_sorted_aggregate_renderer_{AggregateArrayRenderer::small_sorted_aggregate_renderer()},
   small_instances_renderer_{ArrayInstancesRenderer::small_instances_renderer()},
@@ -67,7 +68,7 @@ RenderableScene::RenderableScene(
       config.low_pass,
       config.high_pass)},
   render_logics_{mutex_, ui_focus},
-  players_{physics_engine_.advance_times_},
+  players_{physics_engine_.advance_times_, level_name},
   game_logic_{
       scene_,
       physics_engine_.advance_times_,

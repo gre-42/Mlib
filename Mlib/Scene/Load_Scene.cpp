@@ -544,7 +544,8 @@ void LoadScene::operator()(
                     .with_dirtmap = safe_stob(match[10].str()),
                     .with_skybox = safe_stob(match[11].str()),
                     .with_flying_logic = safe_stob(match[12].str()),
-                    .clear_mode = clear_mode_from_string(match[13].str())});
+                    .clear_mode = clear_mode_from_string(match[13].str())},
+                script_filename);
             if (!renderable_scenes.insert({match[1].str(), rs}).second) {
                 throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");
             }
