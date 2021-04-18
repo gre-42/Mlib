@@ -1647,7 +1647,7 @@ void LoadScene::operator()(
                 selection_ids[match[1].str()],
                 [macro_line_executor, reload_transient_objects, &rsc](){
                     if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, rsc);
+                        macro_line_executor(reload_transient_objects, SubstitutionString(), rsc);
                     }
                 });
             render_logics.append(nullptr, scene_selector_logic);
@@ -1745,16 +1745,16 @@ void LoadScene::operator()(
                 next_scene_filename,
                 [macro_line_executor, reload_transient_objects, &rsc](){
                     if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, rsc);
+                        macro_line_executor(reload_transient_objects, SubstitutionString(), rsc);
                     }
                 },
                 [macro_line_executor, on_change, &rsc](){
                     if (!on_change.empty()) {
-                        macro_line_executor(on_change, rsc);
+                        macro_line_executor(on_change, SubstitutionString(), rsc);
                     }
                 });
             if (!on_init.empty()) {
-                macro_line_executor(on_init, rsc);
+                macro_line_executor(on_init, SubstitutionString(), rsc);
             }
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (Mlib::re::regex_match(line, match, ui_background_reg)) {
@@ -2004,7 +2004,7 @@ void LoadScene::operator()(
                         " IF_RACING:#" <<
                         " IF_RALLY:" <<
                         " PLAYER_NAME:" << player;
-                    macro_line_executor(sstr.str(), rsc);
+                    macro_line_executor(sstr.str(), SubstitutionString(), rsc);
                 }
             );
         } else if (Mlib::re::regex_match(line, match, set_vip_reg)) {

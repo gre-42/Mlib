@@ -23,10 +23,11 @@ public:
         const std::string& working_directory,
         const UserFunction& user_function,
         const std::string& context,
-        const SubstitutionString& substitutions,
+        const SubstitutionString& global_substitutions,
         bool verbose);
     void operator () (
         const std::string& line,
+        const SubstitutionString& local_substitutions,
         const RegexSubstitutionCache& rsc) const;
 private:
     MacroRecorder& macro_file_executor_;
@@ -34,8 +35,8 @@ private:
     std::string working_directory_;
     UserFunction user_function_;
     std::string context_;
-    const SubstitutionString& substitutions_;
-    SubstitutionString builtin_substitutions_;
+    const SubstitutionString& global_substitutions_;
+    SubstitutionString global_and_builtin_substitutions_;
     bool verbose_;
 };
 
