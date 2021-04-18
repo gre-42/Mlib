@@ -17,6 +17,9 @@ ParameterSetterLogic::ParameterSetterLogic(
     size_t& num_renderings,
     ButtonPress& button_press,
     size_t& selection_index,
+    const std::string& previous_scene_filename,
+    const std::string& next_scene_filename,
+    const std::function<void()>& reload_transient_objects,
     const std::function<void()>& on_change)
 : scene_selector_list_view_{
     button_press,
@@ -35,7 +38,10 @@ ParameterSetterLogic::ParameterSetterLogic(
   submenu_id_{submenu_id},
   substitutions_{substitutions},
   num_renderings_{num_renderings},
-  button_press_{button_press}
+  button_press_{button_press},
+  previous_scene_filename_{previous_scene_filename},
+  next_scene_filename_{next_scene_filename},
+  reload_transient_objects_{reload_transient_objects}
 {
     // Initialize the reference
     merge_substitutions();
@@ -65,7 +71,11 @@ void ParameterSetterLogic::render(
         }
         if (button_press_.key_pressed({.key = "ENTER", .gamepad_button = "A"})) {
             // ui_focus_.focus.pop_back();
-            num_renderings_ = 0;
+            if (previous_scene_filename_ != next_scene_filename_) {
+                num_renderings_ = 0;
+            } else {
+                reload_transient_objects_();
+            }
         }
     }
     scene_selector_list_view_.render(width, height, true); // true=periodic_position

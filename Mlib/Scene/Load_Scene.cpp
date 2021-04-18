@@ -378,6 +378,7 @@ void LoadScene::operator()(
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+default=([\\d]+)"
+        "\\s+reload_transient_objects=([\\w+-.:= ]*)"
         "\\s+on_init=([\\w+-.:= ]*)"
         "\\s+on_change=([\\w+-.:= ]*)"
         "\\s+parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
@@ -1714,9 +1715,10 @@ void LoadScene::operator()(
             float font_height_pixels = safe_stof(match[5].str());
             float line_distance_pixels = safe_stof(match[6].str());
             size_t deflt = safe_stoz(match[7].str());
-            std::string on_init = match[8].str();
-            std::string on_change = match[9].str();
-            std::string parameters = match[10].str();
+            std::string reload_transient_objects = match[8].str();
+            std::string on_init = match[9].str();
+            std::string on_change = match[10].str();
+            std::string parameters = match[11].str();
             std::list<ReplacementParameter> rps;
             for (const auto& e : find_all_name_values(parameters, "[\\w+-. ]+", substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
@@ -1739,6 +1741,13 @@ void LoadScene::operator()(
                 num_renderings,
                 button_press,
                 selection_ids.at(id),
+                script_filename,
+                next_scene_filename,
+                [macro_line_executor, reload_transient_objects, &rsc](){
+                    if (!reload_transient_objects.empty()) {
+                        macro_line_executor(reload_transient_objects, rsc);
+                    }
+                },
                 [macro_line_executor, on_change, &rsc](){
                     if (!on_change.empty()) {
                         macro_line_executor(on_change, rsc);

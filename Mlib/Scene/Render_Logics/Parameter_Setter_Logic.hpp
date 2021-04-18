@@ -30,6 +30,9 @@ public:
         size_t& num_renderings,
         ButtonPress& button_press,
         size_t& selection_index,
+        const std::string& previous_scene_filename,
+        const std::string& next_scene_filename,
+        const std::function<void()>& reload_transient_objects,
         const std::function<void()>& on_change = [](){});
     ~ParameterSetterLogic();
 
@@ -50,6 +53,9 @@ private:
     SubstitutionString& substitutions_;
     size_t& num_renderings_;
     ButtonPress& button_press_;
+    const std::string& previous_scene_filename_;
+    const std::string& next_scene_filename_;
+    std::function<void()> reload_transient_objects_;
 };
 
 }
