@@ -38,9 +38,9 @@ void GameHistory::load() {
         }
         for (const auto& l : j) {
             lap_time_events_.push_back({
-                l["level"].get<std::string>(),
-                l["player_name"].get<std::string>(),
-                l["lap_time"].get<float>()});
+                .level = l["level"].get<std::string>(),
+                .lap_time = l["lap_time"].get<float>(),
+                .player_name = l["player_name"].get<std::string>()});
         }
     }
 }
@@ -52,18 +52,19 @@ void GameHistory::save() const {
     size_t i = 0;
     for (const auto& l : lap_time_events_) {
         j[i]["level"] = l.level;
-        j[i]["player_name"] = l.player_name;
         j[i]["lap_time"] = l.lap_time;
+        j[i]["player_name"] = l.player_name;
         ++i;
     }
-    fstr << j;
+    fstr << j.dump(4);
     if (fstr.fail()) {
         throw std::runtime_error("Could not save \"" + fn + '"');
     }
 }
 
 void GameHistory::notify_lap_time(const LapTimeEvent& lap_time_event) {
-    lap_time_events_.push_front(lap_time_event);
+    // From: https://stackoverflow.com/a/35840954/2292832
+    lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lap_time_event), lap_time_event);
     save();
 }
 

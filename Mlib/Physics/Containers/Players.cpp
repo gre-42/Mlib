@@ -54,8 +54,8 @@ void Players::notify_lap_time(const Player* player, float lap_time) {
     t = std::min(t, lap_time);
     game_history_->notify_lap_time({
         .level = level_stem(),
-        .player_name = player->name(),
-        .lap_time = lap_time});
+        .lap_time = lap_time,
+        .player_name = player->name()});
 }
 
 std::string Players::get_score_board() const {
@@ -67,6 +67,7 @@ std::string Players::get_score_board() const {
                 ", team: " << p.second->team() <<
                 ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.second)) <<
                 ", car HP: " << p.second->car_health() << std::endl;
+            sstr << std::endl;
             sstr << "History" << std::endl;
             sstr << game_history_->get_level_history(level_stem()) << std::endl;
         }

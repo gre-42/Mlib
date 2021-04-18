@@ -7,8 +7,9 @@ namespace Mlib {
 
 struct LapTimeEvent {
     std::string level;
-    std::string player_name;
     float lap_time;
+    std::string player_name;
+    inline std::strong_ordering operator <=> (const LapTimeEvent& other) const = default;
 };
 
 class GameHistory {
