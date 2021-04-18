@@ -21,6 +21,7 @@ public:
         BaseLog* base_log = nullptr);
     ~PhysicsIteration();
     void operator()();
+    void delete_scheduled_advance_times();
 private:
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;

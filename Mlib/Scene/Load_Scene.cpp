@@ -28,6 +28,7 @@
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
@@ -189,8 +190,8 @@ void LoadScene::operator()(
         "(?:\\s+aggregate=(0|1))?$");
     static const DECLARE_REGEX(delete_root_node_reg,
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)");
-    static const DECLARE_REGEX(wait_until_no_advance_times_to_delete_reg,
-        "^\\s*wait_until_no_advance_times_to_delete");
+    static const DECLARE_REGEX(wait_until_paused_and_delete_scheduled_advance_times_reg,
+        "^\\s*wait_until_paused_and_delete_scheduled_advance_times");
     static const DECLARE_REGEX(renderable_instance_reg, "^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
     static const DECLARE_REGEX(register_geographic_mapping_reg,
         "^\\s*register_geographic_mapping"
@@ -1097,6 +1098,7 @@ void LoadScene::operator()(
         auto& players = cit->second->players_;
         auto& scene = cit->second->scene_;
         auto& physics_engine = cit->second->physics_engine_;
+        auto& physics_loop = *cit->second->physics_loop_;
         auto& button_press = cit->second->button_press_;
         auto& key_bindings = *cit->second->key_bindings_;
         auto& selected_cameras = cit->second->selected_cameras_;
@@ -1150,8 +1152,8 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
             std::lock_guard lock{ mutex };
             scene.delete_root_node(match[1].str());
-        } else if (Mlib::re::regex_match(line, match, wait_until_no_advance_times_to_delete_reg)) {
-            physics_engine.advance_times_.wait_until_no_advance_times_to_delete();
+        } else if (Mlib::re::regex_match(line, match, wait_until_paused_and_delete_scheduled_advance_times_reg)) {
+            physics_loop.wait_until_paused_and_delete_scheduled_advance_times();
         } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.instantiate_renderable(

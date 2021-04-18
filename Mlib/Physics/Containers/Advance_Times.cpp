@@ -1,8 +1,8 @@
 #include "Advance_Times.hpp"
 #include <chrono>
+#include <iostream>
 #include <stdexcept>
 #include <thread>
-#include <iostream>
 
 using namespace Mlib;
 
@@ -40,12 +40,5 @@ void AdvanceTimes::add_advance_time(AdvanceTime& advance_time) {
 void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime* advance_time) {
     if (!advance_times_to_delete_.insert(advance_time).second) {
         throw std::runtime_error("Multiple deletes scheduled for a single advance_time");
-    }
-}
-
-void AdvanceTimes::wait_until_no_advance_times_to_delete() const {
-    while (!advance_times_to_delete_.empty()) {
-        std::cerr << "w " << std::this_thread::get_id() << " " << advance_times_to_delete_.size() << " " << this << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

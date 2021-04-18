@@ -64,3 +64,7 @@ void PhysicsIteration::operator()() {
     physics_engine_.move_advance_times();
     physics_engine_.advance_times_.delete_scheduled_advance_times();
 }
+
+void PhysicsIteration::delete_scheduled_advance_times() {
+    physics_engine_.advance_times_.delete_scheduled_advance_times();
+}

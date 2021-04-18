@@ -21,11 +21,13 @@ public:
     void stop_and_join();
     //! Useful if nframes != SIZE_MAX
     void join();
+    void wait_until_paused_and_delete_scheduled_advance_times();
 private:
     std::atomic_bool exit_physics_;
+    std::atomic_bool idle_;
     SetFps& set_fps_;
+    PhysicsIteration& physics_iteration_;
     std::thread physics_thread_;
-
 };
 
 }

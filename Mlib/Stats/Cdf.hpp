@@ -14,7 +14,7 @@ public:
         TFloat cumsum = 0;
         for (size_t i = 0; i < hist.length(); ++i) {
             cumsum += TFloat(hist(i)) / data.length();
-            cdf_(i) = cumsum;
+            cdf_(i) = std::min((TFloat)1, cumsum);
         }
     }
     const TFloat& operator () (const TData& v, bool check_bounds = false) {

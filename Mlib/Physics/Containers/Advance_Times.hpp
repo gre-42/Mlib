@@ -14,7 +14,6 @@ public:
     void add_advance_time(AdvanceTime& advance_time);
     void schedule_delete_advance_time(const AdvanceTime* advance_time);
     void delete_scheduled_advance_times();
-    void wait_until_no_advance_times_to_delete() const;
 private:
     std::list<std::shared_ptr<AdvanceTime>> advance_times_shared_;
     std::list<AdvanceTime*> advance_times_ptr_;
