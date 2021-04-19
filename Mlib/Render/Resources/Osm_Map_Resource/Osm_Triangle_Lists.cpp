@@ -338,6 +338,7 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_no_grass() const 
         tl_tunnel_crossing,
         tl_tunnel_bdry};
     if (tl_terrain->contains(TerrainType::STONE)) res.push_back((*tl_terrain)[TerrainType::STONE]);
+    if (tl_terrain->contains(TerrainType::ASPHALT)) res.push_back((*tl_terrain)[TerrainType::ASPHALT]);
     for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
     for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}

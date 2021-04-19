@@ -652,6 +652,9 @@ void LoadScene::operator()(
                 else if (key == "terrain_stone_textures") {
                     config.terrain_textures[TerrainType::STONE] = string_to_vector(value, fpath);
                 }
+                else if (key == "terrain_asphalt_textures") {
+                    config.terrain_textures[TerrainType::ASPHALT] = string_to_vector(value, fpath);
+                }
                 else if (key == "dirt_texture") {
                     config.dirt_texture = fpath(value);
                 }
