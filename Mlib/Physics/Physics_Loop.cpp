@@ -65,10 +65,3 @@ void PhysicsLoop::wait_until_paused_and_delete_scheduled_advance_times() {
     }
     physics_iteration_.delete_scheduled_advance_times();
 }
-
-void PhysicsLoop::ensure_paused_and_iterate() {
-    if (!(set_fps_.paused() && idle_)) {
-        throw std::runtime_error("ensure_paused_and_iterate despite running simulation");
-    }
-    physics_iteration_();
-}

@@ -22,7 +22,6 @@ public:
     //! Useful if nframes != SIZE_MAX
     void join();
     void wait_until_paused_and_delete_scheduled_advance_times();
-    void ensure_paused_and_iterate();
 private:
     std::atomic_bool exit_physics_;
     std::atomic_bool idle_;

@@ -192,8 +192,6 @@ void LoadScene::operator()(
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)");
     static const DECLARE_REGEX(wait_until_paused_and_delete_scheduled_advance_times_reg,
         "^\\s*wait_until_paused_and_delete_scheduled_advance_times");
-    static const DECLARE_REGEX(ensure_paused_and_iterate_reg,
-        "^\\s*ensure_paused_and_iterate");
     static const DECLARE_REGEX(renderable_instance_reg, "^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
     static const DECLARE_REGEX(register_geographic_mapping_reg,
         "^\\s*register_geographic_mapping"
@@ -1165,8 +1163,6 @@ void LoadScene::operator()(
             scene.delete_root_node(match[1].str());
         } else if (Mlib::re::regex_match(line, match, wait_until_paused_and_delete_scheduled_advance_times_reg)) {
             physics_loop.wait_until_paused_and_delete_scheduled_advance_times();
-        } else if (Mlib::re::regex_match(line, match, ensure_paused_and_iterate_reg)) {
-            physics_loop.ensure_paused_and_iterate();
         } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.instantiate_renderable(
