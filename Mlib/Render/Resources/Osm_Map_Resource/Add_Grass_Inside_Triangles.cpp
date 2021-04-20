@@ -9,7 +9,7 @@ using namespace Mlib;
 void Mlib::add_grass_inside_triangles(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
     ResourceNameCycle& rnc,
     const TriangleList& triangles,
     float scale,

@@ -33,7 +33,7 @@ void Mlib::smoothen_and_apply_heightmap(
     const OsmTriangleLists& air_triangle_lists,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
     std::list<SteinerPointInfo>& steiner_points,
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes)
@@ -78,7 +78,7 @@ void Mlib::smoothen_and_apply_heightmap(
         }
         for (auto& h : hitboxes) {
             for (auto& d : h.second) {
-                smoothed_vertices.push_back(&d);
+                smoothed_vertices.push_back(&d.position);
             }
         }
         for (SteinerPointInfo& p : steiner_points) {
@@ -146,8 +146,8 @@ void Mlib::smoothen_and_apply_heightmap(
             });
         }
         for (auto& h : hitboxes) {
-            h.second.remove_if([&vertices_to_delete](const FixedArray<float, 3>& p){
-                return vertices_to_delete.contains(&p);
+            h.second.remove_if([&vertices_to_delete](const ResourceInstanceDescriptor& p){
+                return vertices_to_delete.contains(&p.position);
             });
         }
         steiner_points.remove_if([&vertices_to_delete](const SteinerPointInfo& p){

@@ -11,18 +11,19 @@ void Mlib::add_parsed_resource_name(
     float scale,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes)
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes)
 {
+    ResourceInstanceDescriptor rid{
+        .position = p,
+        .yangle = yangle,
+        .scale = scale};
     if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
-        resource_instance_positions[prn.name].push_back({
-            .position = p,
-            .yangle = yangle,
-            .scale = scale});
+        resource_instance_positions[prn.name].push_back(rid);
     } else {
         object_resource_descriptors.push_back({p, prn.name, scale});
     }
     if (!prn.hitbox.empty()) {
-        hitboxes[prn.hitbox].push_back(p);
+        hitboxes[prn.hitbox].push_back(rid);
     }
 }
 
@@ -34,7 +35,7 @@ void Mlib::add_parsed_resource_name(
     float scale,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes)
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes)
 {
     add_parsed_resource_name(
         FixedArray<float, 3>{p(0), p(1), height},

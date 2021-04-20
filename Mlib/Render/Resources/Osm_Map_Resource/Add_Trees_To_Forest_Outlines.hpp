@@ -17,7 +17,7 @@ class StreetBvh;
 void add_trees_to_forest_outlines(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes,
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
     std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     float min_dist_to_road,

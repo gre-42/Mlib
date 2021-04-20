@@ -25,7 +25,7 @@ void add_parsed_resource_name(
     float scale,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes);
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes);
 
 void add_parsed_resource_name(
     const FixedArray<float, 2>& p,
@@ -35,6 +35,6 @@ void add_parsed_resource_name(
     float scale,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
-    std::map<std::string, std::list<FixedArray<float, 3>>>& hitboxes);
+    std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes);
 
 }

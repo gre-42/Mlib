@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Renderables/Renderable_Osm_Map.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_Inside_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Add_Grass_on_Steiner_Points.hpp>
@@ -974,8 +975,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays
             for (auto& y : p.second) {
                 res->cvas.push_back(x->transformed(
                     TransformationMatrix{
-                        scale_ * fixed_identity_array<float, 3>(),
-                        y}));
+                        scale_ * rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, y.yangle),
+                        y.position}));
             }
         }
     }
