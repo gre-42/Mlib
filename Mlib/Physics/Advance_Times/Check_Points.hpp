@@ -8,6 +8,7 @@
 
 namespace Mlib {
 
+class Focuses;
 class AbsoluteMovable;
 class AdvanceTimes;
 class SceneNode;
@@ -37,6 +38,7 @@ public:
         float radius,
         SceneNodeResources& scene_node_resources,
         Scene& scene,
+        const Focuses& focuses,
         bool enable_height_changed_mode = false);
     ~CheckPoints();
     virtual void advance_time(float dt) override;
@@ -57,7 +59,9 @@ private:
     size_t i01_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
+    const Focuses& focuses_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
+    std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
     bool enable_height_changed_mode_;
 };

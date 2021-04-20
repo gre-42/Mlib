@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <fstream>
 
 namespace Mlib {
@@ -7,7 +8,7 @@ namespace Mlib {
 class TrackReader {
 public:
     explicit TrackReader(const std::string& filename, float delta_index = 1);
-    bool read(float& time, FixedArray<float, 3>& position, FixedArray<float, 3>& rotation);
+    bool read(TrackElement& track_element);
     bool eof() const;
     void restart();
 private:
@@ -16,10 +17,8 @@ private:
     float delta_index_;
     float findex_;
     size_t iindex_;
-    FixedArray<float, 3> position0_;
-    FixedArray<float, 3> rotation0_;
-    FixedArray<float, 3> position1_;
-    FixedArray<float, 3> rotation1_;
+    TrackElement track_element0_;
+    TrackElement track_element1_;
 };
 
 }

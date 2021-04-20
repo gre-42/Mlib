@@ -49,13 +49,22 @@ void Players::set_team_waypoint(const std::string& team_name, const FixedArray<f
     }
 }
 
-void Players::notify_lap_time(const Player* player, float lap_time) {
+void Players::notify_lap_time(
+    const Player* player,
+    float lap_time,
+    const std::list<TrackElement>& track)
+{
     auto& t = best_lap_time_.at(player);
     t = std::min(t, lap_time);
     game_history_->notify_lap_time({
         .level = level_stem(),
         .lap_time = lap_time,
-        .player_name = player->name()});
+        .player_name = player->name()},
+        track);
+}
+
+std::string Players::get_winner_track_filename(size_t rank) const {
+    return game_history_->get_winner_track_filename(rank);
 }
 
 std::string Players::get_score_board() const {

@@ -63,6 +63,10 @@ std::string Mlib::get_home_directory() {
     return res;
 }
 
-std::string Mlib::get_path_in_home_directory(const std::string& child_path) {
-    return (fs::path(get_home_directory()) / fs::path(child_path)).string();
+std::string Mlib::get_path_in_home_directory(const std::initializer_list<std::string>& child_path) {
+    fs::path res = get_home_directory();
+    for (const auto& s : child_path) {
+        res /= fs::path(s);
+    }
+    return res.string();
 }

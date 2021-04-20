@@ -2,12 +2,13 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Physics/Misc/Track_Writer.hpp>
 #include <chrono>
 #include <fstream>
 
 namespace Mlib {
 
+class Focuses;
 class AdvanceTimes;
 class SceneNode;
 struct RigidBodyIntegrator;
@@ -28,7 +29,7 @@ private:
     AdvanceTimes& advance_times_;
     SceneNode* recorded_node_;
     RigidBodyIntegrator* rbi_;
-    std::ofstream ofstr_;
+    TrackWriter track_writer_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
 };
 

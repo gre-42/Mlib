@@ -23,10 +23,10 @@ void RigidBodyPlayback::advance_time(float dt) {
     if (focuses_.countdown_active()) {
         return;
     }
-    float time;
-    FixedArray<float, 3> rotation;
-    if (track_reader_.read(time, transformation_matrix_.t(), rotation)) {
-        transformation_matrix_.R() = tait_bryan_angles_2_matrix(rotation);
+    TrackElement track_element;
+    if (track_reader_.read(track_element)) {
+        transformation_matrix_.R() = tait_bryan_angles_2_matrix(track_element.rotation);
+        transformation_matrix_.t() = track_element.position;
     }
 }
 

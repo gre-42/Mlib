@@ -1,11 +1,13 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
 
 namespace Mlib {
 
+struct TrackElement;
 class AdvanceTimes;
 class Player;
 class GameHistory;
@@ -20,7 +22,11 @@ public:
     void add_player(Player& player);
     Player& get_player(const std::string& name);
     void set_team_waypoint(const std::string& team_name, const FixedArray<float, 2>& waypoint);
-    void notify_lap_time(const Player* player, float lap_time);
+    void notify_lap_time(
+        const Player* player,
+        float lap_time,
+        const std::list<TrackElement>& track);
+    std::string get_winner_track_filename(size_t rank) const;
     std::string get_score_board() const;
     std::map<std::string, Player*>& players();
     const std::map<std::string, Player*>& players() const;

@@ -459,19 +459,31 @@ void LoadScene::operator()(
         "\\s+cosine=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
         "\\s+weight=([\\w+-.]+)$");
-    static const DECLARE_REGEX(record_track_reg, "^\\s*record_track node=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
-    static const DECLARE_REGEX(playback_track_reg, "^\\s*playback_track node=([\\w+-.]+) speed=([\\w+-.]+) filename=([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(record_track_reg,
+        "^\\s*record_track"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+filename=([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(playback_track_reg,
+        "^\\s*playback_track"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+speed=([\\w+-.]+)"
+        "\\s+filename=([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(playback_winner_track_reg,
+        "^\\s*playback_winner_track"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+speed=([\\w+-.]+)"
+        "\\s+rank=(\\d+)$");
     static const DECLARE_REGEX(check_points_reg,
-        "^\\s*check_points\\r?\\n"
-        "\\s*moving_node=([\\w+-.]+)\\r?\\n"
-        "\\s*resource=([\\w-. \\(\\)/+-]+)\\r?\\n"
-        "\\s*player=([\\w+-.]+)\\r?\\n"
-        "\\s*nbeacons=(\\d+)\\r?\\n"
-        "\\s*nth=(\\d+)\\r?\\n"
-        "\\s*nahead=(\\d+)\\r?\\n"
-        "\\s*radius=([\\w+-.]+)\\r?\\n"
-        "\\s*height_changed=(0|1)\\r?\\n"
-        "\\s*track_filename=([\\w-. \\(\\)/+-]+)$");
+        "^\\s*check_points"
+        "\\s+moving_node=([\\w+-.]+)"
+        "\\s+resource=([\\w-. \\(\\)/+-]+)"
+        "\\s+player=([\\w+-.]+)"
+        "\\s+nbeacons=(\\d+)"
+        "\\s+nth=(\\d+)"
+        "\\s+nahead=(\\d+)"
+        "\\s+radius=([\\w+-.]+)"
+        "\\s+height_changed=(0|1)"
+        "\\s+track_filename=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(set_camera_cycle_reg, "^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
     static const DECLARE_REGEX(set_camera_reg, "^\\s*set_camera ([\\w+-.]+)$");
     static const DECLARE_REGEX(set_dirtmap_reg,
@@ -1937,6 +1949,19 @@ void LoadScene::operator()(
                 ui_focus.focuses,
                 safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
+        } else if (Mlib::re::regex_match(line, match, playback_winner_track_reg)) {
+            size_t rank = safe_stoz(match[3].str());
+            std::string filename = players.get_winner_track_filename(rank);
+            if (filename.empty()) {
+                throw std::runtime_error("Winner with rank " + std::to_string(rank) + " does not exist");
+            }
+            auto playback_node = scene.get_node(match[1].str());
+            auto playback = std::make_shared<RigidBodyPlayback>(
+                filename,
+                physics_engine.advance_times_,
+                ui_focus.focuses,
+                safe_stof(match[2].str()));
+            linker.link_absolute_movable(*playback_node, playback);
         } else if (Mlib::re::regex_match(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
             physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
@@ -1953,6 +1978,7 @@ void LoadScene::operator()(
                 safe_stof(match[7].str()),              // radius
                 scene_node_resources,
                 scene,
+                ui_focus.focuses,
                 safe_stob(match[8].str())));            // enable_height_changed_mode
         } else if (Mlib::re::regex_match(line, match, set_camera_cycle_reg)) {
             std::string cameras = match[2].str();

@@ -4,6 +4,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -27,6 +28,7 @@ CheckPoints::CheckPoints(
     float radius,
     SceneNodeResources& scene_node_resources,
     Scene& scene,
+    const Focuses& focuses,
     bool enable_height_changed_mode)
 : advance_times_{advance_times},
   track_reader_{filename},
@@ -42,6 +44,7 @@ CheckPoints::CheckPoints(
   i01_{0},
   scene_node_resources_{scene_node_resources},
   scene_{scene},
+  focuses_{focuses},
   enable_height_changed_mode_{enable_height_changed_mode}
 {
     if (nbeacons == 0) {
@@ -66,28 +69,36 @@ CheckPoints::~CheckPoints() {
 }
 
 void CheckPoints::advance_time(float dt) {
+    if (moving_node_ == nullptr || moving_ == nullptr) {
+        return;
+    }
+    if (focuses_.countdown_active()) {
+        return;
+    }
     bool just_started = checkpoints_ahead_.empty();
 
     if (just_started) {
         start_time_ = std::chrono::steady_clock::now();
     }
-
+    auto am = moving_->get_new_absolute_model_matrix();
+    movable_track_.push_back(TrackElement{
+        .elapsed_time = std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count(),
+        .position = am.t(),
+        .rotation = matrix_2_tait_bryan_angles(am.R())});
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
         for (size_t i = 0; i < nth_; ++i) {
-            float time;
-            FixedArray<float, 3> position;
-            FixedArray<float, 3> rotation;
-            if (track_reader_.read(time, position, rotation) &&
+            TrackElement track_element;
+            if (track_reader_.read(track_element) &&
                 (i == nth_ - 1))
             {
-                checkpoints_ahead_.push_back({.position = position, .rotation = rotation});
+                checkpoints_ahead_.push_back({.position = track_element.position, .rotation = track_element.rotation});
                 if (i01_ == beacon_nodes_.size()) {
                     std::unique_ptr<SceneNode> node{new SceneNode};
                     scene_node_resources_.instantiate_renderable(resource_name_, "check_point_beacon_" + std::to_string(i01_), *node, SceneNodeResourceFilter());
                     scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), node.get());
                     beacon_nodes_.push_back(node.release());
                 }
-                beacon_nodes_[i01_]->set_relative_pose(position, rotation, 1);
+                beacon_nodes_[i01_]->set_relative_pose(track_element.position, track_element.rotation, 1);
                 i01_ = (i01_ + 1) % nbeacons_;
             }
         }
@@ -103,7 +114,7 @@ void CheckPoints::advance_time(float dt) {
     }
 
     if (!checkpoints_ahead_.empty() &&
-        (sum(squared(moving_->get_new_absolute_model_matrix().t() - checkpoints_ahead_.front().position)) < squared(radius_)))
+        (sum(squared(am.t() - checkpoints_ahead_.front().position)) < squared(radius_)))
     {
         checkpoints_ahead_.pop_front();
     }
@@ -112,7 +123,7 @@ void CheckPoints::advance_time(float dt) {
     {
         std::chrono::duration<float> elapsed_time{std::chrono::steady_clock::now() - start_time_};
         std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_time.count()) << std::endl;
-        players_->notify_lap_time(player_, elapsed_time.count());
+        players_->notify_lap_time(player_, elapsed_time.count(), movable_track_);
         track_reader_.restart();
         advance_time(0);
     }
