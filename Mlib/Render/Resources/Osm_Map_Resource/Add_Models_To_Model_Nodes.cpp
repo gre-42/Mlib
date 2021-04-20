@@ -48,12 +48,13 @@ void Mlib::add_models_to_model_nodes(
             if (auto lit = tags.find("game:level"); (lit != tags.end()) && (lit->second != game_level)) {
                 continue;
             }
+            auto hit = tags.find("hitbox");
             const auto& p = n.second.position;
             ParsedResourceName prn{
                 .name = mit->second,
                 .probability = NAN,
                 .aggregate_mode = resources.aggregate_mode(mit->second),
-                .hitbox = ""};
+                .hitbox = (hit == tags.end()) ? "" : hit->second};
             auto yit = tags.find("yangle");
             float yangle;
             if (yit == tags.end()) {
