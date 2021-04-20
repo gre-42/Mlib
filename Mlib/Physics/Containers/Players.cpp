@@ -11,10 +11,11 @@ using namespace Mlib;
 
 Players::Players(
     AdvanceTimes& advance_times,
-    const std::string& level_name)
+    const std::string& level_name,
+    size_t max_tracks)
 : advance_times_{advance_times},
   level_name_{level_name},
-  game_history_{new GameHistory()}
+  game_history_{new GameHistory(max_tracks)}
 {}
 
 Players::~Players()

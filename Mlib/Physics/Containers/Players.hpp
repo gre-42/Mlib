@@ -17,7 +17,8 @@ class Players {
 public:
     explicit Players(
         AdvanceTimes& advance_times,
-        const std::string& level_name);
+        const std::string& level_name,
+        size_t max_tracks);
     ~Players();
     void add_player(Player& player);
     Player& get_player(const std::string& name);

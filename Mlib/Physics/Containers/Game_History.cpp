@@ -13,7 +13,8 @@ using json = nlohmann::json;
 
 using namespace Mlib;
 
-GameHistory::GameHistory()
+GameHistory::GameHistory(size_t max_tracks)
+: max_tracks_{max_tracks}
 {
     fs::create_directory(config_dirname());
     load();
@@ -58,22 +59,24 @@ void GameHistory::load() {
     }
 }
 
-void GameHistory::save() const {
+void GameHistory::save_and_discard() {
     std::string fn = stats_json_filename();
     std::ofstream fstr{fn.c_str()};
     json j;
     size_t i = 0;
-    for (const auto& l : lap_time_events_) {
-        if (i < 10) {
+    lap_time_events_.remove_if([&i, &j, this](const LapTimeEventAndId& l){
+        if (i < max_tracks_) {
             j[i]["id"] = l.id;
             j[i]["level"] = l.event.level;
             j[i]["lap_time"] = l.event.lap_time;
             j[i]["player_name"] = l.event.player_name;
+            ++i;
+            return false;
         } else {
             fs::remove(track_m_filename(l.id));
+            return true;
         }
-        ++i;
-    }
+    });
     fstr << j.dump(4);
     if (fstr.fail()) {
         throw std::runtime_error("Could not save \"" + fn + '"');
@@ -101,7 +104,7 @@ void GameHistory::notify_lap_time(
     LapTimeEventAndId lid{lap_time_event, max_id};
     // From: https://stackoverflow.com/a/35840954/2292832
     lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lid), lid);
-    save();
+    save_and_discard();
 }
 
 std::string GameHistory::get_level_history(const std::string& level) const {
