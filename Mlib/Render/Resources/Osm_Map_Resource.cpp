@@ -975,7 +975,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays
             for (auto& y : p.second) {
                 res->cvas.push_back(x->transformed(
                     TransformationMatrix{
-                        scale_ * rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, y.yangle),
+                        scale_ * rodrigues(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
                         y.position}));
             }
         }
