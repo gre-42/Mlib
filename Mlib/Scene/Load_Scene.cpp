@@ -2048,6 +2048,7 @@ void LoadScene::operator()(
             player.set_waypoints(*node, way_points);
         } else if (Mlib::re::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
+            scene.move(0.f); // dt
         } else {
             return false;
         }
