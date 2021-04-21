@@ -63,8 +63,9 @@ void GameHistory::save_and_discard() {
     std::string fn = stats_json_filename();
     std::ofstream fstr{fn.c_str()};
     json j;
-    size_t i = 0;
-    lap_time_events_.remove_if([&i, &j, this](const LapTimeEventAndId& l){
+    std::map<std::string, size_t> ntracks;
+    lap_time_events_.remove_if([&ntracks, &j, this](const LapTimeEventAndId& l){
+        size_t& i = ntracks[l.event.level];
         if (i < max_tracks_) {
             j[i]["id"] = l.id;
             j[i]["level"] = l.event.level;
