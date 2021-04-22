@@ -67,10 +67,12 @@ void GameHistory::save_and_discard() {
     lap_time_events_.remove_if([&ntracks, &j, this](const LapTimeEventAndId& l){
         size_t& i = ntracks[l.event.level];
         if (i < max_tracks_) {
-            j[i]["id"] = l.id;
-            j[i]["level"] = l.event.level;
-            j[i]["lap_time"] = l.event.lap_time;
-            j[i]["player_name"] = l.event.player_name;
+            json entry;
+            entry["id"] = l.id;
+            entry["level"] = l.event.level;
+            entry["lap_time"] = l.event.lap_time;
+            entry["player_name"] = l.event.player_name;
+            j.push_back(entry);
             ++i;
             return false;
         } else {
