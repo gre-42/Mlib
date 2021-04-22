@@ -86,7 +86,7 @@ void FollowMovable::advance_time(float dt) {
 }
 
 void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
-    if (std::abs(absolute_model_matrix.get_scale2() - 1) > 1e-12) {
+    if (std::abs(absolute_model_matrix.get_scale2() - 1) > 1e-6) {
         throw std::runtime_error("FollowMovable does not support scaling");
     }
     transformation_matrix_ = absolute_model_matrix;
