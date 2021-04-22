@@ -108,6 +108,12 @@ int main(int argc, char** argv) {
         "    [--angle_x <angle_x>]\n"
         "    [--angle_y <angle_y>]\n"
         "    [--angle_z <angle_z>]\n"
+        "    [--light_x <x>]\n"
+        "    [--light_y <y>]\n"
+        "    [--light_z <z>]\n"
+        "    [--light_angle_x <angle_x>]\n"
+        "    [--light_angle_y <angle_y>]\n"
+        "    [--light_angle_z <angle_z>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
         "    [--blend_mode {off,continuous,binary,binary_add}]\n"
@@ -152,6 +158,8 @@ int main(int argc, char** argv) {
         "    [--no_shadows]\n"
         "    [--light_configuration {none, one, shifted_circle, circle}]\n"
         "    [--triangle_tangent_error_behavior {zero, warn, raise}]\n"
+        "    [--light_beacon] <filename>\n"
+        "    [--light_beacon_scale] <scale>\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
          "--no_cull_faces",
@@ -184,6 +192,12 @@ int main(int argc, char** argv) {
          "--angle_x",
          "--angle_y",
          "--angle_z",
+         "--light_x",
+         "--light_y",
+         "--light_z",
+         "--light_angle_x",
+         "--light_angle_y",
+         "--light_angle_z",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
          "--blend_mode",
@@ -221,7 +235,9 @@ int main(int argc, char** argv) {
          "--background_r",
          "--background_g",
          "--background_b",
-         "--triangle_tangent_error_behavior"});
+         "--triangle_tangent_error_behavior",
+         "--light_beacon",
+         "--light_beacon_scale"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -439,15 +455,52 @@ int main(int argc, char** argv) {
         }
         scene.add_root_node("obj", scene_node);
 
+        size_t light_beacon_index = 0;
+        auto add_light_beacon_if_set = [&args, &light_beacon_index, &scene_node_resources](SceneNode& scene_node){
+            if (!args.has_named_value("--light_beacon")) {
+                return;
+            }
+            std::string name = "light_beacon-" + std::to_string(light_beacon_index++);
+            LoadMeshConfig cfg{
+                .position = fixed_zeros<float, 3>(),
+                .rotation = fixed_zeros<float, 3>(),
+                .scale = fixed_full<float, 3>(safe_stof(args.named_value("--light_beacon_scale", "1"))),
+                .is_small = false,
+                .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary")),
+                .cull_faces = !args.has_named("--no_cull_faces"),
+                .occluded_type = OccludedType::OFF,
+                .occluder_type = OccluderType::OFF,
+                .occluded_by_black = false,
+                .aggregate_mode = AggregateMode::OFF,
+                .transformation_mode = TransformationMode::ALL,
+                .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
+                .apply_static_lighting = args.has_named("--apply_static_lighting"),
+                .werror = !args.has_named("--no_werror")};
+            scene_node_resources.add_resource(name, std::make_shared<ObjFileResource>(
+                args.named_value("--light_beacon"),
+                cfg));
+            scene_node_resources.instantiate_renderable(
+                name,
+                name,
+                scene_node,
+                SceneNodeResourceFilter());
+        };
         std::list<Light*> lights;
         SelectedCameras selected_cameras{scene};
         if (light_configuration == "one") {
             scene.add_root_node("light_node0", new SceneNode);
-            scene.get_node("light_node0")->set_position({0.f, 50.f, 0.f});
-            scene.get_node("light_node0")->set_rotation({ -45.f * float{M_PI} / 180.f, 0.f, 0.f });
+            scene.get_node("light_node0")->set_position({
+                safe_stof(args.named_value("--light_x", "0")),
+                safe_stof(args.named_value("--light_y", "50")),
+                safe_stof(args.named_value("--light_z", "0"))});
+            scene.get_node("light_node0")->set_rotation({
+                safe_stof(args.named_value("--light_angle_x", "-45")) * float{M_PI} / 180.f,
+                safe_stof(args.named_value("--light_angle_y", "0")) * float{M_PI} / 180.f,
+                safe_stof(args.named_value("--light_angle_z", "0")) * float{M_PI} / 180.f});
             lights.push_back(new Light{.node_name = "light_node0", .only_black = false, .shadow = true});
             scene.get_node("light_node0")->add_light(lights.back());
             scene.get_node("light_node0")->set_camera(std::make_shared<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+            add_light_beacon_if_set(*scene.get_node("light_node0"));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
