@@ -125,6 +125,10 @@ void basic_use()
     tree.mProperties.mTrunkLength = getenv_default_float("mTrunkLength", 2.4f);
     int ntrees = getenv_default_int("ntrees", 1);
     float tree_distance = getenv_default_float("tree_distance", 0.2);
+    std::string trunk_diffuse = getenv_default("trunk_diffuse", "bark.jpg");
+    std::string twig_diffuse = getenv_default("twig_diffuse", "twig.jpg");
+    std::string trunk_normal = getenv_default("trunk_normal", "");
+    std::string twig_normal = getenv_default("twig_normal", "");
 
     // 3) Call generate
     // tree.generate();
@@ -177,11 +181,13 @@ void basic_use()
             throw std::runtime_error("Could not open tree.mtl for write");
         }
         fprintf(pFile, "newmtl tree\n");
-        fprintf(pFile, "map_Kd bark.jpg\n");
+        fprintf(pFile, "map_Kd %s\n", trunk_diffuse.c_str());
+        if (!trunk_normal.empty()) fprintf(pFile, "map_Bump %s\n", trunk_normal.c_str());
         fprintf(pFile, "\n");
         fprintf(pFile, "newmtl twig\n");
-        fprintf(pFile, "map_Kd twig.png\n");
-        fprintf(pFile, "map_d twig.png\n");
+        fprintf(pFile, "map_Kd %s\n", twig_diffuse.c_str());
+        fprintf(pFile, "map_d %s\n", twig_diffuse.c_str());
+        if (!twig_normal.empty()) fprintf(pFile, "map_Bump %s\n", twig_normal.c_str());
 
         if (fclose(pFile) < 0) {
             throw std::runtime_error("Could not close file");
