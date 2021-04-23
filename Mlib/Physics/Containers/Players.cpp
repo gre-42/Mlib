@@ -65,7 +65,7 @@ void Players::notify_lap_time(
 }
 
 std::string Players::get_winner_track_filename(size_t rank) const {
-    return game_history_->get_winner_track_filename(rank);
+    return game_history_->get_winner_track_filename(level_stem(), rank);
 }
 
 std::string Players::get_score_board() const {

@@ -28,7 +28,7 @@ public:
         const LapTimeEvent& lap_time_event,
         const std::list<TrackElement>& track);
     std::string get_level_history(const std::string& level) const;
-    std::string get_winner_track_filename(size_t position) const;
+    std::string get_winner_track_filename(const std::string& level, size_t position) const;
 private:
     std::string config_dirname() const;
     std::string stats_json_filename() const;

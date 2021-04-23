@@ -120,11 +120,16 @@ std::string GameHistory::get_level_history(const std::string& level) const {
     return sstr.str();
 }
 
-std::string GameHistory::get_winner_track_filename(size_t rank) const {
-    if (rank >= lap_time_events_.size()) {
-        return "";
+std::string GameHistory::get_winner_track_filename(const std::string& level, size_t rank) const {
+    size_t i = 0;
+    for (const auto& l : lap_time_events_) {
+        if (l.event.level != level) {
+            continue;
+        }
+        if (i == rank) {
+            return track_m_filename(l.id);
+        }
+        ++i;
     }
-    auto it = lap_time_events_.begin();
-    std::advance(it, rank);
-    return track_m_filename(it->id);
+    return "";
 }
