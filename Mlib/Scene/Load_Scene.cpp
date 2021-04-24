@@ -179,7 +179,22 @@ void LoadScene::operator()(
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
     static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
-    static const DECLARE_REGEX(binary_x_resource_reg, "^\\s*binary_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+) ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) is_small=(0|1) occluder_type=(off|white|black)$");
+    static const DECLARE_REGEX(binary_x_resource_reg,
+        "^\\s*binary_x_resource"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+texture_filename=(#?[\\w-.\\(\\)/+-]+)"
+        "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+max=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+is_small=(0|1)"
+        "\\s+occluded_type=(off|color|depth)"
+        "\\s+occluder_type=(off|white|black)"
+        "\\s+occluded_by_black=(0|1)"
+        "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+blend_mode=(off|binary|continuous)"
+        "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+cull_faces=(0|1)"
+        "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
+        "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
     static const DECLARE_REGEX(node_instance_reg,
         "^\\s*node_instance"
         "\\s+parent=([\\w-.<>]+)"
@@ -982,7 +997,7 @@ void LoadScene::operator()(
                 safe_stof(match[3].str()));
             return true;
         }
-        if (Mlib::re::regex_match(line, match, square_resource_reg)) {
+        auto add_billboard = [&](auto* b){
             // 1: name
             // 2: texture_filename
             // 3, 4: min
@@ -995,7 +1010,7 @@ void LoadScene::operator()(
             // 14: cull_faces
             // 15: aggregate_mode
             // 16: transformation_mode
-            scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
+            scene_node_resources.add_resource(match[1].str(), std::make_shared<typename std::remove_reference<decltype(*b)>::type>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
@@ -1023,6 +1038,9 @@ void LoadScene::operator()(
                         safe_stof(match[13].str())},
                     .diffusivity = {0.f, 0.f, 0.f},
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
+        };
+        if (Mlib::re::regex_match(line, match, square_resource_reg)) {
+            add_billboard((SquareResource*)nullptr);
             return true;
         }
         if (Mlib::re::regex_match(line, match, blending_x_resource_reg)) {
@@ -1034,17 +1052,7 @@ void LoadScene::operator()(
             return true;
         }
         if (Mlib::re::regex_match(line, match, binary_x_resource_reg)) {
-            scene_node_resources.add_resource(match[1].str(), std::make_shared<BinaryXResource>(
-                FixedArray<float, 2, 2>{
-                    safe_stof(match[3].str()), safe_stof(match[4].str()),
-                    safe_stof(match[5].str()), safe_stof(match[6].str())},
-                fpath(match[2].str()),
-                safe_stob(match[10].str()),
-                occluder_type_from_string(match[11].str()),
-                FixedArray<float, 3>{
-                    safe_stof(match[7].str()),
-                    safe_stof(match[8].str()),
-                    safe_stof(match[9].str())}));
+            add_billboard((BinaryXResource*)nullptr);
             return true;
         }
         if (Mlib::re::regex_match(line, match, append_focus_reg)) {

@@ -5,14 +5,13 @@
 
 namespace Mlib {
 
+struct Material;
+
 class BinaryXResource: public SceneNodeResource {
 public:
     BinaryXResource(
         const FixedArray<float, 2, 2>& square,
-        const std::string& texture,
-        bool is_small,
-        OccluderType occluder_type,
-        const FixedArray<float, 3>& ambience = {2, 2, 2});
+        const Material& material);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual AggregateMode aggregate_mode() const override;
 private:

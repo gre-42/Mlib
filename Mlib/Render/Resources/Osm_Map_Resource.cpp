@@ -533,19 +533,17 @@ OsmMapResource::OsmMapResource(
         way_point_edges_2_lanes);
 
     GroundBvh ground_bvh{osm_triangle_lists.tls_smooth()};
-    if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
-        LOG_INFO("add_models_to_model_nodes");
-        add_models_to_model_nodes(
-            resource_instance_positions_,
-            object_resource_descriptors_,
-            hitboxes_,
-            ground_bvh,
-            scene_node_resources,
-            nodes,
-            ways,
-            config.scale,
-            config.game_level);
-    }
+    LOG_INFO("add_models_to_model_nodes");
+    add_models_to_model_nodes(
+        resource_instance_positions_,
+        object_resource_descriptors_,
+        hitboxes_,
+        ground_bvh,
+        scene_node_resources,
+        nodes,
+        ways,
+        config.scale,
+        config.game_level);
 
     // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     // {
