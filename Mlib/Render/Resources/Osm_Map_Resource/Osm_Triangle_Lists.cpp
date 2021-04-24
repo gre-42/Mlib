@@ -110,17 +110,18 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .draw_distance_noperations = 1000}.compute_color_mode()));
     }
     for (const auto& s : config.street_texture) {
+        bool blend = config.blend_street && (s.first.type != RoadType::WALL);
         tl_street.append(StyledRoadEntry{
             .road_properties = s.first,
             .styled_road = StyledRoad{
                 .triangle_list = std::make_shared<TriangleList>((std::string)s.first, Material{
-                    .continuous_blending_z_order = config.blend_street ? 1 : 0,
-                    .blend_mode = config.blend_street ? BlendMode::CONTINUOUS : BlendMode::OFF,
+                    .continuous_blending_z_order = blend ? 1 : 0,
+                    .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                     .textures = {primary_rendering_resources->get_blend_map_texture(s.second.texture)},
                     .occluded_type = (s.first.type != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
                     .occluder_type = (s.first.type != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
-                    .depth_func_equal = config.blend_street,
-                    .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
+                    .depth_func_equal = blend,
+                    .aggregate_mode = blend ? AggregateMode::ONCE : AggregateMode::OFF,
                     .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
                     .draw_distance_noperations = 1000}.compute_color_mode()),
                 .uvx = s.second.uvx}}); // mixed_texture: terrain_texture
