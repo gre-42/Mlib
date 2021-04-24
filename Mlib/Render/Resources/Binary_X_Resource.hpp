@@ -11,11 +11,13 @@ class BinaryXResource: public SceneNodeResource {
 public:
     BinaryXResource(
         const FixedArray<float, 2, 2>& square,
-        const Material& material);
+        const Material& material_0,
+        const Material& material_90);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual AggregateMode aggregate_mode() const override;
 private:
-    std::shared_ptr<ColoredVertexArrayResource> rva_;
+    std::shared_ptr<ColoredVertexArrayResource> rva_0_;
+    std::shared_ptr<ColoredVertexArrayResource> rva_90_;
 
 };
 

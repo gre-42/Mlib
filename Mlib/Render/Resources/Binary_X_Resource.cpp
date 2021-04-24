@@ -11,7 +11,8 @@ using namespace Mlib;
 
 BinaryXResource::BinaryXResource(
     const FixedArray<float, 2, 2>& square,
-    const Material& material)
+    const Material& material_0,
+    const Material& material_90)
 {
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2);
@@ -39,12 +40,24 @@ BinaryXResource::BinaryXResource(
 
     triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
+    auto triangles_0 = triangles;
+    auto triangles_90 = std::move(triangles);
 
-    rva_ = std::make_shared<ColoredVertexArrayResource>(
+    rva_0_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(
             "BinaryXResource",
-            material,
-            std::move(triangles),
+            material_0,
+            std::move(triangles_0),
+            std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
+        nullptr);  // instances
+
+    rva_90_ = std::make_shared<ColoredVertexArrayResource>(
+        std::make_shared<ColoredVertexArray>(
+            "BinaryXResource",
+            material_90,
+            std::move(triangles_90),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
@@ -57,14 +70,19 @@ void BinaryXResource::instantiate_renderable(const std::string& name, SceneNode&
     // std::unique_lock lock_guard1{scene.static_mutex_};
     // std::unique_lock lock_guard2{scene.aggregate_mutex_};
 
-    rva_->instantiate_renderable(name, scene_node, SceneNodeResourceFilter());
+    rva_0_->instantiate_renderable(name, scene_node, SceneNodeResourceFilter());
 
     auto node90 = new SceneNode;
     node90->set_rotation({0.f, -float{M_PI} / 2.f, 0.f });
-    rva_->instantiate_renderable(name, *node90, SceneNodeResourceFilter());
+    rva_90_->instantiate_renderable(name, *node90, SceneNodeResourceFilter());
     scene_node.add_child(name + "_node90", node90);
 }
 
 AggregateMode BinaryXResource::aggregate_mode() const {
-    return rva_->aggregate_mode();
+    AggregateMode am_0 = rva_0_->aggregate_mode();
+    AggregateMode am_90 = rva_90_->aggregate_mode();
+    if (am_0 != am_90) {
+        throw std::runtime_error("Conflicting aggregate modes");
+    }
+    return am_0;
 }

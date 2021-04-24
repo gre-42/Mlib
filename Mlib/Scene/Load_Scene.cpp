@@ -182,7 +182,8 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(binary_x_resource_reg,
         "^\\s*binary_x_resource"
         "\\s+name=([\\w+-.]+)"
-        "\\s+texture_filename=(#?[\\w-.\\(\\)/+-]+)"
+        "\\s+texture_filename_0=(#?[\\w-.\\(\\)/+-]+)"
+        "\\s+texture_filename_90=(#?[\\w-.\\(\\)/+-]+)"
         "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+max=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+is_small=(0|1)"
@@ -997,7 +998,7 @@ void LoadScene::operator()(
                 safe_stof(match[3].str()));
             return true;
         }
-        auto add_billboard = [&](auto* b){
+        if (Mlib::re::regex_match(line, match, square_resource_reg)) {
             // 1: name
             // 2: texture_filename
             // 3, 4: min
@@ -1010,7 +1011,7 @@ void LoadScene::operator()(
             // 14: cull_faces
             // 15: aggregate_mode
             // 16: transformation_mode
-            scene_node_resources.add_resource(match[1].str(), std::make_shared<typename std::remove_reference<decltype(*b)>::type>(
+            scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
@@ -1038,9 +1039,6 @@ void LoadScene::operator()(
                         safe_stof(match[13].str())},
                     .diffusivity = {0.f, 0.f, 0.f},
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
-        };
-        if (Mlib::re::regex_match(line, match, square_resource_reg)) {
-            add_billboard((SquareResource*)nullptr);
             return true;
         }
         if (Mlib::re::regex_match(line, match, blending_x_resource_reg)) {
@@ -1052,7 +1050,54 @@ void LoadScene::operator()(
             return true;
         }
         if (Mlib::re::regex_match(line, match, binary_x_resource_reg)) {
-            add_billboard((BinaryXResource*)nullptr);
+            // 1: name
+            // 2: texture_filename_0
+            // 3: texture_filename_90
+            // 4, 5: min
+            // 6, 7: max
+            // 8: is_small
+            // 9: occluded_type
+            // 10: occluder_type
+            // 11, 12, 13: ambience
+            // 14: blend_mode
+            // 15: cull_faces
+            // 16: aggregate_mode
+            // 17: transformation_mode
+            Material material{
+                .blend_mode = blend_mode_from_string(match[15].str()),
+                .occluded_type =  occluded_type_from_string(match[9].str()),
+                .occluder_type = occluder_type_from_string(match[10].str()),
+                .occluded_by_black = safe_stob(match[11].str()),
+                .alpha_distances = {
+                    safe_stof(match[16].str()),
+                    safe_stof(match[17].str()),
+                    safe_stof(match[18].str()),
+                    safe_stof(match[19].str())},
+                .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
+                .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
+                .collide = false,
+                .aggregate_mode = aggregate_mode_from_string(match[21].str()),
+                .transformation_mode = transformation_mode_from_string(match[22].str()),
+                .is_small = safe_stob(match[8].str()),
+                .cull_faces = safe_stob(match[20].str()),
+                .ambience = {
+                    safe_stof(match[12].str()),
+                    safe_stof(match[13].str()),
+                    safe_stof(match[14].str())},
+                .diffusivity = {0.f, 0.f, 0.f},
+                .specularity = {0.f, 0.f, 0.f}};
+            Material material_0{material};
+            Material material_90{material};
+            material_0.textures = {{.texture_descriptor = {.color = fpath(match[2].str())}}};
+            material_90.textures = {{.texture_descriptor = {.color = fpath(match[3].str())}}};
+            material_0.compute_color_mode();
+            material_90.compute_color_mode();
+            scene_node_resources.add_resource(match[1].str(), std::make_shared<BinaryXResource>(
+                FixedArray<float, 2, 2>{
+                    safe_stof(match[4].str()), safe_stof(match[5].str()),
+                    safe_stof(match[6].str()), safe_stof(match[7].str())},
+                material_0,
+                material_90));
             return true;
         }
         if (Mlib::re::regex_match(line, match, append_focus_reg)) {
