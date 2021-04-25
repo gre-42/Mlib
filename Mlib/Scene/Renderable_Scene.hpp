@@ -53,7 +53,7 @@ class RenderableScene {
 public:
     RenderableScene(
         SceneNodeResources& scene_node_resources,
-        const SceneConfig& scene_config,
+        SceneConfig& scene_config,
         ButtonStates& button_states,
         UiFocus& ui_focus,
         std::map<std::string, size_t>& selection_ids,

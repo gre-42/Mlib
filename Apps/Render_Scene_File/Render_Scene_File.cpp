@@ -171,9 +171,9 @@ int main(int argc, char** argv) {
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "INFINITY"))};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
+            render_config,
             num_renderings,
-            nullptr,
-            render_config};
+            nullptr};
         
         render2.print_hardware_info();
 
@@ -187,15 +187,11 @@ int main(int argc, char** argv) {
             num_renderings = SIZE_MAX;
             ui_focus.n_submenus = 0;
 
-            SceneConfig scene_config;
-
-            scene_config.render_config = render_config;
-
-            scene_config.scene_graph_config = SceneGraphConfig{
+            SceneGraphConfig scene_graph_config{
                 .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),
                 .aggregate_update_interval = safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
 
-            scene_config.physics_engine_config = PhysicsEngineConfig{
+            PhysicsEngineConfig physics_engine_config{
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 .damping = safe_stof(args.named_value("--damping", "0")),
@@ -216,6 +212,14 @@ int main(int argc, char** argv) {
                 .physics_type = physics_type_from_string(args.named_value("--physics_type", "builtin")),
                 .resolve_collision_type = resolve_collission_type_from_string(args.named_value("--resolve_collision_type", "sequential_pulses")),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
+
+            CameraConfig camera_config;
+
+            SceneConfig scene_config{
+                .render_config = render_config,
+                .camera_config = camera_config,
+                .scene_graph_config = scene_graph_config,
+                .physics_engine_config = physics_engine_config};
 
             SceneNodeResources scene_node_resources;
             {
@@ -253,7 +257,6 @@ int main(int argc, char** argv) {
                     rsc,
                     scene_node_resources,
                     scene_config,
-                    render_config,
                     button_states,
                     ui_focus,
                     selection_ids,

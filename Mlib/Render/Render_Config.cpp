@@ -10,7 +10,9 @@ void RenderConfig::apply() const {
     if (wire_frame) {
         CHK(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
     }
-    CHK(glEnable(GL_DEPTH_TEST));
+    if (depth_test) {
+        CHK(glEnable(GL_DEPTH_TEST));
+    }
     if (nsamples_msaa != 1) {
         CHK(glEnable(GL_MULTISAMPLE));
     }
@@ -23,7 +25,9 @@ void RenderConfig::unapply() const {
     if (wire_frame) {
         CHK(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
     }
-    CHK(glDisable(GL_DEPTH_TEST));
+    if (depth_test) {
+        CHK(glDisable(GL_DEPTH_TEST));
+    }
     if (nsamples_msaa != 1) {
         CHK(glDisable(GL_MULTISAMPLE));
     }

@@ -99,6 +99,15 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
                     user_object->physics_set_fps->toggle_pause_resume();
                 }
                 break;
+            case GLFW_KEY_W:
+                user_object->wire_frame = !user_object->wire_frame;
+                break;
+            case GLFW_KEY_D:
+                user_object->depth_test = !user_object->depth_test;
+                break;
+            case GLFW_KEY_C:
+                user_object->cull_faces = !user_object->cull_faces;
+                break;
         }
     }
     fullscreen_callback(window, key, scancode, action, mods);

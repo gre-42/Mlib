@@ -54,7 +54,8 @@ void test_render() {
         Array<float> output;
         RenderResults render_results{.output = &output};
         size_t num_renderings = SIZE_MAX;
-        Render2{num_renderings, &render_results, RenderConfig{}}.render_depth_map(
+        RenderConfig render_config;
+        Render2{render_config, num_renderings, &render_results}.render_depth_map(
             img.to_float_rgb(),
             depth,
             FixedArray<float, 3, 3>{intrinsic_matrix},

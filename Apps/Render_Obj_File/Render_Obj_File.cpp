@@ -265,9 +265,9 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--background_b", "1"))},
             .dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
         Render2 render2{
+            render_config,
             num_renderings,
-            &render_results,
-            render_config};
+            &render_results};
 
         render2.print_hardware_info();
 
@@ -573,6 +573,9 @@ int main(int argc, char** argv) {
             .button_states = button_states,
             .cameras = selected_cameras,
             .focuses = focuses,
+            .wire_frame = render_config.wire_frame,
+            .depth_test = render_config.depth_test,
+            .cull_faces = render_config.cull_faces,
             .physics_set_fps = nullptr};
         auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
             render2.window(),

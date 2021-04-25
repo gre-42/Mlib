@@ -35,7 +35,8 @@ int main(int argc, char** argv) {
         SceneNodeResources scene_node_resources;
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
         size_t num_renderings = SIZE_MAX;
-        Render2{num_renderings}.render_height_map(
+        RenderConfig render_config;
+        Render2{render_config, num_renderings}.render_height_map(
             img.to_float_rgb(),
             height.to_float() * safe_stof(args.named_value("--z_scale", "1")),
             np.normalization_matrix().pre_scaled(safe_stof(args.named_value("--xy_scale", "1"))),

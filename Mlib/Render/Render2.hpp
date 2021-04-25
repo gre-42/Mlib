@@ -21,9 +21,9 @@ class TransformationMatrix;
 class Render2 {
 public:
     explicit Render2(
+        RenderConfig& render_config,
         size_t& num_renderings,
-        RenderResults* render_results = nullptr,
-        const RenderConfig& render_config = RenderConfig{});
+        RenderResults* render_results = nullptr);
     ~Render2();
 
     void print_hardware_info() const;
@@ -64,7 +64,7 @@ public:
 private:
     size_t& num_renderings_;
     RenderResults* render_results_;
-    RenderConfig render_config_;
+    RenderConfig& render_config_;
     std::unique_ptr<Window> window_;
 };
 

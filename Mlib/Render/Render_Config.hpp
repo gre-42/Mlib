@@ -5,11 +5,18 @@
 
 namespace Mlib {
 
+struct NoCopy {
+    NoCopy() = default;
+    NoCopy(const NoCopy&) = delete;
+    NoCopy& operator = (const NoCopy&) = delete;
+};
+
 struct RenderConfig {
     int nsamples_msaa = 1;
     int lightmap_nsamples_msaa = 4;
     bool cull_faces = true;
     bool wire_frame = false;
+    bool depth_test = true;
     std::string window_title = "Simple example";
     int screen_width = 640;
     int screen_height = 480;
@@ -32,6 +39,7 @@ struct RenderConfig {
     float max_residual_time = 0.5f;
     float draw_distance_add = INFINITY;
     float draw_distance_slop = 10;
+    NoCopy no_copy;
     void apply() const;
     void unapply() const;
 };

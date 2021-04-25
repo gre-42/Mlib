@@ -7,7 +7,7 @@ using namespace Mlib;
 
 RenderableScene::RenderableScene(
     SceneNodeResources& scene_node_resources,
-    const SceneConfig& scene_config,
+    SceneConfig& scene_config,
     ButtonStates& button_states,
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
@@ -32,6 +32,9 @@ RenderableScene::RenderableScene(
       .button_states = button_states,
       .cameras = selected_cameras_,
       .focuses = ui_focus.focuses,
+      .wire_frame = scene_config.render_config.wire_frame,
+      .depth_test = scene_config.render_config.depth_test,
+      .cull_faces = scene_config.render_config.cull_faces,
       .physics_set_fps = &physics_set_fps_},
   gefp_{FixedArray<float, 3>{0.f, -9.8f, 0.f}},
   standard_camera_logic_{

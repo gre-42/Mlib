@@ -126,8 +126,7 @@ void LoadScene::operator()(
     bool verbose,
     RegexSubstitutionCache& rsc,
     SceneNodeResources& scene_node_resources,
-    const SceneConfig& scene_config,
-    const RenderConfig& render_config,
+    SceneConfig& scene_config,
     ButtonStates& button_states,
     UiFocus& ui_focus,
     std::map<std::string, size_t>& selection_ids,
@@ -549,7 +548,7 @@ void LoadScene::operator()(
             RenderingContextGuard rrg{
                 scene_node_resources,
                 match[1].str() + ".rendering_resources",
-                render_config.anisotropic_filtering_level,
+                scene_config.render_config.anisotropic_filtering_level,
                 safe_stoi(match[2].str())};
             AggregateRendererGuard arg{std::make_shared<AggregateArrayRenderer>()};
             InstancesRendererGuard irg{std::make_shared<ArrayInstancesRenderer>()};

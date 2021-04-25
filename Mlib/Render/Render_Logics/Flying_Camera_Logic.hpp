@@ -21,6 +21,9 @@ public:
     ButtonStates& button_states;
     SelectedCameras& cameras;
     Focuses& focuses;
+    bool& wire_frame;
+    bool& depth_test;
+    bool& cull_faces;
     SetFps* physics_set_fps;
     FixedArray<float, 3> position;
     FixedArray<float, 3> angles;
