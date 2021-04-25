@@ -102,7 +102,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
         tl_terrain_extrusion[ttt.first]->material_.compute_color_mode();
     }
     for (const auto& s : config.street_crossing_texture) {
-        tl_street_crossing.insert(s.first, std::make_shared<TriangleList>(road_type_to_string(s.first), Material{
+        tl_street_crossing.insert(s.first, std::make_shared<TriangleList>("crossing_" + road_type_to_string(s.first), Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
             .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
             .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
