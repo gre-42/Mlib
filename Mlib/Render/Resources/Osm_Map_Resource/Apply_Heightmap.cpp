@@ -162,7 +162,7 @@ void Mlib::apply_heightmap(
     for (const auto& tt : tl_terrain.map()) {
         for (const auto& t : tt.second->triangles_) {
             for (const auto& v : t.flat_iterable()) {
-                OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
+                OrderableFixedArray<float, 2> vc{v.position(0), v.position(1)};
                 for (const auto& e : entrances) {
                     if (e.second.contains(vc)) {
                         terrain_entrance_vertices[e.first].insert(&v.position);
@@ -177,7 +177,7 @@ void Mlib::apply_heightmap(
             for (const auto& t : tt.second->triangles_) {
                 bool found = false;
                 for (const auto& v : t.flat_iterable()) {
-                    OrderableFixedArray<float, 2> vc{(v.position)(0), (v.position)(1)};
+                    OrderableFixedArray<float, 2> vc{v.position(0), v.position(1)};
                     if (entrances.at(EntranceType::TUNNEL).contains(vc)) {
                         found = true;
                     }
