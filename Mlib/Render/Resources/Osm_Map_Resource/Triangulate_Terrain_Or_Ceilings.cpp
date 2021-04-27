@@ -11,6 +11,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/PTri.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Uv.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
 #include <poly2tri/point_exception.hpp>
 
@@ -299,9 +300,9 @@ void triangulate_entity_list(
                 color,
                 color,
                 color,
-                {float(t->GetPoint(0)->x) / scale * uv_scale, float(t->GetPoint(0)->y) / scale * uv_scale},
-                {float(t->GetPoint(1)->x) / scale * uv_scale, float(t->GetPoint(1)->y) / scale * uv_scale},
-                {float(t->GetPoint(2)->x) / scale * uv_scale, float(t->GetPoint(2)->y) / scale * uv_scale});
+                terrain_uv(float(t->GetPoint(0)->x), float(t->GetPoint(0)->y), scale, uv_scale),
+                terrain_uv(float(t->GetPoint(1)->x), float(t->GetPoint(1)->y), scale, uv_scale),
+                terrain_uv(float(t->GetPoint(2)->x), float(t->GetPoint(2)->y), scale, uv_scale));
         }
     };
     if (ncontours == 0) {
