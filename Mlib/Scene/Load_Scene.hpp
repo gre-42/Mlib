@@ -9,7 +9,7 @@ struct GLFWwindow;
 namespace Mlib {
 
 class RenderableScene;
-class SubstitutionString;
+class SubstitutionMap;
 
 class SceneNodeResources;
 struct SceneConfig;
@@ -24,7 +24,7 @@ public:
         const std::string& working_directory,
         const std::string& script_filename,
         std::string& next_scene_filename,
-        SubstitutionString& substitutions,
+        SubstitutionMap& external_substitutions,
         size_t& num_renderings,
         bool verbose,
         RegexSubstitutionCache& rsc,

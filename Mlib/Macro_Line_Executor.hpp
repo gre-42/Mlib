@@ -8,6 +8,7 @@
 namespace Mlib {
 
 class MacroRecorder;
+class SubstitutionMap;
 
 class MacroLineExecutor {
     friend MacroRecorder;
@@ -16,18 +17,19 @@ public:
         const std::string& context,
         const std::function<std::string(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
-        const std::string& line)> UserFunction;
+        const std::string& line,
+        SubstitutionMap& line_substitutions)> UserFunction;
     MacroLineExecutor(
         MacroRecorder& macro_file_executor,
         const std::string& script_filename,
         const std::string& working_directory,
         const UserFunction& user_function,
         const std::string& context,
-        const SubstitutionString& global_substitutions,
+        const SubstitutionMap& global_substitutions,
         bool verbose);
     void operator () (
         const std::string& line,
-        const SubstitutionString& local_substitutions,
+        const SubstitutionMap& local_substitutions,
         const RegexSubstitutionCache& rsc) const;
 private:
     MacroRecorder& macro_file_executor_;
@@ -35,8 +37,8 @@ private:
     std::string working_directory_;
     UserFunction user_function_;
     std::string context_;
-    const SubstitutionString& global_substitutions_;
-    SubstitutionString global_and_builtin_substitutions_;
+    const SubstitutionMap& global_substitutions_;
+    SubstitutionMap global_and_builtin_substitutions_;
     bool verbose_;
 };
 

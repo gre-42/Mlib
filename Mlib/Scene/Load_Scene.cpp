@@ -121,7 +121,7 @@ void LoadScene::operator()(
     const std::string& working_directory,
     const std::string& script_filename,
     std::string& next_scene_filename,
-    SubstitutionString& substitutions,
+    SubstitutionMap& external_substitutions,
     size_t& num_renderings,
     bool verbose,
     RegexSubstitutionCache& rsc,
@@ -484,6 +484,8 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+speed=([\\w+-.]+)"
         "\\s+filename=([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(define_winner_conditionals_reg,
+        "^\\s*define_winner_conditionals$");
     static const DECLARE_REGEX(playback_winner_track_reg,
         "^\\s*playback_winner_track"
         "\\s+node=([\\w+-.]+)"
@@ -541,7 +543,8 @@ void LoadScene::operator()(
         const std::string& context,
         const std::function<std::string(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
-        const std::string& line) -> bool
+        const std::string& line,
+        SubstitutionMap& line_substitutions) -> bool
     {
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(line, match, create_scene_reg)) {
@@ -1713,7 +1716,7 @@ void LoadScene::operator()(
                 selection_ids[match[1].str()],
                 [macro_line_executor, reload_transient_objects, &rsc](){
                     if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, SubstitutionString(), rsc);
+                        macro_line_executor(reload_transient_objects, SubstitutionMap(), rsc);
                     }
                 });
             render_logics.append(nullptr, scene_selector_logic);
@@ -1771,7 +1774,7 @@ void LoadScene::operator()(
                 focus_from_string(match[6].str()));
             wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
         } else if (Mlib::re::regex_match(line, match, clear_parameters_reg)) {
-            substitutions.clear();
+            external_substitutions.clear();
         } else if (Mlib::re::regex_match(line, match, parameter_setter_reg)) {
             std::string id = match[1].str();
             std::string ttf_filename = fpath(match[2].str());
@@ -1789,7 +1792,7 @@ void LoadScene::operator()(
             for (const auto& e : find_all_name_values(parameters, "[\\w+-. ]+", substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
                     .name = e.first,
-                    .substitutions = SubstitutionString{ replacements_to_map(e.second) } });
+                    .substitutions = SubstitutionMap{ replacements_to_map(e.second) } });
             }
             // If the selection_ids array is not yet initialized, apply the default value.
             if (selection_ids.find(id) == selection_ids.end()) {
@@ -1803,7 +1806,7 @@ void LoadScene::operator()(
                 line_distance_pixels,        // line_distance_pixels
                 ui_focus,
                 ui_focus.n_submenus++,
-                substitutions,
+                external_substitutions,
                 num_renderings,
                 button_press,
                 selection_ids.at(id),
@@ -1811,16 +1814,16 @@ void LoadScene::operator()(
                 next_scene_filename,
                 [macro_line_executor, reload_transient_objects, &rsc](){
                     if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, SubstitutionString(), rsc);
+                        macro_line_executor(reload_transient_objects, SubstitutionMap(), rsc);
                     }
                 },
                 [macro_line_executor, on_change, &rsc](){
                     if (!on_change.empty()) {
-                        macro_line_executor(on_change, SubstitutionString(), rsc);
+                        macro_line_executor(on_change, SubstitutionMap(), rsc);
                     }
                 });
             if (!on_init.empty()) {
-                macro_line_executor(on_init, SubstitutionString(), rsc);
+                macro_line_executor(on_init, SubstitutionMap(), rsc);
             }
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (Mlib::re::regex_match(line, match, ui_background_reg)) {
@@ -2003,6 +2006,14 @@ void LoadScene::operator()(
                 ui_focus.focuses,
                 safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
+        } else if (Mlib::re::regex_match(line, match, define_winner_conditionals_reg)) {
+            for (size_t rank = 0; rank < 3; ++rank) {
+                continue;
+                std::string filename = players.get_winner_track_filename(rank);
+                line_substitutions.merge(SubstitutionMap({{
+                    "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
+                    filename.empty() ? "# " : ""}}));
+            }
         } else if (Mlib::re::regex_match(line, match, playback_winner_track_reg)) {
             size_t rank = safe_stoz(match[3].str());
             std::string filename = players.get_winner_track_filename(rank);
@@ -2084,7 +2095,7 @@ void LoadScene::operator()(
                         " IF_RACING:#" <<
                         " IF_RALLY:" <<
                         " PLAYER_NAME:" << player;
-                    macro_line_executor(sstr.str(), SubstitutionString(), rsc);
+                    macro_line_executor(sstr.str(), SubstitutionMap(), rsc);
                 }
             );
         } else if (Mlib::re::regex_match(line, match, set_vip_reg)) {
@@ -2112,7 +2123,7 @@ void LoadScene::operator()(
         working_directory,
         user_function,
         "no_scene_specified",
-        substitutions,
+        external_substitutions,
         verbose};
     macro_file_executor_(lp2, rsc);
 }

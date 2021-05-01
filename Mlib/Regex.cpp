@@ -118,16 +118,6 @@ std::map<std::string, std::string> Mlib::replacements_to_map(const std::string& 
     return repls;
 }
 
-std::map<std::string, std::string> Mlib::merge_replacements(const std::initializer_list<std::map<std::string, std::string>>& replacements) {
-    std::map<std::string, std::string> res;
-    for (const auto& p : replacements) {
-        for (const auto& e : p) {
-            res[e.first] = e.second;
-        }
-    }
-    return res;
-}
-
 void Mlib::find_all(
     const std::string& str,
     const Mlib::regex& pattern,
@@ -157,30 +147,32 @@ std::list<std::pair<std::string, std::string>> Mlib::find_all_name_values(
     return res;
 }
 
-SubstitutionString::SubstitutionString()
+SubstitutionMap::SubstitutionMap()
 {}
 
-SubstitutionString::SubstitutionString(const std::map<std::string, std::string>& s)
+SubstitutionMap::SubstitutionMap(const std::map<std::string, std::string>& s)
 : s_{s}
 {}
 
-SubstitutionString::SubstitutionString(std::map<std::string, std::string>&& s)
+SubstitutionMap::SubstitutionMap(std::map<std::string, std::string>&& s)
 : s_{s}
 {}
 
-std::string SubstitutionString::substitute(const std::string& t, const RegexSubstitutionCache& rsc) const {
+std::string SubstitutionMap::substitute(const std::string& t, const RegexSubstitutionCache& rsc) const {
     return Mlib::substitute(t, s_, rsc);
 }
 
-void SubstitutionString::merge(const SubstitutionString& other) {
-    s_ = merge_replacements({s_, other.s_});
+void SubstitutionMap::merge(const SubstitutionMap& other) {
+    for (const auto& e : other.s_) {
+        s_[e.first] = e.second;
+    }
 }
 
-void SubstitutionString::clear() {
+void SubstitutionMap::clear() {
     s_.clear();
 }
 
-std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionString& s) {
+std::ostream& Mlib::operator << (std::ostream& ostr, const SubstitutionMap& s) {
     for (const auto& e : s.s_) {
         ostr << e.first << " -> " << e.second << '\n';
     }

@@ -13,7 +13,7 @@ class ButtonPress;
 
 struct ReplacementParameter {
     std::string name;
-    SubstitutionString substitutions;
+    SubstitutionMap substitutions;
 };
 
 class ParameterSetterLogic: public RenderLogic {
@@ -26,7 +26,7 @@ public:
         float line_distance_pixels,
         UiFocus& ui_focus,
         size_t submenu_id,
-        SubstitutionString& substitutions,
+        SubstitutionMap& substitutions,
         size_t& num_renderings,
         ButtonPress& button_press,
         size_t& selection_index,
@@ -50,7 +50,7 @@ private:
     ListView<ReplacementParameter> scene_selector_list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;
-    SubstitutionString& substitutions_;
+    SubstitutionMap& substitutions_;
     size_t& num_renderings_;
     ButtonPress& button_press_;
     const std::string& previous_scene_filename_;

@@ -13,7 +13,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     float line_distance_pixels,
     UiFocus& ui_focus,
     size_t submenu_id,
-    SubstitutionString& substitutions,
+    SubstitutionMap& substitutions,
     size_t& num_renderings,
     ButtonPress& button_press,
     size_t& selection_index,

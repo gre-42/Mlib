@@ -33,7 +33,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
         } else if (!recording_macros.empty()) {
             recording_macros.back().second.lines.push_back(line);
         } else {
-            macro_line_executor(line, SubstitutionString(), rsc);
+            macro_line_executor(line, SubstitutionMap(), rsc);
         }
     }
 

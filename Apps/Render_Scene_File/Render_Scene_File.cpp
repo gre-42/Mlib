@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
 
         ButtonStates button_states;
         UiFocus ui_focus;
-        SubstitutionString substitutions;
+        SubstitutionMap external_substitutions;
         std::map<std::string, size_t> selection_ids;
         // FifoLog fifo_log{10 * 1000};
 
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
                     {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "10000")))},
                     {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"}
                 };
-                substitutions.merge(SubstitutionString{std::move(sstr)});
+                external_substitutions.merge(SubstitutionMap{std::move(sstr)});
             }
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
                     working_directory,
                     main_scene_filename,
                     next_scene_filename,
-                    substitutions,
+                    external_substitutions,
                     num_renderings,
                     args.has_named("--verbose"),
                     rsc,

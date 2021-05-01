@@ -18,7 +18,7 @@ MacroLineExecutor::MacroLineExecutor(
     const std::string& working_directory,
     const UserFunction& user_function,
     const std::string& context,
-    const SubstitutionString& global_substitutions,
+    const SubstitutionMap& global_substitutions,
     bool verbose)
 : macro_file_executor_{macro_file_executor},
   script_filename_{script_filename},
@@ -29,21 +29,21 @@ MacroLineExecutor::MacroLineExecutor(
   verbose_{verbose}
 {
     global_and_builtin_substitutions_.merge(global_substitutions);
-    global_and_builtin_substitutions_.merge(SubstitutionString({{"__DIR__", fs::path(script_filename_).parent_path()}}));
+    global_and_builtin_substitutions_.merge(SubstitutionMap({{"__DIR__", fs::path(script_filename_).parent_path()}}));
 }
 
 void MacroLineExecutor::operator () (
     const std::string& line,
-    const SubstitutionString& local_substitutions,
+    const SubstitutionMap& local_substitutions,
     const RegexSubstitutionCache& rsc) const
 {
     if (verbose_) {
         std::cerr << "Processing line \"" << line << '"' << std::endl;
     }
 
-    SubstitutionString s = global_and_builtin_substitutions_;
-    s.merge(local_substitutions);
-    std::string subst_line = s.substitute(line, rsc);
+    SubstitutionMap line_substitutions = global_and_builtin_substitutions_;
+    line_substitutions.merge(local_substitutions);
+    std::string subst_line = line_substitutions.substitute(line, rsc);
 
     if (verbose_) {
         std::cerr << "Substituted line: \"" << subst_line << '"' << std::endl;
@@ -85,7 +85,7 @@ void MacroLineExecutor::operator () (
     } else if (Mlib::re::regex_match(subst_line, match, macro_playback_reg)) {
         std::string name = match[1].str();
         std::string context = match[2].str();
-        SubstitutionString local_substitutions2{replacements_to_map(match[3].str())};
+        SubstitutionMap local_substitutions2{replacements_to_map(match[3].str())};
         auto macro_it = macro_file_executor_.macros_.find(name);
         if (macro_it == macro_file_executor_.macros_.end()) {
             throw std::runtime_error("No macro with name " + name + " exists");
@@ -114,7 +114,7 @@ void MacroLineExecutor::operator () (
     } else {
         bool success = false;
         try {
-            success = user_function_(context_, fpath, *this, subst_line);
+            success = user_function_(context_, fpath, *this, subst_line, line_substitutions);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Exception while processing line: \"" + subst_line + "\"\n\n" + e.what());
         }

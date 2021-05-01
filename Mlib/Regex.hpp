@@ -27,8 +27,6 @@ std::string substitute(
 
 std::map<std::string, std::string> replacements_to_map(const std::string& replacements);
 
-std::map<std::string, std::string> merge_replacements(const std::initializer_list<std::map<std::string, std::string>>& replacements);
-
 void find_all(
     const std::string& str,
     const Mlib::regex& pattern,
@@ -39,19 +37,19 @@ std::list<std::pair<std::string, std::string>> find_all_name_values(
     const std::string& name_pattern,
     const std::string& value_pattern);
 
-class SubstitutionString {
-    friend std::ostream& operator << (std::ostream& ostr, const SubstitutionString& s);
+class SubstitutionMap {
+    friend std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);
 public:
-    SubstitutionString();
-    explicit SubstitutionString(const std::map<std::string, std::string>& s);
-    explicit SubstitutionString(std::map<std::string, std::string>&& s);
+    SubstitutionMap();
+    explicit SubstitutionMap(const std::map<std::string, std::string>& s);
+    explicit SubstitutionMap(std::map<std::string, std::string>&& s);
     std::string substitute(const std::string& t, const RegexSubstitutionCache& rsc) const;
-    void merge(const SubstitutionString& other);
+    void merge(const SubstitutionMap& other);
     void clear();
 private:
     std::map<std::string, std::string> s_;
 };
 
-std::ostream& operator << (std::ostream& ostr, const SubstitutionString& s);
+std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);
 
 }
