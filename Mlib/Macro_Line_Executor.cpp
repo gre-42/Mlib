@@ -34,7 +34,7 @@ MacroLineExecutor::MacroLineExecutor(
 
 void MacroLineExecutor::operator () (
     const std::string& line,
-    const SubstitutionMap& local_substitutions,
+    SubstitutionMap* local_substitutions,
     const RegexSubstitutionCache& rsc) const
 {
     if (verbose_) {
@@ -42,7 +42,9 @@ void MacroLineExecutor::operator () (
     }
 
     SubstitutionMap line_substitutions = global_and_builtin_substitutions_;
-    line_substitutions.merge(local_substitutions);
+    if (local_substitutions != nullptr) {
+        line_substitutions.merge(*local_substitutions);
+    }
     std::string subst_line = line_substitutions.substitute(line, rsc);
 
     if (verbose_) {
@@ -99,7 +101,7 @@ void MacroLineExecutor::operator () (
             global_substitutions_,
             verbose_};
         for (const std::string& l : macro_it->second.lines) {
-            mle2(l, local_substitutions2, rsc);
+            mle2(l, &local_substitutions2, rsc);
         }
     } else if (Mlib::re::regex_match(subst_line, match, include_reg)) {
         MacroLineExecutor mle2{
@@ -114,7 +116,7 @@ void MacroLineExecutor::operator () (
     } else {
         bool success = false;
         try {
-            success = user_function_(context_, fpath, *this, subst_line, line_substitutions);
+            success = user_function_(context_, fpath, *this, subst_line, local_substitutions);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Exception while processing line: \"" + subst_line + "\"\n\n" + e.what());
         }

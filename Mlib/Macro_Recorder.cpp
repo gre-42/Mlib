@@ -11,6 +11,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
     static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");
     static const DECLARE_REGEX(macro_end_reg, "^\\s*macro_end$");
 
+    SubstitutionMap local_substitutions;
     std::string line;
     std::list<std::pair<std::string, Macro>> recording_macros;
     while(std::getline(ifs, line, ';')) {
@@ -33,7 +34,7 @@ void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, con
         } else if (!recording_macros.empty()) {
             recording_macros.back().second.lines.push_back(line);
         } else {
-            macro_line_executor(line, SubstitutionMap(), rsc);
+            macro_line_executor(line, &local_substitutions, rsc);
         }
     }
 

@@ -18,7 +18,7 @@ public:
         const std::function<std::string(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line,
-        SubstitutionMap& line_substitutions)> UserFunction;
+        SubstitutionMap* local_substitutions)> UserFunction;
     MacroLineExecutor(
         MacroRecorder& macro_file_executor,
         const std::string& script_filename,
@@ -29,7 +29,7 @@ public:
         bool verbose);
     void operator () (
         const std::string& line,
-        const SubstitutionMap& local_substitutions,
+        SubstitutionMap* local_substitutions,
         const RegexSubstitutionCache& rsc) const;
 private:
     MacroRecorder& macro_file_executor_;

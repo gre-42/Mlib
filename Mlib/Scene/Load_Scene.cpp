@@ -546,7 +546,7 @@ void LoadScene::operator()(
         const std::function<std::string(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line,
-        SubstitutionMap& line_substitutions) -> bool
+        SubstitutionMap* local_substitutions) -> bool
     {
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(line, match, create_scene_reg)) {
@@ -1718,7 +1718,7 @@ void LoadScene::operator()(
                 selection_ids[match[1].str()],
                 [macro_line_executor, reload_transient_objects, &rsc](){
                     if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, SubstitutionMap(), rsc);
+                        macro_line_executor(reload_transient_objects, nullptr, rsc);
                     }
                 });
             render_logics.append(nullptr, scene_selector_logic);
@@ -1816,16 +1816,16 @@ void LoadScene::operator()(
                 next_scene_filename,
                 [macro_line_executor, reload_transient_objects, &rsc](){
                     if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, SubstitutionMap(), rsc);
+                        macro_line_executor(reload_transient_objects, nullptr, rsc);
                     }
                 },
                 [macro_line_executor, on_change, &rsc](){
                     if (!on_change.empty()) {
-                        macro_line_executor(on_change, SubstitutionMap(), rsc);
+                        macro_line_executor(on_change, nullptr, rsc);
                     }
                 });
             if (!on_init.empty()) {
-                macro_line_executor(on_init, SubstitutionMap(), rsc);
+                macro_line_executor(on_init, local_substitutions, rsc);
             }
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (Mlib::re::regex_match(line, match, ui_background_reg)) {
@@ -2009,9 +2009,12 @@ void LoadScene::operator()(
                 safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
         } else if (Mlib::re::regex_match(line, match, define_winner_conditionals_reg)) {
+            if (local_substitutions == nullptr) {
+                throw std::runtime_error("Cannot define winner conditionals without local substitutions");
+            }
             for (size_t rank = safe_stoz(match[1].str()); rank < safe_stoz(match[2].str()); ++rank) {
                 std::string filename = players.get_winner_track_filename(rank);
-                line_substitutions.merge(SubstitutionMap({{
+                local_substitutions->merge(SubstitutionMap({{
                     "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
                     filename.empty() ? "# " : ""}}));
             }
@@ -2096,7 +2099,7 @@ void LoadScene::operator()(
                         " IF_RACING:#" <<
                         " IF_RALLY:" <<
                         " PLAYER_NAME:" << player;
-                    macro_line_executor(sstr.str(), SubstitutionMap(), rsc);
+                    macro_line_executor(sstr.str(), nullptr, rsc);
                 }
             );
         } else if (Mlib::re::regex_match(line, match, set_vip_reg)) {
