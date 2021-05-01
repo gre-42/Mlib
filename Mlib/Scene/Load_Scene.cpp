@@ -485,7 +485,9 @@ void LoadScene::operator()(
         "\\s+speed=([\\w+-.]+)"
         "\\s+filename=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(define_winner_conditionals_reg,
-        "^\\s*define_winner_conditionals$");
+        "^\\s*define_winner_conditionals"
+        "\\s+begin_rank=(\\d+)"
+        "\\s+end_rank=(\\d+)""$");
     static const DECLARE_REGEX(playback_winner_track_reg,
         "^\\s*playback_winner_track"
         "\\s+node=([\\w+-.]+)"
@@ -2007,8 +2009,7 @@ void LoadScene::operator()(
                 safe_stof(match[2].str()));
             linker.link_absolute_movable(*playback_node, playback);
         } else if (Mlib::re::regex_match(line, match, define_winner_conditionals_reg)) {
-            for (size_t rank = 0; rank < 3; ++rank) {
-                continue;
+            for (size_t rank = safe_stoz(match[1].str()); rank < safe_stoz(match[2].str()); ++rank) {
                 std::string filename = players.get_winner_track_filename(rank);
                 line_substitutions.merge(SubstitutionMap({{
                     "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
