@@ -23,6 +23,7 @@
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder.hpp>
 #include <Mlib/Physics/Advance_Times/Trigger_Gun_Ai.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
+#include <Mlib/Physics/Containers/Game_History.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
@@ -225,7 +226,8 @@ void LoadScene::operator()(
         "(?:\\s+com=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "\\s+collidable_mode=(terrain|small_static|small_moving)$");
+        "\\s+collidable_mode=(terrain|small_static|small_moving)"
+        "(?:\\s+name=([\\w+-.]+))?$");
     static const DECLARE_REGEX(gun_reg, "^\\s*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(trigger_gun_ai_reg, "^\\s*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
     static const DECLARE_REGEX(damageable_reg, "^\\s*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
@@ -1277,7 +1279,8 @@ void LoadScene::operator()(
                     match[14].str().empty() ? 0.f : safe_stof(match[14].str()) * float(M_PI / 180),
                     match[15].str().empty() ? 0.f : safe_stof(match[15].str()) * float(M_PI / 180),
                     match[16].str().empty() ? 0.f : safe_stof(match[16].str()) * float(M_PI / 180)},
-                scene_node_resources.get_geographic_mapping("world"));
+                scene_node_resources.get_geographic_mapping("world"),
+                match[18].str());
             std::list<std::shared_ptr<ColoredVertexArray>> hitbox = scene_node_resources.get_animated_arrays(match[2].str())->cvas;
             std::list<std::shared_ptr<ColoredVertexArray>> tirelines;
             if (!match[3].str().empty()) {
@@ -2023,14 +2026,20 @@ void LoadScene::operator()(
                 throw std::runtime_error("Cannot define winner conditionals without local substitutions");
             }
             for (size_t rank = safe_stoz(match[1].str()); rank < safe_stoz(match[2].str()); ++rank) {
-                std::string filename = players.get_winner_track_filename(rank);
-                local_substitutions->merge(SubstitutionMap({{
-                    "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
-                    filename.empty() ? "# " : ""}}));
+                LapTimeEventAndIdAndMfilename lapTimeEvent = players.get_winner_track_filename(rank);
+                local_substitutions->merge(SubstitutionMap({
+                    {
+                        "IF_WINNER_RANK" + std::to_string(rank) + "_EXISTS",
+                        lapTimeEvent.m_filename.empty() ? "# " : ""
+                    },
+                    {
+                        "VEHICLE_WINNER" + std::to_string(rank),
+                        lapTimeEvent.event.vehicle
+                    }}));
             }
         } else if (Mlib::re::regex_match(line, match, playback_winner_track_reg)) {
             size_t rank = safe_stoz(match[3].str());
-            std::string filename = players.get_winner_track_filename(rank);
+            std::string filename = players.get_winner_track_filename(rank).m_filename;
             if (filename.empty()) {
                 throw std::runtime_error("Winner with rank " + std::to_string(rank) + " does not exist");
             }

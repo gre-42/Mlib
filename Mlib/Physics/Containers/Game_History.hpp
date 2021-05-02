@@ -11,6 +11,7 @@ struct LapTimeEvent {
     std::string level;
     float lap_time;
     std::string player_name;
+    std::string vehicle;
     inline std::partial_ordering operator <=> (const LapTimeEvent& other) const = default;
 };
 
@@ -18,6 +19,11 @@ struct LapTimeEventAndId {
     LapTimeEvent event;
     size_t id;
     inline std::partial_ordering operator <=> (const LapTimeEventAndId& other) const = default;
+};
+
+struct LapTimeEventAndIdAndMfilename {
+    LapTimeEvent event;
+    std::string m_filename;
 };
 
 class GameHistory {
@@ -28,7 +34,7 @@ public:
         const LapTimeEvent& lap_time_event,
         const std::list<TrackElement>& track);
     std::string get_level_history(const std::string& level) const;
-    std::string get_winner_track_filename(const std::string& level, size_t position) const;
+    LapTimeEventAndIdAndMfilename get_winner_track_filename(const std::string& level, size_t position) const;
 private:
     std::string config_dirname() const;
     std::string stats_json_filename() const;

@@ -31,7 +31,8 @@ public:
     RigidBody(
         RigidBodies& rigid_bodies,
         const RigidBodyIntegrator& rbi,
-        const TransformationMatrix<double, 3>* geographic_mapping = nullptr);
+        const TransformationMatrix<double, 3>* geographic_mapping = nullptr,
+        const std::string& name = "");
     ~RigidBody();
     void reset_forces();
     void integrate_force(const VectorAtPosition<float, 3>& F);
@@ -80,6 +81,7 @@ public:
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
+    const std::string& name() const;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
@@ -100,12 +102,10 @@ public:
     RigidBodyIntegrator rbi_;
     std::list<std::shared_ptr<CollisionObserver>> collision_observers_;
 
+    std::string name_;
     Damageable* damageable_;
-
     Player* driver_;
-
     const TransformationMatrix<double, 3>* geographic_mapping_;
-
     mutable std::mutex advance_time_mutex_;
 };
 

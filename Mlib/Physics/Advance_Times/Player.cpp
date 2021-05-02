@@ -191,6 +191,10 @@ float Player::car_health() const {
     }
 }
 
+std::string Player::vehicle_name() const {
+    return has_rigid_body() ? rb_->name() : "";
+}
+
 GameMode Player::game_mode() const {
     return game_mode_;
 }

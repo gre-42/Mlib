@@ -15,7 +15,8 @@ using namespace Mlib;
 RigidBody::RigidBody(
     RigidBodies& rigid_bodies,
     const RigidBodyIntegrator& rbi,
-    const TransformationMatrix<double, 3>* geographic_mapping)
+    const TransformationMatrix<double, 3>* geographic_mapping,
+    const std::string& name)
 : rigid_bodies_{rigid_bodies},
   max_velocity_{INFINITY},
 #ifdef COMPUTE_POWER
@@ -24,6 +25,7 @@ RigidBody::RigidBody(
 #endif
   tires_z_{0.f, 0.f, -1.f },
   rbi_{rbi},
+  name_{name},
   damageable_{nullptr},
   driver_{nullptr},
   geographic_mapping_{geographic_mapping}
@@ -291,6 +293,10 @@ Tire& RigidBody::get_tire(size_t id) {
 
 float RigidBody::energy() const {
     return rbi_.energy();
+}
+
+const std::string& RigidBody::name() const {
+    return name_;
 }
 
 // void RigidBody::set_tire_sliding(size_t id, bool value) {

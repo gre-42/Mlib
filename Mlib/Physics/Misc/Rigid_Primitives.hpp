@@ -34,6 +34,7 @@ std::shared_ptr<RigidBody> rigid_cuboid(
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>(),
-    const TransformationMatrix<double, 3>* geographic_coordinates = nullptr);
+    const TransformationMatrix<double, 3>* geographic_coordinates = nullptr,
+    const std::string& name = "");
 
 }

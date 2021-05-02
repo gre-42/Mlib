@@ -8,6 +8,7 @@
 namespace Mlib {
 
 struct TrackElement;
+struct LapTimeEventAndIdAndMfilename;
 class AdvanceTimes;
 class Player;
 class GameHistory;
@@ -27,7 +28,7 @@ public:
         const Player* player,
         float lap_time,
         const std::list<TrackElement>& track);
-    std::string get_winner_track_filename(size_t rank) const;
+    LapTimeEventAndIdAndMfilename get_winner_track_filename(size_t rank) const;
     std::string get_score_board() const;
     std::map<std::string, Player*>& players();
     const std::map<std::string, Player*>& players() const;

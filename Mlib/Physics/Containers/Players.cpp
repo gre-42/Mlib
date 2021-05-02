@@ -60,11 +60,12 @@ void Players::notify_lap_time(
     game_history_->notify_lap_time({
         .level = level_stem(),
         .lap_time = lap_time,
-        .player_name = player->name()},
+        .player_name = player->name(),
+        .vehicle = player->vehicle_name()},
         track);
 }
 
-std::string Players::get_winner_track_filename(size_t rank) const {
+LapTimeEventAndIdAndMfilename Players::get_winner_track_filename(size_t rank) const {
     return game_history_->get_winner_track_filename(level_stem(), rank);
 }
 

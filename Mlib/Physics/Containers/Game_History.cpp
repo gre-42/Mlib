@@ -49,12 +49,17 @@ void GameHistory::load() {
             throw std::runtime_error("Could not load \"" + fn + '"');
         }
         for (const auto& l : j) {
-            lap_time_events_.push_back({
-                .event{
-                    .level = l["level"].get<std::string>(),
-                    .lap_time = l["lap_time"].get<float>(),
-                    .player_name = l["player_name"].get<std::string>()},
-                .id = l["id"].get<size_t>()});
+            try {
+                lap_time_events_.push_back(LapTimeEventAndId{
+                    .event = LapTimeEvent{
+                        .level = l["level"].get<std::string>(),
+                        .lap_time = l["lap_time"].get<float>(),
+                        .player_name = l["player_name"].get<std::string>(),
+                        .vehicle = l["vehicle"].get<std::string>()},
+                    .id = l["id"].get<size_t>() });
+            } catch (const nlohmann::detail::type_error& e) {
+                throw std::runtime_error("Could not parse " + fn + ": " + e.what());
+            }
         }
     }
 }
@@ -72,6 +77,7 @@ void GameHistory::save_and_discard() {
             entry["level"] = l.event.level;
             entry["lap_time"] = l.event.lap_time;
             entry["player_name"] = l.event.player_name;
+            entry["vehicle"] = l.event.vehicle;
             j.push_back(entry);
             ++i;
             return false;
@@ -120,16 +126,19 @@ std::string GameHistory::get_level_history(const std::string& level) const {
     return sstr.str();
 }
 
-std::string GameHistory::get_winner_track_filename(const std::string& level, size_t rank) const {
+LapTimeEventAndIdAndMfilename GameHistory::get_winner_track_filename(const std::string& level, size_t rank) const {
     size_t i = 0;
     for (const auto& l : lap_time_events_) {
         if (l.event.level != level) {
             continue;
         }
         if (i == rank) {
-            return track_m_filename(l.id);
+            return LapTimeEventAndIdAndMfilename{
+                .event = l.event,
+                .m_filename = track_m_filename(l.id)
+            };
         }
         ++i;
     }
-    return "";
+    return LapTimeEventAndIdAndMfilename();
 }
