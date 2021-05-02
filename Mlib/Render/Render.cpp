@@ -104,14 +104,11 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
         GLFW_CHK(glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE));
     }
 
-#ifndef WIN32
-    int fpeflags = fegetexcept();
-    fedisableexcept(FE_ALL_EXCEPT);
-#endif
-    GLFW_CHK(GLFWwindow* window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL));
-#ifndef WIN32
-    feenableexcept(fpeflags);
-#endif
+    GLFWwindow* window;
+    {
+        TemporarilyIgnoreFloatingPointExeptions ignore_except;
+        GLFW_CHK(window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL));
+    }
     if (!window)
     {
         GLFW_CHK(glfwTerminate());

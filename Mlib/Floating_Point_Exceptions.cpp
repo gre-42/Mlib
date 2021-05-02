@@ -60,6 +60,7 @@ TemporarilyIgnoreFloatingPointExeptions::~TemporarilyIgnoreFloatingPointExeption
 #ifdef __linux__
 
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <fenv.h>
 
 using namespace Mlib;
 
