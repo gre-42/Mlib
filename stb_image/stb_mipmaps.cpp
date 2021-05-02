@@ -1,4 +1,4 @@
-#include "../Mlib/Ignore_Except.hpp"
+#include "../Mlib/Floating_Point_Exceptions.hpp"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
@@ -22,7 +22,7 @@ void downsample_rgba_inplace(
         }
     }
     {
-        Mlib::IgnoreExcept ignore_except;
+        Mlib::TemporarilyIgnoreFloatingPointExeptions ignore_except;
         if (!stbir_resize_uint8(
             data,
             width,

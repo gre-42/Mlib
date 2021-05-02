@@ -1,3 +1,5 @@
+#ifndef __MINGW32__
+
 #include "Mesh_Subtract.hpp"
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
 #include <cork/cork.h>
@@ -37,3 +39,5 @@ void Mlib::mesh_subtract(
     }
     freeCorkTriMesh(&out);
 }
+
+#endif

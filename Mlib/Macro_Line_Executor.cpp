@@ -29,7 +29,7 @@ MacroLineExecutor::MacroLineExecutor(
   verbose_{verbose}
 {
     global_and_builtin_substitutions_.merge(global_substitutions);
-    global_and_builtin_substitutions_.merge(SubstitutionMap({{"__DIR__", fs::path(script_filename_).parent_path()}}));
+    global_and_builtin_substitutions_.merge(SubstitutionMap({{"__DIR__", fs::path(script_filename_).parent_path().string()}}));
 }
 
 void MacroLineExecutor::operator () (

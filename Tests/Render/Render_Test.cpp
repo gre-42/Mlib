@@ -1,3 +1,4 @@
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -9,7 +10,6 @@
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Fixed_Random_Arrays.hpp>
-#include <fenv.h>
 
 using namespace Mlib;
 
@@ -67,14 +67,9 @@ void test_render() {
     }
 }
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char **argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     test_scene_node();
     test_render();

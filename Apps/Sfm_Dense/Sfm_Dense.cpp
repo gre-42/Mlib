@@ -1,5 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Cv/Project_Points.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
@@ -12,7 +13,6 @@
 #include <Mlib/Sfm/Rigid_Motion/Synthetic_Dense.hpp>
 #include <Mlib/Stats/Histogram.hpp>
 #include <Mlib/Stats/Neighbor_Db.hpp>
-#include <fenv.h>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -132,14 +132,9 @@ private:
     const Array<float> im_rgb_;
 };
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char **argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     ArgParser parser(
         "Usage: sfm_dense --intrinsic_matrix <intrinsic_matrix.m> --im0 <image0.bgr> --im1 <image1.bgr> --c0 <camera0.m> --c1 <camera1.m>",

@@ -1,3 +1,4 @@
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Images/Svg.hpp>
@@ -6,7 +7,6 @@
 #include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
-#include <fenv.h>
 
 using namespace Mlib;
 
@@ -215,14 +215,9 @@ void test_rigid_body_physics_rbi_multiple() {
 //     }
 // }
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char** argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     test_rigid_body_physics_particle0();
     test_rigid_body_physics_particle();

@@ -1,4 +1,5 @@
 #include <Mlib/Env.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
@@ -33,7 +34,6 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
 #include <atomic>
-#include <fenv.h>
 #include <thread>
 
 using namespace Mlib;
@@ -270,14 +270,9 @@ void test_physics_engine() {
     }
 }
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char** argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     test_physics_engine();
     return 0;

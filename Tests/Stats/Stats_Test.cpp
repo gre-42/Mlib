@@ -1,3 +1,4 @@
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Stats/Cdf.hpp>
 #include <Mlib/Stats/Histogram.hpp>
 #include <Mlib/Stats/Histogram_Matching.hpp>
@@ -12,7 +13,6 @@
 #include <Mlib/Stats/Robust.hpp>
 #include <Mlib/Stats/Sort.hpp>
 #include <Mlib/Stats/T_Distribution.hpp>
-#include <fenv.h>
 #include <map>
 
 using namespace Mlib;
@@ -219,14 +219,9 @@ void test_random_number_generators() {
     assert_isclose(rng(), 0.131538f);
 }
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char** argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     test_median();
     test_mad();

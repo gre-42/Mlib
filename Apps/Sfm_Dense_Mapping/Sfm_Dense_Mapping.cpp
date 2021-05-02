@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/PpmImage.hpp>
@@ -15,7 +16,6 @@
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Sort.hpp>
-#include <fenv.h>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -23,14 +23,9 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char **argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     ArgParser parser(
         "Usage: sfm_dense --intrinsic_matrix <intrinsic_matrix.m> --im0 <image0.ppm> --im1 <image1.ppm> --c0 <camera0.m> --c1 <camera1.m>",

@@ -1,3 +1,4 @@
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
@@ -10,7 +11,6 @@
 #include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Stats/Linspace.hpp>
-#include <fenv.h>
 
 using namespace Mlib;
 
@@ -264,14 +264,9 @@ void test_magic_formula() {
     }
 }
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char** argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     test_aim();
     test_power_to_force_negative();

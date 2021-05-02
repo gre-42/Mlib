@@ -8,7 +8,7 @@ set(libs)
 if (OPENSSL_FOUND)
     list(APPEND libs OpenSSL::SSL)
 endif()
-if (MSYS)
+if (MINGW)
     # https://github.com/yhirose/cpp-httplib/issues/37
     list(APPEND libs -lws2_32)
 endif()

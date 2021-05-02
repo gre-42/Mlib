@@ -1,3 +1,4 @@
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cross.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
@@ -13,7 +14,6 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <fenv.h>
 
 using namespace Mlib;
 
@@ -301,9 +301,7 @@ void test_distance_point_triangle() {
 }
 
 int main(int argc, const char** argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
     #ifdef _MSC_VER
     #pragma float_control(except, on)
     #endif

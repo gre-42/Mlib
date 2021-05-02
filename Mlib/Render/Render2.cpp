@@ -1,7 +1,8 @@
 #include "Render2.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Fps.hpp>
-#include <Mlib/Ignore_Except.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -23,7 +24,6 @@
 #include <Mlib/Set_Fps.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
-#include <fenv.h>
 #include <iostream>
 
 using namespace Mlib;
@@ -68,7 +68,9 @@ Render2::Render2(
         GLFW_CHK(glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE));
     }
     {
-        IgnoreExcept ignore_except;
+#ifdef __linux__
+        TemporarilyIgnoreFloatingPointExeptions ignore_except;
+#endif
         if (window_ != nullptr) {
             throw std::runtime_error("Multiple calls to render2");
         }

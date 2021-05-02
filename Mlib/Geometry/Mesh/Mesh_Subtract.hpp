@@ -1,4 +1,6 @@
 #pragma once
+#ifndef __MINGW32__
+
 #include <list>
 
 namespace Mlib {
@@ -10,3 +12,5 @@ struct ColoredVertex;
 void mesh_subtract(std::list<FixedArray<ColoredVertex, 3>>& a, const std::list<FixedArray<ColoredVertex, 3>>& b);
 
 }
+
+#endif

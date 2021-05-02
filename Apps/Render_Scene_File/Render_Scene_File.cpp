@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
@@ -6,14 +7,11 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
-#include <fenv.h>
 
 using namespace Mlib;
 
 int main(int argc, char** argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn\n"

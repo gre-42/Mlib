@@ -1,7 +1,7 @@
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Resource_Ptr.hpp>
-#include <fenv.h>
 #include <iostream>
 
 using namespace Mlib;
@@ -34,14 +34,9 @@ void test_substitute() {
     }
 }
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, const char** argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     test_resource_ptr();
     test_substitute();

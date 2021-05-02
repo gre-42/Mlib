@@ -1,20 +1,15 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Strings/From_Number.hpp>
-#include <fenv.h>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char **argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     ArgParser parser(
         "Usage: sfm_dense --im image.ppm> --dest <dest.ppm> --alpha <alpha> --beta <beta>",

@@ -1,9 +1,9 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Sfm/Data_Generators/Folder_Data_Generator.hpp>
 #include <Mlib/Sfm/Pipelines/Calibration/Chessboard_Calibration_Pipeline.hpp>
 #include <Mlib/Sfm/Pipelines/Reconstruction/Template_Patch_Pipeline.hpp>
 #include <Mlib/Strings/From_Number.hpp>
-#include <fenv.h>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -51,14 +51,9 @@ static void run_reconstruction_pipeline(
     process_folder_with_pipeline(cache_dir, source_dir + "/1-video/ppm", load_cameras ? &camera_dir : nullptr, *pipeline, std::cout, nimages, ncameras);
 }
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char **argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     ArgParser parser(
         "Usage: [--pipeline {feature_points, optical_flow}] --cache <cache_dir> --source <source_dir> [--load_cameras] [--no-dtam] [--no-dtam-tracking] --chess_r <chess_r> --chess_c <chess_c> [--nimages <nimages>] [--ncameras <ncameras>]",

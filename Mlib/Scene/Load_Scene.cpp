@@ -138,7 +138,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(obj_resource_reg,
         "^\\s*obj_resource"
         "\\s+name=([\\w-. \\(\\)/+-]+)"
-        "\\s+filename=([\\w-. \\(\\)/+-]+)"
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
@@ -177,7 +177,7 @@ void LoadScene::operator()(
         "\\s+cull_faces=(0|1)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
-    static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w-. \\(\\)/+-]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w+-. \\(\\)/\\\\:]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(binary_x_resource_reg,
         "^\\s*binary_x_resource"
         "\\s+name=([\\w+-.]+)"
@@ -204,9 +204,11 @@ void LoadScene::operator()(
         "\\s+scale=([\\w+-.]+)"
         "(?:\\s+aggregate=(0|1))?$");
     static const DECLARE_REGEX(delete_root_node_reg,
-        "^\\s*delete_root_node\\s+name=([\\w+-.]+)");
+        "^\\s*delete_root_node\\s+name=([\\w+-.]+)$");
+    static const DECLARE_REGEX(delete_root_nodes_reg,
+        "^\\s*delete_root_nodes\\s+regex=(.*)$");
     static const DECLARE_REGEX(wait_until_paused_and_delete_scheduled_advance_times_reg,
-        "^\\s*wait_until_paused_and_delete_scheduled_advance_times");
+        "^\\s*wait_until_paused_and_delete_scheduled_advance_times$");
     static const DECLARE_REGEX(renderable_instance_reg, "^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
     static const DECLARE_REGEX(register_geographic_mapping_reg,
         "^\\s*register_geographic_mapping"
@@ -412,7 +414,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(add_bvh_resource_reg,
         "^\\s*add_bvh_resource"
         "\\s+name=([\\w+-.]+)\\r?\\n"
-        "\\s+filename=([\\w-. \\(\\)/+-]+)"
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+smooth_radius=([\\w+-.]+)"
         "\\s+smooth_alpha=([\\w+-.]+)"
         "\\s+periodic=(0|1)$");
@@ -424,7 +426,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(hud_image_reg,
         "^\\s*hud_image"
         "\\s+node=([\\w+-.]+)"
-        "\\s+filename=([\\w-. \\(\\)/+-]+)"
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+update=(once|always)"
         "\\s+center=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
@@ -480,16 +482,16 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(record_track_reg,
         "^\\s*record_track"
         "\\s+node=([\\w+-.]+)"
-        "\\s+filename=([\\w-. \\(\\)/+-]+)$");
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
     static const DECLARE_REGEX(playback_track_reg,
         "^\\s*playback_track"
         "\\s+node=([\\w+-.]+)"
         "\\s+speed=([\\w+-.]+)"
-        "\\s+filename=([\\w-. \\(\\)/+-]+)$");
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
     static const DECLARE_REGEX(define_winner_conditionals_reg,
         "^\\s*define_winner_conditionals"
         "\\s+begin_rank=(\\d+)"
-        "\\s+end_rank=(\\d+)""$");
+        "\\s+end_rank=(\\d+)$");
     static const DECLARE_REGEX(playback_winner_track_reg,
         "^\\s*playback_winner_track"
         "\\s+node=([\\w+-.]+)"
@@ -505,11 +507,11 @@ void LoadScene::operator()(
         "\\s+nahead=(\\d+)"
         "\\s+radius=([\\w+-.]+)"
         "\\s+height_changed=(0|1)"
-        "\\s+track_filename=([\\w-. \\(\\)/+-]+)$");
+        "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)$");
     static const DECLARE_REGEX(set_camera_cycle_reg, "^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
     static const DECLARE_REGEX(set_camera_reg, "^\\s*set_camera ([\\w+-.]+)$");
     static const DECLARE_REGEX(set_dirtmap_reg,
-        "^\\s*set_dirtmap filename=([\\w-. \\(\\)/+-]+)"
+        "^\\s*set_dirtmap filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+offset=([\\w+-.]+)"
         "\\s+discreteness=([\\w+-.]+)"
         "\\s+wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
@@ -1237,6 +1239,9 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
             std::lock_guard lock{ mutex };
             scene.delete_root_node(match[1].str());
+        } else if (Mlib::re::regex_match(line, match, delete_root_nodes_reg)) {
+            std::lock_guard lock{ mutex };
+            scene.delete_root_nodes(std::regex{match[1].str()});
         } else if (Mlib::re::regex_match(line, match, wait_until_paused_and_delete_scheduled_advance_times_reg)) {
             physics_loop.wait_until_paused_and_delete_scheduled_advance_times();
         } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {

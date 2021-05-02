@@ -94,7 +94,7 @@ const std::map<std::string, Player*>& Players::players() const {
 }
 
 std::string Players::level_stem() const {
-    return fs::path{level_name_}.stem();
+    return fs::path{level_name_}.stem().string();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Players& players) {

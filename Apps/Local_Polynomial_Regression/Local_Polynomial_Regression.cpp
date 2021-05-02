@@ -1,10 +1,10 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Strings/From_Number.hpp>
-#include <fenv.h>
 #include <iostream>
 
 using namespace Mlib;
@@ -29,14 +29,9 @@ void lpr(
     dest.save_to_file(destination);
 }
 
-#ifdef _MSC_VER
-#pragma float_control(except, on)
-#endif
 
 int main(int argc, char **argv) {
-    #ifdef __linux__
-    feenableexcept(FE_INVALID);
-    #endif
+    enable_floating_point_exceptions();
 
     const ArgParser parser(
         "Usage: local_polynomial_regression source destination --sigma <sigma> --degree <degree>",

@@ -48,13 +48,16 @@ endif()
 # Set ouptut pathes #
 #####################
 
-# https://stackoverflow.com/questions/33062728/cmake-link-shared-library-on-windows
-if(MSVC)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+if (MINGW)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 endif()
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
-if (MINGW OR MSVC)
+if (MSVC)
+    # https://stackoverflow.com/questions/33062728/cmake-link-shared-library-on-windows
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 endif()
 set(CMAKE_DEBUG_POSTFIX _d)
@@ -69,11 +72,15 @@ endif()
 ######################
 
 add_subdirectory(Apps)
-add_subdirectory(cork)
+if(NOT MINGW)
+    add_subdirectory(cork)
+endif()
 add_subdirectory(cpp-httplib)
 add_subdirectory(Mlib)
 add_subdirectory(poly2tri)
 add_subdirectory(stb_image)
 add_subdirectory(Tests)
 # Requires 32 bit or disabled warnings.
-add_subdirectory(Triangle)
+if(NOT MINGW)
+    add_subdirectory(Triangle)
+endif()

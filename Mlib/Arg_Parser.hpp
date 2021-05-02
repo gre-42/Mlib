@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+namespace Mlib {
+
 class CommandLineArgumentError: public std::runtime_error {
 public:
     CommandLineArgumentError(const std::string& msg)
@@ -119,3 +121,5 @@ public:
         return result;
     }
 };
+
+}

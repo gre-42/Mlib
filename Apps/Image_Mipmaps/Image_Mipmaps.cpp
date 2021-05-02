@@ -4,6 +4,8 @@
 #include <stb_image/stb_image_write.h>
 #include <stb_image/stb_mipmaps.h>
 
+using namespace Mlib;
+
 void downsample_file(const char* in_filename, const char* out_prefix) {
     int width, height, channels;
     stbi_uc* data = stbi_load(

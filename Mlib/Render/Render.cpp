@@ -10,7 +10,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/linmath.hpp>
-#include <fenv.h>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <iostream>
 
 using namespace Mlib;
