@@ -364,7 +364,7 @@ void LoadScene::operator()(
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+reload_transient_objects=([\\w+-.:= ]*)"
-        "\\s+scene_files=([\\r\\n\\w-. \\(\\)/+-:=%]+)$");
+        "\\s+scene_files=([\\s\\w+-.\\(\\)/:=%]+)$");
     static const DECLARE_REGEX(scene_to_texture_reg,
         "^\\s*scene_to_texture"
         "\\s+texture_name=([\\w+-.]+)"
@@ -1241,7 +1241,7 @@ void LoadScene::operator()(
             scene.delete_root_node(match[1].str());
         } else if (Mlib::re::regex_match(line, match, delete_root_nodes_reg)) {
             std::lock_guard lock{ mutex };
-            scene.delete_root_nodes(std::regex{match[1].str()});
+            scene.delete_root_nodes(Mlib::compile_regex(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, wait_until_paused_and_delete_scheduled_advance_times_reg)) {
             physics_loop.wait_until_paused_and_delete_scheduled_advance_times();
         } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {
@@ -1702,7 +1702,7 @@ void LoadScene::operator()(
             wit->second->render_logics_.append(nullptr, polf);
         } else if (Mlib::re::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
-            for (const auto& e : find_all_name_values(match[9].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
+            for (const auto& e : find_all_name_values(match[9].str(), "[\\w+-. \\(\\)/:]+", "[\\w+-. \\(\\)/:]+")) {
                 scene_entries.push_back(SceneEntry{
                     .name = e.first,
                     .filename = fpath(e.second)});

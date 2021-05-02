@@ -11,13 +11,13 @@ struct LapTimeEvent {
     std::string level;
     float lap_time;
     std::string player_name;
-    inline std::strong_ordering operator <=> (const LapTimeEvent& other) const = default;
+    inline std::partial_ordering operator <=> (const LapTimeEvent& other) const = default;
 };
 
 struct LapTimeEventAndId {
     LapTimeEvent event;
     size_t id;
-    inline std::strong_ordering operator <=> (const LapTimeEventAndId& other) const = default;
+    inline std::partial_ordering operator <=> (const LapTimeEventAndId& other) const = default;
 };
 
 class GameHistory {

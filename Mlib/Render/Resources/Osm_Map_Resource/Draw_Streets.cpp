@@ -44,7 +44,7 @@ struct NodeWayInfo {
 struct AngleCurb {
     float angle;
     int curb;
-    std::strong_ordering operator <=> (const AngleCurb& other) const = default;
+    std::partial_ordering operator <=> (const AngleCurb& other) const = default;
 };
 
 struct NodeWaypoint {

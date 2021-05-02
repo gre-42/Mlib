@@ -3,12 +3,12 @@
 
 using namespace Mlib;
 
-void test_fail() {
-    std::cerr << 0. / 0. << std::endl;
+void test_fail(double zero = 0) {
+    std::cerr << 0. / zero << std::endl;
 }
 
-void test_pass_inf() {
-    std::cerr << 1. / 0. << std::endl;
+void test_pass_inf(double zero = 0) {
+    std::cerr << 1. / zero << std::endl;
 }
 
 void test_pass_std() {

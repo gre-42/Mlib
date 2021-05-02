@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Strings/String.hpp>
 #include <compare>
 #include <stdexcept>
 #include <string>

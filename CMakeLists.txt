@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(Abclib CXX)
+project(Mlib CXX)
 
 enable_testing()
 include(CMakeCommands.cmake)
@@ -72,7 +72,7 @@ endif()
 ######################
 
 add_subdirectory(Apps)
-if(NOT MINGW)
+if(NOT (MINGW OR MSVC))
     add_subdirectory(cork)
 endif()
 add_subdirectory(cpp-httplib)
@@ -81,6 +81,6 @@ add_subdirectory(poly2tri)
 add_subdirectory(stb_image)
 add_subdirectory(Tests)
 # Requires 32 bit or disabled warnings.
-if(NOT MINGW)
+if(NOT (MINGW OR MSVC))
     add_subdirectory(Triangle)
 endif()

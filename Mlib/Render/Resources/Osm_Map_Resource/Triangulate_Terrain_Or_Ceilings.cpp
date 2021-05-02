@@ -51,13 +51,13 @@ void plot_contours(const std::string& filename, const std::vector<std::vector<p2
                 (s == c.end())
                     ? P2{(float)c.front()->x, -(float)c.front()->y}
                     : P2{(float)(*s)->x, -(float)(*s)->y}};
-            if (bvh.visit(BoundingSphere{edge}, [&edge, &highlighted_nodes](const Edge& data){
+            bvh.visit(BoundingSphere{edge}, [&edge, &highlighted_nodes](const Edge& data){
                 FixedArray<float, 2> intersection;
                 if (intersect_lines(intersection, edge, data, 0.f, 0.f, false, true)) {
                     highlighted_nodes.push_back({intersection(0), intersection(1), 0.f});
                 }
                 return true;
-            }));
+            });
             bvh.insert(edge, edge);
         }
     }

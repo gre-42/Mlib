@@ -41,7 +41,7 @@ const Mlib::regex& RegexSubstitutionCache::get0(const std::string& key) const {
     if (it != c0_.end()) {
         return it->second;
     } else {
-        c0_.insert({key, CONSTRUCT_REGEX(":" + key + "(?:=\\S*|\\b(?!:))")});
+        c0_.insert({key, compile_regex(":" + key + "(?:=\\S*|\\b(?!:))")});
         return c0_.at(key);
     }
 }
@@ -51,7 +51,7 @@ const Mlib::regex& RegexSubstitutionCache::get1(const std::string& key) const {
     if (it != c1_.end()) {
         return it->second;
     } else {
-        c1_.insert({key, CONSTRUCT_REGEX("\\b" + key + "\\b(?!:)")});
+        c1_.insert({key, compile_regex("\\b" + key + "\\b(?!:)")});
         return c1_.at(key);
     }
 }
