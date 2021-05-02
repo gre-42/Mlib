@@ -19,6 +19,7 @@ public:
     ListView(
         ButtonPress& button_press,
         size_t& selection_index,
+        const std::string& title,
         const std::vector<TOption>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -34,6 +35,7 @@ public:
 
 private:
     std::unique_ptr<TextResource> renderable_text_;
+    std::string title_;
     std::vector<TOption> options_;
     FixedArray<float, 2> position_;
     float line_distance_pixels_;

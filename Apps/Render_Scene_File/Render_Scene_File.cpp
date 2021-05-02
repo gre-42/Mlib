@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
         "    [--draw_distance_add <value>]\n"
         "    [--far_plane <value>]\n"
         "    [--record_track]\n"
+        "    [--devel_mode]\n"
         "    [--damping <x>]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
@@ -99,6 +100,7 @@ int main(int argc, char** argv) {
          "--plot_bvh",
          "--no_bvh",
          "--record_track",
+         "--devel_mode",
          "--print_gamepad_buttons",
          "--show_mouse_cursor",
          "--no_slip",
@@ -236,7 +238,9 @@ int main(int argc, char** argv) {
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", "1"},
                     {"PRIMARY_SCENE_CLEAR_MODE", "color_and_depth"},
                     {"FAR_PLANE", std::to_string(safe_stof(args.named_value("--far_plane", "10000")))},
-                    {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"}
+                    {"IF_RECORD_TRACK", args.has_named("--record_track") ? "" : "#"},
+                    {"IF_DEVEL", args.has_named("--devel_mode") ? "" : "#"},
+                    {"IF_RELEASE", args.has_named("--devel_mode") ? "#" : ""}
                 };
                 external_substitutions.merge(SubstitutionMap{std::move(sstr)});
             }

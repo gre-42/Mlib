@@ -9,6 +9,7 @@ template <class TOption>
 ListView<TOption>::ListView(
     ButtonPress& button_press,
     size_t& selection_index,
+    const std::string& title,
     const std::vector<TOption>& options,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
@@ -17,6 +18,7 @@ ListView<TOption>::ListView(
     const std::function<std::string(const TOption&)>& transformation,
     const std::function<void()>& on_change)
 : renderable_text_{new TextResource{ttf_filename, font_height_pixels}},
+  title_{title},
   options_{options},
   position_{position},
   line_distance_pixels_{line_distance_pixels},
@@ -64,6 +66,8 @@ template <class TOption>
 void ListView<TOption>::render(int width, int height, bool periodic_position)
 {
     std::stringstream sstr;
+    sstr << title_ << std::endl;
+    sstr << std::endl;
     size_t i = 0;
     for (const auto& s : options_) {
         if (i++ == selection_index_) {

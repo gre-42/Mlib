@@ -16,6 +16,7 @@ struct SceneEntry {
 class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
+        const std::string& title,
         const std::vector<SceneEntry>& scene_files,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -42,7 +43,7 @@ public:
     virtual Focus focus_mask() const override;
 
 private:
-    ListView<SceneEntry> scene_selector_list_view_;
+    ListView<SceneEntry> list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;
     ButtonPress& button_press_;

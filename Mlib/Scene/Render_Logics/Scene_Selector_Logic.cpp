@@ -9,6 +9,7 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 
 SceneSelectorLogic::SceneSelectorLogic(
+    const std::string& title,
     const std::vector<SceneEntry>& scene_files,
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
@@ -22,9 +23,10 @@ SceneSelectorLogic::SceneSelectorLogic(
     ButtonPress& button_press,
     size_t& selection_index,
     const std::function<void()>& reload_transient_objects)
-: scene_selector_list_view_{
+: list_view_{
     button_press,
     selection_index,
+    title,
     scene_files,
     ttf_filename,
     position,
@@ -40,7 +42,7 @@ SceneSelectorLogic::SceneSelectorLogic(
   reload_transient_objects_{reload_transient_objects}
 {
     // Initialize the reference
-    next_scene_filename_ = scene_selector_list_view_.selected_element().filename;
+    next_scene_filename_ = list_view_.selected_element().filename;
 }
 
 SceneSelectorLogic::~SceneSelectorLogic()
@@ -55,15 +57,15 @@ void SceneSelectorLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     if (ui_focus_.submenu_id == submenu_id_) {
-        scene_selector_list_view_.handle_input();
+        list_view_.handle_input();
         if (button_press_.key_pressed({.key = "LEFT", .joystick_axis = "1", .joystick_axis_sign = -1})) {
             ui_focus_.goto_prev_submenu();
         }
         if (button_press_.key_pressed({.key = "RIGHT", .joystick_axis = "1", .joystick_axis_sign = 1})) {
             ui_focus_.goto_next_submenu();
         }
-        if (scene_selector_list_view_.has_selected_element()) {
-            next_scene_filename_ = scene_selector_list_view_.selected_element().filename;
+        if (list_view_.has_selected_element()) {
+            next_scene_filename_ = list_view_.selected_element().filename;
         }
         if (button_press_.key_pressed({.key = "ENTER", .gamepad_button = "A"})) {
             // ui_focus_.focus.pop_back();
@@ -74,7 +76,7 @@ void SceneSelectorLogic::render(
             }
         }
     }
-    scene_selector_list_view_.render(width, height, true); // true=periodic_position
+    list_view_.render(width, height, true); // true=periodic_position
 }
 
 Focus SceneSelectorLogic::focus_mask() const {

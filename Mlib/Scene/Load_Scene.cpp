@@ -356,12 +356,13 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(scene_selector_reg,
         "^\\s*scene_selector"
         "\\s+id=([\\w+-.]+)"
+        "\\s+title=([\\w+-. ]+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+reload_transient_objects=([\\w+-.:= ]*)"
-        "\\s+scene_files=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
+        "\\s+scene_files=([\\r\\n\\w-. \\(\\)/+-:=%]+)$");
     static const DECLARE_REGEX(scene_to_texture_reg,
         "^\\s*scene_to_texture"
         "\\s+texture_name=([\\w+-.]+)"
@@ -387,6 +388,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(parameter_setter_reg,
         "^\\s*parameter_setter"
         "\\s+id=([\\w+-.]+)"
+        "\\s+title=([\\w+-. ]+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
@@ -395,7 +397,7 @@ void LoadScene::operator()(
         "\\s+reload_transient_objects=([\\w+-.:= ]*)"
         "\\s+on_init=([\\w+-.:= ]*)"
         "\\s+on_change=([\\w+-.:= ]*)"
-        "\\s+parameters=([\\r\\n\\w-. \\(\\)/+-:=]+)$");
+        "\\s+parameters=([\\r\\n\\w-. \\(\\)/+-:=%]+)$");
     static const DECLARE_REGEX(set_renderable_style_reg,
         "^\\s*set_renderable_style\\r?\\n"
         "\\s*selector=([\\w+-.]*)\\r?\\n"
@@ -1695,20 +1697,21 @@ void LoadScene::operator()(
             wit->second->render_logics_.append(nullptr, polf);
         } else if (Mlib::re::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
-            for (const auto& e : find_all_name_values(match[8].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
+            for (const auto& e : find_all_name_values(match[9].str(), "[\\w-. \\(\\)/+-:]+", "[\\w-. \\(\\)/+-:]+")) {
                 scene_entries.push_back(SceneEntry{
                     .name = e.first,
                     .filename = fpath(e.second)});
             }
-            std::string reload_transient_objects = match[7].str();
+            std::string reload_transient_objects = match[8].str();
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
+                match[2].str(),
                 std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
-                fpath(match[2].str()),            // ttf_filename
+                fpath(match[3].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
-                    safe_stof(match[3].str()),
-                    safe_stof(match[4].str())},
-                safe_stof(match[5].str()),        // font_height_pixels
-                safe_stof(match[6].str()),        // line_distance_pixels
+                    safe_stof(match[4].str()),
+                    safe_stof(match[5].str())},
+                safe_stof(match[6].str()),        // font_height_pixels
+                safe_stof(match[7].str()),        // line_distance_pixels
                 ui_focus,
                 ui_focus.n_submenus++,
                 script_filename,
@@ -1779,19 +1782,20 @@ void LoadScene::operator()(
             external_substitutions.clear();
         } else if (Mlib::re::regex_match(line, match, parameter_setter_reg)) {
             std::string id = match[1].str();
-            std::string ttf_filename = fpath(match[2].str());
+            std::string title = match[2].str();
+            std::string ttf_filename = fpath(match[3].str());
             FixedArray<float, 2> position{
-                safe_stof(match[3].str()),
-                safe_stof(match[4].str())};
-            float font_height_pixels = safe_stof(match[5].str());
-            float line_distance_pixels = safe_stof(match[6].str());
-            size_t deflt = safe_stoz(match[7].str());
-            std::string reload_transient_objects = match[8].str();
-            std::string on_init = match[9].str();
-            std::string on_change = match[10].str();
-            std::string parameters = match[11].str();
+                safe_stof(match[4].str()),
+                safe_stof(match[5].str())};
+            float font_height_pixels = safe_stof(match[6].str());
+            float line_distance_pixels = safe_stof(match[7].str());
+            size_t deflt = safe_stoz(match[8].str());
+            std::string reload_transient_objects = match[9].str();
+            std::string on_init = match[10].str();
+            std::string on_change = match[11].str();
+            std::string parameters = match[12].str();
             std::list<ReplacementParameter> rps;
-            for (const auto& e : find_all_name_values(parameters, "[\\w+-. ]+", substitute_pattern)) {
+            for (const auto& e : find_all_name_values(parameters, "[\\w+-. %]+", substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
                     .name = e.first,
                     .substitutions = SubstitutionMap{ replacements_to_map(e.second) } });
@@ -1801,6 +1805,7 @@ void LoadScene::operator()(
                 selection_ids.insert({id, deflt});
             }
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
+                title,
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
                 ttf_filename,
                 position,

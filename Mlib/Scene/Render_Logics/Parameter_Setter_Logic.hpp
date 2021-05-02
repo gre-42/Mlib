@@ -19,6 +19,7 @@ struct ReplacementParameter {
 class ParameterSetterLogic: public RenderLogic {
 public:
     ParameterSetterLogic(
+        const std::string& title,
         const std::vector<ReplacementParameter>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
@@ -47,7 +48,7 @@ public:
     virtual Focus focus_mask() const override;
 private:
     void merge_substitutions() const;
-    ListView<ReplacementParameter> scene_selector_list_view_;
+    ListView<ReplacementParameter> list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;
     SubstitutionMap& substitutions_;
