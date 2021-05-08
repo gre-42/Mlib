@@ -18,3 +18,10 @@ void TrackWriter::write(const TrackElement& e) {
         throw std::runtime_error("Could not write to file " + filename_);
     }
 }
+
+void TrackWriter::flush() {
+    ofstr_.flush();
+    if (ofstr_.fail()) {
+        throw std::runtime_error("Could not write to file " + filename_);
+    }
+}

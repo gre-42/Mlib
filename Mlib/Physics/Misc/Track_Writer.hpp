@@ -10,6 +10,7 @@ class TrackWriter {
 public:
     TrackWriter(const std::string& filename);
     void write(const TrackElement& e);
+    void flush();
 private:
     std::string filename_;
     std::ofstream ofstr_;

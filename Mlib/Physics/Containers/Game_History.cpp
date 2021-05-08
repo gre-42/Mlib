@@ -65,8 +65,6 @@ void GameHistory::load() {
 }
 
 void GameHistory::save_and_discard() {
-    std::string fn = stats_json_filename();
-    std::ofstream fstr{fn.c_str()};
     json j;
     std::map<std::string, size_t> ntracks;
     lap_time_events_.remove_if([&ntracks, &j, this](const LapTimeEventAndId& l){
@@ -86,9 +84,14 @@ void GameHistory::save_and_discard() {
             return true;
         }
     });
-    fstr << j.dump(4);
-    if (fstr.fail()) {
-        throw std::runtime_error("Could not save \"" + fn + '"');
+    {
+        std::string fn = stats_json_filename();
+        std::ofstream fstr{fn.c_str()};
+        fstr << j.dump(4);
+        fstr.flush();
+        if (fstr.fail()) {
+            throw std::runtime_error("Could not save \"" + fn + '"');
+        }
     }
 }
 
@@ -106,9 +109,12 @@ void GameHistory::notify_lap_time(
     } else {
         max_id = max_element->id + 1;
     }
-    TrackWriter track_writer{track_m_filename(max_id)};
-    for (const auto& e : track) {
-        track_writer.write(e);
+    {
+        TrackWriter track_writer{track_m_filename(max_id)};
+        for (const auto& e : track) {
+            track_writer.write(e);
+        }
+        track_writer.flush();
     }
     LapTimeEventAndId lid{lap_time_event, max_id};
     // From: https://stackoverflow.com/a/35840954/2292832
