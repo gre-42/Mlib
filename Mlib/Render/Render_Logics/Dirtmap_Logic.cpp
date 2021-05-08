@@ -29,7 +29,7 @@ void DirtmapLogic::render(
         throw std::runtime_error("DirtmapLogic received dirtmap rendering");
     }
     if (!generated_) {
-        if (filename_ == "") {
+        if (filename_.empty()) {
             throw std::runtime_error("DirtmapLogic::set_filename not called");
         }
         // Calculate camera position
@@ -42,9 +42,7 @@ void DirtmapLogic::render(
             "dirtmap",
             TextureDescriptor{
                 .color = filename_,
-                .color_mode = ColorMode::RGB,
-                .mixed = "",
-                .overlap_npixels = 0});
+                .color_mode = ColorMode::RGB});
         rendering_context_.rendering_resources->set_vp("dirtmap", vp());
         generated_ = true;
     }

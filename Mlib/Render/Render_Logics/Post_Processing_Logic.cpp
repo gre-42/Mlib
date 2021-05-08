@@ -1,15 +1,13 @@
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "Post_Processing_Logic.hpp"
+#include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Log.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 
 using namespace Mlib;
 
@@ -26,7 +24,8 @@ static GenShaderText fragment_shader_text{[](
     const std::vector<BlendMapTexture*>& textures,
     bool low_pass,
     bool high_pass,
-    bool depth_fog)
+    bool depth_fog,
+    bool soft_light)
 {
     if (low_pass && high_pass) {
         throw std::runtime_error("Only one of low_pass and high_pass can be specified");
@@ -45,6 +44,9 @@ static GenShaderText fragment_shader_text{[](
     }
     if (depth_fog) {
         sstr << "uniform vec3 backgroundColor;" << std::endl;
+    }
+    if (soft_light) {
+        sstr << "uniform sampler2D softLightTexture;" << std::endl;
     }
     sstr << std::endl;
     sstr << "const float offset = 1.0 / 1000.0;" << std::endl;
@@ -107,37 +109,31 @@ static GenShaderText fragment_shader_text{[](
     if (depth_fog) {
         sstr << "    col = 0.5 * distance_fac * backgroundColor + (1 - 0.5 * distance_fac) * col;" << std::endl;
     }
+    if (soft_light) {
+        // From: https://en.wikipedia.org/wiki/Blend_modes#Soft_Light
+        sstr << "    vec3 a = col;" << std::endl;
+        sstr << "    vec3 b = texture(softLightTexture, TexCoords.st).rgb;" << std::endl;
+        sstr << "    col = (1 - 2 * b) * a * a + 2 * b * a;" << std::endl;
+    }
     sstr << "    FragColor = vec4(col, 1);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
 
-PostProcessingLogic::PostProcessingLogic(RenderLogic& child_logic, bool depth_fog, bool low_pass, bool high_pass)
+PostProcessingLogic::PostProcessingLogic(
+    RenderLogic& child_logic,
+    bool depth_fog,
+    bool low_pass,
+    bool high_pass)
 : child_logic_{child_logic},
+  rendering_context_{RenderingContextStack::rendering_context()},
+  generated_{false},
   depth_fog_{depth_fog},
-  low_pass_{low_pass}
-{
-    rp_.allocate(vertex_shader_text, fragment_shader_text({}, {}, {}, {}, {}, low_pass_, high_pass, depth_fog_));
+  low_pass_{low_pass},
+  high_pass_{high_pass}
+{}
 
-    // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
-    rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");
-    if (low_pass_ || depth_fog_) {
-        rp_.screen_texture_depth_location = checked_glGetUniformLocation(rp_.program, "screenTextureDepth");
-        rp_.z_near_location = checked_glGetUniformLocation(rp_.program, "zNear");
-        rp_.z_far_location = checked_glGetUniformLocation(rp_.program, "zFar");
-    } else {
-        rp_.screen_texture_depth_location = 0;
-        rp_.z_near_location = 0;
-        rp_.z_far_location = 0;
-    }
-    if (depth_fog_) {
-        rp_.background_color_location = checked_glGetUniformLocation(rp_.program, "backgroundColor");
-    } else {
-        rp_.background_color_location = 0;
-    }
-}
-
-PostProcessingLogic::~PostProcessingLogic() = default;
+PostProcessingLogic::~PostProcessingLogic() {};
 
 void PostProcessingLogic::render(
     int width,
@@ -147,6 +143,32 @@ void PostProcessingLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    if (!generated_) {
+        rp_.allocate(vertex_shader_text, fragment_shader_text({}, {}, {}, {}, {}, low_pass_, high_pass_, depth_fog_, !soft_light_filename_.empty()));
+
+        // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
+        rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");
+        if (low_pass_ || depth_fog_) {
+            rp_.screen_texture_depth_location = checked_glGetUniformLocation(rp_.program, "screenTextureDepth");
+            rp_.z_near_location = checked_glGetUniformLocation(rp_.program, "zNear");
+            rp_.z_far_location = checked_glGetUniformLocation(rp_.program, "zFar");
+        } else {
+            rp_.screen_texture_depth_location = 0;
+            rp_.z_near_location = 0;
+            rp_.z_far_location = 0;
+        }
+        if (depth_fog_) {
+            rp_.background_color_location = checked_glGetUniformLocation(rp_.program, "backgroundColor");
+        } else {
+            rp_.background_color_location = 0;
+        }
+        if (!soft_light_filename_.empty()) {
+            rp_.soft_light_texture_location = checked_glGetUniformLocation(rp_.program, "softLightTexture");
+        } else {
+            rp_.soft_light_texture_location = 0;
+        }
+        generated_ = true;
+    }
     // TimeGuard time_guard{"PostProcessingLogic::render", "PostProcessingLogic::render"};
     LOG_FUNCTION("PostProcessingLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::UNDEFINED) {
@@ -196,12 +218,25 @@ void PostProcessingLogic::render(
             if (depth_fog_) {
                 CHK(glUniform3fv(rp_.background_color_location, 1, (GLfloat*)&render_config.background_color));
             }
+            if (!soft_light_filename_.empty()) {
+                CHK(glUniform1i(rp_.soft_light_texture_location, 2));
+            }
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
             CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_color));  // use the color attachment texture as the texture of the quad plane
 
             if (depth_fog_ || low_pass_) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
                 CHK(glBindTexture(GL_TEXTURE_2D, fbs_.fb.texture_depth));
+            }
+            if (!soft_light_filename_.empty()) {
+                CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
+                CHK(glBindTexture(
+                    GL_TEXTURE_2D,
+                    rendering_context_.rendering_resources->get_texture(
+                        "soft_light",
+                        TextureDescriptor{
+                            .color = soft_light_filename_,
+                            .color_mode = ColorMode::RGB})));
             }
 
             CHK(glBindVertexArray(va_.vertex_array));
@@ -232,4 +267,11 @@ const TransformationMatrix<float, 3>& PostProcessingLogic::iv() const {
 
 bool PostProcessingLogic::requires_postprocessing() const {
     return false;
+}
+
+void PostProcessingLogic::set_soft_light_filename(const std::string& soft_light_filename) {
+    if (!soft_light_filename_.empty()) {
+        throw std::runtime_error("Soft light filename already set");
+    }
+    soft_light_filename_ = soft_light_filename;
 }

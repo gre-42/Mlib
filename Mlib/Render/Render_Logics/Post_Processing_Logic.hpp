@@ -4,6 +4,7 @@
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 
 namespace Mlib {
 
@@ -15,6 +16,7 @@ struct PPRenderProgram: public RenderProgram {
     GLint z_near_location = -1;
     GLint z_far_location = -1;
     GLint background_color_location = -1;
+    GLint soft_light_texture_location = -1;
 };
 
 class PostProcessingLogic: public RenderLogic, public GenericPostProcessingLogic {
@@ -38,11 +40,17 @@ public:
     virtual const FixedArray<float, 4, 4>& vp() const override;
     virtual const TransformationMatrix<float, 3>& iv() const override;
     virtual bool requires_postprocessing() const override;
+
+    void set_soft_light_filename(const std::string& soft_light_filename);
 private:
     RenderLogic& child_logic_;
+    RenderingContext rendering_context_;
+    bool generated_;
     PPRenderProgram rp_;
     bool depth_fog_;
     bool low_pass_;
+    bool high_pass_;
+    std::string soft_light_filename_;
     FrameBufferMsaa fbs_;
 };
 

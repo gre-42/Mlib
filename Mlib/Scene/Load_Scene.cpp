@@ -513,11 +513,18 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(set_camera_cycle_reg, "^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
     static const DECLARE_REGEX(set_camera_reg, "^\\s*set_camera ([\\w+-.]+)$");
     static const DECLARE_REGEX(set_dirtmap_reg,
-        "^\\s*set_dirtmap filename=([\\w+-. \\(\\)/\\\\:]+)"
+        "^\\s*set_dirtmap"
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+offset=([\\w+-.]+)"
         "\\s+discreteness=([\\w+-.]+)"
         "\\s+wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
-    static const DECLARE_REGEX(set_skybox_reg, "^\\s*set_skybox alias=([\\w+-.]+) filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
+    static const DECLARE_REGEX(set_soft_light_reg,
+        "^\\s*set_soft_light"
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]*)$");
+    static const DECLARE_REGEX(set_skybox_reg,
+        "^\\s*set_skybox"
+        "\\s+alias=([\\w+-.]+)"
+        "\\s+filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(set_preferred_car_spawner_reg,
         "^\\s*set_preferred_car_spawner"
         "\\s+player=([\\w+-.]+)"
@@ -1197,6 +1204,7 @@ void LoadScene::operator()(
         auto& scene_logic = cit->second->standard_camera_logic_;
         auto& read_pixels_logic = cit->second->read_pixels_logic_;
         auto& dirtmap_logic = *cit->second->dirtmap_logic_;
+        auto& post_processing_logic = *cit->second->post_processing_logic_;
         auto& skybox_logic = cit->second->skybox_logic_;
         auto& game_logic = cit->second->game_logic_;
         auto& base_log = cit->second->fifo_log_;
@@ -2081,6 +2089,8 @@ void LoadScene::operator()(
             secondary_rendering_context.rendering_resources->set_offset("dirtmap", safe_stof(match[2].str()));
             secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[3].str()));
             secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[4].str()));
+        } else if (Mlib::re::regex_match(line, match, set_soft_light_reg)) {
+            post_processing_logic.set_soft_light_filename(fpath(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, set_skybox_reg)) {
             skybox_logic.set_filenames({
                 fpath(match[2].str()),
