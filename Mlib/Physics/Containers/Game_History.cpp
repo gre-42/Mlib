@@ -85,13 +85,18 @@ void GameHistory::save_and_discard() {
         }
     });
     {
-        std::string fn = stats_json_filename();
-        std::ofstream fstr{fn.c_str()};
+        std::string old_json_filename = stats_json_filename();
+        std::string new_json_filename = old_json_filename + "~";
+        std::ofstream fstr{new_json_filename.c_str()};
         fstr << j.dump(4);
         fstr.flush();
         if (fstr.fail()) {
-            throw std::runtime_error("Could not save \"" + fn + '"');
+            throw std::runtime_error("Could not save \"" + new_json_filename + '"');
         }
+        if (fs::exists(old_json_filename)) {
+            fs::remove(old_json_filename);
+        }
+        fs::rename(new_json_filename, old_json_filename);
     }
 }
 
