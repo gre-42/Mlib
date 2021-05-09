@@ -604,8 +604,8 @@ void Mlib::draw_building_walls(
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
             for (const auto& we : sw) {
-                const auto& p0 = we.p00_;
-                const auto& p1 = we.p10_;
+                const auto& p0 = we(0);
+                const auto& p1 = we(1);
                 float width = std::sqrt(sum(squared(p0 - p1)));
                 float height = (bl.top - bl.bottom) * scale;
                 if ((steiner_points != nullptr) && (&bl == &*bu.levels.begin())) {

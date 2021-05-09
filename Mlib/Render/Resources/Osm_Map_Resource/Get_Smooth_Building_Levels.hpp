@@ -12,7 +12,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 enum class DrawBuildingPartType;
 
-std::list<Rectangle> smooth_building_level(
+std::list<FixedArray<FixedArray<float, 2>, 2>> smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
     float max_length,

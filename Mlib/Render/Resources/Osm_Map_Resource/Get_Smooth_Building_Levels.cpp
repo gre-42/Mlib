@@ -5,7 +5,7 @@
 
 using namespace Mlib;
 
-std::list<Rectangle> Mlib::smooth_building_level(
+std::list<FixedArray<FixedArray<float, 2>, 2>> Mlib::smooth_building_level(
     const Building& bu,
     const std::map<std::string, Node>& nodes,
     float max_length,
@@ -19,7 +19,7 @@ std::list<Rectangle> Mlib::smooth_building_level(
     if (bu.way.nd.front() != bu.way.nd.back()) {
         throw std::runtime_error("Cannot compute smooth level of building " + bu.id + ": outline not closed");
     }
-    std::list<Rectangle> result;
+    std::list<FixedArray<FixedArray<float, 2>, 2>> result;
     auto sw = smooth_way(
         nodes,
         bu.way.nd,
@@ -64,7 +64,10 @@ std::list<Rectangle> Mlib::smooth_building_level(
         {
             throw std::runtime_error("Error triangulating level of building " + bu.id);
         } else {
-            result.push_back(rect);
+            result.push_back(
+                FixedArray<FixedArray<float, 2>, 2>{
+                    rect.p01_,
+                    rect.p11_});
         }
         // draw_node(triangles, nodes.at(*a));
         ++a;
@@ -94,7 +97,7 @@ std::list<FixedArray<float, 2>> Mlib::smooth_building_level_outline(
         scale);
     std::list<FixedArray<float, 2>> result;
     for (const auto& w : sw) {
-        result.push_back(w.p00_);
+        result.push_back(w(0));
     }
     return result;
 }
