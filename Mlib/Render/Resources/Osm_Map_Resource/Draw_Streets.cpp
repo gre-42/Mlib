@@ -484,8 +484,7 @@ void DrawStreets::draw_holes() {
                         center_color);
                 }
                 if (with_height_bindings) {
-                    auto& tags = nodes.at(nh.first).tags;
-                    if (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes") {
+                    if (nodes.at(nh.first).tags.contains("bind_height", "yes")) {
                         height_bindings[OrderableFixedArray{center}] = nh.first;
                     }
                 }
