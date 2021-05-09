@@ -16,7 +16,12 @@ using namespace Mlib;
 GameHistory::GameHistory(size_t max_tracks)
 : max_tracks_{max_tracks}
 {
-    fs::create_directory(config_dirname());
+    std::string dn = config_dirname();
+    try {
+        fs::create_directory(dn);
+    } catch (const fs::filesystem_error& e) {
+        throw std::runtime_error("Could not create directory \"" + dn + '"');
+    }
     load();
 }
 
@@ -80,7 +85,12 @@ void GameHistory::save_and_discard() {
             ++i;
             return false;
         } else {
-            fs::remove(track_m_filename(l.id));
+            std::string fn = track_m_filename(l.id);
+            try {
+                fs::remove(fn);
+            } catch (const fs::filesystem_error& e) {
+                throw std::runtime_error("Could not delete file \"" + fn + '"');
+            }
             return true;
         }
     });
@@ -96,9 +106,17 @@ void GameHistory::save_and_discard() {
             }
         }
         if (fs::exists(old_json_filename)) {
-            fs::remove(old_json_filename);
+            try {
+                fs::remove(old_json_filename);
+            } catch (const fs::filesystem_error& e) {
+                throw std::runtime_error("Could not delete file \"" + old_json_filename + '"');
+            }
         }
-        fs::rename(new_json_filename, old_json_filename);
+        try {
+            fs::rename(new_json_filename, old_json_filename);
+        } catch (const fs::filesystem_error& e) {
+            throw std::runtime_error("Could not rename file \"" + new_json_filename + '"');
+        }
     }
 }
 
