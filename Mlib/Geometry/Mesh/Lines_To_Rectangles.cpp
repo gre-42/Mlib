@@ -81,7 +81,7 @@ bool Mlib::lines_to_rectangles(
     // std::cerr << c << std::endl;
     // std::cerr << dL << std::endl;
     // std::cerr << dR << std::endl;
-    if (width_aLb == 0 && width_aLb == 0) {
+    if (width_aLb == 0 && width_bcL == 0) {
         p00 = b;
     } else if (std::abs(dot0d(n_aLb, n_bc)) < std::cos(M_PI / 8)) {
         p00 = intersect_lines({aL, b}, {b, c}, width_aLb, width_bcL, true);  // true = compute_center
