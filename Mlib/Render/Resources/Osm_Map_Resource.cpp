@@ -162,7 +162,7 @@ OsmMapResource::OsmMapResource(
                     spawn_points_.push_back(SpawnPoint{
                         .type = SpawnPointType::SPAWN_LINE,
                         .location = WayPointLocation::UNKNOWN,
-                        .position = {p(0), p(1), bu.building_top * config.scale},
+                        .position = {p(0), p(1), bu.levels.back().top * config.scale},
                         .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))}});
                 }
             }
@@ -341,8 +341,8 @@ OsmMapResource::OsmMapResource(
             config.scale);
     }
     {
-        LOG_INFO("draw_building_walls (barrier)");
-        draw_building_walls(
+        LOG_INFO("draw_wall_barriers");
+        draw_wall_barriers(
             tls_wall_barriers,
             &steiner_points,
             Material{

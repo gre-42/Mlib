@@ -5,6 +5,8 @@
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Compute_Area.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Smooth_Way.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
@@ -14,40 +16,11 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <regex>
 
 using namespace Mlib;
-
-static std::list<FixedArray<float, 2>> smooth_way(
-    const std::map<std::string, Node>& nodes,
-    const std::list<std::string>& nd,
-    float scale,
-    float max_width)
-{
-    std::list<FixedArray<float, 2>> result;
-    for (auto it = nd.begin(); it != nd.end(); ++it) {
-        auto s = it;
-        ++s;
-        if (s != nd.end()) {
-            auto p0 = nodes.at(*it).position;
-            auto p1 = nodes.at(*s).position;
-            float width = std::sqrt(sum(squared(p0 - p1)));
-            auto refined = linspace_multipliers<float>(std::max(2, int(width / scale / max_width))).flat_iterable();
-            for (auto a = refined.begin(); a != refined.end(); ++a) {
-                auto b = a;
-                ++b;
-                if (b != refined.end() || &*s == &nd.back()) {
-                    auto pp0 = a->first * p0 + a->second * p1;
-                    result.push_back(pp0);
-                }
-            }
-        }
-    }
-    return result;
-}
 
 // std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> Mlib::gen_steiner_point_map(std::list<SteinerPointInfo>& steiner_points) {
 //     std::map<OrderableFixedArray<float, 3>, SteinerPointInfo*> steiner_point_map;
@@ -230,7 +203,7 @@ void Mlib::draw_roofs(
             continue;
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {
-            throw std::runtime_error("Building " + bu.id + ": outline not closed");
+            throw std::runtime_error("Cannot draw roof of building " + bu.id + ": outline not closed");
         }
         tls.push_back(std::make_shared<TriangleList>("roofs", material));
         auto way1 = bu.way.nd;
@@ -270,6 +243,7 @@ void Mlib::draw_roofs(
                     scale * width,
                     scale * width,
                     scale * width,
+                    scale * width,
                     scale * width))
             {
                 std::cerr << "Error triangulating roof " + bu.id << std::endl;
@@ -301,7 +275,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
             continue;
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {
-            throw std::runtime_error("Building " + bu.id + ": outline not closed");
+            throw std::runtime_error("Cannot draw ceiling or ground of building " + bu.id + ": outline not closed");
         }
         if ((tpe == DrawBuildingPartType::GROUND) &&
             bu.way.tags.contains("layer") &&
@@ -309,44 +283,32 @@ void Mlib::draw_buildings_ceiling_or_ground(
         {
             continue;
         }
-        auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
+        auto sw = smooth_building_level_outline(bu, nodes, scale, max_width, tpe);
         if (sw.empty()) {
             throw std::runtime_error("Smoothed outline is empty");
         }
-        std::vector<FixedArray<float, 2>> outline;
-        outline.reserve(sw.size() - 1);
-        auto it = sw.begin();
-        ++it;
-        for (; it != sw.end(); ++it) {
-            outline.push_back(*it);
-        }
+        std::vector<FixedArray<float, 2>> outline{sw.begin(), sw.end()};
         outline = removed_duplicates(outline);
-        if (bu.area == 0.f) {
-            throw std::runtime_error("Building area not computed");
-        }
-        if (bu.area < 0.f) {
-            std::reverse(outline.begin(), outline.end());
-        }
         tls.push_back(std::make_shared<TriangleList>("ceilings", material));
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
         BoundingInfo bounding_info{outline, {}, 0.1f};
         try {
             triangulate_terrain_or_ceilings(
-                tl_terrain,                                                 // tl_terrain
-                bounding_info,                                              // bounding_info
-                {},                                                         // steiner_points
-                outline,                                                    // bounding_contour
-                {},                                                         // hole_triangles
-                {},                                                         // region_contours
-                scale,                                                      // scale
-                uv_scale,                                                   // uv_scale
-                tpe == DrawBuildingPartType::CEILING ? bu.building_top : 0, // z
-                parse_color(bu.way.tags, "color", building_color),          // color
-                "",                                                         // contour_filename
-                "",                                                         // triangle_filename
-                TerrainType::UNDEFINED,                                     // default_terrain_type
-                {});                                                        // excluded_terrain_types
+                tl_terrain,                                                      // tl_terrain
+                bounding_info,                                                   // bounding_info
+                {},                                                              // steiner_points
+                outline,                                                         // bounding_contour
+                {},                                                              // hole_triangles
+                {},                                                              // region_contours
+                scale,                                                           // scale
+                uv_scale,                                                        // uv_scale
+                tpe == DrawBuildingPartType::CEILING ? bu.levels.back().top : 0, // z
+                parse_color(bu.way.tags, "color", building_color),               // color
+                "",                                                              // contour_filename
+                "",                                                              // triangle_filename
+                TerrainType::UNDEFINED,                                          // default_terrain_type
+                {});                                                             // excluded_terrain_types
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Could not triangulate building " + bu.id + ": " + e.what());
         }
@@ -561,6 +523,63 @@ void Mlib::compute_building_area(
     }
 }
 
+void Mlib::draw_wall_barriers(
+    std::list<std::shared_ptr<TriangleList>>& tls,
+    std::list<SteinerPointInfo>* steiner_points,
+    const Material& material,
+    const std::list<Building>& buildings,
+    const std::map<std::string, Node>& nodes,
+    float scale,
+    float uv_scale,
+    float max_width,
+    const std::vector<std::string>& facade_textures)
+{
+    if (facade_textures.empty()) {
+        throw std::runtime_error("Facade textures empty");
+    }
+    size_t bid = 0;
+    for (const auto& bu : buildings) {
+        ++bid;
+        for (const auto& bl : bu.levels) {
+            tls.push_back(std::make_shared<TriangleList>("building_walls", material));
+            tls.back()->material_.textures = { {.texture_descriptor = {.color = facade_textures.at(bid % facade_textures.size())}} };
+            tls.back()->material_.compute_color_mode();
+            FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
+            auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
+            for (auto it = sw.begin(); it != sw.end(); ++it) {
+                auto s = it;
+                ++s;
+                if (s != sw.end()) {
+                    const auto& p0 = *s;
+                    const auto& p1 = *it;
+                    float width = std::sqrt(sum(squared(p0 - p1)));
+                    float height = (bl.top - bl.bottom) * scale;
+                    if (steiner_points != nullptr) {
+                        steiner_points->push_back({
+                            .position = {p0(0), p0(1), 0.f},
+                            .type = SteinerPointType::WALL,
+                            .distance_to_road = NAN});
+                    }
+                    // some buildings are clock-wise, others counter-clock-wise
+                    tls.back()->draw_rectangle_wo_normals(
+                        {p1(0), p1(1), bl.bottom * scale},
+                        {p0(0), p0(1), bl.bottom * scale},
+                        {p0(0), p0(1), bl.top * scale},
+                        {p1(0), p1(1), bl.top * scale},
+                        color,
+                        color,
+                        color,
+                        color,
+                        {0.f, 0.f},
+                        {width / scale * uv_scale, 0.f},
+                        {width / scale * uv_scale, height / scale * uv_scale},
+                        {0.f, height / scale * uv_scale});
+                }
+            }
+        }
+    }
+}
+
 void Mlib::draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
@@ -578,20 +597,18 @@ void Mlib::draw_building_walls(
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;
-        tls.push_back(std::make_shared<TriangleList>("building_walls", material));
-        tls.back()->material_.textures = { {.texture_descriptor = {.color = facade_textures.at(bid % facade_textures.size())}} };
-        tls.back()->material_.compute_color_mode();
-        FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
-        auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
-        for (auto it = sw.begin(); it != sw.end(); ++it) {
-            auto s = it;
-            ++s;
-            if (s != sw.end()) {
-                const auto& p0 = bu.area < 0 ? *s : *it;
-                const auto& p1 = bu.area < 0 ? *it : *s;
+        for (const auto& bl : bu.levels) {
+            tls.push_back(std::make_shared<TriangleList>("building_walls", material));
+            tls.back()->material_.textures = { {.texture_descriptor = {.color = facade_textures.at(bid % facade_textures.size())}} };
+            tls.back()->material_.compute_color_mode();
+            FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
+            auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
+            for (const auto& we : sw) {
+                const auto& p0 = we.p00_;
+                const auto& p1 = we.p10_;
                 float width = std::sqrt(sum(squared(p0 - p1)));
-                float height = (bu.building_top - bu.building_bottom) * scale;
-                if (steiner_points != nullptr) {
+                float height = (bl.top - bl.bottom) * scale;
+                if ((steiner_points != nullptr) && (&bl == &*bu.levels.begin())) {
                     steiner_points->push_back({
                         .position = {p0(0), p0(1), 0.f},
                         .type = SteinerPointType::WALL,
@@ -599,10 +616,10 @@ void Mlib::draw_building_walls(
                 }
                 // some buildings are clock-wise, others counter-clock-wise
                 tls.back()->draw_rectangle_wo_normals(
-                    {p1(0), p1(1), bu.building_bottom * scale},
-                    {p0(0), p0(1), bu.building_bottom * scale},
-                    {p0(0), p0(1), bu.building_top * scale},
-                    {p1(0), p1(1), bu.building_top * scale},
+                    {p1(0), p1(1), bl.bottom * scale},
+                    {p0(0), p0(1), bl.bottom * scale},
+                    {p0(0), p0(1), bl.top * scale},
+                    {p1(0), p1(1), bl.top * scale},
                     color,
                     color,
                     color,

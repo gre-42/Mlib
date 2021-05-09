@@ -3,6 +3,10 @@
 
 namespace Mlib {
 
+/**
+ * Create rectangle for line segment (b .. c), with given widths,
+ * contained in crossings [aL; ...; aR] >-- (b -- c) --< [dL; ...; dR].
+ */
 bool lines_to_rectangles(
     FixedArray<float, 2>& p00,
     FixedArray<float, 2>& p01,
@@ -16,7 +20,8 @@ bool lines_to_rectangles(
     const FixedArray<float, 2>& dR,
     float width_aLb,
     float width_aRb,
-    float width_bc,
+    float width_bcL,
+    float width_bcR,
     float width_cdL,
     float width_cdR);
 

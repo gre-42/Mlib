@@ -35,7 +35,8 @@ public:
         const FixedArray<float, 2>& dR,
         float width_aLb,
         float width_aRb,
-        float width_bc,
+        float width_bcL,
+        float width_bcR,
         float width_cdL,
         float width_cdR);
 

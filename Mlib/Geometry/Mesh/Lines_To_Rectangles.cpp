@@ -21,7 +21,8 @@ bool Mlib::lines_to_rectangles(
     const FixedArray<float, 2>& dR,
     float width_aLb,
     float width_aRb,
-    float width_bc,
+    float width_bcL,
+    float width_bcR,
     float width_cdL,
     float width_cdR)
 {
@@ -52,15 +53,15 @@ bool Mlib::lines_to_rectangles(
     FixedArray<float, 2> n_cR = (n_cdR + n_bc) / 2.f;
 
     // Rescale normals after averaging.
-    n_bL *= (width_aLb + width_bc) / 2 / sum(squared(n_bL));
-    n_bR *= (width_aRb + width_bc) / 2 / sum(squared(n_bR));
-    n_cL *= (width_cdL + width_bc) / 2 / sum(squared(n_cL));
-    n_cR *= (width_cdR + width_bc) / 2 / sum(squared(n_cR));
+    n_bL *= (width_aLb + width_bcL) / 2 / sum(squared(n_bL));
+    n_bR *= (width_aRb + width_bcR) / 2 / sum(squared(n_bR));
+    n_cL *= (width_cdL + width_bcL) / 2 / sum(squared(n_cL));
+    n_cR *= (width_cdR + width_bcR) / 2 / sum(squared(n_cR));
 
-    if ((sum(squared(n_bL)) > 3 * width_bc) ||
-        (sum(squared(n_bR)) > 3 * width_bc) ||
-        (sum(squared(n_cL)) > 3 * width_bc) ||
-        (sum(squared(n_cR)) > 3 * width_bc))
+    if ((sum(squared(n_bL)) > 3 * width_bcL) ||
+        (sum(squared(n_bR)) > 3 * width_bcR) ||
+        (sum(squared(n_cL)) > 3 * width_bcL) ||
+        (sum(squared(n_cR)) > 3 * width_bcR))
     {
         return false;
     }
@@ -80,17 +81,25 @@ bool Mlib::lines_to_rectangles(
     // std::cerr << c << std::endl;
     // std::cerr << dL << std::endl;
     // std::cerr << dR << std::endl;
-    if (std::abs(dot0d(n_aLb, n_bc)) < std::cos(M_PI / 8)) {
-        p00 = intersect_lines({aL, b}, {b, c}, width_aLb, width_bc, true);  // true = compute_center
+    if (width_aLb == 0 && width_aLb == 0) {
+        p00 = b;
+    } else if (std::abs(dot0d(n_aLb, n_bc)) < std::cos(M_PI / 8)) {
+        p00 = intersect_lines({aL, b}, {b, c}, width_aLb, width_bcL, true);  // true = compute_center
     }
-    if (std::abs(dot0d(n_aRb, n_bc)) < std::cos(M_PI / 8)) {
-        p01 = intersect_lines({aR, b}, {b, c}, -width_aRb, -width_bc, true);  // true = compute_center
+    if (width_aRb == 0 && width_bcR == 0) {
+        p01 = b;
+    } else if (std::abs(dot0d(n_aRb, n_bc)) < std::cos(M_PI / 8)) {
+        p01 = intersect_lines({aR, b}, {b, c}, -width_aRb, -width_bcR, true);  // true = compute_center
     }
-    if (std::abs(dot0d(n_cdL, n_bc)) < std::cos(M_PI / 8)) {
-        p10 = intersect_lines({b, c}, {c, dL}, width_bc, width_cdL, true);  // true = compute_center
+    if (width_bcL == 0 && width_cdL == 0) {
+        p10 = c;
+    } else if (std::abs(dot0d(n_cdL, n_bc)) < std::cos(M_PI / 8)) {
+        p10 = intersect_lines({b, c}, {c, dL}, width_bcL, width_cdL, true);  // true = compute_center
     }
-    if (std::abs(dot0d(n_cdR, n_bc)) < std::cos(M_PI / 8)) {
-        p11 = intersect_lines({b, c}, {c, dR}, -width_bc, -width_cdR, true);  // true = compute_center
+    if (width_bcR == 0 && width_cdR == 0) {
+        p11 = c;
+    } else if (std::abs(dot0d(n_cdR, n_bc)) < std::cos(M_PI / 8)) {
+        p11 = intersect_lines({b, c}, {c, dR}, -width_bcR, -width_cdR, true);  // true = compute_center
     }
 
     return true;

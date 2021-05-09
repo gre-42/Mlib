@@ -22,7 +22,8 @@ bool Rectangle::from_line(
     const FixedArray<float, 2>& dR,
     float width_aLb,
     float width_aRb,
-    float width_bc,
+    float width_bcL,
+    float width_bcR,
     float width_cdL,
     float width_cdR)
 {
@@ -39,7 +40,8 @@ bool Rectangle::from_line(
         dR,
         width_aLb,
         width_aRb,
-        width_bc,
+        width_bcL,
+        width_bcR,
         width_cdL,
         width_cdR);
 }

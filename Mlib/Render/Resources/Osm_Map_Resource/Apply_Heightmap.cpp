@@ -55,7 +55,7 @@ void Mlib::apply_heightmap(
         for (const auto& w : ways) {
             auto layer_it = w.second.tags.find("layer");
             int layer = (layer_it == w.second.tags.end()) ? 0 : safe_stoi(layer_it->second);
-            if ((layer != 0) && !layer_heights.is_within_range(layer)) {
+            if ((layer != 0) && !layer_heights.is_within_range((float)layer)) {
                 continue;
             }
             float bridge_height = parse_meters(w.second.tags, "bridge_height", NAN);

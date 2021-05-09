@@ -114,7 +114,8 @@ void test_lines_to_rectangles() {
     FixedArray<float, 2> dR{2, -1};
     float width_aLb = 0.2;
     float width_aRb = 0.2;
-    float width_bc = 0.2;
+    float width_bcL = 0.2;
+    float width_bcR = 0.2;
     float width_cdL = 0.2;
     float width_cdR = 0.2;
     lines_to_rectangles(
@@ -130,7 +131,8 @@ void test_lines_to_rectangles() {
         dR,
         width_aLb,
         width_aRb,
-        width_bc,
+        width_bcL,
+        width_bcR,
         width_cdL,
         width_cdR);
     assert_allclose(p00.to_array(), Array<float>{0.0414214, 0.1});

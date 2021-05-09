@@ -92,11 +92,23 @@ bool parse_bool(
     const std::string& key,
     bool default_value);
 
+enum class BuildingLevelType {
+    TOP,
+    BOTTOM,
+    MIDDLE
+};
+
+struct BuildingLevel {
+    float top;
+    float bottom;
+    float extra_width = 0;
+    BuildingLevelType type;
+};
+
 struct Building {
     std::string id;
     const Way& way;
-    float building_top;
-    float building_bottom;
+    std::list<BuildingLevel> levels;
     float area = 0;
 };
 
@@ -232,6 +244,17 @@ void compute_building_area(
     std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale);
+
+void draw_wall_barriers(
+    std::list<std::shared_ptr<TriangleList>>& tls,
+    std::list<SteinerPointInfo>* steiner_points,
+    const Material& material,
+    const std::list<Building>& buildings,
+    const std::map<std::string, Node>& nodes,
+    float scale,
+    float uv_scale,
+    float max_width,
+    const std::vector<std::string>& facade_textures);
 
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,

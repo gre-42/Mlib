@@ -39,11 +39,35 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         float building_top = default_building_top;
         building_top = parse_meters(tags, "height", building_top);
         building_top = parse_meters(tags, "building:height", building_top);
-        result.push_back(Building{
-            .id = w.first,
-            .way = w.second,
-            .building_top = building_top,
-            .building_bottom = building_bottom});
+        auto vs = tags.find("vertical_subdivision");
+        if (vs == tags.end()) {
+            result.push_back(Building{
+                .id = w.first,
+                .way = w.second,
+                .levels = {BuildingLevel{
+                    .top = building_top,
+                    .bottom = building_bottom
+                }}});
+        } else if (vs->second == "socle") {
+            float socle_height = 1.5;
+            if (building_top <= socle_height) {
+                throw std::runtime_error("Building height too small for socle");
+            }
+            result.push_back(Building{
+                .id = w.first,
+                .way = w.second,
+                .levels = {
+                    BuildingLevel{
+                        .top = socle_height,
+                        .bottom = building_bottom,
+                        .extra_width = 0.5f},
+                    BuildingLevel{
+                        .top = building_top,
+                        .bottom = socle_height}
+                }});
+        } else {
+            throw std::runtime_error("Unknown vertical_subdivision: " + vs->second);
+        }
     }
     return result;
 }

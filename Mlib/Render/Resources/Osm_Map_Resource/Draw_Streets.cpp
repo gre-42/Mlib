@@ -275,6 +275,7 @@ void DrawStreets::draw_streets() {
                     *aR == na.first ? it->second.width : node_neighbors.at(*aR).at(na.first).width,
                     *aL == na.first ? it->second.width : node_neighbors.at(*aL).at(na.first).width,
                     it->second.width,
+                    it->second.width,
                     *dL == na.first ? it->second.width : node_neighbors.at(*dL).at(it->second.neighbor_id).width,
                     *dR == na.first ? it->second.width : node_neighbors.at(*dR).at(it->second.neighbor_id).width))
                 {
