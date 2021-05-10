@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
 namespace Mlib {
@@ -18,18 +19,23 @@ void barycentric(
     TData &v,
     TData &w)
 {
-    FixedArray<TData, tndim> v0 = b - a;
-    FixedArray<TData, tndim> v1 = c - a;
-    FixedArray<TData, tndim> v2 = p - a;
-    TData d00 = dot0d(v0, v0);
-    TData d01 = dot0d(v0, v1);
-    TData d11 = dot0d(v1, v1);
-    TData d20 = dot0d(v2, v0);
-    TData d21 = dot0d(v2, v1);
-    TData denom = d00 * d11 - d01 * d01;
-    v = (d11 * d20 - d01 * d21) / denom;
-    w = (d00 * d21 - d01 * d20) / denom;
-    u = 1 - v - w;
+    FixedArray<double, tndim> v0 = (b - a).casted<double>();
+    FixedArray<double, tndim> v1 = (c - a).casted<double>();
+    FixedArray<double, tndim> v2 = (p - a).casted<double>();
+    double d00 = dot0d(v0, v0);
+    double d01 = dot0d(v0, v1);
+    double d11 = dot0d(v1, v1);
+    double d20 = dot0d(v2, v0);
+    double d21 = dot0d(v2, v1);
+    double denom = d00 * d11 - d01 * d01;
+    // FixedArray<TData, tndim, tndim> M = dot2d(v0.columns_as_1D(), v1.rows_as_1D());
+    // TData denom = dot0d(v0, dot1d(M - M.T(), v1));
+    if (std::abs(denom) < 1e-14) {
+        throw TriangleException(a, b, c, "barycentric coordinates encountered zero denominator");
+    }
+    v = (TData)((d11 * d20 - d01 * d21) / denom);
+    w = (TData)((d00 * d21 - d01 * d20) / denom);
+    u = (TData)(1 - v - w);
 }
 
 }

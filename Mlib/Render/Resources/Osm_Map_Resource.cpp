@@ -532,18 +532,52 @@ OsmMapResource::OsmMapResource(
         street_rectangles,
         way_point_edges_2_lanes);
 
-    GroundBvh ground_bvh{osm_triangle_lists.tls_smooth()};
+    auto ground_bvh_triangles = osm_triangle_lists.tls_smooth();
+    GroundBvh ground_bvh{ ground_bvh_triangles };
     LOG_INFO("add_models_to_model_nodes");
-    add_models_to_model_nodes(
-        resource_instance_positions_,
-        object_resource_descriptors_,
-        hitboxes_,
-        ground_bvh,
-        scene_node_resources,
-        nodes,
-        ways,
-        config.scale,
-        config.game_level);
+    try {
+        add_models_to_model_nodes(
+            resource_instance_positions_,
+            object_resource_descriptors_,
+            hitboxes_,
+            ground_bvh,
+            scene_node_resources,
+            nodes,
+            ways,
+            config.scale,
+            config.game_level);
+    } catch (const TriangleException& e) {
+        if (const char* prefix = getenv("EXCEPT_MESH_AROUND_PREFIX"); prefix != nullptr) {
+            auto coords = (e.a + e.b + e.c) / 3.f;
+            {
+                FixedArray<double, 3> pos{ coords(0), coords(1), 0.f };
+                auto m = get_geographic_mapping(SceneNode());
+                std::cerr.precision(15);
+                std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
+            }
+            for (float r : string_to_vector(getenv_default("EXCEPT_MESH_AROUND_RADIUSES", "0.05 0.2 0.5"), safe_stof)) {
+                plot_mesh(
+                    ArrayShape{ 2000, 2000 },         // image_size
+                    1,                                // line_thickness
+                    4,                                // point_size
+                    get_triangles_around(             // triangles
+                        ground_bvh_triangles,
+                        { coords(0), coords(1) },
+                        r),
+                    {},                               // contour
+                    {                                 // highlighted_nodes
+                        {e.a(0), e.a(1), 0.f},
+                        {e.b(0), e.b(1), 0.f},
+                        {e.c(0), e.c(1), 0.f}
+                    },
+                    {}                                // crossed_nodes
+                ).T().reversed(0).save_to_file(std::string(prefix) + "_r_" + std::to_string(r) + ".ppm");
+            }
+            handle_triangle_exception(e, "add models failed, debug image saved");
+        } else {
+            handle_triangle_exception(e, "add models failed, cosider setting the 'EXCEPT_MESH_AROUND_PREFIX' environment variable");
+        }
+    }
 
     // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     // {
@@ -850,8 +884,8 @@ OsmMapResource::OsmMapResource(
             config.scale);
     }
     if (const char* wf = getenv("WAYPOINT_DEBUG_PREFIX"); (wf != nullptr)) {
-        way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1);
-        way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1);
+        way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1f);
+        way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1f);
     }
 
     if (!std::isnan(config.extrude_air_curb_amount)) {

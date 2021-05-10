@@ -123,6 +123,5 @@ void MacroLineExecutor::operator () (
         if (!success) {
             throw std::runtime_error("Could not parse line: \"" + subst_line + '"');
         }
-        
     }
 }
