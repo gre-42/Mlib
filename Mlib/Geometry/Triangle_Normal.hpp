@@ -20,10 +20,10 @@ inline FixedArray<float, 3> triangle_normal(
     float ma = max(abs(res));
     if (ma < 1e-12) {
         if (error_behavior == TriangleNormalErrorBehavior::ZERO) {
-            return FixedArray<float, 3>{0, 0, 0};
+            return FixedArray<float, 3>{0.f, 0.f, 0.f};
         } else if (error_behavior == TriangleNormalErrorBehavior::WARN) {
             std::cerr << "Cannot calculate triangle normal" << std::endl;
-            return FixedArray<float, 3>{0, 0, 0};
+            return FixedArray<float, 3>{0.f, 0.f, 0.f};
         } else {
             throw TriangleException(t(0), t(1), t(2), "Cannot calculate triangle normal");
         }
