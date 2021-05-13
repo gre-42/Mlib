@@ -134,7 +134,7 @@ public:
     void flip();
     static void convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists);
     static void smoothen_edges(
-        const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
+        std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
         const std::list<FixedArray<float, 3>*>& smoothed_vertices,

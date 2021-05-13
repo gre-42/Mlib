@@ -347,7 +347,7 @@ void TriangleList::convert_triangle_to_vertex_normals(const std::list<std::share
 }
 
 void TriangleList::smoothen_edges(
-    const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
+    std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
     const std::list<FixedArray<float, 3>*>& smoothed_vertices,
@@ -418,6 +418,9 @@ void TriangleList::smoothen_edges(
                     (*s)(2) += mit->second(2);
                 } else {
                     *s += mit->second;
+                    if (hit != vertex_height_bindings.end()) {
+                        hit->second.value() += FixedArray<float, 2>{ mit->second(0), mit->second(1) };
+                    }
                 }
             }
         }

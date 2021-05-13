@@ -35,6 +35,9 @@ public:
     const FixedArray<float, 2>& value() const {
         return value_;
     }
+    FixedArray<float, 2>& value() {
+        return value_;
+    }
 private:
     bool is_undefined() const {
         return all(Mlib::isnan(value_));
