@@ -591,18 +591,28 @@ void Mlib::draw_building_walls(
     float scale,
     float uv_scale,
     float max_width,
+    const std::vector<std::string>& socle_textures,
     const std::vector<std::string>& facade_textures)
 {
-    if (facade_textures.empty()) {
-        throw std::runtime_error("Facade textures empty");
-    }
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;
         std::list<FixedArray<FixedArray<float, 2>, 2>> swG;
         for (const auto& bl : bu.levels) {
             tls.push_back(std::make_shared<TriangleList>("building_walls", material));
-            tls.back()->material_.textures = { {.texture_descriptor = {.color = facade_textures.at(bid % facade_textures.size())}} };
+            std::string texture;
+            if (bl.type == BuildingLevelType::SOCLE) {
+                if (socle_textures.empty()) {
+                    throw std::runtime_error("Socle textures empty");
+                }
+                texture = socle_textures.at(bid % socle_textures.size()); 
+            } else {
+                if (facade_textures.empty()) {
+                    throw std::runtime_error("Facade textures empty");
+                }
+                texture = facade_textures.at(bid % facade_textures.size());
+            }
+            tls.back()->material_.textures = { {.texture_descriptor = {.color = texture}} };
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
@@ -651,14 +661,16 @@ void Mlib::draw_building_walls(
                     &pp10b,
                     &pp11b);
                 if (&bl != &*bu.levels.begin()) {
-                    const auto& pG0 = (*swGit)(0);
-                    const auto& pG1 = (*swGit)(1);
-                    vertex_height_bindings[&pp00a->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
-                    vertex_height_bindings[&pp00b->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
-                    vertex_height_bindings[&pp10b->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
-                    vertex_height_bindings[&pp11b->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
-                    vertex_height_bindings[&pp11a->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
-                    vertex_height_bindings[&pp01a->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
+                    if (bl.extra_width != 0.f) {
+                        const auto& pG0 = (*swGit)(0);
+                        const auto& pG1 = (*swGit)(1);
+                        vertex_height_bindings[&pp00a->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
+                        vertex_height_bindings[&pp00b->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
+                        vertex_height_bindings[&pp10b->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp11b->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp11a->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
+                        vertex_height_bindings[&pp01a->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
+                    }
                     ++swGit;
                 }
             }

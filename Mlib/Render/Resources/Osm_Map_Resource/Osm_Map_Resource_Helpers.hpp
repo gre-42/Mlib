@@ -95,7 +95,7 @@ bool parse_bool(
 
 enum class BuildingLevelType {
     TOP,
-    BOTTOM,
+    SOCLE,
     MIDDLE
 };
 
@@ -267,6 +267,7 @@ void draw_building_walls(
     float scale,
     float uv_scale,
     float max_width,
+    const std::vector<std::string>& socle_textures,
     const std::vector<std::string>& facade_textures);
 
 std::vector<FixedArray<float, 2>> removed_duplicates(const std::vector<FixedArray<float, 2>>& nodes, bool verbose = true);

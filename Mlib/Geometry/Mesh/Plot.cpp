@@ -41,6 +41,39 @@ static void convert_to_2d(
     }
 }
 
+struct ConvPtri {
+    ConvPtri(
+        const std::list<PTri>& triangles,
+        const std::list<std::vector<p2t::Point*>>& contours,
+        const std::list<p2t::Point*>& highlighted_nodes,
+        const std::list<p2t::Point*>& crossed_nodes)
+    {
+        typedef FixedArray<double, 2>* P;
+        for (const auto& t : triangles) {
+            triangles_2d.push_back(FixedArray<FixedArray<float, 2>, 3>{
+                FixedArray<float, 2>{(float)t(0)->x, (float)t(0)->y},
+                    FixedArray<float, 2>{(float)t(1)->x, (float)t(1)->y},
+                    FixedArray<float, 2>{(float)t(2)->x, (float)t(2)->y}});
+        }
+        for (const auto& c : reinterpret_cast<const std::list<std::vector<P>>&>(contours)) {
+            contours_2d.emplace_back();
+            for (const auto& p : c) {
+                contours_2d.back().push_back(FixedArray<float, 2>{p->casted<float>()});
+            };
+        }
+        for (const auto& p : reinterpret_cast<const std::list<P>&>(highlighted_nodes)) {
+            highlighted_nodes_2d.push_back(p->casted<float>());
+        }
+        for (const auto& p : reinterpret_cast<const std::list<P>&>(crossed_nodes)) {
+            crossed_nodes_2d.push_back(p->casted<float>());
+        }
+    }
+    std::list<FixedArray<FixedArray<float, 2>, 3>> triangles_2d;
+    std::list<std::list<FixedArray<float, 2>>> contours_2d;
+    std::list<FixedArray<float, 2>> highlighted_nodes_2d;
+    std::list<FixedArray<float, 2>> crossed_nodes_2d;
+};
+
 PpmImage Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
@@ -241,6 +274,31 @@ void Mlib::plot_mesh_svg(
     }
 }
 
+void Mlib::plot_mesh_svg(
+    const std::string& filename,
+    float width,
+    float height,
+    const std::list<PTri>& triangles,
+    const std::list<std::vector<p2t::Point*>>& contours,
+    const std::list<p2t::Point*>& highlighted_nodes)
+{
+    ConvPtri c{
+        triangles,
+        contours,
+        highlighted_nodes,
+        {} };
+    std::ofstream ofstr{ filename };
+    Svg<float> svg{ ofstr, width, height };
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
+    plot_mesh(
+        svg,
+        c.triangles_2d,
+        c.contours_2d,
+        c.highlighted_nodes_2d);
+}
+
 PpmImage Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
@@ -276,35 +334,17 @@ PpmImage Mlib::plot_mesh(
     const std::list<p2t::Point*>& highlighted_nodes,
     const std::list<p2t::Point*>& crossed_nodes)
 {
-    std::list<FixedArray<FixedArray<float, 2>, 3>> triangles_2d;
-    std::list<std::list<FixedArray<float, 2>>> contours_2d;
-    std::list<FixedArray<float, 2>> highlighted_nodes_2d;
-    std::list<FixedArray<float, 2>> crossed_nodes_2d;
-    typedef FixedArray<double, 2>* P;
-    for (const auto& t : triangles) {
-        triangles_2d.push_back(FixedArray<FixedArray<float, 2>, 3>{
-            FixedArray<float, 2>{(float)t(0)->x, (float)t(0)->y},
-            FixedArray<float, 2>{(float)t(1)->x, (float)t(1)->y},
-            FixedArray<float, 2>{(float)t(2)->x, (float)t(2)->y}});
-    }
-    for (const auto& c : reinterpret_cast<const std::list<std::vector<P>>&>(contours)) {
-        contours_2d.emplace_back();
-        for (const auto& p : c) {
-            contours_2d.back().push_back(FixedArray<float, 2>{p->casted<float>()});
-        };
-    }
-    for (const auto& p : reinterpret_cast<const std::list<P>&>(highlighted_nodes)) {
-        highlighted_nodes_2d.push_back(p->casted<float>());
-    }
-    for (const auto& p : reinterpret_cast<const std::list<P>&>(crossed_nodes)) {
-        crossed_nodes_2d.push_back(p->casted<float>());
-    }
+    ConvPtri c{
+        triangles,
+        contours,
+        highlighted_nodes,
+        crossed_nodes };
     return plot_mesh(
         image_size,
         line_thickness,
         point_size,
-        triangles_2d,
-        contours_2d,
-        highlighted_nodes_2d,
-        crossed_nodes_2d);
+        c.triangles_2d,
+        c.contours_2d,
+        c.highlighted_nodes_2d,
+        c.crossed_nodes_2d);
 }

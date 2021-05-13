@@ -40,16 +40,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         building_top = parse_meters(tags, "height", building_top);
         building_top = parse_meters(tags, "building:height", building_top);
         auto vs = tags.find("vertical_subdivision");
-        if (vs == tags.end()) {
-            result.push_back(Building{
-                .id = w.first,
-                .way = w.second,
-                .levels = {BuildingLevel{
-                    .top = building_top,
-                    .bottom = building_bottom
-                }}});
-        } else if (vs->second == "socle") {
-            float socle_height = 1.5;
+        if (((vs == tags.end()) && (building_type == BuildingType::BUILDING)) ||
+            ((vs != tags.end()) && (vs->second == "socle")))
+        {
+            float socle_height = 1.2;
             if (building_top <= socle_height) {
                 throw std::runtime_error("Building height too small for socle");
             }
@@ -60,11 +54,22 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     BuildingLevel{
                         .top = socle_height,
                         .bottom = building_bottom,
-                        .extra_width = 0.5f},
+                        .extra_width = 0.f,
+                        .type = BuildingLevelType::SOCLE},
                     BuildingLevel{
                         .top = building_top,
-                        .bottom = socle_height}
-                }});
+                        .bottom = socle_height,
+                        .type = BuildingLevelType::MIDDLE}
+                } });
+        } else if ((vs == tags.end()) || (vs->second == "no")) {
+            result.push_back(Building{
+                .id = w.first,
+                .way = w.second,
+                .levels = {BuildingLevel{
+                    .top = building_top,
+                    .bottom = building_bottom,
+                    .type = BuildingLevelType::MIDDLE
+                }} });
         } else {
             throw std::runtime_error("Unknown vertical_subdivision: " + vs->second);
         }

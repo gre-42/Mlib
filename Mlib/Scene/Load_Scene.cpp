@@ -754,6 +754,9 @@ void LoadScene::operator()(
                 else if (key == "air_support_texture") {
                     config.air_support_texture = fpath(value);
                 }
+                else if (key == "socle_textures") {
+                    config.socle_textures = string_to_vector(value, fpath);
+                }
                 else if (key == "facade_textures") {
                     config.facade_textures = string_to_vector(value, fpath);
                 }
