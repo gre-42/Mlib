@@ -15,6 +15,7 @@ namespace Mlib {
 
 struct ColoredVertex;
 struct ColoredVertexArray;
+class VertexHeightBinding;
 
 class TriangleList {
 public:
@@ -40,7 +41,10 @@ public:
         const std::vector<BoneWeight>& b00 = {},
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b01 = {},
-        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE);
+        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
+        ColoredVertex** pp00 = nullptr,
+        ColoredVertex** pp10 = nullptr,
+        ColoredVertex** pp01 = nullptr);
     void draw_triangle_wo_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -55,7 +59,10 @@ public:
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b01 = {},
         TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
-        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE);
+        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
+        ColoredVertex** pp00 = nullptr,
+        ColoredVertex** pp10 = nullptr,
+        ColoredVertex** pp01 = nullptr);
     void draw_rectangle_with_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -77,7 +84,13 @@ public:
         const std::vector<BoneWeight>& b10 = {},
         const std::vector<BoneWeight>& b11 = {},
         const std::vector<BoneWeight>& b01 = {},
-        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE);
+        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
+        ColoredVertex** pp00a = nullptr,
+        ColoredVertex** pp11a = nullptr,
+        ColoredVertex** pp01a = nullptr,
+        ColoredVertex** pp00b = nullptr,
+        ColoredVertex** pp10b = nullptr,
+        ColoredVertex** pp11b = nullptr);
     void draw_rectangle_wo_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -96,7 +109,13 @@ public:
         const std::vector<BoneWeight>& b11 = {},
         const std::vector<BoneWeight>& b01 = {},
         TriangleNormalErrorBehavior normal_error_behavior = TriangleNormalErrorBehavior::RAISE,
-        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE);
+        TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
+        ColoredVertex** pp00a = nullptr,
+        ColoredVertex** pp11a = nullptr,
+        ColoredVertex** pp01a = nullptr,
+        ColoredVertex** pp00b = nullptr,
+        ColoredVertex** pp10b = nullptr,
+        ColoredVertex** pp11b = nullptr);
     static void extrude(
         TriangleList& dest,
         const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
@@ -115,6 +134,7 @@ public:
     void flip();
     static void convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists);
     static void smoothen_edges(
+        const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
         const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
         const std::list<FixedArray<float, 3>*>& smoothed_vertices,

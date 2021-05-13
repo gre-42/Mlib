@@ -38,6 +38,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -189,6 +190,7 @@ OsmMapResource::OsmMapResource(
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
     std::map<OrderableFixedArray<float, 2>, HeightBinding> height_bindings;
+    std::map<const FixedArray<float, 3>*, VertexHeightBinding> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
     std::list<std::pair<std::string, std::string>> way_point_edges_1_lane;
@@ -244,6 +246,7 @@ OsmMapResource::OsmMapResource(
         draw_building_walls(
             tls_buildings,
             nullptr,            // Steiner points not required due to existance of ground triangles.
+            vertex_height_bindings,
             Material{
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
@@ -518,6 +521,7 @@ OsmMapResource::OsmMapResource(
     smoothen_and_apply_heightmap(
         config,
         height_bindings,
+        vertex_height_bindings,
         nodes,
         ways,
         normalized_points,

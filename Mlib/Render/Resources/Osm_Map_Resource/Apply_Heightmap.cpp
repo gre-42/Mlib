@@ -9,6 +9,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
 namespace Mlib {
@@ -43,6 +44,7 @@ void Mlib::apply_heightmap(
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
+    const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     float street_node_smoothness,
     const Interp<float>& layer_heights)
 {
@@ -195,7 +197,14 @@ void Mlib::apply_heightmap(
     // Also, duplicate nodes were already removed while parsing the OSM XML-file.
     std::map<OrderableFixedArray<float, 2>, std::list<FixedArray<float, 3>*>> vertex_instances_map;
     for (FixedArray<float, 3>* iv : in_vertices) {
-        vertex_instances_map[{(*iv)(0), (*iv)(1)}].push_back(iv);
+        OrderableFixedArray<float, 2> vc;
+        auto hit = vertex_height_bindings.find(iv);
+        if (hit != vertex_height_bindings.end()) {
+            vc = hit->second.value();
+        } else {
+            vc = { (*iv)(0), (*iv)(1) };
+        }
+        vertex_instances_map[vc].push_back(iv);
     }
     for (auto& position : vertex_instances_map) {
         FixedArray<float, 2> vc;

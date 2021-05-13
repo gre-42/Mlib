@@ -10,6 +10,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <list>
 #include <memory>
@@ -24,6 +25,7 @@ enum class SmoothingClass {
 void Mlib::smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
     const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
+    const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     const NormalizedPointsFixed& normalized_points,
@@ -121,6 +123,7 @@ void Mlib::smoothen_and_apply_heightmap(
             nodes,
             ways,
             height_bindings,
+            vertex_height_bindings,
             config.street_node_smoothness,
             config.layer_heights);
         for (auto& l : tls_smoothed) {
@@ -164,14 +167,14 @@ void Mlib::smoothen_and_apply_heightmap(
         tls_street.insert(tls_street.end(), tls_air_street.begin(), tls_air_street.end());
         if (config.street_edge_smoothness > 0) {
             LOG_INFO("smoothen_edges (street)");
-            TriangleList::smoothen_edges(tls_street, {}, smoothed_vertices, config.street_edge_smoothness * config.scale, 100, true);
+            TriangleList::smoothen_edges(vertex_height_bindings, tls_street, {}, smoothed_vertices, config.street_edge_smoothness * config.scale, 100, true);
         }
         if (config.terrain_edge_smoothness > 0) {
             LOG_INFO("smoothen_edges (ground)");
             auto tls_smooth = osm_triangle_lists.tls_smooth();
             auto air_tls_smooth = air_triangle_lists.tls_smooth();
             tls_smooth.insert(tls_smooth.end(), air_tls_smooth.begin(), air_tls_smooth.end());
-            TriangleList::smoothen_edges(tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 100, false);
+            TriangleList::smoothen_edges(vertex_height_bindings, tls_smooth, tls_street, smoothed_vertices, config.terrain_edge_smoothness * config.scale, 100, false);
             // {
             //     std::list<FixedArray<ColoredVertex, 3>> tcp;
             //     for (const auto& l : tls_smooth) {

@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-struct Rectangle;
+class Rectangle;
 struct Building;
 struct Node;
 template <typename TData, size_t... tshape>

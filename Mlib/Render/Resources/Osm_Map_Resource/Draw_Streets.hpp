@@ -27,7 +27,7 @@ struct AngleCurb;
 struct HoleWaypoint;
 struct NodeWayInfo;
 struct OsmTriangleLists;
-struct Rectangle;
+class Rectangle;
 struct ColoredVertex;
 struct WayInfo;
 struct NodeHoleVertex;

@@ -28,6 +28,7 @@ struct OsmTriangleLists;
 struct BoundingInfo;
 struct SteinerPointInfo;
 class StreetBvh;
+class VertexHeightBinding;
 
 static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
@@ -259,6 +260,7 @@ void draw_wall_barriers(
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
+    std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,

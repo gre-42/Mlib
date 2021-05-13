@@ -14,6 +14,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
@@ -583,6 +584,7 @@ void Mlib::draw_wall_barriers(
 void Mlib::draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
     std::list<SteinerPointInfo>* steiner_points,
+    std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     const Material& material,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
@@ -597,12 +599,14 @@ void Mlib::draw_building_walls(
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;
+        std::list<FixedArray<FixedArray<float, 2>, 2>> swG;
         for (const auto& bl : bu.levels) {
             tls.push_back(std::make_shared<TriangleList>("building_walls", material));
             tls.back()->material_.textures = { {.texture_descriptor = {.color = facade_textures.at(bid % facade_textures.size())}} };
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
+            auto swGit = swG.begin();
             for (const auto& we : sw) {
                 const auto& p0 = we(0);
                 const auto& p1 = we(1);
@@ -614,12 +618,18 @@ void Mlib::draw_building_walls(
                         .type = SteinerPointType::WALL,
                         .distance_to_road = NAN});
                 }
+                ColoredVertex* pp00a;
+                ColoredVertex* pp11a;
+                ColoredVertex* pp01a;
+                ColoredVertex* pp00b;
+                ColoredVertex* pp10b;
+                ColoredVertex* pp11b;
                 // some buildings are clock-wise, others counter-clock-wise
                 tls.back()->draw_rectangle_wo_normals(
-                    {p1(0), p1(1), bl.bottom * scale},
-                    {p0(0), p0(1), bl.bottom * scale},
-                    {p0(0), p0(1), bl.top * scale},
-                    {p1(0), p1(1), bl.top * scale},
+                    {p1(0), p1(1), bl.bottom * scale}, // p00
+                    {p0(0), p0(1), bl.bottom * scale}, // p10
+                    {p0(0), p0(1), bl.top * scale},    // p11
+                    {p1(0), p1(1), bl.top * scale},    // p01
                     color,
                     color,
                     color,
@@ -627,7 +637,33 @@ void Mlib::draw_building_walls(
                     {0.f, 0.f},
                     {width / scale * uv_scale, 0.f},
                     {width / scale * uv_scale, height / scale * uv_scale},
-                    {0.f, height / scale * uv_scale});
+                    {0.f, height / scale * uv_scale},
+                    {},
+                    {},
+                    {},
+                    {},
+                    TriangleNormalErrorBehavior::RAISE,
+                    TriangleTangentErrorBehavior::RAISE,
+                    &pp00a,
+                    &pp11a,
+                    &pp01a,
+                    &pp00b,
+                    &pp10b,
+                    &pp11b);
+                if (&bl != &*bu.levels.begin()) {
+                    const auto& pG0 = (*swGit)(0);
+                    const auto& pG1 = (*swGit)(1);
+                    vertex_height_bindings[&pp00a->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
+                    vertex_height_bindings[&pp00b->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
+                    vertex_height_bindings[&pp10b->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
+                    vertex_height_bindings[&pp11b->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
+                    vertex_height_bindings[&pp11a->position] = FixedArray<float, 2>{ pG0(0), pG0(1) };
+                    vertex_height_bindings[&pp01a->position] = FixedArray<float, 2>{ pG1(0), pG1(1) };
+                    ++swGit;
+                }
+            }
+            if (&bl == &*bu.levels.begin()) {
+                swG = std::move(sw);
             }
         }
     }

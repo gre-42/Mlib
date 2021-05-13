@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Geometry/Triangle_Tangent.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <map>
 
 using namespace Mlib;
@@ -27,7 +28,10 @@ void TriangleList::draw_triangle_with_normals(
     const std::vector<BoneWeight>& b00,
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b01,
-    TriangleTangentErrorBehavior tangent_error_behavior)
+    TriangleTangentErrorBehavior tangent_error_behavior,
+    ColoredVertex** pp00,
+    ColoredVertex** pp10,
+    ColoredVertex** pp01)
 {
     ColoredVertex v00{p00, c00, u00, n00};
     ColoredVertex v10{p10, c10, u10, n10};
@@ -52,6 +56,15 @@ void TriangleList::draw_triangle_with_normals(
             throw std::runtime_error("Triangle bone size mismatch");
         }
     }
+    if (pp00 != nullptr) {
+        *pp00 = &triangles_.back()(0);
+    }
+    if (pp10 != nullptr) {
+        *pp10 = &triangles_.back()(1);
+    }
+    if (pp01 != nullptr) {
+        *pp01 = &triangles_.back()(2);
+    }
 }
 
 void TriangleList::draw_triangle_wo_normals(
@@ -68,10 +81,13 @@ void TriangleList::draw_triangle_wo_normals(
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b01,
     TriangleNormalErrorBehavior normal_error_behavior,
-    TriangleTangentErrorBehavior tangent_error_behavior)
+    TriangleTangentErrorBehavior tangent_error_behavior,
+    ColoredVertex** pp00,
+    ColoredVertex** pp10,
+    ColoredVertex** pp01)
 {
     auto n = triangle_normal({p00, p10, p01}, normal_error_behavior);
-    draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior);
+    draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior, pp00, pp10, pp01);
 }
 
 void TriangleList::draw_rectangle_with_normals(
@@ -95,10 +111,16 @@ void TriangleList::draw_rectangle_with_normals(
     const std::vector<BoneWeight>& b10,
     const std::vector<BoneWeight>& b11,
     const std::vector<BoneWeight>& b01,
-    TriangleTangentErrorBehavior tangent_error_behavior)
+    TriangleTangentErrorBehavior tangent_error_behavior,
+    ColoredVertex** pp00a,
+    ColoredVertex** pp11a,
+    ColoredVertex** pp01a, 
+    ColoredVertex** pp00b,
+    ColoredVertex** pp10b,
+    ColoredVertex** pp11b)
 {
-    draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01, tangent_error_behavior);
-    draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11, tangent_error_behavior);
+    draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
+    draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
 }
 
 void TriangleList::draw_rectangle_wo_normals(
@@ -119,10 +141,16 @@ void TriangleList::draw_rectangle_wo_normals(
     const std::vector<BoneWeight>& b11,
     const std::vector<BoneWeight>& b01,
     TriangleNormalErrorBehavior normal_error_behavior,
-    TriangleTangentErrorBehavior tangent_error_behavior)
+    TriangleTangentErrorBehavior tangent_error_behavior,
+    ColoredVertex** pp00a,
+    ColoredVertex** pp11a,
+    ColoredVertex** pp01a,
+    ColoredVertex** pp00b,
+    ColoredVertex** pp10b,
+    ColoredVertex** pp11b)
 {
-    draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior);
-    draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior);
+    draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
+    draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
 }
 
 void TriangleList::extrude(
@@ -319,6 +347,7 @@ void TriangleList::convert_triangle_to_vertex_normals(const std::list<std::share
 }
 
 void TriangleList::smoothen_edges(
+    const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     const std::list<std::shared_ptr<TriangleList>>& edge_triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>& excluded_triangle_lists,
     const std::list<FixedArray<float, 3>*>& smoothed_vertices,
@@ -376,12 +405,19 @@ void TriangleList::smoothen_edges(
             }
         }
         for (const auto& s : smoothed_vertices) {
-            auto it = vertex_movement.find(Vertex2{(*s)(0), (*s)(1)});
-            if (it != vertex_movement.end()) {
+            Vertex2 vc;
+            auto hit = vertex_height_bindings.find(s);
+            if (hit != vertex_height_bindings.end()) {
+                vc = hit->second.value();
+            } else {
+                vc = {(*s)(0), (*s)(1)};
+            }
+            auto mit = vertex_movement.find(vc);
+            if (mit != vertex_movement.end()) {
                 if (move_only_z) {
-                    (*s)(2) += it->second(2);
+                    (*s)(2) += mit->second(2);
                 } else {
-                    *s += it->second;
+                    *s += mit->second;
                 }
             }
         }
