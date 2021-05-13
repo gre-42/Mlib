@@ -410,7 +410,7 @@ void TriangleList::smoothen_edges(
             if (hit != vertex_height_bindings.end()) {
                 vc = hit->second.value();
             } else {
-                vc = {(*s)(0), (*s)(1)};
+                vc = Vertex2{(*s)(0), (*s)(1)};
             }
             auto mit = vertex_movement.find(vc);
             if (mit != vertex_movement.end()) {

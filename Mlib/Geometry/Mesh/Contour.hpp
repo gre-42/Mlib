@@ -105,7 +105,7 @@ void delete_triangles_inside_contours(
                                     if (debug_filename.ends_with(".ppm")) {
                                         plot_mesh(ArrayShape{ 8000, 8000 }, 1, 4, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} }, {}).T().reversed(0).save_to_file(debug_filename);
                                     } else if (debug_filename.ends_with(".svg")) {
-                                        plot_mesh_svg(debug_filename, 600, 600, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} });
+                                        plot_mesh_svg(debug_filename, 600.f, 600.f, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} });
                                     } else {
                                         throw std::runtime_error("Unknown file extension: " + debug_filename);
                                     }

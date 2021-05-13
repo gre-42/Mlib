@@ -202,7 +202,7 @@ void Mlib::apply_heightmap(
         if (hit != vertex_height_bindings.end()) {
             vc = hit->second.value();
         } else {
-            vc = { (*iv)(0), (*iv)(1) };
+            vc = OrderableFixedArray<float, 2>{ (*iv)(0), (*iv)(1) };
         }
         vertex_instances_map[vc].push_back(iv);
     }

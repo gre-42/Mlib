@@ -79,6 +79,14 @@ void plot_mesh_svg(
     const std::string& filename,
     float width,
     float height,
+    const std::list<FixedArray<OrderableFixedArray<float, 2>, 3>>& triangles,
+    const std::list<std::vector<OrderableFixedArray<float, 2>>>& contours,
+    const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes);
+
+void plot_mesh_svg(
+    const std::string& filename,
+    float width,
+    float height,
     const std::list<PTri>& triangles,
     const std::list<std::vector<p2t::Point*>>& contours,
     const std::list<p2t::Point*>& highlighted_nodes);

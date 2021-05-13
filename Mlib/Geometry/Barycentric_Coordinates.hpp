@@ -19,9 +19,9 @@ void barycentric(
     TData &v,
     TData &w)
 {
-    FixedArray<double, tndim> v0 = (b - a).casted<double>();
-    FixedArray<double, tndim> v1 = (c - a).casted<double>();
-    FixedArray<double, tndim> v2 = (p - a).casted<double>();
+    FixedArray<double, tndim> v0 = (b - a) TEMPLATEV casted<double>();
+    FixedArray<double, tndim> v1 = (c - a) TEMPLATEV casted<double>();
+    FixedArray<double, tndim> v2 = (p - a) TEMPLATEV casted<double>();
     double d00 = dot0d(v0, v0);
     double d01 = dot0d(v0, v1);
     double d11 = dot0d(v1, v1);

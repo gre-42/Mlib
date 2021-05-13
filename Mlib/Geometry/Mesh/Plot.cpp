@@ -41,6 +41,29 @@ static void convert_to_2d(
     }
 }
 
+struct ConvOrderable {
+    ConvOrderable(
+        const std::list<FixedArray<OrderableFixedArray<float, 2>, 3>>& triangles,
+        const std::list<std::vector<OrderableFixedArray<float, 2>>>& contours,
+        const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes,
+        const std::list<OrderableFixedArray<float, 2>>& crossed_nodes)
+    : triangles_2d{reinterpret_cast<const std::list<FixedArray<FixedArray<float, 2>, 3>>&>(triangles)},
+      highlighted_nodes_2d{reinterpret_cast<const std::list<FixedArray<float, 2>>&>(highlighted_nodes_2d)},
+      crossed_nodes_2d{reinterpret_cast<const std::list<FixedArray<float, 2>>&>(crossed_nodes)}
+    {
+        for (const auto& c : contours) {
+            contours_2d.emplace_back();
+            for (const auto& p : c) {
+                contours_2d.back().push_back(p);
+            }
+        }
+    }
+    const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles_2d;
+    std::list<std::list<FixedArray<float, 2>>> contours_2d;
+    const std::list<FixedArray<float, 2>>& highlighted_nodes_2d;
+    const std::list<FixedArray<float, 2>>& crossed_nodes_2d;
+};
+
 struct ConvPtri {
     ConvPtri(
         const std::list<PTri>& triangles,
@@ -278,6 +301,31 @@ void Mlib::plot_mesh_svg(
     const std::string& filename,
     float width,
     float height,
+    const std::list<FixedArray<OrderableFixedArray<float, 2>, 3>>& triangles,
+    const std::list<std::vector<OrderableFixedArray<float, 2>>>& contours,
+    const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes)
+{
+    ConvOrderable c{
+        triangles,
+        contours,
+        highlighted_nodes,
+        {}};
+    std::ofstream ofstr{ filename };
+    Svg<float> svg{ ofstr, width, height };
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
+    plot_mesh(
+        svg,
+        c.triangles_2d,
+        c.contours_2d,
+        c.highlighted_nodes_2d);
+}
+
+void Mlib::plot_mesh_svg(
+    const std::string& filename,
+    float width,
+    float height,
     const std::list<PTri>& triangles,
     const std::list<std::vector<p2t::Point*>>& contours,
     const std::list<p2t::Point*>& highlighted_nodes)
@@ -308,21 +356,19 @@ PpmImage Mlib::plot_mesh(
     const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes,
     const std::list<OrderableFixedArray<float, 2>>& crossed_nodes)
 {
-    std::list<std::list<FixedArray<float, 2>>> contoursR;
-    for (const auto& c : contours) {
-        contoursR.emplace_back();
-        for (const auto& p : c) {
-            contoursR.back().push_back(p);
-        }
-    }
+    ConvOrderable c{
+        triangles,
+        contours,
+        highlighted_nodes,
+        crossed_nodes};
     return plot_mesh(
         image_size,
         line_thickness,
         point_size,
-        reinterpret_cast<const std::list<FixedArray<FixedArray<float, 2>, 3>>&>(triangles),
-        contoursR,
-        reinterpret_cast<const std::list<FixedArray<float, 2>>&>(highlighted_nodes),
-        reinterpret_cast<const std::list<FixedArray<float, 2>>&>(crossed_nodes));
+        c.triangles_2d,
+        c.contours_2d,
+        c.highlighted_nodes_2d,
+        c.crossed_nodes_2d);
 }
 
 PpmImage Mlib::plot_mesh(
