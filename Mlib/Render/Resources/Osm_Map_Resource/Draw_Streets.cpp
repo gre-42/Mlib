@@ -483,10 +483,8 @@ void DrawStreets::draw_holes() {
                         way_infos.at(hv(j).way_id).colors(0),
                         center_color);
                 }
-                if (with_height_bindings) {
-                    if (nodes.at(nh.first).tags.contains("bind_height", "yes")) {
-                        height_bindings[OrderableFixedArray{center}] = nh.first;
-                    }
+                if (with_height_bindings && !nodes.at(nh.first).tags.contains("bind_height", "no")) {
+                    height_bindings[OrderableFixedArray{ center }] = nh.first;
                 }
             }
             // Draw corners
@@ -683,11 +681,11 @@ void DrawStreets::draw_streets_draw_ways(
     bool with_c_height_binding;
     {
         const auto& tags = nodes.at(node_id).tags;
-        with_b_height_binding = with_height_bindings && (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes");
+        with_b_height_binding = with_height_bindings && !tags.contains("bind_height", "no");
     }
     {
         const auto& tags = nodes.at(angle_way.neighbor_id).tags;
-        with_c_height_binding = with_height_bindings && (tags.find("bind_height") == tags.end() || tags.at("bind_height") == "yes");
+        with_c_height_binding = with_height_bindings && !tags.contains("bind_height", "no");
     }
     EntranceType b_entrance_type = EntranceType::NONE;
     EntranceType c_entrance_type = EntranceType::NONE;
