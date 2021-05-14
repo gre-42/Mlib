@@ -69,14 +69,14 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     tl_terrain->insert(TerrainType::BUILDING_HOLE, std::make_shared<TriangleList>(terrain_type_to_string(TerrainType::BUILDING_HOLE), Material()));
     for (auto& ttt : config.terrain_textures) {
         tl_terrain->insert(ttt.first, std::make_shared<TriangleList>(terrain_type_to_string(ttt.first), Material{
-            .dirt_texture = config.dirt_texture,
+            .dirt_texture = config.terrain_dirt_texture,
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
             .occluder_type = OccluderType::WHITE,
             .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode()));
         tl_terrain_visuals.insert(ttt.first, std::make_shared<TriangleList>(terrain_type_to_string(ttt.first) + "_visuals", Material{
-            .dirt_texture = config.dirt_texture,
+            .dirt_texture = config.terrain_dirt_texture,
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
             .occluder_type = OccluderType::WHITE,
             .collide = false,
@@ -84,7 +84,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .specularity = {0.f, 0.f, 0.f},
             .draw_distance_noperations = 1000}.compute_color_mode()));
         tl_terrain_extrusion.insert(ttt.first, std::make_shared<TriangleList>(terrain_type_to_string(ttt.first) + "_street_extrusion", Material{
-            .dirt_texture = config.dirt_texture,
+            .dirt_texture = config.terrain_dirt_texture,
             .occluded_type = OccludedType::LIGHT_MAP_COLOR,
             .occluder_type = OccluderType::WHITE,
             .aggregate_mode = config.blend_street ? AggregateMode::ONCE : AggregateMode::OFF,
@@ -104,6 +104,8 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     for (const auto& s : config.street_crossing_texture) {
         tl_street_crossing.insert(s.first, std::make_shared<TriangleList>("crossing_" + road_type_to_string(s.first), Material{
             .textures = {primary_rendering_resources->get_blend_map_texture(s.second)},
+            .dirt_texture = config.street_dirt_texture,
+            .dirt_color_mode = ColorMode::RGBA,
             .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
             .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
             .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first != RoadType::WALL))},
@@ -118,6 +120,8 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                     .continuous_blending_z_order = blend ? 1 : 0,
                     .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                     .textures = {primary_rendering_resources->get_blend_map_texture(s.second.texture)},
+                    .dirt_texture = config.street_dirt_texture,
+                    .dirt_color_mode = ColorMode::RGBA,
                     .occluded_type = (s.first.type != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
                     .occluder_type = (s.first.type != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
                     .depth_func_equal = blend,

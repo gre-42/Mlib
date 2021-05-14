@@ -240,6 +240,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_lightmap_color = has_lightmap_color,
             .has_lightmap_depth = has_lightmap_depth,
             .has_dirtmap = has_dirtmap,
+            .dirt_color_mode = cva->material.dirt_color_mode,
             .has_instances = has_instances,
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
@@ -435,7 +436,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glActiveTexture(GL_TEXTURE0));
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + filtered_lights.size() + ntextures_normal + 1)));
-        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = cva->material.dirt_texture, .color_mode = ColorMode::RGB})));
+        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = cva->material.dirt_texture, .color_mode = cva->material.dirt_color_mode})));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
         CHK(glActiveTexture(GL_TEXTURE0));

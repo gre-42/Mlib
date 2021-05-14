@@ -1,10 +1,7 @@
 #pragma once
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
-#include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <map>
@@ -43,6 +40,7 @@ struct RenderProgramIdentifier {
     bool has_lightmap_color;
     bool has_lightmap_depth;
     bool has_dirtmap;
+    ColorMode dirt_color_mode;
     bool has_instances;
     bool has_lookat;
     bool has_yangle;

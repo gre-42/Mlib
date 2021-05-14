@@ -220,6 +220,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_lightmap_depth,
     bool has_normalmap,
     bool has_dirtmap,
+    ColorMode dirt_color_mode,
     const OrderableFixedArray<float, 3>& ambience,
     const OrderableFixedArray<float, 3>& diffusivity,
     const OrderableFixedArray<float, 3>& specularity,
@@ -563,12 +564,19 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
+        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord);" << std::endl;
+        if (dirt_color_mode == ColorMode::RGBA) {
+            sstr << "    dirtiness *= dirt_color.a;" << std::endl;
+        } else if (dirt_color_mode != ColorMode::RGB) {
+            throw std::runtime_error("Unsupported dirt color mode");
+        }
         sstr << "    dirtiness += " << dirtmap_offset << ";" << std::endl;
         sstr << "    dirtiness = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness - 0.5), 0, 1);" << std::endl;
         // sstr << "    dirtiness += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
-        sstr << "    frag_color = texture_color * (1 - dirtiness)" << std::endl;
-        sstr << "               + texture(texture_dirt, tex_coord) * dirtiness;" << std::endl;
-        sstr << "    frag_color *= vec4(color, 1.0);" << std::endl;
+        sstr << "    frag_color.a = 1;" << std::endl;
+        sstr << "    frag_color.rgb = texture_color.rgb * (1 - dirtiness)" << std::endl;
+        sstr << "                     + dirt_color.rgb * dirtiness;" << std::endl;
+        sstr << "    frag_color.rgb *= color;" << std::endl;
     } else if (ntextures_color != 0) {
         sstr << "    frag_color = texture_color * vec4(color, 1.0);" << std::endl;
     } else {
@@ -785,6 +793,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_lightmap_depth,
         id.ntextures_normal != 0,
         id.has_dirtmap,
+        id.dirt_color_mode,
         id.ambience,
         id.diffusivity,
         id.specularity,
