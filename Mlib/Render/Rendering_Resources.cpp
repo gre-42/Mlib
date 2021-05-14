@@ -461,6 +461,20 @@ void RenderingResources::set_discreteness(const std::string& name, float value) 
     discreteness_[name] = value;
 }
 
+float RenderingResources::get_scale(const std::string& name) const {
+    LOG_FUNCTION("RenderingResources::get_scale " + name);
+    auto it = scales_.find(name);
+    if (it == scales_.end()) {
+        throw std::runtime_error("Could not find scale with name " + name);
+    }
+    return it->second;
+}
+
+void RenderingResources::set_scale(const std::string& name, float value) {
+    LOG_FUNCTION("RenderingResources::set_scale " + name);
+    scales_[name] = value;
+}
+
 WrapMode RenderingResources::get_texture_wrap(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_texture_wrap " + name);
     auto it = texture_wrap_.find(name);

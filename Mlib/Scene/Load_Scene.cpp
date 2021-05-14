@@ -517,6 +517,7 @@ void LoadScene::operator()(
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+offset=([\\w+-.]+)"
         "\\s+discreteness=([\\w+-.]+)"
+        "\\s+scale=([\\w+-.]+)"
         "\\s+wrap_mode=(repeat|clamp_to_edge|clamp_to_border)$");
     static const DECLARE_REGEX(set_soft_light_reg,
         "^\\s*set_soft_light"
@@ -2097,7 +2098,8 @@ void LoadScene::operator()(
             dirtmap_logic.set_filename(fpath(match[1].str()));
             secondary_rendering_context.rendering_resources->set_offset("dirtmap", safe_stof(match[2].str()));
             secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[3].str()));
-            secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[4].str()));
+            secondary_rendering_context.rendering_resources->set_scale("dirtmap", safe_stof(match[4].str()));
+            secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[5].str()));
         } else if (Mlib::re::regex_match(line, match, set_soft_light_reg)) {
             post_processing_logic.set_soft_light_filename(fpath(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, set_skybox_reg)) {

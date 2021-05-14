@@ -232,7 +232,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool fragments_depend_on_distance,
     bool fragments_depend_on_normal,
     float dirtmap_offset,
-    float dirtmap_discreteness)
+    float DIRTMAP_DISCRETENESS,
+    float dirtmap_scale)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
@@ -564,14 +565,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
-        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord);" << std::endl;
+        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord * " << dirtmap_scale << " );" << std::endl;
         if (dirt_color_mode == ColorMode::RGBA) {
             sstr << "    dirtiness *= dirt_color.a;" << std::endl;
         } else if (dirt_color_mode != ColorMode::RGB) {
             throw std::runtime_error("Unsupported dirt color mode: " + color_mode_to_string(dirt_color_mode));
         }
         sstr << "    dirtiness += " << dirtmap_offset << ";" << std::endl;
-        sstr << "    dirtiness = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness - 0.5), 0, 1);" << std::endl;
+        sstr << "    dirtiness = clamp(0.5 + " << DIRTMAP_DISCRETENESS << " * (dirtiness - 0.5), 0, 1);" << std::endl;
         // sstr << "    dirtiness += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
         sstr << "    frag_color.a = 1;" << std::endl;
         sstr << "    frag_color.rgb = texture_color.rgb * (1 - dirtiness)" << std::endl;
@@ -807,7 +808,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.fragments_depend_on_distance,
         id.fragments_depend_on_normal,
         id.dirtmap_offset,
-        id.dirtmap_discreteness);
+        id.dirtmap_discreteness,
+        id.dirtmap_scale);
     try {
         rp->allocate(vs_text, fs_text);
 

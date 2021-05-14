@@ -57,6 +57,8 @@ public:
     void set_offset(const std::string& name, float value);
     float get_discreteness(const std::string& name) const;
     void set_discreteness(const std::string& name, float value);
+    float get_scale(const std::string& name) const;
+    void set_scale(const std::string& name, float value);
     WrapMode get_texture_wrap(const std::string& name) const;
     void set_texture_wrap(const std::string& name, WrapMode mode);
 
@@ -76,6 +78,7 @@ private:
     std::map<std::string, FixedArray<float, 4, 4>> vps_;
     std::map<std::string, float> offsets_;
     std::map<std::string, float> discreteness_;
+    std::map<std::string, float> scales_;
     std::map<std::string, WrapMode> texture_wrap_;
     std::map<std::string, BlendMapTexture> blend_map_textures_;
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;

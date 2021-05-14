@@ -54,6 +54,7 @@ struct RenderProgramIdentifier {
     bool fragments_depend_on_normal;
     float dirtmap_offset;
     float dirtmap_discreteness;
+    float dirtmap_scale;
     std::partial_ordering operator <=> (const RenderProgramIdentifier&) const = default;
 };
 
