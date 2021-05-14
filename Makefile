@@ -32,6 +32,9 @@ test_release10: release10
 debug_clang:
 	CC=/usr/bin/clang CXX=/usr/bin/clang++ BUILD_PREFIX=L ./build.sh Debug
 
+asan10:
+	CXX=g++-10 CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=A ./build.sh RelWithDebInfo
+
 distclean:
 	./build.sh Debug distclean
 	./build.sh Release distclean
