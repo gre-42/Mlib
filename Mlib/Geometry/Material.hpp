@@ -21,6 +21,7 @@ struct Material {
     BlendMode blend_mode = BlendMode::OFF;
     std::vector<BlendMapTexture> textures;
     std::string dirt_texture;
+    ColorMode dirt_color_mode = ColorMode::RGB;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::OFF;
     bool occluded_by_black = true;
