@@ -393,6 +393,14 @@ TextureDescriptor RenderingResources::get_texture_descriptor(const std::string& 
     }
 }
 
+TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std::string& name) const {
+    auto it = texture_descriptors_.find(name);
+    if (it == texture_descriptors_.end()) {
+        throw std::runtime_error("Could not find texture descriptor: " + name);
+    }
+    return it->second;
+}
+
 BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_blending_min " + name);
     if (auto it = blend_map_textures_.find(name); it == blend_map_textures_.end()) {

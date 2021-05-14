@@ -46,6 +46,7 @@ public:
     void set_texture(const std::string& name, GLuint id);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_texture_descriptor(const std::string& name) const;
+    TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
 
     BlendMapTexture get_blend_map_texture(const std::string& name) const;
     void set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt);
