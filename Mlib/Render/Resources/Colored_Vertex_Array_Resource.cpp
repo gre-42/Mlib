@@ -574,7 +574,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    dirtiness += " << dirtmap_offset << ";" << std::endl;
         sstr << "    dirtiness = clamp(0.5 + " << DIRTMAP_DISCRETENESS << " * (dirtiness - 0.5), 0, 1);" << std::endl;
         // sstr << "    dirtiness += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
-        sstr << "    frag_color.a = 1;" << std::endl;
+        sstr << "    frag_color.a = texture_color.a;" << std::endl;
         sstr << "    frag_color.rgb = texture_color.rgb * (1 - dirtiness)" << std::endl;
         sstr << "                     + dirt_color.rgb * dirtiness;" << std::endl;
         sstr << "    frag_color.rgb *= color;" << std::endl;
