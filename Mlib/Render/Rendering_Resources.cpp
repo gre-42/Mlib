@@ -38,15 +38,12 @@ int log2(int n) {
 }
 
 static StbInfo stb_load_texture(const std::string& filename,
-                                bool rgba,
+                                size_t nchannels,
                                 bool flip_vertically,
                                 bool flip_horizontally) {
     StbInfo result = stb_load(filename, flip_vertically, flip_horizontally);
-    if (result.nrChannels != 3 && result.nrChannels != 4) {
-        throw std::runtime_error(filename + " does not have 3 or 4 channels");
-    }
-    if (rgba && (result.nrChannels == 3)) {
-        throw std::runtime_error("Requested RGBA texture but it is RGB: " + filename);
+    if ((size_t)result.nrChannels < nchannels) {
+        throw std::runtime_error(filename + " does not have at least " + std::to_string(nchannels) + " channels");
     }
     if (!is_power_of_two(result.width) || !is_power_of_two(result.height)) {
         std::cerr << filename << " size: " << result.width << 'x' << result.height << std::endl;
@@ -195,6 +192,19 @@ GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descri
         .anisotropic_filtering_level = descriptor.anisotropic_filtering_level});
 }
 
+static GLenum nchannels2format(size_t nchannels) {
+    switch (nchannels) {
+    case 1:
+        return GL_RED;
+    case 3:
+        return GL_RGB;
+    case 4:
+        return GL_RGBA;
+    default:
+        throw std::runtime_error("Unsupported number of channels: " + std::to_string(nchannels));
+    };
+}
+
 // From: https://gamedev.stackexchange.com/questions/70829/why-is-gl-texture-max-anisotropy-ext-undefined/75816#75816?newreg=a7ddca6a76bf40b794c36dbe189c64b6
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
@@ -232,10 +242,10 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
         }
     }
     StbInfo si0 = stb_load_texture(
-        desc.color, desc.color_mode == ColorMode::RGBA, true, false); // true=flip_vertically, false=flip_horizontally
+        desc.color, (size_t)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
     if (!desc.mixed.empty()) {
         auto si1_raw = stb_load_texture(
-            desc.mixed, desc.color_mode == ColorMode::RGBA, true, false); // true=flip_vertically, false=flip_horizontally
+            desc.mixed, (size_t)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
         std::unique_ptr<unsigned char[]> si1_resized{
             new unsigned char[(size_t)(si0.width * si0.height * si1_raw.nrChannels)]};
         stbir_resize_uint8(si1_raw.data.get(),
@@ -296,11 +306,11 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     }
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     desc.color_mode == ColorMode::RGBA ? GL_RGBA : GL_RGB,
+                     nchannels2format(size_t(desc.color_mode)),
                      si0.width,
                      si0.height,
                      0,
-                     si0.nrChannels == 3 ? GL_RGB : GL_RGBA,
+                     nchannels2format(si0.nrChannels),
                      GL_UNSIGNED_BYTE,
                      si0.data.get()));
     if (si0.nrChannels == 4) {

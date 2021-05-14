@@ -42,7 +42,7 @@ void DirtmapLogic::render(
             "dirtmap",
             TextureDescriptor{
                 .color = filename_,
-                .color_mode = ColorMode::RGB});
+                .color_mode = ColorMode::GRAYSCALE});
         rendering_context_.rendering_resources->set_vp("dirtmap", vp());
         generated_ = true;
     }

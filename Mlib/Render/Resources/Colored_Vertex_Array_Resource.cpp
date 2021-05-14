@@ -562,16 +562,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         throw std::runtime_error("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
     }
     if (has_dirtmap) {
-        sstr << "    vec4 dirtiness = texture(texture_dirtmap, tex_coord_dirtmap);" << std::endl;
-        sstr << "    dirtiness.r += " << dirtmap_offset << ";" << std::endl;
-        sstr << "    dirtiness.g += " << dirtmap_offset << ";" << std::endl;
-        sstr << "    dirtiness.b += " << dirtmap_offset << ";" << std::endl;
-        sstr << "    dirtiness.r = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.r - 0.5), 0, 1);" << std::endl;
-        sstr << "    dirtiness.g = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.g - 0.5), 0, 1);" << std::endl;
-        sstr << "    dirtiness.b = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness.b - 0.5), 0, 1);" << std::endl;
-        // sstr << "    dirtiness.r += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
-        // sstr << "    dirtiness.g += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
-        // sstr << "    dirtiness.b += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
+        sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
+        sstr << "    dirtiness += " << dirtmap_offset << ";" << std::endl;
+        sstr << "    dirtiness = clamp(0.5 + " << dirtmap_discreteness << " * (dirtiness - 0.5), 0, 1);" << std::endl;
+        // sstr << "    dirtiness += clamp(0.005 + 80 * (0.98 - norm.y), 0, 1);" << std::endl;
         sstr << "    frag_color = texture_color * (1 - dirtiness)" << std::endl;
         sstr << "               + texture(texture_dirt, tex_coord) * dirtiness;" << std::endl;
         sstr << "    frag_color *= vec4(color, 1.0);" << std::endl;
