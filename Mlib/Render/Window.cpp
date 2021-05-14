@@ -28,7 +28,7 @@ Window::Window(
         title,
         monitor,
         share));
-    if (!window_) {
+    if (window_ == nullptr) {
         throw std::runtime_error("Could not initialize window");
     }
     if (use_double_buffering) {
