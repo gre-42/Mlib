@@ -463,7 +463,7 @@ void LoadScene::operator()(
         "\\s+name=([\\w+-.]+)"
         "\\s+color=([\\w-. \\(\\)/+-]+)"
         "(?:\\s+normal=([\\w-. \\(\\)/+-]+))?"
-        "\\s+color_mode=(rgb|rgba)"
+        "\\s+color_mode=(grayscale|rgb|rgba)"
         "(?:\\s+desaturate=(0|1))?"
         "(?:\\s+histogram=([\\w-. \\(\\)/+-]+))?"
         "(?:\\s+mixed=([\\w-. \\(\\)/+-]+))?"
