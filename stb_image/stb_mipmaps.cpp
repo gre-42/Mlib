@@ -23,7 +23,7 @@ void downsample_rgba_inplace(
         .applied([](float v){return v == 0 ? float{NAN} : v;});
     for (int d = 0; d < 3; ++d) {
         TemporarilyIgnoreFloatingPointExeptions ignore_except;
-        ar[d] = gaussian_filter_NWE(ar[d] * m, 1.f, float{NAN}) / m;
+        ar[d] = gaussian_filter_NWE(ar[d] * ar[3], 1.f, float{NAN}) / m;
     }
     array_2_stb_image(substitute_nans(ar, 0.f).casted<unsigned char>(), data);
     {
