@@ -1,13 +1,50 @@
-#include "../Mlib/Floating_Point_Exceptions.hpp"
+#include "stb_array.h"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
 #include "stb_mipmaps.h"
+#include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
 
+using namespace Mlib;
+
 void downsample_rgba_inplace(
+    unsigned char* data,
+    unsigned char* downsampled_data,
+    int width,
+    int height)
+{
+    Array<float> ar = stb_image_2_array(data, width, height, 4).casted<float>();
+    Array<float> m =
+        gaussian_filter_NWE(ar[3], 1.f, float{NAN})
+        .applied([](float v){return v == 0 ? float{NAN} : v;});
+    for (int d = 0; d < 3; ++d) {
+        TemporarilyIgnoreFloatingPointExeptions ignore_except;
+        ar[d] = gaussian_filter_NWE(ar[d] * m, 1.f, float{NAN}) / m;
+    }
+    array_2_stb_image(substitute_nans(ar, 0.f).casted<unsigned char>(), data);
+    {
+        TemporarilyIgnoreFloatingPointExeptions ignore_except;
+        if (!stbir_resize_uint8(
+            data,
+            width,
+            height,
+            0,
+            downsampled_data,
+            (width == 0 || height == 0) ? 1 : width / 2,
+            (width == 0 || height == 0) ? 1 : height / 2,
+            0,
+            4))
+        {
+            throw std::runtime_error("could not resize image");
+        }
+    }
+}
+
+void downsample_rgba_inplace0(
     unsigned char* data,
     unsigned char* downsampled_data,
     int width,
@@ -22,7 +59,7 @@ void downsample_rgba_inplace(
         }
     }
     {
-        Mlib::TemporarilyIgnoreFloatingPointExeptions ignore_except;
+        TemporarilyIgnoreFloatingPointExeptions ignore_except;
         if (!stbir_resize_uint8(
             data,
             width,
