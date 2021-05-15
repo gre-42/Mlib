@@ -4,7 +4,11 @@
 
 using namespace Mlib;
 
-Array<unsigned char> Mlib::match_rgba_histograms(const Array<unsigned char>& image, const Array<unsigned char>& ref) {
+Array<unsigned char> Mlib::match_rgba_histograms(
+    const Array<unsigned char>& image,
+    const Array<unsigned char>& ref,
+    unsigned char alpha_threshold)
+{
     Array<unsigned char> out{image.shape()};
     if (image.ndim() != 3) {
         throw std::runtime_error("Image does not have 3 dimensions");
@@ -23,10 +27,10 @@ Array<unsigned char> Mlib::match_rgba_histograms(const Array<unsigned char>& ima
             out[d] = histogram_matching<unsigned char, unsigned char, float>(image[d].flattened(), ref[d].flattened(), 256);
         }
     } else if (image.shape(0) == 4) {
-        Array<bool> mask = (image[3] > (unsigned char)50);
+        Array<bool> mask = (image[3] > alpha_threshold);
         Array<bool> mask_ref = ref.shape(0) == 3
             ? ones<bool>(ref.shape().erased_first())
-            : (ref[3] > (unsigned char)50);
+            : (ref[3] > alpha_threshold);
         for (size_t d = 0; d < 3; ++d) {
             HistogramMatching<unsigned char, unsigned char, float> hm{image[d][mask], ref[d][mask_ref], 256};
             for (size_t r = 0; r < image.shape(1); ++r) {
