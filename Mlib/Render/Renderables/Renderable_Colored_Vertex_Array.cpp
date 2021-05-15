@@ -458,8 +458,17 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glEnable(GL_BLEND));
             CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
             CHK(glDepthMask(GL_FALSE));
-            if (cva->material.depth_func_equal) {
+            switch(cva->material.depth_func) {
+            case DepthFunc::LESS:
+                break;
+            case DepthFunc::EQUAL:
                 CHK(glDepthFunc(GL_EQUAL));
+                break;
+            case DepthFunc::LESS_EQUAL:
+                CHK(glDepthFunc(GL_LEQUAL));
+                break;
+            default:
+                throw std::runtime_error("Unknown depth func");
             }
             break;
         default:

@@ -174,6 +174,7 @@ void LoadScene::operator()(
         "\\s+occluded_by_black=(0|1)"
         "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+blend_mode=(off|binary|continuous)"
+        "(?:\\s+depth_func=(less_equal|less|equal))?"
         "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
         "(?:\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
@@ -1038,12 +1039,13 @@ void LoadScene::operator()(
             // 10: occluded_by_black
             // 11, 12, 13: ambience
             // 14: blend_mode
-            // 15, 16, 17, 18: alpha_distances
-            // 19: cull_faces
-            // 20, 21, 22: rotation
-            // 23, 24, 25: translation
-            // 26: aggregate_mode
-            // 27: transformation_mode
+            // 15: depth_func
+            // 16, 17, 18, 19: alpha_distances
+            // 20: cull_faces
+            // 21, 22, 23: rotation
+            // 24, 25, 26: translation
+            // 27: aggregate_mode
+            // 28: transformation_mode
             scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -1051,31 +1053,32 @@ void LoadScene::operator()(
                 TransformationMatrix<float, 3>(
                     tait_bryan_angles_2_matrix(
                         FixedArray<float, 3>{
-                            match[20].matched ? safe_stof(match[20].str()) / 180.f * float(M_PI) : 0.f,
                             match[21].matched ? safe_stof(match[21].str()) / 180.f * float(M_PI) : 0.f,
-                            match[22].matched ? safe_stof(match[22].str()) / 180.f * float(M_PI) : 0.f}),
+                            match[22].matched ? safe_stof(match[22].str()) / 180.f * float(M_PI) : 0.f,
+                            match[23].matched ? safe_stof(match[23].str()) / 180.f * float(M_PI) : 0.f}),
                     FixedArray<float, 3>{
-                        match[23].matched ? safe_stof(match[23].str()) : 0.f,
                         match[24].matched ? safe_stof(match[24].str()) : 0.f,
-                        match[25].matched ? safe_stof(match[25].str()) : 0.f}),
+                        match[25].matched ? safe_stof(match[25].str()) : 0.f,
+                        match[26].matched ? safe_stof(match[26].str()) : 0.f}),
                 Material{
                     .blend_mode = blend_mode_from_string(match[14].str()),
+                    .depth_func = match[15].matched ? depth_func_from_string(match[15].str()) : DepthFunc::LESS,
                     .textures = {{.texture_descriptor = {.color = fpath(match[2].str())}}},
                     .occluded_type =  occluded_type_from_string(match[8].str()),
                     .occluder_type = occluder_type_from_string(match[9].str()),
                     .occluded_by_black = safe_stob(match[10].str()),
                     .alpha_distances = {
-                        safe_stof(match[15].str()),
                         safe_stof(match[16].str()),
                         safe_stof(match[17].str()),
-                        safe_stof(match[18].str())},
+                        safe_stof(match[18].str()),
+                        safe_stof(match[19].str())},
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .collide = false,
-                    .aggregate_mode = aggregate_mode_from_string(match[26].str()),
-                    .transformation_mode = transformation_mode_from_string(match[27].str()),
+                    .aggregate_mode = aggregate_mode_from_string(match[27].str()),
+                    .transformation_mode = transformation_mode_from_string(match[28].str()),
                     .is_small = safe_stob(match[7].str()),
-                    .cull_faces = safe_stob(match[19].str()),
+                    .cull_faces = safe_stob(match[20].str()),
                     .ambience = {
                         safe_stof(match[11].str()),
                         safe_stof(match[12].str()),

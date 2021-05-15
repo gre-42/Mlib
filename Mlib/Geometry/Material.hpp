@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
+#include <Mlib/Geometry/Material/Depth_Func.hpp>
 #include <Mlib/Geometry/Material/Occluded_Type.hpp>
 #include <Mlib/Geometry/Material/Occluder_Type.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
@@ -19,13 +20,13 @@ struct Material {
     int continuous_blending_z_order = 0;
     // Second element to support sorting.
     BlendMode blend_mode = BlendMode::OFF;
+    DepthFunc depth_func = DepthFunc::LESS;
     std::vector<BlendMapTexture> textures;
     std::string dirt_texture;
     OccludedType occluded_type = OccludedType::OFF;
     OccluderType occluder_type = OccluderType::OFF;
     bool occluded_by_black = true;
     OrderableFixedArray<float, 4> alpha_distances = { default_distances };
-    bool depth_func_equal = false;
     WrapMode wrap_mode_s = WrapMode::REPEAT;
     WrapMode wrap_mode_t = WrapMode::REPEAT;
     bool collide = true;

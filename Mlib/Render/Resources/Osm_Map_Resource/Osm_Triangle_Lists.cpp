@@ -120,11 +120,11 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                 .triangle_list = std::make_shared<TriangleList>((std::string)s.first, Material{
                     .continuous_blending_z_order = blend ? 1 : 0,
                     .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
+                    .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
                     .textures = {primary_rendering_resources->get_blend_map_texture(s.second.texture)},
                     .dirt_texture = config.street_dirt_texture,
                     .occluded_type = (s.first.type != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
                     .occluder_type = (s.first.type != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
-                    .depth_func_equal = blend,
                     .aggregate_mode = blend ? AggregateMode::ONCE : AggregateMode::OFF,
                     .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(s.first.type != RoadType::WALL))},
                     .draw_distance_noperations = 1000}.compute_color_mode()),
