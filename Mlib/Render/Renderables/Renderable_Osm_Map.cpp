@@ -91,8 +91,8 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             VisibilityCheck vc_center{ mvp_center };
             if (vc_center.is_visible(gtl.material_, scene_graph_config, external_render_pass, 2 * scene_graph_config.max_distance_near))
             {
-                ts.seed(392743);
-                rnc.seed(4624052);
+                ts.seed(392743 + (unsigned int)(size_t)&t);
+                rnc.seed(4624052 + (unsigned int)(size_t)&t);
                 ts.sample_triangle_interior<3>(
                     t(0).position,
                     t(1).position,
