@@ -990,7 +990,9 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
             scene_node.add_instances_position(p.first, r.position, r.yangle);
         }
     }
-    if (!near_grass_resource_names_.empty() && (much_near_grass_distance_ != INFINITY)) {
+    if ((!near_grass_resource_names_.empty() && (much_near_grass_distance_ != INFINITY)) ||
+        (!dirt_decals_resource_names_.empty() && (dirt_decals_distance_ != INFINITY)))
+    {
         scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
     }
     // if (rbvh_ == nullptr) {
