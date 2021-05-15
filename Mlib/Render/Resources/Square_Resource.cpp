@@ -9,6 +9,7 @@ using namespace Mlib;
 
 SquareResource::SquareResource(
     const FixedArray<float, 2, 2>& square,
+    const TransformationMatrix<float, 3>& transformation,
     const Material& material)
 {
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
@@ -35,8 +36,8 @@ SquareResource::SquareResource(
         {1.f, 1.f},
         {0.f, 0.f, 1.f}};
 
-    triangles.push_back(FixedArray<ColoredVertex, 3>{v00, v11, v01});
-    triangles.push_back(FixedArray<ColoredVertex, 3>{v11, v00, v10});
+    triangles.push_back(FixedArray<ColoredVertex, 3>{v00.transformed(transformation), v11.transformed(transformation), v01.transformed(transformation)});
+    triangles.push_back(FixedArray<ColoredVertex, 3>{v11.transformed(transformation), v00.transformed(transformation), v10.transformed(transformation)});
 
     rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(

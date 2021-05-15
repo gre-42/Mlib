@@ -176,6 +176,8 @@ void LoadScene::operator()(
         "\\s+blend_mode=(off|binary|continuous)"
         "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
+        "(?:\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:\\s+translation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
     static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w+-. \\(\\)/\\\\:]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
@@ -1033,15 +1035,29 @@ void LoadScene::operator()(
             // 7: is_small
             // 8: occluded_type
             // 9: occluder_type
-            // 10, 11, 12: ambience
-            // 13: blend_mode
-            // 14: cull_faces
-            // 15: aggregate_mode
-            // 16: transformation_mode
+            // 10: occluded_by_black
+            // 11, 12, 13: ambience
+            // 14: blend_mode
+            // 15, 16, 17, 18: alpha_distances
+            // 19: cull_faces
+            // 20, 21, 22: rotation
+            // 23, 24, 25: translation
+            // 26: aggregate_mode
+            // 27: transformation_mode
             scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
+                TransformationMatrix<float, 3>(
+                    tait_bryan_angles_2_matrix(
+                        FixedArray<float, 3>{
+                            match[20].matched ? safe_stof(match[20].str()) / 180.f * float(M_PI) : 0.f,
+                            match[21].matched ? safe_stof(match[21].str()) / 180.f * float(M_PI) : 0.f,
+                            match[22].matched ? safe_stof(match[22].str()) / 180.f * float(M_PI) : 0.f}),
+                    FixedArray<float, 3>{
+                        match[23].matched ? safe_stof(match[23].str()) : 0.f,
+                        match[24].matched ? safe_stof(match[24].str()) : 0.f,
+                        match[25].matched ? safe_stof(match[25].str()) : 0.f}),
                 Material{
                     .blend_mode = blend_mode_from_string(match[14].str()),
                     .textures = {{.texture_descriptor = {.color = fpath(match[2].str())}}},
@@ -1056,8 +1072,8 @@ void LoadScene::operator()(
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .collide = false,
-                    .aggregate_mode = aggregate_mode_from_string(match[20].str()),
-                    .transformation_mode = transformation_mode_from_string(match[21].str()),
+                    .aggregate_mode = aggregate_mode_from_string(match[26].str()),
+                    .transformation_mode = transformation_mode_from_string(match[27].str()),
                     .is_small = safe_stob(match[7].str()),
                     .cull_faces = safe_stob(match[19].str()),
                     .ambience = {

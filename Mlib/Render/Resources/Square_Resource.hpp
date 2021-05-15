@@ -6,11 +6,14 @@
 namespace Mlib {
 
 struct Material;
+template <class TData, size_t n>
+class TransformationMatrix;
 
 class SquareResource: public SceneNodeResource{
 public:
     SquareResource(
         const FixedArray<float, 2, 2>& square,
+        const TransformationMatrix<float, 3>& transformation,
         const Material& material);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
