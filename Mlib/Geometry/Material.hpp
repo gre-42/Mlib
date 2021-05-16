@@ -20,6 +20,7 @@ struct Material {
     int continuous_blending_z_order = 0;
     // Second element to support sorting.
     BlendMode blend_mode = BlendMode::OFF;
+    // Third element to support sorting.
     DepthFunc depth_func = DepthFunc::LESS;
     std::vector<BlendMapTexture> textures;
     std::string dirt_texture;
