@@ -29,7 +29,7 @@ struct FrameBuffer {
     GLuint texture_color = (GLuint)-1;
     GLuint texture_depth = (GLuint)-1;
     GLuint render_buffer = (GLuint)-1;
-    void configure(const FrameBufferConfig& config = FrameBufferConfig{});
+    void configure(const FrameBufferConfig& config);
     void deallocate();
     void bind() const;
     void unbind() const;
@@ -42,7 +42,7 @@ private:
 struct FrameBufferMsaa {
     FrameBuffer fb;
     FrameBuffer ms_fb;
-    void configure(const FrameBufferConfig& config = FrameBufferConfig{});
+    void configure(const FrameBufferConfig& config);
     void bind() const;
     void unbind() const;
     void deallocate();
