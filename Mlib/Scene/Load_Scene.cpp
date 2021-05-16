@@ -806,6 +806,9 @@ void LoadScene::operator()(
                 else if (key == "near_grass_resource_names") {
                     config.near_grass_resource_names = string_to_vector(value);
                 }
+                else if (key == "dirt_decals_resource_names") {
+                    config.dirt_decals_resource_names = string_to_vector(value);
+                }
                 else if (key == "wayside_resource_names") {
                     Mlib::re::smatch match2;
                     if (!Mlib::re::regex_match(value, match2, wayside_resource_names_reg)) {
@@ -887,6 +890,9 @@ void LoadScene::operator()(
                 }
                 else if (key == "much_near_grass_distance") {
                     config.much_near_grass_distance = safe_stof(value);
+                }
+                else if (key == "dirt_decals_distance") {
+                    config.dirt_decals_distance = safe_stof(value);
                 }
                 else if (key == "raceway_beacon_distance") {
                     config.raceway_beacon_distance = safe_stof(value);

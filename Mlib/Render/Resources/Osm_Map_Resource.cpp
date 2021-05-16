@@ -62,7 +62,9 @@ OsmMapResource::OsmMapResource(
 : scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
   near_grass_resource_names_{ config.near_grass_resource_names },
-  much_near_grass_distance_{ config.much_near_grass_distance }
+  much_near_grass_distance_{ config.much_near_grass_distance },
+  dirt_decals_resource_names_{ config.dirt_decals_resource_names },
+  dirt_decals_distance_{ config.dirt_decals_distance }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     std::map<std::string, Node> nodes;

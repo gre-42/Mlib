@@ -47,7 +47,7 @@ private:
     std::list<std::shared_ptr<TriangleList>> tls_no_grass_;
     std::vector<std::string> near_grass_resource_names_;
     float much_near_grass_distance_ = 2;
-    std::vector<std::string> dirt_decals_resource_names_ = {"Leaf018_2", "Paper"};
+    std::vector<std::string> dirt_decals_resource_names_;
     float dirt_decals_distance_ = 10;
 };
 

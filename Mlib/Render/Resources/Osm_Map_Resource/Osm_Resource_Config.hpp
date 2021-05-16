@@ -54,6 +54,7 @@ struct OsmResourceConfig {
     std::vector<std::string> tree_resource_names;
     std::vector<std::string> grass_resource_names;
     std::vector<std::string> near_grass_resource_names;
+    std::vector<std::string> dirt_decals_resource_names;
     std::list<WaysideResourceNames> waysides;
     TerrainType default_terrain_type = TerrainType::UNDEFINED;
     float default_street_width = 7;
@@ -79,6 +80,7 @@ struct OsmResourceConfig {
     float forest_outline_tree_inwards_distance = 0;
     float much_grass_distance = 5;
     float much_near_grass_distance = 2;
+    float dirt_decals_distance = 10;
     float raceway_beacon_distance = INFINITY;
     float min_dist_to_road = 0.5f;
     bool with_terrain = true;
