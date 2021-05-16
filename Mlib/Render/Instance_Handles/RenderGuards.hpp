@@ -11,10 +11,9 @@ public:
     explicit RenderToFrameBufferGuard(const FrameBufferMsaa& fb);
     ~RenderToFrameBufferGuard();
 private:
-    const FrameBufferMsaa* last_frame_buffer_;
-    static const FrameBufferMsaa* first_frame_buffer_;
+    const FrameBufferMsaa* previous_frame_buffer_;
+    static const FrameBufferMsaa* last_frame_buffer_;
     static bool is_empty_;
-    static size_t stack_size_;
 };
 
 class RenderToScreenGuard {

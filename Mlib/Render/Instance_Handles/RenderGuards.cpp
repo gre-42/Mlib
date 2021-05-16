@@ -6,9 +6,8 @@
 
 using namespace Mlib;
 
-const FrameBufferMsaa* RenderToFrameBufferGuard::first_frame_buffer_ = nullptr;
+const FrameBufferMsaa* RenderToFrameBufferGuard::last_frame_buffer_ = nullptr;
 bool RenderToFrameBufferGuard::is_empty_ = true;
-size_t RenderToFrameBufferGuard::stack_size_ = 0;
 
 // use cases:
 // 1.
@@ -37,37 +36,31 @@ size_t RenderToFrameBufferGuard::stack_size_ = 0;
 //     glReadPixels();
 // }
 
-RenderToFrameBufferGuard::RenderToFrameBufferGuard(const FrameBufferMsaa& fb) {
+RenderToFrameBufferGuard::RenderToFrameBufferGuard(const FrameBufferMsaa& fb)
+: previous_frame_buffer_{last_frame_buffer_}
+ {
     if (fb.fb.frame_buffer_ == (GLuint)-1) {
         throw std::runtime_error("Invalid input for RenderToFrameBufferGuard");
     }
-    ++stack_size_;
-    if (stack_size_ == 1) {
-        first_frame_buffer_ = &fb;
-        is_empty_ = true;
-    } else {
-        fb.bind();
-    }
     last_frame_buffer_ = &fb;
+    is_empty_ = true;
 }
 
 RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
-    if (stack_size_ == 1) {
-        first_frame_buffer_ = nullptr;
-    }
     last_frame_buffer_->unbind();
-    --stack_size_;
+    last_frame_buffer_ = previous_frame_buffer_;
+    if (is_empty_) {
+        std::cerr << "WARNING: Frame buffer was not drawn" << std::endl;
+    }
 }
 
 RenderToScreenGuard::RenderToScreenGuard() {
-    if (RenderToFrameBufferGuard::first_frame_buffer_ != nullptr) {
+    if (RenderToFrameBufferGuard::last_frame_buffer_ != nullptr) {
         if (!RenderToFrameBufferGuard::is_empty_) {
             throw std::runtime_error("Frame buffer was already drawn");
         }
-        if (RenderToFrameBufferGuard::stack_size_ == 1) {
-            RenderToFrameBufferGuard::first_frame_buffer_->bind();
-            RenderToFrameBufferGuard::is_empty_ = false;
-        }
+        RenderToFrameBufferGuard::last_frame_buffer_->bind();
+        RenderToFrameBufferGuard::is_empty_ = false;
     }
 }
 
