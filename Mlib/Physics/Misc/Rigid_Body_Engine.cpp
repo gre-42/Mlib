@@ -33,10 +33,10 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power() {
 }
 
 void RigidBodyEngine::set_surface_power(float surface_power) {
-    if (max_surface_power_ == 0) {
-        surface_power_ = sign(surface_power);
-    } else if (std::isnan(surface_power)) {
+    if (std::isnan(surface_power)) {
         surface_power_ = NAN;
+    } else if (max_surface_power_ == 0) {
+        surface_power_ = sign(surface_power);
     } else {
         surface_power_ = sign(surface_power) * std::min(max_surface_power_, std::abs(surface_power));
     }

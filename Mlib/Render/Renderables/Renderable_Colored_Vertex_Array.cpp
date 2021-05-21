@@ -240,7 +240,9 @@ void RenderableColoredVertexArray::render_cva(
             .has_lightmap_color = has_lightmap_color,
             .has_lightmap_depth = has_lightmap_depth,
             .has_dirtmap = has_dirtmap,
-            .dirt_color_mode = has_dirtmap ? rcva_->rendering_resources_->get_existing_texture_descriptor(cva->material.dirt_texture).color_mode : ColorMode::UNDEFINED,
+            .dirt_color_mode = has_dirtmap
+                ? rcva_->rendering_resources_->get_existing_texture_descriptor(cva->material.dirt_texture).color_mode
+                : ColorMode::UNDEFINED,
             .has_instances = has_instances,
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
