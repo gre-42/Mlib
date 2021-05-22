@@ -357,6 +357,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::ONCE,
                 .is_small = false,
                 .cull_faces = false,
+                .reorient_uv0 = true,
                 .draw_distance_noperations = 1000},
             wall_barriers,
             nodes,

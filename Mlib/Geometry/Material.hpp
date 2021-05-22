@@ -35,6 +35,7 @@ struct Material {
     TransformationMode transformation_mode = TransformationMode::ALL;
     bool is_small = false;
     bool cull_faces = true;
+    bool reorient_uv0 = false;
     OrderableFixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};
     OrderableFixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
     OrderableFixedArray<float, 3> specularity{1.f, 1.f, 1.f};

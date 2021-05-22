@@ -45,6 +45,7 @@ struct RenderProgramIdentifier {
     bool has_lookat;
     bool has_yangle;
     bool reorient_normals;
+    bool reorient_uv0;
     bool calculate_lightmap;
     OrderableFixedArray<float, 3> ambience;
     OrderableFixedArray<float, 3> diffusivity;

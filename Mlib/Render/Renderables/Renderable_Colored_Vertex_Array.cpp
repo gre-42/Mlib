@@ -228,6 +228,10 @@ void RenderableColoredVertexArray::render_cva(
         specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
     }
     bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
+    if (cva->material.cull_faces && cva->material.reorient_uv0) {
+        throw std::runtime_error("reorient_uv0 requires disabled face culling");
+    }
+    bool reorient_uv0 = cva->material.reorient_uv0 && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
     LOG_INFO("RenderableColoredVertexArray::render get_render_program");
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         {
@@ -247,6 +251,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
             .reorient_normals = reorient_normals,
+            .reorient_uv0 = reorient_uv0,
             .calculate_lightmap = render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE,
             .ambience = OrderableFixedArray{ambience},
             .diffusivity = OrderableFixedArray{diffusivity},
