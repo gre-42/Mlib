@@ -352,7 +352,6 @@ OsmMapResource::OsmMapResource(
             tls_wall_barriers,
             &steiner_points,
             Material{
-                .blend_mode = config.barrier_blend_mode,
                 .occluder_type = OccluderType::BLACK,
                 .aggregate_mode = AggregateMode::ONCE,
                 .is_small = false,

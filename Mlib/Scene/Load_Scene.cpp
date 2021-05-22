@@ -686,17 +686,18 @@ void LoadScene::operator()(
                     });
                 };
                 auto add_barrier_textures = [&value, &fpath, &config](){
-                    static const DECLARE_REGEX(barrier_texture_reg, "(?:\\s*texture:(#?[\\w-.\\(\\)/+-]+) uv:([\\w+-.]+) ([\\w+-.]+) blend_mode:(off|binary|continuous)|([\\s\\S]+))");
+                    static const DECLARE_REGEX(barrier_texture_reg, "(?:\\s*texture:(#?[\\w-.\\(\\)/+-]+) uv:([\\w+-.]+) ([\\w+-.]+) blend_mode:(off|binary|continuous) reorient_uv0:(0|1)|([\\s\\S]+))");
                     find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {
-                        if (match3[5].matched) {
-                            throw std::runtime_error("Unknown element: \"" + match3[5].str() + '"');
+                        if (match3[6].matched) {
+                            throw std::runtime_error("Unknown element: \"" + match3[6].str() + '"');
                         }
                         BarrierStyle as{
                             .texture = fpath(match3[1].str()),
                             .uv = FixedArray<float, 2>{
                                 safe_stof(match3[2].str()),
                                 safe_stof(match3[3].str())},
-                            .blend_mode = blend_mode_from_string(match3[4].str())};
+                            .blend_mode = blend_mode_from_string(match3[4].str()),
+                            .reorient_uv0 = safe_stob(match3[5].str())};
                         config.barrier_textures.push_back(as);
                     });
                 };
@@ -790,9 +791,6 @@ void LoadScene::operator()(
                 }
                 else if (key == "barrier_textures") {
                     add_barrier_textures();
-                }
-                else if (key == "barrier_blend_mode") {
-                    config.barrier_blend_mode = blend_mode_from_string(value);
                 }
                 else if (key == "roof_texture") {
                     config.roof_texture = fpath(value);

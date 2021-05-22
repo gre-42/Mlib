@@ -547,6 +547,7 @@ void Mlib::draw_wall_barriers(
             const BarrierStyle& bs = barrier_styles.at(bid % barrier_styles.size());
             tls.back()->material_.textures = { {.texture_descriptor = {.color = bs.texture}} };
             tls.back()->material_.blend_mode = bs.blend_mode;
+            tls.back()->material_.reorient_uv0 = bs.reorient_uv0;
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);

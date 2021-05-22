@@ -30,6 +30,7 @@ struct BarrierStyle {
     std::string texture;
     FixedArray<float, 2> uv;
     BlendMode blend_mode;
+    bool reorient_uv0;
 };
 
 struct OsmResourceConfig {
@@ -55,7 +56,6 @@ struct OsmResourceConfig {
     std::string tunnel_bdry_resource_name = "pipe_box_boundary";
     std::string water_texture;
     float water_height = 0;
-    BlendMode barrier_blend_mode;
     std::string roof_texture;
     std::vector<std::string> tree_resource_names;
     std::vector<std::string> grass_resource_names;
