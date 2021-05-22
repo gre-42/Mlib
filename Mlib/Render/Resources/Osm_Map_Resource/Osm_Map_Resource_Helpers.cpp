@@ -8,6 +8,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Smooth_Way.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
@@ -533,17 +534,19 @@ void Mlib::draw_wall_barriers(
     float scale,
     float uv_scale,
     float max_width,
-    const std::vector<std::string>& facade_textures)
+    const std::vector<BarrierStyle>& barrier_styles)
 {
-    if (facade_textures.empty()) {
-        throw std::runtime_error("Facade textures empty");
+    if (barrier_styles.empty()) {
+        throw std::runtime_error("Barrier textures empty");
     }
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
             tls.push_back(std::make_shared<TriangleList>("building_walls", material));
-            tls.back()->material_.textures = { {.texture_descriptor = {.color = facade_textures.at(bid % facade_textures.size())}} };
+            const BarrierStyle& bs = barrier_styles.at(bid % barrier_styles.size());
+            tls.back()->material_.textures = { {.texture_descriptor = {.color = bs.texture}} };
+            tls.back()->material_.blend_mode = bs.blend_mode;
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_way(nodes, bu.way.nd, scale, max_width);
@@ -561,6 +564,7 @@ void Mlib::draw_wall_barriers(
                             .type = SteinerPointType::WALL,
                             .distance_to_road = NAN});
                     }
+                    FixedArray<float, 2> uv = 1.f / scale * uv_scale * bs.uv;
                     // some buildings are clock-wise, others counter-clock-wise
                     tls.back()->draw_rectangle_wo_normals(
                         {p1(0), p1(1), bl.bottom * scale},
@@ -571,10 +575,10 @@ void Mlib::draw_wall_barriers(
                         color,
                         color,
                         color,
-                        {0.f, 0.f},
-                        {width / scale * uv_scale, 0.f},
-                        {width / scale * uv_scale, height / scale * uv_scale},
-                        {0.f, height / scale * uv_scale});
+                        FixedArray<float, 2>{0.f, 0.f} * uv,
+                        FixedArray<float, 2>{width, 0.f} * uv,
+                        FixedArray<float, 2>{width, height} * uv,
+                        FixedArray<float, 2>{0.f, height} * uv);
                 }
             }
         }

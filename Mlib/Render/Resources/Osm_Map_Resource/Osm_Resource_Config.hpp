@@ -26,6 +26,12 @@ struct RoadStyle {
     float uvx;
 };
 
+struct BarrierStyle {
+    std::string texture;
+    FixedArray<float, 2> uv;
+    BlendMode blend_mode;
+};
+
 struct OsmResourceConfig {
     OsmResourceConfig();
     ~OsmResourceConfig();
@@ -43,7 +49,7 @@ struct OsmResourceConfig {
     std::vector<std::string> socle_textures;
     std::vector<std::string> facade_textures;
     std::string ceiling_texture;
-    std::vector<std::string> barrier_textures;
+    std::vector<BarrierStyle> barrier_textures;
     std::string tunnel_pipe_texture;
     std::string tunnel_pipe_resource_name = "pipe_box";
     std::string tunnel_bdry_resource_name = "pipe_box_boundary";

@@ -677,12 +677,27 @@ void LoadScene::operator()(
                             throw std::runtime_error("Unknown element: \"" + match3[4].str() + '"');
                         }
                         RoadProperties rp{.type=road_type, .nlanes = safe_stoz(match3[1].str())};
-                        RoadStyle rs{.texture = fpath(
-                            match3[2].str()),
+                        RoadStyle rs{
+                            .texture = fpath(match3[2].str()),
                             .uvx = match3[3].matched
                                 ? safe_stof(match3[3].str())
                                 : 1.f};
                         config.street_texture[rp] = rs;
+                    });
+                };
+                auto add_barrier_textures = [&value, &fpath, &config](){
+                    static const DECLARE_REGEX(barrier_texture_reg, "(?:\\s*texture:(#?[\\w-.\\(\\)/+-]+) uv:([\\w+-.]+) ([\\w+-.]+) blend_mode:(off|binary|continuous)|([\\s\\S]+))");
+                    find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {
+                        if (match3[5].matched) {
+                            throw std::runtime_error("Unknown element: \"" + match3[5].str() + '"');
+                        }
+                        BarrierStyle as{
+                            .texture = fpath(match3[1].str()),
+                            .uv = FixedArray<float, 2>{
+                                safe_stof(match3[2].str()),
+                                safe_stof(match3[3].str())},
+                            .blend_mode = blend_mode_from_string(match3[4].str())};
+                        config.barrier_textures.push_back(as);
                     });
                 };
                 if (key == "name") {
@@ -774,7 +789,7 @@ void LoadScene::operator()(
                     config.ceiling_texture = fpath(value);
                 }
                 else if (key == "barrier_textures") {
-                    config.barrier_textures = string_to_vector(value, fpath);
+                    add_barrier_textures();
                 }
                 else if (key == "barrier_blend_mode") {
                     config.barrier_blend_mode = blend_mode_from_string(value);

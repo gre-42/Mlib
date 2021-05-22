@@ -29,6 +29,7 @@ struct BoundingInfo;
 struct SteinerPointInfo;
 class StreetBvh;
 class VertexHeightBinding;
+struct BarrierStyle;
 
 static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
@@ -255,7 +256,7 @@ void draw_wall_barriers(
     float scale,
     float uv_scale,
     float max_width,
-    const std::vector<std::string>& facade_textures);
+    const std::vector<BarrierStyle>& barrier_style);
 
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
