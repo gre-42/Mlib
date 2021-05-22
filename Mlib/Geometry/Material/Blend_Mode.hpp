@@ -10,8 +10,9 @@ namespace Mlib {
 enum class BlendMode {
     OFF = 0,
     BINARY = 1,
-    CONTINUOUS = 2,
-    BINARY_ADD = 3
+    SEMI_CONTINUOUS = 2,
+    CONTINUOUS = 3,
+    BINARY_ADD = 4
 };
 
 inline BlendMode blend_mode_from_string(const std::string& str) {
@@ -19,6 +20,8 @@ inline BlendMode blend_mode_from_string(const std::string& str) {
         return BlendMode::OFF;
     } else if (str == "binary") {
         return BlendMode::BINARY;
+    } else if (str == "semi_continuous") {
+        return BlendMode::SEMI_CONTINUOUS;
     } else if (str == "continuous") {
         return BlendMode::CONTINUOUS;
     } else if (str == "binary_add") {

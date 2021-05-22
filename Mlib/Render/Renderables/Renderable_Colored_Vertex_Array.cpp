@@ -461,25 +461,29 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glBlendFunc(GL_ONE, GL_ONE));
             CHK(glDepthMask(GL_FALSE));
             break;
+        case BlendMode::SEMI_CONTINUOUS:
+            CHK(glEnable(GL_BLEND));
+            CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+            break;
         case BlendMode::CONTINUOUS:
             CHK(glEnable(GL_BLEND));
             CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
             CHK(glDepthMask(GL_FALSE));
-            switch(cva->material.depth_func) {
-            case DepthFunc::LESS:
-                break;
-            case DepthFunc::EQUAL:
-                CHK(glDepthFunc(GL_EQUAL));
-                break;
-            case DepthFunc::LESS_EQUAL:
-                CHK(glDepthFunc(GL_LEQUAL));
-                break;
-            default:
-                throw std::runtime_error("Unknown depth func");
-            }
             break;
         default:
             throw std::runtime_error("Unknown blend_mode");
+    }
+    switch(cva->material.depth_func) {
+        case DepthFunc::LESS:
+            break;
+        case DepthFunc::EQUAL:
+            CHK(glDepthFunc(GL_EQUAL));
+            break;
+        case DepthFunc::LESS_EQUAL:
+            CHK(glDepthFunc(GL_LEQUAL));
+            break;
+        default:
+            throw std::runtime_error("Unknown depth func");
     }
     const SubstitutionInfo& si = rcva_->get_vertex_array(cva);
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&

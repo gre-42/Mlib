@@ -819,9 +819,14 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ambience,
         id.diffusivity,
         id.specularity,
-        (id.blend_mode == BlendMode::BINARY) || (id.blend_mode == BlendMode::BINARY_ADD)
-        ? (id.calculate_lightmap ? 0.1f : 0.5f)
-        : 0.f,
+        (id.blend_mode == BlendMode::OFF) ||
+        (id.blend_mode == BlendMode::CONTINUOUS)
+            ? 0.f
+            : id.calculate_lightmap
+                ? 0.1f
+                : (id.blend_mode == BlendMode::SEMI_CONTINUOUS)
+                    ? 0.2f
+                    : 0.5f,
         id.alpha_distances,
         occlusion_type,
         id.reorient_normals,

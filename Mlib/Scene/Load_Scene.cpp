@@ -144,7 +144,7 @@ void LoadScene::operator()(
         "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+is_small=(0|1)"
-        "\\s+blend_mode=(off|binary|continuous)"
+        "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
         "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
         "\\s+occluded_type=(off|color|depth)"
@@ -173,7 +173,7 @@ void LoadScene::operator()(
         "\\s+occluder_type=(off|white|black)"
         "\\s+occluded_by_black=(0|1)"
         "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+blend_mode=(off|binary|continuous)"
+        "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
         "(?:\\s+depth_func=(less_equal|less|equal))?"
         "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
@@ -194,7 +194,7 @@ void LoadScene::operator()(
         "\\s+occluder_type=(off|white|black)"
         "\\s+occluded_by_black=(0|1)"
         "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+blend_mode=(off|binary|continuous)"
+        "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
         "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
@@ -686,7 +686,7 @@ void LoadScene::operator()(
                     });
                 };
                 auto add_barrier_textures = [&value, &fpath, &config](){
-                    static const DECLARE_REGEX(barrier_texture_reg, "(?:\\s*texture:(#?[\\w-.\\(\\)/+-]+) uv:([\\w+-.]+) ([\\w+-.]+) blend_mode:(off|binary|continuous) reorient_uv0:(0|1)|([\\s\\S]+))");
+                    static const DECLARE_REGEX(barrier_texture_reg, "(?:\\s*texture:(#?[\\w-.\\(\\)/+-]+) uv:([\\w+-.]+) ([\\w+-.]+) blend_mode:(off|binary|semi_continuous|continuous) reorient_uv0:(0|1)|([\\s\\S]+))");
                     find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {
                         if (match3[6].matched) {
                             throw std::runtime_error("Unknown element: \"" + match3[6].str() + '"');
