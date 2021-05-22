@@ -928,10 +928,16 @@ void LoadScene::operator()(
                     config.curb2_alpha = safe_stof(value);
                 }
                 else if (key == "curb_uv_x") {
-                    config.curb_uv_x = safe_stof(value);
+                    config.curb_uv(0) = safe_stof(value);
+                }
+                else if (key == "curb_uv_y") {
+                    config.curb_uv(1) = safe_stof(value);
                 }
                 else if (key == "curb2_uv_x") {
-                    config.curb2_uv_x = safe_stof(value);
+                    config.curb2_uv(0) = safe_stof(value);
+                }
+                else if (key == "curb2_uv_y") {
+                    config.curb2_uv(1) = safe_stof(value);
                 }
                 else if (key == "curb_color") {
                     auto curb_color = string_to_vector(value, safe_stof, 3);

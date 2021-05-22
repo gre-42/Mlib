@@ -93,8 +93,8 @@ struct OsmResourceConfig {
     std::vector<float> steiner_point_distances_steiner = { 100.f };
     float curb_alpha = 0.9f;
     float curb2_alpha = 0.95f;
-    float curb_uv_x = 1;
-    float curb2_uv_x = 1;
+    FixedArray<float, 2> curb_uv = FixedArray<float, 2>{1.f, 1.f};
+    FixedArray<float, 2> curb2_uv = FixedArray<float, 2>{1.f, 1.f};
     FixedArray<float, 3> curb_color = FixedArray<float, 3>{ 1.f, 1.f, 1.f };
     float raise_streets_amount = 0.2f;
     float extrude_curb_amount = 0;

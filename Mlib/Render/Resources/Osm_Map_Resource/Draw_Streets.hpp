@@ -59,8 +59,8 @@ struct DrawStreetsInput {
     const std::set<std::string>& path_tags;
     float curb_alpha_;
     float curb2_alpha_;
-    float curb_uv_x;
-    float curb2_uv_x;
+    FixedArray<float, 2> curb_uv;
+    FixedArray<float, 2> curb2_uv;
     FixedArray<float, 3> curb_color_;
     ResourceNameCycle& street_lights;
     bool with_height_bindings;
