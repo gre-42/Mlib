@@ -773,8 +773,8 @@ void LoadScene::operator()(
                 else if (key == "ceiling_texture") {
                     config.ceiling_texture = fpath(value);
                 }
-                else if (key == "barrier_texture") {
-                    config.barrier_texture = fpath(value);
+                else if (key == "barrier_textures") {
+                    config.barrier_textures = string_to_vector(value, fpath);
                 }
                 else if (key == "barrier_blend_mode") {
                     config.barrier_blend_mode = blend_mode_from_string(value);

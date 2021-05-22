@@ -363,7 +363,7 @@ OsmMapResource::OsmMapResource(
             config.scale,
             config.uv_scale_barrier_wall,
             config.max_wall_width,
-            { config.barrier_texture });
+            config.barrier_textures);
     }
 
     std::vector<FixedArray<float, 2>> map_outer_contour = get_map_outer_contour(
