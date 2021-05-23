@@ -99,7 +99,8 @@ void ListView<TOption>::render(int width, int height, bool periodic_position)
             break;
         case ListViewOrientation::VERTICAL:
             delimiter = '\n';
-            sel_right = " <----";
+            sel_left = "> ";
+            sel_right = " <";
             break;
         default:
             throw std::runtime_error("Unknown listview orientation");
