@@ -39,6 +39,7 @@
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/Render/Render_Logics/Controls_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
@@ -390,6 +391,12 @@ void LoadScene::operator()(
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)$");
+    static const DECLARE_REGEX(controls_reg,
+        "^\\s*controls"
+        "\\s+title=([\\w+-. ]*)"
+        "\\s+gamepad_texture=(#?[\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(clear_parameters_reg,
         "^\\s*clear_parameters$");
     static const DECLARE_REGEX(parameter_setter_reg,
@@ -1850,6 +1857,20 @@ void LoadScene::operator()(
                     safe_stoi(match[5].str())},
                 focus_from_string(match[6].str()));
             wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
+        } else if (Mlib::re::regex_match(line, match, controls_reg)) {
+            std::shared_ptr<ControlsLogic> controls_logic;
+            ui_focus.submenu_titles.push_back(match[1].str());
+            controls_logic = std::make_shared<ControlsLogic>(
+                fpath(match[2].str()),            // gamepad_texture
+                FixedArray<float, 2>{             // position
+                    safe_stof(match[3].str()),
+                    safe_stof(match[4].str())},
+                FixedArray<float, 2>{             // size
+                    safe_stof(match[5].str()),
+                    safe_stof(match[6].str())},
+                ui_focus,
+                ui_focus.submenu_titles.size() - 1);
+            render_logics.append(nullptr, controls_logic);
         } else if (Mlib::re::regex_match(line, match, clear_parameters_reg)) {
             external_substitutions.clear();
         } else if (Mlib::re::regex_match(line, match, parameter_setter_reg)) {
