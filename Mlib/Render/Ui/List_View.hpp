@@ -1,12 +1,11 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <functional>
 #include <memory>
 #include <vector>
 
 namespace Mlib {
 
-template <typename TData, size_t... tshape>
-class FixedArray;
 class TextResource;
 class ButtonPress;
 
