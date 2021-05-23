@@ -29,6 +29,9 @@ int main(int argc, char** argv) {
     while(true) {
         bs.update_gamepad_state();
         bp.print();
+        bp.print(
+            false,  // physical
+            true);  // only_pressed
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
