@@ -71,7 +71,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const Focuses& focuses) {
 }
 
 void UiFocus::goto_next_submenu() {
-    if ((n_submenus != 0) && (submenu_id < n_submenus - 1)) {
+    if ((submenu_titles.size() != 0) && (submenu_id < submenu_titles.size() - 1)) {
         ++submenu_id;
     }
 }

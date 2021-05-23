@@ -1,37 +1,37 @@
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Regex.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
-#include <memory>
+#include <functional>
 #include <vector>
 
 namespace Mlib {
 
+struct UiFocus;
 class ButtonPress;
 
-struct ReplacementParameter {
-    std::string name;
-    SubstitutionMap substitutions;
+struct TabEntry {
+    std::string title;
+    std::unique_ptr<RenderLogic> content;
 };
 
-class ParameterSetterLogic: public RenderLogic {
+class TabMenuLogic: public RenderLogic {
 public:
-    ParameterSetterLogic(
+    TabMenuLogic(
         const std::string& title,
-        const std::vector<ReplacementParameter>& options,
+        const std::vector<std::string>& options,
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
         UiFocus& ui_focus,
-        size_t submenu_id,
-        SubstitutionMap& substitutions,
+        size_t& num_renderings,
         ButtonPress& button_press,
         size_t& selection_index,
+        const std::string& previous_scene_filename,
+        const std::string& next_scene_filename,
+        const std::function<void()>& reload_transient_objects,
         const std::function<void()>& on_change = [](){});
-    ~ParameterSetterLogic();
+    ~TabMenuLogic();
 
     virtual void render(
         int width,
@@ -42,13 +42,15 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
 
     virtual Focus focus_mask() const override;
+
 private:
-    void merge_substitutions() const;
-    std::vector<ReplacementParameter> options_;
-    ListView<ReplacementParameter> list_view_;
     UiFocus& ui_focus_;
-    size_t submenu_id_;
-    SubstitutionMap& substitutions_;
+    ButtonPress& button_press_;
+    std::string previous_scene_filename_;
+    const std::string& next_scene_filename_;
+    size_t& num_renderings_;
+    std::function<void()> reload_transient_objects_;
+    ListView<std::string> list_view_;
 };
 
 }

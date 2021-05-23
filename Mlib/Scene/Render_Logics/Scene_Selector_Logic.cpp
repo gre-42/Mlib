@@ -17,29 +17,24 @@ SceneSelectorLogic::SceneSelectorLogic(
     float line_distance_pixels,
     UiFocus& ui_focus,
     size_t submenu_id,
-    const std::string& previous_scene_filename,
     std::string& next_scene_filename,
-    size_t& num_renderings,
     ButtonPress& button_press,
-    size_t& selection_index,
-    const std::function<void()>& reload_transient_objects)
-: list_view_{
+    size_t& selection_index)
+: scene_files_{ scene_files },
+  list_view_ {
     button_press,
     selection_index,
     title,
-    scene_files,
+    scene_files_,
     ttf_filename,
     position,
     font_height_pixels,
     line_distance_pixels,
+    ListViewOrientation::VERTICAL,
     [](const SceneEntry& s){return s.name;}},
   ui_focus_{ui_focus},
   submenu_id_{submenu_id},
-  button_press_{button_press},
-  previous_scene_filename_{previous_scene_filename},
-  next_scene_filename_{next_scene_filename},
-  num_renderings_{num_renderings},
-  reload_transient_objects_{reload_transient_objects}
+  next_scene_filename_{next_scene_filename}
 {
     // Initialize the reference
     next_scene_filename_ = list_view_.selected_element().filename;
@@ -58,25 +53,11 @@ void SceneSelectorLogic::render(
 {
     if (ui_focus_.submenu_id == submenu_id_) {
         list_view_.handle_input();
-        if (button_press_.key_pressed({.key = "LEFT", .joystick_axis = "1", .joystick_axis_sign = -1})) {
-            ui_focus_.goto_prev_submenu();
-        }
-        if (button_press_.key_pressed({.key = "RIGHT", .joystick_axis = "1", .joystick_axis_sign = 1})) {
-            ui_focus_.goto_next_submenu();
-        }
         if (list_view_.has_selected_element()) {
             next_scene_filename_ = list_view_.selected_element().filename;
         }
-        if (button_press_.key_pressed({.key = "ENTER", .gamepad_button = "A"})) {
-            // ui_focus_.focus.pop_back();
-            if (previous_scene_filename_ != next_scene_filename_) {
-                num_renderings_ = 0;
-            } else {
-                reload_transient_objects_();
-            }
-        }
+        list_view_.render(width, height, true); // true=periodic_position
     }
-    list_view_.render(width, height, true); // true=periodic_position
 }
 
 Focus SceneSelectorLogic::focus_mask() const {

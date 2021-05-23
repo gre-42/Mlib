@@ -1,17 +1,19 @@
 #pragma once
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
-#include <Mlib/Array/Fixed_Array.hpp>
 #include <functional>
 #include <memory>
 #include <vector>
 
 namespace Mlib {
 
+template <typename TData, size_t... tshape>
+class FixedArray;
 class TextResource;
 class ButtonPress;
+
+enum class ListViewOrientation {
+    HORIZONTAL,
+    VERTICAL
+};
 
 template <class TOption>
 class ListView {
@@ -25,6 +27,7 @@ public:
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
+        ListViewOrientation orientation,
         const std::function<std::string(const TOption&)>& transformation = [](const TOption& s) -> std::string {return s;},
         const std::function<void()>& on_change = [](){});
     ~ListView();
@@ -36,15 +39,16 @@ public:
 private:
     std::unique_ptr<TextResource> renderable_text_;
     std::string title_;
-    std::vector<TOption> options_;
+    const std::vector<TOption>& options_;
     FixedArray<float, 2> position_;
     float line_distance_pixels_;
     std::function<std::string(TOption)> transformation_;
     size_t& selection_index_;
     ButtonPress& button_press_;
     const std::function<void()> on_change_;
+    ListViewOrientation orientation_;
 };
 
 }
 
-#include "ListView.impl.hpp"
+#include "List_View.impl.hpp"

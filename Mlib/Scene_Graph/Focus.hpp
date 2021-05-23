@@ -54,7 +54,7 @@ std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 struct UiFocus {
     Focuses focuses;
     size_t submenu_id = 0;
-    size_t n_submenus = 0;
+    std::vector<std::string> submenu_titles;
     void goto_next_submenu();
     void goto_prev_submenu();
 };

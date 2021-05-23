@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
 
         while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
             num_renderings = SIZE_MAX;
-            ui_focus.n_submenus = 0;
+            ui_focus.submenu_titles.clear();
 
             SceneGraphConfig scene_graph_config{
                 .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),

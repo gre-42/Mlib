@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Ui/ListView.hpp>
+#include <Mlib/Render/Ui/List_View.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <vector>
 
@@ -24,12 +24,9 @@ public:
         float line_distance_pixels,
         UiFocus& ui_focus,
         size_t submenu_id_,
-        const std::string& previous_scene_filename,
         std::string& next_scene_filename,
-        size_t& num_renderings,
         ButtonPress& button_press,
-        size_t& selection_index,
-        const std::function<void()>& reload_transient_objects);
+        size_t& selection_index);
     ~SceneSelectorLogic();
 
     virtual void render(
@@ -43,14 +40,11 @@ public:
     virtual Focus focus_mask() const override;
 
 private:
+    std::vector<SceneEntry> scene_files_;
     ListView<SceneEntry> list_view_;
     UiFocus& ui_focus_;
     size_t submenu_id_;
-    ButtonPress& button_press_;
-    std::string previous_scene_filename_;
     std::string& next_scene_filename_;
-    size_t& num_renderings_;
-    std::function<void()> reload_transient_objects_;
 };
 
 }

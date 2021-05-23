@@ -70,6 +70,7 @@
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Players_Stats_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Scene_Selector_Logic.hpp>
+#include <Mlib/Scene/Render_Logics/Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Global_Log.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger.hpp>
@@ -363,12 +364,11 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(scene_selector_reg,
         "^\\s*scene_selector"
         "\\s+id=([\\w+-.]+)"
-        "\\s+title=([\\w+-. ]+)"
+        "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
-        "\\s+reload_transient_objects=([\\w+-.:= ]*)"
         "\\s+scene_files=([\\s\\w+-.\\(\\)/:=%]+)$");
     static const DECLARE_REGEX(scene_to_texture_reg,
         "^\\s*scene_to_texture"
@@ -395,16 +395,25 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(parameter_setter_reg,
         "^\\s*parameter_setter"
         "\\s+id=([\\w+-.]+)"
-        "\\s+title=([\\w+-. ]+)"
+        "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+default=([\\d]+)"
-        "\\s+reload_transient_objects=([\\w+-.:= ]*)"
         "\\s+on_init=([\\w+-.:= ]*)"
         "\\s+on_change=([\\w+-.:= ]*)"
         "\\s+parameters=([\\r\\n\\w-. \\(\\)/+-:=%]+)$");
+    static const DECLARE_REGEX(tab_menu_reg,
+        "^\\s*tab_menu"
+        "\\s+id=([\\w+-.]+)"
+        "\\s+title=([\\w+-. ]*)"
+        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+font_height=([\\w+-.]+)"
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+default=([\\d]+)"
+        "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
     static const DECLARE_REGEX(set_renderable_style_reg,
         "^\\s*set_renderable_style\\r?\\n"
         "\\s*selector=([\\w+-.]*)\\r?\\n"
@@ -1767,14 +1776,14 @@ void LoadScene::operator()(
             wit->second->render_logics_.append(nullptr, polf);
         } else if (Mlib::re::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
-            for (const auto& e : find_all_name_values(match[9].str(), "[\\w+-. \\(\\)/:]+", "[\\w+-. \\(\\)/:]+")) {
+            for (const auto& e : find_all_name_values(match[8].str(), "[\\w+-. \\(\\)/:]+", "[\\w+-. \\(\\)/:]+")) {
                 scene_entries.push_back(SceneEntry{
                     .name = e.first,
                     .filename = fpath(e.second)});
             }
-            std::string reload_transient_objects = match[8].str();
+            ui_focus.submenu_titles.push_back(match[2].str());
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
-                match[2].str(),
+                "",
                 std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
                 fpath(match[3].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
@@ -1783,17 +1792,10 @@ void LoadScene::operator()(
                 safe_stof(match[6].str()),        // font_height_pixels
                 safe_stof(match[7].str()),        // line_distance_pixels
                 ui_focus,
-                ui_focus.n_submenus++,
-                script_filename,
+                ui_focus.submenu_titles.size() - 1,
                 next_scene_filename,
-                num_renderings,
                 button_press,
-                selection_ids[match[1].str()],
-                [macro_line_executor, reload_transient_objects, &rsc](){
-                    if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, nullptr, rsc);
-                    }
-                });
+                selection_ids[match[1].str()]);
             render_logics.append(nullptr, scene_selector_logic);
         } else if (Mlib::re::regex_match(line, match, scene_to_texture_reg)) {
             auto wit = renderable_scenes.find("primary_scene");
@@ -1856,14 +1858,13 @@ void LoadScene::operator()(
             std::string ttf_filename = fpath(match[3].str());
             FixedArray<float, 2> position{
                 safe_stof(match[4].str()),
-                safe_stof(match[5].str())};
+                safe_stof(match[5].str()) };
             float font_height_pixels = safe_stof(match[6].str());
             float line_distance_pixels = safe_stof(match[7].str());
             size_t deflt = safe_stoz(match[8].str());
-            std::string reload_transient_objects = match[9].str();
-            std::string on_init = match[10].str();
-            std::string on_change = match[11].str();
-            std::string parameters = match[12].str();
+            std::string on_init = match[9].str();
+            std::string on_change = match[10].str();
+            std::string parameters = match[11].str();
             std::list<ReplacementParameter> rps;
             for (const auto& e : find_all_name_values(parameters, "[\\w+-. %]+", substitute_pattern)) {
                 rps.push_back(ReplacementParameter{
@@ -1872,29 +1873,22 @@ void LoadScene::operator()(
             }
             // If the selection_ids array is not yet initialized, apply the default value.
             if (selection_ids.find(id) == selection_ids.end()) {
-                selection_ids.insert({id, deflt});
+                selection_ids.insert({ id, deflt });
             }
+            ui_focus.submenu_titles.push_back(title);
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
-                title,
+                "",
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
                 ttf_filename,
                 position,
                 font_height_pixels,
                 line_distance_pixels,        // line_distance_pixels
                 ui_focus,
-                ui_focus.n_submenus++,
+                ui_focus.submenu_titles.size() - 1,
                 external_substitutions,
-                num_renderings,
                 button_press,
                 selection_ids.at(id),
-                script_filename,
-                next_scene_filename,
-                [macro_line_executor, reload_transient_objects, &rsc](){
-                    if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, nullptr, rsc);
-                    }
-                },
-                [macro_line_executor, on_change, &rsc](){
+                [macro_line_executor, on_change, &rsc]() {
                     if (!on_change.empty()) {
                         macro_line_executor(on_change, nullptr, rsc);
                     }
@@ -1903,6 +1897,40 @@ void LoadScene::operator()(
                 macro_line_executor(on_init, local_substitutions, rsc);
             }
             render_logics.append(nullptr, parameter_setter_logic);
+        } else if (Mlib::re::regex_match(line, match, tab_menu_reg)) {
+            std::string id = match[1].str();
+            std::string title = match[2].str();
+            std::string ttf_filename = fpath(match[3].str());
+            FixedArray<float, 2> position{
+                safe_stof(match[4].str()),
+                safe_stof(match[5].str()) };
+            float font_height_pixels = safe_stof(match[6].str());
+            float line_distance_pixels = safe_stof(match[7].str());
+            size_t deflt = safe_stoz(match[8].str());
+            std::string reload_transient_objects = match[9].str();
+            // If the selection_ids array is not yet initialized, apply the default value.
+            if (selection_ids.find(id) == selection_ids.end()) {
+                selection_ids.insert({ id, deflt });
+            }
+            auto tab_menu_logic = std::make_shared<TabMenuLogic>(
+                title,
+                ui_focus.submenu_titles,
+                ttf_filename,
+                position,
+                font_height_pixels,
+                line_distance_pixels,
+                ui_focus,
+                num_renderings,
+                button_press,
+                selection_ids.at(id),
+                script_filename,
+                next_scene_filename,
+                [macro_line_executor, reload_transient_objects, &rsc]() {
+                    if (!reload_transient_objects.empty()) {
+                        macro_line_executor(reload_transient_objects, nullptr, rsc);
+                    }
+                });
+            render_logics.append(nullptr, tab_menu_logic);
         } else if (Mlib::re::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 fpath(match[1].str()),
