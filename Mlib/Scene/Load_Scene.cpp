@@ -1749,6 +1749,7 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()),        // line_distance_pixels
                 ui_focus.focuses,
                 safe_stof(match[6].str()));       // nseconds
+            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, countdown_logic);
         } else if (Mlib::re::regex_match(line, match, loading_reg)) {
             auto loading_logic = std::make_shared<LoadingTextLogic>(
@@ -1759,6 +1760,7 @@ void LoadScene::operator()(
                 safe_stof(match[4].str()),        // font_height_pixels
                 safe_stof(match[5].str()),        // line_distance_pixels
                 match[6].str());                  // text
+            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, loading_logic);
         } else if (Mlib::re::regex_match(line, match, players_stats_reg)) {
             auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
@@ -1807,6 +1809,7 @@ void LoadScene::operator()(
                 next_scene_filename,
                 button_press,
                 ui_focus.selection_ids.at(id));
+            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, scene_selector_logic);
         } else if (Mlib::re::regex_match(line, match, scene_to_texture_reg)) {
             auto wit = renderable_scenes.find("primary_scene");
@@ -1866,6 +1869,7 @@ void LoadScene::operator()(
                 FocusFilter{
                     .focus_mask = focus_from_string(match[6].str()),
                     .submenu_id = match[7].str()});
+            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
         } else if (Mlib::re::regex_match(line, match, controls_reg)) {
             std::string id = match[1].str();
@@ -1883,6 +1887,7 @@ void LoadScene::operator()(
                 FocusFilter{
                     .focus_mask = Focus::MENU,
                     .submenu_id = id });
+            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, controls_logic);
         } else if (Mlib::re::regex_match(line, match, clear_parameters_reg)) {
             external_substitutions.clear();
@@ -1927,6 +1932,7 @@ void LoadScene::operator()(
             if (!on_init.empty()) {
                 macro_line_executor(on_init, local_substitutions, rsc);
             }
+            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, parameter_setter_logic);
         } else if (Mlib::re::regex_match(line, match, tab_menu_reg)) {
             std::string id = match[1].str();
@@ -1959,12 +1965,14 @@ void LoadScene::operator()(
                         macro_line_executor(reload_transient_objects, nullptr, rsc);
                     }
                 });
+            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, tab_menu_logic);
         } else if (Mlib::re::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 fpath(match[1].str()),
                 resource_update_cycle_from_string(match[2].str()),
                 FocusFilter{ .focus_mask = focus_from_string(match[3].str()) });
+            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, bg);
         } else if (Mlib::re::regex_match(line, match, set_renderable_style_reg)) {
             auto node = scene.get_node(match[2].str());
