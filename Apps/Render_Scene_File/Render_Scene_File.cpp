@@ -184,6 +184,7 @@ int main(int argc, char** argv) {
 
         while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
             num_renderings = SIZE_MAX;
+            ui_focus.submenu_numbers.clear();
             ui_focus.submenu_titles.clear();
 
             SceneGraphConfig scene_graph_config{
