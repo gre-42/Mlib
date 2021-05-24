@@ -1,4 +1,5 @@
 #include "Focus.hpp"
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -70,15 +71,44 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const Focuses& focuses) {
     return ostr;
 }
 
+void UiFocus::insert_submenu(
+    const std::string& id,
+    const std::string& title,
+    size_t default_selection)
+{
+    if (!submenu_numbers.insert({id, submenu_titles.size()}).second) {
+        throw std::runtime_error("Submenu with ID \"" + id + "\" already exists");
+    }
+    submenu_titles.push_back(title);
+    // If the selection_ids array is not yet initialized, apply the default value.
+    selection_ids.insert({ id, default_selection });
+}
+
+bool UiFocus::has_focus(const FocusFilter& focus_filter) const {
+    if ((focuses.focus() & focus_filter.focus_mask) == Focus::NONE) {
+        return false;
+    }
+    if (!focus_filter.submenu_id.empty() && focuses.focus() == Focus::MENU) {
+        auto it = submenu_numbers.find(focus_filter.submenu_id);
+        if (it == submenu_numbers.end()) {
+            throw std::runtime_error("Could not find submenu with ID " + focus_filter.submenu_id);
+        }
+        if (it->second != submenu_number) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void UiFocus::goto_next_submenu() {
-    if ((submenu_titles.size() != 0) && (submenu_id < submenu_titles.size() - 1)) {
-        ++submenu_id;
+    if ((submenu_titles.size() != 0) && (submenu_number < submenu_titles.size() - 1)) {
+        ++submenu_number;
     }
 }
 
 void UiFocus::goto_prev_submenu() {
-    if (submenu_id > 0) {
-        --submenu_id;
+    if (submenu_number > 0) {
+        --submenu_number;
     }
 }
 

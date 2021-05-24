@@ -1,5 +1,6 @@
 #include "Loading_Text_Logic.hpp"
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 using namespace Mlib;
 
@@ -37,6 +38,6 @@ void LoadingTextLogic::render(
         true);  // true=periodic_position
 }
 
-Focus LoadingTextLogic::focus_mask() const {
-    return Focus::LOADING;
+FocusFilter LoadingTextLogic::focus_filter() const {
+    return { .focus_mask = Focus::LOADING };
 }

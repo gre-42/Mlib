@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 namespace Mlib {
 
@@ -12,7 +13,7 @@ public:
         RenderLogic& render_logic,
         const FixedArray<int, 2>& position,
         const FixedArray<int, 2>& size,
-        Focus focus_mask,
+        const FocusFilter& focus_filter,
         bool flip_y = true);
 
     virtual void render(
@@ -23,13 +24,13 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
     
-    virtual Focus focus_mask() const override;
+    virtual FocusFilter focus_filter() const override;
 
 private:
     RenderLogic& render_logic_;
     FixedArray<int, 2> position_;
     FixedArray<int, 2> size_;
-    Focus focus_mask_;
+    FocusFilter focus_filter_;
     bool flip_y_;
 };
 

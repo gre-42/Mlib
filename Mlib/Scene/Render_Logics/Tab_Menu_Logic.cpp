@@ -3,6 +3,7 @@
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -32,7 +33,7 @@ TabMenuLogic::TabMenuLogic(
   reload_transient_objects_{ reload_transient_objects },
   list_view_{
       button_press,
-      ui_focus_.submenu_id,
+      ui_focus_.submenu_number,
       title,
       options,
       ttf_filename,
@@ -68,6 +69,6 @@ void TabMenuLogic::render(
     list_view_.render(width, height, true); // true=periodic_position
 }
 
-Focus TabMenuLogic::focus_mask() const {
-    return Focus::MENU;
+FocusFilter TabMenuLogic::focus_filter() const {
+    return { .focus_mask = Focus::MENU };
 }

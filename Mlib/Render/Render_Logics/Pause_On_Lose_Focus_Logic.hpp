@@ -1,17 +1,18 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 namespace Mlib {
 
 class SetFps;
-class Focuses;
+struct UiFocus;
 
 class PauseOnLoseFocusLogic: public RenderLogic {
 public:
     explicit PauseOnLoseFocusLogic(
         SetFps& set_fps,
-        Focuses& focuses,
-        Focus focus_mask);
+        UiFocus& ui_focus,
+        FocusFilter focus_filter);
 
     virtual void render(
         int width,
@@ -22,8 +23,8 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
 private:
     SetFps& set_fps_;
-    Focuses& focuses_;
-    Focus focus_mask_;
+    UiFocus& ui_focus_;
+    FocusFilter focus_filter_;
 };
 
 }

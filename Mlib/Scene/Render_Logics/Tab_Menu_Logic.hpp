@@ -41,7 +41,7 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
-    virtual Focus focus_mask() const override;
+    virtual FocusFilter focus_filter() const override;
 
 private:
     UiFocus& ui_focus_;

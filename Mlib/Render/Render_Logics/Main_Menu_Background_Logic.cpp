@@ -7,9 +7,9 @@ using namespace Mlib;
 MainMenuBackgroundLogic::MainMenuBackgroundLogic(
     const std::string& image_resource_name,
     ResourceUpdateCycle update_cycle,
-    Focus focus_mask)
+    const FocusFilter& focus_filter)
 : FillWithTextureLogic{image_resource_name, update_cycle},
-  focus_mask_{focus_mask}
+  focus_filter_{focus_filter}
 {}
 
 void MainMenuBackgroundLogic::render(
@@ -23,6 +23,6 @@ void MainMenuBackgroundLogic::render(
     FillWithTextureLogic::render(width, height, render_config, scene_graph_config, render_results, frame_id);
 }
 
-Focus MainMenuBackgroundLogic::focus_mask() const {
-    return focus_mask_;
+FocusFilter MainMenuBackgroundLogic::focus_filter() const {
+    return focus_filter_;
 }

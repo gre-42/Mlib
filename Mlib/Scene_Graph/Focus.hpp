@@ -2,11 +2,14 @@
 #include <algorithm>
 #include <iosfwd>
 #include <list>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace Mlib {
+
+struct FocusFilter;
 
 enum class Focus {
     NONE = 0,
@@ -53,8 +56,15 @@ std::ostream& operator << (std::ostream& ostr, const Focuses& focuses);
 
 struct UiFocus {
     Focuses focuses;
-    size_t submenu_id = 0;
+    size_t submenu_number = 0;
+    std::map<std::string, size_t> submenu_numbers;
     std::vector<std::string> submenu_titles;
+    std::map<std::string, size_t> selection_ids;
+    void insert_submenu(
+        const std::string& id,
+        const std::string& title,
+        size_t default_selection);
+    bool has_focus(const FocusFilter& focus_filter) const;
     void goto_next_submenu();
     void goto_prev_submenu();
 };

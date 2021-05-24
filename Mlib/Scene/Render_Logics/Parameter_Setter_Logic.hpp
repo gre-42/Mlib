@@ -3,7 +3,7 @@
 #include <Mlib/Regex.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <memory>
 #include <vector>
 
@@ -25,8 +25,7 @@ public:
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
-        UiFocus& ui_focus,
-        size_t submenu_id,
+        const FocusFilter& focus_filter,
         SubstitutionMap& substitutions,
         ButtonPress& button_press,
         size_t& selection_index,
@@ -41,13 +40,12 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
-    virtual Focus focus_mask() const override;
+    virtual FocusFilter focus_filter() const override;
 private:
     void merge_substitutions() const;
     std::vector<ReplacementParameter> options_;
     ListView<ReplacementParameter> list_view_;
-    UiFocus& ui_focus_;
-    size_t submenu_id_;
+    FocusFilter focus_filter_;
     SubstitutionMap& substitutions_;
 };
 

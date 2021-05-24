@@ -8,11 +8,9 @@ ControlsLogic::ControlsLogic(
     const std::string& gamepad_texture,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    UiFocus& ui_focus,
-    size_t submenu_id)
-: gamepad_texture_{gamepad_texture, ResourceUpdateCycle::ONCE, position, size, Focus::ALWAYS},
-  ui_focus_{ui_focus},
-  submenu_id_{submenu_id}
+    const FocusFilter& focus_filter)
+: gamepad_texture_{ gamepad_texture, ResourceUpdateCycle::ONCE, position, size, {.focus_mask = Focus::ALWAYS} },
+  focus_filter_{ focus_filter }
 {}
 
 void ControlsLogic::render(
@@ -23,17 +21,15 @@ void ControlsLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (ui_focus_.submenu_id == submenu_id_) {
-        gamepad_texture_.render(
-            width,
-            height,
-            render_config,
-            scene_graph_config,
-            render_results,
-            frame_id);
-    }
+    gamepad_texture_.render(
+        width,
+        height,
+        render_config,
+        scene_graph_config,
+        render_results,
+        frame_id);
 }
 
-Focus ControlsLogic::focus_mask() const {
-    return Focus::MENU;
+FocusFilter ControlsLogic::focus_filter() const {
+    return focus_filter_;
 }

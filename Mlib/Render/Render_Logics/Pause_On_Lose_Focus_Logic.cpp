@@ -7,11 +7,11 @@ using namespace Mlib;
 
 PauseOnLoseFocusLogic::PauseOnLoseFocusLogic(
     SetFps& set_fps,
-    Focuses& focuses,
-    Focus focus_mask)
-: set_fps_{set_fps},
-  focuses_{focuses},
-  focus_mask_{focus_mask}
+    UiFocus& ui_focus,
+    FocusFilter focus_filter)
+: set_fps_{ set_fps },
+  ui_focus_{ ui_focus },
+  focus_filter_{ focus_filter }
 {}
 
 void PauseOnLoseFocusLogic::render(
@@ -24,7 +24,7 @@ void PauseOnLoseFocusLogic::render(
 {
     LOG_FUNCTION("PauseOnLoseFocusLogic::render");
 
-    if ((focuses_.focus() & focus_mask_) != Focus::NONE) {
+    if (ui_focus_.has_focus(focus_filter_)) {
         set_fps_.resume();
     } else {
         set_fps_.pause();

@@ -180,7 +180,6 @@ int main(int argc, char** argv) {
         ButtonStates button_states;
         UiFocus ui_focus;
         SubstitutionMap external_substitutions;
-        std::map<std::string, size_t> selection_ids;
         // FifoLog fifo_log{10 * 1000};
 
         while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
@@ -261,7 +260,6 @@ int main(int argc, char** argv) {
                     scene_config,
                     button_states,
                     ui_focus,
-                    selection_ids,
                     render2.window(),
                     renderable_scenes);
             }

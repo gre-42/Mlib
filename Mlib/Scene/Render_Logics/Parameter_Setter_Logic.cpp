@@ -12,8 +12,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
-    UiFocus& ui_focus,
-    size_t submenu_id,
+    const FocusFilter& focus_filter,
     SubstitutionMap& substitutions,
     ButtonPress& button_press,
     size_t& selection_index,
@@ -34,9 +33,8 @@ ParameterSetterLogic::ParameterSetterLogic(
         merge_substitutions();
         on_change();
     }},
-  ui_focus_{ui_focus},
-  submenu_id_{submenu_id},
-  substitutions_{substitutions}
+  focus_filter_{ focus_filter },
+  substitutions_{ substitutions }
 {
     // Initialize the reference
     merge_substitutions();
@@ -53,17 +51,15 @@ void ParameterSetterLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (ui_focus_.submenu_id == submenu_id_) {
-        list_view_.handle_input();
-        if (list_view_.has_selected_element()) {
-            substitutions_.merge(list_view_.selected_element().substitutions);
-        }
-        list_view_.render(width, height, true); // true=periodic_position
+    list_view_.handle_input();
+    if (list_view_.has_selected_element()) {
+        substitutions_.merge(list_view_.selected_element().substitutions);
     }
+    list_view_.render(width, height, true); // true=periodic_position
 }
 
-Focus ParameterSetterLogic::focus_mask() const {
-    return Focus::MENU;
+FocusFilter ParameterSetterLogic::focus_filter() const {
+    return focus_filter_;
 }
 
 void ParameterSetterLogic::merge_substitutions() const {

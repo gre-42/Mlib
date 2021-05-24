@@ -2,6 +2,7 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <vector>
 
 namespace Mlib {
@@ -22,8 +23,7 @@ public:
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
-        UiFocus& ui_focus,
-        size_t submenu_id_,
+        const FocusFilter& focus_filter,
         std::string& next_scene_filename,
         ButtonPress& button_press,
         size_t& selection_index);
@@ -37,13 +37,12 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
-    virtual Focus focus_mask() const override;
+    virtual FocusFilter focus_filter() const override;
 
 private:
     std::vector<SceneEntry> scene_files_;
     ListView<SceneEntry> list_view_;
-    UiFocus& ui_focus_;
-    size_t submenu_id_;
+    FocusFilter focus_filter_;
     std::string& next_scene_filename_;
 };
 

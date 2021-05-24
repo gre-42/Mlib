@@ -132,7 +132,6 @@ void LoadScene::operator()(
     SceneConfig& scene_config,
     ButtonStates& button_states,
     UiFocus& ui_focus,
-    std::map<std::string, size_t>& selection_ids,
     GLFWwindow* window,
     std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
 {
@@ -376,7 +375,8 @@ void LoadScene::operator()(
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)$");
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)"
+        "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(fill_pixel_region_with_texture_reg,
         "^\\s*fill_pixel_region_with_texture"
         "\\s+source_scene=([\\w+-.]+)"
@@ -384,15 +384,18 @@ void LoadScene::operator()(
         "\\s+update=(once|always)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)$");
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)"
+        "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(scene_to_pixel_region_reg,
         "^\\s*scene_to_pixel_region"
         "\\s+target_scene=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)$");
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)"
+        "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(controls_reg,
         "^\\s*controls"
+        "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
         "\\s+gamepad_texture=(#?[\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
@@ -572,7 +575,8 @@ void LoadScene::operator()(
         "\\s+resource=([\\w+-.]+)$");
     static const DECLARE_REGEX(pause_on_lose_focus_reg,
         "^\\s*pause_on_lose_focus"
-        "\\s+focus_mask=(menu|loading|countdown_any|scene)$");
+        "\\s+focus_mask=(menu|loading|countdown_any|scene)"
+        "\\s+submenu=(\\w*)$");
 
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
@@ -595,7 +599,6 @@ void LoadScene::operator()(
                 scene_config,
                 button_states,
                 ui_focus,
-                selection_ids,
                 window,
                 SceneConfigResource{
                     .fly = safe_stob(match[3].str()),
@@ -1278,8 +1281,6 @@ void LoadScene::operator()(
         auto& skybox_logic = cit->second->skybox_logic_;
         auto& game_logic = cit->second->game_logic_;
         auto& base_log = cit->second->fifo_log_;
-        auto& ui_focus = cit->second->ui_focus_;
-        auto& selection_ids = cit->second->selection_ids_;
         auto& mutex = cit->second->mutex_;
 
         Linker linker{physics_engine.advance_times_};
@@ -1774,12 +1775,12 @@ void LoadScene::operator()(
             if (wit == renderable_scenes.end()) {
                 throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
             }
-            Focus focus_mask = focus_from_string(match[1].str());
-            Focuses& focuses = ui_focus.focuses;
             auto polf = std::make_shared<PauseOnLoseFocusLogic>(
                 physics_set_fps,
-                focuses,
-                focus_mask);
+                ui_focus,
+                FocusFilter{
+                    .focus_mask = focus_from_string(match[1].str()),
+                    .submenu_id = match[2].str() });
             wit->second->render_logics_.append(nullptr, polf);
         } else if (Mlib::re::regex_match(line, match, scene_selector_reg)) {
             std::list<SceneEntry> scene_entries;
@@ -1788,7 +1789,9 @@ void LoadScene::operator()(
                     .name = e.first,
                     .filename = fpath(e.second)});
             }
-            ui_focus.submenu_titles.push_back(match[2].str());
+            std::string id = match[1].str();
+            std::string title = match[2].str();
+            ui_focus.insert_submenu(id, title, 0);
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
                 "",
                 std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
@@ -1798,11 +1801,12 @@ void LoadScene::operator()(
                     safe_stof(match[5].str())},
                 safe_stof(match[6].str()),        // font_height_pixels
                 safe_stof(match[7].str()),        // line_distance_pixels
-                ui_focus,
-                ui_focus.submenu_titles.size() - 1,
+                FocusFilter{
+                    .focus_mask = Focus::MENU,
+                    .submenu_id = id },
                 next_scene_filename,
                 button_press,
-                selection_ids[match[1].str()]);
+                ui_focus.selection_ids.at(id));
             render_logics.append(nullptr, scene_selector_logic);
         } else if (Mlib::re::regex_match(line, match, scene_to_texture_reg)) {
             auto wit = renderable_scenes.find("primary_scene");
@@ -1817,7 +1821,9 @@ void LoadScene::operator()(
                 "",                               // depth_texture_name
                 safe_stoi(match[3].str()),        // texture_width
                 safe_stoi(match[4].str()),        // texture_height
-                focus_from_string(match[5].str()));
+                FocusFilter{
+                    .focus_mask = focus_from_string(match[5].str()),
+                    .submenu_id = match[6].str() });
             wit->second->render_logics_.prepend(nullptr, scene_window_logic);
         } else if (Mlib::re::regex_match(line, match, fill_pixel_region_with_texture_reg)) {
             std::string source_scene = match[1].str();
@@ -1837,7 +1843,9 @@ void LoadScene::operator()(
                     FixedArray<float, 2>{             // size
                         safe_stof(match[6].str()),
                         safe_stof(match[7].str())},
-                    focus_from_string(match[8].str()));
+                    FocusFilter{
+                        .focus_mask = focus_from_string(match[8].str()),
+                        .submenu_id = match[9].str()});
             }
             render_logics.append(nullptr, scene_window_logic);
         } else if (Mlib::re::regex_match(line, match, scene_to_pixel_region_reg)) {
@@ -1855,21 +1863,26 @@ void LoadScene::operator()(
                 FixedArray<int, 2>{             // size
                     safe_stoi(match[4].str()),
                     safe_stoi(match[5].str())},
-                focus_from_string(match[6].str()));
+                FocusFilter{
+                    .focus_mask = focus_from_string(match[6].str()),
+                    .submenu_id = match[7].str()});
             wit->second->render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
         } else if (Mlib::re::regex_match(line, match, controls_reg)) {
+            std::string id = match[1].str();
+            std::string title = match[2].str();
             std::shared_ptr<ControlsLogic> controls_logic;
-            ui_focus.submenu_titles.push_back(match[1].str());
+            ui_focus.insert_submenu(id, title, 0);
             controls_logic = std::make_shared<ControlsLogic>(
-                fpath(match[2].str()),            // gamepad_texture
+                fpath(match[3].str()),            // gamepad_texture
                 FixedArray<float, 2>{             // position
-                    safe_stof(match[3].str()),
-                    safe_stof(match[4].str())},
+                    safe_stof(match[4].str()),
+                    safe_stof(match[5].str())},
                 FixedArray<float, 2>{             // size
-                    safe_stof(match[5].str()),
-                    safe_stof(match[6].str())},
-                ui_focus,
-                ui_focus.submenu_titles.size() - 1);
+                    safe_stof(match[6].str()),
+                    safe_stof(match[7].str())},
+                FocusFilter{
+                    .focus_mask = Focus::MENU,
+                    .submenu_id = id });
             render_logics.append(nullptr, controls_logic);
         } else if (Mlib::re::regex_match(line, match, clear_parameters_reg)) {
             external_substitutions.clear();
@@ -1892,11 +1905,7 @@ void LoadScene::operator()(
                     .name = e.first,
                     .substitutions = SubstitutionMap{ replacements_to_map(e.second) } });
             }
-            // If the selection_ids array is not yet initialized, apply the default value.
-            if (selection_ids.find(id) == selection_ids.end()) {
-                selection_ids.insert({ id, deflt });
-            }
-            ui_focus.submenu_titles.push_back(title);
+            ui_focus.insert_submenu(id, title, deflt);
             auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
                 "",
                 std::vector<ReplacementParameter>{rps.begin(), rps.end()},
@@ -1904,11 +1913,12 @@ void LoadScene::operator()(
                 position,
                 font_height_pixels,
                 line_distance_pixels,        // line_distance_pixels
-                ui_focus,
-                ui_focus.submenu_titles.size() - 1,
+                FocusFilter{
+                    .focus_mask = Focus::MENU,
+                    .submenu_id = id },
                 external_substitutions,
                 button_press,
-                selection_ids.at(id),
+                ui_focus.selection_ids.at(id),
                 [macro_line_executor, on_change, &rsc]() {
                     if (!on_change.empty()) {
                         macro_line_executor(on_change, nullptr, rsc);
@@ -1930,9 +1940,7 @@ void LoadScene::operator()(
             size_t deflt = safe_stoz(match[8].str());
             std::string reload_transient_objects = match[9].str();
             // If the selection_ids array is not yet initialized, apply the default value.
-            if (selection_ids.find(id) == selection_ids.end()) {
-                selection_ids.insert({ id, deflt });
-            }
+            ui_focus.selection_ids.insert({ id, deflt });
             auto tab_menu_logic = std::make_shared<TabMenuLogic>(
                 title,
                 ui_focus.submenu_titles,
@@ -1943,7 +1951,7 @@ void LoadScene::operator()(
                 ui_focus,
                 num_renderings,
                 button_press,
-                selection_ids.at(id),
+                ui_focus.selection_ids.at(id),
                 script_filename,
                 next_scene_filename,
                 [macro_line_executor, reload_transient_objects, &rsc]() {
@@ -1956,7 +1964,7 @@ void LoadScene::operator()(
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 fpath(match[1].str()),
                 resource_update_cycle_from_string(match[2].str()),
-                focus_from_string(match[3].str()));
+                FocusFilter{ .focus_mask = focus_from_string(match[3].str()) });
             render_logics.append(nullptr, bg);
         } else if (Mlib::re::regex_match(line, match, set_renderable_style_reg)) {
             auto node = scene.get_node(match[2].str());

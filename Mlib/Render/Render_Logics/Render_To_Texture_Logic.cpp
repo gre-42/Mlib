@@ -21,7 +21,7 @@ RenderToTextureLogic::RenderToTextureLogic(
     const std::string& depth_texture_name,
     int texture_width,
     int texture_height,
-    Focus focus_mask)
+    const FocusFilter& focus_filter)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::rendering_context()},
   update_cycle_{update_cycle},
@@ -30,7 +30,7 @@ RenderToTextureLogic::RenderToTextureLogic(
   depth_texture_name_{depth_texture_name},
   texture_width_{texture_width},
   texture_height_{texture_height},
-  focus_mask_{focus_mask}
+  focus_filter_{ focus_filter }
 {}
 
 RenderToTextureLogic::~RenderToTextureLogic() {
@@ -78,6 +78,6 @@ void RenderToTextureLogic::render(
     }
 }
 
-Focus RenderToTextureLogic::focus_mask() const {
-    return focus_mask_;
+FocusFilter RenderToTextureLogic::focus_filter() const {
+    return focus_filter_;
 }

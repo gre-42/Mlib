@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 namespace Mlib {
 
@@ -17,7 +18,7 @@ public:
         const std::string& depth_texture_name,
         int texture_width,
         int texture_height,
-        Focus focus_mask);
+        const FocusFilter& focus_filter);
     ~RenderToTextureLogic();
 
     virtual void render(
@@ -28,7 +29,7 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
 
-    virtual Focus focus_mask() const override;
+    virtual FocusFilter focus_filter() const override;
 
 private:
     RenderLogic& child_logic_;
@@ -40,7 +41,7 @@ private:
     std::string depth_texture_name_;
     int texture_width_;
     int texture_height_;
-    Focus focus_mask_;
+    FocusFilter focus_filter_;
 };
 
 }

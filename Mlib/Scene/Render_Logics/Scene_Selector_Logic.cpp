@@ -15,8 +15,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     const FixedArray<float, 2>& position,
     float font_height_pixels,
     float line_distance_pixels,
-    UiFocus& ui_focus,
-    size_t submenu_id,
+    const FocusFilter& focus_filter,
     std::string& next_scene_filename,
     ButtonPress& button_press,
     size_t& selection_index)
@@ -32,9 +31,8 @@ SceneSelectorLogic::SceneSelectorLogic(
     line_distance_pixels,
     ListViewOrientation::VERTICAL,
     [](const SceneEntry& s){return s.name;}},
-  ui_focus_{ui_focus},
-  submenu_id_{submenu_id},
-  next_scene_filename_{next_scene_filename}
+  focus_filter_{ focus_filter },
+  next_scene_filename_{ next_scene_filename }
 {
     // Initialize the reference
     next_scene_filename_ = list_view_.selected_element().filename;
@@ -51,15 +49,13 @@ void SceneSelectorLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    if (ui_focus_.submenu_id == submenu_id_) {
-        list_view_.handle_input();
-        if (list_view_.has_selected_element()) {
-            next_scene_filename_ = list_view_.selected_element().filename;
-        }
-        list_view_.render(width, height, true); // true=periodic_position
+    list_view_.handle_input();
+    if (list_view_.has_selected_element()) {
+        next_scene_filename_ = list_view_.selected_element().filename;
     }
+    list_view_.render(width, height, true); // true=periodic_position
 }
 
-Focus SceneSelectorLogic::focus_mask() const {
-    return Focus::MENU;
+FocusFilter SceneSelectorLogic::focus_filter() const {
+    return focus_filter_;
 }

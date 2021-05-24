@@ -10,7 +10,6 @@ RenderableScene::RenderableScene(
     SceneConfig& scene_config,
     ButtonStates& button_states,
     UiFocus& ui_focus,
-    std::map<std::string, size_t>& selection_ids,
     GLFWwindow* window,
     const SceneConfigResource& config,
     const std::string& level_name,
@@ -25,8 +24,6 @@ RenderableScene::RenderableScene(
       &large_aggregate_array_renderer_,
       &large_instances_renderer_},
   selected_cameras_{scene_},
-  ui_focus_{ui_focus},
-  selection_ids_{selection_ids},
   button_states_{button_states},
   user_object_{
       .button_states = button_states,

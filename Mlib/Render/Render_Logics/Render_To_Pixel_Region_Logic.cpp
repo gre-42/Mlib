@@ -8,12 +8,12 @@ RenderToPixelRegionLogic::RenderToPixelRegionLogic(
     RenderLogic& render_logic,
     const FixedArray<int, 2>& position,
     const FixedArray<int, 2>& size,
-    Focus focus_mask,
+    const FocusFilter& focus_filter,
     bool flip_y)
 : render_logic_{render_logic},
   position_{position},
   size_{size},
-  focus_mask_{focus_mask},
+  focus_filter_{focus_filter},
   flip_y_{flip_y}
 {}
 
@@ -39,6 +39,6 @@ void RenderToPixelRegionLogic::render(
         frame_id);
 }
 
-Focus RenderToPixelRegionLogic::focus_mask() const {
-    return focus_mask_;
+FocusFilter RenderToPixelRegionLogic::focus_filter() const {
+    return focus_filter_;
 }

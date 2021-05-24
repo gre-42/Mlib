@@ -56,7 +56,6 @@ public:
         SceneConfig& scene_config,
         ButtonStates& button_states,
         UiFocus& ui_focus,
-        std::map<std::string, size_t>& selection_ids,
         GLFWwindow* window,
         const SceneConfigResource& config,
         const std::string& level_name,
@@ -74,8 +73,6 @@ public:
     PhysicsEngine physics_engine_;
     Scene scene_;
     SelectedCameras selected_cameras_;
-    UiFocus& ui_focus_;
-    std::map<std::string, size_t>& selection_ids_;
     ButtonStates& button_states_;
     FlyingCameraUserClass user_object_;
     SetFps physics_set_fps_{"Physics FPS: "};

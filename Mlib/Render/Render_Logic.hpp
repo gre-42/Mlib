@@ -10,7 +10,7 @@ struct RenderConfig;
 struct RenderResults;
 struct RenderedSceneDescriptor;
 struct SceneGraphConfig;
-enum class Focus;
+struct FocusFilter;
 
 class RenderLogic {
 public:
@@ -21,7 +21,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) = 0;
-    virtual Focus focus_mask() const;
+    virtual FocusFilter focus_filter() const;
     virtual float near_plane() const;
     virtual float far_plane() const;
     virtual const FixedArray<float, 4, 4>& vp() const;

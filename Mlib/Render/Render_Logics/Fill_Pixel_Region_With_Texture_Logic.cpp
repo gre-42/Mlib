@@ -8,12 +8,12 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
     ResourceUpdateCycle update_cycle,
     const FixedArray<float, 2>& position,
     const FixedArray<float, 2>& size,
-    Focus focus_mask,
+    const FocusFilter& focus_filter,
     bool flip_y)
 : FillWithTextureLogic{image_resource_name, update_cycle},
   position_{position},
   size_{size},
-  focus_mask_{focus_mask},
+  focus_filter_{focus_filter},
   flip_y_{flip_y}
 {}
 
@@ -68,6 +68,6 @@ void FillPixelRegionWithTextureLogic::render(
     CHK(glDisable(GL_BLEND));
 }
 
-Focus FillPixelRegionWithTextureLogic::focus_mask() const {
-    return focus_mask_;
+FocusFilter FillPixelRegionWithTextureLogic::focus_filter() const {
+    return focus_filter_;
 }

@@ -2,6 +2,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <stdexcept>
 
@@ -41,11 +42,10 @@ void RenderLogics::render(
     const RenderedSceneDescriptor& frame_id)
 {
     std::lock_guard lock{ mutex_ };
-    Focus current_focus = ui_focus_.focuses.focus();
     
     LOG_FUNCTION("RenderLogics::render");
     for (const auto& c : render_logics_) {
-        if ((current_focus & c.second.render_logic->focus_mask()) != Focus::NONE) {
+        if (ui_focus_.has_focus(c.second.render_logic->focus_filter())) {
             c.second.render_logic->render(width, height, render_config, scene_graph_config, render_results, frame_id);
         }
     }

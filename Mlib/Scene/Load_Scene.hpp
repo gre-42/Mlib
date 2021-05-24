@@ -32,7 +32,6 @@ public:
         SceneConfig& scene_config,
         ButtonStates& button_states,
         UiFocus& ui_focus,
-        std::map<std::string, size_t>& selection_ids,
         GLFWwindow* window,
         std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);
 private:

@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 namespace Mlib {
 
@@ -16,7 +16,7 @@ public:
     MainMenuBackgroundLogic(
         const std::string& image_resource_name,
         ResourceUpdateCycle update_cycle,
-        Focus focus_mask);
+        const FocusFilter& focus_filter);
 
     virtual void render(
         int width,
@@ -26,10 +26,10 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
     
-    virtual Focus focus_mask() const override;
+    virtual FocusFilter focus_filter() const override;
 
 private:
-    Focus focus_mask_;
+    FocusFilter focus_filter_;
 };
 
 }
