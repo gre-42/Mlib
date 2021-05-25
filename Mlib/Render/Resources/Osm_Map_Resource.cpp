@@ -966,7 +966,7 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
 {
     {
         size_t i = 0;
-        for (auto& p : object_resource_descriptors_) {
+        for (const auto& p : object_resource_descriptors_) {
             auto node = new SceneNode;
             node->set_position(p.position);
             node->set_scale(scale_ * p.scale);
@@ -980,7 +980,7 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
             }
         }
     }
-    for (auto& p : resource_instance_positions_) {
+    for (const auto& p : resource_instance_positions_) {
         auto node = new SceneNode;
         node->set_rotation({ float{M_PI} / 2.f, 0.f, 0.f });
         scene_node_resources_.instantiate_renderable(p.first, p.first, *node, resource_filter);
