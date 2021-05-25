@@ -11,7 +11,7 @@ ViewportGuard::ViewportGuard(
     GLsizei height)
 {
     stack_.push_back({x, y, width, height});
-    glViewport(x, y, width, height);
+    CHK(glViewport(x, y, width, height));
 }
 
 ViewportGuard::~ViewportGuard() {
