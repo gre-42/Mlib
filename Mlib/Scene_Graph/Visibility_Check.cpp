@@ -22,7 +22,7 @@ bool VisibilityCheck::is_visible(
     if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (m.occluder_type != OccluderType::OFF)) {
         return true;
     }
-    if (std::isnan(max_distance) && !m.is_small) {
+    if (std::isnan(max_distance) && (m.distances == default_distances_hard) && !m.is_small) {
         return true;
     }
     if (orthographic_) {
