@@ -60,10 +60,15 @@ public:
         const std::string& destination,
         const std::string& source,
         float max_distance) const;
+    void add_companion(
+        const std::string& resource_name,
+        const std::string& companion_resource_name,
+        const SceneNodeResourceFilter& resource_filter);
 private:
     std::map<std::string, std::shared_ptr<SceneNodeResource>> resources_;
     mutable std::map<std::string, BvhEntry> bvh_loaders_;
     std::map<std::string, TransformationMatrix<double, 3>> geographic_mappings_;
+    std::map<std::string, std::list<std::pair<std::string, SceneNodeResourceFilter>>> companions_;
     mutable std::recursive_mutex mutex_;
 };
 

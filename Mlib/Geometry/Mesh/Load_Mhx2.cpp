@@ -233,6 +233,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
                 .aggregate_mode = cfg.aggregate_mode,
                 .transformation_mode = cfg.transformation_mode,
+                .distances = cfg.distances,
                 .is_small = cfg.is_small,
                 .ambience = m.ambience,
                 .diffusivity = m.diffusivity,

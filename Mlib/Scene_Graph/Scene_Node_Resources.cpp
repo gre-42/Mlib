@@ -52,6 +52,12 @@ void SceneNodeResources::instantiate_renderable(
     }
     try {
         it->second->instantiate_renderable(instance_name, scene_node, resource_filter);
+        auto cit = companions_.find(resource_name);
+        if (cit != companions_.end()) {
+            for (const auto& c : cit->second) {
+                instantiate_renderable(c.first, instance_name + "/" + c.first, scene_node, c.second);
+            }
+        }
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("instantiate_renderable for resource \"" + resource_name + "\" failed: " + e.what());
     }
@@ -226,4 +232,15 @@ void SceneNodeResources::import_bone_weights(
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("import_bone_weights for resource \"" + destination + "\" failed: " + e.what());
     }
+}
+
+void SceneNodeResources::add_companion(
+    const std::string& resource_name,
+    const std::string& companion_resource_name,
+    const SceneNodeResourceFilter& resource_filter)
+{
+    if (resources_.find(resource_name) == resources_.end()) {
+        throw std::runtime_error("Could not find resource with name \"" + resource_name + '"');
+    }
+    companions_[resource_name].push_back({ companion_resource_name, resource_filter });
 }

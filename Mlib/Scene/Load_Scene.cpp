@@ -144,6 +144,7 @@ void LoadScene::operator()(
         "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "(?:\\s+distances=([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+is_small=(0|1)"
         "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
         "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
@@ -169,6 +170,7 @@ void LoadScene::operator()(
         "\\s+texture_filename=(#?[\\w-.\\(\\)/+-]+)"
         "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+max=([\\w+-.]+) ([\\w+-.]+)"
+        "(?:\\s+distances=([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+is_small=(0|1)"
         "\\s+occluded_type=(off|color|depth)"
         "\\s+occluder_type=(off|white|black)"
@@ -190,6 +192,7 @@ void LoadScene::operator()(
         "\\s+texture_filename_90=(#?[\\w-.\\(\\)/+-]+)"
         "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+max=([\\w+-.]+) ([\\w+-.]+)"
+        "(?:\\s+distances=([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+is_small=(0|1)"
         "\\s+occluded_type=(off|color|depth)"
         "\\s+occluder_type=(off|white|black)"
@@ -214,7 +217,17 @@ void LoadScene::operator()(
         "^\\s*delete_root_nodes\\s+regex=(.*)$");
     static const DECLARE_REGEX(wait_until_paused_and_delete_scheduled_advance_times_reg,
         "^\\s*wait_until_paused_and_delete_scheduled_advance_times$");
-    static const DECLARE_REGEX(renderable_instance_reg, "^\\s*renderable_instance name=([\\w+-.]+) node=([\\w+-.]+) resource=([\\w-. \\(\\)/+-]+)(?: regex=(.*))?$");
+    static const DECLARE_REGEX(renderable_instance_reg,
+        "^\\s*renderable_instance"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+resource=([\\w-. \\(\\)/+-]+)"
+        "(?:\\s+regex=(.*))?$");
+    static const DECLARE_REGEX(add_companion_renderable_reg,
+        "^\\s*add_companion_renderable"
+        "\\s+resource=([\\w+-.]+)"
+        "\\s+companion_resource=([\\w+-.]+)"
+        "(?:\\s+regex=(.*))?$");
     static const DECLARE_REGEX(register_geographic_mapping_reg,
         "^\\s*register_geographic_mapping"
         "\\s+name=([\\w+-.]+)"
@@ -633,24 +646,27 @@ void LoadScene::operator()(
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())},
-                .is_small = safe_stob(match[12].str()),
-                .blend_mode = blend_mode_from_string(match[13].str()),
+                .distances = OrderableFixedArray<float, 2>{
+                    match[12].matched ? safe_stof(match[12].str()) : 0.f,
+                    match[13].matched ? safe_stof(match[13].str()) : float { INFINITY }},
+                .is_small = safe_stob(match[14].str()),
+                .blend_mode = blend_mode_from_string(match[15].str()),
                 .alpha_distances = {
-                    safe_stof(match[14].str()),
-                    safe_stof(match[15].str()),
                     safe_stof(match[16].str()),
-                    safe_stof(match[17].str())},
-                .cull_faces = safe_stob(match[18].str()),
-                .occluded_type = occluded_type_from_string(match[19].str()),
-                .occluder_type = occluder_type_from_string(match[20].str()),
-                .occluded_by_black = safe_stob(match[21].str()),
-                .aggregate_mode = aggregate_mode_from_string(match[22].str()),
-                .transformation_mode = transformation_mode_from_string(match[23].str()),
-                .triangle_tangent_error_behavior = match[24].matched
-                    ? triangle_tangent_error_behavior_from_string(match[24].str())
+                    safe_stof(match[17].str()),
+                    safe_stof(match[18].str()),
+                    safe_stof(match[19].str())},
+                .cull_faces = safe_stob(match[20].str()),
+                .occluded_type = occluded_type_from_string(match[21].str()),
+                .occluder_type = occluder_type_from_string(match[22].str()),
+                .occluded_by_black = safe_stob(match[23].str()),
+                .aggregate_mode = aggregate_mode_from_string(match[24].str()),
+                .transformation_mode = transformation_mode_from_string(match[25].str()),
+                .triangle_tangent_error_behavior = match[26].matched
+                    ? triangle_tangent_error_behavior_from_string(match[26].str())
                     : TriangleTangentErrorBehavior::RAISE,
                 .apply_static_lighting = false,
-                .werror = !match[25].matched};
+                .werror = !match[27].matched};
             std::string filename = fpath(match[2].str());
             if (filename.ends_with(".obj")) {
                 scene_node_resources.add_resource(match[1].str(), std::make_shared<ObjFileResource>(
@@ -1077,19 +1093,20 @@ void LoadScene::operator()(
             // 2: texture_filename
             // 3, 4: min
             // 5, 6: max
-            // 7: is_small
-            // 8: occluded_type
-            // 9: occluder_type
-            // 10: occluded_by_black
-            // 11, 12, 13: ambience
-            // 14: blend_mode
-            // 15: depth_func
-            // 16, 17, 18, 19: alpha_distances
-            // 20: cull_faces
-            // 21, 22, 23: rotation
-            // 24, 25, 26: translation
-            // 27: aggregate_mode
-            // 28: transformation_mode
+            // 7, 8: distances
+            // 9: is_small
+            // 10: occluded_type
+            // 11: occluder_type
+            // 12: occluded_by_black
+            // 13, 14, 15: ambience
+            // 16: blend_mode
+            // 17: depth_func
+            // 18, 19, 20, 21: alpha_distances
+            // 22: cull_faces
+            // 23, 24, 25: rotation
+            // 26, 27, 28: translation
+            // 29: aggregate_mode
+            // 30: transformation_mode
             scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -1097,36 +1114,39 @@ void LoadScene::operator()(
                 TransformationMatrix<float, 3>(
                     tait_bryan_angles_2_matrix(
                         FixedArray<float, 3>{
-                            match[21].matched ? safe_stof(match[21].str()) / 180.f * float(M_PI) : 0.f,
-                            match[22].matched ? safe_stof(match[22].str()) / 180.f * float(M_PI) : 0.f,
-                            match[23].matched ? safe_stof(match[23].str()) / 180.f * float(M_PI) : 0.f}),
+                            match[23].matched ? safe_stof(match[23].str()) / 180.f * float(M_PI) : 0.f,
+                            match[24].matched ? safe_stof(match[24].str()) / 180.f * float(M_PI) : 0.f,
+                            match[25].matched ? safe_stof(match[25].str()) / 180.f * float(M_PI) : 0.f}),
                     FixedArray<float, 3>{
-                        match[24].matched ? safe_stof(match[24].str()) : 0.f,
-                        match[25].matched ? safe_stof(match[25].str()) : 0.f,
-                        match[26].matched ? safe_stof(match[26].str()) : 0.f}),
+                        match[26].matched ? safe_stof(match[26].str()) : 0.f,
+                        match[27].matched ? safe_stof(match[27].str()) : 0.f,
+                        match[28].matched ? safe_stof(match[28].str()) : 0.f}),
                 Material{
-                    .blend_mode = blend_mode_from_string(match[14].str()),
-                    .depth_func = match[15].matched ? depth_func_from_string(match[15].str()) : DepthFunc::LESS,
+                    .blend_mode = blend_mode_from_string(match[16].str()),
+                    .depth_func = match[17].matched ? depth_func_from_string(match[17].str()) : DepthFunc::LESS,
                     .textures = {{.texture_descriptor = {.color = fpath(match[2].str())}}},
-                    .occluded_type =  occluded_type_from_string(match[8].str()),
-                    .occluder_type = occluder_type_from_string(match[9].str()),
-                    .occluded_by_black = safe_stob(match[10].str()),
+                    .occluded_type =  occluded_type_from_string(match[10].str()),
+                    .occluder_type = occluder_type_from_string(match[11].str()),
+                    .occluded_by_black = safe_stob(match[12].str()),
                     .alpha_distances = {
-                        safe_stof(match[16].str()),
-                        safe_stof(match[17].str()),
                         safe_stof(match[18].str()),
-                        safe_stof(match[19].str())},
+                        safe_stof(match[19].str()),
+                        safe_stof(match[20].str()),
+                        safe_stof(match[21].str())},
                     .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                     .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                     .collide = false,
-                    .aggregate_mode = aggregate_mode_from_string(match[27].str()),
-                    .transformation_mode = transformation_mode_from_string(match[28].str()),
-                    .is_small = safe_stob(match[7].str()),
-                    .cull_faces = safe_stob(match[20].str()),
+                    .aggregate_mode = aggregate_mode_from_string(match[29].str()),
+                    .transformation_mode = transformation_mode_from_string(match[30].str()),
+                    .distances = OrderableFixedArray<float, 2>{
+                        match[7].matched ? safe_stof(match[7].str()) : 0.f,
+                        match[8].matched ? safe_stof(match[8].str()) : float { INFINITY }},
+                    .is_small = safe_stob(match[9].str()),
+                    .cull_faces = safe_stob(match[22].str()),
                     .ambience = {
-                        safe_stof(match[11].str()),
-                        safe_stof(match[12].str()),
-                        safe_stof(match[13].str())},
+                        safe_stof(match[13].str()),
+                        safe_stof(match[14].str()),
+                        safe_stof(match[15].str())},
                     .diffusivity = {0.f, 0.f, 0.f},
                     .specularity = {0.f, 0.f, 0.f}}.compute_color_mode()));
             return true;
@@ -1145,35 +1165,44 @@ void LoadScene::operator()(
             // 3: texture_filename_90
             // 4, 5: min
             // 6, 7: max
-            // 8: is_small
-            // 9: occluded_type
-            // 10: occluder_type
-            // 11, 12, 13: ambience
-            // 14: blend_mode
-            // 15: cull_faces
-            // 16: aggregate_mode
-            // 17: transformation_mode
+            // 8, 9: distances
+            // 10: is_small
+            // 11: occluded_type
+            // 12: occluder_type
+            // 13: occluded_by_black
+            // 14, 15, 16: ambience
+            // 17: blend_mode
+            // 18: depth_func
+            // 19, 20, 21, 22: alpha_distances
+            // 23: cull_faces
+            // 24, 25, 26: rotation
+            // 27, 28, 29: translation
+            // 30: aggregate_mode
+            // 31: transformation_mode
             Material material{
-                .blend_mode = blend_mode_from_string(match[15].str()),
-                .occluded_type =  occluded_type_from_string(match[9].str()),
-                .occluder_type = occluder_type_from_string(match[10].str()),
-                .occluded_by_black = safe_stob(match[11].str()),
+                .blend_mode = blend_mode_from_string(match[17].str()),
+                .occluded_type =  occluded_type_from_string(match[11].str()),
+                .occluder_type = occluder_type_from_string(match[12].str()),
+                .occluded_by_black = safe_stob(match[13].str()),
                 .alpha_distances = {
-                    safe_stof(match[16].str()),
-                    safe_stof(match[17].str()),
                     safe_stof(match[18].str()),
-                    safe_stof(match[19].str())},
+                    safe_stof(match[19].str()),
+                    safe_stof(match[20].str()),
+                    safe_stof(match[21].str())},
                 .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
                 .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
                 .collide = false,
-                .aggregate_mode = aggregate_mode_from_string(match[21].str()),
-                .transformation_mode = transformation_mode_from_string(match[22].str()),
-                .is_small = safe_stob(match[8].str()),
-                .cull_faces = safe_stob(match[20].str()),
+                .aggregate_mode = aggregate_mode_from_string(match[23].str()),
+                .transformation_mode = transformation_mode_from_string(match[24].str()),
+                .distances = OrderableFixedArray<float, 2>{
+                    match[8].matched ? safe_stof(match[8].str()) : 0.f,
+                    match[9].matched ? safe_stof(match[9].str()) : float { INFINITY }},
+                .is_small = safe_stob(match[10].str()),
+                .cull_faces = safe_stob(match[22].str()),
                 .ambience = {
-                    safe_stof(match[12].str()),
-                    safe_stof(match[13].str()),
-                    safe_stof(match[14].str())},
+                    safe_stof(match[14].str()),
+                    safe_stof(match[15].str()),
+                    safe_stof(match[16].str())},
                 .diffusivity = {0.f, 0.f, 0.f},
                 .specularity = {0.f, 0.f, 0.f}};
             Material material_0{material};
@@ -1252,6 +1281,13 @@ void LoadScene::operator()(
                         safe_stof(match[15].str())},
                     .scale = safe_stof(match[16].str()),
                     .weight = safe_stof(match[17].str()) });
+            return true;
+        }
+        if (Mlib::re::regex_match(line, match, add_companion_renderable_reg)) {
+            scene_node_resources.add_companion(
+                match[1].str(),
+                match[2].str(),
+                { .regex = Mlib::compile_regex(match[3].str()) });
             return true;
         }
 

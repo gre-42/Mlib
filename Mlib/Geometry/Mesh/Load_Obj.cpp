@@ -40,6 +40,7 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
             .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
+            .distances = cfg.distances,
             .is_small = cfg.is_small}};
     StaticFaceLightning sfl;
 
