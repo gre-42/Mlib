@@ -107,7 +107,7 @@ StbImage StbImage::load_from_file(const std::string& filename) {
 }
 
 void StbImage::save_to_file(const std::string& filename) const {
-    if (!stbi_write_png(filename.c_str(), shape(1), shape(0), 3, (void*)&(*this)(0, 0), 0)) {
+    if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 3, (void*)&(*this)(0, 0), 0)) {
         throw std::runtime_error("Could not save to file " + filename);
     }
 }

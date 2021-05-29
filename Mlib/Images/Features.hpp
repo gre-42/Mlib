@@ -1,11 +1,12 @@
 #pragma once
-#include <Mlib/Array/Array.hpp>
-#include <Mlib/Images/Image_fwd.hpp>
-#include <Mlib/Images/PpmImage.hpp>
-#include <Mlib/Math/Math.hpp>
-#include <cmath>
+#include <Mlib/Images/Rgb24.hpp>
 
 namespace Mlib {
+
+template <class TData>
+class Array;
+class StbImage;
+class ArrayShape;
 
 void hessian_determinant_trace(
     const Array<float>& image,
@@ -37,7 +38,7 @@ Array<float> find_nfeatures(
 
 void highlight_features(
     const Array<float>& feature_points,
-    PpmImage& bitmap,
+    StbImage& bitmap,
     size_t size = 1,
     const Rgb24& color = Rgb24::red());
 

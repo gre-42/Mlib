@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-class PpmImage;
+class StbImage;
 
 namespace Sfm{
 
@@ -12,6 +12,6 @@ void detect_chessboard(
     const ArrayShape& shape,
     Array<float>& p_x,
     Array<float>& p_y,
-    PpmImage& bmp);
+    StbImage& bmp);
 
 }}

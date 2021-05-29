@@ -1,86 +1,9 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Images/Rgb24.hpp>
 #include <string>
 
 namespace Mlib {
-
-class StbImage;
-
-#include <Mlib/Packed_Begin.hpp>
-// 24-bit, 3 * 8 bytes
-struct Rgb24 {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-    Rgb24() {}
-    Rgb24(
-        unsigned char r,
-        unsigned char g,
-        unsigned char b)
-    :r(r), g(g), b(b) {}
-    static inline Rgb24 red() {
-        return Rgb24{255, 0, 0};
-    }
-    static inline Rgb24 green() {
-        return Rgb24{0, 255, 0};
-    }
-    static inline Rgb24 blue() {
-        return Rgb24{0, 0, 255};
-    }
-    static inline Rgb24 black() {
-        return Rgb24{0, 0, 0};
-    }
-    static inline Rgb24 white() {
-        return Rgb24{255, 255, 255};
-    }
-    static inline Rgb24 nan() {
-        return Rgb24{255, 0, 255};
-    }
-    static inline Rgb24 gray() {
-        return Rgb24{127, 127, 127};
-    }
-    static inline Rgb24 yellow() {
-        return Rgb24{255, 255, 0};
-    }
-    static inline Rgb24 orange() {
-        return Rgb24{255, 127, 0};
-    }
-    static inline Rgb24 from_float_grayscale(float grayscale) {
-        if (std::isnan(grayscale)) {
-            return Rgb24::nan();
-        }
-        // consider using grayscale.clip(0, 1) if this fails
-        if (grayscale < 0) {
-            throw std::runtime_error("StbImage::from_float_grayscale received " + std::to_string(grayscale) + "<0");
-        }
-        if (grayscale > 1) {
-            throw std::runtime_error("StbImage::from_float_grayscale received " + std::to_string(grayscale) + ">1");
-        }
-        return Rgb24{
-            (unsigned char)(grayscale * 255 + 0.5f),
-            (unsigned char)(grayscale * 255 + 0.5f),
-            (unsigned char)(grayscale * 255 + 0.5f)};
-    }
-    static inline Rgb24 from_float_rgb(float r, float g, float b) {
-        if (std::isnan(r) || std::isnan(g) || std::isnan(b)) {
-            if (!std::isnan(r) || !std::isnan(g) || !std::isnan(b)) {
-                throw std::runtime_error("StbImage::from_float_rgb received inconsistent NANs");
-            }
-            return Rgb24::nan();
-        }
-        if (r < 0.f || g < 0.f || b < 0.f) {
-            throw std::runtime_error("StbImage::from_float_rgb received value < 0");
-        }
-        if (r > 1.f || g > 1.f || b > 1.f) {
-            throw std::runtime_error("StbImage::from_float_rgb received value > 1");
-        }
-        return Rgb24{
-            (unsigned char)(r * 255 + 0.5f),
-            (unsigned char)(g * 255 + 0.5f),
-            (unsigned char)(b * 255 + 0.5f)};
-    }
-} PACKED;
-#include <Mlib/Packed_End.hpp>
 
 class StbImage: public Array<Rgb24> {
 public:

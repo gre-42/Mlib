@@ -3,7 +3,7 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
@@ -87,10 +87,10 @@ void Mlib::Sfm::detect_chessboard(
     const ArrayShape& shape,
     Array<float>& p_x,
     Array<float>& p_y,
-    PpmImage& bmp)
+    StbImage& bmp)
 {
     assert(shape.ndim() == 2);
-    bmp = PpmImage::from_float_grayscale(image);
+    bmp = StbImage::from_float_grayscale(image);
 
     // Array<float> det = hessian_determinant_image(image);
     // result = Bgr565Bitmap::from_float_grayscale((det + 1.f) / 2.f);

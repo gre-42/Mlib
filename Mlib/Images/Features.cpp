@@ -5,7 +5,7 @@
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Math/Fixed_Trace.hpp>
 #include <Mlib/Math/Math.hpp>
@@ -161,7 +161,7 @@ Array<float> Mlib::find_nfeatures(
 
 void Mlib::highlight_features(
     const Array<float>& feature_points,
-    PpmImage& bitmap,
+    StbImage& bitmap,
     size_t size,
     const Rgb24& color)
 {

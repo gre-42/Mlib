@@ -1,5 +1,5 @@
 #include "Chessboard_Calibration_Pipeline.hpp"
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>
@@ -39,7 +39,7 @@ void ChessboardCalibrationPipeline::process_image_frame(
     const CameraFrame* camera_frame)
 {
     assert(camera_frame == nullptr);
-    PpmImage bmp;
+    StbImage bmp;
     Array<float> im(image_frame.grayscale);
     Array<float> p_y;
     std::string p_x_filename = (fs::path{ cache_dir_ } / "features-p_x.m").string();
@@ -60,7 +60,7 @@ void ChessboardCalibrationPipeline::process_image_frame(
             p_x_.save_txt_2d(p_x_filename);
         }
         p_y.save_txt_2d(p_y_filename);
-        bmp.save_to_file((fs::path{ cache_dir_ } / ("chessboard" + std::to_string(p_y_.size()) + ".ppm")).string());
+        bmp.save_to_file((fs::path{ cache_dir_ } / ("chessboard" + std::to_string(p_y_.size()) + ".png")).string());
     }
     p_y_.push_back(p_y);
 }
