@@ -16,7 +16,7 @@ CorrespondingFeaturesOnLine::CorrespondingFeaturesOnLine(
     const Array<float>& F)
 {
     const size_t max_distance = 200;
-    const size_t worst_error = 1.f; // Errors respect the patch-brightness.
+    const float worst_error = 1.f; // Errors respect the patch-brightness.
 
     std::list<Array<float>> yl0_2;
     std::list<Array<float>> yl1_2;

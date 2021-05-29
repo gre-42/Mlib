@@ -4,6 +4,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 #include <Mlib/Sfm/Homography/Homography_From_Points.hpp>
@@ -16,10 +17,10 @@ public:
     explicit HomographyFeatureGrid(const ArrayShape& shape)
     : shape(shape) {}
     template <class TOperation>
-    void foreach(const Array<float>& homography, const TOperation& op) const {
+    void foreach(const FixedArray<float, 3, 3>& homography, const TOperation& op) const {
         for (size_t r = 0; r < shape(0); ++r) {
             for (size_t c = 0; c < shape(1); ++c) {
-                Array<float> p0 = homogenized_3(i2a(ArrayShape{r, c}));
+                FixedArray<float, 3> p0 = homogenized_3(i2a(FixedArray<size_t, 2>{r, c}));
                 op(p0, apply_homography(homography, p0));
             }
         }
@@ -31,12 +32,12 @@ private:
 template <class TOperation>
 void homography_pixel_grid(
     const HomographyFeatureGrid& fgrid,
-    const ArrayShape& image_shape,
-    const Array<float>& homography,
+    const FixedArray<size_t, 2>& image_shape,
+    const FixedArray<float, 3, 3>& homography,
     const TOperation& op)
 {
-    fgrid.foreach(homography, [&](const Array<float>& p0, const Array<float>& pos){
-        ArrayShape ipos{a2i(dehomogenized_2(pos))};
+    fgrid.foreach(homography, [&](const FixedArray<float, 3>& p0, const FixedArray<float, 3>& pos){
+        FixedArray<size_t, 2> ipos{a2i(dehomogenized_2(pos))};
         if (all(ipos < image_shape)) {
             op(ipos);
         }
@@ -54,8 +55,8 @@ public:
     }
 
     template <class TOperation>
-    void foreach(const Array<float>& homography, const TOperation& op) const {
-        FixedArray<float, 3, 3> inverse_homography{inv(homography)};
+    void foreach(const FixedArray<float, 3, 3>& homography, const TOperation& op) const {
+        FixedArray<float, 3, 3> inverse_homography{ inv(homography.casted<double>()).casted<float>() };
         // std::cerr << homography << std::endl;
 
         for (const FixedArray<float, 2>& p : feature_points_) {
@@ -104,7 +105,7 @@ void Mlib::Sfm::detect_chessboard(
     const float ys = std::min(image.shape(0), image.shape(1)) / 128.f;
 
     float best_good = 0;
-    Array<float> best_homography;
+    FixedArray<float, 3, 3> best_homography;
     for (float w = 3 * ws; w < 10 * ws; w += 0.5 * ws) {
 
         if (any(image.shape() < w * shape)) {
@@ -116,10 +117,10 @@ void Mlib::Sfm::detect_chessboard(
         for (float fx = 0; fx < maxX; fx += 3 * xs) {
             for (float fy = 0; fy < maxY; fy += 3 * ys) {
                 Array<unsigned int> hist = zeros<unsigned int>(shape);
-                Array<float> homography{
-                    {w, 0, fx},
-                    {0, w, fy},
-                    {0, 0, 1}};
+                FixedArray<float, 3, 3> homography{
+                    w, 0, fx,
+                    0, w, fy,
+                    0, 0, 1};
                 homography_list.foreach(homography, [&](
                     const FixedArray<size_t, 2>& ip0,
                     const FixedArray<size_t, 2>& ipos,
@@ -140,6 +141,9 @@ void Mlib::Sfm::detect_chessboard(
         }
     }
     {
+        if (best_good == 0) {
+            throw std::runtime_error{ "Could not find a good homography" };
+        }
         std::list<Array<float>> lst_x;
         std::list<Array<float>> lst_p;
         homography_list.foreach(best_homography, [&](
@@ -161,15 +165,14 @@ void Mlib::Sfm::detect_chessboard(
     HomographyFeatureGrid fg(shape);
     {
         size_t i = 0;
-        fg.foreach(best_homography, [&](Array<float> p0, const Array<float>& pos) {
-            assert(all(pos.shape() == ArrayShape{3}));
+        fg.foreach(best_homography, [&](const FixedArray<float, 3>& p0, const FixedArray<float, 3>& pos) {
             p_x[i] = homogenized_4(p0);
             p_y[i] = pos;
             ++i;
         });
     }
-    homography_pixel_grid(fg, image.shape(), best_homography, [&](const ArrayShape& ipos) {
-        bmp(ipos) = Rgb24::green();
+    homography_pixel_grid(fg, FixedArray<size_t, 2>{image.shape(0), image.shape(1)}, best_homography, [&](const FixedArray<size_t, 2>& ipos) {
+        bmp(ipos(0), ipos(1)) = Rgb24::green();
     });
 
     /*std::list<Array<float>> feature_points = find_saddle_points(image);

@@ -1,10 +1,13 @@
 #include "Features.hpp"
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Math/Fixed_Determinant.hpp>
+#include <Mlib/Math/Fixed_Trace.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Sort.hpp>
 
@@ -22,23 +25,23 @@ void Mlib::hessian_determinant_trace(
     if (trace != nullptr) {
         *trace = zeros<float>(image.shape());
     }
-    Array<float> hessian(ArrayShape{2, 2});
     for (size_t r = 1; r + 1 < image.shape(0); r++) {
         for (size_t c = 1; c + 1 < image.shape(1); c++) {
-            //off_derivatives(0, 0) = (image[r + 1](c - 1) - image[r - 1](c - 1)) / 2.0;
-            //off_derivatives(0, 1) = (image[r + 1](c + 1) - image[r - 1](c + 1)) / 2.0;
-            //off_derivatives(1, 0) = (image[r - 1](c + 1) - image[r - 1](c - 1)) / 2.0;
-            //off_derivatives(1, 1) = (image[r + 1](c + 1) - image[r + 1](c - 1)) / 2.0;
+            //off_derivatives(0, 0) = (image(r + 1, c - 1) - image(r - 1, c - 1)) / 2.0;
+            //off_derivatives(0, 1) = (image(r + 1, c + 1) - image(r - 1, c + 1)) / 2.0;
+            //off_derivatives(1, 0) = (image(r - 1, c + 1) - image(r - 1, c - 1)) / 2.0;
+            //off_derivatives(1, 1) = (image(r + 1, c + 1) - image(r + 1, c - 1)) / 2.0;
             // d00 d01
             // d10 d11
-            hessian(0, 0) = (image[r - 1](c) - 2.f * image(r, c) + image[r + 1](c)) / 4.f;
-            hessian(1, 1) = (image[r](c - 1) - 2.f * image(r, c) + image[r](c + 1)) / 4.f;
+            FixedArray<float, 2, 2> hessian;
+            hessian(0, 0) = (image(r - 1, c) - 2.f * image(r, c) + image(r + 1, c)) / 4.f;
+            hessian(1, 1) = (image(r, c - 1) - 2.f * image(r, c) + image(r, c + 1)) / 4.f;
             hessian(0, 1) = (
-                (image[r + 1](c + 1) - image[r - 1](c + 1)) -
-                (image[r + 1](c - 1) - image[r - 1](c - 1))) / 4.f;
+                (image(r + 1, c + 1) - image(r - 1, c + 1)) -
+                (image(r + 1, c - 1) - image(r - 1, c - 1))) / 4.f;
             hessian(1, 0) = (
-                (image[r + 1](c + 1) - image[r + 1](c - 1)) -
-                (image[r - 1](c + 1) - image[r - 1](c - 1))) / 4.f;
+                (image(r + 1, c + 1) - image(r + 1, c - 1)) -
+                (image(r - 1, c + 1) - image(r - 1, c - 1))) / 4.f;
             //Array<float> q;
             //Array<float> s;
             //qdq(hessian, q, s);

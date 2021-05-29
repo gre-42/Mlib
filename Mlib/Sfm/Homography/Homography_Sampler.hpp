@@ -10,7 +10,7 @@ namespace Mlib { namespace Sfm {
 template <class TData>
 class HomographySampler {
 public:
-    HomographySampler(const Array<TData>& homography)
+    HomographySampler(const FixedArray<TData, 3, 3>& homography)
     : H(homography) {}
     bool sample_destination(size_t r, size_t c, const ArrayShape& shape, BilinearInterpolator<TData>& bi) const {
         FixedArray<size_t, 2> id_s{r, c};

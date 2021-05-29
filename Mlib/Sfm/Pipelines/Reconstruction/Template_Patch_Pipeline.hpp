@@ -19,7 +19,7 @@ class TemplatePatchPipeline: public ImagePipeline {
 public:
     TemplatePatchPipeline(
         const std::string& cache_dir,
-        const Array<float>& intrinsic_matrix,
+        const FixedArray<float, 3, 3>& intrinsic_matrix,
         const TemplatePatchPipelineConfig& cfg);
     virtual void process_image_frame(
         const std::chrono::milliseconds& time,
@@ -29,7 +29,7 @@ public:
 private:
     void save_cameras() const;
 
-    Array<float> intrinsic_matrix_;
+    FixedArray<float, 3, 3> intrinsic_matrix_;
     DownSampler down_sampler_;
     FlowingParticles flowing_particles_;
     OpticalFlows optical_flows_;

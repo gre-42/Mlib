@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Math/Math.hpp>
 
 namespace Mlib { namespace Sfm {
 
@@ -12,19 +12,19 @@ namespace Mlib { namespace Sfm {
  * d: distance to the plane
  **/
 template <class TData>
-Array<TData> rotation_and_translation_to_homography(
-    const Array<TData>& R,
-    const Array<TData>& t,
-    const Array<TData>& n,
+FixedArray<TData, 3, 3> rotation_and_translation_to_homography(
+    const FixedArray<TData, 3, 3>& R,
+    const FixedArray<TData, 3>& t,
+    const FixedArray<TData, 3>& n,
     const TData& d)
 {
-    return R - dot(t.as_column_vector(), n.as_row_vector()) / d;
+    return R - dot2d(t.as_column_vector(), n.as_row_vector()) / d;
 }
 
 template <class TData>
-Array<TData> pixel_homography(
-    const Array<TData>& intrinsic_matrix,
-    const Array<TData>& homog)
+FixedArray<TData, 3, 3> pixel_homography(
+    const FixedArray<TData, 3, 3>& intrinsic_matrix,
+    const FixedArray<TData, 3, 3>& homog)
 {
     // Dense Reconstruction and Tracking with Real-Time Applications
     // Part 2: Geometric Reconstruction
@@ -33,7 +33,7 @@ Array<TData> pixel_homography(
     // return res / res(2, 2);
 
     // i * h * i^{-1} = (i^{-T} * h^T * i^T)^T
-    Array<TData> res = lstsq_chol(
+    FixedArray<TData, 3, 3> res = lstsq_chol(
         intrinsic_matrix.T(),
         outer(homog.T(), intrinsic_matrix)).T();
     return res / res(2, 2);

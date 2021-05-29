@@ -1,6 +1,6 @@
 #include "Folder_Data_Generator.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
@@ -64,7 +64,7 @@ void Mlib::Sfm::process_files_with_pipeline(
                 break;
             }
             {
-                const std::string txt_filename = cache_dir + "/Input/input-" + std::to_string(time.count()) + ".txt";
+                const std::string txt_filename = (fs::path{ cache_dir } / "Input" / ("input-" + std::to_string(time.count()) + ".txt")).string();
                 std::ofstream ofs{txt_filename};
                 ofs.write(image_filename.c_str(), image_filename.length());
                 ofs.flush();
@@ -73,7 +73,7 @@ void Mlib::Sfm::process_files_with_pipeline(
                 }
             }
             std::cout << "Loading " << i << " / " << image_files.size() << ", " << time.count() << " ms" << ": " << image_filename << std::endl;
-            PpmImage raw = PpmImage::load_from_file(image_filename);
+            StbImage raw = StbImage::load_from_file(image_filename);
             ImageFrame image_frame;
             image_frame.grayscale = raw.to_float_grayscale();
             image_frame.rgb = raw.to_float_rgb();
@@ -116,6 +116,9 @@ void Mlib::Sfm::process_folder_with_pipeline(
     size_t ncameras)
 {
     std::vector<std::string> image_files = get_sorted_files(image_folder);
+    if (image_files.empty()) {
+        throw std::runtime_error{ "Could not find a file in directory \"" + image_folder + '"' };
+    }
     std::vector<std::string> camera_files;
     if (camera_folder != nullptr) {
         camera_files = get_sorted_files(*camera_folder);

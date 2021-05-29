@@ -9,14 +9,14 @@ using namespace Mlib::Sfm;
 
 TemplatePatchPipeline::TemplatePatchPipeline(
     const std::string& cache_dir,
-    const Array<float>& intrinsic_matrix,
+    const FixedArray<float, 3, 3>& intrinsic_matrix,
     const TemplatePatchPipelineConfig& cfg)
 : intrinsic_matrix_(intrinsic_matrix),
   down_sampler_{intrinsic_matrix, 0},
   flowing_particles_{image_frames_, optical_flows_.optical_flow_frames_, cache_dir + "/TracedParticles", FlowingParticlesConfig()},
   optical_flows_{image_frames_, cache_dir + "/OpticalFlow"},
-  sparse_reconstruction_{intrinsic_matrix_, camera_frames_, flowing_particles_.particles_, flowing_particles_.bad_points_, cache_dir + "/SparseReconstruction", ReconstructionConfig()},
-  dtam_reconstruction_{image_frames_, camera_frames_, down_sampler_, intrinsic_matrix, cache_dir + "/DtamReconstruction", DtamComponentConfig(cfg.track_using_dtam)},
+  sparse_reconstruction_{intrinsic_matrix.to_array(), camera_frames_, flowing_particles_.particles_, flowing_particles_.bad_points_, cache_dir + "/SparseReconstruction", ReconstructionConfig()},
+  dtam_reconstruction_{image_frames_, camera_frames_, down_sampler_, intrinsic_matrix.to_array(), cache_dir + "/DtamReconstruction", DtamComponentConfig(cfg.track_using_dtam)},
   cache_dir_(cache_dir),
   cfg_(cfg)
 {}

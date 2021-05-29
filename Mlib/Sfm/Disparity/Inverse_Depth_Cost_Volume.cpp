@@ -55,13 +55,12 @@ void InverseDepthCostVolume::increment(
     }
 
     for (size_t di = 0; di < inverse_depths_.length(); ++di) {
-        Array<float> homog_e = rotation_and_translation_to_homography(
-            R,
-            t,
-            -Array<float>{0, 0, 1},
+        FixedArray<float, 3, 3> homog_e = rotation_and_translation_to_homography(
+            FixedArray<float, 3, 3>{R},
+            FixedArray<float, 3>{t},
+            -FixedArray<float, 3>{0, 0, 1},
             1 / inverse_depths_(di));
-        Array<float> homog_i = pixel_homography(intrinsic_matrix, homog_e);
-        FixedArray<float, 3, 3> homog_i_f{homog_i};
+        FixedArray<float, 3, 3> homog_i = pixel_homography(FixedArray<float, 3, 3>{intrinsic_matrix}, homog_e);
         FixedArray<size_t, 2> space_shape_f{space_shape_};
         HomographySampler<float> hs{homog_i};
         #pragma omp parallel for
@@ -72,12 +71,12 @@ void InverseDepthCostVolume::increment(
                     continue;
                 }
                 if (false) {
-                    ArrayShape i0{r, c};
-                    Array<float> ai0 = i2a(i0);
-                    Array<float> ai1 = apply_homography(homog_i, homogenized_3(ai0));
-                    ArrayShape i1 = a2i(dehomogenized_2(ai1));
+                    FixedArray<size_t, 2> i0{r, c};
+                    FixedArray<float, 2> ai0 = i2a(i0);
+                    FixedArray<float, 3> ai1 = apply_homography(homog_i, homogenized_3(ai0));
+                    FixedArray<size_t, 2> i1 = a2i(dehomogenized_2(ai1));
                     // std::cerr << "i0 " << i0 << " i1 " << i1 << std::endl;
-                    if (all(i1 < space_shape_)) {
+                    if (all(i1 < space_shape_f)) {
                         for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
                             idsi_sum_(di, r, c) += std::abs(
                                 im0_rgb(h, i0(0), i0(1)) -
@@ -88,7 +87,7 @@ void InverseDepthCostVolume::increment(
                 } else if (false) {
                     FixedArray<size_t, 2> i0{r, c};
                     FixedArray<float, 2> ai0 = i2a(i0);
-                    FixedArray<float, 3> ai1 = apply_homography(homog_i_f, homogenized_3(ai0));
+                    FixedArray<float, 3> ai1 = apply_homography(homog_i, homogenized_3(ai0));
                     FixedArray<size_t, 2> i1 = a2i(dehomogenized_2(ai1));
                     if (all(i1 < space_shape_f)) {
                         for (size_t h = 0; h < im0_rgb.shape(0); ++h) {

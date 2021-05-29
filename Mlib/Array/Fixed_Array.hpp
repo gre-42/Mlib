@@ -206,14 +206,15 @@ public:
         return *this;
     }
     template <size_t tstart, size_t tend>
-    FixedArray<TData, tend - tstart, tshape...> row_range() const {
+    FixedArray<TData, tend - tstart, tshape...>& row_range() {
         static_assert(tend >= tstart);
         static_assert(tend <= tshape0);
-        FixedArray<TData, tend - tstart, tshape...> result;
-        for (size_t r = tstart; r < tend; ++r) {
-            result[r - tstart] = (*this)[r];
-        }
-        return result;
+        return reinterpret_cast<FixedArray<TData, tend - tstart, tshape...>&>((*this)[tstart]);
+    }
+    template <size_t tstart, size_t tend>
+    const FixedArray<TData, tend - tstart, tshape...>& row_range() const {
+        auto& x = const_cast<FixedArray<TData, tshape0, tshape...>&>(*this);
+        return x.row_range<tstart, tend>();
     }
     FixedArray<TData, tshape0> column(size_t c, size_t r_begin = 0, size_t r_end = tshape0) const {
         static_assert(ndim() == 2);

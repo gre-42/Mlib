@@ -15,16 +15,17 @@ using namespace Mlib::Sfm;
 ChessboardCalibrationPipeline::ChessboardCalibrationPipeline(
     const std::string& cache_dir,
     const ArrayShape& chessboard_shape)
-    :chessboard_shape_(chessboard_shape),
-     cache_dir_(cache_dir + "/Calibration"),
-     camera_intrinsics_filename_(cache_dir_ + "/camera_intrinsic.m")
+    :chessboard_shape_{ chessboard_shape },
+     cache_dir_{ (fs::path{ cache_dir } / "Calibration").string() },
+     camera_intrinsics_filename_{ (fs::path{cache_dir_} / "camera_intrinsic.m").string() }
 {
     if (fs::exists(camera_intrinsics_filename_)) {
         std::cerr << "Camera calibration file " << camera_intrinsics_filename_ << " exists, loading..." << std::endl;
-        intrinsic_matrix_ = Array<float>::load_txt_2d(camera_intrinsics_filename_);
-        if (!all(intrinsic_matrix_.shape() == ArrayShape{3, 3})) {
+        Array<float> ki = Array<float>::load_txt_2d(camera_intrinsics_filename_);
+        if (!all(ki.shape() == ArrayShape{3, 3})) {
             throw std::runtime_error("Intrinsic matrix has incorrect shape");
         }
+        intrinsic_matrix_ = FixedArray<float, 3, 3>{ ki };
         is_cached_ = true;
     } else {
         std::cerr << "Camera calibration file " << camera_intrinsics_filename_ << " does not exist, computing..." << std::endl;
@@ -41,8 +42,8 @@ void ChessboardCalibrationPipeline::process_image_frame(
     PpmImage bmp;
     Array<float> im(image_frame.grayscale);
     Array<float> p_y;
-    std::string p_x_filename = cache_dir_ + "/features-p_x.m";
-    std::string p_y_filename = cache_dir_ + "/features-" + std::to_string(p_y_.size()) + "-p_y.m";
+    std::string p_x_filename = (fs::path{ cache_dir_ } / "features-p_x.m").string();
+    std::string p_y_filename = (fs::path{ cache_dir_ } / ("features-" + std::to_string(p_y_.size()) + "-p_y.m")).string();
     if (fs::exists(p_y_filename)) {
         if (p_y_.size() == 0) {
             p_x_ = Array<float>::load_txt_2d(p_x_filename, ArrayShape{0, 4});
@@ -59,14 +60,14 @@ void ChessboardCalibrationPipeline::process_image_frame(
             p_x_.save_txt_2d(p_x_filename);
         }
         p_y.save_txt_2d(p_y_filename);
-        bmp.save_to_file(cache_dir_ + "/chessboard" + std::to_string(p_y_.size()) + ".ppm");
+        bmp.save_to_file((fs::path{ cache_dir_ } / ("chessboard" + std::to_string(p_y_.size()) + ".ppm")).string());
     }
     p_y_.push_back(p_y);
 }
 
 void ChessboardCalibrationPipeline::print_statistics(std::ostream& ostream) {
-    Array<float> y(p_y_);
-    NormalizedProjection np(y);
+    Array<float> y{ p_y_ };
+    NormalizedProjection np{ y };
     Array<float> ki_out;
     find_projection_matrices(
         p_x_,         // x
@@ -87,11 +88,11 @@ void ChessboardCalibrationPipeline::print_statistics(std::ostream& ostream) {
         300,          // nmisses
         true,         // print_residual
         true);        // nothrow
-    intrinsic_matrix_ = np.denormalized_intrinsic_matrix(ki_out);
-    intrinsic_matrix_.save_txt_2d(camera_intrinsics_filename_);
+    intrinsic_matrix_ = FixedArray<float, 3, 3>{ np.denormalized_intrinsic_matrix(ki_out) };
+    intrinsic_matrix_.to_array().save_txt_2d(camera_intrinsics_filename_);
 }
 
-const Array<float>& ChessboardCalibrationPipeline::intrinsic_matrix() const {
+const FixedArray<float, 3, 3>& ChessboardCalibrationPipeline::intrinsic_matrix() const {
     return intrinsic_matrix_;
 }
 

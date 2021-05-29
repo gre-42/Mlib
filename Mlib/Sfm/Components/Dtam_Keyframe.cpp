@@ -115,7 +115,7 @@ void DtamKeyframe::append_camera_frame() {
             image_r0.grayscale,
             image_frame_l->second.grayscale,
             depth_,
-            down_sampler_.ds_intrinsic_matrix_,
+            down_sampler_.ds_intrinsic_matrix_.to_array(),
             ke);
         draw_nan_masked_grayscale(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-" + suffix + ".ppm");
         float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
@@ -140,7 +140,7 @@ void DtamKeyframe::inspect_externally_appended_camera_frame() const {
         down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale,
         image_frame_l->second.grayscale,
         depth_,
-        down_sampler_.ds_intrinsic_matrix_,
+        down_sampler_.ds_intrinsic_matrix_.to_array(),
         ke);
     draw_quantiled_grayscale(im, 0.05, 0.95).save_to_file(cache_dir_ + "/inspect-err-" + suffix + ".ppm");
 }
@@ -176,7 +176,7 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
             times_integrated_.insert(it->first);
             std::cerr << "Integrating time " << it->first.count() << " ms into keyframe " << key_frame_time_.count() << " ms" << std::endl;
             vol_->increment(
-                down_sampler_.ds_intrinsic_matrix_,
+                down_sampler_.ds_intrinsic_matrix_.to_array(),
                 cams_sorted.at(key_frame_time_)->projection_matrix_3x4(),
                 it->second->projection_matrix_3x4(),
                 down_sampler_.ds_image_frames_.at(key_frame_time_).rgb,
@@ -325,7 +325,7 @@ void DtamKeyframe::optimize1() {
                 err += rigid_motion_roundtrip(
                     depth_,
                     neighbor->second.depth_,
-                    down_sampler_.ds_intrinsic_matrix_,
+                    down_sampler_.ds_intrinsic_matrix_.to_array(),
                     ke);
                 // draw_nan_masked_grayscale(err, 0, 0.5 * 0.5).save_to_file(cache_dir_ + "/err-" + suffix + "-" + std::to_string(neighbor->first.count()) + ".ppm");
                 ++nerr;
@@ -369,7 +369,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
                     camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
                     camera_frames_.at(time).projection_matrix_3x4());
                 if (max(abs(ke - identity_array<float>(4).row_range(0, 3))) > 1e-3) {
-                    Array<float> e3 = find_epipole(down_sampler_.ds_intrinsic_matrix_, ke);
+                    Array<float> e3 = find_epipole(down_sampler_.ds_intrinsic_matrix_.to_array(), ke);
                     if (e3(2) != 0) {
                         img.draw_fill_rect(a2i(dehomogenized_2(e3)), 2, Rgb24::red());
                     }
@@ -379,7 +379,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         img.save_to_file(cache_dir_ + "/epipoles-" + suffix + ".ppm");
     }
     draw_nan_masked_grayscale(masked_depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/masked-depth-" + suffix + ".ppm");
-    Array<float> x = reconstruct_depth(masked_depth_, down_sampler_.ds_intrinsic_matrix_);
+    Array<float> x = reconstruct_depth(masked_depth_, down_sampler_.ds_intrinsic_matrix_.to_array());
     draw_quantiled_grayscale(x[0], 0.05, 0.95).save_to_file(cache_dir_ + "/x-0-" + suffix + ".ppm");
     draw_quantiled_grayscale(x[1], 0.05, 0.95).save_to_file(cache_dir_ + "/x-1-" + suffix + ".ppm");
     draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file(cache_dir_ + "/x-2-" + suffix + ".ppm");
@@ -390,9 +390,9 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         Array<float> condition_number;
         const Array<float>& im0_rgb = down_sampler_.ds_image_frames_.at(key_frame_time_).rgb;
         // using "reconstruct_depth" -> identity projection matrix
-        DenseProjector::from_image(camera_frames_, 0, 1, 2, x, condition_number, down_sampler_.ds_intrinsic_matrix_, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-1-" + suffix + ".ppm");
-        DenseProjector::from_image(camera_frames_, 0, 2, 1, x, condition_number, down_sampler_.ds_intrinsic_matrix_, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-2-" + suffix + ".ppm");
-        DenseProjector::from_image(camera_frames_, 2, 1, 0, x, condition_number, down_sampler_.ds_intrinsic_matrix_, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-2-1-" + suffix + ".ppm");
+        DenseProjector::from_image(camera_frames_, 0, 1, 2, x, condition_number, down_sampler_.ds_intrinsic_matrix_.to_array(), dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-1-" + suffix + ".ppm");
+        DenseProjector::from_image(camera_frames_, 0, 2, 1, x, condition_number, down_sampler_.ds_intrinsic_matrix_.to_array(), dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-2-" + suffix + ".ppm");
+        DenseProjector::from_image(camera_frames_, 2, 1, 0, x, condition_number, down_sampler_.ds_intrinsic_matrix_.to_array(), dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-2-1-" + suffix + ".ppm");
 
         draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth__, 1 / cfg_.params_.min_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-a.ppm");
         PpmImage::from_float_rgb(im0_rgb).save_to_file(cache_dir_ + "/pkg-" + suffix + "-rgb.ppm");

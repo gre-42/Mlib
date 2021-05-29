@@ -1,10 +1,10 @@
 #pragma once
-#include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 
 namespace Mlib { namespace Sfm {
 
 template <class TData>
-Array<TData> homography_from_points(
+FixedArray<TData, 3, 3> homography_from_points(
     const Array<TData>& x, const Array<TData>& p)
 {
     // p = x-prime = x'
@@ -27,9 +27,11 @@ Array<TData> homography_from_points(
         M(2 * r + 1, 8) = p(r, 1);
     }
     M(M.shape(0) - 1, M.shape(1) - 1) = 1;
-    return lstsq_chol_1d(M, dirac_array<TData>(
-        ArrayShape{M.shape(0)},
-        ArrayShape{M.shape(0) - 1})).reshaped(ArrayShape{3, 3});
+    return FixedArray<double, 3, 3>{
+        lstsq_chol_1d(M.casted<double>(), dirac_array<double>(
+            ArrayShape{ M.shape(0) },
+            ArrayShape{ M.shape(0) - 1 })).reshaped(ArrayShape{ 3, 3 })}
+        .casted<TData>();
 }
 
 }}

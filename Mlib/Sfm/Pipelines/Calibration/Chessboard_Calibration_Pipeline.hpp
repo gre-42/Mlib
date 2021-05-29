@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Sfm/Pipelines/ImagePipeline.hpp>
 
 namespace Mlib { namespace Sfm {
@@ -16,12 +17,12 @@ public:
         const ImageFrame& image_frame,
         const CameraFrame* camera_frame = nullptr) override;
     virtual void print_statistics(std::ostream& ostream) override;
-    const Array<float>& intrinsic_matrix() const;
+    const FixedArray<float, 3, 3>& intrinsic_matrix() const;
     bool is_cached() const;
 private:
     Array<float> p_x_;
     std::list<Array<float>> p_y_;
-    Array<float> intrinsic_matrix_;
+    FixedArray<float, 3, 3> intrinsic_matrix_;
     bool is_cached_;
     const ArrayShape chessboard_shape_;
     const std::string cache_dir_;

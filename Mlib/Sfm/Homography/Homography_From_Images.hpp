@@ -3,10 +3,11 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Levenberg_Marquardt.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
-#include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 #include <Mlib/Sfm/Homography/Homography_Sampler.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>
@@ -43,20 +44,20 @@ Array<TData> projected_points_jacobian_dke_1p_1ke_only_rotation(
 }
 
 template <class TData>
-static Array<TData> coordinate_transform(
-    const Array<TData>& R,
-    const Array<TData>& intrinsic_matrix)
+static FixedArray<TData, 3, 3> coordinate_transform(
+    const FixedArray<TData, 3, 3>& R,
+    const FixedArray<TData, 3, 3>& intrinsic_matrix)
 {
     return dot(dot(intrinsic_matrix, R), inv(intrinsic_matrix));
 }
 
 template <class TData>
-static Array<TData> transform_coordinates(
-    const Array<TData>& R,
-    const Array<TData>& x,
-    const Array<TData>& intrinsic_matrix)
+static FixedArray<TData, 2> transform_coordinates(
+    const FixedArray<TData, 3, 3>& R,
+    const FixedArray<TData, 2>& x,
+    const FixedArray<TData, 3, 3>& intrinsic_matrix)
 {
-    Array<TData> H = coordinate_transform(R, intrinsic_matrix);
+    FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix);
     return dehomogenized_2(apply_homography(H, homogenized_3(x)));
 }
 
@@ -64,14 +65,13 @@ template <class TData>
 Array<TData> d_pr(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const Array<TData>& intrinsic_matrix,
-    const Array<TData>& R)
+    const FixedArray<TData, 3, 3>& intrinsic_matrix,
+    const FixedArray<TData, 3, 3>& R)
 {
     assert(im_r.ndim() == 2);
     assert(all(im_r.shape() == im_l.shape()));
     Array<TData> result{im_r.shape()};
-    Array<TData> H_d = coordinate_transform(R, intrinsic_matrix);
-    FixedArray<TData, 3, 3> H{H_d};
+    FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix);
     FixedArray<size_t, 2> shape{result.shape()};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(0); ++i) {
@@ -175,7 +175,7 @@ Array<TData> intensity_jacobian_fast(
 
     ArrayShape space_shape = im_r_di.shape().erased_first();
     Array<TData> result{space_shape.appended(3)};
-    HomographySampler hs{coordinate_transform(Rd, ki)};
+    HomographySampler hs{coordinate_transform(R, kif)};
     #pragma omp parallel for
     for (int i = 0; i < (int)im_r_di.shape(1); ++i) {
         size_t r = (size_t)i;
@@ -226,10 +226,10 @@ Array<TData> intensity_jacobian_fast(
 }
 
 template <class TData>
-Array<TData> rotation_from_images(
+FixedArray<TData, 3, 3> rotation_from_images(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const Array<TData>& intrinsic_matrix,
+    const FixedArray<TData, 3, 3>& intrinsic_matrix,
     bool differentiate_numerically = false,
     Array<TData>* x0 = nullptr,
     Array<TData>* xe = nullptr)
@@ -241,7 +241,7 @@ Array<TData> rotation_from_images(
     }
     const TData NAN_VALUE = 0;
     auto f = [&](const Array<TData>& x){
-        return substitute_nans(d_pr(im_r, im_l, intrinsic_matrix, tait_bryan_angles_2_matrix(x)).flattened(), NAN_VALUE);
+        return substitute_nans(d_pr(im_r, im_l, intrinsic_matrix, tait_bryan_angles_2_matrix(FixedArray<float, 3>{x})).flattened(), NAN_VALUE);
     };
     Array<float> im_r_di = central_gradient_filter(im_r);
     Array<float> im_l_di = central_gradient_filter(im_l);
@@ -253,7 +253,7 @@ Array<TData> rotation_from_images(
             if (differentiate_numerically) {
                 return numerical_differentiation(f, x);
             } else {
-                return intensity_jacobian_fast(im_r_di, im_l_di, intrinsic_matrix, x).rows_as_1D();
+                return intensity_jacobian_fast(im_r_di, im_l_di, intrinsic_matrix.to_array(), x).rows_as_1D();
             }
         },
         TData(1e-2),   // alpha,
@@ -267,7 +267,7 @@ Array<TData> rotation_from_images(
     if (xe != nullptr) {
         *xe = xx;
     }
-    return tait_bryan_angles_2_matrix(xx);
+    return FixedArray<float, 3, 3>{ tait_bryan_angles_2_matrix(xx) };
 }
 
 }}}

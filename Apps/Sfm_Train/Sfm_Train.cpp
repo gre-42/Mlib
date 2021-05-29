@@ -4,6 +4,9 @@
 #include <Mlib/Sfm/Pipelines/Calibration/Chessboard_Calibration_Pipeline.hpp>
 #include <Mlib/Sfm/Pipelines/Reconstruction/Template_Patch_Pipeline.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -13,7 +16,7 @@ static std::unique_ptr<ChessboardCalibrationPipeline> run_chessboard_calibration
     const std::string& cache_dir,
     const ArrayShape& chessboard_shape)
 {
-    const std::string calibration_dir = source_dir + "/0-calibration/ppm";
+    const std::string calibration_dir = (fs::path{ source_dir } / "0-calibration" / "pictures").string();
 
     auto calib = std::make_unique<ChessboardCalibrationPipeline>(
         cache_dir,
@@ -25,7 +28,6 @@ static std::unique_ptr<ChessboardCalibrationPipeline> run_chessboard_calibration
 }
 
 static void run_reconstruction_pipeline(
-    const std::string& sfm_pipeline,
     const std::string& cache_dir,
     const std::string& source_dir,
     bool load_cameras,
@@ -35,7 +37,7 @@ static void run_reconstruction_pipeline(
     const TemplatePatchPipelineConfig& cfg)
 {
     std::unique_ptr<ImagePipeline> pipeline;
-    if (sfm_pipeline == "optical_flow") {
+    {
         auto calibration = run_chessboard_calibration_pipeline(
             source_dir,
             cache_dir,
@@ -44,11 +46,9 @@ static void run_reconstruction_pipeline(
             cache_dir,
             calibration->intrinsic_matrix(),
             cfg));
-    } else {
-        throw std::runtime_error("Unknown pipeline: " + sfm_pipeline);
     }
-    std::string camera_dir = source_dir + "/1-video/cameras";
-    process_folder_with_pipeline(cache_dir, source_dir + "/1-video/ppm", load_cameras ? &camera_dir : nullptr, *pipeline, std::cout, nimages, ncameras);
+    std::string camera_dir = (fs::path(source_dir) / "1-video" / "cameras").string();
+    process_folder_with_pipeline(cache_dir, (fs::path{ source_dir } / "1-video" / "pictures").string(), load_cameras ? &camera_dir : nullptr, *pipeline, std::cout, nimages, ncameras);
 }
 
 
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     enable_floating_point_exceptions();
 
     ArgParser parser(
-        "Usage: [--pipeline {feature_points, optical_flow}] --cache <cache_dir> --source <source_dir> [--load_cameras] [--no-dtam] [--no-dtam-tracking] --chess_r <chess_r> --chess_c <chess_c> [--nimages <nimages>] [--ncameras <ncameras>]",
+        "Usage: --cache <cache_dir> --source <source_dir> [--load_cameras] [--no-dtam] [--no-dtam-tracking] --chess_r <chess_r> --chess_c <chess_c> [--nimages <nimages>] [--ncameras <ncameras>]",
         {"--load_cameras", "--no-dtam", "--no-dtam-tracking"},
         {"--pipeline", "--cache", "--source", "--chess_r", "--chess_c", "--nimages", "--ncameras"});
 
@@ -65,14 +65,12 @@ int main(int argc, char **argv) {
 
         args.assert_num_unamed(0);
 
-        const std::string sfm_pipeline = args.named_value("--pipeline", "feature_points");
         const std::string cache_dir = args.named_value("--cache");
         const std::string image_dir = args.named_value("--source");
         ArrayShape chessboard_shape({
             safe_stoz(args.named_value("--chess_r")),
             safe_stoz(args.named_value("--chess_c"))});
         run_reconstruction_pipeline(
-            sfm_pipeline,
             cache_dir,
             image_dir,
             args.has_named("--load_cameras"),
@@ -84,6 +82,9 @@ int main(int argc, char **argv) {
                 .track_using_dtam = !args.has_named("--no-dtam-tracking")});
         return 0;
     } catch (const CommandLineArgumentError& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;
     }
