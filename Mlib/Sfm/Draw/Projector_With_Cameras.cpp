@@ -26,7 +26,7 @@ void ProjectorWithCameras::plot_camera_lines(PpmImage& ppm) {
 void ProjectorWithCameras::plot_camera_positions(PpmImage& ppm) {
     for (const auto& c : camera_frames_) {
         ppm.draw_fill_rect(
-            x2i(c.second.pose.t()).to_array().to_shape(),
+            x2i(c.second.pose.t()).to_array_shape(),
             2,
             c.state_ == MmState::ACTIVE
                 ? Rgb24::red()
@@ -39,7 +39,7 @@ void ProjectorWithCameras::plot_camera_positions(PpmImage& ppm) {
 void ProjectorWithCameras::plot_unit_square(PpmImage& ppm) {
     FixedArray<size_t, 2> center = x2i(FixedArray<float, 3>{0, 0, 0});
     ppm.draw_fill_rect(
-        center.to_array().to_shape(),
+        center.to_array_shape(),
         (x2i(FixedArray<float, 3>{1, 1, 1}) - center)(0),
         Rgb24::gray());
 }

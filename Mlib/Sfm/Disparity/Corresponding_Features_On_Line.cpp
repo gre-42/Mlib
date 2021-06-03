@@ -28,7 +28,7 @@ CorrespondingFeaturesOnLine::CorrespondingFeaturesOnLine(
         if (ed.good) {
             TraceablePatch tp{im0_rgb, id, ArrayShape{10, 10}};
             if (tp.good_) {
-                float new_pos = tp.new_position_on_line(im1_rgb, a2i(ed.center1).to_array().to_shape(), ed.v1.to_array(), max_distance, worst_error);
+                float new_pos = tp.new_position_on_line(im1_rgb, a2i(ed.center1).to_array_shape(), ed.v1.to_array(), max_distance, worst_error);
                 if (!std::isnan(new_pos)) {
                     yl0_2.push_back(f0);
                     yl1_2.push_back(ed.center1 + new_pos * ed.v1);

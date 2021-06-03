@@ -52,7 +52,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     for (const auto& kv : new_frame) {
         draw_fill_rect(
             existing_points_mask,
-            a2i(kv.second->sequence.rbegin()->second->position).array_shape(),
+            a2i(kv.second->sequence.rbegin()->second->position).to_array_shape(),
             5,      //size
             false); //value
     }
@@ -120,7 +120,7 @@ std::shared_ptr<FeaturePoint> FlowingParticles::generate_feature_point(const Fix
         pos,
         TraceablePatch(
             image_frames_.rbegin()->second.rgb,
-            a2i(pos).to_array().to_shape(),
+            a2i(pos).to_array_shape(),
             cfg_.patch_size));
 }
 
@@ -185,7 +185,7 @@ void FlowingParticles::advance_existing_particles(
         //    continue;
         //}
         const FeaturePoint& p = *s.second->sequence.rbegin()->second;
-        ArrayShape index{a2i(p.position).array_shape()};
+        ArrayShape index{a2i(p.position).to_array_shape()};
         if (all(index < shape_)) {
             FixedArray<float, 2> new_pos;
             if (false) {
@@ -211,7 +211,7 @@ void FlowingParticles::advance_existing_particles(
             if (cfg_.tracking_mode == TrackingMode::PATCH_NEW_POSITION_IN_BOX) {
                 ArrayShape new_index = s.second->sequence.begin()->second->traceable_patch.new_position_in_box(
                     image_frames_.rbegin()->second.rgb,
-                    a2i(p.position).array_shape(),
+                    a2i(p.position).to_array_shape(),
                     cfg_.search_window,
                     cfg_.worst_patch_error);
                 new_pos = FixedArray<float, 2>{ i2a(new_index) };
@@ -324,7 +324,7 @@ void FlowingParticles::draw(Bgr565Bitmap& bmp) {
     assert(all(bmp.shape() == shape_));
     assert(particles_.size() > 0);
     for (const auto& s : particles_.rbegin()->second) {
-        ArrayShape index{a2i(s.second->sequence.rbegin()->second->position).array_shape()};
+        ArrayShape index{ a2i(s.second->sequence.rbegin()->second->position).to_array_shape() };
         //assert(all(index < bmp.shape()));
         bmp.draw_fill_rect(
             index,

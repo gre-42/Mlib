@@ -236,7 +236,6 @@ public:
     constexpr FixedArray<TData, tnew_shape...>& reshaped() {
         FixedArray<TData, tnew_shape...>& result = *reinterpret_cast<FixedArray<TData, tnew_shape...>*>(this);
         static_assert(result.nelements() <= nelements());
-        // memcpy(result.flat_begin(), flat_begin(), result.nbytes());
         return result;
     }
     template <size_t... tnew_shape>
@@ -294,7 +293,13 @@ public:
     }
     Array<TData> to_array() const {
         Array<TData> result{ ArrayShape{tshape0, tshape...} };
-        memcpy(result.flat_iterable().begin(), flat_begin(), nbytes());
+        std::copy(flat_begin(), flat_end(), result.flat_iterable().begin());
+        return result;
+    }
+    ArrayShape to_array_shape() const {
+        static_assert(ndim() == 1);
+        ArrayShape result(nelements());
+        std::copy(flat_begin(), flat_end(), result.begin());
         return result;
     }
     ArrayShape array_shape() const {

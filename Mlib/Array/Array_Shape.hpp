@@ -139,6 +139,9 @@ public:
         sstr << *this;
         return sstr.str();
     }
+    size_t* begin() {
+        return shape_.data();
+    }
     const size_t* begin() const {
         return shape_.data();
     }

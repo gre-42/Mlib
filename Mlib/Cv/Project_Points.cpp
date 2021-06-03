@@ -157,7 +157,6 @@ FixedArray<float, 2, 4> Mlib::Cv::projected_points_jacobian_dki_1p_1ke(
     const FixedArray<float, 3>& x,
     const TransformationMatrix<float, 3>& ke)
 {
-    assert(x.length() == 4);
     FixedArray<float, 3> p = ke.transform(x);
     // ki = kip(0), 0      kip(1)
     //      0       kip(2) kip(3)

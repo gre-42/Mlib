@@ -65,10 +65,10 @@ void SyntheticScene::draw_to_bmp(const std::string& filename, size_t index0, siz
         const FixedArray<float, 2>& y0r = y(index0, r);
         const FixedArray<float, 2>& y1r = y(index1, r);
         FixedArray<size_t, 2> index0{a2i(y0r)};
-        bmp.draw_fill_rect(index0.to_array().to_shape(), 3, Bgr565::red());
+        bmp.draw_fill_rect(index0.to_array_shape(), 3, Bgr565::red());
 
         FixedArray<size_t, 2> index1{a2i(y1r)};
-        bmp.draw_fill_rect(index1.to_array().to_shape(), 3, Bgr565::blue());
+        bmp.draw_fill_rect(index1.to_array_shape(), 3, Bgr565::blue());
 
         bmp.draw_infinite_line(
             Array<float>{y0r(id1), y0r(id0)},

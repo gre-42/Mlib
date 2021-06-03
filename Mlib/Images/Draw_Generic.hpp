@@ -142,8 +142,11 @@ void draw_points_as_boxes(
     const TColor& value)
 {
     assert(image.ndim() == 2);
-    assert(feature_points.ndim() == 1);
-    for (Array<float> feature_point : feature_points) {
+    assert(feature_points.ndim() == 2);
+    assert(feature_points.shape(1) == 2);
+    for (const Array<float>& feature_point : feature_points) {
+        assert(feature_point.ndim() == 1);
+        assert(feature_point.length() == 2);
         //assert(feature_point(0) >= 0);
         //assert(feature_point(0) <= image.shape(1) - 1);
         //assert(feature_point(1) >= 0);

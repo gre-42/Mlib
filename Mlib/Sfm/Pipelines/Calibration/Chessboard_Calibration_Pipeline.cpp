@@ -58,9 +58,9 @@ void ChessboardCalibrationPipeline::process_image_frame(
             bmp);
         fs::create_directories(cache_dir_);
         if (p_y_.size() == 0) {
-            p_x_.save_txt_2d(p_x_filename);
+            Array<float>{ p_x_ }.save_txt_2d(p_x_filename);
         }
-        p_y.save_txt_2d(p_y_filename);
+        Array<float>{ p_y }.save_txt_2d(p_y_filename);
         bmp.save_to_file((fs::path{ cache_dir_ } / ("chessboard" + std::to_string(p_y_.size()) + ".png")).string());
     }
     p_y_.push_back(p_y);

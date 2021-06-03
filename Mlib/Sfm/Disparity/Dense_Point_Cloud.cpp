@@ -150,7 +150,7 @@ Array<float> Mlib::Sfm::compute_disparity_rgb_patch(
                 if (tp.good_) {
                     float new_pos = tp.new_position_on_line(
                         im1_rgb,
-                        a2i(ed.center1).to_array().to_shape(),
+                        a2i(ed.center1).to_array_shape(),
                         ed.v1.to_array(),
                         search_length,
                         worst_error,
