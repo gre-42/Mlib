@@ -211,13 +211,15 @@ public:
         reshape{ [&](const ArrayShape& shape) { return do_reshape(shape); } }
     {
         resize(ArrayShape{ lst.size(), FixedArray<TData, tsize...>::nelements() });
+        auto& lst_flat = reinterpret_cast<const std::list<FixedArray<TData, FixedArray<TData, tsize...>::nelements()>>&>(lst);
         size_t i = 0;
-        for (auto value : lst) {
+        for (auto value : lst_flat) {
             for (size_t j = 0; j < shape(1); ++j) {
                 (*this)(i, j) = value(j);
             }
             ++i;
         }
+        reshape(ArrayShape{ lst.size(), tsize... });
     }
     template <size_t ...tsize>
     explicit Array(const Array<FixedArray<TData, tsize...>>& rhs) :
@@ -226,9 +228,11 @@ public:
         reshape{ [&](const ArrayShape& shape) { return do_reshape(shape); } }
     {
         resize(ArrayShape{ rhs.nelements(), FixedArray<TData, tsize...>::nelements() });
+        auto rhs_flat = rhs.flattened();
+        auto& rhs_flat2 = reinterpret_cast<const Array<FixedArray<TData, FixedArray<TData, tsize...>::nelements()>>&>(rhs_flat);
         for (size_t i = 0; i < shape(0); ++i) {
             for (size_t j = 0; j < shape(1); ++j) {
-                (*this)(i, j) = rhs(i)(j);
+                (*this)(i, j) = rhs_flat2(i)(j);
             }
         }
         reshape(rhs.shape().concatenated(ArrayShape{ tsize... }));
@@ -239,11 +243,10 @@ public:
         constexpr static const size_t static_ndim = FixedArray<TData, tsize...>::ndim();
         assert(rhs.ndim() >= static_ndim);
         assert(all(FixedArray<size_t, static_ndim>{tsize...} == FixedArray<size_t, static_ndim>{rhs.shape().erased_first(static_ndim)}));
-        typedef FixedArray<TData, flat_elements> FixedFlat;
         ArrayShape result_shape{ rhs.shape().erased_last(static_ndim) };
-        Array<FixedArray<TData, flat_elements>> result{ ArrayShape{result_shape.nelements()} };
+        Array<FixedArray<TData, tsize...>> result{ ArrayShape{result_shape.nelements()} };
         Array<TData> rhs_flat = rhs.reshaped(ArrayShape{ result.length(), rhs.nelements() / result.length() });
-        auto& flat_result = reinterpret_cast<Array<FixedFlat>&>(result);
+        auto& flat_result = reinterpret_cast<Array<FixedArray<TData, flat_elements>>&>(result);
         for (size_t i = 0; i < result.length(); ++i) {
             for (size_t j = 0; j < flat_elements; ++j) {
                 flat_result(i)(j) = rhs(i, j);

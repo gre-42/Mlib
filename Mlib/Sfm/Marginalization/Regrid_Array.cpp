@@ -21,8 +21,8 @@ RegridArray::RegridArray(
             // std::cerr << "stripping index " << o.second << " " << o.first << std::endl;
         }
     }
-    ids_src_ = Array<size_t>(&*ids_src_v.begin(), &*ids_src_v.end());
-    ids_dst_ = Array<size_t>(&*ids_dst_v.begin(), &*ids_dst_v.end());
+    ids_src_ = Array<size_t>(ids_src_v.data(), ids_src_v.data() + ids_src_v.size());
+    ids_dst_ = Array<size_t>(ids_dst_v.data(), ids_dst_v.data() + ids_dst_v.size());
     // std::cerr << "d " << ids_src_ << std::endl;
     // std::cerr << "c " << ids_col_ << std::endl;
 }

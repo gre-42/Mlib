@@ -299,7 +299,7 @@ void SparseReconstruction::reconstruct_append() {
         assert(cfg_.nframes >= 2);
         if (filtered_seq.size() >= cfg_.nframes / 2) {
             Array<TransformationMatrix<float, 3>> ke(ArrayShape{filtered_seq.size()});
-            Array<FixedArray<float, 2>> y(ArrayShape{filtered_seq.size(), 3});
+            Array<FixedArray<float, 2>> y(ArrayShape{filtered_seq.size()});
             {
                 size_t i = 0;
                 for (const auto& p : filtered_seq) {

@@ -104,7 +104,7 @@ FixedArray<float, 2> Mlib::Cv::projected_points_1p_1ke(
         ki,
         ke,
         point_at_infinity_behavior);
-    assert(all(res.shape() == ArrayShape{1, 3}));
+    assert(all(res.shape() == ArrayShape{1}));
     return res(0);
 }
 
@@ -132,7 +132,6 @@ FixedArray<float, 2, 6> Mlib::Cv::projected_points_jacobian_dke_1p_1ke(
     const TransformationMatrix<float, 2>& ki,
     const FixedArray<float, 6>& kep)
 {
-    assert(x.length() == 4);
     assert(kep.length() == 6);
     TransformationMatrix<float, 3> ke = k_external(kep);
     FixedArray<float, 2, 3> dy_da = homogeneous_jacobian_dx(ki.affine(), ke.transform(x));

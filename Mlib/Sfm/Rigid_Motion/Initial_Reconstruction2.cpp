@@ -26,9 +26,9 @@ static Array<FixedArray<float, 2, 4>> unpack_k_internal_dk(
     const Array<TransformationMatrix<float, 3>>& ke)
 {
     // t, i, y, k
-    Array<FixedArray<float, 2, 4>> result{ArrayShape{ke.shape(0), x.shape(0)}};
+    Array<FixedArray<float, 2, 4>> result{ArrayShape{ke.shape(0), x.length()}};
     for (size_t t = 0; t < ke.shape(0); ++t) {
-        for (size_t i = 0; i < x.shape(0); ++i) {
+        for (size_t i = 0; i < x.length(); ++i) {
             result(t, i) = projected_points_jacobian_dki_1p_1ke(x(i), ke(t));
         }
     }
@@ -55,9 +55,9 @@ static Array<FixedArray<float, 2, 6>> unpack_k_external_dk(
     assert(k.ndim() == 1);
     assert((k.shape(0) - nintrinsic - nx) % 6 == 0);
     // t, i, y, k
-    Array<FixedArray<float, 2, 6>> result{ArrayShape{(k.shape(0) - nintrinsic - nx) / 6, x.shape(0)}};
+    Array<FixedArray<float, 2, 6>> result{ArrayShape{(k.shape(0) - nintrinsic - nx) / 6, x.length()}};
     for (size_t t = nintrinsic; t < k.shape(0) - nx; t += 6) {
-        for (size_t i = 0; i < x.shape(0); ++i) {
+        for (size_t i = 0; i < x.length(); ++i) {
             result((t - nintrinsic) / 6, i) = projected_points_jacobian_dke_1p_1ke(
                 x(i),
                 ki,
@@ -73,7 +73,7 @@ static Array<FixedArray<float, 3>> unpack_x(const Array<float>& k, size_t nx) {
     Array<FixedArray<float, 3>> x{ ArrayShape{nx / 3} };
     Array<float> k3 = k.row_range(k.shape(0) - nx, k.shape(0));
     k3.do_reshape(ArrayShape{nx / 3, 3});
-    for (size_t i = 0; i < x.shape(0); ++i) {
+    for (size_t i = 0; i < x.length(); ++i) {
         for (size_t d = 0; d < 3; ++d) {
             x(i)(d) = k3(i, d);
         }
@@ -88,7 +88,7 @@ static void pack_x(const Array<FixedArray<float, 3>>& x, Array<float>& k, size_t
     assert(k.ndim() == 1);
     Array<float> k3 = k.row_range(k.shape(0) - nx, k.shape(0));
     k3.do_reshape(ArrayShape{ nx / 3, 3 });
-    for (size_t i = 0; i < x.shape(0); ++i) {
+    for (size_t i = 0; i < x.length(); ++i) {
         for (size_t d = 0; d < 3; ++d) {
             k3(i, d) = x(i)(d);
         }
@@ -134,7 +134,9 @@ Array<FixedArray<float, 3>> Mlib::Sfm::initial_reconstruction(
         assert(condition_number->length() == y0.length());
     }
 
-    Array<TransformationMatrix<float, 3>> ke{ TransformationMatrix<float, 3>::identity(), tm };
+    Array<TransformationMatrix<float, 3>> ke{
+        TransformationMatrix<float, 3>::identity(),
+        tm.inverted() };
     Array<FixedArray<float, 3>> x(ArrayShape{y0.length()});
     Array<FixedArray<float, 2>> y_tracked(ArrayShape{2});
     for (size_t i = 0; i < y0.length(); ++i) {
@@ -232,13 +234,11 @@ void Mlib::Sfm::find_projection_matrices(
     const float* max_residual,
     bool differentiate_numerically)
 {
-    assert(x.ndim() == 2);
-    assert(y.ndim() == 3);
-    assert(x.shape(0) == y.shape(1));
-    assert(x.shape(1) == 4);
-    assert(y.shape(2) == 3);
+    assert(x.ndim() == 1);
+    assert(y.ndim() == 2);
+    assert(x.length() == y.shape(1));
     size_t nintrinsic = ki_precomputed != nullptr ? 0 : 4;
-    size_t nx = x_out != nullptr ? x.shape(0) * 3 : 0;
+    size_t nx = x_out != nullptr ? x.length() * 3 : 0;
     Array<float> k0 = zeros<float>(ArrayShape{nintrinsic + y.shape(0) * 6 + nx});
     if (ki_precomputed == nullptr) {
         k0(0) = 1;
@@ -283,7 +283,7 @@ void Mlib::Sfm::find_projection_matrices(
                     ? x
                     : unpack_x(k, nx);
 
-                Array<float> J = zeros<float>(ArrayShape{y.shape(0), y.shape(1), 3, k.length()});
+                Array<float> J = zeros<float>(ArrayShape{y.shape(0), y.shape(1), 2, k.length()});
                 Array<FixedArray<float, 2, 4>> dy_dki;
                 if (ki_precomputed == nullptr) {
                     dy_dki = unpack_k_internal_dk(xx, ke);
@@ -300,7 +300,7 @@ void Mlib::Sfm::find_projection_matrices(
                 }
                 for (size_t t = 0; t < y.shape(0); ++t) {
                     for (size_t i = 0; i < y.shape(1); ++i) {
-                        for (size_t d = 0; d < 3; ++d) {
+                        for (size_t d = 0; d < 2; ++d) {
                             if (ki_precomputed == nullptr) {
                                 for (size_t j = 0; j < 4; ++j) {
                                     J(t, i, d, j) = dy_dki(t, i)(d, j);
