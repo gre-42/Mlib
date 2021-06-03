@@ -12,43 +12,43 @@ using namespace Mlib::Sfm::Hfi;
 
 void test_jacobian() {
     // Array<float> intrinsic_matrix = Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m");
-    Array<float> intrinsic_matrix{
-        {0.5, 0, 0.9},
-        {0, 0.7, 0.2},
-        {0, 0, 1}};
-    Array<float> theta = uniform_random_array<float>(ArrayShape{3}, 3);
-    Array<float> x = uniform_random_array<float>(ArrayShape{2}, 2);
-    Array<float> num = numerical_differentiation([&](const Array<float>& ttheta){
+    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+        0.5f, 0.f, 0.9f,
+        0.f, 0.7f, 0.2f,
+        0.f, 0.f, 1.f} };
+    FixedArray<float, 3> theta{ uniform_random_array<float>(ArrayShape{3}, 3) };
+    FixedArray<float, 2> x{ uniform_random_array<float>(ArrayShape{2}, 2) };
+    FixedArray<float, 2, 3> num = numerical_differentiation<2>([&](const FixedArray<float, 3>& ttheta){
             return transform_coordinates(tait_bryan_angles_2_matrix(ttheta), x, intrinsic_matrix);
         }, theta);
-    Array<float> an = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(x), intrinsic_matrix, theta);
-    assert_allclose(num, an, float(1e-3));
+    FixedArray<float, 2, 3> an = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(x), intrinsic_matrix, theta);
+    assert_allclose(num.to_array(), an.to_array(), float(1e-3));
 }
 
 void test_intensity_jacobian() {
-    Array<float> intrinsic_matrix{
-        {0.5, 0, 0.9},
-        {0, 0.7, 0.2},
-        {0, 0, 1}};
-    Array<float> theta{0.2, 0.1, 0.4};
+    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+        0.5f, 0.f, 0.9f,
+        0.f, 0.7f, 0.2f,
+        0.f, 0.f, 1.f} };
+    FixedArray<float, 3> theta{0.2f, 0.1f, 0.4f};
     Array<float> im_r = uniform_random_array<float>(ArrayShape{4, 5}, 1);
     Array<float> im_l = uniform_random_array<float>(ArrayShape{4, 5}, 2);
     Array<float> im_r_f = central_gradient_filter(im_r);
     Array<float> im_l_f = central_gradient_filter(im_l);
     Array<float> ij = intensity_jacobian(im_r_f, im_l_f, intrinsic_matrix, theta);
     assert(all(ij.shape() == ArrayShape{4, 5, 3}));
-    assert_isclose(sum(squared(ij)), 3986.64f, float(1e-2));
+    assert_isclose(sum(squared(ij)), 966.527f, float(1e-2));
 
     assert_allclose(
         intensity_jacobian(im_r_f, im_l_f, intrinsic_matrix, theta),
         intensity_jacobian_fast(im_r_f, im_l_f, intrinsic_matrix, theta),
-        1e-4);
+        float{ 1e-4 });
 }
 
 void test_homography_from_images() {
     PpmImage im0_raw = PpmImage::load_from_file("Data/rotation-20-256x455x24.ppm");
     PpmImage im1_raw = PpmImage::load_from_file("Data/rotation-40-256x455x24.ppm");
-    Array<float> intrinsic_matrix = Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m");
+    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> im0_rgb = im0_raw.to_float_rgb();
     Array<float> im1_rgb = im1_raw.to_float_rgb();
     Array<float> im0_gray = im0_raw.to_float_grayscale();
@@ -60,19 +60,24 @@ void test_homography_from_images() {
     im0_gray = gaussian_filter_NWE(im0_gray, 3.f, NAN);
     im1_gray = gaussian_filter_NWE(im1_gray, 3.f, NAN);
 
-    Array<float> R = rotation_from_images(im0_gray, im1_gray, intrinsic_matrix);
-    assert_allclose(R, Array<float>{
-        {0.999997, -0.00180258, -0.00153379},
-        {0.00188353, 0.998511, 0.0545234},
-        {0.00143322, -0.0545261, 0.998511}});
+    FixedArray<float, 3, 3> R = rotation_from_images(im0_gray, im1_gray, intrinsic_matrix);
+    assert_allclose(R.to_array(), Array<float>{
+        {0.999997f, -0.00180258f, -0.00153379f},
+        {0.00188353f, 0.998511f, 0.0545234f},
+        {0.00143322f, -0.0545261f, 0.998511f}});
     // Array<float> diff = d_pr(im0_gray, im1_gray, intrinsic_matrix, R);
     Array<float> diff = d_pr_bilinear(zeros<float>(im0_gray.shape()), im1_gray, intrinsic_matrix, R);
     draw_nan_masked_grayscale(diff, 0, 0).save_to_file("TestOut/rotation-diff.ppm");
 }
 
 int main(int argc, char** argv) {
-    test_jacobian();
-    test_intensity_jacobian();
-    test_homography_from_images();
+    try {
+        test_jacobian();
+        test_intensity_jacobian();
+        test_homography_from_images();
+    } catch (const std::runtime_error& e) {
+        std::cerr << "ERROR: " << e.what();
+        return 1;
+    }
     return 0;
 }

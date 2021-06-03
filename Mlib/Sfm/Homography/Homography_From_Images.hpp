@@ -28,20 +28,17 @@ namespace Mlib { namespace Sfm { namespace Hfi {
  * See: projected_points_jacobian_dke_1p_1ke
  */
 template <class TData>
-Array<TData> projected_points_jacobian_dke_1p_1ke_only_rotation(
-    const Array<TData>& x,
-    const Array<TData>& ki,
-    const Array<TData>& theta)
+FixedArray<TData, 2, 3> projected_points_jacobian_dke_1p_1ke_only_rotation(
+    const FixedArray<TData, 3>& x,
+    const TransformationMatrix<TData, 2>& ki,
+    const FixedArray<TData, 3>& theta)
 {
-    assert(x.length() == 3);
-    assert(all(ki.shape() == ArrayShape{3, 3}));
-    assert(theta.length() == 3);
-    Array<TData> R = tait_bryan_angles_2_matrix(theta);
-    Array<TData> b = lstsq_chol_1d(ki, x);
-    Array<TData> a = dot(R, b);
-    Array<TData> dy_da = homogeneous_jacobian_dx(ki, a);
-    Array<TData> da_dtheta = tait_bryan_angles_dtheta(theta, b);
-    return dot(dy_da, da_dtheta);
+    FixedArray<TData, 3, 3> R = tait_bryan_angles_2_matrix(theta);
+    FixedArray<TData, 3> b = lstsq_chol_1d(ki.affine(), x);
+    FixedArray<TData, 3> a = dot(R, b);
+    FixedArray<TData, 2, 3> dy_da = homogeneous_jacobian_dx(ki.affine(), a);
+    FixedArray<TData, 3, 3> da_dtheta = tait_bryan_angles_dtheta(theta, b);
+    return dot2d(dy_da, da_dtheta);
 }
 
 template <class TData>
@@ -59,7 +56,7 @@ static FixedArray<TData, 2> transform_coordinates(
     const TransformationMatrix<float, 2>& intrinsic_matrix)
 {
     FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix);
-    return dehomogenized_2(apply_homography(H, homogenized_3(x)));
+    return apply_homography(H, x);
 }
 
 template <class TData>
@@ -94,8 +91,8 @@ template <class TData>
 Array<TData> d_pr_bilinear(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const Array<TData>& intrinsic_matrix,
-    const Array<TData>& R)
+    const TransformationMatrix<TData, 2>& intrinsic_matrix,
+    const FixedArray<TData, 3, 3>& R)
 {
     assert(im_r.ndim() == 2);
     assert(all(im_r.shape() == im_l.shape()));
@@ -121,8 +118,8 @@ template <class TData>
 Array<TData> intensity_jacobian(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
-    const Array<TData>& ki,
-    const Array<TData>& theta)
+    const TransformationMatrix<TData, 2>& ki,
+    const FixedArray<TData, 3>& theta)
 {
     ArrayShape space_shape = im_r_di.shape().erased_first();
     Array<TData> result{space_shape.appended(3)};
@@ -131,15 +128,18 @@ Array<TData> intensity_jacobian(
     for (int i = 0; i < (int)im_r_di.shape(1); ++i) {
         size_t r = (size_t)i;
         for (size_t c = 0; c < im_r_di.shape(2); ++c) {
-            ArrayShape id_r{r, c};
-            Array<float> J = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(i2a(id_r)), ki, theta);
-            Array<float> im_grad{im_r_di(id1, r, c), im_r_di(id0, r, c)};
+            FixedArray<size_t, 2> id_r{r, c};
+            FixedArray<float, 2, 3> J = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(i2a(id_r)), ki, theta);
+            FixedArray<float, 2> im_grad{im_r_di(id1, r, c), im_r_di(id0, r, c)};
             BilinearInterpolator<TData> bi;
             if (hs.sample_destination(r, c, space_shape, bi)) {
                 im_grad(0) = (im_grad(0) + bi.interpolate_multichannel(im_l_di, id1)) / 2;
                 im_grad(1) = (im_grad(1) + bi.interpolate_multichannel(im_l_di, id0)) / 2;
             }
-            result[r][c] = dot(im_grad, J);
+            FixedArray<TData, 3> intensity = dot(im_grad, J);
+            for (size_t i = 0; i < 3; ++i) {
+                result(r, c, i) = intensity(i);
+            }
         }
     }
     return result;

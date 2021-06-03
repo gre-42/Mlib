@@ -98,7 +98,7 @@ void PpmImage::draw_streamline(
 }
 
 PpmImage PpmImage::load_from_file(const std::string& filename) {
-    std::ifstream istream(filename);
+    std::ifstream istream(filename, std::ios::binary);
     try {
         return load_from_stream(istream);
     } catch (const std::runtime_error& e) {

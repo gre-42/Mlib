@@ -121,7 +121,7 @@ void test_reconstruction() {
         sc.dR(0, 2).to_array(),
         calculate_camera ? float{ 1e-3 } : float{ 1e-6 });
     assert_allclose(
-        camera_frames.rbegin()->second.pose.t().to_array(),
+        normalized_l2(camera_frames.rbegin()->second.pose.t().to_array()),
         sc.dt2(0, 2).to_array(),
         calculate_camera ? float{ 1e-2 } : float{ 1e-6 });
     {
@@ -129,7 +129,7 @@ void test_reconstruction() {
         Array<size_t> recon_ids = recon.reconstructed_point_ids();
         assert_allclose(
             Array<float>{ recon_pts } / recon_pts(0)(0),
-            Array<float>{ sc.x[recon_ids].col_range(0, 3) / sc.x(recon_ids(0), 0) },
+            Array<float>{ sc.x[recon_ids] } / sc.x(recon_ids(0))(0),
             float{ 1e-2 });
     }
     std::cerr << "4. Insertion" << std::endl;
@@ -141,7 +141,7 @@ void test_reconstruction() {
         sc.dR(0, 3).to_array(),
         calculate_camera ? float{ 1e-1 } : float{ 1e-6 });
     assert_allclose(
-        camera_frames.rbegin()->second.pose.t().to_array(),
+        normalized_l2(camera_frames.rbegin()->second.pose.t().to_array()),
         sc.dt2(0, 3).to_array(),
         calculate_camera ? float{ 1e-3 } : float{ 1e-6 });
     {
@@ -149,7 +149,7 @@ void test_reconstruction() {
         Array<size_t> recon_ids = recon.reconstructed_point_ids();
         assert_allclose(
             Array<float>{ recon_pts } / recon_pts(0)(0),
-            Array<float>{ sc.x[recon_ids].col_range(0, 3) / sc.x(recon_ids(0), 0) },
+            Array<float>{ sc.x[recon_ids] } / sc.x(recon_ids(0))(0),
             float{ 5e-2 });
     }
     // std::cerr << "Marginalizing some points" << std::endl;
@@ -164,7 +164,7 @@ void test_reconstruction() {
         sc.dR(0, 4).to_array(),
         calculate_camera ? float{ 3e-3 } : float{ 1e-6 });
     assert_allclose(
-        camera_frames.rbegin()->second.pose.t().to_array(),
+        normalized_l2(camera_frames.rbegin()->second.pose.t().to_array()),
         sc.dt2(0, 4).to_array(),
         calculate_camera ? float{ 5e-2 } : float{ 1e-6 });
     {
@@ -172,7 +172,7 @@ void test_reconstruction() {
         Array<size_t> recon_ids = recon.reconstructed_point_ids();
         assert_allclose(
             Array<float>{ recon_pts } / recon_pts(0)(0),
-            Array<float>{ sc.x[recon_ids].col_range(0, 3) / sc.x(recon_ids(0), 0) },
+            Array<float>{ sc.x[recon_ids] } / sc.x(recon_ids(0))(0),
             calculate_camera ? float{ 9e-2 } : float{ 1e-3 });
     }
     // std::cerr << "sc.x\n" << sc.x << std::endl;
