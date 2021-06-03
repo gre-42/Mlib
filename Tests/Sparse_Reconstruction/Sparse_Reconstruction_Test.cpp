@@ -104,10 +104,10 @@ void test_reconstruction() {
         calculate_camera ? sc.dt2(0, 1).to_array() : sc.dt(0, 1).to_array(),
         calculate_camera ? float{ 1e-4 } : float { 1e-6 });
     {
-        Array<float> recon_pts = recon.reconstructed_points();
+        Array<FixedArray<float, 3>> recon_pts = recon.reconstructed_points();
         Array<size_t> recon_ids = recon.reconstructed_point_ids();
         assert_allclose(
-            recon_pts / recon_pts(0, 0),
+            Array<float>{ recon_pts } / recon_pts(0)(0),
             Array<float>{ sc.x[recon_ids] } / sc.x(recon_ids(0))(0),
             calculate_camera ? float{ 1e-1 } : float{ 1e-1 });
     }
@@ -125,10 +125,10 @@ void test_reconstruction() {
         sc.dt2(0, 2).to_array(),
         calculate_camera ? float{ 1e-2 } : float{ 1e-6 });
     {
-        Array<float> recon_pts = recon.reconstructed_points();
+        Array<FixedArray<float, 3>> recon_pts = recon.reconstructed_points();
         Array<size_t> recon_ids = recon.reconstructed_point_ids();
         assert_allclose(
-            recon_pts / recon_pts(0, 0),
+            Array<float>{ recon_pts } / recon_pts(0)(0),
             Array<float>{ sc.x[recon_ids].col_range(0, 3) / sc.x(recon_ids(0), 0) },
             float{ 1e-2 });
     }
@@ -145,10 +145,10 @@ void test_reconstruction() {
         sc.dt2(0, 3).to_array(),
         calculate_camera ? float{ 1e-3 } : float{ 1e-6 });
     {
-        Array<float> recon_pts = recon.reconstructed_points();
+        Array<FixedArray<float, 3>> recon_pts = recon.reconstructed_points();
         Array<size_t> recon_ids = recon.reconstructed_point_ids();
         assert_allclose(
-            recon_pts / recon_pts(0, 0),
+            Array<float>{ recon_pts } / recon_pts(0)(0),
             Array<float>{ sc.x[recon_ids].col_range(0, 3) / sc.x(recon_ids(0), 0) },
             float{ 5e-2 });
     }
@@ -168,10 +168,10 @@ void test_reconstruction() {
         sc.dt2(0, 4).to_array(),
         calculate_camera ? float{ 5e-2 } : float{ 1e-6 });
     {
-        Array<float> recon_pts = recon.reconstructed_points();
+        Array<FixedArray<float, 3>> recon_pts = recon.reconstructed_points();
         Array<size_t> recon_ids = recon.reconstructed_point_ids();
         assert_allclose(
-            recon_pts / recon_pts(0, 0),
+            Array<float>{ recon_pts } / recon_pts(0)(0),
             Array<float>{ sc.x[recon_ids].col_range(0, 3) / sc.x(recon_ids(0), 0) },
             calculate_camera ? float{ 9e-2 } : float{ 1e-3 });
     }

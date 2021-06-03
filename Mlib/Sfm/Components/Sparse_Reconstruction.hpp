@@ -26,7 +26,7 @@ public:
         ReconstructionConfig cfg);
     void reconstruct();
     void reconstruct_pass2();
-    const Array<float> reconstructed_points() const;
+    const Array<FixedArray<float, 3>> reconstructed_points() const;
     const Array<size_t> reconstructed_point_ids() const;
     void debug_set_camera_frame(std::chrono::milliseconds time, const CameraFrame& frame);
     void print_arrays() const;

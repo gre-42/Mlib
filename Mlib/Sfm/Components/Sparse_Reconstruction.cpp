@@ -688,11 +688,11 @@ void SparseReconstruction::reconstruct_pass2() {
     }
 }
 
-const Array<float> SparseReconstruction::reconstructed_points() const {
-    Array<float> a(ArrayShape{reconstructed_points_.size(), 3});
+const Array<FixedArray<float, 3>> SparseReconstruction::reconstructed_points() const {
+    Array<FixedArray<float, 3>> a(ArrayShape{reconstructed_points_.size()});
     size_t i = 0;
     for (const auto& x : reconstructed_points_) {
-        a[i] = x.second->position;
+        a(i) = x.second->position;
         ++i;
     }
     return a;
