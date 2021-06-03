@@ -294,18 +294,23 @@ void MarginalizationScheduler::find_points_to_be_linearized(
     const std::chrono::milliseconds& time,
     MarginalizationIds& mids)
 {
-    auto it = camera_frames_.find(time);
-    if (it == camera_frames_.end()) {
-        throw std::runtime_error("Could not find camera " + std::to_string(time.count()) + " ms");
+    // Separate variable because "move_to_linearized" invalidates the iterator.
+    MmState state;
+    {
+        auto it = camera_frames_.find(time);
+        if (it == camera_frames_.end()) {
+            throw std::runtime_error("Could not find camera " + std::to_string(time.count()) + " ms");
+        }
+        state = it->state_;
     }
-    std::cerr << "Marginalizing camera " << time.count() << " ms, state " << it->state_ << std::endl;
-    if (it->state_ == MmState::ACTIVE) {
+    std::cerr << "Marginalizing camera " << time.count() << " ms, state " << state << std::endl;
+    if (state == MmState::ACTIVE) {
         camera_frames_.move_to_linearized(time);
     }
     camera_frames_.move_to_marginalized(time);
     mids.marginalize_camera(time);
 
-    if (it->state_ == MmState::LINEARIZED) {
+    if (state == MmState::LINEARIZED) {
         for (const auto& c2 : camera_frames_.linearized_) {
             assert_true(c2.first != time);
             mids.linearize_camera(c2.first);
