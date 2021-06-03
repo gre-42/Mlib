@@ -1,7 +1,9 @@
 #include "Dtam_Reconstruction.hpp"
 #include <Mlib/Sfm/Components/Dtam_Keyframe.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
@@ -18,7 +20,9 @@ DtamReconstruction::DtamReconstruction(
   intrinsic_matrix_{intrinsic_matrix},
   cache_dir_{cache_dir},
   cfg_{cfg}
-{}
+{
+    fs::create_directories(cache_dir);
+}
 
 void DtamReconstruction::insert_keyframe(const std::chrono::milliseconds& keyframe_time) {
     if (key_frames_.find(keyframe_time) != key_frames_.end()) {

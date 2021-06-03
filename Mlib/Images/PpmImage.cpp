@@ -98,6 +98,9 @@ void PpmImage::draw_streamline(
 }
 
 PpmImage PpmImage::load_from_file(const std::string& filename) {
+    if (!filename.ends_with(".ppm")) {
+        throw std::runtime_error("Filename does not have ppm extension: \"" + filename + '"');
+    }
     std::ifstream istream(filename, std::ios::binary);
     try {
         return load_from_stream(istream);
@@ -159,6 +162,9 @@ PpmImage PpmImage::load_from_stream(std::istream& istream) {
 }
 
 void PpmImage::save_to_file(const std::string& filename) const {
+    if (!filename.ends_with(".ppm")) {
+        throw std::runtime_error("Filename does not have ppm extension: \"" + filename + '"');
+    }
     try {
         std::ofstream ostream(filename, std::ios::binary);
         save_to_stream(ostream);

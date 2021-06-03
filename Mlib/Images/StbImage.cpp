@@ -107,6 +107,9 @@ StbImage StbImage::load_from_file(const std::string& filename) {
 }
 
 void StbImage::save_to_file(const std::string& filename) const {
+    if (!filename.ends_with(".png")) {
+        throw std::runtime_error("Filename does not have png extension: \"" + filename + '"');
+    }
     if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 3, (void*)&(*this)(0, 0), 0)) {
         throw std::runtime_error("Could not save to file " + filename);
     }

@@ -113,7 +113,7 @@ void DtamKeyframe::append_camera_frame() {
             depth_,
             down_sampler_.ds_intrinsic_matrix_,
             ke);
-        draw_nan_masked_grayscale(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-" + suffix + ".ppm");
+        draw_nan_masked_grayscale(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-" + suffix + ".png");
         float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
         can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
         std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
@@ -138,7 +138,7 @@ void DtamKeyframe::inspect_externally_appended_camera_frame() const {
         depth_,
         down_sampler_.ds_intrinsic_matrix_,
         ke);
-    draw_quantiled_grayscale(im, 0.05f, 0.95f).save_to_file(cache_dir_ + "/inspect-err-" + suffix + ".ppm");
+    draw_quantiled_grayscale(im, 0.05f, 0.95f).save_to_file(cache_dir_ + "/inspect-err-" + suffix + ".png");
 }
 
 void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
@@ -234,7 +234,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         }
         if (is_full()) {
             for (size_t i = 0; i < dsi_.shape(0); i += dsi_.shape(0) / 5) {
-                draw_nan_masked_grayscale(dsi_[i], 0, 1).save_to_file(cache_dir_ + "/vol-" + suffix + "-" + std::to_string(i) + ".ppm");
+                draw_nan_masked_grayscale(dsi_[i], 0, 1).save_to_file(cache_dir_ + "/vol-" + suffix + "-" + std::to_string(i) + ".png");
             }
         }
     } else if (!dsi_.initialized()) {
@@ -246,7 +246,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale,
             cfg_.params_);
         dm_ = std::make_unique<Dm::DenseMapping>(dsi_, g, cfg_.params_);
-        draw_nan_masked_grayscale(g, 0, 1).save_to_file(cache_dir_ + "/g-" + suffix + ".ppm");
+        draw_nan_masked_grayscale(g, 0, 1).save_to_file(cache_dir_ + "/g-" + suffix + ".png");
     }
     if (false) {
         std::cerr << "Parameter-search for keyframe " << key_frame_time_.count() << " ms" << std::endl;
@@ -291,14 +291,14 @@ void DtamKeyframe::optimize1() {
         float q = nanquantile(hr, 0.3);
         masked_depth_ = depth_.array_array_binop(hr, [q](float d, float h){ return h < q ? d : NAN; });
         if (is_full()) {
-            draw_nan_masked_grayscale(masked_depth_, 0, 0).save_to_file(cache_dir_ + "/masked_depth-" + suffix + ".ppm");
+            draw_nan_masked_grayscale(masked_depth_, 0, 0).save_to_file(cache_dir_ + "/masked_depth-" + suffix + ".png");
         }
     } else if (false) {
         masked_depth_ = depth_;
     } else {
         masked_depth_ = depth_->array_array_binop(dm_->g_, [](float de, float g){ return g < 1e-1 ? NAN : de; });
     }
-    draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth__, 1 / cfg_.params_.min_depth__).save_to_file(cache_dir_ + "/a-" + suffix + ".ppm");
+    draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth__, 1 / cfg_.params_.min_depth__).save_to_file(cache_dir_ + "/a-" + suffix + ".png");
 
     if (false && dm_->is_converged()) {
         Array<float> err = zeros<float>(depth_.shape());
@@ -323,13 +323,13 @@ void DtamKeyframe::optimize1() {
                     neighbor->second.depth_,
                     down_sampler_.ds_intrinsic_matrix_,
                     ke);
-                // draw_nan_masked_grayscale(err, 0, 0.5 * 0.5).save_to_file(cache_dir_ + "/err-" + suffix + "-" + std::to_string(neighbor->first.count()) + ".ppm");
+                // draw_nan_masked_grayscale(err, 0, 0.5 * 0.5).save_to_file(cache_dir_ + "/err-" + suffix + "-" + std::to_string(neighbor->first.count()) + ".png");
                 ++nerr;
             }
         }
         if (nerr > 0) {
             err /= (float)nerr;
-            draw_quantiled_grayscale(err, 0.f, 0.8f).save_to_file(cache_dir_ + "/err-" + suffix + ".ppm");
+            draw_quantiled_grayscale(err, 0.f, 0.8f).save_to_file(cache_dir_ + "/err-" + suffix + ".png");
             // float q = nanquantile(err, 0.8f);
             // masked_depth_ = depth_.array_array_binop(err, [q](float de, float er){ return er < q ? de : NAN; });
             // for (size_t h = 0; h < vol.shape(0); ++h) {
@@ -346,7 +346,7 @@ void DtamKeyframe::optimize1() {
             //     g,
             //     cfg_.params_);
             // depth_ = Dm::a_to_depth(ae, inverse_depths_);
-            // draw_nan_masked_grayscale(ae, 0, inverse_depths_.length() - 1).save_to_file(cache_dir_ + "/a-err-" + suffix + ".ppm");
+            // draw_nan_masked_grayscale(ae, 0, inverse_depths_.length() - 1).save_to_file(cache_dir_ + "/a-err-" + suffix + ".png");
         } else {
             //masked_depth_ = depth_;
         }
@@ -372,13 +372,13 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
                 }
             }
         }
-        img.save_to_file(cache_dir_ + "/epipoles-" + suffix + ".ppm");
+        img.save_to_file(cache_dir_ + "/epipoles-" + suffix + ".png");
     }
-    draw_nan_masked_grayscale(masked_depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/masked-depth-" + suffix + ".ppm");
+    draw_nan_masked_grayscale(masked_depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/masked-depth-" + suffix + ".png");
     Array<float> x = reconstruct_depth(masked_depth_, down_sampler_.ds_intrinsic_matrix_);
-    draw_quantiled_grayscale(x[0], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-0-" + suffix + ".ppm");
-    draw_quantiled_grayscale(x[1], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-1-" + suffix + ".ppm");
-    draw_quantiled_grayscale(x[2], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-2-" + suffix + ".ppm");
+    draw_quantiled_grayscale(x[0], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-0-" + suffix + ".png");
+    draw_quantiled_grayscale(x[1], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-1-" + suffix + ".png");
+    draw_quantiled_grayscale(x[2], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-2-" + suffix + ".png");
 
     masked_depth_.save_binary(cache_dir_ + "/masked-depth-" + suffix + ".array");
 
@@ -386,16 +386,16 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         Array<float> condition_number;
         const Array<float>& im0_rgb = down_sampler_.ds_image_frames_.at(key_frame_time_).rgb;
         // using "reconstruct_depth" -> identity projection matrix
-        DenseProjector::from_image(camera_frames_, 0, 1, 2, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-1-" + suffix + ".ppm");
-        DenseProjector::from_image(camera_frames_, 0, 2, 1, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-2-" + suffix + ".ppm");
-        DenseProjector::from_image(camera_frames_, 2, 1, 0, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-2-1-" + suffix + ".ppm");
+        DenseProjector::from_image(camera_frames_, 0, 1, 2, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-1-" + suffix + ".png");
+        DenseProjector::from_image(camera_frames_, 0, 2, 1, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-2-" + suffix + ".png");
+        DenseProjector::from_image(camera_frames_, 2, 1, 0, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-2-1-" + suffix + ".png");
 
-        draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth__, 1 / cfg_.params_.min_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-a.ppm");
-        PpmImage::from_float_rgb(im0_rgb).save_to_file(cache_dir_ + "/pkg-" + suffix + "-rgb.ppm");
+        draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth__, 1 / cfg_.params_.min_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-a.png");
+        StbImage::from_float_rgb(im0_rgb).save_to_file(cache_dir_ + "/pkg-" + suffix + "-rgb.png");
         masked_depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-masked-depth.array");
         depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-depth.array");
-        draw_nan_masked_grayscale(masked_depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked-depth.ppm");
-        draw_nan_masked_grayscale(depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-depth.ppm");
+        draw_nan_masked_grayscale(masked_depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked-depth.png");
+        draw_nan_masked_grayscale(depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-depth.png");
         intrinsic_matrix_.affine().to_array().save_txt_2d(cache_dir_ + "/pkg-" + suffix + "-intrinsic_matrix.m");
     }
 }

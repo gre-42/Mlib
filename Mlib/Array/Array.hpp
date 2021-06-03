@@ -245,11 +245,13 @@ public:
         assert(all(FixedArray<size_t, static_ndim>{tsize...} == FixedArray<size_t, static_ndim>{rhs.shape().erased_first(static_ndim)}));
         ArrayShape result_shape{ rhs.shape().erased_last(static_ndim) };
         Array<FixedArray<TData, tsize...>> result{ ArrayShape{result_shape.nelements()} };
-        Array<TData> rhs_flat = rhs.reshaped(ArrayShape{ result.length(), rhs.nelements() / result.length() });
-        auto& flat_result = reinterpret_cast<Array<FixedArray<TData, flat_elements>>&>(result);
-        for (size_t i = 0; i < result.length(); ++i) {
-            for (size_t j = 0; j < flat_elements; ++j) {
-                flat_result(i)(j) = rhs(i, j);
+        if (result.length() > 0) {
+            Array<TData> rhs_flat = rhs.reshaped(ArrayShape{ result.length(), rhs.nelements() / result.length() });
+            auto& flat_result = reinterpret_cast<Array<FixedArray<TData, flat_elements>>&>(result);
+            for (size_t i = 0; i < result.length(); ++i) {
+                for (size_t j = 0; j < flat_elements; ++j) {
+                    flat_result(i)(j) = rhs_flat(i, j);
+                }
             }
         }
         result.reshape(result_shape);
