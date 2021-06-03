@@ -12,9 +12,9 @@ enum class AggregateMode;
 enum class TransformationMode;
 
 struct LoadMeshConfig {
-    FixedArray<float, 3> position = FixedArray<float, 3>(0);
-    FixedArray<float, 3> rotation = FixedArray<float, 3>(0);
-    FixedArray<float, 3> scale = FixedArray<float, 3>(1);
+    FixedArray<float, 3> position = FixedArray<float, 3>(0.f);
+    FixedArray<float, 3> rotation = FixedArray<float, 3>(0.f);
+    FixedArray<float, 3> scale = FixedArray<float, 3>(1.f);
     OrderableFixedArray<float, 2> distances = default_distances_hard;
     bool is_small;
     BlendMode blend_mode;

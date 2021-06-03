@@ -11,7 +11,7 @@ using namespace Mlib;
 DepthMapResource::DepthMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const FixedArray<float, 3, 3>& intrinsic_matrix)
+    const TransformationMatrix<float, 2>& intrinsic_matrix)
 {
     FixedArray<float, 3, 3> iim{inv(intrinsic_matrix)};
     std::vector<FixedArray<ColoredVertex, 3>> triangles;

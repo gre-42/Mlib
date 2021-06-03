@@ -152,21 +152,21 @@ GlobalBundle::GlobalBundle(
         {
             Array<float> ox{ArrayShape{xg.length(), 2}};
             for (const auto& xxp : xps) {
-                ox(column_id(xxp.first), 0) = xxp.first.index;
-                ox(column_id(xxp.first), 1) = xxp.first.dimension;
+                ox(column_id(xxp.first), 0) = (float)xxp.first.index;
+                ox(column_id(xxp.first), 1) = (float)xxp.first.dimension;
             }
             for (const auto& xkk : xks) {
-                ox(column_id(xkk.first), 0) = xkk.first.time.count();
-                ox(column_id(xkk.first), 1) = xkk.first.dimension;
+                ox(column_id(xkk.first), 0) = (float)xkk.first.time.count();
+                ox(column_id(xkk.first), 1) = (float)xkk.first.dimension;
             }
             ox.save_txt_2d(cache_dir_ + "/xs-" + std::to_string(id) + ".m");
         }
         {
             Array<float> oy{ArrayShape{ys.size(), 3}};
             for (const auto& y : ys) {
-                oy(row_id(y.first), 0) = y.first.time.count();
-                oy(row_id(y.first), 1) = y.first.index;
-                oy(row_id(y.first), 2) = y.first.dimension;
+                oy(row_id(y.first), 0) = (float)y.first.time.count();
+                oy(row_id(y.first), 1) = (float)y.first.index;
+                oy(row_id(y.first), 2) = (float)y.first.dimension;
             }
             oy.save_txt_2d(cache_dir_ + "/ys-" + std::to_string(id) + ".m");
         }
@@ -179,7 +179,7 @@ void GlobalBundle::copy_in(
     const std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points,
     const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     const std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
-    const Array<float>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     bool skip_missing_cameras,
     const std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations)
 {
@@ -213,26 +213,26 @@ void GlobalBundle::copy_in(
                 fg.row_range(
                     row_id(Y{p.first, y.first, 0}),
                     row_id(Y{p.first, y.first, 0}) + 2) = projected_points_1p_1ke(
-                        homogenized_4(r_raw->second->position),
+                        r_raw->second->position,
                         intrinsic_matrix,
-                        c_raw->second.projection_matrix_3x4()).row_range(0, 2);
+                        c_raw->second.projection_matrix_3x4()).row_range<0, 2>();
 
                 {
                     // std::cerr << "Computing JP" << std::endl;
-                    Array<float> JP = cfg_.numerical_jacobian_x
-                        ? numerical_differentiation([&](const Array<float>& pp){
-                            return projected_points_1p_1ke(homogenized_4(pp), intrinsic_matrix, cf.projection_matrix_3x4()).row_range(0, 2);
-                        },
-                        rf.position)
+                    FixedArray<float, 2, 3> JP = cfg_.numerical_jacobian_x
+                        ? numerical_differentiation<2>([&](const FixedArray<float, 3>& pp){
+                            return projected_points_1p_1ke(pp, intrinsic_matrix, cf.projection_matrix_3x4());
+                            },
+                            rf.position)
                         : projected_points_jacobian_dx_1p_1ke(
-                            homogenized_4(rf.position),
+                            rf.position,
                             intrinsic_matrix,
-                            cf.projection_matrix_3x4()).col_range(0, 3);
+                            cf.projection_matrix_3x4());
 
                     // std::cerr << "JP " << JP.shape() << std::endl;
                     // std::cerr << JP << std::endl;
-                    for (size_t r = 0; r < JP.shape(0); ++r) {
-                        for (size_t c = 0; c < JP.shape(1); ++c) {
+                    for (size_t r = 0; r < JP.static_shape<0>(); ++r) {
+                        for (size_t c = 0; c < JP.static_shape<1>(); ++c) {
                             Jg_at(Y{p.first, y.first, r}, XP{y.first, c}) = JP(r, c);
                         }
                     }
@@ -240,19 +240,19 @@ void GlobalBundle::copy_in(
                 {
                     // std::cerr << "Computing JK" << std::endl;
                     // std::cerr << c->second.kep << std::endl;
-                    Array<float> JK = cfg_.numerical_jacobian_k
-                        ? numerical_differentiation([&](const Array<float>& kep){
+                    FixedArray<float, 2, 6> JK = cfg_.numerical_jacobian_k
+                        ? numerical_differentiation<2>([&](const FixedArray<float, 6>& kep){
                             // std::cerr << "kep " << kep << std::endl;
                             // std::cerr << k_external(kep) << std::endl;
                             // std::cerr << c->second.projection_matrix_3x4() << std::endl;
-                            return projected_points_1p_1ke(homogenized_4(rf.position), intrinsic_matrix, k_external(kep)).row_range(0, 2);
+                            return projected_points_1p_1ke(rf.position, intrinsic_matrix, k_external(kep));
                         },
                         cf.kep)
-                        : projected_points_jacobian_dke_1p_1ke(homogenized_4(rf.position), intrinsic_matrix, cf.kep);
+                        : projected_points_jacobian_dke_1p_1ke(rf.position, intrinsic_matrix, cf.kep);
                     // std::cerr << "JK " << JK.shape() << std::endl;
                     // std::cerr << JK << std::endl;
-                    for (size_t r = 0; r < JK.shape(0); ++r) {
-                        for (size_t c = 0; c < JK.shape(1); ++c) {
+                    for (size_t r = 0; r < JK.static_shape<0>(); ++r) {
+                        for (size_t c = 0; c < JK.static_shape<1>(); ++c) {
                             Jg_at(Y{p.first, y.first, r}, XK{p.first, c}) = JK(r, c);
                         }
                     }
@@ -334,7 +334,7 @@ void GlobalBundle::copy_out(
     for (auto c : camera_frames) {
         if (c->state_ != MmState::MARGINALIZED) {
             size_t cid = column_id(XK{c.first, 0});
-            const Array<float> kke = x.row_range(cid, cid + 6);
+            const FixedArray<float, 6> kke{ x.row_range(cid, cid + 6) };
             c.second.set_from_projection_matrix_3x4(
                 k_external(kke),
                 kke);

@@ -5,11 +5,11 @@
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
-DownSampler::DownSampler(const FixedArray<float, 3, 3>& intrinsic_matrix, size_t n)
+DownSampler::DownSampler(const TransformationMatrix<float, 2>& intrinsic_matrix, size_t n)
 : n_(n)
 {
     ds_intrinsic_matrix_ = intrinsic_matrix;
-    ds_intrinsic_matrix_.row_range<0, 2>() /= std::pow(2, n);
+    ds_intrinsic_matrix_.pre_scale(1.f / (float)std::pow(2, n));
 }
 
 void DownSampler::append_image_frame(

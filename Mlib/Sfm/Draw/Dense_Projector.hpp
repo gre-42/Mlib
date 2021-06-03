@@ -4,7 +4,12 @@
 #include <Mlib/Sfm/Draw/Projector_With_Cameras.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib {
+
+template <class TData, size_t n>
+class TransformationMatrix;
+
+namespace Sfm {
 
 class DenseProjector: public ProjectorWithCameras {
 
@@ -14,10 +19,10 @@ public:
         size_t i0,
         size_t i1,
         size_t iz,
-        const Array<float>& x,
+        const Array<FixedArray<float, 3>>& x,
         const Array<float>& condition_number,
-        const Array<float>& ki,
-        const Array<float>& ke,
+        const TransformationMatrix<float, 2>& ki,
+        const TransformationMatrix<float, 3>& ke,
         const Array<float>& rgb);
 
     static DenseProjector from_image(
@@ -27,8 +32,8 @@ public:
         size_t iz,
         const Array<float>& x,
         const Array<float>& condition_number,
-        const Array<float>& ki,
-        const Array<float>& ke,
+        const TransformationMatrix<float, 2>& ki,
+        const TransformationMatrix<float, 3>& ke,
         const Array<float>& rgb);
 
     template <class TOperation, class TElse>
@@ -41,8 +46,8 @@ public:
     void draw(const std::string& filename);
 
 private:
-    const Array<float> x_;
-    const Array<float> y_;
+    const Array<FixedArray<float, 3>> x_;
+    const Array<FixedArray<float, 2>> y_;
     const Array<float> condition_number_;
     const Array<float> rgb_;
 };

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 #include <Mlib/Sfm/Homography/Homography_From_Transform.hpp>
 #include <Mlib/Sfm/Homography/Homography_Sampler.hpp>
@@ -25,56 +26,50 @@ InverseDepthCostVolume::InverseDepthCostVolume(
 }
 
 void InverseDepthCostVolume::increment(
-    const Array<float>& intrinsic_matrix,
-    const Array<float>& ke0,
-    const Array<float>& ke1,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 3>& ke0,
+    const TransformationMatrix<float, 3>& ke1,
     const Array<float>& im0_rgb,
     const Array<float>& im1_rgb,
     const float epipole_radius)
 {
-    assert(all(intrinsic_matrix.shape() == ArrayShape{3, 3}));
-    assert(all(ke0.shape() == ArrayShape{3, 4}));
-    assert(all(ke1.shape() == ArrayShape{3, 4}));
     assert(im0_rgb.ndim() == 3);
     assert(all(im0_rgb.shape() == im1_rgb.shape()));
     assert(all(im0_rgb.shape().erased_first() == space_shape_));
 
     nchannel_increments_ += im0_rgb.shape(0);
 
-    Array<float> ke = projection_in_reference(ke0, ke1);
-    Array<float> t = t3_from_Nx4(ke, 3);
-    Array<float> R = R3_from_Nx4(ke, 3);
-    Array<float> e;
+    TransformationMatrix<float, 3> ke = projection_in_reference(ke0, ke1);
+    FixedArray<float, 2> e;
     if (epipole_radius != 0) {
-        if (max(abs(ke - identity_array<float>(4).row_range(0, 3))) > 1e-3) {
-            Array<float> e3 = find_epipole(intrinsic_matrix, ke);
-            if (e3(2) != 0) {
-                e = a2fi(dehomogenized_2(e3));
+        if (max(abs(ke.affine() - fixed_identity_array<float, 4>())) > 1e-3) {
+            FixedArray<float, 2> e2 = find_epipole(intrinsic_matrix, ke);
+            if (!all(Mlib::isnan(e2))) {
+                e = a2fi(e2);
             }
         }
     }
 
     for (size_t di = 0; di < inverse_depths_.length(); ++di) {
         FixedArray<float, 3, 3> homog_e = rotation_and_translation_to_homography(
-            FixedArray<float, 3, 3>{R},
-            FixedArray<float, 3>{t},
+            ke,
             -FixedArray<float, 3>{0, 0, 1},
             1 / inverse_depths_(di));
-        FixedArray<float, 3, 3> homog_i = pixel_homography(FixedArray<float, 3, 3>{intrinsic_matrix}, homog_e);
+        FixedArray<float, 3, 3> homog_i = pixel_homography(intrinsic_matrix, homog_e);
         FixedArray<size_t, 2> space_shape_f{space_shape_};
         HomographySampler<float> hs{homog_i};
         #pragma omp parallel for
         for (int ri = 0; ri < (int)im0_rgb.shape(1); ++ri) {
             size_t r = (size_t)ri;
             for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
-                if (e.initialized() && (std::abs(r - e(0)) < 80) && (std::abs(c - e(1)) < 80)) {
+                if (!any(Mlib::isnan(e)) && (std::abs(r - e(0)) < 80) && (std::abs(c - e(1)) < 80)) {
                     continue;
                 }
                 if (false) {
                     FixedArray<size_t, 2> i0{r, c};
                     FixedArray<float, 2> ai0 = i2a(i0);
-                    FixedArray<float, 3> ai1 = apply_homography(homog_i, homogenized_3(ai0));
-                    FixedArray<size_t, 2> i1 = a2i(dehomogenized_2(ai1));
+                    FixedArray<float, 2> ai1 = apply_homography(homog_i, ai0);
+                    FixedArray<size_t, 2> i1 = a2i(ai1);
                     // std::cerr << "i0 " << i0 << " i1 " << i1 << std::endl;
                     if (all(i1 < space_shape_f)) {
                         for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
@@ -87,8 +82,8 @@ void InverseDepthCostVolume::increment(
                 } else if (false) {
                     FixedArray<size_t, 2> i0{r, c};
                     FixedArray<float, 2> ai0 = i2a(i0);
-                    FixedArray<float, 3> ai1 = apply_homography(homog_i, homogenized_3(ai0));
-                    FixedArray<size_t, 2> i1 = a2i(dehomogenized_2(ai1));
+                    FixedArray<float, 2> ai1 = apply_homography(homog_i, ai0);
+                    FixedArray<size_t, 2> i1 = a2i(ai1);
                     if (all(i1 < space_shape_f)) {
                         for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
                             idsi_sum_(di, r, c) += std::abs(

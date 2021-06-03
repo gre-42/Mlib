@@ -1,6 +1,7 @@
 #include "Features.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Images/Coordinates.hpp>
+#include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
@@ -168,18 +169,16 @@ void Mlib::highlight_features(
     draw_points_as_boxes(feature_points, bitmap, size, color);
 }
 
-Array<float> Mlib::find_feature_in_neighborhood(
-    const Array<float>& old_feature_point,
+FixedArray<float, 2> Mlib::find_feature_in_neighborhood(
+    const FixedArray<float, 2>& old_feature_point,
     const Array<float>& new_featureness,
     const ArrayShape& window_shape)
 {
-    assert(all(old_feature_point.shape() == ArrayShape{2}));
     assert(new_featureness.ndim() == 2);
     assert(window_shape.ndim() == 2);
 
-    ArrayShape index{a2i(old_feature_point)};
-    ArrayShape best_id(old_feature_point.length());
-    best_id = SIZE_MAX;
+    FixedArray<size_t, 2> index{a2i(old_feature_point)};
+    FixedArray<size_t, 2> best_id(SIZE_MAX);
     float best_featureness = -std::numeric_limits<float>::infinity();
     for (size_t r = 0; r < window_shape(0); ++r) {
         for (size_t c = 0; c < window_shape(1); ++c) {

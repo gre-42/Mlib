@@ -1,10 +1,11 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates.hpp>
+#include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/Optical_Flow.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 #include <Mlib/Sfm/Homography/Homography_From_Points.hpp>
 
@@ -16,20 +17,20 @@ static const float max_displacement = 16;
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: ground_plane_detector image0.ppm image1.ppm",
+        "Usage: ground_plane_detector image0.png image1.png",
         {},
         {});
     const auto args = parser.parsed(argc, argv);
     args.assert_num_unamed(2);
-    const auto raw0 = PpmImage::load_from_file(args.unnamed_value(0));
-    const auto raw1 = PpmImage::load_from_file(args.unnamed_value(1));
+    const auto raw0 = StbImage::load_from_file(args.unnamed_value(0));
+    const auto raw1 = StbImage::load_from_file(args.unnamed_value(1));
     const Array<float> image0 = raw0.to_float_grayscale();
     const Array<float> image1 = raw1.to_float_grayscale();
     Array<float> flow;
     Array<bool> global_mask;
     optical_flow(image0, image1, nullptr, ArrayShape{window_size, window_size}, max_displacement, flow, global_mask);
-    PpmImage::from_float_grayscale(normalized_and_clipped(flow[0], -max_displacement, max_displacement)).save_to_file("flow-0.ppm");
-    PpmImage::from_float_grayscale(normalized_and_clipped(flow[1], -max_displacement, max_displacement)).save_to_file("flow-1.ppm");
+    StbImage::from_float_grayscale(normalized_and_clipped(flow[0], -max_displacement, max_displacement)).save_to_file("flow-0.png");
+    StbImage::from_float_grayscale(normalized_and_clipped(flow[1], -max_displacement, max_displacement)).save_to_file("flow-1.png");
     // global_mask.row_range(0, global_mask.shape(0) / 2) = false;
     for (size_t tile_id = 0; tile_id < 5; ++tile_id) {
         Array<bool> mask{global_mask.copy()};
@@ -56,43 +57,43 @@ int main(int argc, char** argv) {
             }
             // H: x -> p, p = x-prime = x'
             std::cerr << "H" << std::endl;
-            Array<float> H = homography_from_points(x, p);
+            FixedArray<float, 3, 3> H = homography_from_points(x, p);
             H /= H(2, 2);
-            std::list<Array<float>> feature_list;
-            std::list<Array<float>> Hp_list;
+            std::list<FixedArray<float, 2>> feature_list;
+            std::list<FixedArray<float, 2>> Hp_list;
             for (size_t r = 0; r < mask.shape(0); ++r) {
                 for (size_t c = 0; c < mask.shape(1); ++c) {
-                    Array<float> a{i2a(ArrayShape{r, c})};
-                    Array<float> b{apply_homography(H, homogenized_3(a)).row_range(0, 2)};
-                    ArrayShape ia = a2i(a);
-                    ArrayShape ib = a2i(b);
-                    if (all(ia < mask.shape()) &&
-                        all(ib < mask.shape()) &&
-                        mask(ia))
+                    FixedArray<float, 2> a{i2a(FixedArray<size_t, 2>{r, c})};
+                    FixedArray<float, 2> b{apply_homography(H, a).row_range<0, 2>()};
+                    FixedArray<size_t, 2> ia = a2i(a);
+                    FixedArray<size_t, 2> ib = a2i(b);
+                    if (all(ia < FixedArray<size_t, 2>{mask.shape(0), mask.shape(1)}) &&
+                        all(ib < FixedArray<size_t, 2>{mask.shape(0), mask.shape(1)}) &&
+                        mask(ia(0), ia(1)))
                     {
-                        if (std::abs(image0(ia) - image1(ib)) < 0.005) {
+                        if (std::abs(image0(ia(0), ia(1)) - image1(ib(0), ib(1))) < 0.005) {
                             if (r % 10 == 0 && c % 10 == 0) {
                                 feature_list.push_back(a);
                                 Hp_list.push_back(b);
                             }
                         } else {
-                            mask(ia) = false;
+                            mask(ia(0), ia(1)) = false;
                         }
                     }
                 }
             }
-            Array<float> features = Array<float>{feature_list};
-            Array<float> Hp{Hp_list};
-            PpmImage bmpf0{PpmImage::from_float_grayscale(image0)};
-            PpmImage bmpf1{PpmImage::from_float_grayscale(image1)};
+            Array<float> features{ feature_list };
+            Array<float> Hp{ Hp_list };
+            StbImage bmpf0{ StbImage::from_float_grayscale(image0) };
+            StbImage bmpf1{ StbImage::from_float_grayscale(image1) };
             std::cerr << H << std::endl;
             // std::cerr << Hp << std::endl;
             highlight_features(features, bmpf0, 1, Rgb24::red());
             highlight_features(Hp, bmpf1, 1, Rgb24::red());
-            const std::string suffix = std::to_string(tile_id) + "-" + std::to_string(it) + ".ppm";
+            const std::string suffix = std::to_string(tile_id) + "-" + std::to_string(it) + ".png";
             bmpf0.save_to_file("bmpf0-" + suffix);
             bmpf1.save_to_file("bmpf1-" + suffix);
-            PpmImage::from_float_grayscale(mask.casted<float>()).save_to_file("mask-" + suffix);
+            StbImage::from_float_grayscale(mask.casted<float>()).save_to_file("mask-" + suffix);
         }
         global_mask &= !mask;
     }

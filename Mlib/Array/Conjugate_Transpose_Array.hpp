@@ -19,6 +19,10 @@ public:
     size_t shape(size_t i) const {
         return shape_(i);
     }
+    template <size_t N>
+    size_t static_shape() const {
+        return shape(N);
+    }
     size_t ndim() const {
         return 2;
     }

@@ -13,10 +13,10 @@
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
-#include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Images/Quantize.hpp>
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 
 using namespace Mlib;
@@ -90,15 +90,15 @@ void test_harris_response_array() {
             {0,-.003125,0,-.003125,0},
             {0,0,-0.05,0,0}});
     assert_allclose<float>(
-        find_harris_corners(pic3x3, -0.001),
-        Array<float>{{1.5, 1.5}, {3.5, 1.5}});
+        find_harris_corners(pic3x3, -0.001f),
+        Array<float>{{1.5f, 1.5f}, {3.5f, 1.5f}});
 }
 
 void test_harris_response() {
-    const auto bitmap = PpmImage::load_from_file("Data/chessboard1.ppm");
+    const auto bitmap = StbImage::load_from_file("Data/chessboard1.ppm");
 
     const Array<float> image = bitmap.to_float_grayscale();
-    PpmImage res = PpmImage::from_float_grayscale(clipped(-80.f * harris_response(image), 0.f, 1.f));
+    StbImage res = StbImage::from_float_grayscale(clipped(-80.f * harris_response(image), 0.f, 1.f));
     // std::cerr << min(harris_response(image)) << std::endl;
     // std::cerr << max(harris_response(image)) << std::endl;
     Array<float> feature_points = find_harris_corners(image);
@@ -107,10 +107,10 @@ void test_harris_response() {
 }
 
 void test_harris_nfeatures() {
-    const auto bitmap = PpmImage::load_from_file("Data/chessboard1.ppm");
+    const auto bitmap = StbImage::load_from_file("Data/chessboard1.ppm");
 
     const Array<float> image = bitmap.to_float_grayscale();
-    PpmImage res = PpmImage::from_float_grayscale(clipped(-80.f * harris_response(image), 0.f, 1.f));
+    StbImage res = StbImage::from_float_grayscale(clipped(-80.f * harris_response(image), 0.f, 1.f));
     Array<float> feature_points = find_nfeatures(
         -harris_response(image),
         ones<bool>(image.shape()),
@@ -260,8 +260,8 @@ void test_bilinear_interpolation() {
 }
 
 void test_division_by_brightness() {
-    PpmImage im = PpmImage::load_from_file("Data/chessboard1.ppm");
-    PpmImage::from_float_rgb(
+    StbImage im = StbImage::load_from_file("Data/chessboard1.ppm");
+    StbImage::from_float_rgb(
         clipped(divide_by_brightness(im.to_float_rgb(), 10.f, NAN), 0.f, 1.f))
     .save_to_file("TestOut/chessboard1_dbb.ppm");
 }

@@ -122,8 +122,8 @@ void dense_reconstruction(
         x.save_txt_2d("features2k.m");
 
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
-        cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{identity_array<float>(3), zeros<float>(ArrayShape{3}), CameraFrame::undefined_kep}));
-        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ptr.R, ptr.t, CameraFrame::undefined_kep}));
+        cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
+        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.R, ptr.t }));
         DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-0-1.ppm");
         DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-0-2.ppm");
         DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-2-1.ppm");

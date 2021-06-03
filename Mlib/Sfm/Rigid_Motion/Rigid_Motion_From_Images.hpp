@@ -2,6 +2,7 @@
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Levenberg_Marquardt.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
@@ -19,14 +20,14 @@ Array<TData> transform_coordinates(const Array<TData>& ki, const Array<TData>& k
     return Array<TData>{res3(0) / res3(2), res3(1) / res3(2)};
 }
 
-Array<float> projected_points_jacobian_dke_1p_1ke_lifting(
-    const Array<float>& y,
+FixedArray<float, 2, 6> projected_points_jacobian_dke_1p_1ke_lifting(
+    const FixedArray<float, 2>& y,
     float depth,
-    const Array<float>& ki,
-    const Array<float>& kep)
+    const TransformationMatrix<float, 2>& ki,
+    const FixedArray<float, 6>& kep)
 {
-    Array<float> x = lstsq_chol_1d(ki, homogenized_3(y)) * depth;
-    return Cv::projected_points_jacobian_dke_1p_1ke(homogenized_4(x), ki, kep);
+    FixedArray<float, 3> x = lstsq_chol_1d(ki.affine(), homogenized_3(y)) * depth;
+    return Cv::projected_points_jacobian_dke_1p_1ke(x, ki, kep);
 }
 
 template <class TData>
@@ -34,8 +35,8 @@ Array<TData> d_pr_bilinear(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
     const Array<TData>& im_r_depth,
-    const Array<TData>& ki,
-    const Array<TData>& ke)
+    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 3>& ke)
 {
     assert(im_r.ndim() == 2);
     assert(all(im_r.shape() == im_l.shape()));
@@ -62,8 +63,8 @@ Array<TData> intensity_jacobian(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
     const Array<TData>& im_r_depth,
-    const Array<TData>& ki,
-    const Array<TData>& kep)
+    const TransformationMatrix<TData, 2>& ki,
+    const FixedArray<TData>& kep)
 {
     ArrayShape space_shape = im_r_di.shape().erased_first();
     Array<TData> result{space_shape.appended(6)};
@@ -95,12 +96,12 @@ Array<TData> intensity_jacobian_fast(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
     const Array<TData>& im_r_depth,
-    const Array<TData>& ki,
-    const Array<TData>& kep)
+    const TransformationMatrix<TData, 2>& ki,
+    const FixedArray<TData, 6>& kep)
 {
-    FixedArray<TData, 3, 3> iki{inv(ki)};
-    FixedArray<TData, 3, 3> kif{ki};
-    FixedArray<TData, 3, 4> ke{Cv::k_external(kep)};
+    FixedArray<TData, 3, 3> iki{inv(ki.affine())};
+    FixedArray<TData, 3, 3> kif{ki.affine()};
+    FixedArray<TData, 3, 4> ke{Cv::k_external(kep).semi_affine()};
     static const Array<TData> I = identity_array<TData>(3);
     // Changed order to be compatible with the rodrigues-implementation
     static const Array<TData> I0 = I[0];
@@ -154,9 +155,9 @@ Array<TData> intensity_jacobian_fast(
             da_dkep_T[2] = dot(RR2, r1);
 
             FixedArray<float, 3, 6> da_dk{
-                da_dkep_T(0, 0), da_dkep_T(1, 0), da_dkep_T(2, 0), 1, 0, 0,
-                da_dkep_T(0, 1), da_dkep_T(1, 1), da_dkep_T(2, 1), 0, 1, 0,
-                da_dkep_T(0, 2), da_dkep_T(1, 2), da_dkep_T(2, 2), 0, 0, 1};
+                da_dkep_T(0, 0), da_dkep_T(1, 0), da_dkep_T(2, 0), 1.f, 0.f, 0.f,
+                da_dkep_T(0, 1), da_dkep_T(1, 1), da_dkep_T(2, 1), 0.f, 1.f, 0.f,
+                da_dkep_T(0, 2), da_dkep_T(1, 2), da_dkep_T(2, 2), 0.f, 0.f, 1.f };
 
             FixedArray<TData, 2, 6> J = dot(dy_da, da_dk);
 
@@ -176,14 +177,14 @@ Array<TData> intensity_jacobian_fast(
 }
 
 template <class TData>
-Array<TData> rigid_motion_from_images(
+TransformationMatrix<TData, 3> rigid_motion_from_images(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
     const Array<TData>& im_r_depth,
-    const Array<TData>& intrinsic_matrix,
+    const TransformationMatrix<TData, 2>& intrinsic_matrix,
     bool differentiate_numerically = false,
-    const Array<TData>* x0 = nullptr,
-    Array<TData>* xe = nullptr)
+    const FixedArray<TData, 6>* x0 = nullptr,
+    FixedArray<TData, 6>* xe = nullptr)
 {
     assert(im_r.ndim() == 2);
     assert(all(im_r.shape() == im_l.shape()));
@@ -191,18 +192,18 @@ Array<TData> rigid_motion_from_images(
         assert(x0->length() == 6);
     }
     const TData NAN_VALUE = 0;
-    auto f = [&](const Array<TData>& x){
+    auto f = [&](const FixedArray<TData, 6>& x){
         return substitute_nans(d_pr_bilinear(im_r, im_l, im_r_depth, intrinsic_matrix, Cv::k_external(x)).flattened(), NAN_VALUE);
     };
     Array<float> im_r_di = central_gradient_filter(im_r);
     Array<float> im_l_di = central_gradient_filter(im_l);
-    Array<TData> xx = levenberg_marquardt(
-        x0 == nullptr ? zeros<TData>(ArrayShape{6}) : *x0,
+    FixedArray<TData, 6> xx = levenberg_marquardt<TData, FixedArray<float, 6, 6>, FixedArray<float, 6>>(
+        x0 == nullptr ? fixed_zeros<TData, 6>() : *x0,
         zeros<TData>(ArrayShape{im_r.nelements()}),
         f,
-        [&](const Array<TData>& x){
+        [&](const FixedArray<TData, 6>& x){
             return differentiate_numerically
-                ? numerical_differentiation(f, x)
+                ? mixed_numerical_differentiation(f, x)
                 : substitute_nans(intensity_jacobian_fast(im_r_di, im_l_di, im_r_depth, intrinsic_matrix, x).rows_as_1D(), NAN_VALUE);
         },
         TData(1e-2),   // alpha,

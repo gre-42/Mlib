@@ -8,23 +8,22 @@ namespace Mlib { namespace Sfm {
 class ProjectionToTR {
 public:
     ProjectionToTR(
-        const Array<float>& y0,
-        const Array<float>& y1,
-        const Array<float>& intrinsic_matrix,
+        const Array<FixedArray<float, 2>>& y0,
+        const Array<FixedArray<float, 2>>& y1,
+        const TransformationMatrix<float, 2>& intrinsic_matrix,
         float threshold);
 
     bool good() const;
     InitialReconstruction initial_reconstruction() const;
 
-    Array<float> R;
-    Array<float> t;
+    TransformationMatrix<float, 3> ke;
     size_t ngood;
 private:
-    Array<float> y;
+    Array<FixedArray<float, 2>> y;
     NormalizedProjection np;
-    Array<float> kin;
-    Array<float> Fn;
-    Array<float> En;
+    TransformationMatrix<float, 2> kin;
+    FixedArray<float, 3, 3> Fn;
+    FixedArray<float, 3, 3> En;
     EssentialMatrixToTR e2tr;
 };
 

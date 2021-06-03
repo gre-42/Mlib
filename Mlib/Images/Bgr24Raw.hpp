@@ -6,6 +6,8 @@ namespace Mlib {
 
 class Bgr565Bitmap;
 
+#pragma warning( push )
+#pragma warning( disable : 4103 )
 #include <Mlib/Packed_Begin.hpp>
 // 24-bit, 3 * 8 bytes
 struct Bgr24 {
@@ -41,6 +43,7 @@ struct Bgr24 {
     }
 } PACKED;
 #include <Mlib/Packed_End.hpp>
+#pragma warning( pop )
 
 class Bgr24Raw: public Array<Bgr24> {
 public:

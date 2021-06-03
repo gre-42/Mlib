@@ -39,16 +39,18 @@ public:
         result.append(size);
         return result;
     }
-    ArrayShape erased_first() const {
+    inline ArrayShape erased_first(size_t n = 1) const {
         assert(ndim() > 0);
+        assert(n <= ndim());
         ArrayShape result = *this;
-        result.shape_.erase(result.shape_.begin());
+        result.shape_.erase(result.shape_.begin(), result.shape_.begin() + n);
         return result;
     }
-    ArrayShape erased_last() const {
+    ArrayShape erased_last(size_t n = 1) const {
         assert(ndim() > 0);
+        assert(n <= ndim());
         ArrayShape result = *this;
-        result.shape_.erase(result.shape_.end() - 1);
+        result.shape_.erase(result.shape_.end() - n, result.shape_.end());
         return result;
     }
     void clear() {
@@ -78,6 +80,10 @@ public:
     size_t& operator () (size_t i) {
         const ArrayShape& a = *this;
         return const_cast<size_t&>(a(i));
+    }
+    template <size_t N>
+    const size_t& get() const {
+        return (*this)(N);
     }
     size_t ndim() const {
         return shape_.size();
@@ -132,6 +138,9 @@ public:
         std::stringstream sstr;
         sstr << *this;
         return sstr.str();
+    }
+    const size_t* begin() const {
+        return shape_.data();
     }
 };
 

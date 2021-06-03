@@ -41,12 +41,12 @@ private:
     size_t streamline_search_length();
     bool try_generate_feature_point_sequence(
         FeaturePointFrame& frame,
-        const Array<float>& pos);
+        const FixedArray<float, 2>& pos);
     bool try_insert_and_append_feature_point(
         FeaturePointFrame& frame,
         const std::pair<size_t, std::shared_ptr<FeaturePointSequence>>& seq,
-        const Array<float>& pos);
-    std::shared_ptr<FeaturePoint> generate_feature_point(const Array<float>& pos) const;
+        const FixedArray<float, 2>& pos);
+    std::shared_ptr<FeaturePoint> generate_feature_point(const FixedArray<float, 2>& pos) const;
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames_;
     const std::map<std::chrono::milliseconds, ImageFrame>& optical_flow_frames_;
 #if 0

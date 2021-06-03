@@ -1,8 +1,12 @@
 #pragma once
-#include <Mlib/Array/Array.hpp>
 
 namespace Mlib {
 
+template <typename TData>
+class Array;
+template <typename TData, size_t... tshape>
+class FixedArray;
+class ArrayShape;
 class StbImage;
 
 namespace Sfm{
@@ -10,8 +14,8 @@ namespace Sfm{
 void detect_chessboard(
     const Array<float>& image,
     const ArrayShape& shape,
-    Array<float>& p_x,
-    Array<float>& p_y,
+    Array<FixedArray<float, 2>>& p_x,
+    Array<FixedArray<float, 2>>& p_y,
     StbImage& bmp);
 
 }}

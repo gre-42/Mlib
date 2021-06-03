@@ -14,9 +14,9 @@ class ProjectionToTR;
 class ProjectionToTrRansac {
 public:
     ProjectionToTrRansac(
-        const Array<float>& y0,
-        const Array<float>& y1,
-        const Array<float>& intrinsic_matrix,
+        const Array<FixedArray<float, 2>>& y0,
+        const Array<FixedArray<float, 2>>& y1,
+        const TransformationMatrix<float, 2>& intrinsic_matrix,
         float threshold,
         const RansacOptions<float>& ro);
 

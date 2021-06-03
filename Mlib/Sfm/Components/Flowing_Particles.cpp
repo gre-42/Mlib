@@ -1,12 +1,15 @@
 #include "Flowing_Particles.hpp"
 #include <Mlib/Images/Bgr565Bitmap.hpp>
-#include <Mlib/Images/Coordinates.hpp>
+#include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/OpenCV.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 #if 0
 #endif
@@ -40,7 +43,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
             for (size_t c = 0; c < shape_(id1); c+=shape_(id1)/10) {
                 try_generate_feature_point_sequence(
                     new_frame,
-                    i2a(ArrayShape{r, c}));
+                    i2a(FixedArray<size_t, 2>{r, c}));
             }
         }
     }
@@ -49,22 +52,22 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     for (const auto& kv : new_frame) {
         draw_fill_rect(
             existing_points_mask,
-            a2i(kv.second->sequence.rbegin()->second->position),
+            a2i(kv.second->sequence.rbegin()->second->position).array_shape(),
             5,      //size
             false); //value
     }
 
-    Array<float> points;
+    Array<FixedArray<float, 2>> points;
     if (false) {
         Array<float> h_trace;
         Array<float> h_det;
         float r_thr = 10;
         hessian_determinant_trace(box_filter(image_frames_.rbegin()->second.grayscale, ArrayShape{10, 10}, NAN), &h_det, &h_trace);
         Array<float> R = squared(h_trace) / (h_det + float(1e-6));
-        points = find_nfeatures(-harris_response(
+        points = Array<float>::from_dynamic<2>(find_nfeatures(-harris_response(
             image_frames_.rbegin()->second.grayscale),
             existing_points_mask && (R < squared(r_thr + 1) / r_thr),
-            n_new_particles);
+            n_new_particles));
         //Bgr565Bitmap::from_float_grayscale(
         //    substitute_nans(
         //        normalized_and_clipped(
@@ -74,7 +77,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     } else if (true) {
         Array<bool> feature_mask;
         Array<float> hr = harris_response(image_frames_.rbegin()->second.grayscale, &feature_mask);
-        points = find_nfeatures(
+        points = Array<float>::from_dynamic<2>(find_nfeatures(
             -hr,
 
             // normalize_brightness(
@@ -89,18 +92,18 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
 
             existing_points_mask && feature_mask,
             n_new_particles,
-            cfg_.distance_sigma);
+            cfg_.distance_sigma));
     } else if (false) {
         Array<bool> mask = multi_scale_harris(image_frames_.rbegin()->second.grayscale, 5);
-        points = find_nfeatures(
+        points = Array<float>::from_dynamic<2>(find_nfeatures(
             -harris_response(image_frames_.rbegin()->second.grayscale),
             existing_points_mask && mask,
-            n_new_particles);
+            n_new_particles));
         //std::cerr << points.shape() << std::endl;
         //std::cerr << count_nonzero(mask) << std::endl;
     }
     std::cerr << "Trying to generate " << points.shape(0) << " new particles" << std::endl;
-    for (const Array<float>& p : points) {
+    for (const FixedArray<float, 2>& p : points.flat_iterable()) {
         try_generate_feature_point_sequence(new_frame, p);
     }
 }
@@ -111,19 +114,19 @@ size_t FlowingParticles::streamline_search_length() {
         image_frames_.rbegin()->second.grayscale.shape()))) / 113;
 }
 
-std::shared_ptr<FeaturePoint> FlowingParticles::generate_feature_point(const Array<float>& pos) const
+std::shared_ptr<FeaturePoint> FlowingParticles::generate_feature_point(const FixedArray<float, 2>& pos) const
 {
     return std::make_shared<FeaturePoint>(
         pos,
         TraceablePatch(
             image_frames_.rbegin()->second.rgb,
-            ArrayShape{a2i(pos)},
+            a2i(pos).to_array().to_shape(),
             cfg_.patch_size));
 }
 
 bool FlowingParticles::try_generate_feature_point_sequence(
     FeaturePointFrame& frame,
-    const Array<float>& pos)
+    const FixedArray<float, 2>& pos)
 {
     auto seq = std::make_shared<FeaturePointSequence>();
     auto p = generate_feature_point(pos);
@@ -138,7 +141,7 @@ bool FlowingParticles::try_generate_feature_point_sequence(
 bool FlowingParticles::try_insert_and_append_feature_point(
     FeaturePointFrame& frame,
     const std::pair<size_t, std::shared_ptr<FeaturePointSequence>>& seq,
-    const Array<float>& pos)
+    const FixedArray<float, 2>& pos)
 {
     auto p = generate_feature_point(pos);
     if (p->traceable_patch.good_) {
@@ -182,14 +185,14 @@ void FlowingParticles::advance_existing_particles(
         //    continue;
         //}
         const FeaturePoint& p = *s.second->sequence.rbegin()->second;
-        ArrayShape index{a2i(p.position)};
+        ArrayShape index{a2i(p.position).array_shape()};
         if (all(index < shape_)) {
-            Array<float> new_pos;
+            FixedArray<float, 2> new_pos;
             if (false) {
                 if (!flow_mask(index)) {
                     continue;
                 }
-                Array<float> v{
+                FixedArray<float, 2> v{
                     flow_field[0](index),
                     flow_field[1](index)};
                 new_pos = find_feature_in_neighborhood(p.position + v, -hr, ArrayShape{5, 5});
@@ -201,17 +204,17 @@ void FlowingParticles::advance_existing_particles(
                 visit_streamline(shape_, index, flow_field, streamline_search_length(), [&](const ArrayShape& id) {
                     if (hr(id) < best_harris) {
                         best_harris = hr(id);
-                        new_pos = i2a(id);
+                        new_pos = FixedArray<float, 2>{ i2a(id) };
                     }
                 });
             }
             if (cfg_.tracking_mode == TrackingMode::PATCH_NEW_POSITION_IN_BOX) {
                 ArrayShape new_index = s.second->sequence.begin()->second->traceable_patch.new_position_in_box(
                     image_frames_.rbegin()->second.rgb,
-                    a2i(p.position),
+                    a2i(p.position).array_shape(),
                     cfg_.search_window,
                     cfg_.worst_patch_error);
-                new_pos = i2a(new_index);
+                new_pos = FixedArray<float, 2>{ i2a(new_index) };
                 if (any(new_pos > float(1e6))) {
                     // std::cerr << "dropping y [" << s.first << "]" << std::endl;
                     continue;
@@ -249,11 +252,12 @@ void FlowingParticles::advance_flowing_particles() {
         bmp.draw_mask(optical_flow_frames_.rbegin()->second.mask, Bgr565::red());
     }
     draw(bmp);
-    bmp.save_to_file(
-        cache_dir_ +
-        "/particles-" +
+    fs::create_directories(cache_dir_);
+    bmp.save_to_file((
+        fs::path{ cache_dir_ } /
+        ("particles-" +
         std::to_string(image_frames_.rbegin()->first.count()) +
-        ".bmp");
+        ".bmp")).string());
 }
 
 #if 0
@@ -320,7 +324,7 @@ void FlowingParticles::draw(Bgr565Bitmap& bmp) {
     assert(all(bmp.shape() == shape_));
     assert(particles_.size() > 0);
     for (const auto& s : particles_.rbegin()->second) {
-        ArrayShape index{a2i(s.second->sequence.rbegin()->second->position)};
+        ArrayShape index{a2i(s.second->sequence.rbegin()->second->position).array_shape()};
         //assert(all(index < bmp.shape()));
         bmp.draw_fill_rect(
             index,

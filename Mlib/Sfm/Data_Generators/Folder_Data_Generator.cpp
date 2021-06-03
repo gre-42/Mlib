@@ -64,7 +64,9 @@ void Mlib::Sfm::process_files_with_pipeline(
                 break;
             }
             {
-                const std::string txt_filename = (fs::path{ cache_dir } / "Input" / ("input-" + std::to_string(time.count()) + ".txt")).string();
+                fs::path input_dir = fs::path{ cache_dir } / "Input";
+                fs::create_directories(input_dir);
+                const std::string txt_filename = (input_dir / ("input-" + std::to_string(time.count()) + ".txt")).string();
                 std::ofstream ofs{txt_filename};
                 ofs.write(image_filename.c_str(), image_filename.length());
                 ofs.flush();
@@ -88,7 +90,10 @@ void Mlib::Sfm::process_files_with_pipeline(
                 Array<float> ike = inverted_homogeneous_3x4(ke);
                 Array<float> R = R3_from_Nx4(ike, 3);
                 Array<float> t = t3_from_Nx4(ike, 3);
-                CameraFrame camera_frame{R, t, CameraFrame::undefined_kep};
+                CameraFrame camera_frame{
+                    TransformationMatrix<float, 3>(
+                        FixedArray<float, 3, 3>{R},
+                        FixedArray<float, 3>{t}) };
                 pipeline.process_image_frame(time, image_frame, &camera_frame);
                 ++camera_it;
             }

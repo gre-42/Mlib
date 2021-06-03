@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+#pragma warning( push )
+#pragma warning( disable : 4103 )
 #include <Mlib/Packed_Begin.hpp>
 // 24-bit, 3 * 8 bytes
 struct Rgb24 {
@@ -80,5 +82,6 @@ struct Rgb24 {
     }
 } PACKED;
 #include <Mlib/Packed_End.hpp>
+#pragma warning ( pop )
 
 }

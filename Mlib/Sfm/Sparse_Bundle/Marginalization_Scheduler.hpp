@@ -29,7 +29,7 @@ public:
         std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points,
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
-        const Array<float>& intrinsic_matrix,
+        const TransformationMatrix<float, 2>& intrinsic_matrix,
         bool skip_missing_cameras,
         UUIDGen<XK, XP>& uuid_gen,
         std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations,
@@ -61,7 +61,7 @@ private:
     std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
     std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames_;
-    const Array<float>& intrinsic_matrix_;
+    const TransformationMatrix<float, 2>& intrinsic_matrix_;
     bool skip_missing_cameras_;
     UUIDGen<XK, XP>& uuid_gen_;
     std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations_;

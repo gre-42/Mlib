@@ -3,9 +3,9 @@
 
 namespace Mlib {
 
-template <class TData, class TF, class TJacobian>
-Array<TData> levenberg_marquardt(
-    const Array<TData>& x0,
+template <class TData, class TdAT_A = Array<TData>, class TdAT_b = Array<TData>, class TX, class TF, class TJacobian>
+TX levenberg_marquardt(
+    const TX& x0,
     const Array<TData>& y,
     const TF& f,
     const TJacobian& J,
@@ -21,27 +21,30 @@ Array<TData> levenberg_marquardt(
     bool nothrow = false,
     Array<TData>* final_residual = nullptr,
     const TData* max_residual = nullptr,
-    const Array<TData>* dAT_A = nullptr,
-    const Array<TData>* dAT_b = nullptr)
+    const TdAT_A* dAT_A = nullptr,
+    const TdAT_b* dAT_b = nullptr)
 {
     return generic_optimization(
         x0,
-        [&](const Array<TData>& x, size_t i){
+        [&](const TX& x, size_t i){
             return y - f(x);
         },
-        [](const Array<TData>& x, const Array<TData>& residual, size_t i){
+        [](const TX& x, const Array<TData>& residual, size_t i){
             return (residual.length() == 0)
                 ? 0
                 : sum(squared(residual)) / residual.length();
         },
-        [&](const Array<TData>& x, const Array<TData>& residual, size_t i){
-            return x + lstsq_chol_1d(
+        [&](const TX& x, const Array<TData>& residual, size_t i){
+            TX dx;
+            lstsq_chol_1d(
+                dx,
                 J(x),
                 residual,
                 i < nburnin ? alpha : alpha2,
                 i < nburnin ? beta : beta2,
                 dAT_A,
                 dAT_b);
+            return x + dx;
         },
         min_redux,
         niterations,

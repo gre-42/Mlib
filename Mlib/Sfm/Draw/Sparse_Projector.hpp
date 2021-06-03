@@ -19,7 +19,7 @@ public:
         size_t i0,
         size_t i1,
         size_t iz,
-        const Array<float>& scale_matrix = BaseProjector::identity_scale_matrix());
+        const FixedArray<float, 3, 3>& scale_matrix = BaseProjector::identity_scale_matrix());
 
     SparseProjector& normalize(float scale);
 

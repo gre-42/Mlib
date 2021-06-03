@@ -7,22 +7,20 @@ namespace Mlib { namespace Sfm {
 class InitialReconstruction {
 public:
     InitialReconstruction(
-        const Array<float>& y0,
-        const Array<float>& y1,
-        const Array<float>& R,
-        const Array<float>& t,
-        const Array<float>& ki);
+        const Array<FixedArray<float, 2>>& y0,
+        const Array<FixedArray<float, 2>>& y1,
+        const TransformationMatrix<float, 3>& ke,
+        const TransformationMatrix<float, 2>& ki);
 
-    Array<float> reconstructed(Array<float>* condition_number = nullptr) const;
-    Array<float> projection_residual0() const;
-    Array<float> projection_residual1() const;
+    Array<FixedArray<float, 3>> reconstructed(Array<float>* condition_number = nullptr) const;
+    Array<FixedArray<float, 2>> projection_residual0() const;
+    Array<FixedArray<float, 2>> projection_residual1() const;
 
 private:
-    Array<float> y0;
-    Array<float> y1;
-    Array<float> R;
-    Array<float> t;
-    Array<float> ki;
+    Array<FixedArray<float, 2>> y0;
+    Array<FixedArray<float, 2>> y1;
+    TransformationMatrix<float, 3> ke;
+    TransformationMatrix<float, 2> ki;
 };
 
 }}

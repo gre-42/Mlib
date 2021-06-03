@@ -2,21 +2,24 @@
 #include <Mlib/Debug_Prefix.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
+#include <filesystem>
 #include <iomanip>
+
+namespace fs = std::filesystem;
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
 TemplatePatchPipeline::TemplatePatchPipeline(
     const std::string& cache_dir,
-    const FixedArray<float, 3, 3>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TemplatePatchPipelineConfig& cfg)
 : intrinsic_matrix_(intrinsic_matrix),
   down_sampler_{intrinsic_matrix, 0},
-  flowing_particles_{image_frames_, optical_flows_.optical_flow_frames_, cache_dir + "/TracedParticles", FlowingParticlesConfig()},
-  optical_flows_{image_frames_, cache_dir + "/OpticalFlow"},
-  sparse_reconstruction_{intrinsic_matrix.to_array(), camera_frames_, flowing_particles_.particles_, flowing_particles_.bad_points_, cache_dir + "/SparseReconstruction", ReconstructionConfig()},
-  dtam_reconstruction_{image_frames_, camera_frames_, down_sampler_, intrinsic_matrix.to_array(), cache_dir + "/DtamReconstruction", DtamComponentConfig(cfg.track_using_dtam)},
+  flowing_particles_{image_frames_, optical_flows_.optical_flow_frames_, (fs::path{cache_dir} / "TracedParticles").string(), FlowingParticlesConfig()},
+  optical_flows_{image_frames_, (fs::path{cache_dir} / "OpticalFlow").string()},
+  sparse_reconstruction_{ intrinsic_matrix_, camera_frames_, flowing_particles_.particles_, flowing_particles_.bad_points_, (fs::path{cache_dir} / "SparseReconstruction").string(), ReconstructionConfig() },
+  dtam_reconstruction_{ image_frames_, camera_frames_, down_sampler_, intrinsic_matrix_, (fs::path{cache_dir} / "DtamReconstruction").string(), DtamComponentConfig(cfg.track_using_dtam) },
   cache_dir_(cache_dir),
   cfg_(cfg)
 {}
@@ -49,7 +52,7 @@ void TemplatePatchPipeline::save_cameras() const {
         std::stringstream sstr;
         sstr.fill('0');
         sstr << std::setw(6) << c.first.count();
-        c.second.projection_matrix_3x4().save_txt_2d(cache_dir_ + "/Cameras/projection-" + sstr.str() + "-3x4.m");
+        c.second.projection_matrix_3x4().semi_affine().to_array().save_txt_2d(cache_dir_ + "/Cameras/projection-" + sstr.str() + "-3x4.m");
     }
 }
 

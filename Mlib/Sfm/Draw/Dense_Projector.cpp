@@ -12,9 +12,9 @@ using namespace Mlib::Sfm;
 
 static const float condition_number_deviation_threshold = 0.5;
 
-static const auto noop = [](size_t i, const ArrayShape& id){};
+static const auto noop = [](size_t i, const FixedArray<size_t, 2>& id){};
 
-static Array<float> remove_nan_x_transposed(const Array<float>& x) {
+static Array<FixedArray<float, 3>> remove_nan_x_transposed(const Array<float>& x) {
     assert_true(x.ndim() == 3);
     assert_true(x.shape(0) == 3);
     Array<float> xx = x.columns_as_1D().T();
@@ -23,7 +23,7 @@ static Array<float> remove_nan_x_transposed(const Array<float>& x) {
         throw std::runtime_error("xv not divisible by 3");
     }
     xv.do_reshape(ArrayShape{xv.nelements() / 3, 3});
-    return xv;
+    return Array<float>::from_dynamic<3>(xv);
 }
 
 static Array<float> remove_nan_cond(const Array<float>& condition_number) {
@@ -37,19 +37,18 @@ DenseProjector::DenseProjector(
     size_t i0,
     size_t i1,
     size_t iz,
-    const Array<float>& x,
+    const Array<FixedArray<float, 3>>& x,
     const Array<float>& condition_number,
-    const Array<float>& ki,
-    const Array<float>& ke,
+    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, 3>& ke,
     const Array<float>& rgb)
 : ProjectorWithCameras{camera_frames, i0, i1, iz},
     x_{x},
-    y_{dehomogenized_Nx2(projected_points_1ke(homogenized_Nx4(x_), ki, ke))},
+    y_{projected_points_1ke(x_, ki, ke)},
     condition_number_{condition_number},
     rgb_{rgb}
 {
-    assert_true(x_.ndim() == 2);
-    assert_true(x_.shape(1) == 3);
+    assert_true(x_.ndim() == 1);
     if (condition_number.initialized() && (condition_number_.length() != x_.shape(0))) {
         throw std::runtime_error("cn and xv diverged");
     }
@@ -62,8 +61,8 @@ DenseProjector DenseProjector::from_image(
         size_t iz,
         const Array<float>& x,
         const Array<float>& condition_number,
-        const Array<float>& ki,
-        const Array<float>& ke,
+        const TransformationMatrix<float, 2>& ki,
+        const TransformationMatrix<float, 3>& ke,
         const Array<float>& rgb)
 {
     return DenseProjector{
@@ -90,8 +89,8 @@ void DenseProjector::for_each_point(
         ? robust_deviation(condition_number_)
         : zeros<float>(ArrayShape{x_.shape(0)});
     for (size_t xi = 0; xi < x_.shape(0); ++xi) {
-        ArrayShape yid{a2i(y_[xi])};
-        if (all(yid < rgb_.shape().erased_first())) {
+        FixedArray<size_t, 2> yid{a2i(y_(xi))};
+        if (all(yid < FixedArray<size_t, 2>{rgb_.shape().erased_first()})) {
             // if (condition_number_(i) < 2 * mean_cond) {
             if (rd(xi) < condition_number_deviation_threshold) {
                 op(xi, yid);
@@ -108,11 +107,11 @@ DenseProjector& DenseProjector::normalize(float scale) {
     NormalizedPoints npo(
         true,    // preserve_aspect_ratio
         false);  // centered
-    for_each_point([&](size_t xi, const ArrayShape& yid) {
-        npo.add_point(homogenized_3(project(x_[xi])));
+    for_each_point([&](size_t xi, const FixedArray<size_t, 2>& yid) {
+        npo.add_point(project(x_(xi)));
     }, noop);
     for (const auto& c : camera_frames_) {
-        npo.add_point(homogenized_3(project(c.second.position)));
+        npo.add_point(project(c.second.pose.t()));
     }
     scale_matrix_ = npo.normalization_matrix() * scale;
     return *this;
@@ -129,28 +128,28 @@ void DenseProjector::draw(const std::string& filename) {
     // }, noop);
     plot_camera_lines(ppm);
     for_each_point(
-        [&](size_t xi, const ArrayShape& yid) {
-            ArrayShape center = x2i(x_[xi]);
-            float zz = zcoord(x_[xi]);
-            if (any(center >= depth.shape()) || depth(center) < zz) {
+        [&](size_t xi, const FixedArray<size_t, 2>& yid) {
+            FixedArray<size_t, 2> center = x2i(x_(xi));
+            float zz = zcoord(x_(xi));
+            if (any(center >= FixedArray<size_t, 2>{depth.shape()}) || depth(center) < zz) {
                 return;
             }
             draw_fill_rect(
                 depth,
-                center,
+                center.to_array().to_shape(),
                 1,
                 zz);
             ppm.draw_fill_rect(
-                center,
+                center.to_array().to_shape(),
                 1,
                 Rgb24::from_float_rgb(
                     rgb_(0, yid(0), yid(1)),
                     rgb_(1, yid(0), yid(1)),
                     rgb_(2, yid(0), yid(1))));
                     // * (x_(i, 2) - min_z) / (max_z - min_z)
-        }, [&](size_t i, const ArrayShape& id) {
+        }, [&](size_t i, const FixedArray<size_t, 2>& id) {
             ppm.draw_fill_rect(
-                x2i(x_[i]),
+                x2i(x_(i)).to_array().to_shape(),
                 1,
                 Rgb24::green());
         });

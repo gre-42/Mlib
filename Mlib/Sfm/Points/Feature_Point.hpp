@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Array/Array.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Sfm/Disparity/Traceable_Patch.hpp>
 #include <memory>
 
@@ -8,9 +8,9 @@ namespace Mlib { namespace Sfm {
 class FeaturePoint {
 public:
     FeaturePoint(
-        const Array<float>& position,
+        const FixedArray<float, 2>& position,
         const TraceablePatch& traceable_patch);
-    Array<float> position;
+    FixedArray<float, 2> position;
     TraceablePatch traceable_patch;
 };
 

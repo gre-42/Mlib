@@ -204,6 +204,54 @@ public:
             ++i;
         }
     }
+    template <size_t ...tsize>
+    explicit Array(const std::list<FixedArray<TData, tsize...>>& lst) :
+        offset_{ 0 },
+        resize{ [&](const ArrayShape& shape) { return do_resize(shape); } },
+        reshape{ [&](const ArrayShape& shape) { return do_reshape(shape); } }
+    {
+        resize(ArrayShape{ lst.size(), FixedArray<TData, tsize...>::nelements() });
+        size_t i = 0;
+        for (auto value : lst) {
+            for (size_t j = 0; j < shape(1); ++j) {
+                (*this)(i, j) = value(j);
+            }
+            ++i;
+        }
+    }
+    template <size_t ...tsize>
+    explicit Array(const Array<FixedArray<TData, tsize...>>& rhs) :
+        offset_{ 0 },
+        resize{ [&](const ArrayShape& shape) { return do_resize(shape); } },
+        reshape{ [&](const ArrayShape& shape) { return do_reshape(shape); } }
+    {
+        resize(ArrayShape{ rhs.nelements(), FixedArray<TData, tsize...>::nelements() });
+        for (size_t i = 0; i < shape(0); ++i) {
+            for (size_t j = 0; j < shape(1); ++j) {
+                (*this)(i, j) = rhs(i)(j);
+            }
+        }
+        reshape(rhs.shape().concatenated(ArrayShape{ tsize... }));
+    }
+    template <size_t ...tsize>
+    static Array<FixedArray<TData, tsize...>> from_dynamic(const Array<TData>& rhs) {
+        constexpr static const size_t flat_elements = FixedArray<TData, tsize...>::nelements();
+        constexpr static const size_t static_ndim = FixedArray<TData, tsize...>::ndim();
+        assert(rhs.ndim() >= static_ndim);
+        assert(all(FixedArray<size_t, static_ndim>{tsize...} == FixedArray<size_t, static_ndim>{rhs.shape().erased_first(static_ndim)}));
+        typedef FixedArray<TData, flat_elements> FixedFlat;
+        ArrayShape result_shape{ rhs.shape().erased_last(static_ndim) };
+        Array<FixedArray<TData, flat_elements>> result{ ArrayShape{result_shape.nelements()} };
+        Array<TData> rhs_flat = rhs.reshaped(ArrayShape{ result.length(), rhs.nelements() / result.length() });
+        auto& flat_result = reinterpret_cast<Array<FixedFlat>&>(result);
+        for (size_t i = 0; i < result.length(); ++i) {
+            for (size_t j = 0; j < flat_elements; ++j) {
+                flat_result(i)(j) = rhs(i, j);
+            }
+        }
+        result.reshape(result_shape);
+        return result;
+    }
     explicit Array(std::initializer_list<TData> d):
         offset_{0},
         resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
@@ -451,11 +499,25 @@ public:
         assert(ndim() == index.ndim());
         if (index.ndim() == 0) {
             return (*this)();
-        } else {
+        }
+        else {
             return (*this)[index(0)](index.erased_first());
         }
     }
     TData& operator () (const ArrayShape& index) {
+        const Array& a = *this;
+        return const_cast<TData&>(a(index));
+    }
+    template <size_t tsize>
+    const TData& operator () (const FixedArray<size_t, tsize>& index) const;
+    
+    template <>
+    const TData& operator () (const FixedArray<size_t, 2>& index) const {
+        assert(ndim() == index.length());
+        return (*this)(index(0), index(1));
+    }
+    template <size_t tsize>
+    TData& operator () (const FixedArray<size_t, tsize>& index) {
         const Array& a = *this;
         return const_cast<TData&>(a(index));
     }
@@ -464,8 +526,20 @@ public:
         assert(shape_ != nullptr);
         return *shape_;
     }
+    const ArrayShape& array_shape() const {
+        return shape();
+    }
+    template <size_t tndim>
+    const FixedArray<size_t, tndim> fixed_shape() const {
+        assert(ndim() == tndim);
+        return FixedArray<size_t, tndim>{shape().begin(), ndim()};
+    }
     size_t shape(size_t i) const {
         return shape()(i);
+    }
+    template <size_t N>
+    size_t static_shape() const {
+        return shape(N);
     }
     size_t ndim() const {
         return shape().ndim();

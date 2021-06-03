@@ -1,14 +1,14 @@
 #pragma once
-#include <Mlib/Array/Array.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 
 namespace Mlib {
 
 class NormalizedPoints {
 public:
     explicit NormalizedPoints(bool preserve_aspect_ratio, bool centered);
-    void add_point(const Array<float>& p);
-    void add_points_quantile(const Array<float>& p, float q);
-    Array<float> normalization_matrix() const;
+    void add_point(const FixedArray<float, 2>& p);
+    void add_points_quantile(const Array<FixedArray<float, 2>>& p, float q);
+    FixedArray<float, 3, 3> normalization_matrix() const;
 private:
     float min_x_ = std::numeric_limits<float>::infinity();
     float max_x_ = -std::numeric_limits<float>::infinity();

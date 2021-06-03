@@ -1,7 +1,12 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib {
+   
+template <class TData, size_t n>
+class TransformationMatrix;
+
+namespace Sfm {
 
 class InverseDepthCostVolume {
 public:
@@ -10,9 +15,9 @@ public:
         const Array<float>& inverse_depths);
 
     void increment(
-        const Array<float>& intrinsic_matrix,
-        const Array<float>& c0,
-        const Array<float>& c1,
+        const TransformationMatrix<float, 2>& intrinsic_matrix,
+        const TransformationMatrix<float, 3>& c0,
+        const TransformationMatrix<float, 3>& c1,
         const Array<float>& im0_rgb,
         const Array<float>& im1_rgb,
         const float epipole_radius = 0);

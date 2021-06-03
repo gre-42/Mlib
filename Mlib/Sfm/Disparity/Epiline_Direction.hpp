@@ -12,20 +12,19 @@ public:
     EpilineDirection(
         size_t r,
         size_t c,
-        const Array<float>& F,
+        const FixedArray<float, 3, 3>& F,
         bool l1_normalization = true,
         float good_threshold = 1e-5)
     : center0(i2a(ArrayShape{r, c}))
     {
-        assert(all(F.shape() == ArrayShape{3, 3}));
-        find_epiline(F, Mlib::homogenized_3(center0), center1, v1);
+        find_epiline(F, center0, center1, v1);
         good = sum(squared(v1 / F(2, 2))) >= good_threshold;
         // v = center - epipole;
         v1 /= (l1_normalization ? max(abs(v1)) : std::sqrt(sum(squared(v1))));
     }
-    Array<float> center0;
-    Array<float> center1;
-    Array<float> v1;
+    FixedArray<float, 2> center0;
+    FixedArray<float, 2> center1;
+    FixedArray<float, 2> v1;
     bool good;
 };
 

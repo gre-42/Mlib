@@ -11,13 +11,13 @@ template <class TData>
 class RigidMotionRoundtripSampler {
 public:
     RigidMotionRoundtripSampler(
-        const Array<TData>& ki,
-        const Array<TData>& ke,
+        const TransformationMatrix<TData, 2>& ki,
+        const TransformationMatrix<TData, 3>& ke,
         const Array<TData>& depth_r,
         const Array<TData>& depth_l)
-    : iki_{inv(ki)},
-      T_r_{dot(ki, ke)},
-      T_l_{intrinsic_times_inverse(ki, ke)},
+    : iki_{inv(ki.affine())},
+      T_r_{dot(ki.affine(), ke.affine().row_range<0, 3>())},
+      T_l_{ki.project(ke.inverted().semi_affine())},
       depth_r_{depth_r},
       depth_l_{depth_l}
     {}

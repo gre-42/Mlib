@@ -9,7 +9,7 @@ public:
         const Array<float>& feature_points0,
         const Array<float>& im0_rgb,
         const Array<float>& im1_rgb,
-        const Array<float>& F);
+        const FixedArray<float, 3, 3>& F);
 
     Array<float> y0_2d;
     Array<float> y1_2d;

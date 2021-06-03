@@ -34,11 +34,11 @@ void test_jacobian() {
 }
 
 void test_intensity_jacobian() {
-    Array<float> intrinsic_matrix{
-        {0.5, 0, 0.9},
-        {0, 0.7, 0.2},
-        {0, 0, 1}};
-    Array<float> kep{0.2, 0.1, 0.4, 0.12, 0.34, 0.56};
+    TransformationMatrix<float, 3> intrinsic_matrix{FixedArray<float, 3, 3>{
+        0.5f, 0.f, 0.9f,
+        0.f, 0.7f, 0.2f,
+        0.f, 0.f, 1.f}};
+    FixedArray<float, 6> kep{0.2f, 0.1f, 0.4f, 0.12f, 0.34f, 0.56f};
     Array<float> im_r = uniform_random_array<float>(ArrayShape{4, 5}, 1);
     Array<float> im_l = uniform_random_array<float>(ArrayShape{4, 5}, 2);
     Array<float> im_r_depth = uniform_random_array<float>(ArrayShape{4, 5}, 1) * 0.2f + 2.f;
@@ -49,8 +49,8 @@ void test_intensity_jacobian() {
     assert_isclose(sum(squared(ij)), 611.727f, float(1e-2));
 
     assert_allclose(
-        intensity_jacobian(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, kep),
-        intensity_jacobian_fast(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, kep),
+        intensity_jacobian(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, kep).to_array(),
+        intensity_jacobian_fast(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, kep).to_array(),
         1e-4);
 }
 

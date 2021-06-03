@@ -5,63 +5,68 @@ namespace Mlib {
 
 template<class TData>
 struct RansacOptions;
+template <class TData, size_t n>
+class TransformationMatrix;
 
 namespace Cv {
 
 class FeaturePoint;
 
-Array<float> k_external(const Array<float>& kep);
+TransformationMatrix<float, 3> k_external(const FixedArray<float, 6>& kep);
 
-Array<float> k_external_inverse(const Array<float>& ke);
+FixedArray<float, 6> k_external_inverse(const TransformationMatrix<float, 3>& ke);
 
-Array<float> k_internal(const Array<float>& kip);
+TransformationMatrix<float, 2> k_internal(const FixedArray<float, 4>& kip);
 
-Array<float> projected_points(
-    const Array<float>& x,
-    const Array<float>& ki,
-    const Array<float>& ke,
-    bool allow_points_at_infinity=false);
+enum class PointAtInfinityBehavior {
+    THROW,
+    IS_NAN
+};
 
-Array<float> projected_points_1ke(
-    const Array<float>& x,
-    const Array<float>& ki,
-    const Array<float>& ke,
-    bool allow_points_at_infinity=false);
+Array<FixedArray<float, 2>> projected_points(
+    const Array<FixedArray<float, 3>>& x,
+    const TransformationMatrix<float, 2>& ki,
+    const Array<TransformationMatrix<float, 3>>& ke,
+    PointAtInfinityBehavior point_at_infinity_behavior = PointAtInfinityBehavior::THROW);
 
-Array<float> projected_points_1p_1ke(
-    const Array<float>& x,
-    const Array<float>& ki,
-    const Array<float>& ke,
-    bool allow_points_at_infinity=false);
+Array<FixedArray<float, 2>> projected_points_1ke(
+    const Array<FixedArray<float, 3>>& x,
+    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, 3>& ke,
+    PointAtInfinityBehavior point_at_infinity_behavior = PointAtInfinityBehavior::THROW);
 
-Array<float> projected_points_jacobian_dx_1p_1ke(
-    const Array<float>& x,
-    const Array<float>& ki,
-    const Array<float>& ke);
+FixedArray<float, 2> projected_points_1p_1ke(
+    const FixedArray<float, 3>& x,
+    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, 3>& ke,
+    PointAtInfinityBehavior point_at_infinity_behavior = PointAtInfinityBehavior::THROW);
 
-Array<float> projected_points_jacobian_dke_1p_1ke(
-    const Array<float>& x,
-    const Array<float>& ki,
-    const Array<float>& kep);
+FixedArray<float, 2, 3> projected_points_jacobian_dx_1p_1ke(
+    const FixedArray<float, 3>& x,
+    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, 3>& ke);
 
-Array<float> projected_points_jacobian_dki_1p_1ke(
-    const Array<float>& x,
-    const Array<float>& kip,
-    const Array<float>& ke);
+FixedArray<float, 2, 6> projected_points_jacobian_dke_1p_1ke(
+    const FixedArray<float, 3>& x,
+    const TransformationMatrix<float, 2>& ki,
+    const FixedArray<float, 6>& kep);
 
-Array<float> reconstructed_point(
-    const Array<float>& y_tracked,
-    const Array<float>& ki,
-    const Array<float>& ke,
+FixedArray<float, 2, 4> projected_points_jacobian_dki_1p_1ke(
+    const FixedArray<float, 3>& x,
+    const TransformationMatrix<float, 3>& ke);
+
+FixedArray<float, 3> reconstructed_point_(
+    const Array<FixedArray<float, 2>>& y_tracked,
+    const TransformationMatrix<float, 2>& ki,
+    const Array<TransformationMatrix<float, 3>>& ke,
     const Array<float>* weights = nullptr,
-    Array<float>* fs = nullptr,
     bool method2 = false,
     bool points_are_normalized=false,  // spares one matrix-inversion
     float *condition_number=nullptr);
 
-Array<float> reconstructed_point_reweighted(
-    const Array<float>& y_tracked,
-    const Array<float>& ki,
-    const Array<float>& ke);
+FixedArray<float, 3> reconstructed_point_reweighted(
+    const Array<FixedArray<float, 2>>& y_tracked,
+    const TransformationMatrix<float, 2>& ki,
+    const Array<TransformationMatrix<float, 3>>& ke);
 
 }}

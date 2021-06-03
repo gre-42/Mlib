@@ -34,17 +34,17 @@ void test_data() {
     Array<Data> t;
 
     t.resize(3);
-    assert_isclose<float>(t.ndim(), 1);
+    assert_isequal<size_t>(t.ndim(), 1);
     t(2) = data;
     assert_isclose<float>(t(2).v, 5);
 
     t.resize[5][5](3);
-    assert_isclose<float>(t.ndim(), 3);
+    assert_isequal<size_t>(t.ndim(), 3);
     t[3](3, 2) = data;
-    assert_isclose<float>(t.ndim(), 3);
+    assert_isequal<size_t>(t.ndim(), 3);
     assert_isclose<float>(t[3](3, 2).v, 5);
 
-    assert_isclose<float>(t[1].flattened().nelements(), 15);
+    assert_isequal<size_t>(t[1].flattened().nelements(), 15);
 }
 
 void test_savetxt2d_loadtxt() {
@@ -76,7 +76,7 @@ void test_vH() {
     assert_allclose(
         lstsq_chol(a, b),
         lstsq(a, b),
-        1e-3);
+        (float)1e-3);
 }
 
 void test_sparse_array() {
@@ -129,7 +129,7 @@ void test_move() {
     Array<float> a;
     a = Array<float>{1, 2, 3};
     a.resize(2);
-    assert_isclose<float>(a.length(), 2);
+    assert_isequal<size_t>(a.length(), 2);
 }
 
 void test_element_iterable() {
@@ -181,7 +181,7 @@ void test_fixed_array() {
     assert_isequal(all(f), false);
     assert_isequal(any(f), false);
 
-    FixedArray<float, 3> g{2, 3, 1.1};
+    FixedArray<float, 3> g{2.f, 3.f, 1.1f};
     assert_isequal((g * 5.f)(1), 15.f);
 }
 

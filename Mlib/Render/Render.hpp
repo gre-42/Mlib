@@ -13,7 +13,7 @@ void render(
 void render_depth_map(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const FixedArray<float, 3, 3>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     float z_offset = 1,
     bool rotate = false,
     Array<float>* output = nullptr);

@@ -15,7 +15,7 @@ struct ReconstructionConfig {
 
     float fov_threshold = 0.1f; // 1.f
     float bad_point_residual_multiplier = 4.f;
-    float max_residual_normalized = 0.1;
+    float max_residual_normalized = 0.1f;
     float max_residual_unnormalized = 10;
     float max_residual_unnormalized_post_l2 = 3;
 

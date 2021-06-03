@@ -1,27 +1,35 @@
 #pragma once
-#include <Mlib/Array/Array.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib {
 
-Array<float> find_fundamental_matrix(
-    const Array<float>& y0,
-    const Array<float>& y1,
+template <class TData>
+class Array;
+template <class TData, size_t... tsize>
+class FixedArray;
+template <class TData, size_t n>
+class TransformationMatrix;
+
+namespace Sfm {
+
+FixedArray<float, 3, 3> find_fundamental_matrix(
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1,
     bool method_inverse_iteration = true);
 
 Array<float> fundamental_error(
-    const Array<float>& F,
-    const Array<float>& y0,
-    const Array<float>& y1);
+    const FixedArray<float, 3, 3>& F,
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1);
 
-Array<float> fundamental_to_essential(const Array<float>& F, const Array<float>& intrinsic_matrix);
+FixedArray<float, 3, 3> fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix);
 
 Array<float> find_epipole(const Array<float>& F);
 
 void find_epiline(
-    const Array<float>& F,
-    const Array<float>& y,
-    Array<float>& p,
-    Array<float>& v);
+    const FixedArray<float, 3, 3>& F,
+    const FixedArray<float, 2>& y,
+    FixedArray<float, 2>& p,
+    FixedArray<float, 2>& v);
 
 Array<float> fundamental_from_camera(
     const Array<float>& intrinsic0,

@@ -1,21 +1,16 @@
 #include "Homogeneous.hpp"
+#include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 using namespace Mlib;
 
-Array<float> Mlib::intrinsic_times_inverse(
-    const Array<float>& intrinsic_matrix,
-    const Array<float>& inv_rhs)
+TransformationMatrix<float, 3> Mlib::reconstruction_times_inverse(
+    const TransformationMatrix<float, 3>& recon_lhs,
+    const TransformationMatrix<float, 3>& inv_rhs)
 {
-    Array<float> ike = inverted_homogeneous_3x4(inv_rhs);
-    return dot(intrinsic_matrix, ike);
-}
-
-Array<float> Mlib::reconstruction_times_inverse(
-    const Array<float>& recon_lhs,
-    const Array<float>& inv_rhs)
-{
-    return lstsq_chol(homogenized_4x4(inv_rhs).T(), homogenized_4x4(recon_lhs).T()).T();
+    return TransformationMatrix<float, 3>{ lstsq_chol(inv_rhs.affine().T(), recon_lhs.affine().T()).T() };
 }
 
 /**
@@ -31,12 +26,12 @@ Array<float> Mlib::reconstruction_times_inverse(
  * Transposition because lstsq_chol inverts the left argument
  * of the multiplication.
  */
-Array<float> Mlib::inverse_projection_in_reference(
-    const Array<float>& reference,
-    const Array<float>& b)
+TransformationMatrix<float, 3> Mlib::inverse_projection_in_reference(
+    const TransformationMatrix<float, 3>& reference,
+    const TransformationMatrix<float, 3>& b)
 {
     auto& a = reference;
-    return lstsq_chol(homogenized_4x4(b).T(), homogenized_4x4(a).T()).T();
+    return TransformationMatrix<float, 3>{ lstsq_chol(b.affine().T(), a.affine().T()).T() };
 }
 
 /**
@@ -51,12 +46,12 @@ Array<float> Mlib::inverse_projection_in_reference(
  * Transposition because lstsq_chol inverts the left argument
  * of the multiplication.
  */
-Array<float> Mlib::projection_in_reference(
-    const Array<float>& reference,
-    const Array<float>& b)
+TransformationMatrix<float, 3> Mlib::projection_in_reference(
+    const TransformationMatrix<float, 3>& reference,
+    const TransformationMatrix<float, 3>& b)
 {
     auto& a = reference;
-    return lstsq_chol(homogenized_4x4(a).T(), homogenized_4x4(b).T()).T().row_range(0, 3);
+    return TransformationMatrix<float, 3>{ lstsq_chol(a.affine().T(), b.affine().T()).T() };
 }
 
 /**
@@ -261,22 +256,4 @@ Array<float> Mlib::dehomogenized_3(const Array<float>& a) {
 Array<float> Mlib::dehomogenized_3x4(const Array<float>& a) {
     assert(all(a.shape() == ArrayShape{4, 4}));
     return a.row_range(0, 3);
-}
-
-Array<float> Mlib::homogeneous_jacobian_dx(const Array<float>& M, const Array<float>& x) {
-    assert(M.ndim() == 2);
-    assert(M.shape(1) > 0);
-    assert(all(x.shape() == ArrayShape{M.shape(1)}));
-    const auto m = M.row_range(0, M.shape(0) - 1);
-    const auto Mx = dot1d(M, x);
-    const auto mx = Mx.row_range(0, Mx.length() - 1);
-    const float bx = Mx(Mx.length() - 1);
-
-    const auto mx_2d = mx.reshaped(ArrayShape{mx.length(), 1});
-    const auto b_2d = M.row_range(M.shape(0) - 1, M.shape(0));
-
-    // M = [m0; m1 ... ; b]
-    // d/dx m'x/(b'x) = (m(0)(b'x) - (m'x)*b(0)) / squared(b'x)
-
-    return ((m * bx) - dot(mx_2d, b_2d)) / squared(bx);
 }

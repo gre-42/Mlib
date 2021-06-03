@@ -39,6 +39,11 @@ public:
       t_{t_from_NxN(m)}
     {}
 
+    inline explicit TransformationMatrix(const FixedArray<TData, n, n + 1>& m)
+    : R_{ R_from_NxN1(m) },
+      t_{ t_from_NxN1(m) }
+    {}
+
     inline FixedArray<TData, n> transform(const FixedArray<TData, n>& rhs) const {
         return dot1d(R_, rhs) + t_;
     }
@@ -51,6 +56,14 @@ public:
 
     inline FixedArray<TData, n> rotate(const FixedArray<TData, n>& rhs) const {
         return dot1d(R_, rhs);
+    }
+
+    template <size_t m>
+    inline FixedArray<TData, n + 1, m> project(const FixedArray<TData, n + 1, m>& rhs) const {
+        FixedArray<TData, n + 1, m> res;
+        res.row_range<0, n>() = dot2d(semi_affine(), rhs);
+        res[n] = rhs[n];
+        return res;
     }
 
     inline const FixedArray<TData, n, n>& R() const {
@@ -71,6 +84,10 @@ public:
 
     inline const FixedArray<TData, n+1, n+1> affine() const {
         return assemble_homogeneous_NxN(R_, t_);
+    }
+
+    inline const FixedArray<TData, n, n + 1> semi_affine() const {
+        return assemble_homogeneous_NxN1(R_, t_);
     }
 
     inline TransformationMatrix inverted() const {

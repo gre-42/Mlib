@@ -27,9 +27,9 @@ struct Particle {
 void test_rigid_body_physics_particle0() {
     Particle0 p{.x = {0, -0.1, 0}, .v1 = {0, -1, 0}, .mass = 5.f * fixed_identity_array<float, 3>()};
     PlaneInequalityConstraint pc{.normal_impulse{.normal = {0, 1, 0}}, .intercept = 0, .b = 0};
-    float h = 1. / 60.;
-    float beta = 0.5;
-    FixedArray<float, 3> g = {0, -9.8, 0};
+    float h = 1.f / 60.f;
+    float beta = 0.5f;
+    FixedArray<float, 3> g = {0, -9.8f, 0};
     p.v2b = p.v1 + h * g;
     for (size_t i = 0; i < 100; ++i) {
         FixedArray<float, 3> J = -pc.normal_impulse.normal;

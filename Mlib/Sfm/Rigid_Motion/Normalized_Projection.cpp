@@ -1,48 +1,35 @@
 #include "Normalized_Projection.hpp"
-#include <Mlib/Geometry/Normalized_Points.hpp>
+#include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
-NormalizedProjection::NormalizedProjection(const Array<float>& y)
+NormalizedProjection::NormalizedProjection(const Array<FixedArray<float, 2>>& y)
 {
-    assert(y.ndim() == 3);
-    assert(y.shape(2) == 3);
-    NormalizedPoints npo(
-        true,   // preserve_aspect_ratio
-        true);  // centered
-    y.shape().erased_last().foreach([&](const ArrayShape& s){
-        npo.add_point(y[s]);
+    assert(y.ndim() == 2);
+    NormalizedPointsFixed npo(
+        ScaleMode::PRESERVE_ASPECT_RATIO,
+        OffsetMode::CENTERED);
+    y.shape().foreach([&](const ArrayShape& s){
+        npo.add_point(FixedArray<float, 2>{y(s)});
     });
     N = npo.normalization_matrix();
     yn = normalized_y(y);
 }
 
-Array<float> NormalizedProjection::normalized_y(const Array<float>& y) {
-    assert(y.ndim() == 3);
-    assert(y.shape(2) == 3);
-    Array<float> yn(y.shape());
-    y.shape().erased_last().foreach([&](const ArrayShape& s){
-        yn[s] = dot1d(N, y[s]);
+Array<FixedArray<float, 2>> NormalizedProjection::normalized_y(const Array<FixedArray<float, 2>>& y) {
+    assert(y.ndim() == 2);
+    Array<FixedArray<float, 2>> yn(y.shape());
+    y.shape().foreach([&](const ArrayShape& s){
+        yn(s) = N.transform(FixedArray<float, 2>{y(s)});
     });
     return yn;
 }
 
-Array<float> NormalizedProjection::denormalized_intrinsic_matrix(const Array<float>& m) {
-    assert(all(m.shape() == ArrayShape{3, 3}));
-    Array<float> result;
-    result = lstsq_chol(N.casted<double>(), m.casted<double>()).casted<float>();
-    return result;
+TransformationMatrix<float, 2> NormalizedProjection::denormalized_intrinsic_matrix(const TransformationMatrix<float, 2>& m) {
+    return N.inverted_scaled() * m;
 }
 
-Array<float> NormalizedProjection::normalized_intrinsic_matrix(const Array<float>& m) {
-    assert(all(m.shape() == ArrayShape{3, 3}));
-    Array<float> result;
-    result = dot(N, m);
-    return result;
-}
-
-void NormalizedProjection::print_min_max() const {
-    std::cerr << min_x << " - " << max_x << std::endl;
-    std::cerr << min_y << " - " << max_y << std::endl;
+TransformationMatrix<float, 2> NormalizedProjection::normalized_intrinsic_matrix(const TransformationMatrix<float, 2>& m) {
+    return N * m;
 }

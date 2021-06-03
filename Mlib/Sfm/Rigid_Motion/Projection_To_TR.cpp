@@ -1,6 +1,7 @@
 #include "Projection_To_TR.hpp"
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Normalized_Projection.hpp>
@@ -9,11 +10,10 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 static bool reconstruction_ok(
-    const Array<float>& R,
-    const Array<float>& t,
-    const Array<float>& ki,
-    const Array<float>& y0,
-    const Array<float>& y1,
+    const TransformationMatrix<float, 3>& tm,
+    const TransformationMatrix<float, 2>& ki,
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1,
     float threshold)
 {
     assert(all(y0.shape() == y1.shape()));
@@ -29,19 +29,19 @@ static bool reconstruction_ok(
     // return (float(nz) / y0.shape(0)) > 0.9;
 
     // return all(initial_reconstruction_x3(R, t, ki, y0, y1) > threshold);
-    Array<float> recon0 = initial_reconstruction(R, t, ki, y0, y1);
-    Array<float> recon1 = outer(assemble_inverse_homogeneous_3x4(R, t), homogenized_Nx4(recon0)).T();
-    return all(recon0.col_range(2, 3) > threshold) &&
-           all(recon1.col_range(2, 3) > threshold);
+    Array<FixedArray<float, 3>> recon0 = initial_reconstruction(tm, ki, y0, y1);
+    Array<FixedArray<float, 3>> recon1 = recon0.applied([&tm](const auto& p) { return tm.transform(p); });
+    return all(recon0.applied<bool>([threshold](const auto& p) { return p(2) > threshold; })) &&
+           all(recon1.applied<bool>([threshold](const auto& p) { return p(2) > threshold; }));
 }
 
 ProjectionToTR::ProjectionToTR(
-    const Array<float>& y0,
-    const Array<float>& y1,
-    const Array<float>& intrinsic_matrix,
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     float threshold)
 : ngood(0),
-  y(std::list<Array<float>>{y0, y1}),
+  y(std::list<Array<FixedArray<float, 2>>>{y0, y1}),
   np(y),
   kin(np.normalized_intrinsic_matrix(intrinsic_matrix)),
   Fn(find_fundamental_matrix(np.yn[0], np.yn[1])),
@@ -51,17 +51,17 @@ ProjectionToTR::ProjectionToTR(
     const auto& v = e2tr;
     //std::cerr << v.R0 << std::endl;
     //std::cerr << v.R1 << std::endl;
-    if (reconstruction_ok(v.R0, v.t0, kin, np.yn[0], np.yn[1], threshold)) {++ngood; t = v.t0; R = v.R0;}
-    if (reconstruction_ok(v.R1, v.t0, kin, np.yn[0], np.yn[1], threshold)) {++ngood; t = v.t0; R = v.R1;}
-    if (reconstruction_ok(v.R0, v.t1, kin, np.yn[0], np.yn[1], threshold)) {++ngood; t = v.t1; R = v.R0;}
-    if (reconstruction_ok(v.R1, v.t1, kin, np.yn[0], np.yn[1], threshold)) {++ngood; t = v.t1; R = v.R1;}
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm0.R(), v.tm0.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.tm0.R(); ke.t() = v.tm0.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm1.R(), v.tm0.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.tm1.R(); ke.t() = v.tm0.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm0.R(), v.tm1.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.tm0.R(); ke.t() = v.tm1.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm1.R(), v.tm1.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.tm1.R(); ke.t() = v.tm1.t(); }
 }
 
 bool ProjectionToTR::good() const {
-    assert((ngood != 1) || (det3x3(R) > 0));
+    assert((ngood != 1) || (det3x3(ke.R()) > 0));
     return (ngood == 1);
 }
 
 InitialReconstruction ProjectionToTR::initial_reconstruction() const {
-    return InitialReconstruction(np.yn[0], np.yn[1], R, t, kin);
+    return InitialReconstruction(np.yn[0], np.yn[1], ke, kin);
 }

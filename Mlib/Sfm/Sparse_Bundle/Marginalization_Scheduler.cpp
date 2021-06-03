@@ -14,12 +14,12 @@ MarginalizationScheduler::MarginalizationScheduler(
     std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
-    const Array<float>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     bool skip_missing_cameras,
     UUIDGen<XK, XP>& uuid_gen,
     std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations,
     const std::map<size_t, std::chrono::milliseconds>& bad_points)
-: bsolver_{1e-2, 1e-2},
+: bsolver_{ float{1e-2}, float{1e-2} },
   cfg_{cfg},
   cache_dir_{cache_dir},
   particles_{particles},
@@ -198,10 +198,10 @@ std::chrono::milliseconds MarginalizationScheduler::find_time_to_be_marginalized
                 continue;
             }
             if (c1.first != c0.first) {
-                score += 1 / (1e-6 + std::sqrt(sum(squared(c0.second.position - c1.second.position))));
+                score += 1 / (float{ 1e-6 } + std::sqrt(sum(squared(c0.second.pose.t() - c1.second.pose.t()))));
             }
         }
-        score *= std::sqrt(std::sqrt(sum(squared(c0.second.position - camera_frames_.active_.rbegin()->second.position))));
+        score *= std::sqrt(std::sqrt(sum(squared(c0.second.pose.t() - camera_frames_.active_.rbegin()->second.pose.t()))));
         if (score > best_score) {
             best_time = c0.first;
             best_score = score;
@@ -282,10 +282,7 @@ void MarginalizationScheduler::find_cameras_to_be_linearized(
                         camera_frames_.move_to_linearized(c.first);
                         frozen_camera_frames_.insert(std::make_pair(
                             c.first,
-                            CameraFrame{
-                                c.second.rotation.copy(),
-                                c.second.position.copy(),
-                                c.second.kep.copy()}));
+                            CameraFrame{ c.second.pose, c.second.kep }));
                     }
                 }
             }

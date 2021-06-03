@@ -20,7 +20,7 @@ public:
     void foreach(const FixedArray<float, 3, 3>& homography, const TOperation& op) const {
         for (size_t r = 0; r < shape(0); ++r) {
             for (size_t c = 0; c < shape(1); ++c) {
-                FixedArray<float, 3> p0 = homogenized_3(i2a(FixedArray<size_t, 2>{r, c}));
+                FixedArray<float, 2> p0 = i2a(FixedArray<size_t, 2>{r, c});
                 op(p0, apply_homography(homography, p0));
             }
         }
@@ -36,8 +36,8 @@ void homography_pixel_grid(
     const FixedArray<float, 3, 3>& homography,
     const TOperation& op)
 {
-    fgrid.foreach(homography, [&](const FixedArray<float, 3>& p0, const FixedArray<float, 3>& pos){
-        FixedArray<size_t, 2> ipos{a2i(dehomogenized_2(pos))};
+    fgrid.foreach(homography, [&](const FixedArray<float, 2>& p0, const FixedArray<float, 2>& pos){
+        FixedArray<size_t, 2> ipos{a2i(pos)};
         if (all(ipos < image_shape)) {
             op(ipos);
         }
@@ -60,9 +60,9 @@ public:
         // std::cerr << homography << std::endl;
 
         for (const FixedArray<float, 2>& p : feature_points_) {
-            FixedArray<float, 3> pos = apply_homography(inverse_homography, homogenized_3(p));
+            FixedArray<float, 2> pos = apply_homography(inverse_homography, p);
             FixedArray<size_t, 2> ip0{a2i(p)};
-            FixedArray<size_t, 2> ipos{a2i(dehomogenized_2(pos))};
+            FixedArray<size_t, 2> ipos{a2i(pos)};
             float dist =
                 squared(ipos(0) + 0.5f - pos(id1)) +
                 squared(ipos(1) + 0.5f - pos(id0));
@@ -85,8 +85,8 @@ private:
 void Mlib::Sfm::detect_chessboard(
     const Array<float>& image,
     const ArrayShape& shape,
-    Array<float>& p_x,
-    Array<float>& p_y,
+    Array<FixedArray<float, 2>>& p_x,
+    Array<FixedArray<float, 2>>& p_y,
     StbImage& bmp)
 {
     assert(shape.ndim() == 2);
@@ -97,7 +97,7 @@ void Mlib::Sfm::detect_chessboard(
     Array<float> feature_points = find_saddle_points(image);
     highlight_features(feature_points, bmp);
 
-    HomographyList homography_list(shape, feature_points, 0.1);
+    HomographyList homography_list(shape, feature_points, 0.1f);
 
     // ws: step-size of w
     const float ws = std::min(image.shape(0), image.shape(1)) / 128.f;
@@ -106,7 +106,7 @@ void Mlib::Sfm::detect_chessboard(
 
     float best_good = 0;
     FixedArray<float, 3, 3> best_homography;
-    for (float w = 3 * ws; w < 10 * ws; w += 0.5 * ws) {
+    for (float w = 3 * ws; w < 10 * ws; w += 0.5f * ws) {
 
         if (any(image.shape() < w * shape)) {
             throw std::runtime_error("Shape problem, internal error");
@@ -160,14 +160,14 @@ void Mlib::Sfm::detect_chessboard(
             Array<float>(lst_x),
             Array<float>(lst_p));
     }
-    p_x = Array<float>(ArrayShape{shape.nelements(), 4});
-    p_y = Array<float>(ArrayShape{shape.nelements(), 3});
+    p_x.resize(ArrayShape{ shape.nelements() });
+    p_y.resize(ArrayShape{ shape.nelements() });
     HomographyFeatureGrid fg(shape);
     {
         size_t i = 0;
-        fg.foreach(best_homography, [&](const FixedArray<float, 3>& p0, const FixedArray<float, 3>& pos) {
-            p_x[i] = homogenized_4(p0);
-            p_y[i] = pos;
+        fg.foreach(best_homography, [&](const FixedArray<float, 2>& p0, const FixedArray<float, 2>& pos) {
+            p_x(i) = p0;
+            p_y(i) = pos;
             ++i;
         });
     }

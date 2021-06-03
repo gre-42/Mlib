@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-template <class TData, class TGetResidual, class TGetResidualNorm, class TGetNextX>
-Array<TData> generic_optimization(
-    const Array<TData>& x0,
+template <class TData, class TX, class TGetResidual, class TGetResidualNorm, class TGetNextX>
+TX generic_optimization(
+    const TX& x0,
     const TGetResidual& get_residual,
     const TGetResidualNorm& get_residual_norm,
     const TGetNextX& get_next_x,
@@ -22,7 +22,7 @@ Array<TData> generic_optimization(
     // f(x0) + J * d = 0
     // -J * d = f(x0)
     // -J^T * J * d = J^T * f(x0)
-    Array<TData> x;
+    TX x;
     x = x0;
     TData old_ssq_residual = std::numeric_limits<TData>::infinity();
     Array<TData> residual;

@@ -78,7 +78,7 @@ void PgmImage::draw_streamline(
     size_t length,
     uint16_t color)
 {
-    visit_streamline(shape(), center, velocity, length, [&](const ArrayShape& ipos){
+    visit_streamline(shape(), center, velocity, length, [&](const ArrayShape& ipos) {
         draw_fill_rect(ipos, size, color);
     });
 }

@@ -10,9 +10,9 @@ namespace Mlib { namespace Sfm {
 template <class TData>
 class RigidMotionSampler {
 public:
-    RigidMotionSampler(const Array<TData>& ki, const Array<TData>& ke, const Array<TData>& depth)
-    : iki_{inv(ki)},
-      T_{dot(ki, ke)},
+    RigidMotionSampler(const TransformationMatrix<TData, 2>& ki, const TransformationMatrix<TData, 3>& ke, const Array<TData>& depth)
+    : iki_{inv(ki.affine())},
+      T_{ki.project(ke.semi_affine())},
       depth_{depth}
     {}
     bool sample_destination(size_t r, size_t c, BilinearInterpolator<TData>& bi) const {

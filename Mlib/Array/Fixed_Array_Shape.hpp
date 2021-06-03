@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Template.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -9,6 +8,8 @@ class FixedArray;
 
 template <size_t... tsize>
 class FixedArrayShape;
+
+class ArrayShape;
 
 namespace FasUtils {
     template <size_t... tsize_a, size_t... tsize_b>
@@ -27,6 +28,8 @@ public:
     constexpr auto nelements() const;
     constexpr auto rows_as_1D() const;
     constexpr auto columns_as_1D() const;
+    template <size_t N>
+    constexpr size_t get() const;
 };
 
 namespace RUtils {
@@ -141,6 +144,25 @@ namespace FasUtils {
         return FixedArrayShape<tsize0>().concatenated(FixedArrayShape<a->nelements()>());
     }
 
+    template <size_t... tsize>
+    inline void equals_(size_t* other, bool* result);
+
+    template <>
+    inline void equals_(size_t* other, bool* result) {}
+
+    template <size_t tsize0, size_t... tsize>
+    inline bool equals_(size_t* other, bool* result) {
+        *result = (tsize0 == *other);
+        equals_<tsize...>(other + 1, result + 1);
+    }
+
+    template <size_t... tsize>
+    inline void equals(size_t* other, size_t nelems, bool* result) {
+        constexpr const FixedArrayShape<tsize...>* a = nullptr;
+        assert(nelems == nelements(a));
+        return equals_<tsize...>(other, result);
+    }
+
     constexpr size_t nelements(const FixedArrayShape<>*) {
         return 1;
     }
@@ -150,6 +172,23 @@ namespace FasUtils {
         constexpr const FixedArrayShape<tsize...>* a = nullptr;
         return tsize0 * nelements(a);
     }
+}
+
+namespace ElemUtils {
+
+    // From: https://stackoverflow.com/questions/20162903/template-parameter-packs-access-nth-type-and-nth-element
+    template <size_t N, size_t... tsize>
+    struct NthElement;
+
+    template <size_t tsize0, size_t... tsize>
+    struct NthElement<0, tsize0, tsize...> {
+        static const size_t value = tsize0;
+    };
+    template <size_t N, size_t tsize0, size_t... tsize>
+    struct NthElement<N, tsize0, tsize...> {
+        static const size_t value = NthElement<N - 1, tsize...>::value;
+    };
+
 }
 
 template <size_t... tsize>
@@ -169,5 +208,9 @@ constexpr auto FixedArrayShape<tsize...>::rows_as_1D() const { return ::Mlib::Fa
 
 template <size_t... tsize>
 constexpr auto FixedArrayShape<tsize...>::columns_as_1D() const { return ::Mlib::FasUtils::columns_as_1D(a); }
+
+template <size_t... tsize>
+template <size_t N>
+constexpr size_t FixedArrayShape<tsize...>::get() const { return ::Mlib::ElemUtils::NthElement<N, tsize...>::value; }
 
 }

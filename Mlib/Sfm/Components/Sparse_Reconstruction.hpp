@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Components/Sparse_Reconstruction_Config.hpp>
 #include <Mlib/Sfm/Frames/Feature_Point_Frame.hpp>
 #include <Mlib/Sfm/Frames/Forward.hpp>
@@ -17,7 +18,7 @@ namespace Mlib { namespace Sfm {
 class SparseReconstruction {
 public:
     explicit SparseReconstruction(
-        const Array<float>& intrinsic_matrix,
+        const TransformationMatrix<float, 2>& intrinsic_matrix,
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
         std::map<size_t, std::chrono::milliseconds>& bad_points,
@@ -49,7 +50,7 @@ private:
     void save_reconstructed(const std::string& prefix) const;
     MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>> reconstructed_points_;
     std::map<size_t, std::shared_ptr<ReconstructedPoint>> frozen_reconstructed_points_;
-    Array<float> intrinsic_matrix_;
+    TransformationMatrix<float, 2> intrinsic_matrix_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
     std::map<std::chrono::milliseconds, CameraFrame> frozen_camera_frames_;
     std::map<std::chrono::milliseconds, FeaturePointFrame>& particles_;

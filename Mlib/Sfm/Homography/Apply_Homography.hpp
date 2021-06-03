@@ -1,20 +1,23 @@
 #pragma once
-#include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 
 namespace Mlib { namespace Sfm {
 
 template <class TData>
-FixedArray<TData, 3> apply_homography(const FixedArray<TData, 3, 3>& homography, const FixedArray<TData, 3>& p) {
-    FixedArray<TData, 3> x = dot(homography, p);
-    x /= x(2);
-    return x;
+FixedArray<TData, 2> apply_homography(const FixedArray<TData, 3, 3>& homography, const FixedArray<TData, 2>& p) {
+    FixedArray<TData, 3> x = dot1d(homography, homogenized_3(p));
+    return FixedArray<TData, 2>{
+        x(0) / x(2),
+        x(1) / x(2)};
 }
 
 template <class TData>
-FixedArray<TData> apply_inverse_homography(const FixedArray<TData, 3, 3>& homography, const FixedArray<TData, 3>& p) {
-    Array<TData> x = lstsq_chol_1d(homography, p);
-    x /= x(2);
-    return x;
+FixedArray<TData, 2> apply_inverse_homography(const FixedArray<TData, 3, 3>& homography, const FixedArray<TData, 2>& p) {
+    FixedArray<TData, 3> x = lstsq_chol_1d(homography, homogenized_3(p));
+    return FixedArray<TData, 2>{
+        x(0) / x(2),
+        x(1) / x(2)};
 }
 
 }}

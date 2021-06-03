@@ -5,6 +5,8 @@ namespace Mlib {
 
 template <class TData>
 class Array;
+template <typename TData, size_t... tshape>
+class FixedArray;
 class StbImage;
 class ArrayShape;
 
@@ -42,8 +44,8 @@ void highlight_features(
     size_t size = 1,
     const Rgb24& color = Rgb24::red());
 
-Array<float> find_feature_in_neighborhood(
-    const Array<float>& old_feature_point,
+FixedArray<float, 2> find_feature_in_neighborhood(
+    const FixedArray<float, 2>& old_feature_point,
     const Array<float>& new_featureness,
     const ArrayShape& window_shape);
 

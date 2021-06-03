@@ -19,7 +19,7 @@ public:
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames,
         const DownSampler& down_sampler,
-        const Array<float>& intrinsic_matrix,
+        const TransformationMatrix<float, 2>& intrinsic_matrix,
         std::string cache_dir,
         const DtamKeyframeConfig& cfg,
         const std::chrono::milliseconds& key_frame_time);
@@ -42,7 +42,7 @@ private:
     const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames_;
     const DownSampler& down_sampler_;
     std::set<std::chrono::milliseconds> times_integrated_;
-    Array<float> intrinsic_matrix__;
+    TransformationMatrix<float, 2> intrinsic_matrix_;
     std::string cache_dir_;
     std::chrono::milliseconds first_integrated_time_;
     std::chrono::milliseconds last_integrated_time_;

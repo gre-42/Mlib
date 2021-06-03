@@ -211,12 +211,12 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
 void Mlib::render_depth_map(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const FixedArray<float, 3, 3>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     float z_offset,
     bool rotate,
     Array<float>* output)
 {
-    FixedArray<float, 3, 3> iim{inv(intrinsic_matrix)};
+    FixedArray<float, 3, 3> iim{inv(intrinsic_matrix.affine())};
     std::vector<ColoredVertex> vertices;
     vertices.reserve(3 * rgb_picture.nelements());
     assert(rgb_picture.ndim() == 3);

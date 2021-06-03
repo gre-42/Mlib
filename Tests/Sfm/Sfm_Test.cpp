@@ -37,7 +37,7 @@ void test_numerical_differentiation() {
     assert_allclose(
         numerical_differentiation(f, Array<float>{2, 3}),
         Array<float>{{1.1f, 1.2f}, {2.1f, 2.2f}},
-        1e-3);
+        float{ 1e-3 });
 }
 
 void test_project_points() {
@@ -46,7 +46,7 @@ void test_project_points() {
     // std::cerr << p << std::endl;
     // std::cerr << p.shape() << std::endl;
     // std::cerr << find_projection_matrices(P, p, true) << std::endl;
-    Array<float> ki_out;
+    TransformationMatrix<float, 2> ki_out;
     find_projection_matrices(
         sc.x,     // x
         np.yn,    // y
@@ -54,9 +54,9 @@ void test_project_points() {
         nullptr,  // kep_initial
         &ki_out); // ki_out
     assert_allclose(
-        np.denormalized_intrinsic_matrix(ki_out),
-        sc.ki,
-        1e-2);
+        np.denormalized_intrinsic_matrix(ki_out).affine().to_array(),
+        sc.ki.affine().to_array(),
+        float{ 1e-2 });
 }
 
 void test_unproject_point() {
@@ -65,31 +65,30 @@ void test_unproject_point() {
     NormalizedProjection np(sc.y);
     //std::cerr << sc.y.shape() << std::endl;
     //std::cerr << sc.x.shape() << std::endl;
-    Array<float> y_tracked(ArrayShape{sc.y.shape(0), 3});
-    Array<float> ys_tracked(ArrayShape{sc.y.shape(0), 3});
+    Array<FixedArray<float, 2>> y_tracked(ArrayShape{sc.y.shape(0)});
+    Array<FixedArray<float, 2>> ys_tracked(ArrayShape{sc.y.shape(0)});
     for (size_t f = 0; f < sc.y.shape(0); ++f) {
-        y_tracked[f] = np.yn[f][index];
-        ys_tracked[f] = sc.y[f][index];
+        y_tracked(f) = np.yn(f, index);
+        ys_tracked(f) = sc.y(f, index);
     }
-    Array<float> kin;
+    TransformationMatrix<float, 2> kin;
     find_projection_matrices(
         sc.x,    // x
         np.yn,   // y
         nullptr, // ki_precomputed
         nullptr, // kep_initial
         &kin);   // ki_out
-    Array<float> x = reconstructed_point(y_tracked, kin, sc.ke, nullptr, nullptr, false, true);
-    Array<float> xw = reconstructed_point_reweighted(y_tracked, kin, sc.ke);
-    Array<float> xs = reconstructed_point(ys_tracked, sc.ki, sc.ke,
+    FixedArray<float, 3> x = reconstructed_point_(y_tracked, kin, sc.ke, nullptr, false, true);
+    FixedArray<float, 3> xw = reconstructed_point_reweighted(y_tracked, kin, sc.ke);
+    FixedArray<float, 3> xs = reconstructed_point_(ys_tracked, sc.ki, sc.ke,
         nullptr, // weights
-        nullptr, // fs
         false,   // method2
         false);  // points_are_normalized
     //std::cerr << "x " << x << std::endl;
     //std::cerr << "sc.c() " << sc.x[index].row_range(0, 3) << std::endl;
-    assert_allclose(x, sc.x[index].row_range(0, 3), 1e-3);
-    assert_allclose(xw, sc.x[index].row_range(0, 3), 1e-3);
-    assert_allclose(xs, sc.x[index].row_range(0, 3), 1e-3);
+    assert_allclose(x.to_array(), sc.x(index).to_array(), float{ 1e-3 });
+    assert_allclose(xw.to_array(), sc.x(index).to_array(), float{ 1e-3 });
+    assert_allclose(xs.to_array(), sc.x(index).to_array(), float{ 1e-3 });
 }
 
 void test_initial_reconstruction() {
@@ -101,30 +100,31 @@ void test_initial_reconstruction() {
     // std::cerr << ir3 << std::endl;
 
     // this did not work without normalization
-    Array<float> irX = initial_reconstruction(
-        sc.dR(0, 1),
-        sc.dt2(0, 1),
+    Array<FixedArray<float, 3>> irX = initial_reconstruction(
+        TransformationMatrix<float, 3>{
+            sc.dR(0, 1),
+            sc.dt2(0, 1)},
         np.normalized_intrinsic_matrix(sc.ki),
         np.yn[0],
         np.yn[1]);
     assert_allclose(
         irX / irX(3, 1),
         sc.x.col_range(0, 3) / sc.x(3, 1),
-        2e-2);
+        float{ 2e-2 });
     // std::cerr << "x\n" << irX/irX(0, 2) << std::endl;
 }
 
 void test_known_ki_alignment() {
     SyntheticScene sc;
     NormalizedProjection np(sc.y);
-    Array<float> kin;
+    TransformationMatrix<float, 2> kin;
     find_projection_matrices(
         sc.x,     // x
         np.yn,    // y
         nullptr,  // ki_precomputed
         nullptr,  // kep_initial
         &kin);    // ki_out
-    Array<float> ke;
+    Array<TransformationMatrix<float, 3>> ke;
     find_projection_matrices(
         sc.x,     // x
         np.yn,    // y
@@ -132,13 +132,16 @@ void test_known_ki_alignment() {
         nullptr,  // kep_initial
         nullptr,  // ki_out
         &ke);     // ke_out
-    assert_allclose(ke, sc.ke, 1e-5);
+    assert_allclose(
+        Array<float>{ke.applied<FixedArray<float, 4, 4>>([](const auto& x) {return x.affine(); })},
+        Array<float>{sc.ke.applied<FixedArray<float, 4, 4>>([](const auto& x) {return x.affine(); })},
+        float{ 1e-5 });
 
-    Array<float> kin2 = np.normalized_intrinsic_matrix(sc.ki);
-    assert_allclose(kin, kin2, 1e-5);
+    TransformationMatrix<float, 2> kin2 = np.normalized_intrinsic_matrix(sc.ki);
+    assert_allclose(kin.affine().to_array(), kin2.affine().to_array(), float{ 1e-5 });
 
-    Array<float> ke2;
-    Array<float> x_out;
+    Array<TransformationMatrix<float, 3>> ke2;
+    Array<FixedArray<float, 3>> x_out;
     find_projection_matrices_twopass(
         sc.x,       // x
         np.yn,      // y
@@ -150,38 +153,37 @@ void test_known_ki_alignment() {
         &x_out);    // x_out
     // (b)undle, (s)ynthetic
     // b * a = s, a = b \ s
-    Array<float> a = lstsq_chol(homogenized_4x4(ke2[0]), homogenized_4x4(sc.ke[0]));
+    FixedArray<float, 4, 4> a = lstsq_chol(ke2(0).affine(), sc.ke(0).affine());
     // std::cerr << ke2[0] << std::endl;
     // std::cerr << sc.ke[0] << std::endl;
     assert_allclose(
-        dot(homogenized_4x4(ke2[0]), a),
-        homogenized_4x4(sc.ke[0]),
-        1e-5);
+        dot(ke2(0).affine(), a).to_array(),
+        sc.ke(0).affine().to_array(),
+        float{ 1e-5 });
     assert_allclose(
-        dot(homogenized_4x4(ke2[1]), a),
-        homogenized_4x4(sc.ke[1]),
-        1e-4);
+        dot(ke2(1).affine(), a).to_array(),
+        sc.ke(1).affine().to_array(),
+        float{ 1e-4 });
 }
 
 struct HomographyData {
     HomographyData()
-    :y0(Array<float>({
+    :y0(Array<float>::from_dynamic<2>(Array<float>({
         random_array2<float>(ArrayShape{20}, 1),
-        random_array2<float>(ArrayShape{20}, 2),
-        ones<float>(ArrayShape{20})}).T()),
+        random_array2<float>(ArrayShape{20}, 2)}).T())),
      y1(y0.shape()),
      homography{
-        {0.5, 0.6, 0.2},
-        {0.1, 0.7, 0.15},
-        {0.25, 0.9, 1}} // last element must be 1
+        0.5f, 0.6f, 0.2f,
+        0.1f, 0.7f, 0.15f,
+        0.25f, 0.9f, 1.f} // last element must be 1
     {
         for (size_t r = 0; r < y1.shape(0); ++r) {
-            y1[r] = apply_homography(homography, y0[r]);
+            y1(r) = apply_homography(homography, y0(r));
         }
     }
-    Array<float> y0;
-    Array<float> y1;
-    Array<float> homography;
+    Array<FixedArray<float, 2>> y0;
+    Array<FixedArray<float, 2>> y1;
+    FixedArray<float, 3, 3> homography;
 };
 
 void test_find_fundamental_matrix_homography() {
@@ -189,7 +191,7 @@ void test_find_fundamental_matrix_homography() {
     //std::cerr << y0 << std::endl;
     //std::cerr << y1;
 
-    Array<float> F = find_fundamental_matrix(hd.y0, hd.y1);
+    FixedArray<float, 3, 3> F = find_fundamental_matrix(hd.y0, hd.y1);
     //std::cerr << F << std::endl;
     //inverse iteration:
     //assert_allclose(F, Array<float>{{-0.0499249, -0.560293, 0.328151},
@@ -205,8 +207,8 @@ void test_find_fundamental_matrix_synthetic_scene() {
     SyntheticScene sc;
     NormalizedProjection np(sc.y);
     // std::cerr << sc.y.shape() << std::endl;
-    Array<float> Fn = find_fundamental_matrix(np.yn[0], np.yn[1]);
-    Array<float> F = find_fundamental_matrix(sc.y[0], sc.y[1]);
+    FixedArray<float, 3, 3> Fn = find_fundamental_matrix(np.yn[0], np.yn[1]);
+    FixedArray<float, 3, 3> F = find_fundamental_matrix(sc.y[0], sc.y[1]);
     //std::cerr << fundamental_error(Fn, np.yn[0], np.yn[1]) << std::endl;
     //std::cerr << fundamental_error(F, sc.y[0], sc.y[1]) << std::endl;
     //assert_allclose<float>(
@@ -233,19 +235,19 @@ void test_find_essential_matrix() {
     SyntheticScene sc;
     NormalizedProjection np(sc.y);
     // std::cerr << sc.y.shape() << std::endl;
-    Array<float> Fn = find_fundamental_matrix(np.yn[i0], np.yn[i1]);
-    Array<float> F = find_fundamental_matrix(sc.y[i0], sc.y[i1]);
+    FixedArray<float, 3, 3> Fn = find_fundamental_matrix(np.yn[i0], np.yn[i1]);
+    FixedArray<float, 3, 3> F = find_fundamental_matrix(sc.y[i0], sc.y[i1]);
     assert_allclose(
         fundamental_error(Fn, np.yn[i0], np.yn[i1]),
         zeros<float>(ArrayShape{np.yn[i0].shape(0)}));
     assert_allclose(
         fundamental_error(F, sc.y[i0], sc.y[i1]),
         zeros<float>(ArrayShape{sc.y[i0].shape(0)}),
-        1e-4);
+        float{ 1e-4 });
     // std::cerr << F << std::endl;
     // "denormalized_intrinsic_matrix" is not used,
     // both E and y are normalized.
-    Array<float> kin;
+    TransformationMatrix<float, 2> kin;
     find_projection_matrices(
         sc.x,      // x
         np.yn,     // y
@@ -264,8 +266,8 @@ void test_find_essential_matrix() {
     //std::cerr << "dke\n" << sc.delta_ke(i0, i1) << std::endl;
     //std::cerr << "t " << sc.t(i0, i1) << std::endl;
     //std::cerr << "R\n" << sc.R(i0, i1) << std::endl;
-    assert_allclose(ptr.t, sc.dt2(i0, i1), 1e-4);
-    assert_allclose(ptr.R, sc.dR(i0, i1), 1e-4);
+    assert_allclose(ptr.ke.t().to_array(), sc.dt2(i0, i1).to_array(), 1e-4);
+    assert_allclose(ptr.ke.R().to_array(), sc.dR(i0, i1).to_array(), 1e-4);
 }
 
 void test_projection_to_TR() {

@@ -9,8 +9,8 @@ template <class TData>
 Array<TData> rigid_motion_roundtrip(
     const Array<TData>& im_r_depth,
     const Array<TData>& im_l_depth,
-    const Array<TData>& ki,
-    const Array<TData>& ke)
+    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, 3>& ke)
 {
     assert(im_r_depth.ndim() == 2);
     assert(all(im_r_depth.shape() == im_l_depth.shape()));

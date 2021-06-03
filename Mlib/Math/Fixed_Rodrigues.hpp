@@ -116,4 +116,64 @@ FixedArray<TData, 3> inverse_rodrigues2(const FixedArray<TData, 3, 3>& R) {
     return x * t;
 }
 
+/**
+ * Not working, only works around point 0.
+ * Using axis-angle representation instead,
+ * where only the angle varies.
+ */
+ // template <class TData>
+ // Array<TData> rodrigues_jacobian_dk(const Array<TData>& k, const Array<TData>& x) {
+ //     auto R = rodrigues(k);
+ //     auto K = cross(-dot(R.T(), x));
+ //     return dot(R, (K, R));
+ // }
+
+template <class TData>
+FixedArray<TData, 3> rodrigues_gradient_dtheta(
+    const FixedArray<TData, 3>& k,
+    const TData& theta,
+    const FixedArray<TData, 3>& x)
+{
+    auto R = rodrigues(k, theta);
+    auto v = cross(k, x);
+    return dot(R, v);
+}
+
+template <class TData>
+FixedArray<TData, 3, 3> tait_bryan_angles_dtheta(
+    const FixedArray<TData, 3>& theta,
+    const FixedArray<TData, 3>& x)
+{
+    assert(theta.length() == 3);
+    assert(x.length() == 3);
+    // y = R2(a2) * R1(a1) * R0(a0) * x
+    //           r2       r1
+    //
+    // dy / da2 = (dy / da2; r2)
+    // dy / da1 = (dy / dr2) * (dr2 / da1; r1) = R2 * (dr2 / da1; r1)
+    // dy / da0 = (dy / dr1) * (dr1 / da0; x) = R2 * R1 * (dr1 / da0; x)
+    //           (dr1 / da0; x)
+    static const FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
+    // Changed order to be compatible with the rodrigues-implementation
+    static const FixedArray<TData, 3> I0 = I[0];
+    static const FixedArray<TData, 3> I1 = I[1];
+    static const FixedArray<TData, 3> I2 = I[2];
+    FixedArray<TData, 3, 3> R0 = rodrigues(I0, theta(0));
+    FixedArray<TData, 3, 3> R1 = rodrigues(I1, theta(1));
+    FixedArray<TData, 3, 3> R2 = rodrigues(I2, theta(2));
+
+    FixedArray<TData, 3> r1 = dot1d(R0, x);
+    FixedArray<TData, 3> r2 = dot1d(R1, r1);
+    // Changed theta-order to be compatible with the rodrigues-implementation
+    FixedArray<TData, 3> dy_da2 = rodrigues_gradient_dtheta(I2, theta(2), r2);
+    FixedArray<TData, 3> dy_da1 = dot1d(R2, rodrigues_gradient_dtheta(I1, theta(1), r1));
+    FixedArray<TData, 3> dy_da0 = dot1d(R2, dot1d(R1, rodrigues_gradient_dtheta(I0, theta(0), x)));
+
+    // Changed order to be compatible with the rodrigues-implementation
+    return FixedArray<TData, 3, 3>{
+        dy_da0(0), dy_da1(0), dy_da2(0),
+        dy_da0(1), dy_da1(1), dy_da2(1),
+        dy_da0(2), dy_da1(2), dy_da2(2)};
+}
+
 }

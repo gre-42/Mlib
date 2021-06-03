@@ -151,9 +151,9 @@ FixedArray<TData, tsize_ac> lstsq_chol_1d(
     const FixedArray<TData, tsize_r, tsize_r>* dAT_A = nullptr,
     const FixedArray<TData, tsize_r>* dAT_b = nullptr)
 {
-    FixedArray<TData, tsize_r> dAT_B1;
+    const FixedArray<TData, tsize_r, 1>* dAT_B1;
     if (dAT_b != nullptr) {
-        dAT_B1 = dAT_b->as_column_vector();
+        dAT_B1 = &dAT_b->as_column_vector();
     }
     auto res = lstsq_chol(
         A,
@@ -161,8 +161,32 @@ FixedArray<TData, tsize_ac> lstsq_chol_1d(
         alpha,
         beta,
         dAT_A,
-        dAT_b == nullptr ? nullptr : &dAT_B1);
+        dAT_b == nullptr ? nullptr : dAT_B1);
     return res.flattened();
+}
+
+template <size_t r, class TArray>
+void lstsq_chol_1d(
+    FixedArray<typename TArray::value_type, r>& result,
+    const TArray& A,
+    const Array<typename TArray::value_type>& B,
+    const typename TArray::value_type& alpha = 0,
+    const typename TArray::value_type& beta = 0,
+    const FixedArray<typename TArray::value_type, r, r>* dAT_A = nullptr,
+    const FixedArray<typename TArray::value_type, r>* dAT_b = nullptr)
+{
+    assert(B.ndim() == 1);
+    FixedArray<typename TArray::value_type, r, r> AT_A;
+    FixedArray<typename TArray::value_type, r, 1> AT_B;
+    dot2d(A.vH(), A, AT_A);
+    dot2d(A.vH(), B.as_column_vector(), AT_B);
+    if (dAT_A != nullptr) {
+        AT_A += *dAT_A;
+    }
+    if (dAT_b != nullptr) {
+        AT_B += dAT_b->reshaped<r, 1>();
+    }
+    result = solve_symm_inplace(AT_A, AT_B, alpha, beta).reshaped<r>();
 }
 
 template <class TData, size_t tsize>

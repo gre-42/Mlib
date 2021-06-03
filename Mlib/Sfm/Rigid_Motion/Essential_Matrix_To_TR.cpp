@@ -1,12 +1,12 @@
 #include "Essential_Matrix_To_TR.h"
+#include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Svd4.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
-EssentialMatrixToTR::EssentialMatrixToTR(const Array<float>& E) {
-    assert(all(E.shape() == ArrayShape{3, 3}));
+EssentialMatrixToTR::EssentialMatrixToTR(const FixedArray<float, 3, 3>& E) {
     // From: Wikipedia, essential matrix
     //Array<float> uT;
     //Array<float> s;
@@ -15,7 +15,7 @@ EssentialMatrixToTR::EssentialMatrixToTR(const Array<float>& E) {
     Array<double> u;
     Array<double> s;
     Array<double> vT;
-    svd4(E.casted<double>(), u, s, vT);
+    svd4(E.casted<double>().to_array(), u, s, vT);
     //u = Array<double>({{-0.25851, -0.17774, 0.94952},
     //                   {0.83392, -0.53719, .12648},
     //                   {0.48759, 0.82452, 0.28709}});
@@ -35,10 +35,10 @@ EssentialMatrixToTR::EssentialMatrixToTR(const Array<float>& E) {
     //std::cerr << "vT\n" << vT << std::endl;
     //std::cerr << "T\n" << T << " tu " << tu << std::endl;
 
-    t0 = tu.casted<float>();
-    t1 = -tu.casted<float>();
-    R0 = dot(dot(u, invW), vT).casted<float>();
-    R1 = dot(dot(u, W), vT).casted<float>();
+    tm0.t() = FixedArray<float, 3>{ tu.casted<float>() };
+    tm1.t() = FixedArray<float, 3>{ -tu.casted<float>() };
+    tm0.R() = FixedArray<float, 3, 3>{ dot(dot(u, invW), vT).casted<float>() };
+    tm1.R() = FixedArray<float, 3, 3>{ dot(dot(u, W), vT).casted<float>() };
     //std::cerr << "E\n" << E << std::endl;
     //std::cerr << "u\n" << u << std::endl;
     //std::cerr << "vT\n" << vT << std::endl;
@@ -46,12 +46,12 @@ EssentialMatrixToTR::EssentialMatrixToTR(const Array<float>& E) {
     //t1 *= det3x3(R1);
     //std::cerr << "R0\n" << R0 << std::endl;
     //std::cerr << "R1\n" << R1 << std::endl;
-    R0 *= det3x3(R0);
-    R1 *= det3x3(R1);
-    if (std::abs(det3x3(R0) - 1) > 1e-6) {
+    tm0.R() *= det3x3(tm0.R());
+    tm1.R() *= det3x3(tm1.R());
+    if (std::abs(det3x3(tm0.R()) - 1) > 1e-6) {
         throw std::runtime_error("det(R0) not approx 1");
     }
-    if (std::abs(det3x3(R1) - 1) > 1e-6) {
+    if (std::abs(det3x3(tm1.R()) - 1) > 1e-6) {
         throw std::runtime_error("det(R1) not approx 1");
     }
 }

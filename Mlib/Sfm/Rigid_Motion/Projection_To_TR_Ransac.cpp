@@ -7,9 +7,9 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 ProjectionToTrRansac::ProjectionToTrRansac(
-    const Array<float>& y0,
-    const Array<float>& y1,
-    const Array<float>& intrinsic_matrix,
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     float threshold,
     const RansacOptions<float>& ro)
 {
@@ -26,7 +26,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
                 threshold};
             if (ptr.good()) {
                 Array<float> res{ArrayShape{y0.shape(0)}};
-                InitialReconstruction ir{y0, y1, ptr.R, ptr.t, intrinsic_matrix};
+                InitialReconstruction ir{y0, y1, ptr.ke, intrinsic_matrix};
                 Array<float> p0{ir.projection_residual0()};
                 Array<float> p1{ir.projection_residual1()};
                 for (size_t r = 0; r < indices.length(); ++r) {

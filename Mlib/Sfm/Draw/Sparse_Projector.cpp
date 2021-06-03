@@ -14,7 +14,7 @@ SparseProjector::SparseProjector(
     size_t i0,
     size_t i1,
     size_t iz,
-    const Array<float>& scale_matrix)
+    const FixedArray<float, 3, 3>& scale_matrix)
 : ProjectorWithCameras(camera_frames, i0, i1, iz, scale_matrix),
     reconstructed_points_(reconstructed_points),
     bad_points_(bad_points) {}
@@ -24,13 +24,13 @@ SparseProjector& SparseProjector::normalize(float scale)
     NormalizedPoints npo(
         true,    // preserve_aspect_ratio
         false);  // centered
-    std::list<Array<float>> points;
+    std::list<FixedArray<float, 2>> points;
     for (const auto& x : reconstructed_points_) {
-        points.push_back(homogenized_3(project(x.second->position)));
+        points.push_back(project(x.second->position));
     }
-    npo.add_points_quantile(Array<float>{points}, 0.05);
+    npo.add_points_quantile(Array<FixedArray<float, 2>>{points}, 0.05f);
     for (const auto& c : camera_frames_) {
-        npo.add_point(homogenized_3(project(c.second.position)));
+        npo.add_point(project(c.second.pose.t()));
     }
     scale_matrix_ = npo.normalization_matrix() * scale;
     return *this;
@@ -42,7 +42,7 @@ void SparseProjector::draw(const std::string& filename) {
     plot_camera_lines(ppm);
     for (const auto& x : reconstructed_points_) {
         ppm.draw_fill_rect(
-            x2i(x.second->position),
+            x2i(x.second->position).to_array().to_shape(),
             2,
             (bad_points_.find(x.first) == bad_points_.end()
                 ? (x.state_ == MmState::ACTIVE

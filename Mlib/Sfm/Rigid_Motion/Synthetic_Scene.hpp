@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 namespace Mlib { namespace Sfm {
 
@@ -8,15 +9,15 @@ public:
     SyntheticScene(
         bool zero_first_extrinsic = false,
         float tR_multiplier = 1);
-    Array<float> delta_ke(size_t index0, size_t index1);
-    Array<float> dt2(size_t index0, size_t index1);
-    Array<float> dt(size_t index0, size_t index1);
-    Array<float> dR(size_t index0, size_t index1);
+    TransformationMatrix<float, 3> delta_ke(size_t index0, size_t index1);
+    FixedArray<float, 3> dt2(size_t index0, size_t index1);
+    FixedArray<float, 3> dt(size_t index0, size_t index1);
+    FixedArray<float, 3, 3> dR(size_t index0, size_t index1);
     void draw_to_bmp(const std::string& filename, size_t index0, size_t index1);
-    Array<float> x;
-    Array<float> ki;
-    Array<float> ke;
-    Array<float> y;
+    Array<FixedArray<float, 3>> x;
+    TransformationMatrix<float, 2> ki;
+    Array<TransformationMatrix<float, 3>> ke;
+    Array<FixedArray<float, 2>> y;
 };
 
 }}

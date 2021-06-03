@@ -8,49 +8,49 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
+CameraFrame::CameraFrame(const TransformationMatrix<float, 3>& pose)
+:pose{ pose }
+{
+    calculate_kep();
+}
+
 CameraFrame::CameraFrame(
-    const Array<float>& rotation,
-    const Array<float>& position,
-    const Array<float>& kep)
-:rotation(rotation),
- position(position),
- kep(kep)
- {
-    assert(all(rotation.shape() == ArrayShape{3, 3}));
-    assert(all(position.shape() == ArrayShape{3}));
-    assert_true(!kep.initialized() || all(kep.shape() == ArrayShape{6}));
-    set_kep_if_undefined();
+    const TransformationMatrix<float, 3>& pose,
+    const FixedArray<float, 6>& kep)
+:pose{ pose },
+ kep{ kep }
+{}
+
+TransformationMatrix<float, 3> CameraFrame::projection_matrix_3x4() const {
+    return pose.inverted();
 }
 
-Array<float> CameraFrame::projection_matrix_3x4() const {
-    return assemble_inverse_homogeneous_3x4(rotation, position);
+const TransformationMatrix<float, 3>& CameraFrame::reconstruction_matrix_3x4() const {
+    return pose;
 }
 
-Array<float> CameraFrame::reconstruction_matrix_3x4() const {
-    return assemble_homogeneous_3x4(rotation, position);
+bool CameraFrame::point_in_fov(const FixedArray<float, 3>& x, float threshold) const {
+    return projection_matrix_3x4().transform(x)(2) > threshold;
 }
 
-bool CameraFrame::point_in_fov(const Array<float>& x, float threshold) const {
-    assert(all(x.shape() == 3));
-    return dot1d(projection_matrix_3x4(), homogenized_4(x))(2) > threshold;
+FixedArray<float, 3> CameraFrame::dir(size_t i) const {
+    return pose.R().column(i);
 }
 
-Array<float> CameraFrame::dir(size_t i) const {
-    return rotation.col_range(i, i + 1).flattened();
+void CameraFrame::set_from_projection_matrix_3x4(const TransformationMatrix<float, 3>& projection)
+{
+    pose = projection.inverted();
+    calculate_kep();
 }
 
 void CameraFrame::set_from_projection_matrix_3x4(
-    const Array<float>& projection,
-    const Array<float>& kep)
+    const TransformationMatrix<float, 3>& projection,
+    const FixedArray<float, 6>& kep)
 {
-    assert_true(!kep.initialized() || all(kep.shape() == ArrayShape{6}));
-    homogeneous_to_inverse_t_R(projection, position, rotation);
+    pose = projection.inverted();
     this->kep = kep;
-    set_kep_if_undefined();
 }
 
-void CameraFrame::set_kep_if_undefined() {
-    if (!kep.initialized()) {
-        kep = k_external_inverse(projection_matrix_3x4());
-    }
+void CameraFrame::calculate_kep() {
+    kep = k_external_inverse(projection_matrix_3x4());
 }

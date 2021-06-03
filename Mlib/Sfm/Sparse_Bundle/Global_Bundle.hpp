@@ -10,7 +10,12 @@
 #include <map>
 #include <set>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib {
+    
+template <class TData, size_t n>
+class TransformationMatrix;
+
+namespace Sfm {
 
 class Y {
 public:
@@ -69,7 +74,7 @@ public:
         const std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points,
         const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         const std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
-        const Array<float>& intrinsic_matrix,
+        const TransformationMatrix<float, 2>& intrinsic_matrix,
         bool skip_missing_cameras,
         const std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations);
     void copy_out(

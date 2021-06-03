@@ -14,7 +14,7 @@ public:
     : H(homography) {}
     bool sample_destination(size_t r, size_t c, const ArrayShape& shape, BilinearInterpolator<TData>& bi) const {
         FixedArray<size_t, 2> id_s{r, c};
-        FixedArray<TData, 2> id_d{a2fi(dehomogenized_2(apply_homography(H, homogenized_3(i2a(id_s)))))};
+        FixedArray<TData, 2> id_d{a2fi(apply_homography(H, i2a(id_s)))};
         return bilinear_interpolation(id_d(0), id_d(1), shape, bi);
     }
 private:

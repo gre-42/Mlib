@@ -3,31 +3,30 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Svd4.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
-Array<float> Mlib::Sfm::find_fundamental_matrix(
-    const Array<float>& y0,
-    const Array<float>& y1,
+FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1,
     bool method_inverse_iteration)
 {
-    assert(y0.ndim() == 2);
-    assert(y1.ndim() == 2);
-    assert(y0.shape(1) == 3);
-    assert(y1.shape(1) == 3);
-    assert(all(y0.shape() == y1.shape()));
-    Array<double> Y(ArrayShape{y0.shape(0), 9});
-    for (size_t r = 0; r < y0.shape(0); ++r) {
-        Y(r, 0) = y1(r, 0) * y0(r, 0); // e11
-        Y(r, 1) = y1(r, 0) * y0(r, 1); // e12
-        Y(r, 2) = y1(r, 0);            // e13
-        Y(r, 3) = y1(r, 1) * y0(r, 0); // e21
-        Y(r, 4) = y1(r, 1) * y0(r, 1); // e22
-        Y(r, 5) = y1(r, 1);            // e23
-        Y(r, 6) = y0(r, 0);            // e31
-        Y(r, 7) = y0(r, 1);            // e32
-        Y(r, 8) = 1;                   // e33
+    assert(y0.ndim() == 1);
+    assert(y1.ndim() == 1);
+    assert(y0.length() == y1.length());
+    Array<double> Y(ArrayShape{y0.length(), 9});
+    for (size_t r = 0; r < y0.length(); ++r) {
+        Y(r, 0) = double(y1(r)(0)) * y0(r)(0); // e11
+        Y(r, 1) = double(y1(r)(0)) * y0(r)(1); // e12
+        Y(r, 2) = y1(r)(0);                    // e13
+        Y(r, 3) = double(y1(r)(1)) * y0(r)(0); // e21
+        Y(r, 4) = double(y1(r)(1)) * y0(r)(1); // e22
+        Y(r, 5) = y1(r)(1);                    // e23
+        Y(r, 6) = y0(r)(0);                    // e31
+        Y(r, 7) = y0(r)(1);                    // e32
+        Y(r, 8) = 1;                           // e33
     }
     //Array<double> u;
     //Array<double> s;
@@ -48,7 +47,7 @@ Array<float> Mlib::Sfm::find_fundamental_matrix(
         // multiple zero eigenvalues, which means that there
         // is a problem with the data.
         inverse_iteration_symm(dot(Y.T(), Y), u, s);
-        return u.reshaped(ArrayShape{3, 3}).casted<float>();
+        return FixedArray<double, 3, 3>{u.reshaped(ArrayShape{ 3, 3 })}.casted<float>();
     } else {
         Array<double> u;
         Array<double> vT;
@@ -57,7 +56,7 @@ Array<float> Mlib::Sfm::find_fundamental_matrix(
         //std::cerr << "s " << s << std::endl;
         //std::cerr << "vT " << vT << std::endl;
         //std::cerr << vT.row_range(8, 9) << std::endl;
-        return vT.row_range(8, 9).reshaped(ArrayShape{3, 3}).casted<float>();
+        return FixedArray<double, 3, 3>{vT.row_range(8, 9).reshaped(ArrayShape{ 3, 3 })}.casted<float>();
         //std::cerr << vT << std::endl;
     }
     //std::cerr << "zzzz\n";
@@ -75,23 +74,22 @@ Array<float> Mlib::Sfm::find_fundamental_matrix(
 }
 
 Array<float> Mlib::Sfm::fundamental_error(
-    const Array<float>& F,
-    const Array<float>& y0,
-    const Array<float>& y1)
+    const FixedArray<float, 3, 3>& F,
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1)
 {
-    assert(all(F.shape() == ArrayShape{3, 3}));
     assert(y0.ndim() == 2);
     assert(y0.shape(1) == 3);
     assert(all(y0.shape() == y1.shape()));
     Array<float> result(ArrayShape{y0.shape(0)});
     for (size_t r = 0; r < y1.shape(0); ++r) {
-        result[r] = dot0d(y1[r], dot1d(F, y0[r]));
+        result(r) = dot0d(homogenized_3(y1(r)), dot1d(F, homogenized_3(y0(r))));
     }
     return result;
 }
 
-Array<float> Mlib::Sfm::fundamental_to_essential(const Array<float>& F, const Array<float>& intrinsic_matrix) {
-    return dot(outer(intrinsic_matrix.T(), F), intrinsic_matrix);
+FixedArray<float, 3, 3> Mlib::Sfm::fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix) {
+    return dot(outer(intrinsic_matrix.affine().T(), F), intrinsic_matrix.affine());
     //return (lstsq_chol(intrinsic_matrix, F), intrinsic_matrix.T());
 }
 
@@ -102,20 +100,17 @@ Array<float> Mlib::Sfm::find_epipole(const Array<float>& F) {
 }
 
 void Mlib::Sfm::find_epiline(
-    const Array<float>& F,
-    const Array<float>& y,
-    Array<float>& p,
-    Array<float>& v)
+    const FixedArray<float, 3, 3>& F,
+    const FixedArray<float, 2>& y,
+    FixedArray<float, 2>& p,
+    FixedArray<float, 2>& v)
 {
-    assert(all(F.shape() == ArrayShape{3, 3}));
-    assert(y.length() == 3);
-    Array<float> n = dot1d(F, y);
-    v = Array<float>{-n(1), n(0)};
+    FixedArray<float, 3> n = dot1d(F, homogenized_3(y));
+    v = FixedArray<float, 2>{-n(1), n(0)};
     float c = n(2);
-    Array<float> yd = dehomogenized_2(y);
-    Array<float> nd = dehomogenized_2(n, n(2));
+    FixedArray<float, 2> nd = dehomogenized_2(n, n(2));
     // nd' * p + c = nd' * (yd + alpha * nd) + c = 0
-    p = yd - nd * (dot0d(nd, yd) + c) / sum(squared(nd));
+    p = y - nd * (dot0d(nd, y) + c) / sum(squared(nd));
     /*float a = n_t(0);
     float b = n_t(1);
     float c = n_t(2);

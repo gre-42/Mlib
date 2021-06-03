@@ -1,5 +1,5 @@
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 #include <iostream>
@@ -8,16 +8,16 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 void test_chessboard_detector() {
-    const auto bitmap = PpmImage::load_from_file("Data/chessboard1.ppm");
+    const auto bitmap = StbImage::load_from_file("Data/chessboard1.png");
 
     const Array<float> image = bitmap.to_float_grayscale();
-    PpmImage bmp;
-    Array<float> x;
-    Array<float> y;
+    StbImage bmp;
+    Array<FixedArray<float, 2>> x;
+    Array<FixedArray<float, 2>> y;
     detect_chessboard(image, ArrayShape{6, 9}, x, y, bmp);
 
-    assert_true(all(x.shape() == ArrayShape{6 * 9, 4}));
-    assert_true(all(y.shape() == ArrayShape{6 * 9, 3}));
+    assert_true(all(x.shape() == ArrayShape{6 * 9}));
+    assert_true(all(y.shape() == ArrayShape{6 * 9}));
 
     // std::list<Array<float>> feature_points = find_saddle_points(image);
     // highlight_features(feature_points, res);
@@ -26,14 +26,14 @@ void test_chessboard_detector() {
 }
 
 void test_inverse_homography() {
-    Array<float> homography{
-        {0.5, 0.6, 0.2},
-        {0.1, 0.7, 0.15},
-        {0.25, 0.9, 2}};
-    Array<float> a{0.31, 0.45, 1};
-    Array<float> b = apply_homography(homography, a);
-    Array<float> bi = apply_inverse_homography(homography, b);
-    assert_allclose(bi, a);
+    FixedArray<float, 3, 3> homography{
+        0.5f, 0.6f, 0.2f,
+        0.1f, 0.7f, 0.15f,
+        0.25f, 0.9f, 2.f};
+    FixedArray<float, 2> a{0.31f, 0.45f};
+    FixedArray<float, 2> b = apply_homography(homography, a);
+    FixedArray<float, 2> bi = apply_inverse_homography(homography, b);
+    assert_allclose(bi.to_array(), a.to_array());
 }
 
 int main(int argc, char **argv) {

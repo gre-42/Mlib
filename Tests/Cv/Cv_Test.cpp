@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>
@@ -31,94 +32,94 @@ void test_tait_bryan_angles_2_matrix() {
 }
 
 void test_homogeneous_jacobian() {
-    Array<float> M = random_array3<float>(ArrayShape{3, 4}, 5);
-    Array<float> x = random_array3<float>(ArrayShape{4}, 2);
+    FixedArray<float, 3, 4> M{ random_array3<float>(ArrayShape{3, 4}, 5) };
+    FixedArray<float, 4> x{ random_array3<float>(ArrayShape{4}, 2) };
     assert_allclose(
-        numerical_differentiation([&](
-            const Array<float>& xx){ return dot1d(M.row_range(0, 2), xx) / dot0d(M[2], xx); },
+        numerical_differentiation<2>([&](
+            const FixedArray<float, 4>& xx){ return dot1d(M.row_range<0, 2>(), xx) / dot0d(M[2], xx); },
             x,
-            float(1e-3)),
-        homogeneous_jacobian_dx(M, x),
-        1e-3);
+            float(1e-3)).to_array(),
+        homogeneous_jacobian_dx(M, x).to_array(),
+        float(1e-3));
 }
 
 void test_tait_bryan_angles_jacobian() {
     {
         // Test gradient with a single angle.
-        float theta = 0.3;
-        Array<float> x = uniform_random_array<float>(ArrayShape{3}, 3);
+        float theta = 0.3f;
+        FixedArray<float, 3> x{ uniform_random_array<float>(ArrayShape{3}, 3) };
         assert_allclose(
-            numerical_differentiation([&](
-                const Array<float>& ttheta){ return dot1d(tait_bryan_angles_2_matrix(Array<float>{ttheta(0), 0.f, 0.f}), x); },
-                Array<float>{theta},
-                float(1e-4)).flattened(),
-            rodrigues_gradient_dtheta(Array<float>{1, 0, 0}, theta, x),
+            numerical_differentiation<3>([&](
+                const FixedArray<float, 1>& ttheta){ return dot1d(tait_bryan_angles_2_matrix(FixedArray<float, 3>{ttheta(0), 0.f, 0.f}), x); },
+                FixedArray<float, 1>{theta},
+                float(1e-4)).to_array().flattened(),
+            rodrigues_gradient_dtheta(FixedArray<float, 3>{1, 0, 0}, theta, x).to_array(),
             float(1e-3));
     }
 
     {
         // Test jacobian with 3 angles.
-        Array<float> theta = uniform_random_array<float>(ArrayShape{3}, 1);
-        Array<float> x = uniform_random_array<float>(ArrayShape{3}, 2);
+        FixedArray<float, 3> theta{ uniform_random_array<float>(ArrayShape{3}, 1) };
+        FixedArray<float, 3> x{ uniform_random_array<float>(ArrayShape{3}, 2) };
 
         assert_allclose(
-            numerical_differentiation([&](
-                const Array<float>& ttheta){ return dot1d(tait_bryan_angles_2_matrix(ttheta), x); },
+            numerical_differentiation<3>([&](
+                const FixedArray<float, 3>& ttheta){ return dot1d(tait_bryan_angles_2_matrix(ttheta), x); },
                 theta,
-                float(1e-4)),
-            tait_bryan_angles_dtheta(theta, x),
+                float(1e-4)).to_array(),
+            tait_bryan_angles_dtheta(theta, x).to_array(),
             float(1e-3));
     }
 }
 
 void test_projection_jacobian_ke() {
-    Array<float> kep = random_array3<float>(ArrayShape{6}, 2);
-    Array<float> t = random_array3<float>(ArrayShape{3}, 2);
-    Array<float> x = random_array3<float>(ArrayShape{3}, 2);
-    Array<float> ki{
-        {0.5, 0, 0.1},
-        {0, 0.7, 0.2},
-        {0, 0, 1}};
+    FixedArray<float, 6> kep{ random_array3<float>(ArrayShape{6}, 2) };
+    FixedArray<float, 3> t{ random_array3<float>(ArrayShape{3}, 2) };
+    FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
+    FixedArray<float, 3, 3> ki{
+        0.5, 0, 0.1,
+        0, 0.7, 0.2,
+        0, 0, 1};
     assert_allclose(
-        numerical_differentiation([&](const Array<float>& kkep){
+        numerical_differentiation<2>([&](const FixedArray<float, 6>& kkep){
             return projected_points_1p_1ke(
-                homogenized_4(x),
-                ki,
-                k_external(kkep)).row_range(0, 2);
+                x,
+                TransformationMatrix<float, 2>{ ki },
+                k_external(kkep)).row_range<0, 2>();
         },
         kep,
-        float(1e-2)),
+        float(1e-2)).to_array(),
         Array<float>{
-            {0.0350952, 0.301784, -0.15803, 0.536746, 0, -0.515664},
-            {-0.383005, 0.220874, -0.0106782, 0, 0.751445, -0.28733}});
+            {0.0350952f, 0.301784f, -0.15803f, 0.536746f, 0.f, -0.515664f},
+            {-0.383005f, 0.220874f, -0.0106782f, 0.f, 0.751445f, -0.28733f}});
     assert_allclose(
-        projected_points_jacobian_dke_1p_1ke(homogenized_4(x), ki, kep),
+        projected_points_jacobian_dke_1p_1ke(x, TransformationMatrix<float, 2>{ki}, kep).to_array(),
         Array<float>{
-            {0.0338736, 0.300373, -0.158062, 0.536745, 0, -0.521198},
-            {-0.383656, 0.220084, -0.00957519, 0, 0.751443, -0.290414}},
+            {0.0338736f, 0.300373f, -0.158062f, 0.536745f, 0.f, -0.521198f},
+            {-0.383656f, 0.220084f, -0.00957519f, 0, 0.751443f, -0.290414f}},
         1e-2);
 }
 
 void test_projection_jacobian_ki() {
-    Array<float> ke = k_external(uniform_random_array<float>(ArrayShape{6}, 1));
-    Array<float> t = uniform_random_array<float>(ArrayShape{3}, 2);
-    Array<float> x = uniform_random_array<float>(ArrayShape{3}, 3);
-    Array<float> kip = uniform_random_array<float>(ArrayShape{4}, 4);
+    TransformationMatrix<float, 3> ke = k_external(FixedArray<float, 6>{uniform_random_array<float>(ArrayShape{ 6 }, 1)});
+    FixedArray<float, 3> t{ uniform_random_array<float>(ArrayShape{3}, 2) };
+    FixedArray<float, 3> x{ uniform_random_array<float>(ArrayShape{3}, 3) };
+    FixedArray<float, 4> kip{ uniform_random_array<float>(ArrayShape{4}, 4) };
     assert_allclose(
-        numerical_differentiation([&](const Array<float>& kkip){
+        numerical_differentiation<2>([&](const FixedArray<float, 4>& kkip){
             return projected_points_1p_1ke(
-                homogenized_4(x),
+                x,
                 k_internal(kkip),
-                ke).row_range(0, 2);
+                ke).row_range<0, 2>();
         },
         kip,
-        float(1e-2)),
+        float(1e-2)).to_array(),
         Array<float>{
             {12.9208, 0.999975, 0, 0},
             {0, 0, 9.05638, 1.00002}},
         1e-4);
     assert_allclose(
-        projected_points_jacobian_dki_1p_1ke(homogenized_4(x), kip, ke),
+        projected_points_jacobian_dki_1p_1ke(x, ke).to_array(),
         Array<float>{
             {12.9208, 0.999975, 0, 0},
             {0, 0, 9.05638, 1.00002}},

@@ -9,21 +9,20 @@
 
 namespace Mlib {
 
-Array<float> intrinsic_times_inverse(
-    const Array<float>& intrinsic_matrix,
-    const Array<float>& inv_rhs);
+template <class TData, size_t n>
+class TransformationMatrix;
 
-Array<float> reconstruction_times_inverse(
-    const Array<float>& recon_lhs,
-    const Array<float>& inv_rhs);
+TransformationMatrix<float, 3> reconstruction_times_inverse(
+    const TransformationMatrix<float, 3>& recon_lhs,
+    const TransformationMatrix<float, 3>& inv_rhs);
 
-Array<float> inverse_projection_in_reference(
-    const Array<float>& reference,
-    const Array<float>& b);
+TransformationMatrix<float, 3> inverse_projection_in_reference(
+    const TransformationMatrix<float, 3>& reference,
+    const TransformationMatrix<float, 3>& b);
 
-Array<float> projection_in_reference(
-    const Array<float>& reference,
-    const Array<float>& b);
+TransformationMatrix<float, 3> projection_in_reference(
+    const TransformationMatrix<float, 3>& reference,
+    const TransformationMatrix<float, 3>& b);
 
 Array<float> reconstruction_in_reference(
     const Array<float>& reference,
@@ -113,6 +112,27 @@ void homogeneous_to_inverse_t_R(const Array<float>& ke, Array<float>& t, Array<f
 Array<float> assemble_homogeneous_3x4(const Array<float>& R, const Array<float>& t);
 
 template <class TData>
+inline FixedArray<TData, 2, 3> assemble_homogeneous_2x3(
+    const FixedArray<TData, 2, 2>& R,
+    const FixedArray<TData, 2>& t)
+{
+    return FixedArray<TData, 2, 3>{
+        R(0, 0), R(0, 1), t(0),
+        R(1, 0), R(1, 1), t(1)};
+}
+
+template <class TData>
+inline FixedArray<TData, 3, 4> assemble_homogeneous_3x4(
+    const FixedArray<TData, 3, 3>& R,
+    const FixedArray<TData, 3>& t)
+{
+    return FixedArray<TData, 3, 4>{
+        R(0, 0), R(0, 1), R(0, 2), t(0),
+        R(1, 0), R(1, 1), R(1, 2), t(1),
+        R(2, 0), R(2, 1), R(2, 2), t(2)};
+}
+
+template <class TData>
 inline FixedArray<TData, 3, 3> assemble_homogeneous_3x3(
     const FixedArray<TData, 2, 2>& R,
     const FixedArray<TData, 2>& t)
@@ -192,7 +212,44 @@ inline FixedArray<float, 3> dehomogenized_3(const FixedArray<float, 4>& a) {
 
 Array<float> dehomogenized_3x4(const Array<float>& a);
 
-Array<float> homogeneous_jacobian_dx(const Array<float>& M, const Array<float>& x);
+template <class TData, size_t r, size_t c>
+FixedArray<TData, r - 1, c> homogeneous_jacobian_dx(const FixedArray<TData, r, c>& M, const FixedArray<TData, c>& x) {
+    static_assert(r > 0);
+    const auto m = M.row_range<0, r - 1>();
+    const auto Mx = dot1d(M, x);
+    const auto mx = Mx.row_range<0, r - 1>();
+    const TData bx = Mx(r - 1);
+
+    const auto mx_2d = mx.reshaped<r - 1, 1>();
+    const auto b_2d = M.row_range<r - 1, r>();
+
+    // M = [m0; m1 ... ; b]
+    // d/dx m'x/(b'x) = (m(0)(b'x) - (m'x)*b(0)) / squared(b'x)
+
+    return ((m * bx) - dot(mx_2d, b_2d)) / squared(bx);
+}
+
+template <class TData, size_t n>
+FixedArray<TData, n - 1, n - 1> R_from_NxN1(const FixedArray<TData, n - 1, n>& a);
+
+template <class TData, size_t n>
+FixedArray<TData, n - 1> t_from_NxN1(const FixedArray<TData, n - 1, n>& a);
+
+template <>
+inline FixedArray<float, 3, 3> R_from_NxN1(const FixedArray<float, 3, 4>& a) {
+    return FixedArray<float, 3, 3>{
+        a(0, 0), a(0, 1), a(0, 2),
+        a(1, 0), a(1, 1), a(1, 2),
+        a(2, 0), a(2, 1), a(2, 2)};
+}
+
+template <>
+inline FixedArray<float, 3> t_from_NxN1(const FixedArray<float, 3, 4>& a) {
+    return FixedArray<float, 3>{
+        a(0, 3),
+        a(1, 3),
+        a(2, 3)};
+}
 
 template <class TData, size_t n>
 FixedArray<TData, n-1, n-1> R_from_NxN(const FixedArray<TData, n, n>& a);
@@ -275,6 +332,28 @@ inline FixedArray<double, 4, 4> assemble_homogeneous_NxN<double, 3>(
     const FixedArray<double, 3>& t)
 {
     return assemble_homogeneous_4x4(R, t);
+}
+
+
+template <class TData, size_t n>
+inline FixedArray<TData, n, n + 1> assemble_homogeneous_NxN1(
+    const FixedArray<TData, n, n>& R,
+    const FixedArray<TData, n>& t);
+
+template <>
+inline FixedArray<float, 2, 3> assemble_homogeneous_NxN1<float, 2>(
+    const FixedArray<float, 2, 2>& R,
+    const FixedArray<float, 2>& t)
+{
+    return assemble_homogeneous_2x3(R, t);
+}
+
+template <>
+inline FixedArray<float, 3, 4> assemble_homogeneous_NxN1<float, 3>(
+    const FixedArray<float, 3, 3>& R,
+    const FixedArray<float, 3>& t)
+{
+    return assemble_homogeneous_3x4(R, t);
 }
 
 }

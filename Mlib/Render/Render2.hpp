@@ -42,7 +42,7 @@ public:
     void render_depth_map(
         const Array<float>& rgb_picture,
         const Array<float>& depth_picture,
-        const FixedArray<float, 3, 3>& intrinsic_matrix,
+        const TransformationMatrix<float, 2>& intrinsic_matrix,
         bool rotate = false,
         float scale = 1,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),

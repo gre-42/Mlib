@@ -363,13 +363,13 @@ void test_fixed_cholesky() {
 }
 
 void test_interp() {
-    Interp<float> interp{{0, 0.1, 2, 3}, {4.123, 2.567, 3.89, 4.2}, OutOfRangeBehavior::EXPLICIT, -10, 20};
+    Interp<float> interp{{0.f, 0.1f, 2.f, 3.f}, {4.123f, 2.567f, 3.89f, 4.2f}, OutOfRangeBehavior::EXPLICIT, -10, 20};
     assert_allclose(
         Array<float>{interp(-1), interp(4.3)},
         Array<float>{-10, 20});
     assert_allclose(
         Array<float>{interp(0), interp(0.05), interp(0.1), interp(2), interp(3)},
-        Array<float>{4.123, 3.345, 2.567, 3.89, 4.2});
+        Array<float>{4.123f, 3.345f, 2.567f, 3.89f, 4.2f});
 }
 
 int main(int argc, const char** argv) {

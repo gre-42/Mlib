@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <iostream>
@@ -15,7 +15,7 @@ void highlight_saddle_points(
     size_t niter,
     size_t marker_size)
 {
-    auto bitmap = PpmImage::load_from_file(source);
+    auto bitmap = StbImage::load_from_file(source);
 
     Array<float> image = bitmap.to_float_grayscale();
     for (size_t i = 0; i < niter; ++i) {

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -141,16 +142,13 @@ void draw_points_as_boxes(
     const TColor& value)
 {
     assert(image.ndim() == 2);
-    assert(feature_points.ndim() == 2);
-    assert(feature_points.shape(1) == 2);
-    for (const Array<float>& feature_point : feature_points) {
-        assert(feature_point.ndim() == 1);
-        assert(feature_point.length() == 2);
+    assert(feature_points.ndim() == 1);
+    for (Array<float> feature_point : feature_points) {
         //assert(feature_point(0) >= 0);
         //assert(feature_point(0) <= image.shape(1) - 1);
         //assert(feature_point(1) >= 0);
         //assert(feature_point(1) <= image.shape(0) - 1);
-        ArrayShape index{a2i(feature_point)};
+        ArrayShape index{ a2i(feature_point) };
         draw_fill_rect(image, index, size, value);
     }
 }

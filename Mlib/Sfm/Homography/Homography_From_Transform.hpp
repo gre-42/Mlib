@@ -13,17 +13,16 @@ namespace Mlib { namespace Sfm {
  **/
 template <class TData>
 FixedArray<TData, 3, 3> rotation_and_translation_to_homography(
-    const FixedArray<TData, 3, 3>& R,
-    const FixedArray<TData, 3>& t,
+    const TransformationMatrix<float, 3>& tm,
     const FixedArray<TData, 3>& n,
     const TData& d)
 {
-    return R - dot2d(t.as_column_vector(), n.as_row_vector()) / d;
+    return tm.R() - dot2d(tm.t().as_column_vector(), n.as_row_vector()) / d;
 }
 
 template <class TData>
 FixedArray<TData, 3, 3> pixel_homography(
-    const FixedArray<TData, 3, 3>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     const FixedArray<TData, 3, 3>& homog)
 {
     // Dense Reconstruction and Tracking with Real-Time Applications
@@ -34,8 +33,8 @@ FixedArray<TData, 3, 3> pixel_homography(
 
     // i * h * i^{-1} = (i^{-T} * h^T * i^T)^T
     FixedArray<TData, 3, 3> res = lstsq_chol(
-        intrinsic_matrix.T(),
-        outer(homog.T(), intrinsic_matrix)).T();
+        intrinsic_matrix.affine().T(),
+        outer(homog.T(), intrinsic_matrix.affine())).T();
     return res / res(2, 2);
 }
 

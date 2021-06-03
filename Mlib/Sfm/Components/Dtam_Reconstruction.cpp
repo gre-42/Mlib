@@ -9,7 +9,7 @@ DtamReconstruction::DtamReconstruction(
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     const DownSampler& down_sampler,
-    const Array<float>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     std::string cache_dir,
     const DtamComponentConfig& cfg)
 : image_frames_{image_frames},

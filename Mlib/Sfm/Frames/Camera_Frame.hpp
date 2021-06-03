@@ -1,27 +1,29 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 namespace Mlib { namespace Sfm {
 
 class CameraFrame {
 public:
-    static inline const Array<float> undefined_kep = Array<float>();
+    explicit CameraFrame(
+        const TransformationMatrix<float, 3>& pose);
     CameraFrame(
-        const Array<float>& rotation,
-        const Array<float>& position,
-        const Array<float>& kep);
-    Array<float> rotation;
-    Array<float> position;
-    Array<float> kep;
-    Array<float> projection_matrix_3x4() const;
-    Array<float> reconstruction_matrix_3x4() const;
-    bool point_in_fov(const Array<float>& x, float threshold) const;
-    Array<float> dir(size_t i) const;
+        const TransformationMatrix<float, 3>& pose,
+        const FixedArray<float, 6>& kep);
+    TransformationMatrix<float, 3> pose;
+    FixedArray<float, 6> kep;
+    TransformationMatrix<float, 3> projection_matrix_3x4() const;
+    const TransformationMatrix<float, 3>& reconstruction_matrix_3x4() const;
+    bool point_in_fov(const FixedArray<float, 3>& x, float threshold) const;
+    FixedArray<float, 3> dir(size_t i) const;
     void set_from_projection_matrix_3x4(
-        const Array<float>& projection,
-        const Array<float>& kep);
+        const TransformationMatrix<float, 3>& projection);
+    void set_from_projection_matrix_3x4(
+        const TransformationMatrix<float, 3>& projection,
+        const FixedArray<float, 6>& kep);
 private:
-    void set_kep_if_undefined();
+    void calculate_kep();
 };
 
 }}

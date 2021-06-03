@@ -36,21 +36,26 @@ public:
     typedef TData value_type;
 
     FixedArray() = default;
-    explicit FixedArray(const Array<TData>& a) {
-        assert(all(a.shape() == ArrayShape{tshape0, tshape...}));
-        memcpy(flat_begin(), a.flat_iterable().begin(), nbytes());
-    }
-    explicit FixedArray(const std::vector<TData>& v) {
-        assert(v.size() == nelements());
-        memcpy(flat_begin(), &*v.begin(), nbytes());
-    }
-    explicit FixedArray(const ArrayShape& shape)
-    : FixedArray{Array<size_t>::from_shape(shape)}
-    {}
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
             v = rhs;
         }
+    }
+    explicit FixedArray(const Array<TData>& a) {
+        assert(all(a.shape() == ArrayShape{tshape0, tshape...}));
+        std::copy(a.flat_iterable().begin(), a.flat_iterable().end(), flat_begin());
+    }
+    explicit FixedArray(const std::vector<TData>& v) {
+        assert(v.size() == nelements());
+        std::copy(v.data(), v.data() + v.size(), flat_begin());
+    }
+    explicit FixedArray(const ArrayShape& shape)
+    : FixedArray{shape.begin(), shape.ndim()}
+    {}
+    explicit FixedArray(const TData* data, size_t nelements)
+    {
+        assert(nelements == this->nelements());
+        set_values_from_ptr(data);
     }
     template<typename... Values>
     FixedArray(const TData& v0, const Values&... values) {
@@ -71,6 +76,9 @@ public:
         *(flat_begin() + i) = v;
         // (*this)(i) = v;
         set_values<i + 1>(values...);
+    }
+    void set_values_from_ptr(const TData* v) {
+        std::copy(v, v + nelements(), flat_begin());
     }
     template <typename... Ids>
     const TData& operator() (size_t id0, Ids... ids) const {
@@ -216,10 +224,10 @@ public:
         auto& x = const_cast<FixedArray<TData, tshape0, tshape...>&>(*this);
         return x.row_range<tstart, tend>();
     }
-    FixedArray<TData, tshape0> column(size_t c, size_t r_begin = 0, size_t r_end = tshape0) const {
+    FixedArray<TData, tshape0> column(size_t c) const {
         static_assert(ndim() == 2);
         FixedArray<TData, tshape0> result;
-        for (size_t r = r_begin; r < r_end; ++r) {
+        for (size_t r = 0; r < tshape0; ++r) {
             result(r) = (*this)(r, c);
         }
         return result;
@@ -237,6 +245,10 @@ public:
     }
     constexpr static FixedArrayShape<tshape0, tshape...> shape() {
         return FixedArrayShape<tshape0, tshape...>();
+    }
+    template <size_t N>
+    constexpr static size_t static_shape() {
+        return shape().get<N>();
     }
     template <size_t... tnew_shape>
     constexpr FixedArray<TData, tnew_shape...>& reshaped(const FixedArrayShape<tnew_shape...>&) {
@@ -281,9 +293,12 @@ public:
         return reshaped(FixedArrayShape<nelements()>());
     }
     Array<TData> to_array() const {
-        Array<TData> result{ArrayShape{tshape0, tshape...}};
-        memcpy(result.flat_iterable().begin(), flat_iterable().begin(), nbytes());
+        Array<TData> result{ ArrayShape{tshape0, tshape...} };
+        memcpy(result.flat_iterable().begin(), flat_begin(), nbytes());
         return result;
+    }
+    ArrayShape array_shape() const {
+        return ArrayShape{ tshape0, tshape... };
     }
     auto T() const {
         static_assert(ndim() == 2);
@@ -304,6 +319,9 @@ public:
             }
         }
         return result;
+    }
+    auto vH() const {
+        return H();
     }
     FixedArray operator - () const {
         return applied([&](const TData& v){ return -v; });

@@ -148,7 +148,7 @@ BvhLoader::BvhLoader(
         if (columns_.empty()) {
             throw std::runtime_error("Columns list is empty");
         }
-        FixedArray<float, 3> center(0);
+        FixedArray<float, 3> center(0.f);
         for (const auto& f : raw_frames) {
             center += f.at(columns_.begin()->joint_name)[0];
         }

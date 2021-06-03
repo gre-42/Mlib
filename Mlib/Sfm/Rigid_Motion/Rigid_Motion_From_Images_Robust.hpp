@@ -15,18 +15,18 @@ namespace Mlib { namespace Sfm { namespace Rmfi {
  * x0_r1_r0: projection from r0 to r1
  */
 template <class TData>
-Array<TData> rigid_motion_from_images_robust(
+TransformationMatrix<float, 3> rigid_motion_from_images_robust(
     const Array<TData>& im_r0,
     const Array<TData>& im_r1,
     const Array<TData>& im_l,
     const Array<TData>& im_r0_depth,
-    const FixedArray<TData, 3, 3>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     const std::vector<TData>& sigmas,
     const std::vector<TData>& thresholds,
-    const Array<TData>& x0_r1_r0 = zeros<TData>(ArrayShape{6}),
+    const FixedArray<TData, 6>& x0_r1_r0 = fixed_zeros<TData, 6>(),
     bool estimate_rotation_first = true)
 {
-    Array<TData> x0_rot_l_r1 = zeros<TData>(ArrayShape{3});
+    FixedArray<TData, 3> x0_rot_l_r1 = fixed_zeros<TData, 3>();
     if (estimate_rotation_first) {
         for (const TData& sigma : sigmas) {
             Hfi::rotation_from_images(
@@ -38,23 +38,24 @@ Array<TData> rigid_motion_from_images_robust(
                 &x0_rot_l_r1);
         }
     }
-    Array<TData> x0_l_r1 = zeros<TData>(ArrayShape{6});
-    x0_l_r1.row_range(0, 3) = x0_rot_l_r1;
+    FixedArray<TData, 6> x0_l_r1 = fixed_zeros<TData, 6>();
+    x0_l_r1.row_range<0, 3>() = x0_rot_l_r1;
 
     //Array<TData> x0_l_r0 = x0_r1_r0.copy();
     //x0_l_r0.row_range(0, 3) = x0_rot_l_r1;
-    Array<TData> x0_l_r0 = Cv::k_external_inverse(dot(
-        homogenized_4x4(Cv::k_external(x0_l_r1)),
-        homogenized_4x4(Cv::k_external(x0_r1_r0))).row_range(0, 3));
+    FixedArray<TData, 6> x0_l_r0 = Cv::k_external_inverse(
+        Cv::k_external(x0_l_r1) *
+        Cv::k_external(x0_r1_r0));
 
     assert(thresholds.size() == sigmas.size() - 1);
     auto threshold_it = thresholds.begin();
-    Array<TData> ke;
+    bool ke_initialized = false;
+    TransformationMatrix<TData, 3> ke;
     for (const TData& sigma : sigmas) {
         Array<TData> masked_im_r_depth_s = gaussian_filter_NWE(im_r0_depth, sigma, NAN);
-        if (ke.initialized()) {
+        if (ke_initialized) {
             masked_im_r_depth_s = masked_im_r_depth_s.array_array_binop(
-                d_pr_bilinear(im_r0, im_l, im_r0_depth, intrinsic_matrix.to_array(), ke),
+                d_pr_bilinear(im_r0, im_l, im_r0_depth, intrinsic_matrix, ke),
                 [&threshold_it](const TData& depth, const TData& err){ return (!std::isnan(err)) && (std::abs(err) < *threshold_it) ? depth : NAN; });
             // draw_nan_masked_grayscale(masked_im_r_depth_s, 0, 0).save_to_file("masked_im_r_depth_s-" + std::to_string(*threshold_it) + ".ppm");
             ++threshold_it;
@@ -63,12 +64,13 @@ Array<TData> rigid_motion_from_images_robust(
             gaussian_filter_NWE(im_r0, sigma, NAN),
             gaussian_filter_NWE(im_l, sigma, NAN),
             masked_im_r_depth_s,
-            intrinsic_matrix.to_array(),
+            intrinsic_matrix,
             false,             // differentiate_numerically
             &x0_l_r0,          // x0
             &x0_l_r0);         // xe
+        ke_initialized = true;
     }
-    return Cv::k_external(x0_l_r0);
+    return TransformationMatrix<float, 3>{ Cv::k_external(x0_l_r0) };
 }
 
 }}}

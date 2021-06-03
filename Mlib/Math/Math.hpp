@@ -13,6 +13,12 @@
 
 namespace Mlib {
 
+template <typename TData, size_t... tshape>
+class FixedArray;
+
+template <class TData, size_t tsize>
+inline FixedArray<TData, tsize, tsize> cholesky(const FixedArray<TData, tsize, tsize>& A);
+
 class PowerIterationDidNotConvergeError: public std::runtime_error {
 public:
     PowerIterationDidNotConvergeError(const std::string& what):
@@ -420,9 +426,9 @@ Array<TData> solve_LU(
  * alpha := eps^2
  * (C'C + alpha) * x = C'D + alpha * x0
  */
-template <class TDerivedB, class TData>
+template <class TDerivedA, class TDerivedB, class TData>
 Array<TData> solve_symm_inplace(
-    Array<TData>& A,
+    BaseDenseArray<TDerivedA, TData>& A,
     BaseDenseArray<TDerivedB, TData>& B,
     const TData& alpha = 0,
     const TData& beta = 0,
@@ -440,17 +446,17 @@ Array<TData> solve_symm_inplace(
         beta != TData(0))
     {
         // OpenCV Levenberg-Marquardt
-        for (size_t r = 0; r < A->shape(0); ++r) {
-            TData dr = alpha + beta * A(r, r);
-            A(r, r) += dr;
+        for (size_t r = 0; r < A->static_shape<0>(); ++r) {
+            TData dr = alpha + beta * (*A)(r, r);
+            (*A)(r, r) += dr;
             if (x0 != nullptr) {
-                for (size_t c = 0; c < B->shape(1); ++c) {
+                for (size_t c = 0; c < B->static_shape<1>(); ++c) {
                     (*B)(r, c) += (*x0)(r, c) * dr;
                 }
             }
         }
     }
-    Array<TData> L = cholesky(A);
+    auto L = cholesky(*A);
     return solve_LU(L, L.vH(), B);
 }
 
@@ -504,10 +510,10 @@ Array<typename TArrayA::value_type> lstsq_chol(
     const TArrayB& B,
     const typename TArrayA::value_type& alpha = 0,
     const typename TArrayA::value_type& beta = 0,
-    const Array<typename TArrayA::value_type>* dAT_A = nullptr,
+    const decltype(dot2d(A.vH(), A))* dAT_A = nullptr,
     const Array<typename TArrayA::value_type>* dAT_B = nullptr)
 {
-    Array<typename TArrayA::value_type> AT_A = dot2d(A.vH(), A);
+    auto AT_A = dot2d(A.vH(), A);
     Array<typename TArrayA::value_type> AT_B = dot2d(A.vH(), B);
     if (dAT_A != nullptr) {
         assert(all(dAT_A->shape() == AT_A.shape()));
@@ -526,7 +532,7 @@ Array<typename TArray::value_type> lstsq_chol_1d(
     const Array<typename TArray::value_type>& B,
     const typename TArray::value_type& alpha = 0,
     const typename TArray::value_type& beta = 0,
-    const Array<typename TArray::value_type>* dAT_A = nullptr,
+    const decltype(dot2d(A.vH(), A))* dAT_A = nullptr,
     const Array<typename TArray::value_type>* dAT_b = nullptr)
 {
     assert(B.ndim() == 1);
@@ -543,6 +549,19 @@ Array<typename TArray::value_type> lstsq_chol_1d(
         dAT_A,
         dAT_b == nullptr ? nullptr : &dAT_B1);
     return res.flattened();
+}
+
+template <class TArray>
+void lstsq_chol_1d(
+    Array<typename TArray::value_type>& result,
+    const TArray& A,
+    const Array<typename TArray::value_type>& B,
+    const typename TArray::value_type& alpha = 0,
+    const typename TArray::value_type& beta = 0,
+    const decltype(dot2d(A.vH(), A))* dAT_A = nullptr,
+    const Array<typename TArray::value_type>* dAT_b = nullptr)
+{
+    result = lstsq_chol_1d(A, B, alpha, beta, dAT_A, dAT_b);
 }
 
 template <class TData>
@@ -565,7 +584,7 @@ void randomize_array(Array<TData> a, size_t seed) {
     Array<TData> fa = a.flattened();
     for (size_t i=0; i<fa.length(); i++) {
         //a(c) = std::uniform_real_distribution<TData>()();
-        fa(i) = seed;
+        fa(i) = (TData)seed;
         seed = (seed * 27 + 47) % 1000;
     }
 }
@@ -586,7 +605,7 @@ void randomize_array2(Array<TData> a, unsigned int seed) {
     std::srand(seed);
     Array<TData> fa = a.flattened();
     for (size_t i=0; i<fa.length(); i++) {
-        fa(i) = std::rand() / double(RAND_MAX);
+        fa(i) = (TData)(std::rand() / double(RAND_MAX));
     }
 }
 
@@ -677,23 +696,24 @@ Array<TData> dirac_array(const ArrayShape& shape, const ArrayShape& index) {
  * Outer product of two matrices.
  * outer2d(a, b) = dot(a, b.H())
  */
-template <class TData>
+template <class TDerivedA, class TDerivedB, class TDerivedR, class TData>
 void outer2d(
-    const Array<TData>& a,
-    const Array<TData>& b,
-    Array<TData>& result)
+    const BaseDenseArray<TDerivedA, TData>& a,
+    const BaseDenseArray<TDerivedB, TData>& b,
+    BaseDenseArray<TDerivedR, TData>& result)
 {
-    assert(a.ndim() == 2);
-    assert(b.ndim() == 2);
-    assert(a.shape(1) == b.shape(1));
-    assert(all(result.shape() == ArrayShape{a.shape(0), b.shape(0)}));
-    for (size_t r = 0; r < result.shape(0); ++r) {
-        for (size_t c = 0; c < result.shape(1); ++c) {
+    assert(a->ndim() == 2);
+    assert(b->ndim() == 2);
+    assert(a->shape(1) == b->shape(1));
+    assert(all(result->shape() == ArrayShape{ a->shape(0), b->shape(0) }));
+    #pragma omp parallel for if (result->nelements() > 200 * 200)
+    for (int r = 0; r < (int)result->shape(0); ++r) {
+        for (size_t c = 0; c < result->static_shape<1>(); ++c) {
             TData v = 0;
-            for (size_t i = 0; i < a.shape(1); ++i) {
-                v += a(r, i) * conju(b(c, i));
+            for (size_t i = 0; i < a->static_shape<1>(); ++i) {
+                v += (*a)(r, i) * conju((*b)(c, i));
             }
-            result(r, c) = v;
+            (*result)(r, c) = v;
         }
     }
 }
@@ -702,15 +722,15 @@ void outer2d(
  * Outer product of two matrices.
  * outer2d(a, b) = dot(a, b.H())
  */
-template <class TData>
+template <class TDerivedA, class TDerivedB, class TData>
 Array<TData> outer2d(
-    const Array<TData>& a,
-    const Array<TData>& b)
+    const BaseDenseArray<TDerivedA, TData>& a,
+    const BaseDenseArray<TDerivedB, TData>& b)
 {
-    assert(a.ndim() == 2);
-    assert(b.ndim() == 2);
-    assert(a.shape(1) == b.shape(1));
-    Array<TData> result{ArrayShape{a.shape(0), b.shape(0)}};
+    assert(a->ndim() == 2);
+    assert(b->ndim() == 2);
+    assert(a->static_shape<1>() == b->static_shape<1>());
+    Array<TData> result{ ArrayShape{a->static_shape<0>(), b->static_shape<0>()} };
     outer2d(a, b, result);
     return result;
 }
@@ -720,23 +740,23 @@ Array<TData> outer2d(
  * ND-wrapper around outer2d.
  * 2D: (a, b) = dot(a, b.H())
  */
-template <class TData>
+template <class TDerivedA, class TDerivedB, class TData>
 Array<TData> outer(
-    const Array<TData>& a,
-    const Array<TData>& b)
+    const BaseDenseArray<TDerivedA, TData>& a,
+    const BaseDenseArray<TDerivedB, TData>& b)
 {
     // a.shape = (a_l0, a_l1, n)
     // b.shape = (b_l0, b_l1, n)
     // r.shape = (a_l0, a_l1, b_r0, b_r1)
-    if ((a.ndim() != 2) || (b.ndim() != 2)) {
-        Array<TData> a2 = a.rows_as_1D();
-        Array<TData> b2 = b.rows_as_1D();
+    if ((a->ndim() != 2) || (b->ndim() != 2)) {
+        auto a2 = a->rows_as_1D();
+        auto b2 = b->rows_as_1D();
         Array<TData> r = outer2d(a2, b2);
         ArrayShape r_shape =
-            a.shape()
+            a->array_shape()
             .erased_last()
             .concatenated(
-                b.shape()
+                b->array_shape()
                 .erased_last());
         r.do_reshape(r_shape);
         return r;
@@ -762,12 +782,14 @@ void dot2d(
     assert(a->ndim() == 2);
     assert(b->ndim() == 2);
     assert(a->shape(1) == b->shape(0));
-    assert(all(result->shape() == ArrayShape{a->shape(0), b->shape(1)}));
+    assert(result->ndim() == 2);
+    assert(result->static_shape<0>() == a->static_shape<0>());
+    assert(result->static_shape<1>() == b->static_shape<1>());
     #pragma omp parallel for if (result->nelements() > 200 * 200)
-    for (int r = 0; r < (int)result->shape(0); ++r) {
-        for (size_t c = 0; c < result->shape(1); ++c) {
+    for (int r = 0; r < (int)result->static_shape<0>(); ++r) {
+        for (size_t c = 0; c < result->static_shape<1>(); ++c) {
             TData v = 0;
-            for (size_t i = 0; i < a->shape(1); ++i) {
+            for (size_t i = 0; i < a->static_shape<1>(); ++i) {
                 v += (*a)(r, i) * (*b)(i, c);
             }
             (*result)(r, c) = v;
@@ -782,8 +804,8 @@ Array<TData> dot2d(
 {
     assert(a->ndim() == 2);
     assert(b->ndim() == 2);
-    assert(a->shape(1) == b->shape(0));
-    Array<TData> result{ArrayShape{a->shape(0), b->shape(1)}};
+    assert(a->static_shape<1>() == b->static_shape<0>());
+    Array<TData> result{ArrayShape{a->static_shape<0>(), b->static_shape<1>()}};
     dot2d(a, b, result);
     return result;
 }
@@ -796,7 +818,7 @@ Array<TData> dot1d(
     assert(a->ndim() == 2);
     assert(b->ndim() == 1);
     assert(a->shape(1) == b->length());
-    Array<TData> result{ArrayShape{a->shape(0), 1}};
+    Array<TData> result{ArrayShape{a->static_shape<0>(), 1}};
     dot2d(a, b->reshaped(ArrayShape{b->length(), 1}), result);
     return result.flattened();
 }
@@ -814,10 +836,10 @@ Array<TData> dot(
         auto b2 = b->columns_as_1D();
         Array<TData> r = dot2d(a2, b2);
         ArrayShape r_shape =
-            a->shape()
+            a->array_shape()
             .erased_last()
             .concatenated(
-                b->shape()
+                b->array_shape()
                 .erased_first());
         r.do_reshape(r_shape);
         return r;
@@ -1194,7 +1216,7 @@ inline size_t count_nonzero(const BaseDenseArray<TDerived, TData>& a) {
 
 template <class TDerived, class TData>
 TData sum(const BaseDenseArray<TDerived, TData>& a) {
-    TData result{0};
+    TData result(0);
     for (const TData& v : a->flat_iterable()) {
         result += v;
     }

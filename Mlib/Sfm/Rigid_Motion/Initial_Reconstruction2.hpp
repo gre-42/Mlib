@@ -5,35 +5,35 @@ namespace Mlib {
 
 template<class TData>
 struct RansacOptions;
+template <class TData, size_t n>
+class TransformationMatrix;
 
 namespace Sfm {
 
-Array<float> initial_reconstruction(
-    const Array<float>& R,
-    const Array<float>& t,
-    const Array<float>& ki,
-    const Array<float>& y0,
-    const Array<float>& y1,
+Array<FixedArray<float, 3>> initial_reconstruction(
+    const TransformationMatrix<float, 3>& tm,
+    const TransformationMatrix<float, 2>& ki,
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1,
     bool points_are_normalized = false,
     Array<float>* condition_number = nullptr);
 
 Array<float> initial_reconstruction_x3(
-    const Array<float>& R,
-    const Array<float>& t,
-    const Array<float>& ki,
-    const Array<float>& y0,
-    const Array<float>& y1,
+    const TransformationMatrix<float, 3>& tm,
+    const TransformationMatrix<float, 2>& ki,
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1,
     bool verbose = false);
 
 void find_projection_matrices(
-    const Array<float>& x,
-    const Array<float>& y,
-    const Array<float>* ki_precomputed,
+    const Array<FixedArray<float, 3>>& x,
+    const Array<FixedArray<float, 2>>& y,
+    const TransformationMatrix<float, 2>* ki_precomputed,
     const Array<float>* kep_initial,
-    Array<float>* ki_out = nullptr,
-    Array<float>* ke_out = nullptr,
+    TransformationMatrix<float, 2>* ki_out = nullptr,
+    Array<TransformationMatrix<float, 3>>* ke_out = nullptr,
     Array<float>* kep_out = nullptr,
-    Array<float>* x_out = nullptr,
+    Array<FixedArray<float, 3>>* x_out = nullptr,
     float alpha = 1e-5,
     float beta = 1e-5,
     float alpha2 = 0,
@@ -50,13 +50,13 @@ void find_projection_matrices(
 
 void find_projection_matrices_ransac(
     const RansacOptions<float>& ro,
-    const Array<float>& x,
-    const Array<float>& y,
-    const Array<float>* ki_precomputed,
-    Array<float>* ki_out = nullptr,
-    Array<float>* ke_out = nullptr,
+    const Array<FixedArray<float, 3>>& x,
+    const Array<FixedArray<float, 2>>& y,
+    const TransformationMatrix<float, 2>* ki_precomputed,
+    TransformationMatrix<float, 2>* ki_out = nullptr,
+    Array<TransformationMatrix<float, 3>>* ke_out = nullptr,
     Array<float>* kep_out = nullptr,
-    Array<float>* x_out = nullptr,
+    Array<FixedArray<float, 3>>* x_out = nullptr,
     float alpha = 1e-5,
     float beta = 1e-5,
     float alpha2 = 0,
@@ -70,13 +70,13 @@ void find_projection_matrices_ransac(
     Array<float>* final_residual = nullptr);
 
 void find_projection_matrices_twopass(
-    const Array<float>& x,
-    const Array<float>& y,
-    const Array<float>* ki_precomputed,
-    Array<float>* ki_out = nullptr,
-    Array<float>* ke_out = nullptr,
+    const Array<FixedArray<float, 3>>& x,
+    const Array<FixedArray<float, 2>>& y,
+    const TransformationMatrix<float, 2>* ki_precomputed,
+    TransformationMatrix<float, 2>* ki_out = nullptr,
+    Array<TransformationMatrix<float, 3>>* ke_out = nullptr,
     Array<float>* kep_out = nullptr,
-    Array<float>* x_out = nullptr,
+    Array<FixedArray<float, 3>>* x_out = nullptr,
     float alpha = 1e-5,
     float beta = 1e-5,
     float alpha2 = 0,
@@ -90,8 +90,8 @@ void find_projection_matrices_twopass(
     Array<float>* final_residual = nullptr,
     const float* max_residual = nullptr);
 
-Array<float> find_epipole(
-    const Array<float>& ki,
-    const Array<float>& ke);
+FixedArray<float, 2> find_epipole(
+    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, 3>& ke);
 
 }}
