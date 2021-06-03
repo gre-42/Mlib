@@ -39,8 +39,6 @@ void ChessboardCalibrationPipeline::process_image_frame(
     const CameraFrame* camera_frame)
 {
     assert(camera_frame == nullptr);
-    StbImage bmp;
-    Array<float> im(image_frame.grayscale);
     Array<FixedArray<float, 2>> p_y;
     std::string p_x_filename = (fs::path{ cache_dir_ } / "features-p_x.m").string();
     std::string p_y_filename = (fs::path{ cache_dir_ } / ("features-" + std::to_string(p_y_.size()) + "-p_y.m")).string();
@@ -50,6 +48,7 @@ void ChessboardCalibrationPipeline::process_image_frame(
         }
         p_y = Array<float>::from_dynamic<2>(Array<float>::load_txt_2d(p_y_filename, ArrayShape{0, 2}));
     } else {
+        StbImage bmp;
         detect_chessboard(
             image_frame.grayscale,
             chessboard_shape_,
