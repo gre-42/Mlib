@@ -1,5 +1,5 @@
 #include "Projector_With_Cameras.hpp"
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -13,19 +13,19 @@ ProjectorWithCameras::ProjectorWithCameras(
 : BaseProjector{i0, i1, iz, scale_matrix},
   camera_frames_(camera_frames) {}
 
-void ProjectorWithCameras::plot_camera_lines(PpmImage& ppm) {
+void ProjectorWithCameras::plot_camera_lines(StbImage& png) {
     for (const auto& c : camera_frames_) {
         FixedArray<float, 2> t = x2fi(c.second.pose.t());
         FixedArray<float, 2> tz = x2fi(c.second.pose.t() + scale_matrix_(0, 0) * 0.5f * c.second.dir(2));
         if (sum(squared(tz - t)) > 1e-6) {
-            ppm.draw_line(t.to_array(), tz.to_array(), 0, Rgb24::black());
+            png.draw_line(t.to_array(), tz.to_array(), 0, Rgb24::black());
         }
     }
 }
 
-void ProjectorWithCameras::plot_camera_positions(PpmImage& ppm) {
+void ProjectorWithCameras::plot_camera_positions(StbImage& png) {
     for (const auto& c : camera_frames_) {
-        ppm.draw_fill_rect(
+        png.draw_fill_rect(
             x2i(c.second.pose.t()).to_array_shape(),
             2,
             c.state_ == MmState::ACTIVE
@@ -36,9 +36,9 @@ void ProjectorWithCameras::plot_camera_positions(PpmImage& ppm) {
     }
 }
 
-void ProjectorWithCameras::plot_unit_square(PpmImage& ppm) {
+void ProjectorWithCameras::plot_unit_square(StbImage& png) {
     FixedArray<size_t, 2> center = x2i(FixedArray<float, 3>{0, 0, 0});
-    ppm.draw_fill_rect(
+    png.draw_fill_rect(
         center.to_array_shape(),
         (x2i(FixedArray<float, 3>{1, 1, 1}) - center)(0),
         Rgb24::gray());

@@ -124,9 +124,9 @@ void dense_reconstruction(
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
         cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
         cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.R, ptr.t }));
-        DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-0-1.ppm");
-        DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-0-2.ppm");
-        DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-2-1.ppm");
+        DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-0-1.png");
+        DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-0-2.png");
+        DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-2-1.png");
     }
 }
 
@@ -330,8 +330,8 @@ void plot_dense_x(const ParsedArgs& args) {
     Array<float> condition_number = Array<float>::load_txt_2d("cond.m");
 
     const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
-    DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), source0.to_float_rgb()).normalize(256).draw("dense-0-2.ppm");
-    DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), source0.to_float_rgb()).normalize(256).draw("dense-2-1.ppm");
+    DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), source0.to_float_rgb()).normalize(256).draw("dense-0-2.png");
+    DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), source0.to_float_rgb()).normalize(256).draw("dense-2-1.png");
 }
 
 int main(int argc, char** argv) {

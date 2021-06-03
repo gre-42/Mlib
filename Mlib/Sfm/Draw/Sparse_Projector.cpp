@@ -1,6 +1,6 @@
 #include "Sparse_Projector.hpp"
 #include <Mlib/Geometry/Normalized_Points.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Points/Reconstructed_Point.hpp>
 
@@ -37,7 +37,7 @@ SparseProjector& SparseProjector::normalize(float scale)
 }
 
 void SparseProjector::draw(const std::string& filename) {
-    PpmImage ppm{ArrayShape{256, 256}, Rgb24::white()};
+    StbImage ppm{ArrayShape{256, 256}, Rgb24::white()};
     plot_unit_square(ppm);
     plot_camera_lines(ppm);
     for (const auto& x : reconstructed_points_) {

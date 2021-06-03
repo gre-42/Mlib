@@ -6,7 +6,11 @@
 #include <chrono>
 #include <map>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib {
+   
+class StbImage;
+
+namespace Sfm {
 
 class ProjectorWithCameras: public BaseProjector {
 public:
@@ -18,9 +22,9 @@ public:
         const FixedArray<float, 3, 3>& scale_matrix = identity_scale_matrix());
 
 protected:
-    void plot_camera_lines(PpmImage& ppm);
-    void plot_camera_positions(PpmImage& ppm);
-    void plot_unit_square(PpmImage& ppm);
+    void plot_camera_lines(StbImage& ppm);
+    void plot_camera_positions(StbImage& ppm);
+    void plot_unit_square(StbImage& ppm);
     const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
 };
 

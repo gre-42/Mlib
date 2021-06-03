@@ -767,8 +767,8 @@ void SparseReconstruction::draw(const std::string& prefix) const {
     if (!camera_frames_.empty()) {
         fs::create_directories(fs::path{ cache_dir_ } / "0-2");
         fs::create_directories(fs::path{ cache_dir_ } / "0-1");
-        SparseProjector(reconstructed_points_, bad_points_, camera_frames_, 0, 2, 1).normalize(256).draw((fs::path{ cache_dir_ } / "0-2" / (prefix + ".ppm")).string());
-        SparseProjector(reconstructed_points_, bad_points_, camera_frames_, 0, 1, 2).normalize(256).draw((fs::path{ cache_dir_ } / "0-1" / (prefix + ".ppm")).string());
+        SparseProjector(reconstructed_points_, bad_points_, camera_frames_, 0, 2, 1).normalize(256).draw((fs::path{ cache_dir_ } / "0-2" / (prefix + ".png")).string());
+        SparseProjector(reconstructed_points_, bad_points_, camera_frames_, 0, 1, 2).normalize(256).draw((fs::path{ cache_dir_ } / "0-1" / (prefix + ".png")).string());
     }
 }
 
