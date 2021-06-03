@@ -1,5 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
@@ -13,11 +14,11 @@ int main(int argc, char** argv) {
         {"--nrows", "--ncols"});
     const auto args = parser.parsed(argc, argv);
     args.assert_num_unamed(2);
-    const auto bitmap = PpmImage::load_from_file(args.unnamed_value(0));
+    const auto bitmap = StbImage::load_from_file(args.unnamed_value(0));
     const Array<float> image = bitmap.to_float_grayscale();
-    PpmImage bmp;
-    Array<float> p_x;
-    Array<float> p_y;
+    StbImage bmp;
+    Array<FixedArray<float, 2>> p_x;
+    Array<FixedArray<float, 2>> p_y;
     detect_chessboard(
         image,
         ArrayShape{
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
         p_y,
         bmp);
     bmp.save_to_file(args.unnamed_value(1));
-    std::cerr << "Extrinsic grid points:\n" << p_x;
-    std::cerr << "Intrinsic grid points:\n" << p_y;
+    std::cerr << "Extrinsic grid points:\n" << Array<float>{p_x};
+    std::cerr << "Intrinsic grid points:\n" << Array<float>{p_y};
     return 0;
 }
