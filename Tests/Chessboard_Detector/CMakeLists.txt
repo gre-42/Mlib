@@ -7,5 +7,5 @@ include_directories(Mlib ${Mlib_INCLUDE_DIR})
 target_link_libraries(chessboard_detector_test MlibSfm)
 
 add_test(NAME ChessboardDetectorTest
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMAND $<TARGET_FILE:chessboard_detector_test>)

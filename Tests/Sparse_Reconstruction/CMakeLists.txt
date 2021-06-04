@@ -7,5 +7,5 @@ include_directories(Mlib ${Mlib_INCLUDE_DIR})
 target_link_libraries(sparse_reconstruction_test MlibSfm)
 
 add_test(NAME SparseReconstructionTest
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMAND $<TARGET_FILE:sparse_reconstruction_test>)

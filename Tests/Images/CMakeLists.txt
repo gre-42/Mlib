@@ -7,5 +7,5 @@ include_directories(Mlib ${Mlib_INCLUDE_DIR})
 target_link_libraries(images_test MlibImages)
 
 add_test(NAME ImagesTest
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMAND $<TARGET_FILE:images_test>)
