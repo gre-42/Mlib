@@ -11,6 +11,7 @@
 #include <Mlib/Math/Set_Difference.hpp>
 #include <Mlib/Math/Sort_Svd.hpp>
 #include <Mlib/Math/Svd4.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 
@@ -372,38 +373,56 @@ void test_interp() {
         Array<float>{4.123f, 3.345f, 2.567f, 3.89f, 4.2f});
 }
 
+void test_projection() {
+    TransformationMatrix<float, 2> a{
+        FixedArray<float, 2, 2>{random_array3<float>(ArrayShape{2, 2}, 3)},
+        FixedArray<float, 2>{random_array3<float>(ArrayShape{2}, 3)} };
+    TransformationMatrix<float, 3> b{
+        FixedArray<float, 3, 3>{random_array3<float>(ArrayShape{3, 3}, 4)},
+        FixedArray<float, 3>{random_array3<float>(ArrayShape{3}, 5)} };
+    assert_allclose(
+        dot2d(a.affine(), b.semi_affine()).to_array(),
+        a.project(b.semi_affine()).to_array());
+}
+
 int main(int argc, const char** argv) {
-    test_svd();
-    test_qdq();
-    test_det_2x2();
-    test_det_3x3();
-    test_identity();
-    test_lstsq();
-    test_lstsq_complex();
-    test_lstsq_chol();
-    test_lstsq_chol_complex();
-    test_sort_svd();
-    test_outer();
-    test_solve_svd();
-    test_solve_svd_complex();
-    test_cond();
-    test_approximate_rank();
-    test_batch_dot();
-    test_huber_norm();
-    test_sum_axis();
-    test_array_array_comparison();
-    test_interpolate();
-    test_substitute_nans();
-    test_power();
-    test_fixed_shape();
-    test_fixed_outer();
-    test_regularization();
-    test_gaussian_elimination();
-    test_cg();
-    test_set_difference();
-    test_nonzero_ids();
-    test_fixed_transposed();
-    test_fixed_cholesky();
-    test_interp();
+    try {
+        test_svd();
+        test_qdq();
+        test_det_2x2();
+        test_det_3x3();
+        test_identity();
+        test_lstsq();
+        test_lstsq_complex();
+        test_lstsq_chol();
+        test_lstsq_chol_complex();
+        test_sort_svd();
+        test_outer();
+        test_solve_svd();
+        test_solve_svd_complex();
+        test_cond();
+        test_approximate_rank();
+        test_batch_dot();
+        test_huber_norm();
+        test_sum_axis();
+        test_array_array_comparison();
+        test_interpolate();
+        test_substitute_nans();
+        test_power();
+        test_fixed_shape();
+        test_fixed_outer();
+        test_regularization();
+        test_gaussian_elimination();
+        test_cg();
+        test_set_difference();
+        test_nonzero_ids();
+        test_fixed_transposed();
+        test_fixed_cholesky();
+        test_interp();
+        test_projection();
+    } catch (const std::runtime_error& e) {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }
