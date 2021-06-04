@@ -397,7 +397,9 @@ public:
     }
     template <class TKeyValueTuple>
     void insert(const TKeyValueTuple& element) {
-        active_.insert(element);
+        if (!active_.insert(element).second) {
+            throw std::runtime_error("Active element already exists");
+        }
     }
     size_t size() const {
         return active_.size() + linearized_.size() + marginalized_.size();
@@ -411,7 +413,9 @@ public:
         if (linearized_.find(it) != linearized_.end()) {
             throw std::runtime_error("Element already marked for marginalization");
         }
-        linearized_.insert(std::move(nh));
+        if (!linearized_.insert(std::move(nh)).inserted) {
+            throw std::runtime_error("Linearized element already exists");
+        }
     }
     template <class TIterator>
     void move_to_marginalized(const TIterator& it) {
@@ -422,7 +426,9 @@ public:
         if (marginalized_.find(it) != marginalized_.end()) {
             throw std::runtime_error("Element already marginalized");
         }
-        marginalized_.insert(std::move(nh));
+        if (!marginalized_.insert(std::move(nh)).inserted) {
+            throw std::runtime_error("Marginalized element already exists");
+        }
     }
     void clear() {
         active_.clear();

@@ -62,9 +62,11 @@ GlobalBundle::GlobalBundle(
 {
     for (const auto& p : particles) {
         const auto c = camera_frames.find(p.first);
-        if (skip_missing_cameras &&
-            (c == camera_frames.end())) {
-            continue;
+        if (c == camera_frames.end()) {
+            if (skip_missing_cameras) {
+                continue;
+            }
+            throw std::runtime_error("Could not find camera at time " + std::to_string(p.first.count()) + " ms");
         }
         if (c->state_ != MmState::MARGINALIZED) {
             bool point_found = false;
