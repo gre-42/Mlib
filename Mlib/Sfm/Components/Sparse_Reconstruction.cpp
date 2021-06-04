@@ -142,6 +142,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
 
 void SparseReconstruction::reconstruct_initial_for_bundle_adjustment() {
     if (particles_.size() >= cfg_.nframes) {
+        std::cerr << "Generating initial reconstruction for bundle adjustment" << std::endl;
         camera_frames_.insert(std::make_pair(
             particles_.begin()->first,
             CameraFrame{ TransformationMatrix<float, 3>::identity() }));
@@ -220,11 +221,11 @@ CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::millis
             &ke,             // ke_out
             &kep,            // kep_out
             nullptr,         // x_out
-            1e-5,            // alpha
-            1e-5,            // beta
+            float{ 1e-5 },   // alpha
+            float{ 1e-5 },   // beta
             0,               // alpha2
             0,               // beta2
-            1e-6,            // min_redux
+            float{ 1e-6 },   // min_redux
             100,             // niterations
             5,               // nburnin
             3,               // nmisses
@@ -237,24 +238,24 @@ CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::millis
 #endif
     } else {
         find_projection_matrices(
-            xa,         // x
-            np.yn,      // y
-            &kin,       // ki_precomputed
-            nullptr,    // kep_initial
-            nullptr,    // ki_out
-            &ke,        // ke_out
-            &kep,       // kep_out
-            nullptr,    // x_out
-            1e-5,       // alpha
-            1e-5,       // beta
-            0,          // alpha2
-            0,          // beta2
-            1e-6,       // min_redux
-            100,        // niterations
-            5,          // nburnin
-            3,          // nmisses
-            false,      // print_residual
-            false,      // nothrow
+            xa,             // x
+            np.yn,          // y
+            &kin,           // ki_precomputed
+            nullptr,        // kep_initial
+            nullptr,        // ki_out
+            &ke,            // ke_out
+            &kep,           // kep_out
+            nullptr,        // x_out
+            float{ 1e-5 },  // alpha
+            float{ 1e-5 },  // beta
+            0,              // alpha2
+            0,              // beta2
+            float{ 1e-6 },  // min_redux
+            100,            // niterations
+            5,              // nburnin
+            3,              // nmisses
+            false,          // print_residual
+            false,          // nothrow
 #ifdef REJECT_LARGE_RESIDUALS
             cfg_.exclude_bad_points ? &final_residual_array : nullptr,
 #else
@@ -418,11 +419,11 @@ void SparseReconstruction::partial_bundle_adjustment(const std::list<std::chrono
         &ke,                               // ke_out
         &kep,                              // kep_out
         &x_out,                            // x_out
-        1e-3,                              // alpha
-        1e-3,                              // beta
-        1e-4,                              // alpha2
-        1e-4,                              // beta2
-        1e-6,                              // min_redux
+        float{ 1e-3 },                     // alpha
+        float{ 1e-3 },                     // beta
+        float{ 1e-4 },                     // alpha2
+        float{ 1e-4 },                     // beta2
+        float{ 1e-6 },                     // min_redux
         100,                               // niterations
         5,                                 // nburnin
         3,                                 // nmisses
@@ -503,17 +504,17 @@ void SparseReconstruction::global_bundle_adjustment_lvm() {
             //     cfg_.initialize_with_bundle_adjustment);
             return gb.Jg;
         },
-        1e-2,     // alpha
-        1e-2,     // beta
-        1e-2,     // alpha2
-        1e-2,     // beta2
-        1e-3,     // min_redux
-        100,      // niterations
-        5,        // nburnin
-        3,        // nmisses
-        true,     // print_residual
-        false,    // nothrow
-        nullptr,  // final_residual
+        float{ 1e-2 },     // alpha
+        float{ 1e-2 },     // beta
+        float{ 1e-2 },     // alpha2
+        float{ 1e-2 },     // beta2
+        float{ 1e-3 },     // min_redux
+        100,               // niterations
+        5,                 // nburnin
+        3,                 // nmisses
+        true,              // print_residual
+        false,             // nothrow
+        nullptr,           // final_residual
         &cfg_.max_residual_unnormalized); // max_residual
 
     gb.copy_out(x_opt, reconstructed_points_, camera_frames_);
@@ -568,11 +569,11 @@ void SparseReconstruction::global_bundle_adjustment() {
             // return msolver_.x_;
             return x + ms_.bsolver_.solve(gb->Jg, x, residual);
         },
-        1e-3,     // min_redux
-        600,      // niterations
-        3,        // nmisses
-        true,     // print_residual
-        false,    // nothrow
+        float{ 1e-3 },                    // min_redux
+        600,                              // niterations
+        3,                                // nmisses
+        true,                             // print_residual
+        false,                            // nothrow
         &final_residual,                  // final_residual
         &cfg_.max_residual_unnormalized); // max_residual
 
