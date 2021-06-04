@@ -601,6 +601,9 @@ void SparseReconstruction::reconstruct() {
                     std::cerr << "Initial bundle adjustment cam position: " << c.second.pose.t() << std::endl;
                 }
                 if (cfg_.interpolate_initial_cameras) {
+                    if (camera_frames_.size() != 2) {
+                        throw std::runtime_error("Number of cameras is not 2");
+                    }
                     const auto& c0 = *camera_frames_.begin();
                     const auto& c1 = *camera_frames_.rbegin();
                     for (const auto& p : particles_) {
@@ -609,6 +612,12 @@ void SparseReconstruction::reconstruct() {
                         }
                         if (p.first > c1.first) {
                             throw std::runtime_error("Cannot interpolate camera, time too high");
+                        }
+                        if (p.first == c0.first) {
+                            continue;
+                        }
+                        if (p.first == c1.first) {
+                            continue;
                         }
                         float alpha = (p.first - c0.first).count() / float((c1.first - c0.first).count());
                         OffsetAndQuaternion<float> rs =
