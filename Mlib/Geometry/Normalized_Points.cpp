@@ -41,7 +41,7 @@ FixedArray<float, 3, 3> NormalizedPoints::normalization_matrix() const {
         dx = dy = std::max(dx, dy);
     }
     return FixedArray<float, 3, 3>{
-        1 / dx, 0, -sx / dx, // (p - sx) / dx = p/dx - sx/dx
-        0, 1 / dy, -sy / dy, // (p - sy) / dy = p/dy - sy/dy
-        0, 0, 1};
+        1 / dx, 0.f, -sx / dx, // (p - sx) / dx = p/dx - sx/dx
+        0.f, 1 / dy, -sy / dy, // (p - sy) / dy = p/dy - sy/dy
+        0.f, 0.f, 1.f};
 }

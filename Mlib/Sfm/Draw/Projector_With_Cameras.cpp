@@ -37,9 +37,9 @@ void ProjectorWithCameras::plot_camera_positions(StbImage& png) {
 }
 
 void ProjectorWithCameras::plot_unit_square(StbImage& png) {
-    FixedArray<size_t, 2> center = x2i(FixedArray<float, 3>{0, 0, 0});
+    FixedArray<size_t, 2> center = x2i(FixedArray<float, 3>{ 0.f, 0.f, 0.f });
     png.draw_fill_rect(
         center.to_array_shape(),
-        (x2i(FixedArray<float, 3>{1, 1, 1}) - center)(0),
+        (x2i(FixedArray<float, 3>{ 1.f, 1.f, 1.f }) - center)(0),
         Rgb24::gray());
 }
