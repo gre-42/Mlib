@@ -242,7 +242,7 @@ public:
         constexpr static const size_t flat_elements = FixedArray<TData, tsize...>::nelements();
         constexpr static const size_t static_ndim = FixedArray<TData, tsize...>::ndim();
         assert(rhs.ndim() >= static_ndim);
-        assert(all(FixedArray<size_t, static_ndim>{tsize...} == FixedArray<size_t, static_ndim>{rhs.shape().erased_first(static_ndim)}));
+        assert(all(FixedArray<size_t, static_ndim>{tsize...} == FixedArray<size_t, static_ndim>{rhs.shape().erased_first(rhs.ndim() - static_ndim)}));
         ArrayShape result_shape{ rhs.shape().erased_last(static_ndim) };
         Array<FixedArray<TData, tsize...>> result{ ArrayShape{result_shape.nelements()} };
         if (result.length() > 0) {

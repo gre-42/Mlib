@@ -5,25 +5,25 @@
 namespace Mlib {
 
 struct Rgb24;
-class PpmImage;
+class StbImage;
 
 namespace Sfm {
 
 void draw_epilines_from_epipole(
     const Array<float>& epipole,
-    PpmImage& bmp,
+    StbImage& bmp,
     const Rgb24& color);
 
 void draw_epilines_from_F(
     const FixedArray<float, 3, 3>& F,
-    PpmImage& bmp,
+    StbImage& bmp,
     const Rgb24& color,
     size_t spacing = 40);
 
 
 void draw_inverse_epilines_from_F(
     const FixedArray<float, 3, 3>& F,
-    PpmImage& bmp,
+    StbImage& bmp,
     const Rgb24& color,
     size_t spacing = 40);
 

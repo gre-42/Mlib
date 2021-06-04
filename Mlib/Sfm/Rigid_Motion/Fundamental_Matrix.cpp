@@ -1,6 +1,7 @@
 #include "Fundamental_Matrix.hpp"
-#include <Mlib/Geometry/Cross.hpp>
+#include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -78,8 +79,7 @@ Array<float> Mlib::Sfm::fundamental_error(
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1)
 {
-    assert(y0.ndim() == 2);
-    assert(y0.shape(1) == 3);
+    assert(y0.ndim() == 1);
     assert(all(y0.shape() == y1.shape()));
     Array<float> result(ArrayShape{y0.shape(0)});
     for (size_t r = 0; r < y1.shape(0); ++r) {
@@ -128,21 +128,15 @@ void Mlib::Sfm::find_epiline(
 /**
  * Source: sourishgosh.com
  */
-Array<float> Mlib::Sfm::fundamental_from_camera(
-    const Array<float>& intrinsic0,
-    const Array<float>& intrinsic1,
-    const Array<float>& R,
-    const Array<float>& t)
+FixedArray<float, 3, 3> Mlib::Sfm::fundamental_from_camera(
+    const TransformationMatrix<float, 2>& intrinsic0,
+    const TransformationMatrix<float, 2>& intrinsic1,
+    const TransformationMatrix<float, 3>& pose)
 {
-    assert(all(intrinsic0.shape() == ArrayShape{3, 3}));
-    assert(all(intrinsic1.shape() == ArrayShape{3, 3}));
-    assert(all(R.shape() == ArrayShape{3, 3}));
-    assert(t.length() == 3);
-    Array<float> Ri;
-    Array<float> ti;
-    invert_t_R(t, R, ti, Ri);
+    TransformationMatrix<float, 3> ke = pose.inverted();
     return lstsq_chol(
-        intrinsic1.T(),
-        dot(outer(Ri, intrinsic0),
-            cross(dot1d(outer(intrinsic0, Ri), ti))));
+        intrinsic1.affine().T(),
+        dot2d(
+            outer2d(ke.R(), intrinsic0.affine()),
+            cross(dot1d(outer(intrinsic0.affine(), ke.R()), ke.t()))));
 }

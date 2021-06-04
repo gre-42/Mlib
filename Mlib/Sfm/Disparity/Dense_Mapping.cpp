@@ -93,12 +93,12 @@ Array<float> weighted_gradient(const Array<float>& g, const Array<float>& d) {
     Array<float> k_y = full<float>(g.shape(), GRADIENT_BOUNDARY_VALUE);
     for (size_t r = 0; r < g.shape(0); ++r) {
         for (size_t c = 0; c < g.shape(1) - 1; ++c) {
-            k_x(r,c) = -0.5*(g(r,c)+g(r,c+1))*d(r,c) + 0.5*(g(r,c)+g(r,c+1))*d(r,c+1);
+            k_x(r,c) = -0.5f*(g(r,c)+g(r,c+1))*d(r,c) + 0.5f*(g(r,c)+g(r,c+1))*d(r,c+1);
         }
     }
     for (size_t r = 0; r < g.shape(0) - 1; ++r) {
         for (size_t c = 0; c < g.shape(1); ++c) {
-            k_y(r,c) = -0.5*(g(r,c)+g(r+1,c))*d(r,c) + 0.5*(g(r,c)+g(r+1,c))*d(r+1,c);
+            k_y(r,c) = -0.5f*(g(r,c)+g(r+1,c))*d(r,c) + 0.5f*(g(r,c)+g(r+1,c))*d(r+1,c);
         }
     }
     return Array<float>({k_x, k_y});

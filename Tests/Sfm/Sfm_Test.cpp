@@ -1,8 +1,10 @@
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates.hpp>
+#include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
@@ -108,8 +110,8 @@ void test_initial_reconstruction() {
         np.yn[0],
         np.yn[1]);
     assert_allclose(
-        irX / irX(3, 1),
-        sc.x.col_range(0, 3) / sc.x(3, 1),
+        Array<float>{ irX } / irX(3)(1),
+        Array<float>{ sc.x } / sc.x(3)(1),
         float{ 2e-2 });
     // std::cerr << "x\n" << irX/irX(0, 2) << std::endl;
 }
@@ -266,8 +268,8 @@ void test_find_essential_matrix() {
     //std::cerr << "dke\n" << sc.delta_ke(i0, i1) << std::endl;
     //std::cerr << "t " << sc.t(i0, i1) << std::endl;
     //std::cerr << "R\n" << sc.R(i0, i1) << std::endl;
-    assert_allclose(ptr.ke.t().to_array(), sc.dt2(i0, i1).to_array(), 1e-4);
-    assert_allclose(ptr.ke.R().to_array(), sc.dR(i0, i1).to_array(), 1e-4);
+    assert_allclose(ptr.ke.t().to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-4 });
+    assert_allclose(ptr.ke.R().to_array(), sc.dR(i0, i1).to_array(), float{ 1e-4 });
 }
 
 void test_projection_to_TR() {
@@ -279,11 +281,11 @@ void test_projection_to_TR() {
     //std::cerr << "t " << ptr.t << std::endl;
     //std::cerr << "R0\n" << sc.R(i0, i1) << std::endl;
     //std::cerr << "t0 " << sc.t2(i0, i1) << std::endl;
-    assert_allclose(ptr.t, sc.dt2(i0, i1), 1e-3);
-    assert_allclose(ptr.R, sc.dR(i0, i1), 1e-4);
-    Array<float> u_scaled = ptr.initial_reconstruction().reconstructed() / mean(abs(ptr.initial_reconstruction().reconstructed()));
-    Array<float> x_scaled = sc.x / mean(abs(sc.x));
-    assert_allclose(u_scaled, x_scaled.col_range(0, 3), 2e-1);
+    assert_allclose(ptr.ke.t().to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-3 });
+    assert_allclose(ptr.ke.R().to_array(), sc.dR(i0, i1).to_array(), float{ 1e-4 });
+    Array<float> u{ ptr.initial_reconstruction().reconstructed() };
+    Array<float> x{ sc.x };
+    assert_allclose(u / mean(abs(u)), x / mean(abs(x)), float{ 2e-1 });
 }
 
 void test_fundamental_from_TR() {
@@ -292,28 +294,28 @@ void test_fundamental_from_TR() {
     SyntheticScene sc(
         true,   // true = zero_first_extrinsic
         10);    // tR_multiplier
-    Array<float> F = find_fundamental_matrix(sc.y[0], sc.y[1]);
-    Array<float> Ftr = fundamental_from_camera(sc.ki, sc.ki, sc.dR(i0, i1), sc.dt(i0, i1));
-    assert_allclose(F / F(2, 2), Ftr / Ftr(2, 2), 1e-5);
+    FixedArray<float, 3, 3> F = find_fundamental_matrix(sc.y[0], sc.y[1]);
+    FixedArray<float, 3, 3> Ftr = fundamental_from_camera(sc.ki, sc.ki, sc.delta_ke(i0, i1));
+    assert_allclose(F.to_array() / F(2, 2), Ftr.to_array() / Ftr(2, 2), float{ 1e-5 });
 }
 
 void test_find_homography() {
     HomographyData hd;
-    Array<float> h = homography_from_points(hd.y0, hd.y1);
-    assert_allclose(h, hd.homography, 1e-4);
+    FixedArray<float, 3, 3> h = homography_from_points(hd.y0, hd.y1);
+    assert_allclose(h.to_array(), hd.homography.to_array(), float{ 1e-4 });
 }
 
 void test_svd_easy_matrix() {
     Array<float> E{
-        {5, 0.0627702, 0.514959},
-        {0.0627705, 5, 0.480495},
-        {0.514955, 0.480504, 4}};
+        {5.f, 0.0627702f, 0.514959f},
+        {0.0627705f, 5.f, 0.480495f},
+        {0.514955f, 0.480504f, 4.f}};
     Array<float> uT;
     Array<float> s;
     Array<float> vT;
     svd(E, uT, s, vT);
-    assert_allclose(outer(uT, uT), identity_array<float>(3), 1e-3);
-    assert_allclose(outer(vT, vT), identity_array<float>(3), 1e-3);
+    assert_allclose(outer(uT, uT), identity_array<float>(3), float{ 1e-3 });
+    assert_allclose(outer(vT, vT), identity_array<float>(3), float{ 1e-3 });
 }
 
 void test_svd_essential_matrix() {
@@ -354,9 +356,9 @@ void test_svd_essential_matrix2() {
     // std::cerr << "s " << s << std::endl;
     // std::cerr << "v\n" << vT.T() << std::endl;
 
-    assert_allclose(abs(u), abs(u_ref), 1e-4);
-    assert_allclose(s, s_ref, 1e-4);
-    assert_allclose(abs(vT), abs(vT_ref), 1e-4);
+    assert_allclose(abs(u), abs(u_ref), float{ 1e-4 });
+    assert_allclose(s, s_ref, float{ 1e-4 });
+    assert_allclose(abs(vT), abs(vT_ref), float{ 1e-4 });
     assert_allclose(reconstruct_svd(u, s, vT), E);
 }
 
@@ -384,7 +386,7 @@ void test_traceable_patch() {
     assert_isclose<float>(p.error_at_position(new_image, ArrayShape{1, 5}), 0);
     assert_isclose<float>(p.error_at_position(image, ArrayShape{1, 2}), 0);
     assert_shape_equals(
-        p.new_position_in_box(new_image, patch_center, ArrayShape{10, 10}, 0.002),
+        p.new_position_in_box(new_image, patch_center, ArrayShape{10, 10}, 0.002f),
         ArrayShape{1, 5});
 }
 
@@ -404,34 +406,34 @@ void test_traceable_patch_nan() {
 }
 
 void test_camera_frame() {
-    const Array<float> x = random_array2<float>(ArrayShape{3}, 1);
+    const FixedArray<float, 3> x{ random_array2<float>(ArrayShape{3}, 1) };
     CameraFrame cf(
-        tait_bryan_angles_2_matrix<float>(Array<float>{0.1f, 0.2f, 0.3f}),
-        random_array2<float>(ArrayShape{3}, 1),
-        CameraFrame::undefined_kep);
-    const Array<float> y = dot1d(cf.projection_matrix_3x4(), homogenized_4(x));
-    const Array<float> x1 = dot1d(cf.reconstruction_matrix_3x4(), homogenized_4(y));
-    assert_allclose(x, x1);
+        TransformationMatrix<float, 3>{
+            tait_bryan_angles_2_matrix<float>(FixedArray<float, 3>{0.1f, 0.2f, 0.3f}),
+            FixedArray<float, 3>{random_array2<float>(ArrayShape{ 3 }, 1)}});
+    const FixedArray<float, 3> y = cf.projection_matrix_3x4().transform(x);
+    const FixedArray<float, 3> x1 = cf.reconstruction_matrix_3x4().transform(y);
+    assert_allclose(x.to_array(), x1.to_array());
 }
 
 void test_find_epiline() {
-    const Array<float> y0 = homogenized_Nx3(random_array2<float>(ArrayShape{20, 2}, 1));
+    const Array<float> y0 = random_array2<float>(ArrayShape{20, 2}, 1);
     const Array<float> tmp = y0.T();
-    tmp[0] += 0.1;
+    tmp[0] += 0.1f;
     tmp[0] += 0.1f * random_array2<float>(ArrayShape{y0.shape(0)}, 1);
     tmp[1] += 0.01f * random_array2<float>(ArrayShape{y0.shape(0)}, 1);
     const Array<float> y1 = tmp.T();
-    const Array<float> F = find_fundamental_matrix(y0, y1);
+    const FixedArray<float, 3, 3> F = find_fundamental_matrix(Array<float>::from_dynamic<2>(y0), Array<float>::from_dynamic<2>(y1));
     //std::cerr << fundamental_error(F, y0, y1) << std::endl;
     //std::cerr << F << std::endl;
-    PpmImage bmp{ArrayShape{200, 200}, Rgb24::white()};
-    highlight_features((dehomogenized_Nx2(y0)) * 180.f, bmp, 2, Rgb24::red());
-    highlight_features((dehomogenized_Nx2(y1)) * 180.f, bmp, 2, Rgb24::blue());
-    Array<float> p;
-    Array<float> v;
-    find_epiline(F, y0[1], p, v);
-    assert_allclose(p, Array<float>{0.784089, 0.788539});
-    assert_allclose(v, Array<float>{-0.703581, -0.070358});
+    StbImage bmp{ArrayShape{200, 200}, Rgb24::white()};
+    highlight_features(y0 * 180.f, bmp, 2, Rgb24::red());
+    highlight_features(y1 * 180.f, bmp, 2, Rgb24::blue());
+    FixedArray<float, 2> p;
+    FixedArray<float, 2> v;
+    find_epiline(F, FixedArray<float, 2>{ y0[1] }, p, v);
+    assert_allclose(p.to_array(), Array<float>{0.784089f, 0.788539f});
+    assert_allclose(v.to_array(), Array<float>{-0.703581f, -0.070358f});
     //std::cerr << "v " << v << std::endl;
     //std::cerr << (F, y0[0]) << std::endl;
     //std::cerr << (F.T(), y1[0]) << std::endl;
@@ -439,11 +441,11 @@ void test_find_epiline() {
     draw_epilines_from_F(F, bmp, Rgb24::green());
     draw_inverse_epilines_from_F(F, bmp, Rgb24::blue(), 72);
     bmp.draw_infinite_line(
-        a2fi(p * 180.f),
-        a2fi((p + v) * 180.f),
+        a2fi(p * 180.f).to_array(),
+        a2fi((p + v) * 180.f).to_array(),
         0,
         Rgb24::black());
-    bmp.save_to_file("TestOut/epiline.ppm");
+    bmp.save_to_file("TestOut/epiline.png");
 }
 
 /**
@@ -613,25 +615,30 @@ void test_marginalized_map() {
 }
 
 int main(int argc, char** argv) {
-    test_marginalized_map();
-    test_numerical_differentiation();
-    test_project_points();
-    test_unproject_point();
-    test_initial_reconstruction();
-    test_synthetic_scene();
-    test_find_fundamental_matrix_homography();
-    test_find_fundamental_matrix_synthetic_scene();
-    test_find_essential_matrix();
-    test_find_homography();
-    test_svd_easy_matrix();
-    test_svd_essential_matrix();
-    test_svd_essential_matrix2();
-    test_traceable_patch();
-    test_traceable_patch_nan();
-    test_known_ki_alignment();
-    test_projection_to_TR();
-    test_fundamental_from_TR();
-    test_camera_frame();
-    test_find_epiline();
+    try {
+        test_marginalized_map();
+        test_numerical_differentiation();
+        test_project_points();
+        test_unproject_point();
+        test_initial_reconstruction();
+        test_synthetic_scene();
+        test_find_fundamental_matrix_homography();
+        test_find_fundamental_matrix_synthetic_scene();
+        test_find_essential_matrix();
+        test_find_homography();
+        test_svd_easy_matrix();
+        test_svd_essential_matrix();
+        test_svd_essential_matrix2();
+        test_traceable_patch();
+        test_traceable_patch_nan();
+        test_known_ki_alignment();
+        test_projection_to_TR();
+        test_fundamental_from_TR();
+        test_camera_frame();
+        test_find_epiline();
+    } catch (const std::runtime_error& e) {
+        std::cerr << "ERROR: " << e.what();
+        return 1;
+    }
     return 0;
 }

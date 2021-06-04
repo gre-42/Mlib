@@ -31,10 +31,9 @@ void find_epiline(
     FixedArray<float, 2>& p,
     FixedArray<float, 2>& v);
 
-Array<float> fundamental_from_camera(
-    const Array<float>& intrinsic0,
-    const Array<float>& intrinsic1,
-    const Array<float>& R,
-    const Array<float>& t);
+FixedArray<float, 3, 3> fundamental_from_camera(
+    const TransformationMatrix<float, 2>& intrinsic0,
+    const TransformationMatrix<float, 2>& intrinsic1,
+    const TransformationMatrix<float, 3>& pose);
 
 }}

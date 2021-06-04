@@ -1,7 +1,7 @@
 #include "Epilines.hpp"
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Approximate_Rank.hpp>
 #include <Mlib/Sfm/Disparity/Epiline_Direction.hpp>
 #include <Mlib/Sfm/Disparity/Inverse_Epiline_Direction.hpp>
@@ -12,7 +12,7 @@ using namespace Mlib::Sfm;
 
 void Mlib::Sfm::draw_epilines_from_epipole(
     const Array<float>& epipole,
-    PpmImage& bmp,
+    StbImage& bmp,
     const Rgb24& color)
 {
     assert(all(epipole.shape() == ArrayShape{2}));
@@ -31,7 +31,7 @@ void Mlib::Sfm::draw_epilines_from_epipole(
 
 void Mlib::Sfm::draw_epilines_from_F(
     const FixedArray<float, 3, 3>& F,
-    PpmImage& bmp,
+    StbImage& bmp,
     const Rgb24& color,
     size_t spacing)
 {
@@ -58,7 +58,7 @@ void Mlib::Sfm::draw_epilines_from_F(
 
 void Mlib::Sfm::draw_inverse_epilines_from_F(
     const FixedArray<float, 3, 3>& F,
-    PpmImage& bmp,
+    StbImage& bmp,
     const Rgb24& color,
     size_t spacing)
 {
