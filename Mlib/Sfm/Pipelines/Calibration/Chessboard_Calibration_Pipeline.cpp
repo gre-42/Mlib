@@ -71,24 +71,24 @@ void ChessboardCalibrationPipeline::print_statistics(std::ostream& ostream) {
     TransformationMatrix<float, 2> ki_out;
     Array<FixedArray<float, 3>> p_x_lifted_ = p_x_.applied< FixedArray<float, 3>>([](const auto& p) {return homogenized_3(p); });
     find_projection_matrices(
-        p_x_lifted_,  // x
-        np.yn,        // y
-        nullptr,      // ki_precomputed
-        nullptr,      // kep_initial
-        &ki_out,      // ki_out
-        nullptr,      // ke_out
-        nullptr,      // kep_out
-        nullptr,      // x_out
-        float{1e-5},  // alpha
-        float{1e-5},  // beta
-        float{1e-6},  // alpha2
-        float{1e-6},  // beta2
-        -INFINITY,    // min_redux
-        100,          // niterations
-        5,            // nburnin
-        300,          // nmisses
-        true,         // print_residual
-        true);        // nothrow
+        p_x_lifted_,    // x
+        np.yn,          // y
+        nullptr,        // ki_precomputed
+        nullptr,        // kep_initial
+        &ki_out,        // ki_out
+        nullptr,        // ke_out
+        nullptr,        // kep_out
+        nullptr,        // x_out
+        float{ 1e-5 },  // alpha
+        float{ 1e-5 },  // beta
+        float{ 1e-6 },  // alpha2
+        float{ 1e-6 },  // beta2
+        -INFINITY,      // min_redux
+        100,            // niterations
+        5,              // nburnin
+        300,            // nmisses
+        true,           // print_residual
+        true);          // nothrow
     intrinsic_matrix_ = np.denormalized_intrinsic_matrix(ki_out);
     intrinsic_matrix_.affine().to_array().save_txt_2d(camera_intrinsics_filename_);
 }
