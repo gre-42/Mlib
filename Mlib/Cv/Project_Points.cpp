@@ -117,7 +117,7 @@ FixedArray<float, 2, 3> Mlib::Cv::projected_points_jacobian_dx_1p_1ke(
     const TransformationMatrix<float, 2>& ki,
     const TransformationMatrix<float, 3>& ke)
 {
-    return homogeneous_jacobian_dx(ki.project(ke.R()), x);
+    return homogeneous_jacobian_dx(TransformationMatrix<float, 3>{ ki.project(ke.semi_affine()) }, x);
 }
 
 /*

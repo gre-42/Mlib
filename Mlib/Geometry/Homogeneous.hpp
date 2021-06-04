@@ -212,21 +212,34 @@ inline FixedArray<float, 3> dehomogenized_3(const FixedArray<float, 4>& a) {
 
 Array<float> dehomogenized_3x4(const Array<float>& a);
 
-template <class TData, size_t r, size_t c>
-FixedArray<TData, r - 1, c> homogeneous_jacobian_dx(const FixedArray<TData, r, c>& M, const FixedArray<TData, c>& x) {
-    static_assert(r > 0);
-    const auto m = M.row_range<0, r - 1>();
-    const auto Mx = dot1d(M, x);
-    const auto mx = Mx.row_range<0, r - 1>();
-    const TData bx = Mx(r - 1);
+template <class TData, size_t d>
+FixedArray<TData, d - 1, d> homogeneous_jacobian_dx_(const FixedArray<TData, d, d>& R, const FixedArray<TData, d>& Mx) {
+    static_assert(d > 0);
+    const auto& m = R.row_range<0, d - 1>();
+    const auto& mx = Mx.row_range<0, d - 1>();
+    const TData& bx = Mx(d - 1);
 
-    const auto mx_2d = mx.reshaped<r - 1, 1>();
-    const auto b_2d = M.row_range<r - 1, r>();
+    const auto& mx_2d = mx.reshaped<d - 1, 1>();
+    const auto& b_2d = R.row_range<d - 1, d>();
 
     // M = [m0; m1 ... ; b]
     // d/dx m'x/(b'x) = (m(0)(b'x) - (m'x)*b(0)) / squared(b'x)
 
     return ((m * bx) - dot(mx_2d, b_2d)) / squared(bx);
+}
+
+template <class TData, size_t d>
+FixedArray<TData, d - 1, d> homogeneous_jacobian_dx(const FixedArray<TData, d, d>& M, const FixedArray<TData, d>& x) {
+    static_assert(d > 0);
+    const auto Mx = dot1d(M, x);
+    return homogeneous_jacobian_dx_(M, Mx);
+}
+
+template <class TData, size_t d>
+FixedArray<TData, d - 1, d> homogeneous_jacobian_dx(const TransformationMatrix<TData, d>& M, const FixedArray<TData, d>& x) {
+    static_assert(d > 0);
+    const auto Mx = M.transform(x);
+    return homogeneous_jacobian_dx_(M.R(), Mx);
 }
 
 template <class TData, size_t n>
@@ -236,11 +249,25 @@ template <class TData, size_t n>
 FixedArray<TData, n - 1> t_from_NxN1(const FixedArray<TData, n - 1, n>& a);
 
 template <>
+inline FixedArray<float, 2, 2> R_from_NxN1(const FixedArray<float, 2, 3>& a) {
+    return FixedArray<float, 2, 2>{
+        a(0, 0), a(0, 1),
+        a(1, 0), a(1, 1)};
+}
+
+template <>
 inline FixedArray<float, 3, 3> R_from_NxN1(const FixedArray<float, 3, 4>& a) {
     return FixedArray<float, 3, 3>{
         a(0, 0), a(0, 1), a(0, 2),
         a(1, 0), a(1, 1), a(1, 2),
         a(2, 0), a(2, 1), a(2, 2)};
+}
+
+template <>
+inline FixedArray<float, 2> t_from_NxN1(const FixedArray<float, 2, 3>& a) {
+    return FixedArray<float, 2>{
+        a(0, 2),
+        a(1, 2)};
 }
 
 template <>

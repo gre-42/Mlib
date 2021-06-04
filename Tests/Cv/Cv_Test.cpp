@@ -32,14 +32,30 @@ void test_tait_bryan_angles_2_matrix() {
 }
 
 void test_homogeneous_jacobian() {
-    FixedArray<float, 3, 4> M{ random_array3<float>(ArrayShape{3, 4}, 5) };
-    FixedArray<float, 4> x{ random_array3<float>(ArrayShape{4}, 2) };
+    TransformationMatrix<float, 3> M{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
+    FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
     assert_allclose(
         numerical_differentiation<2>([&](
-            const FixedArray<float, 4>& xx){ return dot1d(M.row_range<0, 2>(), xx) / dot0d(M[2], xx); },
+            const FixedArray<float, 3>& xx) { return M.transform(xx).row_range<0, 2>() / M.transform(xx)(2); },
             x,
             float(1e-3)).to_array(),
         homogeneous_jacobian_dx(M, x).to_array(),
+        float(1e-3));
+}
+
+void test_projection_jacobian_dx() {
+    FixedArray<float, 3> x{ random_array3<float>(ArrayShape{4}, 2) };
+    TransformationMatrix<float, 3> ke{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
+    TransformationMatrix<float, 2> ki{ FixedArray<float, 2, 3>{
+        0.5f, 0.f, 0.1f,
+        0.f, 0.7f, 0.2f } };
+    auto mm = TransformationMatrix<float, 3>{ ki.project(ke.semi_affine()) };
+    assert_allclose(
+        numerical_differentiation<2>([&](
+            const FixedArray<float, 3>& xx) { return mm.transform(xx).row_range<0, 2>() / mm.transform(xx)(2); },
+            x,
+            float(1e-3)).to_array(),
+        projected_points_jacobian_dx_1p_1ke(x, ki, ke).to_array(),
         float(1e-3));
 }
 
@@ -53,7 +69,7 @@ void test_tait_bryan_angles_jacobian() {
                 const FixedArray<float, 1>& ttheta){ return dot1d(tait_bryan_angles_2_matrix(FixedArray<float, 3>{ttheta(0), 0.f, 0.f}), x); },
                 FixedArray<float, 1>{theta},
                 float(1e-4)).to_array().flattened(),
-            rodrigues_gradient_dtheta(FixedArray<float, 3>{1, 0, 0}, theta, x).to_array(),
+            rodrigues_gradient_dtheta(FixedArray<float, 3>{1.f, 0.f, 0.f}, theta, x).to_array(),
             float(1e-3));
     }
 
@@ -77,9 +93,9 @@ void test_projection_jacobian_ke() {
     FixedArray<float, 3> t{ random_array3<float>(ArrayShape{3}, 2) };
     FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
     FixedArray<float, 3, 3> ki{
-        0.5, 0, 0.1,
-        0, 0.7, 0.2,
-        0, 0, 1};
+        0.5f, 0.f, 0.1f,
+        0.f, 0.7f, 0.2f,
+        0.f, 0.f, 1.f };
     assert_allclose(
         numerical_differentiation<2>([&](const FixedArray<float, 6>& kkep){
             return projected_points_1p_1ke(
@@ -97,7 +113,7 @@ void test_projection_jacobian_ke() {
         Array<float>{
             {0.0338736f, 0.300373f, -0.158062f, 0.536745f, 0.f, -0.521198f},
             {-0.383656f, 0.220084f, -0.00957519f, 0, 0.751443f, -0.290414f}},
-        1e-2);
+        float{ 1e-2 });
 }
 
 void test_projection_jacobian_ki() {
@@ -115,15 +131,15 @@ void test_projection_jacobian_ki() {
         kip,
         float(1e-2)).to_array(),
         Array<float>{
-            {12.9208, 0.999975, 0, 0},
-            {0, 0, 9.05638, 1.00002}},
-        1e-4);
+            {12.9208f, 0.999975f, 0.f, 0.f},
+            {0.f, 0.f, 9.05638f, 1.00002f}},
+        float{ 1e-4 });
     assert_allclose(
         projected_points_jacobian_dki_1p_1ke(x, ke).to_array(),
         Array<float>{
-            {12.9208, 0.999975, 0, 0},
-            {0, 0, 9.05638, 1.00002}},
-        1e-4);
+            {12.9208f, 0.999975f, 0.f, 0.f},
+            {0.f, 0, 9.05638f, 1.00002f}},
+        float{ 1e-4 });
 }
 
 void test_inverse_tait_bryan_angles() {
@@ -158,13 +174,19 @@ void test_fixed_tait_bryan_angles_2_matrix() {
 }
 
 int main(int argc, char** argv) {
-    test_tait_bryan_angles_2_matrix();
-    test_homogeneous_jacobian();
-    test_tait_bryan_angles_jacobian();
-    test_projection_jacobian_ke();
-    test_projection_jacobian_ki();
-    test_inverse_tait_bryan_angles();
-    test_rodrigues_fixed();
-    test_fixed_tait_bryan_angles_2_matrix();
+    try {
+        test_tait_bryan_angles_2_matrix();
+        test_homogeneous_jacobian();
+        test_tait_bryan_angles_jacobian();
+        test_projection_jacobian_dx();
+        test_projection_jacobian_ke();
+        test_projection_jacobian_ki();
+        test_inverse_tait_bryan_angles();
+        test_rodrigues_fixed();
+        test_fixed_tait_bryan_angles_2_matrix();
+    } catch (const std::runtime_error& e) {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }
