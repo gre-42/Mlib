@@ -623,8 +623,8 @@ void SparseReconstruction::reconstruct() {
                         OffsetAndQuaternion<float> rs =
                             OffsetAndQuaternion<float>{ c0.second.pose.affine() }
                             .slerp(OffsetAndQuaternion<float>{ c1.second.pose.affine() }, alpha);
-                        TransformationMatrix<float, 3> proj{ tait_bryan_angles_2_matrix(rs.quaternion().to_tait_bryan_angles()), rs.offset() };
-                        camera_frames_.insert(std::make_pair(p.first, CameraFrame{ proj.inverted() }));
+                        TransformationMatrix<float, 3> pose{ tait_bryan_angles_2_matrix(rs.quaternion().to_tait_bryan_angles()), rs.offset() };
+                        camera_frames_.insert(std::make_pair(p.first, CameraFrame{ pose }));
                     }
                 }
                 // for (const auto& p : particles_) {
