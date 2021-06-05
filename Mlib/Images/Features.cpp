@@ -59,16 +59,18 @@ void Mlib::hessian_determinant_trace(
 
 Array<float> Mlib::find_saddle_points(
     const Array<float>& image,
-    float delta)
+    float delta,
+    float distance_sigma)
 {
     assert(image.ndim() == 2);
     std::list<Array<float>> feature_points;
 
     Array<float> det;
     hessian_determinant_trace(image, &det, nullptr);
+    Array<bool> masked_maxima = find_local_maxima(gaussian_filter_NWE(-det, distance_sigma, NAN), false);
     for (size_t r = 1; r + 1 < image.shape(0); r++) {
         for (size_t c = 1; c + 1 < image.shape(1); c++) {
-            if (det(r, c) < delta) {
+            if (masked_maxima(r, c) && (det(r, c) < delta)) {
                 feature_points.push_back(i2a(ArrayShape{r, c}));
             }
         }

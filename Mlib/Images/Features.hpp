@@ -17,7 +17,8 @@ void hessian_determinant_trace(
 
 Array<float> find_saddle_points(
     const Array<float>& image,
-    float delta = -0.05);
+    float delta = -0.05f,
+    float distance_sigma = 1.f);
 
 Array<float> structure_tensor(
     const Array<float>& image,
