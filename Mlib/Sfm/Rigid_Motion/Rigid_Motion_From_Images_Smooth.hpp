@@ -5,15 +5,15 @@
 namespace Mlib { namespace Sfm { namespace Rmfi {
 
 template <class TData>
-Array<TData> rigid_motion_from_images_smooth(
+TransformationMatrix<TData, 3> rigid_motion_from_images_smooth(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
     const Array<TData>& im_r_depth,
-    const Array<TData>& intrinsic_matrix,
+    const TransformationMatrix<TData, 2>& intrinsic_matrix,
     const std::vector<TData>& sigmas,
-    const Array<TData>& x0 = zeros<TData>(ArrayShape{6}))
+    const FixedArray<TData, 6>& x0 = fixed_zeros<TData, 6>())
 {
-    Array<TData> x00 = x0.copy();
+    FixedArray<TData, 6> x00 = x0;
     for (const TData& sigma : sigmas) {
         rigid_motion_from_images(
             gaussian_filter_NWE(im_r, sigma, NAN),

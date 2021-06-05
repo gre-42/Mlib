@@ -12,12 +12,12 @@
 namespace Mlib { namespace Sfm { namespace Rmfi {
 
 template <class TData>
-Array<TData> transform_coordinates(const Array<TData>& ki, const Array<TData>& ke, const Array<TData>& x, TData depth) {
-    Array<TData> iki{inv(ki)};
-    Array<TData> T{dot(ki, ke)};
+FixedArray<TData, 2> transform_coordinates(const TransformationMatrix<TData, 2>& ki, const TransformationMatrix<TData, 3>& ke, const FixedArray<TData, 2>& x, const TData& depth) {
+    FixedArray<TData, 3, 3> iki{inv(ki.affine())};
+    FixedArray<TData, 3, 4> T{dot(ki.affine(), ke.semi_affine())};
 
-    Array<TData> res3{dot(T, homogenized_4(dot(iki, homogenized_3(x)) * depth))};
-    return Array<TData>{res3(0) / res3(2), res3(1) / res3(2)};
+    FixedArray<TData, 3> res3{dot(T, homogenized_4(dot(iki, homogenized_3(x)) * depth))};
+    return FixedArray<TData, 2>{res3(0) / res3(2), res3(1) / res3(2)};
 }
 
 FixedArray<float, 2, 6> projected_points_jacobian_dke_1p_1ke_lifting(
@@ -64,7 +64,7 @@ Array<TData> intensity_jacobian(
     const Array<TData>& im_l_di,
     const Array<TData>& im_r_depth,
     const TransformationMatrix<TData, 2>& ki,
-    const FixedArray<TData>& kep)
+    const FixedArray<TData, 6>& kep)
 {
     ArrayShape space_shape = im_r_di.shape().erased_first();
     Array<TData> result{space_shape.appended(6)};
@@ -77,8 +77,8 @@ Array<TData> intensity_jacobian(
                 result[r][c] = NAN;
                 continue;
             }
-            ArrayShape id_r{r, c};
-            Array<float> J = projected_points_jacobian_dke_1p_1ke_lifting(i2a(id_r), im_r_depth(r, c), ki, kep);
+            FixedArray<size_t, 2> id_r{r, c};
+            FixedArray<float, 2, 6> J = projected_points_jacobian_dke_1p_1ke_lifting(i2a(id_r), im_r_depth(r, c), ki, kep);
             Array<float> im_grad{im_r_di(id1, r, c), im_r_di(id0, r, c)};
             BilinearInterpolator<TData> bi;
             if (hs.sample_destination(r, c, bi)) {
