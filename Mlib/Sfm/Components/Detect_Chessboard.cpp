@@ -117,6 +117,14 @@ void Mlib::Sfm::detect_chessboard(
 
     HomographyList homography_list(shape, Array<float>::from_dynamic<2>(feature_points), 0.1f);
 
+    // How to tune the grid search parameters in case something does not work:
+    // 1. Start the chessboard detector and denote the (suboptimal) homography.
+    // 2. Overwrite the homography in the chessboard detector with the suboptimal
+    //    one and tune it until it is optimal.
+    // 3. Start the chessboard detector again and observe the output of
+    //    std::cerr << ngood ...
+    //    and find out why the optimal parameters are not reached.
+
     // ws: step-size of w
     const float ws = std::min(image.shape(0), image.shape(1)) / 128.f;
     const float xs = std::min(image.shape(0), image.shape(1)) / 128.f;
@@ -124,10 +132,10 @@ void Mlib::Sfm::detect_chessboard(
 
     unsigned int best_good = 0;
     FixedArray<float, 3, 3> best_homography;
-    for (float w = 3 * ws; w < 10 * ws; w += 0.5f * ws) {
+    for (float w = 3 * ws; w < 15 * ws; w += 0.5f * ws) {
 
-        float maxX = image.shape(id1) - w * shape(id1);
-        float maxY = image.shape(id0) - w * shape(id0);
+        float maxX = image.shape(id1) - w * (shape(id1) - 1);
+        float maxY = image.shape(id0) - w * (shape(id0) - 1);
         if (maxX < 0 || maxY < 0) {
             throw std::runtime_error("Shape problem, internal error");
         }
@@ -139,6 +147,10 @@ void Mlib::Sfm::detect_chessboard(
                     w  , 0.f, fx,
                     0.f, w  , fy,
                     0.f, 0.f, 1.f };
+                // homography = FixedArray<float, 3, 3>{
+                //     33.f, 0.f, 121.25f,
+                //     0.f, 33.f, 101.25f,
+                //     0.f, 0.f, 1.f, };
                 homography_list.foreach(homography, [&](
                     const FixedArray<size_t, 2>& ip0,
                     const FixedArray<size_t, 2>& ipos,
