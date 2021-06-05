@@ -48,11 +48,12 @@ void TemplatePatchPipeline::process_image_frame(
 }
 
 void TemplatePatchPipeline::save_cameras() const {
+    fs::create_directories(fs::path{ cache_dir_ } / "Cameras");
     for (const auto& c : camera_frames_) {
         std::stringstream sstr;
         sstr.fill('0');
         sstr << std::setw(6) << c.first.count();
-        c.second.projection_matrix_3x4().semi_affine().to_array().save_txt_2d(cache_dir_ + "/Cameras/projection-" + sstr.str() + "-3x4.m");
+        c.second.projection_matrix_3x4().semi_affine().to_array().save_txt_2d((fs::path{ cache_dir_ } / "Cameras" / ("projection-" + sstr.str() + "-3x4.m")).string());
     }
 }
 
