@@ -147,7 +147,7 @@ void compute_z(const ParsedArgs& args) {
     Array<float> im0 = source0.to_float_grayscale();
     Array<float> hr0 = harris_response(im0);
     Array<float> feature_points0 = find_nfeatures(
-        -hr0,
+        hr0,
         // find_local_maxima(-hr0, false),
         ones<bool>(im0.shape()),
         100);
@@ -156,7 +156,7 @@ void compute_z(const ParsedArgs& args) {
     Array<float> im1 = source1.to_float_grayscale();
     Array<float> hr1 = harris_response(im1);
     Array<float> feature_points2 = find_nfeatures(
-        -hr1,
+        hr1,
         // find_local_maxima(-hr1, false),
         ones<bool>(im1.shape()),
         100);

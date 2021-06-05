@@ -98,7 +98,7 @@ void test_harris_response() {
     const auto bitmap = StbImage::load_from_file("Data/chessboard1.ppm");
 
     const Array<float> image = bitmap.to_float_grayscale();
-    StbImage res = StbImage::from_float_grayscale(clipped(-80.f * harris_response(image), 0.f, 1.f));
+    StbImage res = StbImage::from_float_grayscale(clipped(80.f * harris_response(image), 0.f, 1.f));
     // std::cerr << min(harris_response(image)) << std::endl;
     // std::cerr << max(harris_response(image)) << std::endl;
     Array<float> feature_points = find_harris_corners(image);
@@ -110,9 +110,9 @@ void test_harris_nfeatures() {
     const auto bitmap = StbImage::load_from_file("Data/chessboard1.ppm");
 
     const Array<float> image = bitmap.to_float_grayscale();
-    StbImage res = StbImage::from_float_grayscale(clipped(-80.f * harris_response(image), 0.f, 1.f));
+    StbImage res = StbImage::from_float_grayscale(clipped(80.f * harris_response(image), 0.f, 1.f));
     Array<float> feature_points = find_nfeatures(
-        -harris_response(image),
+        harris_response(image),
         ones<bool>(image.shape()),
         20);
     highlight_features(feature_points, res);

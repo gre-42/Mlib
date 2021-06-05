@@ -64,7 +64,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
         float r_thr = 10;
         hessian_determinant_trace(box_filter(image_frames_.rbegin()->second.grayscale, ArrayShape{10, 10}, NAN), &h_det, &h_trace);
         Array<float> R = squared(h_trace) / (h_det + float(1e-6));
-        points = Array<float>::from_dynamic<2>(find_nfeatures(-harris_response(
+        points = Array<float>::from_dynamic<2>(find_nfeatures(harris_response(
             image_frames_.rbegin()->second.grayscale),
             existing_points_mask && (R < squared(r_thr + 1) / r_thr),
             n_new_particles));
@@ -78,7 +78,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
         Array<bool> feature_mask;
         Array<float> hr = harris_response(image_frames_.rbegin()->second.grayscale, &feature_mask);
         points = Array<float>::from_dynamic<2>(find_nfeatures(
-            -hr,
+            hr,
 
             // normalize_brightness(
             //     -hr,
@@ -96,7 +96,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     } else if (false) {
         Array<bool> mask = multi_scale_harris(image_frames_.rbegin()->second.grayscale, 5);
         points = Array<float>::from_dynamic<2>(find_nfeatures(
-            -harris_response(image_frames_.rbegin()->second.grayscale),
+            harris_response(image_frames_.rbegin()->second.grayscale),
             existing_points_mask && mask,
             n_new_particles));
         //std::cerr << points.shape() << std::endl;
@@ -195,14 +195,14 @@ void FlowingParticles::advance_existing_particles(
                 FixedArray<float, 2> v{
                     flow_field[0](index),
                     flow_field[1](index)};
-                new_pos = find_feature_in_neighborhood(p.position + v, -hr, ArrayShape{5, 5});
+                new_pos = find_feature_in_neighborhood(p.position + v, hr, ArrayShape{5, 5});
             } else if (false) {
                 if (!flow_mask(index)) {
                     continue;
                 }
-                float best_harris = std::numeric_limits<float>::infinity();
+                float best_harris = -std::numeric_limits<float>::infinity();
                 visit_streamline(shape_, index, flow_field, streamline_search_length(), [&](const ArrayShape& id) {
-                    if (hr(id) < best_harris) {
+                    if (hr(id) > best_harris) {
                         best_harris = hr(id);
                         new_pos = FixedArray<float, 2>{ i2a(id) };
                     }
