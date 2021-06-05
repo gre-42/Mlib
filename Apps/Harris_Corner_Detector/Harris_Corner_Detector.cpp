@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
@@ -13,17 +14,29 @@
 using namespace Mlib;
 
 int main(int argc, char** argv) {
+    enable_floating_point_exceptions();
     const ArgParser parser(
-        "Usage: harris_corner_detector source destination ncorners [--size <marker-size>] [--distance-sigma <distance-sigma>] [--multi-scale] [--response <response>] [--feature-mask <feature-mask>]",
+        "Usage: harris_corner_detector "
+        "source "
+        "destination "
+        "ncorners "
+        "[--k <k>] "
+        "[--distance-sigma <distance-sigma>] "
+        "[--multi-scale] "
+        "[--size <marker-size>] "
+        "[--response <response>] "
+        "[--feature-mask <feature-mask>] "
+        "[--clip-min <clip-min>] "
+        "[--clip-max <clip-max>]",
         {"--multi-scale"},
-        {"--size", "--distance-sigma", "--response", "--feature-mask"});
+        {"--k", "--distance-sigma", "--size", "--response", "--feature-mask", "--clip-min", "--clip-max", });
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unamed(3);
         auto bitmap = StbImage::load_from_file(args.unnamed_value(0));
         ArrayShape smooth_width(2);
         Array<bool> feature_mask;
-        Array<float> response = harris_response(bitmap.to_float_grayscale(), &feature_mask);
+        Array<float> response = harris_response(bitmap.to_float_grayscale(), &feature_mask, safe_stof(args.named_value("--k", "0.05")));
         if (args.has_named("--multi-scale")) {
             feature_mask = multi_scale_harris(bitmap.to_float_grayscale(), 4);
         }
@@ -35,7 +48,7 @@ int main(int argc, char** argv) {
             feature_mask = ones<bool>(bitmap.shape());
         }
         Array<float> corners = find_nfeatures(
-            -response,
+            response,
             feature_mask,
             safe_stoi(args.unnamed_value(2)),
             safe_stof(args.named_value("--distance-sigma", "0")));
@@ -51,7 +64,11 @@ int main(int argc, char** argv) {
         std::cerr << "max[response]=" << nanmax(response) << std::endl;
         if (args.has_named_value("--response")) {
             //PpmImage::from_float_grayscale(normalized_and_clipped(response, -float(5e-5), float(5e-5)))
-            StbImage::from_float_grayscale(normalized_and_clipped(-response, 0.f, 0.002f))
+            StbImage::from_float_grayscale(
+                normalized_and_clipped(
+                    response,
+                    safe_stof(args.named_value("--clip-min", "-0.002")),
+                    safe_stof(args.named_value("--clip-max", "0.002"))))
                 .save_to_file(args.named_value("--response"));
         }
     } catch (const std::runtime_error& e) {

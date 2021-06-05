@@ -26,7 +26,8 @@ Array<float> structure_tensor(
 
 Array<float> harris_response(
     const Array<float>& image,
-    Array<bool>* feature_mask = nullptr);
+    Array<bool>* feature_mask = nullptr,
+    float k = 0.05);
 
 Array<float> find_harris_corners(
     const Array<float>& image,

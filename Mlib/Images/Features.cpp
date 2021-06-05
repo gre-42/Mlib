@@ -93,34 +93,39 @@ Array<float> Mlib::structure_tensor(
         M_f(1, 0, i) = Iy(i) * Ix(i);
         M_f(1, 1, i) = squared(Iy(i));
     }
+    M[0][0] = gaussian_filter_NWE(M[0][0], 1.f, (float)NAN);
+    M[0][1] = gaussian_filter_NWE(M[0][1], 1.f, (float)NAN);
+    M[1][0] = gaussian_filter_NWE(M[1][0], 1.f, (float)NAN);
+    M[1][1] = gaussian_filter_NWE(M[1][1], 1.f, (float)NAN);
     if (det != nullptr) {
-        *det = det2x2_a(M_f).reshaped(image.shape());
+        *det = det2x2_a(M);
     }
     if (trace != nullptr) {
-        *trace = trace2x2_a(M_f).reshaped(image.shape());
+        *trace = trace2x2_a(M);
     }
     return M;
 }
 
 Array<float> Mlib::harris_response(
     const Array<float>& image,
-    Array<bool>* feature_mask)
+    Array<bool>* feature_mask,
+    float k)
 {
     Array<float> M_det;
     Array<float> M_trace;
     structure_tensor(image, &M_det, &M_trace);
     if (feature_mask != nullptr) {
-        *feature_mask = (abs(M_trace) < 0.01f);
+        *feature_mask = ones<bool>(image.shape());
     }
-    return M_det - 0.05f * squared(M_trace);
+    return M_det - k * squared(M_trace);
 }
 
 Array<float> Mlib::find_harris_corners(const Array<float>& image, float threshold) {
     std::list<Array<float>> result;
     Array<float> hr = harris_response(image);
-    Array<bool> maxima = find_local_maxima(-hr, false);
+    Array<bool> maxima = find_local_maxima(hr, false);
     image.shape().foreach([&](const ArrayShape& index) {
-        if (maxima(index) && (hr(index) < threshold)) {
+        if (maxima(index) && (hr(index) > threshold)) {
             // Adding 0.5 selects the center of the pixel
             // Reverting to swap rows/cols
             result.push_back(i2a(index));
