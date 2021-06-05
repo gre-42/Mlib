@@ -32,7 +32,7 @@ void ProjectorWithCameras::plot_camera_positions(StbImage& png) {
                 ? Rgb24::red()
                 : c.state_ == MmState::LINEARIZED
                     ? Rgb24::green()
-                    : Rgb24::nan());
+                    : Rgb24::yellow());
     }
 }
 
