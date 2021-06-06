@@ -29,6 +29,7 @@ public:
     const Array<FixedArray<float, 3>> reconstructed_points() const;
     const Array<size_t> reconstructed_point_ids() const;
     void set_camera_frame(const std::chrono::milliseconds& time, const CameraFrame& frame);
+    CameraFrame& get_camera_frame(const std::chrono::milliseconds& time);
     void print_arrays() const;
 private:
     void reconstruct_initial_with_svd();

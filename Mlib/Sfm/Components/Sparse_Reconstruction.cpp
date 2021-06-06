@@ -169,6 +169,14 @@ bool SparseReconstruction::is_point_observation_bad(size_t id, const std::chrono
     }
 }
 
+CameraFrame& SparseReconstruction::get_camera_frame(const std::chrono::milliseconds& time) {
+    auto it = camera_frames_.find(time);
+    if (it == camera_frames_.end()) {
+        throw std::runtime_error("Could not find camera frame at time " + std::to_string(time.count()) + " ms");
+    }
+    return it->second;
+}
+
 CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::milliseconds& time) {
     if (camera_frames_.find(time) != camera_frames_.end()) {
         return camera_frames_.at(time);
@@ -282,14 +290,8 @@ CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::millis
 
 void SparseReconstruction::reconstruct_append() {
     std::cerr << "reconstruct_append" << std::endl;
-    // This potentially deletes particles.
-    // for (const auto& p : particles_) {
-    //     camera_frame_append(p.first);
-    // }
     const auto pp = particles_.rbegin();
-    auto& frame = pp->second;
-    for (auto sit = frame.begin(); sit != frame.end() ; ) {
-        const auto s = *(sit++);
+    for (const auto& s : pp->second) {
         // auto r = reconstructed_points_.find(s.first);
         // if ((r != reconstructed_points_.end()) && (r->state_ != MmState::ACTIVE)) {
         //     continue;
@@ -308,7 +310,7 @@ void SparseReconstruction::reconstruct_append() {
             {
                 size_t i = 0;
                 for (const auto& p : filtered_seq) {
-                    ke(i) = camera_frame_append(p.first).projection_matrix_3x4();
+                    ke(i) = get_camera_frame(p.first).projection_matrix_3x4();
                     y(i) = p.second->position;
                     ++i;
                 }
@@ -323,8 +325,7 @@ void SparseReconstruction::reconstruct_append() {
                 false,   // method_2
                 false,   // points_are_normalized
                 &condition_number);
-            bool point_is_bad = !camera_frame_append(
-                pp->first)
+            bool point_is_bad = !get_camera_frame(pp->first)
                 .point_in_fov(x, cfg_.fov_threshold);
             if (point_is_bad) {
                 if (cfg_.exclude_bad_points) {
@@ -586,7 +587,7 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
     reject_large_projection_residuals(*gb);
     while(bad_points_.size() > 0) {
         auto bp = bad_points_.begin();
-        for (auto p : particles_) {
+        for (auto& p : particles_) {
             p.second.erase(bp->first);
         }
         reconstructed_points_.active_.erase(bp->first);
@@ -642,11 +643,15 @@ void SparseReconstruction::reconstruct() {
             reconstruct_initial_with_svd();
         }
     } else if (particles_.size() % cfg_.recompute_interval == 0) {
-        reconstruct_append();
         if (cfg_.enable_global_bundle_adjustment) {
             // camera_frames_.clear();
+            // This potentially deletes particles.
+            for (const auto& p : particles_) {
+                camera_frame_append(p.first);
+            }
             global_bundle_adjustment();
         }
+        reconstruct_append();
         if (cfg_.enable_partial_bundle_adjustment) {
             std::deque<std::chrono::milliseconds> times;
             for (auto it = particles_.rbegin(); it != particles_.rend() && times.size() < cfg_.nframes; ++it) {
