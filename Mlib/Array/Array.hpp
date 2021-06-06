@@ -140,28 +140,28 @@ public:
     ArrayResizer reshape;
     explicit Array():
         offset_{0},
-        resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-        reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }} {}
+        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }} {}
     Array(const Array& rhs):
         data_{rhs.data_},
         shape_{rhs.shape_},
         offset_{rhs.offset_},
-        resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-        reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
+        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {}
     Array(Array&& rhs) noexcept
        :data_{std::move(rhs.data_)},
         shape_{std::move(rhs.shape_)},
         offset_{rhs.offset_},
-        resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-        reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
+        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {}
     explicit Array(
         const std::list<Array<TData>>& rhs,
         const ArrayShape& empty_shape=ArrayShape())
         :offset_{0},
-         resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-         reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
+         resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+         reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {
         // Input is a list => empty_shape must be at least 1D
         if ((rhs.size() == 0) && (empty_shape.ndim() == 0)) {
@@ -171,7 +171,7 @@ public:
         if (rhs.size() == 0) {
             do_resize(empty_shape);
         } else {
-            resize[rhs.size()](rhs.front().shape());
+            do_resize(ArrayShape{ rhs.size() }.concatenated(rhs.front().shape()));
             auto it = rhs.begin();
             for (size_t i = 0; i < rhs.size(); ++i) {
                 if (any(it->shape() != rhs.front().shape())) {
@@ -184,23 +184,23 @@ public:
     }
     explicit Array(const TData* begin, const TData* end):
         offset_{0},
-        resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-        reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
+        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {
         size_t count = end - begin;
-        resize(ArrayShape{count});
+        do_resize(ArrayShape{count});
         if (end - begin > 0) {
             std::copy(begin, end, &(*this)(0));
         }
     }
     explicit Array(const std::list<TData>& lst):
         offset_{0},
-        resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-        reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
+        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {
-        resize(lst.size());
+        do_resize(ArrayShape{ lst.size() });
         size_t i = 0;
-        for (auto value : lst) {
+        for (const auto& value : lst) {
             (*this)(i) = value;
             ++i;
         }
@@ -208,27 +208,27 @@ public:
     template <size_t ...tsize>
     explicit Array(const std::list<FixedArray<TData, tsize...>>& lst) :
         offset_{ 0 },
-        resize{ [&](const ArrayShape& shape) { return do_resize(shape); } },
-        reshape{ [&](const ArrayShape& shape) { return do_reshape(shape); } }
+        resize{ [this](const ArrayShape& shape) { do_resize(shape); } },
+        reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
-        resize(ArrayShape{ lst.size(), FixedArray<TData, tsize...>::nelements() });
+        do_resize(ArrayShape{ lst.size(), FixedArray<TData, tsize...>::nelements() });
         auto& lst_flat = reinterpret_cast<const std::list<FixedArray<TData, FixedArray<TData, tsize...>::nelements()>>&>(lst);
         size_t i = 0;
-        for (auto value : lst_flat) {
+        for (const auto& value : lst_flat) {
             for (size_t j = 0; j < shape(1); ++j) {
                 (*this)(i, j) = value(j);
             }
             ++i;
         }
-        reshape(ArrayShape{ lst.size(), tsize... });
+        do_reshape(ArrayShape{ lst.size(), tsize... });
     }
     template <size_t ...tsize>
     explicit Array(const Array<FixedArray<TData, tsize...>>& rhs) :
         offset_{ 0 },
-        resize{ [&](const ArrayShape& shape) { return do_resize(shape); } },
-        reshape{ [&](const ArrayShape& shape) { return do_reshape(shape); } }
+        resize{ [this](const ArrayShape& shape) { do_resize(shape); } },
+        reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
-        resize(ArrayShape{ rhs.nelements(), FixedArray<TData, tsize...>::nelements() });
+        do_resize(ArrayShape{ rhs.nelements(), FixedArray<TData, tsize...>::nelements() });
         auto rhs_flat = rhs.flattened();
         auto& rhs_flat2 = reinterpret_cast<const Array<FixedArray<TData, FixedArray<TData, tsize...>::nelements()>>&>(rhs_flat);
         for (size_t i = 0; i < shape(0); ++i) {
@@ -236,7 +236,7 @@ public:
                 (*this)(i, j) = rhs_flat2(i)(j);
             }
         }
-        reshape(rhs.shape().concatenated(ArrayShape{ tsize... }));
+        do_reshape(rhs.shape().concatenated(ArrayShape{ tsize... }));
     }
     template <size_t ...tsize>
     static Array<FixedArray<TData, tsize...>> from_dynamic(const Array<TData>& rhs) {
@@ -260,29 +260,29 @@ public:
     }
     explicit Array(std::initializer_list<TData> d):
         offset_{0},
-        resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-        reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
+        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {
-        resize(d.size());
+        do_resize(ArrayShape{ d.size() });
         size_t i = 0;
-        for (auto value : d) {
+        for (const auto& value : d) {
             (*this)(i) = value;
             ++i;
         }
     }
     explicit Array(std::initializer_list<std::initializer_list<TData>> d):
         offset_{0},
-        resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-        reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
+        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {
         assert(d.size() > 0);
         size_t ncols = d.begin()->size();
-        resize[d.size()](ncols);
+        do_resize(ArrayShape{ d.size(), ncols });
         size_t r = 0;
-        for (auto row : d) {
+        for (const auto& row : d) {
             assert(row.size() == ncols);
             size_t c = 0;
-            for (auto value : row) {
+            for (const auto& value : row) {
                 (*this)(r, c) = value;
                 ++c;
             }
@@ -291,8 +291,8 @@ public:
     }
     explicit Array(const ArrayShape& shape):
         offset_{0},
-        resize{[&](const ArrayShape& shape){ return do_resize(shape); }},
-        reshape{[&](const ArrayShape& shape){ return do_reshape(shape); }}
+        resize{[this](const ArrayShape& shape){ do_resize(shape); }},
+        reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {
         do_resize(shape);
     }
@@ -429,19 +429,19 @@ public:
         return result;
     }
     // 1D access
-    const TData& operator () (size_t index) const {
+    inline const TData& operator () (size_t index) const {
         assert(ndim() == 1);
         assert(shape(0) > index);
         assert(index < length());
         assert(index + offset_ < data_->size());
         return (*data_)[index + offset_];
     }
-    TData& operator () (size_t index) {
+    inline TData& operator () (size_t index) {
         const Array& a = *this;
         return const_cast<TData&>(a(index));
     }
     // 2D access
-    const TData& operator () (size_t i, size_t j) const {
+    inline const TData& operator () (size_t i, size_t j) const {
         assert(ndim() == 2);
         assert(shape(0) > i);
         assert(shape(1) > j);
@@ -449,12 +449,12 @@ public:
         assert(index + offset_ < data_->size());
         return (*data_)[index + offset_];
     }
-    TData& operator () (size_t i, size_t j) {
+    inline TData& operator () (size_t i, size_t j) {
         const Array& a = *this;
         return const_cast<TData&>(a(i, j));
     }
     // 3D access
-    const TData& operator () (size_t i, size_t j, size_t k) const {
+    inline const TData& operator () (size_t i, size_t j, size_t k) const {
         assert(ndim() == 3);
         assert(shape(0) > i);
         assert(shape(1) > j);
@@ -463,12 +463,12 @@ public:
         assert(index + offset_ < data_->size());
         return (*data_)[index + offset_];
     }
-    TData& operator () (size_t i, size_t j, size_t k) {
+    inline TData& operator () (size_t i, size_t j, size_t k) {
         const Array& a = *this;
         return const_cast<TData&>(a(i, j, k));
     }
     // 4D access
-    const TData& operator () (size_t i, size_t j, size_t k, size_t n) const {
+    inline const TData& operator () (size_t i, size_t j, size_t k, size_t n) const {
         assert(ndim() == 4);
         assert(shape(0) > i);
         assert(shape(1) > j);
@@ -478,17 +478,17 @@ public:
         assert(index + offset_ < data_->size());
         return (*data_)[index + offset_];
     }
-    TData& operator () (size_t i, size_t j, size_t k, size_t n) {
+    inline TData& operator () (size_t i, size_t j, size_t k, size_t n) {
         const Array& a = *this;
         return const_cast<TData&>(a(i, j, k, n));
     }
     // 0D access
-    const TData& operator () () const {
+    inline const TData& operator () () const {
         assert(ndim() == 0);
         assert(offset_ < data_->size());
         return (*data_)[offset_];
     }
-    TData& operator () () {
+    inline TData& operator () () {
         const Array& a = *this;
         return const_cast<TData&>(a());
     }
@@ -501,7 +501,7 @@ public:
             return (*this)[index(0)][index.erased_first()];
         }
     }
-    const TData& operator () (const ArrayShape& index) const {
+    inline const TData& operator () (const ArrayShape& index) const {
         assert(ndim() == index.ndim());
         if (index.ndim() == 0) {
             return (*this)();
@@ -510,29 +510,25 @@ public:
             return (*this)[index(0)](index.erased_first());
         }
     }
-    TData& operator () (const ArrayShape& index) {
+    inline TData& operator () (const ArrayShape& index) {
         const Array& a = *this;
         return const_cast<TData&>(a(index));
     }
-    template <size_t tsize>
-    const TData& operator () (const FixedArray<size_t, tsize>& index) const;
-    
-    template <>
-    const TData& operator () (const FixedArray<size_t, 2>& index) const {
+    inline const TData& operator () (const FixedArray<size_t, 2>& index) const {
         assert(ndim() == index.length());
         return (*this)(index(0), index(1));
     }
     template <size_t tsize>
-    TData& operator () (const FixedArray<size_t, tsize>& index) {
+    inline TData& operator () (const FixedArray<size_t, tsize>& index) {
         const Array& a = *this;
         return const_cast<TData&>(a(index));
     }
     // Shape
-    const ArrayShape &shape() const {
+    inline const ArrayShape &shape() const {
         assert(shape_ != nullptr);
         return *shape_;
     }
-    const ArrayShape& array_shape() const {
+    inline const ArrayShape& array_shape() const {
         return shape();
     }
     template <size_t tndim>
@@ -540,14 +536,14 @@ public:
         assert(ndim() == tndim);
         return FixedArray<size_t, tndim>{shape().begin(), ndim()};
     }
-    size_t shape(size_t i) const {
+    inline size_t shape(size_t i) const {
         return shape()(i);
     }
     template <size_t N>
-    size_t static_shape() const {
+    inline size_t static_shape() const {
         return shape(N);
     }
-    size_t ndim() const {
+    inline size_t ndim() const {
         return shape().ndim();
     }
     size_t nelements() const {
@@ -562,7 +558,7 @@ public:
     size_t length() const {
         return shape().length();
     }
-    bool initialized() const {
+    inline bool initialized() const {
         // See also: destroy()
         return shape_ != nullptr;
     }
@@ -589,14 +585,14 @@ public:
         return result;
     }
     void rows_to_1D() {
-        reshape
-            [shape().erased_last().nelements()]
-            (shape(ndim() - 1));
+        do_reshape(ArrayShape{
+            shape().erased_last().nelements(),
+            shape(ndim() - 1) });
     }
     void columns_to_1D() {
-        reshape
-            [shape(0)]
-            (shape().erased_first().nelements());
+        do_reshape(ArrayShape{
+            shape(0),
+            shape().erased_first().nelements() });
     }
     Array rows_as_1D() const {
         Array result = *this;
@@ -1119,13 +1115,13 @@ public:
         assert(initialized());
         assert(ndim() == 1);
         if (length() + offset_ < data_->size()) {
-            reshape(length() + 1);
+            do_reshape(ArrayShape{ length() + 1 });
         } else {
             size_t old_length = length();
             Array n{ArrayShape{(length() + 1) * 2}};
             n.row_range(0, length()) = *this;
             reassign(n);
-            reshape(old_length + 1);
+            do_reshape(ArrayShape{ old_length + 1 });
         }
         (*this)(length()-1) = value;
     }

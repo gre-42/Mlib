@@ -2,6 +2,7 @@
 #include "Base_Dense_Array.hpp"
 #include "Fixed_Array_Shape.hpp"
 #include <Mlib/Math/Conju.hpp>
+#include <Mlib/Template.hpp>
 #include <cassert>
 #include <cstddef>
 #include <ostream>
@@ -225,7 +226,7 @@ public:
     template <size_t tstart, size_t tend>
     const FixedArray<TData, tend - tstart, tshape...>& row_range() const {
         auto& x = const_cast<FixedArray<TData, tshape0, tshape...>&>(*this);
-        return x.row_range<tstart, tend>();
+        return x TEMPLATEV row_range<tstart, tend>();
     }
     FixedArray<TData, tshape0> column(size_t c) const {
         static_assert(ndim() == 2);
@@ -250,7 +251,7 @@ public:
     }
     template <size_t N>
     constexpr static size_t static_shape() {
-        return shape().get<N>();
+        return shape() TEMPLATEV get<N>();
     }
     template <size_t... tnew_shape>
     constexpr FixedArray<TData, tnew_shape...>& reshaped(const FixedArrayShape<tnew_shape...>&) {

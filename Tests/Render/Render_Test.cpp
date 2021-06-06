@@ -26,10 +26,7 @@ void test_scene_node() {
 void test_render() {
     PpmImage img = PpmImage::load_from_file("Data/Depth/vid001.ppm");
     Array<float> depth = Array<float>::load_binary("Data/Depth/masked-depth-0-0-388-0-190.array");
-    Array<float> intrinsic_matrix = Array<float>::load_txt_2d("Data/Depth/camera_intrinsic.m");
-    if (!all(intrinsic_matrix.shape() == ArrayShape{3, 3})) {
-        throw std::runtime_error("Intrinsic matrix has incorrect shape");
-    }
+    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/Depth/camera_intrinsic.m") } };
     if (!all(depth.shape() == img.shape())) {
         throw std::runtime_error("Depth and image shape differ");
     }
@@ -38,11 +35,11 @@ void test_render() {
         ::Mlib::render_depth_map(
             img.to_float_rgb(),
             depth,
-            FixedArray<float, 3, 3>{intrinsic_matrix},
+            intrinsic_matrix,
             1,      // z_offset
             false,  // rotate
             &output);
-        draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered.ppm");
+        draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered.png");
     }
     {
         SceneNodeResources scene_node_resources;
@@ -58,12 +55,12 @@ void test_render() {
         Render2{render_config, num_renderings, &render_results}.render_depth_map(
             img.to_float_rgb(),
             depth,
-            FixedArray<float, 3, 3>{intrinsic_matrix},
+            intrinsic_matrix,
             false,  // rotate
             1,      // scale
             SceneGraphConfig(),
             CameraConfig());
-        draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered2.ppm");
+        draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered2.png");
     }
 }
 

@@ -213,10 +213,10 @@ void test_find_fundamental_matrix_synthetic_scene() {
     FixedArray<float, 3, 3> F = find_fundamental_matrix(sc.y[0], sc.y[1]);
     //std::cerr << fundamental_error(Fn, np.yn[0], np.yn[1]) << std::endl;
     //std::cerr << fundamental_error(F, sc.y[0], sc.y[1]) << std::endl;
-    //assert_allclose<float>(
-    //    fundamental_error(Fn, np.yn[0], np.yn[1]),
-    //    zeros<float>(ArrayShape{np.yn.shape(1)}),
-    //    float(20));
+    assert_allclose<float>(
+        fundamental_error(Fn, np.yn[0], np.yn[1]),
+        zeros<float>(ArrayShape{np.yn.shape(1)}),
+        float(20));
     assert_allclose<float>(
         fundamental_error(F, sc.y[0], sc.y[1]),
         zeros<float>(ArrayShape{sc.y.shape(1)}),
@@ -484,7 +484,7 @@ void test_marginalized_map() {
         MarginalizedMap<std::map<std::string, int>> mm;
         mm.active_["a"] = 5;
         size_t ncalls = 0;
-        for (auto c : mm) {
+        for (const auto& c : mm) {
             ++ncalls;
             assert_true(c.it_->first == "a");
             assert_true(c.it_->second == 5);
@@ -503,7 +503,7 @@ void test_marginalized_map() {
         MarginalizedMap<std::map<std::string, int>> mm;
         mm.marginalized_["a"] = 5;
         size_t ncalls = 0;
-        for (auto c : mm) {
+        for (const auto& c : mm) {
             ++ncalls;
             assert_true(c.it_->first == "a");
             assert_true(c.it_->second == 5);
@@ -517,7 +517,7 @@ void test_marginalized_map() {
         mm.active_["a"] = 5;
         auto const& mm1 = mm;
         size_t ncalls = 0;
-        for (auto c : mm1) {
+        for (const auto& c : mm1) {
             ++ncalls;
             assert_true(c.it_->first == "a");
             assert_true(c.it_->second == 5);
@@ -530,7 +530,7 @@ void test_marginalized_map() {
         mm.marginalized_["a"] = 5;
         auto const& mm1 = mm;
         size_t ncalls = 0;
-        for (auto c : mm1) {
+        for (const auto& c : mm1) {
             ++ncalls;
             assert_true(c.it_->first == "a");
             assert_true(c.it_->second == 5);
@@ -583,7 +583,7 @@ void test_marginalized_map() {
         }
         {
             std::vector<int> l;
-            for (auto c : mm) {
+            for (const auto& c : mm) {
                 l.push_back(c.it_->second);
             }
             assert_true(l[0] == 5);

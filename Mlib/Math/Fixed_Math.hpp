@@ -137,13 +137,6 @@ FixedArray<TData, n, n> fixed_identity_array() {
     return result;
 }
 
-template <class TData, size_t ...tshape, typename... TIndices>
-FixedArray<TData, tshape...> fixed_dirac_array(const TIndices&... indices) {
-    FixedArray<TData, tshape...> result = fixed_zeros<TData, tshape...>();
-    result(indices...) = 1;
-    return result;
-}
-
 template <class TData, size_t... tsize>
 FixedArray<TData, tsize...> fixed_full(const TData& value) {
     FixedArray<TData, tsize...> a;
@@ -164,6 +157,13 @@ FixedArray<TData, tsize...> fixed_ones() {
 template <class TData, size_t... tsize>
 FixedArray<TData, tsize...> fixed_nans() {
     return fixed_full<TData, tsize...>(NAN);
+}
+
+template <class TData, size_t ...tshape, typename... TIndices>
+FixedArray<TData, tshape...> fixed_dirac_array(const TIndices&... indices) {
+    FixedArray<TData, tshape...> result = fixed_zeros<TData, tshape...>();
+    result(indices...) = 1;
+    return result;
 }
 
 }

@@ -39,7 +39,7 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
         }
     }
     FixedArray<TData, 6> x0_l_r1 = fixed_zeros<TData, 6>();
-    x0_l_r1.row_range<0, 3>() = x0_rot_l_r1;
+    x0_l_r1 TEMPLATEV row_range<0, 3>() = x0_rot_l_r1;
 
     //Array<TData> x0_l_r0 = x0_r1_r0.copy();
     //x0_l_r0.row_range(0, 3) = x0_rot_l_r1;

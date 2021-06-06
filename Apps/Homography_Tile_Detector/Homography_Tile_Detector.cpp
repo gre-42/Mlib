@@ -36,18 +36,16 @@ int main(int argc, char** argv) {
         Array<bool> mask{global_mask.copy()};
         for (size_t it = 0; it < 3; ++it) {
             // H: x -> p, p = x-prime = x'
-            Array<float> x{ArrayShape{count_nonzero(mask), 3}};
-            Array<float> p{ArrayShape{count_nonzero(mask), 3}};
+            Array<float> x{ArrayShape{count_nonzero(mask), 2}};
+            Array<float> p{ArrayShape{count_nonzero(mask), 2}};
             size_t i = 0;
             for (size_t r = 0; r < mask.shape(0); ++r) {
                 for (size_t c = 0; c < mask.shape(1); ++c) {
                     if (mask(r, c)) {
                         x(i, id1) = i2a(r);
                         x(i, id0) = i2a(c);
-                        x(i, 2) = 1;
                         p(i, id1) = i2a(r) + flow(id1, r, c);
                         p(i, id0) = i2a(c) + flow(id0, r, c);
-                        p(i, 2) = 1;
                         ++i;
                     }
                 }
@@ -57,14 +55,14 @@ int main(int argc, char** argv) {
             }
             // H: x -> p, p = x-prime = x'
             std::cerr << "H" << std::endl;
-            FixedArray<float, 3, 3> H = homography_from_points(x, p);
+            FixedArray<float, 3, 3> H = homography_from_points(Array<float>::from_dynamic<2>(x), Array<float>::from_dynamic<2>(p));
             H /= H(2, 2);
             std::list<FixedArray<float, 2>> feature_list;
             std::list<FixedArray<float, 2>> Hp_list;
             for (size_t r = 0; r < mask.shape(0); ++r) {
                 for (size_t c = 0; c < mask.shape(1); ++c) {
                     FixedArray<float, 2> a{i2a(FixedArray<size_t, 2>{r, c})};
-                    FixedArray<float, 2> b{apply_homography(H, a).row_range<0, 2>()};
+                    FixedArray<float, 2> b{apply_homography(H, a) TEMPLATEV row_range<0, 2>()};
                     FixedArray<size_t, 2> ia = a2i(a);
                     FixedArray<size_t, 2> ib = a2i(b);
                     if (all(ia < FixedArray<size_t, 2>{mask.shape(0), mask.shape(1)}) &&

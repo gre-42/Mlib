@@ -193,9 +193,9 @@ void test_fixed_array_initialization() {
 
 void test_fixed_array_slicing() {
     FixedArray<int, 2> f{4, 5};
-    assert_isequal(f.row_range<1, 2>()(0), 5);
+    assert_isequal(f TEMPLATEV row_range<1, 2>()(0), 5);
     FixedArray<int, 3, 3> kif;
-    kif.row_range<0, 2>();
+    kif TEMPLATEV row_range<0, 2>();
     kif.reshaped<2, 2>();
 }
 
@@ -230,6 +230,17 @@ void test_sparse_array2() {
         Array<float>{0, 1, 0, 0, 0, 0});
 }
 
+void test_semi_fix() {
+    std::list<FixedArray<float, 2>> lst{
+        FixedArray<float, 2>{1.f, 2.f},
+        FixedArray<float, 2>{4.f, 2.f},
+        FixedArray<float, 2>{1.f, 2.f},
+        FixedArray<float, 2>{1.f, 5.f},
+        FixedArray<float, 2>{1.f, 2.f} };
+    Array<FixedArray<float, 2>> ar{ lst };
+    std::cerr << ar << std::endl;
+}
+
 int main(int argc, char **argv) {
     test_array_index();
     test_data();
@@ -247,5 +258,6 @@ int main(int argc, char **argv) {
     test_fixed_array_slicing();
     test_append();
     test_copy();
+    test_semi_fix();
     return 0;
 }

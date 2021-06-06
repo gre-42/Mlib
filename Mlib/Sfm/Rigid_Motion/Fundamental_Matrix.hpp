@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 
 namespace Mlib {
 
@@ -23,7 +24,7 @@ Array<float> fundamental_error(
 
 FixedArray<float, 3, 3> fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix);
 
-Array<float> find_epipole(const Array<float>& F);
+FixedArray<float, 2> find_epipole(const FixedArray<float, 3, 3>& F);
 
 void find_epiline(
     const FixedArray<float, 3, 3>& F,

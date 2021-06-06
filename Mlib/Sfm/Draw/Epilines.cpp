@@ -11,12 +11,10 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 void Mlib::Sfm::draw_epilines_from_epipole(
-    const Array<float>& epipole,
+    const FixedArray<float, 2>& epipole,
     StbImage& bmp,
     const Rgb24& color)
 {
-    assert(all(epipole.shape() == ArrayShape{2}));
-
     for (size_t r = 0; r < bmp.shape(0); r+=20) {
         for (size_t c = 0; c < bmp.shape(1); c+=20) {
             // Array<float> n = (F, i2a(ArrayShape{r, c}));

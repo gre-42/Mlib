@@ -93,10 +93,12 @@ FixedArray<float, 3, 3> Mlib::Sfm::fundamental_to_essential(const FixedArray<flo
     //return (lstsq_chol(intrinsic_matrix, F), intrinsic_matrix.T());
 }
 
-Array<float> Mlib::Sfm::find_epipole(const Array<float>& F) {
+FixedArray<float, 2> Mlib::Sfm::find_epipole(const FixedArray<float, 3, 3>& F) {
     Array<double> u, s, vT;
-    svd4(F.casted<double>(), u, s, vT);
-    return vT[1].casted<float>();
+    svd4(F.casted<double>().to_array(), u, s, vT);
+    return FixedArray<double, 2>{
+        vT(1, 0) / vT(1, 2),
+        vT(1, 1) / vT(1, 2) }.casted<float>();
 }
 
 void Mlib::Sfm::find_epiline(

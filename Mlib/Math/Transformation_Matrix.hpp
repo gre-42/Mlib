@@ -61,7 +61,7 @@ public:
     template <size_t m>
     inline FixedArray<TData, n + 1, m> project(const FixedArray<TData, n + 1, m>& rhs) const {
         FixedArray<TData, n + 1, m> res;
-        res.row_range<0, n>() = dot2d(semi_affine(), rhs);
+        res TEMPLATEV row_range<0, n>() = dot2d(semi_affine(), rhs);
         res[n] = rhs[n];
         return res;
     }

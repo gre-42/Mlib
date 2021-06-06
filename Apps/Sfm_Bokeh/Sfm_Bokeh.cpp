@@ -5,7 +5,7 @@
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Normalize.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_In_Box.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_On_Line.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
@@ -31,17 +31,17 @@ CorrespondingFeaturesOnLine get_cfol(
     const Array<float>& im1,
     const Array<float>& im0_rgb,
     const Array<float>& im1_rgb,
-    const Array<float>& F,
+    const FixedArray<float, 3, 3>& F,
     const std::string& bmp_filename)
 {
     Array<float> hr1d = harris_response_1d(im1, F);
-    Array<float> features2k = find_nfeatures(hr1d, ones<bool>(hr1d.shape()), 2000);
+    Array<FixedArray<float, 2>> features2k = Array<float>::from_dynamic<2>(find_nfeatures(hr1d, ones<bool>(hr1d.shape()), 2000));
     CorrespondingFeaturesOnLine ol{features2k, im0_rgb, im1_rgb, F};
     if (!only_features2k) {
-        PpmImage bmp = PpmImage::from_float_grayscale(im1);
+        StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F, bmp, Rgb24::green());
-        highlight_features(features2k, bmp, 2, Rgb24::red());
-        highlight_features(ol.y1_2d, bmp, 2, Rgb24::blue());
+        highlight_features(Array<float>{features2k}, bmp, 2, Rgb24::red());
+        highlight_features(Array<float>{ol.y1_2d}, bmp, 2, Rgb24::blue());
         bmp.save_to_file(bmp_filename);
     }
     return ol;
@@ -57,9 +57,9 @@ void dense_reconstruction(
     const Array<float>& im1,
     const Array<float>& im0_rgb,
     const Array<float>& im1_rgb,
-    const Array<float>& F,
+    const FixedArray<float, 3, 3>& F,
     const ProjectionToTR& ptr,
-    const Array<float>& intrinsic_matrix)
+    const TransformationMatrix<float, 2>& intrinsic_matrix)
 {
     if (!only_features2k) {
         size_t search_length = 200;
@@ -68,16 +68,16 @@ void dense_reconstruction(
             Array<float> res = disparity / (2.f * search_length) + 0.5f;
             // res = box_filter(res, ArrayShape{5, 5}, NAN);
             // res = guided_filter(im1, res, ArrayShape{3, 3}, float(1e-1));
-            PpmImage bmp = PpmImage::from_float_grayscale(res);
-            bmp.save_to_file("disparity_gsp.bmp");
+            StbImage bmp = StbImage::from_float_grayscale(res);
+            bmp.save_to_file("disparity_gsp.png");
         }
         if (false) {
             float worst_error = 1.f;
             Array<float> disparity = compute_disparity_rgb_patch(im0_rgb, im1_rgb, F, search_length, worst_error);
             if (!only_features2k) {
                 Array<float> res = disparity / (float(std::sqrt(2)) * 2.f * search_length) + 0.5f;
-                PpmImage bmp = PpmImage::from_float_grayscale(clipped(res, 0.f, 1.f));
-                bmp.save_to_file("disparity_rgbp.bmp");
+                StbImage bmp = StbImage::from_float_grayscale(clipped(res, 0.f, 1.f));
+                bmp.save_to_file("disparity_rgbp.png");
             }
         }
 
@@ -85,17 +85,16 @@ void dense_reconstruction(
         Array<float> x = reconstruct_disparity(
             disparity,
             F,
-            ptr.R,
-            ptr.t,
+            ptr.ke,
             intrinsic_matrix,
             &condition_number);
-        PpmImage::from_float_grayscale(
+        StbImage::from_float_grayscale(
             normalized_and_clipped(x[0], -1.f, 1.f)
             ).save_to_file(args.named_value("--recon-0"));
-        PpmImage::from_float_grayscale(
+        StbImage::from_float_grayscale(
             normalized_and_clipped(x[1], -1.f, 1.f)
             ).save_to_file(args.named_value("--recon-1"));
-        PpmImage::from_float_grayscale(
+        StbImage::from_float_grayscale(
             //normalized_and_clipped(z)
             normalized_and_clipped(x[2], 0.f, 1.f)
             //normalized_and_clipped(guided_filter(im1, z, ArrayShape{5, 5}, float(1e-2)), 0.3f, 0.6f)
@@ -107,13 +106,12 @@ void dense_reconstruction(
     }
 
     {
-        NormalizedProjection np{Array<float>{std::list<Array<float>>{
-            homogenized_Nx3(ol.y0_2d),
-            homogenized_Nx3(ol.y1_2d)}}};
+        NormalizedProjection np{Array<FixedArray<float, 2>>{std::list<Array<FixedArray<float, 2>>>{
+            ol.y0_2d,
+            ol.y1_2d}}};
         Array<float> condition_number;
-        Array<float> x = initial_reconstruction(
-            ptr.R,
-            ptr.t,
+        Array<FixedArray<float, 3>> x = initial_reconstruction(
+            ptr.ke,
             np.normalized_intrinsic_matrix(intrinsic_matrix),
             np.yn[0],
             np.yn[1],
@@ -123,10 +121,10 @@ void dense_reconstruction(
 
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
         cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
-        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.R, ptr.t }));
-        DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-0-1.png");
-        DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-0-2.png");
-        DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb}.normalize(256).draw("features2k-2-1.png");
+        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.ke }));
+        DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-1.png");
+        DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-2.png");
+        DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-2-1.png");
     }
 }
 
@@ -138,10 +136,7 @@ void compute_z(const ParsedArgs& args) {
         throw std::runtime_error("Source images differ in size");
     }
 
-    Array<float> intrinsic_matrix = Array<float>::load_txt_2d(args.named_value("--calibration-filename"));
-    if (!all(intrinsic_matrix.shape() == ArrayShape{3, 3})) {
-        throw std::runtime_error("Intrinsic matrix must be 3x3");
-    }
+    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{Array<float>::load_txt_2d(args.named_value("--calibration-filename"))} };
 
     Array<float> im0_rgb = source0.to_float_rgb();
     Array<float> im0 = source0.to_float_grayscale();
@@ -162,27 +157,27 @@ void compute_z(const ParsedArgs& args) {
         100);
 
     if (!only_features2k) {
-        PpmImage bmp = PpmImage::from_float_grayscale(im0);
+        StbImage bmp = StbImage::from_float_grayscale(im0);
         highlight_features(feature_points0, bmp, 2);
-        bmp.save_to_file("features0.bmp");
+        bmp.save_to_file("features0.png");
     }
     if (!only_features2k) {
-        PpmImage bmp = PpmImage::from_float_grayscale(im1);
+        StbImage bmp = StbImage::from_float_grayscale(im1);
         highlight_features(feature_points2, bmp, 2);
-        bmp.save_to_file("features1.bmp");
+        bmp.save_to_file("features1.png");
     }
 
     CorrespondingFeaturesInBox cf{feature_points0, im0_rgb, im1_rgb};
-    Array<float> y0{homogenized_Nx3(cf.y0_2d)};
-    Array<float> y1{homogenized_Nx3(cf.y1_2d)};
+    Array<FixedArray<float, 2>> y0{Array<float>::from_dynamic<2>(cf.y0_2d)};
+    Array<FixedArray<float, 2>> y1{Array<float>::from_dynamic<2>(cf.y1_2d)};
     if (!only_features2k) {
-        PpmImage bmp = PpmImage::from_float_grayscale(im1);
+        StbImage bmp = StbImage::from_float_grayscale(im1);
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
         highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
-        bmp.save_to_file("features21.bmp");
+        bmp.save_to_file("features21.png");
     }
 
-    Array<float> F = find_fundamental_matrix(y0, y1);
+    FixedArray<float, 3, 3> F = find_fundamental_matrix(y0, y1);
     std::cerr << "fundamental error " << sum(squared(fundamental_error(F, y0, y1))) << std::endl;
     std::cerr << "fundamental.T error " << sum(squared(fundamental_error(F.T(), y0, y1))) << std::endl;
 
@@ -199,36 +194,35 @@ void compute_z(const ParsedArgs& args) {
         throw std::runtime_error("Could not determine fundamental matrix");
     }
     if (false) {
-        Array<float> epipole3 = find_epipole(F);
-        if (any(Mlib::isnan(epipole3))) {
+        FixedArray<float, 2> epipole2 = find_epipole(F);
+        if (any(Mlib::isnan(epipole2))) {
             throw std::runtime_error("Could not determine epipole");
         }
-        Array<float> epipole2 = dehomogenized_2(epipole3 / epipole3(2));
 
         if (!only_features2k) {
-            PpmImage bmp = PpmImage::from_float_grayscale(im1);
+            StbImage bmp = StbImage::from_float_grayscale(im1);
             draw_epilines_from_epipole(epipole2, bmp, Rgb24::green());
             highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
             highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
             //highlight_features(Array<float>(bad_points), bmp, 2, Bgr565::black());
-            bmp.save_to_file("epilines.bmp");
+            bmp.save_to_file("epilines.png");
         }
     }
 
     if (!only_features2k) {
-        PpmImage bmp = PpmImage::from_float_grayscale(im1);
+        StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F, bmp, Rgb24::green());
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
         highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
-        bmp.save_to_file("f_epilines2.bmp");
+        bmp.save_to_file("f_epilines2.png");
     }
 
     if (!only_features2k) {
-        PpmImage bmp = PpmImage::from_float_grayscale(im1);
+        StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F.T(), bmp, Rgb24::green());
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
         highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
-        bmp.save_to_file("f_epilines2_T.bmp");
+        bmp.save_to_file("f_epilines2_T.png");
     }
 
     CorrespondingFeaturesOnLine ol = get_cfol(im1, im0_rgb, im1_rgb, F, "f_hr1d.bmp");
@@ -256,25 +250,24 @@ void compute_z(const ParsedArgs& args) {
         throw std::runtime_error("Projection not good");
     }
 
-    Array<float> F_r = fundamental_from_camera(
+    FixedArray<float, 3, 3> F_r = fundamental_from_camera(
         intrinsic_matrix,
         intrinsic_matrix,
-        ptr.ptr->R,
-        ptr.ptr->t);
+        ptr.ptr->ke);
     {
-        PpmImage bmp = PpmImage::from_float_grayscale(im1);
+        StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F_r, bmp, Rgb24::green());
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
         highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
-        bmp.save_to_file("r_epilines2.bmp");
+        bmp.save_to_file("r_epilines2.png");
     }
 
     {
-        PpmImage bmp = PpmImage::from_float_grayscale(im1);
+        StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F_r.T(), bmp, Rgb24::green());
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
         highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
-        bmp.save_to_file("r_epilines2_T.bmp");
+        bmp.save_to_file("r_epilines2_T.png");
     }
 
     CorrespondingFeaturesOnLine ol_r = get_cfol(im1, im0_rgb, im1_rgb, F_r, "r_hr1d.bmp");
@@ -292,23 +285,23 @@ void compute_z(const ParsedArgs& args) {
 }
 
 void compute_bokeh(const ParsedArgs& args) {
-    PpmImage bmp0 = PpmImage::load_from_file(args.unnamed_value(0));
-    PpmImage bmpz = PpmImage::load_from_file(args.named_value("--recon-2"));
+    StbImage bmp0 = StbImage::load_from_file(args.unnamed_value(0));
+    StbImage bmpz = StbImage::load_from_file(args.named_value("--recon-2"));
     Array<float> im0 = bmp0.to_float_grayscale();
     Array<float> z = bmpz.to_float_grayscale();
     Array<float> zf = clipped(guided_filter(im0, z, ArrayShape{15, 15}, float(1e-3)), 0.f, 1.f);
-    PpmImage::from_float_grayscale(zf).save_to_file(args.named_value("--post"));
+    StbImage::from_float_grayscale(zf).save_to_file(args.named_value("--post"));
 
     Array<float> f;
     f = im0;
-    for (float thr = 0.5; thr <= 1; thr += 0.1) {
+    for (float thr = 0.5; thr <= 1.f; thr += 0.1f) {
         Array<float> f1 = box_filter_nan(f, ArrayShape{10, 10}, NAN);
         auto w = zf - thr;
         clip(w, 0.f, 1.f);
         f = f * (1.f - w) + f1 * w;
     }
     clip(f, 0.f, 1.f);
-    PpmImage::from_float_grayscale(f).save_to_file(args.named_value("--bokeh"));
+    StbImage::from_float_grayscale(f).save_to_file(args.named_value("--bokeh"));
     /*for (size_t i = 0; i < 10; ++i) {
 
     }*/
@@ -316,10 +309,7 @@ void compute_bokeh(const ParsedArgs& args) {
 
 void plot_dense_x(const ParsedArgs& args) {
 
-    Array<float> intrinsic_matrix = Array<float>::load_txt_2d(args.named_value("--calibration-filename"));
-    if (!all(intrinsic_matrix.shape() == ArrayShape{3, 3})) {
-        throw std::runtime_error("Intrinsic matrix must be 3x3");
-    }
+    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{Array<float>::load_txt_2d(args.named_value("--calibration-filename"))} };
 
     Bgr24Raw source0 = Bgr24Raw::load_from_file(args.unnamed_value(0));
 
@@ -330,8 +320,8 @@ void plot_dense_x(const ParsedArgs& args) {
     Array<float> condition_number = Array<float>::load_txt_2d("cond.m");
 
     const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
-    DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), source0.to_float_rgb()).normalize(256).draw("dense-0-2.png");
-    DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), source0.to_float_rgb()).normalize(256).draw("dense-2-1.png");
+    DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), source0.to_float_rgb()).normalize(256).draw("dense-0-2.png");
+    DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), source0.to_float_rgb()).normalize(256).draw("dense-2-1.png");
 }
 
 int main(int argc, char** argv) {

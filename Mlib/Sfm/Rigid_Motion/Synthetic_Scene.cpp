@@ -11,8 +11,8 @@ using namespace Mlib::Sfm;
 
 static TransformationMatrix<float, 3> random_ke(unsigned int seed, float multiplier = 1.f) {
     FixedArray<float, 6> kep;
-    kep.row_range<0, 3>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed) } - 0.5f) * float(1e-1);
-    kep.row_range<3, 6>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed + 2348) } - 0.5f) * float(2e-1);
+    kep TEMPLATEV row_range<0, 3>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed) } - 0.5f) * float(1e-1);
+    kep TEMPLATEV row_range<3, 6>() = multiplier * (FixedArray<float, 3>{ random_array2<float>(ArrayShape{ 3 }, seed + 2348) } - 0.5f) * float(2e-1);
     return k_external(kep);
 }
 
@@ -28,9 +28,9 @@ SyntheticScene::SyntheticScene(
          random_array2<float>(ArrayShape{20}, 485)) }).T())),
 // an intrinsic camera-matrix
  ki{FixedArray<float, 3, 3>{
-    256, 0, 200,
-    0, 512, 490,
-    0, 0, 1}},
+    256.f, 0.f, 200.f,
+    0.f, 512.f, 490.f,
+    0.f, 0.f, 1.f}},
 // several extrinsic camera-matrices observing "x"
  ke(std::list<TransformationMatrix<float, 3>>{
     random_ke(1, (zero_first_extrinsic ? 0.f : 1.f) * tR_multiplier),

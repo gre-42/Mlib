@@ -334,12 +334,12 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
 }
 
 void PhysicsEngine::move_advance_times() {
-    for (auto a : advance_times_.advance_times_shared_) {
+    for (const auto& a : advance_times_.advance_times_shared_) {
         if (!advance_times_.advance_times_to_delete_.contains(a.get())) {
             a->advance_time(cfg_.dt);
         }
     }
-    for (auto a : advance_times_.advance_times_ptr_) {
+    for (const auto& a : advance_times_.advance_times_ptr_) {
         if (!advance_times_.advance_times_to_delete_.contains(a)) {
             a->advance_time(cfg_.dt);
         }

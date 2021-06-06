@@ -217,7 +217,7 @@ void GlobalBundle::copy_in(
                     row_id(Y{p.first, y.first, 0}) + 2) = projected_points_1p_1ke(
                         r_raw->second->position,
                         intrinsic_matrix,
-                        c_raw->second.projection_matrix_3x4()).row_range<0, 2>();
+                        c_raw->second.projection_matrix_3x4()) TEMPLATEV row_range<0, 2>();
 
                 {
                     // std::cerr << "Computing JP" << std::endl;
@@ -333,7 +333,7 @@ void GlobalBundle::copy_out(
             }
         }
     }
-    for (auto c : camera_frames) {
+    for (const auto& c : camera_frames) {
         if (c->state_ != MmState::MARGINALIZED) {
             size_t cid = column_id(XK{c.first, 0});
             const FixedArray<float, 6> kke{ x.row_range(cid, cid + 6) };

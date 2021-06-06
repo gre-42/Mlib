@@ -153,7 +153,7 @@ namespace FasUtils {
     template <size_t tsize0, size_t... tsize>
     inline bool equals_(size_t* other, bool* result) {
         *result = (tsize0 == *other);
-        equals_<tsize...>(other + 1, result + 1);
+        return equals_<tsize...>(other + 1, result + 1);
     }
 
     template <size_t... tsize>

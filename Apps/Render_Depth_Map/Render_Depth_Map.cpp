@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
         ::Mlib::render_depth_map(
             img.to_float_rgb(),
             depth,
-            FixedArray<float, 3, 3>{intrinsic_matrix},
+            TransformationMatrix<float, 2>{ FixedArray<float, 3, 3>{ intrinsic_matrix } },
             safe_stof(args.named_value("--z_offset", "1")),
             args.has_named("--rotate"));
     } catch (const CommandLineArgumentError& e) {

@@ -10,7 +10,7 @@ class StbImage;
 namespace Sfm {
 
 void draw_epilines_from_epipole(
-    const Array<float>& epipole,
+    const FixedArray<float, 2>& epipole,
     StbImage& bmp,
     const Rgb24& color);
 

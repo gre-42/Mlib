@@ -215,12 +215,12 @@ Array<float> dehomogenized_3x4(const Array<float>& a);
 template <class TData, size_t d>
 FixedArray<TData, d - 1, d> homogeneous_jacobian_dx_(const FixedArray<TData, d, d>& R, const FixedArray<TData, d>& Mx) {
     static_assert(d > 0);
-    const auto& m = R.row_range<0, d - 1>();
-    const auto& mx = Mx.row_range<0, d - 1>();
+    const auto& m = R TEMPLATEV row_range<0, d - 1>();
+    const auto& mx = Mx TEMPLATEV row_range<0, d - 1>();
     const TData& bx = Mx(d - 1);
 
-    const auto& mx_2d = mx.reshaped<d - 1, 1>();
-    const auto& b_2d = R.row_range<d - 1, d>();
+    const auto& mx_2d = mx TEMPLATEV reshaped<d - 1, 1>();
+    const auto& b_2d = R TEMPLATEV row_range<d - 1, d>();
 
     // M = [m0; m1 ... ; b]
     // d/dx m'x/(b'x) = (m(0)(b'x) - (m'x)*b(0)) / squared(b'x)

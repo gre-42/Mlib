@@ -446,11 +446,11 @@ Array<TData> solve_symm_inplace(
         beta != TData(0))
     {
         // OpenCV Levenberg-Marquardt
-        for (size_t r = 0; r < A->static_shape<0>(); ++r) {
+        for (size_t r = 0; r < A TEMPLATE static_shape<0>(); ++r) {
             TData dr = alpha + beta * (*A)(r, r);
             (*A)(r, r) += dr;
             if (x0 != nullptr) {
-                for (size_t c = 0; c < B->static_shape<1>(); ++c) {
+                for (size_t c = 0; c < B TEMPLATE static_shape<1>(); ++c) {
                     (*B)(r, c) += (*x0)(r, c) * dr;
                 }
             }
@@ -708,9 +708,9 @@ void outer2d(
     assert(all(result->shape() == ArrayShape{ a->shape(0), b->shape(0) }));
     #pragma omp parallel for if (result->nelements() > 200 * 200)
     for (int r = 0; r < (int)result->shape(0); ++r) {
-        for (size_t c = 0; c < result->static_shape<1>(); ++c) {
+        for (size_t c = 0; c < result TEMPLATE static_shape<1>(); ++c) {
             TData v = 0;
-            for (size_t i = 0; i < a->static_shape<1>(); ++i) {
+            for (size_t i = 0; i < a TEMPLATE static_shape<1>(); ++i) {
                 v += (*a)(r, i) * conju((*b)(c, i));
             }
             (*result)(r, c) = v;
@@ -729,8 +729,8 @@ Array<TData> outer2d(
 {
     assert(a->ndim() == 2);
     assert(b->ndim() == 2);
-    assert(a->static_shape<1>() == b->static_shape<1>());
-    Array<TData> result{ ArrayShape{a->static_shape<0>(), b->static_shape<0>()} };
+    assert(a TEMPLATE static_shape<1>() == b TEMPLATE static_shape<1>());
+    Array<TData> result{ ArrayShape{a TEMPLATE static_shape<0>(), b TEMPLATE static_shape<0>()} };
     outer2d(a, b, result);
     return result;
 }
@@ -783,13 +783,13 @@ void dot2d(
     assert(b->ndim() == 2);
     assert(a->shape(1) == b->shape(0));
     assert(result->ndim() == 2);
-    assert(result->static_shape<0>() == a->static_shape<0>());
-    assert(result->static_shape<1>() == b->static_shape<1>());
+    assert(result TEMPLATE static_shape<0>() == a TEMPLATE static_shape<0>());
+    assert(result TEMPLATE static_shape<1>() == b TEMPLATE static_shape<1>());
     #pragma omp parallel for if (result->nelements() > 200 * 200)
-    for (int r = 0; r < (int)result->static_shape<0>(); ++r) {
-        for (size_t c = 0; c < result->static_shape<1>(); ++c) {
+    for (int r = 0; r < (int)result TEMPLATE static_shape<0>(); ++r) {
+        for (size_t c = 0; c < result TEMPLATE static_shape<1>(); ++c) {
             TData v = 0;
-            for (size_t i = 0; i < a->static_shape<1>(); ++i) {
+            for (size_t i = 0; i < a TEMPLATE static_shape<1>(); ++i) {
                 v += (*a)(r, i) * (*b)(i, c);
             }
             (*result)(r, c) = v;
@@ -804,8 +804,8 @@ Array<TData> dot2d(
 {
     assert(a->ndim() == 2);
     assert(b->ndim() == 2);
-    assert(a->static_shape<1>() == b->static_shape<0>());
-    Array<TData> result{ArrayShape{a->static_shape<0>(), b->static_shape<1>()}};
+    assert(a TEMPLATE static_shape<1>() == b TEMPLATE static_shape<0>());
+    Array<TData> result{ArrayShape{a TEMPLATE static_shape<0>(), b TEMPLATE static_shape<1>()}};
     dot2d(a, b, result);
     return result;
 }
@@ -818,7 +818,7 @@ Array<TData> dot1d(
     assert(a->ndim() == 2);
     assert(b->ndim() == 1);
     assert(a->shape(1) == b->length());
-    Array<TData> result{ArrayShape{a->static_shape<0>(), 1}};
+    Array<TData> result{ArrayShape{a TEMPLATE static_shape<0>(), 1}};
     dot2d(a, b->reshaped(ArrayShape{b->length(), 1}), result);
     return result.flattened();
 }

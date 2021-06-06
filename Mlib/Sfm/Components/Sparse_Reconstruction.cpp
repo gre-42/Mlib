@@ -282,9 +282,13 @@ CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::millis
 
 void SparseReconstruction::reconstruct_append() {
     std::cerr << "reconstruct_append" << std::endl;
-    const auto& pp = particles_.rbegin();
-    auto& p = pp->second;
-    for (auto sit = p.begin(); sit != p.end() ; ) {
+    // This potentially deletes particles.
+    // for (const auto& p : particles_) {
+    //     camera_frame_append(p.first);
+    // }
+    const auto pp = particles_.rbegin();
+    auto& frame = pp->second;
+    for (auto sit = frame.begin(); sit != frame.end() ; ) {
         const auto s = *(sit++);
         // auto r = reconstructed_points_.find(s.first);
         // if ((r != reconstructed_points_.end()) && (r->state_ != MmState::ACTIVE)) {
@@ -373,7 +377,7 @@ void SparseReconstruction::partial_bundle_adjustment(const std::list<std::chrono
     // However, find_projection_matrices expects a matrix of shape
     // (time, reconstruction-index, dimension (2 + 1)).
     // => Transposition afterwards.
-    for (auto fr : y_start->second) {
+    for (const auto& fr : y_start->second) {
         auto rp = reconstructed_points_.find(fr.first);
         if (rp != reconstructed_points_.end()) {
             std::list<FixedArray<float, 2>> ys;
@@ -440,7 +444,7 @@ void SparseReconstruction::partial_bundle_adjustment(const std::list<std::chrono
 
     {
         size_t i = 0;
-        for (auto time : times) {
+        for (const auto& time : times) {
             // std::cerr << "time " << time.count() << std::endl;
             // std::cerr << camera_frames_.find(time)->second.projection_matrix_3x4() << std::endl;
             // std::cerr << kke[i] << std::endl;
@@ -641,9 +645,6 @@ void SparseReconstruction::reconstruct() {
         reconstruct_append();
         if (cfg_.enable_global_bundle_adjustment) {
             // camera_frames_.clear();
-            for (const auto& p : particles_) {
-                camera_frame_append(p.first);
-            }
             global_bundle_adjustment();
         }
         if (cfg_.enable_partial_bundle_adjustment) {
@@ -788,7 +789,7 @@ void SparseReconstruction::draw(const std::string& prefix) const {
 void SparseReconstruction::save_reconstructed(const std::string& prefix) const {
     Array<float> recon{ArrayShape{reconstructed_points_.size(), 3}};
     size_t i = 0;
-    for (auto r : reconstructed_points_) {
+    for (const auto& r : reconstructed_points_) {
         recon[i] = r.second->position;
         ++i;
     }
@@ -798,19 +799,19 @@ void SparseReconstruction::save_reconstructed(const std::string& prefix) const {
 
 void SparseReconstruction::print_arrays() const {
     // std::cout << "Reconstructed points" << std::endl;
-    // for (auto r : reconstructed_points_) {
+    // for (const auto& r : reconstructed_points_) {
     //     std::cout << r.first << " state " << r.state_ << " ";
     // }
     // std::cout << std::endl;
 
     std::cout << "Particles" << std::endl;
-    for (auto fr : particles_) {
+    for (const auto& fr : particles_) {
         std::cout << fr.first.count() << "ms " << std::endl;
         const auto& c = camera_frames_.find(fr.first);
         if (c != camera_frames_.end()) {
             std::cout << "c=" << c->state_ << std::endl;
         }
-        for (auto p : fr.second) {
+        for (const auto& p : fr.second) {
             const auto& r = reconstructed_points_.find(p.first);
             std::cout << p.first << "=#" << p.second->sequence.size() << " ";
             if (r != reconstructed_points_.end()) {

@@ -68,7 +68,7 @@ void filter_distance_to_camera(Array<float>& x, Array<float>& cond, const Array<
 }
 
 void reproject(
-    const Array<float>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
     const Array<float>& x,
     const Array<float>& im0_rgb)
 {
@@ -81,16 +81,16 @@ void reproject(
                 reprojected(2, r, c) = NAN;
                 continue;
             }
-            Array<float> proj = projected_points_1p_1ke(
-                Array<float>{x(0, r, c), x(1, r, c), x(2, r, c), 1},
+            FixedArray<float, 2> proj = projected_points_1p_1ke(
+                FixedArray<float, 3>{x(0, r, c), x(1, r, c), x(2, r, c)},
                 intrinsic_matrix,
-                identity_array<float>(4).row_range(0, 3));
-            ArrayShape id{a2i(dehomogenized_2(proj))};
+                TransformationMatrix<float, 3>::identity());
+            FixedArray<size_t, 2> id{a2i(proj)};
             // std::cerr << proj << std::endl;
             // reprojected(r, c) = sum(squared(proj, i2a(proj;
             // std::cerr << id << " | " << ArrayShape{r, c} << std::endl;
             // std::cerr << im0_rgb(0, r, c) << " " << im0_rgb(1, r, c) << " " << im0_rgb(2, r, c) << std::endl;
-            if (all(id < reprojected.shape().erased_first())) {
+            if (all(id < FixedArray<size_t, 2>{reprojected.shape().erased_first()})) {
                 if (false) {
                     reprojected(0, r, c) = im0_rgb(0, id(0), id(1));
                     reprojected(1, r, c) = im0_rgb(1, id(0), id(1));
@@ -161,19 +161,18 @@ int main(int argc, char **argv) {
         Array<float> im0_gray = im0_bgr.to_float_grayscale();
         Array<float> im1_gray = im1_bgr.to_float_grayscale();
 
-        Array<float> intrinsic_matrix = Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix"));
+        TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
 
         Array<float> c0 = Array<float>::load_txt_2d(args.named_value("--c0"));
         Array<float> c1 = Array<float>::load_txt_2d(args.named_value("--c1"));
 
         Array<float> dc = reconstruction_in_reference(c0, c1);
-        Array<float> t = t3_from_Nx4(dc, 4);
-        Array<float> R = R3_from_Nx4(dc, 4);
+        TransformationMatrix<float, 3> ke{ FixedArray<float, 4, 4>{ dc } };
         if (synthetic) {
-            t = Array<float>{1, 0, 0};
-            R = identity_array<float>(3);
+            ke.t() = FixedArray<float, 3>{1.f, 0.f, 0.f };
+            ke.R() = fixed_identity_array<float, 3>();
         }
-        Array<float> F = fundamental_from_camera(intrinsic_matrix, intrinsic_matrix, R, t);
+        FixedArray<float, 3, 3> F = fundamental_from_camera(intrinsic_matrix, intrinsic_matrix, ke);
 
         Array<float> disparity_0;
         Array<float> error_0;
@@ -198,19 +197,19 @@ int main(int argc, char **argv) {
 
         if (!fs::exists("condition_number.m")) {
             {
-                PpmImage bmp = PpmImage::from_float_rgb(im0_rgb);
+                StbImage bmp = StbImage::from_float_rgb(im0_rgb);
                 draw_epilines_from_F(F, bmp, Rgb24::green());
-                bmp.save_to_file("epilines-0.bmp");
+                bmp.save_to_file("epilines-0.png");
             }
             {
-                PpmImage bmp = PpmImage::from_float_rgb(im0_rgb);
+                StbImage bmp = StbImage::from_float_rgb(im0_rgb);
                 draw_inverse_epilines_from_F(F, bmp, Rgb24::green());
-                bmp.save_to_file("epilines-i-0.bmp");
+                bmp.save_to_file("epilines-i-0.png");
             }
             {
-                PpmImage bmp = PpmImage::from_float_rgb(im1_rgb);
+                StbImage bmp = StbImage::from_float_rgb(im1_rgb);
                 draw_epilines_from_F(F.T(), bmp, Rgb24::green());
-                bmp.save_to_file("epilines-1.bmp");
+                bmp.save_to_file("epilines-1.png");
             }
 
             Array<float> im0_gray_masked;
@@ -314,7 +313,7 @@ int main(int argc, char **argv) {
 
             // Array<float> disparity_0_f = guided_filter(im0_gray, disparity_0, ArrayShape{10, 10}, float(1e-3));
 
-            x = reconstruct_disparity(disparity_0, F, R, t, intrinsic_matrix, &condition_number);
+            x = reconstruct_disparity(disparity_0, F, ke, intrinsic_matrix, &condition_number);
             x[0].save_txt_2d("x-0.m");
             x[1].save_txt_2d("x-1.m");
             x[2].save_txt_2d("x-2.m");
@@ -649,10 +648,10 @@ int main(int argc, char **argv) {
 
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
         cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
-        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ R, t }));
-        DenseProjector::from_image(cams, 0, 1, 2, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw("dense-0-1.png");
-        DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw("dense-0-2.png");
-        DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw("dense-2-1.png");
+        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ke }));
+        DenseProjector::from_image(cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-1.png");
+        DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-2.png");
+        DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-2-1.png");
 
         return 0;
     } catch (const CommandLineArgumentError& e) {

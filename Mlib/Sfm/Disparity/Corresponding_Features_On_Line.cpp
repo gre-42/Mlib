@@ -10,7 +10,7 @@ using namespace Mlib::Sfm;
  * Cf. "compute_disparity"
  */
 CorrespondingFeaturesOnLine::CorrespondingFeaturesOnLine(
-    const Array<float>& feature_points0,
+    const Array<FixedArray<float, 2>>& feature_points0,
     const Array<float>& im0_rgb,
     const Array<float>& im1_rgb,
     const FixedArray<float, 3, 3>& F)
@@ -18,12 +18,12 @@ CorrespondingFeaturesOnLine::CorrespondingFeaturesOnLine(
     const size_t max_distance = 200;
     const float worst_error = 1.f; // Errors respect the patch-brightness.
 
-    std::list<Array<float>> yl0_2;
+    std::list<FixedArray<float, 2>> yl0_2;
     std::list<FixedArray<float, 2>> yl1_2;
     std::list<Array<float>> yl0;
     std::list<Array<float>> yl1;
-    for (const Array<float>& f0 : feature_points0) {
-        ArrayShape id = a2i(f0);
+    for (const FixedArray<float, 2>& f0 : feature_points0.flat_iterable()) {
+        ArrayShape id = a2i(f0).to_array_shape();
         EpilineDirection ed(id(0), id(1), F);
         if (ed.good) {
             TraceablePatch tp{im0_rgb, id, ArrayShape{10, 10}};
@@ -36,6 +36,6 @@ CorrespondingFeaturesOnLine::CorrespondingFeaturesOnLine(
             }
         }
     }
-    y0_2d = Array<float>{yl0_2};
-    y1_2d = Array<float>{yl1_2};
+    y0_2d = Array<FixedArray<float, 2>>{yl0_2};
+    y1_2d = Array<FixedArray<float, 2>>{yl1_2};
 }

@@ -143,8 +143,8 @@ FixedArray<float, 2, 6> Mlib::Cv::projected_points_jacobian_dke_1p_1ke(
     //     kep.row_range(0, 3),
     //     float(1e-3));
     FixedArray<float, 3, 3> da_dkep = tait_bryan_angles_dtheta(
-        kep.row_range<0, 3>(),
-        x.row_range<0, 3>());
+        kep TEMPLATEV row_range<0, 3>(),
+        x TEMPLATEV row_range<0, 3>());
 
     FixedArray<float, 3, 6> da_dk{
         da_dkep(0, 0), da_dkep(0, 1), da_dkep(0, 2), 1.f, 0.f, 0.f,

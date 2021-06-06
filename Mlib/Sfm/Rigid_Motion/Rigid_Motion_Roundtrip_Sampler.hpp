@@ -16,7 +16,7 @@ public:
         const Array<TData>& depth_r,
         const Array<TData>& depth_l)
     : iki_{inv(ki.affine())},
-      T_r_{dot(ki.affine(), ke.affine().row_range<0, 3>())},
+      T_r_{dot(ki.affine(), ke.affine() TEMPLATEV row_range<0, 3>())},
       T_l_{ki.project(ke.inverted().semi_affine())},
       depth_r_{depth_r},
       depth_l_{depth_l}

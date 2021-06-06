@@ -35,7 +35,7 @@ protected:
 
     FixedArray<float, 2> project(const FixedArray<float, 3>& x) {
         FixedArray<float, 2> sliced{x(i0_), x(i1_)};
-        return dot1d(scale_matrix_, homogenized_3(sliced)).row_range<0, 2>();
+        return dot1d(scale_matrix_, homogenized_3(sliced)) TEMPLATEV row_range<0, 2>();
     }
 
     float zcoord(const FixedArray<float, 3>& x) {

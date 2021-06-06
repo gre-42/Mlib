@@ -55,34 +55,33 @@ int main(int argc, char **argv) {
         Array<float> im0_gray = im0_bgr.to_float_grayscale();
         Array<float> im1_gray = im1_bgr.to_float_grayscale();
 
-        Array<float> intrinsic_matrix = Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix"));
+        TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
 
-        Array<float> c0 = Array<float>::load_txt_2d(args.named_value("--c0"));
-        Array<float> c1 = Array<float>::load_txt_2d(args.named_value("--c1"));
+        TransformationMatrix<float, 3> c0{ FixedArray<float, 4, 4>{ Array<float>::load_txt_2d(args.named_value("--c0")) } };
+        TransformationMatrix<float, 3> c1{ FixedArray<float, 4, 4>{ Array<float>::load_txt_2d(args.named_value("--c1")) } };
 
-        Array<float> dc = reconstruction_in_reference(c0, c1);
-        Array<float> t = t3_from_Nx4(dc, 4);
-        Array<float> R = R3_from_Nx4(dc, 4);
+        Array<float> dc = reconstruction_in_reference(c0.affine().to_array(), c1.affine().to_array());
+        TransformationMatrix<float, 3> ke{ FixedArray<float, 4, 4>{dc} };
         if (synthetic) {
-            t = Array<float>{1, 0, 0};
-            R = identity_array<float>(3);
+            ke.t() = FixedArray<float, 3>{1.f, 0.f, 0.f};
+            ke.R() = fixed_identity_array<float, 3>();
         }
-        Array<float> F = fundamental_from_camera(intrinsic_matrix, intrinsic_matrix, R, t);
+        FixedArray<float, 3, 3> F = fundamental_from_camera(intrinsic_matrix, intrinsic_matrix, ke);
 
         {
-            PpmImage bmp = PpmImage::from_float_rgb(im0_rgb);
+            StbImage bmp = StbImage::from_float_rgb(im0_rgb);
             draw_epilines_from_F(F, bmp, Rgb24::green());
-            bmp.save_to_file("epilines-0.ppm");
+            bmp.save_to_file("epilines-0.png");
         }
         {
-            PpmImage bmp = PpmImage::from_float_rgb(im0_rgb);
+            StbImage bmp = StbImage::from_float_rgb(im0_rgb);
             draw_inverse_epilines_from_F(F, bmp, Rgb24::green());
-            bmp.save_to_file("epilines-i-0.bmp");
+            bmp.save_to_file("epilines-i-0.png");
         }
         {
-            PpmImage bmp = PpmImage::from_float_rgb(im1_rgb);
+            StbImage bmp = StbImage::from_float_rgb(im1_rgb);
             draw_epilines_from_F(F.T(), bmp, Rgb24::green());
-            bmp.save_to_file("epilines-1.bmp");
+            bmp.save_to_file("epilines-1.png");
         }
 
         bool cache_dsi = true;
@@ -103,8 +102,8 @@ int main(int argc, char **argv) {
                 InverseDepthCostVolume vol{im0_gray.shape(), inverse_depths};
                 vol.increment(
                     intrinsic_matrix,
-                    inverted_homogeneous_3x4(c0),
-                    inverted_homogeneous_3x4(c1),
+                    c0,
+                    c1,
                     im0_rgb,
                     im1_rgb);
                 dsi = vol.get(1 * 3);  // 1 * 3 = min_channel_increments
@@ -131,7 +130,7 @@ int main(int argc, char **argv) {
                 }
             }
             if (!use_inverse_depth) {
-                Array<float> x = reconstruct_disparity(disparity0 * d_multiplier, F, R, t, intrinsic_matrix);
+                Array<float> x = reconstruct_disparity(disparity0 * d_multiplier, F, ke, intrinsic_matrix);
                 draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file("xo-2.ppm");
                 draw_nan_masked_grayscale(
                     disparity0,
@@ -183,7 +182,7 @@ int main(int argc, char **argv) {
             draw_nan_masked_grayscale(depth, min(1.f / inverse_depths), max(1.f / inverse_depths)).save_to_file("depth.ppm");
             x = reconstruct_depth(depth, intrinsic_matrix);
         } else {
-            x = reconstruct_disparity(a * d_multiplier, F, R, t, intrinsic_matrix, &condition_number);
+            x = reconstruct_disparity(a * d_multiplier, F, ke, intrinsic_matrix, &condition_number);
             draw_quantiled_grayscale(condition_number, 0.05, 0.95).save_to_file("condition_number.ppm");
         }
         draw_quantiled_grayscale(x[0], 0.05, 0.95).save_to_file("x-0.ppm");
@@ -193,10 +192,10 @@ int main(int argc, char **argv) {
         {
             MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
             cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
-            cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ R, t }));
-            DenseProjector::from_image(cams, 0, 1, 2, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw("dense-0-1.png");
-            DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw("dense-0-2.png");
-            DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, dehomogenized_3x4(identity_array<float>(4)), im0_rgb).normalize(256).draw("dense-2-1.png");
+            cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ke }));
+            DenseProjector::from_image(cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-1.png");
+            DenseProjector::from_image(cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-0-2.png");
+            DenseProjector::from_image(cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw("dense-2-1.png");
         }
 
         return 0;

@@ -184,9 +184,9 @@ void lstsq_chol_1d(
         AT_A += *dAT_A;
     }
     if (dAT_b != nullptr) {
-        AT_B += dAT_b->reshaped<r, 1>();
+        AT_B += dAT_b TEMPLATE reshaped<r, 1>();
     }
-    result = solve_symm_inplace(AT_A, AT_B, alpha, beta).reshaped<r>();
+    result = solve_symm_inplace(AT_A, AT_B, alpha, beta) TEMPLATEV reshaped<r>();
 }
 
 template <class TData, size_t tsize>
