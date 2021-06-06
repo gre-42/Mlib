@@ -23,16 +23,16 @@ using namespace Mlib::Sfm::Dm;
 
 DtamParameters::DtamParameters()
 : DtamParameters(
-    0.5,                                // min_depth
-    10,                                 // max_depth
+    0.5f,                               // min_depth
+    10.f,                               // max_depth
     32,                                 // ndepths
-    100,                                // alpha_G
-    1.6,                                // beta_G
-    8,                                  // theta_0 (0.2)
-    8 / 0.2 * 1e-4,                     // theta_end (1e-4)
-    0.0001,                             // beta (0.0001 - 0.001)
-    1,                                  // lambda (1 for the first keyframe)
-    0.2,                                // epsilon (1e-4)
+    100.f,                              // alpha_G
+    1.6f,                               // beta_G
+    8.f,                                // theta_0 (0.2)
+    8.f / 0.2f * float{ 1e-4 },         // theta_end (1e-4)
+    0.0001f,                            // beta (0.0001 - 0.001)
+    1.f,                                // lambda (1 for the first keyframe)
+    0.2f,                               // epsilon (1e-4)
     400)                                // nsteps
 {}
 

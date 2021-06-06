@@ -5,7 +5,7 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 static bool interactive = true;
-static float theta_0 = interactive ? 0.2 : 8;
+static float theta_0 = interactive ? 0.2f : 8.f;
 
 DtamComponentConfig::DtamComponentConfig(bool track_using_dtam)
 : DtamComponentConfig(
@@ -18,20 +18,20 @@ DtamComponentConfig::DtamComponentConfig(bool track_using_dtam)
         interactive,                // incremental_update
         interactive ? 20 : 20,      // nfuture_frames_per_keyframe
         interactive ? 20 :  1,      // npast_frames_per_keyframe
-        3 * (interactive ? 1 : 10), // min_channel_increments
-        0.8,                        // min_pixel_fraction_for_tracking
+        3 * size_t{ interactive ? 1u : 10u }, // min_channel_increments
+        0.8f,                       // min_pixel_fraction_for_tracking
         100,                        // ninterleaved_iterations
         Dm::DtamParameters(
             0.5f,                   // min_depth
             5.f,                    // max_depth
             32,                     // ndepths
-            100,                    // alpha_G
-            1.6,                    // beta_G
+            100.f,                  // alpha_G
+            1.6f,                   // beta_G
             theta_0,                // theta_0 (0.2)
-            theta_0 / 0.2 * 1e-4,   // theta_end (1e-4)
-            0.0001,                 // beta (0.0001 - 0.001)
-            1,                      // lambda (1 for the first keyframe)
-            0.2,                    // epsilon (1e-4)
+            theta_0 / 0.2f * float{ 1e-4 },  // theta_end (1e-4)
+            0.0001f,                // beta (0.0001 - 0.001)
+            1.f,                    // lambda (1 for the first keyframe)
+            0.2f,                   // epsilon (1e-4)
             400)))                  // nsteps
 {}
 
