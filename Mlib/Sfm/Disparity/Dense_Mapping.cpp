@@ -622,31 +622,31 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
             std::cerr << "sigma_q " << sigma_q << " sigma_d " << sigma_d << std::endl;
         }
         q_ = update_q(g_, q_, d_, parameters_.epsilon_, sigma_q);
-        d_ = update_d(g_, q_, d_, a_, theta_, sigma_d, dsi.shape(0) - 1);
+        d_ = update_d(g_, q_, d_, a_, theta_, sigma_d, (float)(dsi.shape(0) - 1));
     }
     if (print_debug_) {
         Array<float> eo = energy_orig(g_, parameters_.lambda_, parameters_.epsilon_, dsi, a_);
         Array<float> en = energy(g_, theta_, parameters_.lambda_, parameters_.epsilon_, dsi, d_, a_, q_);
         std::cerr << "q: " << xsum(squared(q_)) << std::endl;
-        std::cerr << "q: " << nanquantiles(q_, Array<float>{0, 0.05, 0.5, 0.95, 1}) << std::endl;
-        std::cerr << "d: " << nanquantiles(d_, Array<float>{0, 0.05, 0.5, 0.95, 1}) << std::endl;
+        std::cerr << "q: " << nanquantiles(q_, Array<float>{0.f, 0.05f, 0.5f, 0.95f, 1.f}) << std::endl;
+        std::cerr << "d: " << nanquantiles(d_, Array<float>{0.f, 0.05f, 0.5f, 0.95f, 1.f}) << std::endl;
         std::cerr << "eo: " << xsum(eo) << " en " << xsum(en) << std::endl;
         if (print_bmps_ && n_ % 30 == 0) {
             if (regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES ||
                 regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING ||
                 regularizer == Regularizer::CENTRAL_DIFFERENCES)
             {
-                draw_quantiled_grayscale(q_[0], 0.05, 0.95).save_to_file("q0-" + std::to_string(n_) + ".ppm");
-                draw_quantiled_grayscale(q_[1], 0.05, 0.95).save_to_file("q1-" + std::to_string(n_) + ".ppm");
+                draw_quantiled_grayscale(q_[0], 0.05f, 0.95f).save_to_file("q0-" + std::to_string(n_) + ".ppm");
+                draw_quantiled_grayscale(q_[1], 0.05f, 0.95f).save_to_file("q1-" + std::to_string(n_) + ".ppm");
             }
             if (regularizer == Regularizer::DIFFERENCE_OF_BOXES) {
-                draw_quantiled_grayscale(q_, 0.05, 0.95).save_to_file("q-" + std::to_string(n_) + ".ppm");
+                draw_quantiled_grayscale(q_, 0.05f, 0.95f).save_to_file("q-" + std::to_string(n_) + ".ppm");
             }
-            draw_quantiled_grayscale(eo, 0.05, 0.95).save_to_file("eo-" + std::to_string(n_) + ".ppm");
-            draw_quantiled_grayscale(en, 0.05, 0.95).save_to_file("en-" + std::to_string(n_) + ".ppm");
+            draw_quantiled_grayscale(eo, 0.05f, 0.95f).save_to_file("eo-" + std::to_string(n_) + ".ppm");
+            draw_quantiled_grayscale(en, 0.05f, 0.95f).save_to_file("en-" + std::to_string(n_) + ".ppm");
         }
         if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(d_, 0, dsi.shape(0) - 1).save_to_file("d-" + std::to_string(n_) + ".ppm");
+            draw_nan_masked_grayscale(d_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("d-" + std::to_string(n_) + ".ppm");
         }
     }
     // std::cerr << "done" << std::endl;
@@ -655,7 +655,7 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
         // std::cerr << "done2" << std::endl;
         std::cerr << "a: " << nanmin(a_) << " - " << nanmedian(a_) << " - " << nanmax(a_) << std::endl;
         if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(a_, 0, dsi.shape(0) - 1).save_to_file("a-" + std::to_string(n_) + ".ppm");
+            draw_nan_masked_grayscale(a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(n_) + ".ppm");
         }
     }
     // std::cerr << "done3" << std::endl;
@@ -719,7 +719,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.nsteps_),
             false,
             false);
-        draw_nan_masked_grayscale(a, 0, dsi.shape(0) - 1).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".ppm");
+        draw_nan_masked_grayscale(a, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".ppm");
         std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, a)) << std::endl;
     }
     for (float EPSILON : (parameters.epsilon_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
@@ -740,7 +740,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.nsteps_),
             false,
             false);
-        draw_nan_masked_grayscale(a, 0, dsi.shape(0) - 1).save_to_file("a-epsilon-" + std::to_string(EPSILON) + ".ppm");
+        draw_nan_masked_grayscale(a, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-epsilon-" + std::to_string(EPSILON) + ".ppm");
         std::cerr << "eps " << EPSILON << " energy " << xsum(energy_orig(g, parameters.lambda_, EPSILON, dsi, a)) << std::endl;
     }
 }
@@ -760,7 +760,7 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
                 parameters.alpha_G_,
                 parameters.beta_G_,
                 THETA_0,
-                THETA_0 / 0.2 * 1e-4,
+                THETA_0 / 0.2f * float{ 1e-4 },
                 BETA,
                 parameters.lambda_,
                 parameters.epsilon_,
@@ -780,7 +780,7 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
     size_t rank = 0;
     for (const auto& p : energies) {
         std::cerr << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " energy " << std::get<1>(p) << std::endl;
-        draw_nan_masked_grayscale(std::get<2>(p), 0, dsi.shape(0) - 1).save_to_file("a-" + std::to_string(rank) + ".ppm");
+        draw_nan_masked_grayscale(std::get<2>(p), 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(rank) + ".ppm");
         // draw_quantiled_grayscale(std::get<2>(p), 0.05, 0.5).save_to_file("aq-" + std::to_string(rank) + ".ppm");
         ++rank;
     }
