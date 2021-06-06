@@ -6,6 +6,7 @@
 #include "Conjugate_Transpose_Array.hpp"
 #include "Range.hpp"
 #include "Vector.hpp"
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <cassert>

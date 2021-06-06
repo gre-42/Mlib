@@ -23,7 +23,7 @@ public:
         // l = -k2 / (k0^2 + k1^2)
         FixedArray<float, 3> k = dot1d(F, homogenized_3(center0));
         float l = -k(2) / (squared(k(0)) + squared(k(1)));
-        FixedArray<float, 3> y{k(0) * l, k(1) * l, 1};
+        FixedArray<float, 3> y{k(0) * l, k(1) * l, 1.f};
         FixedArray<float, 3> n = dot1d(F.vH(), y);
 
         good = (sum(squared(n)) > 1e-5);

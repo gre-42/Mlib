@@ -53,8 +53,8 @@ void InverseDepthCostVolume::increment(
     for (size_t di = 0; di < inverse_depths_.length(); ++di) {
         FixedArray<float, 3, 3> homog_e = rotation_and_translation_to_homography(
             ke,
-            -FixedArray<float, 3>{0, 0, 1},
-            1 / inverse_depths_(di));
+            -FixedArray<float, 3>{0.f, 0.f, 1.f},
+            1.f / inverse_depths_(di));
         FixedArray<float, 3, 3> homog_i = pixel_homography(intrinsic_matrix, homog_e);
         FixedArray<size_t, 2> space_shape_f{space_shape_};
         HomographySampler<float> hs{homog_i};

@@ -114,10 +114,10 @@ Array<float> weighted_divergence(const Array<float>& g, const Array<float>& k_x,
     for (size_t r = 0; r < g.shape(0); ++r) {
         for (size_t c = 0; c < g.shape(1); ++c) {
             d(r,c) =
-                (r == 0 ? 0 : 0.5*(g(r-1,c)+g(r,c))*k_y(r-1,c))
-                - (r == g.shape(0) - 1 ? 0 : 0.5*(g(r,c)+g(r+1,c))*k_y(r,c))
-                + (c == 0 ? 0 : 0.5*(g(r,c-1)+g(r,c))*k_x(r,c-1))
-                + (c == g.shape(1) - 1 ? 0 : -0.5*(g(r,c)+g(r,c+1))*k_x(r,c));
+                (r == 0 ? 0 : 0.5f*(g(r-1,c)+g(r,c))*k_y(r-1,c))
+                - (r == g.shape(0) - 1 ? 0 : 0.5f*(g(r,c)+g(r+1,c))*k_y(r,c))
+                + (c == 0 ? 0 : 0.5f*(g(r,c-1)+g(r,c))*k_x(r,c-1))
+                + (c == g.shape(1) - 1 ? 0 : -0.5f*(g(r,c)+g(r,c+1))*k_x(r,c));
         }
     }
     return d;
@@ -376,8 +376,8 @@ Array<float> Mlib::Sfm::Dm::exhaustive_search(
                 float radius = sqrt_lambda_2_theta * sqrt_dsi_max_dmin(r, c);
                 float h_min_f = d(r, c) - radius;
                 float h_max_f = d(r, c) + radius;
-                size_t h_min = std::max(h_min_f, 0.f);
-                size_t h_end = std::min(std::ceil(h_max_f) + 1, float(dsi.shape(0)));
+                size_t h_min = (size_t)std::max(h_min_f, 0.f);
+                size_t h_end = (size_t)std::min(std::ceil(h_max_f) + 1, float(dsi.shape(0)));
                 if (h_min < dsi.shape(0) && h_end <= dsi.shape(0)) {
                     for (size_t h = h_min; h < h_end; ++h) {
                         if (!std::isnan(dsi(h, r, c))) {
@@ -435,18 +435,18 @@ Array<float> saturate(const Array<float>& q) {
  * Source: https://github.com/anuranbaka/OpenDTAM/blob/master/Cpp/DepthmapDenoiseWeightedHuber/DepthmapDenoiseWeightedHuber.cpp
  */
 void compute_sigmas_anuranbaka(float& sigma_d, float& sigma_q, float theta, float epsilon) {
-    float L = 4;
+    float L = 4.f;
 
-    float lambda = 1.0 / theta;
+    float lambda = 1.f / theta;
     float alpha = epsilon;
 
     float gamma = lambda;
     float delta = alpha;
 
-    float mu = 2.0 * std::sqrt(gamma * delta) / L;
+    float mu = 2.f * std::sqrt(gamma * delta) / L;
 
-    float rho = mu / (2.0 * gamma);
-    float sigma = mu / (2.0 * delta);
+    float rho = mu / (2.f * gamma);
+    float sigma = mu / (2.f * delta);
 
     sigma_d = rho;
     sigma_q = sigma;
@@ -477,13 +477,13 @@ void compute_sigmas_ravich2(float& sigma_d, float& sigma_q, float theta, float e
 	obtained for x = (0.5, -0.5, 0.5, -0.5, 0, 0, ..., 0).
 */
 
-	float L = 2.0;
+	float L = 2.f;
 
-	float mu = 2.0 * std::sqrt(epsilon / theta) / L;
+	float mu = 2.f * std::sqrt(epsilon / theta) / L;
 
 	// TODO: check the original paper for correctness of these settings
-	sigma_d = mu / (2.0 / theta);
-	sigma_q = mu / (2.0 * epsilon);
+	sigma_d = mu / (2.f / theta);
+	sigma_q = mu / (2.f * epsilon);
 }
 
 Array<float> update_q(const Array<float>& g, const Array<float>& q, const Array<float>& d, float epsilon, float sigma_q) {
@@ -585,13 +585,13 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
             0.1f,
             10);
     } else if (false) {
-        float sigma = 0.01;
+        float sigma = 0.01f;
         q_ = gradient_descent(
             q_,
             [&](const Array<float>& qq) { return prox_sigma_fs(sigma, g_, parameters_.epsilon_, d_, qq); },
             [&](const Array<float>& qq) { return prox_sigma_fs_dq(sigma, g_, parameters_.epsilon_, d_, qq); },
             10);
-        float tau = 0.01;
+        float tau = 0.01f;
         d_ = gradient_descent(
             d_,
             [&](const Array<float>& dd) { return prox_tau_gs(tau, g_, theta_, dd, a_, q_); },

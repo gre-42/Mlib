@@ -1,12 +1,17 @@
 #pragma once
-#include "Array.hpp"
 #include "Base_Dense_Array.hpp"
 #include "Fixed_Array_Shape.hpp"
+#include <Mlib/Math/Conju.hpp>
+#include <cassert>
 #include <cstddef>
 #include <ostream>
 #include <vector>
 
 namespace Mlib {
+
+template <class TData>
+class Array;
+class ArrayShape;
 
 template <typename TData>
 class PointerIterable {
@@ -49,9 +54,7 @@ public:
         assert(v.size() == nelements());
         std::copy(v.data(), v.data() + v.size(), flat_begin());
     }
-    explicit FixedArray(const ArrayShape& shape)
-    : FixedArray{shape.begin(), shape.ndim()}
-    {}
+    explicit FixedArray(const ArrayShape& shape);
     explicit FixedArray(const TData* data, size_t nelements)
     {
         assert(nelements == this->nelements());
@@ -296,15 +299,8 @@ public:
         std::copy(flat_begin(), flat_end(), result.flat_iterable().begin());
         return result;
     }
-    ArrayShape to_array_shape() const {
-        static_assert(ndim() == 1);
-        ArrayShape result(nelements());
-        std::copy(flat_begin(), flat_end(), result.begin());
-        return result;
-    }
-    ArrayShape array_shape() const {
-        return ArrayShape{ tshape0, tshape... };
-    }
+    ArrayShape to_array_shape() const;
+    ArrayShape array_shape() const;
     auto T() const {
         static_assert(ndim() == 2);
         FixedArray<TData, shape().last(), tshape0> result;
@@ -397,6 +393,30 @@ std::ostream& operator << (std::ostream& ostream, const FixedArray<TData, tshape
         }
     }
     return ostream;
+}
+
+}
+
+#include <Mlib/Array/Array.hpp>
+
+namespace Mlib {
+
+template <typename TData, size_t tshape0, size_t... tshape>
+FixedArray<TData, tshape0, tshape...>::FixedArray(const ArrayShape& shape)
+: FixedArray{ shape.begin(), shape.ndim() }
+{}
+
+template <typename TData, size_t tshape0, size_t... tshape>
+ArrayShape FixedArray<TData, tshape0, tshape...>::to_array_shape() const {
+    static_assert(ndim() == 1);
+    ArrayShape result(nelements());
+    std::copy(flat_begin(), flat_end(), result.begin());
+    return result;
+}
+
+template <typename TData, size_t tshape0, size_t... tshape>
+ArrayShape FixedArray<TData, tshape0, tshape...>::array_shape() const {
+    return ArrayShape{ tshape0, tshape... };
 }
 
 }

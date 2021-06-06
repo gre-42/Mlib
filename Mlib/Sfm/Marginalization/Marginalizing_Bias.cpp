@@ -109,7 +109,7 @@ Array<float> MarginalizingBias::solve(
         ++i;
         draw_nan_masked_grayscale((H != 0.f).casted<float>(), 0, 1).save_to_file("H-" + std::to_string(i) + ".ppm");
         if (max(lhs_ka_) > min(lhs_ka_)) {
-            draw_quantiled_grayscale(lhs_ka_, 0.05, 0.95).save_to_file("L-" + std::to_string(i) + ".ppm");
+            draw_quantiled_grayscale(lhs_ka_, 0.05f, 0.95f).save_to_file("L-" + std::to_string(i) + ".ppm");
         }
     }
     // return cg_simple(H, zeros<float>(ArrayShape{b.length()}), b, 50, 1e-6, true);  // true=nothrow
