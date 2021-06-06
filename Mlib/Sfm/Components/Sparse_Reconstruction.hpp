@@ -28,7 +28,7 @@ public:
     void reconstruct_pass2();
     const Array<FixedArray<float, 3>> reconstructed_points() const;
     const Array<size_t> reconstructed_point_ids() const;
-    void debug_set_camera_frame(std::chrono::milliseconds time, const CameraFrame& frame);
+    void set_camera_frame(const std::chrono::milliseconds& time, const CameraFrame& frame);
     void print_arrays() const;
 private:
     void reconstruct_initial_with_svd();
@@ -37,7 +37,7 @@ private:
     CameraFrame& camera_frame_append(const std::chrono::milliseconds& time);
     void reconstruct_append();
     void partial_bundle_adjustment(const std::list<std::chrono::milliseconds>& times);
-    void global_bundle_adjustment();
+    void global_bundle_adjustment(bool marginalize = true);
     void global_bundle_adjustment_lvm();
     void reject_large_projection_residuals(const GlobalBundle& gb);
 #ifdef REJECT_LARGE_RESIDUALS

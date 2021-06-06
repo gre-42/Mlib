@@ -49,7 +49,7 @@ void test_reconstruction() {
     // y.shape == frame, ID, coordinate
     auto insert_camera = [&](size_t itime) {
         if (!calculate_camera) {
-            recon.debug_set_camera_frame(
+            recon.set_camera_frame(
                 std::chrono::milliseconds(itime),
                 CameraFrame{ sc.delta_ke(0, itime) });
         }

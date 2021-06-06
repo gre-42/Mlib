@@ -13,6 +13,7 @@ struct ReconstructionConfig {
     bool recompute_second_camera = true;
     size_t recompute_interval = 5;
 
+    bool print_residual = false;
     float fov_threshold = 0.1f; // 1.f
     float bad_point_residual_multiplier = 4.f;
     float max_residual_normalized = 0.1f;

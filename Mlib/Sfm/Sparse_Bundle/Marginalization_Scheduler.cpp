@@ -33,7 +33,7 @@ MarginalizationScheduler::MarginalizationScheduler(
   dropped_observations_{dropped_observations},
   bad_points_{bad_points} {}
 
-std::unique_ptr<GlobalBundle> MarginalizationScheduler::marginalize()
+std::unique_ptr<GlobalBundle> MarginalizationScheduler::global_bundle(bool marginalize)
 {
     /*while(reconstructed_points.active_.size() > cfg_.nbundle_points) {
         size_t index = reconstructed_points.active_.begin()->first;
@@ -63,55 +63,57 @@ std::unique_ptr<GlobalBundle> MarginalizationScheduler::marginalize()
         }
     }*/
 
-    GlobalBundle gb(
-        cache_dir_,
-        bundle_cfg_,
-        particles_,
-        reconstructed_points_,
-        frozen_reconstructed_points_,
-        camera_frames_,
-        frozen_camera_frames_,
-        skip_missing_cameras_,
-        uuid_gen_,
-        dropped_observations_);
-
-    gb.copy_in(
-        particles_,
-        reconstructed_points_,
-        frozen_reconstructed_points_,
-        camera_frames_,
-        frozen_camera_frames_,
-        intrinsic_matrix_,
-        skip_missing_cameras_,
-        dropped_observations_);
-
     std::unique_ptr<GlobalBundle> result;
-    while(camera_frames_.active_.size() + camera_frames_.linearized_.size() > cfg_.nbundle_cameras) {
-        // std::chrono::milliseconds time = camera_frames.active_.begin()->first;
-        std::chrono::milliseconds time = find_time_to_be_marginalized_npoints();
-        if (time == std::chrono::milliseconds(-1)) {
-            time = find_time_to_be_marginalized_distance();
-        }
-        if (cfg_.marginalization_target == MarginalizationTarget::POINTS) {
-            {
-                MarginalizationIds mids{gb};
-                std::vector<size_t> pts = find_points_to_be_marginalized(time, mids);
-                find_cameras_to_be_linearized(pts, mids);
-                bsolver_.update_indices(gb.predictor_uuids_);
-                bsolver_.marginalize(gb.Jg, gb.xg, mids.ids_a, mids.ids_b);
+    if (marginalize) {
+        GlobalBundle gb(
+            cache_dir_,
+            bundle_cfg_,
+            particles_,
+            reconstructed_points_,
+            frozen_reconstructed_points_,
+            camera_frames_,
+            frozen_camera_frames_,
+            skip_missing_cameras_,
+            uuid_gen_,
+            dropped_observations_);
+
+        gb.copy_in(
+            particles_,
+            reconstructed_points_,
+            frozen_reconstructed_points_,
+            camera_frames_,
+            frozen_camera_frames_,
+            intrinsic_matrix_,
+            skip_missing_cameras_,
+            dropped_observations_);
+
+        while(camera_frames_.active_.size() + camera_frames_.linearized_.size() > cfg_.nbundle_cameras) {
+            // std::chrono::milliseconds time = camera_frames.active_.begin()->first;
+            std::chrono::milliseconds time = find_time_to_be_marginalized_npoints();
+            if (time == std::chrono::milliseconds(-1)) {
+                time = find_time_to_be_marginalized_distance();
             }
-            {
+            if (cfg_.marginalization_target == MarginalizationTarget::POINTS) {
+                {
+                    MarginalizationIds mids{gb};
+                    std::vector<size_t> pts = find_points_to_be_marginalized(time, mids);
+                    find_cameras_to_be_linearized(pts, mids);
+                    bsolver_.update_indices(gb.predictor_uuids_);
+                    bsolver_.marginalize(gb.Jg, gb.xg, mids.ids_a, mids.ids_b);
+                }
+                {
+                    MarginalizationIds mids{gb};
+                    find_points_to_be_linearized(time, mids);
+                    bsolver_.marginalize(gb.Jg, gb.xg, mids.ids_a, mids.ids_b);
+                }
+            }
+            if (cfg_.marginalization_target == MarginalizationTarget::CAMERAS) {
                 MarginalizationIds mids{gb};
                 find_points_to_be_linearized(time, mids);
+                bsolver_.update_indices(gb.predictor_uuids_);
                 bsolver_.marginalize(gb.Jg, gb.xg, mids.ids_a, mids.ids_b);
+                abandon_points();
             }
-        }
-        if (cfg_.marginalization_target == MarginalizationTarget::CAMERAS) {
-            MarginalizationIds mids{gb};
-            find_points_to_be_linearized(time, mids);
-            bsolver_.update_indices(gb.predictor_uuids_);
-            bsolver_.marginalize(gb.Jg, gb.xg, mids.ids_a, mids.ids_b);
-            abandon_points();
         }
     }
     if (result == nullptr) {

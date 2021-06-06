@@ -106,17 +106,17 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
             Array<float> condition_number;
             Array<FixedArray<float, 3>> x = ptr.ptr->initial_reconstruction().reconstructed(&condition_number);
             if (!cfg_.recompute_first_camera) {
-                camera_frames_.insert(std::make_pair(
+                set_camera_frame(
                     particles_.begin()->first,
-                    CameraFrame{ TransformationMatrix<float, 3>::identity() }));
+                    CameraFrame{ TransformationMatrix<float, 3>::identity() });
             } else {
                 std::cerr << "Not storing first initial camera at " << particles_.begin()->first.count() << " ms" << std::endl;
             }
             if (!cfg_.recompute_second_camera) {
                 std::cerr << "Storing initial camera at " << particles_.rbegin()->first.count() << " ms" << std::endl;
-                camera_frames_.insert(std::make_pair(
+                set_camera_frame(
                     particles_.rbegin()->first,
-                    CameraFrame{ ptr.ptr->ke }));
+                    CameraFrame{ ptr.ptr->ke });
             } else {
                 std::cerr << "Not storing second initial camera at " << particles_.rbegin()->first.count() << " ms" << std::endl;
             }
@@ -143,12 +143,12 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
 void SparseReconstruction::reconstruct_initial_for_bundle_adjustment() {
     if (particles_.size() >= cfg_.nframes) {
         std::cerr << "Generating initial reconstruction for bundle adjustment" << std::endl;
-        camera_frames_.insert(std::make_pair(
+        set_camera_frame(
             particles_.begin()->first,
-            CameraFrame{ TransformationMatrix<float, 3>::identity() }));
-        camera_frames_.insert(std::make_pair(
+            CameraFrame{ TransformationMatrix<float, 3>::identity() });
+        set_camera_frame(
             particles_.rbegin()->first,
-            CameraFrame{ TransformationMatrix<float, 3>::identity() }));
+            CameraFrame{ TransformationMatrix<float, 3>::identity() });
         for (const auto& s : particles_.rbegin()->second) {
             assert(cfg_.nframes >= 2);
             if (s.second->sequence.size() >= cfg_.nframes) {
@@ -175,7 +175,7 @@ CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::millis
     }
     if (cfg_.append_with_bundle_adjustment) {
         const auto&c = camera_frames_.rbegin()->second;
-        camera_frames_.insert(std::make_pair(time, CameraFrame{ c.pose, c.kep }));
+        set_camera_frame(time, CameraFrame{ c.pose, c.kep });
         global_bundle_adjustment();
         return camera_frames_.at(time);
     }
@@ -276,7 +276,7 @@ CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::millis
     std::cerr << "t " << kei.t() << std::endl;
     std::cerr << "R\n" << kei.R() << std::endl;
     std::cerr << "Storing camera at " << time.count() << " ms" << std::endl;
-    camera_frames_.insert(std::make_pair(time, CameraFrame{ kei, FixedArray<float, 6>{kep.row_range(0, 6)} }));
+    set_camera_frame(time, CameraFrame{ kei, FixedArray<float, 6>{kep.row_range(0, 6)} });
     return camera_frames_.at(time);
 }
 
@@ -504,24 +504,25 @@ void SparseReconstruction::global_bundle_adjustment_lvm() {
             //     cfg_.initialize_with_bundle_adjustment);
             return gb.Jg;
         },
-        float{ 1e-2 },     // alpha
-        float{ 1e-2 },     // beta
-        float{ 1e-2 },     // alpha2
-        float{ 1e-2 },     // beta2
-        float{ 1e-3 },     // min_redux
-        100,               // niterations
-        5,                 // nburnin
-        3,                 // nmisses
-        true,              // print_residual
-        false,             // nothrow
-        nullptr,           // final_residual
+        float{ 1e-2 },          // alpha
+        float{ 1e-2 },          // beta
+        float{ 1e-2 },          // alpha2
+        float{ 1e-2 },          // beta2
+        float{ 1e-3 },          // min_redux
+        100,                    // niterations
+        5,                      // nburnin
+        3,                      // nmisses
+        cfg_.print_residual,    // print_residual
+        false,                  // nothrow
+        nullptr,                // final_residual
         &cfg_.max_residual_unnormalized); // max_residual
 
     gb.copy_out(x_opt, reconstructed_points_, camera_frames_);
 }
 
-void SparseReconstruction::global_bundle_adjustment() {
-    std::unique_ptr<GlobalBundle> gb = ms_.marginalize();
+void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
+    std::cerr << "Global bundle adjustment with marginalize=" << (unsigned int)marginalize << std::endl;
+    std::unique_ptr<GlobalBundle> gb = ms_.global_bundle(marginalize);
 
     Array<float> final_residual;
     Array<float> x_opt = generic_optimization<float>(
@@ -572,7 +573,7 @@ void SparseReconstruction::global_bundle_adjustment() {
         float{ 1e-3 },                    // min_redux
         600,                              // niterations
         3,                                // nmisses
-        true,                             // print_residual
+        cfg_.print_residual,              // print_residual
         false,                            // nothrow
         &final_residual,                  // final_residual
         &cfg_.max_residual_unnormalized); // max_residual
@@ -596,7 +597,7 @@ void SparseReconstruction::reconstruct() {
         if (cfg_.initialize_with_bundle_adjustment) {
             reconstruct_initial_for_bundle_adjustment();
             if (reconstructed_points_.size() != 0) {
-                global_bundle_adjustment();
+                global_bundle_adjustment(false);
                 for (const auto& c : camera_frames_) {
                     std::cerr << "Initial bundle adjustment cam position: " << c.second.pose.t() << std::endl;
                 }
@@ -624,8 +625,9 @@ void SparseReconstruction::reconstruct() {
                             OffsetAndQuaternion<float>{ c0.second.pose.affine() }
                             .slerp(OffsetAndQuaternion<float>{ c1.second.pose.affine() }, alpha);
                         TransformationMatrix<float, 3> pose{ tait_bryan_angles_2_matrix(rs.quaternion().to_tait_bryan_angles()), rs.offset() };
-                        camera_frames_.insert(std::make_pair(p.first, CameraFrame{ pose }));
+                        set_camera_frame(p.first, CameraFrame{ pose });
                     }
+                    global_bundle_adjustment(false);
                 }
                 // for (const auto& p : particles_) {
                 //     camera_frame_append(p.first);
@@ -718,7 +720,8 @@ const Array<size_t> SparseReconstruction::reconstructed_point_ids() const {
     return a;
 }
 
-void SparseReconstruction::debug_set_camera_frame(std::chrono::milliseconds time, const CameraFrame& frame) {
+void SparseReconstruction::set_camera_frame(const std::chrono::milliseconds& time, const CameraFrame& frame) {
+    std::cerr << "Inserting camera frame at time " << time.count() << " ms" << std::endl;
     camera_frames_.insert(std::make_pair(time, frame));
 }
 

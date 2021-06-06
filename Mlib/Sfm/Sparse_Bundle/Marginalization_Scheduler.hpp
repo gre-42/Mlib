@@ -35,7 +35,7 @@ public:
         std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations,
         const std::map<size_t, std::chrono::milliseconds>& bad_points);
 
-    std::unique_ptr<GlobalBundle> marginalize();
+    std::unique_ptr<GlobalBundle> global_bundle(bool marginalize);
     MarginalizingBias bsolver_;
 
 private:
