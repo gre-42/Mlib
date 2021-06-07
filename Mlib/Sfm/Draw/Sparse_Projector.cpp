@@ -28,8 +28,7 @@ SparseProjector& SparseProjector::normalize(float scale)
     for (const auto& x : reconstructed_points_) {
         points.push_back(project(x.second->position));
     }
-    Array<FixedArray<float, 2>> asdf{points};
-    npo.add_points_quantile(asdf, 0.05f);
+    npo.add_points_quantile(Array<FixedArray<float, 2>>{ points }, 0.05f);
     for (const auto& c : camera_frames_) {
         npo.add_point(project(c.second.pose.t()));
     }
