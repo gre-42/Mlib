@@ -87,10 +87,13 @@ std::unique_ptr<GlobalBundle> MarginalizationScheduler::global_bundle(bool margi
             skip_missing_cameras_,
             dropped_observations_);
 
-        while(camera_frames_.active_.size() + camera_frames_.linearized_.size() > cfg_.nbundle_cameras) {
+        while(true) {
             // std::chrono::milliseconds time = camera_frames.active_.begin()->first;
             std::chrono::milliseconds time = find_time_to_be_marginalized_npoints();
             if (time == std::chrono::milliseconds(-1)) {
+                if (camera_frames_.active_.size() + camera_frames_.linearized_.size() <= cfg_.nbundle_cameras) {
+                    break;
+                }
                 time = find_time_to_be_marginalized_distance();
             }
             if (cfg_.marginalization_target == MarginalizationTarget::POINTS) {
@@ -145,10 +148,18 @@ std::unique_ptr<GlobalBundle> MarginalizationScheduler::global_bundle(bool margi
 
 std::chrono::milliseconds MarginalizationScheduler::find_time_to_be_marginalized_npoints() const
 {
-    assert_true(camera_frames_.active_.size() >= 1);
-    std::chrono::milliseconds time_newest = camera_frames_.active_.rbegin()->first;
+    assert_true(camera_frames_.active_.size() + camera_frames_.linearized_.size() >= 1);
+    std::chrono::milliseconds time_newest = camera_frames_.rbegin()->first;
 
+    assert_true(cfg_.nbundle_cameras > 2);
+    assert_true(camera_frames_.active_.size() + camera_frames_.linearized_.size() >= 2);
+    std::set<std::chrono::milliseconds> excluded_times{
+        camera_frames_.rbegin()->first,
+        (++camera_frames_.rbegin())->first };
     for (const auto c : camera_frames_) {
+        if (excluded_times.contains(c.first)) {
+            continue;
+        }
         if (c.state_ != MmState::MARGINALIZED) {
             size_t npoints_stored = 0;
             size_t npoints_existing = 0;
@@ -165,7 +176,7 @@ std::chrono::milliseconds MarginalizationScheduler::find_time_to_be_marginalized
                     }
                 }
             }
-            if (float(npoints_existing) / npoints_stored < 0.05) {
+            if ((float(npoints_existing) / npoints_stored < 0.05) || (npoints_stored < 10)) {
                 std::cerr << "Marginalizing camera " << c.first.count() << " ms due to npoints-constraint" << std::endl;
                 return c.first;
             }
@@ -203,7 +214,7 @@ std::chrono::milliseconds MarginalizationScheduler::find_time_to_be_marginalized
                 score += 1 / (float{ 1e-6 } + std::sqrt(sum(squared(c0.second.pose.t() - c1.second.pose.t()))));
             }
         }
-        score *= std::sqrt(std::sqrt(sum(squared(c0.second.pose.t() - camera_frames_.active_.rbegin()->second.pose.t()))));
+        score *= std::sqrt(std::sqrt(sum(squared(c0.second.pose.t() - camera_frames_.rbegin()->second.pose.t()))));
         if (score > best_score) {
             best_time = c0.first;
             best_score = score;
@@ -218,9 +229,9 @@ std::vector<size_t> MarginalizationScheduler::find_points_to_be_marginalized(
 {
     std::vector<size_t> point_ids;
 
-    assert_true(camera_frames_.active_.size() >= 3);
-    std::chrono::milliseconds time_newest = camera_frames_.active_.rbegin()->first;
-    std::chrono::milliseconds time_second = (++camera_frames_.active_.rbegin())->first;
+    assert_true(camera_frames_.active_.size() + camera_frames_.linearized_.size() >= 3);
+    std::chrono::milliseconds time_newest = camera_frames_.rbegin()->first;
+    std::chrono::milliseconds time_second = (++camera_frames_.rbegin())->first;
     assert_true(time_tbm != time_newest && time_tbm != time_second);
     std::cerr << "Marginalizing camera's points at time " << time_tbm.count() << " ms" << std::endl;
     std::cerr << "Newest time " << time_newest.count() << " ms" << std::endl;
@@ -259,7 +270,7 @@ void MarginalizationScheduler::find_cameras_to_be_linearized(
     const std::vector<size_t>& point_ids,
     MarginalizationIds& mids)
 {
-    std::set<std::chrono::milliseconds> linearized_cams_;
+    std::set<std::chrono::milliseconds> linearized_cams;
     for (const size_t i : point_ids) {
         const auto& r = reconstructed_points_.find(i);
         std::cerr << "Marginalizing reconstructed [" << i << "]" << std::endl;
@@ -271,10 +282,9 @@ void MarginalizationScheduler::find_cameras_to_be_linearized(
                 continue;
             }
             if (c.state_ != MmState::MARGINALIZED) {
-                if (linearized_cams_.find(c.first) != linearized_cams_.end()) {
+                if (!linearized_cams.insert(c.first).second) {
                     continue;
                 }
-                linearized_cams_.insert(c.first);
                 const auto& p = particles_.at(c.first);
                 if (p.find(i) != p.end()) {
                     mids.linearize_camera(c.first);

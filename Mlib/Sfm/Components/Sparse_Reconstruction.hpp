@@ -41,6 +41,7 @@ private:
     void global_bundle_adjustment(bool marginalize = true);
     void global_bundle_adjustment_lvm();
     void reject_large_projection_residuals(const GlobalBundle& gb);
+    void delete_bad_points();
 #ifdef REJECT_LARGE_RESIDUALS
     void reject_large_projection_residuals(
         const Array<float>& residual,

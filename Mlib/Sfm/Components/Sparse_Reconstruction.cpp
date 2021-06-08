@@ -359,6 +359,7 @@ void SparseReconstruction::reconstruct_append() {
             }
         }
     }
+    delete_bad_points();
 }
 
 void SparseReconstruction::partial_bundle_adjustment(const std::list<std::chrono::milliseconds>& times)
@@ -585,16 +586,7 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
 
     gb->copy_out(x_opt, reconstructed_points_, camera_frames_);
     reject_large_projection_residuals(*gb);
-    while(bad_points_.size() > 0) {
-        auto bp = bad_points_.begin();
-        for (auto& p : particles_) {
-            p.second.erase(bp->first);
-        }
-        reconstructed_points_.active_.erase(bp->first);
-        reconstructed_points_.linearized_.erase(bp->first);
-        reconstructed_points_.marginalized_.erase(bp->first);
-        bad_points_.erase(bp);
-    }
+    delete_bad_points();
 }
 
 void SparseReconstruction::reconstruct() {
@@ -779,6 +771,57 @@ void SparseReconstruction::reject_large_projection_residuals(const GlobalBundle&
                 bad_points_.insert(std::make_pair(r.first.second, r.first.first));
             }
         }
+    }
+    delete_bad_points();
+}
+
+void SparseReconstruction::delete_bad_points() {
+    while(bad_points_.size() > 0) {
+        auto bp = bad_points_.begin();
+        std::cerr << "Handling bad point " << bp->first << std::endl;
+        //for (auto& p : particles_) {
+        //    p.second.erase(bp->first);
+        //}
+        {
+            size_t i = 0;
+            for (auto it = particles_.rbegin(); it != particles_.rend() && i != 1; ++it, ++i) {
+                auto a = it->second.find(bp->first);
+                if (a != it->second.end()) {
+                    a->second->sequence.erase(it->first);
+                    it->second.erase(bp->first);
+                }
+                // dropped_observations_.insert({ it->first, bp->first });
+            }
+        }
+        // particles_.rbegin()->second.erase(bp->first);
+        // dropped_observations_.insert(std::make_pair(particles_.rbegin()->first, bp->first));
+        {
+            size_t ct = 0;
+            for (const auto& p : particles_) {
+                const auto c = camera_frames_.find(p.first);
+                if (c == camera_frames_.end()) {
+                    continue;
+                }
+                if (c->state_ != MmState::MARGINALIZED) {
+                    ct += (p.second.find(bp->first) != p.second.end());
+                }
+            }
+            if (ct <= 1) {
+                std::cerr << "Deleting reconstructed point " << bp->first << std::endl;
+                reconstructed_points_.active_.erase(bp->first);
+                reconstructed_points_.linearized_.erase(bp->first);
+                reconstructed_points_.marginalized_.erase(bp->first);
+                for (auto& p : particles_) {
+                    auto a = p.second.find(bp->first);
+                    if (a != p.second.end()) {
+                        a->second->sequence.erase(p.first);
+                        p.second.erase(bp->first);
+                    }
+                    // dropped_observations_.insert({ p.first, bp->first });
+                }
+            }
+        }
+        bad_points_.erase(bp);
     }
 }
 
