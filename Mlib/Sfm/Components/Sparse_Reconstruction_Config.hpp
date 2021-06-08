@@ -18,7 +18,7 @@ struct ReconstructionConfig {
     float bad_point_residual_multiplier = 4.f;
     float max_residual_normalized = 0.1f;
     float max_residual_unnormalized = 10;
-    float max_residual_unnormalized_post_l2 = 6;
+    float max_residual_unnormalized_post_l2 = 30;
 
     // float projector_scale = 1.f; // 1.f
     bool use_ransac_append = false;
