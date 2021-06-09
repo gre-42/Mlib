@@ -1,5 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <vector>
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
         // render(vertices);
 
-        PpmImage img = PpmImage::load_from_file(args.named_value("--rgb"));
+        StbImage img = StbImage::load_from_file(args.named_value("--rgb"));
         Array<float> depth = Array<float>::load_binary(args.named_value("--depth"));
         Array<float> intrinsic_matrix = Array<float>::load_txt_2d(args.named_value("--ki"));
         if (!all(intrinsic_matrix.shape() == ArrayShape{3, 3})) {
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
             TransformationMatrix<float, 2>{ FixedArray<float, 3, 3>{ intrinsic_matrix } },
             safe_stof(args.named_value("--z_offset", "1")),
             args.has_named("--rotate"));
-    } catch (const CommandLineArgumentError& e) {
+    } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;
     }
