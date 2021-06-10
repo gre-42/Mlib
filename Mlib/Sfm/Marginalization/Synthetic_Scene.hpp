@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Sfm/Marginalization/UUID.hpp>
+#include <Mlib/Sfm/Points/Point_Observation.hpp>
 #include <chrono>
 
 namespace Mlib { namespace Sfm { namespace SynthMarg {
@@ -49,7 +50,7 @@ public:
     void print_x(const Array<float>& x, bool correct=true) const;
     void print_uuids() const;
 private:
-    std::map<std::pair<std::chrono::milliseconds, size_t>, size_t> observation_row_id_;
+    std::map<PointObservation, size_t> observation_row_id_;
     std::map<CameraVariable, size_t> cameras_;
     std::map<FeaturePointVariable, size_t> feature_points_;
     const std::map<std::chrono::milliseconds, std::map<size_t, float>>& observations_;

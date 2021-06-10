@@ -61,7 +61,7 @@ private:
     ReconstructionConfig cfg_;
     MarginalizationScheduler ms_;
     UUIDGen<XK, XP> uuid_gen_;
-    std::set<std::pair<std::chrono::milliseconds, size_t>> dropped_observations_;
+    std::set<PointObservation> dropped_observations_;
 };
 
 }}

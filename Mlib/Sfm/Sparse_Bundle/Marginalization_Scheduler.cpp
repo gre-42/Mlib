@@ -17,7 +17,7 @@ MarginalizationScheduler::MarginalizationScheduler(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     bool skip_missing_cameras,
     UUIDGen<XK, XP>& uuid_gen,
-    std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations,
+    std::set<PointObservation>& dropped_observations,
     const std::map<size_t, std::chrono::milliseconds>& bad_points)
 : bsolver_{ float{1e-2}, float{1e-2} },
   cfg_{cfg},
@@ -248,7 +248,7 @@ std::vector<size_t> MarginalizationScheduler::find_points_to_be_marginalized(
                 bad_points_.find(s.first) != bad_points_.end())
             {
                 std::cerr << "Dropping measurement of [" << s.first << "] at time " << time_tbm.count() << " ms" << std::endl;
-                dropped_observations_.insert(std::make_pair(time_tbm, s.first));
+                dropped_observations_.insert(PointObservation{ time_tbm, s.first });
             } else {
                 std::cerr << "Marginalization of point [" << s.first << "], state " << r->state_ << std::endl;
                 mids.marginalize_point(s.first);
@@ -278,7 +278,7 @@ void MarginalizationScheduler::find_cameras_to_be_linearized(
         for (auto cit = camera_frames_.begin(); cit != camera_frames_.end(); ) {
             const auto c = *cit;
             ++cit;
-            if (dropped_observations_.find(std::make_pair(c.first, i)) != dropped_observations_.end()) {
+            if (dropped_observations_.find(PointObservation{ c.first, i }) != dropped_observations_.end()) {
                 continue;
             }
             if (c.state_ != MmState::MARGINALIZED) {
@@ -329,7 +329,7 @@ void MarginalizationScheduler::find_points_to_be_linearized(
         }
     }
     for (const auto& s : particles_.at(time)) {
-        if (dropped_observations_.find(std::make_pair(time, s.first)) != dropped_observations_.end()) {
+        if (dropped_observations_.find(PointObservation{ time, s.first }) != dropped_observations_.end()) {
             continue;
         }
         const auto& r = reconstructed_points_.find(s.first);

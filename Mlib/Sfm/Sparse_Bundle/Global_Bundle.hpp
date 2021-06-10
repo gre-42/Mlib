@@ -4,6 +4,7 @@
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Feature_Point_Frame.hpp>
 #include <Mlib/Sfm/Marginalization/UUID.hpp>
+#include <Mlib/Sfm/Points/Point_Observation.hpp>
 #include <Mlib/Sfm/Points/Reconstructed_Point.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
 #include <chrono>
@@ -67,7 +68,7 @@ public:
         const std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
         bool skip_missing_cameras,
         UUIDGen<XK, XP>& uuid_gen,
-        const std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations);
+        const std::set<PointObservation>& dropped_observations);
     void copy_in(
         const std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
         const MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>>& reconstructed_points,
@@ -76,12 +77,12 @@ public:
         const std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
         const TransformationMatrix<float, 2>& intrinsic_matrix,
         bool skip_missing_cameras,
-        const std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations);
+        const std::set<PointObservation>& dropped_observations);
     void copy_out(
         const Array<float>& x,
         MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>>& reconstructed_points,
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames) const;
-    std::map<std::pair<std::chrono::milliseconds, size_t>, float> sum_squared_observation_residuals() const;
+    std::map<PointObservation, float> sum_squared_observation_residuals() const;
     size_t row_id(const Y& y) const;
     size_t column_id(const XP& xp) const;
     size_t column_id(const XK& xk) const;

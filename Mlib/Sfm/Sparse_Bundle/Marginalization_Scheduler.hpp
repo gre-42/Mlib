@@ -32,7 +32,7 @@ public:
         const TransformationMatrix<float, 2>& intrinsic_matrix,
         bool skip_missing_cameras,
         UUIDGen<XK, XP>& uuid_gen,
-        std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations,
+        std::set<PointObservation>& dropped_observations,
         const std::map<size_t, std::chrono::milliseconds>& bad_points);
 
     std::unique_ptr<GlobalBundle> global_bundle(bool marginalize);
@@ -64,7 +64,7 @@ private:
     const TransformationMatrix<float, 2>& intrinsic_matrix_;
     bool skip_missing_cameras_;
     UUIDGen<XK, XP>& uuid_gen_;
-    std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations_;
+    std::set<PointObservation>& dropped_observations_;
     const std::map<size_t, std::chrono::milliseconds>& bad_points_;
 
 };

@@ -752,7 +752,7 @@ void SparseReconstruction::reject_large_projection_residuals(
 
 void SparseReconstruction::reject_large_projection_residuals(const GlobalBundle& gb)
 {
-    std::map<std::pair<std::chrono::milliseconds, size_t>, float> sq_residual_map = gb.sum_squared_observation_residuals();
+    std::map<PointObservation, float> sq_residual_map = gb.sum_squared_observation_residuals();
     Array<float> sq_residual_array{ArrayShape{sq_residual_map.size()}};
     {
         size_t i = 0;
@@ -765,10 +765,10 @@ void SparseReconstruction::reject_large_projection_residuals(const GlobalBundle&
         for (const auto& r : sq_residual_map) {
             if (sq_residual_array(i++) > squared(cfg_.max_residual_unnormalized_post_l2)) {
                 std::cerr <<
-                    "Rejecting point " << r.first.second <<
-                    " at time " << r.first.first.count() <<
+                    "Rejecting point " << r.first.index <<
+                    " at time " << r.first.time.count() <<
                     " ms due to projection-residual" << std::endl;
-                bad_points_.insert(std::make_pair(r.first.second, r.first.first));
+                bad_points_.insert({ r.first.index, r.first.time });
             }
         }
     }

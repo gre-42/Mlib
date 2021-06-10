@@ -10,7 +10,7 @@ using namespace Mlib::Sfm::SynthMarg;
 
 static float intrinsic_matrix = 2;
 static float extrinsic_matrix = 3;
-static float error = 1e-1;
+static float error = 1e-1f;
 
 CameraVariable::CameraVariable(const std::chrono::milliseconds& time)
 : time_(time)
@@ -64,12 +64,12 @@ Scene1dMatrix::Scene1dMatrix(const TestScene1d& scene)
     }
     for (const auto& o : scene.observations_) {
         for (const auto& oo : o.second) {
-            observation_row_id_.insert(std::make_pair(std::make_pair(o.first, oo.first), observation_row_id_.size()));
+            observation_row_id_.insert(std::make_pair(PointObservation{ o.first, oo.first }, observation_row_id_.size()));
         }
     }
 }
 size_t Scene1dMatrix::row_id_observation(const std::chrono::milliseconds& observation_time, size_t feature_point_index) const {
-    return observation_row_id_.at(std::make_pair(observation_time, feature_point_index));
+    return observation_row_id_.at(PointObservation{ observation_time, feature_point_index });
 }
 size_t Scene1dMatrix::column_id_camera(const CameraVariable& camera_index) const {
     return cameras_.at(camera_index);

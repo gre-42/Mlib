@@ -56,7 +56,7 @@ GlobalBundle::GlobalBundle(
     const std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
     bool skip_missing_cameras,
     UUIDGen<XK, XP>& uuid_gen,
-    const std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations)
+    const std::set<PointObservation>& dropped_observations)
 :cfg_{cfg},
  cache_dir_{cache_dir}
 {
@@ -71,7 +71,7 @@ GlobalBundle::GlobalBundle(
         if (c->state_ != MmState::MARGINALIZED) {
             bool point_found = false;
             for (const auto& y : p.second) {
-                if (dropped_observations.find(std::make_pair(p.first, y.first)) != dropped_observations.end()) {
+                if (dropped_observations.find(PointObservation{ p.first, y.first }) != dropped_observations.end()) {
                     continue;
                 }
                 const auto& r = reconstructed_points.find(y.first);
@@ -183,7 +183,7 @@ void GlobalBundle::copy_in(
     const std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     bool skip_missing_cameras,
-    const std::set<std::pair<std::chrono::milliseconds, size_t>>& dropped_observations)
+    const std::set<PointObservation>& dropped_observations)
 {
     for (const auto& p : particles) {
         // This code is equivalent to (for c, p in (cameras & particles)),
@@ -201,7 +201,7 @@ void GlobalBundle::copy_in(
         }
         const CameraFrame& cf = (c_raw->state_ == MmState::ACTIVE) ? c_raw->second : frozen_camera_frames.at(c_raw->first);
         for (const auto& y : p.second) {
-            if (dropped_observations.find(std::make_pair(p.first, y.first)) != dropped_observations.end()) {
+            if (dropped_observations.find(PointObservation{ p.first, y.first }) != dropped_observations.end()) {
                 continue;
             }
             const auto& r_raw = reconstructed_points.find(y.first);
@@ -344,11 +344,11 @@ void GlobalBundle::copy_out(
     }
 }
 
-std::map<std::pair<std::chrono::milliseconds, size_t>, float> GlobalBundle::sum_squared_observation_residuals() const
+std::map<PointObservation, float> GlobalBundle::sum_squared_observation_residuals() const
 {
-    std::map<std::pair<std::chrono::milliseconds, size_t>, float> result;
+    std::map<PointObservation, float> result;
     for (const auto& y : ys) {
-        result[std::make_pair(y.first.time, y.first.index)] += squared(yg(row_id(y.first)) - fg(row_id(y.first)));
+        result[PointObservation{ y.first.time, y.first.index }] += squared(yg(row_id(y.first)) - fg(row_id(y.first)));
     }
     return result;
 }
