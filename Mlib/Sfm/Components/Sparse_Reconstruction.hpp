@@ -22,6 +22,7 @@ public:
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
         std::map<size_t, std::chrono::milliseconds>& bad_points,
+        std::map<size_t, float>& last_sq_residual,
         const std::string& cache_dir,
         ReconstructionConfig cfg);
     void reconstruct();
@@ -57,6 +58,7 @@ private:
     std::map<std::chrono::milliseconds, CameraFrame> frozen_camera_frames_;
     std::map<std::chrono::milliseconds, FeaturePointFrame>& particles_;
     std::map<size_t, std::chrono::milliseconds>& bad_points_;
+    std::map<size_t, float>& last_sq_residual_;
     std::string cache_dir_;
     ReconstructionConfig cfg_;
     MarginalizationScheduler ms_;

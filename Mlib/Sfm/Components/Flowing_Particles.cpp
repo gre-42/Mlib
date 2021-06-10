@@ -326,10 +326,14 @@ void FlowingParticles::draw(Bgr565Bitmap& bmp) {
     for (const auto& s : particles_.rbegin()->second) {
         ArrayShape index{ a2i(s.second->sequence.rbegin()->second->position).to_array_shape() };
         //assert(all(index < bmp.shape()));
-        bmp.draw_fill_rect(
+        auto sq_res_it = last_sq_residual_.find(s.first);
+        float marker_size = sq_res_it == last_sq_residual_.end()
+            ? 1.f
+            : std::sqrt(sq_res_it->second);
+        bmp.draw_empty_rect(
             index,
             (bad_points_.find(s.first) == bad_points_.end()
-                ? 2
+                ? (size_t)std::round(2 * marker_size)
                 : 4),
             (bad_points_.find(s.first) == bad_points_.end()
                 ? Bgr565::green()

@@ -47,6 +47,7 @@ public:
     explicit Bgr565Bitmap(const ArrayShape& shape);
 
     void draw_fill_rect(const ArrayShape& center, size_t size, const Bgr565& color);
+    void draw_empty_rect(const ArrayShape& center, size_t size, const Bgr565& color);
     void draw_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Bgr565& color);
     void draw_infinite_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Bgr565& color);
     void draw_mask(const Array<bool>& mask, const Bgr565& color);

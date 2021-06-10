@@ -32,6 +32,7 @@ public:
     bool requires_optical_flow() const;
     std::map<std::chrono::milliseconds, FeaturePointFrame> particles_;
     std::map<size_t, std::chrono::milliseconds> bad_points_;
+    std::map<size_t, float> last_sq_residual_;
 private:
     void advance_existing_particles(
         FeaturePointFrame& new_frame,

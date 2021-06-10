@@ -95,6 +95,32 @@ void draw_fill_rect(
 }
 
 template<class TColor>
+void draw_empty_rect(
+    Array<TColor>& image,
+    const ArrayShape& center,
+    size_t size,
+    const TColor& value)
+{
+    assert(image.ndim() == 2);
+    assert(center.ndim() == 2);
+    for (size_t r = center(0) - size; r != center(0) + size + 1; ++r) {
+        if (r >= image.shape(0)) {
+            continue;
+        }
+        for (size_t c = center(1) - size; c != center(1) + size + 1; ++c) {
+            if (c >= image.shape(1)) {
+                continue;
+            }
+            if ((r == center(0) - size) || (r == center(0) + size)
+             || (c == center(1) - size) || (c == center(1) + size))
+            {
+                image(r, c) = value;
+            }
+        }
+    }
+}
+
+template<class TColor>
 void draw_line_ext(
     Array<TColor>& image,
     const Array<float>& from,

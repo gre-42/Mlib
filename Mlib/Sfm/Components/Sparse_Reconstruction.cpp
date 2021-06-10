@@ -33,12 +33,14 @@ SparseReconstruction::SparseReconstruction(
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
     std::map<size_t, std::chrono::milliseconds>& bad_points,
+    std::map<size_t, float>& last_sq_residual,
     const std::string& cache_dir,
     ReconstructionConfig cfg)
 :intrinsic_matrix_{ intrinsic_matrix },
  camera_frames_{ camera_frames },
  particles_{ particles },
  bad_points_{ bad_points },
+ last_sq_residual_{ last_sq_residual },
  cache_dir_{ cache_dir },
  cfg_{ cfg },
  ms_{ cfg.gm,
@@ -754,10 +756,12 @@ void SparseReconstruction::reject_large_projection_residuals(const GlobalBundle&
 {
     std::map<PointObservation, float> sq_residual_map = gb.sum_squared_observation_residuals();
     Array<float> sq_residual_array{ArrayShape{sq_residual_map.size()}};
+    last_sq_residual_.clear();
     {
         size_t i = 0;
         for (const auto& r : sq_residual_map) {
             sq_residual_array(i++) = r.second;
+            last_sq_residual_[r.first.index] = std::max(last_sq_residual_[r.first.index], r.second);
         }
     }
     {

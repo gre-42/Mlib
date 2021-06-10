@@ -52,6 +52,10 @@ void Bgr565Bitmap::draw_fill_rect(const ArrayShape& center, size_t size, const B
     Mlib::draw_fill_rect(*this, center, size, color);
 }
 
+void Bgr565Bitmap::draw_empty_rect(const ArrayShape& center, size_t size, const Bgr565& color) {
+    Mlib::draw_empty_rect(*this, center, size, color);
+}
+
 void Bgr565Bitmap::draw_line(
     const Array<float>& from,
     const Array<float>& to,
