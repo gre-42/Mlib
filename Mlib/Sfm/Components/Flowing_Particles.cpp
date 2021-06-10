@@ -333,7 +333,7 @@ void FlowingParticles::draw(Bgr565Bitmap& bmp) {
         bmp.draw_empty_rect(
             index,
             (bad_points_.find(s.first) == bad_points_.end()
-                ? (size_t)std::round(2 * marker_size)
+                ? std::max(size_t{ 2 }, (size_t)std::round(marker_size))
                 : 4),
             (bad_points_.find(s.first) == bad_points_.end()
                 ? Bgr565::green()
