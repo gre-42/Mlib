@@ -120,10 +120,10 @@ void test_schur_complement3() {
     float alpha = 1e-2;
     float beta = 1e-2;
 
-    Array<float> G = uniform_random_array<float>(ArrayShape{10, 5}, 1);
+    Array<float> G = random_array3<float>(ArrayShape{10, 5}, 1);
     SparseArrayCcs<float> J{G};
     Array<float> A = dot2d(G.vH(), G);
-    Array<float> y = uniform_random_array<float>(ArrayShape{10}, 2);
+    Array<float> y = random_array3<float>(ArrayShape{10}, 2);
     Array<float> b = dot(G.T(), y);
 
     Array<float> x_exact = solve_symm_1d(A, b);
@@ -133,11 +133,11 @@ void test_schur_complement3() {
 
     {
         Array<float> x = solve_symm_1d(A, b);
-        assert_allclose(x, Array<float>{0.458309, 0.852957, -0.372384, 0.0442832, -0.291572}, 1e-5);
+        assert_allclose(x, Array<float>{0.567378f, 0.293146f, 0.101899f, -0.318106f, 0.333852f}, 1e-5);
     }
     {
         Array<float> x = solve_symm_1d(A, b, alpha, beta);
-        assert_allclose(x, Array<float>{0.444589, 0.786624, -0.322209, 0.039023, -0.237743}, 1e-5);
+        assert_allclose(x, Array<float>{0.546972f, 0.279436f, 0.102724f, -0.286586f, 0.330915f}, 1e-5);
     }
     Array<size_t> ids_k{ArrayShape{0}};
     Array<size_t> ids_a{0, 1, 4};
@@ -174,14 +174,14 @@ void test_schur_complement3() {
         Array<float> rhs;
         schur_complement_system(A, b, ids_a, ids_b, lhs, rhs, 0, 0);
         Array<float> x = solve_symm_1d(lhs, rhs, 0.f, 0.f);
-        assert_allclose(x.unblocked(ids_a, b.length()), Array<float>{0.458309, 0.852957, NAN, NAN, -0.291572}, 1e-5);
+        assert_allclose(x.unblocked(ids_a, b.length()), Array<float>{0.567378f, 0.293146f, NAN, NAN, 0.333852f}, 1e-5);
     }
     {
         Array<float> lhs;
         Array<float> rhs;
         schur_complement_system(A, b1, ids_a, ids_b, lhs, rhs, 0, 0);
         Array<float> dx = solve_symm_1d(lhs, rhs, 0.f, 0.f);
-        assert_allclose(x0 + dx.unblocked(ids_a, b.length()), Array<float>{0.458309, 0.852957, NAN, NAN, -0.291572}, 1e-5);
+        assert_allclose(x0 + dx.unblocked(ids_a, b.length()), Array<float>{0.567378f, 0.293146f, NAN, NAN, 0.333852f}, 1e-5);
     }
     {
         MarginalizingBias dsolver{alpha*0, beta*0};
@@ -189,7 +189,7 @@ void test_schur_complement3() {
         {
             Array<float> dx = dsolver.solve(J, x0, residual);
             Array<float> x = x0 + dx;
-            assert_allclose(x, Array<float>{0.458309, 0.852957, -0.372384, 0.0442832, -0.291572}, 1e-5);
+            assert_allclose(x, Array<float>{0.567378f, 0.293146f, 0.101903f, -0.31811f, 0.333852f}, 1e-5);
         }
 
         {
@@ -200,7 +200,7 @@ void test_schur_complement3() {
             dsolver_wip.update_indices({{UUID{ids_ka(0)}, 0}, {UUID{ids_ka(1)}, 1}, {UUID{ids_ka(2)}, 2}});
             Array<float> dx = dsolver_wip.solve(J1, x01, residual);
             Array<float> x1 = x01 + dx;
-            assert_allclose(x1, Array<float>{0.458309, 0.852957, -0.291572});
+            assert_allclose(x1, Array<float>{0.567378f, 0.293146f, 0.333852f});
         }
         {
             // Exact
@@ -211,13 +211,13 @@ void test_schur_complement3() {
             {
                 Array<float> dx = dsolver_exact.solve(J1, x01, residual);
                 Array<float> x1 = x01 + dx;
-                assert_allclose(x1, Array<float>{0.458309, 0.852957, -0.291572});
+                assert_allclose(x1, Array<float>{0.567378f, 0.293146f, 0.333852f}, 1e-5);
             }
             {
                 Array<float> dx = dsolver_exact.solve(J1, x01, residual);
                 Array<float> x1 = x01 + dx;
-                assert_allclose(x1, Array<float>{0.458309, 0.852957, -0.291572});
-                assert_isclose(dsolver_exact.bias(x01), 1.71858f, 1e-5);
+                assert_allclose(x1, Array<float>{0.567378f, 0.293146f, 0.333852f}, 1e-5);
+                assert_isclose(dsolver_exact.bias(x01), 1.41828549f, 1e-5);
             }
 
             // Exact2
@@ -226,8 +226,8 @@ void test_schur_complement3() {
             {
                 Array<float> dx2 = dsolver_exact.solve(J2, x02, residual);
                 Array<float> x2 = x02 + dx2;
-                assert_allclose(x2, Array<float>{0.458309, 0.852957});
-                assert_isclose(dsolver_exact.bias(x02), 2.64965f, 1e-5);
+                assert_allclose(x2, Array<float>{0.567378f, 0.293146f}, 1e-5);
+                assert_isclose(dsolver_exact.bias(x02), 0.783129930f, 1e-5);
             }
 
             // Exact3
@@ -236,8 +236,8 @@ void test_schur_complement3() {
             {
                 Array<float> dx3 = dsolver_exact.solve(J3, x03, residual);
                 Array<float> x3 = x03 + dx3;
-                assert_allclose(x3, Array<float>{0.458309});
-                assert_isclose(dsolver_exact.bias(x03), 0.222736f, 1e-5);
+                assert_allclose(x3, Array<float>{0.567378f});
+                assert_isclose(dsolver_exact.bias(x03), 0.299348384f, 1e-5);
             }
         }
         {
@@ -248,7 +248,7 @@ void test_schur_complement3() {
             dsolver_err.update_indices({{UUID{ids_ka(0)}, 0}, {UUID{ids_ka(1)}, 1}, {UUID{ids_ka(2)}, 2}});
             Array<float> dx = dsolver_err.solve(J1, x01, residual);
             Array<float> x1 = x01 + dx;
-            assert_allclose(x1, Array<float>{0.377255, 0.665708, -0.306312});
+            assert_allclose(x1, Array<float>{0.362772f, 0.199253f, 0.241683f});
 
             // Array<size_t> ids_a{ArrayShape{0}};
             // Array<size_t> ids_b{ArrayShape{0}};
