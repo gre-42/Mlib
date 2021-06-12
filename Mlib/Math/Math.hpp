@@ -622,9 +622,10 @@ Array<TData> random_array2(const ArrayShape& shape, unsigned int seed) {
 template <class TData>
 void randomize_array3(Array<TData> a, unsigned int seed) {
     assert(seed != 0);
-    std::default_random_engine e(seed);
+    // std::default_random_engine e(seed);
+    std::mt19937 e{ seed };
     Array<TData> fa = a.flattened();
-    for (size_t i=0; i<fa.length(); i++) {
+    for (size_t i = 0; i < fa.length(); i++) {
         fa(i) = (e() - e.min()) / TData(e.max());
     }
 }

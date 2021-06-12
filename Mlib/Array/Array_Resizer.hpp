@@ -38,6 +38,11 @@ public:
         (*this)[size];
         (*this)();
     }
+    void operator () (size_t size0, size_t size1) {
+        (*this)[size0];
+        (*this)[size1];
+        (*this)();
+    }
     void operator () (const ArrayShape& shape) {
         (*this)[shape];
         (*this)();

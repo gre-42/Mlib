@@ -1,4 +1,5 @@
 #include <Mlib/Math/Approximate_Rank.hpp>
+#include <Mlib/Math/Eigen_Jacobi.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Gaussian_Elimination.hpp>
@@ -168,17 +169,17 @@ void test_solve_svd_complex() {
 }
 
 void test_cond() {
-    Array<double> a = random_array2<double>(ArrayShape{5, 3}, 1);
-    assert_isclose(cond(a), 29.612, 1e-3);
-    assert_isclose(cond4(a), 29.612, 1e-3);
+    Array<double> a = random_array3<double>(ArrayShape{5, 3}, 1);
+    assert_isclose(cond(a), 14.3934, 1e-3);
+    assert_isclose(cond4(a), 14.3934, 1e-3);
 }
 
 void test_approximate_rank() {
     Array<double> a = dot(
-        uniform_random_array<double>(ArrayShape{6, 2}, 1),
-        uniform_random_array<double>(ArrayShape{2, 5}, 2));
+        random_array3<double>(ArrayShape{6, 2}, 1),
+        random_array3<double>(ArrayShape{2, 5}, 2));
     assert_allclose(approximate_rank(a, 2), a);
-    assert_isclose(approximate_rank(a, 1)(0, 0), 0.728259);
+    assert_isclose(approximate_rank(a, 1)(0, 0), 1.10765, 1e-3);
 }
 
 void test_batch_dot() {
@@ -366,10 +367,10 @@ void test_fixed_cholesky() {
 void test_interp() {
     Interp<float> interp{{0.f, 0.1f, 2.f, 3.f}, {4.123f, 2.567f, 3.89f, 4.2f}, OutOfRangeBehavior::EXPLICIT, -10, 20};
     assert_allclose(
-        Array<float>{interp(-1), interp(4.3)},
+        Array<float>{interp(-1.f), interp(4.3f)},
         Array<float>{-10, 20});
     assert_allclose(
-        Array<float>{interp(0), interp(0.05), interp(0.1), interp(2), interp(3)},
+        Array<float>{interp(0.f), interp(0.05f), interp(0.1f), interp(2.f), interp(3.f)},
         Array<float>{4.123f, 3.345f, 2.567f, 3.89f, 4.2f});
 }
 
@@ -383,6 +384,16 @@ void test_projection() {
     assert_allclose(
         dot2d(a.affine(), b.semi_affine()).to_array(),
         a.project(b.semi_affine()).to_array());
+}
+
+void test_eigen_jacobi() {
+    Array<double> m = random_array3<double>(ArrayShape{ 4, 4 }, 1);
+    m += m.T();
+    m(0, 2);
+    Array<double> evals;
+    Array<double> evecs;
+    eigs_symm(m, evals, evecs);
+    assert_allclose(m - reconstruct_svd(evecs.T(), evals, evecs), zeros<double>(ArrayShape{ 4, 4 }));
 }
 
 int main(int argc, const char** argv) {
@@ -420,6 +431,7 @@ int main(int argc, const char** argv) {
         test_fixed_cholesky();
         test_interp();
         test_projection();
+        test_eigen_jacobi();
     } catch (const std::runtime_error& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
         return 1;
