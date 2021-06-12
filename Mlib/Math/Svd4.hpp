@@ -9,4 +9,6 @@ double cond4(const Array<double>& a);
 
 double cond4_x(const Array<double>& a);
 
+Array<double> eig4(const Array<double>& a);
+
 }

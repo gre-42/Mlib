@@ -292,3 +292,11 @@ double Mlib::cond4_x(const Array<double>& a) {
 	}
 	return squared(max(s) / min(s));
 }
+
+Array<double> Mlib::eig4(const Array<double>& a) {
+	Array<double> u;
+	Array<double> s;
+	Array<double> vT;
+	svd4(a, u, s, vT);
+	return s;
+}
