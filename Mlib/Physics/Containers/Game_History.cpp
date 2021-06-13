@@ -20,7 +20,7 @@ GameHistory::GameHistory(size_t max_tracks)
     try {
         fs::create_directory(dn);
     } catch (const fs::filesystem_error& e) {
-        throw std::runtime_error("Could not create directory \"" + dn + '"');
+        throw std::runtime_error("Could not create directory \"" + dn + "\". " + e.what());
     }
     load();
 }

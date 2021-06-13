@@ -41,7 +41,8 @@ void test_reconstruction() {
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames;
     std::map<std::chrono::milliseconds, FeaturePointFrame> particles;
     std::map<size_t, std::chrono::milliseconds> bad_points;
-    SparseReconstruction recon = SparseReconstruction(sc.ki, camera_frames, particles, bad_points, "TestOut", cfg);
+    std::map<size_t, float> last_sq_residual;
+    SparseReconstruction recon{ sc.ki, camera_frames, particles, bad_points, last_sq_residual, "TestOut", cfg };
     Array<float> image = random_array2<float>(ArrayShape{3, 256, 512}, 1);
     ArrayShape patch_center{127, 130};
     ArrayShape patch_size{6, 6};
