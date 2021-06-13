@@ -14,6 +14,7 @@ struct ReconstructionConfig {
     size_t recompute_interval = 5;
 
     bool print_residual = false;
+    bool print_point_updates = false;
     float fov_threshold = 0.1f; // 1.f
     float bad_point_residual_multiplier = 4.f;
     float max_residual_normalized = 0.1f;
@@ -35,8 +36,8 @@ struct ReconstructionConfig {
         .numerical_jacobian_k = false
     };
     GlobalMarginalizationConfig gm {
-        .bias_enabled = true,
-        .nbundle_cameras = 10,
+        .verbose = false,
+        .nbundle_cameras = 7,
         .marginalization_target = MarginalizationTarget::POINTS
     };
     RansacOptions<float> ro_initial {

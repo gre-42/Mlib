@@ -342,20 +342,26 @@ void SparseReconstruction::reconstruct_append() {
                     std::cerr << "Not correcting marginalized point [" << r->first << "]" << std::endl;
                 } else if (r != reconstructed_points_.end()) {
                     if (!(cfg_.enable_partial_bundle_adjustment || cfg_.enable_global_bundle_adjustment)) {
-                        std::cerr << "Correcting x [" << r->first << "] " <<
-                            r->second->position <<
-                            " cond" << r->second->condition_number <<
-                            " to " << x <<
-                            " cond " << condition_number << std::endl;
+                        if (cfg_.print_point_updates) {
+                            std::cerr << "Correcting x [" << r->first << "] " <<
+                                r->second->position <<
+                                " cond" << r->second->condition_number <<
+                                " to " << x <<
+                                " cond " << condition_number << std::endl;
+                        }
                         r->second->position = x;
                     }
-                    std::cerr << "Updating cond [" << r->first << "] " <<
+                    if (cfg_.print_point_updates) {
+                        std::cerr << "Updating cond [" << r->first << "] " <<
                             r->second->condition_number <<
                             " to " <<
                             condition_number << std::endl;
+                    }
                     r->second->condition_number = condition_number;
                 } else {
-                    std::cerr << "New x [" << s.first << "] " << x << " cond " << condition_number << std::endl;
+                    if (cfg_.print_point_updates) {
+                        std::cerr << "New x [" << s.first << "] " << x << " cond " << condition_number << std::endl;
+                    }
                     reconstructed_points_[s.first] = std::make_shared<ReconstructedPoint>(x, condition_number);
                 }
             }
@@ -576,7 +582,7 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
             // msolver_.update_x(gb.Jg, residual, x);
             // msolver_.solve();
             // return msolver_.x_;
-            return x + ms_.bsolver_.solve(gb->Jg, x, residual);
+            return x + ms_.bsolver_.solve(gb->Jg, x, residual, Array<size_t>(), Array<size_t>());
         },
         float{ 1e-3 },                    // min_redux
         600,                              // niterations

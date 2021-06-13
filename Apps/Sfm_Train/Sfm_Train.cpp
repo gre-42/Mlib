@@ -52,13 +52,13 @@ static void run_reconstruction_pipeline(
 }
 
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
     ArgParser parser(
         "Usage: --cache <cache_dir> --source <source_dir> [--load_cameras] [--no-dtam] [--no-dtam-tracking] --chess_r <chess_r> --chess_c <chess_c> [--nimages <nimages>] [--ncameras <ncameras>]",
-        {"--load_cameras", "--no-dtam", "--no-dtam-tracking"},
-        {"--pipeline", "--cache", "--source", "--chess_r", "--chess_c", "--nimages", "--ncameras"});
+        { "--load_cameras", "--no-dtam", "--no-dtam-tracking" },
+        { "--pipeline", "--cache", "--source", "--chess_r", "--chess_c", "--nimages", "--ncameras" });
 
     try {
         auto args = parser.parsed(argc, argv);
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
         const std::string image_dir = args.named_value("--source");
         ArrayShape chessboard_shape({
             safe_stoz(args.named_value("--chess_r")),
-            safe_stoz(args.named_value("--chess_c"))});
+            safe_stoz(args.named_value("--chess_c")) });
         run_reconstruction_pipeline(
             cache_dir,
             image_dir,
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
             args.has_named_value("--ncameras") ? safe_stoz(args.named_value("--ncameras")) : SIZE_MAX,
             TemplatePatchPipelineConfig{
                 .enable_dtam = !args.has_named("--no-dtam"),
-                .track_using_dtam = !args.has_named("--no-dtam-tracking")});
+                .track_using_dtam = !args.has_named("--no-dtam-tracking") });
         return 0;
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;

@@ -236,6 +236,8 @@ std::vector<size_t> MarginalizationScheduler::find_points_to_be_marginalized(
     std::cerr << "Marginalizing camera's points at time " << time_tbm.count() << " ms" << std::endl;
     std::cerr << "Newest time " << time_newest.count() << " ms" << std::endl;
     std::cerr << "Second time " << time_second.count() << " ms" << std::endl;
+    size_t nmeasurements_dropped = 0;
+    size_t npoints_marginalized = 0;
     for (const auto& s : particles_.at(time_tbm)) {
         const auto& r = reconstructed_points_.find(s.first);
         if (r == reconstructed_points_.end()) {
@@ -247,10 +249,16 @@ std::vector<size_t> MarginalizationScheduler::find_points_to_be_marginalized(
                 pp_second.find(s.first) != pp_second.end() ||
                 bad_points_.find(s.first) != bad_points_.end())
             {
-                std::cerr << "Dropping measurement of [" << s.first << "] at time " << time_tbm.count() << " ms" << std::endl;
+                ++nmeasurements_dropped;
+                if (cfg_.verbose) {
+                    std::cerr << "Dropping measurement of [" << s.first << "] at time " << time_tbm.count() << " ms" << std::endl;
+                }
                 dropped_observations_.insert(PointObservation{ time_tbm, s.first });
             } else {
-                std::cerr << "Marginalization of point [" << s.first << "], state " << r->state_ << std::endl;
+                ++npoints_marginalized;
+                if (cfg_.verbose) {
+                    std::cerr << "Marginalization of point [" << s.first << "], state " << r->state_ << std::endl;
+                }
                 mids.marginalize_point(s.first);
                 point_ids.push_back(s.first);
                 if (r->state_ == MmState::ACTIVE) {
@@ -261,6 +269,12 @@ std::vector<size_t> MarginalizationScheduler::find_points_to_be_marginalized(
         } else {
             // std::cerr << "Point already being linearized [" << s.first << "]" << std::endl;
         }
+    }
+    if (nmeasurements_dropped != 0) {
+        std::cerr << "Dropping " << nmeasurements_dropped << " measurements at time " << time_tbm.count() << " ms" << std::endl;
+    }
+    if (npoints_marginalized != 0) {
+        std::cerr << "Marginalization of " << npoints_marginalized << " points" << std::endl;
     }
     //particles.move_to_to_be_marginalized(time);
     return point_ids;

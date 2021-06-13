@@ -60,6 +60,7 @@ GlobalBundle::GlobalBundle(
 :cfg_{cfg},
  cache_dir_{cache_dir}
 {
+    std::unordered_map<size_t, size_t> nobjservations;
     for (const auto& p : particles) {
         const auto c = camera_frames.find(p.first);
         if (c == camera_frames.end()) {
@@ -80,6 +81,7 @@ GlobalBundle::GlobalBundle(
                         point_found = true;
                         for (size_t d = 0; d < 2; ++d) {
                             ys.insert(std::make_pair(Y{p.first, y.first, d}, ys.size()));
+                            ++nobjservations[y.first];
                         }
                     }
                 }
@@ -93,6 +95,13 @@ GlobalBundle::GlobalBundle(
         if (x.state_ != MmState::MARGINALIZED) {
             for (size_t d = 0; d < 3; ++d) {
                 xps.insert(std::make_pair(XP(x.first, d), xps.size()));
+            }
+            auto it = nobjservations.find(x.first);
+            if (it == nobjservations.end()) {
+                throw std::runtime_error("No observation for point " + std::to_string(x.first));
+            }
+            if (it->second == 1) {
+                throw std::runtime_error("Only a single observation for point " + std::to_string(x.first));
             }
         }
     }
@@ -269,6 +278,13 @@ void GlobalBundle::copy_in(
                 std::cerr << xkk.first.time.count() << " ms " << xkk.first.dimension << std::endl;
                 throw std::runtime_error("Camera column is empty");
             }
+            if (false) {
+                auto mit = std::max_element(Jg.column(col).begin(), Jg.column(col).end(), [](const auto& a, const auto& b) {return a.second < b.second; });
+                if (mit->second < 1e-13) {
+                    std::cerr << xkk.first.time.count() << " ms " << xkk.first.dimension << std::endl;
+                    throw std::runtime_error("Camera column is (nearly) zero");
+                }
+            }
             // Initial bundle adjustment (2 cams, N points).
             // Camera rotation about z-axis.
             if (xkk.first.dimension == 2) {
@@ -289,6 +305,13 @@ void GlobalBundle::copy_in(
             if (Jg.column(col).size() == 0) {
                 std::cerr << xxp.first.index << " " << xxp.first.dimension << " " << col << std::endl;
                 throw std::runtime_error("Point column is empty");
+            }
+            if (false) {
+                auto mit = std::max_element(Jg.column(col).begin(), Jg.column(col).end(), [](const auto& a, const auto& b) {return a.second < b.second; });
+                if (mit->second < 1e-13) {
+                    std::cerr << xxp.first.index << " " << xxp.first.dimension << " " << col << std::endl;
+                    throw std::runtime_error("Point column is (nearly) zero");
+                }
             }
             // Initial bundle adjustment (2 cams, N points).
             // Point in z-direction.

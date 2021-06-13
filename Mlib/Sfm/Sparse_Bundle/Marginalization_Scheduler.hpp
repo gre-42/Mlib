@@ -13,7 +13,7 @@ enum class MarginalizationTarget {
 
 class GlobalMarginalizationConfig {
 public:
-    bool bias_enabled;
+    bool verbose;
     size_t nbundle_cameras;
     MarginalizationTarget marginalization_target;
 };
