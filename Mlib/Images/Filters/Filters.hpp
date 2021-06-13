@@ -72,7 +72,7 @@ template <class TData>
 Array<TData> multichannel_laplace_filter(const Array<TData>& image, const TData& boundary_value) {
     Array<TData> result{image.shape()};
     for (size_t h = 0; h < image.shape(0); ++h) {
-        result[h] = laplace_filter(image[h], boundary_value);
+        result[h] = std::move(laplace_filter(image[h], boundary_value));
     }
     return result;
 }
@@ -126,7 +126,7 @@ Array<TData> gradient_filter(
 {
     Array<TData> result{ArrayShape{image.ndim()}.concatenated(image.shape())};
     for (size_t d = 0; d < image.ndim(); d++) {
-        result[d] = difference_filter_1d(image, boundary_value, d, dit);
+        result[d] = std::move(difference_filter_1d(image, boundary_value, d, dit));
     }
     return result;
 }

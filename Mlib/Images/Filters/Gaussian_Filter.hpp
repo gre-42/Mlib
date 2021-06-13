@@ -35,7 +35,7 @@ Array<TData> gaussian_filter_NWE(
 {
     Array<TData> result = image.copy();
     for (size_t axis = 0; axis < image.ndim(); ++axis) {
-        result = gaussian_filter_1d_NWE(result, sigma, axis, boundary_value, truncate, nwe);
+        result = std::move(gaussian_filter_1d_NWE(result, sigma, axis, boundary_value, truncate, nwe));
     }
     return result;
 }
@@ -50,7 +50,7 @@ Array<TData> multichannel_gaussian_filter_NWE(
 {
     Array<TData> result{image.shape()};
     for (size_t h = 0; h < image.shape(0); ++h) {
-        result[h] = gaussian_filter_NWE(image[h], sigma, boundary_value, truncate, nwe);
+        result[h] = std::move(gaussian_filter_NWE(image[h], sigma, boundary_value, truncate, nwe));
     }
     return result;
 }

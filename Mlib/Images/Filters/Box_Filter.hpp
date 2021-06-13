@@ -155,7 +155,7 @@ Array<TData> box_filter_append_zeros(
 {
     Array<TData> result = image.copy();
     for (size_t d = 0; d < image.ndim(); d++) {
-        result = box_filter_append_zeros_1d(result, box_size(d), d);
+        result = std::move(box_filter_append_zeros_1d(result, box_size(d), d));
     }
     return result;
 }
@@ -168,7 +168,7 @@ Array<TData> box_filter_nan(
 {
     Array<TData> result = image.copy();
     for (size_t d = 0; d < image.ndim(); d++) {
-        result = box_filter_nan_1d(result, box_size(d), boundary_value, d);
+        result = std::move(box_filter_nan_1d(result, box_size(d), boundary_value, d));
     }
     return result;
 }
@@ -181,7 +181,7 @@ Array<TData> box_filter_nan_multichannel(
 {
     Array<TData> result{ image.shape() };
     for (size_t h = 0; h < image.shape(0); ++h) {
-        result[h] = box_filter_nan(image[h], box_size, boundary_value);
+        result[h] = std::move(box_filter_nan(image[h], box_size, boundary_value));
     }
     return result;
 }

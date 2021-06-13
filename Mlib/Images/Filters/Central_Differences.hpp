@@ -30,7 +30,7 @@ Array<TData> central_gradient_filter(const Array<TData>& image)
 {
     Array<TData> result{ArrayShape{image.ndim()}.concatenated(image.shape())};
     for (size_t axis = 0; axis < image.ndim(); axis++) {
-        result[axis] = central_differences_1d(image, axis);
+        result[axis] = std::move(central_differences_1d(image, axis));
     }
     return result;
 }
@@ -49,7 +49,7 @@ Array<TData> multichannel_central_sad_filter(const Array<TData>& image)
 {
     Array<TData> result{image.shape()};
     for (size_t h = 0; h < image.shape(0); ++h) {
-        result[h] = central_sad_filter(image[h]);
+        result[h] = std::move(central_sad_filter(image[h]));
     }
     return result;
 }

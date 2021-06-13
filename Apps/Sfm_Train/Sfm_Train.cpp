@@ -82,9 +82,6 @@ int main(int argc, char** argv) {
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
                 .print_residual = args.has_named("--print_residual") });
         return 0;
-    } catch (const CommandLineArgumentError& e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;
