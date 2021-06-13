@@ -7,7 +7,9 @@ using namespace Mlib::Sfm;
 static bool interactive = true;
 static float theta_0 = interactive ? 0.2f : 8.f;
 
-DtamComponentConfig::DtamComponentConfig(bool track_using_dtam)
+DtamComponentConfig::DtamComponentConfig(
+    bool track_using_dtam,
+    bool print_residual)
 : DtamComponentConfig(
     0,                              // tracking_start_ncams
     !interactive,                   // rewind_first_keyframe
@@ -21,6 +23,7 @@ DtamComponentConfig::DtamComponentConfig(bool track_using_dtam)
         3 * size_t{ interactive ? 1u : 10u }, // min_channel_increments
         0.8f,                       // min_pixel_fraction_for_tracking
         100,                        // ninterleaved_iterations
+        print_residual,             // print_residual
         Dm::DtamParameters(
             0.5f,                   // min_depth
             5.f,                    // max_depth

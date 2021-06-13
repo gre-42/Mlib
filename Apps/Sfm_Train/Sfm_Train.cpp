@@ -56,8 +56,8 @@ int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
     ArgParser parser(
-        "Usage: --cache <cache_dir> --source <source_dir> [--load_cameras] [--no-dtam] [--no-dtam-tracking] --chess_r <chess_r> --chess_c <chess_c> [--nimages <nimages>] [--ncameras <ncameras>]",
-        { "--load_cameras", "--no-dtam", "--no-dtam-tracking" },
+        "Usage: --cache <cache_dir> --source <source_dir> [--load_cameras] [--no_dtam] [--no_dtam_tracking] --chess_r <chess_r> --chess_c <chess_c> [--nimages <nimages>] [--ncameras <ncameras>]",
+        { "--load_cameras", "--no_dtam", "--no_dtam_tracking" },
         { "--pipeline", "--cache", "--source", "--chess_r", "--chess_c", "--nimages", "--ncameras" });
 
     try {
@@ -78,8 +78,9 @@ int main(int argc, char** argv) {
             args.has_named_value("--nimages") ? safe_stoz(args.named_value("--nimages")) : SIZE_MAX,
             args.has_named_value("--ncameras") ? safe_stoz(args.named_value("--ncameras")) : SIZE_MAX,
             TemplatePatchPipelineConfig{
-                .enable_dtam = !args.has_named("--no-dtam"),
-                .track_using_dtam = !args.has_named("--no-dtam-tracking") });
+                .enable_dtam = !args.has_named("--no_dtam"),
+                .track_using_dtam = !args.has_named("--no_dtam_tracking"),
+                .print_residual = args.has_named("--print_residual") });
         return 0;
     } catch (const CommandLineArgumentError& e) {
         std::cerr << e.what() << std::endl;

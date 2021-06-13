@@ -94,7 +94,9 @@ void DtamKeyframe::append_camera_frame() {
         down_sampler_.ds_intrinsic_matrix_,
         {3.f, 1.f, 0.f},
         {float(INFINITY), float(INFINITY)},  // robust thresholds: {0.1f, 0.01f}
-        x0_r1_r0);
+        x0_r1_r0,
+        true,                                // estimate_rotation_first
+        cfg_.print_residual_);               // print_residual
     // ke: reference "r", xr -> xl
     // r * xr = x
     // l * ke * xr = l * xl = x

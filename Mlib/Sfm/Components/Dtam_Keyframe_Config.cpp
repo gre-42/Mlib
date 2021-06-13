@@ -10,6 +10,7 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     size_t min_channel_increments,
     float min_pixel_fraction_for_tracking,
     size_t ninterleaved_iterations,
+    bool print_residual,
     Dm::DtamParameters params)
 : incremental_update_(incremental_update),
   nfuture_frames_per_keyframe_(nfuture_frames_per_keyframe),
@@ -17,5 +18,6 @@ DtamKeyframeConfig::DtamKeyframeConfig(
   min_channel_increments_(min_channel_increments),
   min_pixel_fraction_for_tracking_(min_pixel_fraction_for_tracking),
   ninterleaved_iterations_(ninterleaved_iterations),
+  print_residual_{print_residual},
   params_(params)
 {}

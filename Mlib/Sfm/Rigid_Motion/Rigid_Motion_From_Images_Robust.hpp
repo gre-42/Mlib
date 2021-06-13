@@ -24,7 +24,8 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
     const std::vector<TData>& sigmas,
     const std::vector<TData>& thresholds,
     const FixedArray<TData, 6>& x0_r1_r0 = fixed_zeros<TData, 6>(),
-    bool estimate_rotation_first = true)
+    bool estimate_rotation_first = true,
+    bool print_residual = true)
 {
     FixedArray<TData, 3> x0_rot_l_r1 = fixed_zeros<TData, 3>();
     if (estimate_rotation_first) {
@@ -35,7 +36,8 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
                 intrinsic_matrix,
                 false,
                 &x0_rot_l_r1,
-                &x0_rot_l_r1);
+                &x0_rot_l_r1,
+                print_residual);
         }
     }
     FixedArray<TData, 6> x0_l_r1 = fixed_zeros<TData, 6>();
@@ -67,7 +69,8 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
             intrinsic_matrix,
             false,             // differentiate_numerically
             &x0_l_r0,          // x0
-            &x0_l_r0);         // xe
+            &x0_l_r0,          // xe
+            print_residual);   // print_residual
         ke_initialized = true;
     }
     return TransformationMatrix<float, 3>{ Cv::k_external(x0_l_r0) };

@@ -229,7 +229,8 @@ FixedArray<TData, 3, 3> rotation_from_images(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     bool differentiate_numerically = false,
     FixedArray<TData, 3>* x0 = nullptr,
-    FixedArray<TData, 3>* xe = nullptr)
+    FixedArray<TData, 3>* xe = nullptr,
+    bool print_residual = true)
 {
     assert(im_r.ndim() == 2);
     assert(all(im_r.shape() == im_l.shape()));
@@ -250,14 +251,15 @@ FixedArray<TData, 3, 3> rotation_from_images(
                 return intensity_jacobian_fast(im_r_di, im_l_di, intrinsic_matrix, x).rows_as_1D();
             }
         },
-        TData(1e-2),   // alpha,
-        TData(1e-2),   // beta,
-        TData(1e-2),   // alpha2,
-        TData(1e-2),   // beta2,
-        TData(0),      // min_redux
-        100,           // niterations
-        5,             // nburnin
-        3);            // nmisses
+        TData(1e-2),     // alpha,
+        TData(1e-2),     // beta,
+        TData(1e-2),     // alpha2,
+        TData(1e-2),     // beta2,
+        TData(0),        // min_redux
+        100,             // niterations
+        5,               // nburnin
+        3,               // nmisses
+        print_residual); // print_residual
     if (xe != nullptr) {
         *xe = xx;
     }

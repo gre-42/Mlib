@@ -4,7 +4,9 @@
 namespace Mlib { namespace Sfm {
 
 struct DtamComponentConfig {
-    explicit DtamComponentConfig(bool track_using_dtam = true);
+    explicit DtamComponentConfig(
+        bool track_using_dtam = true,
+        bool print_residual = true);
     DtamComponentConfig(
         size_t tracking_start_ncams,
         bool rewind_first_keyframe,

@@ -12,6 +12,7 @@ struct DtamKeyframeConfig {
         size_t min_channel_increments,
         float min_pixel_fraction_for_tracking,
         size_t ninterleaved_iterations,
+        bool print_residual,
         Dm::DtamParameters params);
     bool rewind_first_keyframe_;
     bool incremental_update_;
@@ -20,6 +21,7 @@ struct DtamKeyframeConfig {
     size_t min_channel_increments_;
     float min_pixel_fraction_for_tracking_;
     size_t ninterleaved_iterations_;
+    bool print_residual_;
     Dm::DtamParameters params_;
 };
 
