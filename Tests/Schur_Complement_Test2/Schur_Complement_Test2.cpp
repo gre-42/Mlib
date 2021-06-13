@@ -346,9 +346,14 @@ void test_fill_in() {
 }
 
 int main(int argc, char** argv) {
-    test_schur_complement2();
-    test_schur_complement3();
-    test_schur_solver();
-    test_fill_in();
+    try {
+        test_schur_complement2();
+        test_schur_complement3();
+        test_schur_solver();
+        test_fill_in();
+    } catch (const std::runtime_error& e) {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }
