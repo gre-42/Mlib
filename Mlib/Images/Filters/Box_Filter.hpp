@@ -4,11 +4,86 @@
 namespace Mlib {
 
 template <class TData>
+Array<TData> box_filter_append_zeros_1d_rows(
+    const Array<TData>& image,
+    size_t box_size)
+{
+    assert(image.ndim() == 2);
+    if (box_size == 0 || box_size == 1) {
+        return image.copy();
+    }
+    Array<TData> result{ image.shape() };
+    const size_t delta = box_size / 2;
+    Array<TData> integral{ ArrayShape{image.shape(0)} };
+    for (size_t c = 0; c < image.shape(1); ++c) {
+        integral(0) = image(0, c);
+        // prepend virtual 0
+        for (size_t r = 1; r < image.shape(0); ++r) {
+            // std::cerr << "x " << i << std::endl;
+            integral(r) = integral(r - 1) + image(r, c);
+        }
+        for (size_t r = 0; r < image.shape(0); ++r) {
+            // prepend virtual 0s
+            TData left = (r < (box_size - delta))
+                ? (TData)0
+                : integral(r - box_size + delta);
+            // append virtual 0s
+            TData& right = (r + delta >= image.shape(0))
+                ? integral(image.shape(0) - 1)
+                : integral(r + delta);
+            result(r, c) = (right - left) / box_size;
+        }
+    }
+    return result;
+}
+
+template <class TData>
+Array<TData> box_filter_append_zeros_1d_cols(
+    const Array<TData>& image,
+    size_t box_size)
+{
+    assert(image.ndim() == 2);
+    if (box_size == 0 || box_size == 1) {
+        return image.copy();
+    }
+    Array<TData> result{ image.shape() };
+    const size_t delta = box_size / 2;
+    Array<TData> integral{ ArrayShape{image.shape(1)} };
+    for (size_t r = 0; r < image.shape(0); ++r) {
+        integral(0) = image(r, 0);
+        // prepend virtual 0
+        for (size_t c = 1; c < image.shape(1); ++c) {
+            // std::cerr << "x " << i << std::endl;
+            integral(c) = integral(c - 1) + image(r, c);
+        }
+        for (size_t c = 0; c < image.shape(1); ++c) {
+            // prepend virtual 0s
+            TData left = (c < (box_size - delta))
+                ? (TData)0
+                : integral(c - box_size + delta);
+            // append virtual 0s
+            TData& right = (c + delta >= image.shape(1))
+                ? integral(image.shape(1) - 1)
+                : integral(c + delta);
+            result(r, c) = (right - left) / box_size;
+        }
+    }
+    return result;
+}
+
+template <class TData>
 Array<TData> box_filter_append_zeros_1d(
     const Array<TData>& image,
     size_t box_size,
     size_t axis)
 {
+    if (image.ndim() == 2) {
+        if (axis == 0) {
+            return box_filter_append_zeros_1d_rows(image, box_size);
+        } else {
+            return box_filter_append_zeros_1d_cols(image, box_size);
+        }
+    }
     Array<TData> integral(image.shape());
     Array<TData> result(image.shape());
     const size_t delta = box_size / 2;
