@@ -3,7 +3,10 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
+#include <Mlib/Images/Filters/Box_Filter.hpp>
+#include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Images/Filters/Guided_Filter.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
@@ -382,8 +385,8 @@ int main(int argc, char **argv) {
         // check constraints: dx/dx > 0, z > 0
         if (false) {
             for (size_t axis = 0; axis < 1; ++axis) {
-                Array<float> dx = (difference_filter_1d(x[axis], NAN, 1 - axis) > 0.f).casted<float>();
-                Array<float> ldx = box_filter(dx, ArrayShape{5, 5}, NAN);
+                Array<float> dx = (central_differences_1d(x[axis], 1 - axis) > 0.f).casted<float>();
+                Array<float> ldx = box_filter_NWE(dx, ArrayShape{5, 5});
                 draw_nan_masked_grayscale(ldx, 0, 1).save_to_file("ldx-" + std::to_string(axis) + ".ppm");
                 for (size_t r = 0; r < ldx.shape(0); ++r) {
                     for (size_t c = 0; c < ldx.shape(1); ++c) {
@@ -399,7 +402,7 @@ int main(int argc, char **argv) {
             }
             {
                 Array<float> sz = (x[2] > 0.f).casted<float>();
-                Array<float> lz = box_filter(sz, ArrayShape{2, 2}, NAN);
+                Array<float> lz = box_filter_NWE(sz, ArrayShape{2, 2});
                 draw_nan_masked_grayscale(lz, 0, 1).save_to_file("lx-2.ppm");
                 for (size_t r = 0; r < lz.shape(0); ++r) {
                     for (size_t c = 0; c < lz.shape(1); ++c) {

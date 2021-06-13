@@ -1,7 +1,7 @@
 #include "Registration.hpp"
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/Optical_Flow.hpp>
 
 using namespace Mlib;
@@ -32,7 +32,7 @@ Array<float> Mlib::patch_registration(
                     image1(index + max_window_shape + window_shape));
             });
             //std::cerr << "diff " << std::endl << differences << std::endl;
-            Array<float> ssd = box_filter(differences, max_window_shape, NAN);
+            Array<float> ssd = box_filter(differences, max_window_shape);
             //std::cerr << "ssd " << std::endl << ssd << std::endl;
             differences.shape().foreach([&](const ArrayShape& index) {
                 //std::cerr << "c " << ssd(index) << " " << best_ssd(index) << std::endl;

@@ -3,6 +3,7 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
+#include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
@@ -95,10 +96,14 @@ Array<float> Mlib::structure_tensor(
         M_f(1, 0, i) = Iy(i) * Ix(i);
         M_f(1, 1, i) = squared(Iy(i));
     }
-    M[0][0] = gaussian_filter_NWE(M[0][0], 1.f, (float)NAN);
-    M[0][1] = gaussian_filter_NWE(M[0][1], 1.f, (float)NAN);
-    M[1][0] = gaussian_filter_NWE(M[1][0], 1.f, (float)NAN);
-    M[1][1] = gaussian_filter_NWE(M[1][1], 1.f, (float)NAN);
+    // M[0][0] = gaussian_filter_NWE(M[0][0], 1.f, (float)NAN);
+    // M[0][1] = gaussian_filter_NWE(M[0][1], 1.f, (float)NAN);
+    // M[1][0] = gaussian_filter_NWE(M[1][0], 1.f, (float)NAN);
+    // M[1][1] = gaussian_filter_NWE(M[1][1], 1.f, (float)NAN);
+    M[0][0] = box_filter_NWE(M[0][0], ArrayShape{ 3, 3 });
+    M[0][1] = box_filter_NWE(M[0][1], ArrayShape{ 3, 3 });
+    M[1][0] = box_filter_NWE(M[1][0], ArrayShape{ 3, 3 });
+    M[1][1] = box_filter_NWE(M[1][1], ArrayShape{ 3, 3 });
     if (det != nullptr) {
         *det = det2x2_a(M);
     }

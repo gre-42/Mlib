@@ -3,7 +3,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/OpenCV.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -62,7 +62,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
         Array<float> h_trace;
         Array<float> h_det;
         float r_thr = 10;
-        hessian_determinant_trace(box_filter(image_frames_.rbegin()->second.grayscale, ArrayShape{10, 10}, NAN), &h_det, &h_trace);
+        hessian_determinant_trace(box_filter_NWE(image_frames_.rbegin()->second.grayscale, ArrayShape{10, 10}), &h_det, &h_trace);
         Array<float> R = squared(h_trace) / (h_det + float(1e-6));
         points = Array<float>::from_dynamic<2>(find_nfeatures(harris_response(
             image_frames_.rbegin()->second.grayscale),

@@ -86,9 +86,9 @@ void test_harris_response_array() {
     assert_allclose(
         harris_response(pic3x3),
         Array<float>{
-            {0,0,-0.05,0,0},
-            {0,-.003125,0,-.003125,0},
-            {0,0,-0.05,0,0}});
+            {0,0,-0.05f,0,0},
+            {0,-.003125f,0,-.003125f,0},
+            {0,0,-0.05f,0,0}});
     assert_allclose<float>(
         find_harris_corners(pic3x3, -0.001f),
         Array<float>{{1.5f, 1.5f}, {3.5f, 1.5f}});
@@ -132,7 +132,7 @@ void test_pyramid() {
         res.push_back(img);
         // std::cerr << img << std::endl;
     });
-    assert_isclose<float>(res.size(), nlevels);
+    assert_isequal(res.size(), nlevels);
     assert_allclose(res.front(), Array<float>{
         {2.5, NAN},
         {7.5, NAN},
@@ -191,62 +191,62 @@ void test_lowpass() {
     assert_allclose(
         lowpass_filter_1d_NWE(im, Array<float>{1, 2, 3}, NAN, 1),
         Array<float>{
-            {0, 0.5, 0.333333, 0.166667, 0},
+            {0, 0.5, 0.333333f, 0.166667f, 0},
             {0, 0, 0, 0, 0}});
     Array<float> res01{
-        {0, 0.00382149, 0.988506, 0.00382149, 0},
-        {0, 1.47736e-05, 0.00382149, 1.47736e-05, 0}};
+        {0, 0.00382149f, 0.988506f, 0.00382149f, 0},
+        {0, 1.47736e-05f, 0.00382149f, 1.47736e-05f, 0}};
     assert_allclose(
         multichannel_gaussian_filter_NWE(Array<float>({im, im}), 0.3f, NAN),
         Array<float>({res01, res01}));
     assert_allclose(
         gaussian_filter_1d_NWE(im, 0.5f, 1, NAN),
         Array<float>{
-            {0.000295387, 0.106479, 0.786571, 0.106479, 0.000295387},
+            {0.000295387f, 0.106479f, 0.786571f, 0.106479f, 0.000295387f},
             {0, 0, 0, 0, 0}});
 }
 
 void test_color_spaces() {
     Array<float> a = uniform_random_array<float>(ArrayShape{3, 4, 5}, 1);
-    assert_allclose(yuv2rgb(rgb2yuv(a)), a, 1e-5);
+    assert_allclose(yuv2rgb(rgb2yuv(a)), a, 1e-5f);
 }
 
 void test_central_differences() {
-    Array<float> a{1, 1.1, 2, NAN, 3, 3.3};
+    Array<float> a{1, 1.1f, 2, NAN, 3, 3.3f};
     assert_allclose(
         central_differences_1d(a, 0),
-        Array<float>{0.1, 0.5, 0.9, 0.5, 0.3, 0.3});
+        Array<float>{0.1f, 0.5, 0.9f, 0.5, 0.3f, 0.3f});
 
     Array<float> b({a, 2.f * a});
     assert_allclose(
         central_gradient_filter(b)[1],
         Array<float>{
-            {0.1, 0.5, 0.9, 0.5, 0.3, 0.3},
-            {0.2, 1, 1.8, 1, 0.6, 0.6}});
+            {0.1f, 0.5, 0.9f, 0.5f, 0.3f, 0.3f},
+            {0.2f, 1, 1.8f, 1, 0.6f, 0.6f}});
 
     assert_allclose(
         central_sad_filter(-a),
-        Array<float>{0.1, 0.5, 0.9, 0.5, 0.3, 0.3});
+        Array<float>{0.1f, 0.5f, 0.9f, 0.5f, 0.3f, 0.3f});
 }
 
 void test_small_boxes() {
-    Array<float> a{1, 1.1, 2, NAN, 3, 3.3};
+    Array<float> a{1, 1.1f, 2, NAN, 3, 3.3f};
     assert_allclose(
         small_box_filter_NWE(a, ArrayShape{1}, NAN),
-        Array<float>{1.05, 1.36667, 1.55, 2.5, 3.15, 3.15},
-        1e-5);
+        Array<float>{1.05f, 1.36667f, 1.55f, 2.5f, 3.15f, 3.15f},
+        1e-5f);
 
 }
 
 void test_difference_of_boxes() {
-    Array<float> a{1, 1.1, 2, NAN, 3, 3.3};
+    Array<float> a{1, 1.1f, 2, NAN, 3, 3.3f};
     assert_allclose(
         difference_of_boxes(a, NAN),
-        Array<float>{0.0500001, 0.266667, -0.45, NAN, 0.15, -0.15});
+        Array<float>{0.0500001f, 0.266667f, -0.45f, NAN, 0.15f, -0.15f});
 }
 
 void test_bilinear_interpolation() {
-    Array<float> a{1, 1.1, 2, NAN, 3, 3.3};
+    Array<float> a{1, 1.1f, 2, NAN, 3, 3.3f};
     Array<float> b({a, 2.f * a});
     float intensity;
     assert_true(bilinear_grayscale_interpolation(0.f, 0.f, b, intensity));

@@ -1,6 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
-#include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <iostream>
 
@@ -16,7 +16,7 @@ void box_filter_file(
 
     Array<float> image = bitmap.to_float_grayscale();
     for (size_t i = 0; i < niter; ++i) {
-        image = box_filter(image, ArrayShape{width, width}, 0.f);
+        image = box_filter_NWE(image, ArrayShape{ width, width });
     }
 
     Bgr565Bitmap::from_float_grayscale(image).save_to_file(destination);

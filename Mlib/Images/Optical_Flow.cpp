@@ -1,6 +1,7 @@
 #include "Optical_Flow.hpp"
 #include <Mlib/Images/Coordinates.hpp>
-#include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Images/Filters/Box_Filter.hpp>
+#include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Math/Math.hpp>
 
 using namespace Mlib;
@@ -25,8 +26,8 @@ void Mlib::optical_flow(
     Array<float> Is = image2 != nullptr
         ? image1
         : (image0 + image1) / 2.f;
-    Array<float> Ix = difference_filter_1d(Is, NAN, id1);
-    Array<float> Iy = difference_filter_1d(Is, NAN, id0);
+    Array<float> Ix = central_differences_1d(Is, id1);
+    Array<float> Iy = central_differences_1d(Is, id0);
     auto a = box_filter_nan(Ix * Ix, window_shape, NAN);
     auto b = box_filter_nan(Ix * Iy, window_shape, NAN);
     // box_filter_nan(Iy * Ix, window_shape); // c == b

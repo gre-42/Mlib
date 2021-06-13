@@ -12,10 +12,7 @@ public:
     explicit UniformRandomNumberGenerator(unsigned int seed, const float_type& low = 0, const float_type& high = 1)
     : e_(seed),
       d_(low, high)
-    {
-        assert(seed != 0); // seed 0 is identical to seed 1
-        e_(); // skip first element, it is close to zero
-    }
+    {}
     TData operator () () {
         return d_(e_);
     }
@@ -33,10 +30,7 @@ public:
     explicit UniformIntRandomNumberGenerator(unsigned int seed, const TData& low, const TData& high)
     : e_(seed),
       d_(low, high)
-    {
-        assert(seed != 0); // seed 0 is identical to seed 1
-        e_(); // skip first element, it is close to zero
-    }
+    {}
     TData operator () () {
         return d_(e_);
     }
@@ -55,9 +49,7 @@ public:
     explicit NormalRandomNumberGenerator(unsigned int seed, const float_type& mean = 0, const float_type& stddev = 1)
     : e_(seed),
       d_(mean, stddev)
-    {
-        e_(); // skip first element, it is close to zero
-    }
+    {}
     TData operator () () {
         return d_(e_);
     }
@@ -76,9 +68,7 @@ public:
     explicit GammaRandomNumberGenerator(unsigned int seed, const float_type& alpha, const float_type& beta = 1)
     : e_(seed),
       d_(alpha, beta)
-    {
-        e_(); // skip first element, it is close to zero
-    }
+    {}
     TData operator () () {
         return d_(e_);
     }

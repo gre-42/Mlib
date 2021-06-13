@@ -1,6 +1,6 @@
 #include "Eigen_Jacobi.hpp"
-#include <Mlib/Math/Eigen_Jacobi_Generic.hpp>
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Math/Eigen_Jacobi_Generic.hpp>
 
 using namespace Mlib;
 

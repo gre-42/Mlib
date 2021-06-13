@@ -1,5 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Images/Filters/Guided_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Strings/From_Number.hpp>

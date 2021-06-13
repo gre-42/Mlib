@@ -18,17 +18,17 @@
 using namespace Mlib;
 
 void test_median() {
-    Array<float> a{1, 2, 3, 4, 5, 6};
+    Array<float> a{ 1, 2, 3, 4, 5, 6 };
     assert_isclose<float>(median(a), 4);
 }
 
 void test_mad() {
-    Array<float> a{1, 2, 3, 4, 5, 6};
+    Array<float> a{ 1, 2, 3, 4, 5, 6 };
     assert_isclose<float>(mad(a), 2.96736, 1e-3);
 }
 
 void test_robust_deviation() {
-    Array<float> a{1, 2, 3, 4, 5, 6};
+    Array<float> a{ 1, 2, 3, 4, 5, 6 };
     assert_allclose<float>(
         robust_deviation(a),
         Array<float>{-1.011, -0.674, -0.337, 0, 0.337, 0.674},
@@ -36,7 +36,7 @@ void test_robust_deviation() {
 }
 
 void test_ransac() {
-    Array<float> data{1, 2, 3, 2, 1, 2, 3, 4, 7, 8, 9};
+    Array<float> data{ 1, 2, 3, 2, 1, 2, 3, 2, 7, 8, 9 };
     RansacOptions<float> ro;
     ro.nelems_small = 3;
     ro.ncalls = 10;
@@ -47,25 +47,25 @@ void test_ransac() {
         data.length(), // nelems_large
         ro,
         [&](const Array<size_t>& indices)
-    {
-        // std::cerr << data[indices] << " | " << abs(data - mean(data[indices])) << " | " << sum(abs(data - mean(data[indices]))) << " | " << mean(data[indices]) << std::endl;
-        return abs(data - mean(data[indices]));
-    });
-    assert_allclose<float>(best_ids.casted<float>(), Array<float>{1, 2, 3, 5, 6, 7});
+        {
+            // std::cerr << data[indices] << " | " << abs(data - mean(data[indices])) << " | " << sum(abs(data - mean(data[indices]))) << " | " << mean(data[indices]) << std::endl;
+            return abs(data - mean(data[indices]));
+        });
+    assert_allclose<float>(best_ids.casted<float>(), Array<float>{ 1, 2, 3, 5, 6, 7 });
 }
 
 void test_sort() {
-    Array<float> x{9, 8, 7, 6, 5};
+    Array<float> x{ 9, 8, 7, 6, 5 };
     assert_allclose(sorted(x), Array<float>{5, 6, 7, 8, 9});
 }
 
 void test_quantiles() {
-    Array<float> x{9, 8, 7, 6, 5};
+    Array<float> x{ 9, 8, 7, 6, 5 };
     assert_allclose(
         quantiles(x, Array<float>{0, 0.2, 0.8, 1}),
         Array<float>{5, 6, 8, 9});
     assert_isclose(quantile(x, 0.2), 6.f);
-    assert_isclose(nanquantile(Array<float>({x, NAN * x}), 0.2), 6.f);
+    assert_isclose(nanquantile(Array<float>({ x, NAN * x }), 0.2), 6.f);
 }
 
 void test_argmin() {
@@ -77,12 +77,12 @@ void test_argmin() {
     assert_allequal(
         argmin(Array<float>{
             {3, 5, 2, 1, 3, NAN, NAN},
-            {4, 4, 5, 1, 9, 5, NAN}}, 0),
+            { 4, 4, 5, 1, 9, 5, NAN }}, 0),
         Array<size_t>{0, 1, 0, 0, 0, 1, SIZE_MAX});
     assert_allequal(
         argmin(Array<float>{
             {3, 5, 2, 1, 3, NAN, NAN},
-            {4, 4, 1, 5, 9, 5, NAN}}, 1),
+            { 4, 4, 1, 5, 9, 5, NAN }}, 1),
         Array<size_t>{3, 2});
 }
 
@@ -133,30 +133,30 @@ void test_histogram_matching() {
     assert_allclose(
         histogram_matching(
             Array<float>{1, 2, 3, 3, 4, 5, 6},
-            Array<float>{1, 2, 3, 3, 4, 5, 6} * 10.f,
+            Array<float>{1, 2, 3, 3, 4, 5, 6} *10.f,
             10),
-        Array<float>{1, 2, 3, 3, 4, 5, 6} * 10.f);
+        Array<float>{1, 2, 3, 3, 4, 5, 6} *10.f);
     assert_allclose(
         histogram_matching<unsigned char, unsigned char, float>(
             Array<unsigned char>{1, 2, 3, 3, 4, 5, 6},
-            Array<unsigned char>{1, 2, 3, 3, 4, 5, 6} * (unsigned char)1,
+            Array<unsigned char>{1, 2, 3, 3, 4, 5, 6} *(unsigned char)1,
             10).casted<float>(),
-        Array<float>{1, 2, 3, 3, 4, 5, 6} * 1.f);
+        Array<float>{1, 2, 3, 3, 4, 5, 6} *1.f);
 }
 
 void test_neighbor_db_1d() {
-    NeighborDb1d<float> db1d{Array<float>{1, 2, 6, 2, 4, 6}};
+    NeighborDb1d<float> db1d{ Array<float>{1, 2, 6, 2, 4, 6} };
     assert_allclose(db1d.get_neighbors(2.5, 1).casted<float>(), Array<float>{1, 3});
     assert_allclose(db1d.get_neighbors(2, 1).casted<float>(), Array<float>{0, 1, 3});
     assert_allclose(db1d.get_neighbors(2, 2).casted<float>(), Array<float>{0, 1, 3, 4});
-    assert_allclose(db1d.get_neighbors(20, 2).casted<float>(), Array<float>{ArrayShape{0}});
-    assert_allclose(db1d.get_neighbors(-20, 2).casted<float>(), Array<float>{ArrayShape{0}});
+    assert_allclose(db1d.get_neighbors(20, 2).casted<float>(), Array<float>{ArrayShape{ 0 }});
+    assert_allclose(db1d.get_neighbors(-20, 2).casted<float>(), Array<float>{ArrayShape{ 0 }});
 }
 
 void test_neighbor_db() {
-    NeighborDb<float> db{std::list<Array<float>>({
+    NeighborDb<float> db{ std::list<Array<float>>({
         Array<float>{5, 7, 2},
-        Array<float>{5, 7, 1}})};
+        Array<float>{5, 7, 1}}) };
     assert_isclose<float>(db.count(Array<float>{5, 7, 1}, 0), 1);
     assert_isclose<float>(db.count(Array<float>{5, 7, 1}, 1), 2);
     assert_isclose<float>(db.count_slow(Array<float>{5, 7, 1}, 1), 2);
@@ -192,7 +192,7 @@ void test_incomplete_beta() {
     assert_isclose(incbeta<double>(10, 10, .3), 0.03255, 1e-5);
     assert_isclose(incbeta<double>(10, 10, .5), 0.50000, 1e-5);
     assert_isclose(incbeta<double>(10, 10, .7), 0.96744, 1e-5);
-    assert_isclose(incbeta<double>(10, 10,  1), 1.00000, 1e-5);
+    assert_isclose(incbeta<double>(10, 10, 1), 1.00000, 1e-5);
 
     assert_isclose(incbeta<double>(15, 10, .5), 0.15373, 1e-5);
     assert_isclose(incbeta<double>(15, 10, .6), 0.48908, 1e-5);
@@ -215,31 +215,40 @@ void test_t_cdf() {
 }
 
 void test_random_number_generators() {
-    UniformRandomNumberGenerator<float> rng{1, 0.f, 1.f};
-    assert_isclose(rng(), 0.131538f);
+    UniformRandomNumberGenerator<float> rng{ 1, 0.f, 1.f };
+    float m = 0;
+    for (size_t i = 0; i < 1000; ++i) {
+        m += rng();
+    }
+    assert_isclose(m, 500.f, 1e1f);
 }
 
 
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
-    test_median();
-    test_mad();
-    test_robust_deviation();
-    test_ransac();
-    test_sort();
-    test_quantiles();
-    test_argmin();
-    test_linspace();
-    test_logspace();
-    test_histogram();
-    test_cdf();
-    test_histogram_matching();
-    test_neighbor_db_1d();
-    test_neighbor_db();
-    test_mean_variance_iterator();
-    test_incomplete_beta();
-    test_t_cdf();
-    test_random_number_generators();
+    try {
+        test_median();
+        test_mad();
+        test_robust_deviation();
+        test_ransac();
+        test_sort();
+        test_quantiles();
+        test_argmin();
+        test_linspace();
+        test_logspace();
+        test_histogram();
+        test_cdf();
+        test_histogram_matching();
+        test_neighbor_db_1d();
+        test_neighbor_db();
+        test_mean_variance_iterator();
+        test_incomplete_beta();
+        test_t_cdf();
+        test_random_number_generators();
+    } catch (const std::runtime_error& e) {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }

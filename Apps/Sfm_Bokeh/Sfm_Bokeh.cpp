@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Images/Filters/Guided_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_In_Box.hpp>

@@ -28,7 +28,7 @@ Array<size_t> ransac(
         (nelems_large >= ro.nelems_small) ||
         ro.inlier_distance_thresh == std::numeric_limits<TData>::infinity());
     Array<size_t> ids_large = arange<size_t>(nelems_large);
-    std::default_random_engine g(ro.seed);
+    std::mt19937 g(ro.seed);
     TData best_mean_residual = std::numeric_limits<TData>::infinity();
     Array<size_t> best_indices;
 

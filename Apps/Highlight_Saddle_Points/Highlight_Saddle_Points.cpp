@@ -1,6 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Strings/From_Number.hpp>
@@ -19,7 +19,7 @@ void highlight_saddle_points(
 
     Array<float> image = bitmap.to_float_grayscale();
     for (size_t i = 0; i < niter; ++i) {
-        image = box_filter(image, ArrayShape{width, width}, NAN);
+        image = box_filter_NWE(image, ArrayShape{ width, width });
     }
     Array<float> feature_points = find_saddle_points(image);
     highlight_features(feature_points, bitmap, marker_size);
