@@ -88,7 +88,7 @@ void Mlib::resampling_pyramid(
             ArrayShape{fine.shape(0)}.concatenated(
                 (fine.shape().erased_first() - 1)/ downsample_kernel + 1));
         for (size_t i = 0; i < fine.shape(0); ++i) {
-            coarse[i] = down_sample(box_filter(fine[i], box_kernel), downsample_kernel);
+            coarse[i] = down_sample(box_filter_NWE(fine[i], box_kernel), downsample_kernel);
         }
         pyramid.push_front(coarse);
     }

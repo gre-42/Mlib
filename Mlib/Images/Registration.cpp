@@ -32,7 +32,7 @@ Array<float> Mlib::patch_registration(
                     image1(index + max_window_shape + window_shape));
             });
             //std::cerr << "diff " << std::endl << differences << std::endl;
-            Array<float> ssd = box_filter(differences, max_window_shape);
+            Array<float> ssd = box_filter_NWE(differences, max_window_shape);
             //std::cerr << "ssd " << std::endl << ssd << std::endl;
             differences.shape().foreach([&](const ArrayShape& index) {
                 //std::cerr << "c " << ssd(index) << " " << best_ssd(index) << std::endl;
