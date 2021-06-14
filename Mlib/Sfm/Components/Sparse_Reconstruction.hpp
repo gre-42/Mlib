@@ -25,7 +25,7 @@ public:
         std::map<size_t, float>& last_sq_residual,
         const std::string& cache_dir,
         ReconstructionConfig cfg);
-    void reconstruct();
+    void reconstruct(bool is_last_frame = false);
     void reconstruct_pass2();
     const Array<FixedArray<float, 3>> reconstructed_points() const;
     const Array<size_t> reconstructed_point_ids() const;

@@ -13,6 +13,7 @@ void process_files_with_pipeline(
     const std::vector<std::string>* camera_files,
     ImagePipeline& pipeline,
     std::ostream& ostream,
+    size_t nskipped,
     size_t nimages,
     size_t ncameras);
 
@@ -22,6 +23,7 @@ void process_folder_with_pipeline(
     const std::string* camera_folder,
     ImagePipeline& pipeline,
     std::ostream& ostream,
+    size_t nskipped,
     size_t nimages,
     size_t ncameras);
 

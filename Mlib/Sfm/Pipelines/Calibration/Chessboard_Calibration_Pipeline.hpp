@@ -16,7 +16,8 @@ public:
     virtual void process_image_frame(
         const std::chrono::milliseconds& time,
         const ImageFrame& image_frame,
-        const CameraFrame* camera_frame = nullptr) override;
+        const CameraFrame* camera_frame = nullptr,
+        bool is_last_frame = false) override;
     virtual void print_statistics(std::ostream& ostream) override;
     const TransformationMatrix<float, 2>& intrinsic_matrix() const;
     bool is_cached() const;

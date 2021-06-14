@@ -11,7 +11,8 @@ public:
     virtual void process_image_frame(
         const std::chrono::milliseconds& time,
         const ImageFrame& image_frame,
-        const CameraFrame* camera_frame = nullptr) = 0;
+        const CameraFrame* camera_frame = nullptr,
+        bool is_last_frame = false) = 0;
     virtual void print_statistics(std::ostream& ostream) = 0;
 };
 

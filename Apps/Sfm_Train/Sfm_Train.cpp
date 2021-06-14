@@ -22,7 +22,7 @@ static std::unique_ptr<ChessboardCalibrationPipeline> run_chessboard_calibration
         cache_dir,
         chessboard_shape);
     if (!calib->is_cached()) {
-        process_folder_with_pipeline(cache_dir, calibration_dir, nullptr, *calib, std::cout, SIZE_MAX, SIZE_MAX);
+        process_folder_with_pipeline(cache_dir, calibration_dir, nullptr, *calib, std::cout, 0, SIZE_MAX, SIZE_MAX);
     }
     return calib;
 }
@@ -32,6 +32,7 @@ static void run_reconstruction_pipeline(
     const std::string& source_dir,
     bool load_cameras,
     const ArrayShape& chessboard_shape,
+    size_t nskipped,
     size_t nimages,
     size_t ncameras,
     const TemplatePatchPipelineConfig& cfg)
@@ -48,7 +49,15 @@ static void run_reconstruction_pipeline(
             cfg));
     }
     std::string camera_dir = (fs::path(source_dir) / "1-video" / "cameras").string();
-    process_folder_with_pipeline(cache_dir, (fs::path{ source_dir } / "1-video" / "pictures").string(), load_cameras ? &camera_dir : nullptr, *pipeline, std::cout, nimages, ncameras);
+    process_folder_with_pipeline(
+        cache_dir,
+        (fs::path{ source_dir } / "1-video" / "pictures").string(),
+        load_cameras ? &camera_dir : nullptr,
+        *pipeline,
+        std::cout,
+        nskipped,
+        nimages,
+        ncameras);
 }
 
 
@@ -56,9 +65,18 @@ int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
     ArgParser parser(
-        "Usage: --cache <cache_dir> --source <source_dir> [--load_cameras] [--no_dtam] [--no_dtam_tracking] --chess_r <chess_r> --chess_c <chess_c> [--nimages <nimages>] [--ncameras <ncameras>]",
+        "Usage: --cache <cache_dir> "
+        "--source <source_dir> "
+        "[--load_cameras] "
+        "[--no_dtam] "
+        "[--no_dtam_tracking] "
+        "--chess_r <chess_r> "
+        "--chess_c <chess_c> "
+        "[--nskipped <nskipped>] "
+        "[--nimages <nimages>] "
+        "[--ncameras <ncameras>]",
         { "--load_cameras", "--no_dtam", "--no_dtam_tracking" },
-        { "--pipeline", "--cache", "--source", "--chess_r", "--chess_c", "--nimages", "--ncameras" });
+        { "--pipeline", "--cache", "--source", "--chess_r", "--chess_c", "--nskipped", "--nimages", "--ncameras" });
 
     try {
         auto args = parser.parsed(argc, argv);
@@ -75,6 +93,7 @@ int main(int argc, char** argv) {
             image_dir,
             args.has_named("--load_cameras"),
             chessboard_shape,
+            args.has_named_value("--nskipped") ? safe_stoz(args.named_value("--nskipped")) : 0,
             args.has_named_value("--nimages") ? safe_stoz(args.named_value("--nimages")) : SIZE_MAX,
             args.has_named_value("--ncameras") ? safe_stoz(args.named_value("--ncameras")) : SIZE_MAX,
             TemplatePatchPipelineConfig{

@@ -46,6 +46,7 @@ void Mlib::Sfm::process_files_with_pipeline(
     const std::vector<std::string>* camera_files,
     ImagePipeline& pipeline,
     std::ostream& ostream,
+    size_t nskipped,
     size_t nimages,
     size_t ncameras)
 {
@@ -63,38 +64,42 @@ void Mlib::Sfm::process_files_with_pipeline(
         if (i == nimages) {
             break;
         }
-        {
-            fs::path input_dir = fs::path{ cache_dir } / "Input";
-            fs::create_directories(input_dir);
-            const std::string txt_filename = (input_dir / ("input-" + std::to_string(time.count()) + ".txt")).string();
-            std::ofstream ofs{ txt_filename };
-            ofs.write(image_filename.c_str(), image_filename.length());
-            ofs.flush();
-            if (ofs.fail()) {
-                throw std::runtime_error("Could not write to file \"" + txt_filename + "\"");
+        if (i >= nskipped) {
+            {
+                fs::path input_dir = fs::path{ cache_dir } / "Input";
+                fs::create_directories(input_dir);
+                const std::string txt_filename = (input_dir / ("input-" + std::to_string(time.count()) + ".txt")).string();
+                std::ofstream ofs{ txt_filename };
+                ofs.write(image_filename.c_str(), image_filename.length());
+                ofs.flush();
+                if (ofs.fail()) {
+                    throw std::runtime_error("Could not write to file \"" + txt_filename + "\"");
+                }
+            }
+            std::cout << "Loading " << i << " / " << image_files.size() << ", " << time.count() << " ms" << ": " << image_filename << std::endl;
+            StbImage raw = StbImage::load_from_file(image_filename);
+            ImageFrame image_frame;
+            image_frame.grayscale = raw.to_float_grayscale();
+            image_frame.rgb = raw.to_float_rgb();
+            if ((camera_files == nullptr) || (i > ncameras)) {
+                pipeline.process_image_frame(time, image_frame, nullptr, i == std::min(nimages, image_files.size()) - 1);
+            } else {
+                std::cout << "Loading " << i << " / " << camera_files->size() << ", " << time.count() << " ms" << ": " << *camera_it << std::endl;
+                Array<float> ke = Array<float>::load_txt_2d(*camera_it);
+                if (any(ke.shape() != ArrayShape{ 3, 4 })) {
+                    throw std::runtime_error("Camera matrix has incorrect dimensions");
+                }
+                Array<float> ike = inverted_homogeneous_3x4(ke);
+                Array<float> R = R3_from_Nx4(ike, 3);
+                Array<float> t = t3_from_Nx4(ike, 3);
+                CameraFrame camera_frame{
+                    TransformationMatrix<float, 3>(
+                        FixedArray<float, 3, 3>{R},
+                        FixedArray<float, 3>{t}) };
+                pipeline.process_image_frame(time, image_frame, &camera_frame, i == std::min(nimages, image_files.size()) - 1);
             }
         }
-        std::cout << "Loading " << i << " / " << image_files.size() << ", " << time.count() << " ms" << ": " << image_filename << std::endl;
-        StbImage raw = StbImage::load_from_file(image_filename);
-        ImageFrame image_frame;
-        image_frame.grayscale = raw.to_float_grayscale();
-        image_frame.rgb = raw.to_float_rgb();
-        if ((camera_files == nullptr) || (i > ncameras)) {
-            pipeline.process_image_frame(time, image_frame);
-        } else {
-            std::cout << "Loading " << i << " / " << camera_files->size() << ", " << time.count() << " ms" << ": " << *camera_it << std::endl;
-            Array<float> ke = Array<float>::load_txt_2d(*camera_it);
-            if (any(ke.shape() != ArrayShape{ 3, 4 })) {
-                throw std::runtime_error("Camera matrix has incorrect dimensions");
-            }
-            Array<float> ike = inverted_homogeneous_3x4(ke);
-            Array<float> R = R3_from_Nx4(ike, 3);
-            Array<float> t = t3_from_Nx4(ike, 3);
-            CameraFrame camera_frame{
-                TransformationMatrix<float, 3>(
-                    FixedArray<float, 3, 3>{R},
-                    FixedArray<float, 3>{t}) };
-            pipeline.process_image_frame(time, image_frame, &camera_frame);
+        if (camera_files != nullptr) {
             ++camera_it;
         }
         time += std::chrono::milliseconds{ 10 };
@@ -117,6 +122,7 @@ void Mlib::Sfm::process_folder_with_pipeline(
     const std::string* camera_folder,
     ImagePipeline& pipeline,
     std::ostream& ostream,
+    size_t nskipped,
     size_t nimages,
     size_t ncameras)
 {
@@ -134,6 +140,7 @@ void Mlib::Sfm::process_folder_with_pipeline(
         camera_folder == nullptr ? nullptr : &camera_files,
         pipeline,
         ostream,
+        nskipped,
         nimages,
         ncameras);
 }

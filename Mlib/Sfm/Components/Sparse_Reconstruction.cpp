@@ -597,7 +597,7 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
     delete_bad_points();
 }
 
-void SparseReconstruction::reconstruct() {
+void SparseReconstruction::reconstruct(bool is_last_frame) {
     if (reconstructed_points_.size() == 0) {
         if (cfg_.initialize_with_bundle_adjustment) {
             reconstruct_initial_for_bundle_adjustment();
@@ -642,7 +642,7 @@ void SparseReconstruction::reconstruct() {
         } else {
             reconstruct_initial_with_svd();
         }
-    } else if (particles_.size() % cfg_.recompute_interval == 0) {
+    } else if (is_last_frame || (particles_.size() % cfg_.recompute_interval == 0)) {
         if (cfg_.enable_global_bundle_adjustment) {
             // camera_frames_.clear();
             // This potentially deletes particles.

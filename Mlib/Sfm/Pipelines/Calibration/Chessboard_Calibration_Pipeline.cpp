@@ -36,7 +36,8 @@ ChessboardCalibrationPipeline::ChessboardCalibrationPipeline(
 void ChessboardCalibrationPipeline::process_image_frame(
     const std::chrono::milliseconds& time,
     const ImageFrame& image_frame,
-    const CameraFrame* camera_frame)
+    const CameraFrame* camera_frame,
+    bool is_last_frame)
 {
     assert(camera_frame == nullptr);
     Array<FixedArray<float, 2>> p_y;
