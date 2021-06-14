@@ -4,6 +4,9 @@
 namespace Mlib {
 
 template <class TData>
+class LinspaceIterator;
+
+template <class TData>
 class Linspace {
 public:
     Linspace(const TData& from, const TData& to, size_t count)
@@ -15,10 +18,38 @@ public:
     size_t length() const {
         return count_;
     }
+    LinspaceIterator<TData> begin() const {
+        return LinspaceIterator<TData>{*this, 0};
+    }
+    LinspaceIterator<TData> end() const {
+        return LinspaceIterator<TData>{*this, count_};
+    }
 private:
     TData from_;
     TData to_;
     size_t count_;
+};
+
+template <class TData>
+class LinspaceIterator {
+public:
+    LinspaceIterator(const Linspace<TData>& linspace, size_t i)
+    : linspace_{linspace},
+      i_{i}
+    {}
+    TData operator * () const {
+        return linspace_[i_];
+    }
+    LinspaceIterator& operator ++ () {
+        ++i_;
+        return *this;
+    }
+    bool operator != (const LinspaceIterator& other) const {
+        return i_ != other.i_;
+    }
+private:
+    const Linspace<TData>& linspace_;
+    size_t i_;
 };
 
 template <class TFloat>

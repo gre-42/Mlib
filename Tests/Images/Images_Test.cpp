@@ -17,6 +17,7 @@
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/Svg.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 
 using namespace Mlib;
@@ -294,29 +295,44 @@ void test_local_polynomial_regression() {
     std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN, 4.f, false);}, 2) << std::endl;
 }
 
+void test_waveform() {
+    std::ofstream ofstr{ "waveform.svg" };
+    Svg<float> svg{ ofstr, 200, 100 };
+    std::vector<float> x{1.f, 3.f, 5.f, 6.f};
+    std::vector<bool> y0{0, 0, 1, 0};
+    std::vector<bool> y1{0, 1, 0, 0};
+    svg.plot_waveforms(x, {y0, y1}, {"a", "b"}, 1.f, {"#000", "#FF5733"}, 1);
+    svg.finish();
+}
 
 int main(int argc, char **argv) {
     enable_floating_point_exceptions();
 
-    test_differences();
-    test_forward_backward_differences();
-    test_laplace();
-    test_harris_response_array();
-    test_harris_response();
-    test_harris_nfeatures();
-    test_pyramid();
-    test_quantize();
-    test_median_filter_2d();
-    test_up_sample2();
-    test_lowpass();
-    test_color_spaces();
-    test_central_differences();
-    test_small_boxes();
-    test_difference_of_boxes();
-    test_bilinear_interpolation();
-    test_division_by_brightness();
-    test_down_sample_average();
-    test_meshgrid();
-    test_local_polynomial_regression();
+    try {
+        test_waveform();
+        test_differences();
+        test_forward_backward_differences();
+        test_laplace();
+        test_harris_response_array();
+        test_harris_response();
+        test_harris_nfeatures();
+        test_pyramid();
+        test_quantize();
+        test_median_filter_2d();
+        test_up_sample2();
+        test_lowpass();
+        test_color_spaces();
+        test_central_differences();
+        test_small_boxes();
+        test_difference_of_boxes();
+        test_bilinear_interpolation();
+        test_division_by_brightness();
+        test_down_sample_average();
+        test_meshgrid();
+        test_local_polynomial_regression();
+    } catch (const std::runtime_error& e) {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }

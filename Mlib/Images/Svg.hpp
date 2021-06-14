@@ -1,8 +1,17 @@
 #pragma once
 #include <Mlib/Stats/Linspace.hpp>
+#include <iomanip>
 #include <list>
+#include <sstream>
 
 namespace Mlib {
+
+template <class TData>
+inline std::string to_string_precision(const TData& d, int n) {
+    std::stringstream sstr;
+    sstr << std::setprecision(n) << d;
+    return sstr.str();
+}
 
 template <class TData>
 class PathDrawer {
@@ -153,17 +162,21 @@ public:
     }
 
     template <class TData>
-    void draw_text(const TData& x, const TData& y, const std::string& text, const std::string& color = "black") {
+    void draw_text(const TData& x, const TData& y, const std::string& text, const std::string& color = "black", const std::string& anchor = "start") {
         ostr_ <<
-            "  <text x=\"" << x << "\" y=\"" << y << "\" fill=\"" << color << "\">" << text << "</text>\n";
+            "  <text text-anchor=\"" << anchor <<
+            "\" x=\"" << x <<
+            "\" y=\"" << y <<
+            "\" fill=\"" << color << "\">" <<
+            text << "</text>\n";
     }
 
     template <class TSize2>
     void draw_image(const std::string& filename, const TSize2& width, const TSize2& height) {
-        ostr_
-            << "  <image xlink:href=\"" << filename << "\" "
-            << "width=\"" << width << "\" "
-            << "height=\"" << height << "\"/>\n";
+        ostr_ <<
+            "  <image xlink:href=\"" << filename << "\" " <<
+            "width=\"" << width << "\" " <<
+            "height=\"" << height << "\"/>\n";
     }
 
     template <class TData>
@@ -225,10 +238,10 @@ public:
             }
             pd.finish();
         }
-        for (const TData& xx : linspace(*xm.first, *xm.second, 5).flat_iterable()) {
+        for (const TData& xx : Linspace{ *xm.first, *xm.second, 5 }) {
             draw_text<TData>(xpos(xx), height_, std::to_string(xx));
         }
-        for (const TData& yy : linspace(*ym.first, *ym.second, 5).flat_iterable()) {
+        for (const TData& yy : Linspace{ *ym.first, *ym.second, 5 }) {
             draw_text<TData>(0, ypos(yy), std::to_string(yy));
         }
     }
@@ -262,10 +275,10 @@ public:
             pd.draw_point(xpos(x[i]), ypos(y[i]));
         }
         pd.finish();
-        for (const TData& xx : linspace(*xm.first, *xm.second, 5).flat_iterable()) {
+        for (const TData& xx : Linspace{ *xm.first, *xm.second, 5 }) {
             draw_text<TData>(xpos(xx), height_, std::to_string(xx));
         }
-        for (const TData& yy : linspace(*ym.first, *ym.second, 5).flat_iterable()) {
+        for (const TData& yy : Linspace{ *ym.first, *ym.second, 5 }) {
             draw_text<TData>(0, ypos(yy), std::to_string(yy));
         }
     }
@@ -330,16 +343,73 @@ public:
                 "black",
                 "line" + std::to_string(i));
         }
-        for (const TData& xx : linspace(xm_min, xm_max, 5).flat_iterable()) {
+        for (const TData& xx : Linspace{ xm_min, xm_max, 5 }) {
             draw_text<TData>(xpos(xx), height_, std::to_string(xx));
         }
-        for (const TData& yy : linspace(ym_min, ym_max, 5).flat_iterable()) {
+        for (const TData& yy : Linspace{ ym_min, ym_max, 5 }) {
             draw_text<TData>(0, ypos(yy), std::to_string(yy));
         }
     }
+
+    template <class TData>
+    void plot_waveforms(
+        const std::vector<TData>& x,
+        const std::vector<std::vector<bool>>& ys,
+        const std::vector<std::string>& labels,
+        const TData& stroke_width = 1.5,
+        const std::vector<std::string>& colors = {"#000", "#FF5733"},
+        size_t down_sampling = 1,
+        TData xoffset = (TData)20,
+        TData offset = (TData)0.5,
+        TData amplitude = (TData)1,
+        TData spacing = (TData)1,
+        int precision = 2)
+    {
+        if (ys.size() != labels.size()) {
+            throw std::runtime_error("Number of waveforms differs from number of labels");
+        }
+        if (x.empty()) {
+            return;
+        }
+        const auto xm = std::minmax_element(x.begin(), x.end());
+        TData ymin = 0.f;
+        TData ymax = (amplitude + spacing) * ys.size();
+        const auto xpos = [&](const TData& x) {
+            return ((x - *xm.first) * (width_ - xoffset)) / (*xm.second - *xm.first) + xoffset;
+        };
+        const auto ypos = [&](const TData& y) {
+            return height_ - ((y - ymin) * height_) / (ymax - ymin);
+        };
+        // for (size_t i = down_sampling; i < x.size(); i += down_sampling) {
+        //     draw_line(xpos(x[i-down_sampling]), ypos(y[i-down_sampling]), xpos(x[i]), ypos(y[i]));
+        //}
+        if (colors.empty()) {
+            throw std::runtime_error("No color defined");
+        }
+        for (size_t i = 0; i < ys.size(); ++i) {
+            TData height = ymin + i * (ymax - ymin) / ys.size() + offset;
+            if (x.size() != ys[i].size()) {
+                throw std::runtime_error("Size mismatch in plot waveforms");
+            }
+            PathDrawer pd{ostr_, stroke_width, colors[i % colors.size()]};
+            for (size_t j = 0; j < x.size(); j += down_sampling) {
+                if ((j > 0) && (ys[i][j] != ys[i][j - 1])) {
+                    pd.draw_point(xpos(x[j]), ypos(amplitude * ys[i][j - 1] + height));
+                }
+                pd.draw_point(xpos(x[j]), ypos(amplitude * ys[i][j] + height));
+            }
+            pd.finish();
+            draw_text<TData>(0, ypos(height + 0.5 * amplitude), labels[i]);
+        }
+        for (const TData& xx : Linspace{ *xm.first, *xm.second, 5 }) {
+            draw_text<TData>(xpos(xx), height_, to_string_precision(xx, precision), "black", "end");
+        }
+    }
+
     const TSize& width() const {
         return width_;
     }
+
     const TSize& height() const {
         return height_;
     }
