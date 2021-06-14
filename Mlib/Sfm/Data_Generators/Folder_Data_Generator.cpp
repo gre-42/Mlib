@@ -51,7 +51,12 @@ void Mlib::Sfm::process_files_with_pipeline(
     size_t ncameras)
 {
     if ((camera_files != nullptr) && (camera_files->size() != image_files.size())) {
-        throw std::runtime_error("Number of images differs from number of cameras");
+        throw std::runtime_error(
+            "Number of images (" +
+            std::to_string(image_files.size()) +
+            ") differs from number of cameras (" +
+            std::to_string(camera_files->size()) +
+            ')');
     }
     //try {
     std::chrono::milliseconds time{ 0 };
