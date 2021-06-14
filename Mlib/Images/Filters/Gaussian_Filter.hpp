@@ -33,7 +33,7 @@ Array<TData> gaussian_filter_NWE(
     const TData& truncate = 4,
     bool nwe = true)
 {
-    Array<TData> result = image.copy();
+    Array<TData> result = (image.ndim() == 0) ? image.copy() : image;
     for (size_t axis = 0; axis < image.ndim(); ++axis) {
         result = std::move(gaussian_filter_1d_NWE(result, sigma, axis, boundary_value, truncate, nwe));
     }

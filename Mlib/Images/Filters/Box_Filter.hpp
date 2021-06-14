@@ -153,7 +153,7 @@ Array<TData> box_filter_append_zeros(
     const Array<TData>& image,
     const ArrayShape& box_size)
 {
-    Array<TData> result = image.copy();
+    Array<TData> result = (image.ndim() == 0) ? image.copy() : image;
     for (size_t d = 0; d < image.ndim(); d++) {
         result = std::move(box_filter_append_zeros_1d(result, box_size(d), d));
     }
@@ -166,7 +166,7 @@ Array<TData> box_filter_nan(
     const ArrayShape& box_size,
     const TData& boundary_value)
 {
-    Array<TData> result = image.copy();
+    Array<TData> result = (image.ndim() == 0) ? image.copy() : image;
     for (size_t d = 0; d < image.ndim(); d++) {
         result = std::move(box_filter_nan_1d(result, box_size(d), boundary_value, d));
     }
