@@ -129,8 +129,42 @@ private:
 // inline void fill_with_invalid_value(Array<TData>& a);
 
 template <class TData>
+class ArrayRefAssigner {
+public:
+    explicit ArrayRefAssigner(Array<TData>& ar)
+    : ar_{ar}
+    {}
+    Array<TData>& operator = (const Array<TData>& rhs) {
+        ar_.data_ = rhs.data_;
+        ar_.shape_ = rhs.shape_;
+        ar_.offset_ = rhs.offset_;
+        return ar_;
+    }
+private:
+    Array<TData>& ar_;
+};
+
+template <class TData>
+class ArrayMoveAssigner {
+public:
+    explicit ArrayMoveAssigner(Array<TData>& ar)
+    : ar_{ar}
+    {}
+    Array<TData>& operator = (Array<TData>&& rhs) {
+        ar_.data_ = std::move(rhs.data_);
+        ar_.shape_ = std::move(rhs.shape_);
+        ar_.offset_ = std::move(rhs.offset_);
+        return ar_;
+    }
+private:
+    Array<TData>& ar_;
+};
+
+template <class TData>
 class Array: public BaseDenseArray<Array<TData>, TData> {
     friend ArrayAxisView<TData>;
+    friend ArrayRefAssigner<TData>;
+    friend ArrayMoveAssigner<TData>;
     std::shared_ptr<Vector<TData>> data_;
     std::shared_ptr<ArrayShape> shape_;
     size_t offset_;
@@ -336,8 +370,12 @@ public:
         *this = b_rhs;
         return *this;
     }
-    // Works because ArrayResizer's copy-operator is deleted.
-    Array& operator = (Array&& rhs) = default;
+    ArrayRefAssigner<TData> ref() {
+        return ArrayRefAssigner{ *this };
+    }
+    ArrayMoveAssigner<TData> move() {
+        return ArrayMoveAssigner{ *this };
+    }
     Array& operator = (const TData& rhs) {
         Array f = flattened();
         for (size_t i = 0; i < f.length();  ++i) {

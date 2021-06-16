@@ -153,9 +153,12 @@ Array<TData> box_filter_append_zeros(
     const Array<TData>& image,
     const ArrayShape& box_size)
 {
-    Array<TData> result = (image.ndim() == 0) ? image.copy() : image;
-    for (size_t d = 0; d < image.ndim(); d++) {
-        result = std::move(box_filter_append_zeros_1d(result, box_size(d), d));
+    if (image.ndim() == 0) {
+        return image.copy();
+    }
+    Array<TData> result = box_filter_append_zeros_1d(image, box_size(0), 0);
+    for (size_t d = 1; d < image.ndim(); d++) {
+        result.move() = box_filter_append_zeros_1d(result, box_size(d), d);
     }
     return result;
 }
@@ -166,9 +169,12 @@ Array<TData> box_filter_nan(
     const ArrayShape& box_size,
     const TData& boundary_value)
 {
-    Array<TData> result = (image.ndim() == 0) ? image.copy() : image;
-    for (size_t d = 0; d < image.ndim(); d++) {
-        result = std::move(box_filter_nan_1d(result, box_size(d), boundary_value, d));
+    if (image.ndim() == 0) {
+        return image.copy();
+    }
+    Array<TData> result = box_filter_nan_1d(image, box_size(0), boundary_value, 0);
+    for (size_t d = 1; d < image.ndim(); d++) {
+        result.move() = box_filter_nan_1d(result, box_size(d), boundary_value, d);
     }
     return result;
 }
@@ -181,7 +187,7 @@ Array<TData> box_filter_nan_multichannel(
 {
     Array<TData> result{ image.shape() };
     for (size_t h = 0; h < image.shape(0); ++h) {
-        result[h] = std::move(box_filter_nan(image[h], box_size, boundary_value));
+        result[h] = box_filter_nan(image[h], box_size, boundary_value);
     }
     return result;
 }

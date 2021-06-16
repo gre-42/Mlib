@@ -782,7 +782,7 @@ void dot2d(
 {
     assert(a->ndim() == 2);
     assert(b->ndim() == 2);
-    assert(a->shape(1) == b->shape(0));
+    assert(a TEMPLATE static_shape<1>() == b TEMPLATE static_shape<0>());
     assert(result->ndim() == 2);
     assert(result TEMPLATE static_shape<0>() == a TEMPLATE static_shape<0>());
     assert(result TEMPLATE static_shape<1>() == b TEMPLATE static_shape<1>());

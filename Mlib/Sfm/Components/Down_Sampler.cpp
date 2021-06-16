@@ -17,8 +17,8 @@ void DownSampler::append_image_frame(
     const ImageFrame& image_frame)
 {
     ImageFrame f2;
-    f2.grayscale = down_sample_average(image_frame.grayscale, n_);
+    f2.grayscale.move() = down_sample_average(image_frame.grayscale, n_);
     // f2.mask = down_sample_average(image_frame.mask, n_);
-    f2.rgb = multichannel_down_sample_average(image_frame.rgb, n_);
+    f2.rgb.move() = multichannel_down_sample_average(image_frame.rgb, n_);
     ds_image_frames_.insert(std::make_pair(time, f2));
 }

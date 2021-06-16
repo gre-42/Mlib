@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "(gdb) Launch mgame",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/UDebug/Apps/Render_Scene_File/render_scene_file",
@@ -15,6 +15,31 @@
                 "--print_render_residual_time",
                 "--print_physics_residual_time",
                 "--show_mouse_cursor"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) Launch sfm",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/UDebug/Bin/math_test",
+            "args": [
+                "--cache", "/tmp/sfm_cache",
+                "--source", "/tmp/sfm_source/box640",
+                "--chess_r", "6",
+                "--chess_c", "9",
+                "--no_dtam_tracking",
+                "--no_dtam"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
