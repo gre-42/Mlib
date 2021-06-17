@@ -102,9 +102,25 @@ Array<bool> find_local_maxima_1d(const Array<TData>& image, bool boundary_value,
 template <class TData>
 Array<bool> find_local_maxima(const Array<TData>& image, bool boundary_value) {
     Array<bool> result(image.shape());
-    result = true;
-    for (size_t d = 0; d < image.ndim(); d++) {
-        result &= find_local_maxima_1d(image, boundary_value, d);
+    if (image.ndim() == 2) {
+        for (size_t r = 0; r < image.shape(0); ++r) {
+            for (size_t c = 0; c < image.shape(1); ++c) {
+                if ((r == 0) || (r == image.shape(0) - 1) || (c == 0) || (c == image.shape(1) - 1)) {
+                    result(r, c) = boundary_value;
+                    continue;
+                }
+                result(r, c) =
+                    (image(r, c) > image(r, c + 1)) &&
+                    (image(r, c) > image(r + 1, c)) &&
+                    (image(r, c) > image(r, c - 1)) &&
+                    (image(r, c) > image(r - 1, c));
+            }
+        }
+    } else {
+        result = true;
+        for (size_t d = 0; d < image.ndim(); d++) {
+            result &= find_local_maxima_1d(image, boundary_value, d);
+        }
     }
     return result;
 }
