@@ -1,11 +1,11 @@
 #include "Flowing_Particles.hpp"
-#include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/OpenCV.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <filesystem>
 
@@ -247,9 +247,9 @@ void FlowingParticles::advance_flowing_particles() {
     }
     generate_new_particles(new_frame);
     particles_.insert(std::make_pair(image_frames_.rbegin()->first, new_frame));
-    Bgr565Bitmap bmp = Bgr565Bitmap::from_float_grayscale(image_frames_.rbegin()->second.grayscale);
+    StbImage bmp = StbImage::from_float_grayscale(image_frames_.rbegin()->second.grayscale);
     if (optical_flow_frames_.size() >= 1) {
-        bmp.draw_mask(optical_flow_frames_.rbegin()->second.mask, Bgr565::red());
+        bmp.draw_mask(optical_flow_frames_.rbegin()->second.mask, Rgb24::red());
     }
     draw(bmp);
     fs::create_directories(cache_dir_);
@@ -257,7 +257,7 @@ void FlowingParticles::advance_flowing_particles() {
         fs::path{ cache_dir_ } /
         ("particles-" +
         std::to_string(image_frames_.rbegin()->first.count()) +
-        ".bmp")).string());
+        ".png")).string());
 }
 
 #if 0
@@ -320,7 +320,7 @@ void FlowingParticles::advance_flowing_particles_cv() {
 }
 #endif
 
-void FlowingParticles::draw(Bgr565Bitmap& bmp) {
+void FlowingParticles::draw(StbImage& bmp) {
     assert(all(bmp.shape() == shape_));
     assert(particles_.size() > 0);
     for (const auto& s : particles_.rbegin()->second) {
@@ -336,15 +336,15 @@ void FlowingParticles::draw(Bgr565Bitmap& bmp) {
                 ? std::max(size_t{ 2 }, (size_t)std::round(marker_size))
                 : 4),
             (bad_points_.find(s.first) == bad_points_.end()
-                ? Bgr565::green()
-                : Bgr565::black()));
+                ? Rgb24::green()
+                : Rgb24::black()));
         if (optical_flow_frames_.size() >= 1) {
             bmp.draw_streamline(
                 index,
                 optical_flow_frames_.rbegin()->second.grayscale,
                 1,
                 streamline_search_length(),
-                Bgr565::blue());
+                Rgb24::blue());
         }
     }
 }

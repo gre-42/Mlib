@@ -38,6 +38,10 @@ void StbImage::draw_fill_rect(const ArrayShape& center, size_t size, const Rgb24
     Mlib::draw_fill_rect(*this, center, size, color);
 }
 
+void StbImage::draw_empty_rect(const ArrayShape& center, size_t size, const Rgb24& color) {
+    Mlib::draw_empty_rect(*this, center, size, color);
+}
+
 void StbImage::draw_line(
     const Array<float>& from,
     const Array<float>& to,

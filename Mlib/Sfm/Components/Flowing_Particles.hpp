@@ -15,7 +15,7 @@
 
 namespace Mlib {
 
-class Bgr565Bitmap;
+class StbImage;
 
 namespace Sfm {
 
@@ -28,7 +28,7 @@ public:
         const std::string& cache_dir,
         const FlowingParticlesConfig& cfg_);
     void advance_flowing_particles();
-    void draw(Bgr565Bitmap& bmp);
+    void draw(StbImage& bmp);
     bool requires_optical_flow() const;
     std::map<std::chrono::milliseconds, FeaturePointFrame> particles_;
     std::map<size_t, std::chrono::milliseconds> bad_points_;
