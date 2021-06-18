@@ -15,8 +15,21 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
+#include <Mlib/Time_Guard.hpp>
 
 using namespace Mlib;
+
+void test_blocking_transposed() {
+    Array<float> a{ ArrayShape{ 640, 480 } };
+    TimeGuard::initialize(10 * 1000, MaxLogLengthExceededBehavior::THROW_EXCEPTION);
+    for (size_t block_size = 1; block_size < 100; block_size += 5) {
+        TimeGuard tg{ "asdf", std::to_string(block_size) };
+        for (size_t i = 0; i < 10; ++i) {
+            assert_isequal(a(60, 70), a.T(block_size).T(block_size)(60, 70));
+        }
+    }
+    TimeGuard::print_groups(std::cerr);
+}
 
 void test_svd() {
     Array<float> a = random_array<float>(ArrayShape{3, 2});
@@ -398,6 +411,7 @@ void test_eigen_jacobi() {
 
 int main(int argc, const char** argv) {
     try {
+        test_blocking_transposed();
         test_svd();
         test_qdq();
         test_det_2x2();

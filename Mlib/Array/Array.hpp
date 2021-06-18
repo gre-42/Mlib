@@ -660,16 +660,29 @@ public:
         result.to_column_vector();
         return result;
     }
-    Array T() const {
+    Array T(size_t block_size=1) const {
         if (ndim() <= 1) {
-            Array result;
-            result = *this;
-            return result;
+            return copy();
         } else if (ndim() == 2) {
             Array result{ArrayShape{shape(1), shape(0)}};
-            for (size_t r = 0; r < shape(0); ++r) {
-                for (size_t c = 0; c < shape(1); ++c) {
-                    result(c, r) = (*this)(r, c);
+            if (block_size == 0) {
+                throw std::runtime_error("Block size must be >= 1");
+            }
+            if (block_size == 1) {
+                for (size_t r = 0; r < shape(0); ++r) {
+                    for (size_t c = 0; c < shape(1); ++c) {
+                        result(c, r) = (*this)(r, c);
+                    }
+                }
+            } else {
+                for (size_t i = 0; i < shape(0); i += block_size) {
+                    for (size_t j = 0; j < shape(1); j += block_size) {
+                        for (size_t r = i; r < std::min(i + block_size, shape(0)); ++r) {
+                            for (size_t c = j; c < std::min(j + block_size, shape(1)); ++c) {
+                                result(c, r) = (*this)(r, c);
+                            }
+                        }
+                    }
                 }
             }
             return result;

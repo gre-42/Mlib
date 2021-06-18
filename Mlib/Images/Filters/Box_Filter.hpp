@@ -79,7 +79,8 @@ Array<TData> box_filter_append_zeros_1d(
 {
     if (image.ndim() == 2) {
         if (axis == 0) {
-            return box_filter_append_zeros_1d_rows(image, box_size);
+            // return box_filter_append_zeros_1d_rows(image, box_size);
+            return box_filter_append_zeros_1d_cols(image.T(16), box_size).T(16);
         } else {
             return box_filter_append_zeros_1d_cols(image, box_size);
         }
