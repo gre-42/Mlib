@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Array/Array_Shape.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 
 namespace Mlib {
    
@@ -40,8 +40,8 @@ Array<float> compute_disparity_rgb_patch(
     const FixedArray<float, 3, 3>& F,
     size_t search_length,
     float worst_error,
-    const ArrayShape& patch_size = ArrayShape{10, 10},
-    const ArrayShape& patch_nan_size = ArrayShape{0, 0},
+    const FixedArray<size_t, 2>& patch_size = FixedArray<size_t, 2>{ 10, 10 },
+    const FixedArray<size_t, 2>& patch_nan_size = FixedArray<size_t, 2>{ 0, 0 },
     Array<float>* im0_error = nullptr,
     Array<bool>* mask = nullptr,
     Array<float>* prior_disparity = nullptr,
@@ -54,8 +54,8 @@ Array<float> iterate_disparity_rgb_patch(
     const FixedArray<float, 3, 3>& F,
     size_t search_length,
     float worst_error,
-    const ArrayShape& patch_size = ArrayShape{10, 10},
-    const ArrayShape& patch_nan_size = ArrayShape{0, 0},
+    const FixedArray<size_t, 2>& patch_size = FixedArray<size_t, 2>{ 10, 10 },
+    const FixedArray<size_t, 2>& patch_nan_size = FixedArray<size_t, 2>{ 0, 0 },
     Array<float>* im0_error = nullptr,
     Array<float>* initial_disparity = nullptr,
     bool draw_debug_images = false);

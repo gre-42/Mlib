@@ -122,8 +122,8 @@ Array<float> Mlib::Sfm::compute_disparity_rgb_patch(
     const FixedArray<float, 3, 3>& F,
     size_t search_length,
     float worst_error,
-    const ArrayShape& patch_size,
-    const ArrayShape& patch_nan_size,
+    const FixedArray<size_t, 2>& patch_size,
+    const FixedArray<size_t, 2>& patch_nan_size,
     Array<float>* im0_error,
     Array<bool>* mask,
     Array<float>* prior_disparity,
@@ -146,12 +146,12 @@ Array<float> Mlib::Sfm::compute_disparity_rgb_patch(
             EpilineDirection ed(r, c, F);
             float best_d = NAN;
             if (ed.good) {
-                TraceablePatch tp{im0_rgb, ArrayShape{r, c}, patch_size, patch_nan_size};
+                TraceablePatch tp{im0_rgb, FixedArray<size_t, 2>{ r, c }, patch_size, patch_nan_size};
                 if (tp.good_) {
                     float new_pos = tp.new_position_on_line(
                         im1_rgb,
-                        a2i(ed.center1).to_array_shape(),
-                        ed.v1.to_array(),
+                        a2i(ed.center1),
+                        ed.v1,
                         search_length,
                         worst_error,
                         im0_error == nullptr ? nullptr : &(*im0_error)(r, c),
@@ -176,8 +176,8 @@ Array<float> Mlib::Sfm::iterate_disparity_rgb_patch(
     const FixedArray<float, 3, 3>& F,
     size_t search_length,
     float worst_error,
-    const ArrayShape& patch_size,
-    const ArrayShape& patch_nan_size,
+    const FixedArray<size_t, 2>& patch_size,
+    const FixedArray<size_t, 2>& patch_nan_size,
     Array<float>* im0_error,
     Array<float>* initial_disparity,
     bool draw_debug_images)

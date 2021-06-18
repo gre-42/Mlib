@@ -32,7 +32,7 @@ PpmImage PpmImage::reversed(size_t axis) const {
     return PpmImage(t.reversed());
 }
 
-void PpmImage::draw_fill_rect(const ArrayShape& center, size_t size, const Rgb24& color) {
+void PpmImage::draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, const Rgb24& color) {
     Mlib::draw_fill_rect(*this, center, size, color);
 }
 
@@ -86,13 +86,13 @@ void PpmImage::draw_mask(const Array<bool>& mask, const Rgb24& color) {
 }
 
 void PpmImage::draw_streamline(
-    const ArrayShape& center,
+    const FixedArray<size_t, 2>& center,
     const Array<float>& velocity,
     size_t size,
     size_t length,
     const Rgb24& color)
 {
-    visit_streamline(shape(), center, velocity, length, [&](const ArrayShape& ipos){
+    visit_streamline(FixedArray<size_t, 2>{ shape(0), shape(1) }, center, velocity, length, [&](const FixedArray<size_t, 2>& ipos){
         draw_fill_rect(ipos, size, color);
     });
 }

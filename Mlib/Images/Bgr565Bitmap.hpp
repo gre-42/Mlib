@@ -46,12 +46,12 @@ public:
     explicit Bgr565Bitmap(const Array<Bgr565>& other);
     explicit Bgr565Bitmap(const ArrayShape& shape);
 
-    void draw_fill_rect(const ArrayShape& center, size_t size, const Bgr565& color);
-    void draw_empty_rect(const ArrayShape& center, size_t size, const Bgr565& color);
+    void draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, const Bgr565& color);
+    void draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size, const Bgr565& color);
     void draw_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Bgr565& color);
     void draw_infinite_line(const Array<float>& from, const Array<float>& to, size_t thickness, const Bgr565& color);
     void draw_mask(const Array<bool>& mask, const Bgr565& color);
-    void draw_streamline(const ArrayShape& center, const Array<float>& velocity, size_t size, size_t length, const Bgr565& color);
+    void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, const Bgr565& color);
 
     static Bgr565Bitmap load_from_file(const std::string &filename);
     void save_to_file(const std::string &filename) const;

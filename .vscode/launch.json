@@ -32,7 +32,7 @@
             "name": "(gdb) Launch sfm",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/UDebug/Bin/math_test",
+            "program": "${workspaceFolder}/UDebug/Bin/sfm_train",
             "args": [
                 "--cache", "/tmp/sfm_cache",
                 "--source", "/tmp/sfm_source/box640",

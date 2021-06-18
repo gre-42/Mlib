@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Sfm/Components/Flowing_Particles_Config.hpp>
 #include <Mlib/Sfm/Frames/Feature_Point_Frame.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
@@ -54,7 +55,7 @@ private:
     cv::Ptr<cv::ORB> orb_;
     cv::BFMatcher bfm_;
 #endif
-    ArrayShape shape_;
+    FixedArray<size_t, 2> shape_;
     std::string cache_dir_;
     FlowingParticlesConfig cfg_;
     std::atomic_size_t sequence_index = 0;

@@ -11,7 +11,7 @@ void test_saddle_detector(const std::string& basename) {
     assert(bitmap.shape(1) == 32);
 
     const Array<float> image = bitmap.to_float_grayscale();
-    Array<float> feature_points = find_saddle_points(image, -0.01f);
+    Array<FixedArray<float, 2>> feature_points = Array<float>::from_dynamic<2>(find_saddle_points(image, -0.01f));
     highlight_features(feature_points, bitmap, 0);
 
     bitmap.save_to_file("TestOut/" + basename + "-saddle_points.png");

@@ -48,11 +48,11 @@ Bgr565Bitmap::Bgr565Bitmap(const Array<Bgr565>& other)
 Bgr565Bitmap::Bgr565Bitmap(const ArrayShape& shape)
     : Array<Bgr565>(shape) {}
 
-void Bgr565Bitmap::draw_fill_rect(const ArrayShape& center, size_t size, const Bgr565& color) {
+void Bgr565Bitmap::draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, const Bgr565& color) {
     Mlib::draw_fill_rect(*this, center, size, color);
 }
 
-void Bgr565Bitmap::draw_empty_rect(const ArrayShape& center, size_t size, const Bgr565& color) {
+void Bgr565Bitmap::draw_empty_rect(const FixedArray<size_t, 2>& center, size_t size, const Bgr565& color) {
     Mlib::draw_empty_rect(*this, center, size, color);
 }
 
@@ -102,13 +102,13 @@ void Bgr565Bitmap::draw_mask(const Array<bool>& mask, const Bgr565& color) {
 }
 
 void Bgr565Bitmap::draw_streamline(
-    const ArrayShape& center,
+    const FixedArray<size_t, 2>& center,
     const Array<float>& velocity,
     size_t size,
     size_t length,
     const Bgr565& color)
 {
-    visit_streamline(shape(), center, velocity, length, [&](const ArrayShape& ipos){
+    visit_streamline(FixedArray<size_t, 2>{ shape(0), shape(1) }, center, velocity, length, [&](const FixedArray<size_t, 2>& ipos){
         draw_fill_rect(ipos, size, color);
     });
 }

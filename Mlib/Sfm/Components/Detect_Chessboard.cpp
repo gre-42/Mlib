@@ -112,10 +112,10 @@ void Mlib::Sfm::detect_chessboard(
 
     // Array<float> det = hessian_determinant_image(image);
     // result = Bgr565Bitmap::from_float_grayscale((det + 1.f) / 2.f);
-    Array<float> feature_points = find_saddle_points(image);
+    Array<FixedArray<float, 2>> feature_points = Array<float>::from_dynamic<2>(find_saddle_points(image));
     highlight_features(feature_points, bmp);
 
-    HomographyList homography_list(shape, Array<float>::from_dynamic<2>(feature_points), 0.1f);
+    HomographyList homography_list(shape, feature_points, 0.1f);
 
     // How to tune the grid search parameters in case something does not work:
     // 1. Start the chessboard detector and denote the (suboptimal) homography.

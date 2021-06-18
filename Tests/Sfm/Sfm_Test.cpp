@@ -371,8 +371,8 @@ void test_traceable_patch() {
         {1, 2, 3, 4, 5},
         {6, 7, 8, 9, 10},
         {11, 12, 13, 14, 15}});
-    const ArrayShape patch_center{1, 2};
-    TraceablePatch p(image, patch_center, ArrayShape{3, 4}, ArrayShape{0, 0}, 5);
+    const FixedArray<size_t, 2> patch_center{1, 2};
+    TraceablePatch p(image, patch_center, FixedArray<size_t, 2>{3, 4}, FixedArray<size_t, 2>{0, 0}, 5);
     assert_allclose(
         p.image_patch_,
         to_rgb(Array<float>{
@@ -383,11 +383,11 @@ void test_traceable_patch() {
         {5, 5, 5, 1, 2, 3, 4, 5},
         {5, 5, 5, 6, 7, 8, 9, 10},
         {5, 5, 5, 11, 12, 13, 14, 15}});
-    assert_isclose<float>(p.error_at_position(new_image, ArrayShape{1, 5}), 0);
-    assert_isclose<float>(p.error_at_position(image, ArrayShape{1, 2}), 0);
-    assert_shape_equals(
-        p.new_position_in_box(new_image, patch_center, ArrayShape{10, 10}, 0.002f),
-        ArrayShape{1, 5});
+    assert_isclose<float>(p.error_at_position(new_image, FixedArray<size_t, 2>{1, 5}), 0);
+    assert_isclose<float>(p.error_at_position(image, FixedArray<size_t, 2>{1, 2}), 0);
+    assert_allequal(
+        p.new_position_in_box(new_image, patch_center, FixedArray<size_t, 2>{10, 10}, 0.002f),
+        FixedArray<size_t, 2>{1, 5});
 }
 
 void test_traceable_patch_nan() {
@@ -395,8 +395,8 @@ void test_traceable_patch_nan() {
         {1, 2, 3, 4, 5},
         {6, 7, 8, 9, 10},
         {11, 12, 13, 14, 15}});
-    const ArrayShape patch_center{1, 2};
-    TraceablePatch p(image, patch_center, ArrayShape{3, 4}, ArrayShape{1, 1});
+    const FixedArray<size_t, 2> patch_center{1, 2};
+    TraceablePatch p(image, patch_center, FixedArray<size_t, 2>{3, 4}, FixedArray<size_t, 2>{1, 1});
     assert_allclose(
         p.image_patch_,
         to_rgb(Array<float>{
@@ -427,8 +427,8 @@ void test_find_epiline() {
     //std::cerr << fundamental_error(F, y0, y1) << std::endl;
     //std::cerr << F << std::endl;
     StbImage bmp{ArrayShape{200, 200}, Rgb24::white()};
-    highlight_features(y0 * 180.f, bmp, 2, Rgb24::red());
-    highlight_features(y1 * 180.f, bmp, 2, Rgb24::blue());
+    highlight_features(Array<float>::from_dynamic<2>(y0 * 180.f), bmp, 2, Rgb24::red());
+    highlight_features(Array<float>::from_dynamic<2>(y1 * 180.f), bmp, 2, Rgb24::blue());
     FixedArray<float, 2> p;
     FixedArray<float, 2> v;
     find_epiline(F, FixedArray<float, 2>{ y0[1] }, p, v);

@@ -1236,6 +1236,15 @@ Array<TData> sum(const Array<TData>& x, size_t axis) {
         });
 }
 
+template <class TDerived, class TData>
+TData prod(const BaseDenseArray<TDerived, TData>& a) {
+    TData result(1);
+    for (const TData& v : a->flat_iterable()) {
+        result *= v;
+    }
+    return result;
+}
+
 template <class T>
 inline T squared(const T& a) {
     return a * a;

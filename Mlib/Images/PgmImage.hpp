@@ -29,11 +29,11 @@ public:
     explicit PgmImage(const Array<uint16_t>& other);
     explicit PgmImage(const ArrayShape& shape);
 
-    void draw_fill_rect(const ArrayShape& center, size_t size, uint16_t color);
+    void draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, uint16_t color);
     void draw_line(const Array<float>& from, const Array<float>& to, size_t thickness, uint16_t color);
     void draw_infinite_line(const Array<float>& from, const Array<float>& to, size_t thickness, uint16_t color);
     void draw_mask(const Array<bool>& mask, uint16_t color);
-    void draw_streamline(const ArrayShape& center, const Array<float>& velocity, size_t size, size_t length, uint16_t color);
+    void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, uint16_t color);
 
     static PgmImage load_from_file(const std::string& filename);
     static PgmImage load_from_stream(std::istream& istream);

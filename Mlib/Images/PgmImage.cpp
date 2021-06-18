@@ -22,7 +22,7 @@ PgmImage::PgmImage(const Array<uint16_t>& other)
 PgmImage::PgmImage(const ArrayShape& shape)
     : Array<uint16_t>(shape) {}
 
-void PgmImage::draw_fill_rect(const ArrayShape& center, size_t size, uint16_t color) {
+void PgmImage::draw_fill_rect(const FixedArray<size_t, 2>& center, size_t size, uint16_t color) {
     Mlib::draw_fill_rect(*this, center, size, color);
 }
 
@@ -72,13 +72,13 @@ void PgmImage::draw_mask(const Array<bool>& mask, uint16_t color) {
 }
 
 void PgmImage::draw_streamline(
-    const ArrayShape& center,
+    const FixedArray<size_t, 2>& center,
     const Array<float>& velocity,
     size_t size,
     size_t length,
     uint16_t color)
 {
-    visit_streamline(shape(), center, velocity, length, [&](const ArrayShape& ipos) {
+    visit_streamline(FixedArray<size_t, 2>{ shape(0), shape(1) }, center, velocity, length, [&](const FixedArray<size_t, 2>& ipos) {
         draw_fill_rect(ipos, size, color);
     });
 }

@@ -136,11 +136,11 @@ void DenseProjector::draw(const std::string& filename) {
             }
             draw_fill_rect(
                 depth,
-                center.to_array_shape(),
+                center,
                 1,
                 zz);
             ppm.draw_fill_rect(
-                center.to_array_shape(),
+                center,
                 1,
                 Rgb24::from_float_rgb(
                     rgb_(0, yid(0), yid(1)),
@@ -149,7 +149,7 @@ void DenseProjector::draw(const std::string& filename) {
                     // * (x_(i, 2) - min_z) / (max_z - min_z)
         }, [&](size_t i, const FixedArray<size_t, 2>& id) {
             ppm.draw_fill_rect(
-                x2i(x_(i)).to_array_shape(),
+                x2i(x_(i)),
                 1,
                 Rgb24::green());
         });

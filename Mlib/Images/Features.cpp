@@ -173,7 +173,7 @@ Array<float> Mlib::find_nfeatures(
 }
 
 void Mlib::highlight_features(
-    const Array<float>& feature_points,
+    const Array<FixedArray<float, 2>>& feature_points,
     StbImage& bitmap,
     size_t size,
     const Rgb24& color)

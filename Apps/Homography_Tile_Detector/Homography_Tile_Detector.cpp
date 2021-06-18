@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
                     }
                 }
             }
-            Array<float> features{ feature_list };
-            Array<float> Hp{ Hp_list };
+            Array<FixedArray<float, 2>> features{ feature_list };
+            Array<FixedArray<float, 2>> Hp{ Hp_list };
             StbImage bmpf0{ StbImage::from_float_grayscale(image0) };
             StbImage bmpf1{ StbImage::from_float_grayscale(image1) };
             std::cerr << H << std::endl;

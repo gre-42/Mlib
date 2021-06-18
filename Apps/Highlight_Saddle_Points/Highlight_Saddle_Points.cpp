@@ -21,7 +21,7 @@ void highlight_saddle_points(
     for (size_t i = 0; i < niter; ++i) {
         image = box_filter_NWE(image, ArrayShape{ width, width });
     }
-    Array<float> feature_points = find_saddle_points(image);
+    Array<FixedArray<float, 2>> feature_points = Array<float>::from_dynamic<2>(find_saddle_points(image));
     highlight_features(feature_points, bitmap, marker_size);
 
     bitmap.save_to_file(destination);

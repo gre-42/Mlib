@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Images/Coordinates.hpp>
+#include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <cmath>
@@ -36,32 +36,33 @@ void draw_circle_points(Array<TColor>& image, const float angle0, const size_t n
 }
 
 inline void visit_streamline(
-    const ArrayShape& field_shape,
-    const ArrayShape& center,
+    const FixedArray<size_t, 2>& field_shape,
+    const FixedArray<size_t, 2>& center,
     const Array<float>& velocity,
     size_t length,
-    const std::function<void(const ArrayShape& index)>& operation,
+    const std::function<void(const FixedArray<size_t, 2>& index)>& operation,
     bool freeze_velocity = false)
 {
     assert(velocity.ndim() == 3);
     assert(velocity.shape(0) == 2);
     assert(center.ndim() == 2);
-    assert(all(velocity.shape().erased_first() == field_shape));
-    Array<float> fpos{i2a(center)};
+    assert(all(velocity.shape().erased_first() == ArrayShape{ field_shape(0), field_shape(1) }));
+    FixedArray<float, 2> fpos{i2a(center)};
     if (any(center >= field_shape)) {
         return;
     }
     for (size_t i = 0; i < length; ++i) {
-        ArrayShape ipos{a2i(fpos)};
+        FixedArray<size_t, 2> ipos{a2i(fpos)};
         if (any(ipos >= field_shape)) {
             break;
         }
         //(*this)(ipos) = color;
         operation(ipos);
-        auto v = Array<float>{
-            velocity[0](freeze_velocity ? center : ipos),
-            velocity[1](freeze_velocity ? center : ipos)};
-        if (std::isnan(v(0)) || std::isnan(v(1))) {
+        FixedArray<size_t, 2> epos = freeze_velocity ? center : ipos;
+        auto v = FixedArray<float, 2>{
+            velocity(0, epos(0), epos(1)),
+            velocity(1, epos(0), epos(1))};
+        if (any(Mlib::isnan(v))) {
             break;
         }
         auto ls = sum(squared(v));
@@ -75,12 +76,11 @@ inline void visit_streamline(
 template<class TColor>
 void draw_fill_rect(
     Array<TColor>& image,
-    const ArrayShape& center,
+    const FixedArray<size_t, 2>& center,
     size_t size,
     const TColor& value)
 {
     assert(image.ndim() == 2);
-    assert(center.ndim() == 2);
     for (size_t r = center(0) - size; r != center(0) + size + 1; ++r) {
         if (r >= image.shape(0)) {
             continue;
@@ -97,12 +97,11 @@ void draw_fill_rect(
 template<class TColor>
 void draw_empty_rect(
     Array<TColor>& image,
-    const ArrayShape& center,
+    const FixedArray<size_t, 2>& center,
     size_t size,
     const TColor& value)
 {
     assert(image.ndim() == 2);
-    assert(center.ndim() == 2);
     for (size_t r = center(0) - size; r != center(0) + size + 1; ++r) {
         if (r >= image.shape(0)) {
             continue;
@@ -133,8 +132,8 @@ void draw_line_ext(
     assert(all(from.shape() == ArrayShape{2}));
     assert(all(to.shape() == ArrayShape{2}));
     auto draw_point = [&image, &thickness](const Array<float>& p, const TColor& color){
-        ArrayShape index{fi2i(p(0)), fi2i(p(1))};
-        if (any(index >= image.shape())) {
+        FixedArray<size_t, 2> index{fi2i(p(0)), fi2i(p(1))};
+        if (any(index >= FixedArray<size_t, 2>{ image.shape(0), image.shape(1) })) {
             return false;
         }
         draw_fill_rect(image, index, thickness, color);
@@ -162,7 +161,7 @@ void draw_line_ext(
 
 template<class TColor>
 void draw_points_as_boxes(
-    const Array<float>& feature_points,
+    const Array<FixedArray<float, 2>>& feature_points,
     Array<TColor>& image,
     size_t size,
     const TColor& value)
@@ -170,14 +169,12 @@ void draw_points_as_boxes(
     assert(image.ndim() == 2);
     assert(feature_points.ndim() == 2);
     assert(feature_points.shape(1) == 2);
-    for (const Array<float>& feature_point : feature_points) {
-        assert(feature_point.ndim() == 1);
-        assert(feature_point.length() == 2);
+    for (const FixedArray<float, 2>& feature_point : feature_points.flat_iterable()) {
         //assert(feature_point(0) >= 0);
         //assert(feature_point(0) <= image.shape(1) - 1);
         //assert(feature_point(1) >= 0);
         //assert(feature_point(1) <= image.shape(0) - 1);
-        ArrayShape index{ a2i(feature_point) };
+        FixedArray<size_t, 2> index{ a2i(feature_point) };
         draw_fill_rect(image, index, size, value);
     }
 }

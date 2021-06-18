@@ -40,8 +40,8 @@ CorrespondingFeaturesOnLine get_cfol(
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F, bmp, Rgb24::green());
-        highlight_features(Array<float>{features2k}, bmp, 2, Rgb24::red());
-        highlight_features(Array<float>{ol.y1_2d}, bmp, 2, Rgb24::blue());
+        highlight_features(features2k, bmp, 2, Rgb24::red());
+        highlight_features(ol.y1_2d, bmp, 2, Rgb24::blue());
         bmp.save_to_file(bmp_filename);
     }
     return ol;
@@ -141,20 +141,20 @@ void compute_z(const ParsedArgs& args) {
     Array<float> im0_rgb = source0.to_float_rgb();
     Array<float> im0 = source0.to_float_grayscale();
     Array<float> hr0 = harris_response(im0);
-    Array<float> feature_points0 = find_nfeatures(
+    Array<FixedArray<float, 2>> feature_points0 = Array<float>::from_dynamic<2>(find_nfeatures(
         hr0,
         // find_local_maxima(-hr0, false),
         ones<bool>(im0.shape()),
-        100);
+        100));
 
     Array<float> im1_rgb = source1.to_float_rgb();
     Array<float> im1 = source1.to_float_grayscale();
     Array<float> hr1 = harris_response(im1);
-    Array<float> feature_points2 = find_nfeatures(
+    Array<FixedArray<float, 2>> feature_points2 = Array<float>::from_dynamic<2>(find_nfeatures(
         hr1,
         // find_local_maxima(-hr1, false),
         ones<bool>(im1.shape()),
-        100);
+        100));
 
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im0);
@@ -168,8 +168,6 @@ void compute_z(const ParsedArgs& args) {
     }
 
     CorrespondingFeaturesInBox cf{feature_points0, im0_rgb, im1_rgb};
-    Array<FixedArray<float, 2>> y0{Array<float>::from_dynamic<2>(cf.y0_2d)};
-    Array<FixedArray<float, 2>> y1{Array<float>::from_dynamic<2>(cf.y1_2d)};
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
@@ -177,9 +175,9 @@ void compute_z(const ParsedArgs& args) {
         bmp.save_to_file("features21.png");
     }
 
-    FixedArray<float, 3, 3> F = find_fundamental_matrix(y0, y1);
-    std::cerr << "fundamental error " << sum(squared(fundamental_error(F, y0, y1))) << std::endl;
-    std::cerr << "fundamental.T error " << sum(squared(fundamental_error(F.T(), y0, y1))) << std::endl;
+    FixedArray<float, 3, 3> F = find_fundamental_matrix(cf.y0_2d, cf.y1_2d);
+    std::cerr << "fundamental error " << sum(squared(fundamental_error(F, cf.y0_2d, cf.y1_2d))) << std::endl;
+    std::cerr << "fundamental.T error " << sum(squared(fundamental_error(F.T(), cf.y0_2d, cf.y1_2d))) << std::endl;
 
     //Array<float> err = fundamental_error(F, y0, y1);
     //std::cerr << "err " << err << std::endl;
@@ -228,8 +226,8 @@ void compute_z(const ParsedArgs& args) {
     CorrespondingFeaturesOnLine ol = get_cfol(im1, im0_rgb, im1_rgb, F, "f_hr1d.bmp");
 
     ProjectionToTrRansac ptr{
-        y0,
-        y1,
+        cf.y0_2d,
+        cf.y1_2d,
         intrinsic_matrix,
         0,
         RansacOptions<float> {

@@ -132,9 +132,9 @@ PpmImage Mlib::plot_mesh(
         im.draw_line(a, b, line_thickness, Rgb24::black(), rvalue_address(Rgb24::nan()));
         im.draw_line(b, c, line_thickness, Rgb24::black(), rvalue_address(Rgb24::nan()));
         im.draw_line(c, a, line_thickness, Rgb24::black(), rvalue_address(Rgb24::nan()));
-        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::blue());
-        im.draw_fill_rect(ArrayShape{a2i(b(0)), a2i(b(1))}, point_size, Rgb24::blue());
-        im.draw_fill_rect(ArrayShape{a2i(c(0)), a2i(c(1))}, point_size, Rgb24::blue());
+        im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::blue());
+        im.draw_fill_rect(FixedArray<size_t, 2>{a2i(b(0)), a2i(b(1))}, point_size, Rgb24::blue());
+        im.draw_fill_rect(FixedArray<size_t, 2>{a2i(c(0)), a2i(c(1))}, point_size, Rgb24::blue());
     }
     size_t i = 0;
     for (const auto& c : contours) {
@@ -147,13 +147,13 @@ PpmImage Mlib::plot_mesh(
         }
         if (!c.empty()) {
             auto a = trafo(c.front());
-            im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::green());
+            im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::green());
         }
         ++i;
     }
     for (const auto& n : highlighted_nodes) {
         auto a = trafo(n);
-        im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::red());
+        im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, point_size, Rgb24::red());
     }
     for (const auto& n : crossed_nodes) {
         auto a = trafo(n);
@@ -194,9 +194,9 @@ void Mlib::plot_mesh(
         svg.draw_line(a(0), a(1), b(0), b(1), 0.05f, "black");
         svg.draw_line(b(0), b(1), c(0), c(1), 0.05f, "black");
         svg.draw_line(c(0), c(1), a(0), a(1), 0.05f, "black");
-        // im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, 4, Rgb24::blue());
-        // im.draw_fill_rect(ArrayShape{a2i(b(0)), a2i(b(1))}, 4, Rgb24::blue());
-        // im.draw_fill_rect(ArrayShape{a2i(c(0)), a2i(c(1))}, 4, Rgb24::blue());
+        // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, 4, Rgb24::blue());
+        // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(b(0)), a2i(b(1))}, 4, Rgb24::blue());
+        // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(c(0)), a2i(c(1))}, 4, Rgb24::blue());
     }
     for (const auto& c : contours) {
         for (auto it = c.begin(); ; ) {
@@ -220,11 +220,11 @@ void Mlib::plot_mesh(
     }
     // if (!contour.empty()) {
     //     auto a = trafo(contour.front());
-    //     im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, 4, Rgb24::green());
+    //     im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, 4, Rgb24::green());
     // }
     // for (const auto& n : highlighted_nodes) {
     //     auto a = trafo(n);
-    //     im.draw_fill_rect(ArrayShape{a2i(a(0)), a2i(a(1))}, 4, Rgb24::red());
+    //     im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, 4, Rgb24::red());
     // }
 }
 

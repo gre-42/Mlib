@@ -47,11 +47,11 @@ int main(int argc, char** argv) {
         else {
             feature_mask = ones<bool>(bitmap.shape());
         }
-        Array<float> corners = find_nfeatures(
+        Array<FixedArray<float, 2>> corners = Array<float>::from_dynamic<2>(find_nfeatures(
             response,
             feature_mask,
             safe_stoi(args.unnamed_value(2)),
-            safe_stof(args.named_value("--distance-sigma", "0")));
+            safe_stof(args.named_value("--distance-sigma", "0"))));
         // std::cout << "Found " << corners.shape(0) << " corners." << std::endl;
         highlight_features(
             corners,

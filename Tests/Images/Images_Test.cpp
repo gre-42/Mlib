@@ -102,7 +102,7 @@ void test_harris_response() {
     StbImage res = StbImage::from_float_grayscale(clipped(80.f * harris_response(image), 0.f, 1.f));
     // std::cerr << min(harris_response(image)) << std::endl;
     // std::cerr << max(harris_response(image)) << std::endl;
-    Array<float> feature_points = find_harris_corners(image);
+    Array<FixedArray<float, 2>> feature_points = Array<float>::from_dynamic<2>(find_harris_corners(image));
     highlight_features(feature_points, res);
     res.save_to_file("TestOut/chessboard1_harris_response.ppm");
 }
@@ -112,10 +112,10 @@ void test_harris_nfeatures() {
 
     const Array<float> image = bitmap.to_float_grayscale();
     StbImage res = StbImage::from_float_grayscale(clipped(80.f * harris_response(image), 0.f, 1.f));
-    Array<float> feature_points = find_nfeatures(
+    Array<FixedArray<float, 2>> feature_points = Array<float>::from_dynamic<2>(find_nfeatures(
         harris_response(image),
         ones<bool>(image.shape()),
-        20);
+        20));
     highlight_features(feature_points, res);
     res.save_to_file("TestOut/chessboard1_harris_nfeatures.ppm");
 }

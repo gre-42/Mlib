@@ -41,7 +41,7 @@ Array<float> find_nfeatures(
     float distance_sigma = 0);
 
 void highlight_features(
-    const Array<float>& feature_points,
+    const Array<FixedArray<float, 2>>& feature_points,
     StbImage& bitmap,
     size_t size = 1,
     const Rgb24& color = Rgb24::red());

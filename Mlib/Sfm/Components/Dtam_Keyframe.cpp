@@ -369,7 +369,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
                 if (max(abs(ke.affine() - fixed_identity_array<float, 4>())) > 1e-3) {
                     FixedArray<float, 2> e2 = find_epipole(down_sampler_.ds_intrinsic_matrix_, ke);
                     if (!all(Mlib::isnan(e2))) {
-                        img.draw_fill_rect(a2i(e2.to_array()), 2, Rgb24::red());
+                        img.draw_fill_rect(a2i(e2), 2, Rgb24::red());
                     }
                 }
             }

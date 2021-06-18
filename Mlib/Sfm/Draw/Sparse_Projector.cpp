@@ -42,7 +42,7 @@ void SparseProjector::draw(const std::string& filename) {
     plot_camera_lines(ppm);
     for (const auto& x : reconstructed_points_) {
         ppm.draw_fill_rect(
-            x2i(x.second->position).to_array_shape(),
+            x2i(x.second->position),
             2,
             (bad_points_.find(x.first) == bad_points_.end()
                 ? (x.state_ == MmState::ACTIVE

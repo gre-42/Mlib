@@ -34,7 +34,7 @@ FlowingParticles::FlowingParticles(
 
 void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     assert(image_frames_.size() > 0);
-    shape_ = image_frames_.rbegin()->second.grayscale.shape();
+    shape_ = image_frames_.rbegin()->second.grayscale.fixed_shape<2>();
     assert(new_frame.size() <= cfg_.target_nparticles);
     const size_t n_new_particles = cfg_.target_nparticles - new_frame.size();
 
@@ -52,7 +52,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     for (const auto& kv : new_frame) {
         draw_fill_rect(
             existing_points_mask,
-            a2i(kv.second->sequence.rbegin()->second->position).to_array_shape(),
+            a2i(kv.second->sequence.rbegin()->second->position),
             5,      //size
             false); //value
     }
@@ -120,7 +120,7 @@ std::shared_ptr<FeaturePoint> FlowingParticles::generate_feature_point(const Fix
         pos,
         TraceablePatch(
             image_frames_.rbegin()->second.rgb,
-            a2i(pos).to_array_shape(),
+            a2i(pos),
             cfg_.patch_size));
 }
 
@@ -175,7 +175,7 @@ void FlowingParticles::advance_existing_particles(
     }*/
     assert(particles_.size() > 0);
     if (requires_optical_flow()) {
-        assert(all(flow_field.shape().erased_first() == shape_));
+        assert(all(flow_field.shape().erased_first() == ArrayShape{ shape_(0), shape_(1) }));
         assert(flow_field.shape(0) == 2);
     }
     size_t nsuccess = 0;
@@ -185,7 +185,7 @@ void FlowingParticles::advance_existing_particles(
         //    continue;
         //}
         const FeaturePoint& p = *s.second->sequence.rbegin()->second;
-        ArrayShape index{a2i(p.position).to_array_shape()};
+        FixedArray<size_t, 2> index{a2i(p.position)};
         if (all(index < shape_)) {
             FixedArray<float, 2> new_pos;
             if (false) {
@@ -201,7 +201,7 @@ void FlowingParticles::advance_existing_particles(
                     continue;
                 }
                 float best_harris = -std::numeric_limits<float>::infinity();
-                visit_streamline(shape_, index, flow_field, streamline_search_length(), [&](const ArrayShape& id) {
+                visit_streamline(shape_, index, flow_field, streamline_search_length(), [&](const FixedArray<size_t, 2>& id) {
                     if (hr(id) > best_harris) {
                         best_harris = hr(id);
                         new_pos = FixedArray<float, 2>{ i2a(id) };
@@ -209,9 +209,9 @@ void FlowingParticles::advance_existing_particles(
                 });
             }
             if (cfg_.tracking_mode == TrackingMode::PATCH_NEW_POSITION_IN_BOX) {
-                ArrayShape new_index = s.second->sequence.begin()->second->traceable_patch.new_position_in_box(
+                FixedArray<size_t, 2> new_index = s.second->sequence.begin()->second->traceable_patch.new_position_in_box(
                     image_frames_.rbegin()->second.rgb,
-                    a2i(p.position).to_array_shape(),
+                    a2i(p.position),
                     cfg_.search_window,
                     cfg_.worst_patch_error);
                 new_pos = FixedArray<float, 2>{ i2a(new_index) };
@@ -321,10 +321,10 @@ void FlowingParticles::advance_flowing_particles_cv() {
 #endif
 
 void FlowingParticles::draw(StbImage& bmp) {
-    assert(all(bmp.shape() == shape_));
+    assert(all(bmp.fixed_shape<2>() == shape_));
     assert(particles_.size() > 0);
     for (const auto& s : particles_.rbegin()->second) {
-        ArrayShape index{ a2i(s.second->sequence.rbegin()->second->position).to_array_shape() };
+        FixedArray<size_t, 2> index{ a2i(s.second->sequence.rbegin()->second->position) };
         //assert(all(index < bmp.shape()));
         auto sq_res_it = last_sq_residual_.find(s.first);
         float marker_size = sq_res_it == last_sq_residual_.end()

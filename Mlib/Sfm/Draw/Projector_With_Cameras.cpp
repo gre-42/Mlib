@@ -26,7 +26,7 @@ void ProjectorWithCameras::plot_camera_lines(StbImage& png) {
 void ProjectorWithCameras::plot_camera_positions(StbImage& png) {
     for (const auto& c : camera_frames_) {
         png.draw_fill_rect(
-            x2i(c.second.pose.t()).to_array_shape(),
+            x2i(c.second.pose.t()),
             2,
             c.state_ == MmState::ACTIVE
                 ? Rgb24::red()
@@ -39,7 +39,7 @@ void ProjectorWithCameras::plot_camera_positions(StbImage& png) {
 void ProjectorWithCameras::plot_unit_square(StbImage& png) {
     FixedArray<size_t, 2> center = x2i(FixedArray<float, 3>{ 0.f, 0.f, 0.f });
     png.draw_fill_rect(
-        center.to_array_shape(),
+        center,
         (x2i(FixedArray<float, 3>{ 1.f, 1.f, 1.f }) - center)(0),
         Rgb24::gray());
 }
