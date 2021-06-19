@@ -301,9 +301,9 @@ void TriangleList::delete_backfacing_triangles(
     });
 }
 
-void TriangleList::calculate_triangle_normals() {
+void TriangleList::calculate_triangle_normals(TriangleNormalErrorBehavior error_behavior) {
     for (auto& t : triangles_) {
-        auto n = triangle_normal({t(0).position, t(1).position, t(2).position});
+        auto n = triangle_normal({t(0).position, t(1).position, t(2).position}, error_behavior);
         t(0).normal = n;
         t(1).normal = n;
         t(2).normal = n;

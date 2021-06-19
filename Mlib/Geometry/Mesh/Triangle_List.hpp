@@ -129,7 +129,7 @@ public:
         const std::list<std::shared_ptr<TriangleList>>& a,
         const std::list<std::shared_ptr<TriangleList>>& b);
     void delete_backfacing_triangles(std::list<FixedArray<ColoredVertex, 3>>* deleted_triangles = nullptr);
-    void calculate_triangle_normals();
+    void calculate_triangle_normals(TriangleNormalErrorBehavior error_behavior = TriangleNormalErrorBehavior::RAISE);
     void convert_triangle_to_vertex_normals();
     void flip();
     static void convert_triangle_to_vertex_normals(const std::list<std::shared_ptr<TriangleList>>& triangle_lists);
