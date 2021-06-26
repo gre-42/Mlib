@@ -8,6 +8,7 @@ enum class TerrainType {
     GRASS,
     STONE,
     ASPHALT,
+    ELEVATED_GRASS,
     STREET_HOLE,
     BUILDING_HOLE,
     UNDEFINED
@@ -20,6 +21,8 @@ inline TerrainType terrain_type_from_string(const std::string& tt) {
         return TerrainType::STONE;
     } else if (tt == "asphalt") {
         return TerrainType::ASPHALT;
+    } else if (tt == "elevated_grass") {
+        return TerrainType::ELEVATED_GRASS;
     } else if (tt == "street_hole") {
         return TerrainType::STREET_HOLE;
     } else if (tt == "building_hole") {
@@ -38,6 +41,8 @@ inline std::string terrain_type_to_string(TerrainType tt) {
         return "stone";
     } else if (tt == TerrainType::ASPHALT) {
         return "asphalt";
+    } else if (tt == TerrainType::ELEVATED_GRASS) {
+        return "elevated_grass";
     } else if (tt == TerrainType::STREET_HOLE) {
         return "street_hole";
     } else if (tt == TerrainType::BUILDING_HOLE) {

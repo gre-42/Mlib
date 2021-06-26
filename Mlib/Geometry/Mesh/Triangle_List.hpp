@@ -124,7 +124,8 @@ public:
         float height,
         float scale,
         float uv_scale_x,
-        float uv_scale_y);
+        float uv_scale_y,
+        bool uvs_equal_lengths);
     static std::list<std::shared_ptr<TriangleList>> concatenated(
         const std::list<std::shared_ptr<TriangleList>>& a,
         const std::list<std::shared_ptr<TriangleList>>& b);

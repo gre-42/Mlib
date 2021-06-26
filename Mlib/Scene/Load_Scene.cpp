@@ -751,6 +751,9 @@ void LoadScene::operator()(
                 else if (key == "terrain_grass_textures") {
                     config.terrain_textures[TerrainType::GRASS] = string_to_vector(value, fpath);
                 }
+                else if (key == "terrain_elevated_grass_textures") {
+                    config.terrain_textures[TerrainType::ELEVATED_GRASS] = string_to_vector(value, fpath);
+                }
                 else if (key == "terrain_stone_textures") {
                     config.terrain_textures[TerrainType::STONE] = string_to_vector(value, fpath);
                 }
@@ -1011,6 +1014,9 @@ void LoadScene::operator()(
                 }
                 else if (key == "extrude_grass_amount") {
                     config.extrude_grass_amount = safe_stof(value);
+                }
+                else if (key == "extrude_elevated_grass_amount") {
+                    config.extrude_elevated_grass_amount = safe_stof(value);
                 }
                 else if (key == "street_light_resource_names") {
                     config.street_light_resource_names = string_to_vector(value);

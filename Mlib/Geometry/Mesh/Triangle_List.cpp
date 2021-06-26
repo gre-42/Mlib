@@ -161,7 +161,8 @@ void TriangleList::extrude(
     float height,
     float scale,
     float uv_scale_x,
-    float uv_scale_y)
+    float uv_scale_y,
+    bool uvs_equal_lengths)
 {
     using O = OrderableFixedArray<float, 3>;
 
@@ -213,9 +214,9 @@ void TriangleList::extrude(
                 va = &t_old(a);
                 vb = &t_old(b);
             }
-            auto duv = FixedArray<float, 2>{height / scale * uv_scale_y, 0.f};
-            if (va->uv(0) != vb->uv(0)) {
-                duv = FixedArray<float, 2>{duv(1), duv(0)};
+            auto duv = FixedArray<float, 2>{0.f, height / scale * uv_scale_y};
+            if (va->uv(0) == vb->uv(0)) {
+                std::swap(duv(0), duv(1));
             }
             // Already checked above:
             // (is_clamped(a) && is_clamped(b))
@@ -242,6 +243,7 @@ void TriangleList::extrude(
                     vb->uv,
                     va->uv + duv);
             } else {
+                float len = std::sqrt(sum(squared(vb->position - va->position)));
                 dest.draw_rectangle_wo_normals(
                     va->position,
                     vb->position,
@@ -251,16 +253,18 @@ void TriangleList::extrude(
                     vb->color,
                     vb->color,
                     va->color,
-                    va->uv,
-                    vb->uv,
-                    vb->uv + duv,
-                    va->uv + duv);
+                    uvs_equal_lengths ? FixedArray<float, 2>{0.f, 0.f} : va->uv,
+                    uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, 0} : vb->uv,
+                    uvs_equal_lengths ? FixedArray<float, 2>{len / scale * uv_scale_x, height / scale * uv_scale_y} : vb->uv + duv,
+                    uvs_equal_lengths ? FixedArray<float, 2>{0.f, height / scale * uv_scale_y} : va->uv + duv);
             }
         };
         for (size_t i = 0; i < 3; ++i) {
             if (!is_clamped(i)) {
                 (*t)(i).position(2) += height;
-                (*t)(i).uv(0) *= uv_scale_x;
+                if (!uvs_equal_lengths) {
+                    (*t)(i).uv(0) *= uv_scale_x;
+                }
             }
         }
 
