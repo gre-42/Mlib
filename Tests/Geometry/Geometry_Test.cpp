@@ -8,8 +8,10 @@
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Roundness_Estimator.hpp>
+#include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -29,6 +31,15 @@ void test_cross() {
     assert_allclose(
         dot1d(cross(a), b).to_array(),
         cross(a.to_array(), b.to_array()));
+}
+
+void test_triangle_area() {
+    FixedArray<float, 3> a{7, 3, 0};
+    FixedArray<float, 3> b{5, 2, 0};
+    FixedArray<float, 3> c{-6, -4, 0};
+    assert_true(triangle_is_right_handed(a.row_range<0, 2>(), b.row_range<0, 2>(), c.row_range<0, 2>()));
+    assert_isclose(triangle_area(a, b, c), 0.5f);
+    assert_isclose(triangle_area(a.row_range<0, 2>(), b.row_range<0, 2>(), c.row_range<0, 2>()), 0.5f);
 }
 
 void test_contour() {
@@ -304,11 +315,9 @@ void test_distance_point_triangle() {
 
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
-    #ifdef _MSC_VER
-    #pragma float_control(except, on)
-    #endif
 
     test_cross();
+    test_triangle_area();
     test_contour();
     test_contour2();
     // test_octree();

@@ -754,6 +754,9 @@ void LoadScene::operator()(
                 else if (key == "terrain_elevated_grass_textures") {
                     config.terrain_textures[TerrainType::ELEVATED_GRASS] = string_to_vector(value, fpath);
                 }
+                else if (key == "terrain_elevated_grass_base_textures") {
+                    config.terrain_textures[TerrainType::ELEVATED_GRASS_BASE] = string_to_vector(value, fpath);
+                }
                 else if (key == "terrain_stone_textures") {
                     config.terrain_textures[TerrainType::STONE] = string_to_vector(value, fpath);
                 }
