@@ -62,7 +62,7 @@ void test_contour() {
         std::vector<std::vector<OrderableFixedArray<float, 2>>>{contour},
         triangles,
         inner_triangles);
-    assert_true(triangles.size() == 0);
+    assert_true(triangles.size() == 1);
 }
 
 void test_contour2() {
