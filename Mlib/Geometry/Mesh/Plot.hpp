@@ -1,5 +1,8 @@
 #pragma once
-#include <Mlib/Images/PpmImage.hpp>
+#include <cstddef>
+#include <list>
+#include <string>
+#include <vector>
 
 namespace p2t {
 
@@ -18,8 +21,10 @@ class PgmImage;
 template <class TSize>
 class Svg;
 class PTri;
+class StbImage;
+class ArrayShape;
 
-PpmImage plot_mesh(
+StbImage plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -28,7 +33,7 @@ PpmImage plot_mesh(
     const std::list<FixedArray<float, 2>>& highlighted_nodes,
     const std::list<FixedArray<float, 2>>& crossed_nodes);
 
-PpmImage plot_mesh(
+StbImage plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -37,7 +42,7 @@ PpmImage plot_mesh(
     const std::list<FixedArray<float, 3>>& highlighted_nodes,
     const std::list<FixedArray<float, 3>>& crossed_nodes);
 
-PpmImage plot_mesh(
+StbImage plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -46,7 +51,7 @@ PpmImage plot_mesh(
     const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes,
     const std::list<OrderableFixedArray<float, 2>>& crossed_nodes);
 
-PpmImage plot_mesh(
+StbImage plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,

@@ -1,6 +1,7 @@
 #include "Delete_Backfacing_Triangles.hpp"
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <set>
 

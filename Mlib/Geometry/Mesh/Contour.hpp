@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <map>
 #include <set>
 
@@ -100,14 +101,15 @@ void delete_triangles_inside_contours(
                         if (contour_id != it->second) {
                             if (true) {
                                 const auto& c = t((i + 2) % 3);
-                                std::string debug_filename{ getenv("CONTOUR_DEBUG_FILENAME") };
-                                if (!debug_filename.empty()) {
-                                    if (debug_filename.ends_with(".ppm")) {
-                                        plot_mesh(ArrayShape{ 8000, 8000 }, 1, 4, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} }, {}).T().reversed(0).save_to_file(debug_filename);
-                                    } else if (debug_filename.ends_with(".svg")) {
-                                        plot_mesh_svg(debug_filename, 600.f, 600.f, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} });
+                                const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
+                                if (debug_filename != nullptr) {
+                                    std::string dbf{ debug_filename };
+                                    if (dbf.ends_with(".png")) {
+                                        plot_mesh(ArrayShape{ 8000, 8000 }, 1, 4, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} }, {}).T().reversed(0).save_to_file(dbf);
+                                    } else if (dbf.ends_with(".svg")) {
+                                        plot_mesh_svg(dbf, 600.f, 600.f, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} });
                                     } else {
-                                        throw std::runtime_error("Unknown file extension: " + debug_filename);
+                                        throw std::runtime_error("Unknown file extension: " + dbf);
                                     }
                                     throw EdgeException(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), debug image saved");
                                 } else {

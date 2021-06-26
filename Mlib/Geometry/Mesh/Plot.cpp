@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -97,7 +97,7 @@ struct ConvPtri {
     std::list<FixedArray<float, 2>> crossed_nodes_2d;
 };
 
-PpmImage Mlib::plot_mesh(
+StbImage Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -120,7 +120,7 @@ PpmImage Mlib::plot_mesh(
     for (const auto& n : highlighted_nodes) {
         np.add_point(n);
     }
-    PpmImage im{image_size, Rgb24::white()};
+    StbImage im{image_size, Rgb24::white()};
     auto normalization_matrix = np.normalization_matrix();
     auto trafo = [&](const FixedArray<float, 2>& p){
         return 0.5f + (normalization_matrix.transform(p)).to_array() * (Array<float>::from_shape(im.shape()) - 1.f);
@@ -228,7 +228,7 @@ void Mlib::plot_mesh(
     // }
 }
 
-PpmImage Mlib::plot_mesh(
+StbImage Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -320,6 +320,11 @@ void Mlib::plot_mesh_svg(
         c.triangles_2d,
         c.contours_2d,
         c.highlighted_nodes_2d);
+    svg.finish();
+    ofstr.flush();
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
+    }
 }
 
 void Mlib::plot_mesh_svg(
@@ -345,9 +350,14 @@ void Mlib::plot_mesh_svg(
         c.triangles_2d,
         c.contours_2d,
         c.highlighted_nodes_2d);
+    svg.finish();
+    ofstr.flush();
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
+    }
 }
 
-PpmImage Mlib::plot_mesh(
+StbImage Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
@@ -371,7 +381,7 @@ PpmImage Mlib::plot_mesh(
         c.crossed_nodes_2d);
 }
 
-PpmImage Mlib::plot_mesh(
+StbImage Mlib::plot_mesh(
     const ArrayShape& image_size,
     size_t line_thickness,
     size_t point_size,
