@@ -45,7 +45,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         {
             float socle_height = 1.2;
             if (building_top <= socle_height) {
-                throw std::runtime_error("Building height too small for socle");
+                throw std::runtime_error("Building height too small for socle. ID=" + w.first);
             }
             result.push_back(Building{
                 .id = w.first,
