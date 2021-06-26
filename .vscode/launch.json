@@ -8,7 +8,7 @@
             "name": "(gdb) Launch mgame",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/UDebug/Apps/Render_Scene_File/render_scene_file",
+            "program": "${workspaceFolder}/UDebug/Bin/render_scene_file",
             "args": [
                 "/media/HomeSSD1/MySrc/mgame",
                 "/media/HomeSSD1/MySrc/mgame/levels/main/main.scn",
