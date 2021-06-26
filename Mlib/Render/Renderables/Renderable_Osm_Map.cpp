@@ -141,9 +141,16 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     };
     if (!omr_->near_grass_resource_names_.empty() && (omr_->much_near_grass_distance_ != INFINITY))
     {
-        auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS);
-        if (tit != omr_->tl_terrain_->map().end())
+        std::list<std::shared_ptr<TriangleList>> grass_triangles;
+        if (auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS); tit != omr_->tl_terrain_->map().end())
         {
+            grass_triangles.push_back(tit->second);
+        }
+        if (auto tit = omr_->tl_terrain_->map().find(TerrainType::ELEVATED_GRASS); tit != omr_->tl_terrain_->map().end())
+        {
+            grass_triangles.push_back(tit->second);
+        }
+        if (!grass_triangles.empty()) {
             if (street_bvh_ == nullptr) {
                 street_bvh_.reset(new Bvh<float, FixedArray<FixedArray<float, 3>, 3>, 3>{{0.1f, 0.1f, 0.1f}, 10});
                 for (const auto& lst : omr_->tls_no_grass_) {
@@ -156,13 +163,15 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     }
                 }
             }
-            add_triangles(
-                *tit->second,
-                omr_->scene_node_resources_,
-                omr_->near_grass_resource_names_,
-                omr_->much_near_grass_distance_,
-                omr_->scale_,
-                this->street_bvh_.get());
+            for (const auto& t : grass_triangles) {
+                add_triangles(
+                    *t,
+                    omr_->scene_node_resources_,
+                    omr_->near_grass_resource_names_,
+                    omr_->much_near_grass_distance_,
+                    omr_->scale_,
+                    this->street_bvh_.get());
+            }
         }
     }
     if (!omr_->dirt_decals_resource_names_.empty() && (omr_->dirt_decals_distance_ != INFINITY))
