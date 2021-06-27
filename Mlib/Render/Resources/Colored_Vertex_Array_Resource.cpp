@@ -235,7 +235,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool fragments_depend_on_normal,
     float dirtmap_offset,
     float dirtmap_discreteness,
-    float dirtmap_scale)
+    float dirt_scale)
 {
     assert_true(nlights == lights.size());
     std::stringstream sstr;
@@ -585,7 +585,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
-        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_flipped * " << dirtmap_scale << " );" << std::endl;
+        sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_flipped * " << dirt_scale << " );" << std::endl;
         if (dirt_color_mode == ColorMode::RGBA) {
             sstr << "    dirtiness *= dirt_color.a;" << std::endl;
         } else if (dirt_color_mode != ColorMode::RGB) {
@@ -836,7 +836,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.fragments_depend_on_normal,
         id.dirtmap_offset,
         id.dirtmap_discreteness,
-        id.dirtmap_scale);
+        id.dirt_scale);
     try {
         rp->allocate(vs_text, fs_text);
 

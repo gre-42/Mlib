@@ -262,7 +262,7 @@ void RenderableColoredVertexArray::render_cva(
             // Not using NAN for ordering.
             .dirtmap_offset = has_dirtmap ? secondary_rendering_resources_->get_offset("dirtmap") : -1234,
             .dirtmap_discreteness = has_dirtmap ? secondary_rendering_resources_->get_discreteness("dirtmap") : -1234,
-            .dirtmap_scale = has_dirtmap ? secondary_rendering_resources_->get_scale("dirtmap") : -1234},
+            .dirt_scale = has_dirtmap ? secondary_rendering_resources_->get_scale("dirtmap") : -1234},
         filtered_lights,
         light_noshadow_indices,
         light_shadow_indices,
