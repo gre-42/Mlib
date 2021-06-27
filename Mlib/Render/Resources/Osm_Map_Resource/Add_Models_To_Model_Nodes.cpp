@@ -74,7 +74,10 @@ void Mlib::add_models_to_model_nodes(
                 }
             } else {
                 if (yit->second == "random") {
-                    yangle = UniformRandomNumberGenerator<float>(1523 + (unsigned int)(size_t)&yit->second)() * 360.f;
+                    yangle = UniformRandomNumberGenerator<float>(
+                        1523 + std::abs(safe_stoi(n.first)),
+                        0.f,
+                        2.f * float{M_PI})();
                 } else {
                     yangle = safe_stof(yit->second) * float{M_PI} / 180.f;
                 }

@@ -20,7 +20,7 @@ public:
         e_.seed(seed);
     }
 private:
-    std::default_random_engine e_;
+    std::mt19937 e_;
     std::uniform_real_distribution<typename FloatType<TData>::value_type> d_;
 };
 
@@ -38,7 +38,7 @@ public:
         e_.seed(seed);
     }
 private:
-    std::default_random_engine e_;
+    std::mt19937 e_;
     std::uniform_int_distribution<TData> d_;
 };
 
@@ -57,7 +57,7 @@ public:
         e_.seed(seed);
     }
 private:
-    std::default_random_engine e_;
+    std::mt19937 e_;
     std::normal_distribution<typename FloatType<TData>::value_type> d_;
 };
 
@@ -76,7 +76,7 @@ public:
         e_.seed(seed);
     }
 private:
-    std::default_random_engine e_;
+    std::mt19937 e_;
     std::gamma_distribution<typename FloatType<TData>::value_type> d_;
 };
 
