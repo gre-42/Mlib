@@ -21,6 +21,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder.hpp>
+#include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
 #include <Mlib/Physics/Advance_Times/Trigger_Gun_Ai.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
@@ -518,6 +519,10 @@ void LoadScene::operator()(
         "\\s+weight=([\\w+-.]+)$");
     static const DECLARE_REGEX(record_track_reg,
         "^\\s*record_track"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
+    static const DECLARE_REGEX(record_track_gpx_reg,
+        "^\\s*record_track_gpx"
         "\\s+node=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)$");
     static const DECLARE_REGEX(playback_track_reg,
@@ -2185,6 +2190,19 @@ void LoadScene::operator()(
                 physics_engine.advance_times_,
                 recorder_node,
                 &rb->rbi_,
+                ui_focus.focuses));
+        } else if (Mlib::re::regex_match(line, match, record_track_gpx_reg)) {
+            auto recorder_node = scene.get_node(match[1].str());
+            auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Absolute movable is not a rigid body");
+            }
+            physics_engine.advance_times_.add_advance_time(std::make_shared<RigidBodyRecorderGpx>(
+                fpath(match[2].str()),
+                physics_engine.advance_times_,
+                recorder_node,
+                &rb->rbi_,
+                scene_node_resources.get_geographic_mapping("world"),
                 ui_focus.focuses));
         } else if (Mlib::re::regex_match(line, match, playback_track_reg)) {
             auto playback_node = scene.get_node(match[1].str());
