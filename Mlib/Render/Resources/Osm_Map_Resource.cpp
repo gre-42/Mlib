@@ -333,20 +333,6 @@ OsmMapResource::OsmMapResource(
             config.raceway_beacon_distance,
             config.scale);
     }
-    if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
-        ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
-        LOG_INFO("add_trees_to_tree_nodes");
-        add_trees_to_tree_nodes(
-            resource_instance_positions_,
-            object_resource_descriptors_,
-            hitboxes_,
-            // steiner_points,
-            rnc,
-            config.min_dist_to_road,
-            all_holes_bvh,
-            nodes,
-            config.scale);
-    }
     {
         LOG_INFO("draw_wall_barriers");
         draw_wall_barriers(
@@ -796,6 +782,22 @@ OsmMapResource::OsmMapResource(
             } else {
                 handle_triangle_exception(e, "add models failed, consider setting the 'EXCEPT_MESH_AROUND_PREFIX' environment variable");
             }
+        }
+
+        if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
+            ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
+            LOG_INFO("add_trees_to_tree_nodes");
+            add_trees_to_tree_nodes(
+                resource_instance_positions_,
+                object_resource_descriptors_,
+                hitboxes_,
+                // steiner_points,
+                rnc,
+                config.min_dist_to_road,
+                all_holes_bvh,
+                ground_bvh,
+                nodes,
+                config.scale);
         }
     }
 

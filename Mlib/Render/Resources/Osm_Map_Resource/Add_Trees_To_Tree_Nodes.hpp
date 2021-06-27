@@ -12,6 +12,7 @@ template <class TData, size_t... tshape>
 class FixedArray;
 struct SteinerPointInfo;
 class StreetBvh;
+class GroundBvh;
 struct Node;
 
 void add_trees_to_tree_nodes(
@@ -21,7 +22,8 @@ void add_trees_to_tree_nodes(
     // std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     float min_dist_to_road,
-    const StreetBvh& ground_bvh,
+    const StreetBvh& street_bvh,
+    const GroundBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     float scale);
 
