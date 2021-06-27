@@ -43,15 +43,19 @@ TData distance_point_to_triangle (
         const FixedArray<TData, 2>& a,
         const FixedArray<TData, 2>& b)
     {
-        FixedArray<TData, 2> dl = transform_to_line_coordinates(pt, a, b);
-        if (dl(1) >= 0) {
+        if (sum(squared(a - b)) < 1e-12) {
             is_inside = false;
-            // Using "< 1" instead of "<= 1" to support pt=v1 or pt=v2 or pt=v3.
-            if ((dl(0) >= 0) && (dl(0) < 1)) {
-                if (!std::isnan(result_edge)) {
-                    throw std::runtime_error("distance_point_to_triangle detected left-handed triangle");
+        } else {
+            FixedArray<TData, 2> dl = transform_to_line_coordinates(pt, a, b);
+            if (dl(1) >= 0) {
+                is_inside = false;
+                // Using "< 1" instead of "<= 1" to support pt=v1 or pt=v2 or pt=v3.
+                if ((dl(0) >= 0) && (dl(0) < 1)) {
+                    if (!std::isnan(result_edge)) {
+                        throw std::runtime_error("distance_point_to_triangle detected left-handed triangle");
+                    }
+                    result_edge = dl(1);
                 }
-                result_edge = dl(1);
             }
         }
     };

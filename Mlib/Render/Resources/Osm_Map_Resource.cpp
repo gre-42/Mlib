@@ -385,7 +385,7 @@ OsmMapResource::OsmMapResource(
                     {},                             // contour
                     {{coords[0], coords[1], 0.f}},  // highlighted_nodes
                     {}                              // crossed_nodes
-                    ).T().reversed(0).save_to_file(std::string(prefix) + "_r_" + std::to_string(r) + ".ppm");
+                    ).T().reversed(0).save_to_file(std::string(prefix) + "_r_" + std::to_string(r) + ".png");
             }
         }
         // {
@@ -503,7 +503,7 @@ OsmMapResource::OsmMapResource(
                 l->tls_no_backfaces(),
                 prefix == nullptr
                     ? ""
-                    : prefix + std::to_string(i) + ".ppm");
+                    : prefix + std::to_string(i) + ".png");
             ++i;
         }
     }
@@ -776,7 +776,7 @@ OsmMapResource::OsmMapResource(
                             {e.c(0), e.c(1), 0.f}
                         },
                         {}                                // crossed_nodes
-                    ).T().reversed(0).save_to_file(std::string(prefix) + "_r_" + std::to_string(r) + ".ppm");
+                    ).T().reversed(0).save_to_file(std::string(prefix) + "_r_" + std::to_string(r) + ".png");
                 }
                 handle_triangle_exception(e, "add models failed, debug image saved");
             } else {
