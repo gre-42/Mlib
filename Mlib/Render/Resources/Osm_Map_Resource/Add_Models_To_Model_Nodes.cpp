@@ -73,7 +73,11 @@ void Mlib::add_models_to_model_nodes(
                     yangle = std::atan2(-dir(1), -dir(0));
                 }
             } else {
-                yangle = safe_stof(yit->second) * float{M_PI} / 180.f;
+                if (yit->second == "random") {
+                    yangle = UniformRandomNumberGenerator<float>(1523 + (unsigned int)(size_t)&yit->second)() * 360.f;
+                } else {
+                    yangle = safe_stof(yit->second) * float{M_PI} / 180.f;
+                }
             }
             float height;
             if (ground_bvh.height(height, p)) {
