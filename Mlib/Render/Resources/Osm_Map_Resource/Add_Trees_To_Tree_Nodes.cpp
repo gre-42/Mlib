@@ -11,7 +11,7 @@ void Mlib::add_trees_to_tree_nodes(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
-    std::list<SteinerPointInfo>& steiner_points,
+    // std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     float min_dist_to_road,
     const StreetBvh& ground_bvh,
@@ -26,10 +26,10 @@ void Mlib::add_trees_to_tree_nodes(
             const auto& p = n.second.position;
             if (std::isnan(min_dist_to_road) || !ground_bvh.has_neighbor(p, min_dist_to_road * scale)) {
                 add_parsed_resource_name(p, 0.f, rnc(), yangle_rng(), scale_rng(), resource_instance_positions, object_resource_descriptors, hitboxes);
-                steiner_points.push_back({
-                    .position = {p(0), p(1), 0.f},
-                    .type = SteinerPointType::TREE_NODE,
-                    .distance_to_road = NAN});
+                // steiner_points.push_back({
+                //     .position = {p(0), p(1), 0.f},
+                //     .type = SteinerPointType::TREE_NODE,
+                //     .distance_to_road = NAN});
             }
         }
     }
