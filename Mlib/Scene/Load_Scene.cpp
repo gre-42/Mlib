@@ -741,7 +741,9 @@ void LoadScene::operator()(
                         config.barrier_textures.push_back(as);
                     });
                 };
-                if (key == "name") {
+                if (key.starts_with("#")) {
+                    // Do nothing
+                } else if (key == "name") {
                     resource_name = value;
                 }
                 else if (key == "filename") {
