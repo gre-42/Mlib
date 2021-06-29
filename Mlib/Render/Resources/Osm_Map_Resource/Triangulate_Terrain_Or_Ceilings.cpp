@@ -283,7 +283,7 @@ void triangulate_entity_list(
         }
         std::list<PTri>* wrapped_tris = reinterpret_cast<std::list<PTri>*>(&tris);
         std::vector<std::list<PTri>>* wrapped_itris = reinterpret_cast<std::vector<std::list<PTri>>*>(&inner_triangles);
-        delete_triangles_inside_contours(all_contours, *wrapped_tris, *wrapped_itris);
+        extract_triangles_inside_contours(all_contours, *wrapped_tris, *wrapped_itris);
         // plot_tris("/tmp/wrapped_tris1.obj", tris);
         // save_obj("/tmp/holes.obj", IndexedFaceSet<float, size_t>{hole_triangles});
         // std::cerr << "nresidual " << wrapped_tris.size() << std::endl;

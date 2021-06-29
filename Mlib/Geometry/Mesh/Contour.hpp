@@ -32,7 +32,7 @@ std::list<std::list<FixedArray<float, 3>>> find_contours(
     ContourDetectionStrategy strategy);
 
 template <class TPoint, class TTriangle>
-void delete_triangles_inside_contours(
+void extract_triangles_inside_contours(
     const std::vector<std::vector<TPoint>>& contours,
     std::list<TTriangle>& triangles,
     std::vector<std::list<TTriangle>>& inner_triangles)
