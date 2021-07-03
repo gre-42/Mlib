@@ -752,6 +752,12 @@ void LoadScene::operator()(
                 else if (key == "heightmap") {
                     config.heightmap = fpath(value);
                 }
+                else if (key == "heightmap_mask") {
+                    config.heightmap_mask = fpath(value);
+                }
+                else if (key == "heightmap_extension") {
+                    config.heightmap_extension = safe_stoz(value);
+                }
                 else if (key == "terrain_undefined_textures") {
                     config.terrain_textures[TerrainType::UNDEFINED] = string_to_vector(value, fpath);
                 }
@@ -769,6 +775,9 @@ void LoadScene::operator()(
                 }
                 else if (key == "terrain_asphalt_textures") {
                     config.terrain_textures[TerrainType::ASPHALT] = string_to_vector(value, fpath);
+                }
+                else if (key == "terrain_water_floor_textures") {
+                    config.terrain_textures[TerrainType::WATER_FLOOR] = string_to_vector(value, fpath);
                 }
                 else if (key == "stone_dirt_texture") {
                     config.terrain_dirt_textures[TerrainType::STONE] = fpath(value);
@@ -879,6 +888,9 @@ void LoadScene::operator()(
                         .min_dist = safe_stof(match2[1].str()),
                         .max_dist = safe_stof(match2[2].str()),
                         .resource_names = string_to_vector(match2[3].str()) });
+                }
+                else if (key == "bounding_terrain_type") {
+                    config.bounding_terrain_type = terrain_type_from_string(value);
                 }
                 else if (key == "default_terrain_type") {
                     config.default_terrain_type = terrain_type_from_string(value);
@@ -1027,6 +1039,9 @@ void LoadScene::operator()(
                 }
                 else if (key == "extrude_elevated_grass_amount") {
                     config.extrude_elevated_grass_amount = safe_stof(value);
+                }
+                else if (key == "extrude_water_floor_amout") {
+                    config.extrude_water_floor_amout = safe_stof(value);
                 }
                 else if (key == "street_light_resource_names") {
                     config.street_light_resource_names = string_to_vector(value);

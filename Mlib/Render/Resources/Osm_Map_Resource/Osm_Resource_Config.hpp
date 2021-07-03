@@ -38,6 +38,8 @@ struct OsmResourceConfig {
     ~OsmResourceConfig();
     std::string filename;
     std::string heightmap;
+    std::string heightmap_mask;
+    size_t heightmap_extension = 0;
     std::map<TerrainType, std::vector<std::string>> terrain_textures;
     std::map<TerrainType, std::string> terrain_dirt_textures;
     std::string street_dirt_texture;
@@ -62,6 +64,7 @@ struct OsmResourceConfig {
     std::vector<std::string> near_grass_resource_names;
     std::vector<std::string> dirt_decals_resource_names;
     std::list<WaysideResourceNames> waysides;
+    TerrainType bounding_terrain_type = TerrainType::UNDEFINED;
     TerrainType default_terrain_type = TerrainType::UNDEFINED;
     float default_street_width = 7;
     float default_lane_width = 4;
@@ -110,6 +113,7 @@ struct OsmResourceConfig {
     float extrude_wall_amount = 0;
     float extrude_grass_amount = 0;
     float extrude_elevated_grass_amount = 0;
+    float extrude_water_floor_amout = 0;
     std::vector<std::string> street_light_resource_names = {};
     float max_wall_width = 5;
     bool with_height_bindings = false;

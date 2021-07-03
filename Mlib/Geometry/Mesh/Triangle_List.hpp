@@ -121,6 +121,7 @@ public:
         const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
         const std::list<std::shared_ptr<TriangleList>>* source_triangles,
         const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
+        const std::set<OrderableFixedArray<float, 3>>* vertices_not_to_connect,
         float height,
         float scale,
         float uv_scale_x,

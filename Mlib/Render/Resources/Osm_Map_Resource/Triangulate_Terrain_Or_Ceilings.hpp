@@ -34,6 +34,7 @@ void triangulate_terrain_or_ceilings(
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
+    TerrainType bounding_terrain_type,
     TerrainType default_terrain_type,
     const std::set<TerrainType>& excluded_terrain_types);
 
@@ -50,6 +51,7 @@ void triangulate_water(
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
+    WaterType bounding_water_type,
     WaterType default_water_type);
 
 }

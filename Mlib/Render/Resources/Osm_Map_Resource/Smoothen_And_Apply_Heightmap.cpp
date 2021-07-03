@@ -105,6 +105,11 @@ void Mlib::smoothen_and_apply_heightmap(
         }
     };
     if (!config.heightmap.empty()) {
+        Array<float> heightmap = PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX);
+        Array<bool> heightmap_mask;
+        if (!config.heightmap_mask.empty()) {
+            heightmap_mask = PgmImage::load_from_file(config.heightmap_mask).casted<bool>();
+        }
         LOG_INFO("apply_heightmap");
         std::list<std::shared_ptr<TriangleList>> tls_smoothed;
         std::list<FixedArray<float, 3>*> smoothed_vertices;
@@ -117,7 +122,9 @@ void Mlib::smoothen_and_apply_heightmap(
             config.extrude_air_support_amount,
             smoothed_vertices,
             vertices_to_delete,
-            PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX),
+            heightmap,
+            heightmap_mask,
+            config.heightmap_extension,
             normalized_points.chained(ScaleMode::DIAGONAL, OffsetMode::MINIMUM).normalization_matrix(),
             config.scale,
             nodes,

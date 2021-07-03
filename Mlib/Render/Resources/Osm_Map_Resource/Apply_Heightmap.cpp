@@ -5,6 +5,7 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Extended_Image.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -39,6 +40,8 @@ void Mlib::apply_heightmap(
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
+    const Array<bool>& heightmap_mask,
+    size_t heightmap_extension,
     const TransformationMatrix<float, 2>& normalization_matrix,
     float scale,
     const std::map<std::string, Node>& nodes,
@@ -48,6 +51,13 @@ void Mlib::apply_heightmap(
     float street_node_smoothness,
     const Interp<float>& layer_heights)
 {
+    size_t ext = std::max({ heightmap.shape(0), heightmap.shape(1), heightmap_extension });
+    ExtendedImage extended_heightmap{
+        heightmap,
+        heightmap_mask,
+        heightmap_extension,
+        10,
+        (2 * ext) / 10 };
     // Smoothen raw 2D street nodes, ignoring which triangles they contributed to.
     std::map<std::string, NodeHeight> node_height;
     if (street_node_smoothness != 0) {
@@ -72,7 +82,7 @@ void Mlib::apply_heightmap(
                     if (ref_is_ground) {
                         FixedArray<float, 2> p = normalization_matrix.transform((nodes.at(*it).position + nodes.at(*s).position) / 2.f);
                         float z;
-                        if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+                        if (extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
                             bridge_height_ref += z;
                         } else {
                             std::cerr << "Bridge with ref=ground is not inside heightmap. Way ID: " << w.first << std::endl;
@@ -116,7 +126,7 @@ void Mlib::apply_heightmap(
                     // pick the height of the heightmap exactly on the node.
                     FixedArray<float, 2> p = normalization_matrix.transform(nodes.at(n.first).position);
                     float z;
-                    if (bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+                    if (extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
                         node_height[n.first] = {
                             .height = z,
                             .smooth_height = z};
@@ -236,7 +246,7 @@ void Mlib::apply_heightmap(
         // If no height binding could be applied, use the raw heightmap value.
         FixedArray<float, 2> p = normalization_matrix.transform(vc);
         float z;
-        if (!bilinear_grayscale_interpolation((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), heightmap, z)) {
+        if (!extended_heightmap((1 - p(1)) * (heightmap.shape(0) - 1), p(0) * (heightmap.shape(1) - 1), z)) {
             // std::cerr << "Height out of bounds." << std::endl;
             for (auto& pc : position.second) {
                 if (!vertices_to_delete.insert(pc).second) {

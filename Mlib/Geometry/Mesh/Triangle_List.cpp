@@ -158,6 +158,7 @@ void TriangleList::extrude(
     const std::list<std::shared_ptr<TriangleList>>& triangle_lists,
     const std::list<std::shared_ptr<TriangleList>>* source_triangles,
     const std::set<OrderableFixedArray<float, 3>>* clamped_vertices,
+    const std::set<OrderableFixedArray<float, 3>>* vertices_not_to_connect,
     float height,
     float scale,
     float uv_scale_x,
@@ -189,11 +190,18 @@ void TriangleList::extrude(
     for (auto& t : tris) {
         FixedArray<ColoredVertex, 3> t_old = *t;
         FixedArray<bool, 3> is_clamped{
-            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{(*t)(0).position}),
-            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{(*t)(1).position}),
-            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{(*t)(2).position})};
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{ (*t)(0).position }),
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{ (*t)(1).position }),
+            clamped_vertices != nullptr && clamped_vertices->contains(OrderableFixedArray{ (*t)(2).position })};
+        FixedArray<bool, 3> not_to_connect{
+            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray{ (*t)(0).position }),
+            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray{ (*t)(1).position }),
+            (vertices_not_to_connect != nullptr) && vertices_not_to_connect->contains(OrderableFixedArray{ (*t)(2).position })};
         auto connect_extruded = [&](size_t a, size_t b){
             if (is_clamped(a) && is_clamped(b)) {
+                return;
+            }
+            if (not_to_connect(a) && not_to_connect(b)) {
                 return;
             }
             auto edge = std::make_pair(O{t_old(a).position}, O{t_old(b).position});

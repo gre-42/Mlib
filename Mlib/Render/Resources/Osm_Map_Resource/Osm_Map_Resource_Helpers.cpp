@@ -309,6 +309,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
                 parse_color(bu.way.tags, "color", building_color),               // color
                 "",                                                              // contour_filename
                 "",                                                              // triangle_filename
+                TerrainType::UNDEFINED,                                          // bounding_terrain_type
                 TerrainType::UNDEFINED,                                          // default_terrain_type
                 {});                                                             // excluded_terrain_types
         } catch (const std::runtime_error& e) {

@@ -432,6 +432,7 @@ OsmMapResource::OsmMapResource(
                 terrain_color,
                 getenv_default("TERRAIN_CONTOUR_FILENAME", ""),
                 getenv_default("TERRAIN_TRIANGLE_FILENAME", ""),
+                config.bounding_terrain_type,
                 config.default_terrain_type,
                 {TerrainType::STREET_HOLE});
         } catch (const p2t::PointException& e) {
@@ -557,6 +558,7 @@ OsmMapResource::OsmMapResource(
                 {air_triangle_lists.tl_street_curb[RoadType::STREET]},
                 nullptr,
                 nullptr,
+                nullptr,
                 config.extrude_air_curb_amount * config.scale,
                 config.scale,
                 config.uv_scale_street,
@@ -566,6 +568,7 @@ OsmMapResource::OsmMapResource(
                 TriangleList::extrude(
                     *air_triangle_lists.tl_street_curb[RoadType::PATH],
                     {air_triangle_lists.tl_street_curb[RoadType::PATH]},
+                    nullptr,
                     nullptr,
                     nullptr,
                     config.extrude_air_curb_amount * config.scale,
@@ -581,6 +584,7 @@ OsmMapResource::OsmMapResource(
                 {osm_triangle_lists.tl_street_curb[RoadType::STREET]},
                 nullptr,
                 nullptr,
+                nullptr,
                 config.extrude_curb_amount * config.scale,
                 config.scale,
                 config.uv_scale_street,
@@ -590,6 +594,7 @@ OsmMapResource::OsmMapResource(
                 TriangleList::extrude(
                     *osm_triangle_lists.tl_street_curb[RoadType::PATH],
                     {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
+                    nullptr,
                     nullptr,
                     nullptr,
                     config.extrude_curb_amount * config.scale,
@@ -603,6 +608,7 @@ OsmMapResource::OsmMapResource(
             TriangleList::extrude(
                 *osm_triangle_lists.tl_street[RoadProperties{.type = RoadType::WALL, .nlanes = 1}].triangle_list,
                 {osm_triangle_lists.tls_wall_wo_curb()},
+                nullptr,
                 nullptr,
                 nullptr,
                 config.extrude_wall_amount * config.scale,
@@ -634,6 +640,7 @@ OsmMapResource::OsmMapResource(
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::GRASS]},
                 nullptr,
                 nullptr,
+                nullptr,
                 config.extrude_grass_amount * config.scale,
                 config.scale,
                 1.f,
@@ -648,7 +655,27 @@ OsmMapResource::OsmMapResource(
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::ELEVATED_GRASS]},
                 nullptr,
                 nullptr,
+                nullptr,
                 config.extrude_elevated_grass_amount * config.scale,
+                config.scale,
+                config.uv_scale_highway_wall,
+                config.uv_scale_highway_wall,
+                true);  // uvs_equal_lengths
+        }
+        if ((config.extrude_water_floor_amout != 0) &&
+            osm_triangle_lists.tl_terrain->contains(TerrainType::WATER_FLOOR))
+        {
+            std::set<OrderableFixedArray<float, 3>> vertices_not_to_connect;
+            for (const auto& p : map_outer_contour) {
+                vertices_not_to_connect.insert(OrderableFixedArray<float, 3>{ p(0), p(1), 0.f });
+            }
+            TriangleList::extrude(
+                *osm_triangle_lists.tl_terrain_extrusion[TerrainType::WATER_FLOOR],
+                {(*osm_triangle_lists.tl_terrain)[TerrainType::WATER_FLOOR]},
+                nullptr,
+                nullptr,
+                &vertices_not_to_connect,
+                config.extrude_water_floor_amout * config.scale,
                 config.scale,
                 config.uv_scale_highway_wall,
                 config.uv_scale_highway_wall,
@@ -689,6 +716,7 @@ OsmMapResource::OsmMapResource(
                 osm_triangle_lists.tls_street_wo_curb(),
                 nullptr,
                 nullptr,
+                nullptr,
                 config.extrude_street_amount * config.scale,
                 config.scale,
                 1,
@@ -717,15 +745,16 @@ OsmMapResource::OsmMapResource(
             {
                 std::list<std::shared_ptr<TriangleList>> source_triangles{triangle_lists.tls_curb_only()};
                 TriangleList::extrude(
-                    *triangle_lists.tl_street_curb[RoadType::STREET],
-                    triangle_lists.tls_street_wo_curb(),
-                    &source_triangles,
-                    &boundary_vertices,
-                    config.extrude_street_amount * config.scale,
-                    config.scale,
-                    1,
-                    config.uv_scale_terrain,
-                    false);  // uvs_equal_lengths
+                    *triangle_lists.tl_street_curb[RoadType::STREET],   // dest
+                    triangle_lists.tls_street_wo_curb(),                // triangle_lists
+                    &source_triangles,                                  // source_triangles
+                    &boundary_vertices,                                 // clamped_vertices
+                    nullptr,                                            // vertices_not_to_connect
+                    config.extrude_street_amount * config.scale,        // height
+                    config.scale,                                       // scale
+                    1,                                                  // uv_scale_x
+                    config.uv_scale_terrain,                            // uv_scale_y
+                    false);                                             // uvs_equal_lengths
             };
             if (std::isnan(config.extrude_air_curb_amount)) {
                 do_extrude(osm_triangle_lists);
@@ -830,15 +859,16 @@ OsmMapResource::OsmMapResource(
         }
         if (config.extrude_air_support_amount != 0) {
             TriangleList::extrude(
-                *air_or_osm.tl_air_support,
-                {air_or_osm.tl_air_support},
-                nullptr,
-                &boundary_vertices,
-                config.extrude_air_support_amount * config.scale,
-                config.scale,
-                1,
-                config.uv_scale_terrain,
-                false);  // uvs_equal_lengths
+                *air_or_osm.tl_air_support,                         // dest
+                {air_or_osm.tl_air_support},                        // triangle_lists
+                nullptr,                                            // source_triangles
+                &boundary_vertices,                                 // clamped_vertices
+                nullptr,                                            // vertices_not_to_connect
+                config.extrude_air_support_amount * config.scale,   // height
+                config.scale,                                       // scale
+                1,                                                  // uv_scale_x
+                config.uv_scale_terrain,                            // uv_scale_y
+                false);                                             // uvs_equal_lengths
             air_or_osm.tl_air_support->triangles_.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex, 3>& t){
                 return triangles_to_delete.contains(&t);
             });
@@ -962,6 +992,7 @@ OsmMapResource::OsmMapResource(
                 terrain_color,
                 getenv_default("WATER_CONTOUR_FILENAME", ""),
                 getenv_default("WATER_TRIANGLE_FILENAME", ""),
+                WaterType::UNDEFINED,
                 WaterType::UNDEFINED);
         } catch (const p2t::PointException& e) {
             handle_point_exception(e, "Could not triangulate water");

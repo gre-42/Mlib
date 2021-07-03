@@ -36,6 +36,8 @@ void apply_heightmap(
     std::list<FixedArray<float, 3>*>& in_vertices,
     std::set<const FixedArray<float, 3>*>& vertices_to_delete,
     const Array<float>& heightmap,
+    const Array<bool>& heightmap_mask,
+    size_t heightmap_extension,
     const TransformationMatrix<float, 2>& normalization_matrix,
     float scale,
     const std::map<std::string, Node>& nodes,

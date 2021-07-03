@@ -184,6 +184,7 @@ void triangulate_entity_list(
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
+    EntityType bounding_terrain_type,
     EntityType default_terrain_type,
     const std::set<EntityType>& excluded_entitities)
 {
@@ -316,7 +317,7 @@ void triangulate_entity_list(
                 draw_tris(tl_terrain[p2t_region_types[i]], inner_triangles[i]);
             }
         }
-        draw_tris(tl_terrain[default_terrain_type], inner_triangles.back());
+        draw_tris(tl_terrain[bounding_terrain_type], inner_triangles.back());
     }
     // for (const auto& l : tl_terrain.map()) {
     //     save_obj("/tmp/" + to_string(l.first) + ".obj", IndexedFaceSet<float, size_t>{l.second->triangles_});
@@ -339,6 +340,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
+    TerrainType bounding_terrain_type,
     TerrainType default_terrain_type,
     const std::set<TerrainType>& excluded_terrain_types)
 {
@@ -355,6 +357,7 @@ void Mlib::triangulate_terrain_or_ceilings(
         color,
         contour_filename,
         triangle_filename,
+        bounding_terrain_type,
         default_terrain_type,
         excluded_terrain_types);
 }
@@ -372,6 +375,7 @@ void Mlib::triangulate_water(
     const FixedArray<float, 3>& color,
     const std::string& contour_filename,
     const std::string& triangle_filename,
+    WaterType bounding_water_type,
     WaterType default_water_type)
 {
     triangulate_entity_list(
@@ -387,6 +391,7 @@ void Mlib::triangulate_water(
         color,
         contour_filename,
         triangle_filename,
+        bounding_water_type,
         default_water_type,
         {WaterType::HOLE});
 }
