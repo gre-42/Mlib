@@ -509,6 +509,11 @@ OsmMapResource::OsmMapResource(
         }
     }
 
+    std::list<FixedArray<float, 3>> map_outer_contour3;
+    for (const auto& p : map_outer_contour) {
+        map_outer_contour3.push_back(FixedArray<float, 3>{ p(0), p(1), 0.f });
+    }
+
     smoothen_and_apply_heightmap(
         config,
         height_bindings,
@@ -524,6 +529,7 @@ OsmMapResource::OsmMapResource(
         resource_instance_positions_,
         hitboxes_,
         steiner_points,
+        map_outer_contour3,
         street_rectangles,
         way_point_edges_2_lanes);
 
@@ -666,8 +672,8 @@ OsmMapResource::OsmMapResource(
             osm_triangle_lists.tl_terrain->contains(TerrainType::WATER_FLOOR))
         {
             std::set<OrderableFixedArray<float, 3>> vertices_not_to_connect;
-            for (const auto& p : map_outer_contour) {
-                vertices_not_to_connect.insert(OrderableFixedArray<float, 3>{ p(0), p(1), 0.f });
+            for (const auto& p : map_outer_contour3) {
+                vertices_not_to_connect.insert(OrderableFixedArray{ p });
             }
             TriangleList::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::WATER_FLOOR],

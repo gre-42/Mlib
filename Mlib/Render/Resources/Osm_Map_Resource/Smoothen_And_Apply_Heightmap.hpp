@@ -39,6 +39,7 @@ void smoothen_and_apply_heightmap(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
     std::list<SteinerPointInfo>& steiner_points,
+    std::list<FixedArray<float, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes);
 
