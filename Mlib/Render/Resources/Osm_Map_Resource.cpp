@@ -676,7 +676,7 @@ OsmMapResource::OsmMapResource(
                 vertices_not_to_connect.insert(OrderableFixedArray{ p });
             }
             TriangleList::extrude(
-                *osm_triangle_lists.tl_terrain_extrusion[TerrainType::WATER_FLOOR],
+                *osm_triangle_lists.tl_terrain_extrusion[TerrainType::WATER_FLOOR_BASE],
                 {(*osm_triangle_lists.tl_terrain)[TerrainType::WATER_FLOOR]},
                 nullptr,
                 nullptr,

@@ -779,6 +779,9 @@ void LoadScene::operator()(
                 else if (key == "terrain_water_floor_textures") {
                     config.terrain_textures[TerrainType::WATER_FLOOR] = string_to_vector(value, fpath);
                 }
+                else if (key == "terrain_water_floor_base_textures") {
+                    config.terrain_textures[TerrainType::WATER_FLOOR_BASE] = string_to_vector(value, fpath);
+                }
                 else if (key == "stone_dirt_texture") {
                     config.terrain_dirt_textures[TerrainType::STONE] = fpath(value);
                 }
