@@ -68,6 +68,9 @@ void Sweep::FinalizationPolygon(SweepContext& tcx)
   Point* p = tcx.front()->head()->next->point;
   while (!t->GetConstrainedEdgeCW(*p)) {
     t = t->NeighborCCW(*p);
+    if (t == nullptr) {
+      throw PointException(*p, "FinalizationPolygon could not find NeighborCCW");
+    }
   }
 
   // Collect interior triangles constrained by edges
