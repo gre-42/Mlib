@@ -56,8 +56,8 @@ void Mlib::apply_heightmap(
         heightmap,
         heightmap_mask,
         heightmap_extension,
-        10,
-        (2 * ext) / 10 };
+        50,
+        1 + ext / 50 };
     // Smoothen raw 2D street nodes, ignoring which triangles they contributed to.
     std::map<std::string, NodeHeight> node_height;
     if (street_node_smoothness != 0) {

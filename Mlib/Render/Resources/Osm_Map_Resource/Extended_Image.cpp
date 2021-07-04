@@ -35,7 +35,7 @@ ExtendedImage::ExtendedImage(
                     }
                 }
             }
-            extended_image_ = box_filter_nans_as_zeros_NWE(extended_image_, ArrayShape{ box_filter_radius + 1, box_filter_radius + 1 });
+            extended_image_ = box_filter_nans_as_zeros_NWE(extended_image_, ArrayShape{ 2 * box_filter_radius + 1, 2 * box_filter_radius + 1 });
         }
     }
     if (any(isnan(extended_image_))) {
