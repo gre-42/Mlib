@@ -9,7 +9,8 @@ ExtendedImage::ExtendedImage(
     const Array<bool>& mask,
     size_t extension,
     size_t box_filter_radius,
-    size_t niterations)
+    size_t niterations,
+    bool preserve_original)
 : extension_{ extension }
 {
     if (image.ndim() != 2) {
@@ -36,6 +37,15 @@ ExtendedImage::ExtendedImage(
                 }
             }
             extended_image_ = box_filter_nans_as_zeros_NWE(extended_image_, ArrayShape{ 2 * box_filter_radius + 1, 2 * box_filter_radius + 1 });
+        }
+        if (preserve_original) {
+            for (size_t r = 0; r < image.shape(0); ++r) {
+                for (size_t c = 0; c < image.shape(1); ++c) {
+                    if (mask(r, c)) {
+                        extended_image_(r + extension_, c + extension_) = image(r, c);
+                    }
+                }
+            }
         }
     }
     if (any(isnan(extended_image_))) {
