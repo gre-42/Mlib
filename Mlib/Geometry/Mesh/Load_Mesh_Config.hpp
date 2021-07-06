@@ -23,6 +23,7 @@ struct LoadMeshConfig {
     OccludedType occluded_type;
     OccluderType occluder_type;
     bool occluded_by_black;
+    bool is_black;
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;

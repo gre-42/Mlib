@@ -18,8 +18,12 @@ bool VisibilityCheck::is_visible(
     const ExternalRenderPass& external_render_pass,
     float max_distance) const
 {
-    if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (m.occluder_type != OccluderType::OFF)) {
-        return true;
+    if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
+        if (external_render_pass.black_node_name.empty()) {
+            return m.occluder_type != OccluderType::OFF;
+        } else {
+            return m.is_black;
+        }
     }
     if (!m.is_small && std::isnan(max_distance) && (m.distances == default_distances_hard)) {
         return true;

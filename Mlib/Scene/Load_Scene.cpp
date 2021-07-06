@@ -153,6 +153,7 @@ void LoadScene::operator()(
         "\\s+occluded_type=(off|color|depth)"
         "\\s+occluder_type=(off|white|black)"
         "\\s+occluded_by_black=(0|1)"
+        "(?:\\s+is_black=(0|1))?"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
         "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
@@ -665,13 +666,16 @@ void LoadScene::operator()(
                 .occluded_type = occluded_type_from_string(match[21].str()),
                 .occluder_type = occluder_type_from_string(match[22].str()),
                 .occluded_by_black = safe_stob(match[23].str()),
-                .aggregate_mode = aggregate_mode_from_string(match[24].str()),
-                .transformation_mode = transformation_mode_from_string(match[25].str()),
-                .triangle_tangent_error_behavior = match[26].matched
-                    ? triangle_tangent_error_behavior_from_string(match[26].str())
+                .is_black = match[24].matched
+                    ? safe_stob(match[24].str())
+                    : false,
+                .aggregate_mode = aggregate_mode_from_string(match[25].str()),
+                .transformation_mode = transformation_mode_from_string(match[26].str()),
+                .triangle_tangent_error_behavior = match[27].matched
+                    ? triangle_tangent_error_behavior_from_string(match[27].str())
                     : TriangleTangentErrorBehavior::RAISE,
                 .apply_static_lighting = false,
-                .werror = !match[27].matched};
+                .werror = !match[28].matched};
             std::string filename = fpath(match[2].str());
             if (filename.ends_with(".obj")) {
                 scene_node_resources.add_resource(match[1].str(), std::make_shared<ObjFileResource>(
