@@ -1309,7 +1309,7 @@ void LoadScene::operator()(
             rr->set_blend_map_texture(
                 match[1].str(),
                 BlendMapTexture{
-                    .texture_descriptor = rr->get_texture_descriptor(fpath(match[2].str())),
+                    .texture_descriptor = TextureDescriptor{ .color = fpath(match[2].str()) },
                     .min_height = safe_stof(match[3].str()),
                     .max_height = safe_stof(match[4].str()),
                     .distances = {

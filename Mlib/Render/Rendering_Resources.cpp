@@ -384,15 +384,6 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
     }
 }
 
-TextureDescriptor RenderingResources::get_texture_descriptor(const std::string& name) const {
-    auto it = texture_descriptors_.find(name);
-    if (it == texture_descriptors_.end()) {
-        return TextureDescriptor{ .color = name };
-    } else {
-        return it->second;
-    }
-}
-
 TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std::string& name) const {
     auto it = texture_descriptors_.find(name);
     if (it == texture_descriptors_.end()) {
@@ -404,7 +395,7 @@ TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std:
 BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_blending_min " + name);
     if (auto it = blend_map_textures_.find(name); it == blend_map_textures_.end()) {
-        return BlendMapTexture{ .texture_descriptor = get_texture_descriptor(name) };
+        return BlendMapTexture{ .texture_descriptor = { .color = name } };
     } else {
         return it->second;
     }
