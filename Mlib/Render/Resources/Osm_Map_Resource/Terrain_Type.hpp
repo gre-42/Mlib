@@ -6,6 +6,7 @@ namespace Mlib {
 
 enum class TerrainType {
     GRASS,
+    FLOWERS,
     STONE,
     ASPHALT,
     ELEVATED_GRASS,
@@ -20,6 +21,8 @@ enum class TerrainType {
 inline TerrainType terrain_type_from_string(const std::string& tt) {
     if (tt == "grass") {
         return TerrainType::GRASS;
+    } else if (tt == "flowers") {
+        return TerrainType::FLOWERS;
     } else if (tt == "stone") {
         return TerrainType::STONE;
     } else if (tt == "asphalt") {
@@ -44,6 +47,8 @@ inline TerrainType terrain_type_from_string(const std::string& tt) {
 inline std::string terrain_type_to_string(TerrainType tt) {
     if (tt == TerrainType::GRASS) {
         return "grass";
+    } else if (tt == TerrainType::FLOWERS) {
+        return "flowers";
     } else if (tt == TerrainType::STONE) {
         return "stone";
     } else if (tt == TerrainType::ASPHALT) {

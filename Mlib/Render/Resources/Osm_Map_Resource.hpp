@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -45,10 +46,9 @@ private:
 
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain_;
     std::list<std::shared_ptr<TriangleList>> tls_no_grass_;
-    std::vector<std::string> near_grass_resource_names_;
-    float much_near_grass_distance_ = 2;
-    std::vector<std::string> dirt_decals_resource_names_;
-    float dirt_decals_distance_ = 10;
+    TerrainStyle near_grass_terrain_style_{ .much_near_distance = 2 };
+    TerrainStyle near_flowers_terrain_style_{ .much_near_distance = 2 };
+    TerrainStyle dirt_decals_terrain_style_{ .much_near_distance = 10 };
 };
 
 }

@@ -768,6 +768,9 @@ void LoadScene::operator()(
                 else if (key == "terrain_grass_textures") {
                     config.terrain_textures[TerrainType::GRASS] = string_to_vector(value, fpath);
                 }
+                else if (key == "terrain_flowers_textures") {
+                    config.terrain_textures[TerrainType::FLOWERS] = string_to_vector(value, fpath);
+                }
                 else if (key == "terrain_elevated_grass_textures") {
                     config.terrain_textures[TerrainType::ELEVATED_GRASS] = string_to_vector(value, fpath);
                 }
@@ -881,10 +884,13 @@ void LoadScene::operator()(
                     config.grass_resource_names = string_to_vector(value);
                 }
                 else if (key == "near_grass_resource_names") {
-                    config.near_grass_resource_names = string_to_vector(value);
+                    config.near_grass_terrain_style.near_resource_names = string_to_vector(value);
+                }
+                else if (key == "near_flowers_resource_names") {
+                    config.near_flowers_terrain_style.near_resource_names = string_to_vector(value);
                 }
                 else if (key == "dirt_decals_resource_names") {
-                    config.dirt_decals_resource_names = string_to_vector(value);
+                    config.dirt_decals_terrain_style.near_resource_names = string_to_vector(value);
                 }
                 else if (key == "wayside_resource_names") {
                     Mlib::re::smatch match2;
@@ -969,10 +975,13 @@ void LoadScene::operator()(
                     config.much_grass_distance = safe_stof(value);
                 }
                 else if (key == "much_near_grass_distance") {
-                    config.much_near_grass_distance = safe_stof(value);
+                    config.near_grass_terrain_style.much_near_distance = safe_stof(value);
+                }
+                else if (key == "much_near_flowers_distance") {
+                    config.near_flowers_terrain_style.much_near_distance = safe_stof(value);
                 }
                 else if (key == "dirt_decals_distance") {
-                    config.dirt_decals_distance = safe_stof(value);
+                    config.dirt_decals_terrain_style.much_near_distance = safe_stof(value);
                 }
                 else if (key == "raceway_beacon_distance") {
                     config.raceway_beacon_distance = safe_stof(value);

@@ -62,10 +62,9 @@ OsmMapResource::OsmMapResource(
     const OsmResourceConfig& config)
 : scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
-  near_grass_resource_names_{ config.near_grass_resource_names },
-  much_near_grass_distance_{ config.much_near_grass_distance },
-  dirt_decals_resource_names_{ config.dirt_decals_resource_names },
-  dirt_decals_distance_{ config.dirt_decals_distance }
+  near_grass_terrain_style_{ config.near_grass_terrain_style },
+  near_flowers_terrain_style_{ config.near_flowers_terrain_style },
+  dirt_decals_terrain_style_{ config.dirt_decals_terrain_style }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     std::map<std::string, Node> nodes;
@@ -1057,8 +1056,9 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
             scene_node.add_instances_position(p.first, r.position, r.yangle);
         }
     }
-    if ((!near_grass_resource_names_.empty() && (much_near_grass_distance_ != INFINITY)) ||
-        (!dirt_decals_resource_names_.empty() && (dirt_decals_distance_ != INFINITY)))
+    if (near_grass_terrain_style_.is_visible() ||
+        near_flowers_terrain_style_.is_visible() ||  
+        dirt_decals_terrain_style_.is_visible())
     {
         scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(this));
     }

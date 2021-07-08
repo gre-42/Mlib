@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <cmath>
@@ -61,8 +62,9 @@ struct OsmResourceConfig {
     std::string roof_texture;
     std::vector<std::string> tree_resource_names;
     std::vector<std::string> grass_resource_names;
-    std::vector<std::string> near_grass_resource_names;
-    std::vector<std::string> dirt_decals_resource_names;
+    TerrainStyle near_grass_terrain_style{ .much_near_distance = 2 };
+    TerrainStyle near_flowers_terrain_style{ .much_near_distance = 2 };
+    TerrainStyle dirt_decals_terrain_style{ .much_near_distance = 10 };
     std::list<WaysideResourceNames> waysides;
     TerrainType bounding_terrain_type = TerrainType::UNDEFINED;
     TerrainType default_terrain_type = TerrainType::UNDEFINED;
@@ -88,8 +90,6 @@ struct OsmResourceConfig {
     float forest_outline_tree_distance = 0.15f;
     float forest_outline_tree_inwards_distance = 0;
     float much_grass_distance = 5;
-    float much_near_grass_distance = 2;
-    float dirt_decals_distance = 10;
     float raceway_beacon_distance = INFINITY;
     float min_dist_to_road = 0.5f;
     bool with_terrain = true;

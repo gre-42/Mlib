@@ -77,15 +77,14 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     auto add_triangles = [&mvp, &m, &scene_graph_config, &external_render_pass, &instances_queue](
         const TriangleList& gtl,
         SceneNodeResources& scene_node_resources,
-        const std::vector<std::string>& resource_names,
-        float instances_distance,
+        const TerrainStyle& terrain_style,
         float scale,
         Bvh<float, FixedArray<FixedArray<float, 3>, 3>, 3>* boundary_bvh)
     {
-        assert_true(!resource_names.empty());
-        assert_true(instances_distance != INFINITY);
+        assert_true(!terrain_style.near_resource_names.empty());
+        assert_true(terrain_style.much_near_distance != INFINITY);
         TriangleSampler2<float> ts{ 392743 };
-        ResourceNameCycle rnc{ scene_node_resources, resource_names };
+        ResourceNameCycle rnc{ scene_node_resources, terrain_style.near_resource_names };
         for (const auto& t : gtl.triangles_) {
             auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
             auto mvp_center = dot2d(mvp, TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), center }.affine());
@@ -98,7 +97,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     t(0).position,
                     t(1).position,
                     t(2).position,
-                    instances_distance * scale,
+                    terrain_style.much_near_distance * scale,
                     [&](float a, float b, float c)
                     {
                         FixedArray<float, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
@@ -139,16 +138,20 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             }
         }
     };
-    if (!omr_->near_grass_resource_names_.empty() && (omr_->much_near_grass_distance_ != INFINITY))
+    if (omr_->near_grass_terrain_style_.is_visible() || omr_->near_flowers_terrain_style_.is_visible())
     {
-        std::list<std::shared_ptr<TriangleList>> grass_triangles;
+        std::list<std::pair<TerrainStyle, std::shared_ptr<TriangleList>>> grass_triangles;
         if (auto tit = omr_->tl_terrain_->map().find(TerrainType::GRASS); tit != omr_->tl_terrain_->map().end())
         {
-            grass_triangles.push_back(tit->second);
+            grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
         }
         if (auto tit = omr_->tl_terrain_->map().find(TerrainType::ELEVATED_GRASS); tit != omr_->tl_terrain_->map().end())
         {
-            grass_triangles.push_back(tit->second);
+            grass_triangles.push_back({ omr_->near_grass_terrain_style_, tit->second });
+        }
+        if (auto tit = omr_->tl_terrain_->map().find(TerrainType::FLOWERS); tit != omr_->tl_terrain_->map().end())
+        {
+            grass_triangles.push_back({ omr_->near_flowers_terrain_style_, tit->second });
         }
         if (!grass_triangles.empty()) {
             if (street_bvh_ == nullptr) {
@@ -165,23 +168,20 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             }
             for (const auto& t : grass_triangles) {
                 add_triangles(
-                    *t,
+                    *t.second,
                     omr_->scene_node_resources_,
-                    omr_->near_grass_resource_names_,
-                    omr_->much_near_grass_distance_,
+                    t.first,
                     omr_->scale_,
                     this->street_bvh_.get());
             }
         }
     }
-    if (!omr_->dirt_decals_resource_names_.empty() && (omr_->dirt_decals_distance_ != INFINITY))
-    {
+    if (omr_->dirt_decals_terrain_style_.is_visible()) {
         for (const auto& lst : omr_->tls_no_grass_) {
             add_triangles(
                 *lst,
                 omr_->scene_node_resources_,
-                omr_->dirt_decals_resource_names_,
-                omr_->dirt_decals_distance_,
+                omr_->dirt_decals_terrain_style_,
                 omr_->scale_,
                 nullptr);
         }
