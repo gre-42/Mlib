@@ -2253,7 +2253,7 @@ bool load_system_certs_on_windows(X509_STORE *store) {
   if (!hStore) { return false; }
 
   PCCERT_CONTEXT pContext = NULL;
-  while (pContext = CertEnumCertificatesInStore(hStore, pContext)) {
+  while ((pContext = CertEnumCertificatesInStore(hStore, pContext))) {
     auto encoded_cert =
         static_cast<const unsigned char *>(pContext->pbCertEncoded);
 

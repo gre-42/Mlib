@@ -55,11 +55,7 @@ for d in $SOURCE_DIRS; do
             /cygdrive/d/Programs/cmake/bin/cmake.exe ../
             echo "Use BuildDebug.bat for building"
         else
-            if [ "$OSTYPE" == "msys" ] ; then
-                cmake -G Ninja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DCMAKE_CXX_COMPILER=/mingw64/bin/g++ ../
-            else
-                cmake -G Ninja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../
-            fi
+            cmake -G Ninja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../
             ninja -v
         fi
         cd -
