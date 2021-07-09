@@ -85,11 +85,14 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         assert_true(terrain_style.much_near_distance != INFINITY);
         TriangleSampler2<float> ts{ 392743 };
         ResourceNameCycle rnc{ scene_node_resources, terrain_style.near_resource_names };
+        float max_distance_near = terrain_style.is_small
+            ? scene_graph_config.max_distance_near_small
+            : scene_graph_config.max_distance_near_large;
         for (const auto& t : gtl.triangles_) {
             auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
             auto mvp_center = dot2d(mvp, TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), center }.affine());
             VisibilityCheck vc_center{ mvp_center };
-            if (vc_center.is_visible(gtl.material_, scene_graph_config, external_render_pass, 2 * scene_graph_config.max_distance_near))
+            if (vc_center.is_visible(gtl.material_, scene_graph_config, external_render_pass, 2 * max_distance_near))
             {
                 ts.seed(392743 + (unsigned int)(size_t)&t);
                 rnc.seed(4624052 + (unsigned int)(size_t)&t);
@@ -111,7 +114,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                         auto m_instance = m * mi_rel;
                         VisibilityCheck vc_instance{ mvp_instance };
                         for (const auto& cva : scene_node_resources.get_animated_arrays(rnc().name)->cvas) {
-                            if (vc_instance.is_visible(cva->material, scene_graph_config, external_render_pass, scene_graph_config.max_distance_near))
+                            if (vc_instance.is_visible(cva->material, scene_graph_config, external_render_pass, max_distance_near))
                             {
                                 if (boundary_bvh != nullptr) {
                                     float min_dist = boundary_bvh->min_distance(

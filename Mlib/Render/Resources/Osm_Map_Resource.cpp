@@ -435,11 +435,11 @@ OsmMapResource::OsmMapResource(
                 config.default_terrain_type,
                 {TerrainType::STREET_HOLE});
         } catch (const p2t::PointException& e) {
-            handle_point_exception(e, "Could not triangulate terrain");
+            handle_point_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException& e) {
-            handle_edge_exception(e, "Could not triangulate terrain");
+            handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException& e) {
-            handle_triangle_exception(e, "Could not triangulate terrain");
+            handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         if (config.blend_street) {
             auto& tl = *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type];
@@ -1000,11 +1000,11 @@ OsmMapResource::OsmMapResource(
                 WaterType::UNDEFINED,
                 WaterType::UNDEFINED);
         } catch (const p2t::PointException& e) {
-            handle_point_exception(e, "Could not triangulate water");
+            handle_point_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const EdgeException& e) {
-            handle_edge_exception(e, "Could not triangulate water");
+            handle_edge_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException& e) {
-            handle_triangle_exception(e, "Could not triangulate water");
+            handle_triangle_exception(e, "Could not triangulate water (WATER_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         }
         tls_all = std::move(osm_triangle_lists.tls_wo_subtraction_w_water());
     } else {
