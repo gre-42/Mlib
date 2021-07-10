@@ -13,6 +13,7 @@ struct SteinerPointInfo;
 struct Node;
 struct Way;
 class StreetBvh;
+class GroundBvh;
 
 void add_trees_to_forest_outlines(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
@@ -21,7 +22,8 @@ void add_trees_to_forest_outlines(
     // std::list<SteinerPointInfo>& steiner_points,
     ResourceNameCycle& rnc,
     float min_dist_to_road,
-    const StreetBvh& ground_bvh,
+    const StreetBvh& street_bvh,
+    const GroundBvh& ground_bvh,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
     float tree_distance,

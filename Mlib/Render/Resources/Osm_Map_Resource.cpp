@@ -280,38 +280,6 @@ OsmMapResource::OsmMapResource(
     StreetBvh all_holes_bvh{all_hole_triangles};
     StreetBvh ground_street_bvh{street_hole_triangles};
 
-    if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
-        ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
-        LOG_INFO("add_trees_to_forest_outlines");
-        add_trees_to_forest_outlines(
-            resource_instance_positions_,
-            object_resource_descriptors_,
-            hitboxes_,
-            // steiner_points,
-            rnc,
-            config.min_dist_to_road,
-            all_holes_bvh,
-            nodes,
-            ways,
-            config.forest_outline_tree_distance,
-            config.forest_outline_tree_inwards_distance,
-            config.scale);
-        // add_binary_vegetation(
-        //     tls,
-        //     Material{
-        //         texture: grass_texture,
-        //         mixed_texture: "",
-        //         overlap_npixels: 0,
-        //         blend_mode: BlendMode::BINARY,
-        //         wrap_mode: WrapMode::CLAMP_TO_EDGE,
-        //         collide: false,
-        //         aggregate_mode: AggregateMode::ONCE},
-        //     grass_texture,
-        //     tree_texture,
-        //     tree_texture_2,
-        //     *tl_terrain,
-        //     scale);
-    }
     // if (forest_outline_tree_distance != INFINITY) {
     //     add_grass_outlines(
     //         resource_instance_positions_,
@@ -832,6 +800,40 @@ OsmMapResource::OsmMapResource(
                 ground_bvh,
                 nodes,
                 config.scale);
+        }
+
+        if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
+            ResourceNameCycle rnc{scene_node_resources, config.tree_resource_names};
+            LOG_INFO("add_trees_to_forest_outlines");
+            add_trees_to_forest_outlines(
+                resource_instance_positions_,
+                object_resource_descriptors_,
+                hitboxes_,
+                // steiner_points,
+                rnc,
+                config.min_dist_to_road,
+                all_holes_bvh,
+                ground_bvh,
+                nodes,
+                ways,
+                config.forest_outline_tree_distance,
+                config.forest_outline_tree_inwards_distance,
+                config.scale);
+            // add_binary_vegetation(
+            //     tls,
+            //     Material{
+            //         texture: grass_texture,
+            //         mixed_texture: "",
+            //         overlap_npixels: 0,
+            //         blend_mode: BlendMode::BINARY,
+            //         wrap_mode: WrapMode::CLAMP_TO_EDGE,
+            //         collide: false,
+            //         aggregate_mode: AggregateMode::ONCE},
+            //     grass_texture,
+            //     tree_texture,
+            //     tree_texture_2,
+            //     *tl_terrain,
+            //     scale);
         }
     }
 
