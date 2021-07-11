@@ -13,7 +13,7 @@ class AdvanceTimes;
 class SceneNode;
 class TextResource;
 
-class VisualMovable3rdLogger: public DestructionObserver, public RenderLogic, public AdvanceTime {
+class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver, public AdvanceTime {
 public:
     VisualMovable3rdLogger(
         RenderLogic& scene_logic,
@@ -38,6 +38,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    virtual void print(std::ostream& ostr, size_t depth) const;
 
 private:
     std::unique_ptr<TextResource> renderable_text_;

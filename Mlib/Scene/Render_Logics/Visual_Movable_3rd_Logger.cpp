@@ -65,3 +65,7 @@ void VisualMovable3rdLogger::render(
         renderable_text_->render(p2, text_, width, height, line_distance_pixels_);
     }
 }
+
+void VisualMovable3rdLogger::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "VisualMovable3rdLogger\n";
+}

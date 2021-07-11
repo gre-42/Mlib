@@ -28,7 +28,7 @@ public:
     virtual const FixedArray<float, 4, 4>& vp() const;
     virtual const TransformationMatrix<float, 3>& iv() const;
     virtual bool requires_postprocessing() const;
-    virtual void print(std::ostream& ostr, size_t depth) const;
+    virtual void print(std::ostream& ostr, size_t depth) const = 0;
 };
 
 }

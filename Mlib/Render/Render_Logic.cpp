@@ -28,6 +28,6 @@ bool RenderLogic::requires_postprocessing() const {
     throw std::runtime_error("requires_postprocessing not implemented");
 }
 
-void RenderLogic::print(std::ostream& ostr, size_t depth) const {
-    throw std::runtime_error("print not implemented");
-}
+// void RenderLogic::print(std::ostream& ostr, size_t depth) const {
+//     throw std::runtime_error("print not implemented");
+// }
