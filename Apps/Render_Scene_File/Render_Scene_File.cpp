@@ -242,11 +242,15 @@ int main(int argc, char** argv) {
                 };
                 external_substitutions.merge(SubstitutionMap{std::move(sstr)});
             }
+            // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
+            // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
+            // In case of an exception in the main thread, destruction of "load_scene" must therefore happen
+            // after the destruction of "renderable_scenes".
+            LoadScene load_scene;
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;
-            LoadScene load_scene;
             {
                 GlContextGuard gcg{ render2.window() };
                 load_scene(
