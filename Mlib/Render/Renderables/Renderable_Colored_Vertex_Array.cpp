@@ -119,6 +119,7 @@ void RenderableColoredVertexArray::render_cva(
     const Style* style) const
 {
     LOG_FUNCTION("render_cva");
+    LOG_INFO("RenderableColoredVertexArray::render_cva " + ((cva->material.textures.size() > 0) ? cva->material.textures.front().texture_descriptor.color : cva->name));
     TIME_GUARD_DECLARE(time_guard, "render_cva", (cva->material.textures.size() > 0) ? cva->material.textures.front().texture_descriptor.color : cva->name);
     // This check passes because the arrays are filtered in the constructor.
     assert_true((cva->material.aggregate_mode == AggregateMode::OFF) || (rcva_->instances_ != nullptr));
@@ -232,7 +233,7 @@ void RenderableColoredVertexArray::render_cva(
         throw std::runtime_error("reorient_uv0 requires disabled face culling");
     }
     bool reorient_uv0 = cva->material.reorient_uv0 && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
-    LOG_INFO("RenderableColoredVertexArray::render get_render_program");
+    LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         {
             .occluder_type = render_pass.external.black_node_name.empty() ? cva->material.occluder_type : OccluderType::BLACK,
@@ -268,11 +269,11 @@ void RenderableColoredVertexArray::render_cva(
         light_shadow_indices,
         black_shadow_indices,
         blended_textures);
-    LOG_INFO("RenderableColoredVertexArray::render glUseProgram");
+    LOG_INFO("RenderableColoredVertexArray::render_cva glUseProgram");
     CHK(glUseProgram(rp.program));
-    LOG_INFO("RenderableColoredVertexArray::render mvp");
+    LOG_INFO("RenderableColoredVertexArray::render_cva mvp");
     CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, (const GLfloat*) mvp.flat_begin()));
-    LOG_INFO("RenderableColoredVertexArray::render textures");
+    LOG_INFO("RenderableColoredVertexArray::render_cva textures");
     for (size_t i = 0; i < ntextures_color; ++i) {
         CHK(glUniform1i(rp.texture_color_locations.at(i), (GLint)i));
     }
@@ -304,7 +305,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform1i(rp.texture_dirtmap_location, (GLint)(ntextures_color + filtered_lights.size() + ntextures_normal + 0)));
         CHK(glUniform1i(rp.texture_dirt_location, (GLint)(ntextures_color + filtered_lights.size() + ntextures_normal + 1)));
     }
-    LOG_INFO("RenderableColoredVertexArray::render lights");
+    LOG_INFO("RenderableColoredVertexArray::render_cva lights");
     {
         bool light_dir_required = (any(diffusivity != 0.f) || any(specularity != 0.f));
         if (light_dir_required || fragments_depend_on_distance || fragments_depend_on_normal) {
@@ -350,7 +351,7 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    LOG_INFO("RenderableColoredVertexArray::render bind texture");
+    LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");
     auto setup_texture = [&cva]() {
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
@@ -360,19 +361,19 @@ void RenderableColoredVertexArray::render_cva(
     if (ntextures_color != 0) {
         size_t i = 0;
         for (const auto& t : cva->material.textures) {
-            LOG_INFO("RenderableColoredVertexArray::render get texture \"" + cva->material.texture_descriptor.color + '"');
+            LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + t.texture_descriptor.color + '"');
             GLuint texture = rcva_->rendering_resources_->get_texture(t.texture_descriptor);
-            LOG_INFO("RenderableColoredVertexArray::render bind texture \"" + cva->material.texture_descriptor.color + '"');
+            LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + i)));
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
-            LOG_INFO("RenderableColoredVertexArray::render clamp texture \"" + cva->material.texture_descriptor.color + '"');
+            LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + t.texture_descriptor.color + '"');
             setup_texture();
             CHK(glActiveTexture(GL_TEXTURE0));
             ++i;
         }
     }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
-    LOG_INFO("RenderableColoredVertexArray::render bind light color textures");
+    LOG_INFO("RenderableColoredVertexArray::render_cva bind light color textures");
     if (has_lightmap_color) {
         size_t i = 0;
         for (const auto& l : filtered_lights) {
@@ -393,7 +394,7 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    LOG_INFO("RenderableColoredVertexArray::render bind light depth textures");
+    LOG_INFO("RenderableColoredVertexArray::render_cva bind light depth textures");
     if (has_lightmap_depth) {
         size_t i = 0;
         for (const auto& l : filtered_lights) {
@@ -412,7 +413,7 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    LOG_INFO("RenderableColoredVertexArray::render bind normalmap texture");
+    LOG_INFO("RenderableColoredVertexArray::render_cva bind normalmap texture");
     if (ntextures_normal != 0) {
         size_t i = 0;
         for (const auto& t : cva->material.textures) {
@@ -425,7 +426,7 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    LOG_INFO("RenderableColoredVertexArray::render bind dirtmap texture");
+    LOG_INFO("RenderableColoredVertexArray::render_cva bind dirtmap texture");
     if (has_dirtmap) {
         std::string mname = "dirtmap";
         {
@@ -509,9 +510,9 @@ void RenderableColoredVertexArray::render_cva(
             true,  // run_in_background
             true); // is_static
     }
-    LOG_INFO("RenderableColoredVertexArray::render glBindVertexArray");
+    LOG_INFO("RenderableColoredVertexArray::render_cva glBindVertexArray");
     CHK(glBindVertexArray(si.va_.vertex_array));
-    LOG_INFO("RenderableColoredVertexArray::render glDrawArrays");
+    LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
     if (has_instances) {
         CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)(3 * si.ntriangles_), (GLsizei)rcva_->instances_->at(si.cva_.get()).size()));
     } else {
@@ -524,7 +525,7 @@ void RenderableColoredVertexArray::render_cva(
     CHK(glDepthMask(GL_TRUE));
     CHK(glDepthFunc(GL_LESS));
     // CHK(glFlush());
-    LOG_INFO("RenderableColoredVertexArray::render glDrawArrays finished");
+    LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays finished");
 }
 
 void RenderableColoredVertexArray::render(
