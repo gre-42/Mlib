@@ -75,3 +75,8 @@ void DirtmapLogic::set_filename(const std::string& filename) {
     }
     filename_ = filename;
 }
+
+void DirtmapLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "DirtmapLogic\n";
+    child_logic_.print(ostr, depth + 1);
+}

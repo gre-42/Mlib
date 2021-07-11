@@ -30,3 +30,7 @@ void PauseOnLoseFocusLogic::render(
         set_fps_.pause();
     }
 }
+
+void PauseOnLoseFocusLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "PauseOnLoseFocusLogic\n";
+}

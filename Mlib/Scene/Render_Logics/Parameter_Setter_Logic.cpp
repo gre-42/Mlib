@@ -65,3 +65,7 @@ FocusFilter ParameterSetterLogic::focus_filter() const {
 void ParameterSetterLogic::merge_substitutions() const {
     substitutions_.merge(list_view_.selected_element().substitutions);
 }
+
+void ParameterSetterLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "ParameterSetterLogic\n";
+}

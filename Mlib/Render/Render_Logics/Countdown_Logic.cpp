@@ -49,3 +49,7 @@ void CountDownLogic::render(
         }
     }
 }
+
+void CountDownLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "CountDownLogic\n";
+}

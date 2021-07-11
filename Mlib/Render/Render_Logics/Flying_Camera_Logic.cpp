@@ -187,3 +187,7 @@ void FlyingCameraLogic::render(
         on->set_rotation(user_object_.obj_angles);
     }
 }
+
+void FlyingCameraLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "FlyingCameraLogic\n";
+}

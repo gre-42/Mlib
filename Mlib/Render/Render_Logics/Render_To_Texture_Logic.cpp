@@ -81,3 +81,8 @@ void RenderToTextureLogic::render(
 FocusFilter RenderToTextureLogic::focus_filter() const {
     return focus_filter_;
 }
+
+void RenderToTextureLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "RenderToTextureLogic\n";
+    child_logic_.print(ostr, depth + 1);
+}

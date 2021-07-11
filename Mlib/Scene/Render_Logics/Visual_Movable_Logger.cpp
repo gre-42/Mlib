@@ -51,3 +51,7 @@ void VisualMovableLogger::render(
 {
     renderable_text().render(position_, text_, width, height, line_distance_pixels_, true);  // true=periodic_position
 }
+
+void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "VisualMovableLogger\n";
+}

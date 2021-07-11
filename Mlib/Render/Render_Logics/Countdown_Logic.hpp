@@ -25,6 +25,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
     std::chrono::time_point<std::chrono::steady_clock> start_time_;

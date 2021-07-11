@@ -34,3 +34,7 @@ void PlayersStatsLogic::render(
 {
     renderable_text().render(position_, players_.get_score_board(), width, height, line_distance_pixels_, true);  // true=periodic_position
 }
+
+void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "PlayersStatsLogic\n";
+}

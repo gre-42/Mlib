@@ -41,3 +41,7 @@ void VisualGlobalLog::render(
     base_log_.get_messages(sstr, nentries_, severity_);
     renderable_text().render(position_, sstr.str(), width, height, line_distance_pixels_, true);  // true=periodic_position
 }
+
+void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "VisualGlobalLog\n";
+}

@@ -59,3 +59,7 @@ void SceneSelectorLogic::render(
 FocusFilter SceneSelectorLogic::focus_filter() const {
     return focus_filter_;
 }
+
+void SceneSelectorLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "SceneSelectorLogic\n";
+}

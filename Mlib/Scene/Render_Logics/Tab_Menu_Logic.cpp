@@ -72,3 +72,7 @@ void TabMenuLogic::render(
 FocusFilter TabMenuLogic::focus_filter() const {
     return { .focus_mask = Focus::MENU };
 }
+
+void TabMenuLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "TabMenuLogic\n";
+}

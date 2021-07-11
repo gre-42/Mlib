@@ -24,3 +24,7 @@ void MoveSceneLogic::render(
 
     scene_.move(render_config.dt * speed_);
 }
+
+void MoveSceneLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "MoveSceneLogic\n";
+}

@@ -1,4 +1,5 @@
 #include "Lambda_Render_Logic.hpp"
+#include <ostream>
 
 using namespace Mlib;
 
@@ -28,4 +29,9 @@ void LambdaRenderLogic::render(
         render_results,
         frame_id);
     lambda_();
+}
+
+void LambdaRenderLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "LambdaRenderLogic\n";
+    render_logic_.print(ostr, depth + 1);
 }

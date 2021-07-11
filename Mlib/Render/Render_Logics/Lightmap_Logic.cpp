@@ -107,3 +107,8 @@ const TransformationMatrix<float, 3>& LightmapLogic::iv() const {
 bool LightmapLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
 }
+
+void LightmapLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "LightmapLogic\n";
+    child_logic_.print(ostr, depth + 1);
+}

@@ -275,3 +275,8 @@ void PostProcessingLogic::set_soft_light_filename(const std::string& soft_light_
     }
     soft_light_filename_ = soft_light_filename;
 }
+
+void PostProcessingLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "PostProcessingLogic\n";
+    child_logic_.print(ostr, depth + 1);
+}

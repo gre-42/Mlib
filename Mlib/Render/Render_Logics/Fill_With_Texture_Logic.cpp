@@ -67,3 +67,7 @@ void FillWithTextureLogic::render(
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
 }
+
+void FillWithTextureLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "FillWithTextureLogic\n";
+}

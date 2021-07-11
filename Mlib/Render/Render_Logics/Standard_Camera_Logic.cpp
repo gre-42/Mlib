@@ -66,3 +66,7 @@ const TransformationMatrix<float, 3>& StandardCameraLogic::iv() const {
 bool StandardCameraLogic::requires_postprocessing() const {
     return scene_.get_node(cameras_.camera_node_name())->get_camera()->get_requires_postprocessing();
 }
+
+void StandardCameraLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "StandardCameraLogic\n";
+}

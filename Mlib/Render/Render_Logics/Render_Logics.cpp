@@ -51,6 +51,13 @@ void RenderLogics::render(
     }
 }
 
+void RenderLogics::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "RenderLogics\n";
+    for (const auto& c : render_logics_) {
+        c.second.render_logic->print(ostr, depth + 1);
+    }
+}
+
 void RenderLogics::prepend(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
     insert(scene_node, render_logic, true);
 }

@@ -41,3 +41,7 @@ void LoadingTextLogic::render(
 FocusFilter LoadingTextLogic::focus_filter() const {
     return { .focus_mask = Focus::LOADING };
 }
+
+void LoadingTextLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "LoadingTextLogic\n";
+}

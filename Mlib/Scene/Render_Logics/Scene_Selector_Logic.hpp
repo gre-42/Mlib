@@ -36,8 +36,8 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
-
     virtual FocusFilter focus_filter() const override;
+    virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
     std::vector<SceneEntry> scene_files_;

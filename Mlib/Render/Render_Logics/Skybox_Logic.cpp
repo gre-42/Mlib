@@ -172,3 +172,8 @@ void SkyboxLogic::set_filenames(const std::vector<std::string>& filenames, const
     filenames_ = filenames;
     alias_ = alias;
 }
+
+void SkyboxLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "SkyboxLogic\n";
+    child_logic_.print(ostr, depth + 1);
+}

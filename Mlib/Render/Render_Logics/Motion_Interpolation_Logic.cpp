@@ -441,3 +441,8 @@ const TransformationMatrix<float, 3>& MotionInterpolationLogic::iv() const {
 bool MotionInterpolationLogic::requires_postprocessing() const {
     return false;
 }
+
+void MotionInterpolationLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "MotionInterpolationLogic\n";
+    child_logic_.print(ostr, depth + 1);
+}

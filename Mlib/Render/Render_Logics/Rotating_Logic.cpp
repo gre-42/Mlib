@@ -119,3 +119,7 @@ const TransformationMatrix<float, 3>& RotatingLogic::iv() const {
 bool RotatingLogic::requires_postprocessing() const {
     return true;
 }
+
+void RotatingLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "RotatingLogic\n";
+}

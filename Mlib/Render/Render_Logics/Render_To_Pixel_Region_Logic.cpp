@@ -42,3 +42,8 @@ void RenderToPixelRegionLogic::render(
 FocusFilter RenderToPixelRegionLogic::focus_filter() const {
     return focus_filter_;
 }
+
+void RenderToPixelRegionLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "RenderToPixelRegionLogic\n";
+    render_logic_.print(ostr, depth + 1);
+}

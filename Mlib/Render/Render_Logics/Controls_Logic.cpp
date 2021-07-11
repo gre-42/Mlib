@@ -33,3 +33,7 @@ void ControlsLogic::render(
 FocusFilter ControlsLogic::focus_filter() const {
     return focus_filter_;
 }
+
+void ControlsLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "ControlsLogic\n";
+}

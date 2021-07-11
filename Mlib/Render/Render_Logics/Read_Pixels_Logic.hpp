@@ -23,6 +23,8 @@ public:
     virtual const FixedArray<float, 4, 4>& vp() const override;
     virtual const TransformationMatrix<float, 3>& iv() const override;
     virtual bool requires_postprocessing() const override;
+    virtual void print(std::ostream& ostr, size_t depth) const override;
+
 private:
     RenderLogic& child_logic_;
     std::unique_ptr<FrameBuffer> fb_;
