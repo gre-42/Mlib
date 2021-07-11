@@ -71,9 +71,6 @@ Render2::Render2(
 #ifdef __linux__
         TemporarilyIgnoreFloatingPointExeptions ignore_except;
 #endif
-        if (window_ != nullptr) {
-            throw std::runtime_error("Multiple calls to render2");
-        }
         GLFWmonitor* monitor = !render_config.full_screen
             ? nullptr
             : GLFW_CHK(glfwGetPrimaryMonitor());
