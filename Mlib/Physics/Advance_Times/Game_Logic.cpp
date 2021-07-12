@@ -107,7 +107,6 @@ void GameLogic::handle_team_deathmatch() {
         (spawn_points_.size() > 1))
     {
         {
-            // std::lock_guard lock_guard{mutex_};
             for (auto& p : players_.players()) {
                 if (p.second->team() == *winner_teams.begin()) {
                     ++p.second->stats().nwins;
@@ -116,15 +115,41 @@ void GameLogic::handle_team_deathmatch() {
             for (auto& p : players_.players()) {
                 const std::string& node_name = p.second->scene_node_name();
                 if (!node_name.empty()) {
+                    // Lock guard avoids this error during rendering:
+                    // "Could not find black node with name ..."
+                    std::lock_guard lock_guard{mutex_};
                     scene_.delete_root_node(node_name);
                     // ++ndelete_;
                 }
             }
         }
-        auto sit = spawn_points_.begin();
-        auto pit = players_.players().begin();
-        for (; sit != spawn_points_.end() && pit != players_.players().end(); ++sit, ++pit) {
-            spawn_at_spawn_point(*pit->second, *sit);
+        std::set<SpawnPoint*> occupied_spawn_points;
+        for (const std::string& team : all_teams) {
+            auto sit = spawn_points_.begin();
+            auto pit = players_.players().begin();
+            for (; sit != spawn_points_.end() && pit != players_.players().end();) {
+                if (!sit->team.empty() && (sit->team != team)) {
+                    ++sit;
+                    continue;
+                }
+                if (pit->second->team() != team) {
+                    ++pit;
+                    continue;
+                }
+                if (sit->type != SpawnPointType::SPAWN_LINE) {
+                    ++sit;
+                    continue;
+                }
+                if (occupied_spawn_points.contains(&*sit)) {
+                    ++sit;
+                    continue;
+                }
+                // std::cerr << "Spawning " << pit->second->name() << " with team " << pit->second->team() << std::endl;
+                spawn_at_spawn_point(*pit->second, *sit);
+                occupied_spawn_points.insert(&*sit);
+                ++sit;
+                ++pit;
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ struct SpawnPoint {
     WayPointLocation location;
     FixedArray<float, 3> position;
     FixedArray<float, 3> rotation;
+    std::string team;
 };
 
 }

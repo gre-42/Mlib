@@ -13,7 +13,7 @@ public:
     std::string dirtmap_node_name = "dirtmap_node";
     std::vector<std::string> camera_cycle_near{"follower_camera", "turret_camera_node"};  // "main_gun_end_node";
     std::vector<std::string> camera_cycle_far{"45_deg_camera", "light_node", "dirtmap_node"};
-    std::string fallback_camera_node_name = "light_node0";
+    std::string fallback_camera_node_name = "stadium_camera";
     void set_camera_node_name(const std::string& name);
     const std::string& camera_node_name() const;
 private:

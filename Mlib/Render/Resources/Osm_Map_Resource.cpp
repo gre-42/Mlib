@@ -144,33 +144,6 @@ OsmMapResource::OsmMapResource(
             config.building_bottom,
             config.default_barrier_top);
     }
-    {
-        std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
-            BuildingType::SPAWN_LINE,
-            ways,
-            0,  // building_bottom
-            0); // default_building_top
-        for (const Building& bu : spawn_lines) {
-            for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
-                auto s = it;
-                ++s;
-                if (s != bu.way.nd.end()) {
-                    FixedArray<float, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.f;
-                    FixedArray<float, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
-                    float len2 = sum(squared(dir));
-                    if (len2 < 1e-12) {
-                        throw std::runtime_error("Spawn direction too small");
-                    }
-                    dir /= std::sqrt(len2);
-                    spawn_points_.push_back(SpawnPoint{
-                        .type = SpawnPointType::SPAWN_LINE,
-                        .location = WayPointLocation::UNKNOWN,
-                        .position = {p(0), p(1), bu.levels.back().top * config.scale},
-                        .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))}});
-                }
-            }
-        }
-    }
 
     std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> terrain_region_contours =
         get_terrain_region_contours(nodes, ways);
@@ -834,6 +807,40 @@ OsmMapResource::OsmMapResource(
             //     tree_texture_2,
             //     *tl_terrain,
             //     scale);
+        }
+
+        {
+            std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
+                BuildingType::SPAWN_LINE,
+                ways,
+                0,  // building_bottom
+                0); // default_building_top
+            for (const Building& bu : spawn_lines) {
+                auto iteam = bu.way.tags.find("team");
+                for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+                    auto s = it;
+                    ++s;
+                    if (s != bu.way.nd.end()) {
+                        FixedArray<float, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.f;
+                        FixedArray<float, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
+                        float len2 = sum(squared(dir));
+                        if (len2 < 1e-12) {
+                            throw std::runtime_error("Spawn direction too small");
+                        }
+                        dir /= std::sqrt(len2);
+                        float height;
+                        if (!ground_bvh.height(height, p)) {
+                            throw std::runtime_error("Spawn line out of bounds");
+                        }
+                        spawn_points_.push_back(SpawnPoint{
+                            .type = SpawnPointType::SPAWN_LINE,
+                            .location = WayPointLocation::UNKNOWN,
+                            .position = {p(0), p(1), height},
+                            .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))},
+                            .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
+                    }
+                }
+            }
         }
     }
 
