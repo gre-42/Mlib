@@ -63,6 +63,9 @@ Player::~Player()
 {}
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
+    if (rb.driver_ != nullptr) {
+        throw std::runtime_error("Rigid body already has a driver");
+    }
     if (scene_node_ != nullptr || rb_ != nullptr) {
         throw std::runtime_error("Player rb already set");
     }

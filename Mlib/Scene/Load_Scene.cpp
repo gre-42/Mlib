@@ -428,7 +428,7 @@ void LoadScene::operator()(
         "\\s+default=([\\d]+)"
         "\\s+on_init=([\\w+-.:= ]*)"
         "\\s+on_change=([\\w+-.:= ]*)"
-        "\\s+parameters=([\\r\\n\\w-. \\(\\)/+-:=%]+)$");
+        "\\s+parameters=([\\s\\S]*)$");
     static const DECLARE_REGEX(tab_menu_reg,
         "^\\s*tab_menu"
         "\\s+id=([\\w+-.]+)"
@@ -571,7 +571,7 @@ void LoadScene::operator()(
         "^\\s*set_preferred_car_spawner"
         "\\s+player=([\\w+-.]+)"
         "\\s+macro=([\\w.]+)"
-        "\\s+parameters=([#: \\w+-.]*)$");
+        "\\s+parameters=([\\s\\S]*)$");
     static const DECLARE_REGEX(set_vip_reg, "^\\s*set_vip player=([\\w+-.]+)$");
     static const DECLARE_REGEX(burn_in_reg, "^\\s*burn_in seconds=([\\w+-.]+)$");
     static const DECLARE_REGEX(append_focus_reg,

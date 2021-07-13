@@ -20,6 +20,9 @@ bool CollisionQuery::can_see(
     FixedArray<float, 3> start = watcher;
     FixedArray<float, 3> dir = watched - start;
     float dist = std::sqrt(sum(squared(dir)));
+    if (dist < 1e-12) {
+        throw std::runtime_error("CollisionQuery::can_see received (nearly) identical watcher and watched");
+    }
     dir /= dist;
     for (float alpha = 0; alpha < dist; alpha += physics_engine_.cfg_.static_radius) {
         FixedArray<FixedArray<float, 3>, 2> l{
