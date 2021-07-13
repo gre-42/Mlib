@@ -1518,11 +1518,11 @@ void LoadScene::operator()(
                 match[1].str(),
                 safe_stof(match[2].str()),
                 mutex);
+            physics_engine.advance_times_.add_advance_time(d);
             if (rb->damageable_ != nullptr) {
                 throw std::runtime_error("Rigid body already has a damageable");
             }
             rb->damageable_ = d.get();
-            physics_engine.advance_times_.add_advance_time(d);
         } else if (Mlib::re::regex_match(line, match, crash_reg)) {
             auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
