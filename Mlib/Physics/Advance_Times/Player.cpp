@@ -62,6 +62,18 @@ Player::Player(
 Player::~Player()
 {}
 
+void Player::reset_node() {
+    scene_node_name_.clear();
+    scene_node_ = nullptr;
+    rb_ = nullptr;
+    ypln_ = nullptr;
+    gun_ = nullptr;
+    tire_angles_left_.clear();
+    tire_angles_right_.clear();
+    surface_power_forward_ = NAN;
+    surface_power_backward_ = NAN;
+}
+
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
     if (rb.driver_ != nullptr) {
         throw std::runtime_error("Rigid body already has a driver");
@@ -283,10 +295,7 @@ void Player::set_spotted() {
 
 void Player::notify_destroyed(void* destroyed_object) {
     if (destroyed_object == scene_node_) {
-        scene_node_name_.clear();
-        scene_node_ = nullptr;
-        rb_ = nullptr;
-        ypln_ = nullptr;
+        reset_node();
     }
     if (destroyed_object == target_scene_node_) {
         target_scene_node_ = nullptr;

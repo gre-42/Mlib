@@ -80,6 +80,7 @@ public:
         DrivingDirection driving_direction,
         std::recursive_mutex& mutex);
     ~Player();
+    void reset_node();
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
