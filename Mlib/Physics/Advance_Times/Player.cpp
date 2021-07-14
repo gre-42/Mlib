@@ -54,13 +54,25 @@ Player::Player(
   driving_mode_{driving_mode},
   driving_direction_{driving_direction},
   mutex_{mutex},
-  spotted_{false},
+  spotted_by_vip_{false},
   nunstucked_{0},
   record_waypoints_{false}
 {}
 
 Player::~Player()
 {}
+
+void Player::set_can_drive(bool value) {
+    skills_.can_drive = value;
+}
+
+void Player::set_can_aim(bool value) {
+    skills_.can_aim = value;
+}
+
+void Player::set_can_shoot(bool value) {
+    skills_.can_shoot = value;
+}
 
 void Player::reset_node() {
     scene_node_name_.clear();
@@ -275,7 +287,7 @@ void Player::notify_spawn() {
     set_waypoint(fixed_nans<float, 2>());
     nwaypoints_reached_ = 0;
     spawn_time_ = std::chrono::steady_clock::now();
-    spotted_ = false;
+    spotted_by_vip_ = false;
     waypoint_history_.clear();
 }
 
@@ -286,11 +298,11 @@ float Player::seconds_since_spawn() const {
     return std::chrono::duration<float>(std::chrono::steady_clock::now() - spawn_time_).count();
 }
 
-bool Player::spotted() const {
-    return spotted_;
+bool Player::spotted_by_vip() const {
+    return spotted_by_vip_;
 }
-void Player::set_spotted() {
-    spotted_ = true;
+void Player::set_spotted_by_vip() {
+    spotted_by_vip_ = true;
 }
 
 void Player::notify_destroyed(void* destroyed_object) {
@@ -477,7 +489,7 @@ bool Player::has_rigid_body() const {
 }
 
 const PointsAndAdjacency<float, 2>& Player::waypoints() const {
-    auto it = all_waypoints_.find((Mlib::WayPointLocation)driving_mode_.way_point_location);
+    auto it = all_waypoints_.find(driving_mode_.way_point_location);
     if (it == all_waypoints_.end()) {
         throw std::runtime_error("Could not find waypoints for the specified location");
     }
@@ -485,7 +497,7 @@ const PointsAndAdjacency<float, 2>& Player::waypoints() const {
 }
 
 bool Player::has_waypoints() const {
-    auto it = all_waypoints_.find((Mlib::WayPointLocation)driving_mode_.way_point_location);
+    auto it = all_waypoints_.find(driving_mode_.way_point_location);
     if (it == all_waypoints_.end()) {
         return false;
     }
@@ -497,6 +509,9 @@ bool Player::is_pedestrian() const {
 }
 
 void Player::aim_and_shoot() {
+    if (!skills_.can_aim) {
+        return;
+    }
     assert_true(!target_scene_node_ == !target_rbi_);
     if (has_rigid_body() && ((target_rbi_ == nullptr) || !can_see(*target_rbi_))) {
         select_opponent();
@@ -507,6 +522,9 @@ void Player::aim_and_shoot() {
     assert_true(scene_node_ == nullptr || scene_node_ != target_scene_node_);
     ypln_->set_followed(target_scene_node_, target_rbi_);
     if (gun_ == nullptr) {
+        return;
+    }
+    if (!skills_.can_shoot) {
         return;
     }
     if (target_scene_node_ != nullptr) {
@@ -594,6 +612,9 @@ bool Player::ramming() const {
 }
 
 void Player::move_to_waypoint() {
+    if (!skills_.can_drive) {
+        return;
+    }
     if (!has_rigid_body()) {
         return;
     }

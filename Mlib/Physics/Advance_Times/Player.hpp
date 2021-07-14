@@ -66,6 +66,12 @@ inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
     }
 }
 
+struct Skills {
+    bool can_drive = true;
+    bool can_aim = true;
+    bool can_shoot = true;
+};
+
 class Player: public DestructionObserver, public AdvanceTime, public ExternalForceProvider {
 public:
     Player(
@@ -80,6 +86,9 @@ public:
         DrivingDirection driving_direction,
         std::recursive_mutex& mutex);
     ~Player();
+    void set_can_drive(bool value);
+    void set_can_aim(bool value);
+    void set_can_shoot(bool value);
     void reset_node();
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
     const std::string& scene_node_name() const;
@@ -117,8 +126,8 @@ public:
         float time_offset = 0) const;
     void notify_spawn();
     float seconds_since_spawn() const;
-    bool spotted() const;
-    void set_spotted();
+    bool spotted_by_vip() const;
+    void set_spotted_by_vip();
     bool has_waypoints() const;
     bool is_pedestrian() const;
     bool has_rigid_body() const;
@@ -178,9 +187,10 @@ private:
     DrivingDirection driving_direction_;
     std::recursive_mutex& mutex_;
     std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
-    bool spotted_;
+    bool spotted_by_vip_;
     size_t nunstucked_;
     bool record_waypoints_;
+    Skills skills_;
 };
 
 };

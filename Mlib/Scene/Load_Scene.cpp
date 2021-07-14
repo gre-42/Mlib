@@ -589,9 +589,22 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
     static const DECLARE_REGEX(set_way_points_reg, "^\\s*"
-        "set_way_points player=([\\w+-.]+)"
+        "set_way_points"
+        "\\s+player=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
+    static const DECLARE_REGEX(set_can_drive_reg, "^\\s*"
+        "set_can_drive"
+        "\\s+player=([\\w+-.]+)"
+        "\\s+value=(0|1)$");
+    static const DECLARE_REGEX(set_can_aim_reg, "^\\s*"
+        "set_can_aim"
+        "\\s+player=([\\w+-.]+)"
+        "\\s+value=(0|1)$");
+    static const DECLARE_REGEX(set_can_shoot_reg, "^\\s*"
+        "set_can_shoot"
+        "\\s+player=([\\w+-.]+)"
+        "\\s+value=(0|1)$");
     static const DECLARE_REGEX(pause_on_lose_focus_reg,
         "^\\s*pause_on_lose_focus"
         "\\s+focus_mask=(menu|loading|countdown_any|scene)"
@@ -2359,6 +2372,15 @@ void LoadScene::operator()(
             SceneNode* node = scene.get_node(match[2].str());
             std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points = scene_node_resources.way_points(match[3].str());
             player.set_waypoints(*node, way_points);
+        } else if (Mlib::re::regex_match(line, match, set_can_drive_reg)) {
+            Player& player = players.get_player(match[1].str());
+            player.set_can_drive(safe_stob(match[2].str()));
+        } else if (Mlib::re::regex_match(line, match, set_can_aim_reg)) {
+            Player& player = players.get_player(match[1].str());
+            player.set_can_aim(safe_stob(match[2].str()));
+        } else if (Mlib::re::regex_match(line, match, set_can_shoot_reg)) {
+            Player& player = players.get_player(match[1].str());
+            player.set_can_shoot(safe_stob(match[2].str()));
         } else if (Mlib::re::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
             scene.move(0.f); // dt

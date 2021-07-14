@@ -259,7 +259,7 @@ bool GameLogic::spawn_for_vip(
         spawn_at_spawn_point(player, *sp);
         player.notify_spawn();
         if (spotted) {
-            player.set_spotted();
+            player.set_spotted_by_vip();
         }
         succees = true;
         return false;
@@ -293,10 +293,10 @@ bool GameLogic::delete_for_vip(
         {
             goto delete_player;
         } else {
-            player.set_spotted();
+            player.set_spotted_by_vip();
         }
     }
-    if (!player.spotted() && (player.seconds_since_spawn() > cfg.visible_after_delete)) {
+    if (!player.spotted_by_vip() && (player.seconds_since_spawn() > cfg.visible_after_delete)) {
         if (!vip_->can_see(
             player,
             cfg.only_terrain,
@@ -304,7 +304,7 @@ bool GameLogic::delete_for_vip(
         {
             goto delete_player;
         } else {
-            player.set_spotted();
+            player.set_spotted_by_vip();
         }
     }
     return false;
