@@ -29,6 +29,7 @@
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -230,8 +231,10 @@ void test_physics_engine() {
         ClearMode::COLOR_AND_DEPTH};
     Focuses focuses = {Focus::SCENE};
     ButtonStates button_states;
+    CursorStates cursor_states;
     FlyingCameraUserClass user_object{
         .button_states = button_states,
+        .cursor_states = cursor_states,
         .cameras = selected_cameras,
         .focuses = focuses,
         .wire_frame = render_config.wire_frame,

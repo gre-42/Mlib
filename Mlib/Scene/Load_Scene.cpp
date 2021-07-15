@@ -132,6 +132,7 @@ void LoadScene::operator()(
     SceneNodeResources& scene_node_resources,
     SceneConfig& scene_config,
     ButtonStates& button_states,
+    CursorStates& cursor_states,
     UiFocus& ui_focus,
     GLFWwindow* window,
     std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
@@ -300,14 +301,16 @@ void LoadScene::operator()(
         "\\s*tire_angles=([ \\w+-.]+))?"
         "(?:\\r?\\n\\s*tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
     static const DECLARE_REGEX(rel_key_binding_reg,
-        "^\\s*rel_key_binding\\r?\\n"
-        "\\s*node=([\\w+-.]+)\\r?\\n"
-        "\\s*key=([\\w+-.]+)"
-        "(?:\\r?\\n\\s*gamepad_button=([\\w+-.]*))?"
-        "\\s*joystick_digital_axis=([\\w+-.]*)\\r?\\n"
-        "\\s*joystick_digital_axis_sign=([\\w+-.]+)\\r?\\n"
-        "\\s*angular_velocity_press=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*angular_velocity_repeat=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "^\\s*rel_key_binding"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+key=([\\w+-.]+)"
+        "(?:\\s+gamepad_button=([\\w+-.]*))?"
+        "\\s+joystick_digital_axis=([\\w+-.]*)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
+        "\\s+angular_velocity_press=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+angular_velocity_repeat=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "(?:\\s+cursor_axis=(0|1))?"
+        "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?$");
     static const DECLARE_REGEX(gun_key_binding_reg,
         "^\\s*gun_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
@@ -630,6 +633,7 @@ void LoadScene::operator()(
                 scene_node_resources,
                 scene_config,
                 button_states,
+                cursor_states,
                 ui_focus,
                 window,
                 SceneConfigResource{
@@ -1365,6 +1369,7 @@ void LoadScene::operator()(
         auto& physics_engine = cit->second->physics_engine_;
         auto& physics_loop = *cit->second->physics_loop_;
         auto& button_press = cit->second->button_press_;
+        auto& cursor_states = cit->second->cursor_states_;
         auto& key_bindings = *cit->second->key_bindings_;
         auto& selected_cameras = cit->second->selected_cameras_;
         auto& scene_config = cit->second->scene_config_;
@@ -1754,6 +1759,11 @@ void LoadScene::operator()(
                     .gamepad_button = match[3].str(),
                     .joystick_axis = match[4].str(),
                     .joystick_axis_sign = safe_stof(match[5].str())},
+                .base_cursor_axis = {
+                    .axis = match[12].matched ? safe_stou(match[12].str()) : SIZE_MAX,
+                    .sign_and_scale = match[13].matched ? safe_stof(match[13].str()) : NAN,
+                },
+                .cursor_movement = std::make_shared<CursorMovement>(cursor_states),
                 .node = scene.get_node(match[1].str()),
                 .angular_velocity_press = {
                     safe_stof(match[6].str()),

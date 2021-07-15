@@ -15,10 +15,12 @@ class Scene;
 class SelectedCameras;
 class SetFps;
 class ButtonStates;
+class CursorStates;
 
 class FlyingCameraUserClass: public BaseUserObject {
 public:
     ButtonStates& button_states;
+    CursorStates& cursor_states;
     SelectedCameras& cameras;
     Focuses& focuses;
     bool& wire_frame;

@@ -15,6 +15,7 @@ class SceneNodeResources;
 struct SceneConfig;
 struct RenderConfig;
 class ButtonStates;
+class CursorStates;
 struct UiFocus;
 class RenderLogics;
 
@@ -31,6 +32,7 @@ public:
         SceneNodeResources& scene_node_resources,
         SceneConfig& scene_config,
         ButtonStates& button_states,
+        CursorStates& cursor_states,
         UiFocus& ui_focus,
         GLFWwindow* window,
         std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);

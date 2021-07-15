@@ -4,6 +4,8 @@
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
@@ -178,6 +180,7 @@ int main(int argc, char** argv) {
         render2.print_hardware_info();
 
         ButtonStates button_states;
+        CursorStates cursor_states;
         UiFocus ui_focus;
         SubstitutionMap external_substitutions;
         // FifoLog fifo_log{10 * 1000};
@@ -264,6 +267,7 @@ int main(int argc, char** argv) {
                     scene_node_resources,
                     scene_config,
                     button_states,
+                    cursor_states,
                     ui_focus,
                     render2.window(),
                     renderable_scenes);

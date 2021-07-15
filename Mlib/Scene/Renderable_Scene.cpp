@@ -9,6 +9,7 @@ RenderableScene::RenderableScene(
     SceneNodeResources& scene_node_resources,
     SceneConfig& scene_config,
     ButtonStates& button_states,
+    CursorStates& cursor_states,
     UiFocus& ui_focus,
     GLFWwindow* window,
     const SceneConfigResource& config,
@@ -25,8 +26,10 @@ RenderableScene::RenderableScene(
       &large_instances_renderer_},
   selected_cameras_{scene_},
   button_states_{button_states},
+  cursor_states_{cursor_states},
   user_object_{
       .button_states = button_states,
+      .cursor_states = cursor_states,
       .cameras = selected_cameras_,
       .focuses = ui_focus.focuses,
       .wire_frame = scene_config.render_config.wire_frame,

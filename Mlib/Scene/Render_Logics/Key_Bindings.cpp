@@ -11,6 +11,7 @@
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
@@ -178,7 +179,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             }
             rt->w_ = 0.f;
         }
-        for (const auto& k : relative_movable_key_bindings_) {
+        for (auto& k : relative_movable_key_bindings_) {
             float alpha = button_press_.key_alpha(k.base_key);
             if (!std::isnan(alpha)) {
                 auto m = k.node->get_relative_movable();
@@ -187,6 +188,18 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     throw std::runtime_error("Relative movable is not a relative transformer");
                 }
                 rt->w_ = (1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat;
+            }
+            float beta = k.cursor_movement->axis_alpha(k.base_cursor_axis);
+            if (!std::isnan(beta)) {
+                auto m = k.node->get_relative_movable();
+                auto rt = dynamic_cast<RelativeTransformer*>(m);
+                if (rt == nullptr) {
+                    throw std::runtime_error("Relative movable is not a relative transformer");
+                }
+                // rt->w_ = beta * k.angular_velocity_repeat;
+                rt->transformation_matrix_.R() = dot2d(
+                    rodrigues(0.1f * beta * k.angular_velocity_repeat),
+                    rt->transformation_matrix_.R());
             }
         }
         for (const auto& k : gun_key_bindings_) {

@@ -21,7 +21,6 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
-#include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -34,6 +33,8 @@
 namespace Mlib {
 
 class PhysicsLoop;
+struct ButtonStates;
+struct CursorStates;
 
 struct SceneConfigResource {
     bool fly;
@@ -55,6 +56,7 @@ public:
         SceneNodeResources& scene_node_resources,
         SceneConfig& scene_config,
         ButtonStates& button_states,
+        CursorStates& cursor_states,
         UiFocus& ui_focus,
         GLFWwindow* window,
         const SceneConfigResource& config,
@@ -74,6 +76,7 @@ public:
     Scene scene_;
     SelectedCameras selected_cameras_;
     ButtonStates& button_states_;
+    CursorStates& cursor_states_;
     FlyingCameraUserClass user_object_;
     SetFps physics_set_fps_{"Physics FPS: "};
     FifoLog fifo_log_{10 * 1000};

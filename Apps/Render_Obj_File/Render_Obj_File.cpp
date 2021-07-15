@@ -26,6 +26,7 @@
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
@@ -564,6 +565,7 @@ int main(int argc, char** argv) {
         // scene.print();
         Focuses focuses = {Focus::SCENE};
         ButtonStates button_states;
+        CursorStates cursor_states;
         StandardCameraLogic standard_camera_logic{scene, selected_cameras};
         StandardRenderLogic standard_render_logic{
             scene,
@@ -571,6 +573,7 @@ int main(int argc, char** argv) {
             ClearMode::COLOR_AND_DEPTH};
         FlyingCameraUserClass user_object{
             .button_states = button_states,
+            .cursor_states = cursor_states,
             .cameras = selected_cameras,
             .focuses = focuses,
             .wire_frame = render_config.wire_frame,

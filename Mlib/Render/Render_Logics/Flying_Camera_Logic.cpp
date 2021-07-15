@@ -7,6 +7,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
+#include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Set_Fps.hpp>
@@ -120,6 +121,14 @@ static void nofly_key_callback(GLFWwindow* window, int key, int scancode, int ac
     user_object->button_states.notify_key_event(key, action);
 }
 
+static void nofly_cursor_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
+    user_object->cursor_states.update_cursor(xpos, ypos);
+    std::cerr << "update " << xpos << " " << ypos << std::endl;
+    GLFW_CHK(glfwSetCursorPos(window, 0, 0));
+}
+
 FlyingCameraLogic::FlyingCameraLogic(
     GLFWwindow* window,
     const ButtonStates& button_states,
@@ -151,6 +160,7 @@ FlyingCameraLogic::FlyingCameraLogic(
         }
     } else {
         GLFW_CHK(glfwSetKeyCallback(window, nofly_key_callback));
+        GLFW_CHK(glfwSetCursorPosCallback(window, nofly_cursor_callback));
     }
 }
 
