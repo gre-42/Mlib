@@ -3,12 +3,12 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <map>
+#include <Mlib/Map.hpp>
 #include <string>
 
 namespace Mlib {
 
-static const std::map<std::string, int> glfw_joystick_axes {
+static const Map<std::string, int> glfw_joystick_axes {
     {"1", GLFW_JOYSTICK_1},
     {"2", GLFW_JOYSTICK_2},
     {"3", GLFW_JOYSTICK_3},

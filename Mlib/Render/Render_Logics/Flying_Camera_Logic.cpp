@@ -125,7 +125,13 @@ static void nofly_cursor_callback(GLFWwindow* window, double xpos, double ypos)
 {
     GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
     user_object->cursor_states.update_cursor(xpos, ypos);
-    std::cerr << "update " << xpos << " " << ypos << std::endl;
+    GLFW_CHK(glfwSetCursorPos(window, 0, 0));
+}
+
+static void nofly_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    GLFW_CHK(FlyingCameraUserClass* user_object = (FlyingCameraUserClass*)glfwGetWindowUserPointer(window));
+    user_object->button_states.notify_mouse_button_event(button, action);
     GLFW_CHK(glfwSetCursorPos(window, 0, 0));
 }
 
@@ -161,6 +167,7 @@ FlyingCameraLogic::FlyingCameraLogic(
     } else {
         GLFW_CHK(glfwSetKeyCallback(window, nofly_key_callback));
         GLFW_CHK(glfwSetCursorPosCallback(window, nofly_cursor_callback));
+        GLFW_CHK(glfwSetMouseButtonCallback(window, nofly_mouse_button_callback));
     }
 }
 

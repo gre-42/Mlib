@@ -198,7 +198,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 }
                 // rt->w_ = beta * k.angular_velocity_repeat;
                 rt->transformation_matrix_.R() = dot2d(
-                    rodrigues(0.1f * beta * k.angular_velocity_repeat),
+                    rodrigues(0.02f * beta * k.angular_velocity_repeat),
                     rt->transformation_matrix_.R());
             }
         }

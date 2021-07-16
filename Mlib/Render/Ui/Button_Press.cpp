@@ -2,6 +2,7 @@
 #include <Mlib/Render/Input_Map/Gamepad_Button_Map.hpp>
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
+#include <Mlib/Render/Input_Map/Mouse_Button_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -57,9 +58,10 @@ void ButtonPress::print(bool physical, bool only_pressed) const {
 bool ButtonPress::key_down(const BaseKeyBinding& k) const {
     std::lock_guard lock{button_states_.update_gamepad_state_mutex};
     return
-        (!k.key.empty() && button_states_.get_key_down(glfw_keys.at(k.key))) ||
-        (button_states_.has_gamepad && !k.gamepad_button.empty() && button_states_.gamepad_state.buttons[glfw_gamepad_buttons.at(k.gamepad_button)]) ||
-        (button_states_.has_gamepad && !k.joystick_axis.empty() && (button_states_.gamepad_state.axes[glfw_joystick_axes.at(k.joystick_axis)] == k.joystick_axis_sign));
+        (!k.key.empty() && button_states_.get_key_down(glfw_keys.get(k.key))) ||
+        (!k.mouse_button.empty() && button_states_.get_mouse_button_down(glfw_mouse_buttons.get(k.mouse_button))) ||
+        (button_states_.has_gamepad && !k.gamepad_button.empty() && button_states_.gamepad_state.buttons[glfw_gamepad_buttons.get(k.gamepad_button)]) ||
+        (button_states_.has_gamepad && !k.joystick_axis.empty() && (button_states_.gamepad_state.axes[glfw_joystick_axes.get(k.joystick_axis)] == k.joystick_axis_sign));
 }
 
 bool ButtonPress::key_pressed(const BaseKeyBinding& k) {

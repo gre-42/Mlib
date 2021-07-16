@@ -3,12 +3,12 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <map>
+#include <Mlib/Map.hpp>
 #include <string>
 
 namespace Mlib {
 
-static const std::map<std::string, int> glfw_keys {
+static const Map<std::string, int> glfw_keys {
 /* Printable keys */
     {"SPACE", GLFW_KEY_SPACE},
     {"APOSTROPHE", GLFW_KEY_APOSTROPHE},  /* ' */

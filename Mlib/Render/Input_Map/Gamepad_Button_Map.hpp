@@ -3,12 +3,12 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <map>
+#include <Mlib/Map.hpp>
 #include <string>
 
 namespace Mlib {
 
-static const std::map<std::string, int> glfw_gamepad_buttons {
+static const Map<std::string, int> glfw_gamepad_buttons {
     {"A", GLFW_GAMEPAD_BUTTON_A},
     {"B", GLFW_GAMEPAD_BUTTON_B},
     {"X", GLFW_GAMEPAD_BUTTON_X},

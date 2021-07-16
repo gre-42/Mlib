@@ -312,12 +312,13 @@ void LoadScene::operator()(
         "(?:\\s+cursor_axis=(0|1))?"
         "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?$");
     static const DECLARE_REGEX(gun_key_binding_reg,
-        "^\\s*gun_key_binding\\r?\\n"
-        "\\s*node=([\\w+-.]+)\\r?\\n"
-        "\\s*key=([\\w+-.]+)"
-        "(?:\\r?\\n\\s*gamepad_button=([\\w+-.]*))?"
-        "(?:\\r?\\n\\s*joystick_digital_axis=([\\w+-.]+)\\r?\\n"
-        "\\s*joystick_digital_axis_sign=([\\w+-.]+))?$");
+        "^\\s*gun_key_binding"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+key=(\\w+)"
+        "(?:\\s+mouse_button=(\\w+))?"
+        "(?:\\s+gamepad_button=(\\w+))?"
+        "(?:\\s+joystick_digital_axis=(\\w+)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?$");
     static const DECLARE_REGEX(console_log_reg, "^\\s*console_log node=([\\w+-.]+) format=(\\d+)$");
     static const DECLARE_REGEX(visual_global_log_reg,
         "^\\s*visual_global_log"
@@ -1777,9 +1778,10 @@ void LoadScene::operator()(
             key_bindings.add_gun_key_binding(GunKeyBinding{
                 .base = {
                     .key = match[2].str(),
-                    .gamepad_button = match[3].str(),
-                    .joystick_axis = match[4].str(),
-                    .joystick_axis_sign = match[5].str().empty() ? 0 : safe_stof(match[5].str())},
+                    .mouse_button = match[3].str(),
+                    .gamepad_button = match[4].str(),
+                    .joystick_axis = match[5].str(),
+                    .joystick_axis_sign = match[6].str().empty() ? 0 : safe_stof(match[6].str())},
                 .node = scene.get_node(match[1].str())});
         } else if (Mlib::re::regex_match(line, match, console_log_reg)) {
             auto node = scene.get_node(match[1].str());
