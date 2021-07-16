@@ -239,7 +239,7 @@ void PostProcessingLogic::render(
                             .color_mode = ColorMode::RGB})));
             }
 
-            CHK(glBindVertexArray(va_.vertex_array));
+            CHK(glBindVertexArray(va().vertex_array));
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
             CHK(glBindVertexArray(0));
 

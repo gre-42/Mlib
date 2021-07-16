@@ -26,15 +26,16 @@ FillWithTextureLogic::FillWithTextureLogic(
 : rendering_resources_{RenderingContextStack::rendering_resources()},
   image_resource_name_{image_resource_name},
   update_cycle_{update_cycle}
-{
-    rp_.allocate(vertex_shader_text, fragment_shader_text);
-    rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
-}
+{}
 
 FillWithTextureLogic::~FillWithTextureLogic()
 {}
 
 void FillWithTextureLogic::update_texture_id() {
+    if (rp_.texture_id_ == (GLuint)-1) {
+        rp_.allocate(vertex_shader_text, fragment_shader_text);
+        rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
+    }
     if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
         rp_.texture_id_ = rendering_resources_->get_texture({.color = image_resource_name_, .color_mode = ColorMode::RGBA});
     }
@@ -59,7 +60,7 @@ void FillWithTextureLogic::render(
     CHK(glUniform1i(rp_.texture_location, 0));
     CHK(glBindTexture(GL_TEXTURE_2D, rp_.texture_id_));
 
-    CHK(glBindVertexArray(va_.vertex_array));
+    CHK(glBindVertexArray(va().vertex_array));
 
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
 

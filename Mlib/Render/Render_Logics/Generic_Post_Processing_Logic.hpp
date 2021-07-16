@@ -6,8 +6,11 @@ namespace Mlib {
 class GenericPostProcessingLogic {
 public:
     GenericPostProcessingLogic();
+    ~GenericPostProcessingLogic();
 protected:
     static const char* vertex_shader_text;
+    VertexArray& va();
+private:
     VertexArray va_;
 };
 

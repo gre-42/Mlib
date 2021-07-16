@@ -62,9 +62,9 @@ void HudImageLogic::render(
     CHK(glUniform1i(rp_.texture_location, 0));
     CHK(glBindTexture(GL_TEXTURE_2D, rp_.texture_id_));
 
-    CHK(glBindVertexArray(va_.vertex_array));
+    CHK(glBindVertexArray(va().vertex_array));
 
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, va().vertex_buffer));
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
