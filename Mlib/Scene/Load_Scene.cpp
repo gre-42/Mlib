@@ -307,10 +307,12 @@ void LoadScene::operator()(
         "(?:\\s+gamepad_button=([\\w+-.]*))?"
         "\\s+joystick_digital_axis=([\\w+-.]*)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
-        "\\s+angular_velocity_press=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+angular_velocity_repeat=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "(?:\\s+cursor_axis=(0|1))?"
-        "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?$");
+        "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?"
+        "\\s+rotation_axis=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+angular_velocity_press=([\\w+-.]+)"
+        "\\s+angular_velocity_repeat=([\\w+-.]+)"
+        "\\s+speed_cursor=([\\w+-.]+)$");
     static const DECLARE_REGEX(gun_key_binding_reg,
         "^\\s*gun_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -1761,19 +1763,18 @@ void LoadScene::operator()(
                     .joystick_axis = match[4].str(),
                     .joystick_axis_sign = safe_stof(match[5].str())},
                 .base_cursor_axis = {
-                    .axis = match[12].matched ? safe_stou(match[12].str()) : SIZE_MAX,
-                    .sign_and_scale = match[13].matched ? safe_stof(match[13].str()) : NAN,
+                    .axis = match[6].matched ? safe_stou(match[6].str()) : SIZE_MAX,
+                    .sign_and_scale = match[7].matched ? safe_stof(match[7].str()) : NAN,
                 },
                 .cursor_movement = std::make_shared<CursorMovement>(cursor_states),
                 .node = scene.get_node(match[1].str()),
-                .angular_velocity_press = {
-                    safe_stof(match[6].str()),
-                    safe_stof(match[7].str()),
-                    safe_stof(match[8].str())},
-                .angular_velocity_repeat = {
+                .rotation_axis = {
+                    safe_stof(match[8].str()),
                     safe_stof(match[9].str()),
-                    safe_stof(match[10].str()),
-                    safe_stof(match[11].str())}});
+                    safe_stof(match[10].str())},
+                .angular_velocity_press = safe_stof(match[11].str()),
+                .angular_velocity_repeat = safe_stof(match[12].str()),
+                .speed_cursor = safe_stof(match[13].str())});
         } else if (Mlib::re::regex_match(line, match, gun_key_binding_reg)) {
             key_bindings.add_gun_key_binding(GunKeyBinding{
                 .base = {

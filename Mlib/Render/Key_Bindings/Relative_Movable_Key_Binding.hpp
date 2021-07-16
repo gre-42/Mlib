@@ -17,8 +17,10 @@ struct RelativeMovableKeyBinding {
     size_t cursor_axis;
     std::shared_ptr<CursorMovement> cursor_movement;
     SceneNode* node;
-    FixedArray<float, 3> angular_velocity_press;
-    FixedArray<float, 3> angular_velocity_repeat;
+    FixedArray<float, 3> rotation_axis;
+    float angular_velocity_press;
+    float angular_velocity_repeat;
+    float speed_cursor;
 };
 
 }

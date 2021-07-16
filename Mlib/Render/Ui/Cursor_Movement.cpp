@@ -47,6 +47,5 @@ float CursorMovement::axis_alpha(const BaseCursorAxisBinding& binding) {
     if (sign(v) != sign(binding.sign_and_scale)) {
         return NAN;
     }
-    std::cerr << "alpha " << binding.axis << " " << v << std::endl;
     return std::min(binding.sign_and_scale * v, 1.f);
 }
