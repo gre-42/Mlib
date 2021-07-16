@@ -187,7 +187,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (rt == nullptr) {
                     throw std::runtime_error("Relative movable is not a relative transformer");
                 }
-                rt->w_ = (1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat * k.rotation_axis;
+                rt->w_ = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat) * k.rotation_axis;
             }
             float beta = k.cursor_movement->axis_alpha(k.base_cursor_axis);
             if (!std::isnan(beta)) {
