@@ -24,10 +24,14 @@ bool CollisionQuery::can_see(
         throw std::runtime_error("CollisionQuery::can_see received (nearly) identical watcher and watched");
     }
     dir /= dist;
-    for (float alpha = 0; alpha < dist; alpha += physics_engine_.cfg_.static_radius) {
+    for (float alpha0 = 0; alpha0 < dist; alpha0 += physics_engine_.cfg_.static_radius) {
+        float alpha1 = std::min(alpha0 + physics_engine_.cfg_.static_radius, dist);
+        if (alpha1 - alpha0 < 1e-12) {
+            break;
+        }
         FixedArray<FixedArray<float, 3>, 2> l{
-            start + alpha * dir,
-            start + std::min(alpha + physics_engine_.cfg_.static_radius, dist) * dir};
+            start + alpha0 * dir,
+            start + alpha1 * dir};
         BoundingSphere<float, 3> bs{l};
         if (!only_terrain) {
             for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
