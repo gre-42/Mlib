@@ -33,6 +33,7 @@ public:
         Player& player,
         const std::function<void(const SpawnPoint&)>& preferred_car_spawner);
     void set_vip(Player* vip);
+    void respawn_all_players();
     virtual void advance_time(float dt) override;
 private:
     void handle_team_deathmatch();

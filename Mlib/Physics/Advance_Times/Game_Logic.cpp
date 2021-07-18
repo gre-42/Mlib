@@ -106,50 +106,56 @@ void GameLogic::handle_team_deathmatch() {
         (all_teams.size() > 1) &&
         (spawn_points_.size() > 1))
     {
-        {
-            for (auto& p : players_.players()) {
-                if (p.second->team() == *winner_teams.begin()) {
-                    ++p.second->stats().nwins;
-                }
-            }
-            for (auto& p : players_.players()) {
-                const std::string& node_name = p.second->scene_node_name();
-                if (!node_name.empty()) {
-                    // Lock guard avoids this error during rendering:
-                    // "Could not find black node with name ..."
-                    std::lock_guard lock_guard{mutex_};
-                    scene_.delete_root_node(node_name);
-                    // ++ndelete_;
-                }
+        for (auto& p : players_.players()) {
+            if (p.second->team() == *winner_teams.begin()) {
+                ++p.second->stats().nwins;
             }
         }
-        std::set<SpawnPoint*> occupied_spawn_points;
-        for (const std::string& team : all_teams) {
-            auto sit = spawn_points_.begin();
-            auto pit = players_.players().begin();
-            for (; sit != spawn_points_.end() && pit != players_.players().end();) {
-                if (!sit->team.empty() && (sit->team != team)) {
-                    ++sit;
-                    continue;
-                }
-                if (pit->second->team() != team) {
-                    ++pit;
-                    continue;
-                }
-                if (sit->type != SpawnPointType::SPAWN_LINE) {
-                    ++sit;
-                    continue;
-                }
-                if (occupied_spawn_points.contains(&*sit)) {
-                    ++sit;
-                    continue;
-                }
-                // std::cerr << "Spawning " << pit->second->name() << " with team " << pit->second->team() << std::endl;
-                spawn_at_spawn_point(*pit->second, *sit);
-                occupied_spawn_points.insert(&*sit);
+        respawn_all_players();
+    }
+}
+
+void GameLogic::respawn_all_players() {
+    for (auto& p : players_.players()) {
+        const std::string& node_name = p.second->scene_node_name();
+        if (!node_name.empty()) {
+            // Lock guard avoids this error during rendering:
+            // "Could not find black node with name ..."
+            std::lock_guard lock_guard{mutex_};
+            scene_.delete_root_node(node_name);
+            // ++ndelete_;
+        }
+    }
+    std::set<std::string> all_teams;
+    for (auto& p : players_.players()) {
+        all_teams.insert(p.second->team());
+    }
+    std::set<SpawnPoint*> occupied_spawn_points;
+    for (const std::string& team : all_teams) {
+        auto sit = spawn_points_.begin();
+        auto pit = players_.players().begin();
+        for (; sit != spawn_points_.end() && pit != players_.players().end();) {
+            if (!sit->team.empty() && (sit->team != team)) {
                 ++sit;
-                ++pit;
+                continue;
             }
+            if (pit->second->team() != team) {
+                ++pit;
+                continue;
+            }
+            if (sit->type != SpawnPointType::SPAWN_LINE) {
+                ++sit;
+                continue;
+            }
+            if (occupied_spawn_points.contains(&*sit)) {
+                ++sit;
+                continue;
+            }
+            // std::cerr << "Spawning " << pit->second->name() << " with team " << pit->second->team() << std::endl;
+            spawn_at_spawn_point(*pit->second, *sit);
+            occupied_spawn_points.insert(&*sit);
+            ++sit;
+            ++pit;
         }
     }
 }

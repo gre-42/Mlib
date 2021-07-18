@@ -579,6 +579,7 @@ void LoadScene::operator()(
         "\\s+macro=([\\w.]+)"
         "\\s+parameters=([\\s\\S]*)$");
     static const DECLARE_REGEX(set_vip_reg, "^\\s*set_vip player=([\\w+-.]+)$");
+    static const DECLARE_REGEX(respawn_all_players_reg, "^\\s*respawn_all_players$");
     static const DECLARE_REGEX(burn_in_reg, "^\\s*burn_in seconds=([\\w+-.]+)$");
     static const DECLARE_REGEX(append_focus_reg,
         "^\\s*append_focus"
@@ -2376,6 +2377,8 @@ void LoadScene::operator()(
             );
         } else if (Mlib::re::regex_match(line, match, set_vip_reg)) {
             game_logic.set_vip(&players.get_player(match[1].str()));
+        }else if (Mlib::re::regex_match(line, match, respawn_all_players_reg)) {
+            game_logic.respawn_all_players();
         } else if (Mlib::re::regex_match(line, match, set_spawn_points_reg)) {
             SceneNode* node = scene.get_node(match[1].str());
             std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[2].str());
