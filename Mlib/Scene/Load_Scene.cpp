@@ -218,8 +218,10 @@ void LoadScene::operator()(
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)$");
     static const DECLARE_REGEX(delete_root_nodes_reg,
         "^\\s*delete_root_nodes\\s+regex=(.*)$");
-    static const DECLARE_REGEX(wait_until_paused_and_delete_scheduled_advance_times_reg,
-        "^\\s*wait_until_paused_and_delete_scheduled_advance_times$");
+    static const DECLARE_REGEX(wait_until_paused_reg,
+        "^\\s*wait_until_paused$");
+    static const DECLARE_REGEX(delete_scheduled_advance_times_reg,
+        "^\\s*delete_scheduled_advance_times$");
     static const DECLARE_REGEX(renderable_instance_reg,
         "^\\s*renderable_instance"
         "\\s+name=([\\w+-.]+)"
@@ -1429,8 +1431,10 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, delete_root_nodes_reg)) {
             std::lock_guard lock{ mutex };
             scene.delete_root_nodes(Mlib::compile_regex(match[1].str()));
-        } else if (Mlib::re::regex_match(line, match, wait_until_paused_and_delete_scheduled_advance_times_reg)) {
-            physics_loop.wait_until_paused_and_delete_scheduled_advance_times();
+        } else if (Mlib::re::regex_match(line, match, wait_until_paused_reg)) {
+            physics_loop.wait_until_paused();
+        } else if (Mlib::re::regex_match(line, match, delete_scheduled_advance_times_reg)) {
+            physics_engine.advance_times_.delete_scheduled_advance_times();
         } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {
             auto node = scene.get_node(match[2].str());
             scene_node_resources.instantiate_renderable(

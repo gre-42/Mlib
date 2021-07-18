@@ -59,9 +59,8 @@ void PhysicsLoop::join() {
     }
 }
 
-void PhysicsLoop::wait_until_paused_and_delete_scheduled_advance_times() {
+void PhysicsLoop::wait_until_paused() {
     while (!(set_fps_.paused() && idle_)) {
         std::this_thread::sleep_for(std::chrono::milliseconds{10});
     }
-    physics_iteration_.delete_scheduled_advance_times();
 }
