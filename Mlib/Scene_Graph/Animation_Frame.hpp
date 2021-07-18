@@ -3,11 +3,16 @@
 
 namespace Mlib {
 
+enum class AnimationWrapMode {
+    PERIODIC,
+    APERIODIC
+};
+
 struct AnimationFrame {
-    std::string name;
-    float loop_begin;
-    float loop_end;
-    float loop_time;
+    float begin;
+    float end;
+    float time;
+    void advance_time(float dt, AnimationWrapMode wrap_mode);
 };
 
 }

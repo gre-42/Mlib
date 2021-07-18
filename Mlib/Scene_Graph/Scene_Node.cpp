@@ -222,33 +222,8 @@ void SceneNode::set_style(Style* style) {
 
 void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
     if (style_ != nullptr) {
-        AnimationFrame& af = style_->animation_frame;
-        if (!std::isnan(af.loop_time)) {
-            if (std::isnan(af.loop_begin) != std::isnan(af.loop_end)) {
-                throw std::runtime_error("Inconsistent loop_begin and loop_end NAN-ness");
-            }
-            if (!std::isnan(af.loop_begin)) {
-                if (af.loop_end < af.loop_begin) {
-                    throw std::runtime_error("Loop end before loop begin");
-                }
-                if (af.loop_time < af.loop_begin) {
-                    throw std::runtime_error("Loop time before loop begin");
-                }
-                if (af.loop_time > af.loop_end) {
-                    throw std::runtime_error("Loop time after loop end");
-                }
-                if (af.loop_end == af.loop_begin) {
-                    af.loop_time = af.loop_begin;
-                } else {
-                    af.loop_time = std::clamp(
-                        af.loop_begin + std::fmod(
-                            af.loop_time + dt - af.loop_begin,
-                            af.loop_end - af.loop_begin),
-                        af.loop_begin,
-                        af.loop_end);
-                }
-            }
-        }
+        style_->skelletal_animation_frame.advance_time(dt, AnimationWrapMode::PERIODIC);
+        style_->texture_animation.advance_time(dt, AnimationWrapMode::APERIODIC);
     }
     TransformationMatrix<float, 3> v2;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
@@ -280,6 +255,14 @@ void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
     for (const auto& n : children_) {
         n.second.scene_node->move(v2, dt);
     }
+}
+
+bool SceneNode::to_be_deleted() const {
+    return
+        (style_ != nullptr) &&
+        !std::isnan(style_->texture_animation.time) &&
+        !std::isnan(style_->texture_animation.end) &&
+        (style_->texture_animation.time == style_->texture_animation.end);
 }
 
 bool SceneNode::requires_render_pass() const {

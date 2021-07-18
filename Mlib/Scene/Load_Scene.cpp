@@ -186,7 +186,8 @@ void LoadScene::operator()(
         "(?:\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+translation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
-        "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
+        "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
+        "(?:\\s+number_of_frames=(\\d+))?$");
     static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w+-. \\(\\)/\\\\:]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(binary_x_resource_reg,
         "^\\s*binary_x_resource"
@@ -206,14 +207,21 @@ void LoadScene::operator()(
         "\\s+cull_faces=(0|1)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
-    static const DECLARE_REGEX(node_instance_reg,
-        "^\\s*node_instance"
+    static const DECLARE_REGEX(root_node_instance_reg,
+        "^\\s*root_node_instance"
+        "\\s+type=(aggregate|instances|static|dynamic)"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "(?:\\s+scale=([\\w+-.]+))?$");
+    static const DECLARE_REGEX(child_node_instance_reg,
+        "^\\s*child_node_instance"
+        "\\s+type=(aggregate|instances|dynamic)"
         "\\s+parent=([\\w-.<>]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "(?:\\s+scale=([\\w+-.]+))?"
-        "(?:\\s+aggregate=(0|1))?$");
+        "(?:\\s+scale=([\\w+-.]+))?$");
     static const DECLARE_REGEX(delete_root_node_reg,
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)$");
     static const DECLARE_REGEX(delete_root_nodes_reg,
@@ -1177,6 +1185,7 @@ void LoadScene::operator()(
             // 26, 27, 28: translation
             // 29: aggregate_mode
             // 30: transformation_mode
+            // 31: number_of_frames
             scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -1208,6 +1217,7 @@ void LoadScene::operator()(
                     .collide = false,
                     .aggregate_mode = aggregate_mode_from_string(match[29].str()),
                     .transformation_mode = transformation_mode_from_string(match[30].str()),
+                    .number_of_frames = match[31].matched ? safe_stou(match[31].str()) : 0,
                     .distances = OrderableFixedArray<float, 2>{
                         match[7].matched ? safe_stof(match[7].str()) : 0.f,
                         match[8].matched ? safe_stof(match[8].str()) : float { INFINITY }},
@@ -1391,7 +1401,12 @@ void LoadScene::operator()(
         auto& mutex = cit->second->mutex_;
 
         Linker linker{physics_engine.advance_times_};
-        if (Mlib::re::regex_match(line, match, node_instance_reg)) {
+        if (Mlib::re::regex_match(line, match, root_node_instance_reg)) {
+            // 1: type
+            // 2: name
+            // 3, 4, 5: position
+            // 6, 7, 8: rotation
+            // 9: scale
             auto node = new SceneNode(&scene);
             node->set_position(FixedArray<float, 3>{
                 safe_stof(match[3].str()),
@@ -1404,27 +1419,50 @@ void LoadScene::operator()(
             if (match[9].matched) {
                 node->set_scale(safe_stof(match[9].str()));
             }
-            bool aggregate = match[10].str().empty()
-                ? false
-                : safe_stob(match[10].str());
-            if (match[1].str() == "<dynamic-root>") {
-                if (aggregate) {
-                    scene.add_root_aggregate_node(match[2].str(), node);
-                } else {
-                    scene.add_root_node(match[2].str(), node);
-                }
-            } else if (match[1].str() == "<static-root>") {
+            std::string type = match[1].str();
+            if (type == "aggregate") {
+                scene.add_root_aggregate_node(match[2].str(), node);
+            } else if (type == "instances") {
+                scene.add_root_instances_node(match[2].str(), node);
+            } else if (type == "static") {
                 scene.add_static_root_node(match[2].str(), node);
+            } else if (type == "dynamic") {
+                scene.add_root_node(match[2].str(), node);
             } else {
-                auto parent = scene.get_node(match[1].str());
-                node->set_parent(parent);
-                if (aggregate) {
-                    parent->add_aggregate_child(match[2].str(), node, true);  // true=is_registered
-                } else {
-                    parent->add_child(match[2].str(), node, true);  // true=is_registered
-                }
-                scene.register_node(match[2].str(), node);
+                throw std::runtime_error("Unknown root node type: " + type);
             }
+        } else if (Mlib::re::regex_match(line, match, child_node_instance_reg)) {
+            // 1: type
+            // 2: parent
+            // 3: name
+            // 4, 5, 6: position
+            // 7, 8, 9: rotation
+            // 10: scale
+            auto node = new SceneNode(&scene);
+            node->set_position(FixedArray<float, 3>{
+                safe_stof(match[4].str()),
+                safe_stof(match[5].str()),
+                safe_stof(match[6].str())});
+            node->set_rotation(FixedArray<float, 3>{
+                safe_stof(match[7].str()) / 180.f * float(M_PI),
+                safe_stof(match[8].str()) / 180.f * float(M_PI),
+                safe_stof(match[9].str()) / 180.f * float(M_PI)});
+            if (match[10].matched) {
+                node->set_scale(safe_stof(match[10].str()));
+            }
+            std::string type = match[1].str();
+            auto parent = scene.get_node(match[2].str());
+            node->set_parent(parent);
+            if (type == "aggregate") {
+                parent->add_aggregate_child(match[3].str(), node, true);  // true=is_registered
+            } else if (type == "instances") {
+                parent->add_instances_child(match[3].str(), node, true);  // true=is_registered
+            } else if (type == "dynamic") {
+                parent->add_child(match[3].str(), node, true);  // true=is_registered
+            } else {
+                throw std::runtime_error("Unknown non-root node type: " + type);
+            }
+            scene.register_node(match[3].str(), node);
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
             std::lock_guard lock{ mutex };
             scene.delete_root_node(match[1].str());
@@ -2105,11 +2143,11 @@ void LoadScene::operator()(
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())},
-                .animation_frame = {
-                    .name = match[12].str(),
-                    .loop_begin = safe_stof(match[13].str()),
-                    .loop_end = safe_stof(match[14].str()),
-                    .loop_time = safe_stof(match[15].str())}});
+                .skelletal_animation_name = match[12].str(),
+                .skelletal_animation_frame = {
+                    .begin = safe_stof(match[13].str()),
+                    .end = safe_stof(match[14].str()),
+                    .time = safe_stof(match[15].str())}});
         } else if (Mlib::re::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(

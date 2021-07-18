@@ -12,11 +12,13 @@ struct RigidBodyIntegrator;
 class Scene;
 class SceneNode;
 class AdvanceTimes;
+class SceneNodeResources;
 
 class Bullet: public DestructionObserver, public CollisionObserver, public AdvanceTime {
 public:
     Bullet(
         Scene& scene,
+        SceneNodeResources& scene_node_resources,
         SceneNode& bullet_node,
         AdvanceTimes& advance_times,
         RigidBody& rigid_body,
@@ -27,12 +29,14 @@ public:
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
+        const FixedArray<float, 3>& intersection_point,
         RigidBody& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,
         bool& abort) override;
 private:
     Scene& scene_;
+    SceneNodeResources& scene_node_resources_;
     AdvanceTimes& advance_times_;
     RigidBodyIntegrator& rigid_body_integrator_;
     std::string bullet_node_name_;

@@ -309,11 +309,11 @@ int main(int argc, char** argv) {
                     scene_node_resources.add_resource(name, rmhx2);
                     scene_node->set_style(new Style{
                         .selector = Mlib::compile_regex(""),
-                        .animation_frame = {
-                            .name = "anim",
-                            .loop_begin = safe_stof(args.named_value("--loop_begin", "0")),
-                            .loop_end = safe_stof(args.named_value("--loop_end", "2")),
-                            .loop_time = safe_stof(args.named_value("--loop_time", "1"))}});
+                        .skelletal_animation_name = "anim",
+                        .skelletal_animation_frame = {
+                            .begin = safe_stof(args.named_value("--loop_begin", "0")),
+                            .end = safe_stof(args.named_value("--loop_end", "2")),
+                            .time = safe_stof(args.named_value("--loop_time", "1"))}});
                     LoadMeshConfig bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),

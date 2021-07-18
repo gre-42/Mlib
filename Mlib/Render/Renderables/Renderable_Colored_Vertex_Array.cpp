@@ -86,15 +86,15 @@ std::vector<OffsetAndQuaternion<float>> RenderableColoredVertexArray::calculate_
         if (style == nullptr) {
             throw std::runtime_error("Animation without style");
         }
-        if (style->animation_frame.name.empty()) {
+        if (style->skelletal_animation_name.empty()) {
             throw std::runtime_error("Animation frame has no name");
         }
-        if (std::isnan(style->animation_frame.loop_time)) {
+        if (std::isnan(style->skelletal_animation_frame.time)) {
             throw std::runtime_error("Loop time is NAN");
         }
         auto poses = rcva_->rendering_resources_->scene_node_resources().get_poses(
-            style->animation_frame.name,
-            style->animation_frame.loop_time);
+            style->skelletal_animation_name,
+            style->skelletal_animation_frame.time);
         std::vector<OffsetAndQuaternion<float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
         std::vector<OffsetAndQuaternion<float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->absolutify(ms);
         if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
@@ -273,6 +273,9 @@ void RenderableColoredVertexArray::render_cva(
     CHK(glUseProgram(rp.program));
     LOG_INFO("RenderableColoredVertexArray::render_cva mvp");
     CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, (const GLfloat*) mvp.flat_begin()));
+    if (!has_instances && has_lookat) {
+        CHK(glUniform3fv(rp.instance_position_location, 1, (const GLfloat*) m.t().flat_begin()));
+    }
     LOG_INFO("RenderableColoredVertexArray::render_cva textures");
     for (size_t i = 0; i < ntextures_color; ++i) {
         CHK(glUniform1i(rp.texture_color_locations.at(i), (GLint)i));

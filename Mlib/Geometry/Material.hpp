@@ -34,6 +34,7 @@ struct Material {
     bool collide = true;
     AggregateMode aggregate_mode = AggregateMode::OFF;
     TransformationMode transformation_mode = TransformationMode::ALL;
+    size_t number_of_frames = 0;
     OrderableFixedArray<float, 2> distances{ default_distances_hard };
     bool is_small = false;
     bool cull_faces = true;

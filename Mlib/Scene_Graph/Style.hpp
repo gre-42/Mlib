@@ -11,11 +11,15 @@ struct Style {
     FixedArray<float, 3> ambience{-1.f, -1.f, -1.f};
     FixedArray<float, 3> diffusivity{-1.f, -1.f, -1.f};
     FixedArray<float, 3> specularity{-1.f, -1.f, -1.f};
-    AnimationFrame animation_frame = {
-        .name = "",
-        .loop_begin = NAN,
-        .loop_end = NAN,
-        .loop_time = NAN};
+    std::string skelletal_animation_name = "";
+    AnimationFrame skelletal_animation_frame = {
+        .begin = NAN,
+        .end = NAN,
+        .time = NAN};
+    AnimationFrame texture_animation = {
+        .begin = NAN,
+        .end = NAN,
+        .time = NAN};
 };
 
 }

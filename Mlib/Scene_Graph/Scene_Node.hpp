@@ -138,6 +138,7 @@ public:
     TransformationMatrix<float, 3> absolute_view_matrix() const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     void set_style(Style* style);
+    bool to_be_deleted() const;
 private:
     Scene* scene_;
     SceneNode* parent_;

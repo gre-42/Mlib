@@ -341,8 +341,13 @@ void Scene::move(float dt) {
     if (!root_nodes_to_delete_.empty()) {
         throw std::runtime_error("Moving with root nodes scheduled for deletion");
     }
-    for (const auto& n : root_nodes_) {
-        n.second->move(TransformationMatrix<float, 3>::identity(), dt);
+    for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
+        it->second->move(TransformationMatrix<float, 3>::identity(), dt);
+        if (it->second->to_be_deleted()) {
+            delete_root_node((it++)->first);
+        } else {
+            ++it;
+        }
     }
 }
 

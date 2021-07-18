@@ -73,6 +73,8 @@ static GenShaderText vertex_shader_text_gen{[](
         } else {
             sstr << "layout (location=5) in vec3 instancePosition;" << std::endl;
         }
+    } else if (has_lookat) {
+        sstr << "uniform vec3 instancePosition;" << std::endl;
     }
     if (nbones != 0) {
         sstr << "layout (location=6) in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
@@ -143,13 +145,13 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
     }
-    if (has_lookat && !has_instances) {
-        throw std::runtime_error("has_lookat requires has_instances");
-    }
+    // if (has_lookat && !has_instances) {
+    //     throw std::runtime_error("has_lookat requires has_instances");
+    // }
     if (has_yangle && !has_instances) {
         throw std::runtime_error("has_yangle requires has_instances");
     }
-    if (has_instances && (has_lookat || has_yangle)) {
+    if (has_lookat || has_yangle) {
         if (has_yangle) {
             sstr << "    vec2 dz_xz = vec2(sin(instancePosition.w), cos(instancePosition.w));" << std::endl;
         } else if (orthographic) {
@@ -164,7 +166,10 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    lookat[0] = dx;" << std::endl;
         sstr << "    lookat[1] = dy;" << std::endl;
         sstr << "    lookat[2] = dz;" << std::endl;
-        sstr << "    vPosInstance = lookat * vPosInstance + instancePosition.xyz;" << std::endl;
+        sstr << "    vPosInstance = lookat * vPosInstance;" << std::endl;
+        if (has_instances) {
+            sstr << "    vPosInstance += instancePosition.xyz;" << std::endl;
+        }
         if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
             sstr << "    vNormalInstance = lookat * vNormalInstance;" << std::endl;
         }
@@ -841,6 +846,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         rp->allocate(vs_text, fs_text);
 
         rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");
+        if (!id.has_instances && id.has_lookat) {
+            rp->instance_position_location = checked_glGetUniformLocation(rp->program, "instancePosition");
+        }
         for (size_t i = 0; i < id.ntextures_color; ++i) {
             rp->texture_color_locations[i] = checked_glGetUniformLocation(rp->program, ("textures_color[" + std::to_string(i) + "]").c_str());
         }

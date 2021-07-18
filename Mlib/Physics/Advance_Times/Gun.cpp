@@ -79,6 +79,7 @@ void Gun::advance_time(float dt) {
         std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
         auto bullet = std::make_shared<Bullet>(
             scene_,
+            scene_node_resources_,
             *node,
             advance_times_,
             *rc,

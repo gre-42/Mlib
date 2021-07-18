@@ -31,10 +31,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     CollisionType collision_type = CollisionType::REFLECT;
     bool abort = false;
     for (auto& c0 : c.o0.collision_observers_) {
-        c0->notify_collided(c.o1, CollisionRole::PRIMARY, collision_type, abort);
+        c0->notify_collided(intersection_point, c.o1, CollisionRole::PRIMARY, collision_type, abort);
     }
     for (auto& c1 : c.o1.collision_observers_) {
-        c1->notify_collided(c.o0, CollisionRole::SECONDARY, collision_type, abort);
+        c1->notify_collided(intersection_point, c.o0, CollisionRole::SECONDARY, collision_type, abort);
     }
     if (abort) {
         return;
