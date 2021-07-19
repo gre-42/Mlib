@@ -6,7 +6,9 @@
 using namespace Mlib;
 
 CursorMovement::CursorMovement(CursorStates& cursor_states)
-: cursor_states_{cursor_states}
+: cursor_x_{ 0.f },
+  cursor_y_{ 0.f },
+  cursor_states_{ cursor_states }
 {
     cursor_states.register_cursor_movement(this);
 }
