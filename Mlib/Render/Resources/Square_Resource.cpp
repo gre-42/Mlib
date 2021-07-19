@@ -12,6 +12,9 @@ SquareResource::SquareResource(
     const TransformationMatrix<float, 3>& transformation,
     const Material& material)
 {
+    if (material.number_of_frames == 0) {
+        throw std::runtime_error("SquareResource: material.number_of_frames is zero");
+    }
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2);
 
@@ -28,12 +31,12 @@ SquareResource::SquareResource(
     ColoredVertex v10{ // max(x), min(y)
         {square(1, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
-        {1.f, 0.f},
+        {1.f / (float)material.number_of_frames, 0.f},
         {0.f, 0.f, 1.f}};
     ColoredVertex v11{ // max(x), max(y)
         {square(1, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
-        {1.f, 1.f},
+        {1.f / (float)material.number_of_frames, 1.f},
         {0.f, 0.f, 1.f}};
 
     triangles.push_back(FixedArray<ColoredVertex, 3>{v00.transformed(transformation), v11.transformed(transformation), v01.transformed(transformation)});

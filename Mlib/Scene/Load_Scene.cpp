@@ -1217,7 +1217,7 @@ void LoadScene::operator()(
                     .collide = false,
                     .aggregate_mode = aggregate_mode_from_string(match[29].str()),
                     .transformation_mode = transformation_mode_from_string(match[30].str()),
-                    .number_of_frames = match[31].matched ? safe_stou(match[31].str()) : 0,
+                    .number_of_frames = match[31].matched ? safe_stou(match[31].str()) : 1,
                     .distances = OrderableFixedArray<float, 2>{
                         match[7].matched ? safe_stof(match[7].str()) : 0.f,
                         match[8].matched ? safe_stof(match[8].str()) : float { INFINITY }},

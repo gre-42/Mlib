@@ -332,7 +332,7 @@ void Scene::render(
             scene_graph_config,
             render_config,
             {external_render_pass, InternalRenderPass::BLENDED},
-            style_.get());
+            b.style);
     }
 }
 

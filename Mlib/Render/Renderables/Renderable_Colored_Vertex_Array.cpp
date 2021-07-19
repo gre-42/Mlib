@@ -234,6 +234,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     bool reorient_uv0 = cva->material.reorient_uv0 && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE);
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
+    assert_true(cva->material.number_of_frames > 0);
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         {
             .occluder_type = render_pass.external.black_node_name.empty() ? cva->material.occluder_type : OccluderType::BLACK,
@@ -251,6 +252,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_instances = has_instances,
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
+            .has_uv_offset_u = (cva->material.number_of_frames != 1),
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
             .calculate_lightmap = render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE,
@@ -273,6 +275,24 @@ void RenderableColoredVertexArray::render_cva(
     CHK(glUseProgram(rp.program));
     LOG_INFO("RenderableColoredVertexArray::render_cva mvp");
     CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, (const GLfloat*) mvp.flat_begin()));
+    if (cva->material.number_of_frames != 1) {
+        float uv_offset_u;
+        if ((style != nullptr) &&
+            !std::isnan(style->texture_animation.begin) &&
+            !std::isnan(style->texture_animation.end) &&
+            !std::isnan(style->texture_animation.time))
+        {
+            if (style->texture_animation.begin == style->texture_animation.end) {
+                uv_offset_u = style->texture_animation.time;
+            } else {
+                uv_offset_u = (style->texture_animation.time - style->texture_animation.begin) / (style->texture_animation.end - style->texture_animation.begin);
+                uv_offset_u = std::round(uv_offset_u * cva->material.number_of_frames) / (float)cva->material.number_of_frames;
+            }
+        } else {
+            uv_offset_u = 0;
+        }
+        CHK(glUniform1f(rp.uv_offset_u_location, uv_offset_u));
+    }
     if (!has_instances && has_lookat) {
         CHK(glUniform3fv(rp.instance_position_location, 1, (const GLfloat*) m.t().flat_begin()));
     }

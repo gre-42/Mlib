@@ -44,6 +44,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_instances,
     bool has_lookat,
     bool has_yangle,
+    bool has_uv_offset_u,
     size_t nbones,
     bool reorient_normals,
     bool reorient_uv0,
@@ -81,6 +82,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "layout (location=7) in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
+    }
+    if (has_uv_offset_u) {
+        sstr << "uniform float uv_offset_u;" << std::endl;
     }
     sstr << "out vec3 color;" << std::endl;
     sstr << "out vec2 tex_coord;" << std::endl;
@@ -179,6 +183,9 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "    gl_Position = MVP * vec4(vPosInstance, 1.0);" << std::endl;
     sstr << "    color = vCol;" << std::endl;
     sstr << "    tex_coord = vTexCoord;" << std::endl;
+    if (has_uv_offset_u) {
+        sstr << "    tex_coord.s += uv_offset_u;" << std::endl;
+    }
     if (has_lightmap_color || has_lightmap_depth) {
         sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
         sstr << "        FragPosLightSpace[i] = MVP_light[i] * vec4(vPosInstance, 1.0);" << std::endl;
@@ -801,6 +808,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_instances,
         id.has_lookat,
         id.has_yangle,
+        id.has_uv_offset_u,
         triangles_res_->bone_indices.size(),
         id.reorient_normals,
         id.reorient_uv0,
@@ -846,6 +854,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         rp->allocate(vs_text, fs_text);
 
         rp->mvp_location = checked_glGetUniformLocation(rp->program, "MVP");
+        if (id.has_uv_offset_u) {
+            rp->uv_offset_u_location = checked_glGetUniformLocation(rp->program, "uv_offset_u");
+        }
         if (!id.has_instances && id.has_lookat) {
             rp->instance_position_location = checked_glGetUniformLocation(rp->program, "instancePosition");
         }

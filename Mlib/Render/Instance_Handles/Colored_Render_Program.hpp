@@ -29,6 +29,7 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> texture_normalmap_locations;
     GLint texture_dirtmap_location;
     GLint texture_dirt_location;
+    GLint uv_offset_u_location;
 };
 
 struct RenderProgramIdentifier {
@@ -45,6 +46,7 @@ struct RenderProgramIdentifier {
     bool has_instances;
     bool has_lookat;
     bool has_yangle;
+    bool has_uv_offset_u;
     bool reorient_normals;
     bool reorient_uv0;
     bool calculate_lightmap;
