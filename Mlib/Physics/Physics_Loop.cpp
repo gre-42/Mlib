@@ -58,9 +58,3 @@ void PhysicsLoop::join() {
         physics_thread_.join();
     }
 }
-
-void PhysicsLoop::wait_until_paused() {
-    while (!(set_fps_.paused() && idle_)) {
-        std::this_thread::sleep_for(std::chrono::milliseconds{10});
-    }
-}

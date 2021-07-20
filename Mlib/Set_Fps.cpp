@@ -36,9 +36,18 @@ void SetFps::tick(float dt, float max_residual_time, bool print_residual_time) {
                 " ms" << std::endl;
         }
     }
+    if (!funcs_.empty()) {
+        funcs_.front()();
+        funcs_.pop_front();
+    }
     if (paused()) {
         while (paused()) {
-            std::this_thread::sleep_for(std::chrono::microseconds(100));
+            if (!funcs_.empty()) {
+                funcs_.front()();
+                funcs_.pop_front();
+            } else {
+                std::this_thread::sleep_for(std::chrono::microseconds(100));
+            }
         }
         sim_time_ = std::chrono::steady_clock::now();
         if (print_residual_time) {
@@ -65,4 +74,8 @@ void SetFps::resume() {
 
 bool SetFps::paused() const {
     return paused_;
+}
+
+void SetFps::execute(const std::function<void()>& func) {
+    funcs_.push_back(func);
 }

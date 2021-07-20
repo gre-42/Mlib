@@ -42,7 +42,7 @@ void RenderLogics::render(
     const RenderedSceneDescriptor& frame_id)
 {
     std::lock_guard lock{ mutex_ };
-    
+
     LOG_FUNCTION("RenderLogics::render");
     for (const auto& c : render_logics_) {
         if (ui_focus_.has_focus(c.second.render_logic->focus_filter())) {
@@ -95,9 +95,7 @@ void RenderLogics::notify_destroyed(void* destroyed_object) {
             lst.erase(it);
             return true;
         };
-        bool found = false;
-        found |= del(render_logics_);
-        if (!found) {
+        if (!del(render_logics_)) {
             break;
         }
         ++nfound;

@@ -226,8 +226,6 @@ void LoadScene::operator()(
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)$");
     static const DECLARE_REGEX(delete_root_nodes_reg,
         "^\\s*delete_root_nodes\\s+regex=(.*)$");
-    static const DECLARE_REGEX(wait_until_paused_reg,
-        "^\\s*wait_until_paused$");
     static const DECLARE_REGEX(delete_scheduled_advance_times_reg,
         "^\\s*delete_scheduled_advance_times$");
     static const DECLARE_REGEX(renderable_instance_reg,
@@ -1304,7 +1302,7 @@ void LoadScene::operator()(
             return true;
         }
         if (Mlib::re::regex_match(line, match, set_focuses_reg)) {
-            ui_focus.focuses = string_to_vector(match[1].str(), focus_from_string);
+            ui_focus.focuses.set_focuses(string_to_vector(match[1].str(), focus_from_string));
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_bvh_resource_reg)) {
@@ -1383,7 +1381,6 @@ void LoadScene::operator()(
         auto& players = cit->second->players_;
         auto& scene = cit->second->scene_;
         auto& physics_engine = cit->second->physics_engine_;
-        auto& physics_loop = *cit->second->physics_loop_;
         auto& button_press = cit->second->button_press_;
         auto& cursor_states = cit->second->cursor_states_;
         auto& key_bindings = *cit->second->key_bindings_;
@@ -1469,8 +1466,6 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, delete_root_nodes_reg)) {
             std::lock_guard lock{ mutex };
             scene.delete_root_nodes(Mlib::compile_regex(match[1].str()));
-        } else if (Mlib::re::regex_match(line, match, wait_until_paused_reg)) {
-            physics_loop.wait_until_paused();
         } else if (Mlib::re::regex_match(line, match, delete_scheduled_advance_times_reg)) {
             physics_engine.advance_times_.delete_scheduled_advance_times();
         } else if (Mlib::re::regex_match(line, match, renderable_instance_reg)) {
@@ -2113,9 +2108,11 @@ void LoadScene::operator()(
                 ui_focus.selection_ids.at(id),
                 script_filename,
                 next_scene_filename,
-                [macro_line_executor, reload_transient_objects, &rsc]() {
+                [macro_line_executor, reload_transient_objects, &physics_set_fps, &rsc]() {
                     if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, nullptr, rsc);
+                        physics_set_fps.execute([macro_line_executor, reload_transient_objects, &rsc](){
+                            macro_line_executor(reload_transient_objects, nullptr, rsc);
+                        });
                     }
                 });
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };

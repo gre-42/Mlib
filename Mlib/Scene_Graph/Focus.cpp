@@ -11,9 +11,10 @@ Focuses::Focuses(const std::initializer_list<Focus>& focuses)
 : focuses_{focuses}
 {}
 
-Focuses::Focuses(const std::vector<Focus>& focuses)
-: focuses_(focuses.begin(), focuses.end())
-{}
+void Focuses::set_focuses(const std::vector<Focus>& focuses)
+{
+    focuses_ = std::list(focuses.begin(), focuses.end());
+}
 
 Focus Focuses::focus() const {
     return focuses_.empty()

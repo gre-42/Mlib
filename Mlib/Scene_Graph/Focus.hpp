@@ -36,7 +36,7 @@ class Focuses {
 public:
     Focuses();
     Focuses(const std::initializer_list<Focus>& focuses);
-    Focuses(const std::vector<Focus>& focuses);
+    void set_focuses(const std::vector<Focus>& focuses);
     Focus focus() const;
     std::list<Focus>::const_iterator find(Focus focus) const;
     std::list<Focus>::iterator find(Focus focus);
