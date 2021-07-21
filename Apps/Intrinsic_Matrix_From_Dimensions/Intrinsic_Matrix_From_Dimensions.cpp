@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Array/Array.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Cv/Intrinsic_Matrix_From_Dimensions.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <iostream>
 
@@ -15,18 +16,18 @@ int main(int argc, char** argv) {
 
     const auto args = parser.parsed(argc, argv);
 
-    Array<float> sensor_size{
+    FixedArray<float, 2> sensor_size{
         (float)safe_stod(args.named_value("--sensor_size_x")),
         (float)safe_stod(args.named_value("--sensor_size_y"))};
 
-    ArrayShape image_shape{
+    FixedArray<size_t, 2> image_shape{
         safe_stoz(args.named_value("--picture_rows")),
         safe_stoz(args.named_value("--picture_cols"))};
 
     std::cout << intrinsic_matrix_from_dimensions(
         safe_stoi(args.named_value("--focal_length")),
         sensor_size,
-        image_shape) << std::endl;
+        image_shape).affine() << std::endl;
 
     return 0;
 }

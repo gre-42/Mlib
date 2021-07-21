@@ -1,12 +1,18 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
+#include <cstddef>
 
+namespace Mlib {
 
-namespace Mlib { namespace Cv {
+template <typename TData, size_t... tshape>
+class FixedArray;
+template <class TData, size_t n>
+class TransformationMatrix;
 
-Array<float> intrinsic_matrix_from_dimensions(
+namespace Cv {
+
+TransformationMatrix<float, 2> intrinsic_matrix_from_dimensions(
     float focal_length,
-    const Array<float>& sensor_size,
-    const ArrayShape& picture_shape);
+    const FixedArray<float, 2>& sensor_size,
+    const FixedArray<size_t, 2>& picture_shape);
 
 }}
