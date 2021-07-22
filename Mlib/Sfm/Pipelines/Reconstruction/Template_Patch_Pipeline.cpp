@@ -41,19 +41,22 @@ void TemplatePatchPipeline::process_image_frame(
     const std::chrono::milliseconds& time,
     const ImageFrame& image_frame,
     const CameraFrame* camera_frame,
-    bool is_last_frame)
+    bool is_last_frame,
+    bool camera_is_initializer)
 {
     down_sampler_.append_image_frame(time, image_frame);
     image_frames_.insert(std::make_pair(time, image_frame));
     if (camera_frame != nullptr) {
         camera_frames_.insert(std::make_pair(time, *camera_frame));
     }
-    if (camera_frame == nullptr && !dtam_reconstruction_.can_track_on_its_own()) {
+    if (((camera_frame == nullptr) || camera_is_initializer) && !dtam_reconstruction_.can_track_on_its_own()) {
         if (image_frames_.size() >= 2 && flowing_particles_.requires_optical_flow()) {
             optical_flows_.compute_optical_flow();
         }
         flowing_particles_.advance_flowing_particles();
-        sparse_reconstruction_.reconstruct(is_last_frame);
+        sparse_reconstruction_.reconstruct(
+            is_last_frame,
+            (camera_frame != nullptr) && camera_is_initializer);
     }
     if (cfg_.enable_dtam) {
         // sparse_reconstruction_ may or may have not appended a new camera frame

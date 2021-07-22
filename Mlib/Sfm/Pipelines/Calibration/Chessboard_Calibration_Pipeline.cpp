@@ -37,9 +37,11 @@ void ChessboardCalibrationPipeline::process_image_frame(
     const std::chrono::milliseconds& time,
     const ImageFrame& image_frame,
     const CameraFrame* camera_frame,
-    bool is_last_frame)
+    bool is_last_frame,
+    bool camera_is_initializer)
 {
     assert(camera_frame == nullptr);
+    assert(!camera_is_initializer);
     Array<FixedArray<float, 2>> p_y;
     std::string p_x_filename = (fs::path{ cache_dir_ } / "features-p_x.m").string();
     std::string p_y_filename = (fs::path{ cache_dir_ } / ("features-" + std::to_string(p_y_.size()) + "-p_y.m")).string();

@@ -101,7 +101,7 @@ void Mlib::Sfm::process_files_with_pipeline(
                     TransformationMatrix<float, 3>(
                         FixedArray<float, 3, 3>{R},
                         FixedArray<float, 3>{t}) };
-                pipeline.process_image_frame(time, image_frame, &camera_frame, i == std::min(nimages, image_files.size()) - 1);
+                pipeline.process_image_frame(time, image_frame, &camera_frame, i == std::min(nimages, image_files.size()) - 1, ncameras < image_files.size());
             }
         }
         if (camera_files != nullptr) {

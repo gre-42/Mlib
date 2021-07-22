@@ -25,7 +25,8 @@ public:
         const std::chrono::milliseconds& time,
         const ImageFrame& image_frame,
         const CameraFrame* camera_frame = nullptr,
-        bool is_last_frame = false) override;
+        bool is_last_frame = false,
+        bool camera_is_initializer = false) override;
     virtual void print_statistics(std::ostream& ostream) override;
 private:
     void save_cameras() const;

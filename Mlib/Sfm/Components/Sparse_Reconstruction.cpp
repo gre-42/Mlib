@@ -28,6 +28,9 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
+// static const bool skip_missing_cameras = cfg_.initialize_with_bundle_adjustment;
+static const bool skip_missing_cameras = true;
+
 SparseReconstruction::SparseReconstruction(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
@@ -52,31 +55,75 @@ SparseReconstruction::SparseReconstruction(
       camera_frames,
       frozen_camera_frames_,
       intrinsic_matrix,
-      cfg.initialize_with_bundle_adjustment,
+      skip_missing_cameras,
       uuid_gen_,
       dropped_observations_,
       bad_points } {}
 
-void SparseReconstruction::reconstruct_initial_with_svd() {
-    assert(particles_.size() > 0);
-
-    std::list<size_t> active_sequence_ids;
+void SparseReconstruction::compute_reconstruction_pair(
+    Array<size_t>& ids,
+    Array<FixedArray<float, 2>>& y0,
+    Array<FixedArray<float, 2>>& y1)
+{
+    std::list<size_t> ids_l;
     std::list<FixedArray<float, 2>> y0_l;
     std::list<FixedArray<float, 2>> y1_l;
     for (const auto& s : particles_.rbegin()->second) {
-        assert(cfg_.nframes >= 2);
+        assert(cfg_.nframes >= 1);
         std::shared_ptr<FeaturePoint> nth_parent = s.second->nth_from_end(cfg_.nframes - 1);
         if (nth_parent != nullptr) {
-            active_sequence_ids.push_back(s.first);
+            ids_l.push_back(s.first);
             y0_l.push_back(nth_parent->position);
             y1_l.push_back(s.second->sequence.rbegin()->second->position);
         }
     }
+    ids = Array<size_t>(ids_l);
+    y0 = Array<FixedArray<float, 2>>(y0_l);
+    y1 = Array<FixedArray<float, 2>>(y1_l);
+}
 
-    std::cerr << "Found " << y0_l.size() << " points, waiting for " << cfg_.npoints << std::endl;
-    if (y0_l.size() >= cfg_.npoints) {
-        Array<FixedArray<float, 2>> y0(y0_l);
-        Array<FixedArray<float, 2>> y1(y1_l);
+void SparseReconstruction::reconstruct_initial_with_camera() {
+    assert(particles_.size() > 0);
+
+    Array<size_t> active_sequence_ids;
+    Array<FixedArray<float, 2>> y0;
+    Array<FixedArray<float, 2>> y1;
+
+    compute_reconstruction_pair(active_sequence_ids, y0, y1);
+
+    std::cerr << "Found " << y0.length() << " points, waiting for " << cfg_.npoints << std::endl;
+    if (y0.length() >= cfg_.npoints) {
+        assert_true(camera_frames_.size() >= cfg_.nframes);
+        assert_true(camera_frames_.rbegin()->first == particles_.rbegin()->first);
+        auto cit_second = camera_frames_.rbegin();
+        auto cit_first = cit_second;
+        assert(cfg_.nframes >= 1);
+        std::advance(cit_first, cfg_.nframes - 1);
+        InitialReconstruction ir{ y0, y1, cit_first->second.projection_matrix_3x4() * cit_second->second.reconstruction_matrix_3x4(), intrinsic_matrix_ };
+
+        Array<float> condition_number;
+        Array<FixedArray<float, 3>> x = ir.reconstructed(&condition_number);
+
+        for (size_t i = 0; i < active_sequence_ids.length(); ++i) {
+            const FixedArray<float, 3>& xx = cit_first->second.reconstruction_matrix_3x4().transform(x(i));
+            std::cerr << "New initial x [" << i << "] " << xx << " cond " << condition_number(i) << std::endl;
+            reconstructed_points_[active_sequence_ids(i)] =
+                std::make_shared<ReconstructedPoint>(xx, condition_number(i));
+        }
+    }
+}
+
+void SparseReconstruction::reconstruct_initial_with_svd() {
+    assert(particles_.size() > 0);
+
+    Array<size_t> active_sequence_ids;
+    Array<FixedArray<float, 2>> y0;
+    Array<FixedArray<float, 2>> y1;
+
+    compute_reconstruction_pair(active_sequence_ids, y0, y1);
+
+    std::cerr << "Found " << y0.length() << " points, waiting for " << cfg_.npoints << std::endl;
+    if (y0.length() >= cfg_.npoints) {
         ProjectionToTrRansac ptr(
             y0,
             y1,
@@ -103,7 +150,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
             std::cerr << "dt " << ptr.ptr->ke.t() << std::endl;
             std::cerr << "RANSAC selected " <<
                 ptr.best_indices.length() << " of " <<
-                active_sequence_ids.size() << " points" << std::endl;
+                active_sequence_ids.length() << " points" << std::endl;
 
             Array<float> condition_number;
             Array<FixedArray<float, 3>> x = ptr.ptr->initial_reconstruction().reconstructed(&condition_number);
@@ -122,7 +169,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
             } else {
                 std::cerr << "Not storing second initial camera at " << particles_.rbegin()->first.count() << " ms" << std::endl;
             }
-            Array<size_t> inlier_sequence_ids{Array<size_t>{active_sequence_ids}[ptr.best_indices]};
+            Array<size_t> inlier_sequence_ids{active_sequence_ids[ptr.best_indices]};
             auto sequence_id_it = &inlier_sequence_ids(0);
             for (size_t i = 0; i < x.shape(0); ++i) {
                 float cond_number = condition_number(i);
@@ -485,7 +532,7 @@ void SparseReconstruction::global_bundle_adjustment_lvm() {
         frozen_reconstructed_points_,
         camera_frames_,
         frozen_camera_frames_,
-        cfg_.initialize_with_bundle_adjustment,
+        skip_missing_cameras,
         uuid_gen_,
         dropped_observations_};
     std::cerr << "global shape " << gb.Jg.shape() << std::endl;
@@ -502,7 +549,7 @@ void SparseReconstruction::global_bundle_adjustment_lvm() {
                 camera_frames_,
                 frozen_camera_frames_,
                 intrinsic_matrix_,
-                cfg_.initialize_with_bundle_adjustment,
+                skip_missing_cameras,
                 dropped_observations_);
             return gb.fg;
         },
@@ -515,7 +562,7 @@ void SparseReconstruction::global_bundle_adjustment_lvm() {
             //     reconstructed_points_,
             //     camera_frames_,
             //     intrinsic_matrix_,
-            //     cfg_.initialize_with_bundle_adjustment);
+            //     skip_missing_cameras);
             return gb.Jg;
         },
         float{ 1e-2 },          // alpha
@@ -550,7 +597,7 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
                 camera_frames_,
                 frozen_camera_frames_,
                 intrinsic_matrix_,
-                cfg_.initialize_with_bundle_adjustment,
+                skip_missing_cameras,
                 dropped_observations_);
             return gb->yg - gb->fg;
         },
@@ -569,7 +616,7 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
             //     reconstructed_points_,
             //     camera_frames_,
             //     intrinsic_matrix_,
-            //     cfg_.initialize_with_bundle_adjustment);
+            //     skip_missing_cameras);
             // return gb.Jg;
 
             // auto ATA = dot2d(gb.Jg.vH(), gb.Jg);
@@ -597,8 +644,10 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
     delete_bad_points();
 }
 
-void SparseReconstruction::reconstruct(bool is_last_frame) {
-    if (reconstructed_points_.size() == 0) {
+void SparseReconstruction::reconstruct(bool is_last_frame, bool camera_initializer_set) {
+    if (camera_initializer_set) {
+        reconstruct_initial_with_camera();
+    } else if (reconstructed_points_.size() == 0) {
         if (cfg_.initialize_with_bundle_adjustment) {
             reconstruct_initial_for_bundle_adjustment();
             if (reconstructed_points_.size() != 0) {
@@ -836,7 +885,7 @@ void SparseReconstruction::delete_bad_points() {
 }
 
 void SparseReconstruction::draw(const std::string& prefix) const {
-    if (!camera_frames_.empty()) {
+    if (camera_frames_.size() > 1) {
         fs::create_directories(fs::path{ cache_dir_ } / "0-2");
         fs::create_directories(fs::path{ cache_dir_ } / "0-1");
         SparseProjector(reconstructed_points_, bad_points_, camera_frames_, 0, 2, 1).normalize(256).draw((fs::path{ cache_dir_ } / "0-2" / (prefix + ".png")).string());

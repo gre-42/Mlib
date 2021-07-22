@@ -25,7 +25,7 @@ public:
         std::map<size_t, float>& last_sq_residual,
         const std::string& cache_dir,
         ReconstructionConfig cfg);
-    void reconstruct(bool is_last_frame = false);
+    void reconstruct(bool is_last_frame = false, bool camera_initializer_set = false);
     void reconstruct_pass2();
     const Array<FixedArray<float, 3>> reconstructed_points() const;
     const Array<size_t> reconstructed_point_ids() const;
@@ -33,6 +33,11 @@ public:
     CameraFrame& get_camera_frame(const std::chrono::milliseconds& time);
     void print_arrays() const;
 private:
+    void compute_reconstruction_pair(
+        Array<size_t>& ids,
+        Array<FixedArray<float, 2>>& y0,
+        Array<FixedArray<float, 2>>& y1);
+    void reconstruct_initial_with_camera();
     void reconstruct_initial_with_svd();
     void reconstruct_initial_for_bundle_adjustment();
     bool is_point_observation_bad(size_t id, const std::chrono::milliseconds& time);

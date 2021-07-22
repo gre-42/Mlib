@@ -128,9 +128,9 @@ bool FlowingParticles::try_generate_feature_point_sequence(
     FeaturePointFrame& frame,
     const FixedArray<float, 2>& pos)
 {
-    auto seq = std::make_shared<FeaturePointSequence>();
     auto p = generate_feature_point(pos);
     if (p->traceable_patch.good_) {
+        auto seq = std::make_shared<FeaturePointSequence>();
         seq->sequence[image_frames_.rbegin()->first] = p;
         frame[sequence_index++] = seq;
         return true;
