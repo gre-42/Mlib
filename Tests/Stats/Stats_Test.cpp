@@ -36,7 +36,7 @@ void test_robust_deviation() {
 }
 
 void test_ransac() {
-    Array<float> data{ 1, 2, 3, 2, 1, 2, 3, 2, 7, 8, 9 };
+    Array<float> data{ 1, 2, 30, 2, -10, 2, 3, 2, 7, 8, 9 };
     RansacOptions<float> ro;
     ro.nelems_small = 3;
     ro.ncalls = 10;
@@ -51,7 +51,7 @@ void test_ransac() {
             // std::cerr << data[indices] << " | " << abs(data - mean(data[indices])) << " | " << sum(abs(data - mean(data[indices]))) << " | " << mean(data[indices]) << std::endl;
             return abs(data - mean(data[indices]));
         });
-    assert_allclose<float>(best_ids.casted<float>(), Array<float>{ 1, 2, 3, 5, 6, 7 });
+    assert_allclose<float>(best_ids.casted<float>(), Array<float>{ 0, 1, 3, 5, 6, 7 });
 }
 
 void test_sort() {
