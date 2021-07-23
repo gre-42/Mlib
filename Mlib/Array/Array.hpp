@@ -1058,6 +1058,18 @@ public:
     ConstArrayElementIterable<TData> flat_iterable() const {
         return ConstArrayElementIterable(flattened());
     }
+    TData* flat_begin() {
+        return flat_iterable().begin();
+    }
+    const TData* flat_begin() const {
+        return flat_iterable().begin();
+    }
+    TData* flat_end() {
+        return flat_iterable().end();
+    }
+    const TData* flat_end() const {
+        return flat_iterable().end();
+    }
     void do_resize(const ArrayShape& shape) {
         assert(offset_ == 0);
         data_ = std::make_shared<Vector<TData>>(shape.nelements());
