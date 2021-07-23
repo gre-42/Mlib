@@ -181,6 +181,25 @@ void Mlib::highlight_features(
     draw_points_as_boxes(feature_points, bitmap, size, color);
 }
 
+void Mlib::highlight_feature_correspondences(
+    const Array<FixedArray<float, 2>>& feature_points0,
+    const Array<FixedArray<float, 2>>& feature_points1,
+    StbImage& bitmap,
+    size_t thickness,
+    const Rgb24& color,
+    const Rgb24* short_line_color)
+{
+    assert(feature_points0.length() == feature_points1.length());
+    for (size_t i = 0; i < feature_points0.length(); ++i) {
+        bitmap.draw_line(
+            a2fi(feature_points0(i)).to_array(),
+            a2fi(feature_points1(i)).to_array(),
+            thickness,
+            color,
+            short_line_color);
+    }
+}
+
 FixedArray<float, 2> Mlib::find_feature_in_neighborhood(
     const FixedArray<float, 2>& old_feature_point,
     const Array<float>& new_featureness,

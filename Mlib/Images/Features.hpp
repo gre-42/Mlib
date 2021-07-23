@@ -46,6 +46,14 @@ void highlight_features(
     size_t size = 1,
     const Rgb24& color = Rgb24::red());
 
+void highlight_feature_correspondences(
+    const Array<FixedArray<float, 2>>& feature_points0,
+    const Array<FixedArray<float, 2>>& feature_points1,
+    StbImage& bitmap,
+    size_t thickness = 0,
+    const Rgb24& color = Rgb24::red(),
+    const Rgb24* short_line_color = nullptr);
+
 FixedArray<float, 2> find_feature_in_neighborhood(
     const FixedArray<float, 2>& old_feature_point,
     const Array<float>& new_featureness,
