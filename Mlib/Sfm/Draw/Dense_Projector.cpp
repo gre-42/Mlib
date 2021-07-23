@@ -50,7 +50,7 @@ DenseProjector::DenseProjector(
 {
     assert_true(x_.ndim() == 1);
     if (condition_number.initialized() && (condition_number_.length() != x_.shape(0))) {
-        throw std::runtime_error("cn and xv diverged");
+        throw std::runtime_error("cn and xv diverged (" + std::to_string(condition_number_.length()) + " != " + std::to_string(x_.shape(0)) + ')');
     }
 }
 

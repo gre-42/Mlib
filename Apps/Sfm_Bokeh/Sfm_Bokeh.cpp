@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Base_Projector.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates.hpp>
@@ -64,13 +65,13 @@ void dense_reconstruction(
 {
     if (!only_features2k) {
         size_t search_length = 200;
-        Array<float> disparity = compute_disparity_gray_single_pixel(im0, im1, F, search_length);
+        Array<float> disparity = compute_disparity_rgb_single_pixel(im0_rgb, im1_rgb, F, search_length);
         if (!only_features2k) {
             Array<float> res = disparity / (2.f * search_length) + 0.5f;
             // res = box_filter(res, ArrayShape{5, 5}, NAN);
             // res = guided_filter(im1, res, ArrayShape{3, 3}, float(1e-1));
             StbImage bmp = StbImage::from_float_grayscale(res);
-            bmp.save_to_file("disparity_gsp.png");
+            bmp.save_to_file("disparity_rgbs.png");
         }
         if (false) {
             float worst_error = 1.f;
@@ -286,12 +287,12 @@ void compute_z(const ParsedArgs& args) {
 
     dense_reconstruction(
         args,
-        args.has_named("--tr2f") ? ol_r : ol,
+        args.has_named("--no_tr2f") ? ol : ol_r,
         im0,
         im1,
         im0_rgb,
         im1_rgb,
-        args.has_named("--tr2f") ? F_r : F,
+        args.has_named("--no_tr2f") ? F : F_r,
         *ptr.ptr,
         intrinsic_matrix);
 }
@@ -337,9 +338,11 @@ void plot_dense_x(const ParsedArgs& args) {
 }
 
 int main(int argc, char** argv) {
+    enable_floating_point_exceptions();
+
     const ArgParser parser(
-        "Usage: sfm_bokeh source0 source1 --recon <reconstructed> --post <postprocessed> --bokeh <postprocessed> --calibration-filename <calibration-filename> [--tr2f]",
-        {"--tr2f"},
+        "Usage: sfm_bokeh source0 source1 --recon <reconstructed> --post <postprocessed> --bokeh <postprocessed> --calibration-filename <calibration-filename> [--no_tr2f]",
+        {"--no_tr2f"},
         {"--recon-0", "--recon-1", "--recon-2", "--post", "--bokeh", "--calibration-filename"});
     const auto args = parser.parsed(argc, argv);
 
