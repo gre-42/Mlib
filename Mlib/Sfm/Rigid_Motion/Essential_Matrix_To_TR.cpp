@@ -30,7 +30,8 @@ EssentialMatrixToTR::EssentialMatrixToTR(const FixedArray<float, 3, 3>& E) {
     Array<double> tu;
     //double ts;
     //inverse_iteration_symm(outer(T, T), tu, ts, 1e-12);
-    tu = find_smallest_eigenvector(outer(T, T));
+    //tu = find_smallest_eigenvector_4(outer(T, T));
+    tu = find_smallest_eigenvector_j(outer(T, T));
     //std::cerr << "E\n" << E << std::endl;
     //std::cerr << "u\n" << u << std::endl;
     //std::cerr << "s " << s << std::endl;

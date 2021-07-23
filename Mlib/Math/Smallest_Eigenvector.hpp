@@ -1,15 +1,11 @@
 #pragma once
-#include <Mlib/Math/Svd4.hpp>
 
 namespace Mlib {
 
 template <class TData>
-Array<TData> find_smallest_eigenvector(const Array<TData>& m) {
-    Array<TData> u;
-    Array<TData> s;
-    Array<TData> vT;
-    svd4(m, u, s, vT);
-    return vT[vT.shape(0) - 1];
-}
+class Array;
+
+Array<double> find_smallest_eigenvector_4(const Array<double>& m);
+Array<double> find_smallest_eigenvector_j(const Array<double>& m);
 
 }
