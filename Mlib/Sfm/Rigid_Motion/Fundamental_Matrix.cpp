@@ -51,7 +51,7 @@ FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
         inverse_iteration_symm(dot(Y.T(), Y), u, s);
         return FixedArray<double, 3, 3>{u.reshaped(ArrayShape{ 3, 3 })}.casted<float>();
     } else {
-        Array<double> ev = find_smallest_eigenvector(dot(Y.T(), Y));
+        Array<double> ev = find_smallest_eigenvector_j(dot(Y.T(), Y));
         return FixedArray<double, 3, 3>{ev.reshaped(ArrayShape{ 3, 3 })}.casted<float>();
         //std::cerr << vT << std::endl;
     }
