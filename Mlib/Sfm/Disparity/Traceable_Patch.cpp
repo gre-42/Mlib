@@ -19,10 +19,12 @@ TraceablePatch::TraceablePatch(
     const FixedArray<size_t, 2>& patch_center,
     const FixedArray<size_t, 2>& patch_size,
     const FixedArray<size_t, 2>& patch_nan_size,
-    size_t min_npixels)
+    size_t min_npixels,
+    float min_brightness)
 : image_patch_{ ArrayShape{ image.shape(0), patch_size(0), patch_size(1) } },
   brightness_{0},
-  min_npixels_{min_npixels}
+  min_npixels_{min_npixels},
+  min_brightness_{min_brightness}
 {
     assert(image.ndim() == 3); // channel, rows, columns
     FixedArray<size_t, 2> image_shape2{ image.shape(1), image.shape(2) };
@@ -87,7 +89,7 @@ float TraceablePatch::error_at_position(
             }
         }
     }
-    if (nerror >= (min_npixels_ != 0 ? min_npixels_ : prod(image_patch_shape2))) {
+    if ((brightness_ > min_brightness_) && nerror >= (min_npixels_ != 0 ? min_npixels_ : prod(image_patch_shape2))) {
         return error_sum / float(image.shape(0)) / nerror / brightness_;
     } else {
         return std::numeric_limits<float>::infinity();
