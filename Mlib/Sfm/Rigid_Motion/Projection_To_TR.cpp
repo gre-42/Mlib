@@ -52,19 +52,19 @@ ProjectionToTR::ProjectionToTR(
     const auto& v = e2tr;
     //std::cerr << v.R0 << std::endl;
     //std::cerr << v.R1 << std::endl;
-    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm0.R(), v.tm0.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.tm0.R(); ke.t() = v.tm0.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm1.R(), v.tm0.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.tm1.R(); ke.t() = v.tm0.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm0.R(), v.tm1.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.tm0.R(); ke.t() = v.tm1.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm1.R(), v.tm1.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.tm1.R(); ke.t() = v.tm1.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm0.R(), v.tm0.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; tm.R() = v.tm0.R(); tm.t() = v.tm0.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm1.R(), v.tm0.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; tm.R() = v.tm1.R(); tm.t() = v.tm0.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm0.R(), v.tm1.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; tm.R() = v.tm0.R(); tm.t() = v.tm1.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.tm1.R(), v.tm1.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; tm.R() = v.tm1.R(); tm.t() = v.tm1.t(); }
 }
 
 bool ProjectionToTR::good() const {
-    assert((ngood != 1) || (det3x3(ke.R()) > 0));
+    assert((ngood != 1) || (det3x3(tm.R()) > 0));
     return (ngood == 1);
 }
 
 InitialReconstruction ProjectionToTR::initial_reconstruction() const {
-    return InitialReconstruction(np.yn[0], np.yn[1], ke, kin);
+    return InitialReconstruction(np.yn[0], np.yn[1], tm.inverted(), kin);
 }
 
 void ProjectionToTR::draw_epilines(StbImage& image, const Rgb24& color) const {

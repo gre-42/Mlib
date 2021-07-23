@@ -268,8 +268,8 @@ void test_find_essential_matrix() {
     //std::cerr << "dke\n" << sc.delta_ke(i0, i1) << std::endl;
     //std::cerr << "t " << sc.t(i0, i1) << std::endl;
     //std::cerr << "R\n" << sc.R(i0, i1) << std::endl;
-    assert_allclose(ptr.ke.t().to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-4 });
-    assert_allclose(ptr.ke.R().to_array(), sc.dR(i0, i1).to_array(), float{ 1e-4 });
+    assert_allclose(ptr.tm.t().to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-4 });
+    assert_allclose(ptr.tm.R().to_array(), sc.dR(i0, i1).to_array(), float{ 1e-4 });
 }
 
 void test_projection_to_TR() {
@@ -281,8 +281,8 @@ void test_projection_to_TR() {
     //std::cerr << "t " << ptr.t << std::endl;
     //std::cerr << "R0\n" << sc.R(i0, i1) << std::endl;
     //std::cerr << "t0 " << sc.t2(i0, i1) << std::endl;
-    assert_allclose(ptr.ke.t().to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-3 });
-    assert_allclose(ptr.ke.R().to_array(), sc.dR(i0, i1).to_array(), float{ 1e-4 });
+    assert_allclose(ptr.tm.t().to_array(), sc.dt2(i0, i1).to_array(), float{ 1e-3 });
+    assert_allclose(ptr.tm.R().to_array(), sc.dR(i0, i1).to_array(), float{ 1e-4 });
     Array<float> u{ ptr.initial_reconstruction().reconstructed() };
     Array<float> x{ sc.x };
     assert_allclose(u / mean(abs(u)), x / mean(abs(x)), float{ 2e-1 });
@@ -433,7 +433,7 @@ void test_find_epiline() {
     FixedArray<float, 2> v;
     find_epiline(F, FixedArray<float, 2>{ y0[1] }, p, v);
     assert_allclose(p.to_array(), Array<float>{0.784089f, 0.788539f});
-    assert_allclose(v.to_array(), Array<float>{-0.703581f, -0.070358f});
+    assert_allclose(v.to_array(), Array<float>{0.703581f, 0.070358f});
     //std::cerr << "v " << v << std::endl;
     //std::cerr << (F, y0[0]) << std::endl;
     //std::cerr << (F.T(), y1[0]) << std::endl;

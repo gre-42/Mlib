@@ -142,12 +142,12 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
                 auto cam2 = camera_frames_.find(particles_.rbegin()->first);
                 if (cam2 != camera_frames_.end()) {
                     std::cerr << "Overwriting rotation and translation" << std::endl;
-                    ptr.ptr->ke = cam2->second.pose;
+                    ptr.ptr->tm = cam2->second.pose;
                 }
             }
             std::cerr << "good" << std::endl;
-            std::cerr << "dR\n" << ptr.ptr->ke.R() << std::endl;
-            std::cerr << "dt " << ptr.ptr->ke.t() << std::endl;
+            std::cerr << "dR\n" << ptr.ptr->tm.R() << std::endl;
+            std::cerr << "dt " << ptr.ptr->tm.t() << std::endl;
             std::cerr << "RANSAC selected " <<
                 ptr.best_indices.length() << " of " <<
                 active_sequence_ids.length() << " points" << std::endl;
@@ -165,7 +165,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
                 std::cerr << "Storing initial camera at " << particles_.rbegin()->first.count() << " ms" << std::endl;
                 set_camera_frame(
                     particles_.rbegin()->first,
-                    CameraFrame{ ptr.ptr->ke });
+                    CameraFrame{ ptr.ptr->tm });
             } else {
                 std::cerr << "Not storing second initial camera at " << particles_.rbegin()->first.count() << " ms" << std::endl;
             }

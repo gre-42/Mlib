@@ -85,7 +85,7 @@ void dense_reconstruction(
         Array<float> x = reconstruct_disparity(
             disparity,
             F,
-            ptr.ke,
+            ptr.tm.inverted(),
             intrinsic_matrix,
             &condition_number);
         StbImage::from_float_grayscale(
@@ -111,7 +111,7 @@ void dense_reconstruction(
             ol.y1_2d}}};
         Array<float> condition_number;
         Array<FixedArray<float, 3>> x = initial_reconstruction(
-            ptr.ke,
+            ptr.tm.inverted(),
             np.normalized_intrinsic_matrix(intrinsic_matrix),
             np.yn[0],
             np.yn[1],
@@ -121,7 +121,7 @@ void dense_reconstruction(
 
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
         cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
-        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.ke }));
+        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.tm }));
         DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-1.png");
         DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-2.png");
         DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-2-1.png");
@@ -251,7 +251,7 @@ void compute_z(const ParsedArgs& args) {
     FixedArray<float, 3, 3> F_r = fundamental_from_camera(
         intrinsic_matrix,
         intrinsic_matrix,
-        ptr.ptr->ke);
+        ptr.ptr->tm);
     {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F_r, bmp, Rgb24::green());

@@ -22,7 +22,7 @@ public:
     InitialReconstruction initial_reconstruction() const;
     void draw_epilines(StbImage& image, const Rgb24& color) const;
 
-    TransformationMatrix<float, 3> ke;
+    TransformationMatrix<float, 3> tm;
     size_t ngood;
 private:
     Array<FixedArray<float, 2>> y;
