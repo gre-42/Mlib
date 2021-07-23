@@ -231,7 +231,7 @@ CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::millis
         return camera_frames_.at(time);
     }
     if (cfg_.append_with_bundle_adjustment) {
-        const auto&c = camera_frames_.rbegin()->second;
+        const auto& c = camera_frames_.rbegin()->second;
         set_camera_frame(time, CameraFrame{ c.pose, c.kep });
         global_bundle_adjustment();
         return camera_frames_.at(time);
