@@ -927,6 +927,8 @@ public:
             while(srow >> svalue) {
                 if (svalue == "nan") {
                     value = NAN;
+                } if (svalue == "-nan") {
+                    value = -NAN;
                 } else if (svalue == "inf") {
                     value = INFINITY;
                 } else if (svalue == "-inf") {
