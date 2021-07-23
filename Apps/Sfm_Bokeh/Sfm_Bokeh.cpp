@@ -129,8 +129,8 @@ void dense_reconstruction(
 }
 
 void compute_z(const ParsedArgs& args) {
-    Bgr24Raw source0 = Bgr24Raw::load_from_file(args.unnamed_value(0));
-    Bgr24Raw source1 = Bgr24Raw::load_from_file(args.unnamed_value(1));
+    StbImage source0 = StbImage::load_from_file(args.unnamed_value(0));
+    StbImage source1 = StbImage::load_from_file(args.unnamed_value(1));
 
     if (!all(source0.shape() == source1.shape())) {
         throw std::runtime_error("Source images differ in size");
@@ -223,7 +223,7 @@ void compute_z(const ParsedArgs& args) {
         bmp.save_to_file("f_epilines2_T.png");
     }
 
-    CorrespondingFeaturesOnLine ol = get_cfol(im1, im0_rgb, im1_rgb, F, "f_hr1d.bmp");
+    CorrespondingFeaturesOnLine ol = get_cfol(im1, im0_rgb, im1_rgb, F, "f_hr1d.png");
 
     ProjectionToTrRansac ptr{
         cf.y0_2d,
@@ -268,7 +268,7 @@ void compute_z(const ParsedArgs& args) {
         bmp.save_to_file("r_epilines2_T.png");
     }
 
-    CorrespondingFeaturesOnLine ol_r = get_cfol(im1, im0_rgb, im1_rgb, F_r, "r_hr1d.bmp");
+    CorrespondingFeaturesOnLine ol_r = get_cfol(im1, im0_rgb, im1_rgb, F_r, "r_hr1d.png");
 
     dense_reconstruction(
         args,
@@ -309,7 +309,7 @@ void plot_dense_x(const ParsedArgs& args) {
 
     TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{Array<float>::load_txt_2d(args.named_value("--calibration-filename"))} };
 
-    Bgr24Raw source0 = Bgr24Raw::load_from_file(args.unnamed_value(0));
+    StbImage source0 = StbImage::load_from_file(args.unnamed_value(0));
 
     Array<float> x(std::list<Array<float>>{
         Array<float>::load_txt_2d("dense-0.m"),

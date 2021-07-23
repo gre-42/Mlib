@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Images/Bgr24Raw.hpp>
 #include <Mlib/Sfm/Draw/Projector_With_Cameras.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
 
