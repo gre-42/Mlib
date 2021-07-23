@@ -168,3 +168,35 @@ float TraceablePatch::new_position_on_line(
     // std::cerr << "best error " << best_error << std::endl;
     return best_disparity;
 }
+
+FixedArray<float, 2> TraceablePatch::new_position_in_candidate_list(
+    const Array<float>& image,
+    const FixedArray<float, 2>& patch_center,
+    const Array<FixedArray<float, 2>>& candidates,
+    float worst_error) const
+{
+    assert_true(good_);
+    FixedArray<size_t, 2> image_shape2{ image.shape(1), image.shape(2) };
+    float best_error = std::numeric_limits<float>::infinity();
+    FixedArray<size_t, 2> best_id{SIZE_MAX, SIZE_MAX};
+    size_t ncandidates = 0;
+    for (const FixedArray<float, 2>& patch_center : candidates.flat_iterable()) {
+        FixedArray<size_t, 2> id = a2i(patch_center);
+        // Negative indices are not (yet) supported on the caller-site.
+        // The image is in RGB, so remove the first dimension.
+        if (all(id < image_shape2)) {
+            float error = error_at_position(image, id);
+            // std::cerr  << dr << " - " << dc << " | " << error << " - " << best_error << std::endl;
+            if ((error < best_error) && (error <= worst_error)) {
+                best_error = error;
+                best_id = id;
+            }
+            if (error != INFINITY) {
+                ++ncandidates;
+            }
+        }
+    }
+    // std::cerr << "best " << best_id << std::endl;
+    // std::cerr << "best error " << best_error << std::endl;
+    return i2a(best_id);
+}
