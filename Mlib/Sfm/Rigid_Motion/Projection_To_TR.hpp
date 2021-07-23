@@ -3,7 +3,12 @@
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Normalized_Projection.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib {
+
+class StbImage;
+class Rgb24;
+
+namespace Sfm {
 
 class ProjectionToTR {
 public:
@@ -15,6 +20,7 @@ public:
 
     bool good() const;
     InitialReconstruction initial_reconstruction() const;
+    void draw_epilines(StbImage& image, const Rgb24& color) const;
 
     TransformationMatrix<float, 3> ke;
     size_t ngood;

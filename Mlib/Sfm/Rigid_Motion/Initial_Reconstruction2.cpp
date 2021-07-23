@@ -118,7 +118,7 @@ static Array<FixedArray<float, 2, 3>> unpack_x_dx(
  * Only works with normalized coordinates
  */
 Array<FixedArray<float, 3>> Mlib::Sfm::initial_reconstruction(
-    const TransformationMatrix<float, 3>& tm,
+    const TransformationMatrix<float, 3>& ke,
     const TransformationMatrix<float, 2>& ki,
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
@@ -134,15 +134,15 @@ Array<FixedArray<float, 3>> Mlib::Sfm::initial_reconstruction(
         assert(condition_number->length() == y0.length());
     }
 
-    Array<TransformationMatrix<float, 3>> ke{
+    Array<TransformationMatrix<float, 3>> kes{
         TransformationMatrix<float, 3>::identity(),
-        tm.inverted() };
+        ke };
     Array<FixedArray<float, 3>> x(ArrayShape{y0.length()});
     Array<FixedArray<float, 2>> y_tracked(ArrayShape{2});
     for (size_t i = 0; i < y0.length(); ++i) {
         y_tracked(0) = y0(i);
         y_tracked(1) = y1(i);
-        x[i] = reconstructed_point_(y_tracked, ki, ke,
+        x(i) = reconstructed_point_(y_tracked, ki, kes,
             nullptr, // weights
             false,   // method2
             points_are_normalized,

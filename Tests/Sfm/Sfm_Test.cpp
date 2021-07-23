@@ -105,7 +105,7 @@ void test_initial_reconstruction() {
     Array<FixedArray<float, 3>> irX = initial_reconstruction(
         TransformationMatrix<float, 3>{
             sc.dR(0, 1),
-            sc.dt2(0, 1)},
+            sc.dt2(0, 1)}.inverted(),
         np.normalized_intrinsic_matrix(sc.ki),
         np.yn[0],
         np.yn[1]);
@@ -216,11 +216,11 @@ void test_find_fundamental_matrix_synthetic_scene() {
     assert_allclose<float>(
         fundamental_error(Fn, np.yn[0], np.yn[1]),
         zeros<float>(ArrayShape{np.yn.shape(1)}),
-        float(20));
+        float(1e-5));
     assert_allclose<float>(
         fundamental_error(F, sc.y[0], sc.y[1]),
         zeros<float>(ArrayShape{sc.y.shape(1)}),
-        float(1e-4));
+        float(1e-2));
 }
 
 void test_synthetic_scene() {
@@ -245,7 +245,7 @@ void test_find_essential_matrix() {
     assert_allclose(
         fundamental_error(F, sc.y[i0], sc.y[i1]),
         zeros<float>(ArrayShape{sc.y[i0].shape(0)}),
-        float{ 1e-4 });
+        float{ 1e-2 });
     // std::cerr << F << std::endl;
     // "denormalized_intrinsic_matrix" is not used,
     // both E and y are normalized.

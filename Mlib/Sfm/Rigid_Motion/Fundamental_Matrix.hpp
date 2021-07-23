@@ -15,7 +15,7 @@ namespace Sfm {
 FixedArray<float, 3, 3> find_fundamental_matrix(
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
-    bool method_inverse_iteration = true);
+    bool method_inverse_iteration = false);
 
 Array<float> fundamental_error(
     const FixedArray<float, 3, 3>& F,

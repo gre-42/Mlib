@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Determinant.hpp>
+#include <Mlib/Sfm/Draw/Epilines.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Normalized_Projection.hpp>
@@ -29,7 +30,7 @@ static bool reconstruction_ok(
     // return (float(nz) / y0.shape(0)) > 0.9;
 
     // return all(initial_reconstruction_x3(R, t, ki, y0, y1) > threshold);
-    Array<FixedArray<float, 3>> recon0 = initial_reconstruction(tm, ki, y0, y1);
+    Array<FixedArray<float, 3>> recon0 = initial_reconstruction(tm.inverted(), ki, y0, y1);
     Array<FixedArray<float, 3>> recon1 = recon0.applied([&tm](const auto& p) { return tm.transform(p); });
     return all(recon0.applied<bool>([threshold](const auto& p) { return p(2) > threshold; })) &&
            all(recon1.applied<bool>([threshold](const auto& p) { return p(2) > threshold; }));
@@ -64,4 +65,8 @@ bool ProjectionToTR::good() const {
 
 InitialReconstruction ProjectionToTR::initial_reconstruction() const {
     return InitialReconstruction(np.yn[0], np.yn[1], ke, kin);
+}
+
+void ProjectionToTR::draw_epilines(StbImage& image, const Rgb24& color) const {
+    draw_epilines_from_F(fundamental_to_essential(Fn, np.N), image, color);
 }

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Smallest_Eigenvector.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
@@ -50,14 +51,8 @@ FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
         inverse_iteration_symm(dot(Y.T(), Y), u, s);
         return FixedArray<double, 3, 3>{u.reshaped(ArrayShape{ 3, 3 })}.casted<float>();
     } else {
-        Array<double> u;
-        Array<double> vT;
-        Array<double> s;
-        svd4(dot(Y.T(), Y), u, s, vT);
-        //std::cerr << "s " << s << std::endl;
-        //std::cerr << "vT " << vT << std::endl;
-        //std::cerr << vT.row_range(8, 9) << std::endl;
-        return FixedArray<double, 3, 3>{vT.row_range(8, 9).reshaped(ArrayShape{ 3, 3 })}.casted<float>();
+        Array<double> ev = find_smallest_eigenvector(dot(Y.T(), Y));
+        return FixedArray<double, 3, 3>{ev.reshaped(ArrayShape{ 3, 3 })}.casted<float>();
         //std::cerr << vT << std::endl;
     }
     //std::cerr << "zzzz\n";
@@ -89,8 +84,8 @@ Array<float> Mlib::Sfm::fundamental_error(
 }
 
 FixedArray<float, 3, 3> Mlib::Sfm::fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix) {
-    return dot(outer(intrinsic_matrix.affine().T(), F), intrinsic_matrix.affine());
-    //return (lstsq_chol(intrinsic_matrix, F), intrinsic_matrix.T());
+    // return dot(outer(intrinsic_matrix.affine().T(), F), intrinsic_matrix.affine());
+    return dot2d(dot2d(intrinsic_matrix.affine().T(), F), intrinsic_matrix.affine());
 }
 
 FixedArray<float, 2> Mlib::Sfm::find_epipole(const FixedArray<float, 3, 3>& F) {

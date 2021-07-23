@@ -11,7 +11,7 @@ class TransformationMatrix;
 namespace Sfm {
 
 Array<FixedArray<float, 3>> initial_reconstruction(
-    const TransformationMatrix<float, 3>& tm,
+    const TransformationMatrix<float, 3>& ke,
     const TransformationMatrix<float, 2>& ki,
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,

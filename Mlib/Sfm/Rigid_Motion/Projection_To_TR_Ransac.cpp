@@ -24,6 +24,13 @@ ProjectionToTrRansac::ProjectionToTrRansac(
                 y1[indices],
                 intrinsic_matrix,
                 threshold};
+            // {
+            //     static size_t i = 0;
+            //     StbImage bmp{ArrayShape{360, 640}, Rgb24::white()};
+            //     ptr.draw_epilines(bmp, Rgb24::black());
+            //     bmp.save_to_file("/tmp/epilines_ransac_" + std::to_string(i) + "_" + std::to_string(ptr.ngood) + ".png");
+            //     ++i;
+            // }
             if (ptr.good()) {
                 Array<float> res{ArrayShape{y0.shape(0)}};
                 InitialReconstruction ir{y0, y1, ptr.ke, intrinsic_matrix};
