@@ -33,7 +33,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
             // }
             if (ptr.good()) {
                 // Array<float> res{ArrayShape{y0.shape(0)}};
-                // InitialReconstruction ir{y0, y1, ptr.tm.inverted(), intrinsic_matrix};
+                // InitialReconstruction ir{y0, y1, ptr.ke, intrinsic_matrix};
                 // Array<FixedArray<float, 2>> p0{ir.projection_residual0()};
                 // Array<FixedArray<float, 2>> p1{ir.projection_residual1()};
                 // for (size_t r = 0; r < y0.shape(0); ++r) {

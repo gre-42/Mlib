@@ -7,8 +7,8 @@ namespace Mlib { namespace Sfm {
 class EssentialMatrixToTR {
 public:
     EssentialMatrixToTR(const FixedArray<float, 3, 3>& E);
-    TransformationMatrix<float, 3> tm0;
-    TransformationMatrix<float, 3> tm1;
+    TransformationMatrix<float, 3> ke0;
+    TransformationMatrix<float, 3> ke1;
 };
 
 }}

@@ -25,7 +25,7 @@ public:
         const Array<FixedArray<float, 2>>& y1) const;
     void draw_epilines(StbImage& image, const Rgb24& color) const;
 
-    TransformationMatrix<float, 3> tm;
+    TransformationMatrix<float, 3> ke;
     size_t ngood;
 private:
     Array<FixedArray<float, 2>> y;

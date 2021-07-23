@@ -7,6 +7,7 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_In_Box.hpp>
+#include <Mlib/Sfm/Disparity/Corresponding_Features_In_Candidate_List.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Features_On_Line.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Traceable_Patch.hpp>
@@ -35,7 +36,7 @@ CorrespondingFeaturesOnLine get_cfol(
     const std::string& bmp_filename)
 {
     Array<float> hr1d = harris_response_1d(im1, F);
-    Array<FixedArray<float, 2>> features2k = Array<float>::from_dynamic<2>(find_nfeatures(hr1d, ones<bool>(hr1d.shape()), 2000));
+    Array<FixedArray<float, 2>> features2k = Array<float>::from_dynamic<2>(find_nfeatures(hr1d, ones<bool>(hr1d.shape()), 2000, 2.f));
     CorrespondingFeaturesOnLine ol{features2k, im0_rgb, im1_rgb, F};
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im1);
@@ -85,7 +86,7 @@ void dense_reconstruction(
         Array<float> x = reconstruct_disparity(
             disparity,
             F,
-            ptr.tm.inverted(),
+            ptr.ke,
             intrinsic_matrix,
             &condition_number);
         StbImage::from_float_grayscale(
@@ -111,7 +112,7 @@ void dense_reconstruction(
             ol.y1_2d}}};
         Array<float> condition_number;
         Array<FixedArray<float, 3>> x = initial_reconstruction(
-            ptr.tm.inverted(),
+            ptr.ke,
             np.normalized_intrinsic_matrix(intrinsic_matrix),
             np.yn[0],
             np.yn[1],
@@ -121,7 +122,7 @@ void dense_reconstruction(
 
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
         cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
-        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.tm }));
+        cams.insert(std::make_pair(std::chrono::milliseconds{5}, CameraFrame{ ptr.ke.inverted() }));
         DenseProjector{cams, 0, 1, 2, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-1.png");
         DenseProjector{cams, 0, 2, 1, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-0-2.png");
         DenseProjector{cams, 2, 1, 0, x, condition_number, intrinsic_matrix, TransformationMatrix<float, 3>::identity(), im0_rgb}.normalize(256).draw("features2k-2-1.png");
@@ -145,16 +146,18 @@ void compute_z(const ParsedArgs& args) {
         hr0,
         // find_local_maxima(-hr0, false),
         ones<bool>(im0.shape()),
-        100));
+        100,
+        2.f));
 
     Array<float> im1_rgb = source1.to_float_rgb();
     Array<float> im1 = source1.to_float_grayscale();
     Array<float> hr1 = harris_response(im1);
-    Array<FixedArray<float, 2>> feature_points2 = Array<float>::from_dynamic<2>(find_nfeatures(
+    Array<FixedArray<float, 2>> feature_points1 = Array<float>::from_dynamic<2>(find_nfeatures(
         hr1,
         // find_local_maxima(-hr1, false),
         ones<bool>(im1.shape()),
-        100));
+        100,
+        2.f));
 
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im0);
@@ -163,16 +166,25 @@ void compute_z(const ParsedArgs& args) {
     }
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im1);
-        highlight_features(feature_points2, bmp, 2);
+        highlight_features(feature_points1, bmp, 2);
         bmp.save_to_file("features1.png");
     }
 
-    CorrespondingFeaturesInBox cf{feature_points0, im0_rgb, im1_rgb};
+    // CorrespondingFeaturesInBox cf{feature_points0, im0_rgb, im1_rgb, 10, 30};
+    CorrespondingFeaturesInCandidateList cf{feature_points0, feature_points1, im0_rgb, im1_rgb, 10};
     if (!only_features2k) {
-        StbImage bmp = StbImage::from_float_grayscale(im1);
+        StbImage bmp = StbImage::from_float_grayscale(im0);
+        highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp);
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
         highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
-        bmp.save_to_file("features21.png");
+        bmp.save_to_file("features10_0.png");
+    }
+    if (!only_features2k) {
+        StbImage bmp = StbImage::from_float_grayscale(im1);
+        highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp);
+        highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
+        highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+        bmp.save_to_file("features10_1.png");
     }
 
     FixedArray<float, 3, 3> F = find_fundamental_matrix(cf.y0_2d, cf.y1_2d);
@@ -231,10 +243,10 @@ void compute_z(const ParsedArgs& args) {
         intrinsic_matrix,
         0,
         RansacOptions<float> {
-            .nelems_small = 20,
-            .ncalls = 10,
-            .inlier_distance_thresh = squared(100.f),
-            .inlier_count_thresh = 10,
+            .nelems_small = 8,
+            .ncalls = 100,
+            .inlier_distance_thresh = squared(2.f),
+            .inlier_count_thresh = 20,
             .seed = 1
         }};
 
@@ -251,10 +263,11 @@ void compute_z(const ParsedArgs& args) {
     FixedArray<float, 3, 3> F_r = fundamental_from_camera(
         intrinsic_matrix,
         intrinsic_matrix,
-        ptr.ptr->tm);
+        ptr.ptr->ke.inverted());
     {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F_r, bmp, Rgb24::green());
+        highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp);
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
         highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
         bmp.save_to_file("r_epilines2.png");
@@ -263,6 +276,7 @@ void compute_z(const ParsedArgs& args) {
     {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F_r.T(), bmp, Rgb24::green());
+        highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp);
         highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
         highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
         bmp.save_to_file("r_epilines2_T.png");

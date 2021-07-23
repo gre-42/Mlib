@@ -84,8 +84,7 @@ Array<float> Mlib::Sfm::fundamental_error(
 }
 
 FixedArray<float, 3, 3> Mlib::Sfm::fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix) {
-    return dot(outer(intrinsic_matrix.affine().T(), F), intrinsic_matrix.affine());
-    // return dot2d(dot2d(intrinsic_matrix.affine().T(), F), intrinsic_matrix.affine());
+    return dot2d(dot2d(intrinsic_matrix.affine().T(), F), intrinsic_matrix.affine());
 }
 
 FixedArray<float, 2> Mlib::Sfm::find_epipole(const FixedArray<float, 3, 3>& F) {
