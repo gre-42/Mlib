@@ -1,6 +1,6 @@
 #include "Smallest_Eigenvector.hpp"
-#include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Math/Eigen_Jacobi.hpp>
+#include <Mlib/Math/Svd4.hpp>
 
 using namespace Mlib;
 
