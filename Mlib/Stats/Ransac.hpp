@@ -34,8 +34,8 @@ Array<size_t> ransac(
 
     for (size_t i = 0; i < ro.ncalls; ++i) {
 
-        std::shuffle(&ids_large(0), &ids_large(ids_large.length() - 1), g);
-        Array<size_t> perm(&ids_large(0), &ids_large(0) + std::min(ro.nelems_small, nelems_large));
+        std::shuffle(ids_large.flat_begin(), ids_large.flat_end(), g);
+        Array<size_t> perm(ids_large.flat_begin(), ids_large.flat_begin() + std::min(ro.nelems_small, nelems_large));
         sort(perm);
         Array<TData> positive_residual = substitute_nans(callable(perm), TData(INFINITY));
         if (positive_residual.length() != nelems_large) {
@@ -49,7 +49,7 @@ Array<size_t> ransac(
 
         if (count_nonzero(also_inliers) > ro.inlier_count_thresh) {
             Array<size_t> better_indices = arange<size_t>(nelems_large)[also_inliers];
-            Array<TData> better_positive_residual = substitute_nans(callable(better_indices), TData(INFINITY));
+            Array<TData> better_positive_residual = substitute_nans(callable(better_indices)[also_inliers], TData(INFINITY));
             TData better_mean_residual = mean(better_positive_residual);
 
             // std::cerr << "---- " << better_mean_residual << " " << best_mean_residual << std::endl;
