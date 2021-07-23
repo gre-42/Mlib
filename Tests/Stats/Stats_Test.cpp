@@ -51,7 +51,7 @@ void test_ransac() {
             // std::cerr << data[indices] << " | " << abs(data - mean(data[indices])) << " | " << sum(abs(data - mean(data[indices]))) << " | " << mean(data[indices]) << std::endl;
             return abs(data - mean(data[indices]));
         });
-    assert_allclose<float>(best_ids.casted<float>(), Array<float>{ 0, 1, 3, 5, 6, 7 });
+    assert_allclose<float>(best_ids.casted<float>(), Array<float>{ 1, 3, 5, 6, 7 });
 }
 
 void test_sort() {
