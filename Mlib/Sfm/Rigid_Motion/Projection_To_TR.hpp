@@ -20,6 +20,9 @@ public:
 
     bool good() const;
     InitialReconstruction initial_reconstruction() const;
+    Array<float> fundamental_error(
+        const Array<FixedArray<float, 2>>& y0,
+        const Array<FixedArray<float, 2>>& y1) const;
     void draw_epilines(StbImage& image, const Rgb24& color) const;
 
     TransformationMatrix<float, 3> tm;

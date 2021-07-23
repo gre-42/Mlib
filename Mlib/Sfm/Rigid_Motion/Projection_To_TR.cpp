@@ -67,6 +67,15 @@ InitialReconstruction ProjectionToTR::initial_reconstruction() const {
     return InitialReconstruction(np.yn[0], np.yn[1], tm.inverted(), kin);
 }
 
+Array<float> ProjectionToTR::fundamental_error(
+    const Array<FixedArray<float, 2>>& y0,
+    const Array<FixedArray<float, 2>>& y1) const
+{
+    auto y0_n = np.normalized_y(y0);
+    auto y1_n = np.normalized_y(y1);
+    return Mlib::Sfm::fundamental_error(Fn, y0_n, y1_n) / np.N.get_scale2();
+}
+
 void ProjectionToTR::draw_epilines(StbImage& image, const Rgb24& color) const {
     draw_epilines_from_F(fundamental_to_essential(Fn, np.N), image, color);
 }
