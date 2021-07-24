@@ -21,7 +21,7 @@ public:
         size_t iz,
         const FixedArray<float, 3, 3>& scale_matrix = BaseProjector::nan_scale_matrix());
 
-    SparseProjector& normalize(float scale);
+    SparseProjector& normalize(float scale, float quantile = 0.f);
 
     void draw(const std::string& filename);
 
