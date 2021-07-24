@@ -73,7 +73,7 @@ Array<float> ProjectionToTR::fundamental_error(
 {
     auto y0_n = np.normalized_y(y0);
     auto y1_n = np.normalized_y(y1);
-    return Mlib::Sfm::fundamental_error(Fn, y0_n, y1_n) / np.N.get_scale2();
+    return Mlib::Sfm::fundamental_error(Fn, y0_n, y1_n) / np.N.get_scale();
 }
 
 void ProjectionToTR::draw_epilines(StbImage& image, const Rgb24& color) const {
