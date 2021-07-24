@@ -12,8 +12,10 @@
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
+#include <Mlib/Render/Resources/Point_Cloud_Resource.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -248,23 +250,15 @@ void Render2::operator () (
         scene_graph_config);
 }
 
-void Render2::render_depth_map(
-    const Array<float>& rgb_picture,
-    const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
-    float z_offset,
+void Render2::render_node(
+    SceneNode& node,
     bool rotate,
     float scale,
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
-    const auto r = std::make_shared<DepthMapResource>(rgb_picture, depth_picture, intrinsic_matrix, z_offset);
-    SceneNodeResources scene_node_resources;
     Scene scene;
-    scene_node_resources.add_resource("DepthMapResource", r);
-    auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
-    scene.add_root_node("obj", on);
+    scene.add_root_node("obj", &node);
     scene.add_root_node("camera", new SceneNode);
     scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
     scene.add_root_node("light", new SceneNode);
@@ -278,6 +272,39 @@ void Render2::render_depth_map(
     (*this)(scene, rotate, scale, scene_graph_config);
 }
 
+void Render2::render_point_cloud(
+    const Array<FixedArray<float, 3>>& points,
+    bool rotate,
+    float scale,
+    const SceneGraphConfig& scene_graph_config,
+    const CameraConfig& camera_config)
+{
+    auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
+    const auto r = std::make_shared<PointCloudResource>(points);
+    scene_node_resources.add_resource("PointCloudResource", r);
+    auto on = new SceneNode;
+    scene_node_resources.instantiate_renderable("PointCloudResource", "PointCloudResource", *on, SceneNodeResourceFilter());
+    render_node(*on, rotate, scale, scene_graph_config, camera_config);
+}
+
+void Render2::render_depth_map(
+    const Array<float>& rgb_picture,
+    const Array<float>& depth_picture,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    float z_offset,
+    bool rotate,
+    float scale,
+    const SceneGraphConfig& scene_graph_config,
+    const CameraConfig& camera_config)
+{
+    auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
+    const auto r = std::make_shared<DepthMapResource>(rgb_picture, depth_picture, intrinsic_matrix, z_offset);
+    scene_node_resources.add_resource("DepthMapResource", r);
+    auto on = new SceneNode;
+    scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
+    render_node(*on, rotate, scale, scene_graph_config, camera_config);
+}
+
 void Render2::render_height_map(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
@@ -287,24 +314,12 @@ void Render2::render_height_map(
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
+    auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix);
-    SceneNodeResources scene_node_resources;
-    Scene scene;
     scene_node_resources.add_resource("HeightMapResource", r);
     auto on = new SceneNode;
     scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, SceneNodeResourceFilter());
-    scene.add_root_node("obj", on);
-    scene.add_root_node("camera", new SceneNode);
-    scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
-    scene.add_root_node("light", new SceneNode);
-    scene.get_node("light")->add_light(new Light{
-        .ambience = {0.5f, 0.5f, 0.5f},
-        .diffusivity = {1.f, 1.f, 1.f},
-        .specularity = {1.f, 1.f, 1.f},
-        .node_name = "1234",
-        .only_black = false,
-        .shadow = false});
-    (*this)(scene, rotate, scale, scene_graph_config);
+    render_node(*on, rotate, scale, scene_graph_config, camera_config);
 }
 
 GLFWwindow* Render2::window() const {

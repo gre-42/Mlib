@@ -1,0 +1,19 @@
+#pragma once
+#include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
+
+namespace Mlib {
+
+class PointCloudResource: public SceneNodeResource {
+public:
+    explicit PointCloudResource(const Array<FixedArray<float, 3>>& points);
+    virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
+    virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
+private:
+    std::shared_ptr<ColoredVertexArrayResource> rva_;
+
+};
+
+}

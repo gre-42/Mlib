@@ -12,6 +12,7 @@ class SceneNodeResources;
 class RenderingResources;
 class RenderLogic;
 class Scene;
+class SceneNode;
 class Window;
 class ButtonStates;
 
@@ -38,6 +39,20 @@ public:
         bool rotate = false,
         float scale = 1,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
+
+    void render_node(
+        SceneNode& node,
+        bool rotate,
+        float scale,
+        const SceneGraphConfig& scene_graph_config,
+        const CameraConfig& camera_config);
+
+    void render_point_cloud(
+        const Array<FixedArray<float, 3>>& points,
+        bool rotate = false,
+        float scale = 1,
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
+        const CameraConfig& camera_config = CameraConfig());
 
     void render_depth_map(
         const Array<float>& rgb_picture,
