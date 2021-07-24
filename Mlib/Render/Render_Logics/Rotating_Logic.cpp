@@ -47,11 +47,15 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     fullscreen_callback(window, key, scancode, action, mods);
 }
 
-RotatingLogic::RotatingLogic(GLFWwindow* window, const Scene& scene, bool rotate, float scale)
+RotatingLogic::RotatingLogic(
+    GLFWwindow* window,
+    const Scene& scene,
+    bool rotate,
+    float scale)
 : scene_{scene},
-  rotate_{rotate},
-  scale_{scale}
+  rotate_{rotate}
 {
+    user_object_.scale = scale;
     GLFW_CHK(glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y));
     GLFW_CHK(glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height));
     GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
@@ -80,7 +84,7 @@ void RotatingLogic::render(
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
         auto on = scene_.get_node("obj");
-        on->set_scale(scale_ * user_object_.scale);
+        on->set_scale(user_object_.scale);
         on->set_rotation(FixedArray<float, 3>{
             user_object_.angle_x,
             rotate_ ? (float)glfwGetTime() : user_object_.angle_y,

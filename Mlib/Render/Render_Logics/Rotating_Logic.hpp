@@ -36,7 +36,6 @@ private:
     const Scene& scene_;
     RotatingLocigUserClass user_object_;
     bool rotate_;
-    float scale_;
 };
 
 }

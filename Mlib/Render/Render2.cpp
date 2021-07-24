@@ -43,7 +43,7 @@ static void error_callback(int error, const char* description)
 }*/
 
 Render2::Render2(
-    RenderConfig& render_config,
+    const RenderConfig& render_config,
     size_t& num_renderings,
     RenderResults* render_results)
 : num_renderings_{num_renderings},
@@ -183,8 +183,7 @@ void Render2::operator () (
                 if (render_config_.dt != 0) {
                     TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
                     set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
-                }
-                else if (render_config_.motion_interpolation) {
+                } else if (render_config_.motion_interpolation) {
                     throw std::runtime_error("Motion interpolation requires render_dt");
                 }
                 {
@@ -253,12 +252,13 @@ void Render2::render_depth_map(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
+    float z_offset,
     bool rotate,
     float scale,
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
-    const auto r = std::make_shared<DepthMapResource>(rgb_picture, depth_picture, intrinsic_matrix);
+    const auto r = std::make_shared<DepthMapResource>(rgb_picture, depth_picture, intrinsic_matrix, z_offset);
     SceneNodeResources scene_node_resources;
     Scene scene;
     scene_node_resources.add_resource("DepthMapResource", r);

@@ -30,7 +30,7 @@ struct RenderConfig {
     bool double_buffer = false;
     unsigned int anisotropic_filtering_level = 8;
     bool normalmaps = true;
-    bool show_mouse_cursor = false;
+    bool show_mouse_cursor = true;
     int swap_interval = 1;
     FixedArray<float, 3> background_color = fixed_zeros<float, 3>();
     bool print_fps = false;

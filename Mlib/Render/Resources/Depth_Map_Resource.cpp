@@ -11,9 +11,10 @@ using namespace Mlib;
 DepthMapResource::DepthMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix)
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    float z_offset)
 {
-    FixedArray<float, 3, 3> iim{inv(intrinsic_matrix.affine())};
+    TransformationMatrix<float, 2> iim = intrinsic_matrix.inverted_scaled();
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2 * depth_picture.nelements());
     assert(rgb_picture.ndim() == 3);
@@ -33,11 +34,8 @@ DepthMapResource::DepthMapResource(
             }
             FixedArray<size_t, 2> id0{r, c};
             FixedArray<size_t, 2> id1{r + 1, c + 1};
-            FixedArray<float, 3> pos0 = dot1d(iim, homogenized_3(i2a(id0)));
-            FixedArray<float, 3> pos1 = dot1d(iim, homogenized_3(i2a(id1)));
-            pos0 /= pos0(2);
-            pos1 /= pos1(2);
-            float z_offset = 1;
+            FixedArray<float, 2> pos0 = iim.transform(i2a(id0));
+            FixedArray<float, 2> pos1 = iim.transform(i2a(id1));
             ColoredVertex v00{
                     FixedArray<float, 3> {
                         pos0(0) * Z(r, c),

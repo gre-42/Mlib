@@ -56,6 +56,7 @@ void test_render() {
             img.to_float_rgb(),
             depth,
             intrinsic_matrix,
+            1.f,    // z_offset
             false,  // rotate
             1,      // scale
             SceneGraphConfig(),

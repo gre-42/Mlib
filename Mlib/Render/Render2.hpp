@@ -21,7 +21,7 @@ class TransformationMatrix;
 class Render2 {
 public:
     explicit Render2(
-        RenderConfig& render_config,
+        const RenderConfig& render_config,
         size_t& num_renderings,
         RenderResults* render_results = nullptr);
     ~Render2();
@@ -43,6 +43,7 @@ public:
         const Array<float>& rgb_picture,
         const Array<float>& depth_picture,
         const TransformationMatrix<float, 2>& intrinsic_matrix,
+        float z_offset,
         bool rotate = false,
         float scale = 1,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
@@ -64,7 +65,7 @@ public:
 private:
     size_t& num_renderings_;
     RenderResults* render_results_;
-    RenderConfig& render_config_;
+    const RenderConfig& render_config_;
     std::unique_ptr<Window> window_;
 };
 
