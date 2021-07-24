@@ -20,9 +20,10 @@ struct ReconstructionConfig {
     float max_residual_normalized = 0.1f;
     float max_residual_unnormalized = 10;
     float max_residual_unnormalized_post_l2 = 4;
+    float max_cond = 10.f * 1000.f;
 
     // float projector_scale = 1.f; // 1.f
-    bool use_ransac_append = false;
+    bool use_ransac_append = true;
     bool enable_partial_bundle_adjustment = false;
     bool enable_global_bundle_adjustment = true;
     bool exclude_bad_points = true;
@@ -31,6 +32,7 @@ struct ReconstructionConfig {
     bool initialize_with_bundle_adjustment = false;
     bool interpolate_initial_cameras = true;
     bool append_with_bundle_adjustment = false;
+    bool marginalize = true;
     GlobalBundleConfig gb {
         .numerical_jacobian_x = false,
         .numerical_jacobian_k = false

@@ -18,6 +18,7 @@
 #include <Mlib/Sfm/Rigid_Motion/Normalized_Projection.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Projection_To_TR.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Projection_To_TR_Ransac.hpp>
+#include <Mlib/Stats/Min_Max.hpp>
 #include <deque>
 #include <filesystem>
 #include <set>
@@ -366,19 +367,34 @@ void SparseReconstruction::reconstruct_append() {
             }
             NormalizedProjection np{y.reshaped(ArrayShape{1}.concatenated(y.shape()))};
             float condition_number;
+            // Array<float> squared_distances;
+            Array<FixedArray<float, 2>> projection_residual;
             FixedArray<float, 3> x = reconstructed_point_(
                 np.yn[0],
                 np.normalized_intrinsic_matrix(intrinsic_matrix_),
                 ke,
                 nullptr, // weights
                 false,   // method_2
-                false,   // points_are_normalized
-                &condition_number);
+                true,    // points_are_normalized
+                &condition_number,
+                nullptr, // &squared_distances,
+                &projection_residual);
+            // squared_distances /= np.N.get_scale2();
+            projection_residual /= fixed_full<float, 2>(np.N.get_scale());
+            float max_residual = max(projection_residual.applied<float>([](const FixedArray<float, 2>& p){return sum(squared(p));}));
             bool point_is_bad = !get_camera_frame(pp->first)
                 .point_in_fov(x, cfg_.fov_threshold);
+            // point_is_bad |= (max(squared_distances) > squared(0.2f));
+            point_is_bad |= (max_residual > squared(cfg_.max_residual_unnormalized_post_l2));
+            point_is_bad |= (condition_number > cfg_.max_cond);
             if (point_is_bad) {
                 if (cfg_.exclude_bad_points) {
-                    std::cerr << "Rejecting x [" << s.first << "], its reprojection is not in the FoV " << x << std::endl;
+                    std::cerr <<
+                        "Rejecting x [" << s.first <<
+                        "], its reprojection is not in the FoV, or cond or its residual is too large, x = " <<
+                        x <<
+                        ", res = " << max_residual <<
+                        ", cond " << condition_number << std::endl;
                     bad_points_.insert(std::make_pair(s.first, pp->first));
                     // s.second->sequence.erase(pp->first);
                     // p.erase(s.first);
@@ -407,7 +423,7 @@ void SparseReconstruction::reconstruct_append() {
                     r->second->condition_number = condition_number;
                 } else {
                     if (cfg_.print_point_updates) {
-                        std::cerr << "New x [" << s.first << "] " << x << " cond " << condition_number << std::endl;
+                        std::cerr << "New x [" << s.first << "] " << x << " cond " << condition_number << " res " << max_residual << std::endl;
                     }
                     reconstructed_points_[s.first] = std::make_shared<ReconstructedPoint>(x, condition_number);
                 }
@@ -698,9 +714,10 @@ void SparseReconstruction::reconstruct(bool is_last_frame, bool camera_initializ
             for (const auto& p : particles_) {
                 camera_frame_append(p.first);
             }
-            global_bundle_adjustment();
+            global_bundle_adjustment(cfg_.marginalize);
         }
         reconstruct_append();
+        global_bundle_adjustment(cfg_.marginalize);
         if (cfg_.enable_partial_bundle_adjustment) {
             std::deque<std::chrono::milliseconds> times;
             for (auto it = particles_.rbegin(); it != particles_.rend() && times.size() < cfg_.nframes; ++it) {
