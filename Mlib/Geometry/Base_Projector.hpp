@@ -9,15 +9,15 @@ namespace Mlib {
 class BaseProjector {
 
 public:
-    static inline FixedArray<float, 3, 3> identity_scale_matrix() {
-        return fixed_identity_array<float, 3>();
+    static inline FixedArray<float, 3, 3> nan_scale_matrix() {
+        return fixed_nans<float, 3, 3>();
     }
 
     BaseProjector(
         size_t i0,
         size_t i1,
         size_t iz,
-        const FixedArray<float, 3, 3>& scale_matrix = identity_scale_matrix())
+        const FixedArray<float, 3, 3>& scale_matrix = nan_scale_matrix())
     :i0_(i0),
      i1_(i1),
      iz_(iz),
@@ -26,16 +26,28 @@ public:
 
 protected:
     FixedArray<size_t, 2> x2i(const FixedArray<float, 3>& x) {
-        return a2i(project(x));
+        if (all(isnan(scale_matrix_))) {
+            return a2i(project(x));
+        } else {
+            return na2i(project(x));
+        }
     }
 
     FixedArray<float, 2> x2fi(const FixedArray<float, 3>& x) {
-        return a2fi(project(x));
+        if (all(isnan(scale_matrix_))) {
+            return a2fi(project(x));
+        } else {
+            return na2fi(project(x));
+        }
     }
 
     FixedArray<float, 2> project(const FixedArray<float, 3>& x) {
         FixedArray<float, 2> sliced{x(i0_), x(i1_)};
-        return dot1d(scale_matrix_, homogenized_3(sliced)) TEMPLATEV row_range<0, 2>();
+        if (all(isnan(scale_matrix_))) {
+            return sliced;
+        } else {
+            return dot1d(scale_matrix_, homogenized_3(sliced)) TEMPLATEV row_range<0, 2>();
+        }
     }
 
     float zcoord(const FixedArray<float, 3>& x) {

@@ -14,6 +14,8 @@
 #include <Mlib/Sfm/Disparity/Traceable_Patch.hpp>
 #include <Mlib/Sfm/Draw/Dense_Projector.hpp>
 #include <Mlib/Sfm/Draw/Epilines.hpp>
+#include <Mlib/Sfm/Draw/Sparse_Projector.hpp>
+#include <Mlib/Sfm/Points/Reconstructed_Point.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Projection_To_TR.hpp>
@@ -259,6 +261,20 @@ void compute_z(const ParsedArgs& args) {
 
     if (!ptr.ptr->good()) {
         throw std::runtime_error("Projection not good");
+    }
+
+    {
+        auto sparse_reconstruction = ptr.ptr->initial_reconstruction().reconstructed();
+        MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>> reconstructed_points;
+        for (size_t i = 0; i < sparse_reconstruction.length(); ++i) {
+            reconstructed_points.active_[i] = std::make_shared<ReconstructedPoint>(sparse_reconstruction(i), NAN);
+        }
+        MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames;
+        camera_frames.active_.insert({std::chrono::milliseconds{ 0 }, CameraFrame{ TransformationMatrix<float, 3>::identity() }});
+        camera_frames.active_.insert({std::chrono::milliseconds{ 42 }, CameraFrame{ ptr.ptr->ke.inverted() }});
+        SparseProjector(reconstructed_points, {}, camera_frames, 0, 1, 2).normalize(256).draw("features-0-1.png");
+        SparseProjector(reconstructed_points, {}, camera_frames, 0, 2, 1).normalize(256).draw("features-0-2.png");
+        SparseProjector(reconstructed_points, {}, camera_frames, 2, 1, 0).normalize(256).draw("features-2-1.png");
     }
 
     FixedArray<float, 3, 3> F_r = fundamental_from_camera(

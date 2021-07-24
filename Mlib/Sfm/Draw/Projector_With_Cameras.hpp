@@ -18,7 +18,7 @@ public:
         size_t i0,
         size_t i1,
         size_t iz,
-        const FixedArray<float, 3, 3>& scale_matrix = identity_scale_matrix());
+        const FixedArray<float, 3, 3>& scale_matrix = nan_scale_matrix());
 
 protected:
     void plot_camera_lines(StbImage& ppm);
