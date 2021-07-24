@@ -975,43 +975,46 @@ public:
 
     static Array load_binary(const std::string& filename) {
         std::ifstream ifs(filename, std::ios::binary);
+        if (ifs.fail()) {
+            throw std::runtime_error("Could not open file \"" + filename + '"');
+        }
         std::string first_line;
         ifs >> first_line;
         if (first_line != "BinaryArray") {
-            throw std::runtime_error{ "File " + filename + " has no first line \"BinaryArray\"" };
+            throw std::runtime_error{ "File \"" + filename + "\" has no first line \"BinaryArray\"" };
         }
         size_t ndim;
         ifs >> ndim;
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not read ndim from file " + filename };
+            throw std::runtime_error{ "Could not read ndim from file \"" + filename + '"' };
         }
         ArrayShape s(ndim);
         for (size_t i = 0; i < ndim; ++i) {
             ifs >> s(i);
         }
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not read shape from file " + filename };
+            throw std::runtime_error{ "Could not read shape from file \"" + filename + '"' };
         }
         size_t element_size;
         ifs >> element_size;
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not element size from file " + filename };
+            throw std::runtime_error{ "Could not element size from file \"" + filename + '"' };
         }
         if (element_size != sizeof(TData)) {
-            throw std::runtime_error{ "Wrong element size in file " + filename };
+            throw std::runtime_error{ "Wrong element size in file \"" + filename + '"' };
         }
         char c;
         read_binary(ifs, c);
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not read newline-character of file " + filename };
+            throw std::runtime_error{ "Could not read newline-character of file \"" + filename + '"' };
         }
         if (c != '\n') {
-            throw std::runtime_error{ "Did not find newline-character in file " + filename };
+            throw std::runtime_error{ "Did not find newline-character in file \"" + filename + '"' };
         }
         Array res{s};
         ifs.read((char*)res.flat_iterable().begin(), res.nbytes());
         if (ifs.fail()) {
-            throw std::runtime_error{ "Could not read data from file " + filename };
+            throw std::runtime_error{ "Could not read data from file \"" + filename + '"' };
         }
         return res;
     }
