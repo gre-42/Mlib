@@ -45,7 +45,7 @@ Array<FixedArray<float, 2>> Mlib::Cv::projected_points(
     assert(x.ndim() == 1);
     assert(ke.ndim() == 1);
     // std::cerr << x.shape() << " | " << ki.shape() << " | " << ke.shape() << std::endl;
-    Array<FixedArray<float, 2>> y{ ArrayShape{ke.shape(0), x.shape(0)} };
+    Array<FixedArray<float, 2>> y{ ArrayShape{ke.length(), x.length()} };
     for (size_t i = 0; i < ke.shape(0); ++i) {
         // std::cerr << ki.shape() << " | " << ke[i].shape() << std::endl;
         auto m = TransformationMatrix<float, 3>{ ki.project(ke(i).semi_affine()) };
@@ -180,7 +180,9 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
     const Array<float>* weights,
     bool method2,
     bool points_are_normalized,
-    float *condition_number)
+    float* condition_number,
+    Array<float>* squared_distances,
+    Array<FixedArray<float, 2>>* projection_residual)
 {
     assert(y_tracked.ndim() == 1);
     assert(ke.ndim() == 1);
@@ -252,13 +254,28 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
     if (condition_number != nullptr) {
         *condition_number = (float)cond4_x(M.casted<double>());
     }
+    FixedArray<float, 3> x;
     if (method2) {
-        return FixedArray<float, 3>{lstsq_chol_1d(M, B).row_range(0, 3)};
+        if (squared_distances != nullptr) {
+            throw std::runtime_error("Squared distances not supported for method2");
+        }
+        x = FixedArray<float, 3>{ lstsq_chol_1d(M, B).row_range(0, 3) };
     } else {
-        return FixedArray<float, 3>{lstsq_chol_1d(
+        x = FixedArray<float, 3>{ lstsq_chol_1d(
             M.casted<double>(),
-            B.casted<double>()).casted<float>()};
+            B.casted<double>()).casted<float>() };
+        if (squared_distances != nullptr) {
+            Array<float> diff = dot1d(M, x.to_array()) - B;
+            *squared_distances = sum(squared(diff->reshaped(ArrayShape{y_tracked.length(), 3})), 1);
+        }
     }
+    if (projection_residual != nullptr) {
+        *projection_residual = projected_points(
+            Array<FixedArray<float, 3>>{ x },
+            ki,
+            ke).flattened() - y_tracked;
+    }
+    return x;
 }
 
 FixedArray<float, 3> Mlib::Cv::reconstructed_point_reweighted(

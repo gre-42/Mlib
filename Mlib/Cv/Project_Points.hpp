@@ -62,7 +62,9 @@ FixedArray<float, 3> reconstructed_point_(
     const Array<float>* weights = nullptr,
     bool method2 = false,
     bool points_are_normalized=false,  // spares one matrix-inversion
-    float *condition_number=nullptr);
+    float *condition_number=nullptr,
+    Array<float>* squared_distances = nullptr,
+    Array<FixedArray<float, 2>>* projection_residual = nullptr);
 
 FixedArray<float, 3> reconstructed_point_reweighted(
     const Array<FixedArray<float, 2>>& y_tracked,
