@@ -99,7 +99,7 @@ void SparseReconstruction::reconstruct_initial_with_camera() {
         auto cit_first = cit_second;
         assert(cfg_.nframes >= 1);
         std::advance(cit_first, cfg_.nframes - 1);
-        InitialReconstruction ir{ y0, y1, cit_first->second.projection_matrix_3x4() * cit_second->second.reconstruction_matrix_3x4(), intrinsic_matrix_ };
+        InitialReconstruction ir{ y0, y1, cit_first->second.reconstruction_matrix_3x4() * cit_second->second.projection_matrix_3x4(), intrinsic_matrix_ };
 
         Array<float> condition_number;
         Array<FixedArray<float, 3>> x = ir.reconstructed(&condition_number);
