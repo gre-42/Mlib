@@ -15,11 +15,11 @@ struct ReconstructionConfig {
 
     bool print_residual = false;
     bool print_point_updates = false;
-    float fov_threshold = 0.1f; // 1.f
+    float fov_threshold = 2.f; // 1.f
     float bad_point_residual_multiplier = 4.f;
     float max_residual_normalized = 0.1f;
     float max_residual_unnormalized = 10;
-    float max_residual_unnormalized_post_l2 = 5;
+    float max_residual_unnormalized_post_l2 = 4;
 
     // float projector_scale = 1.f; // 1.f
     bool use_ransac_append = false;
@@ -43,14 +43,14 @@ struct ReconstructionConfig {
     RansacOptions<float> ro_initial {
         .nelems_small = 8,
         .ncalls = 100,
-        .inlier_distance_thresh = squared(5.f),
+        .inlier_distance_thresh = squared(4.f),
         .inlier_count_thresh = 20,
         .seed = 1
     };
     RansacOptions<float> ro_append {
         .nelems_small = 8,
         .ncalls = 100,
-        .inlier_distance_thresh = squared(5.f),
+        .inlier_distance_thresh = squared(4.f),
         .inlier_count_thresh = 20,
         .seed = 1
     };
