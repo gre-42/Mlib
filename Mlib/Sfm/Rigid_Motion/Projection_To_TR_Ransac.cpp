@@ -34,6 +34,9 @@ ProjectionToTrRansac::ProjectionToTrRansac(
             //     highlight_feature_correspondences(y0, y1, bmp);
             //     bmp.save_to_file("/tmp/epilines_ransac_" + std::to_string(i) + "_" + std::to_string(ptr.ngood) + ".png");
             //     ptr.fundamental_error(y0, y1).as_column_vector().save_txt_2d("/tmp/fundamental_error_" + std::to_string(i) + ".m");
+            //     if (ptr.good()) {
+            //         ptr.ke.inverted().affine().to_array().save_txt_2d("/tmp/pose_" + std::to_string(i) + ".m");
+            //     }
             // }
             if (ptr.good()) {
                 // Array<float> res{ArrayShape{y0.shape(0)}};
