@@ -31,7 +31,7 @@ static bool reconstruction_ok(
 
     // return all(initial_reconstruction_x3(R, t, ki, y0, y1) > threshold);
     Array<FixedArray<float, 3>> recon0 = initial_reconstruction(ke, ki, y0, y1);
-    Array<FixedArray<float, 3>> recon1 = recon0.applied([&ke](const auto& p) { return ke.inverted().transform(p); });
+    Array<FixedArray<float, 3>> recon1 = recon0.applied([&ke](const auto& p) { return ke.transform(p); });
     return all(recon0.applied<bool>([threshold](const auto& p) { return p(2) > threshold; })) &&
            all(recon1.applied<bool>([threshold](const auto& p) { return p(2) > threshold; }));
 }
