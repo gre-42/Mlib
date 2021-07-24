@@ -25,8 +25,8 @@ DtamComponentConfig::DtamComponentConfig(
         100,                        // ninterleaved_iterations
         print_residual,             // print_residual
         Dm::DtamParameters(
-            0.5f,                   // min_depth
-            5.f,                    // max_depth
+            5.f,                    // min_depth
+            9.f,                    // max_depth
             32,                     // ndepths
             100.f,                  // alpha_G
             1.6f,                   // beta_G
