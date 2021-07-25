@@ -30,10 +30,6 @@ Array<float> harris_response(
     Array<bool>* feature_mask = nullptr,
     float k = 0.05);
 
-Array<float> find_harris_corners(
-    const Array<float>& image,
-    float threshold = -0.01);
-
 Array<float> find_nfeatures(
     const Array<float>& featureness,
     const Array<bool>& mask,

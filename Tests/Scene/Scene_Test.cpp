@@ -267,7 +267,7 @@ void test_physics_engine() {
         SceneGraphConfig());
 
     if (!is_interactive) {
-        draw_nan_masked_rgb(render_results.outputs.at(rsd), 0, 1).save_to_file("TestOut/scene_test.ppm");
+        draw_nan_masked_rgb(render_results.outputs.at(rsd), 0, 1).save_to_file("TestOut/scene_test.png");
     } else {
         pl.stop_and_join();
     }

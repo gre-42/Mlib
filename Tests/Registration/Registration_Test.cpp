@@ -27,11 +27,11 @@ void test_patch_registration_1d_1() {
     {
         Array<float> flow = patch_registration(b, a, max_window_shape, false);
         assert_isclose<float>(flow(0, 2), -2);
-        assert_allclose(flow[0], Array<float>{NAN, -2, -2, -2, -2, -2, -2, -2, NAN});
+        assert_allclose(flow[0], Array<float>{-2, -2, -2, -2, -2, -2, -2, -2, -2});
     }
     {
         Array<float> flow = patch_registration(b, a, max_window_shape, true);
-        assert_allclose(flow[0], Array<float>{NAN, NAN, NAN, NAN, -2, -2, -2, -2, -2, -2, -2, NAN, NAN, NAN, NAN});
+        assert_allclose(flow[0], Array<float>{NAN, NAN, NAN, -2, -2, -2, -2, -2, -2, -2, -2, -2, NAN, NAN, NAN});
     }
 }
 
@@ -76,11 +76,11 @@ void test_flow_registration() {
         5,  // max_displacement
         1); // niterations
     assert_allclose(displacement[0], Array<float>{
-        {-NAN, -NAN, -NAN, -NAN, -NAN, -NAN, -NAN},
-        {-NAN, -1.2, -1.2, -1.2, -1.2, -NAN, -NAN},
-        {-NAN, -1.2, -1.2, -1.2, -1.2, -NAN, -NAN},
-        {-NAN, -1.2, -1.2, -1.2, -1.2, -NAN, -NAN},
-        {-NAN, -NAN, -NAN, -NAN, -NAN, -NAN, -NAN},
+        {-2.66667, -4, -2,   -2,   -2, -NAN, -NAN},
+        {-1.93333, -2.13333, -1.46667, -1.6, -1.46666, -1.2, -1.2},
+        {-1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2},
+        {-1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2},
+        {-1.2, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2},
         {-NAN, -NAN, -NAN, -NAN, -NAN, -NAN, -NAN}},
         1e-5);
 }

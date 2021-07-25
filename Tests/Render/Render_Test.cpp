@@ -31,28 +31,27 @@ void test_render() {
         throw std::runtime_error("Depth and image shape differ");
     }
     {
-        Array<float> output;
-        ::Mlib::render_depth_map(
+        RenderResults render_results;
+        RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
+        render_results.outputs[rsd] = Array<float>();
+        size_t num_renderings = SIZE_MAX;
+        Render2{RenderConfig(), num_renderings, &render_results}.render_depth_map(
             img.to_float_rgb(),
             depth,
             intrinsic_matrix,
             1,      // z_offset
             false,  // rotate
-            &output);
-        draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered.png");
+            1,      // scale
+            SceneGraphConfig(),
+            CameraConfig());
+        draw_nan_masked_rgb(render_results.outputs.at(rsd), 0, 1).save_to_file("TestOut/rendered.png");
     }
     {
-        SceneNodeResources scene_node_resources;
-        RenderingContextGuard rrg{
-            scene_node_resources,
-            "primary_rendering_resources",
-            16,
-            0};
-        Array<float> output;
-        RenderResults render_results{.output = &output};
+        RenderResults render_results;
+        RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
+        render_results.outputs[rsd] = Array<float>();
         size_t num_renderings = SIZE_MAX;
-        RenderConfig render_config;
-        Render2{render_config, num_renderings, &render_results}.render_depth_map(
+        Render2{RenderConfig(), num_renderings, &render_results}.render_depth_map(
             img.to_float_rgb(),
             depth,
             intrinsic_matrix,
@@ -61,7 +60,7 @@ void test_render() {
             1,      // scale
             SceneGraphConfig(),
             CameraConfig());
-        draw_nan_masked_rgb(output, 0, 1).save_to_file("TestOut/rendered2.png");
+        draw_nan_masked_rgb(render_results.outputs.at(rsd), 0, 1).save_to_file("TestOut/rendered2.png");
     }
 }
 

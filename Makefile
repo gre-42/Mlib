@@ -43,6 +43,9 @@ test_debug10: debug10
 test_release10: release10
 	make test10 CMAKE_BUILD_TYPE=Release
 
+test_release10_dbg: release10_dbg
+	make test10 CMAKE_BUILD_TYPE=RelWithDebInfo
+
 build_clang:
 	CC=/usr/bin/clang CXX=/usr/bin/clang++ BUILD_PREFIX=L \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

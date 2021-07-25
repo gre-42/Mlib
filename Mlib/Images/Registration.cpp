@@ -39,7 +39,7 @@ Array<float> Mlib::patch_registration(
                 if (ssd(index) < best_ssd(index)) {
                     best_ssd(index) = ssd(index);
                     for (size_t j = 0; j < differences.ndim(); j++) {
-                        flow[j](index) = static_cast<float>(window_shape(j));
+                        flow[j](index) = static_cast<float>((int)window_shape(j));
                     }
                 }
             });

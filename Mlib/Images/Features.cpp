@@ -127,20 +127,6 @@ Array<float> Mlib::harris_response(
     return M_det - k * squared(M_trace);
 }
 
-Array<float> Mlib::find_harris_corners(const Array<float>& image, float threshold) {
-    std::list<Array<float>> result;
-    Array<float> hr = harris_response(image);
-    Array<bool> maxima = find_local_maxima(hr, false);
-    image.shape().foreach([&](const ArrayShape& index) {
-        if (maxima(index) && (hr(index) > threshold)) {
-            // Adding 0.5 selects the center of the pixel
-            // Reverting to swap rows/cols
-            result.push_back(i2a(index));
-        }
-    });
-    return Array<float>(result, ArrayShape{0, 2});
-}
-
 Array<float> Mlib::find_nfeatures(
     const Array<float>& featureness,
     const Array<bool>& mask,

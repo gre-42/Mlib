@@ -22,7 +22,7 @@ void test_chessboard_detector() {
     // std::list<Array<float>> feature_points = find_saddle_points(image);
     // highlight_features(feature_points, res);
 
-    bmp.save_to_file("TestOut/chessboard1_detected.ppm");
+    bmp.save_to_file("TestOut/chessboard1_detected.png");
 }
 
 void test_inverse_homography() {

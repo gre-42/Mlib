@@ -104,15 +104,15 @@ void test_projection_jacobian_ke() {
                 k_external(kkep)) TEMPLATEV row_range<0, 2>();
         },
         kep,
-        float(1e-2)).to_array(),
+        float(1e-3)).to_array(),
         Array<float>{
-            {0.0350952f, 0.301784f, -0.15803f, 0.536746f, 0.f, -0.515664f},
-            {-0.383005f, 0.220874f, -0.0106782f, 0.f, 0.751445f, -0.28733f}});
+            {-0.0968575f, 0.338674f, -0.0870824f, 0.516891f, 0.f, -0.733554f},
+            {-0.155747f, 0.240684f, 0.320494f, 0.f, 0.7236f, -0.536442f}});
     assert_allclose(
         projected_points_jacobian_dke_1p_1ke(x, TransformationMatrix<float, 2>{ki}, kep).to_array(),
         Array<float>{
-            {0.0338736f, 0.300373f, -0.158062f, 0.536745f, 0.f, -0.521198f},
-            {-0.383656f, 0.220084f, -0.00957519f, 0, 0.751443f, -0.290414f}},
+            {-0.096922, 0.338622, -0.0870149, 0.516837, 0.f, -0.734359f},
+            {-0.155774, 0.240563, 0.320573, 0.f, 0.723572f, -0.537037f}},
         float{ 1e-2 });
 }
 
@@ -131,15 +131,15 @@ void test_projection_jacobian_ki() {
         kip,
         float(1e-2)).to_array(),
         Array<float>{
-            {12.9208f, 0.999975f, 0.f, 0.f},
-            {0.f, 0.f, 9.05638f, 1.00002f}},
-        float{ 1e-4 });
+            {53.4374f, 1.f, 0.f, 0.f},
+            {0.f, 0.f, 12.5028, 1.00002f}},
+        float{ 1e-3 });
     assert_allclose(
         projected_points_jacobian_dki_1p_1ke(x, ke).to_array(),
         Array<float>{
-            {12.9208f, 0.999975f, 0.f, 0.f},
-            {0.f, 0, 9.05638f, 1.00002f}},
-        float{ 1e-4 });
+            {53.4375f, 1.f, 0.f, 0.f},
+            {0.f, 0, 12.5027f, 1.00002f}},
+        float{ 1e-3 });
 }
 
 void test_inverse_tait_bryan_angles() {

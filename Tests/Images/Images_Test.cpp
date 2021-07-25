@@ -79,36 +79,8 @@ void test_laplace() {
             {NAN, NAN, NAN, NAN, NAN, NAN, NAN}});
 }
 
-void test_harris_response_array() {
-    auto pic3x3 = Array<float>{
-        {0,0,0,0,0},
-        {0,0,1,0,0},
-        {0,0,0,0,0}};
-    assert_allclose(
-        harris_response(pic3x3),
-        Array<float>{
-            {0,0,-0.05f,0,0},
-            {0,-.003125f,0,-.003125f,0},
-            {0,0,-0.05f,0,0}});
-    assert_allclose<float>(
-        find_harris_corners(pic3x3, -0.001f),
-        Array<float>{{1.5f, 1.5f}, {3.5f, 1.5f}});
-}
-
-void test_harris_response() {
-    const auto bitmap = StbImage::load_from_file("Data/chessboard1.ppm");
-
-    const Array<float> image = bitmap.to_float_grayscale();
-    StbImage res = StbImage::from_float_grayscale(clipped(80.f * harris_response(image), 0.f, 1.f));
-    // std::cerr << min(harris_response(image)) << std::endl;
-    // std::cerr << max(harris_response(image)) << std::endl;
-    Array<FixedArray<float, 2>> feature_points = Array<float>::from_dynamic<2>(find_harris_corners(image));
-    highlight_features(feature_points, res);
-    res.save_to_file("TestOut/chessboard1_harris_response.ppm");
-}
-
 void test_harris_nfeatures() {
-    const auto bitmap = StbImage::load_from_file("Data/chessboard1.ppm");
+    const auto bitmap = StbImage::load_from_file("Data/chessboard1.png");
 
     const Array<float> image = bitmap.to_float_grayscale();
     StbImage res = StbImage::from_float_grayscale(clipped(80.f * harris_response(image), 0.f, 1.f));
@@ -117,7 +89,7 @@ void test_harris_nfeatures() {
         ones<bool>(image.shape()),
         20));
     highlight_features(feature_points, res);
-    res.save_to_file("TestOut/chessboard1_harris_nfeatures.ppm");
+    res.save_to_file("TestOut/chessboard1_harris_nfeatures.png");
 }
 
 void test_pyramid() {
@@ -135,10 +107,10 @@ void test_pyramid() {
     });
     assert_isequal(res.size(), nlevels);
     assert_allclose(res.front(), Array<float>{
-        {2.5, NAN},
-        {7.5, NAN},
-        {12.5, NAN},
-        {17.5, NAN}});
+        {2.5, 5},
+        {7.5, 10},
+        {12.5, 15},
+        {17.5, 20}});
     assert_allclose(res.back(), images);
 }
 
@@ -261,10 +233,10 @@ void test_bilinear_interpolation() {
 }
 
 void test_division_by_brightness() {
-    StbImage im = StbImage::load_from_file("Data/chessboard1.ppm");
+    StbImage im = StbImage::load_from_file("Data/chessboard1.png");
     StbImage::from_float_rgb(
         clipped(divide_by_brightness(im.to_float_rgb(), 10.f, NAN), 0.f, 1.f))
-    .save_to_file("TestOut/chessboard1_dbb.ppm");
+    .save_to_file("TestOut/chessboard1_dbb.png");
 }
 
 void test_down_sample_average() {
@@ -313,8 +285,6 @@ int main(int argc, char **argv) {
         test_differences();
         test_forward_backward_differences();
         test_laplace();
-        test_harris_response_array();
-        test_harris_response();
         test_harris_nfeatures();
         test_pyramid();
         test_quantize();
