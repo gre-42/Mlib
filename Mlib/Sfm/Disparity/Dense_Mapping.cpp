@@ -189,7 +189,8 @@ Array<float> Mlib::Sfm::Dm::C(
     for (int ri = 0; ri < (int)dsi.shape(1); ++ri) {
         size_t r = (size_t)ri;
         for (size_t c = 0; c < dsi.shape(2); ++c) {
-            if ((a(r, c) >= 0) &&
+            if (!std::isnan(a(r, c)) &&
+                (a(r, c) >= 0) &&
                 (a(r, c) < dsi.shape(0)))
             {
                 res(r, c) = dsi(size_t(a(r, c)), r, c);
