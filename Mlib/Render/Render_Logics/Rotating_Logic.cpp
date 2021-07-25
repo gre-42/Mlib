@@ -2,6 +2,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/linmath.hpp>
@@ -71,6 +72,7 @@ void RotatingLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("RotatingLogic::render");
+    RenderToScreenGuard rsg;
     float aspect_ratio = width / (float) height;
 
     auto cn = scene_.get_node("camera");

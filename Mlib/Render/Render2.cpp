@@ -9,6 +9,7 @@
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -52,11 +53,10 @@ Render2::Render2(
   render_results_{render_results},
   render_config_{render_config}
 {
-    GLFW_CHK(glfwSetErrorCallback(error_callback));
-
-    if (!glfwInit()) {
+    if (glfwInit() == GLFW_FALSE) {
         throw std::runtime_error("glfwInit failed");
     }
+    GLFW_CHK(glfwSetErrorCallback(error_callback));
 
     GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3));
     GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3));
@@ -98,6 +98,10 @@ Render2::Render2(
 }
 
 Render2::~Render2() {
+    {
+        GlContextGuard gcg{ window_->window() };
+        execute_gc_render();
+    }
     window_.release();
     GLFW_WARN(glfwTerminate());
 }
@@ -159,7 +163,7 @@ void Render2::operator () (
                     // TimeGuard time_guard("logic.render", "logic.render");
                     RenderedSceneDescriptor rsd = (render_results_ != nullptr) && (!render_results_->outputs.empty())
                         ? RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = time_id, .light_node_name = "" }
-                    : RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = "" };
+                        : RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::UNDEFINED, ""}, .time_id = time_id, .light_node_name = "" };
                     // std::cerr << "-------------------------------" << std::endl;
                     // logic.print(std::cerr, 0);
                     // std::cerr << "+++++++++++++++++++++++++++++++" << std::endl;
@@ -245,8 +249,9 @@ void Render2::operator () (
     const SceneGraphConfig& scene_graph_config)
 {
     RotatingLogic rotating_logic{window_->window(), scene, rotate, scale};
+    ReadPixelsLogic read_pixels_logic{ rotating_logic };
     (*this)(
-        rotating_logic,
+        read_pixels_logic,
         scene_graph_config);
 }
 
@@ -297,7 +302,12 @@ void Render2::render_depth_map(
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
-    auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
+    SceneNodeResources scene_node_resources;
+    RenderingContextGuard rrg{
+        scene_node_resources,
+        "primary_rendering_resources",
+        16,
+        0};
     const auto r = std::make_shared<DepthMapResource>(rgb_picture, depth_picture, intrinsic_matrix, z_offset);
     scene_node_resources.add_resource("DepthMapResource", r);
     auto on = new SceneNode;
