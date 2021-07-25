@@ -47,9 +47,12 @@ Array<TData> lowpass_filter_NWE(
     const Array<TData>& coeffs,
     const TData& boundary_value)
 {
-    Array<TData> result = (image.ndim() == 0) ? image.copy() : image;
+    if (image.ndim() == 0) {
+        return image.copy();
+    }
+    Array<TData> result;
     for (size_t axis = 0; axis < image.ndim(); ++axis) {
-        result = lowpass_filter_1d_NWE(result, coeffs, boundary_value, axis);
+        result = lowpass_filter_1d_NWE(axis == 0 ? image : result, coeffs, boundary_value, axis);
     }
     return result;
 }

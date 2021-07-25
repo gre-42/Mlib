@@ -21,9 +21,12 @@ Array<TData> small_box_filter_NWE(
     const ArrayShape& radiuses,
     const TData& boundary_value)
 {
-    Array<TData> result = (image.ndim() == 0) ? image.copy() : image;
+    if (image.ndim() == 0) {
+        return image.copy();
+    }
+    Array<TData> result;
     for (size_t axis = 0; axis < image.ndim(); ++axis) {
-        result = std::move(small_box_filter_1d_NWE(result, radiuses(axis), axis, boundary_value));
+        result.move() = small_box_filter_1d_NWE(axis == 0 ? image : result, radiuses(axis), axis, boundary_value);
     }
     return result;
 }
@@ -34,9 +37,12 @@ Array<TData> multichannel_small_box_filter_NWE(
     const ArrayShape& radiuses,
     const TData& boundary_value)
 {
-    Array<TData> result{image.shape()};
+    if (image.ndim() == 0) {
+        throw std::runtime_error("Image dimension must be > 0");
+    }
+    Array<TData> result{ image.shape() };
     for (size_t h = 0; h < image.shape(0); ++h) {
-        result[h] = std::move(small_box_filter_NWE(image[h], radiuses, boundary_value));
+        result[h] = small_box_filter_NWE(image[h], radiuses, boundary_value);
     }
     return result;
 }
