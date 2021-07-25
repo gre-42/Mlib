@@ -91,13 +91,6 @@ Array<float> g_from_grayscale(
     const Array<float>& im_ref_gray,
     const DtamParameters& parameters);
 
-Array<float> dense_mapping(
-    const Array<float>& dsi,
-    const Array<float>& g,
-    const DtamParameters& parameters,
-    bool print_debug = false,
-    bool print_bmps = false);
-
 class DenseMapping {
 public:
     explicit DenseMapping(

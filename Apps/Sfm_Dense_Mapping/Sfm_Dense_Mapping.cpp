@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     enable_floating_point_exceptions();
 
     ArgParser parser(
-        "Usage: sfm_dense --intrinsic_matrix <intrinsic_matrix.m> --im0 <image0.ppm> --im1 <image1.ppm> --c0 <camera0.m> --c1 <camera1.m>",
+        "Usage: sfm_dense --intrinsic_matrix <intrinsic_matrix.m> --im0 <image0.png> --im1 <image1.png> --c0 <camera0.m> --c1 <camera1.m>",
         {},
         {"--intrinsic_matrix", "--im0", "--im1", "--c0", "--c1"});
 
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
             }
             if (!use_inverse_depth) {
                 Array<float> x = reconstruct_disparity(disparity0 * d_multiplier, F, ke, intrinsic_matrix);
-                draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file("xo-2.ppm");
+                draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file("xo-2.png");
                 draw_nan_masked_grayscale(
                     disparity0,
                     -float(search_length) * d_multiplier,
@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
             std::cerr << "nanmin(dsi) " << nanmin(dsi) << std::endl;
             std::cerr << "nanmax(dsi) " << nanmax(dsi) << std::endl;
             for (size_t i = 0; i < dsi.shape(0); i += dsi.shape(0) / 5) {
-                draw_nan_masked_grayscale(dsi[i], 0, 0).save_to_file("dsi-" + std::to_string(i) + ".ppm");
+                draw_nan_masked_grayscale(dsi[i], 0, 0).save_to_file("dsi-" + std::to_string(i) + ".png");
             }
             if (cache_dsi) {
                 dsi.save_binary(dsi_filename);
@@ -157,37 +157,39 @@ int main(int argc, char **argv) {
         // std::cerr << dsi.T()[188][303] << std::endl;
         // throw std::runtime_error("asd");
 
-        Array<float> a;
-        const std::string a_filename = dsi_filename + ".a.array";
-        if (!fs::exists(a_filename)) {
-            std::cerr << a_filename << " does not exist, computing..." << std::endl;
+        Array<float> ai;
+        const std::string ai_filename = dsi_filename + ".ai.array";
+        if (!fs::exists(ai_filename)) {
+            std::cerr << ai_filename << " does not exist, computing..." << std::endl;
             Dm::DtamParameters params;
-            a = Dm::dense_mapping(
+            Dm::DenseMapping dm{
                 dsi,
                 Dm::g_from_grayscale(im0_gray, params),
                 params,
                 false,                              // print_energy
-                false);                             // print_bmps
-            a.save_binary(a_filename);
+                false};                             // print_bmps
+            dm.iterate_atmost(dsi, SIZE_MAX);
+            ai = dm.interpolated_a();
+            ai.save_binary(ai_filename);
         } else {
-            std::cerr << a_filename << " exists, loading..." << std::endl;
-            a = Array<float>::load_binary(a_filename);
+            std::cerr << ai_filename << " exists, loading..." << std::endl;
+            ai = Array<float>::load_binary(ai_filename);
         }
-        draw_nan_masked_grayscale(a, 0, 0).save_to_file("a.ppm");
+        draw_nan_masked_grayscale(ai, 0, 0).save_to_file("ai.png");
 
         Array<float> condition_number;
         Array<float> x;
         if (use_inverse_depth) {
-            Array<float> depth = 1.f / a;
-            draw_nan_masked_grayscale(depth, min(1.f / inverse_depths), max(1.f / inverse_depths)).save_to_file("depth.ppm");
+            Array<float> depth = 1.f / ai;
+            draw_nan_masked_grayscale(depth, min(1.f / inverse_depths), max(1.f / inverse_depths)).save_to_file("depth.png");
             x = reconstruct_depth(depth, intrinsic_matrix);
         } else {
-            x = reconstruct_disparity(a * d_multiplier, F, ke, intrinsic_matrix, &condition_number);
-            draw_quantiled_grayscale(condition_number, 0.05, 0.95).save_to_file("condition_number.ppm");
+            x = reconstruct_disparity(ai * d_multiplier, F, ke, intrinsic_matrix, &condition_number);
+            draw_quantiled_grayscale(condition_number, 0.05, 0.95).save_to_file("condition_number.png");
         }
-        draw_quantiled_grayscale(x[0], 0.05, 0.95).save_to_file("x-0.ppm");
-        draw_quantiled_grayscale(x[1], 0.05, 0.95).save_to_file("x-1.ppm");
-        draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file("x-2.ppm");
+        draw_quantiled_grayscale(x[0], 0.05, 0.95).save_to_file("x-0.png");
+        draw_quantiled_grayscale(x[1], 0.05, 0.95).save_to_file("x-1.png");
+        draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file("x-2.png");
 
         {
             MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;

@@ -536,18 +536,6 @@ static Array<float> get_sqrt_dsi_max_dmin(const Array<float>& dsi) {
     return sqrt_dsi_max_dmin;
 }
 
-Array<float> Mlib::Sfm::Dm::dense_mapping(
-    const Array<float>& dsi,
-    const Array<float>& g,
-    const DtamParameters& parameters,
-    bool print_debug,
-    bool print_bmps)
-{
-    DenseMapping dm{dsi, g, parameters, print_debug, print_bmps};
-    dm.iterate_atmost(dsi, SIZE_MAX);
-    return dm.interpolated_a();
-}
-
 DenseMapping::DenseMapping(
     const Array<float>& dsi,
     const Array<float>& g,
@@ -563,7 +551,7 @@ DenseMapping::DenseMapping(
     assert(all(dsi.shape().erased_first() == g.shape()));
 
     if (print_bmps) {
-        draw_nan_masked_grayscale(g, 0, 1).save_to_file("g.ppm");
+        draw_nan_masked_grayscale(g, 0, 1).save_to_file("g.png");
     }
     notify_cost_volume_changed(dsi);
 }
@@ -636,17 +624,17 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
                 regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING ||
                 regularizer == Regularizer::CENTRAL_DIFFERENCES)
             {
-                draw_quantiled_grayscale(q_[0], 0.05f, 0.95f).save_to_file("q0-" + std::to_string(n_) + ".ppm");
-                draw_quantiled_grayscale(q_[1], 0.05f, 0.95f).save_to_file("q1-" + std::to_string(n_) + ".ppm");
+                draw_quantiled_grayscale(q_[0], 0.05f, 0.95f).save_to_file("q0-" + std::to_string(n_) + ".png");
+                draw_quantiled_grayscale(q_[1], 0.05f, 0.95f).save_to_file("q1-" + std::to_string(n_) + ".png");
             }
             if (regularizer == Regularizer::DIFFERENCE_OF_BOXES) {
-                draw_quantiled_grayscale(q_, 0.05f, 0.95f).save_to_file("q-" + std::to_string(n_) + ".ppm");
+                draw_quantiled_grayscale(q_, 0.05f, 0.95f).save_to_file("q-" + std::to_string(n_) + ".png");
             }
-            draw_quantiled_grayscale(eo, 0.05f, 0.95f).save_to_file("eo-" + std::to_string(n_) + ".ppm");
-            draw_quantiled_grayscale(en, 0.05f, 0.95f).save_to_file("en-" + std::to_string(n_) + ".ppm");
+            draw_quantiled_grayscale(eo, 0.05f, 0.95f).save_to_file("eo-" + std::to_string(n_) + ".png");
+            draw_quantiled_grayscale(en, 0.05f, 0.95f).save_to_file("en-" + std::to_string(n_) + ".png");
         }
         if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(d_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("d-" + std::to_string(n_) + ".ppm");
+            draw_nan_masked_grayscale(d_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("d-" + std::to_string(n_) + ".png");
         }
     }
     // std::cerr << "done" << std::endl;
@@ -655,7 +643,7 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
         // std::cerr << "done2" << std::endl;
         std::cerr << "a: " << nanmin(a_) << " - " << nanmedian(a_) << " - " << nanmax(a_) << std::endl;
         if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(n_) + ".ppm");
+            draw_nan_masked_grayscale(a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(n_) + ".png");
         }
     }
     // std::cerr << "done3" << std::endl;
@@ -702,7 +690,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
     const DtamParameters& parameters)
 {
     for (float LAMBDA : (parameters.lambda_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
-        Array<float> a = Dm::dense_mapping(
+        DenseMapping dm{
             dsi,
             g,
             DtamParameters(
@@ -718,12 +706,13 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.epsilon_,
                 parameters.nsteps_),
             false,
-            false);
-        draw_nan_masked_grayscale(a, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".ppm");
-        std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, a)) << std::endl;
+            false};
+        dm.iterate_atmost(dsi, SIZE_MAX);
+        draw_nan_masked_grayscale(dm.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".png");
+        std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, dm.a_)) << std::endl;
     }
     for (float EPSILON : (parameters.epsilon_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
-        Array<float> a = Dm::dense_mapping(
+        DenseMapping dm{
             dsi,
             g,
             DtamParameters(
@@ -739,9 +728,10 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 EPSILON,
                 parameters.nsteps_),
             false,
-            false);
-        draw_nan_masked_grayscale(a, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-epsilon-" + std::to_string(EPSILON) + ".ppm");
-        std::cerr << "eps " << EPSILON << " energy " << xsum(energy_orig(g, parameters.lambda_, EPSILON, dsi, a)) << std::endl;
+            false};
+        dm.iterate_atmost(dsi, SIZE_MAX);
+        draw_nan_masked_grayscale(dm.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-epsilon-" + std::to_string(EPSILON) + ".png");
+        std::cerr << "eps " << EPSILON << " energy " << xsum(energy_orig(g, parameters.lambda_, EPSILON, dsi, dm.a_)) << std::endl;
     }
 }
 
@@ -765,14 +755,15 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
                 parameters.lambda_,
                 parameters.epsilon_,
                 parameters.nsteps_);
-            Array<float> a = Dm::dense_mapping(
+            DenseMapping dm{
                 dsi,
                 g,
                 modified_parameters,
                 false,
-                false);
-            float energy = xsum(energy_orig(g, parameters.lambda_, parameters.epsilon_, dsi, a));
-            energies.push_back(std::make_tuple(modified_parameters, energy, a));
+                false};
+            dm.iterate_atmost(dsi, SIZE_MAX);
+            float energy = xsum(energy_orig(g, parameters.lambda_, parameters.epsilon_, dsi, dm.a_));
+            energies.push_back(std::make_tuple(modified_parameters, energy, dm.a_));
             std::cerr << modified_parameters << " energy " << energy << std::endl;
         }
     }
@@ -780,8 +771,8 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
     size_t rank = 0;
     for (const auto& p : energies) {
         std::cerr << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " energy " << std::get<1>(p) << std::endl;
-        draw_nan_masked_grayscale(std::get<2>(p), 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(rank) + ".ppm");
-        // draw_quantiled_grayscale(std::get<2>(p), 0.05, 0.5).save_to_file("aq-" + std::to_string(rank) + ".ppm");
+        draw_nan_masked_grayscale(std::get<2>(p), 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(rank) + ".png");
+        // draw_quantiled_grayscale(std::get<2>(p), 0.05, 0.5).save_to_file("aq-" + std::to_string(rank) + ".png");
         ++rank;
     }
 }

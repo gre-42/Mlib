@@ -123,7 +123,8 @@ void test_boundary_and_nan() {
     Array<float> g = uniform_random_array<float>(ArrayShape{nR, nC}, 1);
     Dm::DtamParameters p;
     p.nsteps_ = 20;
-    Array<float> a = Dm::dense_mapping(dsi, g, p);
+    Dm::DenseMapping dm{ dsi, g, p };
+    dm.iterate_atmost(dsi, SIZE_MAX);
     //std::cerr << a << std::endl;
 
     for (size_t dc = 0; dc < 2; ++dc) {
@@ -145,11 +146,12 @@ void test_boundary_and_nan() {
         //std::cerr << g << std::endl;
         //std::cerr << dsiN << std::endl;
         //std::cerr << gN << std::endl;
-        Array<float> aN = Dm::dense_mapping(dsiN, gN, p);
-        //std::cerr << aN << std::endl;
-        for (size_t r = 0; r < a.shape(0); ++r) {
-            for (size_t c = 0; c < a.shape(1); ++c) {
-                assert_isclose(aN(r, c + dc), a(r, c));
+        Dm::DenseMapping dmN{ dsiN, gN, p };
+        dmN.iterate_atmost(dsiN, SIZE_MAX);
+        //std::cerr << dmN.a_ << std::endl;
+        for (size_t r = 0; r < dm.a_.shape(0); ++r) {
+            for (size_t c = 0; c < dm.a_.shape(1); ++c) {
+                assert_isclose(dmN.a_(r, c + dc), dm.a_(r, c));
             }
         }
     }
