@@ -42,7 +42,7 @@ private:
     const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames_;
     const DownSampler& down_sampler_;
     std::set<std::chrono::milliseconds> times_integrated_;
-    TransformationMatrix<float, 2> intrinsic_matrix_;
+    TransformationMatrix<float, 2> intrinsic_matrix__;
     std::string cache_dir_;
     std::chrono::milliseconds first_integrated_time_;
     std::chrono::milliseconds last_integrated_time_;

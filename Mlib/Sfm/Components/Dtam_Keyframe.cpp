@@ -31,7 +31,7 @@ DtamKeyframe::DtamKeyframe(
   camera_frames_{camera_frames},
   key_frames_{key_frames},
   down_sampler_{down_sampler},
-  intrinsic_matrix_{intrinsic_matrix},
+  intrinsic_matrix__{intrinsic_matrix},
   cache_dir_{cache_dir},
   first_integrated_time_{std::chrono::milliseconds::max()},
   last_integrated_time_{std::chrono::milliseconds::max()},
@@ -398,7 +398,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-depth.array");
         draw_nan_masked_grayscale(masked_depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked-depth.png");
         draw_nan_masked_grayscale(depth_, cfg_.params_.min_depth__, cfg_.params_.max_depth__).save_to_file(cache_dir_ + "/pkg-" + suffix + "-depth.png");
-        intrinsic_matrix_.affine().to_array().save_txt_2d(cache_dir_ + "/pkg-" + suffix + "-intrinsic_matrix.m");
+        down_sampler_.ds_intrinsic_matrix_.affine().to_array().save_txt_2d(cache_dir_ + "/pkg-" + suffix + "-intrinsic_matrix.m");
     }
 }
 
