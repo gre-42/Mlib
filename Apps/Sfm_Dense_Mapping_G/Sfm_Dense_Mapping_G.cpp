@@ -1,6 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
@@ -12,19 +12,19 @@ int main(int argc, char **argv) {
     enable_floating_point_exceptions();
 
     ArgParser parser(
-        "Usage: sfm_dense --im image.ppm> --dest <dest.ppm> --alpha <alpha> --beta <beta>",
+        "Usage: sfm_dense_mapping_g --im <image.png> --dest <dest.png> --alpha <alpha> --beta <beta>",
         {},
         {"--im", "--alpha", "--beta", "--dest"});
 
     try {
         auto args = parser.parsed(argc, argv);
 
-        PpmImage im = PpmImage::load_from_file(args.named_value("--im"));
+        StbImage im = StbImage::load_from_file(args.named_value("--im"));
 
         Dm::DtamParameters params;
         params.alpha_G_ = safe_stod(args.named_value("--alpha"));
         params.beta_G_ = safe_stod(args.named_value("--beta"));
-        PpmImage::from_float_grayscale(Dm::g_from_grayscale(
+        StbImage::from_float_grayscale(Dm::g_from_grayscale(
             im.to_float_grayscale(),
             params)).save_to_file(args.named_value("--dest"));
 
