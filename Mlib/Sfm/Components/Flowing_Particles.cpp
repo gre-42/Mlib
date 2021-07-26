@@ -3,6 +3,7 @@
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/OpenCV.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
@@ -76,7 +77,11 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
         //    .save_to_file("edges.bmp");
     } else if (true) {
         Array<bool> feature_mask;
-        Array<float> hr = harris_response(image_frames_.rbegin()->second.grayscale, &feature_mask);
+        Array<float> hr = harris_response(
+            gaussian_filter_NWE(
+                image_frames_.rbegin()->second.grayscale,
+                cfg_.presmoothing_sigma, NAN),
+            &feature_mask);
         points = Array<float>::from_dynamic<2>(find_nfeatures(
             hr,
 
