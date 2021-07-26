@@ -10,7 +10,7 @@ enum class Regularizer {
     FORWARD_BACKWARD_DIFFERENCES,
     FORWARD_BACKWARD_WEIGHTING,
     CENTRAL_DIFFERENCES,
-    DIFFERENCE_OF_BOXES
+    DIFFERENCE_OF_BOXES  // a.k.a. Laplace
 };
 
 static const Regularizer regularizer = Regularizer::FORWARD_BACKWARD_WEIGHTING;
