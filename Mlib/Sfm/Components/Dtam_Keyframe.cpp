@@ -143,6 +143,13 @@ void DtamKeyframe::inspect_externally_appended_camera_frame() const {
     draw_quantiled_grayscale(im, 0.05f, 0.95f).save_to_file(cache_dir_ + "/inspect-err-" + suffix + ".png");
 }
 
+Array<float> remove_illumination(const Array<float>& image, float sigma) {
+    if (sigma == INFINITY) {
+        return image;
+    }
+    return clipped(0.5f + image - multichannel_gaussian_filter_NWE(image, sigma, NAN), 0.f, 1.f);
+}
+
 void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
     auto cams_sorted = camera_frames_.sorted();
     size_t navail_future = size_t(std::distance(
@@ -177,8 +184,8 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
                 down_sampler_.ds_intrinsic_matrix_,
                 cams_sorted.at(key_frame_time_)->projection_matrix_3x4(),
                 it->second->projection_matrix_3x4(),
-                down_sampler_.ds_image_frames_.at(key_frame_time_).rgb,
-                down_sampler_.ds_image_frames_.at(it->first).rgb);
+                remove_illumination(down_sampler_.ds_image_frames_.at(key_frame_time_).rgb, cfg_.params_.ext.sigma_illumination_removal),
+                remove_illumination(down_sampler_.ds_image_frames_.at(it->first).rgb, cfg_.params_.ext.sigma_illumination_removal));
         };
         for (auto it = ++cams_sorted.find(last_integrated_time_);
             (it != cams_sorted.end()) && (!future_is_full());

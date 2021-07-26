@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Sfm/Disparity/Dtam_Extension_Config.hpp>
 #include <cstddef>
 #include <iosfwd>
 
@@ -34,6 +35,7 @@ public:
     Array<float> inverse_depths() const;
     float theta_0_corrected() const;
     float theta_end_corrected() const;
+    DtamExtensionConfig ext;
 private:
     float theta_correction_factor() const;
 };

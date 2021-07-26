@@ -3,7 +3,9 @@
 #include <Mlib/Images/Filters/Backward_Differences.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Difference_Of_Boxes.hpp>
+#include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Forward_Differences.hpp>
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Math/Huber_Norm.hpp>
 #include <Mlib/Math/Interpolate.hpp>
@@ -507,11 +509,24 @@ Array<float> Mlib::Sfm::Dm::g_from_grayscale(
         // Array<float> diff = standard_deviation(im_ref_gray, ArrayShape{5, 5}, GRADIENT_BOUNDARY_VALUE);
         return normalized_and_clipped(-diff);
         // return normalized_and_clipped(exp(-1.f * diff));
-    } else {
-        return exp(-parameters.alpha_G_ * pow(
-            sum(squared(central_gradient_filter(im_ref_gray)), 0),
-            parameters.beta_G_ / 2));
     }
+    // Detect (1 - edges).
+    Array<float> res = exp(-parameters.alpha_G_ * pow(
+        sum(squared(central_gradient_filter(im_ref_gray)), 0),
+        parameters.beta_G_ / 2));
+    
+    if (parameters.ext.remove_edge_blobs) {
+        // Convert (1 - edges) to edges.
+        res = 1.f - res;
+        // Detect clusters of edges.
+        auto x = clipped(0.5f + 4.f * (0.5f - gaussian_filter_NWE(res, 2.f, NAN)), 0.f, 1.f);
+        // Dilate the clusters.
+        x = clipped(0.95f + 4.f * (gaussian_filter_NWE(x, 2.f, NAN) - 0.95f), 0.f, 1.f);
+        // Remove boundaries inside dilated clusters.
+        res *= x;
+        res = 1.f - res;
+    }
+    return res;
 }
 
 static Array<float> get_sqrt_dsi_max_dmin(const Array<float>& dsi) {
