@@ -710,9 +710,9 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
             dsi,
             g,
             DtamParameters(
-                parameters.min_depth__,
-                parameters.max_depth__,
-                parameters.ndepths__,
+                parameters.min_depth_,
+                parameters.max_depth_,
+                parameters.ndepths_,
                 parameters.alpha_G_,
                 parameters.beta_G_,
                 parameters.theta_0__,
@@ -732,9 +732,9 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
             dsi,
             g,
             DtamParameters(
-                parameters.min_depth__,
-                parameters.max_depth__,
-                parameters.ndepths__,
+                parameters.min_depth_,
+                parameters.max_depth_,
+                parameters.ndepths_,
                 parameters.alpha_G_,
                 parameters.beta_G_,
                 parameters.theta_0__,
@@ -760,9 +760,9 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
     for (float THETA_0 : (parameters.theta_0__ * logspace(-1.f, 1.f, 7)).element_iterable()) {
         for (float BETA : (parameters.beta_ * logspace(-1.f, 1.f, 7)).element_iterable()) {
             DtamParameters modified_parameters(
-                parameters.min_depth__,
-                parameters.max_depth__,
-                parameters.ndepths__,
+                parameters.min_depth_,
+                parameters.max_depth_,
+                parameters.ndepths_,
                 parameters.alpha_G_,
                 parameters.beta_G_,
                 THETA_0,

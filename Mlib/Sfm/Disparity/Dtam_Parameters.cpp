@@ -58,9 +58,9 @@ DtamParameters::DtamParameters(
     float lambda,
     float epsilon,
     size_t nsteps)
-: min_depth__(min_depth),
-  max_depth__(max_depth),
-  ndepths__(ndepths),
+: min_depth_(min_depth),
+  max_depth_(max_depth),
+  ndepths_(ndepths),
   alpha_G_(alpha_G),
   beta_G_(beta_G),
   theta_0__(theta_0),
@@ -72,7 +72,7 @@ DtamParameters::DtamParameters(
 {}
 
 Array<float> DtamParameters::inverse_depths() const {
-    return linspace(1.f / max_depth__, 1.f / min_depth__, ndepths__);
+    return linspace(1.f / max_depth_, 1.f / min_depth_, ndepths_);
 }
 
 float DtamParameters::theta_0_corrected() const {
@@ -84,10 +84,11 @@ float DtamParameters::theta_end_corrected() const {
 }
 
 float DtamParameters::theta_correction_factor() const {
-    assert(ndepths__ > 1);
+    assert(ndepths_ > 1);
     // Energy: 1 / (2 * theta) * ||d-a||^2
-    return squared((ndepths__ - 1) / (1.f / min_depth__ - 1.f / max_depth__));
+    return squared((ndepths_ - 1) / (1.f / min_depth_ - 1.f / max_depth_));
 }
+
 std::ostream& Mlib::Sfm::Dm::operator << (std::ostream& str, const DtamParameters& params) {
     str <<
         "alpha_G " << std::setw(15) << params.alpha_G_ <<

@@ -21,9 +21,9 @@ public:
         float lambda,
         float epsilon,
         size_t nsteps);
-    float min_depth__;
-    float max_depth__;
-    size_t ndepths__;
+    float min_depth_;
+    float max_depth_;
+    size_t ndepths_;
     float alpha_G_;
     float beta_G_;
     float theta_0__;
