@@ -12,4 +12,12 @@ Array<TData> difference_of_boxes(const Array<TData>& image, const TData& boundar
     return small_box_filter_NWE(image, radiuses, boundary_value) - image;
 }
 
+template <class TData>
+Array<TData> multichannel_difference_of_boxes(const Array<TData>& image, const TData& boundary_value)
+{
+    ArrayShape radiuses(image.ndim());
+    radiuses = 1;
+    return multichannel_small_box_filter_NWE(image, radiuses, boundary_value) - image;
+}
+
 }
