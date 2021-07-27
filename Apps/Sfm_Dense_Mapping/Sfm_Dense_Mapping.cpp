@@ -2,8 +2,8 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Inverse_Depth_Cost_Volume.hpp>
@@ -37,13 +37,13 @@ int main(int argc, char **argv) {
 
         const bool synthetic = false;
 
-        PpmImage im0_bgr = PpmImage::load_from_file(args.named_value("--im0"));
-        PpmImage im1_bgr = PpmImage::load_from_file(args.named_value("--im1"));
+        StbImage im0_bgr = StbImage::load_from_file(args.named_value("--im0"));
+        StbImage im1_bgr = StbImage::load_from_file(args.named_value("--im1"));
         if (any(im0_bgr.shape() != im1_bgr.shape())) {
             throw std::runtime_error("Image shapes differ");
         }
         if (synthetic) {
-            PpmImage im_bgr{im0_bgr.copy()};
+            StbImage im_bgr{im0_bgr.copy()};
             synthetic_dense(im_bgr, im0_bgr, im1_bgr);
         }
         Array<float> im0_rgb = im0_bgr.to_float_rgb();

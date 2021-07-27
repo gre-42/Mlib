@@ -8,7 +8,7 @@
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Guided_Filter.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Draw/Dense_Projector.hpp>
 #include <Mlib/Sfm/Draw/Epilines.hpp>
@@ -36,10 +36,10 @@ void filter_distance_to_camera(Array<float>& x, Array<float>& cond, const Array<
                 squared(x(2, r, c)));
         }
     }
-    draw_nan_masked_grayscale(dist, -25.f, 25.f).save_to_file("dist.ppm");
+    draw_nan_masked_grayscale(dist, -25.f, 25.f).save_to_file("dist.png");
     Array<float> distf = guided_filter(im, dist, ArrayShape{15, 15}, float(1e-3));
-    draw_nan_masked_grayscale(distf, -25.f, 25.f).save_to_file("distf.ppm");
-    draw_nan_masked_grayscale(abs(dist - distf), 0.f, 1.f).save_to_file("dist-distf.ppm");
+    draw_nan_masked_grayscale(distf, -25.f, 25.f).save_to_file("distf.png");
+    draw_nan_masked_grayscale(abs(dist - distf), 0.f, 1.f).save_to_file("dist-distf.png");
     if (false) {
         for (size_t r = 0; r < x.shape(1); ++r) {
             for (size_t c = 0; c < x.shape(2); ++c) {
@@ -110,7 +110,7 @@ void reproject(
             }
         }
     }
-    draw_nan_masked_rgb(reprojected, 0, 1).save_to_file("reprojected.ppm");
+    draw_nan_masked_rgb(reprojected, 0, 1).save_to_file("reprojected.png");
 }
 
 class ColorDescriptor {
@@ -149,13 +149,13 @@ int main(int argc, char **argv) {
 
         const bool synthetic = false;
 
-        PpmImage im0_bgr = PpmImage::load_from_file(args.named_value("--im0"));
-        PpmImage im1_bgr = PpmImage::load_from_file(args.named_value("--im1"));
+        StbImage im0_bgr = StbImage::load_from_file(args.named_value("--im0"));
+        StbImage im1_bgr = StbImage::load_from_file(args.named_value("--im1"));
         if (any(im0_bgr.shape() != im1_bgr.shape())) {
             throw std::runtime_error("Image shapes differ");
         }
         if (synthetic) {
-            PpmImage im_bgr{im0_bgr.copy()};
+            StbImage im_bgr{im0_bgr.copy()};
             synthetic_dense(im_bgr, im0_bgr, im1_bgr);
         }
         Array<float> im0_rgb = im0_bgr.to_float_rgb();
@@ -194,8 +194,8 @@ int main(int argc, char **argv) {
         //     im0_rgb_smooth[d] = im0_rgb[d - 3];
         //     im1_rgb_smooth[d] = im1_rgb[d - 3];
         // }
-        // draw_nan_masked_rgb(im0_rgb_smooth, 0, 1).save_to_file("im0_rgb_smooth.ppm");
-        // draw_nan_masked_rgb(im1_rgb_smooth, 0, 1).save_to_file("im1_rgb_smooth.ppm");
+        // draw_nan_masked_rgb(im0_rgb_smooth, 0, 1).save_to_file("im0_rgb_smooth.png");
+        // draw_nan_masked_rgb(im1_rgb_smooth, 0, 1).save_to_file("im1_rgb_smooth.png");
         // Array<float> im0_gray_smooth = box_filter_nan(im0_gray, ArrayShape{3, 3}, NAN);
 
         if (!fs::exists("condition_number.m")) {
@@ -239,16 +239,16 @@ int main(int argc, char **argv) {
                         }
                     }
                 }
-                draw_nan_masked_grayscale(im0_gray_masked, 0, 1).save_to_file("stdm-0.ppm");
-                draw_nan_masked_grayscale(im1_gray_masked, 0, 1).save_to_file("stdm-1.ppm");
+                draw_nan_masked_grayscale(im0_gray_masked, 0, 1).save_to_file("stdm-0.png");
+                draw_nan_masked_grayscale(im1_gray_masked, 0, 1).save_to_file("stdm-1.png");
             }
             if (false) {
                 Array<float> hr0_1d = harris_response_1d(im0_gray, F);
                 Array<float> hr1_1d = harris_response_1d(im1_gray, F.T());
                 Array<float> hr0_1d_im = hr0_1d / float(1e-3);
                 Array<float> hr1_1d_im = hr1_1d / float(1e-3);
-                draw_nan_masked_grayscale(hr0_1d_im, 0, 1).save_to_file("hr0_1d_im.ppm");
-                draw_nan_masked_grayscale(hr1_1d_im, 0, 1).save_to_file("hr1_1d_im.ppm");
+                draw_nan_masked_grayscale(hr0_1d_im, 0, 1).save_to_file("hr0_1d_im.png");
+                draw_nan_masked_grayscale(hr1_1d_im, 0, 1).save_to_file("hr1_1d_im.png");
                 hr0_1d = box_filter_nan(hr0_1d, ArrayShape{10, 10}, NAN);
                 hr1_1d = box_filter_nan(hr1_1d, ArrayShape{10, 10}, NAN);
                 for (size_t r = 0; r < hr0_1d.shape(0); ++r) {
@@ -275,10 +275,10 @@ int main(int argc, char **argv) {
                         }
                     }
                 }
-                draw_nan_masked_grayscale(im0_gray_masked, 0, 1).save_to_file("hrm-0.ppm");
-                draw_nan_masked_grayscale(im1_gray_masked, 0, 1).save_to_file("hrm-1.ppm");
-                draw_nan_masked_rgb(im0_rgb, 0, 1).save_to_file("im0_rgb.ppm");
-                draw_nan_masked_rgb(im1_rgb, 0, 1).save_to_file("im1_rgb.ppm");
+                draw_nan_masked_grayscale(im0_gray_masked, 0, 1).save_to_file("hrm-0.png");
+                draw_nan_masked_grayscale(im1_gray_masked, 0, 1).save_to_file("hrm-1.png");
+                draw_nan_masked_rgb(im0_rgb, 0, 1).save_to_file("im0_rgb.png");
+                draw_nan_masked_rgb(im1_rgb, 0, 1).save_to_file("im1_rgb.png");
             }
 
             size_t search_length = 70;
@@ -289,30 +289,30 @@ int main(int argc, char **argv) {
             disparity_0 = compute_disparity_rgb_patch(im0_rgb, im1_rgb, F, search_length, worst_error, FixedArray<size_t, 2>{15, 15}, FixedArray<size_t, 2>{0, 0}, &error_0);
             disparity_0.save_txt_2d("disparity_0.m");
             error_0.save_txt_2d("error_0.m");
-            draw_nan_masked_grayscale(disparity_0, -50.f, 50.f).save_to_file("disparity-0.ppm");
+            draw_nan_masked_grayscale(disparity_0, -50.f, 50.f).save_to_file("disparity-0.png");
 
             // Array<float> disparity_0_x = compute_disparity_rgb_patch(im0_rgb, im1_rgb, F, search_length, worst_error, ArrayShape{10, 10}, ArrayShape{5, 5});
-            // draw_nan_masked_grayscale(disparity_0_x, -50.f, 50.f).save_to_file("disparity-0-x.ppm");
+            // draw_nan_masked_grayscale(disparity_0_x, -50.f, 50.f).save_to_file("disparity-0-x.png");
 
-            // draw_nan_masked_grayscale(abs(disparity_0 - disparity_0_x), -5.f, 5.f).save_to_file("disparity-0-diff.ppm");
+            // draw_nan_masked_grayscale(abs(disparity_0 - disparity_0_x), -5.f, 5.f).save_to_file("disparity-0-diff.png");
 
             // Array<float> disparity_1 = compute_disparity_gray_single_pixel(im1_gray, im0_gray, F.T(), search_length);
-            // draw_nan_masked_grayscale("disparity-1.ppm", disparity_1, -250.f, 250.f);
+            // draw_nan_masked_grayscale("disparity-1.png", disparity_1, -250.f, 250.f);
 
             // Array<float> disparity_0_f = guided_filter(im0_gray, disparity_0, ArrayShape{15, 15}, float(1e-3));
             // Array<float> disparity_0_f = quantized(disparity_0, Array<float>{0, 20, 30, 40, 60, 70});
-            // draw_nan_masked_grayscale(disparity_0_f, -50.f, 50.f).save_to_file("disparity-0-f.ppm");
+            // draw_nan_masked_grayscale(disparity_0_f, -50.f, 50.f).save_to_file("disparity-0-f.png");
 
 
             Array<float> im_01_rgb = move_along_disparity(disparity_0, F, im1_rgb);
-            draw_nan_masked_rgb(im_01_rgb, 0, 1).save_to_file("im-01.ppm");
+            draw_nan_masked_rgb(im_01_rgb, 0, 1).save_to_file("im-01.png");
 
             // Array<float> im_01_rgb_smooth = move_along_disparity(disparity_0, F, im1_rgb_smooth);
-            // draw_nan_masked_rgb(im_01_rgb_smooth, 0, 1).save_to_file("im-01s.ppm");
+            // draw_nan_masked_rgb(im_01_rgb_smooth, 0, 1).save_to_file("im-01s.png");
 
-            draw_nan_masked_rgb(abs(im_01_rgb - im0_rgb), 0, 0.5).save_to_file("im-01-diff.ppm");
+            draw_nan_masked_rgb(abs(im_01_rgb - im0_rgb), 0, 0.5).save_to_file("im-01-diff.png");
 
-            draw_nan_masked_rgb(abs(box_filter_nan_multichannel(im_01_rgb - im0_rgb, ArrayShape{5, 5}, NAN)), 0, 0.5).save_to_file("im-01-sm-diff.ppm");
+            draw_nan_masked_rgb(abs(box_filter_nan_multichannel(im_01_rgb - im0_rgb, ArrayShape{5, 5}, NAN)), 0, 0.5).save_to_file("im-01-sm-diff.png");
 
             // Array<float> disparity_0_f = guided_filter(im0_gray, disparity_0, ArrayShape{10, 10}, float(1e-3));
 
@@ -347,7 +347,7 @@ int main(int argc, char **argv) {
         }
 
         if (false) {
-            Array<bool> mask0 = PpmImage::load_from_file("mask/mask.ppm").to_float_grayscale().casted<bool>();
+            Array<bool> mask0 = StbImage::load_from_file("mask/mask.png").to_float_grayscale().casted<bool>();
             for (size_t r = 0; r < mask0.shape(0); ++r) {
                 for (size_t c = 0; c < mask0.shape(1); ++c) {
                     if (!mask0(r, c)) {
@@ -363,7 +363,7 @@ int main(int argc, char **argv) {
         if (false) {
             Array<float> hr0_1d = harris_response_1d(im0_gray, F);
             Array<float> hr0_1d_im = hr0_1d / float(1e-3);
-            draw_nan_masked_grayscale(hr0_1d_im, 0, 1).save_to_file("hr0_1d_im.ppm");
+            draw_nan_masked_grayscale(hr0_1d_im, 0, 1).save_to_file("hr0_1d_im.png");
             for (size_t r = 0; r < hr0_1d.shape(0); ++r) {
                 for (size_t c = 0; c < hr0_1d.shape(1); ++c) {
                     if (!(hr0_1d(r, c) > 1e-3)) {
@@ -387,7 +387,7 @@ int main(int argc, char **argv) {
             for (size_t axis = 0; axis < 1; ++axis) {
                 Array<float> dx = (central_differences_1d(x[axis], 1 - axis) > 0.f).casted<float>();
                 Array<float> ldx = box_filter_NWE(dx, ArrayShape{5, 5});
-                draw_nan_masked_grayscale(ldx, 0, 1).save_to_file("ldx-" + std::to_string(axis) + ".ppm");
+                draw_nan_masked_grayscale(ldx, 0, 1).save_to_file("ldx-" + std::to_string(axis) + ".png");
                 for (size_t r = 0; r < ldx.shape(0); ++r) {
                     for (size_t c = 0; c < ldx.shape(1); ++c) {
                         if (!(ldx(r, c) > 0.9)) {
@@ -403,7 +403,7 @@ int main(int argc, char **argv) {
             {
                 Array<float> sz = (x[2] > 0.f).casted<float>();
                 Array<float> lz = box_filter_NWE(sz, ArrayShape{2, 2});
-                draw_nan_masked_grayscale(lz, 0, 1).save_to_file("lx-2.ppm");
+                draw_nan_masked_grayscale(lz, 0, 1).save_to_file("lx-2.png");
                 for (size_t r = 0; r < lz.shape(0); ++r) {
                     for (size_t c = 0; c < lz.shape(1); ++c) {
                         if (!(lz(r, c) > 0.9)) {
@@ -421,13 +421,13 @@ int main(int argc, char **argv) {
         // filter_distance_to_camera(x, condition_number, im0_gray);
 
         // Array<float> d = sqrt(squared(x[0]) + squared(x[1]) + squared(x[2]));
-        // draw_nan_masked_grayscale(d, -5.f, 5.f).save_to_file("d.ppm");
+        // draw_nan_masked_grayscale(d, -5.f, 5.f).save_to_file("d.png");
 
         // Array<float> xf2 = clipped(guided_filter(im0_gray, x[2], ArrayShape{15, 15}, float(1e-3)), 0.f, 1.f);
-        draw_nan_masked_grayscale(x[0], -5.f, 5.f).save_to_file("x-0.ppm");
-        draw_nan_masked_grayscale(x[1], -5.f, 5.f).save_to_file("x-1.ppm");
-        draw_nan_masked_grayscale(x[2], -5.f, 5.f).save_to_file("x-2.ppm");
-        // draw_nan_masked_grayscale(xf2, -2.f, 2.f).save_to_file("xf-2.ppm");
+        draw_nan_masked_grayscale(x[0], -5.f, 5.f).save_to_file("x-0.png");
+        draw_nan_masked_grayscale(x[1], -5.f, 5.f).save_to_file("x-1.png");
+        draw_nan_masked_grayscale(x[2], -5.f, 5.f).save_to_file("x-2.png");
+        // draw_nan_masked_grayscale(xf2, -2.f, 2.f).save_to_file("xf-2.png");
 
         if (false) {
             size_t search_length = 70;
@@ -443,20 +443,20 @@ int main(int argc, char **argv) {
                 FixedArray<size_t, 2>{0, 0},
                 nullptr,
                 &disparity_0);
-            draw_nan_masked_grayscale(disparity_0_i, -50.f, 50.f).save_to_file("disparity_0_i.ppm");
-            draw_nan_masked_grayscale(disparity_0_i - disparity_0, -30.f, 30.f).save_to_file("disparity_0_i-diff.ppm");
+            draw_nan_masked_grayscale(disparity_0_i, -50.f, 50.f).save_to_file("disparity_0_i.png");
+            draw_nan_masked_grayscale(disparity_0_i - disparity_0, -30.f, 30.f).save_to_file("disparity_0_i-diff.png");
         }
 
         if (false) {
-            Array<float> prior = PpmImage::load_from_file("disparity_0_i.ppm").to_float_grayscale();
+            Array<float> prior = StbImage::load_from_file("disparity_0_i.png").to_float_grayscale();
             Array<float> gf = guided_filter(im0_gray, prior, ArrayShape{15, 15}, float(1e-3));
-            draw_nan_masked_grayscale(gf, 0, 0).save_to_file("disparity_0_i_gf.ppm");
+            draw_nan_masked_grayscale(gf, 0, 0).save_to_file("disparity_0_i_gf.png");
         }
 
         if (true) {
             Array<float> disparity_0_f = guided_filter(im0_gray, disparity_0, ArrayShape{15, 15}, float(1e-3));
-            draw_nan_masked_grayscale(disparity_0_f, -50.f, 50.f).save_to_file("disparity-0-f.ppm");
-            draw_nan_masked_grayscale(disparity_0_f - disparity_0, -10.f, 10.f).save_to_file("disparity-0-f-diff.ppm");
+            draw_nan_masked_grayscale(disparity_0_f, -50.f, 50.f).save_to_file("disparity-0-f.png");
+            draw_nan_masked_grayscale(disparity_0_f - disparity_0, -10.f, 10.f).save_to_file("disparity-0-f-diff.png");
             for (size_t r = 0; r < disparity_0_f.shape(0); ++r) {
                 for (size_t c = 0; c < disparity_0_f.shape(1); ++c) {
                     if (!(std::abs(disparity_0_f(r, c) - disparity_0(r, c)) < 10)) {
@@ -471,7 +471,7 @@ int main(int argc, char **argv) {
 
         if (true) {
             Array<float> hr0_1d = harris_response_1d(im0_gray, F);
-            draw_nan_masked_grayscale(hr0_1d, 0, 1e-3).save_to_file("hr0_1d.ppm");
+            draw_nan_masked_grayscale(hr0_1d, 0, 1e-3).save_to_file("hr0_1d.png");
             hr0_1d = box_filter_nan(hr0_1d, ArrayShape{10, 10}, NAN);
             for (size_t r = 0; r < hr0_1d.shape(0); ++r) {
                 for (size_t c = 0; c < hr0_1d.shape(1); ++c) {
@@ -486,12 +486,12 @@ int main(int argc, char **argv) {
         }
 
         if (false) {
-            draw_nan_masked_grayscale(condition_number, 1, 1000).save_to_file("cond.ppm");
+            draw_nan_masked_grayscale(condition_number, 1, 1000).save_to_file("cond.png");
             Array<float> bp = guided_filter(im0_gray, (x[2] < 0.f).casted<float>(), ArrayShape{5, 5}, float(1e-3));
             // Array<float> bp = (x[2] < 0.f).casted<float>();
             // Array<float> bp = (disparity_0 < 20.f).casted<float>();
             // Array<float> bp = box_filter_nan((!(sad_filter(disparity_0, NAN) < 0.5f)).casted<float>(), ArrayShape{5, 5}, NAN);
-            draw_nan_masked_grayscale(bp, 0, 1).save_to_file("bp.ppm");
+            draw_nan_masked_grayscale(bp, 0, 1).save_to_file("bp.png");
 
             for (size_t r = 0; r < bp.shape(0); ++r) {
                 for (size_t c = 0; c < bp.shape(1); ++c) {
@@ -508,9 +508,9 @@ int main(int argc, char **argv) {
         if (false) {
             Array<float> md = median_filter_2d(disparity_0, 10, 20);
             Array<float> adiff = abs(md - disparity_0);
-            draw_nan_masked_grayscale(adiff, 0, 0).save_to_file("mdm.ppm");
+            draw_nan_masked_grayscale(adiff, 0, 0).save_to_file("mdm.png");
             Array<float> adiff2 = median_filter_2d(adiff, 10, 20);
-            draw_nan_masked_grayscale(adiff2, 0, 0).save_to_file("mdm2.ppm");
+            draw_nan_masked_grayscale(adiff2, 0, 0).save_to_file("mdm2.png");
             for (size_t r = 0; r < md.shape(0); ++r) {
                 for (size_t c = 0; c < md.shape(1); ++c) {
                     // std::cerr << std::abs(md(r, c) - disparity_0(r, c)) << std::endl;
@@ -569,12 +569,12 @@ int main(int argc, char **argv) {
         }
 
         if (true) {
-            draw_nan_masked_grayscale(error_0, 0, 0).save_to_file("error_0.ppm");
+            draw_nan_masked_grayscale(error_0, 0, 0).save_to_file("error_0.png");
         }
 
         if (true) {
             Array<bool> mask = zeros<bool>(x[0].shape());
-            PpmImage im = PpmImage::from_float_rgb(im0_rgb);
+            StbImage im = StbImage::from_float_rgb(im0_rgb);
             for (size_t r = 0; r < condition_number.shape(0); ++r) {
                 for (size_t c = 0; c < condition_number.shape(1); ++c) {
                     if (x(2, r, c) < 0) {
@@ -601,7 +601,7 @@ int main(int argc, char **argv) {
                     }
                 }
             }
-            draw_nan_masked_rgb(img, 0, 1).save_to_file("inverse_mask.ppm");
+            draw_nan_masked_rgb(img, 0, 1).save_to_file("inverse_mask.png");
         }
 
         if (false) {
@@ -619,7 +619,7 @@ int main(int argc, char **argv) {
         }
 
         if (false) {
-            Array<float> disparity_diff = PpmImage::load_from_file("disparity-0-diff.ppm").to_float_grayscale();
+            Array<float> disparity_diff = StbImage::load_from_file("disparity-0-diff.png").to_float_grayscale();
             for (size_t r = 0; r < disparity_diff.shape(0); ++r) {
                 for (size_t c = 0; c < disparity_diff.shape(1); ++c) {
                     if (disparity_diff(r, c) > 0.8) {
@@ -632,7 +632,7 @@ int main(int argc, char **argv) {
             }
         }
         if (false) {
-            Array<float> diff01 = PpmImage::load_from_file("im-01-sm-diff.ppm").to_float_grayscale();
+            Array<float> diff01 = StbImage::load_from_file("im-01-sm-diff.png").to_float_grayscale();
             for (size_t r = 0; r < diff01.shape(0); ++r) {
                 for (size_t c = 0; c < diff01.shape(1); ++c) {
                     if (diff01(r, c) > 0.05) {
@@ -645,9 +645,9 @@ int main(int argc, char **argv) {
             }
         }
 
-        draw_nan_masked_grayscale(x[0], 0, 0).save_to_file("xp-0.ppm");
-        draw_nan_masked_grayscale(x[1], 0, 0).save_to_file("xp-1.ppm");
-        draw_nan_masked_grayscale(x[2], 0, 0).save_to_file("xp-2.ppm");
+        draw_nan_masked_grayscale(x[0], 0, 0).save_to_file("xp-0.png");
+        draw_nan_masked_grayscale(x[1], 0, 0).save_to_file("xp-1.png");
+        draw_nan_masked_grayscale(x[2], 0, 0).save_to_file("xp-2.png");
 
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> cams;
         cams.insert(std::make_pair(std::chrono::milliseconds{0}, CameraFrame{ TransformationMatrix<float, 3>::identity() }));
