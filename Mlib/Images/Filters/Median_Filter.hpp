@@ -14,27 +14,31 @@ Array<TData> median_filter_2d(
 {
     assert(im.ndim() == 2);
     assert(minelements > 0);
-    std::vector<TData> values((2 * window_size + 1) * (2 * window_size + 1));
     Array<TData> result = full(im.shape(), boundary_value);
     if (any(im.shape() < window_size)) {
         return result;
     }
-    for (size_t r = window_size; r < im.shape(0) - window_size; ++r) {
-        for (size_t c = window_size; c < im.shape(1) - window_size; ++c) {
-            size_t nvals = 0;
-            for (size_t rr = 0; rr < 2 * window_size + 1; ++rr) {
-                for (size_t cc = 0; cc < 2 * window_size + 1; ++cc) {
-                    const TData& v = im(r + rr - window_size, c + cc - window_size);
-                    if (!std::isnan(v)) {
-                        values[nvals++] = v;
+    #pragma omp parallel
+    {
+        std::vector<TData> values((2 * window_size + 1) * (2 * window_size + 1));
+        #pragma omp for
+        for (int r = (int)window_size; r < (int)(im.shape(0) - window_size); ++r) {
+            for (size_t c = window_size; c < im.shape(1) - window_size; ++c) {
+                size_t nvals = 0;
+                for (size_t rr = 0; rr < 2 * window_size + 1; ++rr) {
+                    for (size_t cc = 0; cc < 2 * window_size + 1; ++cc) {
+                        const TData& v = im((size_t)r + rr - window_size, c + cc - window_size);
+                        if (!std::isnan(v)) {
+                            values[nvals++] = v;
+                        }
                     }
                 }
-            }
-            if (nvals >= minelements) {
-                std::sort(values.begin(), values.begin() + nvals);
-                result(r, c) = values[nvals / 2];
-            } else {
-                result(r, c) = boundary_value;
+                if (nvals >= minelements) {
+                    std::sort(values.begin(), values.begin() + nvals);
+                    result((size_t)r, c) = values[nvals / 2];
+                } else {
+                    result((size_t)r, c) = boundary_value;
+                }
             }
         }
     }
