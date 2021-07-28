@@ -7,6 +7,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
+#include <Mlib/Math/Power_Iteration/Svd.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Sfm/Disparity/Traceable_Patch.hpp>

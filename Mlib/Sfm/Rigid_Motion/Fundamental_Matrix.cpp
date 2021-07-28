@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Power_Iteration/Inverse_Iteration.hpp>
 #include <Mlib/Math/Smallest_Eigenvector.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>

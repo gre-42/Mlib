@@ -3,3 +3,5 @@
 ./UDebug/*
 ./MRelease/*
 ./URelease/*
+./MRelWithDebInfo/*
+./URelWithDebInfo/*

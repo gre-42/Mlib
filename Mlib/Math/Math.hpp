@@ -50,20 +50,6 @@ inline bool scalar_isnan(bool s) {
     return false;
 }
 
-template <class TData>
-void svd(
-    const Array<TData>& a,
-    Array<TData>& uT,
-    Array<typename FloatType<TData>::value_type>& s,
-    Array<TData>& vT);
-
-template <class TData>
-void power_iteration(
-    const Array<TData>& a,
-    Array<TData>& v,
-    typename FloatType<TData>::value_type& s,
-    size_t i);
-
 template <class TData> void identity_array(Array<TData>& a);
 template <class TData> Array<TData> identity_array(size_t n);
 
@@ -119,65 +105,6 @@ template <class TData> void randomize_array2(Array<TData> a, unsigned int seed =
 template <class TData> Array<TData> random_array2(const ArrayShape& shape, unsigned int seed);
 
 template <class TData>
-void svd_u(
-    const Array<TData>& a,
-    Array<TData>& uT,
-    Array<typename FloatType<TData>::value_type>& s,
-    Array<TData>& vT)
-{
-    assert(a.ndim() == 2);
-    uT.resize[a.shape(0)](a.shape(0));
-    s.resize(uT.shape(0));
-    // A=USV'
-    // AA'=US²U'
-    // V'=(1/S)U'A
-    auto m = outer(a, a);
-    for (size_t i=0; i<uT.shape(0); i++) {
-        power_iteration(m, uT, s(i), i);
-    }
-    vT = dot(uT, a);
-    for (size_t r = 0; r < vT.shape(0); r++) {
-        s(r) = std::sqrt(s(r));
-        for (size_t c = 0; c < vT.shape(1); c++) {
-            vT(r, c) /= s(r);
-        }
-    }
-}
-
-template <class TData>
-void svd(
-    const Array<TData>& a,
-    Array<TData>& uT,
-    Array<typename FloatType<TData>::value_type>& s,
-    Array<TData>& vT)
-{
-    assert(a.ndim() == 2);
-    if (a.shape(0) > a.shape(1)) {
-        svd_u(a.H(), vT, s, uT);
-    } else {
-        svd_u(a, uT, s, vT);
-    }
-}
-
-/*
- * Diagonalization of a symmetric matrix.
- */
-template <class TData>
-void qdq(
-    const Array<TData>& a,
-    Array<TData>& q,
-    Array<typename FloatType<TData>::value_type>& s)
-{
-    assert(a.ndim() == 2);
-    assert(a.shape(0) == a.shape(1));
-    q.resize[a.shape(0)](a.shape(0));
-    s.resize(q.shape(0));
-    for (size_t i=0; i<a.shape(0); i++) {
-        power_iteration(a, q, s(i), i);
-    }
-}
-
-template <class TData>
 inline TData det2x2(const Array<TData>& a)
 {
     assert(all(a.shape() == ArrayShape{2, 2}));
@@ -216,82 +143,6 @@ inline Array<TData> trace2x2_a(const Array<TData>& a)
     assert(a.shape(1) == 2);
     return a[0][0] + a[1][1];
 }
-/*
- * Power iteration on a symmetric matrix.
- * Eigenvector is orthogonalized w.r.t. orthonormal v[:i].
- * Eigenvalue is stored in s.
- */
-template <class TData>
-void power_iteration(
-    const Array<TData>& a,
-    Array<TData>& uT,
-    typename FloatType<TData>::value_type& s,
-    size_t i)
-{
-    assert(a.ndim() == 2);
-    assert(a.shape(0) == a.shape(1));
-    randomize_array(uT[i]);
-
-    for (size_t n = 0; n < 30 * a.shape(0); n++) {
-        for (size_t r=0; r<i; r++) {
-            uT[i] -= uT[r] * outer(uT[i], uT[r])();
-        }
-        Array<TData> ui_old;
-        ui_old = uT[i];
-        uT[i] = outer(uT[i], a);
-        typename FloatType<TData>::value_type s_old = s;
-        s = std::sqrt(sum(norm(uT[i])));
-        if (s < 1e-12) {
-            // undo, and abort, because diff will be 0
-            uT[i] = ui_old;
-        } else {
-            uT[i] /= s;
-        }
-
-        {
-            Array<TData> diff = uT[i] - ui_old;
-            auto diff_norm = sum(norm(diff));
-            if (diff_norm < 1e-12) {
-                return;
-            }
-        }
-
-        {
-            Array<TData> diff = uT[i] + ui_old;
-            auto diff_norm = sum(norm(diff));
-            if (diff_norm < 1e-12) {
-                s = -s;
-                return;
-            }
-        }
-
-        // Required for close-to-identical eigenvalues.
-        if (std::abs(s - s_old) < 1e-7) {
-            return;
-        }
-    }
-    throw PowerIterationDidNotConvergeError("power iteration did not converge");
-}
-
-template <class TData>
-void inverse_iteration_symm(
-    const Array<TData>& a,
-    Array<TData>& u,
-    typename FloatType<TData>::value_type& s,
-    const TData& alpha = 0,
-    const TData& beta = 0)
-{
-    assert(a.ndim() == 2);
-    assert(a.shape(0) == a.shape(1));
-    u = random_array<TData>(ArrayShape{a.shape(0)});
-
-    for (size_t n = 0; n < 30 * a.shape(0); n++) {
-        // u = lstsq_chol_1d(a, u, float(1e-1));
-        u = solve_symm_1d(a, u, alpha, beta);
-        s = 1 / std::sqrt(sum(norm(u)));
-        u *= s;
-    }
-}
 
 template <class TData>
 Array<TData> reconstruct_svd(
@@ -321,39 +172,6 @@ Array<TData> pinv_svd(
 {
     typedef typename FloatType<TData>::value_type float_type;
     return reconstruct_svd(vT.H(), float_type(1) / s, u.H());
-}
-
-template <class TData>
-Array<TData> pinv(const Array<TData>& a) {
-    // a = u s v'
-    // p = v 1/s u' = v/s u' = (1/s v')' u'
-    Array<TData> uT;
-    Array<typename FloatType<TData>::value_type> s;
-    Array<TData> vT;
-    svd(a, uT, s, vT);
-    for (size_t r = 0; r < vT.shape(0); r++) {
-        for (size_t c = 0; c < vT.shape(1); c++) {
-            vT(r, c) /= s(r);
-        }
-    }
-    return dot(vT.H(), uT);
-}
-
-template <class TData>
-typename FloatType<TData>::value_type cond(const Array<TData>& a) {
-    Array<TData> m;
-    if (a.shape(0) < a.shape(1)) {
-        m = outer(a, a);
-    } else {
-        m = dot(a.H(), a);
-    }
-    Array<TData> u0;
-    Array<TData> uT1{ArrayShape{1, m.shape(0)}};
-    typename FloatType<TData>::value_type s0;
-    typename FloatType<TData>::value_type s1;
-    inverse_iteration_symm(m, u0, s0);
-    power_iteration(m, uT1, s1, 0);
-    return s1 / s0;  // no square-root
 }
 
 /*
@@ -569,11 +387,6 @@ Array<TData> inv(const Array<TData>& a) {
     assert(a.ndim() == 2);
     assert(a.shape(0) == a.shape(1));
     return lstsq_chol(a, identity_array<TData>(a.shape(0)));
-}
-
-template <class TData>
-Array<TData> lstsq(const Array<TData>& a, const Array<TData>& b) {
-    return dot(pinv(a), b);
 }
 
 /*

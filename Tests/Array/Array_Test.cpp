@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Power_Iteration/Pinv.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <filesystem>
 

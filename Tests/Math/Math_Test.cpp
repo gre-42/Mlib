@@ -9,6 +9,11 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Non_Zero_Ids.hpp>
 #include <Mlib/Math/Optimize/Cg.hpp>
+#include <Mlib/Math/Power_Iteration/Cond.hpp>
+#include <Mlib/Math/Power_Iteration/Inverse_Iteration.hpp>
+#include <Mlib/Math/Power_Iteration/Pinv.hpp>
+#include <Mlib/Math/Power_Iteration/Qdq.hpp>
+#include <Mlib/Math/Power_Iteration/Svd.hpp>
 #include <Mlib/Math/Set_Difference.hpp>
 #include <Mlib/Math/Sort_Svd.hpp>
 #include <Mlib/Math/Svd4.hpp>
