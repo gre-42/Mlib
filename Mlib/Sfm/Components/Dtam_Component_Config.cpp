@@ -23,10 +23,12 @@ DtamComponentConfig::DtamComponentConfig(
         0.8f,                       // min_pixel_fraction_for_tracking
         100,                        // ninterleaved_iterations
         print_residual,             // print_residual
+        CostVolumeParameters{
+            .min_depth = 5.f,
+            .max_depth = 9.f,
+            .ndepths = 32
+        },
         Dm::DtamParameters(
-            5.f,                    // min_depth
-            9.f,                    // max_depth
-            32,                     // ndepths
             100.f,                  // alpha_G
             1.6f,                   // beta_G
             0.2,                    // theta_0 (0.2)
@@ -34,7 +36,15 @@ DtamComponentConfig::DtamComponentConfig(
             0.0001f,                // beta (0.0001 - 0.001)
             1.f,                    // lambda (1 for the first keyframe)
             float{ 1e-4 },          // epsilon (1e-4)
-            400)))                  // nsteps
+            400),                   // nsteps
+        DenseFilteringParameters{
+            .lambda = 1.f,
+            .beta = 0.0001,
+            .nsteps = 400,
+            .theta_0__ = 0.2,
+            .theta_end__ = float{ 1e-4 }},
+        Regularization::FILTERING,
+        0.5f))                      // sigma_illumination_removal
 {}
 
 DtamComponentConfig::DtamComponentConfig(

@@ -12,6 +12,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Gradient_Ascent_Descent.hpp>
 #include <Mlib/Math/Optimize/Gradient_Descent.hpp>
+#include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Quantile.hpp>
@@ -346,62 +347,6 @@ Array<float> Mlib::Sfm::Dm::prox_tau_gs_dd(
          + (d - tau * AGaq(g, q));
 }
 
-Array<float> Mlib::Sfm::Dm::exhaustive_search(
-    const Array<float>& dsi,
-    const Array<float>& sqrt_dsi_max_dmin,
-    float theta,
-    float lambda,
-    const Array<float>& d)
-{
-    assert(dsi.ndim() == 3);
-    assert(nanmin(dsi) >= 0);
-    assert(nanmax(dsi) < 1 + 1e-6);
-    assert(dsi.shape(0) >= 3);
-    assert(all(d.shape() == dsi.shape().erased_first()));
-
-    float sqrt_lambda_2_theta = std::sqrt(lambda * 2 * theta);
-    Array<float> a{d.shape()};
-    #pragma omp parallel for
-    for (int ri = 0; ri < (int)dsi.shape(1); ++ri) {
-        size_t r = (size_t)ri;
-        for (size_t c = 0; c < dsi.shape(2); ++c) {
-            float best_h_f = NAN;
-            if (!std::isnan(d(r, c)) &&
-                !std::isnan(sqrt_dsi_max_dmin(r, c)) &&
-                (sqrt_dsi_max_dmin(r, c) != 0))
-            {
-                auto e_aux = [&](size_t h){
-                    return 1 / (2 * theta) * squared(d(r, c) - h)
-                        + lambda * dsi(h, r, c);
-                };
-                size_t best_h_i = SIZE_MAX;
-                float best_value = NAN;
-                float radius = sqrt_lambda_2_theta * sqrt_dsi_max_dmin(r, c);
-                float h_min_f = d(r, c) - radius;
-                float h_max_f = d(r, c) + radius;
-                size_t h_min = (size_t)std::max(h_min_f, 0.f);
-                size_t h_end = (size_t)std::min(std::ceil(h_max_f) + 1, float(dsi.shape(0)));
-                if (h_min < dsi.shape(0) && h_end <= dsi.shape(0)) {
-                    for (size_t h = h_min; h < h_end; ++h) {
-                        if (!std::isnan(dsi(h, r, c))) {
-                            float value = e_aux(h);
-                            if ((best_h_i == SIZE_MAX) || (value < best_value)) {
-                                best_h_i = h;
-                                best_value = value;
-                            }
-                        }
-                    }
-                }
-                if (best_h_i != SIZE_MAX) {
-                    best_h_f = gauss_newton_step(best_h_i, dsi.shape(0) - 1, e_aux);
-                }
-            }
-            a(r, c) = best_h_f;
-        }
-    }
-    return a;
-}
-
 /**
  * Source: https://github.com/anuranbaka/OpenDTAM/blob/master/Cpp/DepthmapDenoiseWeightedHuber/DepthmapDenoiseWeightedHuber.cu
  */
@@ -529,36 +474,15 @@ Array<float> Mlib::Sfm::Dm::g_from_grayscale(
     return res;
 }
 
-static Array<float> get_sqrt_dsi_max_dmin(const Array<float>& dsi) {
-    Array<float> sqrt_dsi_max_dmin{dsi.shape().erased_first()};
-    for (size_t r = 0; r < dsi.shape(1); ++r) {
-        for (size_t c = 0; c < dsi.shape(2); ++c) {
-            float dsi_min = INFINITY;
-            float dsi_max = -INFINITY;
-            for (size_t h = 0; h < dsi.shape(0); ++h) {
-                if (!std::isnan(dsi(h, r, c))) {
-                    dsi_min = std::min(dsi_min, dsi(h, r, c));
-                    dsi_max = std::max(dsi_max, dsi(h, r, c));
-                }
-            }
-            float diff = dsi_max - dsi_min;
-            if (diff >= 0) {
-                sqrt_dsi_max_dmin(r, c) = std::sqrt(diff);
-            } else {
-                sqrt_dsi_max_dmin(r, c) = NAN;
-            }
-        }
-    }
-    return sqrt_dsi_max_dmin;
-}
-
 DenseMapping::DenseMapping(
     const Array<float>& dsi,
     const Array<float>& g,
+    const CostVolumeParameters& cost_volume_parameters,
     const DtamParameters& parameters,
     bool print_debug,
     bool print_bmps)
 : g_{g},
+  cost_volume_parameters_{cost_volume_parameters},
   parameters_{parameters},
   print_debug_{print_debug},
   print_bmps_{print_bmps}
@@ -675,7 +599,7 @@ void DenseMapping::iterate_atmost(const Array<float>& dsi, size_t niters) {
 }
 
 bool DenseMapping::is_converged() const {
-    return !((theta_ > parameters_.theta_end_corrected()) && (n_ < parameters_.nsteps_));
+    return !((theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)) && (n_ < parameters_.nsteps_));
 }
 
 void DenseMapping::notify_cost_volume_changed(const Array<float>& dsi) {
@@ -688,31 +612,34 @@ void DenseMapping::notify_cost_volume_changed(const Array<float>& dsi) {
         regularizer == Regularizer::CENTRAL_DIFFERENCES
             ? ArrayShape{2, g_.shape(0), g_.shape(1)}
             : g_.shape());
-    theta_ = parameters_.theta_0_corrected();
+    theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
     n_ = 0;
 }
 
 Array<float> DenseMapping::interpolated_a() const {
-    return interpolate(a_, parameters_.inverse_depths());
+    return interpolate(a_, cost_volume_parameters_.inverse_depths());
 }
 
 Array<float> DenseMapping::interpolated_d() const {
-    return interpolate(d_, parameters_.inverse_depths());
+    return interpolate(d_, cost_volume_parameters_.inverse_depths());
+}
+
+size_t DenseMapping::current_number_of_iterations() const {
+    return n_;
 }
 
 void Mlib::Sfm::Dm::primary_parameter_optimization(
     const Array<float>& dsi,
     const Array<float>& g,
+    const CostVolumeParameters& cost_volume_parameters,
     const DtamParameters& parameters)
 {
     for (float LAMBDA : (parameters.lambda_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
         DenseMapping dm{
             dsi,
             g,
+            cost_volume_parameters,
             DtamParameters(
-                parameters.min_depth_,
-                parameters.max_depth_,
-                parameters.ndepths_,
                 parameters.alpha_G_,
                 parameters.beta_G_,
                 parameters.theta_0__,
@@ -731,10 +658,8 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
         DenseMapping dm{
             dsi,
             g,
+            cost_volume_parameters,
             DtamParameters(
-                parameters.min_depth_,
-                parameters.max_depth_,
-                parameters.ndepths_,
                 parameters.alpha_G_,
                 parameters.beta_G_,
                 parameters.theta_0__,
@@ -754,15 +679,13 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
 void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
     const Array<float>& dsi,
     const Array<float>& g,
+    const CostVolumeParameters& cost_volume_parameters,
     const DtamParameters& parameters)
 {
     std::list<std::tuple<DtamParameters, float, Array<float>>> energies;
     for (float THETA_0 : (parameters.theta_0__ * logspace(-1.f, 1.f, 7)).element_iterable()) {
         for (float BETA : (parameters.beta_ * logspace(-1.f, 1.f, 7)).element_iterable()) {
             DtamParameters modified_parameters(
-                parameters.min_depth_,
-                parameters.max_depth_,
-                parameters.ndepths_,
                 parameters.alpha_G_,
                 parameters.beta_G_,
                 THETA_0,
@@ -774,6 +697,7 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
             DenseMapping dm{
                 dsi,
                 g,
+                cost_volume_parameters,
                 modified_parameters,
                 false,
                 false};

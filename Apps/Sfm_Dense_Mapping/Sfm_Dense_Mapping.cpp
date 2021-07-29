@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
         Array<float> dsi;
         float d_multiplier = 1;
         size_t search_length = 32 / d_multiplier;
-        Array<float> inverse_depths = linspace<float>(1 / 10.f, 1 / 0.5f, 2 * search_length + 1);
+        Array<float> inverse_depths = linspace<float>(1 / 4.f, 1 / 0.5f, 2 * search_length + 1);
         std::string dsi_filename =
             std::string(use_inverse_depth ? "i" : "") +
             "dsi-" +
@@ -165,6 +165,7 @@ int main(int argc, char **argv) {
             Dm::DenseMapping dm{
                 dsi,
                 Dm::g_from_grayscale(im0_gray, params),
+                CostVolumeParameters(),
                 params,
                 false,                              // print_energy
                 false};                             // print_bmps

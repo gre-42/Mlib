@@ -1,5 +1,4 @@
 #include "Dtam_Reconstruction.hpp"
-#include <Mlib/Sfm/Components/Dtam_Keyframe.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <filesystem>
 
@@ -12,7 +11,7 @@ DtamReconstruction::DtamReconstruction(
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     const DownSampler& down_sampler,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
-    std::string cache_dir,
+    const std::string& cache_dir,
     const DtamComponentConfig& cfg)
 : image_frames_{image_frames},
   camera_frames_{camera_frames},

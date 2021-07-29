@@ -1,6 +1,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
+#include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>
@@ -103,16 +104,16 @@ void test_numerical_differentiation() {
 }
 
 void test_gauss_newton_step() {
-    assert_isclose(Dm::gauss_newton_step(1, 5, [](float x){ return x * x; }), 0.f);
-    assert_isclose(Dm::gauss_newton_step(1, 5, [](float x){ return (x - 0.5f) * (x - 0.5f); }), 0.5f);
-    assert_isclose(Dm::gauss_newton_step(0, 5, [](float x){ return (x - 0.5f) * (x - 0.5f); }), 0.f);
-    assert_isclose(Dm::gauss_newton_step(2, 5, [](float x){ return (x - 0.5f) * (x - 0.5f); }), 0.5f);
-    assert_isclose(Dm::gauss_newton_step(2, 5, [](float x){ return (x + 0.5f) * (x + 0.5f); }), 0.f);  // clipping
-    assert_isclose(Dm::gauss_newton_step(4, 5, [](float x){ return (x - 3.5f) * (x - 3.5f); }), 3.5f);
-    assert_isclose(Dm::gauss_newton_step(5, 5, [](float x){ return (x - 3.5f) * (x - 3.5f); }), 4.f);
-    assert_isclose(Dm::gauss_newton_step(4, 5, [](float x){ return (x - 6.5f) * (x - 6.5f); }), 5.f);  // clipping
-    assert_isclose(Dm::gauss_newton_step(5, 5, [](float x){ return (x - 6.5f) * (x - 6.5f); }), 5.f);  // clipping
-    assert_isclose(Dm::gauss_newton_step(5, 7, [](float x){ return (x - 6.5f) * (x - 6.5f); }), 6.5f);
+    assert_isclose(gauss_newton_step(1, 5, [](float x){ return x * x; }), 0.f);
+    assert_isclose(gauss_newton_step(1, 5, [](float x){ return (x - 0.5f) * (x - 0.5f); }), 0.5f);
+    assert_isclose(gauss_newton_step(0, 5, [](float x){ return (x - 0.5f) * (x - 0.5f); }), 0.f);
+    assert_isclose(gauss_newton_step(2, 5, [](float x){ return (x - 0.5f) * (x - 0.5f); }), 0.5f);
+    assert_isclose(gauss_newton_step(2, 5, [](float x){ return (x + 0.5f) * (x + 0.5f); }), 0.f);  // clipping
+    assert_isclose(gauss_newton_step(4, 5, [](float x){ return (x - 3.5f) * (x - 3.5f); }), 3.5f);
+    assert_isclose(gauss_newton_step(5, 5, [](float x){ return (x - 3.5f) * (x - 3.5f); }), 4.f);
+    assert_isclose(gauss_newton_step(4, 5, [](float x){ return (x - 6.5f) * (x - 6.5f); }), 5.f);  // clipping
+    assert_isclose(gauss_newton_step(5, 5, [](float x){ return (x - 6.5f) * (x - 6.5f); }), 5.f);  // clipping
+    assert_isclose(gauss_newton_step(5, 7, [](float x){ return (x - 6.5f) * (x - 6.5f); }), 6.5f);
 }
 
 void test_boundary_and_nan() {
@@ -121,9 +122,10 @@ void test_boundary_and_nan() {
     size_t nC = 4;
     Array<float> dsi = uniform_random_array<float>(ArrayShape{nH, nR, nC}, 1);
     Array<float> g = uniform_random_array<float>(ArrayShape{nR, nC}, 1);
+    CostVolumeParameters c;
     Dm::DtamParameters p;
     p.nsteps_ = 20;
-    Dm::DenseMapping dm{ dsi, g, p };
+    Dm::DenseMapping dm{ dsi, g, c, p };
     dm.iterate_atmost(dsi, SIZE_MAX);
     //std::cerr << a << std::endl;
 
@@ -146,7 +148,7 @@ void test_boundary_and_nan() {
         //std::cerr << g << std::endl;
         //std::cerr << dsiN << std::endl;
         //std::cerr << gN << std::endl;
-        Dm::DenseMapping dmN{ dsiN, gN, p };
+        Dm::DenseMapping dmN{ dsiN, gN, c, p };
         dmN.iterate_atmost(dsiN, SIZE_MAX);
         //std::cerr << dmN.a_ << std::endl;
         for (size_t r = 0; r < dm.a_.shape(0); ++r) {

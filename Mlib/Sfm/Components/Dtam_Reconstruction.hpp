@@ -1,6 +1,4 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Sfm/Components/Down_Sampler.hpp>
 #include <Mlib/Sfm/Components/Dtam_Component_Config.hpp>
 #include <Mlib/Sfm/Components/Dtam_Keyframe.hpp>
 #include <Mlib/Sfm/Frames/Forward.hpp>
@@ -10,6 +8,8 @@
 
 namespace Mlib { namespace Sfm {
 
+class DownSampler;
+
 class DtamReconstruction {
 public:
     DtamReconstruction(
@@ -17,7 +17,7 @@ public:
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         const DownSampler& down_sampler,
         const TransformationMatrix<float, 2>& intrinsic_matrix,
-        std::string cache_dir,
+        const std::string& cache_dir,
         const DtamComponentConfig& cfg);
     DtamReconstruction(const DtamReconstruction&) = delete;
     DtamReconstruction& operator = (const DtamReconstruction&) = delete;

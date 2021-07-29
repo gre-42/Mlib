@@ -1,4 +1,5 @@
 #include "Dtam_Keyframe_Config.hpp"
+#include <stdexcept>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -11,7 +12,11 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     float min_pixel_fraction_for_tracking,
     size_t ninterleaved_iterations,
     bool print_residual,
-    Dm::DtamParameters params)
+    const CostVolumeParameters& cost_volume_parameters,
+    const Dm::DtamParameters& dm_params,
+    const DenseFilteringParameters& df_params,
+    Regularization regularization,
+    float sigma_illumination_removal)
 : incremental_update_(incremental_update),
   nfuture_frames_per_keyframe_(nfuture_frames_per_keyframe),
   npast_frames_per_keyframe_(npast_frames_per_keyframe),
@@ -19,5 +24,9 @@ DtamKeyframeConfig::DtamKeyframeConfig(
   min_pixel_fraction_for_tracking_(min_pixel_fraction_for_tracking),
   ninterleaved_iterations_(ninterleaved_iterations),
   print_residual_{print_residual},
-  params_(params)
+  cost_volume_parameters_{cost_volume_parameters},
+  dm_params_(dm_params),
+  df_params_(df_params),
+  regularization_{regularization},
+  sigma_illumination_removal_{sigma_illumination_removal}
 {}

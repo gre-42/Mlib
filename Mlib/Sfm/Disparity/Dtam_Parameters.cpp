@@ -23,9 +23,6 @@ using namespace Mlib::Sfm::Dm;
 
 DtamParameters::DtamParameters()
 : DtamParameters(
-    0.5f,                               // min_depth
-    10.f,                               // max_depth
-    32,                                 // ndepths
     100.f,                              // alpha_G
     1.6f,                               // beta_G
     8.f,                                // theta_0 (0.2)
@@ -47,9 +44,6 @@ DtamParameters::DtamParameters()
 // {}
 
 DtamParameters::DtamParameters(
-    float min_depth,
-    float max_depth,
-    size_t ndepths,
     float alpha_G,
     float beta_G,
     float theta_0,
@@ -58,10 +52,7 @@ DtamParameters::DtamParameters(
     float lambda,
     float epsilon,
     size_t nsteps)
-: min_depth_(min_depth),
-  max_depth_(max_depth),
-  ndepths_(ndepths),
-  alpha_G_(alpha_G),
+: alpha_G_(alpha_G),
   beta_G_(beta_G),
   theta_0__(theta_0),
   theta_end__(theta_end),
@@ -71,22 +62,12 @@ DtamParameters::DtamParameters(
   nsteps_(nsteps)
 {}
 
-Array<float> DtamParameters::inverse_depths() const {
-    return linspace(1.f / max_depth_, 1.f / min_depth_, ndepths_);
+float DtamParameters::theta_0_corrected(const CostVolumeParameters& cost_volume_parameters) const {
+    return theta_0__ * cost_volume_parameters.theta_correction_factor();
 }
 
-float DtamParameters::theta_0_corrected() const {
-    return theta_0__ * theta_correction_factor();
-}
-
-float DtamParameters::theta_end_corrected() const {
-    return theta_end__ * theta_correction_factor();
-}
-
-float DtamParameters::theta_correction_factor() const {
-    assert(ndepths_ > 1);
-    // Energy: 1 / (2 * theta) * ||d-a||^2
-    return squared((ndepths_ - 1) / (1.f / min_depth_ - 1.f / max_depth_));
+float DtamParameters::theta_end_corrected(const CostVolumeParameters& cost_volume_parameters) const {
+    return theta_end__ * cost_volume_parameters.theta_correction_factor();
 }
 
 std::ostream& Mlib::Sfm::Dm::operator << (std::ostream& str, const DtamParameters& params) {

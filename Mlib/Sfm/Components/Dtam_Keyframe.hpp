@@ -1,9 +1,7 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Array/Array.hpp>
 #include <Mlib/Sfm/Components/Down_Sampler.hpp>
 #include <Mlib/Sfm/Components/Dtam_Keyframe_Config.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
-#include <Mlib/Sfm/Disparity/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Frames/Forward.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
 #include <chrono>
@@ -11,6 +9,9 @@
 #include <set>
 
 namespace Mlib { namespace Sfm {
+
+class InverseDepthCostVolume;
+class DenseDepthEstimation;
 
 class DtamKeyframe {
 public:
@@ -20,9 +21,13 @@ public:
         const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames,
         const DownSampler& down_sampler,
         const TransformationMatrix<float, 2>& intrinsic_matrix,
-        std::string cache_dir,
+        const std::string& cache_dir,
         const DtamKeyframeConfig& cfg,
         const std::chrono::milliseconds& key_frame_time);
+    DtamKeyframe(DtamKeyframe&&);
+    DtamKeyframe(const DtamKeyframe&) = delete;
+    DtamKeyframe& operator = (const DtamKeyframe&) = delete;
+    ~DtamKeyframe();
     void reconstruct();
     void append_camera_frame();
     void inspect_externally_appended_camera_frame() const;
@@ -48,7 +53,7 @@ private:
     std::chrono::milliseconds last_integrated_time_;
     const std::chrono::milliseconds key_frame_time_;
     std::unique_ptr<InverseDepthCostVolume> vol_;
-    std::unique_ptr<Dm::DenseMapping> dm_;
+    std::unique_ptr<DenseDepthEstimation> dm_;
     bool can_track_;
     size_t opt_id_;
     DtamKeyframeConfig cfg_;

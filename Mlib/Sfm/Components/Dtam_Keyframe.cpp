@@ -4,8 +4,10 @@
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
+#include <Mlib/Sfm/Disparity/Dense_Filtering.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
+#include <Mlib/Sfm/Disparity/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Draw/Dense_Projector.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
@@ -24,7 +26,7 @@ DtamKeyframe::DtamKeyframe(
     const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames,
     const DownSampler& down_sampler,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
-    std::string cache_dir,
+    const std::string& cache_dir,
     const DtamKeyframeConfig& cfg,
     const std::chrono::milliseconds& key_frame_time)
 : image_frames__{image_frames},
@@ -39,6 +41,11 @@ DtamKeyframe::DtamKeyframe(
   can_track_(false),
   opt_id_{0},
   cfg_{cfg}
+{}
+
+DtamKeyframe::DtamKeyframe(DtamKeyframe&&) = default;
+
+DtamKeyframe::~DtamKeyframe()
 {}
 
 void DtamKeyframe::reconstruct() {
@@ -173,7 +180,7 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
         std::cerr << "Creating cost volume at time " << key_frame_time_.count() << " ms" << std::endl;
         vol_ = std::make_unique<InverseDepthCostVolume>(
             down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale.shape(),
-            cfg_.params_.inverse_depths());
+            cfg_.cost_volume_parameters_.inverse_depths());
     }
     if (vol_ != nullptr) {
         auto increment_volume = [&](auto it){
@@ -184,8 +191,8 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
                 down_sampler_.ds_intrinsic_matrix_,
                 cams_sorted.at(key_frame_time_)->projection_matrix_3x4(),
                 it->second->projection_matrix_3x4(),
-                remove_illumination(down_sampler_.ds_image_frames_.at(key_frame_time_).rgb, cfg_.params_.ext.sigma_illumination_removal),
-                remove_illumination(down_sampler_.ds_image_frames_.at(it->first).rgb, cfg_.params_.ext.sigma_illumination_removal));
+                remove_illumination(down_sampler_.ds_image_frames_.at(key_frame_time_).rgb, cfg_.sigma_illumination_removal_),
+                remove_illumination(down_sampler_.ds_image_frames_.at(it->first).rgb, cfg_.sigma_illumination_removal_));
         };
         for (auto it = ++cams_sorted.find(last_integrated_time_);
             (it != cams_sorted.end()) && (!future_is_full());
@@ -251,28 +258,49 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
     }
 
     if (dm_ == nullptr) {
-        Array<float> g = Dm::g_from_grayscale(
-            down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale,
-            cfg_.params_);
-        dm_ = std::make_unique<Dm::DenseMapping>(dsi_, g, cfg_.params_);
-        draw_nan_masked_grayscale(g, 0, 1).save_to_file(cache_dir_ + "/g-" + suffix + ".png");
+        if (cfg_.regularization_ == Regularization::DTAM) {
+            Array<float> g = Dm::g_from_grayscale(
+                down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale,
+                cfg_.dm_params_);
+            dm_ = std::make_unique<Dm::DenseMapping>(
+                dsi_,
+                g,
+                cfg_.cost_volume_parameters_,
+                cfg_.dm_params_);
+            draw_nan_masked_grayscale(g, 0, 1).save_to_file(cache_dir_ + "/g-" + suffix + ".png");
+        } else if (cfg_.regularization_ == Regularization::FILTERING) {
+            dm_ = std::make_unique<DenseFiltering>(
+                dsi_,
+                cfg_.cost_volume_parameters_,
+                cfg_.df_params_,
+                [](const Array<float>& d){return gaussian_filter_NWE(d, 1.f, NAN);});
+        } else {
+            throw std::runtime_error("Unknown regularization mode");
+        }
     }
     if (false) {
         std::cerr << "Parameter-search for keyframe " << key_frame_time_.count() << " ms" << std::endl;
-        Dm::primary_parameter_optimization(
-            dsi_,
-            dm_->g_,
-            cfg_.params_);
-        Dm::auxiliary_parameter_optimization(
-            dsi_,
-            dm_->g_,
-            cfg_.params_);
-        throw std::runtime_error("Parameter-search complete");
+        if (cfg_.regularization_ == Regularization::DTAM) {
+            Dm::DenseMapping* dm = dynamic_cast<Dm::DenseMapping*>(dm_.get());
+            Dm::primary_parameter_optimization(
+                dsi_,
+                dm->g_,
+                cfg_.cost_volume_parameters_,
+                cfg_.dm_params_);
+            Dm::auxiliary_parameter_optimization(
+                dsi_,
+                dm->g_,
+                cfg_.cost_volume_parameters_,
+                cfg_.dm_params_);
+            throw std::runtime_error("Parameter-search complete");
+        } else {
+            throw std::runtime_error("Parameter-search not implemented for the given regularizer");
+        }
     }
     if (cfg_.incremental_update_) {
         std::cerr <<
             "Keyframe " << key_frame_time_.count() <<
-            " updated incrementally. n = " << dm_->n_ << std::endl;
+            " updated incrementally. n = " << dm_->current_number_of_iterations() << std::endl;
         dm_->iterate_atmost(dsi_, cfg_.ninterleaved_iterations_);
     } else {
         dm_->iterate_atmost(dsi_, SIZE_MAX);
@@ -285,7 +313,7 @@ void DtamKeyframe::optimize1() {
         "-" +
         std::to_string(opt_id_ - 1) +
         "-" +
-        std::to_string(dm_->n_) +
+        std::to_string(dm_->current_number_of_iterations()) +
         "-" +
         std::to_string(first_integrated_time_.count()) +
         "-" +
@@ -305,9 +333,15 @@ void DtamKeyframe::optimize1() {
     } else if (false) {
         masked_depth_ = depth_;
     } else {
-        masked_depth_ = depth_->array_array_binop(dm_->g_, [](float de, float g){ return g < 1e-1 ? NAN : de; });
+        if (cfg_.regularization_ == Regularization::DTAM) {
+            masked_depth_ = depth_->array_array_binop(dynamic_cast<Dm::DenseMapping*>(dm_.get())->g_, [](float de, float g){ return g < 1e-1 ? NAN : de; });
+        } else if (cfg_.regularization_ == Regularization::FILTERING) {
+            masked_depth_ = depth_;
+        } else {
+            throw std::runtime_error("Unknown regularization type");
+        }
     }
-    draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth_, 1 / cfg_.params_.min_depth_).save_to_file(cache_dir_ + "/a-" + suffix + ".png");
+    draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth).save_to_file(cache_dir_ + "/a-" + suffix + ".png");
 
     if (false && dm_->is_converged()) {
         Array<float> err = zeros<float>(depth_.shape());
@@ -367,7 +401,7 @@ void DtamKeyframe::optimize1() {
 
 void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
     {
-        auto img = draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth_, 1 / cfg_.params_.min_depth_);
+        auto img = draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth);
         for (const std::chrono::milliseconds& time : times_integrated_) {
             if (time != key_frame_time_) {
                 TransformationMatrix<float, 3> ke = projection_in_reference(
@@ -383,7 +417,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         }
         img.save_to_file(cache_dir_ + "/epipoles-" + suffix + ".png");
     }
-    draw_nan_masked_grayscale(masked_depth_, cfg_.params_.min_depth_, cfg_.params_.max_depth_).save_to_file(cache_dir_ + "/masked-depth-" + suffix + ".png");
+    draw_nan_masked_grayscale(masked_depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/masked-depth-" + suffix + ".png");
     Array<float> x = reconstruct_depth(masked_depth_, down_sampler_.ds_intrinsic_matrix_);
     draw_quantiled_grayscale(x[0], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-0-" + suffix + ".png");
     draw_quantiled_grayscale(x[1], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-1-" + suffix + ".png");
@@ -399,12 +433,12 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         DenseProjector::from_image(camera_frames_, 0, 2, 1, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-2-" + suffix + ".png");
         DenseProjector::from_image(camera_frames_, 2, 1, 0, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-2-1-" + suffix + ".png");
 
-        draw_nan_masked_grayscale(ai_, 1 / cfg_.params_.max_depth_, 1 / cfg_.params_.min_depth_).save_to_file(cache_dir_ + "/pkg-" + suffix + "-a.png");
+        draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-a.png");
         StbImage::from_float_rgb(im0_rgb).save_to_file(cache_dir_ + "/pkg-" + suffix + "-rgb.png");
         masked_depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-masked-depth.array");
         depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-depth.array");
-        draw_nan_masked_grayscale(masked_depth_, cfg_.params_.min_depth_, cfg_.params_.max_depth_).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked-depth.png");
-        draw_nan_masked_grayscale(depth_, cfg_.params_.min_depth_, cfg_.params_.max_depth_).save_to_file(cache_dir_ + "/pkg-" + suffix + "-depth.png");
+        draw_nan_masked_grayscale(masked_depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked-depth.png");
+        draw_nan_masked_grayscale(depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-depth.png");
         down_sampler_.ds_intrinsic_matrix_.affine().to_array().save_txt_2d(cache_dir_ + "/pkg-" + suffix + "-intrinsic_matrix.m");
     }
 }
