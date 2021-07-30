@@ -319,7 +319,7 @@ void DtamKeyframe::optimize1() {
         "-" +
         std::to_string(last_integrated_time_.count());
 
-    ai_ = dm_->interpolated_a();
+    ai_ = dm_->interpolated_inverse_depth_image();
     depth_ = 1.f / ai_;
     can_track_ = true;
 

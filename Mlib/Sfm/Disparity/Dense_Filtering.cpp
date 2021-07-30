@@ -34,9 +34,9 @@ void DenseFiltering::iterate_once(const Array<float>& dsi) {
     // d_ = gaussian_filter_NWE(a_, 1.f, NAN);
     // d_ = guided_filter(a_, a_, ArrayShape{ 5, 5 }, float{ 1e1 });
     // d_ = median_filter_2d(a_, 3);
-    d_ = smoother_(a_);
+    Array<float> d = smoother_(a_);
     // std::cerr << "done" << std::endl;
-    a_ = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, d_);
+    a_ = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, d);
     // std::cerr << "done3" << std::endl;
     // throw std::runtime_error("asd");
     theta_ *= (1 - parameters_.beta * n_);
@@ -55,18 +55,13 @@ bool DenseFiltering::is_converged() const {
 
 void DenseFiltering::notify_cost_volume_changed(const Array<float>& dsi) {
     sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
-    d_ = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(sqrt_dsi_max_dmin_.shape()));
-    a_ = d_.copy();
+    a_ = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(sqrt_dsi_max_dmin_.shape()));
     theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
     n_ = 0;
 }
 
-Array<float> DenseFiltering::interpolated_a() const {
+Array<float> DenseFiltering::interpolated_inverse_depth_image() const {
     return interpolate(a_, cost_volume_parameters_.inverse_depths());
-}
-
-Array<float> DenseFiltering::interpolated_d() const {
-    return interpolate(d_, cost_volume_parameters_.inverse_depths());
 }
 
 size_t DenseFiltering::current_number_of_iterations() const {

@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
                 false,                              // print_energy
                 false};                             // print_bmps
             dm.iterate_atmost(dsi, SIZE_MAX);
-            ai = dm.interpolated_a();
+            ai = dm.interpolated_inverse_depth_image();
             ai.save_binary(ai_filename);
         } else {
             std::cerr << ai_filename << " exists, loading..." << std::endl;

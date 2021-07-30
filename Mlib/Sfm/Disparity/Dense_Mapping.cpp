@@ -616,12 +616,8 @@ void DenseMapping::notify_cost_volume_changed(const Array<float>& dsi) {
     n_ = 0;
 }
 
-Array<float> DenseMapping::interpolated_a() const {
+Array<float> DenseMapping::interpolated_inverse_depth_image() const {
     return interpolate(a_, cost_volume_parameters_.inverse_depths());
-}
-
-Array<float> DenseMapping::interpolated_d() const {
-    return interpolate(d_, cost_volume_parameters_.inverse_depths());
 }
 
 size_t DenseMapping::current_number_of_iterations() const {

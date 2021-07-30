@@ -23,12 +23,10 @@ public:
     virtual void iterate_atmost(const Array<float>& dsi, size_t niters) override;
     virtual bool is_converged() const override;
     virtual void notify_cost_volume_changed(const Array<float>& dsi) override;
-    virtual Array<float> interpolated_a() const override;
-    virtual Array<float> interpolated_d() const override;
+    virtual Array<float> interpolated_inverse_depth_image() const override;
     virtual size_t current_number_of_iterations() const override;
 private:
     Array<float> sqrt_dsi_max_dmin_;
-    Array<float> d_;
     Array<float> a_;
     float theta_;
     size_t n_;
