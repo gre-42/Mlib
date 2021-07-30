@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -12,9 +13,9 @@ using namespace Mlib;
 int main(int argc, char** argv) {
 
     const ArgParser parser(
-        "Usage: render_depth_map --rgb <filename> --depth <filename> --ki <intrinsic_matrix> [--z_offset <z_offset>] [--rotate]",
+        "Usage: render_depth_map --rgb <filename> --depth <filename> --ki <intrinsic_matrix> --median_filter_radius <r> [--z_offset <z_offset>] [--rotate]",
         {"--rotate"},
-        {"--rgb", "--depth", "--ki", "--z_offset"});
+        {"--rgb", "--depth", "--ki", "--z_offset", "--median_filter_radius"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -28,6 +29,12 @@ int main(int argc, char** argv) {
         }
         if (!all(depth.shape() == img.shape())) {
             throw std::runtime_error("Depth and image shape differ");
+        }
+        {
+            size_t r = safe_stoz(args.named_value("--median_filter_radius", "0"));
+            if (r != 0) {
+                depth = median_filter_2d(depth, r);
+            }
         }
         size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
