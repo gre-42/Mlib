@@ -343,7 +343,7 @@ void DtamKeyframe::optimize1() {
     }
     draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth).save_to_file(cache_dir_ + "/a-" + suffix + ".png");
 
-    if (false && dm_->is_converged()) {
+    if (dm_->is_converged()) {
         Array<float> err = zeros<float>(depth_.shape());
         size_t nerr = 0;
         {
@@ -372,7 +372,8 @@ void DtamKeyframe::optimize1() {
         }
         if (nerr > 0) {
             err /= (float)nerr;
-            draw_quantiled_grayscale(err, 0.f, 0.8f).save_to_file(cache_dir_ + "/err-" + suffix + ".png");
+            // draw_quantiled_grayscale(err, 0.f, 0.8f).save_to_file(cache_dir_ + "/err_qua-" + suffix + ".png");
+            draw_nan_masked_grayscale(err, 0.f, squared(2.f)).save_to_file(cache_dir_ + "/err-" + suffix + ".png");
             // float q = nanquantile(err, 0.8f);
             // masked_depth_ = depth_.array_array_binop(err, [q](float de, float er){ return er < q ? de : NAN; });
             // for (size_t h = 0; h < vol.shape(0); ++h) {
