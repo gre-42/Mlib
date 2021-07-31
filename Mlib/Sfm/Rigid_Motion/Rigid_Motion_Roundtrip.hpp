@@ -25,7 +25,7 @@ Array<TData> rigid_motion_roundtrip(
                 if (rs.roundtrip_position(r, c, pos_r_round) && !any(Mlib::isnan(pos_r_round))) {
                     result(r, c) = sum(squared(pos_r_round - FixedArray<TData, 2>{i2fi(r), i2fi(c)}));
                 } else {
-                    result(r, c) = 0;
+                    result(r, c) = NAN;
                 }
             } else {
                 result(r, c) = NAN;
