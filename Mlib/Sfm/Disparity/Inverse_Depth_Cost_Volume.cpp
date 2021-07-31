@@ -62,7 +62,7 @@ void InverseDepthCostVolume::increment(
         for (int ri = 0; ri < (int)im0_rgb.shape(1); ++ri) {
             size_t r = (size_t)ri;
             for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
-                if (!any(Mlib::isnan(e)) && (std::abs(r - e(0)) < 80) && (std::abs(c - e(1)) < 80)) {
+                if ((epipole_radius != 0) && !any(Mlib::isnan(e)) && (std::abs(r - e(0)) < epipole_radius) && (std::abs(c - e(1)) < epipole_radius)) {
                     continue;
                 }
                 if (false) {
