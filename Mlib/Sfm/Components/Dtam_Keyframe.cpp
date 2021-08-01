@@ -441,6 +441,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         draw_nan_masked_grayscale(masked_depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked_depth.png");
         draw_nan_masked_grayscale(depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-depth.png");
         down_sampler_.ds_intrinsic_matrix_.affine().to_array().save_txt_2d(cache_dir_ + "/pkg-" + suffix + "-intrinsic_matrix.m");
+        camera_frames_.at(key_frame_time_).projection_matrix_3x4().affine().to_array().save_txt_2d(cache_dir_ + "/pkg-" + suffix + "-extrinsic_matrix.m");
     }
 }
 
