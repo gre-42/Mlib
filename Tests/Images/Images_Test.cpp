@@ -268,7 +268,7 @@ void test_local_polynomial_regression() {
 }
 
 void test_waveform() {
-    std::ofstream ofstr{ "waveform.svg" };
+    std::ofstream ofstr{ "TestOut/waveform.svg" };
     Svg<float> svg{ ofstr, 200, 100 };
     std::vector<float> x{1.f, 3.f, 5.f, 6.f};
     std::vector<bool> y0{0, 0, 1, 0};
