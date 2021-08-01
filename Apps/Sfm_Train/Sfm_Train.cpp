@@ -75,8 +75,17 @@ int main(int argc, char** argv) {
         "[--nskipped <nskipped>] "
         "[--nimages <nimages>] "
         "[--ncameras <ncameras>]",
-        { "--load_cameras", "--no_dtam", "--no_dtam_tracking" },
-        { "--pipeline", "--cache", "--source", "--chess_r", "--chess_c", "--nskipped", "--nimages", "--ncameras" });
+        { "--load_cameras",
+          "--no_dtam",
+          "--no_dtam_tracking" },
+        { "--pipeline",
+          "--cache",
+          "--source",
+          "--chess_r",
+          "--chess_c",
+          "--nskipped",
+          "--nimages",
+          "--ncameras" });
 
     try {
         auto args = parser.parsed(argc, argv);
