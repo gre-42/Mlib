@@ -276,7 +276,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 dsi_,
                 cfg_.cost_volume_parameters_,
                 cfg_.df_params_,
-                [](const Array<float>& d){return gaussian_filter_NWE(d, 1.f, NAN);});
+                [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, NAN);});
         } else {
             throw std::runtime_error("Unknown regularization mode");
         }

@@ -16,7 +16,8 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     const Dm::DtamParameters& dm_params,
     const DenseFilteringParameters& df_params,
     Regularization regularization,
-    float sigma_illumination_removal)
+    float sigma_illumination_removal,
+    float regularization_filter_sigma)
 : incremental_update_(incremental_update),
   nfuture_frames_per_keyframe_(nfuture_frames_per_keyframe),
   npast_frames_per_keyframe_(npast_frames_per_keyframe),
@@ -28,5 +29,6 @@ DtamKeyframeConfig::DtamKeyframeConfig(
   dm_params_(dm_params),
   df_params_(df_params),
   regularization_{regularization},
-  sigma_illumination_removal_{sigma_illumination_removal}
+  sigma_illumination_removal_{sigma_illumination_removal},
+  regularization_filter_sigma_{regularization_filter_sigma}
 {}

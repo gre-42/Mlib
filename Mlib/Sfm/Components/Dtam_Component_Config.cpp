@@ -44,7 +44,8 @@ DtamComponentConfig::DtamComponentConfig(
             .theta_0__ = 0.2,
             .theta_end__ = float{ 1e-4 }},
         Regularization::FILTERING,
-        0.5f))                      // sigma_illumination_removal
+        0.5f,                       // sigma_illumination_removal
+        1.f))                       // regularization_filter_sigma
 {}
 
 DtamComponentConfig::DtamComponentConfig(
