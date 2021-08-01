@@ -10,8 +10,10 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Variance.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <Mlib/Sfm/Disparity/Corresponding_Features_In_Candidate_List.hpp>
 
 using namespace Mlib;
+using namespace Mlib::Sfm;
 
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
@@ -20,56 +22,93 @@ int main(int argc, char** argv) {
         "source "
         "destination "
         "ncorners "
+        "[--source1 <source1>] "
         "[--k <k>] "
         "[--distance-sigma <distance-sigma>] "
         "[--multi-scale] "
         "[--size <marker-size>] "
         "[--response <response>] "
-        "[--feature-mask <feature-mask>] "
         "[--clip-min <clip-min>] "
         "[--clip-max <clip-max>]",
-        {"--multi-scale"},
-        {"--k", "--distance-sigma", "--size", "--response", "--feature-mask", "--clip-min", "--clip-max", });
+        { "--multi-scale" },
+        { "--source1",
+          "--k",
+          "--distance-sigma",
+          "--size",
+          "--response",
+          "--clip-min",
+          "--clip-max" });
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unamed(3);
-        auto bitmap = StbImage::load_from_file(args.unnamed_value(0));
-        ArrayShape smooth_width(2);
-        Array<bool> feature_mask;
-        Array<float> response = harris_response(bitmap.to_float_grayscale(), &feature_mask, safe_stof(args.named_value("--k", "0.05")));
+        auto bitmap0 = StbImage::load_from_file(args.unnamed_value(0));
+        Array<float> response0 = harris_response(
+            bitmap0.to_float_grayscale(),
+            safe_stof(args.named_value("--k", "0.05")));
+        Array<bool> feature_mask0;
         if (args.has_named("--multi-scale")) {
-            feature_mask = multi_scale_harris(bitmap.to_float_grayscale(), 4);
+            feature_mask0 = multi_scale_harris(bitmap0.to_float_grayscale(), 4);
+        } else {
+            feature_mask0 = ones<bool>(bitmap0.shape());
         }
-        if (args.has_named_value("--feature-mask")) {
-            StbImage::from_float_grayscale(feature_mask.casted<float>())
-                .save_to_file(args.named_value("--feature-mask"));
-        }
-        else {
-            feature_mask = ones<bool>(bitmap.shape());
-        }
-        Array<FixedArray<float, 2>> corners = Array<float>::from_dynamic<2>(find_nfeatures(
-            response,
-            feature_mask,
+        Array<FixedArray<float, 2>> corners0 = Array<float>::from_dynamic<2>(find_nfeatures(
+            response0,
+            feature_mask0,
             safe_stoi(args.unnamed_value(2)),
             safe_stof(args.named_value("--distance-sigma", "0"))));
         // std::cout << "Found " << corners.shape(0) << " corners." << std::endl;
         highlight_features(
-            corners,
-            bitmap,
+            corners0,
+            bitmap0,
             safe_stoi(args.named_value("--size", "1")));
-        bitmap.save_to_file(args.unnamed_value(1));
-        std::cerr << "V[response]=" << nanvar(response) << std::endl;
-        std::cerr << "E[response]=" << nanmean(response) << std::endl;
-        std::cerr << "min[response]=" << nanmin(response) << std::endl;
-        std::cerr << "max[response]=" << nanmax(response) << std::endl;
+        bitmap0.save_to_file(args.unnamed_value(1));
+        std::cerr << "V[response]=" << nanvar(response0) << std::endl;
+        std::cerr << "E[response]=" << nanmean(response0) << std::endl;
+        std::cerr << "min[response]=" << nanmin(response0) << std::endl;
+        std::cerr << "max[response]=" << nanmax(response0) << std::endl;
         if (args.has_named_value("--response")) {
             //PpmImage::from_float_grayscale(normalized_and_clipped(response, -float(5e-5), float(5e-5)))
             StbImage::from_float_grayscale(
                 normalized_and_clipped(
-                    response,
+                    response0,
                     safe_stof(args.named_value("--clip-min", "-0.002")),
                     safe_stof(args.named_value("--clip-max", "0.002"))))
                 .save_to_file(args.named_value("--response"));
+        }
+        if (args.has_named_value("--source1")) {
+            auto bitmap1 = StbImage::load_from_file(args.named_value("--source1"));
+            if (any(bitmap0.shape() != bitmap1.shape())) {
+                throw std::runtime_error("Images have different shapes");
+            }
+            Array<float> response1 = harris_response(
+                bitmap1.to_float_grayscale(),
+                safe_stof(args.named_value("--k", "0.05")));
+            Array<bool> feature_mask1;
+            if (args.has_named("--multi-scale")) {
+                feature_mask1 = multi_scale_harris(bitmap1.to_float_grayscale(), 4);
+            } else {
+                feature_mask1 = ones<bool>(bitmap1.shape());
+            }
+            Array<FixedArray<float, 2>> corners1 = Array<float>::from_dynamic<2>(find_nfeatures(
+                response1,
+                feature_mask1,
+                safe_stoi(args.unnamed_value(2)),
+                safe_stof(args.named_value("--distance-sigma", "0"))));
+            CorrespondingFeaturesInCandidateList cf{corners0, corners1, bitmap0.to_float_rgb(), bitmap1.to_float_rgb(), 10};
+            {
+                StbImage bmp{ bitmap0.copy() };
+                highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
+                highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
+                highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+                bmp.save_to_file("features10_0.png");
+            }
+            {
+                StbImage bmp{ bitmap1.copy() };
+                highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
+                highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
+                highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+                bmp.save_to_file("features10_1.png");
+            }
         }
     } catch (const std::runtime_error& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;

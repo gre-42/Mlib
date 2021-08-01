@@ -115,15 +115,11 @@ Array<float> Mlib::structure_tensor(
 
 Array<float> Mlib::harris_response(
     const Array<float>& image,
-    Array<bool>* feature_mask,
     float k)
 {
     Array<float> M_det;
     Array<float> M_trace;
     structure_tensor(image, &M_det, &M_trace);
-    if (feature_mask != nullptr) {
-        *feature_mask = ones<bool>(image.shape());
-    }
     return M_det - k * squared(M_trace);
 }
 

@@ -76,12 +76,10 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
         //        0.f))
         //    .save_to_file("edges.bmp");
     } else if (true) {
-        Array<bool> feature_mask;
         Array<float> hr = harris_response(
             gaussian_filter_NWE(
                 image_frames_.rbegin()->second.grayscale,
-                cfg_.presmoothing_sigma, NAN),
-            &feature_mask);
+                cfg_.presmoothing_sigma, NAN));
         points = Array<float>::from_dynamic<2>(find_nfeatures(
             hr,
 
@@ -95,7 +93,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
 
             // abs(laplace_filter(image_frames_.rbegin()->second.grayscale, NAN)),
 
-            existing_points_mask && feature_mask,
+            existing_points_mask,
             n_new_particles,
             cfg_.distance_sigma));
     } else if (false) {
