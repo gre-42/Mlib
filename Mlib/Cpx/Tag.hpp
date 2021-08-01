@@ -4,7 +4,7 @@
 #include <list>
 #include <memory>
 
-namespace Mlib { namespace cpx {
+namespace Mlib::cpx {
 
 class Tag: public Renderable {
     std::string name_;
@@ -38,4 +38,4 @@ public:
     }
 };
 
-}}
+}

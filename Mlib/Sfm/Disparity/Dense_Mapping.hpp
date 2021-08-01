@@ -4,7 +4,7 @@
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
 #include <cmath>
 
-namespace Mlib { namespace Sfm { namespace Dm {
+namespace Mlib::Sfm::Dm {
 
 enum class Regularizer {
     FORWARD_BACKWARD_DIFFERENCES,
@@ -125,4 +125,4 @@ void auxiliary_parameter_optimization(
     const CostVolumeParameters& cost_volume_parameters,
     const DtamParameters& parameters);
 
-}}}
+}

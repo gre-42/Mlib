@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class SyntheticScene {
 public:
@@ -20,4 +20,4 @@ public:
     Array<FixedArray<float, 2>> y;
 };
 
-}}
+}

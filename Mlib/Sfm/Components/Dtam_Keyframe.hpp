@@ -8,7 +8,7 @@
 #include <map>
 #include <set>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class InverseDepthCostVolume;
 class DenseDepthEstimation;
@@ -63,4 +63,4 @@ private:
     Array<float> dsi_;
 };
 
-}}
+}

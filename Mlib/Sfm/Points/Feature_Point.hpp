@@ -3,7 +3,7 @@
 #include <Mlib/Sfm/Disparity/Traceable_Patch.hpp>
 #include <memory>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class FeaturePoint {
 public:
@@ -14,4 +14,4 @@ public:
     TraceablePatch traceable_patch;
 };
 
-}}
+}

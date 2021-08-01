@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class CorrespondingFeaturesInBox {
 public:
@@ -16,4 +16,4 @@ public:
     Array<FixedArray<float, 2>> y1_2d;
 };
 
-}}
+}

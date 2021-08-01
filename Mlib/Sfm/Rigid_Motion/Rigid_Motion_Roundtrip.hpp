@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Roundtrip_Sampler.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 
 template <class TData>
@@ -35,4 +35,4 @@ Array<TData> rigid_motion_roundtrip(
     return result;
 }
 
-}}
+}

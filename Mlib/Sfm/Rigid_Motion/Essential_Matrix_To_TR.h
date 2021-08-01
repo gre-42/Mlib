@@ -2,7 +2,7 @@
 
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class EssentialMatrixToTR {
 public:
@@ -11,4 +11,4 @@ public:
     TransformationMatrix<float, 3> ke1;
 };
 
-}}
+}

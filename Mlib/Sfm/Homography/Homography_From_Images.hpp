@@ -13,7 +13,7 @@
 #include <Mlib/Sfm/Homography/Homography_Sampler.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>
 
-namespace Mlib { namespace Sfm { namespace Hfi {
+namespace Mlib::Sfm::Hfi {
 
 /**
  * y = proj <- a = M x = R(theta) ki^{-1} x = R(theta) b
@@ -266,4 +266,4 @@ FixedArray<TData, 3, 3> rotation_from_images(
     return FixedArray<float, 3, 3>{ tait_bryan_angles_2_matrix(xx) };
 }
 
-}}}
+}

@@ -4,7 +4,7 @@
 #include <ostream>
 
 
-namespace Mlib { namespace cpx {
+namespace Mlib::cpx {
 
 template <class TEntry>
 std::list<TEntry> list_dir(
@@ -14,4 +14,4 @@ std::list<TEntry> list_dir(
     return applied(path, callback);
 }
 
-}}
+}

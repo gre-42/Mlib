@@ -2,7 +2,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 /**
  * Source: https://dsp.stackexchange.com/a/1854
@@ -38,4 +38,4 @@ FixedArray<TData, 3, 3> pixel_homography(
     return res / res(2, 2);
 }
 
-}}
+}

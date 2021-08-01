@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class NormalizedProjection {
 public:
@@ -14,4 +14,4 @@ public:
     TransformationMatrix<float, 2> N;
 };
 
-}}
+}

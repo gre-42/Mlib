@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 template <class TData>
 FixedArray<TData, 3, 3> homography_from_points(
@@ -34,4 +34,4 @@ FixedArray<TData, 3, 3> homography_from_points(
         TEMPLATEV casted<TData>();
 }
 
-}}
+}

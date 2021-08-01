@@ -5,7 +5,7 @@
 #include <chrono>
 #include <map>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class ReconstructedPoint;
 class CameraFrame;
@@ -30,4 +30,4 @@ private:
     const std::map<size_t, std::chrono::milliseconds>& bad_points_;
 };
 
-}}
+}

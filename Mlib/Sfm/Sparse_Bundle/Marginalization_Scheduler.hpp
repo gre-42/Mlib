@@ -2,7 +2,7 @@
 #include <Mlib/Sfm/Marginalization/Marginalizing_Bias.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Global_Bundle.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class MarginalizationIds;
 
@@ -69,4 +69,4 @@ private:
 
 };
 
-}}
+}

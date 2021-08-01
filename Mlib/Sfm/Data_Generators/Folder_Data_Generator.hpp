@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class ImagePipeline;
 
@@ -27,4 +27,4 @@ void process_folder_with_pipeline(
     size_t nimages,
     size_t ncameras);
 
-}}
+}

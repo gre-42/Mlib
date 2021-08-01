@@ -3,7 +3,7 @@
 #include <chrono>
 #include <set>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class GlobalBundle;
 
@@ -25,4 +25,4 @@ private:
 
 };
 
-}}
+}

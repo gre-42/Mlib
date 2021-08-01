@@ -2,7 +2,7 @@
 #include <Mlib/Cpx/Renderable.hpp>
 #include <list>
 
-namespace Mlib { namespace cpx {
+namespace Mlib::cpx {
 
 class Text: public Renderable {
     std::string contents_;
@@ -14,4 +14,4 @@ public:
     }
 };
 
-} }
+}

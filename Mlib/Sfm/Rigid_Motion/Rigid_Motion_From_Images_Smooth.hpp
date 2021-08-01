@@ -2,7 +2,7 @@
 #include <Mlib/Sfm/Homography/Homography_From_Images.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images.hpp>
 
-namespace Mlib { namespace Sfm { namespace Rmfi {
+namespace Mlib::Sfm::Rmfi {
 
 template <class TData>
 TransformationMatrix<TData, 3> rigid_motion_from_images_smooth(
@@ -27,4 +27,4 @@ TransformationMatrix<TData, 3> rigid_motion_from_images_smooth(
     return Cv::k_external(x00);
 }
 
-}}}
+}

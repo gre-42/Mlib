@@ -5,7 +5,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 template <class TData>
 class HomographySampler {
@@ -21,4 +21,4 @@ private:
     FixedArray<TData, 3, 3> H;
 };
 
-}}
+}

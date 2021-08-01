@@ -1,7 +1,7 @@
 #pragma once
 #include <ostream>
 
-namespace Mlib { namespace cpx {
+namespace Mlib::cpx {
 
 class Renderable {
 public:
@@ -14,4 +14,4 @@ std::ostream& operator << (std::ostream& ostream, const Renderable& renderable) 
     return ostream;
 }
 
-}}
+}

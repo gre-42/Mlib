@@ -1,6 +1,6 @@
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class ImageFrame;
 class CameraFrame;
 
-}}
+}

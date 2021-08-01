@@ -4,7 +4,7 @@
 #include <map>
 #include <ostream>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class ImagePipeline {
 public:
@@ -17,4 +17,4 @@ public:
     virtual void print_statistics(std::ostream& ostream) = 0;
 };
 
-}}
+}

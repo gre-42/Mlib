@@ -4,7 +4,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Pipelines/ImagePipeline.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class ImagePipeline;
 
@@ -32,4 +32,4 @@ private:
     const std::string camera_intrinsics_filename_;
 };
 
-}}
+}

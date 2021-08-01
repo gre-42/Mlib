@@ -4,7 +4,7 @@
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
 #include <cstddef>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 enum class Regularization {
     DTAM,
@@ -40,4 +40,4 @@ struct DtamKeyframeConfig {
     float sigma_illumination_removal_;
 };
 
-}}
+}

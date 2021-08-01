@@ -6,7 +6,7 @@
 #include <chrono>
 #include <map>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class DownSampler;
 
@@ -34,4 +34,4 @@ private:
     DtamComponentConfig cfg_;
 };
 
-}}
+}

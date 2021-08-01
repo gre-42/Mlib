@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 
-namespace Mlib { namespace cpx {
+namespace Mlib::cpx {
 
 // Tags
 struct html { static const char *name() { return "html"; } };
@@ -45,4 +45,4 @@ std::list<std::shared_ptr<Renderable>> gen_renderables(
     return result;
 }
 
-}}
+}

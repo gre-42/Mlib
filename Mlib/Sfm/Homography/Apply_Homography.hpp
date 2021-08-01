@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 template <class TData>
 FixedArray<TData, 2> apply_homography(const FixedArray<TData, 3, 3>& homography, const FixedArray<TData, 2>& p) {
@@ -20,4 +20,4 @@ FixedArray<TData, 2> apply_inverse_homography(const FixedArray<TData, 3, 3>& hom
         x(1) / x(2)};
 }
 
-}}
+}

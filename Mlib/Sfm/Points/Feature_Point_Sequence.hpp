@@ -5,7 +5,7 @@
 #include <map>
 #include <memory>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class FeaturePointSequence {
 public:
@@ -13,4 +13,4 @@ public:
     std::map<std::chrono::milliseconds, std::shared_ptr<FeaturePoint>> sequence;
 };
 
-}}
+}

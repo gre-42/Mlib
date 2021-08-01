@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class ImageFrame {
 public:
@@ -18,4 +18,4 @@ private:
     mutable Array<float> grayscale_x3_;
 };
 
-}}
+}

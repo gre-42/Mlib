@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Shape.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 enum class TrackingMode {
     PATCH_NEW_POSITION_IN_BOX
@@ -19,4 +19,4 @@ public:
     FixedArray<size_t, 2> patch_size{10, 10};
 };
 
-}}
+}

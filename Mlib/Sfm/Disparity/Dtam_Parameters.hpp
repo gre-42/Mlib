@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <iosfwd>
 
-namespace Mlib { namespace Sfm { namespace Dm {
+namespace Mlib::Sfm::Dm {
 
 class DtamParameters {
 public:
@@ -35,4 +35,4 @@ public:
 
 std::ostream& operator << (std::ostream& str, const DtamParameters& params);
 
-}}}
+}

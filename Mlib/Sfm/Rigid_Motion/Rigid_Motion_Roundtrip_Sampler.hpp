@@ -5,7 +5,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 template <class TData>
 class RigidMotionRoundtripSampler {
@@ -43,4 +43,4 @@ private:
     Array<TData> depth_l_;
 };
 
-}}
+}

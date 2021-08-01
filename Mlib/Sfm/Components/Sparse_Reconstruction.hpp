@@ -13,7 +13,7 @@
 
 #undef REJECT_LARGE_RESIDUALS
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class SparseReconstruction {
 public:
@@ -71,4 +71,4 @@ private:
     std::set<PointObservation> dropped_observations_;
 };
 
-}}
+}

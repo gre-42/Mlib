@@ -13,7 +13,7 @@
 #include <map>
 #include <ostream>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class TemplatePatchPipeline: public ImagePipeline {
 public:
@@ -43,4 +43,4 @@ private:
     TemplatePatchPipelineConfig cfg_;
 };
 
-}}
+}

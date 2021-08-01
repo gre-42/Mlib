@@ -4,7 +4,7 @@
 #include <Mlib/Sfm/Points/Feature_Point.hpp>
 #include <memory>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class ReconstructedPoint {
 public:
@@ -15,4 +15,4 @@ public:
     float condition_number;
 };
 
-}}
+}

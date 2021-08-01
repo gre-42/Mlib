@@ -4,7 +4,7 @@
 #include <Mlib/Stats/RansacOptions.hpp>
 #include <cstddef>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 struct ReconstructionConfig {
     size_t npoints = 10;
@@ -58,4 +58,4 @@ struct ReconstructionConfig {
     };
 };
 
-}}
+}

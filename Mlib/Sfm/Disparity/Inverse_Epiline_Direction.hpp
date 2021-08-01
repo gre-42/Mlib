@@ -4,7 +4,7 @@
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class InverseEpilineDirection {
 public:
@@ -37,4 +37,4 @@ public:
     bool good;
 };
 
-}}
+}

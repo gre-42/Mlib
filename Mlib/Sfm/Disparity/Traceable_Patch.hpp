@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class TraceablePatch {
 public:
@@ -42,4 +42,4 @@ private:
     float min_brightness_;
 };
 
-}}
+}

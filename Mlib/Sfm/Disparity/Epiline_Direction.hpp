@@ -5,7 +5,7 @@
 #include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class EpilineDirection {
 public:
@@ -28,4 +28,4 @@ public:
     bool good;
 };
 
-}}
+}

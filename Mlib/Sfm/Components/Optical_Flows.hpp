@@ -3,7 +3,7 @@
 #include <chrono>
 #include <map>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class OpticalFlows {
 public:
@@ -17,4 +17,4 @@ private:
     std::string cache_dir_;
 };
 
-}}
+}

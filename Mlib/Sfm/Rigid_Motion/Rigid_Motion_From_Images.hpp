@@ -9,7 +9,7 @@
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Sampler.hpp>
 
-namespace Mlib { namespace Sfm { namespace Rmfi {
+namespace Mlib::Sfm::Rmfi {
 
 template <class TData>
 FixedArray<TData, 2> transform_coordinates(const TransformationMatrix<TData, 2>& ki, const TransformationMatrix<TData, 3>& ke, const FixedArray<TData, 2>& x, const TData& depth) {
@@ -222,4 +222,4 @@ TransformationMatrix<TData, 3> rigid_motion_from_images(
     return Cv::k_external(xx);
 }
 
-}}}
+}

@@ -2,7 +2,7 @@
 #include <Mlib/Stats/RansacOptions.hpp>
 #include <cstddef>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 struct TemplatePatchPipelineConfig {
     bool enable_dtam = true;
@@ -10,4 +10,4 @@ struct TemplatePatchPipelineConfig {
     bool print_residual = true;
 };
 
-}}
+}

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Sfm/Components/Dtam_Keyframe_Config.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 struct DtamComponentConfig {
     explicit DtamComponentConfig(
@@ -22,4 +22,4 @@ struct DtamComponentConfig {
     DtamKeyframeConfig keyframe_config_;
 };
 
-}}
+}

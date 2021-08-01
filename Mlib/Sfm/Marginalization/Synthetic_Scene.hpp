@@ -4,7 +4,7 @@
 #include <Mlib/Sfm/Points/Point_Observation.hpp>
 #include <chrono>
 
-namespace Mlib { namespace Sfm { namespace SynthMarg {
+namespace Mlib::Sfm::SynthMarg {
 
 class CameraVariable {
 public:
@@ -60,4 +60,4 @@ private:
 void gen_scene0(TestScene1d& tc);
 void gen_scene1(TestScene1d& tc);
 
-}}}
+}

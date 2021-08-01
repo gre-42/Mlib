@@ -2,7 +2,7 @@
 #include <Mlib/Sfm/Rigid_Motion/Essential_Matrix_To_TR.h>
 #include <Mlib/Sfm/Rigid_Motion/Normalized_Projection.hpp>
 
-namespace Mlib { namespace Sfm {
+namespace Mlib::Sfm {
 
 class InitialReconstruction {
 public:
@@ -23,4 +23,4 @@ private:
     TransformationMatrix<float, 2> ki;
 };
 
-}}
+}
