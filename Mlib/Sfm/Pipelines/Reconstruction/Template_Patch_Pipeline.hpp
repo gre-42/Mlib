@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Sfm/Components/Down_Sampler.hpp>
 #include <Mlib/Sfm/Components/Dtam_Reconstruction.hpp>
 #include <Mlib/Sfm/Components/Flowing_Particles.hpp>
@@ -33,14 +34,16 @@ private:
 
     TransformationMatrix<float, 2> intrinsic_matrix_;
     DownSampler down_sampler_;
-    FlowingParticles flowing_particles_;
-    OpticalFlows optical_flows_;
-    SparseReconstruction sparse_reconstruction_;
-    DtamReconstruction dtam_reconstruction_;
     std::map<std::chrono::milliseconds, ImageFrame> image_frames_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames_;
     std::string cache_dir_;
     TemplatePatchPipelineConfig cfg_;
+
+    FlowingParticles flowing_particles_;
+    OpticalFlows optical_flows_;
+    SparseReconstruction sparse_reconstruction_;
+    DepthMapBundle depth_map_bundle_;
+    DtamReconstruction dtam_reconstruction_;
 };
 
 }

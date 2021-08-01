@@ -16,6 +16,8 @@ TemplatePatchPipeline::TemplatePatchPipeline(
     const TemplatePatchPipelineConfig& cfg)
 : intrinsic_matrix_(intrinsic_matrix),
   down_sampler_{intrinsic_matrix, 0},
+  cache_dir_(cache_dir),
+  cfg_(cfg),
   flowing_particles_{image_frames_, optical_flows_.optical_flow_frames_, (fs::path{cache_dir} / "TracedParticles").string(), FlowingParticlesConfig()},
   optical_flows_{image_frames_, (fs::path{cache_dir} / "OpticalFlow").string()},
   sparse_reconstruction_{
@@ -26,15 +28,15 @@ TemplatePatchPipeline::TemplatePatchPipeline(
       flowing_particles_.last_sq_residual_,
       (fs::path{cache_dir} / "SparseReconstruction").string(),
       ReconstructionConfig{.print_residual = cfg.print_residual} },
+  depth_map_bundle_{camera_frames_, down_sampler_},
   dtam_reconstruction_{
       image_frames_,
       camera_frames_,
+      depth_map_bundle_,
       down_sampler_,
       intrinsic_matrix_,
       (fs::path{cache_dir} / "DtamReconstruction").string(),
-      DtamComponentConfig(cfg.track_using_dtam, cfg.print_residual) },
-  cache_dir_(cache_dir),
-  cfg_(cfg)
+      DtamComponentConfig(cfg.track_using_dtam, cfg.print_residual) }
 {}
 
 void TemplatePatchPipeline::process_image_frame(

@@ -15,6 +15,7 @@ public:
     DtamReconstruction(
         const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
+        DepthMapBundle& depth_map_bundle,
         const DownSampler& down_sampler,
         const TransformationMatrix<float, 2>& intrinsic_matrix,
         const std::string& cache_dir,
@@ -28,6 +29,7 @@ private:
     std::map<std::chrono::milliseconds, DtamKeyframe> key_frames_;
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
+    DepthMapBundle& depth_map_bundle_;
     const DownSampler& down_sampler_;
     TransformationMatrix<float, 2> intrinsic_matrix_;
     std::string cache_dir_;

@@ -4,6 +4,7 @@
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
+#include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Filtering.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
@@ -24,6 +25,7 @@ DtamKeyframe::DtamKeyframe(
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames,
+    DepthMapBundle& depth_map_bundle,
     const DownSampler& down_sampler,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const std::string& cache_dir,
@@ -32,6 +34,7 @@ DtamKeyframe::DtamKeyframe(
 : image_frames__{image_frames},
   camera_frames_{camera_frames},
   key_frames_{key_frames},
+  depth_map_bundle_{depth_map_bundle},
   down_sampler_{down_sampler},
   intrinsic_matrix__{intrinsic_matrix},
   cache_dir_{cache_dir},
@@ -344,32 +347,16 @@ void DtamKeyframe::optimize1() {
     draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth).save_to_file(cache_dir_ + "/a-" + suffix + ".png");
 
     if (dm_->is_converged()) {
-        Array<float> err = zeros<float>(depth_.shape());
-        size_t nerr = 0;
-        {
-            auto cit = key_frames_.find(key_frame_time_);
-            for (auto neighbor = key_frames_.begin(); neighbor != cit; ++neighbor) {
-                if (std::distance(neighbor, cit) > 2 ||
-                    neighbor == cit ||
-                    !neighbor->second.depth_.initialized())
-                {
-                    continue;
-                }
-                std::cerr << "Keyframe " << key_frame_time_.count() <<
-                    " ms selected neighbor " << neighbor->first.count() << " ms" << std::endl;
-                // ke is expected to be l's relative projection-matrix.
-                TransformationMatrix<float, 3> ke = projection_in_reference(
-                    camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
-                    camera_frames_.at(neighbor->first).projection_matrix_3x4());
-                err += rigid_motion_roundtrip(
-                    depth_,
-                    neighbor->second.depth_,
-                    down_sampler_.ds_intrinsic_matrix_,
-                    ke);
-                // draw_nan_masked_grayscale(err, 0, 0.5 * 0.5).save_to_file(cache_dir_ + "/err-" + suffix + "-" + std::to_string(neighbor->first.count()) + ".png");
-                ++nerr;
-            }
-        }
+        draw_reconstruction(suffix);
+    }
+}
+
+void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
+    depth_map_bundle_.insert(key_frame_time_, depth_);
+    {
+        Array<float> err;
+        size_t nerr;
+        depth_map_bundle_.compute_error(key_frame_time_, err, nerr);
         if (nerr > 0) {
             err /= (float)nerr;
             // draw_quantiled_grayscale(err, 0.f, 0.8f).save_to_file(cache_dir_ + "/err_qua-" + suffix + ".png");
@@ -395,12 +382,6 @@ void DtamKeyframe::optimize1() {
             //masked_depth_ = depth_;
         }
     }
-    if (dm_->is_converged()) {
-        draw_reconstruction(suffix);
-    }
-}
-
-void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
     {
         auto img = draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth);
         for (const std::chrono::milliseconds& time : times_integrated_) {

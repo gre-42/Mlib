@@ -9,12 +9,14 @@ using namespace Mlib::Sfm;
 DtamReconstruction::DtamReconstruction(
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
+    DepthMapBundle& depth_map_bundle,
     const DownSampler& down_sampler,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const std::string& cache_dir,
     const DtamComponentConfig& cfg)
 : image_frames_{image_frames},
   camera_frames_{camera_frames},
+  depth_map_bundle_{depth_map_bundle},
   down_sampler_{down_sampler},
   intrinsic_matrix_{intrinsic_matrix},
   cache_dir_{cache_dir},
@@ -34,6 +36,7 @@ void DtamReconstruction::insert_keyframe(const std::chrono::milliseconds& keyfra
             image_frames_,
             camera_frames_,
             key_frames_,
+            depth_map_bundle_,
             down_sampler_,
             intrinsic_matrix_,
             cache_dir_,
