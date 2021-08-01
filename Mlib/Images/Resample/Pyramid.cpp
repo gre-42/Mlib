@@ -105,23 +105,23 @@ Array<bool> Mlib::multi_scale_harris(
     Array<float> laplace = laplace_filter(image, NAN);
     Array<float> harris(ArrayShape{nlevels}.concatenated(image.shape()));
     Array<float> laplaces(harris.shape());
-    Array<bool> hmask(harris.shape());
+    Array<bool> harris_mask(harris.shape());
     for (size_t l = 0; l < nlevels; ++l) {
         float sigma = std::pow(2.f, (float)l);
         harris[l] = harris_response(gaussian_filter_NWE(image, sigma, NAN)) * float(std::pow(sigma, 2 * std::sqrt(2)));
         laplaces[l] = gaussian_filter_NWE(laplace, sigma, NAN) * float(std::pow(sigma, std::sqrt(2)));
         // std::cerr << sum(abs(laplaces[l])) << std::endl;
         // std::cerr << sum(abs(harris[l])) << std::endl;
-        hmask[l] = find_local_maxima(harris[l], false);
+        harris_mask[l] = find_local_maxima(harris[l], false);
     }
-    Array<bool> lmask =
+    Array<bool> laplace_mask =
         find_local_maxima_1d(laplaces, false, 0) ||
         find_local_maxima_1d(-laplaces, false, 0);
-    Array<bool> mask = hmask && lmask;
+    Array<bool> mask = harris_mask && laplace_mask;
     Array<bool> result = any(mask, 0);
     //std::cout <<
-    //    count_nonzero(lmask) << " " <<
-    //    count_nonzero(hmask) << " " <<
+    //    count_nonzero(laplace_mask) << " " <<
+    //    count_nonzero(harris_mask) << " " <<
     //    count_nonzero(mask) << " " <<
     //    count_nonzero(result) << std::endl;
     return result;
