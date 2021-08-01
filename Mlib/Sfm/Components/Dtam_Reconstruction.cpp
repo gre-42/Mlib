@@ -46,7 +46,7 @@ void DtamReconstruction::insert_keyframe(const std::chrono::milliseconds& keyfra
 
 void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
     if (((image_frames_.size() % cfg_.nth_image_) != 0) &&
-        can_track_on_its_own())
+        (!cfg_.track_using_dtam_ || can_track_on_its_own()))
     {
         return;
     }
