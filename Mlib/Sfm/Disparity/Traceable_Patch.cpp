@@ -175,13 +175,14 @@ FixedArray<float, 2> TraceablePatch::new_position_in_candidate_list(
     const Array<float>& image,
     const FixedArray<float, 2>& patch_center,
     const Array<FixedArray<float, 2>>& candidates,
-    float worst_error) const
+    float worst_error,
+    float lowe_ratio) const
 {
     assert_true(good_);
     FixedArray<size_t, 2> image_shape2{ image.shape(1), image.shape(2) };
+    float second_best_error = std::numeric_limits<float>::infinity();
     float best_error = std::numeric_limits<float>::infinity();
     FixedArray<size_t, 2> best_id{SIZE_MAX, SIZE_MAX};
-    size_t ncandidates = 0;
     for (const FixedArray<float, 2>& patch_center : candidates.flat_iterable()) {
         FixedArray<size_t, 2> id = a2i(patch_center);
         // Negative indices are not (yet) supported on the caller-site.
@@ -190,13 +191,14 @@ FixedArray<float, 2> TraceablePatch::new_position_in_candidate_list(
             float error = error_at_position(image, id);
             // std::cerr  << dr << " - " << dc << " | " << error << " - " << best_error << std::endl;
             if ((error < best_error) && (error <= worst_error)) {
+                second_best_error = best_error;
                 best_error = error;
                 best_id = id;
             }
-            if (error != INFINITY) {
-                ++ncandidates;
-            }
         }
+    }
+    if (best_error > lowe_ratio * second_best_error) {
+        best_id = SIZE_MAX;
     }
     // std::cerr << "best " << best_id << std::endl;
     // std::cerr << "best error " << best_error << std::endl;

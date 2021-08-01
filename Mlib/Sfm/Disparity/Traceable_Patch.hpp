@@ -30,7 +30,8 @@ public:
         const Array<float>& image,
         const FixedArray<float, 2>& patch_center,
         const Array<FixedArray<float, 2>>& candidates,
-        float worst_error) const;
+        float worst_error,
+        float lowe_ratio = 0.75f) const;
     float error_at_position(
         const Array<float>& image,
         const FixedArray<size_t, 2>& patch_center) const;

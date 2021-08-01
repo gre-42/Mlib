@@ -57,11 +57,14 @@ int main(int argc, char** argv) {
             safe_stoi(args.unnamed_value(2)),
             safe_stof(args.named_value("--distance-sigma", "0"))));
         // std::cout << "Found " << corners.shape(0) << " corners." << std::endl;
-        highlight_features(
-            corners0,
-            bitmap0,
-            safe_stoi(args.named_value("--size", "1")));
-        bitmap0.save_to_file(args.unnamed_value(1));
+        {
+            StbImage bmp{bitmap0.copy()};
+            highlight_features(
+                corners0,
+                bmp,
+                safe_stoi(args.named_value("--size", "1")));
+            bmp.save_to_file(args.unnamed_value(1));
+        }
         std::cerr << "V[response]=" << nanvar(response0) << std::endl;
         std::cerr << "E[response]=" << nanmean(response0) << std::endl;
         std::cerr << "min[response]=" << nanmin(response0) << std::endl;
@@ -97,16 +100,16 @@ int main(int argc, char** argv) {
             CorrespondingFeaturesInCandidateList cf{corners0, corners1, bitmap0.to_float_rgb(), bitmap1.to_float_rgb(), 10};
             {
                 StbImage bmp{ bitmap0.copy() };
-                highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
                 highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
                 highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+                highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
                 bmp.save_to_file("features10_0.png");
             }
             {
                 StbImage bmp{ bitmap1.copy() };
-                highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
                 highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
                 highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+                highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
                 bmp.save_to_file("features10_1.png");
             }
         }
