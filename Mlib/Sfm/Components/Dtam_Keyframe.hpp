@@ -59,7 +59,7 @@ private:
     DtamKeyframeConfig cfg_;
     Array<float> ai_;
     Array<float> depth_;
-    Array<float> masked_depth_;
+    // Array<float> masked_depth_;
     Array<float> dsi_;
 };
 
