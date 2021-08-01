@@ -418,13 +418,13 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         }
         img.save_to_file(cache_dir_ + "/epipoles-" + suffix + ".png");
     }
-    draw_nan_masked_grayscale(masked_depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/masked-depth-" + suffix + ".png");
+    draw_nan_masked_grayscale(masked_depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/masked_depth-" + suffix + ".png");
     Array<float> x = reconstruct_depth(masked_depth_, down_sampler_.ds_intrinsic_matrix_);
     draw_quantiled_grayscale(x[0], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-0-" + suffix + ".png");
     draw_quantiled_grayscale(x[1], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-1-" + suffix + ".png");
     draw_quantiled_grayscale(x[2], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-2-" + suffix + ".png");
 
-    masked_depth_.save_binary(cache_dir_ + "/masked-depth-" + suffix + ".array");
+    masked_depth_.save_binary(cache_dir_ + "/masked_depth-" + suffix + ".array");
 
     {
         Array<float> condition_number;
@@ -436,9 +436,9 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
 
         draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-a.png");
         StbImage::from_float_rgb(im0_rgb).save_to_file(cache_dir_ + "/pkg-" + suffix + "-rgb.png");
-        masked_depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-masked-depth.array");
+        masked_depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-masked_depth.array");
         depth_.save_binary(cache_dir_ + "/pkg-" + suffix + "-depth.array");
-        draw_nan_masked_grayscale(masked_depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked-depth.png");
+        draw_nan_masked_grayscale(masked_depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-masked_depth.png");
         draw_nan_masked_grayscale(depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-depth.png");
         down_sampler_.ds_intrinsic_matrix_.affine().to_array().save_txt_2d(cache_dir_ + "/pkg-" + suffix + "-intrinsic_matrix.m");
     }
