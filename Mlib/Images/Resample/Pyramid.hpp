@@ -1,3 +1,4 @@
+#pragma once
 #include <Mlib/Array/Array.hpp>
 #include <deque>
 #include <functional>
