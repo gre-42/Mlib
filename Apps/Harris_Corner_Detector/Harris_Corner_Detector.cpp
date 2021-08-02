@@ -6,11 +6,11 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Sfm/Disparity/Corresponding_Features_In_Candidate_List.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Variance.hpp>
 #include <Mlib/Strings/From_Number.hpp>
-#include <Mlib/Sfm/Disparity/Corresponding_Features_In_Candidate_List.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
