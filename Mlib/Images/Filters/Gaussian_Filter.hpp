@@ -15,7 +15,7 @@ Array<TData> gaussian_filter_1d_NWE(
     if (sigma == 0) {
         return image.copy();
     }
-    Array<TData> coeffs{ArrayShape{1 + size_t(2 * truncate * sigma)}};
+    Array<TSigma> coeffs{ArrayShape{1 + size_t(2 * truncate * sigma)}};
     size_t cdist = coeffs.length() / 2;
     for (size_t i = cdist; i < coeffs.length(); ++i) {
         coeffs(i) = std::exp(-squared((i - cdist) / sigma) / 2);

@@ -3,8 +3,8 @@
 
 namespace Mlib {
 
-template <class TData>
-Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TData>& coeffs, const TData& boundary_value, size_t axis, bool nwe = true) {
+template <class TData, class TCoeffs>
+Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeffs>& coeffs, const TData& boundary_value, size_t axis, bool nwe = true) {
     assert(coeffs.ndim() == 1);
 
     if (coeffs.length() <= 1) {
@@ -17,8 +17,8 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TData>
         ArrayAxisView<TData> result_axis(result, index0, axis);
         size_t cdist = coeffs.length() / 2;
         for (size_t i = 0; i < result_axis.length(); i++) {
-            TData v = 0;
-            TData sc = 0;
+            TCoeffs v = 0;
+            TCoeffs sc = 0;
             for (size_t d = 0; d < coeffs.length(); ++d) {
                 size_t idi = i + d - cdist;
                 if (idi < result_axis.length()) {
