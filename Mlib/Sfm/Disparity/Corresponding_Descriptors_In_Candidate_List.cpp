@@ -1,5 +1,6 @@
 #include "Corresponding_Descriptors_In_Candidate_List.hpp"
 #include <Mlib/Images/Coordinates_Fixed.hpp>
+#include <Mlib/Sfm/Disparity/Traceable_Descriptor.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -21,21 +22,11 @@ CorrespondingDescriptorsInCandidateList::CorrespondingDescriptorsInCandidateList
     std::list<Array<float>> yl0;
     std::list<Array<float>> yl1;
     for (size_t i0 = 0; i0 < feature_points0.length(); ++i0) {
-        size_t best_i1 = SIZE_MAX;
-        float best_dist = INFINITY;
-        float second_best_dist = INFINITY;
-        for (size_t i1 = 0; i1 < feature_points1.length(); ++i1) {
-            float dist = 0;
-            for (size_t d = 0; d < descriptors0.shape(1); ++d) {
-                dist += squared(descriptors0(i0, d) - descriptors1(i1, d));
-            }
-            if (dist < best_dist) {
-                best_i1 = i1;
-                second_best_dist = best_dist;
-                best_dist = dist;
-            }
-        }
-        if (best_dist < squared(lowe_ratio) * second_best_dist) {
+        size_t best_i1 = TraceableDescriptor::descriptor_id_in_parameter_list(
+            &descriptors0(i0, 0),
+            descriptors1,
+            lowe_ratio);
+        if (best_i1 != SIZE_MAX) {
             yl0_2.push_back(feature_points0(i0));
             yl1_2.push_back(feature_points1(best_i1));
         }
