@@ -90,7 +90,7 @@ void Mlib::cv::cvtColor(
 }
 
 void Mlib::cv::GaussianBlur(const Mat<int16_t>& src, Mat<int16_t>& dest, float sigma) {
-    dest.array.move() = gaussian_filter_NWE(src.array * (int16_t)100, sigma, (int16_t)UINT16_MAX) / (int16_t)100;
+    dest.array.move() = gaussian_filter_NWE(src.array, sigma, (int16_t)UINT16_MAX);
 }
 
 template <class TData>
