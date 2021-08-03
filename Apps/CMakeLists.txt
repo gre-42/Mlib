@@ -25,6 +25,7 @@ add_subdirectory(Sfm_Dense_Mapping)
 add_subdirectory(Sfm_Dense_Mapping_G)
 add_subdirectory(Sfm_Dtam_Pipeline)
 add_subdirectory(Sfm_Train)
+add_subdirectory(Sift_Feature_Detector)
 
 if (glfw3_FOUND)
 add_subdirectory(Explicit_Mipmaps)

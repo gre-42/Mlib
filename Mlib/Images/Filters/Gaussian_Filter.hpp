@@ -3,10 +3,10 @@
 
 namespace Mlib {
 
-template <class TData>
+template <class TData, class TSigma>
 Array<TData> gaussian_filter_1d_NWE(
     const Array<TData>& image,
-    const TData& sigma,
+    const TSigma& sigma,
     size_t axis,
     const TData& boundary_value,
     const TData& truncate = 4,
@@ -25,10 +25,10 @@ Array<TData> gaussian_filter_1d_NWE(
     return lowpass_filter_1d_NWE(image, coeffs, boundary_value, axis, nwe);
 }
 
-template <class TData>
+template <class TData, class TSigma>
 Array<TData> gaussian_filter_NWE(
     const Array<TData>& image,
-    const TData& sigma,
+    const TSigma& sigma,
     const TData& boundary_value,
     const TData& truncate = 4,
     bool nwe = true)

@@ -9,9 +9,46 @@ Array<float> down_sample(
     const Array<float>& image,
     const ArrayShape& reduction);
 
-Array<float> down_sample2(const Array<float>& image);
+template <class TData>
+Array<TData> down_sample2(const Array<TData>& image)
+{
+    assert(image.ndim() == 2);
+    Array<TData> result{(image.shape() - 1) / 2 + 1};
+    // assert(all(2 * (result.shape() - 1) + 1 == image.shape()));
+    assert(all(2 * (result.shape() - 1) < image.shape()));
+    for (size_t r = 0; r < result.shape(0); ++r) {
+        for (size_t c = 0; c < result.shape(1); ++c) {
+            result(r, c) = image(2 * r, 2 * c);
+        }
+    }
+    return result;
+}
 
-Array<float> up_sample2(const Array<float>& image);
+template <class TData>
+Array<TData> up_sample2(const Array<TData>& image)
+{
+    assert(image.ndim() == 2);
+    Array<TData> result{2 * (image.shape() - 1) + 1};
+    for (size_t r = 0; r < image.shape(0); ++r) {
+        for (size_t c = 0; c < image.shape(1); ++c) {
+            result(2 * r, 2 * c) = image(r, c);
+            if (c < image.shape(1) - 1) {
+                result(2 * r, 2 * c + 1) = (image(r, c) + image(r, c + 1)) / 2;
+            }
+            if (r < image.shape(0) - 1) {
+                result(2 * r + 1, 2 * c) = (image(r, c) + image(r + 1, c)) / 2;
+            }
+            if (c < image.shape(1) - 1 && r < image.shape(0) - 1) {
+                result(2 * r + 1, 2 * c + 1) = (
+                    image(r + 0, c + 0) +
+                    image(r + 0, c + 1) +
+                    image(r + 1, c + 0) +
+                    image(r + 1, c + 1)) / 4;
+            }
+        }
+    }
+    return result;
+}
 
 void resampling_pyramid(
     const Array<float>& images,

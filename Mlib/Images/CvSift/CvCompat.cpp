@@ -1,0 +1,143 @@
+#include "CvCompat.hpp"
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
+#include <Mlib/Math/Math.hpp>
+
+using namespace Mlib;
+using namespace cv;
+
+template <class TData>
+Mat<TData>::Mat()
+{}
+
+template <class TData>
+Mat<TData>::Mat(const Mlib::Array<TData>& array)
+: array{array}
+{}
+
+template <class TData>
+int Mat<TData>::channels() const {
+    if (array.ndim() == 3) {
+        return array.shape(2);
+    } else if (array.ndim() == 2) {
+        return 1;
+    } else {
+        throw std::runtime_error("Unsupported image dimensions");
+    }
+}
+
+template <class TData>
+void Mat<TData>::copyTo(Mat<TData>& other) const {
+    other.array = array;
+}
+
+template <class TData>
+template <class TDestData>
+void Mat<TData>::convertTo(Mat<TDestData>& dest, double alpha) const {
+    if (alpha == 1) {
+        dest.array.move() = array TEMPLATEV casted<TDestData>();
+    } else {
+        dest.array.move() = array TEMPLATEV applied<TDestData>([alpha](const TData& v){return (TDestData)(v * alpha);});
+    }
+}
+
+template <class TData>
+int Mat<TData>::rows() const {
+    assert(array.ndim() == 2 || array.ndim() == 3);
+    return (int)array.shape(0);
+}
+
+template <class TData>
+int Mat<TData>::cols() const {
+    assert(array.ndim() == 2 || array.ndim() == 3);
+    return (int)array.shape(1);
+}
+
+template <class TData>
+int Mat<TData>::step1() const {
+    assert(array.ndim() == 2);
+    return array.shape(1);
+}
+
+template <class TData>
+TData* Mat<TData>::ptr(int r) {
+    assert(array.ndim() == 2);
+    return &array(r, 0);
+}
+
+template <class TData>
+const TData* Mat<TData>::ptr(int r) const {
+    assert(array.ndim() == 2);
+    return &array(r, 0);
+}
+
+template <class TData>
+bool Mat<TData>::empty() const {
+    return !array.initialized();
+}
+
+template <class TSourceData, class TDestData>
+void Mlib::cv::cvtColor(
+    const Mat<TSourceData>& img,
+    Mat<TDestData>& gray,
+    ColorConversionCodes code)
+{
+    if (code == COLOR_BGR2GRAY) {
+        assert_true(img.channels() == 3);
+        gray.array.move() = sum(img.array, 2);
+    } else {
+        throw std::runtime_error("Unknown conversion code");
+    }
+}
+
+void Mlib::cv::GaussianBlur(const Mat<int16_t>& src, Mat<int16_t>& dest, float sigma) {
+    dest.array.move() = gaussian_filter_NWE(src.array * (int16_t)100, sigma, (int16_t)UINT16_MAX) / (int16_t)100;
+}
+
+template <class TData>
+void Mlib::cv::exp(const TData* src, TData* dst, int len) {
+    for (int i = 0; i < len; ++i) {
+        dst[i] = std::exp(src[i]);
+    }
+}
+
+template <class TData>
+void Mlib::cv::fastAtan2(const TData* Y, const TData* X, TData* Ori, int len) {
+    for (int i = 0; i < len; ++i) {
+        Ori[i] = std::atan2(Y[i], X[i]);
+    }
+}
+
+template <class TData>
+void Mlib::cv::magnitude(const TData* X, const TData* Y, TData* Mag, int len) {
+    for (int i = 0; i < len; ++i) {
+        Mag[i] = std::sqrt(squared(X[i]) + squared(Y[i]));
+    }
+}
+
+template <class TData>
+int Mlib::cv::cvRound(const TData& data) {
+    return (int)std::round(data);
+}
+
+int Mlib::cv::cvFloor(float v) {
+    return (int)std::floor(v);
+}
+
+template <class TDest, class TSource>
+TDest Mlib::cv::saturate_cast(const TSource& a) {
+    return (TDest)std::clamp<TSource>(a, std::numeric_limits<TDest>::min(), std::numeric_limits<TDest>::max());
+}
+
+template uint8_t Mlib::cv::saturate_cast<uint8_t, float>(const float& a);
+template void Mlib::cv::cvtColor<uint8_t, uint8_t>(const Mat<uint8_t>& img, Mat<uint8_t>& gray, ColorConversionCodes code);
+template class Mlib::cv::Mat<uint8_t>;
+template class Mlib::cv::Mat<int16_t>;
+template class Mlib::cv::Mat<float>;
+
+template void Mlib::cv::Mat<uint8_t>::convertTo<int16_t>(Mat<int16_t>& dest, double alpha) const;
+
+template void Mlib::cv::exp<float>(const float* src, float* dst, int len);
+template void Mlib::cv::fastAtan2<float>(const float* Y, const float* X, float* Ori, int len);
+template void Mlib::cv::magnitude<float>(const float* X, const float* Y, float* Mag, int len);
+template int Mlib::cv::cvRound(const float& data);
+template int Mlib::cv::cvRound(const double& data);
