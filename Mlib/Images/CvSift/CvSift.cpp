@@ -343,7 +343,7 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
     const float second_deriv_scale = img_scale;
     const float cross_deriv_scale = img_scale*0.25f;
 
-    float xi=0, xr=0, xc=0, contr;
+    float xi=0, xr=0, xc=0, contr=0;
     int i = 0;
 
     TemporarilyIgnoreFloatingPointExeptions ignore_except;
@@ -384,12 +384,12 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
         xr = -X(1);
         xc = -X(0);
 
-        if( std::abs( xi ) < 0.5f  &&  std::abs( xr ) < 0.5f  &&  std::abs( xc ) < 0.5f )
+        if( std::abs(xi) < 0.5f && std::abs(xr) < 0.5f && std::abs(xc) < 0.5f )
             break;
 
-        c += cvRound( xc );
-        r += cvRound( xr );
-        layer += cvRound( xi );
+        c += cvRound(xc);
+        r += cvRound(xr);
+        layer += cvRound(xi);
 
         if( layer < 1 || layer > nOctaveLayers ||
            c < SIFT_IMG_BORDER || c >= img.cols() - SIFT_IMG_BORDER  ||
@@ -397,7 +397,7 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
             return false;
     }
 
-    /* ensure convergence of interpolation */
+    // ensure convergence of interpolation
     if( i >= SIFT_MAX_INTERP_STEPS )
         return false;
 
@@ -433,6 +433,7 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
     kpt.pt(1) = (r + xr) * (1 << octv);
     kpt.octave = octv + (layer << 8) + (cvRound((xi + 0.5)*255) << 16);
     kpt.size = sigma*powf(2.f, (layer + xi) / nOctaveLayers)*(1 << octv)*2;
+    kpt.response = std::abs(contr);
 
     return true;
 }
@@ -742,7 +743,7 @@ void SIFT::operator()(const Array<uint8_t>& _image, const Array<uint8_t>& _mask,
         //KeyPointsFilter::runByPixelsMask( keypoints, mask );
     }
 
-    if ( _descriptors != nullptr )
+    if( _descriptors != nullptr )
     {
         //t = (double)getTickCount();
         int dsize = descriptorSize();
