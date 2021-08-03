@@ -107,6 +107,7 @@
 #include <Mlib/Images/CvSift/CvKeyPointsFilter.hpp>
 #include <Mlib/Images/CvSift/KeyPoint.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <iostream>
 #include <stdarg.h>
@@ -222,13 +223,14 @@ void SIFT::buildGaussianPyramid( const Mat<int16_t>& base, std::vector<Mat<int16
         for( int i = 0; i < nOctaveLayers + 3; i++ )
         {
             Mat<int16_t>& dst = pyr[o*(nOctaveLayers + 3) + i];
+            assert(dst.empty());
             if( o == 0  &&  i == 0 )
-                dst = base;
+                dst.array = base.array;
             // base of new octave is halved image from end of previous octave
             else if( i == 0 )
             {
                 const Mat<int16_t>& src = pyr[(o-1)*(nOctaveLayers + 3) + nOctaveLayers];
-                dst.array.move() = down_sample2(src.array);
+                dst.array = down_sample2(src.array);
             }
             else
             {
@@ -344,6 +346,7 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
     float xi=0, xr=0, xc=0, contr;
     int i = 0;
 
+    TemporarilyIgnoreFloatingPointExeptions ignore_except;
     for( ; i < SIFT_MAX_INTERP_STEPS; i++ )
     {
         int idx = octv*(nOctaveLayers+2) + layer;
@@ -373,6 +376,9 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
             dxs, dys, dss};
 
         FixedArray<float, 3> X = lstsq_chol_1d(H, dD);
+        if (any(isnan(X))) {
+            return false;
+        }
 
         xi = -X(2);
         xr = -X(1);
@@ -706,6 +712,12 @@ void SIFT::operator()(const Array<uint8_t>& _image, const Array<uint8_t>& _mask,
     //t = (double)getTickCount();
     buildGaussianPyramid(base, gpyr, nOctaves);
     buildDoGPyramid(gpyr, dogpyr);
+    // for (size_t i = 0; i < gpyr.size(); ++i) {
+    //     draw_nan_masked_grayscale(gpyr[i].array.casted<float>(), 0.f, float{INT16_MAX}).save_to_file(std::to_string(i) + "_g.png");
+    // }
+    // for (size_t i = 0; i < dogpyr.size(); ++i) {
+    //     draw_nan_masked_grayscale(dogpyr[i].array.casted<float>(), float{100}, float{100}).save_to_file(std::to_string(i) + "_d.png");
+    // }
 
     //t = (double)getTickCount() - t;
     //printf("pyramid construction time: %g\n", t*1000./tf);
