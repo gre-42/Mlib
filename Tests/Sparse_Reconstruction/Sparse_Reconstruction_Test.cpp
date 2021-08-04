@@ -62,7 +62,7 @@ void test_reconstruction() {
         assert(keep < sc.y.shape(1));
         for (size_t pt_id = 0; pt_id < sc.y.shape(1) - keep; ++pt_id) {
             std::shared_ptr<FeaturePointSequence> seq;
-            auto point = std::make_shared<FeaturePoint>(sc.y(itime, pt_id), traceable_patch);
+            auto point = std::make_shared<FeaturePoint>(sc.y(itime, pt_id), traceable_patch, TraceableDescriptor{ Array<float>() });
             if ((particles.size() > 0) &&
                 (particles.rbegin()->second.find(pt_id) != particles.rbegin()->second.end())) {
                 seq = particles.rbegin()->second.find(pt_id)->second;

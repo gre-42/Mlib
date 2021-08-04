@@ -1,5 +1,7 @@
 #include "Flowing_Particles.hpp"
 #include <Mlib/Images/Coordinates_Fixed.hpp>
+#include <Mlib/Images/CvSift/CvSift.hpp>
+#include <Mlib/Images/CvSift/KeyPoint.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
@@ -7,6 +9,7 @@
 #include <Mlib/Images/OpenCV.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Sfm/Disparity/Traceable_Descriptor.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <filesystem>
 
@@ -33,6 +36,43 @@ FlowingParticles::FlowingParticles(
   cfg_{cfg}
 {}
 
+void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_frame) {
+    assert(image_frames_.size() > 0);
+    shape_ = image_frames_.rbegin()->second.grayscale.fixed_shape<2>();
+
+    std::vector<cv::KeyPoint> keypoints1;
+    Array<float> descriptors1;
+    std::set<size_t> inserted_keypoints1;
+    cv::SIFT sift{ (int)cfg_.target_nparticles };
+    sift((image_frames_.rbegin()->second.grayscale * 255.f).casted<uint8_t>(),
+         ones<uint8_t>(image_frames_.rbegin()->second.grayscale.shape()),
+         keypoints1,
+         &descriptors1);
+    if (particles_.size() > 0) {
+        for (auto& s : particles_.rbegin()->second) {
+            size_t best_id1 = s.second->sequence.rbegin()->second->tracebale_descriptor.descriptor_id_in_parameter_list(descriptors1);
+            if (!inserted_keypoints1.contains(best_id1)) {
+                if (best_id1 != SIZE_MAX) {
+                    try_insert_and_append_feature_point(
+                        new_frame,
+                        s,
+                        keypoints1[best_id1].pt,
+                        descriptors1[best_id1]);
+                    inserted_keypoints1.insert(best_id1);
+                }
+            }
+        }
+    }
+    for (size_t i1 = 0; (i1 < keypoints1.size()) && (new_frame.size() < cfg_.target_nparticles); ++i1) {
+        if (!inserted_keypoints1.contains(i1)) {
+            try_generate_feature_point_sequence(
+                new_frame,
+                keypoints1[i1].pt,
+                descriptors1[i1]);
+        }
+    }
+}
+
 void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     assert(image_frames_.size() > 0);
     shape_ = image_frames_.rbegin()->second.grayscale.fixed_shape<2>();
@@ -44,7 +84,8 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
             for (size_t c = 0; c < shape_(id1); c+=shape_(id1)/10) {
                 try_generate_feature_point_sequence(
                     new_frame,
-                    i2a(FixedArray<size_t, 2>{r, c}));
+                    i2a(FixedArray<size_t, 2>{r, c}),
+                    Array<float>());
             }
         }
     }
@@ -107,7 +148,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     }
     std::cerr << "Trying to generate " << points.shape(0) << " new particles" << std::endl;
     for (const FixedArray<float, 2>& p : points.flat_iterable()) {
-        try_generate_feature_point_sequence(new_frame, p);
+        try_generate_feature_point_sequence(new_frame, p, Array<float>());
     }
 }
 
@@ -117,21 +158,25 @@ size_t FlowingParticles::streamline_search_length() {
         image_frames_.rbegin()->second.grayscale.shape()))) / 113;
 }
 
-std::shared_ptr<FeaturePoint> FlowingParticles::generate_feature_point(const FixedArray<float, 2>& pos) const
+std::shared_ptr<FeaturePoint> FlowingParticles::generate_feature_point(
+    const FixedArray<float, 2>& pos,
+    const Array<float>& descriptor) const
 {
     return std::make_shared<FeaturePoint>(
         pos,
         TraceablePatch(
             image_frames_.rbegin()->second.rgb,
             a2i(pos),
-            cfg_.patch_size));
+            cfg_.patch_size),
+        TraceableDescriptor{ descriptor });
 }
 
 bool FlowingParticles::try_generate_feature_point_sequence(
     FeaturePointFrame& frame,
-    const FixedArray<float, 2>& pos)
+    const FixedArray<float, 2>& pos,
+    const Array<float>& descriptor)
 {
-    auto p = generate_feature_point(pos);
+    auto p = generate_feature_point(pos, descriptor);
     if (p->traceable_patch.good_) {
         auto seq = std::make_shared<FeaturePointSequence>();
         seq->sequence[image_frames_.rbegin()->first] = p;
@@ -144,10 +189,11 @@ bool FlowingParticles::try_generate_feature_point_sequence(
 bool FlowingParticles::try_insert_and_append_feature_point(
     FeaturePointFrame& frame,
     const std::pair<size_t, std::shared_ptr<FeaturePointSequence>>& seq,
-    const FixedArray<float, 2>& pos)
+    const FixedArray<float, 2>& pos,
+    const Array<float>& descriptor)
 {
-    auto p = generate_feature_point(pos);
-    if (p->traceable_patch.good_) {
+    auto p = generate_feature_point(pos, descriptor);
+    if (descriptor.initialized() || p->traceable_patch.good_) {
         seq.second->sequence[image_frames_.rbegin()->first] = p;
         frame.insert(seq);
         return true;
@@ -223,7 +269,7 @@ void FlowingParticles::advance_existing_particles(
                     continue;
                 }
             }
-            if (try_insert_and_append_feature_point(new_frame, s, new_pos)) {
+            if (try_insert_and_append_feature_point(new_frame, s, new_pos, Array<float>())) {
                 ++nsuccess;
             }
         }
@@ -234,21 +280,25 @@ void FlowingParticles::advance_existing_particles(
 void FlowingParticles::advance_flowing_particles() {
     assert(image_frames_.size() >= 1);
     FeaturePointFrame new_frame;
-    if (particles_.size() > 0) {
-        if (cfg_.tracking_mode == TrackingMode::PATCH_NEW_POSITION_IN_BOX) {
-            advance_existing_particles(
-                new_frame,
-                Array<float>(),
-                Array<bool>());
-        } else {
-            assert(optical_flow_frames_.size() >= 1);
-            advance_existing_particles(
-                new_frame,
-                optical_flow_frames_.rbegin()->second.grayscale,
-                optical_flow_frames_.rbegin()->second.mask);
+    if (cfg_.tracking_mode == TrackingMode::SIFT) {
+        generate_sift_correspondences(new_frame);
+    } else {
+        if (particles_.size() > 0) {
+            if (cfg_.tracking_mode == TrackingMode::PATCH_NEW_POSITION_IN_BOX) {
+                advance_existing_particles(
+                    new_frame,
+                    Array<float>(),
+                    Array<bool>());
+            } else {
+                assert(optical_flow_frames_.size() >= 1);
+                advance_existing_particles(
+                    new_frame,
+                    optical_flow_frames_.rbegin()->second.grayscale,
+                    optical_flow_frames_.rbegin()->second.mask);
+            }
         }
+        generate_new_particles(new_frame);
     }
-    generate_new_particles(new_frame);
     particles_.insert(std::make_pair(image_frames_.rbegin()->first, new_frame));
     StbImage bmp = StbImage::from_float_grayscale(image_frames_.rbegin()->second.grayscale);
     if (optical_flow_frames_.size() >= 1) {
@@ -354,6 +404,7 @@ void FlowingParticles::draw(StbImage& bmp) {
 
 bool FlowingParticles::requires_optical_flow() const {
     return
-        cfg_.tracking_mode != TrackingMode::PATCH_NEW_POSITION_IN_BOX ||
+        (cfg_.tracking_mode != TrackingMode::PATCH_NEW_POSITION_IN_BOX &&
+         cfg_.tracking_mode != TrackingMode::SIFT) ||
         cfg_.draw_optical_flow;
 }

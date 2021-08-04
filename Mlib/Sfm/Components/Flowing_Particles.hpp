@@ -39,16 +39,21 @@ private:
         FeaturePointFrame& new_frame,
         const Array<float>& flow_field,
         const Array<bool>& flow_mask);
+    void generate_sift_correspondences(FeaturePointFrame& new_frame);
     void generate_new_particles(FeaturePointFrame& new_frame);
     size_t streamline_search_length();
     bool try_generate_feature_point_sequence(
         FeaturePointFrame& frame,
-        const FixedArray<float, 2>& pos);
+        const FixedArray<float, 2>& pos,
+        const Array<float>& descriptor);
     bool try_insert_and_append_feature_point(
         FeaturePointFrame& frame,
         const std::pair<size_t, std::shared_ptr<FeaturePointSequence>>& seq,
-        const FixedArray<float, 2>& pos);
-    std::shared_ptr<FeaturePoint> generate_feature_point(const FixedArray<float, 2>& pos) const;
+        const FixedArray<float, 2>& pos,
+        const Array<float>& descriptor);
+    std::shared_ptr<FeaturePoint> generate_feature_point(
+        const FixedArray<float, 2>& pos,
+        const Array<float>& descriptor) const;
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames_;
     const std::map<std::chrono::milliseconds, ImageFrame>& optical_flow_frames_;
 #if 0

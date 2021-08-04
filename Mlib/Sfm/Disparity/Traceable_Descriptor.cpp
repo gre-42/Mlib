@@ -2,6 +2,10 @@
 
 using namespace Mlib::Sfm;
 
+TraceableDescriptor::TraceableDescriptor(const Array<float>& descriptor)
+: descriptor_{descriptor}
+{}
+
 bool TraceableDescriptor::new_position_in_candidate_list(
     FixedArray<float, 2>& position,
     const Array<float>& feature_points1,
@@ -9,7 +13,7 @@ bool TraceableDescriptor::new_position_in_candidate_list(
     float lowe_ratio) const
 {
     size_t best_id1 = descriptor_id_in_parameter_list(
-        descriptor.flat_begin(),
+        descriptor_.flat_begin(),
         descriptors1,
         lowe_ratio);
     if (best_id1 == SIZE_MAX) {
@@ -19,6 +23,16 @@ bool TraceableDescriptor::new_position_in_candidate_list(
     return true;
 }
 
+size_t TraceableDescriptor::descriptor_id_in_parameter_list(
+    const Array<float>& descriptors1,
+    float lowe_ratio)
+{
+    return descriptor_id_in_parameter_list(
+        descriptor_.flat_begin(),
+        descriptors1,
+        lowe_ratio);
+}
+    
 size_t TraceableDescriptor::descriptor_id_in_parameter_list(
     const float* descriptor0,
     const Array<float>& descriptors1,
