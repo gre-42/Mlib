@@ -50,7 +50,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
          &descriptors1);
     if (particles_.size() > 0) {
         for (auto& s : particles_.rbegin()->second) {
-            size_t best_id1 = s.second->sequence.rbegin()->second->tracebale_descriptor.descriptor_id_in_parameter_list(descriptors1);
+            size_t best_id1 = s.second->sequence.begin()->second->tracebale_descriptor.descriptor_id_in_parameter_list(descriptors1);
             if (!inserted_keypoints1.contains(best_id1)) {
                 if (best_id1 != SIZE_MAX) {
                     try_insert_and_append_feature_point(
