@@ -3,7 +3,7 @@
 #include <Mlib/Math/Math.hpp>
 
 using namespace Mlib;
-using namespace cv;
+using namespace ocv;
 
 template <class TData>
 Mat<TData>::Mat()
@@ -76,7 +76,7 @@ bool Mat<TData>::empty() const {
 }
 
 template <class TSourceData, class TDestData>
-void Mlib::cv::cvtColor(
+void Mlib::ocv::cvtColor(
     const Mat<TSourceData>& img,
     Mat<TDestData>& gray,
     ColorConversionCodes code)
@@ -89,55 +89,55 @@ void Mlib::cv::cvtColor(
     }
 }
 
-void Mlib::cv::GaussianBlur(const Mat<int16_t>& src, Mat<int16_t>& dest, float sigma) {
+void Mlib::ocv::GaussianBlur(const Mat<int16_t>& src, Mat<int16_t>& dest, float sigma) {
     dest.array.move() = gaussian_filter_NWE(src.array, sigma, (int16_t)UINT16_MAX);
 }
 
 template <class TData>
-void Mlib::cv::exp(const TData* src, TData* dst, int len) {
+void Mlib::ocv::exp(const TData* src, TData* dst, int len) {
     for (int i = 0; i < len; ++i) {
         dst[i] = std::exp(src[i]);
     }
 }
 
 template <class TData>
-void Mlib::cv::fastAtan2(const TData* Y, const TData* X, TData* Ori, int len) {
+void Mlib::ocv::fastAtan2(const TData* Y, const TData* X, TData* Ori, int len) {
     for (int i = 0; i < len; ++i) {
         Ori[i] = std::atan2(Y[i], X[i]);
     }
 }
 
 template <class TData>
-void Mlib::cv::magnitude(const TData* X, const TData* Y, TData* Mag, int len) {
+void Mlib::ocv::magnitude(const TData* X, const TData* Y, TData* Mag, int len) {
     for (int i = 0; i < len; ++i) {
         Mag[i] = std::sqrt(squared(X[i]) + squared(Y[i]));
     }
 }
 
 template <class TData>
-int Mlib::cv::cvRound(const TData& data) {
+int Mlib::ocv::cvRound(const TData& data) {
     return (int)std::round(data);
 }
 
-int Mlib::cv::cvFloor(float v) {
+int Mlib::ocv::cvFloor(float v) {
     return (int)std::floor(v);
 }
 
 template <class TDest, class TSource>
-TDest Mlib::cv::saturate_cast(const TSource& a) {
+TDest Mlib::ocv::saturate_cast(const TSource& a) {
     return (TDest)std::clamp<TSource>(a, std::numeric_limits<TDest>::min(), std::numeric_limits<TDest>::max());
 }
 
-template uint8_t Mlib::cv::saturate_cast<uint8_t, float>(const float& a);
-template void Mlib::cv::cvtColor<uint8_t, uint8_t>(const Mat<uint8_t>& img, Mat<uint8_t>& gray, ColorConversionCodes code);
-template class Mlib::cv::Mat<uint8_t>;
-template class Mlib::cv::Mat<int16_t>;
-template class Mlib::cv::Mat<float>;
+template uint8_t Mlib::ocv::saturate_cast<uint8_t, float>(const float& a);
+template void Mlib::ocv::cvtColor<uint8_t, uint8_t>(const Mat<uint8_t>& img, Mat<uint8_t>& gray, ColorConversionCodes code);
+template class Mlib::ocv::Mat<uint8_t>;
+template class Mlib::ocv::Mat<int16_t>;
+template class Mlib::ocv::Mat<float>;
 
-template void Mlib::cv::Mat<uint8_t>::convertTo<int16_t>(Mat<int16_t>& dest, double alpha) const;
+template void Mlib::ocv::Mat<uint8_t>::convertTo<int16_t>(Mat<int16_t>& dest, double alpha) const;
 
-template void Mlib::cv::exp<float>(const float* src, float* dst, int len);
-template void Mlib::cv::fastAtan2<float>(const float* Y, const float* X, float* Ori, int len);
-template void Mlib::cv::magnitude<float>(const float* X, const float* Y, float* Mag, int len);
-template int Mlib::cv::cvRound(const float& data);
-template int Mlib::cv::cvRound(const double& data);
+template void Mlib::ocv::exp<float>(const float* src, float* dst, int len);
+template void Mlib::ocv::fastAtan2<float>(const float* Y, const float* X, float* Ori, int len);
+template void Mlib::ocv::magnitude<float>(const float* X, const float* Y, float* Mag, int len);
+template int Mlib::ocv::cvRound(const float& data);
+template int Mlib::ocv::cvRound(const double& data);

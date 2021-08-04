@@ -2,13 +2,15 @@
 #include <cstdint>
 #include <vector>
 
-namespace Mlib::cv {
-    struct KeyPoint;
-    template <class TData>
-    class Mat;
+namespace Mlib::ocv {
+
+struct KeyPoint;
+template <class TData>
+class Mat;
+
 };
 
-namespace Mlib::cv::KeyPointsFilter {
+namespace Mlib::ocv::KeyPointsFilter {
 
 void removeDuplicated( std::vector<KeyPoint>& keypoints );
 void runByPixelsMask( std::vector<KeyPoint>& keypoints, const Mat<uint8_t>& mask );

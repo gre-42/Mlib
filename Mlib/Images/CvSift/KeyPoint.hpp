@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
-namespace Mlib::cv {
+namespace Mlib::ocv {
 
 struct KeyPoint {
     OrderableFixedArray<float, 2> pt;

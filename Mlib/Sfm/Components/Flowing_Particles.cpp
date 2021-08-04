@@ -40,10 +40,10 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
     assert(image_frames_.size() > 0);
     shape_ = image_frames_.rbegin()->second.grayscale.fixed_shape<2>();
 
-    std::vector<cv::KeyPoint> keypoints1;
+    std::vector<ocv::KeyPoint> keypoints1;
     Array<float> descriptors1;
     std::set<size_t> inserted_keypoints1;
-    cv::SIFT sift{ (int)cfg_.target_nparticles };
+    ocv::SIFT sift{ (int)cfg_.target_nparticles };
     sift((image_frames_.rbegin()->second.grayscale * 255.f).casted<uint8_t>(),
          ones<uint8_t>(image_frames_.rbegin()->second.grayscale.shape()),
          keypoints1,

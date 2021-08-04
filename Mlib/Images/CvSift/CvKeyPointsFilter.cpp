@@ -2,10 +2,10 @@
 #include <Mlib/Images/CvSift/CvCompat.hpp>
 #include <Mlib/Images/CvSift/KeyPoint.hpp>
 
-using namespace Mlib::cv;
-using namespace Mlib::cv::KeyPointsFilter;
+using namespace Mlib::ocv;
+using namespace Mlib::ocv::KeyPointsFilter;
 
-void Mlib::cv::KeyPointsFilter::removeDuplicated( std::vector<KeyPoint>& keypoints )
+void Mlib::ocv::KeyPointsFilter::removeDuplicated( std::vector<KeyPoint>& keypoints )
 {
     int i, j, n = (int)keypoints.size();
     std::vector<int> kpidx(n);
@@ -51,7 +51,7 @@ private:
     MaskPredicate& operator=(const MaskPredicate&) = delete;
 };
 
-void Mlib::cv::KeyPointsFilter::runByPixelsMask( std::vector<KeyPoint>& keypoints, const Mat<uint8_t>& mask )
+void Mlib::ocv::KeyPointsFilter::runByPixelsMask( std::vector<KeyPoint>& keypoints, const Mat<uint8_t>& mask )
 {
     if( mask.empty() )
         return;
@@ -102,5 +102,7 @@ void KeyPointsFilter::retainBest(std::vector<KeyPoint>& keypoints, int n_points)
                        KeypointResponseGreaterThanOrEqualToThreshold(ambiguous_response));
         //resize the keypoints, given this new end point. nth_element and partition reordered the points inplace
         keypoints.resize(new_end - keypoints.begin());
+
+        // std::sort(keypoints.begin(), keypoints.end(), KeypointResponseGreater());
     }
 }

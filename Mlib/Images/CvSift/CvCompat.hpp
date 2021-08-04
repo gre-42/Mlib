@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 
-namespace Mlib::cv {
+namespace Mlib::ocv {
 
 enum ColorConversionCodes {
     COLOR_BGR2GRAY = 6, 

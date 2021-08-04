@@ -113,7 +113,7 @@
 #include <stdarg.h>
 
 using namespace Mlib;
-using namespace Mlib::cv;
+using namespace Mlib::ocv;
 
 /******************************* Defs and macros *****************************/
 

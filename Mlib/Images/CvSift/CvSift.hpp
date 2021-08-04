@@ -10,7 +10,7 @@ class Array;
 
 }
 
-namespace Mlib::cv {
+namespace Mlib::ocv {
 
 struct KeyPoint;
 
