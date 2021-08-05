@@ -416,7 +416,7 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
         if( std::abs( contr ) * nOctaveLayers < contrastThreshold )
             return false;
 
-        /* principal curvatures are computed using the trace and det of Hessian */
+        // principal curvatures are computed using the trace and det of Hessian
         float v2 = img.array(r, c)*2.f;
         float dxx = (img.array(r, c+1) + img.array(r, c-1) - v2)*second_deriv_scale;
         float dyy = (img.array(r+1, c) + img.array(r-1, c) - v2)*second_deriv_scale;
@@ -558,11 +558,9 @@ static void calcSIFTDescriptor( const Mat<int16_t>& img, const FixedArray<float,
     for( i = -radius, k = 0; i <= radius; i++ )
         for( j = -radius; j <= radius; j++ )
         {
-            /*
-             Calculate sample's histogram array coords rotated relative to ori.
-             Subtract 0.5 so samples that fall e.g. in the center of row 1 (i.e.
-             r_rot = 1.5) have full weight placed in row 1 after interpolation.
-             */
+            // Calculate sample's histogram array coords rotated relative to ori.
+            // Subtract 0.5 so samples that fall e.g. in the center of row 1 (i.e.
+            // r_rot = 1.5) have full weight placed in row 1 after interpolation.
             float c_rot = j * cos_t - i * sin_t;
             float r_rot = j * sin_t + i * cos_t;
             float rbin = r_rot + d/2 - 0.5f;

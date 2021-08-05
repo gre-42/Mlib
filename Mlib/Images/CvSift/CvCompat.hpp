@@ -28,7 +28,8 @@ public:
 template <class TSourceData, class TDestData>
 void cvtColor(const Mat<TSourceData>& source, Mat<TDestData>& dest, ColorConversionCodes code);
 
-void GaussianBlur(const Mat<int16_t>& src, Mat<int16_t>& dest, float sigma);
+template <class TData>
+void GaussianBlur(const Mat<TData>& src, Mat<TData>& dest, float sigma);
 
 template <class TData>
 void exp(const TData* src, TData* dst, int len);

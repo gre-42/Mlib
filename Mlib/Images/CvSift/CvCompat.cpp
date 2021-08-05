@@ -11,7 +11,7 @@ Mat<TData>::Mat()
 
 template <class TData>
 Mat<TData>::Mat(const Mlib::Array<TData>& array)
-: array{array}
+: array(array)
 {}
 
 template <class TData>
@@ -89,8 +89,9 @@ void Mlib::ocv::cvtColor(
     }
 }
 
-void Mlib::ocv::GaussianBlur(const Mat<int16_t>& src, Mat<int16_t>& dest, float sigma) {
-    dest.array.move() = gaussian_filter_NWE(src.array, sigma, (int16_t)UINT16_MAX);
+template <class TData>
+void Mlib::ocv::GaussianBlur(const Mat<TData>& src, Mat<TData>& dest, float sigma) {
+    dest.array.move() = gaussian_filter_NWE(src.array, sigma, std::numeric_limits<TData>::max());
 }
 
 template <class TData>
@@ -135,9 +136,13 @@ template class Mlib::ocv::Mat<int16_t>;
 template class Mlib::ocv::Mat<float>;
 
 template void Mlib::ocv::Mat<uint8_t>::convertTo<int16_t>(Mat<int16_t>& dest, double alpha) const;
+template void Mlib::ocv::Mat<uint8_t>::convertTo<float>(Mat<float>& dest, double alpha) const;
 
 template void Mlib::ocv::exp<float>(const float* src, float* dst, int len);
 template void Mlib::ocv::fastAtan2<float>(const float* Y, const float* X, float* Ori, int len);
 template void Mlib::ocv::magnitude<float>(const float* X, const float* Y, float* Mag, int len);
 template int Mlib::ocv::cvRound(const float& data);
 template int Mlib::ocv::cvRound(const double& data);
+
+template void Mlib::ocv::GaussianBlur<int16_t>(const Mat<int16_t>& src, Mat<int16_t>& dest, float sigma);
+template void Mlib::ocv::GaussianBlur<float>(const Mat<float>& src, Mat<float>& dest, float sigma);
