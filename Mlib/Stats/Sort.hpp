@@ -34,7 +34,7 @@ void sort(Array<TData>& a) {
 
 template <class TData>
 Array<TData> sorted(const Array<TData>& a) {
-    Array<TData> af{a.copy()};
+    Array<TData> af(a.copy());
     sort(af);
     return af;
 }

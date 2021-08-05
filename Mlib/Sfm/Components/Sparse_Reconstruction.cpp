@@ -170,7 +170,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
             } else {
                 std::cerr << "Not storing second initial camera at " << particles_.rbegin()->first.count() << " ms" << std::endl;
             }
-            Array<size_t> inlier_sequence_ids{active_sequence_ids[ptr.best_indices]};
+            Array<size_t> inlier_sequence_ids(active_sequence_ids[ptr.best_indices]);
             auto sequence_id_it = &inlier_sequence_ids(0);
             for (size_t i = 0; i < x.shape(0); ++i) {
                 float cond_number = condition_number(i);

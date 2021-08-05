@@ -8,7 +8,7 @@ template <class TDataX>
 class Quantiles {
 public:
     explicit Quantiles(const Array<TDataX>& x)
-    : sx_{sorted(x)}
+    : sx_(sorted(x))
     {
         if (x.length() == 0) {
             throw std::runtime_error("Cannot compute quantiles for an empty array");

@@ -3,7 +3,7 @@
 using namespace Mlib::Sfm;
 
 TraceableDescriptor::TraceableDescriptor(const Array<float>& descriptor)
-: descriptor_{descriptor}
+: descriptor_(descriptor)
 {}
 
 bool TraceableDescriptor::new_position_in_candidate_list(

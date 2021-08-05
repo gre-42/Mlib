@@ -12,8 +12,8 @@ InitialReconstruction::InitialReconstruction(
     const Array<FixedArray<float, 2>>& y1,
     const TransformationMatrix<float, 3>& ke,
     const TransformationMatrix<float, 2>& ki)
-: y0{ y0 },
-  y1{ y1 },
+: y0( y0 ),
+  y1( y1 ),
   ke{ ke },
   ki{ ki }
 {}
