@@ -3,17 +3,20 @@
 
 namespace Mlib {
 
-class Range {
+template <class TData>
+class XRange {
 public:
-    inline Range(size_t begin, size_t end)
+    inline XRange(const TData& begin, const TData& end)
     : begin(begin),
       end(end)
     {}
-    inline size_t length() const {
+    inline TData length() const {
         return end - begin;
     }
-    size_t begin;
-    size_t end;
+    TData begin;
+    TData end;
 };
+
+typedef XRange<size_t> Range;
 
 }
