@@ -7,8 +7,10 @@
 #include "Range.hpp"
 #include "Vector.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Initializer_List_As_Sized_Iterable.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Math/Conju.hpp>
+#include <Mlib/Sized_Iterable.hpp>
 #include <cassert>
 #include <complex>
 #include <cstddef>
@@ -160,6 +162,27 @@ private:
     Array<TData>& ar_;
 };
 
+template <class TContainer, class TData>
+concept DataSizedIterable = requires()
+{
+    requires SizedIterable<TContainer>;
+    requires std::same_as<typename TContainer::value_type, TData>;
+};
+
+template <class TContainer, class TData>
+concept ArraySizedIterable = requires()
+{
+    requires SizedIterable<TContainer>;
+    requires std::same_as<typename TContainer::value_type, Array<TData>>;
+};
+
+template <class TContainer, class TData, size_t ...tsize>
+concept FixedArraySizedSizedIterable = requires()
+{
+    requires SizedIterable<TContainer>;
+    requires std::same_as<typename TContainer::value_type, FixedArray<TData, tsize...>>;
+};
+
 template <class TData>
 class Array: public BaseDenseArray<Array<TData>, TData> {
     friend ArrayAxisView<TData>;
@@ -190,8 +213,9 @@ public:
         resize{[this](const ArrayShape& shape){ do_resize(shape); }},
         reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
     {}
+    template <ArraySizedIterable<TData> TArrayContainer>
     explicit Array(
-        const std::list<Array<TData>>& rhs,
+        const TArrayContainer& rhs,
         const ArrayShape& empty_shape=ArrayShape())
         :offset_{0},
          resize{[this](const ArrayShape& shape){ do_resize(shape); }},
@@ -205,10 +229,10 @@ public:
         if (rhs.size() == 0) {
             do_resize(empty_shape);
         } else {
-            do_resize(ArrayShape{ rhs.size() }.concatenated(rhs.front().shape()));
+            do_resize(ArrayShape{ rhs.size() }.concatenated(rhs.begin()->shape()));
             auto it = rhs.begin();
             for (size_t i = 0; i < rhs.size(); ++i) {
-                if (any(it->shape() != rhs.front().shape())) {
+                if (any(it->shape() != rhs.begin()->shape())) {
                     // Not an assertion because it is used for file-io
                     throw std::runtime_error{ "Arrays in lists have differing sizes" };
                 }
@@ -227,7 +251,8 @@ public:
             std::copy(begin, end, &(*this)(0));
         }
     }
-    explicit Array(const std::list<TData>& lst):
+    template <DataSizedIterable<TData> TDataContainer>
+    explicit Array(const TDataContainer& lst):
         offset_{0},
         resize{[this](const ArrayShape& shape){ do_resize(shape); }},
         reshape{[this](const ArrayShape& shape){ do_reshape(shape); }}
@@ -239,18 +264,19 @@ public:
             ++i;
         }
     }
-    template <size_t ...tsize>
-    explicit Array(const std::list<FixedArray<TData, tsize...>>& lst) :
+    template <size_t ...tsize, FixedArraySizedSizedIterable<TData, tsize...> TDataContainer>
+    explicit Array(const TDataContainer& lst) :
         offset_{ 0 },
         resize{ [this](const ArrayShape& shape) { do_resize(shape); } },
         reshape{ [this](const ArrayShape& shape) { do_reshape(shape); } }
     {
-        do_resize(ArrayShape{ lst.size(), FixedArray<TData, tsize...>::nelements() });
-        auto& lst_flat = reinterpret_cast<const std::list<FixedArray<TData, FixedArray<TData, tsize...>::nelements()>>&>(lst);
+        constexpr size_t nelements = FixedArray<TData, tsize...>::nelements();
+        do_resize(ArrayShape{ lst.size(), nelements });
         size_t i = 0;
-        for (const auto& value : lst_flat) {
-            for (size_t j = 0; j < shape(1); ++j) {
-                (*this)(i, j) = value(j);
+        for (const auto& value : lst) {
+            const auto& flat_value = reinterpret_cast<const FixedArray<TData, nelements>&>(value);
+            for (size_t j = 0; j < nelements; ++j) {
+                (*this)(i, j) = flat_value(j);
             }
             ++i;
         }
@@ -323,6 +349,9 @@ public:
             ++r;
         }
     }
+    explicit Array(std::initializer_list<Array<TData>> d):
+        Array(InitializerListAsSizedIterable(d))
+    {}
     explicit Array(const ArrayShape& shape):
         offset_{0},
         resize{[this](const ArrayShape& shape){ do_resize(shape); }},

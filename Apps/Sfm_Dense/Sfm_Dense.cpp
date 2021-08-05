@@ -325,10 +325,10 @@ int main(int argc, char **argv) {
             std::cout << "condition_number.m exists, loading..." << std::endl;
             disparity_0 = Array<float>::load_txt_2d("disparity_0.m");
             error_0 = Array<float>::load_txt_2d("error_0.m");
-            x = Array<float>{{
+            x = Array<float>{
                 Array<float>::load_txt_2d("x-0.m"),
                 Array<float>::load_txt_2d("x-1.m"),
-                Array<float>::load_txt_2d("x-2.m")}};
+                Array<float>::load_txt_2d("x-2.m")};
             condition_number = Array<float>::load_txt_2d("condition_number.m");
         }
 

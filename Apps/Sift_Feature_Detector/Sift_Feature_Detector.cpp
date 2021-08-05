@@ -28,8 +28,9 @@ int main(int argc, char** argv) {
         "[--size <marker-size>] "
         "[--response <response>] "
         "[--clip-min <clip-min>] "
-        "[--clip-max <clip-max>]",
-        { "--multi-scale" },
+        "[--clip-max <clip-max>] "
+        "[--cv_impl]",
+        { "--multi-scale", "--cv_impl" },
         { "--source1",
           "--k",
           "--distance-sigma",
@@ -44,7 +45,7 @@ int main(int argc, char** argv) {
         auto bitmap0 = StbImage::load_from_file(args.unnamed_value(0));
         if (false) {
             SiftFeatures response0 = computeKeypointsAndDescriptors(bitmap0.to_float_grayscale());
-            Array<FixedArray<float, 2>> corners0 = Array(response0.keypoints).applied<FixedArray<float, 2>>([](const KeyPointWithOrientation& v){return v.kp.pt;});
+            Array<FixedArray<float, 2>> corners0 = Array<KeyPointWithOrientation>(response0.keypoints).applied<FixedArray<float, 2>>([](const KeyPointWithOrientation& v){return v.kp.pt;});
             {
                 StbImage bmp{bitmap0.copy()};
                 highlight_features(
@@ -57,11 +58,11 @@ int main(int argc, char** argv) {
         Array<float> descriptors0;
         Array<FixedArray<float, 2>> corners0;
         {
-            if (false) {
+            if (!args.has_named("--cv_impl")) {
                 ocv::SIFT sift{ safe_stoi(args.unnamed_value(2)) };
                 std::vector<ocv::KeyPoint> keypoints;
                 sift(bitmap0.to_float_grayscale().applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);}), Array<uint8_t>(), keypoints, &descriptors0);
-                corners0 = Array(std::list(keypoints.begin(), keypoints.end()))
+                corners0 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
             } else {
                 std::vector<cv::KeyPoint> keypoints;
@@ -73,7 +74,7 @@ int main(int argc, char** argv) {
                     keypoints,
                     cv_descriptors0);
                 descriptors0 = cv_mat_to_array(cv_descriptors0);
-                corners0 = Array(std::list(keypoints.begin(), keypoints.end()))
+                corners0 = Array<cv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const cv::KeyPoint& v){return FixedArray<float, 2>{ v.pt.x, v.pt.y };});
             }
             {
@@ -89,11 +90,11 @@ int main(int argc, char** argv) {
         Array<FixedArray<float, 2>> corners1;
         if (args.has_named_value("--source1")) {
             auto bitmap1 = StbImage::load_from_file(args.named_value("--source1"));
-            if (false) {
+            if (!args.has_named("--cv_impl")) {
                 ocv::SIFT sift{ safe_stoi(args.unnamed_value(2)) };
                 std::vector<ocv::KeyPoint> keypoints;
                 sift(bitmap1.to_float_grayscale().applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);}), Array<uint8_t>(), keypoints, &descriptors1);
-                corners1 = Array(std::list(keypoints.begin(), keypoints.end()))
+                corners1 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
                 {
                     StbImage bmp{bitmap1.copy()};
@@ -113,7 +114,7 @@ int main(int argc, char** argv) {
                     keypoints,
                     cv_descriptors1);
                 descriptors1 = cv_mat_to_array(cv_descriptors1);
-                corners1 = Array(std::list(keypoints.begin(), keypoints.end()))
+                corners1 = Array<cv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const cv::KeyPoint& v){return FixedArray<float, 2>{ v.pt.x, v.pt.y };});
             }
             CorrespondingDescriptorsInCandidateList cf{corners0, corners1, descriptors0, descriptors1};
