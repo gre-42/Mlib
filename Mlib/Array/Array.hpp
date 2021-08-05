@@ -351,7 +351,11 @@ public:
     }
     explicit Array(std::initializer_list<Array<TData>> d):
         Array(InitializerListAsSizedIterable(d))
-    {}
+    {
+        if (d.size() == 1) {
+            throw std::runtime_error("Do not use single initializer for arrays");
+        }
+    }
     explicit Array(const ArrayShape& shape):
         offset_{0},
         resize{[this](const ArrayShape& shape){ do_resize(shape); }},
