@@ -17,6 +17,7 @@
 #include <Mlib/Math/Set_Difference.hpp>
 #include <Mlib/Math/Sort_Svd.hpp>
 #include <Mlib/Math/Svd4.hpp>
+#include <Mlib/Math/Svd_Jacobi.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
@@ -64,6 +65,30 @@ void test_svd() {
     inverse_iteration_symm(dot(a.T(), a), ui, si);
     assert_allclose<float>(ui, Array<float>{-6.840296e-01, 7.294543e-01});
     assert_isclose<float>(std::sqrt(si), 268.333618, 1e-4);
+}
+
+void test_svd_j() {
+    Array<double> a = random_array3<double>(ArrayShape{ 4, 4 }, 1);
+    {
+        Array<double> u;
+        Array<double> s;
+        Array<double> vT;
+        svd4(a, u, s, vT);
+        assert_allclose(reconstruct_svd(u, s, vT), a);
+        std::cerr << u << std::endl;
+        std::cerr << s << std::endl;
+        std::cerr << vT << std::endl;
+    }
+    {
+        Array<double> uT;
+        Array<double> s;
+        Array<double> vT;
+        svd_j(a, uT, s, vT);
+        std::cerr << uT << std::endl;
+        std::cerr << s << std::endl;
+        std::cerr << vT << std::endl;
+        assert_allclose(reconstruct_svd(uT.T(), s, vT), a);
+    }
 }
 
 void test_qdq() {
@@ -418,6 +443,7 @@ int main(int argc, const char** argv) {
     try {
         test_blocking_transposed();
         test_svd();
+        test_svd_j();
         test_qdq();
         test_det_2x2();
         test_det_3x3();

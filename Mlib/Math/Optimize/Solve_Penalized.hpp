@@ -55,8 +55,8 @@ Array<TData> solve_penalized(
     const TData& beta = 0,
     const Array<TData>* x0 = nullptr)
 {
-    Array<TData> AI{A};
-    TDerivedB BI{*B};
+    Array<TData> AI(A);
+    TDerivedB BI(*B);
     if (alpha != TData(0) ||
         beta != TData(0))
     {
