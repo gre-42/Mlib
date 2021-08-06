@@ -26,7 +26,8 @@ TX generic_optimization(
     x = x0;
     TData old_ssq_residual = std::numeric_limits<TData>::infinity();
     Array<TData> residual;
-    for (size_t i = 0; i < niterations; ++i) {
+    size_t i;
+    for (i = 0; i < niterations; ++i) {
         // std::cerr << "i " << i << std::endl;
         // std::cerr << "J " << J(x).shape() << std::endl;
         // std::cerr << "f " << f(x).shape() << std::endl;
@@ -56,11 +57,11 @@ TX generic_optimization(
         }
         if (ssq_residual >= old_ssq_residual) {
             if (--nmisses == 0) {
-                return x;
+                break;
             }
         }
         if (!std::isnan(redux) && (redux < min_redux)) {
-            return x;
+            break;
         }
         old_ssq_residual = ssq_residual;
         x = get_next_x(x, residual, i);
@@ -68,7 +69,7 @@ TX generic_optimization(
     if ((max_residual == nullptr) && (final_residual != nullptr)) {
         *final_residual = residual;
     }
-    if (nothrow) {
+    if ((i < niterations) || nothrow) {
         return x;
     } else {
         throw std::runtime_error("levenberg_marquardt did not converge");
