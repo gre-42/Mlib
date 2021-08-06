@@ -63,7 +63,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
         for (const auto& k : cv_keypoints) {
             keypoints1.push_back(ocv::KeyPoint{
                 .pt{k.pt.x, k.pt.y},
-                .octave = (size_t)k.octave,
+                .octave = k.octave,
                 .size = k.size,
                 .response = k.response,
                 .angle = k.angle});

@@ -6,7 +6,7 @@ namespace Mlib::Sift {
 
 struct KeyPoint {
     OrderableFixedArray<float, 2> pt;
-    size_t octave;
+    int octave;
     float size;
     float response;
     std::strong_ordering operator <=> (const KeyPoint& kp) const = default;
