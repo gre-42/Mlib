@@ -16,10 +16,10 @@ using namespace Mlib::Sfm;
 InverseDepthCostVolume::InverseDepthCostVolume(
     const ArrayShape& space_shape,
     const Array<float>& inverse_depths)
-: space_shape_{space_shape},
-  inverse_depths_{inverse_depths},
-  idsi_sum_{zeros<float>(ArrayShape{inverse_depths.length()}.concatenated(space_shape))},
-  nelements_idsi_{zeros<size_t>(idsi_sum_.shape())},
+: space_shape_(space_shape),
+  inverse_depths_(inverse_depths),
+  idsi_sum_(zeros<float>(ArrayShape{inverse_depths.length()}.concatenated(space_shape))),
+  nelements_idsi_(zeros<size_t>(idsi_sum_.shape())),
   nchannel_increments_(0)
 {
     assert(inverse_depths.ndim() == 1);

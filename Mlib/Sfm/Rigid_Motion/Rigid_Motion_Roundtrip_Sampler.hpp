@@ -15,11 +15,11 @@ public:
         const TransformationMatrix<TData, 3>& ke,
         const Array<TData>& depth_r,
         const Array<TData>& depth_l)
-    : iki_{inv(ki.affine())},
-      T_r_{dot(ki.affine(), ke.affine() TEMPLATEV row_range<0, 3>())},
-      T_l_{ki.project(ke.inverted().semi_affine())},
-      depth_r_{depth_r},
-      depth_l_{depth_l}
+    : iki_(inv(ki.affine())),
+      T_r_(dot(ki.affine(), ke.affine() TEMPLATEV row_range<0, 3>())),
+      T_l_(ki.project(ke.inverted().semi_affine())),
+      depth_r_(depth_r),
+      depth_l_(depth_l)
     {}
     bool roundtrip_position(size_t r, size_t c, FixedArray<TData, 2>& pos_r_) const {
         FixedArray<size_t, 2> id_s{r, c};

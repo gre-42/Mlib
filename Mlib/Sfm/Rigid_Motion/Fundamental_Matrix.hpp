@@ -12,15 +12,12 @@ class TransformationMatrix;
 
 namespace Sfm {
 
-FixedArray<float, 3, 3> find_fundamental_matrix(
+struct FundamentalMatrixAndError;
+
+FundamentalMatrixAndError find_fundamental_matrix(
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
     bool method_inverse_iteration = false);
-
-Array<float> fundamental_error(
-    const FixedArray<float, 3, 3>& F,
-    const Array<FixedArray<float, 2>>& y0,
-    const Array<FixedArray<float, 2>>& y1);
 
 FixedArray<float, 3, 3> fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix);
 

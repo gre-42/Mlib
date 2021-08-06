@@ -1,4 +1,5 @@
 #include "Essential_Matrix_To_TR.h"
+#include <Mlib/Math/Eigen_Vector_And_Value.hpp>
 #include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Smallest_Eigenvector.hpp>
@@ -31,7 +32,7 @@ EssentialMatrixToTR::EssentialMatrixToTR(const FixedArray<float, 3, 3>& E) {
     //double ts;
     //inverse_iteration_symm(outer(T, T), tu, ts, 1e-12);
     //tu = find_smallest_eigenvector_4(outer(T, T));
-    tu = find_smallest_eigenvector_j(outer(T, T));
+    tu = find_smallest_eigenvector_j(outer(T, T)).vec;
     //std::cerr << "E\n" << E << std::endl;
     //std::cerr << "u\n" << u << std::endl;
     //std::cerr << "s " << s << std::endl;

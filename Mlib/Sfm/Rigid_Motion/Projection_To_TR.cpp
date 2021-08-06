@@ -46,7 +46,7 @@ ProjectionToTR::ProjectionToTR(
   np(y),
   kin(np.normalized_intrinsic_matrix(intrinsic_matrix)),
   Fn(find_fundamental_matrix(np.yn[0], np.yn[1])),
-  En(fundamental_to_essential(Fn, kin)),
+  En(fundamental_to_essential(Fn.F, kin)),
   e2tr(En)
 {
     const auto& v = e2tr;
@@ -67,15 +67,11 @@ InitialReconstruction ProjectionToTR::initial_reconstruction() const {
     return InitialReconstruction(np.yn[0], np.yn[1], ke, kin);
 }
 
-Array<float> ProjectionToTR::fundamental_error(
-    const Array<FixedArray<float, 2>>& y0,
-    const Array<FixedArray<float, 2>>& y1) const
+float ProjectionToTR::fundamental_error() const
 {
-    auto y0_n = np.normalized_y(y0);
-    auto y1_n = np.normalized_y(y1);
-    return Mlib::Sfm::fundamental_error(Fn, y0_n, y1_n) / np.N.get_scale();
+    return Fn.error;
 }
 
 void ProjectionToTR::draw_epilines(StbImage& image, const Rgb24& color) const {
-    draw_epilines_from_F(fundamental_to_essential(Fn, np.N), image, color);
+    draw_epilines_from_F(fundamental_to_essential(Fn.F, np.N), image, color);
 }

@@ -190,9 +190,9 @@ void compute_z(const ParsedArgs& args) {
         bmp.save_to_file("features10_1.png");
     }
 
-    FixedArray<float, 3, 3> F = find_fundamental_matrix(cf.y0_2d, cf.y1_2d);
-    std::cerr << "fundamental error " << sum(squared(fundamental_error(F, cf.y0_2d, cf.y1_2d))) << std::endl;
-    std::cerr << "fundamental.T error " << sum(squared(fundamental_error(F.T(), cf.y0_2d, cf.y1_2d))) << std::endl;
+    FundamentalMatrixAndError vF = find_fundamental_matrix(cf.y0_2d, cf.y1_2d);
+    std::cerr << "fundamental error " << vF.F << std::endl;
+    const FixedArray<float, 3, 3>& F = vF.F;
 
     //Array<float> err = fundamental_error(F, y0, y1);
     //std::cerr << "err " << err << std::endl;

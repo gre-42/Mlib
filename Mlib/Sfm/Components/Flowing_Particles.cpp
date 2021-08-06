@@ -43,11 +43,32 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
     std::vector<ocv::KeyPoint> keypoints1;
     Array<float> descriptors1;
     std::set<size_t> inserted_keypoints1;
-    ocv::SIFT sift{ (int)cfg_.target_nparticles };
-    sift((image_frames_.rbegin()->second.grayscale * 255.f).casted<uint8_t>(),
-         ones<uint8_t>(image_frames_.rbegin()->second.grayscale.shape()),
-         keypoints1,
-         &descriptors1);
+    if (false) {
+        ocv::SIFT sift{ (int)cfg_.target_nparticles };
+        sift((image_frames_.rbegin()->second.grayscale * 255.f).casted<uint8_t>(),
+            ones<uint8_t>(image_frames_.rbegin()->second.grayscale.shape()),
+            keypoints1,
+            &descriptors1);
+    } else {
+        auto sift = cv::SIFT::create((int)cfg_.target_nparticles);
+        std::vector<cv::KeyPoint> cv_keypoints;
+        cv::Mat_<float> cv_descriptors1;
+        sift->detectAndCompute(
+            array_to_cv_mat(image_frames_.rbegin()->second.grayscale.applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);})),
+            cv::Mat_<uint8_t>(),
+            cv_keypoints,
+            cv_descriptors1);
+        descriptors1 = cv_mat_to_array(cv_descriptors1);
+        keypoints1.reserve(cv_keypoints.size());
+        for (const auto& k : cv_keypoints) {
+            keypoints1.push_back(ocv::KeyPoint{
+                .pt{k.pt.x, k.pt.y},
+                .octave = (size_t)k.octave,
+                .size = k.size,
+                .response = k.response,
+                .angle = k.angle});
+        }
+    }
     if (particles_.size() > 0) {
         for (auto& s : particles_.rbegin()->second) {
             size_t best_id1 = s.second->sequence.begin()->second->tracebale_descriptor.descriptor_id_in_parameter_list(descriptors1);

@@ -10,7 +10,7 @@ enum class TrackingMode {
 
 class FlowingParticlesConfig {
 public:
-    TrackingMode tracking_mode = TrackingMode::SIFT;
+    TrackingMode tracking_mode = TrackingMode::PATCH_NEW_POSITION_IN_BOX;
     bool draw_optical_flow = false;
     size_t target_nparticles = 100;
     float presmoothing_sigma = 0.5f;

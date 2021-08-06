@@ -194,34 +194,25 @@ void test_find_fundamental_matrix_homography() {
     //std::cerr << y0 << std::endl;
     //std::cerr << y1;
 
-    FixedArray<float, 3, 3> F = find_fundamental_matrix(hd.y0, hd.y1);
+    FundamentalMatrixAndError F = find_fundamental_matrix(hd.y0, hd.y1);
     //std::cerr << F << std::endl;
     //inverse iteration:
     //assert_allclose(F, Array<float>{{-0.0499249, -0.560293, 0.328151},
     //                                {0.476451, 0.372055, -0.44176},
     //                                {-0.0907307, 0.0841532, 0.000316865}});
-    assert_allclose<float>(
-        fundamental_error(F, hd.y0, hd.y1),
-        zeros<float>(ArrayShape{hd.y0.shape(0)}),
-        float(1e-7));
+    assert_isclose(F.error, 0.f);
 }
 
 void test_find_fundamental_matrix_synthetic_scene() {
     SyntheticScene sc;
     NormalizedProjection np(sc.y);
     // std::cerr << sc.y.shape() << std::endl;
-    FixedArray<float, 3, 3> Fn = find_fundamental_matrix(np.yn[0], np.yn[1]);
-    FixedArray<float, 3, 3> F = find_fundamental_matrix(sc.y[0], sc.y[1]);
+    FundamentalMatrixAndError Fn = find_fundamental_matrix(np.yn[0], np.yn[1]);
+    FundamentalMatrixAndError F = find_fundamental_matrix(sc.y[0], sc.y[1]);
     //std::cerr << fundamental_error(Fn, np.yn[0], np.yn[1]) << std::endl;
     //std::cerr << fundamental_error(F, sc.y[0], sc.y[1]) << std::endl;
-    assert_allclose<float>(
-        fundamental_error(Fn, np.yn[0], np.yn[1]),
-        zeros<float>(ArrayShape{np.yn.shape(1)}),
-        float(1e-5));
-    assert_allclose<float>(
-        fundamental_error(F, sc.y[0], sc.y[1]),
-        zeros<float>(ArrayShape{sc.y.shape(1)}),
-        float(1e-2));
+    assert_isclose(Fn.error, 0.f);
+    assert_isclose(F.error, 0.f);
 }
 
 void test_synthetic_scene() {
@@ -238,15 +229,10 @@ void test_find_essential_matrix() {
     SyntheticScene sc;
     NormalizedProjection np(sc.y);
     // std::cerr << sc.y.shape() << std::endl;
-    FixedArray<float, 3, 3> Fn = find_fundamental_matrix(np.yn[i0], np.yn[i1]);
-    FixedArray<float, 3, 3> F = find_fundamental_matrix(sc.y[i0], sc.y[i1]);
-    assert_allclose(
-        fundamental_error(Fn, np.yn[i0], np.yn[i1]),
-        zeros<float>(ArrayShape{np.yn[i0].shape(0)}));
-    assert_allclose(
-        fundamental_error(F, sc.y[i0], sc.y[i1]),
-        zeros<float>(ArrayShape{sc.y[i0].shape(0)}),
-        float{ 1e-2 });
+    FundamentalMatrixAndError Fn = find_fundamental_matrix(np.yn[i0], np.yn[i1]);
+    FundamentalMatrixAndError F = find_fundamental_matrix(sc.y[i0], sc.y[i1]);
+    assert_isclose(Fn.error, 0.f);
+    assert_isclose(F.error, 0.f);
     // std::cerr << F << std::endl;
     // "denormalized_intrinsic_matrix" is not used,
     // both E and y are normalized.
@@ -295,7 +281,7 @@ void test_fundamental_from_TR() {
     SyntheticScene sc(
         true,   // true = zero_first_extrinsic
         10);    // tR_multiplier
-    FixedArray<float, 3, 3> F = find_fundamental_matrix(sc.y[0], sc.y[1]);
+    FixedArray<float, 3, 3> F = find_fundamental_matrix(sc.y[0], sc.y[1]).F;
     FixedArray<float, 3, 3> Ftr = fundamental_from_camera(sc.ki, sc.ki, sc.delta_ke(i0, i1));
     assert_allclose(F.to_array() / F(2, 2), Ftr.to_array() / Ftr(2, 2), float{ 1e-5 });
 }
@@ -424,7 +410,7 @@ void test_find_epiline() {
     tmp[0] += 0.1f * random_array2<float>(ArrayShape{y0.shape(0)}, 1);
     tmp[1] += 0.01f * random_array2<float>(ArrayShape{y0.shape(0)}, 1);
     const Array<float> y1 = tmp.T();
-    const FixedArray<float, 3, 3> F = find_fundamental_matrix(Array<float>::from_dynamic<2>(y0), Array<float>::from_dynamic<2>(y1));
+    const FixedArray<float, 3, 3> F = find_fundamental_matrix(Array<float>::from_dynamic<2>(y0), Array<float>::from_dynamic<2>(y1)).F;
     //std::cerr << fundamental_error(F, y0, y1) << std::endl;
     //std::cerr << F << std::endl;
     StbImage bmp{ArrayShape{200, 200}, Rgb24::white()};

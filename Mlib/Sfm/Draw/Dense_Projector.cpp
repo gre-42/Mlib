@@ -43,10 +43,10 @@ DenseProjector::DenseProjector(
     const TransformationMatrix<float, 3>& ke,
     const Array<float>& rgb)
 : ProjectorWithCameras{camera_frames, i0, i1, iz},
-    x_{x},
-    y_{projected_points_1ke(x_, ki, ke)},
-    condition_number_{condition_number},
-    rgb_{rgb}
+    x_(x),
+    y_(projected_points_1ke(x_, ki, ke)),
+    condition_number_(condition_number),
+    rgb_(rgb)
 {
     assert_true(x_.ndim() == 1);
     if (condition_number.initialized() && (condition_number_.length() != x_.shape(0))) {

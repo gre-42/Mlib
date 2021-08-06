@@ -1,17 +1,19 @@
 #include "Fundamental_Matrix.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Math/Eigen_Vector_And_Value.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Power_Iteration/Inverse_Iteration.hpp>
 #include <Mlib/Math/Smallest_Eigenvector.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
+#include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix_And_Error.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
-FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
+FundamentalMatrixAndError Mlib::Sfm::find_fundamental_matrix(
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
     bool method_inverse_iteration)
@@ -50,10 +52,14 @@ FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
         // multiple zero eigenvalues, which means that there
         // is a problem with the data.
         inverse_iteration_symm(dot(Y.T(), Y), u, s);
-        return FixedArray<double, 3, 3>{u.reshaped(ArrayShape{ 3, 3 })}.casted<float>();
+        return FundamentalMatrixAndError{
+            FixedArray<double, 3, 3>{u.reshaped(ArrayShape{ 3, 3 })}.casted<float>(),
+            (float)s};
     } else {
-        Array<double> ev = find_smallest_eigenvector_j(dot(Y.T(), Y));
-        return FixedArray<double, 3, 3>{ev.reshaped(ArrayShape{ 3, 3 })}.casted<float>();
+        EigenVectorAndValue v = find_smallest_eigenvector_j(dot(Y.T(), Y));
+        return {
+            FixedArray<double, 3, 3>{v.vec.reshaped(ArrayShape{ 3, 3 })}.casted<float>(),
+            (float)v.val};
         //std::cerr << vT << std::endl;
     }
     //std::cerr << "zzzz\n";
@@ -68,20 +74,6 @@ FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
     //}
     //std::cerr << std::endl;
     //return F;
-}
-
-Array<float> Mlib::Sfm::fundamental_error(
-    const FixedArray<float, 3, 3>& F,
-    const Array<FixedArray<float, 2>>& y0,
-    const Array<FixedArray<float, 2>>& y1)
-{
-    assert(y0.ndim() == 1);
-    assert(all(y0.shape() == y1.shape()));
-    Array<float> result(ArrayShape{y0.shape(0)});
-    for (size_t r = 0; r < y1.shape(0); ++r) {
-        result(r) = dot0d(homogenized_3(y1(r)), dot1d(F, homogenized_3(y0(r))));
-    }
-    return result;
 }
 
 FixedArray<float, 3, 3> Mlib::Sfm::fundamental_to_essential(const FixedArray<float, 3, 3>& F, const TransformationMatrix<float, 2>& intrinsic_matrix) {

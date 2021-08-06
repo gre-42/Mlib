@@ -204,15 +204,15 @@ Array<TData> box_filter_nans_as_zeros_NWE(const Array<TData>& image, const Array
     // std::cerr << image0.shape() << " - " << mask.shape() << std::endl;
     // std::cerr << "mask\n" << mask << std::endl;
     // std::cerr << "image0\n" << image0 << std::endl;
-    Array<TData> a{ box_filter_append_zeros(image0, box_size) };
-    Array<TData> b{ box_filter_append_zeros(mask, box_size) };
+    Array<TData> a(box_filter_append_zeros(image0, box_size));
+    Array<TData> b(box_filter_append_zeros(mask, box_size));
     return a.array_array_binop(b, [](const TData& x, const TData& y) { return y > 0 ? x / y : NAN; });
 }
 
 template <class TData>
 Array<TData> box_filter_NWE(const Array<TData>& image, const ArrayShape& box_size) {
-    Array<TData> a{ box_filter_append_zeros(image, box_size) };
-    Array<TData> b{ box_filter_append_zeros(ones<TData>(image.shape()), box_size) };
+    Array<TData> a(box_filter_append_zeros(image, box_size));
+    Array<TData> b(box_filter_append_zeros(ones<TData>(image.shape()), box_size));
     return a / b;
 }
 
