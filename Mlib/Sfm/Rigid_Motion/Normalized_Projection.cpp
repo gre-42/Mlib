@@ -6,7 +6,6 @@ using namespace Mlib::Sfm;
 
 NormalizedProjection::NormalizedProjection(const Array<FixedArray<float, 2>>& y)
 {
-    assert(y.ndim() == 2);
     NormalizedPointsFixed npo(
         ScaleMode::PRESERVE_ASPECT_RATIO,
         OffsetMode::CENTERED);
@@ -14,11 +13,10 @@ NormalizedProjection::NormalizedProjection(const Array<FixedArray<float, 2>>& y)
         npo.add_point(p);
     }
     N = npo.normalization_matrix();
-    yn = normalized_y(y, 2);
+    yn = normalized_y(y);
 }
 
-Array<FixedArray<float, 2>> NormalizedProjection::normalized_y(const Array<FixedArray<float, 2>>& y, size_t ndim) const {
-    assert(y.ndim() == ndim);
+Array<FixedArray<float, 2>> NormalizedProjection::normalized_y(const Array<FixedArray<float, 2>>& y) const {
     return y.applied([this](const FixedArray<float, 2>& p){return N.transform(p);});
 }
 

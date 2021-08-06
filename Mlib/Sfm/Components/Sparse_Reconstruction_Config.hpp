@@ -6,6 +6,12 @@
 
 namespace Mlib::Sfm {
 
+enum class AppendMode {
+    BUNDLE_ADJUSTMENT,
+    PROJECTION,
+    STEREO
+};
+
 struct ReconstructionConfig {
     size_t npoints = 10;
     size_t nframes = 40;
@@ -31,7 +37,7 @@ struct ReconstructionConfig {
     bool two_pass = false;
     bool initialize_with_bundle_adjustment = false;
     bool interpolate_initial_cameras = true;
-    bool append_with_bundle_adjustment = false;
+    AppendMode append_mode = AppendMode::PROJECTION;
     bool marginalize = true;
     GlobalBundleConfig gb {
         .numerical_jacobian_x = false,

@@ -36,7 +36,7 @@ void test_reconstruction() {
 
     cfg.initialize_with_bundle_adjustment = false;
     cfg.interpolate_initial_cameras = false;
-    cfg.append_with_bundle_adjustment = false;
+    cfg.append_mode = AppendMode::PROJECTION;
 
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames;
     std::map<std::chrono::milliseconds, FeaturePointFrame> particles;
@@ -64,15 +64,15 @@ void test_reconstruction() {
             std::shared_ptr<FeaturePointSequence> seq;
             auto point = std::make_shared<FeaturePoint>(sc.y(itime, pt_id), traceable_patch, TraceableDescriptor{ Array<float>() });
             if ((particles.size() > 0) &&
-                (particles.rbegin()->second.find(pt_id) != particles.rbegin()->second.end())) {
-                seq = particles.rbegin()->second.find(pt_id)->second;
+                (particles.rbegin()->second.tracked_points.find(pt_id) != particles.rbegin()->second.tracked_points.end())) {
+                seq = particles.rbegin()->second.tracked_points.find(pt_id)->second;
                 // std::cerr << "exist" << std::endl;
             } else {
                 seq = std::make_shared<FeaturePointSequence>();
                 // std::cerr << "new" << std::endl;
             }
             seq->sequence[time] = point;
-            fr[pt_id] = seq;
+            fr.tracked_points[pt_id] = seq;
         }
         particles.insert(std::make_pair(time, fr));
     };

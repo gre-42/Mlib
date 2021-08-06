@@ -71,7 +71,7 @@ GlobalBundle::GlobalBundle(
         }
         if (c->state_ != MmState::MARGINALIZED) {
             bool point_found = false;
-            for (const auto& y : p.second) {
+            for (const auto& y : p.second.tracked_points) {
                 if (dropped_observations.find(PointObservation{ p.first, y.first }) != dropped_observations.end()) {
                     continue;
                 }
@@ -153,7 +153,7 @@ GlobalBundle::GlobalBundle(
     for (const auto& y : ys)
     {
         const auto& p = particles.at(y.first.time);
-        const auto& s = p.at(y.first.index)->sequence;
+        const auto& s = p.tracked_points.at(y.first.index)->sequence;
         yg(row_id(y.first)) = s.at(y.first.time)->position(y.first.dimension);
     }
     if (false) {
@@ -209,7 +209,7 @@ void GlobalBundle::copy_in(
             continue;
         }
         const CameraFrame& cf = (c_raw->state_ == MmState::ACTIVE) ? c_raw->second : frozen_camera_frames.at(c_raw->first);
-        for (const auto& y : p.second) {
+        for (const auto& y : p.second.tracked_points) {
             if (dropped_observations.find(PointObservation{ p.first, y.first }) != dropped_observations.end()) {
                 continue;
             }

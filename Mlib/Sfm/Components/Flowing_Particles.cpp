@@ -40,15 +40,20 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
     assert(image_frames_.size() > 0);
     shape_ = image_frames_.rbegin()->second.grayscale.fixed_shape<2>();
 
-    std::vector<ocv::KeyPoint> keypoints1;
-    Array<float> descriptors1;
+    Array<FixedArray<float, 2>>& keypoints1 = new_frame.keypoints;
+    Array<float>& descriptors1 = new_frame.descriptors;
     std::set<size_t> inserted_keypoints1;
     if (false) {
+        std::vector<ocv::KeyPoint> keypoints1_;
         ocv::SIFT sift{ (int)cfg_.target_nparticles };
         sift((image_frames_.rbegin()->second.grayscale * 255.f).casted<uint8_t>(),
             ones<uint8_t>(image_frames_.rbegin()->second.grayscale.shape()),
-            keypoints1,
+            keypoints1_,
             &descriptors1);
+        keypoints1.resize(ArrayShape{keypoints1_.size()});
+        for (size_t i = 0; i < keypoints1_.size(); ++i) {
+            keypoints1(i) = keypoints1_[i].pt;
+        }
     } else {
         auto sift = cv::SIFT::create((int)cfg_.target_nparticles);
         std::vector<cv::KeyPoint> cv_keypoints;
@@ -59,36 +64,31 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
             cv_keypoints,
             cv_descriptors1);
         descriptors1 = cv_mat_to_array(cv_descriptors1);
-        keypoints1.reserve(cv_keypoints.size());
-        for (const auto& k : cv_keypoints) {
-            keypoints1.push_back(ocv::KeyPoint{
-                .pt{k.pt.x, k.pt.y},
-                .octave = k.octave,
-                .size = k.size,
-                .response = k.response,
-                .angle = k.angle});
+        keypoints1.resize(ArrayShape{cv_keypoints.size()});
+        for (size_t i = 0; i < cv_keypoints.size(); ++i) {
+            keypoints1(i) = FixedArray<float, 2>{ cv_keypoints[i].pt.x, cv_keypoints[i].pt.y };
         }
     }
     if (particles_.size() > 0) {
-        for (auto& s : particles_.rbegin()->second) {
+        for (auto& s : particles_.rbegin()->second.tracked_points) {
             size_t best_id1 = s.second->sequence.begin()->second->tracebale_descriptor.descriptor_id_in_parameter_list(descriptors1);
             if (!inserted_keypoints1.contains(best_id1)) {
                 if (best_id1 != SIZE_MAX) {
                     try_insert_and_append_feature_point(
                         new_frame,
                         s,
-                        keypoints1[best_id1].pt,
+                        keypoints1(best_id1),
                         descriptors1[best_id1]);
                     inserted_keypoints1.insert(best_id1);
                 }
             }
         }
     }
-    for (size_t i1 = 0; (i1 < keypoints1.size()) && (new_frame.size() < cfg_.target_nparticles); ++i1) {
+    for (size_t i1 = 0; (i1 < keypoints1.length()) && (new_frame.tracked_points.size() < cfg_.target_nparticles); ++i1) {
         if (!inserted_keypoints1.contains(i1)) {
             try_generate_feature_point_sequence(
                 new_frame,
-                keypoints1[i1].pt,
+                keypoints1(i1),
                 descriptors1[i1]);
         }
     }
@@ -97,8 +97,8 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
 void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     assert(image_frames_.size() > 0);
     shape_ = image_frames_.rbegin()->second.grayscale.fixed_shape<2>();
-    assert(new_frame.size() <= cfg_.target_nparticles);
-    const size_t n_new_particles = cfg_.target_nparticles - new_frame.size();
+    assert(new_frame.tracked_points.size() <= cfg_.target_nparticles);
+    const size_t n_new_particles = cfg_.target_nparticles - new_frame.tracked_points.size();
 
     if (false) {
         for (size_t r = 0; r < shape_(id0); r+=shape_(id0)/10) {
@@ -112,7 +112,7 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
     }
 
     Array<bool> existing_points_mask = ones<bool>(image_frames_.rbegin()->second.grayscale.shape());
-    for (const auto& kv : new_frame) {
+    for (const auto& kv : new_frame.tracked_points) {
         draw_fill_rect(
             existing_points_mask,
             a2i(kv.second->sequence.rbegin()->second->position),
@@ -201,7 +201,7 @@ bool FlowingParticles::try_generate_feature_point_sequence(
     if (p->traceable_patch.good_) {
         auto seq = std::make_shared<FeaturePointSequence>();
         seq->sequence[image_frames_.rbegin()->first] = p;
-        frame[sequence_index++] = seq;
+        frame.tracked_points[sequence_index++] = seq;
         return true;
     }
     return false;
@@ -216,7 +216,7 @@ bool FlowingParticles::try_insert_and_append_feature_point(
     auto p = generate_feature_point(pos, descriptor);
     if (descriptor.initialized() || p->traceable_patch.good_) {
         seq.second->sequence[image_frames_.rbegin()->first] = p;
-        frame.insert(seq);
+        frame.tracked_points.insert(seq);
         return true;
     }
     return false;
@@ -249,7 +249,7 @@ void FlowingParticles::advance_existing_particles(
         assert(flow_field.shape(0) == 2);
     }
     size_t nsuccess = 0;
-    for (const auto& s : particles_.rbegin()->second) {
+    for (const auto& s : particles_.rbegin()->second.tracked_points) {
         //if (bad_points_.find(s.first) != bad_points_.end()) {
         //    std::cerr << "Discontinuing bad point [" << s.first << "]" << std::endl;
         //    continue;
@@ -295,7 +295,7 @@ void FlowingParticles::advance_existing_particles(
             }
         }
     }
-    std::cerr << "Traced " << nsuccess << " / " << particles_.rbegin()->second.size() << " particles" << std::endl;
+    std::cerr << "Traced " << nsuccess << " / " << particles_.rbegin()->second.tracked_points.size() << " particles" << std::endl;
 }
 
 void FlowingParticles::advance_flowing_particles() {
@@ -397,7 +397,7 @@ void FlowingParticles::advance_flowing_particles_cv() {
 void FlowingParticles::draw(StbImage& bmp) {
     assert(all(bmp.fixed_shape<2>() == shape_));
     assert(particles_.size() > 0);
-    for (const auto& s : particles_.rbegin()->second) {
+    for (const auto& s : particles_.rbegin()->second.tracked_points) {
         FixedArray<size_t, 2> index{ a2i(s.second->sequence.rbegin()->second->position) };
         //assert(all(index < bmp.shape()));
         auto sq_res_it = last_sq_residual_.find(s.first);

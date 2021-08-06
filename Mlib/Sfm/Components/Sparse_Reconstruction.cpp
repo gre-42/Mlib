@@ -9,6 +9,7 @@
 #include <Mlib/Math/Optimize/Generic_Optimization.hpp>
 #include <Mlib/Math/Optimize/Levenberg_Marquardt.hpp>
 #include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Sfm/Disparity/Corresponding_Descriptors_In_Candidate_List.hpp>
 #include <Mlib/Sfm/Draw/Sparse_Projector.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Feature_Point_Frame.hpp>
@@ -69,7 +70,7 @@ void SparseReconstruction::compute_reconstruction_pair(
     std::list<size_t> ids_l;
     std::list<FixedArray<float, 2>> y0_l;
     std::list<FixedArray<float, 2>> y1_l;
-    for (const auto& s : particles_.rbegin()->second) {
+    for (const auto& s : particles_.rbegin()->second.tracked_points) {
         assert(cfg_.nframes >= 1);
         std::shared_ptr<FeaturePoint> nth_parent = s.second->nth_from_end(cfg_.nframes - 1);
         if (nth_parent != nullptr) {
@@ -199,7 +200,7 @@ void SparseReconstruction::reconstruct_initial_for_bundle_adjustment() {
         set_camera_frame(
             particles_.rbegin()->first,
             CameraFrame{ TransformationMatrix<float, 3>::identity() });
-        for (const auto& s : particles_.rbegin()->second) {
+        for (const auto& s : particles_.rbegin()->second.tracked_points) {
             assert(cfg_.nframes >= 2);
             if (s.second->sequence.size() >= cfg_.nframes) {
                 const FixedArray<float, 3> xx{0.f, 0.f, 1.f}; // x[i] * 0.f;
@@ -228,20 +229,28 @@ CameraFrame& SparseReconstruction::get_camera_frame(const std::chrono::milliseco
 }
 
 CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::milliseconds& time) {
-    if (camera_frames_.find(time) != camera_frames_.end()) {
-        return camera_frames_.at(time);
+    std::cerr << "Appending camera frame at time " << time.count() << " ms" << std::endl;
+    if (camera_frames_.find(time) == camera_frames_.end()) {
+        if (cfg_.append_mode == AppendMode::BUNDLE_ADJUSTMENT) {
+            const auto& c = camera_frames_.rbegin()->second;
+            set_camera_frame(time, CameraFrame{ c.pose, c.kep });
+            global_bundle_adjustment();
+        } else if (cfg_.append_mode == AppendMode::PROJECTION) {
+            append_with_projection(time);
+        } else if (cfg_.append_mode == AppendMode::STEREO) {
+            append_with_stereo(time);
+            global_bundle_adjustment();
+        }
     }
-    if (cfg_.append_with_bundle_adjustment) {
-        const auto& c = camera_frames_.rbegin()->second;
-        set_camera_frame(time, CameraFrame{ c.pose, c.kep });
-        global_bundle_adjustment();
-        return camera_frames_.at(time);
-    }
+    return camera_frames_.at(time);
+}
+
+void SparseReconstruction::append_with_projection(const std::chrono::milliseconds& time) {
     assert(particles_.size() > 0);
     std::list<FixedArray<float, 3>> x;
     std::list<FixedArray<float, 2>> y;
     std::list<size_t> ids;
-    for (const auto& s : particles_.at(time)) {
+    for (const auto& s : particles_.at(time).tracked_points) {
         auto r = reconstructed_points_.find(s.first);
         if ((r != reconstructed_points_.end()) &&
             (!is_point_observation_bad(s.first, time)))
@@ -335,13 +344,70 @@ CameraFrame& SparseReconstruction::camera_frame_append(const std::chrono::millis
     std::cerr << "R\n" << kei.R() << std::endl;
     std::cerr << "Storing camera at " << time.count() << " ms" << std::endl;
     set_camera_frame(time, CameraFrame{ kei, FixedArray<float, 6>{kep.row_range(0, 6)} });
-    return camera_frames_.at(time);
+}
+
+void SparseReconstruction::append_with_stereo(const std::chrono::milliseconds& time) {
+    assert(particles_.size() > 0);
+
+    if (time != particles_.rbegin()->first) {
+        throw std::runtime_error("Not appending at the end");
+    }
+    if (camera_frames_.find(time) != camera_frames_.end()) {
+        throw std::runtime_error("Camera already computed");
+    }
+
+    if (particles_.size() >= cfg_.nframes) {
+        auto pit0 = particles_.rbegin();
+        std::advance(pit0, cfg_.nframes - 1);
+        CorrespondingDescriptorsInCandidateList cf{
+            pit0->second.keypoints,
+            particles_.rbegin()->second.keypoints,
+            pit0->second.descriptors,
+            particles_.rbegin()->second.descriptors };
+
+        if (cf.y0_2d.length() < cfg_.npoints) {
+            throw std::runtime_error("Too few points in first frame");
+        }
+
+        if (cf.y1_2d.length() < cfg_.npoints) {
+            throw std::runtime_error("Too few points in second frame");
+        }
+
+        ProjectionToTrRansac ptr(
+            cf.y0_2d,
+            cf.y1_2d,
+            intrinsic_matrix_,
+            cfg_.fov_threshold,
+            cfg_.ro_initial);
+
+        if (ptr.ptr == nullptr) {
+            std::cerr << "RANSAC found no candidate" << std::endl;
+        } else {
+            std::cerr << "ngood " << ptr.ptr->ngood << std::endl;
+        }
+
+        if (ptr.ptr != nullptr && ptr.ptr->good()) {
+            std::cerr << "good" << std::endl;
+            std::cerr << "dR\n" << ptr.ptr->ke.inverted().R() << std::endl;
+            std::cerr << "dt " << ptr.ptr->ke.inverted().t() << std::endl;
+            std::cerr << "RANSAC selected " <<
+                ptr.best_indices.length() << " of " <<
+                std::min(cf.y0_2d.length(), cf.y1_2d.length()) << " points" << std::endl;
+
+            auto pit0 = particles_.rbegin();
+            std::advance(pit0, cfg_.nframes - 1);
+            CameraFrame& c0 = camera_frames_.at(pit0->first);
+            set_camera_frame(
+                particles_.rbegin()->first,
+                CameraFrame{ c0.reconstruction_matrix_3x4() * ptr.ptr->ke.inverted() });
+        }
+    }
 }
 
 void SparseReconstruction::reconstruct_append() {
     std::cerr << "reconstruct_append" << std::endl;
     const auto pp = particles_.rbegin();
-    for (const auto& s : pp->second) {
+    for (const auto& s : pp->second.tracked_points) {
         // auto r = reconstructed_points_.find(s.first);
         // if ((r != reconstructed_points_.end()) && (r->state_ != MmState::ACTIVE)) {
         //     continue;
@@ -354,7 +420,7 @@ void SparseReconstruction::reconstruct_append() {
             }
         }
         assert(cfg_.nframes >= 2);
-        if (filtered_seq.size() >= cfg_.nframes / 2) {
+        if (filtered_seq.size() >= std::max<size_t>(cfg_.nframes / 2, 2)) {
             Array<TransformationMatrix<float, 3>> ke(ArrayShape{filtered_seq.size()});
             Array<FixedArray<float, 2>> y(ArrayShape{filtered_seq.size()});
             {
@@ -365,12 +431,12 @@ void SparseReconstruction::reconstruct_append() {
                     ++i;
                 }
             }
-            NormalizedProjection np{y.reshaped(ArrayShape{1}.concatenated(y.shape()))};
+            NormalizedProjection np{y};
             float condition_number;
             // Array<float> squared_distances;
             Array<FixedArray<float, 2>> projection_residual;
             FixedArray<float, 3> x = reconstructed_point_(
-                np.yn[0],
+                np.yn,
                 np.normalized_intrinsic_matrix(intrinsic_matrix_),
                 ke,
                 nullptr, // weights
@@ -450,7 +516,7 @@ void SparseReconstruction::partial_bundle_adjustment(const std::list<std::chrono
     // However, find_projection_matrices expects a matrix of shape
     // (time, reconstruction-index, dimension (2 + 1)).
     // => Transposition afterwards.
-    for (const auto& fr : y_start->second) {
+    for (const auto& fr : y_start->second.tracked_points) {
         auto rp = reconstructed_points_.find(fr.first);
         if (rp != reconstructed_points_.end()) {
             std::list<FixedArray<float, 2>> ys;
@@ -861,10 +927,10 @@ void SparseReconstruction::delete_bad_points() {
         {
             size_t i = 0;
             for (auto it = particles_.rbegin(); it != particles_.rend() && i != 1; ++it, ++i) {
-                auto a = it->second.find(bp->first);
-                if (a != it->second.end()) {
+                auto a = it->second.tracked_points.find(bp->first);
+                if (a != it->second.tracked_points.end()) {
                     a->second->sequence.erase(it->first);
-                    it->second.erase(bp->first);
+                    it->second.tracked_points.erase(bp->first);
                 }
                 // dropped_observations_.insert({ it->first, bp->first });
             }
@@ -879,7 +945,7 @@ void SparseReconstruction::delete_bad_points() {
                     continue;
                 }
                 if (c->state_ != MmState::MARGINALIZED) {
-                    ct += (p.second.find(bp->first) != p.second.end());
+                    ct += (p.second.tracked_points.find(bp->first) != p.second.tracked_points.end());
                 }
             }
             if (ct <= 1) {
@@ -888,10 +954,10 @@ void SparseReconstruction::delete_bad_points() {
                 reconstructed_points_.linearized_.erase(bp->first);
                 reconstructed_points_.marginalized_.erase(bp->first);
                 for (auto& p : particles_) {
-                    auto a = p.second.find(bp->first);
-                    if (a != p.second.end()) {
+                    auto a = p.second.tracked_points.find(bp->first);
+                    if (a != p.second.tracked_points.end()) {
                         a->second->sequence.erase(p.first);
-                        p.second.erase(bp->first);
+                        p.second.tracked_points.erase(bp->first);
                     }
                     // dropped_observations_.insert({ p.first, bp->first });
                 }
@@ -935,7 +1001,7 @@ void SparseReconstruction::print_arrays() const {
         if (c != camera_frames_.end()) {
             std::cout << "c=" << c->state_ << std::endl;
         }
-        for (const auto& p : fr.second) {
+        for (const auto& p : fr.second.tracked_points) {
             const auto& r = reconstructed_points_.find(p.first);
             std::cout << p.first << "=#" << p.second->sequence.size() << " ";
             if (r != reconstructed_points_.end()) {

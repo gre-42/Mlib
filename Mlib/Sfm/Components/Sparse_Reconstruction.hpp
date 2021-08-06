@@ -42,6 +42,8 @@ private:
     void reconstruct_initial_for_bundle_adjustment();
     bool is_point_observation_bad(size_t id, const std::chrono::milliseconds& time);
     CameraFrame& camera_frame_append(const std::chrono::milliseconds& time);
+    void append_with_projection(const std::chrono::milliseconds& time);
+    void append_with_stereo(const std::chrono::milliseconds& time);
     void reconstruct_append();
     void partial_bundle_adjustment(const std::list<std::chrono::milliseconds>& times);
     void global_bundle_adjustment(bool marginalize = true);
