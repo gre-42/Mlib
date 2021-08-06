@@ -11,7 +11,7 @@ args = parser.parse_args()
 
 import numpy as np
 import cv2 as cv
-img1 = cv.imread(args.source0,cv.IMREAD_GRAYSCALE)          # queryImage
+img1 = cv.imread(args.source0,cv.IMREAD_GRAYSCALE) # queryImage
 img2 = cv.imread(args.source1,cv.IMREAD_GRAYSCALE) # trainImage
 
 # Initiate SIFT detector
