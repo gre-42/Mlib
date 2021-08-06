@@ -390,7 +390,6 @@ void Mlib::Sfm::find_projection_matrices_ransac(
         y.shape(1), // nelems_large
         ro,
         [&](const Array<size_t>& indices) {
-            Array<float> final_residual1;
             TransformationMatrix<float, 2> ki_out1;
             Array<TransformationMatrix<float, 3>> ke_out1;
             find_projection_matrices(
@@ -411,8 +410,7 @@ void Mlib::Sfm::find_projection_matrices_ransac(
                 nburnin,
                 nmisses,
                 print_residual,
-                nothrow,
-                &final_residual1);
+                nothrow);
             // y = (t, i, d)
             // Note that this is an input to the RANSAC function, not for the LM algorithm.
             Array<FixedArray<float, 2>> residual = projected_points(x, ki_out1, ke_out1) - y;
