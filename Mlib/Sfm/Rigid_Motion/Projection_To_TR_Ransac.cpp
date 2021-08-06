@@ -13,9 +13,9 @@ ProjectionToTrRansac::ProjectionToTrRansac(
     float threshold,
     const RansacOptions<float>& ro)
 {
-    assert(all(y0.shape() == y1.shape()));
+    assert(y0.length() == y1.length());
     best_indices = ransac(
-        y0.shape(0),    // nelems_large
+        y0.length(),    // nelems_large
         ro,
         [&](const Array<size_t>& indices){
             std::cerr << "RANSAC ..." << std::endl;
@@ -38,11 +38,11 @@ ProjectionToTrRansac::ProjectionToTrRansac(
             //     }
             // }
             if (ptr.good()) {
-                Array<float> res{ArrayShape{y0.shape(0)}};
+                Array<float> res{ArrayShape{y0.length()}};
                 InitialReconstruction ir{y0, y1, ptr.ke, intrinsic_matrix};
                 Array<FixedArray<float, 2>> p0(ir.projection_residual0());
                 Array<FixedArray<float, 2>> p1(ir.projection_residual1());
-                for (size_t r = 0; r < y0.shape(0); ++r) {
+                for (size_t r = 0; r < y0.length(); ++r) {
                     res(r) = (sum(squared(p0(r))) + sum(squared(p1(r)))) / 2.f;
                 }
                 return res;
@@ -53,7 +53,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
 
                 // return squared(ptr.fundamental_error(y0, y1));
             } else {
-                return nans<float>(ArrayShape{y0.shape(0)});
+                return nans<float>(ArrayShape{y0.length()});
             }
         });
     if (best_indices.initialized()) {
