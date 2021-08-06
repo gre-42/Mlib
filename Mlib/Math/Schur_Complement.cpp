@@ -9,15 +9,15 @@ SchurComplement::SchurComplement(
     const Array<float>& b,
     const Array<size_t>& ids_a,
     const Array<size_t>& ids_b)
-: H_aa_{H.blocked(ids_a, ids_a)},
-  H_bb_{H.blocked(ids_b, ids_b)},
-  H_ab_{H.blocked(ids_a, ids_b)},
-  H_ba_{H.blocked(ids_b, ids_a)},
-  ba_{b.blocked(ids_a)},
-  bb_{b.blocked(ids_b)},
-  ids_a_{ids_a},
-  ids_b_{ids_b},
-  shape_{H.shape()}
+: H_aa_(H.blocked(ids_a, ids_a)),
+  H_bb_(H.blocked(ids_b, ids_b)),
+  H_ab_(H.blocked(ids_a, ids_b)),
+  H_ba_(H.blocked(ids_b, ids_a)),
+  ba_(b.blocked(ids_a)),
+  bb_(b.blocked(ids_b)),
+  ids_a_(ids_a),
+  ids_b_(ids_b),
+  shape_(H.shape())
 {}
 
 Array<float> SchurComplement::lhs(float alpha, float beta) {
