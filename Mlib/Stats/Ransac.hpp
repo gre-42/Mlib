@@ -29,7 +29,7 @@ Array<size_t> ransac(
         ro.inlier_distance_thresh == std::numeric_limits<TData>::infinity());
     Array<size_t> ids_large = arange<size_t>(nelems_large);
     std::mt19937 g(ro.seed);
-    TData best_mean_residual = std::numeric_limits<TData>::infinity();
+    size_t best_nonzero = 0;
     Array<size_t> best_indices;
 
     for (size_t i = 0; i < ro.ncalls; ++i) {
@@ -50,13 +50,13 @@ Array<size_t> ransac(
         if (count_nonzero(also_inliers) > ro.inlier_count_thresh) {
             Array<size_t> better_indices = arange<size_t>(nelems_large)[also_inliers];
             Array<TData> better_positive_residual = substitute_nans(callable(better_indices)[also_inliers], TData(INFINITY));
-            TData better_mean_residual = mean(better_positive_residual);
+            size_t better_nonzero = count_nonzero(better_positive_residual <= ro.inlier_distance_thresh);
 
             // std::cerr << "---- " << better_mean_residual << " " << best_mean_residual << std::endl;
-            if (better_mean_residual < best_mean_residual) {
+            if (better_nonzero > best_nonzero) {
                 best_indices.destroy();
                 best_indices = better_indices;
-                best_mean_residual = better_mean_residual;
+                best_nonzero = better_nonzero;
             }
         }
     }
