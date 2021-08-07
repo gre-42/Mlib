@@ -31,7 +31,10 @@ ProjectionToTrRansac::ProjectionToTrRansac(
             //     ptr.draw_epilines(bmp, Rgb24::black());
             //     highlight_features(y0, bmp, 2, Rgb24::blue());
             //     highlight_features(y1, bmp, 2, Rgb24::red());
+            //     highlight_features(y0[indices], bmp, 4, Rgb24::blue());
+            //     highlight_features(y1[indices], bmp, 4, Rgb24::red());
             //     highlight_feature_correspondences(y0, y1, bmp);
+            //     highlight_feature_correspondences(y0[indices], y1[indices], bmp, 1);
             //     bmp.save_to_file("/tmp/epilines_ransac_" + std::to_string(i) + "_" + std::to_string(ptr.ngood) + "_" + std::to_string(ptr.fundamental_error()) + ".png");
             //     if (ptr.good()) {
             //         ptr.ke.inverted().affine().to_array().save_txt_2d("/tmp/pose_" + std::to_string(i) + ".m");
@@ -45,6 +48,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
                 for (size_t r = 0; r < y0.length(); ++r) {
                     res(r) = (sum(squared(p0(r))) + sum(squared(p1(r)))) / 2.f;
                 }
+                // sqrt(res.as_column_vector()).save_txt_2d("/tmp/residual_" + std::to_string(i) + ".m");
                 return res;
 
                 // StbImage bmp{ArrayShape{360, 640}, Rgb24::white()};
@@ -62,6 +66,22 @@ ProjectionToTrRansac::ProjectionToTrRansac(
             y1[best_indices],
             intrinsic_matrix,
             threshold);
+        // static size_t i = -1;
+        // ++i;
+        // {
+        //     StbImage bmp{ArrayShape{360, 640}, Rgb24::white()};
+        //     ptr->draw_epilines(bmp, Rgb24::black());
+        //     highlight_features(y0, bmp, 2, Rgb24::blue());
+        //     highlight_features(y1, bmp, 2, Rgb24::red());
+        //     highlight_features(y0[best_indices], bmp, 4, Rgb24::blue());
+        //     highlight_features(y1[best_indices], bmp, 4, Rgb24::red());
+        //     highlight_feature_correspondences(y0, y1, bmp);
+        //     highlight_feature_correspondences(y0[best_indices], y1[best_indices], bmp, 1);
+        //     bmp.save_to_file("/tmp/epilines_ransac_best_" + std::to_string(i) + "_" + std::to_string(ptr->ngood) + "_" + std::to_string(ptr->fundamental_error()) + ".png");
+        //     if (ptr->good()) {
+        //         ptr->ke.inverted().affine().to_array().save_txt_2d("/tmp/pose_best_" + std::to_string(i) + ".m");
+        //     }
+        // }
     } else {
         ptr = nullptr;
     }
