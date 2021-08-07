@@ -359,6 +359,7 @@ void SparseReconstruction::append_with_stereo(const std::chrono::milliseconds& t
     if (particles_.size() >= cfg_.nframes) {
         auto pit0 = particles_.rbegin();
         std::advance(pit0, cfg_.nframes - 1);
+        std::cerr << "Appending using stereo vision between " << pit0->first.count() << " and " << time.count() << " ms" << std::endl;
         CorrespondingDescriptorsInCandidateList cf{
             pit0->second.keypoints,
             particles_.rbegin()->second.keypoints,
