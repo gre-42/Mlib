@@ -481,7 +481,7 @@ DenseMapping::DenseMapping(
     const DtamParameters& parameters,
     bool print_debug,
     bool print_bmps)
-: g_{g},
+: g_(g),
   cost_volume_parameters_{cost_volume_parameters},
   parameters_{parameters},
   print_debug_{print_debug},
