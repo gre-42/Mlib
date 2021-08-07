@@ -132,6 +132,20 @@ int main(int argc, char** argv) {
                 highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
                 bmp.save_to_file("features01.png");
             }
+            {
+                StbImage bmp{ bitmap0.copy() };
+                highlight_features(cf.y0, bmp, 2, Rgb24::red());
+                highlight_features(cf.y1, bmp, 2, Rgb24::blue());
+                highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
+                bmp.save_to_file("features01_0.png");
+            }
+            {
+                StbImage bmp{ bitmap1.copy() };
+                highlight_features(cf.y0, bmp, 2, Rgb24::red());
+                highlight_features(cf.y1, bmp, 2, Rgb24::blue());
+                highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
+                bmp.save_to_file("features01_1.png");
+            }
             if (args.has_named_value("--intrinsic_matrix")) {
                 TransformationMatrix<float, 2> ki { FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
                 ProjectionToTrRansac ptr{
