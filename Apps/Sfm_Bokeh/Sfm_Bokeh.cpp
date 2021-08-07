@@ -177,20 +177,20 @@ void compute_z(const ParsedArgs& args) {
     CorrespondingFeaturesInCandidateList cf{feature_points0, feature_points1, im0_rgb, im1_rgb, 10};
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im0);
-        highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp);
-        highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-        highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+        highlight_feature_correspondences(cf.y0, cf.y1, bmp);
+        highlight_features(cf.y0, bmp, 2, Rgb24::red());
+        highlight_features(cf.y1, bmp, 2, Rgb24::blue());
         bmp.save_to_file("features10_0.png");
     }
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im1);
-        highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp);
-        highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-        highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+        highlight_feature_correspondences(cf.y0, cf.y1, bmp);
+        highlight_features(cf.y0, bmp, 2, Rgb24::red());
+        highlight_features(cf.y1, bmp, 2, Rgb24::blue());
         bmp.save_to_file("features10_1.png");
     }
 
-    FundamentalMatrixAndError vF = find_fundamental_matrix(cf.y0_2d, cf.y1_2d);
+    FundamentalMatrixAndError vF = find_fundamental_matrix(cf.y0, cf.y1);
     std::cerr << "fundamental error " << vF.F << std::endl;
     const FixedArray<float, 3, 3>& F = vF.F;
 
@@ -215,8 +215,8 @@ void compute_z(const ParsedArgs& args) {
         if (!only_features2k) {
             StbImage bmp = StbImage::from_float_grayscale(im1);
             draw_epilines_from_epipole(epipole2, bmp, Rgb24::green());
-            highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-            highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+            highlight_features(cf.y0, bmp, 2, Rgb24::red());
+            highlight_features(cf.y1, bmp, 2, Rgb24::blue());
             //highlight_features(Array<float>(bad_points), bmp, 2, Bgr565::black());
             bmp.save_to_file("epilines.png");
         }
@@ -225,24 +225,24 @@ void compute_z(const ParsedArgs& args) {
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F, bmp, Rgb24::green());
-        highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-        highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+        highlight_features(cf.y0, bmp, 2, Rgb24::red());
+        highlight_features(cf.y1, bmp, 2, Rgb24::blue());
         bmp.save_to_file("f_epilines2.png");
     }
 
     if (!only_features2k) {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F.T(), bmp, Rgb24::green());
-        highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-        highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+        highlight_features(cf.y0, bmp, 2, Rgb24::red());
+        highlight_features(cf.y1, bmp, 2, Rgb24::blue());
         bmp.save_to_file("f_epilines2_T.png");
     }
 
     CorrespondingFeaturesOnLine ol = get_cfol(im1, im0_rgb, im1_rgb, F, "f_hr1d.png");
 
     ProjectionToTrRansac ptr{
-        cf.y0_2d,
-        cf.y1_2d,
+        cf.y0,
+        cf.y1,
         intrinsic_matrix,
         0,
         RansacOptions<float> {
@@ -284,18 +284,18 @@ void compute_z(const ParsedArgs& args) {
     {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F_r, bmp, Rgb24::green());
-        highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp);
-        highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-        highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+        highlight_feature_correspondences(cf.y0, cf.y1, bmp);
+        highlight_features(cf.y0, bmp, 2, Rgb24::red());
+        highlight_features(cf.y1, bmp, 2, Rgb24::blue());
         bmp.save_to_file("r_epilines2.png");
     }
 
     {
         StbImage bmp = StbImage::from_float_grayscale(im1);
         draw_epilines_from_F(F_r.T(), bmp, Rgb24::green());
-        highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp);
-        highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-        highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
+        highlight_feature_correspondences(cf.y0, cf.y1, bmp);
+        highlight_features(cf.y0, bmp, 2, Rgb24::red());
+        highlight_features(cf.y1, bmp, 2, Rgb24::blue());
         bmp.save_to_file("r_epilines2_T.png");
     }
 

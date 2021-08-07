@@ -365,17 +365,17 @@ void SparseReconstruction::append_with_stereo(const std::chrono::milliseconds& t
             pit0->second.descriptors,
             particles_.rbegin()->second.descriptors };
 
-        if (cf.y0_2d.length() < cfg_.npoints) {
+        if (cf.y0.length() < cfg_.npoints) {
             throw std::runtime_error("Too few points in first frame");
         }
 
-        if (cf.y1_2d.length() < cfg_.npoints) {
+        if (cf.y1.length() < cfg_.npoints) {
             throw std::runtime_error("Too few points in second frame");
         }
 
         ProjectionToTrRansac ptr(
-            cf.y0_2d,
-            cf.y1_2d,
+            cf.y0,
+            cf.y1,
             intrinsic_matrix_,
             cfg_.fov_threshold,
             cfg_.ro_initial);
@@ -392,7 +392,7 @@ void SparseReconstruction::append_with_stereo(const std::chrono::milliseconds& t
             std::cerr << "dt " << ptr.ptr->ke.inverted().t() << std::endl;
             std::cerr << "RANSAC selected " <<
                 ptr.best_indices.length() << " of " <<
-                std::min(cf.y0_2d.length(), cf.y1_2d.length()) << " points" << std::endl;
+                std::min(cf.y0.length(), cf.y1.length()) << " points" << std::endl;
 
             auto pit0 = particles_.rbegin();
             std::advance(pit0, cfg_.nframes - 1);

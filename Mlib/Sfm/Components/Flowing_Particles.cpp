@@ -42,7 +42,6 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
 
     Array<FixedArray<float, 2>>& keypoints1 = new_frame.keypoints;
     Array<float>& descriptors1 = new_frame.descriptors;
-    std::set<size_t> inserted_keypoints1;
     if (false) {
         std::vector<ocv::KeyPoint> keypoints1_;
         ocv::SIFT sift{ (int)cfg_.target_nparticles };
@@ -69,18 +68,23 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
             keypoints1(i) = FixedArray<float, 2>{ cv_keypoints[i].pt.x, cv_keypoints[i].pt.y };
         }
     }
+    std::map<size_t, size_t> inserted_keypoints1;
+    std::list<std::pair<size_t, size_t>> matches;
     if (particles_.size() > 0) {
         for (auto& s : particles_.rbegin()->second.tracked_points) {
             size_t best_id1 = s.second->sequence.begin()->second->tracebale_descriptor.descriptor_id_in_parameter_list(descriptors1);
-            if (!inserted_keypoints1.contains(best_id1)) {
-                if (best_id1 != SIZE_MAX) {
-                    try_insert_and_append_feature_point(
-                        new_frame,
-                        s,
-                        keypoints1(best_id1),
-                        descriptors1[best_id1]);
-                    inserted_keypoints1.insert(best_id1);
-                }
+            if ((best_id1 != SIZE_MAX) && !inserted_keypoints1.contains(best_id1)) {
+                matches.push_back({ s.first, best_id1 });
+            }
+            ++inserted_keypoints1[best_id1];
+        }
+        for (const auto& m : matches) {
+            if (inserted_keypoints1.at(m.second) == 1) {
+                try_insert_and_append_feature_point(
+                    new_frame,
+                    *particles_.rbegin()->second.tracked_points.find(m.first),
+                    keypoints1(m.second),
+                    descriptors1[m.second]);
             }
         }
     }
@@ -216,7 +220,9 @@ bool FlowingParticles::try_insert_and_append_feature_point(
     auto p = generate_feature_point(pos, descriptor);
     if (descriptor.initialized() || p->traceable_patch.good_) {
         seq.second->sequence[image_frames_.rbegin()->first] = p;
-        frame.tracked_points.insert(seq);
+        if (!frame.tracked_points.insert(seq).second) {
+            throw std::runtime_error("Point to be inserted already exists");
+        }
         return true;
     }
     return false;

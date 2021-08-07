@@ -14,20 +14,18 @@ CorrespondingFeaturesInCandidateList::CorrespondingFeaturesInCandidateList(
 {
     const float worst_error = 1.f; // Errors respect the patch-brightness.
 
-    std::list<FixedArray<float, 2>> yl0_2;
-    std::list<FixedArray<float, 2>> yl1_2;
-    std::list<Array<float>> yl0;
-    std::list<Array<float>> yl1;
+    std::list<FixedArray<float, 2>> yl0;
+    std::list<FixedArray<float, 2>> yl1;
     for (const FixedArray<float, 2>& f : feature_points0.flat_iterable()) {
         TraceablePatch tp{im0_rgb, a2i(f), FixedArray<size_t, 2>{ patch_size, patch_size }};
         if (tp.good_) {
             FixedArray<float, 2> new_pos = tp.new_position_in_candidate_list(im1_rgb, f, feature_points1, worst_error);
             if (new_pos(0) < 1e6) {
-                yl0_2.push_back(f);
-                yl1_2.push_back(new_pos);
+                yl0.push_back(f);
+                yl1.push_back(new_pos);
             }
         }
     }
-    y0_2d = Array<FixedArray<float, 2>>{yl0_2};
-    y1_2d = Array<FixedArray<float, 2>>{yl1_2};
+    y0 = Array<FixedArray<float, 2>>{yl0};
+    y1 = Array<FixedArray<float, 2>>{yl1};
 }

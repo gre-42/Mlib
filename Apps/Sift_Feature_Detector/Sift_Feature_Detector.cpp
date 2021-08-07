@@ -7,6 +7,11 @@
 #include <Mlib/Images/Sift.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Descriptors_In_Candidate_List.hpp>
+#include <Mlib/Sfm/Draw/Sparse_Projector.hpp>
+#include <Mlib/Sfm/Points/Reconstructed_Point.hpp>
+#include <Mlib/Sfm/Rigid_Motion/Projection_To_TR.hpp>
+#include <Mlib/Sfm/Rigid_Motion/Projection_To_TR_Ransac.hpp>
+#include <Mlib/Stats/RansacOptions.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <opencv2/features2d.hpp>
 
@@ -29,7 +34,8 @@ int main(int argc, char** argv) {
         "[--response <response>] "
         "[--clip-min <clip-min>] "
         "[--clip-max <clip-max>] "
-        "[--cv_impl]",
+        "[--cv_impl] "
+        "[--intrinsic_matrix <ki>]",
         { "--multi-scale", "--cv_impl" },
         { "--source1",
           "--k",
@@ -38,7 +44,8 @@ int main(int argc, char** argv) {
           "--response",
           "--response1",
           "--clip-min",
-          "--clip-max" });
+          "--clip-max",
+          "--intrinsic_matrix" });
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unamed(3);
@@ -119,18 +126,42 @@ int main(int argc, char** argv) {
             }
             CorrespondingDescriptorsInCandidateList cf{corners0, corners1, descriptors0, descriptors1};
             {
-                StbImage bmp{ bitmap0.copy() };
-                highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-                highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
-                highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
-                bmp.save_to_file("features10_0.png");
+                StbImage bmp = StbImage::from_float_rgb((bitmap0.to_float_rgb() + bitmap1.to_float_rgb()) / 2.f);
+                highlight_features(cf.y0, bmp, 2, Rgb24::red());
+                highlight_features(cf.y1, bmp, 2, Rgb24::blue());
+                highlight_feature_correspondences(cf.y0, cf.y1, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
+                bmp.save_to_file("features01.png");
             }
-            {
-                StbImage bmp{ bitmap1.copy() };
-                highlight_features(cf.y0_2d, bmp, 2, Rgb24::red());
-                highlight_features(cf.y1_2d, bmp, 2, Rgb24::blue());
-                highlight_feature_correspondences(cf.y0_2d, cf.y1_2d, bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
-                bmp.save_to_file("features10_1.png");
+            if (args.has_named_value("--intrinsic_matrix")) {
+                TransformationMatrix<float, 2> ki { FixedArray<float, 3, 3>{ Array<float>::load_txt_2d(args.named_value("--intrinsic_matrix")) } };
+                ProjectionToTrRansac ptr{
+                    cf.y0,
+                    cf.y1,
+                    ki,
+                    1.f,
+                    RansacOptions<float>{
+                        .nelems_small = 8,
+                        .ncalls = 100,
+                        .inlier_distance_thresh = squared(4.f),
+                        .inlier_count_thresh = 20,
+                        .seed = 1}};
+                if (ptr.ptr == nullptr) {
+                    std::cerr << "RANSAC found no candidate" << std::endl;
+                } else {
+                    std::cerr << ptr.ptr->ke.semi_affine() << std::endl;
+
+                    auto sparse_reconstruction = ptr.ptr->initial_reconstruction().reconstructed();
+                    MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>> reconstructed_points;
+                    for (size_t i = 0; i < sparse_reconstruction.length(); ++i) {
+                        reconstructed_points.active_[i] = std::make_shared<ReconstructedPoint>(sparse_reconstruction(i), NAN);
+                    }
+                    MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames;
+                    camera_frames.active_.insert({std::chrono::milliseconds{ 0 }, CameraFrame{ TransformationMatrix<float, 3>::identity() }});
+                    camera_frames.active_.insert({std::chrono::milliseconds{ 42 }, CameraFrame{ ptr.ptr->ke.inverted() }});
+                    SparseProjector(reconstructed_points, {}, camera_frames, 0, 1, 2).normalize(256).draw("features-0-1.png");
+                    SparseProjector(reconstructed_points, {}, camera_frames, 0, 2, 1).normalize(256).draw("features-0-2.png");
+                    SparseProjector(reconstructed_points, {}, camera_frames, 2, 1, 0).normalize(256).draw("features-2-1.png");
+                }
             }
         }
     } catch (const std::runtime_error& e) {

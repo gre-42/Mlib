@@ -12,8 +12,8 @@ public:
         const Array<float>& descriptors1,
         float lowe_ratio = 0.75f);
 
-    Array<FixedArray<float, 2>> y0_2d;
-    Array<FixedArray<float, 2>> y1_2d;
+    Array<FixedArray<float, 2>> y0;
+    Array<FixedArray<float, 2>> y1;
 };
 
 }
