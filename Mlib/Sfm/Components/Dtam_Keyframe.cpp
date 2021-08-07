@@ -170,7 +170,8 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
         cams_sorted.find(key_frame_time_)) + 1);
     std::cerr << "Keyframe " << key_frame_time_.count() <<
         " ms: navail_future = " << navail_future <<
-        ", navail_past = " << navail_past << std::endl;
+        ", navail_past = " << navail_past <<
+        ", ncams = " << cams_sorted.size() << std::endl;
     if ((vol_ == nullptr) &&
         (cfg_.incremental_update_ || (
             navail_future >= cfg_.nfuture_frames_per_keyframe_ &&
