@@ -29,8 +29,12 @@ const TransformationMatrix<float, 3>& CameraFrame::reconstruction_matrix_3x4() c
     return pose;
 }
 
-bool CameraFrame::point_in_fov(const FixedArray<float, 3>& x, float threshold) const {
-    return projection_matrix_3x4().transform(x)(2) > threshold;
+bool CameraFrame::point_in_fov(
+    const FixedArray<float, 3>& x,
+    const FixedArray<float, 2>& fov_distances) const
+{
+    float z = projection_matrix_3x4().transform(x)(2);
+    return (z > fov_distances(0)) && (z < fov_distances(1));
 }
 
 FixedArray<float, 3> CameraFrame::dir(size_t i) const {

@@ -15,7 +15,7 @@ static bool reconstruction_ok(
     const TransformationMatrix<float, 2>& ki,
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
-    float threshold)
+    const FixedArray<float, 2>& fov_distances)
 {
     assert(all(y0.shape() == y1.shape()));
     // std::cerr << "RRRR\n" << R << std::endl;
@@ -32,18 +32,17 @@ static bool reconstruction_ok(
     // return all(initial_reconstruction_x3(R, t, ki, y0, y1) > threshold);
     Array<FixedArray<float, 3>> recon0 = initial_reconstruction(ke, ki, y0, y1);
     Array<FixedArray<float, 3>> recon1 = recon0.applied([&ke](const auto& p) { return ke.transform(p); });
-    return all(recon0.applied<bool>([threshold](const auto& p) { return p(2) > threshold; })) &&
-           all(recon1.applied<bool>([threshold](const auto& p) { return p(2) > threshold; }));
+    return all(recon0.applied<bool>([&fov_distances](const auto& p) { return (p(2) > fov_distances(0)) && (p(2) < fov_distances(1)); })) &&
+           all(recon1.applied<bool>([&fov_distances](const auto& p) { return (p(2) > fov_distances(0)) && (p(2) < fov_distances(1)); }));
 }
 
 ProjectionToTR::ProjectionToTR(
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
-    float threshold)
+    const FixedArray<float, 2>& fov_distances)
 : ngood(0),
-  y(std::list<Array<FixedArray<float, 2>>>{y0, y1}),
-  np(y),
+  np(Array<FixedArray<float, 2>>{y0, y1}),
   kin(np.normalized_intrinsic_matrix(intrinsic_matrix)),
   Fn(find_fundamental_matrix(np.yn[0], np.yn[1])),
   En(fundamental_to_essential(Fn.F, kin)),
@@ -52,10 +51,10 @@ ProjectionToTR::ProjectionToTR(
     const auto& v = e2tr;
     //std::cerr << v.R0 << std::endl;
     //std::cerr << v.R1 << std::endl;
-    if (reconstruction_ok(TransformationMatrix<float, 3>{v.ke0.R(), v.ke0.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.ke0.R(); ke.t() = v.ke0.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, 3>{v.ke1.R(), v.ke0.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.ke1.R(); ke.t() = v.ke0.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, 3>{v.ke0.R(), v.ke1.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.ke0.R(); ke.t() = v.ke1.t(); }
-    if (reconstruction_ok(TransformationMatrix<float, 3>{v.ke1.R(), v.ke1.t()}, kin, np.yn[0], np.yn[1], threshold)) { ++ngood; ke.R() = v.ke1.R(); ke.t() = v.ke1.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.ke0.R(), v.ke0.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke0.R(); ke.t() = v.ke0.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.ke1.R(), v.ke0.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke1.R(); ke.t() = v.ke0.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.ke0.R(), v.ke1.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke0.R(); ke.t() = v.ke1.t(); }
+    if (reconstruction_ok(TransformationMatrix<float, 3>{v.ke1.R(), v.ke1.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke1.R(); ke.t() = v.ke1.t(); }
 }
 
 bool ProjectionToTR::good() const {

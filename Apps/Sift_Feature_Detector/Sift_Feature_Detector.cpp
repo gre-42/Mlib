@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
                     cf.y0,
                     cf.y1,
                     ki,
-                    1.f,
+                    { 1.f, float{INFINITY} },
                     RansacOptions<float>{
                         .nelems_small = 8,
                         .ncalls = 100,

@@ -139,7 +139,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
             y0,
             y1,
             intrinsic_matrix_,
-            cfg_.fov_threshold,
+            cfg_.fov_distances,
             cfg_.ro_initial);
 
         if (ptr.ptr == nullptr) {
@@ -395,7 +395,7 @@ void SparseReconstruction::append_with_stereo(const std::chrono::milliseconds& t
             cf.y0,
             cf.y1,
             intrinsic_matrix_,
-            cfg_.fov_threshold,
+            cfg_.fov_distances,
             cfg_.ro_initial);
 
         if (ptr.ptr == nullptr) {
@@ -467,7 +467,7 @@ void SparseReconstruction::reconstruct_append() {
             projection_residual /= fixed_full<float, 2>(np.N.get_scale());
             float max_residual = max(projection_residual.applied<float>([](const FixedArray<float, 2>& p){return sum(squared(p));}));
             bool point_is_bad = !get_camera_frame(pp->first)
-                .point_in_fov(x, cfg_.fov_threshold);
+                .point_in_fov(x, cfg_.fov_distances);
             // point_is_bad |= (max(squared_distances) > squared(0.2f));
             point_is_bad |= (max_residual > squared(cfg_.max_residual_unnormalized_post_l2));
             point_is_bad |= (condition_number > cfg_.max_cond);

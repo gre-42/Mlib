@@ -15,7 +15,9 @@ public:
     FixedArray<float, 6> kep;
     TransformationMatrix<float, 3> projection_matrix_3x4() const;
     const TransformationMatrix<float, 3>& reconstruction_matrix_3x4() const;
-    bool point_in_fov(const FixedArray<float, 3>& x, float threshold) const;
+    bool point_in_fov(
+        const FixedArray<float, 3>& x,
+        const FixedArray<float, 2>& fov_distances) const;
     FixedArray<float, 3> dir(size_t i) const;
     void set_from_projection_matrix_3x4(
         const TransformationMatrix<float, 3>& projection);

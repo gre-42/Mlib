@@ -245,7 +245,7 @@ void test_find_essential_matrix() {
         &kin);     // ki_out
     //std::cerr << "kin\n" << kin << std::endl;
     //Array<float> E = fundamental_to_essential(Fn, kin);
-    ProjectionToTR ptr(np.yn[i0], np.yn[i1], kin, 0);
+    ProjectionToTR ptr(np.yn[i0], np.yn[i1], kin, { 0.f, float{INFINITY} });
     //std::cerr << "t " << e2tr.t << std::endl;
     //std::cerr << "R\n" << e2tr.R << std::endl;
     //std::cerr << "ke[i0]\n" << sc.ke[i0] << std::endl;
@@ -264,7 +264,7 @@ void test_projection_to_TR() {
     size_t i1 = 1;
     SyntheticScene sc(true); // true = zero_first_extrinsic
     NormalizedProjection np(sc.y);
-    ProjectionToTR ptr(np.yn[i0], np.yn[i1], np.normalized_intrinsic_matrix(sc.ki), 0);
+    ProjectionToTR ptr(np.yn[i0], np.yn[i1], np.normalized_intrinsic_matrix(sc.ki), { 0.f, float{INFINITY} });
     //std::cerr << "t " << ptr.t << std::endl;
     //std::cerr << "R0\n" << sc.R(i0, i1) << std::endl;
     //std::cerr << "t0 " << sc.t2(i0, i1) << std::endl;

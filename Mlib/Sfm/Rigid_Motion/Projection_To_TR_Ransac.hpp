@@ -17,7 +17,7 @@ public:
         const Array<FixedArray<float, 2>>& y0,
         const Array<FixedArray<float, 2>>& y1,
         const TransformationMatrix<float, 2>& intrinsic_matrix,
-        float threshold,
+        const FixedArray<float, 2>& fov_distances,
         const RansacOptions<float>& ro);
 
     Array<size_t> best_indices;

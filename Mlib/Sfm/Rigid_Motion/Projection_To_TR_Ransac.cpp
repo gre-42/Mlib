@@ -10,7 +10,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
     const Array<FixedArray<float, 2>>& y0,
     const Array<FixedArray<float, 2>>& y1,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
-    float threshold,
+    const FixedArray<float, 2>& fov_distances,
     const RansacOptions<float>& ro)
 {
     assert(y0.length() == y1.length());
@@ -23,7 +23,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
                 y0[indices],
                 y1[indices],
                 intrinsic_matrix,
-                threshold};
+                fov_distances};
             // static size_t i = -1;
             // ++i;
             // {
@@ -65,7 +65,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
             y0[best_indices],
             y1[best_indices],
             intrinsic_matrix,
-            threshold);
+            fov_distances);
         // static size_t i = -1;
         // ++i;
         // {

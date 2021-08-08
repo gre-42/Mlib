@@ -17,7 +17,7 @@ public:
         const Array<FixedArray<float, 2>>& y0,
         const Array<FixedArray<float, 2>>& y1,
         const TransformationMatrix<float, 2>& intrinsic_matrix,
-        float threshold);
+        const FixedArray<float, 2>& fov_distances);
 
     bool good() const;
     InitialReconstruction initial_reconstruction() const;
@@ -27,7 +27,6 @@ public:
     TransformationMatrix<float, 3> ke;
     size_t ngood;
 private:
-    Array<FixedArray<float, 2>> y;
     NormalizedProjection np;
     TransformationMatrix<float, 2> kin;
     FundamentalMatrixAndError Fn;

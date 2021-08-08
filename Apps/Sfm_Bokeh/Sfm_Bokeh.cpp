@@ -244,7 +244,7 @@ void compute_z(const ParsedArgs& args) {
         cf.y0,
         cf.y1,
         intrinsic_matrix,
-        0,
+        { 0.f, float{INFINITY} },
         RansacOptions<float> {
             .nelems_small = 8,
             .ncalls = 100,
