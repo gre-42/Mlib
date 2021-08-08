@@ -69,9 +69,7 @@ void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
         std::cerr << "DTAM reconstruction [" << cams_sorted.size() << "] = " << cams_sorted.rbegin()->first.count() << " ms" << std::endl;
     }
     if (key_frames_.empty() && !cams_sorted.empty()) {
-        if ((cfg_.keyframe_config_.incremental_update_ && (cams_sorted.size() >= 2))  ||
-            (!cfg_.keyframe_config_.incremental_update_ && (cams_sorted.size() > 2)))  // detect and reject initial reconstruction
-        {
+        if (cams_sorted.size() >= 2) {
             if (cfg_.rewind_first_keyframe_) {
                 size_t i = 0;
                 for (const auto& c : cams_sorted) {
