@@ -23,6 +23,7 @@ TemplatePatchPipeline::TemplatePatchPipeline(
   sparse_reconstruction_{
       intrinsic_matrix_,
       camera_frames_,
+      image_frames_,
       flowing_particles_.particles_,
       flowing_particles_.bad_points_,
       flowing_particles_.last_sq_residual_,

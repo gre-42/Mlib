@@ -1,6 +1,7 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Sfm/Components/Sparse_Reconstruction.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
+#include <Mlib/Sfm/Frames/Image_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Synthetic_Scene.hpp>
 
 using namespace Mlib;
@@ -38,11 +39,12 @@ void test_reconstruction() {
     cfg.interpolate_initial_cameras = false;
     cfg.append_mode = AppendMode::PROJECTION;
 
+    std::map<std::chrono::milliseconds, ImageFrame> image_frames;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames;
     std::map<std::chrono::milliseconds, FeaturePointFrame> particles;
     std::map<size_t, std::chrono::milliseconds> bad_points;
     std::map<size_t, float> last_sq_residual;
-    SparseReconstruction recon{ sc.ki, camera_frames, particles, bad_points, last_sq_residual, "TestOut", cfg };
+    SparseReconstruction recon{ sc.ki, camera_frames, image_frames, particles, bad_points, last_sq_residual, "TestOut", cfg };
     Array<float> image = random_array2<float>(ArrayShape{3, 256, 512}, 1);
     FixedArray<size_t, 2> patch_center{127, 130};
     FixedArray<size_t, 2> patch_size{6, 6};

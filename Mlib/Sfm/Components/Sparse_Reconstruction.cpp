@@ -5,6 +5,7 @@
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
+#include <Mlib/Images/Features.cpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Optimize/Generic_Optimization.hpp>
 #include <Mlib/Math/Optimize/Levenberg_Marquardt.hpp>
@@ -13,6 +14,7 @@
 #include <Mlib/Sfm/Draw/Sparse_Projector.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Feature_Point_Frame.hpp>
+#include <Mlib/Sfm/Frames/Image_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Essential_Matrix_To_TR.h>
 #include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>
@@ -36,6 +38,7 @@ static const bool skip_missing_cameras = true;
 SparseReconstruction::SparseReconstruction(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
+    const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
     std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
     std::map<size_t, std::chrono::milliseconds>& bad_points,
     std::map<size_t, float>& last_sq_residual,
@@ -43,6 +46,7 @@ SparseReconstruction::SparseReconstruction(
     ReconstructionConfig cfg)
 :intrinsic_matrix_{ intrinsic_matrix },
  camera_frames_{ camera_frames },
+ image_frames_{ image_frames },
  particles_{ particles },
  bad_points_{ bad_points },
  last_sq_residual_{ last_sq_residual },
@@ -65,13 +69,15 @@ SparseReconstruction::SparseReconstruction(
 void SparseReconstruction::compute_reconstruction_pair(
     Array<size_t>& ids,
     Array<FixedArray<float, 2>>& y0,
-    Array<FixedArray<float, 2>>& y1)
+    Array<FixedArray<float, 2>>& y1,
+    std::pair<std::chrono::milliseconds, std::chrono::milliseconds>& times)
 {
+    assert(cfg_.nframes > 1);
     std::list<size_t> ids_l;
     std::list<FixedArray<float, 2>> y0_l;
     std::list<FixedArray<float, 2>> y1_l;
-    for (const auto& s : particles_.rbegin()->second.tracked_points) {
-        assert(cfg_.nframes >= 1);
+    auto second_particles = particles_.rbegin();
+    for (const auto& s : second_particles->second.tracked_points) {
         std::shared_ptr<FeaturePoint> nth_parent = s.second->nth_from_end(cfg_.nframes - 1);
         if (nth_parent != nullptr) {
             ids_l.push_back(s.first);
@@ -82,6 +88,9 @@ void SparseReconstruction::compute_reconstruction_pair(
     ids = Array<size_t>(ids_l);
     y0 = Array<FixedArray<float, 2>>(y0_l);
     y1 = Array<FixedArray<float, 2>>(y1_l);
+    times.second = second_particles->first;
+    std::advance(second_particles, cfg_.nframes - 1);
+    times.first = second_particles->first;
 }
 
 void SparseReconstruction::reconstruct_initial_with_camera() {
@@ -90,24 +99,23 @@ void SparseReconstruction::reconstruct_initial_with_camera() {
     Array<size_t> active_sequence_ids;
     Array<FixedArray<float, 2>> y0;
     Array<FixedArray<float, 2>> y1;
+    std::pair<std::chrono::milliseconds, std::chrono::milliseconds> times;
 
-    compute_reconstruction_pair(active_sequence_ids, y0, y1);
+    compute_reconstruction_pair(active_sequence_ids, y0, y1, times);
 
     std::cerr << "Found " << y0.length() << " points, waiting for " << cfg_.npoints << std::endl;
     if (y0.length() >= cfg_.npoints) {
-        assert_true(camera_frames_.size() >= cfg_.nframes);
-        assert_true(camera_frames_.rbegin()->first == particles_.rbegin()->first);
-        auto cit_second = camera_frames_.rbegin();
-        auto cit_first = cit_second;
-        assert(cfg_.nframes >= 1);
-        std::advance(cit_first, cfg_.nframes - 1);
-        InitialReconstruction ir{ y0, y1, cit_first->second.reconstruction_matrix_3x4() * cit_second->second.projection_matrix_3x4(), intrinsic_matrix_ };
+        InitialReconstruction ir{
+            y0,
+            y1,
+            camera_frames_.at(times.first).reconstruction_matrix_3x4() * camera_frames_.at(times.second).projection_matrix_3x4(),
+            intrinsic_matrix_ };
 
         Array<float> condition_number;
         Array<FixedArray<float, 3>> x = ir.reconstructed(&condition_number);
 
         for (size_t i = 0; i < active_sequence_ids.length(); ++i) {
-            const FixedArray<float, 3>& xx = cit_first->second.reconstruction_matrix_3x4().transform(x(i));
+            const FixedArray<float, 3>& xx = camera_frames_.at(times.first).reconstruction_matrix_3x4().transform(x(i));
             std::cerr << "New initial x [" << i << "] " << xx << " cond " << condition_number(i) << std::endl;
             reconstructed_points_[active_sequence_ids(i)] =
                 std::make_shared<ReconstructedPoint>(xx, condition_number(i));
@@ -122,7 +130,8 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
     Array<FixedArray<float, 2>> y0;
     Array<FixedArray<float, 2>> y1;
 
-    compute_reconstruction_pair(active_sequence_ids, y0, y1);
+    std::pair<std::chrono::milliseconds, std::chrono::milliseconds> times;
+    compute_reconstruction_pair(active_sequence_ids, y0, y1, times);
 
     std::cerr << "Found " << y0.length() << " points, waiting for " << cfg_.npoints << std::endl;
     if (y0.length() >= cfg_.npoints) {
@@ -140,6 +149,14 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
         }
 
         if (ptr.ptr != nullptr && ptr.ptr->good()) {
+            if (!image_frames_.empty()) {
+                StbImage bmp = StbImage::from_float_rgb((image_frames_.at(times.first).rgb + image_frames_.at(times.second).rgb) / 2.f);
+                highlight_features(y0[ptr.best_indices], bmp, 2, Rgb24::red());
+                highlight_features(y1[ptr.best_indices], bmp, 2, Rgb24::blue());
+                highlight_feature_correspondences(y0[ptr.best_indices], y1[ptr.best_indices], bmp, 0, Rgb24::red(), rvalue_address(Rgb24::nan()));
+                fs::create_directories(cache_dir_);
+                bmp.save_to_file((fs::path{ cache_dir_ } / (std::to_string(times.first.count()) + "-" + std::to_string(times.second.count()) + "-features01.png")).string());
+            }
             {
                 auto cam2 = camera_frames_.find(particles_.rbegin()->first);
                 if (cam2 != camera_frames_.end()) {

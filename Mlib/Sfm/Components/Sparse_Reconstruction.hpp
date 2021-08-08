@@ -20,6 +20,7 @@ public:
     explicit SparseReconstruction(
         const TransformationMatrix<float, 2>& intrinsic_matrix,
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
+        const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
         std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
         std::map<size_t, std::chrono::milliseconds>& bad_points,
         std::map<size_t, float>& last_sq_residual,
@@ -36,7 +37,8 @@ private:
     void compute_reconstruction_pair(
         Array<size_t>& ids,
         Array<FixedArray<float, 2>>& y0,
-        Array<FixedArray<float, 2>>& y1);
+        Array<FixedArray<float, 2>>& y1,
+        std::pair<std::chrono::milliseconds, std::chrono::milliseconds>& times);
     void reconstruct_initial_with_camera();
     void reconstruct_initial_with_svd();
     void reconstruct_initial_for_bundle_adjustment();
@@ -63,6 +65,7 @@ private:
     TransformationMatrix<float, 2> intrinsic_matrix_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
     std::map<std::chrono::milliseconds, CameraFrame> frozen_camera_frames_;
+    const std::map<std::chrono::milliseconds, ImageFrame>& image_frames_;
     std::map<std::chrono::milliseconds, FeaturePointFrame>& particles_;
     std::map<size_t, std::chrono::milliseconds>& bad_points_;
     std::map<size_t, float>& last_sq_residual_;
