@@ -60,9 +60,11 @@ private:
 #endif
     void draw(const std::string& prefix) const;
     void save_reconstructed(const std::string& prefix) const;
+    void save_intrinsic_coefficients(const std::string& prefix) const;
     MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>> reconstructed_points_;
     std::map<size_t, std::shared_ptr<ReconstructedPoint>> frozen_reconstructed_points_;
-    TransformationMatrix<float, 2> intrinsic_matrix_;
+    TransformationMatrix<float, 2> initial_intrinsic_matrix_;
+    FixedArray<float, 4> packed_intrinsic_coefficients_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
     std::map<std::chrono::milliseconds, CameraFrame> frozen_camera_frames_;
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames_;
@@ -72,7 +74,7 @@ private:
     std::string cache_dir_;
     ReconstructionConfig cfg_;
     MarginalizationScheduler ms_;
-    UUIDGen<XK, XP> uuid_gen_;
+    UUIDGen<XKi, XKe, XP> uuid_gen_;
     std::set<PointObservation> dropped_observations_;
 };
 

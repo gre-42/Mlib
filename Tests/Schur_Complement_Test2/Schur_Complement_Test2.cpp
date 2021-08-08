@@ -276,7 +276,7 @@ void test_schur_solver() {
 }
 
 void test_fill_in() {
-    UUIDGen<CameraVariable, FeaturePointVariable> uuid_gen;
+    UUIDGen<int, CameraVariable, FeaturePointVariable> uuid_gen;
 
     TestScene1d tc(uuid_gen);
     gen_scene1(tc);

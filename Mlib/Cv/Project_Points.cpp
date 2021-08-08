@@ -36,6 +36,12 @@ TransformationMatrix<float, 2> Mlib::Cv::k_internal(const FixedArray<float, 4>& 
         FixedArray<float, 2>{kip(1), kip(3)}};
 }
 
+FixedArray<float, 4> Mlib::Cv::pack_k_internal(const TransformationMatrix<float, 2>& ki) {
+    FixedArray<float, 4> kip{ki.R()(0, 0), ki.t()(0), ki.R()(1, 1), ki.t()(1)};
+    assert(all(k_internal(kip).semi_affine() == ki.semi_affine()));
+    return kip;
+}
+
 Array<FixedArray<float, 2>> Mlib::Cv::projected_points(
     const Array<FixedArray<float, 3>>& x,
     const TransformationMatrix<float, 2>& ki,

@@ -27,11 +27,11 @@ public:
         std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
         MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>>& reconstructed_points,
         std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points,
+        FixedArray<float, 4>& packed_intrinsic_coefficients,
         MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
         std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
         bool skip_missing_cameras,
-        UUIDGen<XK, XP>& uuid_gen,
+        UUIDGen<XKi, XKe, XP>& uuid_gen,
         std::set<PointObservation>& dropped_observations,
         const std::map<size_t, std::chrono::milliseconds>& bad_points);
 
@@ -61,9 +61,9 @@ private:
     std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
     std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames_;
-    const TransformationMatrix<float, 2>& intrinsic_matrix_;
+    FixedArray<float, 4>& packed_intrinsic_coefficients_;
     bool skip_missing_cameras_;
-    UUIDGen<XK, XP>& uuid_gen_;
+    UUIDGen<XKi, XKe, XP>& uuid_gen_;
     std::set<PointObservation>& dropped_observations_;
     const std::map<size_t, std::chrono::milliseconds>& bad_points_;
 

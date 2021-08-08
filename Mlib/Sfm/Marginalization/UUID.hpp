@@ -22,14 +22,22 @@ inline std::ostream& operator << (std::ostream& ostr, const UUID& uuid) {
     return ostr;
 }
 
-template <class TCameraVariable, class TFeaturePointVariable>
+template <class TCameraIntrinsicVariable, class TCameraVariable, class TFeaturePointVariable>
 class UUIDGen {
 public:
+    inline UUID get(const TCameraIntrinsicVariable& ii) const {
+        return camera_intrinsics_.at(ii);
+    }
     inline UUID get(const TCameraVariable& ci) const {
         return cameras_.at(ci);
     }
     inline UUID get(const TFeaturePointVariable& fi) const {
         return feature_points_.at(fi);
+    }
+    inline void generate(const TCameraIntrinsicVariable& ii) {
+        if (camera_intrinsics_.find(ii) == camera_intrinsics_.end()) {
+            camera_intrinsics_.insert(std::make_pair(ii, UUID(last_uuid_++)));
+        }
     }
     inline void generate(const TCameraVariable& ci) {
         if (cameras_.find(ci) == cameras_.end()) {
@@ -42,6 +50,7 @@ public:
         }
     }
 private:
+    std::map<TCameraIntrinsicVariable, UUID> camera_intrinsics_;
     std::map<TCameraVariable, UUID> cameras_;
     std::map<TFeaturePointVariable, UUID> feature_points_;
     size_t last_uuid_ = 0;

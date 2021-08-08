@@ -20,7 +20,7 @@ public:
     size_t feature_point_id_;
 };
 
-typedef UUIDGen<CameraVariable, FeaturePointVariable> XUUIDGen;
+typedef UUIDGen<int, CameraVariable, FeaturePointVariable> XUUIDGen;
 
 class TestScene1d {
 public:

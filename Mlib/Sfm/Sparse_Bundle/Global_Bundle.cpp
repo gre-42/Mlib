@@ -16,35 +16,22 @@ using namespace Mlib::Sfm;
 Y::Y(const std::chrono::milliseconds time, size_t index, size_t dimension)
   : time(time), index(index), dimension(dimension) {}
 
-auto Y::as_pair() const {
-    return std::make_pair(std::make_pair(time, index), dimension);
-}
-
-bool Y::operator < (const Y& y) const {
-    return as_pair() < y.as_pair();
-}
+std::strong_ordering Y::operator <=> (const Y& y) const = default;
 
 XP::XP(size_t index, size_t dimension)
 : index(index), dimension(dimension) {}
 
-auto XP::as_pair() const {
-    return std::make_pair(index, dimension);
-}
+std::strong_ordering XP::operator <=> (const XP& xp) const = default;
 
-bool XP::operator < (const XP& xp) const {
-    return as_pair() < xp.as_pair();
-}
+XKi::XKi(size_t dimension)
+: dimension(dimension) {}
 
-XK::XK(const std::chrono::milliseconds time, size_t dimension)
+std::strong_ordering XKi::operator <=> (const XKi& xki) const = default;
+
+XKe::XKe(const std::chrono::milliseconds time, size_t dimension)
 : time(time), dimension(dimension) {}
 
-auto XK::as_pair() const {
-    return std::make_pair(time, dimension);
-}
-
-bool XK::operator < (const XK& xk) const {
-    return as_pair() < xk.as_pair();
-}
+std::strong_ordering XKe::operator <=> (const XKe& xke) const = default;
 
 GlobalBundle::GlobalBundle(
     const std::string& cache_dir,
@@ -52,10 +39,11 @@ GlobalBundle::GlobalBundle(
     const std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
     const MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>>& reconstructed_points,
     const std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points,
+    const FixedArray<float, 4>& packed_intrinsic_coefficients,
     const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     const std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
     bool skip_missing_cameras,
-    UUIDGen<XK, XP>& uuid_gen,
+    UUIDGen<XKi, XKe, XP>& uuid_gen,
     const std::set<PointObservation>& dropped_observations)
 :cfg_{cfg},
  cache_dir_{cache_dir}
@@ -105,15 +93,18 @@ GlobalBundle::GlobalBundle(
             }
         }
     }
+    for (size_t i = 0; i < packed_intrinsic_coefficients.length(); ++i) {
+        xkis.insert({XKi{i}, xkis.size()});
+    }
     for (const auto& c : camera_frames) {
         if (c.state_ != MmState::MARGINALIZED) {
             for (size_t d = 0; d < 6; ++d) {
-                xks.insert(std::make_pair(XK(c.first, d), xks.size()));
+                xkes.insert(std::make_pair(XKe(c.first, d), xkes.size()));
             }
         }
     }
 
-    xg.resize(ArrayShape{xps.size() + xks.size()});
+    xg.resize(ArrayShape{xps.size() + packed_intrinsic_coefficients.length() + xkes.size()});
     frozen_xg.resize(xg.shape());
 
     for (const auto& xxp : xps) {
@@ -130,19 +121,27 @@ GlobalBundle::GlobalBundle(
         predictor_uuids_.insert(std::make_pair(uuid_gen.get(xpi), column_id(xpi)));
         xp_uuids_[xpi.index](xpi.dimension) = uuid_gen.get(xpi);
     }
-    for (const auto& xkk : xks) {
-        const auto& xki = xkk.first;
-        const auto& c = camera_frames.find(xki.time);
-        xg(column_id(xki)) = c->second.kep(xki.dimension);
+    for (const auto& xkki : xkis) {
+        const auto& xkii = xkki.first;
+        xg(column_id(xkii)) = packed_intrinsic_coefficients(xkii.dimension);
+        frozen_xg(column_id(xkii)) = xg(column_id(xkii));
+        uuid_gen.generate(xkii);
+        predictor_uuids_.insert(std::make_pair(uuid_gen.get(xkii), column_id(xkii)));
+        xki_uuids_(xkii.dimension) = uuid_gen.get(xkii);
+    }
+    for (const auto& xkke : xkes) {
+        const auto& xkei = xkke.first;
+        const auto& c = camera_frames.find(xkei.time);
+        xg(column_id(xkei)) = c->second.kep(xkei.dimension);
         if (c->state_ == MmState::LINEARIZED) {
-            frozen_xg(column_id(xki)) = frozen_camera_frames.at(xki.time).kep(xki.dimension);
+            frozen_xg(column_id(xkei)) = frozen_camera_frames.at(xkei.time).kep(xkei.dimension);
         } else {
-            frozen_xg(column_id(xki)) = xg(column_id(xki));
+            frozen_xg(column_id(xkei)) = xg(column_id(xkei));
         }
         assert(c->state_ != MmState::MARGINALIZED);
-        uuid_gen.generate(xki);
-        predictor_uuids_.insert(std::make_pair(uuid_gen.get(xki), column_id(xki)));
-        xk_uuids_[xki.time](xki.dimension) = uuid_gen.get(xki);
+        uuid_gen.generate(xkei);
+        predictor_uuids_.insert(std::make_pair(uuid_gen.get(xkei), column_id(xkei)));
+        xke_uuids_[xkei.time](xkei.dimension) = uuid_gen.get(xkei);
     }
 
     // Disabled for SparseArray
@@ -166,9 +165,9 @@ GlobalBundle::GlobalBundle(
                 ox(column_id(xxp.first), 0) = (float)xxp.first.index;
                 ox(column_id(xxp.first), 1) = (float)xxp.first.dimension;
             }
-            for (const auto& xkk : xks) {
-                ox(column_id(xkk.first), 0) = (float)xkk.first.time.count();
-                ox(column_id(xkk.first), 1) = (float)xkk.first.dimension;
+            for (const auto& xkke : xkes) {
+                ox(column_id(xkke.first), 0) = (float)xkke.first.time.count();
+                ox(column_id(xkke.first), 1) = (float)xkke.first.dimension;
             }
             ox.save_txt_2d(cache_dir_ + "/xs-" + std::to_string(id) + ".m");
         }
@@ -188,12 +187,13 @@ void GlobalBundle::copy_in(
     const std::map<std::chrono::milliseconds, FeaturePointFrame>& particles,
     const MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>>& reconstructed_points,
     const std::map<size_t, std::shared_ptr<ReconstructedPoint>>& frozen_reconstructed_points,
+    const FixedArray<float, 4>& packed_intrinsic_coefficients,
     const MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames,
     const std::map<std::chrono::milliseconds, CameraFrame>& frozen_camera_frames,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
     bool skip_missing_cameras,
     const std::set<PointObservation>& dropped_observations)
 {
+    TransformationMatrix<float, 2> intrinsic_matrix = k_internal(packed_intrinsic_coefficients);
     for (const auto& p : particles) {
         // This code is equivalent to (for c, p in (cameras & particles)),
         // but with an additional error check.
@@ -249,9 +249,17 @@ void GlobalBundle::copy_in(
                     }
                 }
                 {
+                    FixedArray<float, 2, 4> JKi = projected_points_jacobian_dki_1p_1ke(rf.position, cf.projection_matrix_3x4());
+                    for (size_t r = 0; r < JKi.static_shape<0>(); ++r) {
+                        for (size_t c = 0; c < JKi.static_shape<1>(); ++c) {
+                            Jg_at(Y{p.first, y.first, r}, XKi{c}) = JKi(r, c);
+                        }
+                    }
+                }
+                {
                     // std::cerr << "Computing JK" << std::endl;
                     // std::cerr << c->second.kep << std::endl;
-                    FixedArray<float, 2, 6> JK = cfg_.numerical_jacobian_k
+                    FixedArray<float, 2, 6> JKe = cfg_.numerical_jacobian_k
                         ? numerical_differentiation<2>([&](const FixedArray<float, 6>& kep){
                             // std::cerr << "kep " << kep << std::endl;
                             // std::cerr << k_external(kep) << std::endl;
@@ -262,9 +270,9 @@ void GlobalBundle::copy_in(
                         : projected_points_jacobian_dke_1p_1ke(rf.position, intrinsic_matrix, cf.kep);
                     // std::cerr << "JK " << JK.shape() << std::endl;
                     // std::cerr << JK << std::endl;
-                    for (size_t r = 0; r < JK.static_shape<0>(); ++r) {
-                        for (size_t c = 0; c < JK.static_shape<1>(); ++c) {
-                            Jg_at(Y{p.first, y.first, r}, XK{p.first, c}) = JK(r, c);
+                    for (size_t r = 0; r < JKe.static_shape<0>(); ++r) {
+                        for (size_t c = 0; c < JKe.static_shape<1>(); ++c) {
+                            Jg_at(Y{p.first, y.first, r}, XKe{p.first, c}) = JKe(r, c);
                         }
                     }
                 }
@@ -272,31 +280,31 @@ void GlobalBundle::copy_in(
         }
     }
     if (false) {
-        for (const auto& xkk : xks) {
-            size_t col = column_id(xkk.first);
+        for (const auto& xkke : xkes) {
+            size_t col = column_id(xkke.first);
             if (Jg.column(col).size() == 0) {
-                std::cerr << xkk.first.time.count() << " ms " << xkk.first.dimension << std::endl;
+                std::cerr << xkke.first.time.count() << " ms " << xkke.first.dimension << std::endl;
                 throw std::runtime_error("Camera column is empty");
             }
             if (false) {
                 auto mit = std::max_element(Jg.column(col).begin(), Jg.column(col).end(), [](const auto& a, const auto& b) {return a.second < b.second; });
                 if (mit->second < 1e-13) {
-                    std::cerr << xkk.first.time.count() << " ms " << xkk.first.dimension << std::endl;
+                    std::cerr << xkke.first.time.count() << " ms " << xkke.first.dimension << std::endl;
                     throw std::runtime_error("Camera column is (nearly) zero");
                 }
             }
             // Initial bundle adjustment (2 cams, N points).
             // Camera rotation about z-axis.
-            if (xkk.first.dimension == 2) {
+            if (xkke.first.dimension == 2) {
                 continue;
             }
             // Initial bundle adjustment (2 cams, N points).
             // Camera position in z-direction.
-            if (xkk.first.dimension == 5) {
+            if (xkke.first.dimension == 5) {
                 continue;
             }
             if (all(Jg.columns(Array<size_t>{col}).to_dense_array() == 0.f)) {
-                std::cerr << xkk.first.time.count() << " ms " << xkk.first.dimension << std::endl;
+                std::cerr << xkke.first.time.count() << " ms " << xkke.first.dimension << std::endl;
                 throw std::runtime_error("Camera column is zero");
             }
         }
@@ -347,6 +355,7 @@ void GlobalBundle::copy_in(
 void GlobalBundle::copy_out(
     const Array<float>& x,
     MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>>& reconstructed_points,
+    FixedArray<float, 4>& packed_intrinsic_coefficients,
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames) const
 {
     for (const auto& r : reconstructed_points) {
@@ -356,9 +365,12 @@ void GlobalBundle::copy_out(
             }
         }
     }
+    for (size_t i = 0; i < packed_intrinsic_coefficients.length(); ++i) {
+        packed_intrinsic_coefficients(i) = x(column_id(XKi{i}));
+    }
     for (const auto& c : camera_frames) {
         if (c->state_ != MmState::MARGINALIZED) {
-            size_t cid = column_id(XK{c.first, 0});
+            size_t cid = column_id(XKe{c.first, 0});
             const FixedArray<float, 6> kke{ x.row_range(cid, cid + 6) };
             c.second.set_from_projection_matrix_3x4(
                 k_external(kke),
@@ -384,14 +396,22 @@ size_t GlobalBundle::column_id(const XP& xp) const {
     return xps.at(xp);
 }
 
-size_t GlobalBundle::column_id(const XK& xk) const {
-    return xps.size() + xks.at(xk);
+size_t GlobalBundle::column_id(const XKi& xki) const {
+    return xps.size() + xkis.at(xki);
+}
+
+size_t GlobalBundle::column_id(const XKe& xke) const {
+    return xps.size() + xkis.size() + xkes.at(xke);
 }
 
 float& GlobalBundle::Jg_at(const Y& y, const XP& xp) {
     return Jg(row_id(y), column_id(xp));
 }
 
-float& GlobalBundle::Jg_at(const Y& y, const XK& xk) {
-    return Jg(row_id(y), column_id(xk));
+float& GlobalBundle::Jg_at(const Y& y, const XKi& xki) {
+    return Jg(row_id(y), column_id(xki));
+}
+
+float& GlobalBundle::Jg_at(const Y& y, const XKe& xke) {
+    return Jg(row_id(y), column_id(xke));
 }

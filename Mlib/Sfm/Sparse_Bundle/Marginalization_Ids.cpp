@@ -22,7 +22,7 @@ void MarginalizationIds::linearize_point(size_t index) {
 }
 
 void MarginalizationIds::linearize_camera(const std::chrono::milliseconds& time) {
-    for (const auto& p : gb_.xk_uuids_.at(time).flat_iterable()) {
+    for (const auto& p : gb_.xke_uuids_.at(time).flat_iterable()) {
         size_t id = gb_.predictor_uuids_.at(p);
         if (ids_.find(id) != ids_.end()) {
             throw std::runtime_error("Duplicate marginalization-ID");
@@ -42,7 +42,7 @@ void MarginalizationIds::marginalize_point(size_t index) {
 }
 
 void MarginalizationIds::marginalize_camera(const std::chrono::milliseconds& time) {
-    for (const auto& p : gb_.xk_uuids_.at(time).flat_iterable()) {
+    for (const auto& p : gb_.xke_uuids_.at(time).flat_iterable()) {
         size_t id = gb_.predictor_uuids_.at(p);
         if (ids_.find(id) != ids_.end()) {
             throw std::runtime_error("Duplicate marginalization-ID");

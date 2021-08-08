@@ -44,7 +44,8 @@ SparseReconstruction::SparseReconstruction(
     std::map<size_t, float>& last_sq_residual,
     const std::string& cache_dir,
     ReconstructionConfig cfg)
-:intrinsic_matrix_{ intrinsic_matrix },
+:initial_intrinsic_matrix_{ intrinsic_matrix },
+ packed_intrinsic_coefficients_{ pack_k_internal(intrinsic_matrix) },
  camera_frames_{ camera_frames },
  image_frames_{ image_frames },
  particles_{ particles },
@@ -58,9 +59,9 @@ SparseReconstruction::SparseReconstruction(
       particles,
       reconstructed_points_,
       frozen_reconstructed_points_,
+      packed_intrinsic_coefficients_,
       camera_frames,
       frozen_camera_frames_,
-      intrinsic_matrix,
       skip_missing_cameras,
       uuid_gen_,
       dropped_observations_,
@@ -109,7 +110,7 @@ void SparseReconstruction::reconstruct_initial_with_camera() {
             y0,
             y1,
             camera_frames_.at(times.first).reconstruction_matrix_3x4() * camera_frames_.at(times.second).projection_matrix_3x4(),
-            intrinsic_matrix_ };
+            initial_intrinsic_matrix_ };
 
         Array<float> condition_number;
         Array<FixedArray<float, 3>> x = ir.reconstructed(&condition_number);
@@ -138,7 +139,7 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
         ProjectionToTrRansac ptr(
             y0,
             y1,
-            intrinsic_matrix_,
+            initial_intrinsic_matrix_,
             cfg_.fov_distances,
             cfg_.ro_initial);
 
@@ -292,7 +293,7 @@ void SparseReconstruction::append_with_projection(const std::chrono::millisecond
     Array<FixedArray<float, 3>> xa{ x };
     Array<FixedArray<float, 2>> ya{ y };
     NormalizedProjection np(ya.reshaped(ArrayShape{1}.concatenated(ya.shape())));
-    TransformationMatrix<float, 2> kin = np.normalized_intrinsic_matrix(intrinsic_matrix_);
+    TransformationMatrix<float, 2> kin = np.normalized_intrinsic_matrix(k_internal(packed_intrinsic_coefficients_));
     Array<TransformationMatrix<float, 3>> ke;
     Array<float> kep;
     if (cfg_.use_ransac_append) {
@@ -394,7 +395,7 @@ void SparseReconstruction::append_with_stereo(const std::chrono::milliseconds& t
         ProjectionToTrRansac ptr(
             cf.y0,
             cf.y1,
-            intrinsic_matrix_,
+            k_internal(packed_intrinsic_coefficients_),
             cfg_.fov_distances,
             cfg_.ro_initial);
 
@@ -455,7 +456,7 @@ void SparseReconstruction::reconstruct_append() {
             Array<FixedArray<float, 2>> projection_residual;
             FixedArray<float, 3> x = reconstructed_point_(
                 np.yn,
-                np.normalized_intrinsic_matrix(intrinsic_matrix_),
+                np.normalized_intrinsic_matrix(k_internal(packed_intrinsic_coefficients_)),
                 ke,
                 nullptr, // weights
                 false,   // method_2
@@ -568,7 +569,7 @@ void SparseReconstruction::partial_bundle_adjustment(const std::list<std::chrono
     NormalizedProjection np{y};
     Array<TransformationMatrix<float, 3>> ke; //{ArrayShape{cfg_.nframes, 3, 4}};
     Array<float> kep;
-    TransformationMatrix<float, 2> kin = np.normalized_intrinsic_matrix(intrinsic_matrix_);
+    TransformationMatrix<float, 2> kin = np.normalized_intrinsic_matrix(k_internal(packed_intrinsic_coefficients_));
     Array<FixedArray<float, 3>> x_out;
     Array<float> final_residual_array;
     find_projection_matrices_twopass(
@@ -630,6 +631,7 @@ void SparseReconstruction::global_bundle_adjustment_lvm() {
         particles_,
         reconstructed_points_,
         frozen_reconstructed_points_,
+        packed_intrinsic_coefficients_,
         camera_frames_,
         frozen_camera_frames_,
         skip_missing_cameras,
@@ -641,14 +643,14 @@ void SparseReconstruction::global_bundle_adjustment_lvm() {
         gb.xg,
         gb.yg,
         [&](const Array<float>& x) {
-            gb.copy_out(x, reconstructed_points_, camera_frames_);
+            gb.copy_out(x, reconstructed_points_, packed_intrinsic_coefficients_, camera_frames_);
             gb.copy_in(
                 particles_,
                 reconstructed_points_,
                 frozen_reconstructed_points_,
+                packed_intrinsic_coefficients_,
                 camera_frames_,
                 frozen_camera_frames_,
-                intrinsic_matrix_,
                 skip_missing_cameras,
                 dropped_observations_);
             return gb.fg;
@@ -678,7 +680,7 @@ void SparseReconstruction::global_bundle_adjustment_lvm() {
         nullptr,                // final_residual
         &cfg_.max_residual_unnormalized); // max_residual
 
-    gb.copy_out(x_opt, reconstructed_points_, camera_frames_);
+    gb.copy_out(x_opt, reconstructed_points_, packed_intrinsic_coefficients_, camera_frames_);
 }
 
 void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
@@ -689,14 +691,14 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
     Array<float> x_opt = generic_optimization<float>(
         gb->xg,
         [&](const Array<float>& x, size_t i) {
-            gb->copy_out(x, reconstructed_points_, camera_frames_);
+            gb->copy_out(x, reconstructed_points_, packed_intrinsic_coefficients_, camera_frames_);
             gb->copy_in(
                 particles_,
                 reconstructed_points_,
                 frozen_reconstructed_points_,
+                packed_intrinsic_coefficients_,
                 camera_frames_,
                 frozen_camera_frames_,
-                intrinsic_matrix_,
                 skip_missing_cameras,
                 dropped_observations_);
             return gb->yg - gb->fg;
@@ -739,7 +741,7 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
         &final_residual,                  // final_residual
         &cfg_.max_residual_unnormalized); // max_residual
 
-    gb->copy_out(x_opt, reconstructed_points_, camera_frames_);
+    gb->copy_out(x_opt, reconstructed_points_, packed_intrinsic_coefficients_, camera_frames_);
     reject_large_projection_residuals(*gb);
     delete_bad_points();
 }
@@ -829,6 +831,7 @@ void SparseReconstruction::reconstruct(bool is_last_frame, bool camera_initializ
     }
     draw("cameras-" + std::to_string(particles_.rbegin()->first.count()));
     save_reconstructed("recon-" + std::to_string(particles_.rbegin()->first.count()));
+    save_intrinsic_coefficients("intrinsic_coefficients-" + std::to_string(particles_.rbegin()->first.count()));
 }
 
 void SparseReconstruction::reconstruct_pass2() {
@@ -1001,8 +1004,15 @@ void SparseReconstruction::save_reconstructed(const std::string& prefix) const {
         recon[i] = r.second->position;
         ++i;
     }
-    fs::create_directories(cache_dir_);
-    recon.save_txt_2d((fs::path{ cache_dir_ } / (prefix + ".m")).string());
+    auto filename = fs::path{ cache_dir_ } / "recon" / (prefix + ".m");
+    fs::create_directories(filename.parent_path());
+    recon.save_txt_2d(filename.string());
+}
+
+void SparseReconstruction::save_intrinsic_coefficients(const std::string& prefix) const {
+    auto filename = fs::path{ cache_dir_ } / "intrinsic_coefficients" / (prefix + ".m");
+    fs::create_directories(filename.parent_path());
+    packed_intrinsic_coefficients_.as_column_vector().to_array().save_txt_2d(filename.string());
 }
 
 void SparseReconstruction::print_arrays() const {

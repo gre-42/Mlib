@@ -18,6 +18,8 @@ FixedArray<float, 6> k_external_inverse(const TransformationMatrix<float, 3>& ke
 
 TransformationMatrix<float, 2> k_internal(const FixedArray<float, 4>& kip);
 
+FixedArray<float, 4> pack_k_internal(const TransformationMatrix<float, 2>& ki);
+
 enum class PointAtInfinityBehavior {
     THROW,
     IS_NAN
