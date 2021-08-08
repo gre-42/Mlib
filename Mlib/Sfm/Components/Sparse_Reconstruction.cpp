@@ -382,7 +382,7 @@ void SparseReconstruction::append_with_stereo(const std::chrono::milliseconds& t
             cfg_.ro_initial);
 
         if (ptr.ptr == nullptr) {
-            std::cerr << "RANSAC found no candidate" << std::endl;
+            throw std::runtime_error("RANSAC found no candidate");
         } else {
             std::cerr << "ngood " << ptr.ptr->ngood << std::endl;
         }
