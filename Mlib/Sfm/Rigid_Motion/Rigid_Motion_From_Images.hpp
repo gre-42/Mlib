@@ -212,7 +212,7 @@ TransformationMatrix<TData, 3> rigid_motion_from_images(
         TData(1e-2),     // alpha2,
         TData(1e-2),     // beta2,
         TData(0),        // min_redux
-        100,             // niterations
+        200,             // niterations
         5,               // nburnin
         30,              // nmisses
         print_residual); // print_residual
