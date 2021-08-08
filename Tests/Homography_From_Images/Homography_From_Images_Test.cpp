@@ -1,7 +1,7 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
-#include <Mlib/Sfm/Homography/Homography_From_Images.hpp>
+#include <Mlib/Sfm/Rigid_Motion/Rotation_From_Images.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>

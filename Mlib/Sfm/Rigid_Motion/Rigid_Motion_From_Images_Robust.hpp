@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
-#include <Mlib/Sfm/Homography/Homography_From_Images.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images.hpp>
+#include <Mlib/Sfm/Rigid_Motion/Rotation_From_Images.hpp>
 
 namespace Mlib::Sfm::Rmfi {
 
