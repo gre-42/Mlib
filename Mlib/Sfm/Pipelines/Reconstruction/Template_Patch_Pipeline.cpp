@@ -15,7 +15,7 @@ TemplatePatchPipeline::TemplatePatchPipeline(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TemplatePatchPipelineConfig& cfg)
 : intrinsic_matrix_(intrinsic_matrix),
-  down_sampler_{intrinsic_matrix, 0},
+  down_sampler_{intrinsic_matrix, cfg.dtam_down_sampling},
   cache_dir_(cache_dir),
   cfg_(cfg),
   flowing_particles_{image_frames_, optical_flows_.optical_flow_frames_, (fs::path{cache_dir} / "TracedParticles").string(), FlowingParticlesConfig()},

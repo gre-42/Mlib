@@ -74,7 +74,8 @@ int main(int argc, char** argv) {
         "--chess_c <chess_c> "
         "[--nskipped <nskipped>] "
         "[--nimages <nimages>] "
-        "[--ncameras <ncameras>]",
+        "[--ncameras <ncameras>] "
+        "[--dtam_down_sampling <n>]",
         { "--load_cameras",
           "--no_dtam",
           "--no_dtam_tracking" },
@@ -85,7 +86,8 @@ int main(int argc, char** argv) {
           "--chess_c",
           "--nskipped",
           "--nimages",
-          "--ncameras" });
+          "--ncameras",
+          "--dtam_down_sampling" });
 
     try {
         auto args = parser.parsed(argc, argv);
@@ -108,7 +110,8 @@ int main(int argc, char** argv) {
             TemplatePatchPipelineConfig{
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
-                .print_residual = args.has_named("--print_residual") });
+                .print_residual = args.has_named("--print_residual"),
+                .dtam_down_sampling = safe_stoz(args.named_value("--dtam_down_sampling", "0")) });
         return 0;
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
