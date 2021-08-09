@@ -93,6 +93,8 @@ void DtamKeyframe::append_camera_frame() {
     const CameraFrame& camera_r0 = camera_frames_.at(key_frame_time_);
     const ImageFrame& image_r0 = down_sampler_.ds_image_frames_.at(key_frame_time_);
     std::chrono::milliseconds time_r1 = camera_frames_.rbegin()->first;
+    // x0_r1_r0: The mapping r0->r1 used as initial guess (x0) for the mapping r0->l.
+    // Assumed memory layout: [r0=keyframe ... frame1, frame2, ... r1=camera_frames_.rbegin(), .. image_frame_l].
     FixedArray<float, 6> x0_r1_r0 = k_external_inverse(projection_in_reference(
         camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
         camera_frames_.rbegin()->second.projection_matrix_3x4()));
@@ -107,7 +109,11 @@ void DtamKeyframe::append_camera_frame() {
         x0_r1_r0,
         true,                                // estimate_rotation_first
         cfg_.print_residual_);               // print_residual
-    // ke: reference "r", xr -> xl
+    // Given:
+    //   1. r: The reconstruction matrix of a reference keyframe (*this)
+    //   2. ke: A transformation matrix mapping from the to-be-appended
+    //      keyframe "l" to "r" (xr -> xl).
+    // Find l, the reconstruction matrix of the to-be-appended keyframe.
     // r * xr = x
     // l * ke * xr = l * xl = x
     // find l: xl -> x
