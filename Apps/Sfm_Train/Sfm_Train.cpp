@@ -12,25 +12,24 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 static std::unique_ptr<ChessboardCalibrationPipeline> run_chessboard_calibration_pipeline(
-    const std::string& source_dir,
+    const std::string& calib_source_dir,
     const std::string& cache_dir,
     const ArrayShape& chessboard_shape)
 {
-    const std::string calibration_dir = (fs::path{ source_dir } / "0-calibration" / "pictures").string();
-
     auto calib = std::make_unique<ChessboardCalibrationPipeline>(
         cache_dir,
         chessboard_shape);
     if (!calib->is_cached()) {
-        process_folder_with_pipeline(cache_dir, calibration_dir, nullptr, *calib, std::cout, 0, SIZE_MAX, SIZE_MAX);
+        process_folder_with_pipeline(cache_dir, calib_source_dir, nullptr, *calib, std::cout, 0, SIZE_MAX, SIZE_MAX);
     }
     return calib;
 }
 
 static void run_reconstruction_pipeline(
     const std::string& cache_dir,
-    const std::string& source_dir,
-    bool load_cameras,
+    const std::string& calib_source_dir,
+    const std::string& recon_source_dir,
+    const std::string* camera_source_dir,
     const ArrayShape& chessboard_shape,
     size_t nskipped,
     size_t nimages,
@@ -40,7 +39,7 @@ static void run_reconstruction_pipeline(
     std::unique_ptr<ImagePipeline> pipeline;
     {
         auto calibration = run_chessboard_calibration_pipeline(
-            source_dir,
+            calib_source_dir,
             cache_dir,
             chessboard_shape);
         pipeline = std::unique_ptr<ImagePipeline>(new TemplatePatchPipeline(
@@ -48,11 +47,10 @@ static void run_reconstruction_pipeline(
             calibration->intrinsic_matrix(),
             cfg));
     }
-    std::string camera_dir = (fs::path(source_dir) / "1-video" / "cameras").string();
     process_folder_with_pipeline(
         cache_dir,
-        (fs::path{ source_dir } / "1-video" / "pictures").string(),
-        load_cameras ? &camera_dir : nullptr,
+        recon_source_dir,
+        camera_source_dir,
         *pipeline,
         std::cout,
         nskipped,
@@ -66,8 +64,9 @@ int main(int argc, char** argv) {
 
     ArgParser parser(
         "Usage: --cache <cache_dir> "
-        "--source <source_dir> "
-        "[--load_cameras] "
+        "--calib_source <source_dir> "
+        "--recon_source <source_dir> "
+        "--camera_source <source_dir> "
         "[--no_dtam] "
         "[--no_dtam_tracking] "
         "--chess_r <chess_r> "
@@ -76,12 +75,13 @@ int main(int argc, char** argv) {
         "[--nimages <nimages>] "
         "[--ncameras <ncameras>] "
         "[--dtam_down_sampling <n>]",
-        { "--load_cameras",
-          "--no_dtam",
+        { "--no_dtam",
           "--no_dtam_tracking" },
         { "--pipeline",
           "--cache",
-          "--source",
+          "--calib_source",
+          "--recon_source",
+          "--camera_source",
           "--chess_r",
           "--chess_c",
           "--nskipped",
@@ -95,14 +95,17 @@ int main(int argc, char** argv) {
         args.assert_num_unamed(0);
 
         const std::string cache_dir = args.named_value("--cache");
-        const std::string image_dir = args.named_value("--source");
+        const std::string calib_source_dir = args.named_value("--calib_source");
+        const std::string recon_source_dir = args.named_value("--recon_source");
+        const std::string camera_source_dir = args.named_value("--camera_source", "");
         ArrayShape chessboard_shape({
             safe_stoz(args.named_value("--chess_r")),
             safe_stoz(args.named_value("--chess_c")) });
         run_reconstruction_pipeline(
             cache_dir,
-            image_dir,
-            args.has_named("--load_cameras"),
+            calib_source_dir,
+            recon_source_dir,
+            args.has_named_value("--camera_source") ? &camera_source_dir : nullptr,
             chessboard_shape,
             args.has_named_value("--nskipped") ? safe_stoz(args.named_value("--nskipped")) : 0,
             args.has_named_value("--nimages") ? safe_stoz(args.named_value("--nimages")) : SIZE_MAX,
