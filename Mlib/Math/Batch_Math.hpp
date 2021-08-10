@@ -141,8 +141,8 @@ Array<Array<TData>> batch_solve_symm(
     const Array<TData>* beta = nullptr,
     const Array<Array<TData>>* x0 = nullptr)
 {
-    Array<Array<TData>> AI{A};
-    TDerivedB BI{*B};
+    Array<Array<TData>> AI(A);
+    TDerivedB BI(*B);
     if (alpha != nullptr || beta != nullptr) {
         AI.reassign(A);
         if (x0 != nullptr) {

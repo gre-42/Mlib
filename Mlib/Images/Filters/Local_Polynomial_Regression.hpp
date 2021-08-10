@@ -68,7 +68,7 @@ void meshgrid(TImage& image, size_t axis) {
 
 template <class TData, class TFilter>
 Array<TData> local_polynomial_regression(const Array<TData>& image, const TFilter& filter, size_t degree, const Array<TData>* weights = nullptr) {
-    Array<Array<TData>> x{ArrayShape{image.ndim()}};
+    Array<Array<TData>> x(ArrayShape{image.ndim()});
     for (size_t axis = 0; axis < x.shape(0); ++axis) {
         x(axis).resize(image.shape());
         Array<TData> tmp = x(axis);
