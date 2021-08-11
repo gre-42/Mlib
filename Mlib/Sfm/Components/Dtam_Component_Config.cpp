@@ -24,7 +24,7 @@ DtamComponentConfig::DtamComponentConfig(
         100,                        // ninterleaved_iterations
         print_residual,             // print_residual
         CostVolumeParameters{
-            .min_depth = 5.f,
+            .min_depth = 4.5f,
             .max_depth = 9.f,
             .ndepths = 32
         },
@@ -45,7 +45,7 @@ DtamComponentConfig::DtamComponentConfig(
             .theta_end__ = float{ 1e-4 }},
         Regularization::FILTERING,
         0.5f,                       // sigma_illumination_removal
-        1.f))                       // regularization_filter_sigma
+        2.f))                       // regularization_filter_sigma
 {}
 
 DtamComponentConfig::DtamComponentConfig(
