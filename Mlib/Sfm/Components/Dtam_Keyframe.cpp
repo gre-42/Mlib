@@ -3,6 +3,7 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
+#include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Filtering.hpp>
@@ -279,11 +280,16 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 cfg_.dm_params_);
             draw_nan_masked_grayscale(g, 0, 1).save_to_file(cache_dir_ + "/g-" + suffix + ".png");
         } else if (cfg_.regularization_ == Regularization::FILTERING) {
+            auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, 2);};
+            // auto w = [this](const Array<double>& d){return gaussian_filter_NWE(d, double{cfg_.regularization_filter_sigma_}, double{NAN}, 4., false);};
+            // auto l = [&w](const Array<float>& d){return local_polynomial_regression(d.casted<double>(), w, 2).casted<float>();};
             dm_ = std::make_unique<DenseFiltering>(
                 dsi_,
                 cfg_.cost_volume_parameters_,
                 cfg_.df_params_,
-                [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, NAN);});
+                // w);
+                // l);
+                g2);
         } else {
             throw std::runtime_error("Unknown regularization mode");
         }

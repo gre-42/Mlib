@@ -12,6 +12,8 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
+#include <Mlib/Images/Filters/Polynomial_Contrast.hpp>
+#include <Mlib/Images/Mesh_Coordinates/Meshgrid.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/Quantize.hpp>
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
@@ -262,7 +264,7 @@ void test_meshgrid() {
 }
 
 void test_local_polynomial_regression() {
-    Array<float> image{random_array3<float>(ArrayShape{5, 6}, 1)};
+    Array<float> image(random_array3<float>(ArrayShape{5, 6}, 1));
     meshgrid(image, 0);
     std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN, 4.f, false);}, 2) << std::endl;
 }
@@ -275,6 +277,25 @@ void test_waveform() {
     std::vector<bool> y1{0, 1, 0, 0};
     svg.plot_waveforms(x, {y0, y1}, {"a", "b"}, 1.f, {"#000", "#FF5733"}, 1);
     svg.finish();
+}
+
+void test_polynomial_contrast() {
+    // {
+    //     size_t poly_degree = 2;
+    //     Array<float> weights{ 0.5f, 0.6f, 1.5f, 0.5f, 0.4f };
+    //     Array<float> contrast = zeros<float>(ArrayShape{ 1 + poly_degree });
+    //     contrast(0) = 1;
+    //     Array<Array<float>> A{ ArrayShape{ 1 }};
+    //     A[0] = linspace<float>(-1, 1, weights.length());
+    //     weights = polynomial_contrast(A, weights, contrast, poly_degree);
+    //     std::cerr << weights << std::endl;
+    // }
+    auto w = [](const Array<float>& d){return gaussian_filter_NWE(d, 1.23f, float{NAN}, 4.f, false);};
+    auto l = [&w](const Array<float>& d){return local_polynomial_regression(d, w, 2);};
+
+    assert_allclose(
+        gaussian_filter_NWE(dirac_array<float>(ArrayShape{41}, ArrayShape{20}), 1.23f, NAN, 4.f, true, 2),
+        l(dirac_array<float>(ArrayShape{41}, ArrayShape{20})));
 }
 
 int main(int argc, char **argv) {
@@ -300,6 +321,7 @@ int main(int argc, char **argv) {
         test_down_sample_average();
         test_meshgrid();
         test_local_polynomial_regression();
+        test_polynomial_contrast();
     } catch (const std::runtime_error& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
         return 1;
