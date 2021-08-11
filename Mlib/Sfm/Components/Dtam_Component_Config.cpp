@@ -8,7 +8,9 @@ static bool interactive = false;
 
 DtamComponentConfig::DtamComponentConfig(
     bool track_using_dtam,
-    bool print_residual)
+    bool print_residual,
+    float regularization_filter_sigma,
+    size_t regularization_filter_poly_degree)
 : DtamComponentConfig(
     0,                              // tracking_start_ncams
     !interactive,                   // rewind_first_keyframe
@@ -44,8 +46,9 @@ DtamComponentConfig::DtamComponentConfig(
             .theta_0__ = 0.2,
             .theta_end__ = float{ 1e-4 }},
         Regularization::FILTERING,
-        0.5f,                       // sigma_illumination_removal
-        2.f))                       // regularization_filter_sigma
+        0.5f,                                // sigma_illumination_removal
+        regularization_filter_sigma,         // regularization_filter_sigma
+        regularization_filter_poly_degree))
 {}
 
 DtamComponentConfig::DtamComponentConfig(

@@ -5,8 +5,10 @@ namespace Mlib::Sfm {
 
 struct DtamComponentConfig {
     explicit DtamComponentConfig(
-        bool track_using_dtam = true,
-        bool print_residual = true);
+        bool track_using_dtam,
+        bool print_residual,
+        float regularization_filter_sigma,
+        size_t regularization_filter_poly_degree);
     DtamComponentConfig(
         size_t tracking_start_ncams,
         bool rewind_first_keyframe,

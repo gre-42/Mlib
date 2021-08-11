@@ -74,7 +74,9 @@ int main(int argc, char** argv) {
         "[--nskipped <nskipped>] "
         "[--nimages <nimages>] "
         "[--ncameras <ncameras>] "
-        "[--dtam_down_sampling <n>]",
+        "[--dtam_down_sampling <n>] "
+        "[--regularization_filter_poly_degree <d>] "
+        "[--regularization_filter_sigma <s>]",
         { "--no_dtam",
           "--no_dtam_tracking" },
         { "--pipeline",
@@ -87,7 +89,9 @@ int main(int argc, char** argv) {
           "--nskipped",
           "--nimages",
           "--ncameras",
-          "--dtam_down_sampling" });
+          "--dtam_down_sampling",
+          "--regularization_filter_sigma",
+          "--regularization_filter_poly_degree" });
 
     try {
         auto args = parser.parsed(argc, argv);
@@ -114,7 +118,9 @@ int main(int argc, char** argv) {
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
                 .print_residual = args.has_named("--print_residual"),
-                .dtam_down_sampling = safe_stoz(args.named_value("--dtam_down_sampling", "0")) });
+                .dtam_down_sampling = safe_stoz(args.named_value("--dtam_down_sampling", "0")),
+                .regularization_filter_sigma = safe_stof(args.named_value("--regularization_filter_sigma", "1")),
+                .regularization_filter_poly_degree = safe_stoz(args.named_value("--regularization_filter_poly_degree", "0")) });
         return 0;
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

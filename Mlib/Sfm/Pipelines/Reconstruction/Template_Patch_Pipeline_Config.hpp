@@ -9,6 +9,8 @@ struct TemplatePatchPipelineConfig {
     bool track_using_dtam = true;
     bool print_residual = true;
     size_t dtam_down_sampling = 0;
+    float regularization_filter_sigma = 1.f;
+    size_t regularization_filter_poly_degree = 0;
 };
 
 }

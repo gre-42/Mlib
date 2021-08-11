@@ -25,7 +25,8 @@ struct DtamKeyframeConfig {
         const DenseFilteringParameters& df_params,
         Regularization regularization,
         float sigma_illumination_removal,
-        float regularization_filter_sigma);
+        float regularization_filter_sigma,
+        size_t regularization_filter_poly_degree);
     bool rewind_first_keyframe_;
     bool incremental_update_;
     size_t nfuture_frames_per_keyframe_;
@@ -40,6 +41,7 @@ struct DtamKeyframeConfig {
     Regularization regularization_;
     float sigma_illumination_removal_;
     float regularization_filter_sigma_;
+    size_t regularization_filter_poly_degree_;
 };
 
 }
