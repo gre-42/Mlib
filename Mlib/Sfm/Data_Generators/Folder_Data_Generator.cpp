@@ -86,8 +86,9 @@ void Mlib::Sfm::process_files_with_pipeline(
             ImageFrame image_frame;
             image_frame.grayscale = raw.to_float_grayscale();
             image_frame.rgb = raw.to_float_rgb();
+            bool is_last_frame = (i == std::min(nimages, image_files.size()) - 1);
             if ((camera_files == nullptr) || (i > ncameras)) {
-                pipeline.process_image_frame(time, image_frame, nullptr, i == std::min(nimages, image_files.size()) - 1);
+                pipeline.process_image_frame(time, image_frame, nullptr, is_last_frame);
             } else {
                 std::cout << "Loading " << i << " / " << camera_files->size() << ", " << time.count() << " ms" << ": " << *camera_it << std::endl;
                 Array<float> ke = Array<float>::load_txt_2d(*camera_it);
@@ -101,7 +102,7 @@ void Mlib::Sfm::process_files_with_pipeline(
                     TransformationMatrix<float, 3>(
                         FixedArray<float, 3, 3>{R},
                         FixedArray<float, 3>{t}) };
-                pipeline.process_image_frame(time, image_frame, &camera_frame, i == std::min(nimages, image_files.size()) - 1, ncameras < image_files.size());
+                pipeline.process_image_frame(time, image_frame, &camera_frame, is_last_frame, ncameras < image_files.size());
             }
         }
         if (camera_files != nullptr) {
