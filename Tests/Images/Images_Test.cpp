@@ -290,12 +290,12 @@ void test_polynomial_contrast() {
     //     weights = polynomial_contrast(A, weights, contrast, poly_degree);
     //     std::cerr << weights << std::endl;
     // }
-    auto w = [](const Array<float>& d){return gaussian_filter_NWE(d, 1.23f, float{NAN}, 4.f, false);};
-    auto l = [&w](const Array<float>& d){return local_polynomial_regression(d, w, 2);};
+    auto w = [](const Array<double>& d){return gaussian_filter_NWE(d, 1.23, double{NAN}, 4., false);};
+    auto l = [&w](const Array<double>& d){return local_polynomial_regression(d, w, 2);};
 
     assert_allclose(
-        gaussian_filter_NWE(dirac_array<float>(ArrayShape{41}, ArrayShape{20}), 1.23f, NAN, 4.f, true, 2),
-        l(dirac_array<float>(ArrayShape{41}, ArrayShape{20})));
+        gaussian_filter_NWE(dirac_array<double>(ArrayShape{41}, ArrayShape{20}), 1.23, double{NAN}, 4., false, 2),
+        l(dirac_array<double>(ArrayShape{41}, ArrayShape{20})));
 }
 
 int main(int argc, char **argv) {

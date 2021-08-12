@@ -44,7 +44,7 @@ void test_homogeneous_jacobian() {
 }
 
 void test_projection_jacobian_dx() {
-    FixedArray<float, 3> x{ random_array3<float>(ArrayShape{4}, 2) };
+    FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
     TransformationMatrix<float, 3> ke{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
     TransformationMatrix<float, 2> ki{ FixedArray<float, 2, 3>{
         0.5f, 0.f, 0.1f,

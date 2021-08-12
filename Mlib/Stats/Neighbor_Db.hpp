@@ -11,8 +11,8 @@ template <class TData>
 class NeighborDb1d {
 public:
     NeighborDb1d(const Array<TData>& values)
-    : ids_{argsort(values)},
-      sorted_values{values[ids_]} {}
+    : ids_(argsort(values)),
+      sorted_values(values[ids_]) {}
 
     Array<size_t> get_neighbors(const TData& value, const TData& radius) const {
         if (ids_.length() == 0) {
