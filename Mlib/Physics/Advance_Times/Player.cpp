@@ -29,7 +29,7 @@ Player::Player(
     UnstuckMode unstuck_mode,
     const DrivingMode& driving_mode,
     DrivingDirection driving_direction,
-    std::recursive_mutex& mutex)
+    std::recursive_mutex& deletion_mutex)
 : scene_{scene},
   collision_query_{collision_query},
   players_{players},
@@ -53,7 +53,7 @@ Player::Player(
   unstuck_mode_{unstuck_mode},
   driving_mode_{driving_mode},
   driving_direction_{driving_direction},
-  mutex_{mutex},
+  deletion_mutex_{deletion_mutex},
   spotted_by_vip_{false},
   nunstucked_{0},
   record_waypoints_{false}
@@ -391,7 +391,7 @@ bool Player::unstuck() {
                     rb_->set_tire_angle_y(tire.first, 0);
                 }
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
-                // std::lock_guard lock{mutex_};
+                // std::lock_guard lock{ mutex_ };
                 // scene_.delete_root_node(scene_node_name_);
                 scene_.schedule_delete_root_node(scene_node_name_);
                 stuck_start_ = std::chrono::steady_clock::time_point();

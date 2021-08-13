@@ -15,13 +15,13 @@ PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,
     Scene& scene,
     PhysicsEngine& physics_engine,
-    std::recursive_mutex& mutex,
+    std::recursive_mutex& deletion_mutex,
     const PhysicsEngineConfig& physics_cfg,
     BaseLog* base_log)
 : scene_node_resources_{ scene_node_resources },
   scene_{ scene },
   physics_engine_{ physics_engine },
-  mutex_{mutex},
+  deletion_mutex_{deletion_mutex},
   physics_cfg_{ physics_cfg },
   base_log_{base_log}
 {}
@@ -43,7 +43,7 @@ void PhysicsIteration::operator()() {
         physics_engine_.move_rigid_bodies(bcns);
     }
     {
-        std::lock_guard lock{ mutex_ };
+        std::lock_guard lock{ deletion_mutex_ };
         {
             static const DECLARE_REGEX(re, "^beacon.*");
             scene_.delete_root_nodes(re);

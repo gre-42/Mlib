@@ -79,6 +79,7 @@ public:
         const std::string& name,
         const FixedArray<float, 3>& position,
         float yangle);
+    bool has_camera() const;
     void set_camera(const std::shared_ptr<Camera>& camera);
     std::shared_ptr<Camera> get_camera() const;
     void add_light(Light* light);

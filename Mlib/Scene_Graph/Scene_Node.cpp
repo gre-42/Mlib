@@ -195,6 +195,10 @@ void SceneNode::add_instances_position(
     it->second.instances.push_back(PositionAndYAngle{position, yangle});
 }
 
+bool SceneNode::has_camera() const {
+    return camera_ != nullptr;
+}
+
 void SceneNode::set_camera(const std::shared_ptr<Camera>& camera) {
     if (camera_ != nullptr) {
         throw std::runtime_error("Camera already set");

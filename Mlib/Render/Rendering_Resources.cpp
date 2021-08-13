@@ -168,7 +168,7 @@ RenderingResources::~RenderingResources() {
 
 void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     LOG_FUNCTION("RenderingResources::preload, color=" + descriptor.color);
-    std::lock_guard lock_guard{mutex_};
+    std::lock_guard lock{ mutex_ };
     auto dit = texture_descriptors_.find(descriptor.color);
     const TextureDescriptor& desc = dit != texture_descriptors_.end()
         ? dit->second
@@ -211,7 +211,7 @@ static GLenum nchannels2format(size_t nchannels) {
 
 GLuint RenderingResources::get_texture(const std::string& name, const TextureDescriptor& descriptor) const {
     LOG_FUNCTION("RenderingResources::get_texture " + name);
-    std::lock_guard lock_guard{mutex_};
+    std::lock_guard lock{ mutex_ };
     if (auto it = textures_.find(name); it != textures_.end())
     {
         return it->second.handle;
@@ -328,7 +328,7 @@ GLuint RenderingResources::get_cubemap(const std::string& name,
                                        const std::vector<std::string>& filenames) const
 {
     LOG_FUNCTION("RenderingResources::get_cubemap " + name);
-    std::lock_guard lock_guard{mutex_};
+    std::lock_guard lock{ mutex_ };
     if (auto it = textures_.find(name); it != textures_.end()) {
         return it->second.handle;
     }

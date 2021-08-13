@@ -84,7 +84,7 @@ public:
         UnstuckMode unstuck_mode,
         const DrivingMode& driving_mode,
         DrivingDirection driving_direction,
-        std::recursive_mutex& mutex);
+        std::recursive_mutex& deletion_mutex);
     ~Player();
     void set_can_drive(bool value);
     void set_can_aim(bool value);
@@ -185,7 +185,7 @@ private:
     UnstuckMode unstuck_mode_;
     DrivingMode driving_mode_;
     DrivingDirection driving_direction_;
-    std::recursive_mutex& mutex_;
+    std::recursive_mutex& deletion_mutex_;
     std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
     bool spotted_by_vip_;
     size_t nunstucked_;
