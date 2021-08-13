@@ -32,7 +32,7 @@ SyntheticScene::SyntheticScene(
     0.f, 512.f, 490.f,
     0.f, 0.f, 1.f}},
 // several extrinsic camera-matrices observing "x"
- ke(std::list<TransformationMatrix<float, 3>>{
+ ke({
     random_ke(1, (zero_first_extrinsic ? 0.f : 1.f) * tR_multiplier),
     random_ke(2, tR_multiplier),
     random_ke(3, tR_multiplier),

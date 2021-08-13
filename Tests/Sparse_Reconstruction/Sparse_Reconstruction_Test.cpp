@@ -23,6 +23,8 @@ void test_reconstruction() {
 
     SyntheticScene sc(true); // true = zero_first_extrinsic
 
+    cfg.fov_distances = FixedArray<float, 2>{0.1f, 200.f};
+
     cfg.ro_initial.nelems_small = sc.y.shape(1);
     cfg.ro_initial.ncalls = 1;
     cfg.ro_initial.inlier_distance_thresh = squared(INFINITY);
@@ -82,11 +84,13 @@ void test_reconstruction() {
     // (cfg.nframes == 2) => nothing happens yet.
     insert_particles(0, 5);
     recon.reconstruct();
+    assert_isequal(camera_frames.size(), (size_t)0);
     std::cerr << "2. Insertion" << std::endl;
     insert_particles(1, 4);
     insert_camera(0);
     insert_camera(1);
     recon.reconstruct();
+    assert_isequal(camera_frames.size(), (size_t)2);
     // std::cerr << "sc.R\n" << sc.R(0, 1) << std::endl;
     // std::cerr << "recon\n" << recon.reconstructed_points() << std::endl;
     // std::cerr << "sc.x\n" << sc.x << std::endl;
@@ -119,6 +123,7 @@ void test_reconstruction() {
     insert_particles(2, 4);
     insert_camera(2);
     recon.reconstruct();
+    assert_isequal(camera_frames.size(), (size_t)3);
     assert_allclose(
         camera_frames.rbegin()->second.pose.R().to_array(),
         sc.dR(0, 2).to_array(),
@@ -139,6 +144,7 @@ void test_reconstruction() {
     insert_particles(3, 5);
     insert_camera(3);
     recon.reconstruct();
+    assert_isequal(camera_frames.size(), (size_t)4);
     assert_allclose(
         camera_frames.rbegin()->second.pose.R().to_array(),
         sc.dR(0, 3).to_array(),
@@ -162,6 +168,7 @@ void test_reconstruction() {
     insert_particles(4, 5);
     insert_camera(4);
     recon.reconstruct();
+    assert_isequal(camera_frames.size(), (size_t)5);
     assert_allclose(
         camera_frames.rbegin()->second.pose.R().to_array(),
         sc.dR(0, 4).to_array(),
