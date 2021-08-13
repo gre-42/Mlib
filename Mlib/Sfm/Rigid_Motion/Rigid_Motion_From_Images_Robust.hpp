@@ -7,7 +7,7 @@
 namespace Mlib::Sfm::Rmfi {
 
 /**
- * Projection: l <- r1 <- r0
+ * This function returns the projection: l <- r1 <- r0
  * l: live image
  * r1: reference 1 w/o depth, but close to l
  * r0: reference 0 including depth (keyframe)
@@ -56,6 +56,7 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
     for (const TData& sigma : sigmas) {
         Array<TData> masked_im_r_depth_s = gaussian_filter_NWE(im_r0_depth, sigma, NAN);
         if (ke_initialized) {
+            // Assign NANs to pixels with errors above a given threshold.
             masked_im_r_depth_s = masked_im_r_depth_s.array_array_binop(
                 d_pr_bilinear(im_r0, im_l, im_r0_depth, intrinsic_matrix, ke),
                 [&threshold_it](const TData& depth, const TData& err){ return (!std::isnan(err)) && (std::abs(err) < *threshold_it) ? depth : NAN; });

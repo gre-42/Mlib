@@ -94,8 +94,8 @@ void DtamKeyframe::append_camera_frame() {
     const CameraFrame& camera_r0 = camera_frames_.at(key_frame_time_);
     const ImageFrame& image_r0 = down_sampler_.ds_image_frames_.at(key_frame_time_);
     std::chrono::milliseconds time_r1 = camera_frames_.rbegin()->first;
-    // x0_r1_r0: The mapping r0->r1 used as initial guess (x0) for the mapping r0->l.
-    // Assumed memory layout: [r0=keyframe ... frame1, frame2, ... r1=camera_frames_.rbegin(), .. image_frame_l].
+    // x0_r1_r0: The projection r0->r1 used as initial guess (x0) for the mapping r0->l.
+    // Assumed memory layout: [r0=keyframe ... frame1, frame2, ... r1=camera_frames_.rbegin(), ... image_frame_l].
     FixedArray<float, 6> x0_r1_r0 = k_external_inverse(projection_in_reference(
         camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
         camera_frames_.rbegin()->second.projection_matrix_3x4()));
@@ -112,8 +112,8 @@ void DtamKeyframe::append_camera_frame() {
         cfg_.print_residual_);               // print_residual
     // Given:
     //   1. r: The reconstruction matrix of a reference keyframe (*this)
-    //   2. ke: A transformation matrix mapping from the to-be-appended
-    //      keyframe "l" to "r" (xr -> xl).
+    //   2. ke: A projection matrix mapping from the reference coordinate
+    //      system "r" to the to-be-appended live keyframe "l" (xr -> xl).
     // Find l, the reconstruction matrix of the to-be-appended keyframe.
     // r * xr = x
     // l * ke * xr = l * xl = x
@@ -121,9 +121,9 @@ void DtamKeyframe::append_camera_frame() {
     // l * ke * xr = r * xr, for all xr
     // l * ke = r
     // l = r * inv(ke)
-    TransformationMatrix<float, 3> gke = reconstruction_times_inverse(camera_r0.reconstruction_matrix_3x4(), ke);
-    std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gke.R() << "\nt\n" << gke.t() << std::endl;
-    camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gke }));
+    TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_r0.reconstruction_matrix_3x4(), ke);
+    std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
+    camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
 
     {
         Array<float> im1t = Rmfi::d_pr_bilinear(
