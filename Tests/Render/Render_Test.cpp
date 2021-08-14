@@ -1,6 +1,5 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -24,7 +23,7 @@ void test_scene_node() {
 }
 
 void test_render() {
-    PpmImage img = PpmImage::load_from_file("Data/Depth/vid001.ppm");
+    StbImage img = StbImage::load_from_file("Data/Depth/vid001.png");
     Array<float> depth = Array<float>::load_binary("Data/Depth/masked-depth-0-0-388-0-190.array");
     TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/Depth/camera_intrinsic.m") } };
     if (!all(depth.shape() == img.shape())) {
@@ -32,8 +31,8 @@ void test_render() {
     }
     {
         RenderResults render_results;
-        RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
-        render_results.outputs[rsd] = Array<float>();
+        RenderedSceneDescriptor rsd;
+        render_results.outputs[rsd] = {};
         size_t num_renderings = SIZE_MAX;
         Render2{RenderConfig(), num_renderings, &render_results}.render_depth_map(
             img.to_float_rgb(),
@@ -44,12 +43,12 @@ void test_render() {
             1,      // scale
             SceneGraphConfig(),
             CameraConfig());
-        draw_nan_masked_rgb(render_results.outputs.at(rsd), 0, 1).save_to_file("TestOut/rendered.png");
+        draw_nan_masked_rgb(render_results.outputs.at(rsd).rgb, 0, 1).save_to_file("TestOut/rendered.png");
     }
     {
         RenderResults render_results;
-        RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
-        render_results.outputs[rsd] = Array<float>();
+        RenderedSceneDescriptor rsd;
+        render_results.outputs[rsd] = {};
         size_t num_renderings = SIZE_MAX;
         Render2{RenderConfig(), num_renderings, &render_results}.render_depth_map(
             img.to_float_rgb(),
@@ -60,7 +59,7 @@ void test_render() {
             1,      // scale
             SceneGraphConfig(),
             CameraConfig());
-        draw_nan_masked_rgb(render_results.outputs.at(rsd), 0, 1).save_to_file("TestOut/rendered2.png");
+        draw_nan_masked_rgb(render_results.outputs.at(rsd).rgb, 0, 1).save_to_file("TestOut/rendered2.png");
     }
 }
 

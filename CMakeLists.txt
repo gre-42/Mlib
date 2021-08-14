@@ -44,6 +44,10 @@ if (OPENSSL_FOUND)
     add_compile_definitions(WITH_OPENSSL)
 endif()
 
+if (glfw3_FOUND)
+    add_compile_definitions(WITH_GLFW3)
+endif()
+
 #####################
 # Set ouptut pathes #
 #####################

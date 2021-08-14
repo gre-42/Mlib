@@ -6,9 +6,15 @@
 
 namespace Mlib {
 
+struct RenderResult {
+    bool flip_y = true;
+    Array<float> rgb = Array<float>();
+    Array<float> depth = Array<float>();
+};
+
 struct RenderResults {
     Array<float>* output = nullptr;
-    std::map<RenderedSceneDescriptor, Array<float>> outputs;
+    std::map<RenderedSceneDescriptor, RenderResult> outputs;
 };
 
 }

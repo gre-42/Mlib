@@ -9,7 +9,7 @@ class Scene;
 class RotatingLocigUserClass: public BaseUserObject {
 public:
     float scale = 1;
-    float camera_z = 5;
+    float camera_z = 0;
     float angle_x = 0;
     float angle_y = 0;
 };

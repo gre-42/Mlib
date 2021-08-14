@@ -2,7 +2,6 @@
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
-#include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Sfm/Data_Generators/Folder_Data_Generator.hpp>
 #include <Mlib/Sfm/Pipelines/Reconstruction/Template_Patch_Pipeline.hpp>
@@ -60,8 +59,8 @@ void test_rigid_motion_from_images() {
     TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
     Array<float> depth0 = Array<float>::load_binary("Data/Rigid_Motion/depth-0-590.array");
     Array<float> depth1 = Array<float>::load_binary("Data/Rigid_Motion/depth-200-790.array");
-    Array<float> im0 = PpmImage::load_from_file("Data/Rigid_Motion/vid001-256x455x24.ppm").to_float_grayscale();
-    Array<float> im1 = PpmImage::load_from_file("Data/Rigid_Motion/vid021-256x455x24.ppm").to_float_grayscale();
+    Array<float> im0 = StbImage::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_grayscale();
+    Array<float> im1 = StbImage::load_from_file("Data/Rigid_Motion/vid021-256x455x24.png").to_float_grayscale();
 
     draw_nan_masked_grayscale(im0, 0, 1).save_to_file("TestOut/rmfi-0.png");
     draw_nan_masked_grayscale(im1, 0, 1).save_to_file("TestOut/rmfi-1.png");

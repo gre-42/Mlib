@@ -1,5 +1,7 @@
+#include <Mlib/Cv/Project_Depth_Map.hpp>
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Math/Rodrigues.hpp>
@@ -173,6 +175,30 @@ void test_fixed_tait_bryan_angles_2_matrix() {
     assert_allclose(kf.to_array(), matrix_2_tait_bryan_angles(rf, true).to_array());  // true=force_singular
 }
 
+void test_project_depth_map() {
+    TransformationMatrix<float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{ Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m")} };
+    Array<float> depth_picture0 = Array<float>::load_binary("Data/Rigid_Motion/depth-0-590.array");
+    Array<float> rgb_picture0 = StbImage::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_rgb();
+
+    Array<float> depth_picture1;
+    Array<float> rgb_picture1;
+
+    project_depth_map(
+        rgb_picture0,
+        depth_picture0,
+        intrinsic_matrix,
+        TransformationMatrix<float, 3>::identity(),
+        rgb_picture1,
+        depth_picture1,
+        intrinsic_matrix,
+        depth_picture0.shape(1),
+        depth_picture0.shape(0),
+        0.1f,
+        1000.f);
+    
+    draw_nan_masked_rgb(rgb_picture1, 0.f, 1.f).save_to_file("TestOut/projected_depth_map_identity.png");
+}
+
 int main(int argc, char** argv) {
     try {
         test_tait_bryan_angles_2_matrix();
@@ -184,6 +210,7 @@ int main(int argc, char** argv) {
         test_inverse_tait_bryan_angles();
         test_rodrigues_fixed();
         test_fixed_tait_bryan_angles_2_matrix();
+        test_project_depth_map();
     } catch (const std::runtime_error& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
         return 1;

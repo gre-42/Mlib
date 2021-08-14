@@ -247,9 +247,9 @@ int main(int argc, char** argv) {
         // Declared as first class to let destructors of other classes succeed.
         size_t num_renderings = SIZE_MAX;
         RenderResults render_results;
-        RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
+        RenderedSceneDescriptor rsd;
         if (args.has_named_value("--output")) {
-            render_results.outputs[rsd] = Array<float>();
+            render_results.outputs[rsd] = {};
         }
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "4")),
@@ -612,7 +612,7 @@ int main(int argc, char** argv) {
             render_logics,
             SceneGraphConfig());
         if (args.has_named_value("--output")) {
-            const Array<float>& array = render_results.outputs.at(rsd);
+            const Array<float>& array = render_results.outputs.at(rsd).rgb;
             if (!array.initialized()) {
                 throw std::runtime_error("Rendered scene descriptor not initialized");
             }

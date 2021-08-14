@@ -4,9 +4,9 @@
 namespace Mlib {
 
 struct RenderedSceneDescriptor {
-    const ExternalRenderPass external_render_pass;
-    const size_t time_id;
-    const std::string light_node_name;
+    const ExternalRenderPass external_render_pass = {.pass = ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, .black_node_name = ""};
+    const size_t time_id = 0;
+    const std::string light_node_name = "";
     std::strong_ordering operator <=> (const RenderedSceneDescriptor&) const = default;
 };
 

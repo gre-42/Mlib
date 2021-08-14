@@ -8,15 +8,17 @@ include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 
 # Replaced with MSYS2 package
 # if (MINGW)
-#     target_link_libraries(MlibRender MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib ${glfw3_LIBRARY} -lopengl32 -lglu32 -lgdi32)
+#     target_link_libraries(MlibRender MlibImages MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib ${glfw3_LIBRARY} -lopengl32 -lglu32 -lgdi32)
 # else()
-#     target_link_libraries(MlibRender MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib glfw)
+#     target_link_libraries(MlibRender MlibImages MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib glfw)
 # endif()
 
+target_link_libraries(MlibRender Mlib MlibImages MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib)
+
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
-    target_link_libraries(MlibRender Mlib MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib ${glfw3_LIBRARY})
+    target_link_libraries(MlibRender ${glfw3_LIBRARY})
 else()
-    target_link_libraries(MlibRender Mlib MlibImages MlibCv MlibPoly2Tri MlibSceneGraph MlibStbImage Mlib glfw)
+    target_link_libraries(MlibRender glfw)
 endif()
 
 if (MSVC)

@@ -42,10 +42,10 @@ using namespace Mlib;
 void test_physics_engine() {
     size_t num_renderings = SIZE_MAX;
     RenderResults render_results;
-    RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD_WITH_POSTPROCESSING, ""}, .time_id = 0, .light_node_name = ""};
+    RenderedSceneDescriptor rsd;
     bool is_interactive = getenv_default_bool("PHYSICS_INTERACTIVE", false);
     if (!is_interactive) {
-        render_results.outputs[rsd] = Array<float>{};
+        render_results.outputs[rsd] = {};
     }
     RenderConfig render_config{
         .nsamples_msaa = 1,
@@ -267,7 +267,7 @@ void test_physics_engine() {
         SceneGraphConfig());
 
     if (!is_interactive) {
-        draw_nan_masked_rgb(render_results.outputs.at(rsd), 0, 1).save_to_file("TestOut/scene_test.png");
+        draw_nan_masked_rgb(render_results.outputs.at(rsd).rgb, 0, 1).save_to_file("TestOut/scene_test.png");
     } else {
         pl.stop_and_join();
     }

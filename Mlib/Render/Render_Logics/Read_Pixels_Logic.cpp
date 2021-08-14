@@ -29,7 +29,7 @@ void ReadPixelsLogic::render(
     if (render_results != nullptr) {
         auto o = render_results->outputs.find(frame_id);
         if (o != render_results->outputs.end()) {
-            if (o->second.initialized()) {
+            if (o->second.rgb.initialized()) {
                 throw std::runtime_error("ReadPixelsLogic::render detected multiple rendering calls");
             }
             FrameBufferMsaa fbs;
@@ -45,7 +45,7 @@ void ReadPixelsLogic::render(
                 frame_id);
             VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
             CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
-            render_results->outputs[frame_id] = reverted_axis(vp.to_array(), 1);
+            o->second.rgb = o->second.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
         }
     }
     child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);
