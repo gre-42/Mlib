@@ -403,7 +403,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    if (texture_color.a < " << alpha_threshold << ")" << std::endl;
         sstr << "        discard;" << std::endl;
     }
-    sstr << "    vec3 fragBrightness = vec3(0, 0, 0);" << std::endl;
+    if (!lights.empty()) {
+        sstr << "    vec3 fragBrightness = vec3(0, 0, 0);" << std::endl;
+    }
     if ((ntextures_color != 1) || !reorient_uv0) {
         compute_normal();
     }
@@ -615,7 +617,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else {
         sstr << "    frag_color = vec4(color, 1.0);" << std::endl;
     }
-    sstr << "    frag_color.rgb *= fragBrightness;" << std::endl;
+    if (!lights.empty()) {
+        sstr << "    frag_color.rgb *= fragBrightness;" << std::endl;
+    }
     if (occlusion_type == OcclusionType::OCCLUDED) {
         sstr << "    frag_color.r = 1;" << std::endl;
         sstr << "    frag_color.g = 1;" << std::endl;
