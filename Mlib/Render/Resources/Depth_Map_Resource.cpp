@@ -14,7 +14,7 @@ DepthMapResource::DepthMapResource(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     float z_offset)
 {
-    TransformationMatrix<float, 2> iim = intrinsic_matrix.inverted_scaled();
+    TransformationMatrix<float, 2> iim{ inv(intrinsic_matrix.affine()) };
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2 * depth_picture.nelements());
     assert(rgb_picture.ndim() == 3);
