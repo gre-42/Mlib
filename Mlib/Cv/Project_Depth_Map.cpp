@@ -27,10 +27,10 @@ void Mlib::Cv::project_depth_map(
     float z_far)
 {
     size_t num_renderings = 1;
-    RenderConfig render_config{ .cull_faces = false, .screen_width = width, .screen_height = height };
+    RenderConfig render_config{ .screen_width = width, .screen_height = height };
     RenderResults render_results;
     RenderedSceneDescriptor rsd;
-    render_results.outputs[rsd] = { .flip_y = false };
+    render_results.outputs[rsd] = {};
 
     Render2 render2{ render_config, num_renderings, &render_results };
 

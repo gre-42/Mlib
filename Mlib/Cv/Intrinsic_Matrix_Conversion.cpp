@@ -33,8 +33,8 @@ FixedArray<float, 4, 4> Mlib::Cv::opengl_matrix_from_hz_intrinsic_matrix(
     float x0 = 0.f;
     float y0 = 0.f;
     return FixedArray<float, 4, 4>{
-        2.f * R(0, 0) / width,  -2.f * R(0, 1) / width,   (width - 2.f * t(0) + 2.f * x0) / width,                                        0,
-                          0.f, -2.f * R(1, 1) / height, (height - 2.f * t(1) + 2.f * y0) / height,                                        0,
-                          0.f,                     0.f,      (-z_far - z_near) / (z_far - z_near), -2.f * z_far * z_near / (z_far - z_near),
-                          0.f,                     0.f,                                      -1.f,                                        0};
+        2.f * R(0, 0) / width, -2.f * R(0, 1) / width,   (width - 2.f * t(0) + 2.f * x0) / width,                                        0,
+                          0.f, 2.f * R(1, 1) / height,  (-height + 2.f * t(1) + 2 * y0) / height,                                        0,
+                          0.f,                    0.f,      (-z_far - z_near) / (z_far - z_near), -2.f * z_far * z_near / (z_far - z_near),
+                          0.f,                    0.f,                                      -1.f,                                        0};
 }
