@@ -4,6 +4,7 @@
 #include <Mlib/Math/Rodrigues.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rotation_From_Images.hpp>
+#include <Mlib/Stats/Mean.hpp>
 
 namespace Mlib::Sfm::Rmfi {
 
@@ -62,13 +63,12 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
         Array<TData> masked_im_r_depth_s = gaussian_filter_NWE(im_r0_depth, sigma, NAN);
         if (ke_initialized) {
             // Assign NANs to pixels with errors above a given threshold.
-            Array<float> err = sum(
+            Array<float> err = mean(
                 abs(d_pr_bilinear(im_r0, im_l, im_r0_depth, intrinsic_matrix, ke)),
                 0);
-            float threshold = (*threshold_it) * (float)im_r0.shape(0);
             for (size_t r = 0; r < im_r0.shape(1); ++r) {
                 for (size_t c = 0; c < im_r0.shape(2); ++c) {
-                    if (std::isnan(err(r, c)) || (err(r, c) >= threshold)) {
+                    if (std::isnan(err(r, c)) || (err(r, c) >= (*threshold_it))) {
                         masked_im_r_depth_s(r, c) = NAN;
                     }
                 }
