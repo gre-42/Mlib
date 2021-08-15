@@ -1,4 +1,5 @@
 #include "Dtam_Keyframe.hpp"
+#include <Mlib/Cv/Project_Depth_Map.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Features.hpp>
@@ -96,49 +97,103 @@ void DtamKeyframe::append_camera_frame() {
     std::chrono::milliseconds time_r1 = camera_frames_.rbegin()->first;
     // x0_r1_r0: The projection r0->r1 used as initial guess (x0) for the mapping r0->l.
     // Assumed memory layout: [r0=keyframe ... frame1, frame2, ... r1=camera_frames_.rbegin(), ... image_frame_l].
-    FixedArray<float, 6> x0_r1_r0 = k_external_inverse(projection_in_reference(
+    TransformationMatrix<float, 3> x0_r1_r0 = projection_in_reference(
         camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
-        camera_frames_.rbegin()->second.projection_matrix_3x4()));
-    TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_robust(
-        image_r0.grayscale,
-        down_sampler_.ds_image_frames_.at(time_r1).grayscale,
-        image_frame_l->second.grayscale,
-        depth_,
-        down_sampler_.ds_intrinsic_matrix_,
-        {3.f, 1.f, 0.f},
-        {float(INFINITY), float(INFINITY)},  // robust thresholds: {0.1f, 0.01f}
-        x0_r1_r0,
-        true,                                // estimate_rotation_first
-        cfg_.print_residual_);               // print_residual
-    // Given:
-    //   1. r: The reconstruction matrix of a reference keyframe (*this)
-    //   2. ke: A projection matrix mapping from the reference coordinate
-    //      system "r" to the to-be-appended live keyframe "l" (xr -> xl).
-    // Find l, the reconstruction matrix of the to-be-appended keyframe.
-    // r * xr = x
-    // l * ke * xr = l * xl = x
-    // find l: xl -> x
-    // l * ke * xr = r * xr, for all xr
-    // l * ke = r
-    // l = r * inv(ke)
-    TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_r0.reconstruction_matrix_3x4(), ke);
-    std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
-    camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
-
-    {
-        Array<float> im1t = Rmfi::d_pr_bilinear(
-            image_r0.grayscale,
-            image_frame_l->second.grayscale,
+        camera_frames_.rbegin()->second.projection_matrix_3x4());
+    if (false) {
+        TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_robust(
+            image_r0.rgb,
+            down_sampler_.ds_image_frames_.at(time_r1).rgb,
+            image_frame_l->second.rgb,
             depth_,
             down_sampler_.ds_intrinsic_matrix_,
-            ke);
-        draw_nan_masked_grayscale(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-" + suffix + ".png");
-        float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
-        can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
-        std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
-        if (cfg_.incremental_update_ && !can_track_) {
-            draw_reconstruction(suffix);
+            {3.f, 1.f, 0.f},
+            {float(INFINITY), float(INFINITY)},  // robust thresholds: {0.1f, 0.01f}
+            k_external_inverse(x0_r1_r0),
+            true,                                // estimate_rotation_first
+            cfg_.print_residual_);               // print_residual
+        // Given:
+        //   1. r: The reconstruction matrix of a reference keyframe (*this)
+        //   2. ke: A projection matrix mapping from the reference coordinate
+        //      system "r" to the to-be-appended live keyframe "l" (xr -> xl).
+        // Find l, the reconstruction matrix of the to-be-appended keyframe.
+        // r * xr = x
+        // l * ke * xr = l * xl = x
+        // find l: xl -> x
+        // l * ke * xr = r * xr, for all xr
+        // l * ke = r
+        // l = r * inv(ke)
+        TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_r0.reconstruction_matrix_3x4(), ke);
+        std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
+        camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
+
+        {
+            Array<float> im1t = Rmfi::d_pr_bilinear(
+                image_r0.rgb,
+                image_frame_l->second.rgb,
+                depth_,
+                down_sampler_.ds_intrinsic_matrix_,
+                ke);
+            draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-" + suffix + ".png");
+            float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
+            can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
+            std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
         }
+    } else {
+        // [r0, r1=v=camera_frames_.rbegin(), image_frame_l]
+        Array<float> rgb_picture_v;
+        Array<float> depth_picture_v;
+        project_depth_map(
+            image_r0.rgb,
+            depth_,
+            down_sampler_.ds_intrinsic_matrix_,
+            x0_r1_r0,
+            rgb_picture_v,
+            depth_picture_v,
+            down_sampler_.ds_intrinsic_matrix_,
+            depth_.shape(1),                            // width
+            depth_.shape(0),                            // height
+            0.1f,                                       // z_near
+            100.f);                                     // z_far
+        
+        draw_nan_masked_rgb(rgb_picture_v, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-" + suffix + ".png");
+        draw_nan_masked_grayscale(
+            depth_picture_v,
+            cfg_.cost_volume_parameters_.min_depth,
+            cfg_.cost_volume_parameters_.max_depth)
+            .save_to_file(cache_dir_ + "/v_depth-" + suffix + ".png");
+
+        TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_robust(
+            rgb_picture_v,                                     // im_r0
+            down_sampler_.ds_image_frames_.at(time_r1).rgb,    // im_r1
+            image_frame_l->second.rgb,                         // im_l
+            depth_picture_v,                                   // im_r0_depth
+            down_sampler_.ds_intrinsic_matrix_,                // intrinsic_matrix
+            {3.f, 1.f, 0.f},                                   // sigmas
+            {float(INFINITY), float(INFINITY)},                // robust thresholds: {0.1f, 0.01f}
+            fixed_zeros<float, 6>(),                           // x0_r1_r0
+            true,                                              // estimate_rotation_first
+            cfg_.print_residual_);                             // print_residual
+        
+        TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_frames_.rbegin()->second.reconstruction_matrix_3x4(), ke);
+        std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
+        camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
+
+        {
+            Array<float> im1t = Rmfi::d_pr_bilinear(
+                rgb_picture_v,
+                image_frame_l->second.rgb,
+                depth_picture_v,
+                down_sampler_.ds_intrinsic_matrix_,
+                ke);
+            draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-v-" + suffix + ".png");
+            float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
+            can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
+            std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
+        }
+    }
+    if (cfg_.incremental_update_ && !can_track_) {
+        draw_reconstruction(suffix);
     }
 }
 
@@ -152,12 +207,12 @@ void DtamKeyframe::inspect_externally_appended_camera_frame() const {
         camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
         camera_frames_.at(image_frame_l->first).projection_matrix_3x4());
     Array<float> im = Rmfi::d_pr_bilinear(
-        down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale,
-        image_frame_l->second.grayscale,
+        down_sampler_.ds_image_frames_.at(key_frame_time_).rgb,
+        image_frame_l->second.rgb,
         depth_,
         down_sampler_.ds_intrinsic_matrix_,
         ke);
-    draw_quantiled_grayscale(im, 0.05f, 0.95f).save_to_file(cache_dir_ + "/inspect-err-" + suffix + ".png");
+    draw_quantiled_grayscale(sum(abs(im), 0), 0.05f, 0.95f).save_to_file(cache_dir_ + "/inspect-err-" + suffix + ".png");
 }
 
 Array<float> remove_illumination(const Array<float>& image, float sigma) {
