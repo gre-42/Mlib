@@ -36,6 +36,17 @@ Array<TData> central_gradient_filter(const Array<TData>& image)
 }
 
 template <class TData>
+Array<TData> multichannel_central_gradient_filter(const Array<TData>& image)
+{
+    assert(image.ndim() > 0);
+    Array<TData> result{ ArrayShape{ image.shape(0), image.ndim() - 1 }.concatenated(image.shape().erased_first()) };
+    for (size_t d = 0; d < image.shape(0); ++d) {
+        result[d] = central_gradient_filter(image[d]);
+    }
+    return result;
+}
+
+template <class TData>
 Array<TData> central_sad_filter(const Array<TData>& image) {
     Array<TData> result = zeros<TData>(image.shape());
     for (size_t axis = 0; axis < image.ndim(); axis++) {
