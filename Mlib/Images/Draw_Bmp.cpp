@@ -47,5 +47,7 @@ StbImage Mlib::draw_nan_masked_rgb(const Array<float>& image, float low, float h
 {
     assert(image.ndim() == 3);
     assert(image.shape(0) == 3);
+    // No colors for min / max here because the channels might conflict.
+    // (single color instead of red/blue?)
     return StbImage::from_float_rgb(nac(image, low, high));
 }
