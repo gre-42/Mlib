@@ -29,12 +29,12 @@ void ReadPixelsLogic::render(
     if (render_results != nullptr) {
         auto o = render_results->outputs.find(frame_id);
         if (o != render_results->outputs.end()) {
-            if (o->second.rgb.initialized()) {
+            if (o->second.rgb.initialized() || o->second.depth.initialized()) {
                 throw std::runtime_error("ReadPixelsLogic::render detected multiple rendering calls");
             }
             FrameBufferMsaa fbs;
             // Not setting MSAA
-            fbs.configure({.width = width, .height = height});
+            fbs.configure({ .width = width, .height = height, .with_depth_texture = o->second.with_depth_texture });
             RenderToFrameBufferGuard rfg{fbs};
             child_logic_.render(
                 width,
@@ -43,9 +43,16 @@ void ReadPixelsLogic::render(
                 scene_graph_config,
                 render_results,
                 frame_id);
-            VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
-            CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
-            o->second.rgb = o->second.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
+            {
+                VectorialPixels<float, 3> vp{ArrayShape{size_t(height), size_t(width)}};
+                CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
+                o->second.rgb = o->second.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();
+            }
+            if (o->second.with_depth_texture) {
+                Array<float> sp{ ArrayShape{ size_t(height), size_t(width) } };
+                CHK(glReadPixels(0, 0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT, sp->flat_iterable().begin()));
+                o->second.depth = o->second.flip_y ? reverted_axis(sp, 0) : sp;
+            }
         }
     }
     child_logic_.render(width, height, render_config, scene_graph_config, render_results, frame_id);

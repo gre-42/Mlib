@@ -197,6 +197,7 @@ void test_project_depth_map() {
         1000.f);
     
     draw_nan_masked_rgb(rgb_picture1, 0.f, 1.f).save_to_file("TestOut/projected_depth_map_identity.png");
+    draw_nan_masked_grayscale(depth_picture1, 0.f, 0.f).save_to_file("TestOut/projected_depth_map_identity_depth.png");
 }
 
 int main(int argc, char** argv) {

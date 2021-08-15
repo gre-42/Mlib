@@ -8,6 +8,7 @@ namespace Mlib {
 
 struct RenderResult {
     bool flip_y = true;
+    bool with_depth_texture = false;
     Array<float> rgb = Array<float>();
     Array<float> depth = Array<float>();
 };

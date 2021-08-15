@@ -30,7 +30,7 @@ void Mlib::Cv::project_depth_map(
     RenderConfig render_config{ .screen_width = width, .screen_height = height };
     RenderResults render_results;
     RenderedSceneDescriptor rsd;
-    render_results.outputs[rsd] = {};
+    render_results.outputs[rsd] = { .with_depth_texture = true };
 
     Render2 render2{ render_config, num_renderings, &render_results };
 
@@ -64,4 +64,9 @@ void Mlib::Cv::project_depth_map(
         scene_graph_config);
     
     rgb_picture1 = render_results.outputs[rsd].rgb;
+    // From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
+    Array<float> z_b = render_results.outputs[rsd].depth.applied([](float v){ return v == 1 ? NAN : v; });
+    Array<float> z_n = 2.f * z_b - 1.f;
+    Array<float> z_e = 2.f * z_near * z_far / (z_far + z_near - z_n * (z_far - z_near));
+    depth_picture1 = z_e;
 }
