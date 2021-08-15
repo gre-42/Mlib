@@ -65,8 +65,18 @@ void Mlib::Cv::project_depth_map(
     
     rgb_picture1 = render_results.outputs[rsd].rgb;
     // From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
-    Array<float> z_b = render_results.outputs[rsd].depth.applied([](float v){ return v == 1 ? NAN : v; });
+    Array<float> z_b = render_results.outputs[rsd].depth;
     Array<float> z_n = 2.f * z_b - 1.f;
     Array<float> z_e = 2.f * z_near * z_far / (z_far + z_near - z_n * (z_far - z_near));
     depth_picture1 = z_e;
+    for (size_t r = 0; r < depth_picture1.shape(0); ++r) {
+        for (size_t c = 0; c < depth_picture1.shape(1); ++c) {
+            if (z_b(r, c) == 1) {
+                depth_picture1(r, c) = NAN;
+                for (size_t color = 0; color < rgb_picture1.shape(0); ++color) {
+                    rgb_picture1(color, r, c) = NAN;
+                }
+            }
+        }
+    }
 }
