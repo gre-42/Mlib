@@ -3,9 +3,14 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Depth_Map_Resource.hpp>
+#include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -57,11 +62,12 @@ void Mlib::Cv::project_depth_map(
             z_near,
             z_far)));
 
-    render2(
-        scene,
-        false,  // rotate
-        1.f,    // scale
-        scene_graph_config);
+    SelectedCameras selected_cameras{ scene };
+    selected_cameras.set_camera_node_name("camera");
+    StandardCameraLogic camera_logic{ scene, selected_cameras };
+    StandardRenderLogic render_logic{ scene, camera_logic, ClearMode::COLOR_AND_DEPTH };
+    ReadPixelsLogic read_pixels_logic{ render_logic };
+    render2(read_pixels_logic);
     
     rgb_picture1 = render_results.outputs[rsd].rgb;
     // From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
