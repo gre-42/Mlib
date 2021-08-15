@@ -27,7 +27,7 @@ public:
         FixedArray<TData, 2> id_d{a2fi(FixedArray<TData, 2>{l_res3(0) / l_res3(2), l_res3(1) / l_res3(2)})};
         BilinearInterpolator<TData> bi;
         if (bilinear_interpolation(id_d(0), id_d(1), depth_l_.shape(), bi)) {
-            TData dl = bi.interpolate_grayscale(depth_l_);
+            TData dl = bi(depth_l_);
             FixedArray<TData, 3> r_res3{dot(T_l_, homogenized_4(dot(iki_, homogenized_3(fi2a(id_d))) * dl))};
             pos_r_ = a2fi(FixedArray<TData, 2>{r_res3(0) / r_res3(2), r_res3(1) / r_res3(2)});
             return true;

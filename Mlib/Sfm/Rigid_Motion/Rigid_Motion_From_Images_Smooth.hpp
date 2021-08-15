@@ -16,8 +16,8 @@ TransformationMatrix<TData, 3> rigid_motion_from_images_smooth(
     FixedArray<TData, 6> x00 = x0;
     for (const TData& sigma : sigmas) {
         rigid_motion_from_images(
-            gaussian_filter_NWE(im_r, sigma, NAN),
-            gaussian_filter_NWE(im_l, sigma, NAN),
+            multichannel_gaussian_filter_NWE(im_r, sigma, NAN),
+            multichannel_gaussian_filter_NWE(im_l, sigma, NAN),
             gaussian_filter_NWE(im_r_depth, sigma, NAN),
             intrinsic_matrix,
             false,             // differentiate_numerically

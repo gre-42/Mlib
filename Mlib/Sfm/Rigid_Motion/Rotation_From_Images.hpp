@@ -66,21 +66,25 @@ Array<TData> d_pr(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const FixedArray<TData, 3, 3>& R)
 {
-    assert(im_r.ndim() == 2);
+    assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
     Array<TData> result{im_r.shape()};
     FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix);
-    FixedArray<size_t, 2> shape{result.shape()};
+    FixedArray<size_t, 2> space_shape{ result.shape(1), result.shape(2) };
     #pragma omp parallel for
-    for (int i = 0; i < (int)result.shape(0); ++i) {
+    for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;
-        for (size_t c = 0; c < result.shape(1); ++c) {
+        for (size_t c = 0; c < result.shape(2); ++c) {
             FixedArray<size_t, 2> id_r(r, c);
             FixedArray<size_t, 2> id_l = a2i(apply_homography(H, i2a(id_r)));
-            if (all(id_l < shape)) {
-                result(r, c) = im_l(id_l(0), id_l(1)) - im_r(id_r(0), id_r(1));
+            if (all(id_l < space_shape)) {
+                for (size_t color = 0; color < result.shape(0); ++color) {
+                    result(color, r, c) = im_l(color, id_l(0), id_l(1)) - im_r(color, id_r(0), id_r(1));
+                }
             } else {
-                result(r, c) = NAN;
+                for (size_t color = 0; color < result.shape(0); ++color) {
+                    result(color, r, c) = NAN;
+                }
             }
         }
     }
@@ -94,20 +98,24 @@ Array<TData> d_pr_bilinear(
     const TransformationMatrix<TData, 2>& intrinsic_matrix,
     const FixedArray<TData, 3, 3>& R)
 {
-    assert(im_r.ndim() == 2);
+    assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
-    Array<TData> result{im_r.shape()};
-    FixedArray<size_t, 2> shape{result.shape()};
+    Array<TData> result{ im_r.shape() };
+    ArrayShape space_shape{ im_r.shape(1), im_r.shape(2) };
     HomographySampler hs{coordinate_transform(R, intrinsic_matrix)};
     #pragma omp parallel for
-    for (int i = 0; i < (int)result.shape(0); ++i) {
+    for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;
-        for (size_t c = 0; c < result.shape(1); ++c) {
+        for (size_t c = 0; c < result.shape(2); ++c) {
             BilinearInterpolator<TData> bi;
-            if (hs.sample_destination(r, c, im_l.shape(), bi)) {
-                result(r, c) = bi.interpolate_grayscale(im_l) - im_r(r, c);
+            if (hs.sample_destination(r, c, space_shape, bi)) {
+                for (size_t color = 0; color < result.shape(0); ++color) {
+                    result(color, r, c) = bi(im_l, color) - im_r(color, r, c);
+                }
             } else {
-                result(r, c) = NAN;
+                for (size_t color = 0; color < result.shape(0); ++color) {
+                    result(color, r, c) = NAN;
+                }
             }
         }
     }
@@ -121,24 +129,27 @@ Array<TData> intensity_jacobian(
     const TransformationMatrix<TData, 2>& ki,
     const FixedArray<TData, 3>& theta)
 {
-    ArrayShape space_shape = im_r_di.shape().erased_first();
-    Array<TData> result{space_shape.appended(3)};
+    ArrayShape space_shape = ArrayShape{ im_r_di.shape(2), im_r_di.shape(3) };
+    Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 3 } };
     HomographySampler hs{coordinate_transform(tait_bryan_angles_2_matrix(theta), ki)};
     #pragma omp parallel for
-    for (int i = 0; i < (int)im_r_di.shape(1); ++i) {
+    for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
-        for (size_t c = 0; c < im_r_di.shape(2); ++c) {
+        for (size_t c = 0; c < im_r_di.shape(3); ++c) {
             FixedArray<size_t, 2> id_r{r, c};
             FixedArray<float, 2, 3> J = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(i2a(id_r)), ki, theta);
-            FixedArray<float, 2> im_grad{im_r_di(id1, r, c), im_r_di(id0, r, c)};
-            BilinearInterpolator<TData> bi;
-            if (hs.sample_destination(r, c, space_shape, bi)) {
-                im_grad(0) = (im_grad(0) + bi.interpolate_multichannel(im_l_di, id1)) / 2;
-                im_grad(1) = (im_grad(1) + bi.interpolate_multichannel(im_l_di, id0)) / 2;
-            }
-            FixedArray<TData, 3> intensity = dot(im_grad, J);
-            for (size_t i = 0; i < 3; ++i) {
-                result(r, c, i) = intensity(i);
+
+            for (size_t color = 0; color < im_r_di.shape(0); ++color) {
+                FixedArray<float, 2> im_grad{im_r_di(color, id1, r, c), im_r_di(color, id0, r, c)};
+                BilinearInterpolator<TData> bi;
+                if (hs.sample_destination(r, c, space_shape, bi)) {
+                    im_grad(0) = (im_grad(0) + bi(im_l_di, color, id1)) / 2;
+                    im_grad(1) = (im_grad(1) + bi(im_l_di, color, id0)) / 2;
+                }
+                FixedArray<TData, 3> intensity = dot(im_grad, J);
+                for (size_t i = 0; i < 3; ++i) {
+                    result(color, r, c, i) = intensity(i);
+                }
             }
         }
     }
@@ -152,6 +163,9 @@ Array<TData> intensity_jacobian_fast(
     const TransformationMatrix<TData, 2>& ki,
     const FixedArray<TData, 3>& theta)
 {
+    // Color, direction, row, column
+    assert(im_r_di.ndim() == 4);
+    assert(all(im_r_di.shape() == im_l_di.shape()));
     FixedArray<TData, 3, 3> Rd = tait_bryan_angles_2_matrix(theta);
     FixedArray<TData, 3, 3> R{Rd};
     FixedArray<TData, 3, 3> ki_inv{inv(ki.affine())};
@@ -173,15 +187,15 @@ Array<TData> intensity_jacobian_fast(
     FixedArray<TData, 3, 3> RR1 = dot(R2, dot(R1, cross1));
     FixedArray<TData, 3, 3> RR0 = dot(R2, dot(R1, dot(R0, cross0)));
 
-    ArrayShape space_shape = im_r_di.shape().erased_first();
-    Array<TData> result{space_shape.appended(3)};
+    ArrayShape space_shape = ArrayShape{ im_r_di.shape(2), im_r_di.shape(3) };
+    Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 3 } };
     HomographySampler hs{coordinate_transform(R, ki)};
     const auto m = ki.affine().template row_range<0, 2>();
     const auto b_2d = ki.affine().template row_range<2, 3>();
     #pragma omp parallel for
-    for (int i = 0; i < (int)im_r_di.shape(1); ++i) {
+    for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
-        for (size_t c = 0; c < im_r_di.shape(2); ++c) {
+        for (size_t c = 0; c < im_r_di.shape(3); ++c) {
             FixedArray<size_t, 2> id_r{r, c};
             FixedArray<TData, 3> x = homogenized_3(i2a(id_r));
 
@@ -207,15 +221,17 @@ Array<TData> intensity_jacobian_fast(
 
             FixedArray<TData, 2, 3> J = outer(dy_da, da_dtheta_T);
 
-            FixedArray<TData, 2> im_grad{im_r_di(id1, r, c), im_r_di(id0, r, c)};
-            BilinearInterpolator<TData> bi;
-            if (hs.sample_destination(r, c, space_shape, bi)) {
-                im_grad(0) = (im_grad(0) + bi.interpolate_multichannel(im_l_di, id1)) / 2;
-                im_grad(1) = (im_grad(1) + bi.interpolate_multichannel(im_l_di, id0)) / 2;
-            }
-            FixedArray<TData, 3> intensity = dot(im_grad, J);
-            for (size_t i = 0; i < 3; ++i) {
-                result(r, c, i) = intensity(i);
+            for (size_t color = 0; color < im_r_di.shape(0); ++color) {
+                FixedArray<TData, 2> im_grad{ im_r_di(color, id1, r, c), im_r_di(color, id0, r, c) };
+                BilinearInterpolator<TData> bi;
+                if (hs.sample_destination(r, c, space_shape, bi)) {
+                    im_grad(0) = (im_grad(0) + bi(im_l_di, color, id1)) / 2;
+                    im_grad(1) = (im_grad(1) + bi(im_l_di, color, id0)) / 2;
+                }
+                FixedArray<TData, 3> intensity = dot(im_grad, J);
+                for (size_t i = 0; i < 3; ++i) {
+                    result(color, r, c, i) = intensity(i);
+                }
             }
         }
     }
@@ -232,14 +248,14 @@ FixedArray<TData, 3, 3> rotation_from_images(
     FixedArray<TData, 3>* xe = nullptr,
     bool print_residual = true)
 {
-    assert(im_r.ndim() == 2);
+    assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
     const TData NAN_VALUE = 0;
     auto f = [&](const FixedArray<TData, 3>& x){
-        return substitute_nans(d_pr(im_r, im_l, intrinsic_matrix, tait_bryan_angles_2_matrix(x)).flattened(), NAN_VALUE);
+        return substitute_nans(d_pr_bilinear(im_r, im_l, intrinsic_matrix, tait_bryan_angles_2_matrix(x)).flattened(), NAN_VALUE);
     };
-    Array<float> im_r_di = central_gradient_filter(im_r);
-    Array<float> im_l_di = central_gradient_filter(im_l);
+    Array<float> im_r_di = multichannel_central_gradient_filter(im_r);
+    Array<float> im_l_di = multichannel_central_gradient_filter(im_l);
     FixedArray<TData, 3> xx = levenberg_marquardt<TData, FixedArray<float, 3, 3>, FixedArray<float, 3>>(
         x0 != nullptr ? *x0 : fixed_zeros<TData, 3>(),
         zeros<TData>(ArrayShape{im_r.nelements()}),

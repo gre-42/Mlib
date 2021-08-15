@@ -6,16 +6,10 @@ namespace Mlib {
 template <class TData>
 class BilinearInterpolator {
 public:
-    TData interpolate_grayscale(const Array<TData>& im) {
-        assert(im.ndim() == 2);
-        float v00 = ((1 - a0) * im(r0, c0) + a0 * im(r1, c0));
-        float v01 = ((1 - a0) * im(r0, c1) + a0 * im(r1, c1));
-        return (1 - a1) * v00 + a1 * v01;
-    }
-    TData interpolate_multichannel(const Array<TData>& im, size_t dim) {
-        assert(im.ndim() == 3);
-        float v00 = ((1 - a0) * im(dim, r0, c0) + a0 * im(dim, r1, c0));
-        float v01 = ((1 - a0) * im(dim, r0, c1) + a0 * im(dim, r1, c1));
+    template <typename... TDimensions>
+    TData operator () (const Array<TData>& im, TDimensions... dim) {
+        float v00 = ((1 - a0) * im(dim..., r0, c0) + a0 * im(dim..., r1, c0));
+        float v01 = ((1 - a0) * im(dim..., r0, c1) + a0 * im(dim..., r1, c1));
         return (1 - a1) * v00 + a1 * v01;
     }
     size_t r0;
@@ -56,7 +50,7 @@ template <class TData>
 bool bilinear_grayscale_interpolation(TData rf, TData cf, const Array<TData>& im, TData& intensity) {
     BilinearInterpolator<TData> bi;
     if (bilinear_interpolation(rf, cf, im.shape(), bi)) {
-        intensity = bi.interpolate_grayscale(im);
+        intensity = bi(im);
         return true;
     } else {
         return false;

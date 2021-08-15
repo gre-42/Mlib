@@ -96,7 +96,7 @@ void InverseDepthCostVolume::increment(
                     BilinearInterpolator<float> bi;
                     if (hs.sample_destination(r, c, space_shape_, bi)) {
                         for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
-                            float v = bi.interpolate_multichannel(im1_rgb, h);
+                            float v = bi(im1_rgb, h);
                             if (!std::isnan(v)) {
                                 idsi_sum_(di, r, c) += std::abs(im0_rgb(h, r, c) - v);
                                 ++nelements_idsi_(di, r, c);

@@ -38,20 +38,23 @@ Array<TData> d_pr_bilinear(
     const TransformationMatrix<TData, 2>& ki,
     const TransformationMatrix<TData, 3>& ke)
 {
-    assert(im_r.ndim() == 2);
+    assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
-    Array<TData> result{im_r.shape()};
-    FixedArray<size_t, 2> shape{result.shape()};
+    Array<TData> result{ im_r.shape() };
     RigidMotionSampler rs{ki, ke, im_r_depth};
     #pragma omp parallel for
-    for (int i = 0; i < (int)result.shape(0); ++i) {
+    for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;
-        for (size_t c = 0; c < result.shape(1); ++c) {
+        for (size_t c = 0; c < result.shape(2); ++c) {
             BilinearInterpolator<TData> bi;
             if (!std::isnan(im_r_depth(r, c)) && rs.sample_destination(r, c, bi)) {
-                result(r, c) = bi.interpolate_grayscale(im_l) - im_r(r, c);
+                for (size_t color = 0; color < im_r.shape(0); ++color) {
+                    result(color, r, c) = bi(im_l, color) - im_r(color, r, c);
+                }
             } else {
-                result(r, c) = NAN;
+                for (size_t color = 0; color < im_r.shape(0); ++color) {
+                    result(color, r, c) = NAN;
+                }
             }
         }
     }
@@ -66,31 +69,40 @@ Array<TData> intensity_jacobian(
     const TransformationMatrix<TData, 2>& ki,
     const FixedArray<TData, 6>& kep)
 {
-    ArrayShape space_shape = im_r_di.shape().erased_first();
-    Array<TData> result{space_shape.appended(6)};
+    // Color, direction, row, column
+    assert(im_r_di.ndim() == 4);
+    assert(all(im_r_di.shape() == im_l_di.shape()));
+    Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 6 } };
     RigidMotionSampler hs{ki, Cv::k_external(kep), im_r_depth};
     #pragma omp parallel for
-    for (int ri = 0; ri < (int)im_r_di.shape(1); ++ri) {
-        size_t r = (size_t)ri;
-        for (size_t c = 0; c < im_r_di.shape(2); ++c) {
+    for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
+        size_t r = (size_t)i;
+        for (size_t c = 0; c < im_r_di.shape(3); ++c) {
             if (std::isnan(im_r_depth(r, c))) {
                 result[r][c] = NAN;
                 continue;
             }
             FixedArray<size_t, 2> id_r{r, c};
             FixedArray<float, 2, 6> J = projected_points_jacobian_dke_1p_1ke_lifting(i2a(id_r), im_r_depth(r, c), ki, kep);
-            Array<float> im_grad{im_r_di(id1, r, c), im_r_di(id0, r, c)};
-            BilinearInterpolator<TData> bi;
-            if (hs.sample_destination(r, c, bi)) {
-                im_grad(0) = (im_grad(0) + bi.interpolate_multichannel(im_l_di, id1)) / 2;
-                im_grad(1) = (im_grad(1) + bi.interpolate_multichannel(im_l_di, id0)) / 2;
+
+            for (size_t color = 0; color < im_r_di.shape(0); ++color) {
+                Array<float> im_grad{im_r_di(color, id1, r, c), im_r_di(color, id0, r, c)};
+                BilinearInterpolator<TData> bi;
+                if (hs.sample_destination(r, c, bi)) {
+                    im_grad(0) = (im_grad(0) + bi(im_l_di, color, id1)) / 2;
+                    im_grad(1) = (im_grad(1) + bi(im_l_di, color, id0)) / 2;
+                }
+                result[color][r][c] = dot(im_grad, J);
             }
-            result[r][c] = dot(im_grad, J);
         }
     }
     return result;
 }
 
+/**
+ * im_r_di: Fixed difference image.
+ * im_l_di: Moving difference image.
+ */
 template <class TData>
 Array<TData> intensity_jacobian_fast(
     const Array<TData>& im_r_di,
@@ -99,6 +111,9 @@ Array<TData> intensity_jacobian_fast(
     const TransformationMatrix<TData, 2>& ki,
     const FixedArray<TData, 6>& kep)
 {
+    // Color, direction, row, column
+    assert(im_r_di.ndim() == 4);
+    assert(all(im_r_di.shape() == im_l_di.shape()));
     FixedArray<TData, 3, 3> iki{inv(ki.affine())};
     FixedArray<TData, 3, 3> kif{ki.affine()};
     FixedArray<TData, 3, 4> ke{Cv::k_external(kep).semi_affine()};
@@ -120,16 +135,18 @@ Array<TData> intensity_jacobian_fast(
     FixedArray<TData, 3, 3> RR1 = dot(R2, dot(R1, cross1));
     FixedArray<TData, 3, 3> RR0 = dot(R2, dot(R1, dot(R0, cross0)));
 
-    ArrayShape space_shape = im_r_di.shape().erased_first();
-    Array<TData> result{space_shape.appended(6)};
+    Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 6 } };
+
     RigidMotionSampler hs{ki, Cv::k_external(kep), im_r_depth};
     #pragma omp parallel for
-    for (int i = 0; i < (int)im_r_di.shape(1); ++i) {
+    for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
-        for (size_t c = 0; c < im_r_di.shape(2); ++c) {
+        for (size_t c = 0; c < im_r_di.shape(3); ++c) {
             if (std::isnan(im_r_depth(r, c))) {
-                for (size_t i = 0; i < 6; ++i) {
-                    result(r, c, i) = NAN;
+                for (size_t color = 0; color < im_r_di.shape(0); ++color) {
+                    for (size_t i = 0; i < 6; ++i) {
+                        result(color, r, c, i) = NAN;
+                    }
                 }
                 continue;
             }
@@ -161,15 +178,17 @@ Array<TData> intensity_jacobian_fast(
 
             FixedArray<TData, 2, 6> J = dot(dy_da, da_dk);
 
-            FixedArray<TData, 2> im_grad{im_r_di(id1, r, c), im_r_di(id0, r, c)};
-            BilinearInterpolator<TData> bi;
-            if (hs.sample_destination(r, c, bi)) {
-                im_grad(0) = (im_grad(0) + bi.interpolate_multichannel(im_l_di, id1)) / 2;
-                im_grad(1) = (im_grad(1) + bi.interpolate_multichannel(im_l_di, id0)) / 2;
-            }
-            FixedArray<TData, 6> intensity = dot(im_grad, J);
-            for (size_t i = 0; i < 6; ++i) {
-                result(r, c, i) = intensity(i);
+            for (size_t color = 0; color < im_r_di.shape(0); ++color) {
+                FixedArray<TData, 2> im_grad{ im_r_di(color, id1, r, c), im_r_di(color, id0, r, c) };
+                BilinearInterpolator<TData> bi;
+                if (hs.sample_destination(r, c, bi)) {
+                    im_grad(0) = (im_grad(0) + bi(im_l_di, color, id1)) / 2;
+                    im_grad(1) = (im_grad(1) + bi(im_l_di, color, id0)) / 2;
+                }
+                FixedArray<TData, 6> intensity = dot(im_grad, J);
+                for (size_t i = 0; i < 6; ++i) {
+                    result(color, r, c, i) = intensity(i);
+                }
             }
         }
     }
@@ -187,7 +206,7 @@ TransformationMatrix<TData, 3> rigid_motion_from_images(
     FixedArray<TData, 6>* xe = nullptr,
     bool print_residual = true)
 {
-    assert(im_r.ndim() == 2);
+    assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
     if (x0 != nullptr) {
         assert(x0->length() == 6);
@@ -196,8 +215,8 @@ TransformationMatrix<TData, 3> rigid_motion_from_images(
     auto f = [&](const FixedArray<TData, 6>& x){
         return substitute_nans(d_pr_bilinear(im_r, im_l, im_r_depth, intrinsic_matrix, Cv::k_external(x)).flattened(), NAN_VALUE);
     };
-    Array<float> im_r_di = central_gradient_filter(im_r);
-    Array<float> im_l_di = central_gradient_filter(im_l);
+    Array<float> im_r_di = multichannel_central_gradient_filter(im_r);
+    Array<float> im_l_di = multichannel_central_gradient_filter(im_l);
     FixedArray<TData, 6> xx = levenberg_marquardt<TData, FixedArray<float, 6, 6>, FixedArray<float, 6>>(
         x0 == nullptr ? fixed_zeros<TData, 6>() : *x0,
         zeros<TData>(ArrayShape{im_r.nelements()}),
