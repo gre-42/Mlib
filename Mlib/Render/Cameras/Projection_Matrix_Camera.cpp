@@ -11,8 +11,8 @@ ProjectionMatrixCamera::ProjectionMatrixCamera(const FixedArray<float, 4, 4>& pr
 ProjectionMatrixCamera::~ProjectionMatrixCamera()
 {}
 
-std::shared_ptr<Camera> ProjectionMatrixCamera::copy() const {
-    return std::make_shared<ProjectionMatrixCamera>(*this);
+std::unique_ptr<Camera> ProjectionMatrixCamera::copy() const {
+    return std::make_unique<ProjectionMatrixCamera>(*this);
 }
 
 FixedArray<float, 4, 4> ProjectionMatrixCamera::projection_matrix() {

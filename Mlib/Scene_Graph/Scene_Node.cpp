@@ -199,18 +199,18 @@ bool SceneNode::has_camera() const {
     return camera_ != nullptr;
 }
 
-void SceneNode::set_camera(const std::shared_ptr<Camera>& camera) {
+void SceneNode::set_camera(std::unique_ptr<Camera>& camera) {
     if (camera_ != nullptr) {
         throw std::runtime_error("Camera already set");
     }
-    camera_ = camera;
+    camera_ = std::move(camera);
 }
 
-std::shared_ptr<Camera> SceneNode::get_camera() const {
+Camera* SceneNode::get_camera() const {
     if (camera_ == nullptr) {
         throw std::runtime_error("Node has no camera");
     }
-    return camera_;
+    return camera_.get();
 }
 
 void SceneNode::add_light(Light* light) {

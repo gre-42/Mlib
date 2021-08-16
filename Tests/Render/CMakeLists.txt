@@ -4,7 +4,7 @@ my_add_executable(render_test "1")
 
 include_directories(${Mlib_INCLUDE_DIR} ${glfw3_INCLUDE_DIR})
 
-target_link_libraries(render_test MlibRender)
+target_link_libraries(render_test MlibCv)
 
 add_test(NAME RenderTest
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

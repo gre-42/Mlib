@@ -1,3 +1,4 @@
+#include <Mlib/Cv/Render_Data.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -34,15 +35,18 @@ void test_render() {
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
         size_t num_renderings = SIZE_MAX;
-        Render2{RenderConfig(), num_renderings, &render_results}.render_depth_map(
+        Render2 render{ RenderConfig(), num_renderings, &render_results};
+        render_depth_map(
+            render,
             img.to_float_rgb(),
             depth,
             intrinsic_matrix,
+            0.1f,   // near_plane
+            100.f,  // far_plane
             1,      // z_offset
             false,  // rotate
             1,      // scale
-            SceneGraphConfig(),
-            CameraConfig());
+            SceneGraphConfig());
         draw_nan_masked_rgb(render_results.outputs.at(rsd).rgb, 0, 1).save_to_file("TestOut/rendered.png");
     }
     {
@@ -50,15 +54,18 @@ void test_render() {
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
         size_t num_renderings = SIZE_MAX;
-        Render2{RenderConfig(), num_renderings, &render_results}.render_depth_map(
+        Render2 render{ RenderConfig(), num_renderings, &render_results};
+        render_depth_map(
+            render,
             img.to_float_rgb(),
             depth,
             intrinsic_matrix,
+            0.1f,   // near_plane
+            100.f,  // far_plane
             1.f,    // z_offset
             false,  // rotate
             1,      // scale
-            SceneGraphConfig(),
-            CameraConfig());
+            SceneGraphConfig());
         draw_nan_masked_rgb(render_results.outputs.at(rsd).rgb, 0, 1).save_to_file("TestOut/rendered2.png");
     }
 }

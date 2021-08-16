@@ -7,7 +7,7 @@ namespace Mlib {
 class Camera {
 public:
     virtual ~Camera();
-    virtual std::shared_ptr<Camera> copy() const = 0;
+    virtual std::unique_ptr<Camera> copy() const = 0;
     virtual void set_y_fov(float y_fov);
     virtual void set_aspect_ratio(float aspect_ratio);
     virtual void set_near_plane(float near_plane);

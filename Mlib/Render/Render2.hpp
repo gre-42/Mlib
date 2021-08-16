@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 
 struct GLFWwindow;
@@ -15,6 +14,7 @@ class Scene;
 class SceneNode;
 class Window;
 class ButtonStates;
+class Camera;
 
 template <class TData, size_t n>
 class TransformationMatrix;
@@ -45,33 +45,7 @@ public:
         bool rotate,
         float scale,
         const SceneGraphConfig& scene_graph_config,
-        const CameraConfig& camera_config);
-
-    void render_point_cloud(
-        const Array<FixedArray<float, 3>>& points,
-        bool rotate = false,
-        float scale = 1,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-        const CameraConfig& camera_config = CameraConfig());
-
-    void render_depth_map(
-        const Array<float>& rgb_picture,
-        const Array<float>& depth_picture,
-        const TransformationMatrix<float, 2>& intrinsic_matrix,
-        float z_offset,
-        bool rotate = false,
-        float scale = 1,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-        const CameraConfig& camera_config = CameraConfig());
-
-    void render_height_map(
-        const Array<float>& rgb_picture,
-        const Array<float>& height_picture,
-        const TransformationMatrix<float, 2>& normalization_matrix,
-        bool rotate = false,
-        float scale = 1,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-        const CameraConfig& camera_config = CameraConfig());
+        std::unique_ptr<Camera>& camera);
     
     GLFWwindow* window() const;
 

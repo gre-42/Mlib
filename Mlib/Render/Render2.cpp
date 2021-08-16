@@ -1,7 +1,6 @@
 #include "Render2.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Fps.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
@@ -260,12 +259,13 @@ void Render2::render_node(
     bool rotate,
     float scale,
     const SceneGraphConfig& scene_graph_config,
-    const CameraConfig& camera_config)
+    std::unique_ptr<Camera>& camera)
 {
     Scene scene;
     scene.add_root_node("obj", &node);
     scene.add_root_node("camera", new SceneNode);
-    scene.get_node("camera")->set_camera(std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE));
+    // std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE)
+    scene.get_node("camera")->set_camera(camera);
     scene.add_root_node("light", new SceneNode);
     scene.get_node("light")->add_light(new Light{
         .ambience = {0.5f, 0.5f, 0.5f},
@@ -275,61 +275,6 @@ void Render2::render_node(
         .only_black = false,
         .shadow = false});
     (*this)(scene, rotate, scale, scene_graph_config);
-}
-
-void Render2::render_point_cloud(
-    const Array<FixedArray<float, 3>>& points,
-    bool rotate,
-    float scale,
-    const SceneGraphConfig& scene_graph_config,
-    const CameraConfig& camera_config)
-{
-    auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
-    const auto r = std::make_shared<PointCloudResource>(points);
-    scene_node_resources.add_resource("PointCloudResource", r);
-    auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("PointCloudResource", "PointCloudResource", *on, SceneNodeResourceFilter());
-    render_node(*on, rotate, scale, scene_graph_config, camera_config);
-}
-
-void Render2::render_depth_map(
-    const Array<float>& rgb_picture,
-    const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
-    float z_offset,
-    bool rotate,
-    float scale,
-    const SceneGraphConfig& scene_graph_config,
-    const CameraConfig& camera_config)
-{
-    SceneNodeResources scene_node_resources;
-    RenderingContextGuard rrg{
-        scene_node_resources,
-        "primary_rendering_resources",
-        16,
-        0};
-    const auto r = std::make_shared<DepthMapResource>(rgb_picture, depth_picture, intrinsic_matrix, z_offset);
-    scene_node_resources.add_resource("DepthMapResource", r);
-    auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
-    render_node(*on, rotate, scale, scene_graph_config, camera_config);
-}
-
-void Render2::render_height_map(
-    const Array<float>& rgb_picture,
-    const Array<float>& height_picture,
-    const TransformationMatrix<float, 2>& normalization_matrix,
-    bool rotate,
-    float scale,
-    const SceneGraphConfig& scene_graph_config,
-    const CameraConfig& camera_config)
-{
-    auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
-    const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix);
-    scene_node_resources.add_resource("HeightMapResource", r);
-    auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, SceneNodeResourceFilter());
-    render_node(*on, rotate, scale, scene_graph_config, camera_config);
 }
 
 GLFWwindow* Render2::window() const {

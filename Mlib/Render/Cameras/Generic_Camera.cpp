@@ -17,8 +17,8 @@ void GenericCamera::set_mode(const Mode& mode) {
 GenericCamera::~GenericCamera()
 {}
 
-std::shared_ptr<Camera> GenericCamera::copy() const {
-    return std::make_shared<GenericCamera>(*this);
+std::unique_ptr<Camera> GenericCamera::copy() const {
+    return std::make_unique<GenericCamera>(*this);
 }
 
 void GenericCamera::set_y_fov(float y_fov) {

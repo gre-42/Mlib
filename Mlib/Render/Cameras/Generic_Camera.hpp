@@ -13,7 +13,7 @@ public:
     explicit GenericCamera(const CameraConfig& cfg, const Mode& mode);
     void set_mode(const Mode& mode);
     virtual ~GenericCamera() override;
-    virtual std::shared_ptr<Camera> copy() const override;
+    virtual std::unique_ptr<Camera> copy() const override;
     virtual void set_y_fov(float y_fov) override;
     virtual void set_aspect_ratio(float aspect_ratio) override;
     virtual void set_near_plane(float near_plane) override;

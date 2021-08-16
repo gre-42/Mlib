@@ -80,8 +80,13 @@ public:
         const FixedArray<float, 3>& position,
         float yangle);
     bool has_camera() const;
-    void set_camera(const std::shared_ptr<Camera>& camera);
-    std::shared_ptr<Camera> get_camera() const;
+    template<typename TCamera, typename... Args>
+    void create_camera(Args&&... args) {
+        std::unique_ptr<Camera> camera(new TCamera(std::forward<Args>(args)...));
+        set_camera(camera);
+    }
+    void set_camera(std::unique_ptr<Camera>& camera);
+    Camera* get_camera() const;
     void add_light(Light* light);
     void move(const TransformationMatrix<float, 3>& v, float dt);
     bool requires_render_pass() const;
@@ -148,7 +153,7 @@ private:
     RelativeMovable* relative_movable_;
     AbsoluteObserver* absolute_observer_;
     std::set<DestructionObserver*> destruction_observers_;
-    std::shared_ptr<Camera> camera_;
+    std::unique_ptr<Camera> camera_;
     std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
     std::map<std::string, SceneNodeChild> children_;
     std::map<std::string, SceneNodeChild> aggregate_children_;

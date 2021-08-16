@@ -2162,14 +2162,14 @@ void LoadScene::operator()(
             physics_engine.advance_times_.add_advance_time(hud_image);
         } else if (Mlib::re::regex_match(line, match, perspective_camera_reg)) {
             auto node = scene.get_node(match[1].str());
-            node->set_camera(std::make_shared<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::PERSPECTIVE));
+            node->create_camera<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::PERSPECTIVE);
             node->get_camera()->set_y_fov(safe_stof(match[2].str()));
             node->get_camera()->set_near_plane(safe_stof(match[3].str()));
             node->get_camera()->set_far_plane(safe_stof(match[4].str()));
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[5].str()));
         } else if (Mlib::re::regex_match(line, match, ortho_camera_reg)) {
             auto node = scene.get_node(match[1].str());
-            node->set_camera(std::make_shared<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::ORTHO));
+            node->create_camera<GenericCamera>(scene_config.camera_config, GenericCamera::Mode::ORTHO);
             node->get_camera()->set_near_plane(safe_stof(match[2].str()));
             node->get_camera()->set_far_plane(safe_stof(match[3].str()));
             node->get_camera()->set_left_plane(safe_stof(match[4].str()));

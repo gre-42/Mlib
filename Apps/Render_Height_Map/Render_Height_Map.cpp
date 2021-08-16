@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Cv/Render_Data.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/PgmImage.hpp>
@@ -36,7 +37,9 @@ int main(int argc, char** argv) {
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
         size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
-        Render2{ render_config, num_renderings }.render_height_map(
+        Render2 render{ render_config, num_renderings };
+        render_height_map(
+            render,
             img.to_float_rgb(),
             height.to_float() * safe_stof(args.named_value("--z_scale", "1")),
             np.normalization_matrix().pre_scaled(safe_stof(args.named_value("--xy_scale", "1"))),

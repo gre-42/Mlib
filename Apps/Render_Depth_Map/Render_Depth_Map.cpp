@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Cv/Render_Data.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -15,7 +16,7 @@ int main(int argc, char** argv) {
     const ArgParser parser(
         "Usage: render_depth_map --rgb <filename> --depth <filename> --ki <intrinsic_matrix> --median_filter_radius <r> [--z_offset <z_offset>] [--rotate]",
         {"--rotate"},
-        {"--rgb", "--depth", "--ki", "--z_offset", "--median_filter_radius"});
+        {"--rgb", "--depth", "--ki", "--z_offset", "--median_filter_radius", "--near_plane", "--far_plane"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -37,13 +38,19 @@ int main(int argc, char** argv) {
             }
         }
         size_t num_renderings = SIZE_MAX;
-        RenderConfig render_config;
+        RenderConfig render_config{
+            .screen_width = (int)depth.shape(1),
+            .screen_height = (int)depth.shape(0)};
         SceneNodeResources scene_node_resources;
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
-        Render2{ render_config, num_renderings }.render_depth_map(
+        Render2 render{ render_config, num_renderings };
+        render_depth_map(
+            render,
             img.to_float_rgb(),
             depth,
             TransformationMatrix<float, 2>{ FixedArray<float, 3, 3>{ intrinsic_matrix } },
+            safe_stof(args.named_value("--near_plane", "0.1")),
+            safe_stof(args.named_value("--far_plane", "100")),
             safe_stof(args.named_value("--z_offset", "1")),
             args.has_named("--rotate"));
     } catch (const std::runtime_error& e) {
