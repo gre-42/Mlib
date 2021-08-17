@@ -35,7 +35,8 @@ int main(int argc, char** argv) {
         "--near_plane",
         "--far_plane",
         "--minus_depth",
-        "--minus_ke"});
+        "--minus_ke",
+        "--minus_threshold"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -78,7 +79,8 @@ int main(int argc, char** argv) {
             TransformationMatrix<float, 3> ke0 = load_ke(args.named_value("--ke"));
             TransformationMatrix<float, 3> ke1 = load_ke(args.named_value("--minus_ke"));
             Array<float> diff = Cv::depth_difference(depth, minus_depth, intrinsic_matrix, projection_in_reference(ke0, ke1));
-            depth = depth.array_array_binop(diff, [](float a, float b){ return std::isnan(b) || (b < -0.1f) ? NAN : a; });
+            float thresh = safe_stof(args.named_value("--minus_threshold"));
+            depth = depth.array_array_binop(diff, [&thresh](float a, float b){ return std::isnan(b) || (b < -thresh) ? NAN : a; });
         }
         size_t num_renderings = SIZE_MAX;
         RenderConfig render_config{
