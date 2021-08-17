@@ -139,6 +139,40 @@ void DtamKeyframe::append_camera_frame() {
             can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
             std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
         }
+
+        // {
+        //     Array<float> rgb_picture_v;
+        //     Array<float> depth_picture_v;
+        //     project_depth_map(
+        //         image_r0.rgb,
+        //         depth_,
+        //         down_sampler_.ds_intrinsic_matrix_,
+        //         ke,
+        //         // camera_frames_.at(key_frame_time_).projection_matrix_3x4() * camera_frames_.rbegin()->second.reconstruction_matrix_3x4(),
+        //         // camera_frames_.at(key_frame_time_).reconstruction_matrix_3x4() * camera_frames_.rbegin()->second.projection_matrix_3x4(),
+        //         // camera_frames_.rbegin()->second.reconstruction_matrix_3x4() * camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
+        //         // camera_frames_.rbegin()->second.projection_matrix_3x4() * camera_frames_.at(key_frame_time_).reconstruction_matrix_3x4(),
+        //         rgb_picture_v,
+        //         depth_picture_v,
+        //         down_sampler_.ds_intrinsic_matrix_,
+        //         depth_.shape(1),                            // width
+        //         depth_.shape(0),                            // height
+        //         0.1f,                                       // z_near
+        //         100.f);                                     // z_far
+        //     
+        //     // draw_nan_masked_rgb(image_r0.rgb, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-0-" + suffix + ".png");
+        //     // draw_nan_masked_rgb(down_sampler_.ds_image_frames_.at(time_r1).rgb, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-r-" + suffix + ".png");
+        //     // draw_nan_masked_rgb(rgb_picture_v, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-" + suffix + ".png");
+        //     // draw_nan_masked_rgb(image_frame_l->second.rgb, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-l-" + suffix + ".png");
+        // }
+        // {
+        //     Array<float> im1 = project_depth_map_cpu(
+        //         image_r0.rgb,
+        //         depth_,
+        //         down_sampler_.ds_intrinsic_matrix_,
+        //         ke);
+        //     draw_nan_masked_rgb(im1, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-s-" + suffix + ".png");
+        // }
     } else {
         // [r0, r1=v=camera_frames_.rbegin(), image_frame_l]
         Array<float> rgb_picture_v;
@@ -156,6 +190,12 @@ void DtamKeyframe::append_camera_frame() {
             0.1f,                                       // z_near
             100.f);                                     // z_far
         
+        // draw_nan_masked_rgb(image_r0.rgb, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-0-" + suffix + ".png");
+        // draw_nan_masked_grayscale(
+        //     depth_,
+        //     cfg_.cost_volume_parameters_.min_depth,
+        //     cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/v_depth-0-" + suffix + ".png");
+        // draw_nan_masked_rgb(down_sampler_.ds_image_frames_.at(time_r1).rgb, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-r-" + suffix + ".png");
         draw_nan_masked_rgb(rgb_picture_v, 0.f, 1.f).save_to_file(cache_dir_ + "/v_rgb-" + suffix + ".png");
         draw_nan_masked_grayscale(
             depth_picture_v,
@@ -163,7 +203,8 @@ void DtamKeyframe::append_camera_frame() {
             cfg_.cost_volume_parameters_.max_depth)
             .save_to_file(cache_dir_ + "/v_depth-" + suffix + ".png");
 
-        TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_robust(
+        // Transformation ke_lv: virtual -> live
+        TransformationMatrix<float, 3> ke_lv = Rmfi::rigid_motion_from_images_robust(
             rgb_picture_v,                                     // im_r0
             down_sampler_.ds_image_frames_.at(time_r1).rgb,    // im_r1
             image_frame_l->second.rgb,                         // im_l
@@ -175,7 +216,7 @@ void DtamKeyframe::append_camera_frame() {
             true,                                              // estimate_rotation_first
             cfg_.print_residual_);                             // print_residual
         
-        TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_frames_.rbegin()->second.reconstruction_matrix_3x4(), ke);
+        TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_frames_.rbegin()->second.reconstruction_matrix_3x4(), ke_lv);
         std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
         camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
 
@@ -185,8 +226,20 @@ void DtamKeyframe::append_camera_frame() {
                 image_frame_l->second.rgb,
                 depth_picture_v,
                 down_sampler_.ds_intrinsic_matrix_,
-                ke);
+                ke_lv);
             draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-v-" + suffix + ".png");
+        }
+        {
+            TransformationMatrix<float, 3> ke = projection_in_reference(
+                camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
+                camera_frames_.at(image_frame_l->first).projection_matrix_3x4());
+            Array<float> im1t = Rmfi::d_pr_bilinear(
+                image_r0.rgb,
+                image_frame_l->second.rgb,
+                depth_,
+                down_sampler_.ds_intrinsic_matrix_,
+                ke);
+            draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-r-" + suffix + ".png");
             float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
             can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
             std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
