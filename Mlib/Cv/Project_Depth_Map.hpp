@@ -35,8 +35,6 @@ void project_depth_map(
     float z_near,
     float z_far);
 
-}
-
 template <class TData>
 Array<TData> project_depth_map_cpu(
     const Array<TData>& im_r,
@@ -63,6 +61,8 @@ Array<TData> project_depth_map_cpu(
         }
     }
     return result;
+}
+
 }
 
 }
