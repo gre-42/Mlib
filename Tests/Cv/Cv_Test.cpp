@@ -180,24 +180,80 @@ void test_project_depth_map() {
     Array<float> depth_picture0 = Array<float>::load_binary("Data/Rigid_Motion/depth-0-590.array");
     Array<float> rgb_picture0 = StbImage::load_from_file("Data/Rigid_Motion/vid001-256x455x24.png").to_float_rgb();
 
-    Array<float> depth_picture1;
-    Array<float> rgb_picture1;
+    // Identity
+    {
+        {
+            Array<float> depth_picture1;
+            Array<float> rgb_picture1;
 
-    project_depth_map(
-        rgb_picture0,
-        depth_picture0,
-        intrinsic_matrix,
-        TransformationMatrix<float, 3>::identity(),
-        rgb_picture1,
-        depth_picture1,
-        intrinsic_matrix,
-        depth_picture0.shape(1),
-        depth_picture0.shape(0),
-        0.1f,
-        1000.f);
-    
-    draw_nan_masked_rgb(rgb_picture1, 0.f, 1.f).save_to_file("TestOut/projected_depth_map_identity.png");
-    draw_nan_masked_grayscale(depth_picture1, 0.f, 0.f).save_to_file("TestOut/projected_depth_map_identity_depth.png");
+            project_depth_map(
+                rgb_picture0,
+                depth_picture0,
+                intrinsic_matrix,
+                TransformationMatrix<float, 3>::identity(),
+                rgb_picture1,
+                depth_picture1,
+                intrinsic_matrix,
+                depth_picture0.shape(1),
+                depth_picture0.shape(0),
+                0.1f,
+                1000.f);
+            
+            draw_nan_masked_rgb(rgb_picture1, 0.f, 1.f).save_to_file("TestOut/projected_depth_map_identity.png");
+            draw_nan_masked_grayscale(depth_picture1, 0.f, 0.f).save_to_file("TestOut/projected_depth_map_identity_depth.png");
+        }
+
+        {
+            Array<float> rgb_picture1_cpu = project_depth_map_cpu(
+                rgb_picture0,
+                depth_picture0,
+                intrinsic_matrix,
+                TransformationMatrix<float, 3>::identity());
+            
+            draw_nan_masked_rgb(rgb_picture1_cpu, 0.f, 1.f).save_to_file("TestOut/projected_depth_map_identity_cpu.png");
+        }
+    }
+
+    // Shift
+    {
+        TransformationMatrix<float, 3> ke = TransformationMatrix<float, 3>::identity();
+        // ke.t()(0) = 0.1f;
+        ke.t() = FixedArray<float, 3>{ 0.1f, 0.2f, 0.15f };
+        // ke.t()(2) = 0.1f;
+        ke.R() = rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, 0.2f);
+        std::cerr << "ke\n" << ke.semi_affine() << std::endl;
+
+        {
+            Array<float> depth_picture1;
+            Array<float> rgb_picture1;
+
+            project_depth_map(
+                rgb_picture0,
+                depth_picture0,
+                intrinsic_matrix,
+                ke,
+                rgb_picture1,
+                depth_picture1,
+                intrinsic_matrix,
+                depth_picture0.shape(1),
+                depth_picture0.shape(0),
+                0.1f,
+                1000.f);
+            
+            draw_nan_masked_rgb(rgb_picture1, 0.f, 1.f).save_to_file("TestOut/projected_depth_map_x.png");
+            draw_nan_masked_grayscale(depth_picture1, 0.f, 0.f).save_to_file("TestOut/projected_depth_map_depth_x.png");
+        }
+
+        {
+            Array<float> rgb_picture1_cpu = project_depth_map_cpu(
+                rgb_picture0,
+                depth_picture0,
+                intrinsic_matrix,
+                ke);
+            
+            draw_nan_masked_rgb(rgb_picture1_cpu, 0.f, 1.f).save_to_file("TestOut/projected_depth_map_cpu_x.png");
+        }
+    }
 }
 
 int main(int argc, char** argv) {

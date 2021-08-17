@@ -1,5 +1,6 @@
 #pragma once
-#include <cstddef>
+#include <Mlib/Images/Bilinear_Interpolation.hpp>
+#include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Sampler.hpp>
 
 namespace Mlib {
 
@@ -34,6 +35,34 @@ void project_depth_map(
     float z_near,
     float z_far);
 
+}
+
+template <class TData>
+Array<TData> project_depth_map_cpu(
+    const Array<TData>& im_r,
+    const Array<TData>& im_r_depth,
+    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 3>& ke)
+{
+    assert(im_r.ndim() == 3);
+    Array<TData> result = nans<TData>(im_r.shape());
+    Sfm::RigidMotionSampler rs{ki, ke, im_r_depth};
+    #pragma omp parallel for
+    for (int i = 0; i < (int)result.shape(1); ++i) {
+        size_t r = (size_t)i;
+        for (size_t c = 0; c < result.shape(2); ++c) {
+            BilinearInterpolator<TData> bi;
+            if (!std::isnan(im_r_depth(r, c)) && rs.sample_destination(r, c, bi)) {
+                for (size_t color = 0; color < im_r.shape(0); ++color) {
+                    result(color, bi.r0, bi.c0) = im_r(color, r, c);
+                    result(color, bi.r0, bi.c1) = im_r(color, r, c);
+                    result(color, bi.r1, bi.c0) = im_r(color, r, c);
+                    result(color, bi.r1, bi.c1) = im_r(color, r, c);
+                }
+            }
+        }
+    }
+    return result;
 }
 
 }
