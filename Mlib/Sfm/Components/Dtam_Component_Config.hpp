@@ -6,6 +6,7 @@ namespace Mlib::Sfm {
 struct DtamComponentConfig {
     explicit DtamComponentConfig(
         bool track_using_dtam,
+        bool use_virtual_camera,
         bool print_residual,
         float regularization_filter_sigma,
         size_t regularization_filter_poly_degree);

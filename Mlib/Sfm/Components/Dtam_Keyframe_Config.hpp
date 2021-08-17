@@ -13,6 +13,8 @@ enum class Regularization {
 
 struct DtamKeyframeConfig {
     DtamKeyframeConfig(
+        bool rewind_first_keyframe,
+        bool use_virtual_camera,
         bool incremental_update,
         size_t nfuture_frames_per_keyframe,
         size_t npast_frames_per_keyframe,
@@ -28,6 +30,7 @@ struct DtamKeyframeConfig {
         float regularization_filter_sigma,
         size_t regularization_filter_poly_degree);
     bool rewind_first_keyframe_;
+    bool use_virtual_camera_;
     bool incremental_update_;
     size_t nfuture_frames_per_keyframe_;
     size_t npast_frames_per_keyframe_;

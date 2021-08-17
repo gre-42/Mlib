@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
         "--camera_source <source_dir> "
         "[--no_dtam] "
         "[--no_dtam_tracking] "
+        "[--use_virtual_camera] "
         "--chess_r <chess_r> "
         "--chess_c <chess_c> "
         "[--nskipped <nskipped>] "
@@ -78,7 +79,8 @@ int main(int argc, char** argv) {
         "[--regularization_filter_poly_degree <d>] "
         "[--regularization_filter_sigma <s>]",
         { "--no_dtam",
-          "--no_dtam_tracking" },
+          "--no_dtam_tracking",
+          "--use_virtual_camera" },
         { "--pipeline",
           "--cache",
           "--calib_source",
@@ -117,6 +119,7 @@ int main(int argc, char** argv) {
             TemplatePatchPipelineConfig{
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
+                .use_virtual_camera = args.has_named("--use_virtual_camera"),
                 .print_residual = args.has_named("--print_residual"),
                 .dtam_down_sampling = safe_stoz(args.named_value("--dtam_down_sampling", "0")),
                 .regularization_filter_sigma = safe_stof(args.named_value("--regularization_filter_sigma", "1")),

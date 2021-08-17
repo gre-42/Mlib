@@ -39,6 +39,7 @@ TemplatePatchPipeline::TemplatePatchPipeline(
       (fs::path{cache_dir} / "DtamReconstruction").string(),
       DtamComponentConfig(
           cfg.track_using_dtam,
+          cfg.use_virtual_camera,
           cfg.print_residual,
           cfg.regularization_filter_sigma,
           cfg.regularization_filter_poly_degree) }

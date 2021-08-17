@@ -100,7 +100,7 @@ void DtamKeyframe::append_camera_frame() {
     TransformationMatrix<float, 3> x0_r1_r0 = projection_in_reference(
         camera_frames_.at(key_frame_time_).projection_matrix_3x4(),
         camera_frames_.rbegin()->second.projection_matrix_3x4());
-    if (false) {
+    if (!cfg_.use_virtual_camera_) {
         TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_robust(
             image_r0.rgb,
             down_sampler_.ds_image_frames_.at(time_r1).rgb,

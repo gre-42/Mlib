@@ -8,6 +8,7 @@ static bool interactive = false;
 
 DtamComponentConfig::DtamComponentConfig(
     bool track_using_dtam,
+    bool use_virtual_camera,
     bool print_residual,
     float regularization_filter_sigma,
     size_t regularization_filter_poly_degree)
@@ -18,6 +19,8 @@ DtamComponentConfig::DtamComponentConfig(
     track_using_dtam,               // track_using_dtam
     1,                              // nth_image
     DtamKeyframeConfig(
+        false,                      // rewind_first_keyframe
+        use_virtual_camera,         // use_virtual_camera
         interactive,                // incremental_update
         interactive ? 20 : 20,      // nfuture_frames_per_keyframe
         interactive ? 20 :  1,      // npast_frames_per_keyframe
@@ -26,8 +29,8 @@ DtamComponentConfig::DtamComponentConfig(
         100,                        // ninterleaved_iterations
         print_residual,             // print_residual
         CostVolumeParameters{
-            .min_depth = 4.5f,
-            .max_depth = 9.f,
+            .min_depth = 3.5f,
+            .max_depth = 12.f,
             .ndepths = 32
         },
         Dm::DtamParameters(

@@ -5,6 +5,8 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 DtamKeyframeConfig::DtamKeyframeConfig(
+    bool rewind_first_keyframe,
+    bool use_virtual_camera,
     bool incremental_update,
     size_t nfuture_frames_per_keyframe,
     size_t npast_frames_per_keyframe,
@@ -19,7 +21,9 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     float sigma_illumination_removal,
     float regularization_filter_sigma,
     size_t regularization_filter_poly_degree)
-: incremental_update_(incremental_update),
+: rewind_first_keyframe_{rewind_first_keyframe},
+  use_virtual_camera_{use_virtual_camera},
+  incremental_update_(incremental_update),
   nfuture_frames_per_keyframe_(nfuture_frames_per_keyframe),
   npast_frames_per_keyframe_(npast_frames_per_keyframe),
   min_channel_increments_(min_channel_increments),
