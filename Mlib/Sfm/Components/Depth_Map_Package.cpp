@@ -1,6 +1,6 @@
 #include "Depth_Map_Package.hpp"
-#include <nlohmann/json.hpp>
 #include <filesystem>
+#include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
 using namespace Mlib;
@@ -26,9 +26,9 @@ void Mlib::save_depth_map_package(
     }
 }
 
-DepthMapPackage load_depth_map_file(const std::string& filename) {
+DepthMapPackage Mlib::load_depth_map_file(const std::string& filename) {
     auto fn = [&filename](const std::string& suffix){
-        return (fs::path{ filename } / suffix).string();
+        return (fs::path{ filename }.parent_path() / suffix).string();
     };
     json j;
     std::ifstream f{filename};
@@ -48,8 +48,8 @@ DepthMapPackage load_depth_map_file(const std::string& filename) {
         throw std::runtime_error("Intrinsic matrix does not have shape 3x3");
     }
     Array<float> ke = Array<float>::load_txt_2d(fn(j.at("ke").get<std::string>()));
-    if (!all(ki.shape() == ArrayShape{ 4, 4 })) {
-        throw std::runtime_error("Intrinsic matrix does not have shape 4x4");
+    if (!all(ke.shape() == ArrayShape{ 4, 4 })) {
+        throw std::runtime_error("Extrinsic matrix does not have shape 4x4");
     }
     return DepthMapPackage{
         .depth = depth,

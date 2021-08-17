@@ -7,6 +7,7 @@
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Sfm/Components/Depth_Map_Package.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <vector>
 
@@ -23,8 +24,7 @@ int main(int argc, char** argv) {
         " --median_filter_radius <r>"
         " [--z_offset <z_offset>]"
         " [--rotate]"
-        " [--minus_depth <filename>]"
-        " [--minus_ke <filename>]",
+        " [--minus <file1> <file2...>]",
         {"--rotate"},
         {"--rgb",
         "--depth",
@@ -34,9 +34,8 @@ int main(int argc, char** argv) {
         "--median_filter_radius",
         "--near_plane",
         "--far_plane",
-        "--minus_depth",
-        "--minus_ke",
-        "--minus_threshold"});
+        "--minus_threshold"},
+        {"--minus"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -71,16 +70,14 @@ int main(int argc, char** argv) {
         if (!all(depth.shape() == img.shape())) {
             throw std::runtime_error("Depth and image shape differ");
         }
-        if (args.has_named_value("--minus_depth")) {
-            Array<float> minus_depth = load_depth(args.named_value("--minus_depth"));
-            if (!all(minus_depth.shape() == depth.shape())) {
-                throw std::runtime_error("Minus depth has incorrect shape");
+        if (args.has_named_list("--minus")) {
+            for (const std::string& filename : args.named_list("--minus")) {
+                DepthMapPackage pkg = load_depth_map_file(filename);
+                TransformationMatrix<float, 3> ke0 = load_ke(args.named_value("--ke"));
+                Array<float> diff = Cv::depth_difference(depth, pkg.depth, intrinsic_matrix, projection_in_reference(ke0, pkg.ke));
+                float thresh = safe_stof(args.named_value("--minus_threshold"));
+                depth = depth.array_array_binop(diff, [&thresh](float a, float b){ return std::isnan(b) || (b < -thresh) ? NAN : a; });
             }
-            TransformationMatrix<float, 3> ke0 = load_ke(args.named_value("--ke"));
-            TransformationMatrix<float, 3> ke1 = load_ke(args.named_value("--minus_ke"));
-            Array<float> diff = Cv::depth_difference(depth, minus_depth, intrinsic_matrix, projection_in_reference(ke0, ke1));
-            float thresh = safe_stof(args.named_value("--minus_threshold"));
-            depth = depth.array_array_binop(diff, [&thresh](float a, float b){ return std::isnan(b) || (b < -thresh) ? NAN : a; });
         }
         size_t num_renderings = SIZE_MAX;
         RenderConfig render_config{
