@@ -1,5 +1,6 @@
 #include "Dtam_Keyframe.hpp"
 #include <Mlib/Cv/Project_Depth_Map.hpp>
+#include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Features.hpp>
@@ -16,7 +17,6 @@
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Robust.hpp>
-#include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Quantile.hpp>
 

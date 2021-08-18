@@ -1,13 +1,14 @@
 #include "Depth_Map_Bundle.hpp"
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Components/Down_Sampler.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
-#include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
 
 using namespace Mlib;
+using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
 DepthMapBundle::DepthMapBundle(

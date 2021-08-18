@@ -1,3 +1,4 @@
+#include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
@@ -7,7 +8,6 @@
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Robust.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
-#include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>

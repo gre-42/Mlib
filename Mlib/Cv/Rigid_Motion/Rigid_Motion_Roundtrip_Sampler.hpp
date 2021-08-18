@@ -2,10 +2,10 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>
-#include <Mlib/Sfm/Homography/Apply_Homography.hpp>
 
-namespace Mlib::Sfm {
+namespace Mlib::Cv {
 
 template <class TData>
 class RigidMotionRoundtripSampler {

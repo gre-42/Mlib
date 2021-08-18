@@ -1,9 +1,8 @@
 #pragma once
+#include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip_Sampler.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
-#include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Roundtrip_Sampler.hpp>
 
-namespace Mlib::Sfm {
-
+namespace Mlib::Cv {
 
 template <class TData>
 Array<TData> rigid_motion_roundtrip(

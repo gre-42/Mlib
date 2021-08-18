@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Sampler.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
-#include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Sampler.hpp>
 
 namespace Mlib {
 
@@ -36,7 +36,7 @@ Array<TData> depth_difference(
     FixedArray<TData, 3> z = ke_1_0.R()[2];
     z /= std::sqrt(sum(squared(z)));
     TData offset = -dot0d(z, ke_1_0.inverted().t());
-    Sfm::RigidMotionSampler rs{ki, ke_1_0, im_0_depth};
+    RigidMotionSampler rs{ki, ke_1_0, im_0_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(0); ++i) {
         size_t r = (size_t)i;

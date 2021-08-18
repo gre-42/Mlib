@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Sampler.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
-#include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_Sampler.hpp>
 
 namespace Mlib {
 
@@ -44,7 +44,7 @@ Array<TData> project_depth_map_cpu(
 {
     assert(im_r.ndim() == 3);
     Array<TData> result = nans<TData>(im_r.shape());
-    Sfm::RigidMotionSampler rs{ki, ke, im_r_depth};
+    RigidMotionSampler rs{ki, ke, im_r_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;
