@@ -29,7 +29,7 @@ TemplatePatchPipeline::TemplatePatchPipeline(
       flowing_particles_.last_sq_residual_,
       (fs::path{cache_dir} / "SparseReconstruction").string(),
       ReconstructionConfig{.print_residual = cfg.print_residual} },
-  depth_map_bundle_{camera_frames_, down_sampler_},
+  depth_map_bundle_(),
   dtam_reconstruction_{
       image_frames_,
       camera_frames_,

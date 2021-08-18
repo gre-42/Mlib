@@ -89,7 +89,7 @@ void test_rigid_motion_from_images() {
         //        depth0(r, c) *= 1.5;
         //    }
         //}
-        Array<float> err = rigid_motion_roundtrip(depth0, depth1, intrinsic_matrix, ke);
+        Array<float> err = rigid_motion_roundtrip(depth0, depth1, intrinsic_matrix, intrinsic_matrix, ke);
         draw_nan_masked_grayscale(err, 0, 0.5f * 0.5f).save_to_file("TestOut/rmfi-err.png");
     }
 }

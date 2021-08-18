@@ -1,5 +1,7 @@
 #include "Render_Data.hpp"
-#include <Mlib/Cv/Intrinsic_Matrix_Conversion.hpp>
+#include <Mlib/Cv/Depth_Map_Package.hpp>
+#include <Mlib/Cv/Matrix_Conversion.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -12,8 +14,9 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
+using namespace Mlib::Cv;
 
-void Mlib::render_point_cloud(
+void Mlib::Cv::render_point_cloud(
     Render2& render,
     const Array<FixedArray<float, 3>>& points,
     std::unique_ptr<Camera>& camera,
@@ -29,11 +32,46 @@ void Mlib::render_point_cloud(
     render.render_node(*on, rotate, scale, scene_graph_config, camera);
 }
 
-void Mlib::render_depth_map(
+void Mlib::Cv::render_depth_map(
     Render2& render,
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
+    float near_plane,
+    float far_plane,
+    float z_offset,
+    bool rotate,
+    float scale,
+    const SceneGraphConfig& scene_graph_config)
+{
+    DepthMapPackage package{
+        .time = std::chrono::milliseconds(0),
+        .rgb = rgb_picture,
+        .depth = depth_picture,
+        .ki = intrinsic_matrix,
+        .ke = TransformationMatrix<float, 3>::identity()};
+    render_depth_maps(
+        render,
+        { package },
+        intrinsic_matrix,
+        TransformationMatrix<float, 3>::identity(),
+        (float)depth_picture.shape(1),
+        (float)depth_picture.shape(0),
+        near_plane,
+        far_plane,
+        z_offset,
+        rotate,
+        scale,
+        scene_graph_config);
+}
+
+void Mlib::Cv::render_depth_maps(
+    Render2& render,
+    const std::vector<DepthMapPackage>& packages,
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 3>& extrinsic_matrix,
+    float width,
+    float height,
     float near_plane,
     float far_plane,
     float z_offset,
@@ -47,25 +85,34 @@ void Mlib::render_depth_map(
         "primary_rendering_resources",
         16,
         0};
-    const auto r = std::make_shared<DepthMapResource>(rgb_picture, depth_picture, intrinsic_matrix, z_offset);
-    scene_node_resources.add_resource("DepthMapResource", r);
-    auto on = new SceneNode;
-    scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
+    auto root_node = new SceneNode;
+    size_t i = 0;
+    for (const DepthMapPackage& package : packages) {
+        std::string resource_name = "DepthMapResource_" + std::to_string(i++);
+        const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, z_offset);
+        scene_node_resources.add_resource(resource_name, r);
+        auto on = new SceneNode;
+        TransformationMatrix<float, 3> cpos = opengl_matrix_from_opencv_extrinsic_matrix(package.ke).inverted();
+        float scale = cpos.get_scale();
+        on->set_absolute_pose(cpos.t(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
+        scene_node_resources.instantiate_renderable(resource_name, "DepthMap", *on, SceneNodeResourceFilter());
+        root_node->add_child(resource_name, on);
+    }
     std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(Cv::opengl_matrix_from_hz_intrinsic_matrix(
         intrinsic_matrix,
-        (float)depth_picture.shape(1),
-        (float)depth_picture.shape(0),
+        width,
+        height,
         near_plane,
         far_plane)));
     render.render_node(
-        *on,
+        *root_node,
         rotate,
         scale,
         scene_graph_config,
         camera);
 }
 
-void Mlib::render_height_map(
+void Mlib::Cv::render_height_map(
     Render2& render,
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,

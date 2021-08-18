@@ -1,4 +1,5 @@
 #include "Dtam_Keyframe.hpp"
+#include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Project_Depth_Map.hpp>
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
@@ -8,7 +9,6 @@
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
-#include <Mlib/Sfm/Components/Depth_Map_Package.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Filtering.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
@@ -474,7 +474,13 @@ void DtamKeyframe::optimize1() {
 }
 
 void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
-    depth_map_bundle_.insert(key_frame_time_, depth_);
+    depth_map_bundle_.insert(
+        DepthMapPackage{
+            .time = key_frame_time_,
+            .rgb = down_sampler_.ds_image_frames_.at(key_frame_time_).rgb,
+            .depth = depth_,
+            .ki = down_sampler_.ds_intrinsic_matrix_,
+            .ke = camera_frames_.at(key_frame_time_).projection_matrix_3x4()});
     {
         Array<float> err;
         size_t nerr;

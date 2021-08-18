@@ -1,12 +1,15 @@
 #include "Depth_Map_Package.hpp"
+#include <Mlib/Images/StbImage.hpp>
 #include <filesystem>
 #include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
-using namespace Mlib;
 using json = nlohmann::json;
 
-void Mlib::save_depth_map_package(
+using namespace Mlib;
+using namespace Mlib::Cv;
+
+void Mlib::Cv::save_depth_map_package(
     const std::string& filename,
     const std::chrono::milliseconds& time,
     const std::string& rgb_filename,
@@ -30,7 +33,7 @@ void Mlib::save_depth_map_package(
     }
 }
 
-DepthMapPackage Mlib::load_depth_map_package(const std::string& filename) {
+DepthMapPackage Mlib::Cv::load_depth_map_package(const std::string& filename) {
     auto fn = [&filename](const std::string& suffix){
         return (fs::path{ filename }.parent_path() / suffix).string();
     };
@@ -44,10 +47,13 @@ DepthMapPackage Mlib::load_depth_map_package(const std::string& filename) {
         throw std::runtime_error("Could not read from file " + filename);
     }
     std::chrono::milliseconds time = std::chrono::milliseconds{ j.at("time_ms").get<uint64_t>() };
-    StbImage rgb = StbImage::load_from_file(fn(j.at("rgb").get<std::string>()));
+    Array<float> rgb = StbImage::load_from_file(fn(j.at("rgb").get<std::string>())).to_float_rgb();
     Array<float> depth = Array<float>::load_binary(fn(j.at("depth").get<std::string>()));
     if (depth.ndim() != 2) {
         throw std::runtime_error("Depth array does not have ndim=2");
+    }
+    if (!all(rgb.shape().erased_first() == depth.shape())) {
+        throw std::runtime_error("RGB and depth image differ in size");
     }
     Array<float> ki = Array<float>::load_txt_2d(fn(j.at("ki").get<std::string>()));
     if (!all(ki.shape() == ArrayShape{ 3, 3 })) {

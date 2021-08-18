@@ -1,4 +1,4 @@
-#include "Intrinsic_Matrix_Conversion.hpp"
+#include "Matrix_Conversion.hpp"
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
@@ -37,4 +37,15 @@ FixedArray<float, 4, 4> Mlib::Cv::opengl_matrix_from_hz_intrinsic_matrix(
                           0.f, 2.f * R(1, 1) / height, (-height + 2.f * t(1) + 2.f * y0) / height,                                        0,
                           0.f,                    0.f,       (-z_far - z_near) / (z_far - z_near), -2.f * z_far * z_near / (z_far - z_near),
                           0.f,                    0.f,                                       -1.f,                                        0};
+}
+
+TransformationMatrix<float, 3> Mlib::Cv::opengl_matrix_from_opencv_extrinsic_matrix(
+    const TransformationMatrix<float, 3>& extrinsic_matrix)
+{
+    static FixedArray<float, 4, 4> f{
+        1.f, 0.f, 0.f, 0.f,
+        0.f, -1.f, 0.f, 0.f,
+        0.f, 0.f, -1.f, 0.f,
+        0.f, 0.f, 0.f, 1.f};
+    return TransformationMatrix<float, 3>{ dot2d(dot2d(f, extrinsic_matrix.affine()), f) };
 }

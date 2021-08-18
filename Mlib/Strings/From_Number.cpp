@@ -63,6 +63,24 @@ unsigned int Mlib::safe_stou(const std::string& s) {
     return res;
 }
 
+uint64_t Mlib::safe_stou64(const std::string& s) {
+    std::size_t idx;
+    uint64_t res;
+    try {
+        unsigned long long ul = std::stoull(s, &idx);
+        res = ul;
+        if (res != ul) {
+            throw std::invalid_argument(s);
+        }
+    } catch (const std::invalid_argument&) {
+        throw std::invalid_argument("safe_stou64: \"" + s + '"');
+    }
+    if (idx != s.length()) {
+        throw std::invalid_argument("safe_stou64: \"" + s + '"');
+    }
+    return res;
+}
+
 size_t Mlib::safe_stoz(const std::string& s) {
     std::size_t idx;
     size_t res;

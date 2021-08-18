@@ -8,13 +8,14 @@ template <class TData>
 Array<TData> rigid_motion_roundtrip(
     const Array<TData>& im_r_depth,
     const Array<TData>& im_l_depth,
-    const TransformationMatrix<float, 2>& ki,
+    const TransformationMatrix<float, 2>& ki_r,
+    const TransformationMatrix<float, 2>& ki_l,
     const TransformationMatrix<float, 3>& ke)
 {
     assert(im_r_depth.ndim() == 2);
     assert(all(im_r_depth.shape() == im_l_depth.shape()));
     Array<TData> result{im_r_depth.shape()};
-    RigidMotionRoundtripSampler rs{ki, ke, im_r_depth, im_l_depth};
+    RigidMotionRoundtripSampler rs{ki_r, ki_l, ke, im_r_depth, im_l_depth};
     for (size_t r = 0; r < result.shape(0); ++r) {
         for (size_t c = 0; c < result.shape(1); ++c) {
             FixedArray<TData, 2> pos_r_round;

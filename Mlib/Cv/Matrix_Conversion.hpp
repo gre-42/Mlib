@@ -27,4 +27,7 @@ FixedArray<float, 4, 4> opengl_matrix_from_hz_intrinsic_matrix(
     float z_near,
     float z_far);
 
+TransformationMatrix<float, 3> opengl_matrix_from_opencv_extrinsic_matrix(
+    const TransformationMatrix<float, 3>& extrinsic_matrix);
+
 }}

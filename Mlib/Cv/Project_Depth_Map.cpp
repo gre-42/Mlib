@@ -1,5 +1,5 @@
 #include "Project_Depth_Map.hpp"
-#include <Mlib/Cv/Intrinsic_Matrix_Conversion.hpp>
+#include <Mlib/Cv/Matrix_Conversion.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -51,13 +51,7 @@ void Mlib::Cv::project_depth_map(
     Scene scene;
     scene.add_root_node("obj", on);
     scene.add_root_node("camera", new SceneNode);
-    TransformationMatrix<float, 3> cpose = ke_1_0;
-    static FixedArray<float, 4, 4> f{
-        1.f, 0.f, 0.f, 0.f,
-        0.f, -1.f, 0.f, 0.f,
-        0.f, 0.f, -1.f, 0.f,
-        0.f, 0.f, 0.f, 1.f};
-    cpose = TransformationMatrix<float, 3>{ dot(dot(f, cpose.affine()), f) }.inverted();
+    TransformationMatrix<float, 3> cpose = opengl_matrix_from_opencv_extrinsic_matrix(ke_1_0).inverted();
     float cscale = cpose.get_scale();
     scene.get_node("camera")->set_absolute_pose(cpose.t(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale);
     std::cerr << "cam\n" << scene.get_node("camera")->absolute_view_matrix().semi_affine() << std::endl;

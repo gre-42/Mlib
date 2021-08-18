@@ -14,6 +14,7 @@
 #include <vector>
 
 using namespace Mlib;
+using namespace Mlib::Cv;
 
 int main(int argc, char** argv) {
 

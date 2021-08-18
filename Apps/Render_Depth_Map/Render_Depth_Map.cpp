@@ -1,5 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Cv/Depth_Difference.hpp>
+#include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Render_Data.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
@@ -7,11 +8,11 @@
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Sfm/Components/Depth_Map_Package.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <vector>
 
 using namespace Mlib;
+using namespace Mlib::Cv;
 
 int main(int argc, char** argv) {
 
@@ -21,7 +22,7 @@ int main(int argc, char** argv) {
         " --depth <filename>"
         " --ki <intrinsic_matrix>"
         " [--ke <extrinsic_matrix>]"
-        " --median_filter_radius <r>"
+        " [--median_filter_radius <r>]"
         " [--z_offset <z_offset>]"
         " [--rotate]"
         " [--minus <file1> <file2...>]",

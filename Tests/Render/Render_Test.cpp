@@ -12,6 +12,7 @@
 #include <Mlib/Stats/Fixed_Random_Arrays.hpp>
 
 using namespace Mlib;
+using namespace Mlib::Cv;
 
 void test_scene_node() {
     SceneNode node;

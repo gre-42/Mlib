@@ -1,14 +1,13 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <chrono>
 
-namespace Mlib {
+namespace Mlib::Cv {
 
 struct DepthMapPackage {
     std::chrono::milliseconds time;
-    StbImage rgb;
+    Array<float> rgb;
     Array<float> depth;
     TransformationMatrix<float, 2> ki;
     TransformationMatrix<float, 3> ke;
