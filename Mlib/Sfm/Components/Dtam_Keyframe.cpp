@@ -548,6 +548,8 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
 
         save_depth_map_package(
             cache_dir_ + "/pkg-" + suffix + ".json",
+            key_frame_time_,
+            "pkg-" + suffix + "-rgb.png",
             "pkg-" + suffix + "-depth.array",
             "pkg-" + suffix + "-intrinsic_matrix.m",
             "pkg-" + suffix + "-extrinsic_matrix.m");

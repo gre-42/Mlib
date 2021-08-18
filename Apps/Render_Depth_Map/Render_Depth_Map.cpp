@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
         }
         if (args.has_named_list("--minus")) {
             for (const std::string& filename : args.named_list("--minus")) {
-                DepthMapPackage pkg = load_depth_map_file(filename);
+                DepthMapPackage pkg = load_depth_map_package(filename);
                 TransformationMatrix<float, 3> ke0 = load_ke(args.named_value("--ke"));
                 Array<float> diff = Cv::depth_difference(depth, pkg.depth, intrinsic_matrix, projection_in_reference(ke0, pkg.ke));
                 float thresh = safe_stof(args.named_value("--minus_threshold"));
