@@ -1,5 +1,6 @@
 #include "Depth_Map_Bundle.hpp"
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Cv/Depth_Difference.hpp>
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
@@ -86,4 +87,30 @@ void DepthMapBundle::compute_error(const std::chrono::milliseconds& time, Array<
         // draw_nan_masked_grayscale(err, 0, 0.5 * 0.5).save_to_file(cache_dir_ + "/err-" + suffix + "-" + std::to_string(neighbor->first.count()) + ".png");
         ++nerr;
     }
+}
+
+DepthMapBundle DepthMapBundle::delete_pixels_blocking_the_view(float threshold) const {
+    DepthMapBundle result;
+    for (const auto& plus : packages_) {
+        Array<float> depth = plus.second.depth.copy();
+        for (const auto& minus : packages_) {
+            if (plus.second.time == minus.second.time) {
+                continue;
+            }
+            Array<float> diff = Cv::depth_difference(
+                depth,
+                minus.second.depth,
+                plus.second.ki,
+                minus.second.ki,
+                projection_in_reference(plus.second.ke, minus.second.ke));
+            depth.move() = depth.array_array_binop(diff, [&threshold](float a, float b){ return std::isnan(b) || (b < -threshold) ? NAN : a; });
+        }
+        result.insert(DepthMapPackage{
+            .time = plus.second.time,
+            .rgb = plus.second.rgb,
+            .depth = depth,
+            .ki = plus.second.ki,
+            .ke = plus.second.ke});
+    }
+    return result;
 }

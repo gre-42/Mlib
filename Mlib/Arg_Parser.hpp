@@ -122,6 +122,7 @@ public:
                     for (; i < argc; ++i) {
                         std::string argi{argv[i]};
                         if (!argi.empty() && (argi[0] == '-')) {
+                            --i;
                             break;
                         }
                         values.push_back(argi);
@@ -129,7 +130,6 @@ public:
                     if (!result.named_lists_.insert(std::make_pair(name, std::move(values))).second) {
                         throw CommandLineArgumentError("Multiple values for " + name);
                     }
-                    ++i;
                 } else {
                     if (!eoopts && name.size() > 0 && name[0] == '-') {
                         throw CommandLineArgumentError(help);

@@ -14,14 +14,18 @@ namespace Mlib::Cv {
 template <class TData>
 class RigidMotionSampler {
 public:
-    RigidMotionSampler(const TransformationMatrix<TData, 2>& ki, const TransformationMatrix<TData, 3>& ke, const Array<TData>& depth)
-    : iki_{inv(ki.affine())},
-      T_{ki.project(ke.semi_affine())},
+    RigidMotionSampler(
+        const TransformationMatrix<TData, 2>& ki_0,
+        const TransformationMatrix<TData, 2>& ki_1,
+        const TransformationMatrix<TData, 3>& ke_1_0,
+        const Array<TData>& depth)
+    : iki_0_{inv(ki_0.affine())},
+      T_{ki_1.project(ke_1_0.semi_affine())},
       depth_(depth)
     {}
     inline FixedArray<TData, 3> point_in_reference(size_t r, size_t c) const {
         FixedArray<size_t, 2> id_s{r, c};
-        return dot1d(iki_, homogenized_3(i2a(id_s))) * depth_(r, c);
+        return dot1d(iki_0_, homogenized_3(i2a(id_s))) * depth_(r, c);
     }
     inline bool sample_destination(const FixedArray<TData, 3>& pr, BilinearInterpolator<TData>& bi) const {
         FixedArray<TData, 3> dp3 = dot1d(T_, homogenized_4(pr));
@@ -33,7 +37,7 @@ public:
         return sample_destination(pr, bi);
     }
 private:
-    FixedArray<TData, 3, 3> iki_;
+    FixedArray<TData, 3, 3> iki_0_;
     FixedArray<TData, 3, 4> T_;
     Array<TData> depth_;
 };

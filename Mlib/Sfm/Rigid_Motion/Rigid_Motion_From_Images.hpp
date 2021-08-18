@@ -41,7 +41,7 @@ Array<TData> d_pr_bilinear(
     assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
     Array<TData> result{ im_r.shape() };
-    Cv::RigidMotionSampler rs{ki, ke, im_r_depth};
+    Cv::RigidMotionSampler rs{ki, ki, ke, im_r_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;
@@ -73,7 +73,7 @@ Array<TData> intensity_jacobian(
     assert(im_r_di.ndim() == 4);
     assert(all(im_r_di.shape() == im_l_di.shape()));
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 6 } };
-    Cv::RigidMotionSampler hs{ki, Cv::k_external(kep), im_r_depth};
+    Cv::RigidMotionSampler hs{ki, ki, Cv::k_external(kep), im_r_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
@@ -137,7 +137,7 @@ Array<TData> intensity_jacobian_fast(
 
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 6 } };
 
-    Cv::RigidMotionSampler hs{ki, Cv::k_external(kep), im_r_depth};
+    Cv::RigidMotionSampler hs{ki, ki, Cv::k_external(kep), im_r_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;

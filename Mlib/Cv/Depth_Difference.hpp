@@ -28,7 +28,8 @@ template <class TData>
 Array<TData> depth_difference(
     const Array<TData>& im_0_depth,
     const Array<TData>& im_1_depth,
-    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 2>& ki_0,
+    const TransformationMatrix<TData, 2>& ki_1,
     const TransformationMatrix<TData, 3>& ke_1_0)
 {
     assert(im_0_depth.ndim() == 2);
@@ -36,7 +37,7 @@ Array<TData> depth_difference(
     FixedArray<TData, 3> z = ke_1_0.R()[2];
     z /= std::sqrt(sum(squared(z)));
     TData offset = -dot0d(z, ke_1_0.inverted().t());
-    RigidMotionSampler rs{ki, ke_1_0, im_0_depth};
+    RigidMotionSampler rs{ki_0, ki_1, ke_1_0, im_0_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(0); ++i) {
         size_t r = (size_t)i;
