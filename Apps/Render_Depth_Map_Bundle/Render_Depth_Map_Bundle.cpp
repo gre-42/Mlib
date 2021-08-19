@@ -23,9 +23,10 @@ int main(int argc, char** argv) {
         " --minus_threshold <threshold>"
         " [--median_filter_radius <r>]"
         " [--rotate]"
+        " [--wire_frame]"
         " [--reference_time <milliseconds>]"
         " [--packages <file1> <file2...>]",
-        {"--rotate"},
+        {"--rotate", "--wire_frame"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -62,6 +63,7 @@ int main(int argc, char** argv) {
         }
         size_t num_renderings = SIZE_MAX;
         RenderConfig render_config{
+            .wire_frame = args.has_named("--wire_frame"),
             .screen_width = (int)ref->second.depth.shape(1),
             .screen_height = (int)ref->second.depth.shape(0)};
         SceneNodeResources scene_node_resources;
