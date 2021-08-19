@@ -6,6 +6,7 @@
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
@@ -21,6 +22,7 @@ int main(int argc, char** argv) {
     const ArgParser parser(
         "Usage: render_depth_map_bundle"
         " --minus_threshold <threshold>"
+        " [--output <filename>]"
         " [--median_filter_radius <r>]"
         " [--rotate]"
         " [--wire_frame]"
@@ -31,7 +33,8 @@ int main(int argc, char** argv) {
         "--near_plane",
         "--far_plane",
         "--minus_threshold",
-        "--reference_time"},
+        "--reference_time",
+        "--output"},
         {"--packages"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -68,7 +71,12 @@ int main(int argc, char** argv) {
             .screen_height = (int)ref->second.depth.shape(0)};
         SceneNodeResources scene_node_resources;
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
-        Render2 render{ render_config, num_renderings };
+        RenderResults render_results;
+        RenderedSceneDescriptor rsd;
+        if (args.has_named_value("--output")) {
+            render_results.outputs[rsd] = {};
+        }
+        Render2 render{ render_config, num_renderings, &render_results };
         render_depth_maps(
             render,
             packages,
@@ -80,6 +88,13 @@ int main(int argc, char** argv) {
             safe_stof(args.named_value("--far_plane", "100")),
             safe_stof(args.named_value("--z_offset", "1")),
             args.has_named("--rotate"));
+        if (args.has_named_value("--output")) {
+            const Array<float>& array = render_results.outputs.at(rsd).rgb;
+            if (!array.initialized()) {
+                throw std::runtime_error("Rendered scene descriptor not initialized");
+            }
+            StbImage::from_float_rgb(array).save_to_file(args.named_value("--output"));
+        }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;
