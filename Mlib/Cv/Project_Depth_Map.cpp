@@ -55,13 +55,13 @@ void Mlib::Cv::project_depth_map(
     float cscale = cpose.get_scale();
     scene.get_node("camera")->set_absolute_pose(cpose.t(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale);
     std::cerr << "cam\n" << scene.get_node("camera")->absolute_view_matrix().semi_affine() << std::endl;
-    scene.get_node("camera")->create_camera<ProjectionMatrixCamera>(
+    scene.get_node("camera")->set_camera(std::make_unique<ProjectionMatrixCamera>(
         opengl_matrix_from_hz_intrinsic_matrix(
             intrinsic_matrix1,
             (float)width,
             (float)height,
             z_near,
-            z_far));
+            z_far)));
 
     SelectedCameras selected_cameras{ scene };
     selected_cameras.set_camera_node_name("camera");

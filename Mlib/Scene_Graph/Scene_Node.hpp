@@ -80,11 +80,6 @@ public:
         const FixedArray<float, 3>& position,
         float yangle);
     bool has_camera() const;
-    template<typename TCamera, typename... Args>
-    void create_camera(Args&&... args) {
-        std::unique_ptr<Camera> camera(new TCamera(std::forward<Args>(args)...));
-        set_camera(std::move(camera));
-    }
     void set_camera(std::unique_ptr<Camera>&& camera);
     Camera* get_camera() const;
     void add_light(Light* light);

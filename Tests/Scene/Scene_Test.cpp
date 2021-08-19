@@ -184,8 +184,8 @@ void test_physics_engine() {
     scene.add_root_node("obj", std::move(scene_nodeR));
     scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
     scene.add_root_node("light_node", std::move(scene_nodeL));
-    scene.get_node("follower_camera")->create_camera<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE);
-    scene.get_node("light_node")->create_camera<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE);
+    scene.get_node("follower_camera")->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
+    scene.get_node("light_node")->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
 
     // Must be done when node is already linked to its parents.
     scene_node0->set_absolute_movable(rb0.get());
