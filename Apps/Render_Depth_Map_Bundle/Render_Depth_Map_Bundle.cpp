@@ -40,9 +40,13 @@ int main(int argc, char** argv) {
         DepthMapBundle cleaned_bundle;
         {
             DepthMapBundle bundle;
+            size_t r = safe_stoz(args.named_value("--median_filter_radius", "0"));
             for (const std::string& filename : args.named_list("--packages")) {
                 std::cerr << "Loading \"" << filename << '"' << std::endl;
                 DepthMapPackage package = load_depth_map_package(filename);
+                if (r != 0) {
+                    package.depth.move() = median_filter_2d(package.depth, r);
+                }
                 bundle.insert(package);
             }
             cleaned_bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
