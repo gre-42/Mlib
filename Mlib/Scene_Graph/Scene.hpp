@@ -26,16 +26,16 @@ public:
     bool contains_node(const std::string& name) const;
     void add_root_node(
         const std::string& name,
-        SceneNode* scene_node);
+        std::unique_ptr<SceneNode>&& scene_node);
     void add_static_root_node(
         const std::string& name,
-        SceneNode* scene_node);
+        std::unique_ptr<SceneNode>&& scene_node);
     void add_root_aggregate_node(
         const std::string& name,
-        SceneNode* scene_node);
+        std::unique_ptr<SceneNode>&& scene_node);
     void add_root_instances_node(
         const std::string& name,
-        SceneNode* scene_node);
+        std::unique_ptr<SceneNode>&& scene_node);
     bool root_node_scheduled_for_deletion(const std::string& name) const;
     void schedule_delete_root_node(const std::string& name);
     void delete_scheduled_root_nodes() const;

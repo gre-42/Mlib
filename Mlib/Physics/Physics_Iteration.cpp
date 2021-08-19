@@ -49,11 +49,11 @@ void PhysicsIteration::operator()() {
             scene_.delete_root_nodes(re);
             size_t i = 0;
             for (const auto& beacon : beacons) {
-                SceneNode* node = new SceneNode;
-                scene_.add_root_node("beacon" + std::to_string(i), new SceneNode);
+                auto node = std::make_unique<SceneNode>();
                 scene_node_resources_.instantiate_renderable(beacon.resource_name, "box", *node, SceneNodeResourceFilter());
                 node->set_position(beacon.position);
                 // node->set_scale(0.05);
+                scene_.add_root_node("beacon" + std::to_string(i), std::move(node));
                 ++i;
             }
         }

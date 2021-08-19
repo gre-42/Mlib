@@ -65,15 +65,15 @@ public:
         const std::shared_ptr<const Renderable>& renderable);
     void add_child(
         const std::string& name,
-        SceneNode* node,
+        std::unique_ptr<SceneNode>&& node,
         bool is_registered = false);
     void add_aggregate_child(
         const std::string& name,
-        SceneNode* node,
+        std::unique_ptr<SceneNode>&& node,
         bool is_registered = false);
     void add_instances_child(
         const std::string& name,
-        SceneNode* node,
+        std::unique_ptr<SceneNode>&& node,
         bool is_registered = false);
     void add_instances_position(
         const std::string& name,
@@ -83,9 +83,9 @@ public:
     template<typename TCamera, typename... Args>
     void create_camera(Args&&... args) {
         std::unique_ptr<Camera> camera(new TCamera(std::forward<Args>(args)...));
-        set_camera(camera);
+        set_camera(std::move(camera));
     }
-    void set_camera(std::unique_ptr<Camera>& camera);
+    void set_camera(std::unique_ptr<Camera>&& camera);
     Camera* get_camera() const;
     void add_light(Light* light);
     void move(const TransformationMatrix<float, 3>& v, float dt);

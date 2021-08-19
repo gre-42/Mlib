@@ -22,7 +22,7 @@ struct DepthMapPackage;
 void render_point_cloud(
     Render2& render,
     const Array<FixedArray<float, 3>>& points,
-    std::unique_ptr<Camera>& camera,
+    std::unique_ptr<Camera>&& camera,
     bool rotate = false,
     float scale = 1,
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig());

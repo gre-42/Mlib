@@ -136,12 +136,12 @@ void test_physics_engine() {
             .apply_static_lighting = true,
             .werror = true}));
     scene_node_resources.generate_triangle_rays("obj1", 5, {1, 1, 1});
-    auto scene_node0 = new SceneNode;
-    auto scene_node1_0 = new SceneNode;
-    auto scene_node1_1 = new SceneNode;
-    auto scene_node1_2 = new SceneNode;
-    auto scene_nodeR = new SceneNode;
-    auto scene_nodeL = new SceneNode;
+    auto scene_node0 = std::make_unique<SceneNode>();
+    auto scene_node1_0 = std::make_unique<SceneNode>();
+    auto scene_node1_1 = std::make_unique<SceneNode>();
+    auto scene_node1_2 = std::make_unique<SceneNode>();
+    auto scene_nodeR = std::make_unique<SceneNode>();
+    auto scene_nodeL = std::make_unique<SceneNode>();
 
     scene_node_resources.instantiate_renderable("obj0", "obj0", *scene_node0, SceneNodeResourceFilter());
     scene_node_resources.instantiate_renderable("obj1", "obj1_0", *scene_node1_0, SceneNodeResourceFilter());
@@ -159,14 +159,14 @@ void test_physics_engine() {
         scene_node1_2->set_rotation(FixedArray<float, 3>{0, 0, 0.05 * M_PI});
     }
 
-    scene_nodeR->add_child("n0", scene_node0);
-    scene_nodeR->add_child("n1_0", scene_node1_0);
-    scene_nodeR->add_child("n1_1", scene_node1_1);
-    scene_nodeR->add_child("n1_2", scene_node1_2);
-    scene_node0->set_parent(scene_nodeR);
-    scene_node1_0->set_parent(scene_nodeR);
-    scene_node1_1->set_parent(scene_nodeR);
-    scene_node1_2->set_parent(scene_nodeR);
+    scene_nodeR->add_child("n0", std::move(scene_node0));
+    scene_nodeR->add_child("n1_0", std::move(scene_node1_0));
+    scene_nodeR->add_child("n1_1", std::move(scene_node1_1));
+    scene_nodeR->add_child("n1_2", std::move(scene_node1_2));
+    scene_node0->set_parent(scene_nodeR.get());
+    scene_node1_0->set_parent(scene_nodeR.get());
+    scene_node1_1->set_parent(scene_nodeR.get());
+    scene_node1_2->set_parent(scene_nodeR.get());
     scene_nodeR->set_position({0.f, -1.f, -40.f});
     scene_nodeL->set_position({0.f, 50.f, -40.f});
     scene_nodeL->set_rotation({-90.f * M_PI / 180.f, 0.f, 0.f});
@@ -181,9 +181,9 @@ void test_physics_engine() {
         .only_black = false,
         .shadow = false});
 
-    scene.add_root_node("obj", scene_nodeR);
-    scene.add_root_node("follower_camera", new SceneNode);
-    scene.add_root_node("light_node", scene_nodeL);
+    scene.add_root_node("obj", std::move(scene_nodeR));
+    scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
+    scene.add_root_node("light_node", std::move(scene_nodeL));
     scene.get_node("follower_camera")->create_camera<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE);
     scene.get_node("light_node")->create_camera<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE);
 

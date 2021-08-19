@@ -1040,27 +1040,27 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
     {
         size_t i = 0;
         for (const auto& p : object_resource_descriptors_) {
-            auto node = new SceneNode;
+            auto node = std::make_unique<SceneNode>();
             node->set_position(p.position);
             node->set_scale(scale_ * p.scale);
             node->set_rotation({float{M_PI} / 2.f, 0.f, 0.f});
             scene_node_resources_.instantiate_renderable(p.name, p.name, *node, resource_filter);
             if (node->requires_render_pass()) {
-                scene_node.add_child(p.name + "-" + std::to_string(i++), node);
+                scene_node.add_child(p.name + "-" + std::to_string(i++), std::move(node));
             } else {
                 std::cerr << "Adding aggregate " << p.name << std::endl;
-                scene_node.add_aggregate_child(p.name + "-" + std::to_string(i++), node);
+                scene_node.add_aggregate_child(p.name + "-" + std::to_string(i++), std::move(node));
             }
         }
     }
     for (const auto& p : resource_instance_positions_) {
-        auto node = new SceneNode;
+        auto node = std::make_unique<SceneNode>();
         node->set_rotation({ float{M_PI} / 2.f, 0.f, 0.f });
         scene_node_resources_.instantiate_renderable(p.first, p.first, *node, resource_filter);
         if (node->requires_render_pass()) {
             throw std::runtime_error("Object " + p.first + " requires render pass");
         }
-        scene_node.add_instances_child(p.first, node);
+        scene_node.add_instances_child(p.first, std::move(node));
         for (const auto& r : p.second) {
             scene_node.add_instances_position(p.first, r.position, r.yangle);
         }

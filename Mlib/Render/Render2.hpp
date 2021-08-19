@@ -41,11 +41,11 @@ public:
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
 
     void render_node(
-        SceneNode& node,
+        std::unique_ptr<SceneNode>&& node,
         bool rotate,
         float scale,
         const SceneGraphConfig& scene_graph_config,
-        std::unique_ptr<Camera>& camera);
+        std::unique_ptr<Camera>&& camera);
     
     GLFWwindow* window() const;
 

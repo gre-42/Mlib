@@ -124,7 +124,7 @@ void SceneNode::add_renderable(
 
 void SceneNode::add_child(
     const std::string& name,
-    SceneNode* node,
+    std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
     // Required in SceneNonde::~SceneNode
@@ -136,7 +136,7 @@ void SceneNode::add_child(
     }
     if (!children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = is_registered,
-        .scene_node = std::unique_ptr<SceneNode>(node)})).second)
+        .scene_node = std::move(node)})).second)
     {
         throw std::runtime_error("Child node with name " + name + " already exists");
     }
@@ -144,7 +144,7 @@ void SceneNode::add_child(
 
 void SceneNode::add_aggregate_child(
     const std::string& name,
-    SceneNode* node,
+    std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
     // Required in SceneNonde::~SceneNode
@@ -156,7 +156,7 @@ void SceneNode::add_aggregate_child(
     }
     if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = is_registered,
-        .scene_node = std::unique_ptr<SceneNode>(node)})).second)
+        .scene_node = std::move(node)})).second)
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
     }
@@ -164,7 +164,7 @@ void SceneNode::add_aggregate_child(
 
 void SceneNode::add_instances_child(
     const std::string& name,
-    SceneNode* node,
+    std::unique_ptr<SceneNode>&& node,
     bool is_registered)
 {
     // Required in SceneNonde::~SceneNode
@@ -176,7 +176,7 @@ void SceneNode::add_instances_child(
     }
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = is_registered,
-        .scene_node = std::move(std::unique_ptr<SceneNode>{node}),
+        .scene_node = std::move(node),
         .instances = std::move(std::list<PositionAndYAngle>())})).second)
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
@@ -199,7 +199,7 @@ bool SceneNode::has_camera() const {
     return camera_ != nullptr;
 }
 
-void SceneNode::set_camera(std::unique_ptr<Camera>& camera) {
+void SceneNode::set_camera(std::unique_ptr<Camera>&& camera) {
     if (camera_ != nullptr) {
         throw std::runtime_error("Camera already set");
     }

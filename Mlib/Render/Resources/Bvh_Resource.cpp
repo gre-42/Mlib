@@ -39,7 +39,7 @@ static void instantiate_bvh(
             aabb.extend(b.first);
         }
         auto center = (aabb.min() + aabb.max()) / 2.f;
-        auto node = new SceneNode();
+        auto node = std::make_unique<SceneNode>();
         node->set_position(center - position_shift);
         std::list<std::shared_ptr<ColoredVertexArray>> lcvas;
         for (const auto& cva : cvas) {
@@ -63,11 +63,11 @@ static void instantiate_bvh(
         }
         std::make_shared<ColoredVertexArrayResource>(lcvas, nullptr)->
             instantiate_renderable("renderable_bvh", *node, resource_filter);
-        scene_node.add_child(name + "_data", node);
+        scene_node.add_child(name + "_data", std::move(node));
     }
     size_t i = 0;
     for (const auto& c : bvh.children()) {
-        auto node = new SceneNode();
+        auto node = std::make_unique<SceneNode>();
         node->set_position((c.first.min() + c.first.max()) / 2.f - position_shift);
         instantiate_bvh(
             name,
@@ -75,7 +75,7 @@ static void instantiate_bvh(
             position_shift + node->position(),
             resource_filter,
             c.second);
-        scene_node.add_child("bvh_" + std::to_string(i), node);
+        scene_node.add_child("bvh_" + std::to_string(i), std::move(node));
         ++i;
     }
 }

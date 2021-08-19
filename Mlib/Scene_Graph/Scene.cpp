@@ -24,44 +24,44 @@ Scene::Scene(
 
 void Scene::add_root_node(
     const std::string& name,
-    SceneNode* scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
     LOG_FUNCTION("Scene::add_root_node");
     if (root_nodes_to_delete_.contains(name)) {
         throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
     }
-    register_node(name, scene_node);
-    if (!root_nodes_.insert(std::make_pair(name, scene_node)).second) {
+    register_node(name, scene_node.get());
+    if (!root_nodes_.insert(std::make_pair(name, std::move(scene_node))).second) {
         throw std::runtime_error("add_root_node could not insert node");
     };
 }
 
 void Scene::add_static_root_node(
     const std::string& name,
-    SceneNode* scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
-    register_node(name, scene_node);
-    if (!static_root_nodes_.insert(std::make_pair(name, scene_node)).second) {
+    register_node(name, scene_node.get());
+    if (!static_root_nodes_.insert(std::make_pair(name, std::move(scene_node))).second) {
         throw std::runtime_error("add_static_root_node could not insert node");
     }
 }
 
 void Scene::add_root_aggregate_node(
     const std::string& name,
-    SceneNode* scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
-    register_node(name, scene_node);
-    if (!root_aggregate_nodes_.insert(std::make_pair(name, scene_node)).second) {
+    register_node(name, scene_node.get());
+    if (!root_aggregate_nodes_.insert(std::make_pair(name, std::move(scene_node))).second) {
         throw std::runtime_error("add_root_aggregate_node could not insert node");
     }
 }
 
 void Scene::add_root_instances_node(
     const std::string& name,
-    SceneNode* scene_node)
+    std::unique_ptr<SceneNode>&& scene_node)
 {
-    register_node(name, scene_node);
-    if (!root_instances_nodes_.insert(std::make_pair(name, scene_node)).second) {
+    register_node(name, scene_node.get());
+    if (!root_instances_nodes_.insert(std::make_pair(name, std::move(scene_node))).second) {
         throw std::runtime_error("add_root_instances_node could not insert node");
     }
 }

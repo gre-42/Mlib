@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
         render_point_cloud(
             render,
             points,
-            camera,
+            std::move(camera),
             args.has_named("--rotate"),
             safe_stof(args.named_value("--scale", "1")));
     } catch (const CommandLineArgumentError& e) {

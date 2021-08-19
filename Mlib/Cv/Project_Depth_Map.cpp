@@ -45,12 +45,12 @@ void Mlib::Cv::project_depth_map(
 
     const auto r = std::make_shared<DepthMapResource>(rgb_picture0, depth_picture0, intrinsic_matrix0, 0.f);  // 0.f = z_offset
     scene_node_resources.add_resource("DepthMapResource", r);
-    auto on = new SceneNode;
+    auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
 
     Scene scene;
-    scene.add_root_node("obj", on);
-    scene.add_root_node("camera", new SceneNode);
+    scene.add_root_node("obj", std::move(on));
+    scene.add_root_node("camera", std::make_unique<SceneNode>());
     TransformationMatrix<float, 3> cpose = opengl_matrix_from_opencv_extrinsic_matrix(ke_1_0).inverted();
     float cscale = cpose.get_scale();
     scene.get_node("camera")->set_absolute_pose(cpose.t(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale);

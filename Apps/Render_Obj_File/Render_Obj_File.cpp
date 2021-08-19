@@ -42,7 +42,7 @@ void add_reference_bone(
     SceneNode* parent_node,
     SceneNodeResources& scene_node_resources)
 {
-    SceneNode* bone_node = new SceneNode;
+    auto bone_node = std::make_unique<SceneNode>();
     bone_node->set_position(b.initial_absolute_transformation.offset());
     bone_node->set_rotation(b.initial_absolute_transformation.quaternion().to_tait_bryan_angles());
     scene_node_resources.instantiate_renderable(
@@ -50,7 +50,7 @@ void add_reference_bone(
         "reference_bone",
         *bone_node,
         SceneNodeResourceFilter());
-    parent_node->add_child("reference_bone" + std::to_string(b.index), bone_node);
+    parent_node->add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
         add_reference_bone(*c, parent_node, scene_node_resources);
     }
@@ -65,7 +65,7 @@ void add_bone_frame(
     if (b.index >= frame.size()) {
         throw std::runtime_error("Frame index too large");
     }
-    SceneNode* bone_node = new SceneNode;
+    auto bone_node = std::make_unique<SceneNode>();
     bone_node->set_position(frame.at(b.index).offset());
     bone_node->set_rotation(frame.at(b.index).quaternion().to_tait_bryan_angles());
     scene_node_resources.instantiate_renderable(
@@ -73,9 +73,10 @@ void add_bone_frame(
         "frame_bone",
         *bone_node,
         SceneNodeResourceFilter());
-    parent_node->add_child("frame_bone" + std::to_string(b.index), bone_node);
+    SceneNode* parent = bone_node.get();
+    parent_node->add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
-        add_bone_frame(*c, frame, bone_node, scene_node_resources);
+        add_bone_frame(*c, frame, parent, scene_node_resources);
     }
 }
 
@@ -278,7 +279,7 @@ int main(int argc, char** argv) {
         AggregateArrayRenderer large_aggregate_renderer;
         Scene scene{&large_aggregate_renderer};
         std::string light_configuration = args.named_value("--light_configuration", "one");
-        auto scene_node = new SceneNode;
+        auto scene_node = std::make_unique<SceneNode>();
         {
             size_t i = 0;
             for (const std::string& filename : args.unnamed_values()) {
@@ -332,7 +333,7 @@ int main(int argc, char** argv) {
                         scene_node_resources.add_resource("reference_bone", std::make_shared<ObjFileResource>(
                             args.named_value("--reference_bone"),
                             bone_cfg));
-                        add_reference_bone(rmhx2->skeleton(), scene_node, scene_node_resources);
+                        add_reference_bone(rmhx2->skeleton(), scene_node.get(), scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
                         BvhConfig bvh_config{
@@ -354,7 +355,7 @@ int main(int argc, char** argv) {
                             add_bone_frame(
                                 rmhx2->skeleton(),
                                 rmhx2->vectorize_joint_poses(scene_node_resources.get_poses("anim", bone_frame)),
-                                scene_node,
+                                scene_node.get(),
                                 scene_node_resources);
                         }
                         // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
@@ -454,7 +455,7 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        scene.add_root_node("obj", scene_node);
+        scene.add_root_node("obj", std::move(scene_node));
 
         size_t light_beacon_index = 0;
         auto add_light_beacon_if_set = [&args, &light_beacon_index, &scene_node_resources](SceneNode& scene_node){
@@ -489,7 +490,7 @@ int main(int argc, char** argv) {
         std::list<Light*> lights;
         SelectedCameras selected_cameras{scene};
         if (light_configuration == "one") {
-            scene.add_root_node("light_node0", new SceneNode);
+            scene.add_root_node("light_node0", std::make_unique<SceneNode>());
             scene.get_node("light_node0")->set_position({
                 safe_stof(args.named_value("--light_x", "0")),
                 safe_stof(args.named_value("--light_y", "50")),
@@ -517,7 +518,7 @@ int main(int argc, char** argv) {
             }
             for (float a : linspace<float>(0.f, 2.f * float{ M_PI }, n).flat_iterable()) {
                 std::string name = "light" + std::to_string(i++);
-                scene.add_root_node(name, new SceneNode);
+                scene.add_root_node(name, std::make_unique<SceneNode>());
                 scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
                 scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat(
                     scene.get_node(name)->position(),
@@ -532,7 +533,7 @@ int main(int argc, char** argv) {
             if (with_diffusivity) {
                 for (float a : linspace<float>(0.f, 2.f * float{ M_PI }, n).flat_iterable()) {
                     std::string name = "light_s" + std::to_string(i++);
-                    scene.add_root_node(name, new SceneNode);
+                    scene.add_root_node(name, std::make_unique<SceneNode>());
                     scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
                     scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat(
                         scene.get_node(name)->position(),
@@ -550,7 +551,7 @@ int main(int argc, char** argv) {
         }
         if (args.has_named_value("--background_light_ambience")) {
             std::string name = "background_light";
-            scene.add_root_node(name, new SceneNode);
+            scene.add_root_node(name, std::make_unique<SceneNode>());
             lights.push_back(new Light{.node_name = name, .only_black = false, .shadow = false});
             scene.get_node(name)->add_light(lights.back());
             scene.get_node(name)->create_camera<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE);
@@ -559,7 +560,7 @@ int main(int argc, char** argv) {
             lights.back()->specularity = 0.f;
         }
         
-        scene.add_root_node("follower_camera", new SceneNode);
+        scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
         scene.get_node("follower_camera")->create_camera<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE);
         
         // scene.print();

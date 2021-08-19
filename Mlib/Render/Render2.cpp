@@ -255,18 +255,18 @@ void Render2::operator () (
 }
 
 void Render2::render_node(
-    SceneNode& node,
+    std::unique_ptr<SceneNode>&& node,
     bool rotate,
     float scale,
     const SceneGraphConfig& scene_graph_config,
-    std::unique_ptr<Camera>& camera)
+    std::unique_ptr<Camera>&& camera)
 {
     Scene scene;
-    scene.add_root_node("obj", &node);
-    scene.add_root_node("camera", new SceneNode);
+    scene.add_root_node("obj", std::move(node));
+    scene.add_root_node("camera", std::make_unique<SceneNode>());
     // std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE)
-    scene.get_node("camera")->set_camera(camera);
-    scene.add_root_node("light", new SceneNode);
+    scene.get_node("camera")->set_camera(std::move(camera));
+    scene.add_root_node("light", std::make_unique<SceneNode>());
     scene.get_node("light")->add_light(new Light{
         .ambience = {0.5f, 0.5f, 0.5f},
         .diffusivity = {1.f, 1.f, 1.f},

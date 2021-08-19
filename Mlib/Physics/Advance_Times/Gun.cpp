@@ -57,7 +57,7 @@ void Gun::advance_time(float dt) {
         seconds_since_last_shot_ = 0;
         triggered_ = false;
         std::shared_ptr<RigidBody> rc = rigid_cuboid(rigid_bodies_, bullet_mass_, bullet_size_);
-        SceneNode* node = new SceneNode;
+        auto node = std::make_unique<SceneNode>();
         FixedArray<float, 3> t = absolute_model_matrix_.t();
         FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());
         node->set_position(t);
@@ -89,7 +89,7 @@ void Gun::advance_time(float dt) {
             deletion_mutex_);
         rc->collision_observers_.push_back(bullet);
         advance_times_.add_advance_time(bullet);
-        scene_.add_root_node(bullet_node_name, node);
+        scene_.add_root_node(bullet_node_name, std::move(node));
     }
 }
 

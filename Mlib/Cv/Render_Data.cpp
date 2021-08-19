@@ -19,7 +19,7 @@ using namespace Mlib::Cv;
 void Mlib::Cv::render_point_cloud(
     Render2& render,
     const Array<FixedArray<float, 3>>& points,
-    std::unique_ptr<Camera>& camera,
+    std::unique_ptr<Camera>&& camera,
     bool rotate,
     float scale,
     const SceneGraphConfig& scene_graph_config)
@@ -27,9 +27,9 @@ void Mlib::Cv::render_point_cloud(
     auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
     const auto r = std::make_shared<PointCloudResource>(points);
     scene_node_resources.add_resource("PointCloudResource", r);
-    auto on = new SceneNode;
+    auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("PointCloudResource", "PointCloudResource", *on, SceneNodeResourceFilter());
-    render.render_node(*on, rotate, scale, scene_graph_config, camera);
+    render.render_node(std::move(on), rotate, scale, scene_graph_config, std::move(camera));
 }
 
 void Mlib::Cv::render_depth_map(
@@ -85,18 +85,18 @@ void Mlib::Cv::render_depth_maps(
         "primary_rendering_resources",
         16,
         0};
-    auto root_node = new SceneNode;
+    auto root_node = std::make_unique<SceneNode>();
     size_t i = 0;
     for (const DepthMapPackage& package : packages) {
         std::string resource_name = "DepthMapResource_" + std::to_string(i++);
         const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, z_offset);
         scene_node_resources.add_resource(resource_name, r);
-        auto on = new SceneNode;
+        auto on = std::make_unique<SceneNode>();
         TransformationMatrix<float, 3> cpos = opengl_matrix_from_opencv_extrinsic_matrix(package.ke).inverted();
         float scale = cpos.get_scale();
         on->set_absolute_pose(cpos.t(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
         scene_node_resources.instantiate_renderable(resource_name, "DepthMap", *on, SceneNodeResourceFilter());
-        root_node->add_child(resource_name, on);
+        root_node->add_child(resource_name, std::move(on));
     }
     std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(Cv::opengl_matrix_from_hz_intrinsic_matrix(
         intrinsic_matrix,
@@ -105,11 +105,11 @@ void Mlib::Cv::render_depth_maps(
         near_plane,
         far_plane)));
     render.render_node(
-        *root_node,
+        std::move(root_node),
         rotate,
         scale,
         scene_graph_config,
-        camera);
+        std::move(camera));
 }
 
 void Mlib::Cv::render_height_map(
@@ -125,8 +125,8 @@ void Mlib::Cv::render_height_map(
     auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix);
     scene_node_resources.add_resource("HeightMapResource", r);
-    auto on = new SceneNode;
+    auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, SceneNodeResourceFilter());
     std::unique_ptr<Camera> camera(new GenericCamera(camera_config, GenericCamera::Mode::PERSPECTIVE));
-    render.render_node(*on, rotate, scale, scene_graph_config, camera);
+    render.render_node(std::move(on), rotate, scale, scene_graph_config, std::move(camera));
 }

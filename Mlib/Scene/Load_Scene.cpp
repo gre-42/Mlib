@@ -1404,7 +1404,7 @@ void LoadScene::operator()(
             // 3, 4, 5: position
             // 6, 7, 8: rotation
             // 9: scale
-            auto node = new SceneNode(&scene);
+            auto node = std::make_unique<SceneNode>(&scene);
             node->set_position(FixedArray<float, 3>{
                 safe_stof(match[3].str()),
                 safe_stof(match[4].str()),
@@ -1418,13 +1418,13 @@ void LoadScene::operator()(
             }
             std::string type = match[1].str();
             if (type == "aggregate") {
-                scene.add_root_aggregate_node(match[2].str(), node);
+                scene.add_root_aggregate_node(match[2].str(), std::move(node));
             } else if (type == "instances") {
-                scene.add_root_instances_node(match[2].str(), node);
+                scene.add_root_instances_node(match[2].str(), std::move(node));
             } else if (type == "static") {
-                scene.add_static_root_node(match[2].str(), node);
+                scene.add_static_root_node(match[2].str(), std::move(node));
             } else if (type == "dynamic") {
-                scene.add_root_node(match[2].str(), node);
+                scene.add_root_node(match[2].str(), std::move(node));
             } else {
                 throw std::runtime_error("Unknown root node type: " + type);
             }
@@ -1435,7 +1435,7 @@ void LoadScene::operator()(
             // 4, 5, 6: position
             // 7, 8, 9: rotation
             // 10: scale
-            auto node = new SceneNode(&scene);
+            auto node = std::make_unique<SceneNode>(&scene);
             node->set_position(FixedArray<float, 3>{
                 safe_stof(match[4].str()),
                 safe_stof(match[5].str()),
@@ -1450,16 +1450,17 @@ void LoadScene::operator()(
             std::string type = match[1].str();
             auto parent = scene.get_node(match[2].str());
             node->set_parent(parent);
+            SceneNode* node_ptr = node.get();
             if (type == "aggregate") {
-                parent->add_aggregate_child(match[3].str(), node, true);  // true=is_registered
+                parent->add_aggregate_child(match[3].str(), std::move(node), true);  // true=is_registered
             } else if (type == "instances") {
-                parent->add_instances_child(match[3].str(), node, true);  // true=is_registered
+                parent->add_instances_child(match[3].str(), std::move(node), true);  // true=is_registered
             } else if (type == "dynamic") {
-                parent->add_child(match[3].str(), node, true);  // true=is_registered
+                parent->add_child(match[3].str(), std::move(node), true);  // true=is_registered
             } else {
                 throw std::runtime_error("Unknown non-root node type: " + type);
             }
-            scene.register_node(match[3].str(), node);
+            scene.register_node(match[3].str(), node_ptr);
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
             std::lock_guard lock{ mutex };
             scene.delete_root_node(match[1].str());

@@ -65,7 +65,7 @@ void Bullet::notify_collided(
         rigid_body.damageable_->damage(damage_);
     }
 
-    SceneNode* node = new SceneNode;
+    auto node = std::make_unique<SceneNode>();
     node->set_position(intersection_point);
     node->set_style(new Style{.texture_animation = AnimationFrame{
         .begin = 0.f,
@@ -77,5 +77,5 @@ void Bullet::notify_collided(
         *node,
         SceneNodeResourceFilter());
     std::string explosion_node_name = "explosion-" + std::to_string(scene_.get_uuid());
-    scene_.add_root_node(explosion_node_name, node);
+    scene_.add_root_node(explosion_node_name, std::move(node));
 }
