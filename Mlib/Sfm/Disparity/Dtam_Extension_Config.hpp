@@ -3,7 +3,7 @@
 namespace Mlib {
 
 struct DtamExtensionConfig {
-    bool remove_edge_blobs = true;
+    bool remove_edge_blobs = false;
 };
 
 }
