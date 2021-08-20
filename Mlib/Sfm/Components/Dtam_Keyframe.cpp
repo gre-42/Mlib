@@ -451,7 +451,7 @@ void DtamKeyframe::optimize1() {
     // if (false) {
     //     Array<float> hr = harris_response(down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale);
     //     float q = nanquantile(hr, 0.3);
-    //     masked_depth_ = depth_.array_array_binop(hr, [q](float d, float h){ return h < q ? d : NAN; });
+    //     masked_depth_ = depth_.array_array_binop(hr, [q](float d, float h){ return h > q ? d : NAN; });
     //     if (is_full()) {
     //         draw_nan_masked_grayscale(masked_depth_, 0, 0).save_to_file(cache_dir_ + "/masked_depth-" + suffix + ".png");
     //     }
