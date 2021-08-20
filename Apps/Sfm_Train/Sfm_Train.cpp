@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
         "[--nskipped <nskipped>] "
         "[--nimages <nimages>] "
         "[--ncameras <ncameras>] "
+        "[--features_down_sampling <n>] "
         "[--dtam_down_sampling <n>] "
         "[--regularization_filter_poly_degree <d>] "
         "[--regularization_filter_sigma <s>]",
@@ -91,6 +92,7 @@ int main(int argc, char** argv) {
           "--nskipped",
           "--nimages",
           "--ncameras",
+          "--features_down_sampling",
           "--dtam_down_sampling",
           "--regularization_filter_sigma",
           "--regularization_filter_poly_degree" });
@@ -121,6 +123,7 @@ int main(int argc, char** argv) {
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
                 .use_virtual_camera = args.has_named("--use_virtual_camera"),
                 .print_residual = args.has_named("--print_residual"),
+                .features_down_sampling = safe_stoz(args.named_value("--features_down_sampling", "0")),
                 .dtam_down_sampling = safe_stoz(args.named_value("--dtam_down_sampling", "0")),
                 .regularization_filter_sigma = safe_stof(args.named_value("--regularization_filter_sigma", "1")),
                 .regularization_filter_poly_degree = safe_stoz(args.named_value("--regularization_filter_poly_degree", "0")) });

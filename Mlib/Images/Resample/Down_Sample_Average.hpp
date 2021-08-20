@@ -25,8 +25,7 @@ Array<TData> down_sample_average(const Array<TData>& image, size_t n = 1)
     Array<TData> result = image;
     for (size_t i = 0; i < n; ++i) {
         for (size_t axis = 0; axis < image.ndim(); ++axis) {
-            Array<TData> result2 = down_sample_average_1d(result, axis);
-            result.ref() = result2;
+            result.move() = down_sample_average_1d(result, axis);
         }
     }
     return result;
@@ -41,7 +40,7 @@ Array<TData> multichannel_down_sample_average(const Array<TData>& image, size_t 
         for (size_t h = 0; h < result.shape(0); ++h) {
             result2[h] = down_sample_average(result[h]);
         }
-        result.ref() = result2;
+        result.move() = std::move(result2);
     }
     return result;
 }

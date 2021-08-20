@@ -33,14 +33,15 @@ private:
     void save_cameras() const;
 
     TransformationMatrix<float, 2> intrinsic_matrix_;
-    DownSampler down_sampler_;
+    DownSampler features_down_sampler_;
+    DownSampler dtam_down_sampler_;
     std::map<std::chrono::milliseconds, ImageFrame> image_frames_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>> camera_frames_;
     std::string cache_dir_;
     TemplatePatchPipelineConfig cfg_;
 
-    FlowingParticles flowing_particles_;
     OpticalFlows optical_flows_;
+    FlowingParticles flowing_particles_;
     SparseReconstruction sparse_reconstruction_;
     DepthMapBundle depth_map_bundle_;
     DtamReconstruction dtam_reconstruction_;

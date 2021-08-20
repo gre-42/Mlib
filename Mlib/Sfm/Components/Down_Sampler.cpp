@@ -16,9 +16,13 @@ void DownSampler::append_image_frame(
     const std::chrono::milliseconds& time,
     const ImageFrame& image_frame)
 {
-    ImageFrame f2;
-    f2.grayscale.move() = down_sample_average(image_frame.grayscale, n_);
-    // f2.mask = down_sample_average(image_frame.mask, n_);
-    f2.rgb.move() = multichannel_down_sample_average(image_frame.rgb, n_);
-    ds_image_frames_.insert(std::make_pair(time, f2));
+    if (n_ == 0) {
+        ds_image_frames_.insert(std::make_pair(time, image_frame));
+    } else {
+        ImageFrame f2;
+        f2.grayscale.move() = down_sample_average(image_frame.grayscale, n_);
+        // f2.mask = down_sample_average(image_frame.mask, n_);
+        f2.rgb.move() = multichannel_down_sample_average(image_frame.rgb, n_);
+        ds_image_frames_.insert(std::make_pair(time, f2));
+    }
 }

@@ -15,15 +15,20 @@ TemplatePatchPipeline::TemplatePatchPipeline(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TemplatePatchPipelineConfig& cfg)
 : intrinsic_matrix_(intrinsic_matrix),
-  down_sampler_{intrinsic_matrix, cfg.dtam_down_sampling},
+  features_down_sampler_{intrinsic_matrix, cfg.features_down_sampling},
+  dtam_down_sampler_{intrinsic_matrix, cfg.dtam_down_sampling},
   cache_dir_(cache_dir),
   cfg_(cfg),
-  flowing_particles_{image_frames_, optical_flows_.optical_flow_frames_, (fs::path{cache_dir} / "TracedParticles").string(), FlowingParticlesConfig()},
-  optical_flows_{image_frames_, (fs::path{cache_dir} / "OpticalFlow").string()},
+  optical_flows_{features_down_sampler_.ds_image_frames_, (fs::path{cache_dir} / "OpticalFlow").string()},
+  flowing_particles_{
+      features_down_sampler_.ds_image_frames_,
+      optical_flows_.optical_flow_frames_,
+      (fs::path{cache_dir} / "TracedParticles").string(),
+      FlowingParticlesConfig()},
   sparse_reconstruction_{
-      intrinsic_matrix_,
+      features_down_sampler_.ds_intrinsic_matrix_,
       camera_frames_,
-      image_frames_,
+      features_down_sampler_.ds_image_frames_,
       flowing_particles_.particles_,
       flowing_particles_.bad_points_,
       flowing_particles_.last_sq_residual_,
@@ -34,7 +39,7 @@ TemplatePatchPipeline::TemplatePatchPipeline(
       image_frames_,
       camera_frames_,
       depth_map_bundle_,
-      down_sampler_,
+      dtam_down_sampler_,
       intrinsic_matrix_,
       (fs::path{cache_dir} / "DtamReconstruction").string(),
       DtamComponentConfig(
@@ -52,7 +57,8 @@ void TemplatePatchPipeline::process_image_frame(
     bool is_last_frame,
     bool camera_is_initializer)
 {
-    down_sampler_.append_image_frame(time, image_frame);
+    features_down_sampler_.append_image_frame(time, image_frame);
+    dtam_down_sampler_.append_image_frame(time, image_frame);
     image_frames_.insert(std::make_pair(time, image_frame));
     if (camera_frame != nullptr) {
         camera_frames_.insert(std::make_pair(time, *camera_frame));
