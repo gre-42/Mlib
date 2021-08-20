@@ -51,7 +51,6 @@ public:
     SceneNode(const SceneNode& other) = delete;
     SceneNode& operator = (const SceneNode& other) = delete;
     ~SceneNode();
-    void set_parent(SceneNode* parent);
     AbsoluteMovable* get_absolute_movable() const;
     RelativeMovable* get_relative_movable() const;
     AbsoluteObserver* get_absolute_observer() const;
@@ -67,6 +66,7 @@ public:
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
         bool is_registered = false);
+    SceneNode* get_child(const std::string& name) const;
     void add_aggregate_child(
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
@@ -142,6 +142,7 @@ public:
     void set_style(Style* style);
     bool to_be_deleted() const;
 private:
+    void set_parent(SceneNode* parent);
     Scene* scene_;
     SceneNode* parent_;
     AbsoluteMovable* absolute_movable_;

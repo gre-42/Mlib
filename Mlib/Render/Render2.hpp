@@ -38,12 +38,14 @@ public:
         const Scene& scene,
         bool rotate = false,
         float scale = 1,
+        float camera_z = 0,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
 
     void render_node(
         std::unique_ptr<SceneNode>&& node,
         bool rotate,
         float scale,
+        float camera_z,
         const SceneGraphConfig& scene_graph_config,
         std::unique_ptr<Camera>&& camera);
     

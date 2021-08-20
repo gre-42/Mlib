@@ -930,6 +930,9 @@ public:
     void save_txt_2d(const std::string& filename) const {
         assert(ndim() == 2);
         std::ofstream ofs(filename);
+        if (ofs.fail()) {
+            throw std::runtime_error("Could not open file \"" + filename + '"');
+        }
         ofs.setf(std::ios_base::scientific);
         ofs.precision(10);
         for (size_t r = 0; r < shape(0); ++r) {
@@ -940,7 +943,7 @@ public:
         }
         ofs.flush();
         if (ofs.fail()) {
-            throw std::runtime_error{ "Could not save to file " + filename };
+            throw std::runtime_error{ "Could not save to file \"" + filename + '"' };
         }
     }
 
@@ -950,6 +953,9 @@ public:
     {
         std::list<Array> result;
         std::ifstream ifs(filename);
+        if (ifs.fail()) {
+            throw std::runtime_error{ "Could not open file \"" + filename + '"' };
+        }
         std::string line;
         size_t r = 0;
         while(std::getline(ifs, line)) {
@@ -970,13 +976,13 @@ public:
                     std::stringstream ssvalue(svalue);
                     ssvalue >> value;
                     if (ssvalue.fail()) {
-                        throw std::runtime_error{ "Could not read value of file " + filename };
+                        throw std::runtime_error{ "Could not read value of file \"" + filename + '"' };
                     }
                 }
                 rowv.push_back(value);
             }
             if (srow.fail() && !srow.eof()) {
-                throw std::runtime_error{ "Could not read line of file " + filename };
+                throw std::runtime_error{ "Could not read line of file \"" + filename + '"' };
             }
             Array arow(ArrayShape{rowv.size()});
             for (size_t c = 0; c < arow.length(); ++c) {
@@ -986,14 +992,16 @@ public:
             ++r;
         }
         if (ifs.fail() && !ifs.eof()) {
-            throw std::runtime_error{ "Could not read line of file " + filename };
+            throw std::runtime_error{ "Could not read line of file \"" + filename + '"' };
         }
         return Array(result, empty_shape);
     }
 
     void save_binary(const std::string& filename) const {
         std::ofstream ofs(filename, std::ios::binary);
-
+        if (ofs.fail()) {
+            throw std::runtime_error("Could not open file \"" + filename + '"');
+        }
         ofs << "BinaryArray\n" << ndim();
         for (size_t i = 0; i < ndim(); ++i) {
             ofs << " " << shape(i);
@@ -1002,7 +1010,7 @@ public:
         ofs.write((const char*)flat_iterable().begin(), nbytes());
         ofs.flush();
         if (ofs.fail()) {
-            throw std::runtime_error{ "Could not save to file " + filename };
+            throw std::runtime_error{ "Could not save to file \"" + filename + '"' };
         }
     }
 

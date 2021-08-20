@@ -41,6 +41,9 @@ SceneNode::~SceneNode() {
 }
 
 void SceneNode::set_parent(SceneNode* parent) {
+    if (parent_ != nullptr) {
+        throw std::runtime_error("Scene node already has a parent");
+    }
     parent_ = parent;
 }
 
@@ -134,12 +137,22 @@ void SceneNode::add_child(
     if (name.empty()) {
         throw std::runtime_error("Child node has no name");
     }
+    SceneNode* n = node.get();
     if (!children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = is_registered,
         .scene_node = std::move(node)})).second)
     {
         throw std::runtime_error("Child node with name " + name + " already exists");
     }
+    n->set_parent(this);
+}
+
+SceneNode* SceneNode::get_child(const std::string& name) const {
+    auto it = children_.find(name);
+    if (it == children_.end()) {
+        throw std::runtime_error("Node does not have a child with name \"" + name + '"');
+    }
+    return it->second.scene_node.get();
 }
 
 void SceneNode::add_aggregate_child(
@@ -154,12 +167,14 @@ void SceneNode::add_aggregate_child(
     if (name.empty()) {
         throw std::runtime_error("Child node has no name");
     }
+    SceneNode* n = node.get();
     if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = is_registered,
         .scene_node = std::move(node)})).second)
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
     }
+    n->set_parent(this);
 }
 
 void SceneNode::add_instances_child(
@@ -174,6 +189,7 @@ void SceneNode::add_instances_child(
     if (name.empty()) {
         throw std::runtime_error("Child node has no name");
     }
+    SceneNode* n = node.get();
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = is_registered,
         .scene_node = std::move(node),
@@ -181,6 +197,7 @@ void SceneNode::add_instances_child(
     {
         throw std::runtime_error("Aggregate node with name " + name + " already exists");
     }
+    n->set_parent(this);
 }
 
 void SceneNode::add_instances_position(

@@ -32,11 +32,12 @@ void test_render() {
         throw std::runtime_error("Depth and image shape differ");
     }
     {
+        RenderConfig render_config;
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
         size_t num_renderings = SIZE_MAX;
-        Render2 render{ RenderConfig(), num_renderings, &render_results};
+        Render2 render{ render_config, num_renderings, &render_results};
         render_depth_map(
             render,
             img.to_float_rgb(),
@@ -47,15 +48,17 @@ void test_render() {
             1,      // z_offset
             false,  // rotate
             1,      // scale
+            2,      // camera_z
             SceneGraphConfig());
         draw_nan_masked_rgb(render_results.outputs.at(rsd).rgb, 0, 1).save_to_file("TestOut/rendered.png");
     }
     {
+        RenderConfig render_config;
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
         size_t num_renderings = SIZE_MAX;
-        Render2 render{ RenderConfig(), num_renderings, &render_results};
+        Render2 render{ render_config, num_renderings, &render_results};
         render_depth_map(
             render,
             img.to_float_rgb(),
@@ -66,6 +69,7 @@ void test_render() {
             1.f,    // z_offset
             false,  // rotate
             1,      // scale
+            2,      // camera_z
             SceneGraphConfig());
         draw_nan_masked_rgb(render_results.outputs.at(rsd).rgb, 0, 1).save_to_file("TestOut/rendered2.png");
     }

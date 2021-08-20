@@ -22,6 +22,7 @@ void Mlib::Cv::render_point_cloud(
     std::unique_ptr<Camera>&& camera,
     bool rotate,
     float scale,
+    float camera_z,
     const SceneGraphConfig& scene_graph_config)
 {
     auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
@@ -29,7 +30,7 @@ void Mlib::Cv::render_point_cloud(
     scene_node_resources.add_resource("PointCloudResource", r);
     auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("PointCloudResource", "PointCloudResource", *on, SceneNodeResourceFilter());
-    render.render_node(std::move(on), rotate, scale, scene_graph_config, std::move(camera));
+    render.render_node(std::move(on), rotate, scale, camera_z, scene_graph_config, std::move(camera));
 }
 
 void Mlib::Cv::render_depth_map(
@@ -42,6 +43,7 @@ void Mlib::Cv::render_depth_map(
     float z_offset,
     bool rotate,
     float scale,
+    float camera_z,
     const SceneGraphConfig& scene_graph_config)
 {
     DepthMapPackage package{
@@ -62,6 +64,7 @@ void Mlib::Cv::render_depth_map(
         z_offset,
         rotate,
         scale,
+        camera_z,
         scene_graph_config);
 }
 
@@ -77,6 +80,7 @@ void Mlib::Cv::render_depth_maps(
     float z_offset,
     bool rotate,
     float scale,
+    float camera_z,
     const SceneGraphConfig& scene_graph_config)
 {
     SceneNodeResources scene_node_resources;
@@ -108,6 +112,7 @@ void Mlib::Cv::render_depth_maps(
         std::move(root_node),
         rotate,
         scale,
+        camera_z,
         scene_graph_config,
         std::move(camera));
 }
@@ -119,6 +124,7 @@ void Mlib::Cv::render_height_map(
     const TransformationMatrix<float, 2>& normalization_matrix,
     bool rotate,
     float scale,
+    float camera_z,
     const SceneGraphConfig& scene_graph_config,
     const CameraConfig& camera_config)
 {
@@ -128,5 +134,5 @@ void Mlib::Cv::render_height_map(
     auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, SceneNodeResourceFilter());
     std::unique_ptr<Camera> camera(new GenericCamera(camera_config, GenericCamera::Mode::PERSPECTIVE));
-    render.render_node(std::move(on), rotate, scale, scene_graph_config, std::move(camera));
+    render.render_node(std::move(on), rotate, scale, camera_z, scene_graph_config, std::move(camera));
 }

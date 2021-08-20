@@ -25,6 +25,7 @@ void render_point_cloud(
     std::unique_ptr<Camera>&& camera,
     bool rotate = false,
     float scale = 1,
+    float camera_z = 0,
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
 
 void render_depth_map(
@@ -37,6 +38,7 @@ void render_depth_map(
     float z_offset,
     bool rotate = false,
     float scale = 1,
+    float camera_z = 0,
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
 
 void render_depth_maps(
@@ -51,6 +53,7 @@ void render_depth_maps(
     float z_offset,
     bool rotate = false,
     float scale = 1,
+    float camera_z = 0,
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
 
 void render_height_map(
@@ -60,6 +63,7 @@ void render_height_map(
     const TransformationMatrix<float, 2>& normalization_matrix,
     bool rotate = false,
     float scale = 1,
+    float camera_z = 0,
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
     const CameraConfig& camera_config = CameraConfig());
 

@@ -245,9 +245,10 @@ void Render2::operator () (
     const Scene& scene,
     bool rotate,
     float scale,
+    float camera_z,
     const SceneGraphConfig& scene_graph_config)
 {
-    RotatingLogic rotating_logic{window_->window(), scene, rotate, scale};
+    RotatingLogic rotating_logic{window_->window(), scene, rotate, scale, camera_z};
     ReadPixelsLogic read_pixels_logic{ rotating_logic };
     (*this)(
         read_pixels_logic,
@@ -258,6 +259,7 @@ void Render2::render_node(
     std::unique_ptr<SceneNode>&& node,
     bool rotate,
     float scale,
+    float camera_z,
     const SceneGraphConfig& scene_graph_config,
     std::unique_ptr<Camera>&& camera)
 {
@@ -274,7 +276,7 @@ void Render2::render_node(
         .node_name = "1234",
         .only_black = false,
         .shadow = false});
-    (*this)(scene, rotate, scale, scene_graph_config);
+    (*this)(scene, rotate, scale, camera_z, scene_graph_config);
 }
 
 GLFWwindow* Render2::window() const {

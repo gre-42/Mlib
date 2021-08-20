@@ -6,7 +6,7 @@ namespace Mlib {
 
 class Scene;
 
-class RotatingLocigUserClass: public BaseUserObject {
+class RotatingLogicUserClass: public BaseUserObject {
 public:
     float scale = 1;
     float camera_z = 0;
@@ -16,7 +16,7 @@ public:
 
 class RotatingLogic: public RenderLogic {
 public:
-    explicit RotatingLogic(GLFWwindow* window, const Scene& scene, bool rotate, float scale);
+    explicit RotatingLogic(GLFWwindow* window, const Scene& scene, bool rotate, float scale, float camera_z);
 
     virtual void render(
         int width,
@@ -34,7 +34,7 @@ public:
 
 private:
     const Scene& scene_;
-    RotatingLocigUserClass user_object_;
+    RotatingLogicUserClass user_object_;
     bool rotate_;
 };
 

@@ -1449,7 +1449,6 @@ void LoadScene::operator()(
             }
             std::string type = match[1].str();
             auto parent = scene.get_node(match[2].str());
-            node->set_parent(parent);
             SceneNode* node_ptr = node.get();
             if (type == "aggregate") {
                 parent->add_aggregate_child(match[3].str(), std::move(node), true);  // true=is_registered

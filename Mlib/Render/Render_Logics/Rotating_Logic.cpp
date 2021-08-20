@@ -13,7 +13,7 @@ using namespace Mlib;
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    GLFW_CHK(RotatingLocigUserClass* user_object = (RotatingLocigUserClass*)glfwGetWindowUserPointer(window));
+    GLFW_CHK(RotatingLogicUserClass* user_object = (RotatingLogicUserClass*)glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     }
@@ -52,11 +52,13 @@ RotatingLogic::RotatingLogic(
     GLFWwindow* window,
     const Scene& scene,
     bool rotate,
-    float scale)
+    float scale,
+    float camera_z)
 : scene_{scene},
   rotate_{rotate}
 {
     user_object_.scale = scale;
+    user_object_.camera_z = camera_z;
     GLFW_CHK(glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y));
     GLFW_CHK(glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height));
     GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
