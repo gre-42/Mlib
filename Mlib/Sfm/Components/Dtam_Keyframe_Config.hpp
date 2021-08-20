@@ -24,7 +24,7 @@ struct DtamKeyframeConfig {
         bool print_residual,
         const CostVolumeParameters& cost_volume_parameters,
         const Dm::DtamParameters& dm_params,
-        const DenseFilteringParameters& df_params,
+        const Df::DenseFilteringParameters& df_params,
         Regularization regularization,
         float sigma_illumination_removal,
         float regularization_filter_sigma,
@@ -40,7 +40,7 @@ struct DtamKeyframeConfig {
     bool print_residual_;
     CostVolumeParameters cost_volume_parameters_;
     Dm::DtamParameters dm_params_;
-    DenseFilteringParameters df_params_;
+    Df::DenseFilteringParameters df_params_;
     Regularization regularization_;
     float sigma_illumination_removal_;
     float regularization_filter_sigma_;

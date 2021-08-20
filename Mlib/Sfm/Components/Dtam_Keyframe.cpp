@@ -392,7 +392,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, cfg_.regularization_filter_poly_degree_);};
             // auto w = [this](const Array<double>& d){return gaussian_filter_NWE(d, double{cfg_.regularization_filter_sigma_}, double{NAN}, 4., false);};
             // auto l = [&w](const Array<float>& d){return local_polynomial_regression(d.casted<double>(), w, 2).casted<float>();};
-            dm_ = std::make_unique<DenseFiltering>(
+            dm_ = std::make_unique<Df::DenseFiltering>(
                 dsi_,
                 cfg_.cost_volume_parameters_,
                 cfg_.df_params_,
@@ -417,10 +417,22 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 dm->g_,
                 cfg_.cost_volume_parameters_,
                 cfg_.dm_params_);
-            throw std::runtime_error("Parameter-search complete");
+        } else if (cfg_.regularization_ == Regularization::FILTERING) {
+            auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, cfg_.regularization_filter_poly_degree_);};
+            Df::primary_parameter_optimization(
+                dsi_,
+                cfg_.cost_volume_parameters_,
+                cfg_.df_params_,
+                g2);
+            Df::auxiliary_parameter_optimization(
+                dsi_,
+                cfg_.cost_volume_parameters_,
+                cfg_.df_params_,
+                g2);
         } else {
             throw std::runtime_error("Parameter-search not implemented for the given regularizer");
         }
+        throw std::runtime_error("Parameter-search complete");
     }
     if (cfg_.incremental_update_) {
         std::cerr <<

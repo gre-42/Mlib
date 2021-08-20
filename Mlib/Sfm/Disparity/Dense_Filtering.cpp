@@ -1,6 +1,8 @@
 #include "Dense_Filtering.hpp"
+#include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Interpolate.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
+#include <Mlib/Stats/Logspace.hpp>
 
 /**
  * Sources:
@@ -9,6 +11,7 @@
  */
 using namespace Mlib;
 using namespace Mlib::Sfm;
+using namespace Mlib::Sfm::Df;
 
 DenseFiltering::DenseFiltering(
     const Array<float>& dsi,
@@ -66,4 +69,64 @@ Array<float> DenseFiltering::interpolated_inverse_depth_image() const {
 
 size_t DenseFiltering::current_number_of_iterations() const {
     return n_;
+}
+
+void Mlib::Sfm::Df::primary_parameter_optimization(
+    const Array<float>& dsi,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DenseFilteringParameters& parameters,
+    const std::function<Array<float>(const Array<float>& d)>& smoother)
+{
+    for (float LAMBDA : (parameters.lambda * logspace(-2.f, 2.f, 5)).element_iterable()) {
+        DenseFiltering df{
+            dsi,
+            cost_volume_parameters,
+            DenseFilteringParameters{
+                .nsteps = parameters.nsteps,
+                .theta_0__ = parameters.theta_0__,
+                .theta_end__ = parameters.theta_end__,
+                .beta = parameters.beta,
+                .lambda = LAMBDA},
+            smoother};
+        df.iterate_atmost(dsi, SIZE_MAX);
+        draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".png");
+    }
+}
+
+void Mlib::Sfm::Df::auxiliary_parameter_optimization(
+    const Array<float>& dsi,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DenseFilteringParameters& parameters,
+    const std::function<Array<float>(const Array<float>& d)>& smoother)
+{
+    for (float THETA_0 : (parameters.theta_0__ * logspace(-1.f, 1.f, 7)).element_iterable()) {
+        DenseFilteringParameters modified_parameters{
+            .nsteps = parameters.nsteps,
+            .theta_0__ = THETA_0,
+            .theta_end__ = THETA_0 / 0.2f * float{ 1e-4 },
+            .beta = parameters.beta,
+            .lambda = parameters.lambda};
+        DenseFiltering df{
+            dsi,
+            cost_volume_parameters,
+            modified_parameters,
+            smoother};
+        df.iterate_atmost(dsi, SIZE_MAX);
+        draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-theta_0-" + std::to_string(THETA_0) + "-" + ".png");
+    }
+    for (float BETA : (parameters.beta * logspace(-1.f, 1.f, 7)).element_iterable()) {
+        DenseFilteringParameters modified_parameters{
+            .nsteps = parameters.nsteps,
+            .theta_0__ = parameters.theta_0__,
+            .theta_end__ = parameters.theta_end__,
+            .beta = BETA,
+            .lambda = parameters.lambda};
+        DenseFiltering df{
+            dsi,
+            cost_volume_parameters,
+            modified_parameters,
+            smoother};
+        df.iterate_atmost(dsi, SIZE_MAX);
+        draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-beta-" + std::to_string(BETA) + ".png");
+    }
 }

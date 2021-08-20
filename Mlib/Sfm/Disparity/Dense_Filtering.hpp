@@ -4,12 +4,7 @@
 #include <Mlib/Sfm/Disparity/Dense_Filtering_Parameters.hpp>
 #include <functional>
 
-namespace Mlib {
-
-template <class TData>
-class Array;
-
-namespace Sfm {
+namespace Mlib::Sfm::Df {
 
 class DenseFiltering: public DenseDepthEstimation {
 public:
@@ -25,9 +20,9 @@ public:
     virtual void notify_cost_volume_changed(const Array<float>& dsi) override;
     virtual Array<float> interpolated_inverse_depth_image() const override;
     virtual size_t current_number_of_iterations() const override;
+    Array<float> a_;
 private:
     Array<float> sqrt_dsi_max_dmin_;
-    Array<float> a_;
     float theta_;
     size_t n_;
     CostVolumeParameters cost_volume_parameters_;
@@ -35,4 +30,16 @@ private:
     std::function<Array<float>(const Array<float>& d)> smoother_;
 };
 
-}}
+void primary_parameter_optimization(
+    const Array<float>& dsi,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DenseFilteringParameters& parameters,
+    const std::function<Array<float>(const Array<float>& d)>& smoother);
+
+void auxiliary_parameter_optimization(
+    const Array<float>& dsi,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DenseFilteringParameters& parameters,
+    const std::function<Array<float>(const Array<float>& d)>& smoother);
+
+}

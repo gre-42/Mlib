@@ -42,12 +42,12 @@ DtamComponentConfig::DtamComponentConfig(
             1.f,                    // lambda (1 for the first keyframe)
             float{ 1e-4 },          // epsilon (1e-4)
             400),                   // nsteps
-        DenseFilteringParameters{
-            .lambda = 1.f,
-            .beta = 0.0001,
+        Df::DenseFilteringParameters{
             .nsteps = 400,
             .theta_0__ = 0.2,
-            .theta_end__ = float{ 1e-4 }},
+            .theta_end__ = float{ 1e-4 },
+            .beta = 0.0001,
+            .lambda = 1.f},
         Regularization::FILTERING,
         0.5f,                                // sigma_illumination_removal
         regularization_filter_sigma,         // regularization_filter_sigma

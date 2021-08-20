@@ -16,7 +16,7 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     bool print_residual,
     const CostVolumeParameters& cost_volume_parameters,
     const Dm::DtamParameters& dm_params,
-    const DenseFilteringParameters& df_params,
+    const Df::DenseFilteringParameters& df_params,
     Regularization regularization,
     float sigma_illumination_removal,
     float regularization_filter_sigma,
