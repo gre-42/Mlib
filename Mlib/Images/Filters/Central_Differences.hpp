@@ -68,4 +68,17 @@ Array<TData> multichannel_central_sad_filter(const Array<TData>& image)
     return result;
 }
 
+template <class TData>
+Array<TData> central_divergence_filter(const Array<TData>& image) {
+    assert(image.ndim() > 0);
+    if (image.shape(0) == 0) {
+        return zeros<TData>(image.shape().erased_first());
+    }
+    Array<TData> result(central_differences_1d(image[0], 0));
+    for (size_t h = 1; h < image.shape(0); ++h) {
+        result += central_differences_1d(image[h], h);
+    }
+    return result;
+}
+
 }
