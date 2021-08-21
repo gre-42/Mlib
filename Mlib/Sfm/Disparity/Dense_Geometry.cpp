@@ -1,6 +1,7 @@
 #include "Dense_Geometry.hpp"
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/Filters/Central_Differences.hpp>
+#include <Mlib/Images/Filters/Backward_Differences.hpp>
+#include <Mlib/Images/Filters/Forward_Differences.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Math/Interpolate.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
@@ -11,6 +12,8 @@
 #include <list>
 
 static const bool verbose = false;
+// From: An algorithm for total variation minimization and applications
+//       https://www.uni-muenster.de/AMM/num/Vorlesungen/MathemBV_SS16/literature/Chambolle2004.pdf
 static const float GRADIENT_BOUNDARY_VALUE = 0;
 
 /**
@@ -38,11 +41,11 @@ Array<float> energy(
     const Array<float>& dsi,
     const Array<float>& u)
 {
-    return l2q(central_gradient_filter(u)) + lambda * C(dsi, u);
+    return l2q(forward_gradient_filter(u, GRADIENT_BOUNDARY_VALUE)) + lambda * C(dsi, u);
 }
 
 Array<float> update_p(const Array<float>& p, const Array<float>& h, float theta, float tau) {
-    Array<float> v = tau * central_gradient_filter(central_divergence_filter(p) - h / theta);
+    Array<float> v = tau * forward_gradient_filter(backward_divergence_filter(p, GRADIENT_BOUNDARY_VALUE) - h / theta, GRADIENT_BOUNDARY_VALUE);
     Array<float> n = 1.f + l2q(v);
     Array<float> result{ p.shape() };
     for (size_t h = 0; h < p.shape(0); ++h) {
@@ -52,7 +55,7 @@ Array<float> update_p(const Array<float>& p, const Array<float>& h, float theta,
 }
 
 Array<float> update_u(const Array<float>& p, Array<float>& h, float theta, float u_max) {
-    return clipped(h - theta * central_divergence_filter(p), 0.f, u_max);
+    return clipped(h - theta * backward_divergence_filter(p, GRADIENT_BOUNDARY_VALUE), 0.f, u_max);
 }
 
 DenseGeometry::DenseGeometry(
