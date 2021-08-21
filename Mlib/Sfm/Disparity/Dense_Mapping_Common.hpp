@@ -8,6 +8,10 @@ class Array;
 
 namespace Sfm {
 
+Array<float> C(
+    const Array<float>& dsi,
+    const Array<float>& a);
+
 Array<float> exhaustive_search(
     const Array<float>& dsi,
     const Array<float>& sqrt_dsi_max_dmin,

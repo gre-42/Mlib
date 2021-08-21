@@ -1,0 +1,224 @@
+#include "Dense_Geometry.hpp"
+#include <Mlib/Images/Draw_Bmp.hpp>
+#include <Mlib/Images/Filters/Central_Differences.hpp>
+#include <Mlib/Images/Normalize.hpp>
+#include <Mlib/Math/Interpolate.hpp>
+#include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
+#include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Stats/Logspace.hpp>
+#include <Mlib/Stats/Robust.hpp>
+#include <iomanip>
+#include <list>
+
+static const bool verbose = false;
+static const float GRADIENT_BOUNDARY_VALUE = 0;
+
+/**
+ * From: Real-Time Dense Geometry from a Handheld Camera
+ */
+using namespace Mlib;
+using namespace Mlib::Sfm;
+using namespace Mlib::Sfm::Dg;
+
+static float xsum(const Array<float>& v) {
+    auto m = !Mlib::isnan(v);
+    auto n = count_nonzero(m);
+    if (n == 0) {
+        throw std::runtime_error("n == 0");
+    }
+    return (sum(v[m]) * v.nelements()) / n;
+}
+
+static Array<float> l2q(const Array<float>& q) {
+    return sqrt(sum(squared(q), 0));
+}
+
+Array<float> energy(
+    float lambda,
+    const Array<float>& dsi,
+    const Array<float>& u)
+{
+    return l2q(central_gradient_filter(u)) + lambda * C(dsi, u);
+}
+
+Array<float> update_p(const Array<float>& p, const Array<float>& h, float theta, float tau) {
+    Array<float> v = tau * central_gradient_filter(central_divergence_filter(p) - h / theta);
+    Array<float> n = 1.f + l2q(v);
+    Array<float> result{ p.shape() };
+    for (size_t h = 0; h < p.shape(0); ++h) {
+        result[h] = (p[h] + v[h]) / n;
+    }
+    return result;
+}
+
+Array<float> update_u(const Array<float>& p, Array<float>& h, float theta, float u_max) {
+    return clipped(h - theta * central_divergence_filter(p), 0.f, u_max);
+}
+
+DenseGeometry::DenseGeometry(
+    const Array<float>& dsi,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DenseGeometryParameters& parameters,
+    bool print_debug,
+    bool print_bmps)
+: cost_volume_parameters_{cost_volume_parameters},
+  parameters_{parameters},
+  print_debug_{print_debug},
+  print_bmps_{print_bmps}
+{
+    assert(dsi.ndim() == 3);
+
+    notify_cost_volume_changed(dsi);
+}
+
+void DenseGeometry::iterate_once(const Array<float>& dsi) {
+    if (is_converged()) {
+        throw std::runtime_error("Call to iterate_once despite convergence");
+    }
+    if (print_debug_) {
+        std::cerr << "theta: " << theta_ << std::endl;
+    }
+    p_ = update_p(p_, h_, theta_, parameters_.tau);
+    u_ = update_u(p_, h_, theta_, (float)(dsi.shape(0) - 1));
+
+    if (print_debug_) {
+        Array<float> eo = energy(parameters_.lambda, dsi, h_);
+        std::cerr << "eo: " << xsum(eo) << std::endl;
+        if (print_bmps_ && n_ % 30 == 0) {
+            draw_quantiled_grayscale(eo, 0.05f, 0.95f).save_to_file("eo-" + std::to_string(n_) + ".png");
+        }
+        if (print_bmps_ && n_ % 30 == 0) {
+            draw_nan_masked_grayscale(u_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("u-" + std::to_string(n_) + ".png");
+        }
+    }
+    // std::cerr << "done" << std::endl;
+    h_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, u_);
+    if (print_debug_) {
+        // std::cerr << "done2" << std::endl;
+        std::cerr << "h: " << nanmin(h_) << " - " << nanmedian(h_) << " - " << nanmax(h_) << std::endl;
+        if (print_bmps_ && n_ % 30 == 0) {
+            draw_nan_masked_grayscale(h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("h-" + std::to_string(n_) + ".png");
+        }
+    }
+    theta_ *= (1 - parameters_.beta * n_);
+    ++n_;
+}
+
+void DenseGeometry::iterate_atmost(const Array<float>& dsi, size_t niters) {
+    while(!is_converged() && (niters-- != 0)) {
+        iterate_once(dsi);
+    }
+}
+
+bool DenseGeometry::is_converged() const {
+    return !((theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)) && (n_ < parameters_.nsteps));
+}
+
+void DenseGeometry::notify_cost_volume_changed(const Array<float>& dsi) {
+    sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
+    u_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(dsi.shape().erased_first()));
+    h_ = u_;
+    p_.move() = zeros<float>(ArrayShape{ 2, h_.shape(0), h_.shape(1) });
+    theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
+    n_ = 0;
+}
+
+Array<float> DenseGeometry::interpolated_inverse_depth_image() const {
+    return interpolate(h_, cost_volume_parameters_.inverse_depths());
+}
+
+size_t DenseGeometry::current_number_of_iterations() const {
+    return n_;
+}
+
+/**
+ * From: https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values
+ */
+template <typename T>
+std::string to_string_with_precision(const T a_value, const int n = 6)
+{
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return out.str();
+}
+
+void Mlib::Sfm::Dg::primary_parameter_optimization(
+    const Array<float>& dsi,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DenseGeometryParameters& parameters)
+{
+    for (float LAMBDA : (parameters.lambda * logspace(-2.f, 2.f, 5)).element_iterable()) {
+        DenseGeometry dg{
+            dsi,
+            cost_volume_parameters,
+            DenseGeometryParameters{
+                .ndepths = parameters.ndepths,
+                .theta_0__ = parameters.theta_0__,
+                .theta_end__ = parameters.theta_end__,
+                .beta = parameters.beta,
+                .lambda = LAMBDA,
+                .tau = parameters.tau,
+                .nsteps = parameters.nsteps},
+            false,
+            false};
+        dg.iterate_atmost(dsi, SIZE_MAX);
+        draw_nan_masked_grayscale(dg.h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("h-lambda-" + std::to_string(LAMBDA) + ".png");
+        std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy(LAMBDA, dsi, dg.h_)) << std::endl;
+    }
+    for (float TAU : (1.f / 8.f * logspace(-3.f, 0.f, 5)).element_iterable()) {
+        DenseGeometry dg{
+            dsi,
+            cost_volume_parameters,
+            DenseGeometryParameters{
+                .ndepths = parameters.ndepths,
+                .theta_0__ = parameters.theta_0__,
+                .theta_end__ = parameters.theta_end__,
+                .beta = parameters.beta,
+                .lambda = parameters.lambda,
+                .tau = TAU,
+                .nsteps = parameters.nsteps},
+            false,
+            false};
+        dg.iterate_atmost(dsi, SIZE_MAX);
+        draw_nan_masked_grayscale(dg.h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-tau-" + to_string_with_precision(TAU, 10) + ".png");
+        std::cerr << "tau " << TAU << " energy " << xsum(energy(parameters.lambda, dsi, dg.h_)) << std::endl;
+    }
+}
+
+void Mlib::Sfm::Dg::auxiliary_parameter_optimization(
+    const Array<float>& dsi,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DenseGeometryParameters& parameters)
+{
+    std::list<std::tuple<DenseGeometryParameters, float, Array<float>>> energies;
+    for (float THETA_0 : (parameters.theta_0__ * logspace(-1.f, 1.f, 7)).element_iterable()) {
+        for (float BETA : (parameters.beta * logspace(-1.f, 1.f, 7)).element_iterable()) {
+            DenseGeometryParameters modified_parameters{
+                .ndepths = parameters.ndepths,
+                .theta_0__ = THETA_0,
+                .theta_end__ = THETA_0 / 0.2f * float{ 1e-4 },
+                .beta = BETA,
+                .lambda = parameters.lambda,
+                .tau = parameters.tau,
+                .nsteps = parameters.nsteps};
+            DenseGeometry dg{
+                dsi,
+                cost_volume_parameters,
+                modified_parameters,
+                false,
+                false};
+            dg.iterate_atmost(dsi, SIZE_MAX);
+            float nrg = xsum(energy(parameters.lambda, dsi, dg.h_));
+            energies.push_back(std::make_tuple(modified_parameters, nrg, dg.h_));
+            std::cerr << modified_parameters << " energy " << nrg << std::endl;
+        }
+    }
+    energies.sort([](const auto& a, const auto& b) -> bool { return std::get<1>(a) < std::get<1>(b); });
+    size_t rank = 0;
+    for (const auto& p : energies) {
+        std::cerr << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " energy " << std::get<1>(p) << std::endl;
+        draw_nan_masked_grayscale(std::get<2>(p), 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(rank) + ".png");
+        ++rank;
+    }
+}

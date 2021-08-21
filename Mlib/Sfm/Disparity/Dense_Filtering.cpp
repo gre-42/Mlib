@@ -39,7 +39,7 @@ void DenseFiltering::iterate_once(const Array<float>& dsi) {
     // d_ = median_filter_2d(a_, 3);
     Array<float> d = smoother_(a_);
     // std::cerr << "done" << std::endl;
-    a_ = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, d);
+    a_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, d);
     // std::cerr << "done3" << std::endl;
     // throw std::runtime_error("asd");
     theta_ *= (1 - parameters_.beta * n_);
@@ -58,7 +58,7 @@ bool DenseFiltering::is_converged() const {
 
 void DenseFiltering::notify_cost_volume_changed(const Array<float>& dsi) {
     sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
-    a_ = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(sqrt_dsi_max_dmin_.shape()));
+    a_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(sqrt_dsi_max_dmin_.shape()));
     theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
     n_ = 0;
 }

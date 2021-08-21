@@ -65,7 +65,7 @@ static Array<float> sum_q(const Array<float>& q) {
     assert(false);
 }
 
-Array<float> l2q(const Array<float>& q) {
+static Array<float> l2q(const Array<float>& q) {
     if (regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES ||
         regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING ||
         regularizer == Regularizer::CENTRAL_DIFFERENCES)
@@ -180,29 +180,6 @@ static Array<float> AGaq(
         return g * difference_of_boxes(q, NAN);
     }
     assert(false);
-}
-
-Array<float> Mlib::Sfm::Dm::C(
-    const Array<float>& dsi,
-    const Array<float>& a)
-{
-    assert(all(a.shape() == dsi.shape().erased_first()));
-    Array<float> res{a.shape()};
-    #pragma omp parallel for
-    for (int ri = 0; ri < (int)dsi.shape(1); ++ri) {
-        size_t r = (size_t)ri;
-        for (size_t c = 0; c < dsi.shape(2); ++c) {
-            if (!std::isnan(a(r, c)) &&
-                (a(r, c) >= 0) &&
-                (a(r, c) < dsi.shape(0)))
-            {
-                res(r, c) = dsi(size_t(a(r, c)), r, c);
-            } else {
-                res(r, c) = NAN;
-            }
-        }
-    }
-    return res;
 }
 
 Array<float> Mlib::Sfm::Dm::energy_orig(
@@ -578,7 +555,7 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
         }
     }
     // std::cerr << "done" << std::endl;
-    a_ = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda_, d_);
+    a_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda_, d_);
     if (print_debug_) {
         // std::cerr << "done2" << std::endl;
         std::cerr << "a: " << nanmin(a_) << " - " << nanmedian(a_) << " - " << nanmax(a_) << std::endl;
@@ -604,8 +581,8 @@ bool DenseMapping::is_converged() const {
 
 void DenseMapping::notify_cost_volume_changed(const Array<float>& dsi) {
     sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
-    d_ = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(g_.shape()));
-    a_ = d_.copy();
+    d_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(g_.shape()));
+    a_ = d_;
     q_ = zeros<float>(
         regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES ||
         regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING ||
@@ -622,6 +599,18 @@ Array<float> DenseMapping::interpolated_inverse_depth_image() const {
 
 size_t DenseMapping::current_number_of_iterations() const {
     return n_;
+}
+
+/**
+ * From: https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values
+ */
+template <typename T>
+std::string to_string_with_precision(const T a_value, const int n = 6)
+{
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return out.str();
 }
 
 void Mlib::Sfm::Dm::primary_parameter_optimization(
@@ -667,7 +656,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
             false,
             false};
         dm.iterate_atmost(dsi, SIZE_MAX);
-        draw_nan_masked_grayscale(dm.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-epsilon-" + std::to_string(EPSILON) + ".png");
+        draw_nan_masked_grayscale(dm.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-epsilon-" + to_string_with_precision(EPSILON, 10) + ".png");
         std::cerr << "eps " << EPSILON << " energy " << xsum(energy_orig(g, parameters.lambda_, EPSILON, dsi, dm.a_)) << std::endl;
     }
 }

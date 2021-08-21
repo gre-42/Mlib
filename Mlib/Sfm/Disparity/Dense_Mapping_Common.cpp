@@ -5,6 +5,29 @@
 using namespace Mlib;
 using namespace Mlib::Sfm;
 
+Array<float> Mlib::Sfm::C(
+    const Array<float>& dsi,
+    const Array<float>& a)
+{
+    assert(all(a.shape() == dsi.shape().erased_first()));
+    Array<float> res{a.shape()};
+    #pragma omp parallel for
+    for (int ri = 0; ri < (int)dsi.shape(1); ++ri) {
+        size_t r = (size_t)ri;
+        for (size_t c = 0; c < dsi.shape(2); ++c) {
+            if (!std::isnan(a(r, c)) &&
+                (a(r, c) >= 0) &&
+                (a(r, c) < dsi.shape(0)))
+            {
+                res(r, c) = dsi(size_t(a(r, c)), r, c);
+            } else {
+                res(r, c) = NAN;
+            }
+        }
+    }
+    return res;
+}
+
 Array<float> Mlib::Sfm::exhaustive_search(
     const Array<float>& dsi,
     const Array<float>& sqrt_dsi_max_dmin,
@@ -63,7 +86,9 @@ Array<float> Mlib::Sfm::exhaustive_search(
 
 Array<float> Mlib::Sfm::get_sqrt_dsi_max_dmin(const Array<float>& dsi) {
     Array<float> sqrt_dsi_max_dmin{dsi.shape().erased_first()};
-    for (size_t r = 0; r < dsi.shape(1); ++r) {
+    #pragma omp parallel for
+    for (int ri = 0; ri < (int)dsi.shape(1); ++ri) {
+        size_t r = (size_t)ri;
         for (size_t c = 0; c < dsi.shape(2); ++c) {
             float dsi_min = INFINITY;
             float dsi_max = -INFINITY;

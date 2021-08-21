@@ -15,10 +15,6 @@ enum class Regularizer {
 
 static const Regularizer regularizer = Regularizer::FORWARD_BACKWARD_WEIGHTING;
 
-Array<float> C(
-    const Array<float>& dsi,
-    const Array<float>& a);
-
 Array<float> energy_orig(
     const Array<float>& g,
     float lambda,

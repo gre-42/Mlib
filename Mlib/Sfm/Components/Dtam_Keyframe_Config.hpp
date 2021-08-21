@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Filtering_Parameters.hpp>
+#include <Mlib/Sfm/Disparity/Dense_Geometry_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
 #include <cstddef>
 
@@ -8,6 +9,7 @@ namespace Mlib::Sfm {
 
 enum class Regularization {
     DTAM,
+    DENSE_GEOMETRY,
     FILTERING
 };
 
@@ -24,6 +26,7 @@ struct DtamKeyframeConfig {
         bool print_residual,
         const CostVolumeParameters& cost_volume_parameters,
         const Dm::DtamParameters& dm_params,
+        const Dg::DenseGeometryParameters& dg_params,
         const Df::DenseFilteringParameters& df_params,
         Regularization regularization,
         float sigma_illumination_removal,
@@ -40,6 +43,7 @@ struct DtamKeyframeConfig {
     bool print_residual_;
     CostVolumeParameters cost_volume_parameters_;
     Dm::DtamParameters dm_params_;
+    Dg::DenseGeometryParameters dg_params_;
     Df::DenseFilteringParameters df_params_;
     Regularization regularization_;
     float sigma_illumination_removal_;

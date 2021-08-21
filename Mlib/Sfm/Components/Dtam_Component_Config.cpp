@@ -42,6 +42,14 @@ DtamComponentConfig::DtamComponentConfig(
             1.f,                    // lambda (1 for the first keyframe)
             float{ 1e-4 },          // epsilon (1e-4)
             400),                   // nsteps
+        Dg::DenseGeometryParameters{
+            .ndepths = 400,
+            .theta_0__ = 0.2,
+            .theta_end__ = float{ 1e-4 },
+            .beta = 0.0001,
+            .lambda = 2.f,
+            .tau = 0.01f / 8.f,
+            .nsteps = 400},
         Df::DenseFilteringParameters{
             .nsteps = 400,
             .theta_0__ = 0.2,
