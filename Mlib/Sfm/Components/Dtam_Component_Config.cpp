@@ -43,12 +43,11 @@ DtamComponentConfig::DtamComponentConfig(
             float{ 1e-4 },          // epsilon (1e-4)
             400),                   // nsteps
         Dg::DenseGeometryParameters{
-            .ndepths = 400,
-            .theta_0__ = 0.2,
-            .theta_end__ = float{ 1e-4 },
+            .theta_0__ = 0.1f * 0.2f,
+            .theta_end__ = float{ 0.1 * 1e-4 },
             .beta = 0.0001,
-            .lambda = 2.f,
-            .tau = 0.01f / 8.f,
+            .lambda = 200.f,
+            .tau = 1 / 8.f,
             .nsteps = 400},
         Df::DenseFilteringParameters{
             .nsteps = 400,
@@ -56,7 +55,7 @@ DtamComponentConfig::DtamComponentConfig(
             .theta_end__ = float{ 1e-4 },
             .beta = 0.0001,
             .lambda = 1.f},
-        Regularization::FILTERING,
+        Regularization::DENSE_GEOMETRY,
         0.5f,                                // sigma_illumination_removal
         regularization_filter_sigma,         // regularization_filter_sigma
         regularization_filter_poly_degree))

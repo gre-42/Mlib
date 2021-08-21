@@ -9,7 +9,6 @@ namespace Mlib::Sfm::Dg {
 
 class DenseGeometryParameters {
 public:
-    size_t ndepths;
     float theta_0__;
     float theta_end__;
     float beta;

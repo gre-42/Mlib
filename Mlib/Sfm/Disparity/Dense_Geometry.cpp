@@ -156,7 +156,6 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
             dsi,
             cost_volume_parameters,
             DenseGeometryParameters{
-                .ndepths = parameters.ndepths,
                 .theta_0__ = parameters.theta_0__,
                 .theta_end__ = parameters.theta_end__,
                 .beta = parameters.beta,
@@ -169,12 +168,14 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
         draw_nan_masked_grayscale(dg.h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("h-lambda-" + std::to_string(LAMBDA) + ".png");
         std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy(LAMBDA, dsi, dg.h_)) << std::endl;
     }
-    for (float TAU : (1.f / 8.f * logspace(-3.f, 0.f, 5)).element_iterable()) {
+    // From: An algorithm for total variation minimization and applications
+    //       https://www.uni-muenster.de/AMM/num/Vorlesungen/MathemBV_SS16/literature/Chambolle2004.pdf
+    //       Page 3, bottom right: 1/4 is best in practice.
+    for (float TAU : (1.f / 4.f * logspace(-1.f, 0.f, 5)).element_iterable()) {
         DenseGeometry dg{
             dsi,
             cost_volume_parameters,
             DenseGeometryParameters{
-                .ndepths = parameters.ndepths,
                 .theta_0__ = parameters.theta_0__,
                 .theta_end__ = parameters.theta_end__,
                 .beta = parameters.beta,
@@ -198,7 +199,6 @@ void Mlib::Sfm::Dg::auxiliary_parameter_optimization(
     for (float THETA_0 : (parameters.theta_0__ * logspace(-1.f, 1.f, 7)).element_iterable()) {
         for (float BETA : (parameters.beta * logspace(-1.f, 1.f, 7)).element_iterable()) {
             DenseGeometryParameters modified_parameters{
-                .ndepths = parameters.ndepths,
                 .theta_0__ = THETA_0,
                 .theta_end__ = THETA_0 / 0.2f * float{ 1e-4 },
                 .beta = BETA,
