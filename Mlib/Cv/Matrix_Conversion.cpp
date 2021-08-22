@@ -39,6 +39,10 @@ FixedArray<float, 4, 4> Mlib::Cv::opengl_matrix_from_hz_intrinsic_matrix(
                           0.f,                    0.f,                                       -1.f,                                        0};
 }
 
+FixedArray<float, 3> Mlib::Cv::cv_to_opengl_coordinates(const FixedArray<float, 3>& p) {
+    return FixedArray<float, 3>{ p(0), -p(1), -p(2) };
+}
+
 TransformationMatrix<float, 3> Mlib::Cv::opengl_matrix_from_opencv_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix)
 {

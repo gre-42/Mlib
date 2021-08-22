@@ -1,5 +1,6 @@
 #include "Depth_Map_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Cv/Matrix_Conversion.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
@@ -7,6 +8,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
+using namespace Mlib::Cv;
 
 DepthMapResource::DepthMapResource(
     const Array<float>& rgb_picture,
@@ -37,37 +39,37 @@ DepthMapResource::DepthMapResource(
             FixedArray<float, 2> pos0 = iim.transform(i2a(id0));
             FixedArray<float, 2> pos1 = iim.transform(i2a(id1));
             ColoredVertex v00{
-                    FixedArray<float, 3> {
+                    Cv::cv_to_opengl_coordinates({
                         pos0(0) * Z(r, c),
-                        -pos0(1) * Z(r, c),
-                        -Z(r, c) + z_offset},
+                        pos0(1) * Z(r, c),
+                        Z(r, c) + z_offset}),
                     FixedArray<float, 3>{
                         R(r, c),
                         G(r, c),
                         B(r, c)}};
             ColoredVertex v01{
-                    FixedArray<float, 3>{
+                    Cv::cv_to_opengl_coordinates({
                         pos1(0) * Z(r, c + 1),
-                        -pos0(1) * Z(r, c + 1),
-                        -Z(r, c + 1) + z_offset},
+                        pos0(1) * Z(r, c + 1),
+                        Z(r, c + 1) + z_offset}),
                     FixedArray<float, 3> {
                         R(r, c + 1),
                         G(r, c + 1),
                         B(r, c + 1)}};
             ColoredVertex v10{
-                    FixedArray<float, 3> {
+                    Cv::cv_to_opengl_coordinates({
                         pos0(0) * Z(r + 1, c),
-                        -pos1(1) * Z(r + 1, c),
-                        -Z(r + 1, c) + z_offset},
+                        pos1(1) * Z(r + 1, c),
+                        Z(r + 1, c) + z_offset}),
                      FixedArray<float, 3> {
                         R(r + 1, c),
                         G(r + 1, c),
                         B(r + 1, c)}};
             ColoredVertex v11{
-                    FixedArray<float, 3>{
+                    Cv::cv_to_opengl_coordinates({
                         pos1(0) * Z(r + 1, c + 1),
-                        -pos1(1) * Z(r + 1, c + 1),
-                        -Z(r + 1, c + 1) + z_offset},
+                        pos1(1) * Z(r + 1, c + 1),
+                        Z(r + 1, c + 1) + z_offset}),
                     FixedArray<float, 3> {
                         R(r + 1, c + 1),
                         G(r + 1, c + 1),

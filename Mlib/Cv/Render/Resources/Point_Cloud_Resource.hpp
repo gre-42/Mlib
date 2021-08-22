@@ -3,7 +3,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 
-namespace Mlib {
+namespace Mlib::Cv {
 
 class PointCloudResource: public SceneNodeResource {
 public:

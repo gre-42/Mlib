@@ -1,5 +1,6 @@
 #include "Point_Cloud_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Cv/Matrix_Conversion.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -8,6 +9,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
+using namespace Mlib::Cv;
 
 PointCloudResource::PointCloudResource(const Array<FixedArray<float, 3>>& points)
 {
@@ -16,10 +18,10 @@ PointCloudResource::PointCloudResource(const Array<FixedArray<float, 3>>& points
     FixedArray<float, 3> d1{0.f, 0.1f, 0.f};
     for (const FixedArray<float, 3>& p : points.flat_iterable()) {
         tris.draw_rectangle_wo_normals(
-            p - d0 - d1,
-            p + d0 - d1,
-            p + d0 + d1,
-            p - d0 + d1);
+            Cv::cv_to_opengl_coordinates(p - d0 - d1),
+            Cv::cv_to_opengl_coordinates(p + d0 - d1),
+            Cv::cv_to_opengl_coordinates(p + d0 + d1),
+            Cv::cv_to_opengl_coordinates(p - d0 + d1));
     }
     rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(

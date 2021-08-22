@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Cv/Depth_Difference.hpp>
 #include <Mlib/Cv/Depth_Map_Package.hpp>
-#include <Mlib/Cv/Render_Data.hpp>
+#include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -29,7 +29,8 @@ int main(int argc, char** argv) {
         " [--rotate]"
         " [--wire_frame]"
         " [--reference_time <milliseconds>]"
-        " [--packages <file1> <file2...>]",
+        " [--packages <file1> <file2...>]"
+        " [--points <file>]",
         {"--rotate",
         "--wire_frame",
         "--register_forward",
@@ -39,7 +40,8 @@ int main(int argc, char** argv) {
         "--far_plane",
         "--minus_threshold",
         "--reference_time",
-        "--output"},
+        "--output",
+        "--points"},
         {"--packages"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -62,6 +64,14 @@ int main(int argc, char** argv) {
         }
         if (args.has_named("--register_backward")) {
             bundle = bundle.reregister(RegistrationDirection::BACKWARD);
+        }
+        Array<FixedArray<float, 3>> points;
+        if (args.has_named_value("--points")) {
+            Array<float> pts = Array<float>::load_txt_2d(args.named_value("--points"), ArrayShape{ 0, 3 });
+            if (pts.shape(1) != 3) {
+                throw std::runtime_error("Points dimension not 3");
+            }
+            points = Array<float>::from_dynamic<3>(pts);
         }
 
         std::vector<DepthMapPackage> packages;
@@ -90,6 +100,7 @@ int main(int argc, char** argv) {
         render_depth_maps(
             render,
             packages,
+            points,
             ref->second.ki,
             ref->second.ke,
             (float)ref->second.depth.shape(1),

@@ -1,5 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Cv/Render_Data.hpp>
+#include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/PgmImage.hpp>

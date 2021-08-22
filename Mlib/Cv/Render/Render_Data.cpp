@@ -1,15 +1,15 @@
 #include "Render_Data.hpp"
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Matrix_Conversion.hpp>
+#include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
+#include <Mlib/Cv/Render/Resources/Point_Cloud_Resource.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
-#include <Mlib/Render/Resources/Point_Cloud_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 
@@ -55,6 +55,7 @@ void Mlib::Cv::render_depth_map(
     render_depth_maps(
         render,
         { package },
+        Array<FixedArray<float, 3>>{},
         intrinsic_matrix,
         TransformationMatrix<float, 3>::identity(),
         (float)depth_picture.shape(1),
@@ -71,6 +72,7 @@ void Mlib::Cv::render_depth_map(
 void Mlib::Cv::render_depth_maps(
     Render2& render,
     const std::vector<DepthMapPackage>& packages,
+    const Array<FixedArray<float, 3>>& points,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
     float width,
@@ -90,17 +92,24 @@ void Mlib::Cv::render_depth_maps(
         16,
         0};
     auto root_node = std::make_unique<SceneNode>();
-    size_t i = 0;
-    for (const DepthMapPackage& package : packages) {
-        std::string resource_name = "DepthMapResource_" + std::to_string(i++);
-        const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, z_offset);
-        scene_node_resources.add_resource(resource_name, r);
-        auto on = std::make_unique<SceneNode>();
-        TransformationMatrix<float, 3> cpos = opengl_matrix_from_opencv_extrinsic_matrix(package.ke).inverted();
-        float scale = cpos.get_scale();
-        on->set_absolute_pose(cpos.t(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
-        scene_node_resources.instantiate_renderable(resource_name, "DepthMap", *on, SceneNodeResourceFilter());
-        root_node->add_child(resource_name, std::move(on));
+    {
+        size_t i = 0;
+        for (const DepthMapPackage& package : packages) {
+            std::string resource_name = "DepthMapResource_" + std::to_string(i++);
+            const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, z_offset);
+            scene_node_resources.add_resource(resource_name, r);
+            auto on = std::make_unique<SceneNode>();
+            TransformationMatrix<float, 3> cpos = opengl_matrix_from_opencv_extrinsic_matrix(package.ke).inverted();
+            float scale = cpos.get_scale();
+            on->set_absolute_pose(cpos.t(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
+            scene_node_resources.instantiate_renderable(resource_name, "DepthMap", *on, SceneNodeResourceFilter());
+            root_node->add_child(resource_name, std::move(on));
+        }
+    }
+    if (points.initialized() && (points.length() > 0)) {
+        const auto r = std::make_shared<PointCloudResource>(points);
+        scene_node_resources.add_resource("PointCloudResource", r);
+        scene_node_resources.instantiate_renderable("PointCloudResource", "DepthMap", *root_node, SceneNodeResourceFilter());
     }
     std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(Cv::opengl_matrix_from_hz_intrinsic_matrix(
         intrinsic_matrix,

@@ -1,5 +1,7 @@
 #include "Render2.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
+#include <Mlib/Cv/Render/Resources/Point_Cloud_Resource.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Fps.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
@@ -13,9 +15,7 @@
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
-#include <Mlib/Render/Resources/Point_Cloud_Resource.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>

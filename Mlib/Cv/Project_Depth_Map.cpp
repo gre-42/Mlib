@@ -1,5 +1,6 @@
 #include "Project_Depth_Map.hpp"
 #include <Mlib/Cv/Matrix_Conversion.hpp>
+#include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -9,7 +10,6 @@
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
