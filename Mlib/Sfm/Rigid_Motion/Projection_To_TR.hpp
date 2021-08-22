@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Sfm/Rigid_Motion/Essential_Matrix_To_TR.h>
-#include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix_And_Error.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Normalized_Projection.hpp>
 
@@ -21,7 +20,9 @@ public:
 
     bool good() const;
     InitialReconstruction initial_reconstruction() const;
-    float fundamental_error() const;
+    Array<float> fundamental_error(
+        const Array<FixedArray<float, 2>>& y0,
+        const Array<FixedArray<float, 2>>& y1) const;
     void draw_epilines(StbImage& image, const Rgb24& color) const;
 
     TransformationMatrix<float, 3> ke;
@@ -29,7 +30,7 @@ public:
 private:
     NormalizedProjection np;
     TransformationMatrix<float, 2> kin;
-    FundamentalMatrixAndError Fn;
+    FixedArray<float, 3, 3> Fn;
     FixedArray<float, 3, 3> En;
     EssentialMatrixToTR e2tr;
 };
