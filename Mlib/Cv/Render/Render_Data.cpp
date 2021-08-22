@@ -40,7 +40,6 @@ void Mlib::Cv::render_depth_map(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     float near_plane,
     float far_plane,
-    float z_offset,
     bool rotate,
     float scale,
     float camera_z,
@@ -62,7 +61,6 @@ void Mlib::Cv::render_depth_map(
         (float)depth_picture.shape(0),
         near_plane,
         far_plane,
-        z_offset,
         rotate,
         scale,
         camera_z,
@@ -79,7 +77,6 @@ void Mlib::Cv::render_depth_maps(
     float height,
     float near_plane,
     float far_plane,
-    float z_offset,
     bool rotate,
     float scale,
     float camera_z,
@@ -96,7 +93,7 @@ void Mlib::Cv::render_depth_maps(
         size_t i = 0;
         for (const DepthMapPackage& package : packages) {
             std::string resource_name = "DepthMapResource_" + std::to_string(i++);
-            const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, z_offset);
+            const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki);
             scene_node_resources.add_resource(resource_name, r);
             auto on = std::make_unique<SceneNode>();
             TransformationMatrix<float, 3> cpos = opengl_matrix_from_opencv_extrinsic_matrix(package.ke).inverted();

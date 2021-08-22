@@ -13,8 +13,7 @@ using namespace Mlib::Cv;
 DepthMapResource::DepthMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
-    float z_offset)
+    const TransformationMatrix<float, 2>& intrinsic_matrix)
 {
     TransformationMatrix<float, 2> iim{ inv(intrinsic_matrix.affine()) };
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
@@ -42,7 +41,7 @@ DepthMapResource::DepthMapResource(
                     Cv::cv_to_opengl_coordinates({
                         pos0(0) * Z(r, c),
                         pos0(1) * Z(r, c),
-                        Z(r, c) + z_offset}),
+                        Z(r, c)}),
                     FixedArray<float, 3>{
                         R(r, c),
                         G(r, c),
@@ -51,7 +50,7 @@ DepthMapResource::DepthMapResource(
                     Cv::cv_to_opengl_coordinates({
                         pos1(0) * Z(r, c + 1),
                         pos0(1) * Z(r, c + 1),
-                        Z(r, c + 1) + z_offset}),
+                        Z(r, c + 1)}),
                     FixedArray<float, 3> {
                         R(r, c + 1),
                         G(r, c + 1),
@@ -60,7 +59,7 @@ DepthMapResource::DepthMapResource(
                     Cv::cv_to_opengl_coordinates({
                         pos0(0) * Z(r + 1, c),
                         pos1(1) * Z(r + 1, c),
-                        Z(r + 1, c) + z_offset}),
+                        Z(r + 1, c)}),
                      FixedArray<float, 3> {
                         R(r + 1, c),
                         G(r + 1, c),
@@ -69,7 +68,7 @@ DepthMapResource::DepthMapResource(
                     Cv::cv_to_opengl_coordinates({
                         pos1(0) * Z(r + 1, c + 1),
                         pos1(1) * Z(r + 1, c + 1),
-                        Z(r + 1, c + 1) + z_offset}),
+                        Z(r + 1, c + 1)}),
                     FixedArray<float, 3> {
                         R(r + 1, c + 1),
                         G(r + 1, c + 1),

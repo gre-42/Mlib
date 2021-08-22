@@ -14,7 +14,7 @@ void render_depth_map(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
-    float z_offset = 1,
+    float z_offset = 0,
     bool rotate = false,
     Array<float>* output = nullptr);
 

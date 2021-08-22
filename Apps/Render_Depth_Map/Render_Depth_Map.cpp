@@ -23,7 +23,6 @@ int main(int argc, char** argv) {
         " --ki <intrinsic_matrix>"
         " [--ke <extrinsic_matrix>]"
         " [--median_filter_radius <r>]"
-        " [--z_offset <z_offset>]"
         " [--rotate]"
         " [--minus <file1> <file2...>]",
         {"--rotate"},
@@ -31,7 +30,6 @@ int main(int argc, char** argv) {
         "--depth",
         "--ki",
         "--ke",
-        "--z_offset",
         "--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -94,7 +92,6 @@ int main(int argc, char** argv) {
             intrinsic_matrix,
             safe_stof(args.named_value("--near_plane", "0.1")),
             safe_stof(args.named_value("--far_plane", "100")),
-            safe_stof(args.named_value("--z_offset", "1")),
             args.has_named("--rotate"));
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

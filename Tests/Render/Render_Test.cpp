@@ -45,7 +45,6 @@ void test_render() {
             intrinsic_matrix,
             0.1f,   // near_plane
             100.f,  // far_plane
-            1,      // z_offset
             false,  // rotate
             1,      // scale
             2,      // camera_z
@@ -66,7 +65,6 @@ void test_render() {
             intrinsic_matrix,
             0.1f,   // near_plane
             100.f,  // far_plane
-            1.f,    // z_offset
             false,  // rotate
             1,      // scale
             2,      // camera_z
