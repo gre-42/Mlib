@@ -30,13 +30,14 @@ namespace Mlib::Sfm::Hfi {
 template <class TData>
 FixedArray<TData, 2, 3> projected_points_jacobian_dke_1p_1ke_only_rotation(
     const FixedArray<TData, 3>& x,
-    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 2>& ki_r,
+    const TransformationMatrix<TData, 2>& ki_l,
     const FixedArray<TData, 3>& theta)
 {
     FixedArray<TData, 3, 3> R = tait_bryan_angles_2_matrix(theta);
-    FixedArray<TData, 3> b = lstsq_chol_1d(ki.affine(), x);
+    FixedArray<TData, 3> b = lstsq_chol_1d(ki_r.affine(), x);
     FixedArray<TData, 3> a = dot(R, b);
-    FixedArray<TData, 2, 3> dy_da = homogeneous_jacobian_dx(ki.affine(), a);
+    FixedArray<TData, 2, 3> dy_da = homogeneous_jacobian_dx(ki_l.affine(), a);
     FixedArray<TData, 3, 3> da_dtheta = tait_bryan_angles_dtheta(theta, b);
     return dot2d(dy_da, da_dtheta);
 }
@@ -44,18 +45,20 @@ FixedArray<TData, 2, 3> projected_points_jacobian_dke_1p_1ke_only_rotation(
 template <class TData>
 static FixedArray<TData, 3, 3> coordinate_transform(
     const FixedArray<TData, 3, 3>& R,
-    const TransformationMatrix<float, 2>& intrinsic_matrix)
+    const TransformationMatrix<float, 2>& intrinsic_matrix_0,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_1)
 {
-    return dot(dot(intrinsic_matrix.affine(), R), inv(intrinsic_matrix.affine()));
+    return dot2d(dot2d(intrinsic_matrix_1.affine(), R), inv(intrinsic_matrix_0.affine()));
 }
 
 template <class TData>
 static FixedArray<TData, 2> transform_coordinates(
     const FixedArray<TData, 3, 3>& R,
     const FixedArray<TData, 2>& x,
-    const TransformationMatrix<float, 2>& intrinsic_matrix)
+    const TransformationMatrix<float, 2>& intrinsic_matrix_0,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_1)
 {
-    FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix);
+    FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix_0, intrinsic_matrix_1);
     return apply_homography(H, x);
 }
 
@@ -63,13 +66,14 @@ template <class TData>
 Array<TData> d_pr(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_0,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_1,
     const FixedArray<TData, 3, 3>& R)
 {
     assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
     Array<TData> result{im_r.shape()};
-    FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix);
+    FixedArray<TData, 3, 3> H = coordinate_transform(R, intrinsic_matrix_0, intrinsic_matrix_1);
     FixedArray<size_t, 2> space_shape{ result.shape(1), result.shape(2) };
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(1); ++i) {
@@ -95,14 +99,15 @@ template <class TData>
 Array<TData> d_pr_bilinear(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const TransformationMatrix<TData, 2>& intrinsic_matrix,
+    const TransformationMatrix<TData, 2>& intrinsic_matrix_r,
+    const TransformationMatrix<TData, 2>& intrinsic_matrix_l,
     const FixedArray<TData, 3, 3>& R)
 {
     assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
     Array<TData> result{ im_r.shape() };
     ArrayShape space_shape{ im_r.shape(1), im_r.shape(2) };
-    HomographySampler hs{coordinate_transform(R, intrinsic_matrix)};
+    HomographySampler hs{coordinate_transform(R, intrinsic_matrix_r, intrinsic_matrix_l)};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;
@@ -126,18 +131,19 @@ template <class TData>
 Array<TData> intensity_jacobian(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
-    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 2>& ki_r,
+    const TransformationMatrix<TData, 2>& ki_l,
     const FixedArray<TData, 3>& theta)
 {
     ArrayShape space_shape = ArrayShape{ im_r_di.shape(2), im_r_di.shape(3) };
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 3 } };
-    HomographySampler hs{coordinate_transform(tait_bryan_angles_2_matrix(theta), ki)};
+    HomographySampler hs{coordinate_transform(tait_bryan_angles_2_matrix(theta), ki_r, ki_l)};
     #pragma omp parallel for
     for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
         for (size_t c = 0; c < im_r_di.shape(3); ++c) {
             FixedArray<size_t, 2> id_r{r, c};
-            FixedArray<float, 2, 3> J = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(i2a(id_r)), ki, theta);
+            FixedArray<float, 2, 3> J = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(i2a(id_r)), ki_r, ki_l, theta);
 
             for (size_t color = 0; color < im_r_di.shape(0); ++color) {
                 FixedArray<float, 2> im_grad{im_r_di(color, id1, r, c), im_r_di(color, id0, r, c)};
@@ -160,7 +166,8 @@ template <class TData>
 Array<TData> intensity_jacobian_fast(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
-    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 2>& ki_r,
+    const TransformationMatrix<TData, 2>& ki_l,
     const FixedArray<TData, 3>& theta)
 {
     // Color, direction, row, column
@@ -168,7 +175,7 @@ Array<TData> intensity_jacobian_fast(
     assert(all(im_r_di.shape() == im_l_di.shape()));
     FixedArray<TData, 3, 3> Rd = tait_bryan_angles_2_matrix(theta);
     FixedArray<TData, 3, 3> R{Rd};
-    FixedArray<TData, 3, 3> ki_inv{inv(ki.affine())};
+    FixedArray<TData, 3, 3> ki_r_inv{inv(ki_r.affine())};
     static const FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
     // Changed order to be compatible with the rodrigues-implementation
     static const FixedArray<TData, 3> I0 = I[0];
@@ -183,15 +190,15 @@ Array<TData> intensity_jacobian_fast(
     FixedArray<TData, 3, 3> cross1{cross(I1)};
     FixedArray<TData, 3, 3> cross2{cross(I2)};
 
-    FixedArray<TData, 3, 3> RR2 = dot(R2, cross2);
-    FixedArray<TData, 3, 3> RR1 = dot(R2, dot(R1, cross1));
-    FixedArray<TData, 3, 3> RR0 = dot(R2, dot(R1, dot(R0, cross0)));
+    FixedArray<TData, 3, 3> RR2 = dot2d(R2, cross2);
+    FixedArray<TData, 3, 3> RR1 = dot2d(R2, dot2d(R1, cross1));
+    FixedArray<TData, 3, 3> RR0 = dot2d(R2, dot2d(R1, dot2d(R0, cross0)));
 
     ArrayShape space_shape = ArrayShape{ im_r_di.shape(2), im_r_di.shape(3) };
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 3 } };
-    HomographySampler hs{coordinate_transform(R, ki)};
-    const auto m = ki.affine().template row_range<0, 2>();
-    const auto b_2d = ki.affine().template row_range<2, 3>();
+    HomographySampler hs{coordinate_transform(R, ki_r, ki_l)};
+    const auto m = ki_l.affine().template row_range<0, 2>();
+    const auto b_2d = ki_l.affine().template row_range<2, 3>();
     #pragma omp parallel for
     for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
@@ -200,24 +207,24 @@ Array<TData> intensity_jacobian_fast(
             FixedArray<TData, 3> x = homogenized_3(i2a(id_r));
 
             // projected_points_jacobian_dke_1p_1ke_only_rotation
-            FixedArray<TData, 3> b = dot(ki_inv, x);
-            FixedArray<TData, 3> a = dot(R, b);
+            FixedArray<TData, 3> b = dot1d(ki_r_inv, x);
+            FixedArray<TData, 3> a = dot1d(R, b);
 
-            const auto Mx = dot(ki.affine(), a);
+            const auto Mx = dot1d(ki_l.affine(), a);
             const auto mx = Mx.template row_range<0, 2>();
             const float bx = Mx(2);
 
             const auto mx_2d = mx.template reshaped<2, 1>();
 
-            FixedArray<TData, 2, 3> dy_da = ((m * bx) - dot(mx_2d, b_2d)) / squared(bx);
+            FixedArray<TData, 2, 3> dy_da = ((m * bx) - dot2d(mx_2d, b_2d)) / squared(bx);
 
-            FixedArray<TData, 3> r0 = dot(R0, b);
-            FixedArray<TData, 3> r1 = dot(R1, r0);
+            FixedArray<TData, 3> r0 = dot1d(R0, b);
+            FixedArray<TData, 3> r1 = dot1d(R1, r0);
 
             FixedArray<TData, 3, 3> da_dtheta_T;
-            da_dtheta_T[0] = dot(RR0, b);
-            da_dtheta_T[1] = dot(RR1, r0);
-            da_dtheta_T[2] = dot(RR2, r1);
+            da_dtheta_T[0] = dot1d(RR0, b);
+            da_dtheta_T[1] = dot1d(RR1, r0);
+            da_dtheta_T[2] = dot1d(RR2, r1);
 
             FixedArray<TData, 2, 3> J = outer(dy_da, da_dtheta_T);
 
@@ -242,7 +249,8 @@ template <class TData>
 FixedArray<TData, 3, 3> rotation_from_images(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_r,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_l,
     bool differentiate_numerically = false,
     FixedArray<TData, 3>* x0 = nullptr,
     FixedArray<TData, 3>* xe = nullptr,
@@ -252,7 +260,7 @@ FixedArray<TData, 3, 3> rotation_from_images(
     assert(all(im_r.shape() == im_l.shape()));
     const TData NAN_VALUE = 0;
     auto f = [&](const FixedArray<TData, 3>& x){
-        return substitute_nans(d_pr_bilinear(im_r, im_l, intrinsic_matrix, tait_bryan_angles_2_matrix(x)).flattened(), NAN_VALUE);
+        return substitute_nans(d_pr_bilinear(im_r, im_l, intrinsic_matrix_r, intrinsic_matrix_l, tait_bryan_angles_2_matrix(x)).flattened(), NAN_VALUE);
     };
     Array<float> im_r_di = multichannel_central_gradient_filter(im_r);
     Array<float> im_l_di = multichannel_central_gradient_filter(im_l);
@@ -264,7 +272,7 @@ FixedArray<TData, 3, 3> rotation_from_images(
             if (differentiate_numerically) {
                 return mixed_numerical_differentiation(f, x);
             } else {
-                return intensity_jacobian_fast(im_r_di, im_l_di, intrinsic_matrix, x).rows_as_1D();
+                return intensity_jacobian_fast(im_r_di, im_l_di, intrinsic_matrix_r, intrinsic_matrix_l, x).rows_as_1D();
             }
         },
         TData(1e-2),     // alpha,

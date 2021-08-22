@@ -29,7 +29,7 @@ void test_jacobian() {
             return transform_coordinates(intrinsic_matrix, k_external(kkep), x, depth);
         },
         kep);
-    FixedArray<float, 2, 6> an = projected_points_jacobian_dke_1p_1ke_lifting(x, depth, intrinsic_matrix, kep);
+    FixedArray<float, 2, 6> an = projected_points_jacobian_dke_1p_1ke_lifting(x, depth, intrinsic_matrix, intrinsic_matrix, kep);
     assert_allclose(num, an, float{ 1e-3 });
 }
 
@@ -44,13 +44,13 @@ void test_intensity_jacobian() {
     Array<float> im_r_depth = uniform_random_array<float>(ArrayShape{4, 5}, 1) * 0.2f + 2.f;
     Array<float> im_r_f = multichannel_central_gradient_filter(im_r);
     Array<float> im_l_f = multichannel_central_gradient_filter(im_l);
-    Array<float> ij = intensity_jacobian(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, kep);
+    Array<float> ij = intensity_jacobian(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, intrinsic_matrix, kep);
     assert(all(ij.shape() == ArrayShape{2, 4, 5, 6}));
     // assert_isclose(sum(squared(ij)), 611.727f, float(1e-2));
 
     assert_allclose(
-        intensity_jacobian(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, kep),
-        intensity_jacobian_fast(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, kep),
+        intensity_jacobian(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, intrinsic_matrix, kep),
+        intensity_jacobian_fast(im_r_f, im_l_f, im_r_depth, intrinsic_matrix, intrinsic_matrix, kep),
         float{ 1e-4 });
 }
 
@@ -63,25 +63,25 @@ void test_rigid_motion_from_images() {
 
     draw_nan_masked_rgb(im0, 0, 1).save_to_file("TestOut/rmfi-0.png");
     draw_nan_masked_rgb(im1, 0, 1).save_to_file("TestOut/rmfi-1.png");
-    Array<float> im0m = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, TransformationMatrix<float, 3>::identity());
+    Array<float> im0m = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, TransformationMatrix<float, 3>::identity());
     draw_nan_masked_rgb(im0m, -0.1f, 0.1f).save_to_file("TestOut/rmfi-d_pr.png");
 
     {
-        TransformationMatrix<float, 3> ke_id = rigid_motion_from_images_smooth(im0, im0, depth0, intrinsic_matrix, {1.f});
+        TransformationMatrix<float, 3> ke_id = rigid_motion_from_images_smooth(im0, im0, depth0, intrinsic_matrix, intrinsic_matrix, {1.f});
         assert_allclose(ke_id.affine(), fixed_identity_array<float, 4>());
     }
     {
-        TransformationMatrix<float, 3> ke_s = rigid_motion_from_images_smooth(im0, im1, depth0, intrinsic_matrix, { 3.f });
-        Array<float> im1t_s = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, ke_s);
+        TransformationMatrix<float, 3> ke_s = rigid_motion_from_images_smooth(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, { 3.f });
+        Array<float> im1t_s = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke_s);
 
-        TransformationMatrix<float, 3> ke_r = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, { 3.f }, {}, fixed_zeros<float, 6>(), false);  // false = estimate_rotation_first
-        Array<float> im1t_r = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, ke_r);
+        TransformationMatrix<float, 3> ke_r = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, { 3.f }, {}, fixed_zeros<float, 6>(), false);  // false = estimate_rotation_first
+        Array<float> im1t_r = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke_r);
         draw_nan_masked_rgb(im1t_r, -0.05f, 0.05f).save_to_file("TestOut/rmfi-t-d_pr.png");
         assert_allclose(ke_s.affine(), ke_r.affine());
     }
     {
-        TransformationMatrix<float, 3> ke = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, {3.f, 1.f, 0.f}, {0.1f, 0.05f});
-        Array<float> im1t = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, ke);
+        TransformationMatrix<float, 3> ke = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, {3.f, 1.f, 0.f}, {0.1f, 0.05f});
+        Array<float> im1t = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke);
         draw_nan_masked_rgb(im1t, -0.05f, 0.05f).save_to_file("TestOut/rmfi-t-d_pr-3-0.png");
 
         //for (size_t r = 0; r < depth1.shape(0); ++r) {

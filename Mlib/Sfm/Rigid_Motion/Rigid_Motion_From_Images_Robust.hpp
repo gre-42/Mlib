@@ -22,7 +22,9 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
     const Array<TData>& im_r1,
     const Array<TData>& im_l,
     const Array<TData>& im_r0_depth,
-    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_r0,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_r1,
+    const TransformationMatrix<float, 2>& intrinsic_matrix_l,
     const std::vector<TData>& sigmas,
     const std::vector<TData>& thresholds,
     const FixedArray<TData, 6>& x0_r1_r0 = fixed_zeros<TData, 6>(),
@@ -39,7 +41,8 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
             Hfi::rotation_from_images(
                 multichannel_gaussian_filter_NWE(im_r1, sigma, NAN),
                 multichannel_gaussian_filter_NWE(im_l, sigma, NAN),
-                intrinsic_matrix,
+                intrinsic_matrix_r1,
+                intrinsic_matrix_l,
                 false,
                 &x0_rot_l_r1,
                 &x0_rot_l_r1,
@@ -64,7 +67,7 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
         if (ke_initialized) {
             // Assign NANs to pixels with errors above a given threshold.
             Array<float> err = mean(
-                abs(d_pr_bilinear(im_r0, im_l, im_r0_depth, intrinsic_matrix, ke)),
+                abs(d_pr_bilinear(im_r0, im_l, im_r0_depth, intrinsic_matrix_r0, intrinsic_matrix_l, ke)),
                 0);
             for (size_t r = 0; r < im_r0.shape(1); ++r) {
                 for (size_t c = 0; c < im_r0.shape(2); ++c) {
@@ -80,7 +83,8 @@ TransformationMatrix<float, 3> rigid_motion_from_images_robust(
             multichannel_gaussian_filter_NWE(im_r0, sigma, NAN),
             multichannel_gaussian_filter_NWE(im_l, sigma, NAN),
             masked_im_r_depth_s,
-            intrinsic_matrix,
+            intrinsic_matrix_r0,
+            intrinsic_matrix_l,
             false,             // differentiate_numerically
             &x0_l_r0,          // x0
             &x0_l_r0,          // xe

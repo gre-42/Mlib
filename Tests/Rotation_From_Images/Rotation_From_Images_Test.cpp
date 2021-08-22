@@ -20,9 +20,9 @@ void test_jacobian() {
     FixedArray<float, 3> theta{ uniform_random_array<float>(ArrayShape{3}, 3) };
     FixedArray<float, 2> x{ uniform_random_array<float>(ArrayShape{2}, 2) };
     FixedArray<float, 2, 3> num = numerical_differentiation<2>([&](const FixedArray<float, 3>& ttheta){
-            return transform_coordinates(tait_bryan_angles_2_matrix(ttheta), x, intrinsic_matrix);
+            return transform_coordinates(tait_bryan_angles_2_matrix(ttheta), x, intrinsic_matrix, intrinsic_matrix);
         }, theta);
-    FixedArray<float, 2, 3> an = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(x), intrinsic_matrix, theta);
+    FixedArray<float, 2, 3> an = projected_points_jacobian_dke_1p_1ke_only_rotation(homogenized_3(x), intrinsic_matrix, intrinsic_matrix, theta);
     assert_allclose(num, an, float(1e-2));
 }
 
@@ -36,13 +36,13 @@ void test_intensity_jacobian() {
     Array<float> im_l = uniform_random_array<float>(ArrayShape{2, 4, 5}, 2);
     Array<float> im_r_f = multichannel_central_gradient_filter(im_r);
     Array<float> im_l_f = multichannel_central_gradient_filter(im_l);
-    Array<float> ij = intensity_jacobian(im_r_f, im_l_f, intrinsic_matrix, theta);
+    Array<float> ij = intensity_jacobian(im_r_f, im_l_f, intrinsic_matrix, intrinsic_matrix, theta);
     assert(all(ij.shape() == ArrayShape{2, 4, 5, 3}));
     assert_isclose(sum(squared(ij)), 29428.1f, float(1e-1));
 
     assert_allclose(
-        intensity_jacobian(im_r_f, im_l_f, intrinsic_matrix, theta),
-        intensity_jacobian_fast(im_r_f, im_l_f, intrinsic_matrix, theta),
+        intensity_jacobian(im_r_f, im_l_f, intrinsic_matrix, intrinsic_matrix, theta),
+        intensity_jacobian_fast(im_r_f, im_l_f, intrinsic_matrix, intrinsic_matrix, theta),
         float{ 1e-3 });
 }
 
@@ -59,13 +59,13 @@ void test_homography_from_images() {
     im0_rgb = multichannel_gaussian_filter_NWE(im0_rgb, 3.f, NAN);
     im1_rgb = multichannel_gaussian_filter_NWE(im1_rgb, 3.f, NAN);
 
-    FixedArray<float, 3, 3> R = rotation_from_images(im0_rgb, im1_rgb, intrinsic_matrix);
+    FixedArray<float, 3, 3> R = rotation_from_images(im0_rgb, im1_rgb, intrinsic_matrix, intrinsic_matrix);
     assert_allclose(R, FixedArray<float, 3, 3>{
         0.999998, -0.00143413, -0.00139267,
         0.00150745, 0.998531, 0.0541625,
         0.00131294, -0.0541645, 0.998531});
     // Array<float> diff = d_pr(im0_rgb, im1_rgb, intrinsic_matrix, R);
-    Array<float> diff = d_pr_bilinear(zeros<float>(im0_rgb.shape()), im1_rgb, intrinsic_matrix, R);
+    Array<float> diff = d_pr_bilinear(zeros<float>(im0_rgb.shape()), im1_rgb, intrinsic_matrix, intrinsic_matrix, R);
     draw_nan_masked_rgb(diff, 0, 0).save_to_file("TestOut/rotation-diff.png");
 }
 

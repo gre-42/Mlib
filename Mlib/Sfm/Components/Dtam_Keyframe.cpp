@@ -109,6 +109,8 @@ void DtamKeyframe::append_camera_frame() {
             image_frame_l->second.rgb,
             depth_,
             down_sampler_.ds_intrinsic_matrix_,
+            down_sampler_.ds_intrinsic_matrix_,
+            down_sampler_.ds_intrinsic_matrix_,
             {3.f, 1.f, 0.f},
             {float(INFINITY), float(INFINITY)},  // robust thresholds: {0.1f, 0.01f}
             k_external_inverse(x0_r1_r0),
@@ -134,6 +136,7 @@ void DtamKeyframe::append_camera_frame() {
                 image_r0.rgb,
                 image_frame_l->second.rgb,
                 depth_,
+                down_sampler_.ds_intrinsic_matrix_,
                 down_sampler_.ds_intrinsic_matrix_,
                 ke);
             draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-" + suffix + ".png");
@@ -211,7 +214,9 @@ void DtamKeyframe::append_camera_frame() {
             down_sampler_.ds_image_frames_.at(time_r1).rgb,    // im_r1
             image_frame_l->second.rgb,                         // im_l
             depth_picture_v,                                   // im_r0_depth
-            down_sampler_.ds_intrinsic_matrix_,                // intrinsic_matrix
+            down_sampler_.ds_intrinsic_matrix_,                // intrinsic_matrix_r0
+            down_sampler_.ds_intrinsic_matrix_,                // intrinsic_matrix_r1
+            down_sampler_.ds_intrinsic_matrix_,                // intrinsic_matrix_l
             {3.f, 1.f, 0.f},                                   // sigmas
             {float(INFINITY), float(INFINITY)},                // robust thresholds: {0.1f, 0.01f}
             fixed_zeros<float, 6>(),                           // x0_r1_r0
@@ -228,6 +233,7 @@ void DtamKeyframe::append_camera_frame() {
                 image_frame_l->second.rgb,
                 depth_picture_v,
                 down_sampler_.ds_intrinsic_matrix_,
+                down_sampler_.ds_intrinsic_matrix_,
                 ke_lv);
             draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-v-" + suffix + ".png");
         }
@@ -239,6 +245,7 @@ void DtamKeyframe::append_camera_frame() {
                 image_r0.rgb,
                 image_frame_l->second.rgb,
                 depth_,
+                down_sampler_.ds_intrinsic_matrix_,
                 down_sampler_.ds_intrinsic_matrix_,
                 ke);
             draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-r-" + suffix + ".png");
@@ -265,6 +272,7 @@ void DtamKeyframe::inspect_externally_appended_camera_frame() const {
         down_sampler_.ds_image_frames_.at(key_frame_time_).rgb,
         image_frame_l->second.rgb,
         depth_,
+        down_sampler_.ds_intrinsic_matrix_,
         down_sampler_.ds_intrinsic_matrix_,
         ke);
     draw_quantiled_grayscale(sum(abs(im), 0), 0.05f, 0.95f).save_to_file(cache_dir_ + "/inspect-err-" + suffix + ".png");

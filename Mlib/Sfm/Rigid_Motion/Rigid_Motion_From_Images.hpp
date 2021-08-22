@@ -20,14 +20,16 @@ FixedArray<TData, 2> transform_coordinates(const TransformationMatrix<TData, 2>&
     return FixedArray<TData, 2>{res3(0) / res3(2), res3(1) / res3(2)};
 }
 
-FixedArray<float, 2, 6> projected_points_jacobian_dke_1p_1ke_lifting(
-    const FixedArray<float, 2>& y,
-    float depth,
-    const TransformationMatrix<float, 2>& ki,
-    const FixedArray<float, 6>& kep)
+template <class TData>
+FixedArray<TData, 2, 6> projected_points_jacobian_dke_1p_1ke_lifting(
+    const FixedArray<TData, 2>& y,
+    TData depth,
+    const TransformationMatrix<TData, 2>& ki_r,
+    const TransformationMatrix<TData, 2>& ki_l,
+    const FixedArray<TData, 6>& kep)
 {
-    FixedArray<float, 3> x = lstsq_chol_1d(ki.affine(), homogenized_3(y)) * depth;
-    return Cv::projected_points_jacobian_dke_1p_1ke(x, ki, kep);
+    FixedArray<TData, 3> x = lstsq_chol_1d(ki_r.affine(), homogenized_3(y)) * depth;
+    return Cv::projected_points_jacobian_dke_1p_1ke(x, ki_l, kep);
 }
 
 template <class TData>
@@ -35,13 +37,14 @@ Array<TData> d_pr_bilinear(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
     const Array<TData>& im_r_depth,
-    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 2>& ki_r,
+    const TransformationMatrix<TData, 2>& ki_l,
     const TransformationMatrix<TData, 3>& ke)
 {
     assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
     Array<TData> result{ im_r.shape() };
-    Cv::RigidMotionSampler rs{ki, ki, ke, im_r_depth};
+    Cv::RigidMotionSampler rs{ki_r, ki_l, ke, im_r_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;
@@ -66,14 +69,15 @@ Array<TData> intensity_jacobian(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
     const Array<TData>& im_r_depth,
-    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 2>& ki_r,
+    const TransformationMatrix<TData, 2>& ki_l,
     const FixedArray<TData, 6>& kep)
 {
     // Color, direction, row, column
     assert(im_r_di.ndim() == 4);
     assert(all(im_r_di.shape() == im_l_di.shape()));
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 6 } };
-    Cv::RigidMotionSampler hs{ki, ki, Cv::k_external(kep), im_r_depth};
+    Cv::RigidMotionSampler hs{ki_r, ki_l, Cv::k_external(kep), im_r_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
@@ -83,7 +87,7 @@ Array<TData> intensity_jacobian(
                 continue;
             }
             FixedArray<size_t, 2> id_r{r, c};
-            FixedArray<float, 2, 6> J = projected_points_jacobian_dke_1p_1ke_lifting(i2a(id_r), im_r_depth(r, c), ki, kep);
+            FixedArray<float, 2, 6> J = projected_points_jacobian_dke_1p_1ke_lifting(i2a(id_r), im_r_depth(r, c), ki_r, ki_l, kep);
 
             for (size_t color = 0; color < im_r_di.shape(0); ++color) {
                 Array<float> im_grad{im_r_di(color, id1, r, c), im_r_di(color, id0, r, c)};
@@ -108,14 +112,15 @@ Array<TData> intensity_jacobian_fast(
     const Array<TData>& im_r_di,
     const Array<TData>& im_l_di,
     const Array<TData>& im_r_depth,
-    const TransformationMatrix<TData, 2>& ki,
+    const TransformationMatrix<TData, 2>& ki_r,
+    const TransformationMatrix<TData, 2>& ki_l,
     const FixedArray<TData, 6>& kep)
 {
     // Color, direction, row, column
     assert(im_r_di.ndim() == 4);
     assert(all(im_r_di.shape() == im_l_di.shape()));
-    FixedArray<TData, 3, 3> iki{inv(ki.affine())};
-    FixedArray<TData, 3, 3> kif{ki.affine()};
+    FixedArray<TData, 3, 3> iki_r{inv(ki_r.affine())};
+    FixedArray<TData, 3, 3> kif_l{ki_l.affine()};
     FixedArray<TData, 3, 4> ke{Cv::k_external(kep).semi_affine()};
     static const Array<TData> I = identity_array<TData>(3);
     // Changed order to be compatible with the rodrigues-implementation
@@ -137,7 +142,7 @@ Array<TData> intensity_jacobian_fast(
 
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 6 } };
 
-    Cv::RigidMotionSampler hs{ki, ki, Cv::k_external(kep), im_r_depth};
+    Cv::RigidMotionSampler hs{ki_r, ki_l, Cv::k_external(kep), im_r_depth};
     #pragma omp parallel for
     for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
@@ -151,15 +156,15 @@ Array<TData> intensity_jacobian_fast(
                 continue;
             }
             FixedArray<size_t, 2> id_r{r, c};
-            FixedArray<TData, 3> x = dot(iki, homogenized_3(i2a(id_r))) * im_r_depth(r, c);
+            FixedArray<TData, 3> x = dot(iki_r, homogenized_3(i2a(id_r))) * im_r_depth(r, c);
 
-            const auto m = kif.template row_range<0, 2>();
-            const auto Mx = dot(kif, dot(ke, homogenized_4(x)));
+            const auto m = kif_l.template row_range<0, 2>();
+            const auto Mx = dot(kif_l, dot(ke, homogenized_4(x)));
             const auto mx = Mx.template row_range<0, 2>();
             const TData bx = Mx(2);
 
             const auto mx_2d = mx.template reshaped<2, 1>();
-            const auto b_2d = kif.template row_range<2, 3>();
+            const auto b_2d = kif_l.template row_range<2, 3>();
 
             FixedArray<TData, 2, 3> dy_da = ((m * bx) - dot(mx_2d, b_2d)) / squared(bx);
 
@@ -200,7 +205,8 @@ TransformationMatrix<TData, 3> rigid_motion_from_images(
     const Array<TData>& im_r,
     const Array<TData>& im_l,
     const Array<TData>& im_r_depth,
-    const TransformationMatrix<TData, 2>& intrinsic_matrix,
+    const TransformationMatrix<TData, 2>& intrinsic_matrix_r,
+    const TransformationMatrix<TData, 2>& intrinsic_matrix_l,
     bool differentiate_numerically = false,
     const FixedArray<TData, 6>* x0 = nullptr,
     FixedArray<TData, 6>* xe = nullptr,
@@ -213,7 +219,7 @@ TransformationMatrix<TData, 3> rigid_motion_from_images(
     }
     const TData NAN_VALUE = 0;
     auto f = [&](const FixedArray<TData, 6>& x){
-        return substitute_nans(d_pr_bilinear(im_r, im_l, im_r_depth, intrinsic_matrix, Cv::k_external(x)).flattened(), NAN_VALUE);
+        return substitute_nans(d_pr_bilinear(im_r, im_l, im_r_depth, intrinsic_matrix_r, intrinsic_matrix_l, Cv::k_external(x)).flattened(), NAN_VALUE);
     };
     Array<float> im_r_di = multichannel_central_gradient_filter(im_r);
     Array<float> im_l_di = multichannel_central_gradient_filter(im_l);
@@ -224,7 +230,7 @@ TransformationMatrix<TData, 3> rigid_motion_from_images(
         [&](const FixedArray<TData, 6>& x){
             return differentiate_numerically
                 ? mixed_numerical_differentiation(f, x)
-                : substitute_nans(intensity_jacobian_fast(im_r_di, im_l_di, im_r_depth, intrinsic_matrix, x).rows_as_1D(), NAN_VALUE);
+                : substitute_nans(intensity_jacobian_fast(im_r_di, im_l_di, im_r_depth, intrinsic_matrix_r, intrinsic_matrix_l, x).rows_as_1D(), NAN_VALUE);
         },
         TData(1e-2),     // alpha,
         TData(1e-2),     // beta,

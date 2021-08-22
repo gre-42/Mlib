@@ -41,27 +41,26 @@ int main(int argc, char** argv) {
 
         args.assert_num_unamed(0);
 
-        DepthMapBundle cleaned_bundle;
-        {
-            DepthMapBundle bundle;
-            size_t r = safe_stoz(args.named_value("--median_filter_radius", "0"));
-            for (const std::string& filename : args.named_list("--packages")) {
-                std::cerr << "Loading \"" << filename << '"' << std::endl;
-                DepthMapPackage package = load_depth_map_package(filename);
-                if (r != 0) {
-                    package.depth.move() = median_filter_2d(package.depth, r);
-                }
-                bundle.insert(package);
+        DepthMapBundle bundle;
+        size_t r = safe_stoz(args.named_value("--median_filter_radius", "0"));
+        for (const std::string& filename : args.named_list("--packages")) {
+            std::cerr << "Loading \"" << filename << '"' << std::endl;
+            DepthMapPackage package = load_depth_map_package(filename);
+            if (r != 0) {
+                package.depth.move() = median_filter_2d(package.depth, r);
             }
-            cleaned_bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
+            bundle.insert(package);
         }
+        bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
+        bundle = bundle.reregister();
+
         std::vector<DepthMapPackage> packages;
-        packages.reserve(cleaned_bundle.packages().size());
-        for (const auto& package : cleaned_bundle.packages()) {
+        packages.reserve(bundle.packages().size());
+        for (const auto& package : bundle.packages()) {
             packages.push_back(package.second);
         }
-        const auto& ref = cleaned_bundle.packages().find(std::chrono::milliseconds(safe_stou64(args.named_value("--reference_time"))));
-        if (ref == cleaned_bundle.packages().end()) {
+        const auto& ref = bundle.packages().find(std::chrono::milliseconds(safe_stou64(args.named_value("--reference_time"))));
+        if (ref == bundle.packages().end()) {
             throw std::runtime_error("Could not find package with reference time");
         }
         size_t num_renderings = SIZE_MAX;

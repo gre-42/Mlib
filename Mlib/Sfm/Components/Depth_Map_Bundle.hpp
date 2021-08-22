@@ -29,6 +29,7 @@ public:
     const Packages& packages() const;
     void compute_error(const std::chrono::milliseconds& time, Array<float>& err, size_t& nerr) const;
     DepthMapBundle delete_pixels_blocking_the_view(float threshold) const;
+    DepthMapBundle reregister(bool print_residual = false) const;
 private:
     Packages packages_;
 };
