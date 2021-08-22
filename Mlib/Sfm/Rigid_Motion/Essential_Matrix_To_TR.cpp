@@ -9,7 +9,8 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 EssentialMatrixToTR::EssentialMatrixToTR(const FixedArray<float, 3, 3>& E) {
-    // From: Wikipedia, essential matrix
+    // From: https://en.wikipedia.org/wiki/Essential_matrix#Extracting_rotation_and_translation
+
     //Array<float> uT;
     //Array<float> s;
     //Array<float> vT;
@@ -24,9 +25,18 @@ EssentialMatrixToTR::EssentialMatrixToTR(const FixedArray<float, 3, 3>& E) {
     //vT = Array<double>({{0.17801,-0.25069, 0.95156},
     //                    {0.53480, 0.83637, 0.12030},
     //                    {-0.82601, 0.48748, 0.28295}}).T();
-    Array<double> Z{{0, -1, 0}, {1, 0, 0}, {0, 0, 0}};
-    Array<double> invW{{0, 1, 0}, {-1, 0, 0}, {0, 0, 1}};
-    Array<double> W{{0, -1, 0}, {1, 0, 0}, {0, 0, 1}};
+    Array<double> Z{
+        {0, 1, 0},
+        {-1, 0, 0},
+        {0, 0, 0}};
+    Array<double> invW{
+        {0, 1, 0},
+        {-1, 0, 0},
+        {0, 0, 1}};
+    Array<double> W{
+        {0, -1, 0},
+        {1, 0, 0},
+        {0, 0, 1}};
     Array<double> T = outer(dot(u, Z), u);
     Array<double> tu;
     //double ts;
