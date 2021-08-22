@@ -35,9 +35,9 @@ ProjectionToTrRansac::ProjectionToTrRansac(
             //     highlight_features(y1[indices], bmp, 4, Rgb24::red());
             //     highlight_feature_correspondences(y0, y1, bmp);
             //     highlight_feature_correspondences(y0[indices], y1[indices], bmp, 1);
-            //     bmp.save_to_file("/tmp/epilines_ransac_" + std::to_string(i) + "_" + std::to_string(ptr.ngood) + "_" + std::to_string(ptr.fundamental_error()) + ".png");
+            //     bmp.save_to_file("/tmp/epilines_ransac_" + std::to_string(i) + "_" + std::to_string(ptr.ngood) + ".png");
             //     if (ptr.good()) {
-            //         ptr.ke.inverted().affine().to_array().save_txt_2d("/tmp/pose_" + std::to_string(i) + ".m");
+            //         ptr.ke.inverted().semi_affine().to_array().save_txt_2d("/tmp/pose_" + std::to_string(i) + ".m");
             //     }
             // }
             if (ptr.good()) {
@@ -77,9 +77,9 @@ ProjectionToTrRansac::ProjectionToTrRansac(
         //     highlight_features(y1[best_indices], bmp, 4, Rgb24::red());
         //     highlight_feature_correspondences(y0, y1, bmp);
         //     highlight_feature_correspondences(y0[best_indices], y1[best_indices], bmp, 1);
-        //     bmp.save_to_file("/tmp/epilines_ransac_best_" + std::to_string(i) + "_" + std::to_string(ptr->ngood) + "_" + std::to_string(ptr->fundamental_error()) + ".png");
+        //     bmp.save_to_file("/tmp/epilines_ransac_best_" + std::to_string(i) + "_" + std::to_string(ptr->ngood) + ".png");
         //     if (ptr->good()) {
-        //         ptr->ke.inverted().affine().to_array().save_txt_2d("/tmp/pose_best_" + std::to_string(i) + ".m");
+        //         ptr->ke.inverted().semi_affine().to_array().save_txt_2d("/tmp/pose_best_" + std::to_string(i) + ".m");
         //     }
         // }
     } else {
