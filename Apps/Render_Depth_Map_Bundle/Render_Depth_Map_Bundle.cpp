@@ -24,11 +24,16 @@ int main(int argc, char** argv) {
         " --minus_threshold <threshold>"
         " [--output <filename>]"
         " [--median_filter_radius <r>]"
+        " [--register_forward]"
+        " [--register_backward]"
         " [--rotate]"
         " [--wire_frame]"
         " [--reference_time <milliseconds>]"
         " [--packages <file1> <file2...>]",
-        {"--rotate", "--wire_frame"},
+        {"--rotate",
+        "--wire_frame",
+        "--register_forward",
+        "--register_backward"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -52,7 +57,12 @@ int main(int argc, char** argv) {
             bundle.insert(package);
         }
         bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
-        bundle = bundle.reregister();
+        if (args.has_named("--register_forward")) {
+            bundle = bundle.reregister(RegistrationDirection::FORWARD);
+        }
+        if (args.has_named("--register_backward")) {
+            bundle = bundle.reregister(RegistrationDirection::BACKWARD);
+        }
 
         std::vector<DepthMapPackage> packages;
         packages.reserve(bundle.packages().size());

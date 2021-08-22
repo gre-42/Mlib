@@ -116,37 +116,47 @@ DepthMapBundle DepthMapBundle::delete_pixels_blocking_the_view(float threshold) 
     return result;
 }
 
-DepthMapBundle DepthMapBundle::reregister(bool print_residual) const {
-    DepthMapBundle result;
-    auto eit = packages_.begin();
-    if (eit == packages_.end()) {
-        return result;
-    }
-    result.insert(eit->second);
-    while (true) {
-        auto bit = eit++;
-        if (eit == packages_.end()) {
-            break;
+DepthMapBundle DepthMapBundle::reregister(
+    RegistrationDirection direction,
+    bool print_residual) const
+{
+    auto reg = [print_residual](auto begin, auto end){
+        DepthMapBundle result;
+        auto eit = begin;
+        if (eit == end) {
+            return result;
         }
-        std::cerr << "Reregistering times " << bit->second.time.count() << " ms and " << eit->second.time.count() << " ms" << std::endl;
-        TransformationMatrix<float, 3> x0_r1_r0 = projection_in_reference(
-            bit->second.ke,
-            eit->second.ke);
-        TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_smooth(
-            bit->second.rgb,
-            eit->second.rgb,
-            bit->second.depth,
-            bit->second.ki,
-            eit->second.ki,
-            {3.f, 1.f, 0.f},
-            k_external_inverse(x0_r1_r0),
-            print_residual);
-        result.insert(DepthMapPackage{
-            .time = eit->second.time,
-            .rgb = eit->second.rgb,
-            .depth = eit->second.depth,
-            .ki = eit->second.ki,
-            .ke = ke * result.packages_.at(bit->first).ke});
+        result.insert(eit->second);
+        while (true) {
+            auto bit = eit++;
+            if (eit == end) {
+                break;
+            }
+            std::cerr << "Reregistering times " << bit->second.time.count() << " ms and " << eit->second.time.count() << " ms" << std::endl;
+            TransformationMatrix<float, 3> x0_r1_r0 = projection_in_reference(
+                bit->second.ke,
+                eit->second.ke);
+            TransformationMatrix<float, 3> ke = Rmfi::rigid_motion_from_images_smooth(
+                bit->second.rgb,
+                eit->second.rgb,
+                bit->second.depth,
+                bit->second.ki,
+                eit->second.ki,
+                {3.f, 1.f, 0.f},
+                k_external_inverse(x0_r1_r0),
+                print_residual);
+            result.insert(DepthMapPackage{
+                .time = eit->second.time,
+                .rgb = eit->second.rgb,
+                .depth = eit->second.depth,
+                .ki = eit->second.ki,
+                .ke = ke * result.packages_.at(bit->first).ke});
+        }
+        return result;
+    };
+    if (direction == RegistrationDirection::FORWARD) {
+        return reg(packages_.begin(), packages_.end());
+    } else {
+        return reg(packages_.rbegin(), packages_.rend());
     }
-    return result;
 }
