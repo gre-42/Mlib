@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
             (float)ref->second.depth.shape(0),
             safe_stof(args.named_value("--near_plane", "0.1")),
             safe_stof(args.named_value("--far_plane", "100")),
-            safe_stof(args.named_value("--z_offset", "1")),
+            safe_stof(args.named_value("--z_offset", "0")),
             args.has_named("--rotate"));
         if (args.has_named_value("--output")) {
             const Array<float>& array = render_results.outputs.at(rsd).rgb;
