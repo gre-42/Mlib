@@ -107,11 +107,11 @@ void Mlib::Sfm::process_files_with_pipeline(
                             FixedArray<float, 3>{t}) };
                     pipeline.process_image_frame(time, image_frame, &camera_frame, is_last_frame, ncameras < image_files.size());
                 }
+                time += std::chrono::milliseconds{ 10 };
             }
             if (camera_files != nullptr) {
                 ++camera_it;
             }
-            time += std::chrono::milliseconds{ 10 };
             ++i;
         }
         //} catch (const std::exception& e) {
