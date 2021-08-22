@@ -22,6 +22,7 @@ FundamentalMatrixAndError Mlib::Sfm::find_fundamental_matrix(
     assert(y1.ndim() == 1);
     assert(y0.length() == y1.length());
     Array<double> Y(ArrayShape{y0.length(), 9});
+    // From: https://en.wikipedia.org/wiki/Eight-point_algorithm#Step_1:_Formulating_a_homogeneous_linear_equation
     for (size_t r = 0; r < y0.length(); ++r) {
         Y(r, 0) = double(y1(r)(0)) * y0(r)(0); // e11
         Y(r, 1) = double(y1(r)(0)) * y0(r)(1); // e12
