@@ -15,7 +15,8 @@ void process_files_with_pipeline(
     std::ostream& ostream,
     size_t nskipped,
     size_t nimages,
-    size_t ncameras);
+    size_t ncameras,
+    bool reverse);
 
 void process_folder_with_pipeline(
     const std::string& cache_dir,
@@ -25,6 +26,7 @@ void process_folder_with_pipeline(
     std::ostream& ostream,
     size_t nskipped,
     size_t nimages,
-    size_t ncameras);
+    size_t ncameras,
+    bool reverse);
 
 }

@@ -20,7 +20,7 @@ static std::unique_ptr<ChessboardCalibrationPipeline> run_chessboard_calibration
         cache_dir,
         chessboard_shape);
     if (!calib->is_cached()) {
-        process_folder_with_pipeline(cache_dir, calib_source_dir, nullptr, *calib, std::cout, 0, SIZE_MAX, SIZE_MAX);
+        process_folder_with_pipeline(cache_dir, calib_source_dir, nullptr, *calib, std::cout, 0, SIZE_MAX, SIZE_MAX, false);
     }
     return calib;
 }
@@ -34,6 +34,7 @@ static void run_reconstruction_pipeline(
     size_t nskipped,
     size_t nimages,
     size_t ncameras,
+    bool reverse,
     const TemplatePatchPipelineConfig& cfg)
 {
     std::unique_ptr<ImagePipeline> pipeline;
@@ -55,7 +56,8 @@ static void run_reconstruction_pipeline(
         std::cout,
         nskipped,
         nimages,
-        ncameras);
+        ncameras,
+        reverse);
 }
 
 
@@ -75,13 +77,15 @@ int main(int argc, char** argv) {
         "[--nskipped <nskipped>] "
         "[--nimages <nimages>] "
         "[--ncameras <ncameras>] "
+        "[--reverse] "
         "[--features_down_sampling <n>] "
         "[--dtam_down_sampling <n>] "
         "[--regularization_filter_poly_degree <d>] "
         "[--regularization_filter_sigma <s>]",
         { "--no_dtam",
           "--no_dtam_tracking",
-          "--use_virtual_camera" },
+          "--use_virtual_camera",
+          "--reverse" },
         { "--pipeline",
           "--cache",
           "--calib_source",
@@ -118,6 +122,7 @@ int main(int argc, char** argv) {
             args.has_named_value("--nskipped") ? safe_stoz(args.named_value("--nskipped")) : 0,
             args.has_named_value("--nimages") ? safe_stoz(args.named_value("--nimages")) : SIZE_MAX,
             args.has_named_value("--ncameras") ? safe_stoz(args.named_value("--ncameras")) : SIZE_MAX,
+            args.has_named("--reverse"),
             TemplatePatchPipelineConfig{
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
