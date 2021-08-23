@@ -50,7 +50,7 @@ Array<TData> min(const Array<TData>& x, size_t axis) {
     return x.apply_over_axis(axis, ApplyOverAxisType::REDUCE,
         [&](size_t i, size_t k, const Array<TData>& xf, Array<TData>& rf)
         {
-            rf(i, k) = -INFINITY;
+            rf(i, k) = INFINITY;
             for (size_t h = 0; h < x.shape(axis); ++h) {
                 rf(i, k) = std::min(rf(i, k), xf(i, h, k));
             }
