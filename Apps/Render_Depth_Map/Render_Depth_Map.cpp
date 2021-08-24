@@ -1,6 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Cv/Depth_Difference.hpp>
 #include <Mlib/Cv/Depth_Map_Package.hpp>
+#include <Mlib/Cv/Depth_Minus.hpp>
 #include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
             for (const std::string& filename : args.named_list("--minus")) {
                 DepthMapPackage pkg = load_depth_map_package(filename);
                 TransformationMatrix<float, 3> ke0 = load_ke(args.named_value("--ke"));
-                Array<float> diff = Cv::depth_difference(depth, pkg.depth, intrinsic_matrix, pkg.ki, projection_in_reference(ke0, pkg.ke));
+                Array<float> diff = Cv::depth_minus(depth, pkg.depth, intrinsic_matrix, pkg.ki, projection_in_reference(ke0, pkg.ke));
                 float thresh = safe_stof(args.named_value("--minus_threshold"));
                 depth = depth.array_array_binop(diff, [&thresh](float a, float b){ return std::isnan(b) || (b < -thresh) ? NAN : a; });
             }

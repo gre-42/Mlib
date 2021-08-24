@@ -1,13 +1,15 @@
 #include "Depth_Map_Bundle.hpp"
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Cv/Depth_Difference.hpp>
 #include <Mlib/Cv/Depth_Map_Package.hpp>
+#include <Mlib/Cv/Depth_Minus.hpp>
+#include <Mlib/Cv/Project_Depth_Map.hpp>
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
+#include <Mlib/Stats/Sort.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Cv;
@@ -61,7 +63,7 @@ const DepthMapBundle::Packages& DepthMapBundle::packages() const {
     return packages_;
 }
 
-void DepthMapBundle::compute_error(const std::chrono::milliseconds& time, Array<float>& err, size_t& nerr) const {
+void DepthMapBundle::compute_roundtrip_error(const std::chrono::milliseconds& time, Array<float>& err, size_t& nerr) const {
     size_t max_distance = 2;
     DepthMapPackageWindow window{ packages_, time, max_distance };
     
@@ -90,6 +92,78 @@ void DepthMapBundle::compute_error(const std::chrono::milliseconds& time, Array<
     }
 }
 
+DepthMapBundle DepthMapBundle::filtered() const {
+    DepthMapBundle result;
+    for (const auto& reference : packages_) {
+        std::cerr << "Filtering time " << reference.second.time.count() << " ms" << std::endl;
+
+        // 1. Who occludes the reference?
+        Array<float> occluder_depths{ ArrayShape{ packages_.size() }.concatenated(reference.second.depth.shape()) };
+        {
+            size_t i = 0;
+            for (const auto& frame_i : packages_) {
+                if (reference.second.time == frame_i.second.time) {
+                    occluder_depths[i] = frame_i.second.depth;
+                } else {
+                    Array<float> occluder_rgb;
+                    Array<float> occluder_depth(occluder_depths[i]);
+                    project_depth_map(
+                        frame_i.second.rgb,
+                        frame_i.second.depth,
+                        frame_i.second.ki,
+                        projection_in_reference(frame_i.second.ke, reference.second.ke),
+                        occluder_rgb,
+                        occluder_depth,
+                        reference.second.ki,
+                        reference.second.depth.shape(1),
+                        reference.second.depth.shape(0),
+                        0.1f,       // z_near
+                        100.f);     // z_far
+                }
+                ++i;
+            }
+        }
+        occluder_depths.move() = nan_sorted(occluder_depths, 0);
+
+        // 2. Who does the reference occlude (a.k.a. depth violations)?
+        Array<size_t> depth_index = zeros<size_t>(reference.second.depth.shape());
+        Array<float> filtered_reference_depth = occluder_depths[0].copy();
+        for (size_t n = 0; n < packages_.size(); ++n) {
+            Array<size_t> n_depth_violations = zeros<size_t>(reference.second.depth.shape());
+            for (const auto& frame_i : packages_) {
+                if (reference.second.time == frame_i.second.time) {
+                    // Do not increment n_depth_violations (continue).
+                    continue;
+                }
+                Array<float> depth_violation_diff = Cv::depth_minus(
+                    filtered_reference_depth,
+                    frame_i.second.depth,
+                    reference.second.ki,
+                    frame_i.second.ki,
+                    projection_in_reference(reference.second.ke, frame_i.second.ke));
+                // Violation if: filtered_reference_depth < frame_i_depth => filtered_reference_depth - frame_i_depth < 0
+                n_depth_violations += (depth_violation_diff < 0.f).casted<size_t>();
+            }
+            depth_index.move() = depth_index.array_array_binop(n_depth_violations, [](size_t depth_id, size_t n_violations){
+                return n_violations > depth_id
+                    ? depth_id + 1
+                    : depth_id; });
+            for (size_t r = 0; r < filtered_reference_depth.shape(0); ++r) {
+                for (size_t c = 0; c < filtered_reference_depth.shape(1); ++c) {
+                    filtered_reference_depth(r, c) = occluder_depths(depth_index(r, c), r, c);
+                }
+            }
+        }
+        result.insert(DepthMapPackage{
+            .time = reference.second.time,
+            .rgb = reference.second.rgb,
+            .depth = filtered_reference_depth,
+            .ki = reference.second.ki,
+            .ke = reference.second.ke});
+    }
+    return result;
+}
+
 DepthMapBundle DepthMapBundle::delete_pixels_blocking_the_view(float threshold) const {
     DepthMapBundle result;
     for (const auto& plus : packages_) {
@@ -98,12 +172,13 @@ DepthMapBundle DepthMapBundle::delete_pixels_blocking_the_view(float threshold) 
             if (plus.second.time == minus.second.time) {
                 continue;
             }
-            Array<float> diff = Cv::depth_difference(
+            Array<float> diff = Cv::depth_minus(
                 depth,
                 minus.second.depth,
                 plus.second.ki,
                 minus.second.ki,
                 projection_in_reference(plus.second.ke, minus.second.ke));
+            // NAN if: plus_depth < minus_depth => plus_depth - minus_depth < 0
             depth.move() = depth.array_array_binop(diff, [&threshold](float a, float b){ return std::isnan(b) || (b < -threshold) ? NAN : a; });
         }
         result.insert(DepthMapPackage{
@@ -116,7 +191,7 @@ DepthMapBundle DepthMapBundle::delete_pixels_blocking_the_view(float threshold) 
     return result;
 }
 
-DepthMapBundle DepthMapBundle::reregister(
+DepthMapBundle DepthMapBundle::reregistered(
     RegistrationDirection direction,
     bool print_residual) const
 {

@@ -25,7 +25,7 @@ namespace Cv {
  *    substitute ke0 with identity.
  */
 template <class TData>
-Array<TData> depth_difference(
+Array<TData> depth_minus(
     const Array<TData>& im_0_depth,
     const Array<TData>& im_1_depth,
     const TransformationMatrix<TData, 2>& ki_0,

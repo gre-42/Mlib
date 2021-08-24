@@ -31,9 +31,17 @@ public:
     ~DepthMapBundle();
     void insert(const Cv::DepthMapPackage& package);
     const Packages& packages() const;
-    void compute_error(const std::chrono::milliseconds& time, Array<float>& err, size_t& nerr) const;
+    void compute_roundtrip_error(const std::chrono::milliseconds& time, Array<float>& err, size_t& nerr) const;
+    /**
+     * From: Real-Time Visibility-Based Fusion of Depth Maps, ICCV 2007.
+     */
+    DepthMapBundle filtered() const;
+    /**
+     * From: https://github.com/cdcseacave/openMVS/blob/master/libs/MVS/SceneDensify.cpp
+     *       void DepthMapsData::FuseDepthMaps(...)
+     */
     DepthMapBundle delete_pixels_blocking_the_view(float threshold) const;
-    DepthMapBundle reregister(
+    DepthMapBundle reregistered(
         RegistrationDirection direction = RegistrationDirection::FORWARD,
         bool print_residual = false) const;
 private:

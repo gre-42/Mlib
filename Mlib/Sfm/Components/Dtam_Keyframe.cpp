@@ -519,7 +519,7 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
     {
         Array<float> err;
         size_t nerr;
-        depth_map_bundle_.compute_error(key_frame_time_, err, nerr);
+        depth_map_bundle_.compute_roundtrip_error(key_frame_time_, err, nerr);
         if (nerr > 0) {
             err /= (float)nerr;
             // draw_quantiled_grayscale(err, 0.f, 0.8f).save_to_file(cache_dir_ + "/err_qua-" + suffix + ".png");

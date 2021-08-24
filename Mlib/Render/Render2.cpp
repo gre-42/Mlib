@@ -183,9 +183,8 @@ void Render2::operator () (
                 }
                 if (render_results_ != nullptr && !render_results_->outputs.empty()) {
                     GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
-                }
-                // Set FPS, assuming that "window_->draw();" below will take 0 time.
-                if (render_config_.dt != 0) {
+                } else if (render_config_.dt != 0) {
+                    // Set FPS, assuming that "window_->draw();" below will take 0 time.
                     TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
                     set_fps.tick(render_config_.dt, render_config_.max_residual_time, render_config_.print_residual_time);
                 } else if (render_config_.motion_interpolation) {

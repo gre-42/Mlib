@@ -1,5 +1,4 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Cv/Depth_Difference.hpp>
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
@@ -34,7 +33,8 @@ int main(int argc, char** argv) {
         {"--rotate",
         "--wire_frame",
         "--register_forward",
-        "--register_backward"},
+        "--register_backward",
+        "--filter"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -60,10 +60,13 @@ int main(int argc, char** argv) {
         }
         bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
         if (args.has_named("--register_forward")) {
-            bundle = bundle.reregister(RegistrationDirection::FORWARD);
+            bundle = bundle.reregistered(RegistrationDirection::FORWARD);
         }
         if (args.has_named("--register_backward")) {
-            bundle = bundle.reregister(RegistrationDirection::BACKWARD);
+            bundle = bundle.reregistered(RegistrationDirection::BACKWARD);
+        }
+        if (args.has_named("--filter")) {
+            bundle = bundle.filtered();
         }
         Array<FixedArray<float, 3>> points;
         if (args.has_named_value("--points")) {
