@@ -145,7 +145,7 @@ DepthMapBundle DepthMapBundle::filtered() const {
                 n_depth_violations += (depth_violation_diff < 0.f).casted<size_t>();
             }
             depth_index.move() = depth_index.array_array_binop(n_depth_violations, [](size_t depth_id, size_t n_violations){
-                return n_violations > depth_id
+                return n_violations > depth_id + 1
                     ? depth_id + 1
                     : depth_id; });
             for (size_t r = 0; r < filtered_reference_depth.shape(0); ++r) {
