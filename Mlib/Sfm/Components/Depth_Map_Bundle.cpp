@@ -131,14 +131,19 @@ DepthMapBundle DepthMapBundle::filtered(float eps_diff) const {
         for (size_t n = 0; n < packages_.size(); ++n) {
             Array<size_t> n_depth_violations = zeros<size_t>(reference.second.depth.shape());
             for (const auto& frame_i : packages_) {
-                Array<float> depth_violation_diff = Cv::depth_minus(
-                    filtered_reference_depth,
-                    frame_i.second.depth,
-                    reference.second.ki,
-                    frame_i.second.ki,
-                    projection_in_reference(reference.second.ke, frame_i.second.ke));
+                Array<float> depth_violation_diff;
+                if (reference.second.time == frame_i.second.time) {
+                    depth_violation_diff.move() = filtered_reference_depth - frame_i.second.depth;
+                } else {
+                    depth_violation_diff.move() = Cv::depth_minus(
+                        filtered_reference_depth,
+                        frame_i.second.depth,
+                        reference.second.ki,
+                        frame_i.second.ki,
+                        projection_in_reference(reference.second.ke, frame_i.second.ke));
+                }
                 // Violation if: filtered_reference_depth < frame_i_depth => filtered_reference_depth - frame_i_depth < 0
-                n_depth_violations += (depth_violation_diff < -eps_diff).casted<size_t>();
+                n_depth_violations += (substitute_nans(depth_violation_diff, INFINITY) < -eps_diff).casted<size_t>();
             }
             depth_index.move() = depth_index.array_array_binop(n_depth_violations, [](size_t depth_id, size_t n_violations){
                 return n_violations > depth_id + 1

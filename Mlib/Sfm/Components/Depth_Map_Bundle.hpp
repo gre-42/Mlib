@@ -35,7 +35,7 @@ public:
     /**
      * From: Real-Time Visibility-Based Fusion of Depth Maps, ICCV 2007.
      */
-    DepthMapBundle filtered(float eps_diff = 0.001f) const;
+    DepthMapBundle filtered(float eps_diff) const;
     /**
      * From: https://github.com/cdcseacave/openMVS/blob/master/libs/MVS/SceneDensify.cpp
      *       void DepthMapsData::FuseDepthMaps(...)

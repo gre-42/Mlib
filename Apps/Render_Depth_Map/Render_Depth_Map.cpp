@@ -2,6 +2,7 @@
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Depth_Minus.hpp>
 #include <Mlib/Cv/Render/Render_Data.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -15,6 +16,7 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 
 int main(int argc, char** argv) {
+    enable_floating_point_exceptions();
 
     const ArgParser parser(
         "Usage: render_depth_map"

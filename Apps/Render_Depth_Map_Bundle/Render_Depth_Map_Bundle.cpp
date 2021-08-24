@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Render/Render_Data.hpp>
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -17,10 +18,11 @@ using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
 
 int main(int argc, char** argv) {
+    enable_floating_point_exceptions();
 
     const ArgParser parser(
         "Usage: render_depth_map_bundle"
-        " --minus_threshold <threshold>"
+        " [--minus_threshold <threshold>]"
         " [--output <filename>]"
         " [--median_filter_radius <r>]"
         " [--register_forward]"
@@ -33,11 +35,11 @@ int main(int argc, char** argv) {
         {"--rotate",
         "--wire_frame",
         "--register_forward",
-        "--register_backward",
-        "--filter"},
+        "--register_backward"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
+        "--filter_threshold",
         "--minus_threshold",
         "--reference_time",
         "--output",
@@ -58,10 +60,12 @@ int main(int argc, char** argv) {
             }
             bundle.insert(package);
         }
-        if (args.has_named("--filter")) {
-            bundle = bundle.filtered();
+        if (args.has_named_value("--filter_threshold")) {
+            bundle = bundle.filtered(safe_stof(args.named_value("--filter_threshold")));
         }
-        bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
+        if (args.has_named_value("--minus_threshold")) {
+            bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
+        }
         if (args.has_named("--register_forward")) {
             bundle = bundle.reregistered(RegistrationDirection::FORWARD);
         }
