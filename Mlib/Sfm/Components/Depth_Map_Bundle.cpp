@@ -92,7 +92,7 @@ void DepthMapBundle::compute_roundtrip_error(const std::chrono::milliseconds& ti
     }
 }
 
-DepthMapBundle DepthMapBundle::filtered() const {
+DepthMapBundle DepthMapBundle::filtered(float eps_diff) const {
     DepthMapBundle result;
     for (const auto& reference : packages_) {
         std::cerr << "Filtering time " << reference.second.time.count() << " ms" << std::endl;
@@ -131,10 +131,6 @@ DepthMapBundle DepthMapBundle::filtered() const {
         for (size_t n = 0; n < packages_.size(); ++n) {
             Array<size_t> n_depth_violations = zeros<size_t>(reference.second.depth.shape());
             for (const auto& frame_i : packages_) {
-                if (reference.second.time == frame_i.second.time) {
-                    // Do not increment n_depth_violations (continue).
-                    continue;
-                }
                 Array<float> depth_violation_diff = Cv::depth_minus(
                     filtered_reference_depth,
                     frame_i.second.depth,
@@ -142,7 +138,7 @@ DepthMapBundle DepthMapBundle::filtered() const {
                     frame_i.second.ki,
                     projection_in_reference(reference.second.ke, frame_i.second.ke));
                 // Violation if: filtered_reference_depth < frame_i_depth => filtered_reference_depth - frame_i_depth < 0
-                n_depth_violations += (depth_violation_diff < 0.f).casted<size_t>();
+                n_depth_violations += (depth_violation_diff < -eps_diff).casted<size_t>();
             }
             depth_index.move() = depth_index.array_array_binop(n_depth_violations, [](size_t depth_id, size_t n_violations){
                 return n_violations > depth_id + 1
