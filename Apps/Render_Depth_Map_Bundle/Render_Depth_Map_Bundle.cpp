@@ -58,15 +58,15 @@ int main(int argc, char** argv) {
             }
             bundle.insert(package);
         }
+        if (args.has_named("--filter")) {
+            bundle = bundle.filtered();
+        }
         bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
         if (args.has_named("--register_forward")) {
             bundle = bundle.reregistered(RegistrationDirection::FORWARD);
         }
         if (args.has_named("--register_backward")) {
             bundle = bundle.reregistered(RegistrationDirection::BACKWARD);
-        }
-        if (args.has_named("--filter")) {
-            bundle = bundle.filtered();
         }
         Array<FixedArray<float, 3>> points;
         if (args.has_named_value("--points")) {
