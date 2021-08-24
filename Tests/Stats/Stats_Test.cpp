@@ -55,8 +55,21 @@ void test_ransac() {
 }
 
 void test_sort() {
-    Array<float> x{ 9, 8, 7, 6, 5 };
-    assert_allclose(sorted(x), Array<float>{5, 6, 7, 8, 9});
+    {
+        Array<float> x{ 9, 8, 7, 6, 5 };
+        assert_allclose(sorted(x), Array<float>{5, 6, 7, 8, 9});
+    }
+    
+    {
+        Array<float> x{
+            {1, 8, NAN, 6, NAN, 5},
+            {9, NAN, 2, 3, NAN, 3} };
+        assert_allequal(
+            nan_sorted(x, 0),
+            Array<float>{
+                {1, 8, 2, 3, NAN, 3},
+                {9, NAN, NAN, 6, NAN, 5}});
+    }
 }
 
 void test_quantiles() {

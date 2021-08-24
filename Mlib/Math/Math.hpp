@@ -1085,6 +1085,13 @@ bool isclose(const std::complex<TData>& a, const std::complex<TData>& b, typenam
 
 }
 
+template <class TData>
+bool isequal(const TData& a, const TData& b) {
+    return
+        (scalar_isnan(a) && scalar_isnan(b)) ||
+        (!scalar_isnan(a) && !scalar_isnan(b) && (a == b));
+}
+
 //inline void assert_true(bool value) {
 //    if (!value) {
 //        throw std::runtime_error("Assertion failed");
@@ -1129,7 +1136,7 @@ void assert_allequal(const Array<TData>& a, const Array<TData>& b) {
         throw std::runtime_error(sstr.str());
     }
     a.shape().foreach([&](const ArrayShape& index) {
-        if (!(a(index) == b(index))) {
+        if (!isequal(a(index), b(index))) {
             std::stringstream sstr;
             sstr << "Numbers not identical at " <<
                 index << ": " << a(index) << ", " << b(index);
@@ -1140,7 +1147,7 @@ void assert_allequal(const Array<TData>& a, const Array<TData>& b) {
 
 template <class TData>
 void assert_isequal(const TData& a, const TData& b) {
-    if (!(a == b) && !(scalar_isnan(a) && scalar_isnan(b))) {
+    if (!isequal(a, b)) {
         throw std::runtime_error(std::to_string(a) + " does not equal " + std::to_string(b));
     }
 }

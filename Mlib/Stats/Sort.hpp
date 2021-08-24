@@ -4,6 +4,18 @@
 
 namespace Mlib {
 
+/**
+ * From: https://stackoverflow.com/questions/51992250/c-sort-with-nan-why-sort-not-exiting-correctly
+ */
+template <class TData>
+struct NanCompare{
+    bool operator () (const TData& d1, const TData& d2) const {
+        if (std::isnan(d1)) return false;
+        if (std::isnan(d2)) return true;
+        return d1 < d2;
+    }
+};
+
 enum class SortingDirection {
     ascending,
     descending
@@ -25,11 +37,23 @@ Array<size_t> argsort(const Array<TData>& s, SortingDirection sd = SortingDirect
 template <class TData>
 void sort(Array<TData>& a) {
     assert(a.ndim() == 1);
-    if (a.length() != 0) {
-        TData* begin = &a(0);
-        TData* end = begin + a.length();
-        std::sort(begin, end);
-    }
+    std::sort(a.flat_begin(), a.flat_end());
+}
+
+template <class TData>
+Array<TData> nan_sorted(const Array<TData>& x, size_t axis) {
+    std::vector<TData> tmp(x.shape(axis));
+    return x.apply_over_axis(axis, ApplyOverAxisType::NOREDUCE,
+        [&](size_t i, size_t k, const Array<TData>& xf, Array<TData>& rf)
+        {
+            for (size_t h = 0; h < x.shape(axis); ++h) {
+                tmp[h] = xf(i, h, k);
+            }
+            std::sort(tmp.begin(), tmp.end(), NanCompare<TData>());
+            for (size_t h = 0; h < x.shape(axis); ++h) {
+                rf(i, h, k) = tmp[h];
+            }
+        });
 }
 
 template <class TData>
