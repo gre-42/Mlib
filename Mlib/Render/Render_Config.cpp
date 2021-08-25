@@ -13,6 +13,9 @@ void RenderConfig::apply() const {
     if (depth_test) {
         CHK(glEnable(GL_DEPTH_TEST));
     }
+    if (nsamples_msaa == 0) {
+        throw std::runtime_error("nsamples_msaa must be >= 1");
+    }
     if (nsamples_msaa != 1) {
         CHK(glEnable(GL_MULTISAMPLE));
     }
@@ -27,6 +30,9 @@ void RenderConfig::unapply() const {
     }
     if (depth_test) {
         CHK(glDisable(GL_DEPTH_TEST));
+    }
+    if (nsamples_msaa == 0) {
+        throw std::runtime_error("nsamples_msaa must be >= 1");
     }
     if (nsamples_msaa != 1) {
         CHK(glDisable(GL_MULTISAMPLE));
