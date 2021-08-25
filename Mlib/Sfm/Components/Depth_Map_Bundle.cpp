@@ -92,9 +92,15 @@ void DepthMapBundle::compute_roundtrip_error(const std::chrono::milliseconds& ti
     }
 }
 
-DepthMapBundle DepthMapBundle::filtered(float eps_diff) const {
+DepthMapBundle DepthMapBundle::filtered(
+    float eps_diff,
+    const std::set<std::chrono::milliseconds>* references) const
+{
     DepthMapBundle result;
     for (const auto& reference : packages_) {
+        if ((references != nullptr) && !references->contains(reference.first)) {
+            continue;
+        }
         std::cerr << "Filtering time " << reference.second.time.count() << " ms" << std::endl;
 
         // 1. Who occludes the reference?

@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <map>
+#include <set>
 
 namespace Mlib {
 
@@ -35,7 +36,7 @@ public:
     /**
      * From: Real-Time Visibility-Based Fusion of Depth Maps, ICCV 2007.
      */
-    DepthMapBundle filtered(float eps_diff) const;
+    DepthMapBundle filtered(float eps_diff, const std::set<std::chrono::milliseconds>* references = nullptr) const;
     /**
      * From: https://github.com/cdcseacave/openMVS/blob/master/libs/MVS/SceneDensify.cpp
      *       void DepthMapsData::FuseDepthMaps(...)

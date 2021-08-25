@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
         "--reference_time",
         "--output",
         "--points"},
-        {"--packages"});
+        {"--packages", "--filter_references"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -61,7 +61,16 @@ int main(int argc, char** argv) {
             bundle.insert(package);
         }
         if (args.has_named_value("--filter_threshold")) {
-            bundle = bundle.filtered(safe_stof(args.named_value("--filter_threshold")));
+            bool has_filter_references = args.has_named_list("--filter_references");
+            std::set<std::chrono::milliseconds> filter_references;
+            if (has_filter_references) {
+                for (const std::string& s : args.named_list("--filter_references")) {
+                    filter_references.insert(std::chrono::milliseconds{ safe_stou64(s) });
+                }
+            }
+            bundle = bundle.filtered(
+                safe_stof(args.named_value("--filter_threshold")),
+                has_filter_references ? &filter_references : nullptr);
         }
         if (args.has_named_value("--minus_threshold")) {
             bundle = bundle.delete_pixels_blocking_the_view(safe_stof(args.named_value("--minus_threshold")));
