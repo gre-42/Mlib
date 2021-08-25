@@ -11,11 +11,11 @@
 using namespace Mlib;
 using namespace Mlib::Cv;
 
-PointCloudResource::PointCloudResource(const Array<FixedArray<float, 3>>& points)
+PointCloudResource::PointCloudResource(const Array<FixedArray<float, 3>>& points, float point_radius)
 {
     TriangleList tris{ "Point cloud", Material() };
-    FixedArray<float, 3> d0{0.1f, 0.f, 0.f};
-    FixedArray<float, 3> d1{0.f, 0.1f, 0.f};
+    FixedArray<float, 3> d0{point_radius, 0.f, 0.f};
+    FixedArray<float, 3> d1{0.f, point_radius, 0.f};
     for (const FixedArray<float, 3>& p : points.flat_iterable()) {
         tris.draw_rectangle_wo_normals(
             Cv::cv_to_opengl_coordinates(p - d0 - d1),

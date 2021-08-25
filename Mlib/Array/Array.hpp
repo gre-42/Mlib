@@ -1217,8 +1217,8 @@ public:
         return res;
     }
     template <class TDerived>
-    Array append(const BaseDenseArray<TDerived, TData>& rhs) {
-        *this = appended(rhs);
+    void append(const BaseDenseArray<TDerived, TData>& rhs) {
+        this->move() = appended(rhs);
     }
     void append(const TData& value) {
         assert(initialized());

@@ -35,7 +35,8 @@ int main(int argc, char** argv) {
         {"--rotate",
         "--wire_frame",
         "--register_forward",
-        "--register_backward"},
+        "--register_backward",
+        "--convert_to_points"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -43,7 +44,8 @@ int main(int argc, char** argv) {
         "--minus_threshold",
         "--reference_time",
         "--output",
-        "--points"},
+        "--points",
+        "--point_radius"},
         {"--packages", "--filter_references"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -81,7 +83,7 @@ int main(int argc, char** argv) {
         if (args.has_named("--register_backward")) {
             bundle = bundle.reregistered(RegistrationDirection::BACKWARD);
         }
-        Array<FixedArray<float, 3>> points;
+        Array<FixedArray<float, 3>> points{ ArrayShape{ 0 } };
         if (args.has_named_value("--points")) {
             Array<float> pts = Array<float>::load_txt_2d(args.named_value("--points"), ArrayShape{ 0, 3 });
             if (pts.shape(1) != 3) {
@@ -91,9 +93,13 @@ int main(int argc, char** argv) {
         }
 
         std::vector<DepthMapPackage> packages;
-        packages.reserve(bundle.packages().size());
-        for (const auto& package : bundle.packages()) {
-            packages.push_back(package.second);
+        if (args.has_named("--convert_to_points")) {
+            points.append(bundle.points());
+        } else {
+            packages.reserve(bundle.packages().size());
+            for (const auto& package : bundle.packages()) {
+                packages.push_back(package.second);
+            }
         }
         const auto& ref = bundle.packages().find(std::chrono::milliseconds(safe_stou64(args.named_value("--reference_time"))));
         if (ref == bundle.packages().end()) {
@@ -123,7 +129,11 @@ int main(int argc, char** argv) {
             (float)ref->second.depth.shape(0),
             safe_stof(args.named_value("--near_plane", "0.1")),
             safe_stof(args.named_value("--far_plane", "100")),
-            args.has_named("--rotate"));
+            args.has_named("--rotate"),
+            1.f,  // scale
+            0.f,  // camera_z
+            SceneGraphConfig(),
+            safe_stof(args.named_value("--point_radius", "0.1")));
         if (args.has_named_value("--output")) {
             const Array<float>& array = render_results.outputs.at(rsd).rgb;
             if (!array.initialized()) {

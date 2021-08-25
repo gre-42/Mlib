@@ -9,6 +9,8 @@ template <class TMap>
 class MarginalizedMap;
 template <class TData>
 class Array;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 }
 
@@ -45,6 +47,7 @@ public:
     DepthMapBundle reregistered(
         RegistrationDirection direction = RegistrationDirection::FORWARD,
         bool print_residual = false) const;
+    Array<FixedArray<float, 3>> points() const;
 private:
     Packages packages_;
 };

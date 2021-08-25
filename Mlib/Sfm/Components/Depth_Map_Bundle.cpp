@@ -242,3 +242,26 @@ DepthMapBundle DepthMapBundle::reregistered(
         return reg(packages_.rbegin(), packages_.rend());
     }
 }
+
+Array<FixedArray<float, 3>> DepthMapBundle::points() const {
+    Array<FixedArray<float, 3>> result{ ArrayShape{ 0 } };
+    for (const auto& package : packages_) {
+        TransformationMatrix cpos = package.second.ke.inverted_scaled();
+        for (size_t r = 0; r < package.second.depth.shape(0); ++r) {
+            for (size_t c = 0; c < package.second.depth.shape(1); ++c) {
+                if (std::isnan(package.second.depth(r, c))) {
+                    continue;
+                }
+                TransformationMatrix<float, 2> iim{ inv(package.second.ki.affine()) };
+                FixedArray<size_t, 2> id{r, c};
+                FixedArray<float, 2> lifted = iim.transform(i2a(id));
+                FixedArray<float, 3> pos0{
+                    lifted(0) * package.second.depth(r, c),
+                    lifted(1) * package.second.depth(r, c),
+                    package.second.depth(r, c)};
+                result.append(cpos.transform(pos0));
+            }
+        }
+    }
+    return result;
+}

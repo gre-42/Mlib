@@ -80,7 +80,8 @@ void Mlib::Cv::render_depth_maps(
     bool rotate,
     float scale,
     float camera_z,
-    const SceneGraphConfig& scene_graph_config)
+    const SceneGraphConfig& scene_graph_config,
+    float point_radius)
 {
     SceneNodeResources scene_node_resources;
     RenderingContextGuard rrg{
@@ -104,7 +105,7 @@ void Mlib::Cv::render_depth_maps(
         }
     }
     if (points.initialized() && (points.length() > 0)) {
-        const auto r = std::make_shared<PointCloudResource>(points);
+        const auto r = std::make_shared<PointCloudResource>(points, point_radius);
         scene_node_resources.add_resource("PointCloudResource", r);
         scene_node_resources.instantiate_renderable("PointCloudResource", "DepthMap", *root_node, SceneNodeResourceFilter());
     }
