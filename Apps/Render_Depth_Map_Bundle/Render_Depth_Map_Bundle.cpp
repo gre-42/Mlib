@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
         " [--median_filter_radius <r>]"
         " [--register_forward]"
         " [--register_backward]"
+        " [--convert_to_points]"
         " [--rotate]"
         " [--wire_frame]"
         " [--reference_time <milliseconds>]"
