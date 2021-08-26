@@ -44,7 +44,7 @@ Array<TData> project_depth_map_cpu(
 {
     assert(im_r.ndim() == 3);
     Array<TData> result = nans<TData>(im_r.shape());
-    RigidMotionSampler rs{ki, ki, ke, im_r_depth};
+    RigidMotionSampler rs{ki, ki, ke, im_r_depth, im_r_depth.shape()};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;

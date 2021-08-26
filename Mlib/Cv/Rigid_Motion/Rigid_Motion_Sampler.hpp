@@ -18,19 +18,21 @@ public:
         const TransformationMatrix<TData, 2>& ki_0,
         const TransformationMatrix<TData, 2>& ki_1,
         const TransformationMatrix<TData, 3>& ke_1_0,
-        const Array<TData>& depth)
+        const Array<TData>& depth0,
+        const ArrayShape& shape1)
     : iki_0_{inv(ki_0.affine())},
       T_{ki_1.project(ke_1_0.semi_affine())},
-      depth_(depth)
+      depth0_(depth0),
+      shape1_(shape1)
     {}
     inline FixedArray<TData, 3> point_in_reference(size_t r, size_t c) const {
         FixedArray<size_t, 2> id_s{r, c};
-        return dot1d(iki_0_, homogenized_3(i2a(id_s))) * depth_(r, c);
+        return dot1d(iki_0_, homogenized_3(i2a(id_s))) * depth0_(r, c);
     }
     inline bool sample_destination(const FixedArray<TData, 3>& pr, BilinearInterpolator<TData>& bi) const {
         FixedArray<TData, 3> dp3 = dot1d(T_, homogenized_4(pr));
         FixedArray<TData, 2> id_d{a2fi(FixedArray<TData, 2>{dp3(0) / dp3(2), dp3(1) / dp3(2)})};
-        return bilinear_interpolation(id_d(0), id_d(1), depth_.shape(), bi);
+        return bilinear_interpolation(id_d(0), id_d(1), shape1_, bi);
     }
     inline bool sample_destination(size_t r, size_t c, BilinearInterpolator<TData>& bi) const {
         FixedArray<TData, 3> pr = point_in_reference(r, c);
@@ -39,7 +41,8 @@ public:
 private:
     FixedArray<TData, 3, 3> iki_0_;
     FixedArray<TData, 3, 4> T_;
-    Array<TData> depth_;
+    Array<TData> depth0_;
+    ArrayShape shape1_;
 };
 
 }

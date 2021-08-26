@@ -37,7 +37,7 @@ Array<TData> depth_minus(
     FixedArray<TData, 3> z = ke_1_0.R()[2];
     z /= std::sqrt(sum(squared(z)));
     TData offset = -dot0d(z, ke_1_0.inverted().t());
-    RigidMotionSampler rs{ki_0, ki_1, ke_1_0, im_0_depth};
+    RigidMotionSampler rs{ki_0, ki_1, ke_1_0, im_0_depth, im_1_depth.shape()};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(0); ++i) {
         size_t r = (size_t)i;
