@@ -54,7 +54,8 @@ void render_depth_maps(
     float scale = 1,
     float camera_z = 0,
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-    float point_radius = 0.1f);
+    float point_radius = 0.1f,
+    float cos_threshold = 0.f);
 
 void render_height_map(
     Render2& render,

@@ -13,7 +13,8 @@ using namespace Mlib::Cv;
 DepthMapResource::DepthMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
-    const TransformationMatrix<float, 2>& intrinsic_matrix)
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    float cos_threshold)
 {
     TransformationMatrix<float, 2> iim{ inv(intrinsic_matrix.affine()) };
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
@@ -74,9 +75,12 @@ DepthMapResource::DepthMapResource(
                         G(r + 1, c + 1),
                         B(r + 1, c + 1)}};
 
-            auto add_triangle = [&triangles](const ColoredVertex& a, const ColoredVertex& b, const ColoredVertex& c) {
-                triangles.push_back(FixedArray<ColoredVertex, 3>{a, b, c});
+            auto add_triangle = [&triangles, &cos_threshold](const ColoredVertex& a, const ColoredVertex& b, const ColoredVertex& c) {
                 FixedArray<float, 3> normal = triangle_normal({a.position, b.position, c.position});
+                if ((cos_threshold != 0.f) && (dot0d(normal, a.position) > -std::sqrt(sum(squared(a.position))) * cos_threshold)) {
+                    return;
+                }
+                triangles.push_back(FixedArray<ColoredVertex, 3>{a, b, c});
                 triangles.back()(0).normal = normal;
                 triangles.back()(1).normal = normal;
                 triangles.back()(2).normal = normal;

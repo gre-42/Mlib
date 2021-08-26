@@ -81,7 +81,8 @@ void Mlib::Cv::render_depth_maps(
     float scale,
     float camera_z,
     const SceneGraphConfig& scene_graph_config,
-    float point_radius)
+    float point_radius,
+    float cos_threshold)
 {
     SceneNodeResources scene_node_resources;
     RenderingContextGuard rrg{
@@ -94,7 +95,7 @@ void Mlib::Cv::render_depth_maps(
         size_t i = 0;
         for (const DepthMapPackage& package : packages) {
             std::string resource_name = "DepthMapResource_" + std::to_string(i++);
-            const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki);
+            const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, cos_threshold);
             scene_node_resources.add_resource(resource_name, r);
             auto on = std::make_unique<SceneNode>();
             TransformationMatrix<float, 3> cpos = opengl_matrix_from_opencv_extrinsic_matrix(package.ke).inverted();
