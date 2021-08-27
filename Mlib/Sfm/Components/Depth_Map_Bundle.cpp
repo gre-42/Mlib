@@ -5,6 +5,7 @@
 #include <Mlib/Cv/Project_Depth_Map.hpp>
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
@@ -243,8 +244,12 @@ DepthMapBundle DepthMapBundle::reregistered(
     }
 }
 
-Array<FixedArray<float, 3>> DepthMapBundle::points() const {
-    Array<FixedArray<float, 3>> result{ ArrayShape{ 0 } };
+void DepthMapBundle::points_and_normals(
+    Array<FixedArray<float, 3>>& points,
+    Array<FixedArray<float, 3>>& normals) const
+{
+    points.resize(ArrayShape{ 0 });
+    Array<FixedArray<float, 3>> zs(ArrayShape{ 0 });
     for (const auto& package : packages_) {
         TransformationMatrix cpos = package.second.ke.inverted_scaled();
         for (size_t r = 0; r < package.second.depth.shape(0); ++r) {
@@ -259,9 +264,41 @@ Array<FixedArray<float, 3>> DepthMapBundle::points() const {
                     lifted(0) * package.second.depth(r, c),
                     lifted(1) * package.second.depth(r, c),
                     package.second.depth(r, c)};
-                result.append(cpos.transform(pos0));
+                points.append(cpos.transform(pos0));
+                zs.append(package.second.ke.R()[2]);
             }
         }
     }
-    return result;
+    Bvh<float, FixedArray<float, 3>, 3> bvh{{0.1f, 0.1f, 0.1f}, 10};
+    for (auto& p : points.flat_iterable()) {
+        bvh.insert({p}, p);
+    }
+    normals.resize(ArrayShape{ 0 });
+    for (size_t pi = 0; pi < points.length(); ++pi) {
+        const auto& p = points(pi);
+        const auto& z = zs(pi);
+        std::vector<std::pair<float, const FixedArray<float, 3>*>> k_nearest = bvh.min_distances(5, p, 0.01f, [&p](const FixedArray<float, 3>& a){return sum(squared(a - p));});
+        FixedArray<float, 3> normal{ 0.f, 0.f, 0.f };
+        size_t nnormals = 0;
+        for (size_t i = 0; i < k_nearest.size(); ++i) {
+            for (size_t j = i + 1; j < k_nearest.size(); ++j) {
+                FixedArray<float, 3> n = cross(p - *k_nearest[i].second, p - *k_nearest[j].second);
+                float len2 = sum(squared(n));
+                if (len2 < 1e-12) {
+                    continue;
+                }
+                if (dot0d(n, z) < 0.f) {
+                    n = -n;
+                }
+                normal += n / std::sqrt(len2);
+                ++nnormals;
+            }
+        }
+        float len2 = sum(squared(normal));
+        if (len2 < 1e-12) {
+            normals.append(fixed_nans<float, 3>());
+        } else {
+            normals.append(normal / float(nnormals));
+        }
+    }
 }

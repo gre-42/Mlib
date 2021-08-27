@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Cv/Matrix_Conversion.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Look_At.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
@@ -11,17 +12,39 @@
 using namespace Mlib;
 using namespace Mlib::Cv;
 
-PointCloudResource::PointCloudResource(const Array<FixedArray<float, 3>>& points, float point_radius)
+PointCloudResource::PointCloudResource(
+    const Array<FixedArray<float, 3>>& points,
+    const Array<FixedArray<float, 3>>& normals,
+    float point_radius)
 {
     TriangleList tris{ "Point cloud", Material() };
     FixedArray<float, 3> d0{point_radius, 0.f, 0.f};
     FixedArray<float, 3> d1{0.f, point_radius, 0.f};
-    for (const FixedArray<float, 3>& p : points.flat_iterable()) {
-        tris.draw_rectangle_wo_normals(
-            Cv::cv_to_opengl_coordinates(p - d0 - d1),
-            Cv::cv_to_opengl_coordinates(p + d0 - d1),
-            Cv::cv_to_opengl_coordinates(p + d0 + d1),
-            Cv::cv_to_opengl_coordinates(p - d0 + d1));
+    if (normals.initialized()) {
+        assert(normals.length() == points.length());
+        for (size_t i = 0; i < points.length(); ++i) {
+            if (all(isnan(normals(i)))) {
+                continue;
+            }
+            FixedArray<float, 3, 3> la = lookat(normals(i));
+            tris.draw_rectangle_with_normals(
+                Cv::cv_to_opengl_coordinates(points(i) + dot1d(la, - d0 - d1)),
+                Cv::cv_to_opengl_coordinates(points(i) + dot1d(la, + d0 - d1)),
+                Cv::cv_to_opengl_coordinates(points(i) + dot1d(la, + d0 + d1)),
+                Cv::cv_to_opengl_coordinates(points(i) + dot1d(la, - d0 + d1)),
+                Cv::cv_to_opengl_coordinates(normals(i)),
+                Cv::cv_to_opengl_coordinates(normals(i)),
+                Cv::cv_to_opengl_coordinates(normals(i)),
+                Cv::cv_to_opengl_coordinates(normals(i)));
+        }
+    } else {
+        for (const FixedArray<float, 3>& p : points.flat_iterable()) {
+            tris.draw_rectangle_wo_normals(
+                Cv::cv_to_opengl_coordinates(p - d0 - d1),
+                Cv::cv_to_opengl_coordinates(p + d0 - d1),
+                Cv::cv_to_opengl_coordinates(p + d0 + d1),
+                Cv::cv_to_opengl_coordinates(p - d0 + d1));
+        }
     }
     rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(

@@ -47,7 +47,9 @@ public:
     DepthMapBundle reregistered(
         RegistrationDirection direction = RegistrationDirection::FORWARD,
         bool print_residual = false) const;
-    Array<FixedArray<float, 3>> points() const;
+    void points_and_normals(
+        Array<FixedArray<float, 3>>& points,
+        Array<FixedArray<float, 3>>& normals) const;
 private:
     Packages packages_;
 };

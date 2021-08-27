@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         " [--minus_threshold <threshold>]"
         " [--cos_threshold <threshold>]"
         " [--output <filename>]"
-        " [--median_filter_radius <r>]"
+        " [--median_filter_radius <radius>]"
         " [--register_forward]"
         " [--register_backward]"
         " [--convert_to_points]"
@@ -34,7 +34,8 @@ int main(int argc, char** argv) {
         " [--wire_frame]"
         " [--reference_time <milliseconds>]"
         " [--packages <file1> <file2...>]"
-        " [--points <file>]",
+        " [--points <file>]"
+        " [--point_radius <radius>]",
         {"--rotate",
         "--wire_frame",
         "--register_forward",
@@ -88,17 +89,23 @@ int main(int argc, char** argv) {
             bundle = bundle.reregistered(RegistrationDirection::BACKWARD);
         }
         Array<FixedArray<float, 3>> points{ ArrayShape{ 0 } };
+        Array<FixedArray<float, 3>> point_normals{ ArrayShape{ 0 } };
         if (args.has_named_value("--points")) {
             Array<float> pts = Array<float>::load_txt_2d(args.named_value("--points"), ArrayShape{ 0, 3 });
             if (pts.shape(1) != 3) {
                 throw std::runtime_error("Points dimension not 3");
             }
             points = Array<float>::from_dynamic<3>(pts);
+            point_normals = full<FixedArray<float, 3>>(points.shape(), FixedArray<float, 3>{ 0.f, 0.f, 1.f });
         }
 
         std::vector<DepthMapPackage> packages;
         if (args.has_named("--convert_to_points")) {
-            points.append(bundle.points());
+            Array<FixedArray<float, 3>> dense_points;
+            Array<FixedArray<float, 3>> dense_normals;
+            bundle.points_and_normals(dense_points, dense_normals);
+            points.append(dense_points);
+            point_normals.append(dense_normals);
         } else {
             packages.reserve(bundle.packages().size());
             for (const auto& package : bundle.packages()) {
@@ -127,6 +134,7 @@ int main(int argc, char** argv) {
             render,
             packages,
             points,
+            point_normals,
             ref->second.ki,
             ref->second.ke,
             (float)ref->second.depth.shape(1),

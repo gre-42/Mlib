@@ -55,6 +55,7 @@ void Mlib::Cv::render_depth_map(
         render,
         { package },
         Array<FixedArray<float, 3>>{},
+        Array<FixedArray<float, 3>>{},
         intrinsic_matrix,
         TransformationMatrix<float, 3>::identity(),
         (float)depth_picture.shape(1),
@@ -71,6 +72,7 @@ void Mlib::Cv::render_depth_maps(
     Render2& render,
     const std::vector<DepthMapPackage>& packages,
     const Array<FixedArray<float, 3>>& points,
+    const Array<FixedArray<float, 3>>& point_normals,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
     float width,
@@ -106,7 +108,7 @@ void Mlib::Cv::render_depth_maps(
         }
     }
     if (points.initialized() && (points.length() > 0)) {
-        const auto r = std::make_shared<PointCloudResource>(points, point_radius);
+        const auto r = std::make_shared<PointCloudResource>(points, point_normals, point_radius);
         scene_node_resources.add_resource("PointCloudResource", r);
         scene_node_resources.instantiate_renderable("PointCloudResource", "DepthMap", *root_node, SceneNodeResourceFilter());
     }
