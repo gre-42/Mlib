@@ -328,6 +328,9 @@ public:
     FixedArray operator - () const {
         return applied([&](const TData& v){ return -v; });
     }
+    const FixedArray& operator + () const {
+        return *this;
+    }
     template <typename TResultData>
     FixedArray<TResultData, tshape0, tshape...> casted() const {
         return applied<TResultData>([&](const TData& v){ return (TResultData)v; });
