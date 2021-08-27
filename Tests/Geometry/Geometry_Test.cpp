@@ -192,6 +192,20 @@ void test_bvh() {
     //     std::cerr << category << " " << data << std::endl;
     // });
     // std::cerr << bvh << std::endl;
+    {
+        std::vector<std::pair<float, const int*>> result = bvh.min_distances(3, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 10.f, [](const auto& p){return std::abs(p - 43);});
+        assert_isequal(result.size(), (size_t)3);
+        assert_isequal(*result[0].second, 43);
+    }
+    {
+        std::vector<std::pair<float, const int*>> result = bvh.min_distances(20, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 100.f, [](const auto& p){return std::abs(p - 43);});
+        assert_isequal(result.size(), (size_t)5);
+        assert_isequal(*result[0].second, 43);
+        assert_isequal(*result[4].second, 46);
+    }
+    // for (const auto& r : result) {
+    //     std::cerr << r.first << " " << *r.second << std::endl;
+    // }
 }
 
 void test_bvh_performance() {

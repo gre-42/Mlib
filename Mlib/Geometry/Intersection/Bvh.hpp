@@ -160,6 +160,38 @@ public:
     }
 
     template <class TComputeDistance>
+    std::vector<std::pair<TData, const TPayload*>> min_distances(
+        size_t k,
+        const FixedArray<TData, tndim>& p,
+        const TData& max_distance,
+        const TComputeDistance& compute_distance) const
+    {
+        std::vector<std::pair<TData, const TPayload*>> result(k);
+        std::fill(result.begin(), result.end(), std::make_pair(INFINITY, nullptr));
+        auto predicate = [](const auto& a, const auto& b){return a.first < b.first;};
+        visit(BoundingSphere<TData, tndim>(p, max_distance),
+            [&result, &compute_distance, &predicate](const TPayload& playload)
+        {
+            TData dist = compute_distance(playload);
+            if (dist < result.back().first) {
+                result.resize(result.size() - 1);
+                // From: https://stackoverflow.com/questions/15843525/how-do-you-insert-the-value-in-a-sorted-vector
+                result.insert( 
+                    std::upper_bound(
+                        result.begin(),
+                        result.end(),
+                        std::make_pair(dist, &playload),
+                        predicate),
+                    std::make_pair(dist, &playload));
+            }
+            return true;
+        });
+        auto last = std::lower_bound(result.begin(), result.end(), std::make_pair(INFINITY, nullptr), predicate);
+        result.resize(last - result.begin());
+        return result;
+    }
+
+    template <class TComputeDistance>
     bool has_neighbor(
         const FixedArray<TData, tndim>& p,
         const TData& max_distance,
