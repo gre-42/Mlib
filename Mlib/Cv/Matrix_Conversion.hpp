@@ -29,7 +29,10 @@ FixedArray<float, 4, 4> opengl_matrix_from_hz_intrinsic_matrix(
 
 FixedArray<float, 3> cv_to_opengl_coordinates(const FixedArray<float, 3>& p);
 
-TransformationMatrix<float, 3> opengl_matrix_from_opencv_extrinsic_matrix(
+TransformationMatrix<float, 3> cv_to_opengl_extrinsic_matrix(
+    const TransformationMatrix<float, 3>& extrinsic_matrix);
+
+TransformationMatrix<float, 3> opengl_to_cv_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix);
 
 }}

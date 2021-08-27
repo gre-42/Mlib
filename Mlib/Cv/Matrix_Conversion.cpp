@@ -43,7 +43,7 @@ FixedArray<float, 3> Mlib::Cv::cv_to_opengl_coordinates(const FixedArray<float, 
     return FixedArray<float, 3>{ p(0), -p(1), -p(2) };
 }
 
-TransformationMatrix<float, 3> Mlib::Cv::opengl_matrix_from_opencv_extrinsic_matrix(
+TransformationMatrix<float, 3> Mlib::Cv::cv_to_opengl_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix)
 {
     static FixedArray<float, 4, 4> f{
@@ -52,4 +52,10 @@ TransformationMatrix<float, 3> Mlib::Cv::opengl_matrix_from_opencv_extrinsic_mat
         0.f, 0.f, -1.f, 0.f,
         0.f, 0.f, 0.f, 1.f};
     return TransformationMatrix<float, 3>{ dot2d(dot2d(f, extrinsic_matrix.affine()), f) };
+}
+
+TransformationMatrix<float, 3> Mlib::Cv::opengl_to_cv_extrinsic_matrix(
+    const TransformationMatrix<float, 3>& extrinsic_matrix)
+{
+    return cv_to_opengl_extrinsic_matrix(extrinsic_matrix);
 }

@@ -51,7 +51,7 @@ void Mlib::Cv::project_depth_map(
     Scene scene;
     scene.add_root_node("obj", std::move(on));
     scene.add_root_node("camera", std::make_unique<SceneNode>());
-    TransformationMatrix<float, 3> cpose = opengl_matrix_from_opencv_extrinsic_matrix(ke_1_0).inverted();
+    TransformationMatrix<float, 3> cpose = cv_to_opengl_extrinsic_matrix(ke_1_0).inverted();
     float cscale = cpose.get_scale();
     scene.get_node("camera")->set_absolute_pose(cpose.t(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale);
     scene.get_node("camera")->set_camera(std::make_unique<ProjectionMatrixCamera>(

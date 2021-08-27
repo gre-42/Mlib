@@ -320,7 +320,7 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
             continue;
         }
         result.append(
-            opengl_matrix_from_opencv_extrinsic_matrix(
+            opengl_to_cv_extrinsic_matrix(
                 TransformationMatrix<float, 3>{
                 lookat_relative(
                     cv_to_opengl_coordinates(normals(i)),

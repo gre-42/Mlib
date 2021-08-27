@@ -98,7 +98,7 @@ void Mlib::Cv::render_depth_maps(
             const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, cos_threshold);
             scene_node_resources.add_resource(resource_name, r);
             auto on = std::make_unique<SceneNode>();
-            TransformationMatrix<float, 3> cpos = opengl_matrix_from_opencv_extrinsic_matrix(package.ke).inverted();
+            TransformationMatrix<float, 3> cpos = cv_to_opengl_extrinsic_matrix(package.ke).inverted();
             float scale = cpos.get_scale();
             on->set_absolute_pose(cpos.t(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
             scene_node_resources.instantiate_renderable(resource_name, "DepthMap", *on, SceneNodeResourceFilter());
