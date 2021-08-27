@@ -246,9 +246,11 @@ DepthMapBundle DepthMapBundle::reregistered(
 
 void DepthMapBundle::points_and_normals(
     Array<FixedArray<float, 3>>& points,
-    Array<FixedArray<float, 3>>& normals) const
+    Array<FixedArray<float, 3>>& normals,
+    Array<FixedArray<float, 3>>& dys) const
 {
     points.resize(ArrayShape{ 0 });
+    dys.resize(ArrayShape{ 0 });
     Array<FixedArray<float, 3>> zs(ArrayShape{ 0 });
     for (const auto& package : packages_) {
         TransformationMatrix cpos = package.second.ke.inverted_scaled();
@@ -265,7 +267,9 @@ void DepthMapBundle::points_and_normals(
                     lifted(1) * package.second.depth(r, c),
                     package.second.depth(r, c)};
                 points.append(cpos.transform(pos0));
-                zs.append(package.second.ke.R()[2]);
+                dys.append(package.second.ke.R()[1]);
+                FixedArray<float, 3> z{ cpos.rotate(pos0) };
+                zs.append(z / std::sqrt(sum(squared(z))));
             }
         }
     }
@@ -277,7 +281,11 @@ void DepthMapBundle::points_and_normals(
     for (size_t pi = 0; pi < points.length(); ++pi) {
         const auto& p = points(pi);
         const auto& z = zs(pi);
-        std::vector<std::pair<float, const FixedArray<float, 3>*>> k_nearest = bvh.min_distances(5, p, 0.01f, [&p](const FixedArray<float, 3>& a){return sum(squared(a - p));});
+        std::vector<std::pair<float, const FixedArray<float, 3>*>> k_nearest = bvh.min_distances(
+            5,
+            p,
+            0.01f,
+            [&p](const FixedArray<float, 3>& a){return sum(squared(a - p));});
         FixedArray<float, 3> normal{ 0.f, 0.f, 0.f };
         size_t nnormals = 0;
         for (size_t i = 0; i < k_nearest.size(); ++i) {

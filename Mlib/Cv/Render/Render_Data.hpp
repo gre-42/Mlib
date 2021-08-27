@@ -45,6 +45,7 @@ void render_depth_maps(
     const std::vector<DepthMapPackage>& packages,
     const Array<FixedArray<float, 3>>& points,
     const Array<FixedArray<float, 3>>& point_normals,
+    const Array<FixedArray<float, 3>>& dy,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
     float width,

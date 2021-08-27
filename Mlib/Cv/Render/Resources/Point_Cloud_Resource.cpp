@@ -15,6 +15,7 @@ using namespace Mlib::Cv;
 PointCloudResource::PointCloudResource(
     const Array<FixedArray<float, 3>>& points,
     const Array<FixedArray<float, 3>>& normals,
+    const Array<FixedArray<float, 3>>& dys,
     float point_radius)
 {
     TriangleList tris{ "Point cloud", Material() };
@@ -22,11 +23,12 @@ PointCloudResource::PointCloudResource(
     FixedArray<float, 3> d1{0.f, point_radius, 0.f};
     if (normals.initialized()) {
         assert(normals.length() == points.length());
+        assert(dys.length() == points.length());
         for (size_t i = 0; i < points.length(); ++i) {
             if (all(isnan(normals(i)))) {
                 continue;
             }
-            FixedArray<float, 3, 3> la = lookat(normals(i));
+            FixedArray<float, 3, 3> la = lookat_relative(normals(i), dys(i));
             tris.draw_rectangle_with_normals(
                 Cv::cv_to_opengl_coordinates(points(i) + dot1d(la, - d0 - d1)),
                 Cv::cv_to_opengl_coordinates(points(i) + dot1d(la, + d0 - d1)),

@@ -90,6 +90,7 @@ int main(int argc, char** argv) {
         }
         Array<FixedArray<float, 3>> points{ ArrayShape{ 0 } };
         Array<FixedArray<float, 3>> point_normals{ ArrayShape{ 0 } };
+        Array<FixedArray<float, 3>> point_dys{ ArrayShape{ 0 } };
         if (args.has_named_value("--points")) {
             Array<float> pts = Array<float>::load_txt_2d(args.named_value("--points"), ArrayShape{ 0, 3 });
             if (pts.shape(1) != 3) {
@@ -97,15 +98,18 @@ int main(int argc, char** argv) {
             }
             points = Array<float>::from_dynamic<3>(pts);
             point_normals = full<FixedArray<float, 3>>(points.shape(), FixedArray<float, 3>{ 0.f, 0.f, 1.f });
+            point_dys = full<FixedArray<float, 3>>(points.shape(), FixedArray<float, 3>{ 0.f, -1.f, 0.f });
         }
 
         std::vector<DepthMapPackage> packages;
         if (args.has_named("--convert_to_points")) {
             Array<FixedArray<float, 3>> dense_points;
             Array<FixedArray<float, 3>> dense_normals;
-            bundle.points_and_normals(dense_points, dense_normals);
+            Array<FixedArray<float, 3>> dense_dys;
+            bundle.points_and_normals(dense_points, dense_normals, dense_dys);
             points.append(dense_points);
             point_normals.append(dense_normals);
+            point_dys.append(dense_dys);
         } else {
             packages.reserve(bundle.packages().size());
             for (const auto& package : bundle.packages()) {
@@ -135,6 +139,7 @@ int main(int argc, char** argv) {
             packages,
             points,
             point_normals,
+            point_dys,
             ref->second.ki,
             ref->second.ke,
             (float)ref->second.depth.shape(1),

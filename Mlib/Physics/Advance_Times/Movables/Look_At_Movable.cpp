@@ -31,7 +31,7 @@ void LookAtMovable::advance_time(float dt) {
     }
     auto dmat = followed_->get_new_absolute_model_matrix();
     auto dpos = dmat.t();
-    transformation_matrix_.R() = lookat(transformation_matrix_.t(), dpos);
+    transformation_matrix_.R() = lookat_absolute(transformation_matrix_.t(), dpos);
 }
 
 void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
