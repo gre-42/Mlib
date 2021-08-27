@@ -35,7 +35,9 @@ int main(int argc, char** argv) {
         " [--reference_time <milliseconds>]"
         " [--packages <file1> <file2...>]"
         " [--points <file>]"
-        " [--point_radius <radius>]",
+        " [--point_radius <radius>]"
+        " [--normal_radius <radius>]"
+        " [--normal_k <k>]",
         {"--rotate",
         "--wire_frame",
         "--register_forward",
@@ -50,7 +52,9 @@ int main(int argc, char** argv) {
         "--reference_time",
         "--output",
         "--points",
-        "--point_radius"},
+        "--point_radius",
+        "--normal_k",
+        "--normal_radius"},
         {"--packages", "--filter_references"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -106,7 +110,12 @@ int main(int argc, char** argv) {
             Array<FixedArray<float, 3>> dense_points;
             Array<FixedArray<float, 3>> dense_normals;
             Array<FixedArray<float, 3>> dense_dys;
-            bundle.points_and_normals(dense_points, dense_normals, dense_dys);
+            bundle.points_and_normals(
+                safe_stoz(args.named_value("--normal_k", "5")),
+                safe_stof(args.named_value("--normal_radius", "0.1")),
+                dense_points,
+                dense_normals,
+                dense_dys);
             points.append(dense_points);
             point_normals.append(dense_normals);
             point_dys.append(dense_dys);

@@ -245,6 +245,8 @@ DepthMapBundle DepthMapBundle::reregistered(
 }
 
 void DepthMapBundle::points_and_normals(
+    size_t k,
+    float normal_radius,
     Array<FixedArray<float, 3>>& points,
     Array<FixedArray<float, 3>>& normals,
     Array<FixedArray<float, 3>>& dys) const
@@ -282,9 +284,9 @@ void DepthMapBundle::points_and_normals(
         const auto& p = points(pi);
         const auto& z = zs(pi);
         std::vector<std::pair<float, const FixedArray<float, 3>*>> k_nearest = bvh.min_distances(
-            5,
+            k,
             p,
-            0.01f,
+            normal_radius,
             [&p](const FixedArray<float, 3>& a){return sum(squared(a - p));});
         FixedArray<float, 3> normal{ 0.f, 0.f, 0.f };
         size_t nnormals = 0;

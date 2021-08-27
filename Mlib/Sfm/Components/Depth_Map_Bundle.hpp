@@ -48,6 +48,8 @@ public:
         RegistrationDirection direction = RegistrationDirection::FORWARD,
         bool print_residual = false) const;
     void points_and_normals(
+        size_t k,
+        float normal_radius,
         Array<FixedArray<float, 3>>& points,
         Array<FixedArray<float, 3>>& normals,
         Array<FixedArray<float, 3>>& dys) const;
