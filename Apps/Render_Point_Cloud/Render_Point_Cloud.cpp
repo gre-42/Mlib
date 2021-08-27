@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
         Render2 render{ render_config, num_renderings };
         render_point_cloud(
             render,
-            points,
+            points.applied<TransformationMatrix<float, 3>>([](const auto& p){return TransformationMatrix<float, 3>{fixed_zeros<float, 3, 3>(), p};}),
             std::move(camera),
             args.has_named("--rotate"),
             safe_stof(args.named_value("--scale", "1")));

@@ -4,8 +4,10 @@
 #include <Mlib/Cv/Depth_Minus.hpp>
 #include <Mlib/Cv/Project_Depth_Map.hpp>
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
+#include <Mlib/Cv/Matrix_Conversion.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Look_At.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
@@ -244,13 +246,12 @@ DepthMapBundle DepthMapBundle::reregistered(
     }
 }
 
-void DepthMapBundle::points_and_normals(
-    size_t k,
-    float normal_radius,
-    Array<FixedArray<float, 3>>& points,
-    Array<FixedArray<float, 3>>& normals,
-    Array<FixedArray<float, 3>>& dys) const
+Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t k, float normal_radius) const
 {
+    Array<FixedArray<float, 3>> points;
+    Array<FixedArray<float, 3>> normals;
+    Array<FixedArray<float, 3>> dys;
+
     points.resize(ArrayShape{ 0 });
     dys.resize(ArrayShape{ 0 });
     Array<FixedArray<float, 3>> zs(ArrayShape{ 0 });
@@ -311,4 +312,20 @@ void DepthMapBundle::points_and_normals(
             normals.append(normal / float(nnormals));
         }
     }
+
+    Array<TransformationMatrix<float, 3>> result{ ArrayShape{ 0 } };
+    for (size_t i = 0; i < points.length(); ++i) {
+        const FixedArray<float, 3>& normal = normals(i);
+        if (all(isnan(normal))) {
+            continue;
+        }
+        result.append(
+            opengl_matrix_from_opencv_extrinsic_matrix(
+                TransformationMatrix<float, 3>{
+                lookat_relative(
+                    cv_to_opengl_coordinates(normals(i)),
+                    cv_to_opengl_coordinates(dys(i))),
+                cv_to_opengl_coordinates(points(i)) }));
+    }
+    return result;
 }

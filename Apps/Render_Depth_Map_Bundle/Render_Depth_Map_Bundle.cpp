@@ -92,33 +92,23 @@ int main(int argc, char** argv) {
         if (args.has_named("--register_backward")) {
             bundle = bundle.reregistered(RegistrationDirection::BACKWARD);
         }
-        Array<FixedArray<float, 3>> points{ ArrayShape{ 0 } };
-        Array<FixedArray<float, 3>> point_normals{ ArrayShape{ 0 } };
-        Array<FixedArray<float, 3>> point_dys{ ArrayShape{ 0 } };
+        Array<TransformationMatrix<float, 3>> point_transformations{ ArrayShape{ 0 } };
         if (args.has_named_value("--points")) {
             Array<float> pts = Array<float>::load_txt_2d(args.named_value("--points"), ArrayShape{ 0, 3 });
             if (pts.shape(1) != 3) {
                 throw std::runtime_error("Points dimension not 3");
             }
-            points = Array<float>::from_dynamic<3>(pts);
-            point_normals = full<FixedArray<float, 3>>(points.shape(), FixedArray<float, 3>{ 0.f, 0.f, 1.f });
-            point_dys = full<FixedArray<float, 3>>(points.shape(), FixedArray<float, 3>{ 0.f, -1.f, 0.f });
+            for (const FixedArray<float, 3>& p : Array<float>::from_dynamic<3>(pts).flat_iterable()) {
+                point_transformations.append(TransformationMatrix<float, 3>{fixed_zeros<float, 3, 3>(), p});
+            }
         }
 
         std::vector<DepthMapPackage> packages;
         if (args.has_named("--convert_to_points")) {
-            Array<FixedArray<float, 3>> dense_points;
-            Array<FixedArray<float, 3>> dense_normals;
-            Array<FixedArray<float, 3>> dense_dys;
-            bundle.points_and_normals(
-                safe_stoz(args.named_value("--normal_k", "5")),
-                safe_stof(args.named_value("--normal_radius", "0.1")),
-                dense_points,
-                dense_normals,
-                dense_dys);
-            points.append(dense_points);
-            point_normals.append(dense_normals);
-            point_dys.append(dense_dys);
+            point_transformations.append(
+                bundle.points_and_normals(
+                    safe_stoz(args.named_value("--normal_k", "5")),
+                    safe_stof(args.named_value("--normal_radius", "0.1"))));
         } else {
             packages.reserve(bundle.packages().size());
             for (const auto& package : bundle.packages()) {
@@ -146,9 +136,7 @@ int main(int argc, char** argv) {
         render_depth_maps(
             render,
             packages,
-            points,
-            point_normals,
-            point_dys,
+            point_transformations,
             ref->second.ki,
             ref->second.ke,
             (float)ref->second.depth.shape(1),

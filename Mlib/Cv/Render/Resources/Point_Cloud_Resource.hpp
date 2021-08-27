@@ -8,9 +8,7 @@ namespace Mlib::Cv {
 class PointCloudResource: public SceneNodeResource {
 public:
     explicit PointCloudResource(
-        const Array<FixedArray<float, 3>>& points,
-        const Array<FixedArray<float, 3>>& normals = Array<FixedArray<float, 3>>(),
-        const Array<FixedArray<float, 3>>& dys = Array<FixedArray<float, 3>>(),
+        const Array<TransformationMatrix<float, 3>>& points,
         float point_radius = 0.1f);
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;

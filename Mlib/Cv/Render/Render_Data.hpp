@@ -21,7 +21,7 @@ struct DepthMapPackage;
 
 void render_point_cloud(
     Render2& render,
-    const Array<FixedArray<float, 3>>& points,
+    const Array<TransformationMatrix<float, 3>>& points,
     std::unique_ptr<Camera>&& camera,
     bool rotate = false,
     float scale = 1,
@@ -43,9 +43,7 @@ void render_depth_map(
 void render_depth_maps(
     Render2& render,
     const std::vector<DepthMapPackage>& packages,
-    const Array<FixedArray<float, 3>>& points,
-    const Array<FixedArray<float, 3>>& point_normals,
-    const Array<FixedArray<float, 3>>& dy,
+    const Array<TransformationMatrix<float, 3>>& points,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
     float width,

@@ -11,6 +11,8 @@ template <class TData>
 class Array;
 template <typename TData, size_t... tshape>
 class FixedArray;
+template <class TData, size_t n>
+class TransformationMatrix;
 
 }
 
@@ -47,12 +49,7 @@ public:
     DepthMapBundle reregistered(
         RegistrationDirection direction = RegistrationDirection::FORWARD,
         bool print_residual = false) const;
-    void points_and_normals(
-        size_t k,
-        float normal_radius,
-        Array<FixedArray<float, 3>>& points,
-        Array<FixedArray<float, 3>>& normals,
-        Array<FixedArray<float, 3>>& dys) const;
+    Array<TransformationMatrix<float, 3>> points_and_normals(size_t k, float normal_radius) const;
 private:
     Packages packages_;
 };
