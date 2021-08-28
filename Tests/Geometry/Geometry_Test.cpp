@@ -10,6 +10,7 @@
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
 #include <Mlib/Geometry/Roundness_Estimator.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
 #include <Mlib/Images/Svg.hpp>
@@ -327,6 +328,28 @@ void test_distance_point_triangle() {
     assert_isclose(distance_point_to_triangle<float>({0.5, 0.2}, {0, 0}, {1, 0}, {1, 1}), 0.f);
 }
 
+void test_triangulate_3d() {
+    const Array<TransformationMatrix<float, 3>> points{
+        TransformationMatrix<float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{0.f, 0.f, 0.f}},
+        TransformationMatrix<float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 0.f, 0.f}},
+        TransformationMatrix<float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 1.f, 0.f}}
+    };
+
+    Array<FixedArray<FixedArray<float, 3>, 3>> mesh = triangulate_3d(
+        points,
+        10.f,   // boundary_radius
+        0.1f);  // z_thickness
+    
+    assert_allequal(
+        Array<float>{ Array<FixedArray<float, 3>>{ mesh } },
+        Array<float>{ Array<FixedArray<float, 3>>{
+            Array<FixedArray<FixedArray<float, 3>, 3>>{
+                FixedArray<FixedArray<float, 3>, 3>{
+                    FixedArray<float, 3>{0, 0, 0},
+                    FixedArray<float, 3>{1, 0, 0},
+                    FixedArray<float, 3>{1, 1, 0}}}}});
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -344,5 +367,6 @@ int main(int argc, const char** argv) {
     test_roundness_estimator();
     // test_smoothen_edges();
     test_distance_point_triangle();
+    test_triangulate_3d();
     return 0;
 }

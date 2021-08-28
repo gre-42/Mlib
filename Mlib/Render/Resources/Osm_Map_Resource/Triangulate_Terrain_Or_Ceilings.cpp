@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>
+#include <Mlib/Geometry/Mesh/P2t_Point_Set.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -132,44 +133,6 @@ void check_contour(const std::vector<p2t::Point*>& contour) {
 //     std::set<OrderableFixedArray<double, 2>> pts_;
 // };
 
-class PointSet {
-public:
-    explicit PointSet(const std::list<SteinerPointInfo>& steiner_points) {
-        for (const auto& p : steiner_points) {
-            // Ignore result
-            steiner_pts_.insert({
-                OrderableFixedArray<float, 2>{p.position(0), p.position(1)},
-                std::make_unique<p2t::Point>(p.position(0), p.position(1))});
-        }
-    }
-    p2t::Point* operator () (float x, float y) {
-        auto p = OrderableFixedArray<float, 2>{x, y};
-        if (auto it = pts_.find(p); it != pts_.end()) {
-            return it->second.get();
-        }
-        if (auto it = steiner_pts_.find(p); it != steiner_pts_.end()) {
-            auto pt = it->second.get();
-            pts_.insert({p, std::move(it->second)});
-            steiner_pts_.erase(it);
-            return pt;
-        }
-        auto pt = new p2t::Point{x, y};
-        pts_.insert({p, std::unique_ptr<p2t::Point>(pt)});
-        return pt;
-    }
-    std::vector<p2t::Point*> remaining_steiner_points() {
-        std::vector<p2t::Point*> result;
-        result.reserve(steiner_pts_.size());
-        for (auto& p : steiner_pts_) {
-            result.push_back(p.second.get());
-        }
-        return result;
-    }
-private:
-    std::map<OrderableFixedArray<float, 2>, std::unique_ptr<p2t::Point>> pts_;
-    std::map<OrderableFixedArray<float, 2>, std::unique_ptr<p2t::Point>> steiner_pts_;
-};
-
 template <class EntityType>
 void triangulate_entity_list(
     EntityTypeTriangleList<EntityType>& tl_terrain,
@@ -188,7 +151,11 @@ void triangulate_entity_list(
     EntityType default_terrain_type,
     const std::set<EntityType>& excluded_entitities)
 {
-    PointSet points{steiner_points};
+    std::list<FixedArray<float, 2>> steiner_point_positions;
+    for (const auto& p : steiner_points) {
+        steiner_point_positions.push_back({p.position(0), p.position(1)});
+    }
+    P2tPointSet points{steiner_point_positions};
     p2t::Point p00{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width};
     p2t::Point p01{bounding_info.boundary_min(0) - bounding_info.border_width, bounding_info.boundary_max(1) + bounding_info.border_width};
     p2t::Point p10{bounding_info.boundary_max(0) + bounding_info.border_width, bounding_info.boundary_min(1) - bounding_info.border_width};

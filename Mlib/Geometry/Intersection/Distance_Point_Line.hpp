@@ -33,7 +33,8 @@ template <class TData>
 FixedArray<TData, 2> transform_to_line_coordinates(
     const FixedArray<TData, 2>& p,
     const FixedArray<TData, 2>& l0,
-    const FixedArray<TData, 2>& l1)
+    const FixedArray<TData, 2>& l1,
+    bool compute_center = false)
 {
     FixedArray<TData, 2> d = l1 - l0;
     TData dist = std::sqrt(sum(squared(d)));
@@ -42,9 +43,16 @@ FixedArray<TData, 2> transform_to_line_coordinates(
     }
     d /= dist;
     FixedArray<TData, 2> n = {d(1), -d(0)};
-    return FixedArray<TData, 2>{
-        dot0d(p - l0, d) / dist,
-        dot0d(p - l0, n)};
+    if (compute_center) {
+        FixedArray<TData, 2> c = (l0 + l1) / (TData)2;
+        return FixedArray<TData, 2>{
+            dot0d(p - c, d) / dist,
+            dot0d(p - c, n)};
+    } else {
+        return FixedArray<TData, 2>{
+            dot0d(p - l0, d) / dist,
+            dot0d(p - l0, n)};
+    }
 }
 
 }

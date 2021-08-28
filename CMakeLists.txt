@@ -69,7 +69,7 @@ endif()
 set(CMAKE_DEBUG_POSTFIX _d)
 set(Mlib_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(MSVC)
+if (MSVC)
     add_compile_definitions(_USE_MATH_DEFINES)
 endif()
 
@@ -78,7 +78,7 @@ endif()
 ######################
 
 add_subdirectory(Apps)
-if(NOT (MINGW OR MSVC))
+if (NOT (MINGW OR MSVC))
     add_subdirectory(cork)
 endif()
 add_subdirectory(cpp-httplib)
@@ -87,6 +87,6 @@ add_subdirectory(poly2tri)
 add_subdirectory(stb_image)
 add_subdirectory(Tests)
 # Requires 32 bit or disabled warnings.
-if(NOT (MINGW OR MSVC))
+if (NOT (MINGW OR MSVC))
     add_subdirectory(Triangle)
 endif()
