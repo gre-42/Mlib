@@ -18,6 +18,28 @@ struct Triangle3 {
 typedef Bvh<float, Point3, 3> PointBvh;
 typedef Bvh<float, Triangle3, 3> TriangleBvh;
 
+class IndexedPointSet3D {
+public:
+    bool operator()(const FixedArray<float, 2>& p2, const FixedArray<float, 3>& p3, int& point_index) {
+        point_index = indexed_points_(p2(0), p2(1));
+        auto res = to3d_.insert({point_index, &p3});
+        if (!res.second && !all(*res.first->second == p3)) {
+            std::cerr << "Detected duplicate Steiner point after projection" << std::endl;
+            return false;
+        }
+        return true;
+    }
+    const FixedArray<float, 3>& p3(int i) {
+        return *to3d_.at(i);
+    }
+    std::vector<double>& positions() {
+        return indexed_points_.positions();
+    }
+private:
+    std::map<int, const FixedArray<float, 3>*> to3d_;
+    IndexedPointSet indexed_points_;
+};
+
 bool triangulate_point(
     const TransformationMatrix<float, 3>& point,
     const PointBvh& point_bvh,
@@ -27,11 +49,9 @@ bool triangulate_point(
 {
     TransformationMatrix<float, 3> projection = point.inverted();
 
-    std::map<OrderableFixedArray<float, 2>, const FixedArray<float, 3>*> to3d;
-
     // Determine steiner points.
     BoundingSphere<float, 3> bounding_sphere{ point.t(), std::sqrt(2.f) * boundary_radius };
-    std::list<FixedArray<float, 2>> steiner_points;
+    IndexedPointSet3D indexed_points;
     if (!point_bvh.visit(
         bounding_sphere,
         [&](const Point3& point)
@@ -43,10 +63,8 @@ bool triangulate_point(
             if (std::abs(pt(2) > z_thickness)) {
                 return true;
             }
-            FixedArray<float, 2> p2{ pt(0), pt(1) };
-            steiner_points.push_back(p2);
-            if (!to3d.insert({OrderableFixedArray<float, 2>{p2}, &point.t()}).second) {
-                std::cerr << "Detected duplicate Steiner point after projection" << std::endl;
+            int point_index;
+            if (!indexed_points(FixedArray<float, 2>{pt(0), pt(1)}, point.t(), point_index)) {
                 return false;
             }
             return true;
@@ -55,7 +73,6 @@ bool triangulate_point(
     {
         return false;
     }
-    IndexedPointSet indexed_points{steiner_points};
 
     // Add existing triangles.
     Array<int> old_triangles_{ ArrayShape{ 0 }};
@@ -75,12 +92,21 @@ bool triangulate_point(
                     return true;
                 }
             }
-            old_triangles_.append(indexed_points(v(0)(0), v(0)(1)));
-            old_triangles_.append(indexed_points(v(1)(0), v(1)(1)));
-            old_triangles_.append(indexed_points(v(2)(0), v(2)(1)));
+            for (size_t i = 0; i < 3; ++i) {
+                int point_index;
+                if (!indexed_points(FixedArray<float, 2>{v(i)(0), v(i)(1)}, triangle.v(i), point_index)) {
+                    return false;
+                }
+                old_triangles_.append(point_index);
+            }
             return true;
         }))
     {
+        return false;
+    }
+
+    if (indexed_points.positions().size() / 2 < 3) {
+        std::cerr << "Less than 3 vertices for triangulation" << std::endl;
         return false;
     }
 
@@ -142,21 +168,21 @@ bool triangulate_point(
     // Q: quiet
     triangle::triangulate("z e Q", &in, &out, nullptr);
 
+    if (out.numberofpoints != in.numberofpoints) {
+        std::cerr << "Out number of points differs from in number of points" << std::endl;
+        return false;
+    }
     // Convert triangulation result to output format.
     for (int* i = out.trianglelist + 3 * in.numberoftriangles; i < out.trianglelist + 3 * out.numberoftriangles; i += 3) {
-        FixedArray<OrderableFixedArray<float, 2>, 3> tri2{
-            OrderableFixedArray<float, 2>{(float)out.pointlist[2 * (*i) + 0], (float)out.pointlist[2 * (*i) + 1]},
-            OrderableFixedArray<float, 2>{(float)out.pointlist[2 * (*i) + 2], (float)out.pointlist[2 * (*i) + 3]},
-            OrderableFixedArray<float, 2>{(float)out.pointlist[2 * (*i) + 4], (float)out.pointlist[2 * (*i) + 5]}};
         FixedArray<FixedArray<float, 3>, 3> tri3{
-            *to3d.at(tri2(0)),
-            *to3d.at(tri2(1)),
-            *to3d.at(tri2(2))};
+            indexed_points.p3(i[0]),
+            indexed_points.p3(i[1]),
+            indexed_points.p3(i[2])};
         triangle_bvh.insert(
             tri3,
             Triangle3{
                 .v = tri3,
-                .normal = triangle_normal(tri3)});
+                .normal = triangle_normal(tri3, TriangleNormalErrorBehavior::WARN)});
     }
 
     triangle::trifree(out.pointlist);

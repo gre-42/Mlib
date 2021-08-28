@@ -3,18 +3,9 @@
 
 using namespace Mlib;
 
-IndexedPointSet::IndexedPointSet(const std::list<FixedArray<float, 2>>& steiner_points)
+IndexedPointSet::IndexedPointSet()
 : current_index_{0}
-{
-    for (const auto& p : steiner_points) {
-        // Ignore result
-        pts_.insert({
-            OrderableFixedArray<float, 2>{p},
-            current_index_++});
-        positions_.push_back(p(0));
-        positions_.push_back(p(1));
-    }
-}
+{}
 
 IndexedPointSet::~IndexedPointSet()
 {}

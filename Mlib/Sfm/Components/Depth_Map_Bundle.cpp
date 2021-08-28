@@ -345,7 +345,21 @@ std::list<std::shared_ptr<ColoredVertexArray>> DepthMapBundle::mesh(
         z_thickness);
     TriangleList triangle_list{ "Mesh", Material() };
     for (const auto& t : tri_mesh.flat_iterable()) {
-        triangle_list.draw_triangle_wo_normals(t(0), t(1), t(2));
+        triangle_list.draw_triangle_wo_normals(
+            t(0),                                 // p00
+            t(1),                                 // p10
+            t(2),                                 // p01
+            FixedArray<float, 3>{1.f, 1.f, 1.f},  // c00
+            FixedArray<float, 3>{1.f, 1.f, 1.f},  // c10
+            FixedArray<float, 3>{1.f, 1.f, 1.f},  // c01
+            {0.f, 0.f},                           // u00
+            {1.f, 0.f},                           // u10
+            {0.f, 1.f},                           // u01
+            {},                                   // b00
+            {},                                   // b10
+            {},                                   // b01
+            TriangleNormalErrorBehavior::WARN,
+            TriangleTangentErrorBehavior::WARN);
     }
     result.push_back(triangle_list.triangle_array());
 

@@ -12,7 +12,7 @@ class OrderableFixedArray;
 
 class IndexedPointSet {
 public:
-    explicit IndexedPointSet(const std::list<FixedArray<float, 2>>& steiner_points);
+    IndexedPointSet();
     ~IndexedPointSet();
     int operator () (float x, float y);
     std::vector<double>& positions();
