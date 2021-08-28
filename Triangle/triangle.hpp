@@ -282,7 +282,7 @@ struct triangulateio {
 };
 
 void triangulate(
-  char *triswitches,
+  const char *triswitches,
   struct triangulateio *in,
   struct triangulateio *out,
   struct triangulateio *vorout);
