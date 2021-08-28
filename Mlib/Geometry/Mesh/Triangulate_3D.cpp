@@ -56,11 +56,11 @@ bool triangulate_point(
         bounding_sphere,
         [&](const Point3& point)
         {
-            if (dot0d(point.R().column(2), projection.R()[2]) < 0) {
+            if (dot0d(point.R().column(2), projection.R()[2]) <= 0) {
                 return true;
             }
             FixedArray<float, 3> pt = projection.transform(point.t());
-            if (std::abs(pt(2) > z_thickness)) {
+            if (std::abs(pt(2)) > z_thickness) {
                 return true;
             }
             int point_index;
@@ -80,7 +80,7 @@ bool triangulate_point(
         bounding_sphere,
         [&](const Triangle3& triangle)
         {
-            if (dot0d(triangle.normal, projection.R()[2]) < 0) {
+            if (dot0d(triangle.normal, projection.R()[2]) <= 0) {
                 return true;
             }
             FixedArray<FixedArray<float, 3>, 3> v{
@@ -88,7 +88,7 @@ bool triangulate_point(
                 projection.transform(triangle.v(1)),
                 projection.transform(triangle.v(2))};
             for (size_t i = 0; i < 2; ++i) {
-                if (std::abs(v(i)(2) > z_thickness)) {
+                if (std::abs(v(i)(2)) > z_thickness) {
                     return true;
                 }
             }
