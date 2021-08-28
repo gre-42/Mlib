@@ -122,11 +122,11 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                                         scene_graph_config.min_distance_near * scale,
                                         [&p](auto& tt)
                                         {
-                                            return distance_point_to_triangle_3d(
+                                            return std::sqrt(sum(squared(distance_point_to_triangle_3d(
                                                 p,
                                                 tt(0),
                                                 tt(1),
-                                                tt(2));
+                                                tt(2)))));
                                         });
                                     if (min_dist < scene_graph_config.min_distance_near * scale) {
                                         continue;

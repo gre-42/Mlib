@@ -75,7 +75,7 @@ TData distance_point_to_triangle (
 }
 
 template <class TData>
-TData distance_point_to_triangle_3d (
+FixedArray<TData, 2> distance_point_to_triangle_3d (
     const FixedArray<TData, 3>& pt,
     const FixedArray<TData, 3>& v1,
     const FixedArray<TData, 3>& v2,
@@ -92,11 +92,11 @@ TData distance_point_to_triangle_3d (
         dot1d(m, v1),
         dot1d(m, v2),
         dot1d(m, v3));
-    return std::sqrt(squared(dist0) + squared(dist1));
+    return {dist0, dist1};
 }
 
 template <class TData>
-TData distance_point_to_triangle_3d (
+FixedArray<TData, 2> distance_point_to_triangle_3d (
     const FixedArray<TData, 3>& pt,
     const FixedArray<TData, 3>& v1,
     const FixedArray<TData, 3>& v2,
