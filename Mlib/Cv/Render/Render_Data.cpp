@@ -9,6 +9,7 @@
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -55,6 +56,7 @@ void Mlib::Cv::render_depth_map(
         render,
         { package },
         Array<TransformationMatrix<float, 3>>{},
+        { },
         intrinsic_matrix,
         TransformationMatrix<float, 3>::identity(),
         (float)depth_picture.shape(1),
@@ -71,6 +73,7 @@ void Mlib::Cv::render_depth_maps(
     Render2& render,
     const std::vector<DepthMapPackage>& packages,
     const Array<TransformationMatrix<float, 3>>& points,
+    const std::list<std::shared_ptr<ColoredVertexArray>>& mesh,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
     float width,
@@ -109,6 +112,11 @@ void Mlib::Cv::render_depth_maps(
         const auto r = std::make_shared<PointCloudResource>(points, point_radius);
         scene_node_resources.add_resource("PointCloudResource", r);
         scene_node_resources.instantiate_renderable("PointCloudResource", "DepthMap", *root_node, SceneNodeResourceFilter());
+    }
+    if (!mesh.empty()) {
+        const auto r = std::make_shared<ColoredVertexArrayResource>(mesh, nullptr);
+        scene_node_resources.add_resource("ColoredVertexArrayResource", r);
+        scene_node_resources.instantiate_renderable("ColoredVertexArrayResource", "ColoredVertexArray", *root_node, SceneNodeResourceFilter());
     }
     std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(Cv::opengl_matrix_from_hz_intrinsic_matrix(
         intrinsic_matrix,

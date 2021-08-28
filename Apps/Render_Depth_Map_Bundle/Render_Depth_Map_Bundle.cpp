@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
         " [--register_forward]"
         " [--register_backward]"
         " [--convert_to_points]"
+        " [--convert_to_mesh]"
         " [--rotate]"
         " [--wire_frame]"
         " [--reference_time <milliseconds>]"
@@ -37,12 +38,15 @@ int main(int argc, char** argv) {
         " [--points <file>]"
         " [--point_radius <radius>]"
         " [--normal_radius <radius>]"
-        " [--normal_k <k>]",
+        " [--normal_k <k>]"
+        " [--boundary_radius <radius>"
+        " [--z_thickness <thickness>",
         {"--rotate",
         "--wire_frame",
         "--register_forward",
         "--register_backward",
-        "--convert_to_points"},
+        "--convert_to_points",
+        "--convert_to_mesh"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -54,7 +58,9 @@ int main(int argc, char** argv) {
         "--points",
         "--point_radius",
         "--normal_k",
-        "--normal_radius"},
+        "--normal_radius",
+        "--boundary_radius",
+        "--z_thickness"},
         {"--packages", "--filter_references"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -104,11 +110,20 @@ int main(int argc, char** argv) {
         }
 
         std::vector<DepthMapPackage> packages;
-        if (args.has_named("--convert_to_points")) {
-            point_transformations.append(
+        std::list<std::shared_ptr<ColoredVertexArray>> mesh;
+        if (args.has_named("--convert_to_points") || args.has_named("--convert_to_mesh")) {
+            Array<TransformationMatrix<float, 3>> dense_point_transformations =
                 bundle.points_and_normals(
                     safe_stoz(args.named_value("--normal_k", "5")),
-                    safe_stof(args.named_value("--normal_radius", "0.1"))));
+                    safe_stof(args.named_value("--normal_radius", "0.1")));
+            if (args.has_named("--convert_to_mesh")) {
+                mesh = bundle.mesh(
+                    dense_point_transformations,
+                    safe_stof(args.named_value("--boundary_radius")),
+                    safe_stof(args.named_value("--z_thickness")));
+            } else {
+                point_transformations.append(dense_point_transformations);
+            }
         } else {
             packages.reserve(bundle.packages().size());
             for (const auto& package : bundle.packages()) {
@@ -137,6 +152,7 @@ int main(int argc, char** argv) {
             render,
             packages,
             point_transformations,
+            mesh,
             ref->second.ki,
             ref->second.ke,
             (float)ref->second.depth.shape(1),

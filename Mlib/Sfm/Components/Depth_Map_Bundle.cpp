@@ -8,6 +8,9 @@
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Look_At.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Rigid_Motion_From_Images_Smooth.hpp>
@@ -327,5 +330,24 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
                     cv_to_opengl_coordinates(dys(i))),
                 cv_to_opengl_coordinates(points(i)) }));
     }
+    return result;
+}
+
+std::list<std::shared_ptr<ColoredVertexArray>> DepthMapBundle::mesh(
+    const Array<TransformationMatrix<float, 3>>& point_cloud,
+    float boundary_radius,
+    float z_thickness) const
+{
+    std::list<std::shared_ptr<ColoredVertexArray>> result;
+    Array<FixedArray<FixedArray<float, 3>, 3>> tri_mesh = triangulate_3d(
+        point_cloud,
+        boundary_radius,
+        z_thickness);
+    TriangleList triangle_list{ "Mesh", Material() };
+    for (const auto& t : tri_mesh.flat_iterable()) {
+        triangle_list.draw_triangle_wo_normals(t(0), t(1), t(2));
+    }
+    result.push_back(triangle_list.triangle_array());
+
     return result;
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <list>
 #include <memory>
 #include <vector>
 
@@ -14,6 +15,7 @@ class Camera;
 template <class TData, size_t n>
 class TransformationMatrix;
 class Render2;
+struct ColoredVertexArray;
 
 namespace Cv {
 
@@ -44,6 +46,7 @@ void render_depth_maps(
     Render2& render,
     const std::vector<DepthMapPackage>& packages,
     const Array<TransformationMatrix<float, 3>>& points,
+    const std::list<std::shared_ptr<ColoredVertexArray>>& mesh,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
     float width,

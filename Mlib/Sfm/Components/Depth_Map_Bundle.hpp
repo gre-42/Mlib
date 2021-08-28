@@ -1,6 +1,8 @@
 #pragma once
 #include <chrono>
+#include <list>
 #include <map>
+#include <memory>
 #include <set>
 
 namespace Mlib {
@@ -13,6 +15,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TData, size_t n>
 class TransformationMatrix;
+struct ColoredVertexArray;
 
 }
 
@@ -49,7 +52,13 @@ public:
     DepthMapBundle reregistered(
         RegistrationDirection direction = RegistrationDirection::FORWARD,
         bool print_residual = false) const;
-    Array<TransformationMatrix<float, 3>> points_and_normals(size_t k, float normal_radius) const;
+    Array<TransformationMatrix<float, 3>> points_and_normals(
+        size_t k,
+        float normal_radius) const;
+    std::list<std::shared_ptr<ColoredVertexArray>> mesh(
+        const Array<TransformationMatrix<float, 3>>& point_cloud,
+        float boundary_radius,
+        float z_thickness) const;
 private:
     Packages packages_;
 };
