@@ -34,13 +34,13 @@ public:
       level_{level}
     {}
 
-    void insert(
+    const TPayload* insert(
         const AxisAlignedBoundingBox<TData, tndim>& aabb,
         const TPayload& data)
     {
         if (level_ == 0) {
             data_.push_back({aabb, data});
-            return;
+            return &data_.back().second;
         }
         for (auto& c : children_) {
             AxisAlignedBoundingBox<TData, tndim> bb = c.first;
@@ -48,13 +48,11 @@ public:
             // if (all(bb.size() <= TData(level_) * max_size_)) {
             if (all(bb.size() <= max_size_ * std::pow(TData(2), TData(level_)))) {
                 c.first = bb;
-                c.second.insert(aabb, data);
-                return;
+                return c.second.insert(aabb, data);
             }
         }
-        Bvh bvh{max_size_, level_ - 1};
-        bvh.insert(aabb, data);
-        children_.push_back({aabb, bvh});
+        children_.push_back({aabb, Bvh{max_size_, level_ - 1}});
+        return children_.back().second.insert(aabb, data);
     }
 
     template <class TVisitor>
