@@ -10,6 +10,7 @@
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Smallest_Angle.hpp>
 #include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
 #include <Mlib/Geometry/Roundness_Estimator.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
@@ -351,6 +352,15 @@ void test_triangulate_3d() {
                     FixedArray<float, 3>{1, 1, 0}}}}});
 }
 
+void test_smallest_angle_in_triangle() {
+    assert_isclose(
+        largest_cos_in_triangle(FixedArray<FixedArray<float, 2>, 3>{
+            FixedArray<float, 2>{-1.f, -1.f},
+            FixedArray<float, 2>{1.f, -1.f},
+            FixedArray<float, 2>{0.f, 2.f}}),
+        0.8f);
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -369,5 +379,6 @@ int main(int argc, const char** argv) {
     // test_smoothen_edges();
     test_distance_point_triangle();
     test_triangulate_3d();
+    test_smallest_angle_in_triangle();
     return 0;
 }
