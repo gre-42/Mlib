@@ -178,6 +178,16 @@ bool triangulate_point(
             indexed_points.p3(i[0]),
             indexed_points.p3(i[1]),
             indexed_points.p3(i[2])};
+        bool good = true;
+        for (size_t i = 0; i < 3; ++i) {
+            if (!bounding_sphere.intersects(BoundingSphere<float, 3>{tri3(i), 0.f})) {
+                good = false;
+                break;
+            }
+        }
+        if (!good) {
+            continue;
+        }
         triangle_bvh.insert(
             tri3,
             Triangle3{
