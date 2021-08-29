@@ -60,7 +60,8 @@ int main(int argc, char** argv) {
         "--normal_k",
         "--normal_radius",
         "--boundary_radius",
-        "--z_thickness"},
+        "--z_thickness",
+        "--cos_min_angle"},
         {"--packages", "--filter_references"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -120,7 +121,8 @@ int main(int argc, char** argv) {
                 mesh = bundle.mesh(
                     dense_point_transformations,
                     safe_stof(args.named_value("--boundary_radius")),
-                    safe_stof(args.named_value("--z_thickness")));
+                    safe_stof(args.named_value("--z_thickness")),
+                    safe_stof(args.named_value("--cos_min_angle", "0.1")));
             } else {
                 point_transformations.append(dense_point_transformations);
             }

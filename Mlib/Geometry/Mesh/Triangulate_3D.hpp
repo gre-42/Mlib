@@ -13,6 +13,7 @@ class TransformationMatrix;
 Array<FixedArray<FixedArray<float, 3>, 3>> triangulate_3d(
     const Array<TransformationMatrix<float, 3>>& points,
     float boundary_radius,
-    float z_thickness);
+    float z_thickness,
+    float cos_min_angle);
 
 }

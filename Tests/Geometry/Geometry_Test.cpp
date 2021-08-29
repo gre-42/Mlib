@@ -338,7 +338,8 @@ void test_triangulate_3d() {
     Array<FixedArray<FixedArray<float, 3>, 3>> mesh = triangulate_3d(
         points,
         10.f,   // boundary_radius
-        0.1f);  // z_thickness
+        0.1f,   // z_thickness
+        0.1f);  // cos_min_angle
     
     assert_allequal(
         Array<float>{ Array<FixedArray<float, 3>>{ mesh } },

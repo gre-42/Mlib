@@ -333,12 +333,14 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
 std::list<std::shared_ptr<ColoredVertexArray>> DepthMapBundle::mesh(
     const Array<TransformationMatrix<float, 3>>& point_cloud,
     float boundary_radius,
-    float z_thickness) const
+    float z_thickness,
+    float cos_min_angle) const
 {
     Array<FixedArray<FixedArray<float, 3>, 3>> tri_mesh = triangulate_3d(
         point_cloud,
         boundary_radius,
-        z_thickness);
+        z_thickness,
+        cos_min_angle);
     std::list<std::shared_ptr<ColoredVertexArray>> result;
     if (tri_mesh.length() != 0) {
         TriangleList triangle_list{ "Mesh", Material() };

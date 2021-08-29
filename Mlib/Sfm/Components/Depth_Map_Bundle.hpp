@@ -58,7 +58,8 @@ public:
     std::list<std::shared_ptr<ColoredVertexArray>> mesh(
         const Array<TransformationMatrix<float, 3>>& point_cloud,
         float boundary_radius,
-        float z_thickness) const;
+        float z_thickness,
+        float cos_min_angle) const;
 private:
     Packages packages_;
 };

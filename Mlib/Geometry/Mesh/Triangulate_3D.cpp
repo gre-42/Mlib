@@ -4,6 +4,8 @@
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Point_Set.hpp>
+#include <Mlib/Geometry/Mesh/Plot.hpp>
+#include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 #include <Triangle/triangle.hpp>
@@ -46,12 +48,43 @@ private:
     IndexedPointSet indexed_points_;
 };
 
+void plot(Svg<float>& svg, const triangle::triangulateio& io) {
+    std::list<FixedArray<FixedArray<float, 2>, 3>> triangles;
+    for (int* i = io.trianglelist; i < io.trianglelist + 3 * io.numberoftriangles; i += 3) {
+        triangles.push_back({
+            FixedArray<float, 2>{(float)io.pointlist[2 * i[0]], (float)io.pointlist[2 * i[0] + 1]},
+            FixedArray<float, 2>{(float)io.pointlist[2 * i[1]], (float)io.pointlist[2 * i[1] + 1]},
+            FixedArray<float, 2>{(float)io.pointlist[2 * i[2]], (float)io.pointlist[2 * i[2] + 1]}});
+    }
+    plot_mesh(
+        svg,
+        triangles,
+        {},
+        {},
+        1.f);
+}
+
+void plot(const triangle::triangulateio& io, const std::string& filename, float width, float height) {
+    std::ofstream ofstr{filename};
+    Svg<float> svg{ofstr, width, height};
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
+    plot(svg, io);
+    svg.finish();
+    ofstr.flush();
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
+    }
+}
+
 bool triangulate_point(
     const TransformationMatrix<float, 3>& central_point,
     const PointBvh& point_bvh,
     TriangleBvh& triangle_bvh,
     float boundary_radius,
-    float z_thickness)
+    float z_thickness,
+    float cos_min_angle)
 {
     TransformationMatrix<float, 3> projection = central_point.inverted();
 
@@ -96,7 +129,7 @@ bool triangulate_point(
                 projection.transform(triangle.v(0)),
                 projection.transform(triangle.v(1)),
                 projection.transform(triangle.v(2))};
-            if (dot0d(triangle.normal, projection.R()[2]) <= 0) {
+            if (dot0d(triangle.normal, projection.R()[2]) <= cos_min_angle) {
                 for (size_t i = 0; i < 3; ++i) {
                     if (indexed_points.exists(FixedArray<float, 2>{v(i)(0), v(i)(1)})) {
                         return false;
@@ -202,6 +235,10 @@ bool triangulate_point(
             indexed_points.p3(i[0]),
             indexed_points.p3(i[1]),
             indexed_points.p3(i[2])};
+        // if (in.numberoftriangles == 1 && out.numberoftriangles == 2) {
+        //     plot(in, "/tmp/plot_in.svg", 40, 40);
+        //     plot(out, "/tmp/plot_out.svg", 40, 40);
+        // }
         triangle_bvh.insert(
             tri3,
             Triangle3{
@@ -215,7 +252,8 @@ bool triangulate_point(
 Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
     const Array<TransformationMatrix<float, 3>>& points,
     float boundary_radius,
-    float z_thickness)
+    float z_thickness,
+    float cos_min_angle)
 {
     TriangleBvh triangle_bvh{{0.1f, 0.1f, 0.1f}, 10};
     PointBvh point_bvh{{0.1f, 0.1f, 0.1f}, 10};
@@ -228,7 +266,8 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
             point_bvh,
             triangle_bvh,
             boundary_radius,
-            z_thickness);
+            z_thickness,
+            cos_min_angle);
     }
     Array<FixedArray<FixedArray<float, 3>, 3>> result{ ArrayShape{ 0 } };
     triangle_bvh.visit_all([&result](const std::pair<AxisAlignedBoundingBox<float, 3>, Triangle3>& tri3){
