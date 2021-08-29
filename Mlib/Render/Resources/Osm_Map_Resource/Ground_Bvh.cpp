@@ -28,7 +28,7 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<TriangleList>>& triangles)
 
 bool GroundBvh::height(float& height, const FixedArray<float, 2>& pt) const
 {
-    return !bvh_.visit(BoundingSphere{pt, 0.f}, [&pt, &height](const Triangle3d& t){
+    return !bvh_.visit(AxisAlignedBoundingBox{ pt }, [&pt, &height](const Triangle3d& t){
         Triangle2d tri2{
             FixedArray<float, 2>{t(0)(0), t(0)(1)},
             FixedArray<float, 2>{t(1)(0), t(1)(1)},

@@ -67,7 +67,7 @@ bool CollisionQuery::can_see(
         if (physics_engine_.cfg_.bvh) {
             bool intersects = false;
             physics_engine_.rigid_bodies_.bvh_.visit(
-                bs,
+                AxisAlignedBoundingBox{ bs.center(), bs.radius() },
                 [&](const RigidBodyAndCollisionTriangleSphere& t0){
                     FixedArray<float, 3> intersection_point;
                     if (!intersects) {

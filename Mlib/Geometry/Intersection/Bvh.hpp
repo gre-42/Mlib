@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <iomanip>
 #include <list>
@@ -59,17 +58,17 @@ public:
     }
 
     template <class TVisitor>
-    bool visit(const BoundingSphere<TData, tndim>& sphere, const TVisitor& visitor) const {
+    bool visit(const AxisAlignedBoundingBox<TData, tndim>& aabb, const TVisitor& visitor) const {
         for (const auto& d : data_) {
-            if (d.first.intersects(sphere)) {
+            if (d.first.intersects(aabb)) {
                 if (!visitor(d.second)) {
                     return false;
                 }
             }
         }
         for (const auto& c : children_) {
-            if (c.first.intersects(sphere)) {
-                if (!c.second.visit(sphere, visitor)) {
+            if (c.first.intersects(aabb)) {
+                if (!c.second.visit(aabb, visitor)) {
                     return false;
                 }
             }
@@ -144,7 +143,7 @@ public:
         const TPayload** nearest_payload = nullptr) const
     {
         TData min_distance = INFINITY;
-        visit(BoundingSphere<TData, tndim>(p, max_distance),
+        visit(AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
             [&min_distance, &compute_distance, nearest_payload](const TPayload& playload)
         {
             TData dist = compute_distance(playload);
@@ -169,7 +168,7 @@ public:
         std::vector<std::pair<TData, const TPayload*>> result(k);
         std::fill(result.begin(), result.end(), std::make_pair(INFINITY, nullptr));
         auto predicate = [](const auto& a, const auto& b){return a.first < b.first;};
-        visit(BoundingSphere<TData, tndim>(p, max_distance),
+        visit(AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
             [&result, &compute_distance, &predicate](const TPayload& playload)
         {
             TData dist = compute_distance(playload);
@@ -197,7 +196,7 @@ public:
         const TData& max_distance,
         const TComputeDistance& compute_distance) const
     {
-        return !visit(BoundingSphere<TData, tndim>(p, max_distance), [&max_distance, &compute_distance](const TPayload& playload) {
+        return !visit(AxisAlignedBoundingBox<TData, tndim>(p, max_distance), [&max_distance, &compute_distance](const TPayload& playload) {
             return compute_distance(playload) > max_distance;
         });
     }

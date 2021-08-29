@@ -296,8 +296,9 @@ void PhysicsEngine::collide(
                 continue;
             }
             for (const auto& msh1 : o1.meshes) {
+                auto bs = msh1.mesh->transformed_bounding_sphere();
                 rigid_bodies_.bvh_.visit(
-                    msh1.mesh->transformed_bounding_sphere(),
+                    AxisAlignedBoundingBox{ bs.center(), bs.radius() },
                     [&](const RigidBodyAndCollisionTriangleSphere& t0){
                         collide_triangle(
                             t0.rb,

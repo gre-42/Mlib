@@ -1,4 +1,5 @@
 #include "Triangulate_3D.hpp"
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
@@ -31,6 +32,9 @@ public:
     bool exists(const FixedArray<float, 2>& p2) {
         return indexed_points_.exists(p2(0), p2(1));
     }
+    int next_index() {
+        return indexed_points_.next_index();
+    }
     const FixedArray<float, 3>& p3(int i) {
         return *to3d_.at(i);
     }
@@ -52,12 +56,16 @@ bool triangulate_point(
     TransformationMatrix<float, 3> projection = central_point.inverted();
 
     // Determine steiner points.
-    BoundingSphere<float, 3> bounding_sphere{ central_point.t(), std::sqrt(2.f) * boundary_radius };
+    BoundingSphere<float, 3> bounding_sphere{ central_point.t(), boundary_radius };
+    AxisAlignedBoundingBox<float, 3> bounding_box{ central_point.t(), boundary_radius };
     IndexedPointSet3D indexed_points;
     if (!point_bvh.visit(
-        bounding_sphere,
+        bounding_box,
         [&](const Point3& steiner_point)
         {
+            if (!bounding_sphere.intersects(BoundingSphere<float, 3>{steiner_point.t(), 0.f})) {
+                return true;
+            }
             if (dot0d(steiner_point.R().column(2), projection.R()[2]) <= 0) {
                 return true;
             }
@@ -76,10 +84,12 @@ bool triangulate_point(
         return false;
     }
 
+    int steiner_point_index_end = indexed_points.next_index();
+
     // Add existing triangles.
     Array<int> old_triangles_{ ArrayShape{ 0 }};
     if (!triangle_bvh.visit(
-        bounding_sphere,
+        bounding_box,
         [&](const Triangle3& triangle)
         {
             FixedArray<FixedArray<float, 3>, 3> v{
@@ -182,20 +192,16 @@ bool triangulate_point(
     }
     // Convert triangulation result to output format.
     for (int* i = out.trianglelist + 3 * in.numberoftriangles; i < out.trianglelist + 3 * out.numberoftriangles; i += 3) {
+        if ((i[0] >= steiner_point_index_end) ||
+            (i[1] >= steiner_point_index_end) ||
+            (i[2] >= steiner_point_index_end))
+        {
+            continue;
+        }
         FixedArray<FixedArray<float, 3>, 3> tri3{
             indexed_points.p3(i[0]),
             indexed_points.p3(i[1]),
             indexed_points.p3(i[2])};
-        bool good = true;
-        for (size_t i = 0; i < 3; ++i) {
-            if (!bounding_sphere.intersects(BoundingSphere<float, 3>{tri3(i), 0.f})) {
-                good = false;
-                break;
-            }
-        }
-        if (!good) {
-            continue;
-        }
         triangle_bvh.insert(
             tri3,
             Triangle3{

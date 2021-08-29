@@ -4,7 +4,7 @@
 using namespace Mlib;
 
 IndexedPointSet::IndexedPointSet()
-: current_index_{0}
+: next_index_{0}
 {}
 
 IndexedPointSet::~IndexedPointSet()
@@ -15,7 +15,7 @@ int IndexedPointSet::operator () (float x, float y) {
     if (auto it = pts_.find(p); it != pts_.end()) {
         return it->second;
     } else {
-        auto pt = current_index_++;
+        auto pt = next_index_++;
         pts_.insert({p, pt});
         positions_.push_back(p(0));
         positions_.push_back(p(1));
@@ -26,6 +26,10 @@ int IndexedPointSet::operator () (float x, float y) {
 bool IndexedPointSet::exists(float x, float y) {
     OrderableFixedArray<float, 2> p{ x, y };
     return pts_.find(p) != pts_.end();
+}
+
+int IndexedPointSet::next_index() {
+    return next_index_;
 }
 
 std::vector<double>& IndexedPointSet::positions() {

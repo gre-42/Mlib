@@ -29,6 +29,10 @@ public:
     : min_{point},
       max_{point}
     {}
+    AxisAlignedBoundingBox(const FixedArray<TData, tndim>& center, const TData& radius)
+    : min_{center - radius},
+      max_{center + radius}
+    {}
     template <size_t tnpoints>
     AxisAlignedBoundingBox(const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
     : AxisAlignedBoundingBox{points.flat_begin(), points.flat_end()}
@@ -45,10 +49,6 @@ public:
     }
     bool intersects(const AxisAlignedBoundingBox& other) const {
         return all(max_ >= other.min_) && all(min_ <= other.max_);
-    }
-    bool intersects(const BoundingSphere<TData, tndim>& sphere) const {
-        return all(sphere.center() >= min_ - sphere.radius()) &&
-               all(sphere.center() <= max_ + sphere.radius());
     }
     void extend(const AxisAlignedBoundingBox& other) {
         min_ = minimum(min_, other.min_);
