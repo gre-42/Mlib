@@ -40,7 +40,9 @@ int main(int argc, char** argv) {
         " [--normal_radius <radius>]"
         " [--normal_k <k>]"
         " [--boundary_radius <radius>"
-        " [--z_thickness <thickness>",
+        " [--z_thickness <thickness>"
+        " [--cos_min_angle]"
+        " [--largest_cos_in_triangle]",
         {"--rotate",
         "--wire_frame",
         "--register_forward",
@@ -61,7 +63,8 @@ int main(int argc, char** argv) {
         "--normal_radius",
         "--boundary_radius",
         "--z_thickness",
-        "--cos_min_angle"},
+        "--cos_min_angle",
+        "--largest_cos_in_triangle"},
         {"--packages", "--filter_references"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -122,7 +125,8 @@ int main(int argc, char** argv) {
                     dense_point_transformations,
                     safe_stof(args.named_value("--boundary_radius")),
                     safe_stof(args.named_value("--z_thickness")),
-                    safe_stof(args.named_value("--cos_min_angle", "0.1")));
+                    safe_stof(args.named_value("--cos_min_angle", "0.1")),
+                    safe_stof(args.named_value("--largest_cos_in_triangle", "0.9")));
             } else {
                 point_transformations.append(dense_point_transformations);
             }

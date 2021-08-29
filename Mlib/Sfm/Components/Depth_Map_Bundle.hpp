@@ -59,7 +59,8 @@ public:
         const Array<TransformationMatrix<float, 3>>& point_cloud,
         float boundary_radius,
         float z_thickness,
-        float cos_min_angle) const;
+        float cos_min_angle,
+        float largest_cos_in_triangle) const;
 private:
     Packages packages_;
 };
