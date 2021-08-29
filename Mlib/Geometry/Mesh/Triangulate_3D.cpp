@@ -163,6 +163,12 @@ bool triangulate_point(
         .numberofedges = 0,
     };
 
+    std::unique_ptr<double, decltype(&triangle::trifree)> unique_pointlist{ out.pointlist, triangle::trifree };
+    std::unique_ptr<int, decltype(&triangle::trifree)> unique_pointmarkerlist{ out.pointmarkerlist, triangle::trifree };
+    std::unique_ptr<int, decltype(&triangle::trifree)> unique_trianglelist{ out.trianglelist, triangle::trifree };
+    std::unique_ptr<int, decltype(&triangle::trifree)> unique_edgelist{ out.edgelist, triangle::trifree };
+    std::unique_ptr<int, decltype(&triangle::trifree)> unique_edgemarkerlist{ out.edgemarkerlist, triangle::trifree };
+
     // z: makes array indizes count from 0 (triangle counts from 1 otherwise)
     // -V -V -V: set printf debug level to 3
     // Q: quiet
@@ -194,12 +200,6 @@ bool triangulate_point(
                 .v = tri3,
                 .normal = triangle_normal(tri3, TriangleNormalErrorBehavior::WARN)});
     }
-
-    triangle::trifree(out.pointlist);
-    triangle::trifree(out.pointmarkerlist);
-    triangle::trifree(out.trianglelist);
-    triangle::trifree(out.edgelist);
-    triangle::trifree(out.edgemarkerlist);
 
     return true;
 }
