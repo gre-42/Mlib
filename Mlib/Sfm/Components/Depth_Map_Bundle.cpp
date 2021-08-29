@@ -297,14 +297,10 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
             for (size_t i = 0; i < k_nearest.size(); ++i) {
                 for (size_t j = i + 1; j < k_nearest.size(); ++j) {
                     FixedArray<float, 3> n = cross(p - *k_nearest[i].second, p - *k_nearest[j].second);
-                    float len2 = sum(squared(n));
-                    if (len2 < 1e-12) {
-                        continue;
-                    }
                     if (dot0d(n, dz) > 0.f) {
                         n = -n;
                     }
-                    normal += n / std::sqrt(len2);
+                    normal += n;
                 }
             }
             float len2 = sum(squared(normal));
