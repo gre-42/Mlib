@@ -301,7 +301,7 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
                     if (len2 < 1e-12) {
                         continue;
                     }
-                    if (dot0d(n, dz) < 0.f) {
+                    if (dot0d(n, dz) > 0.f) {
                         n = -n;
                     }
                     normal += n / std::sqrt(len2);
