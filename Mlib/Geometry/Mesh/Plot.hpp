@@ -64,13 +64,15 @@ void plot_mesh(
     Svg<float>& svg,
     const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
     const std::list<std::list<FixedArray<float, 2>>>& contours,
-    const std::list<FixedArray<float, 2>>& highlighted_nodes);
+    const std::list<FixedArray<float, 2>>& highlighted_nodes,
+    float line_width = 0.05f);
 
 void plot_mesh(
     Svg<float>& svg,
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
     const std::list<std::list<FixedArray<float, 3>>>& contours,
-    const std::list<FixedArray<float, 3>>& highlighted_nodes);
+    const std::list<FixedArray<float, 3>>& highlighted_nodes,
+    float line_width = 0.05f);
 
 void plot_mesh_svg(
     const std::string& filename,
@@ -78,7 +80,8 @@ void plot_mesh_svg(
     float height,
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
     const std::list<std::list<FixedArray<float, 3>>>& contours,
-    const std::list<FixedArray<float, 3>>& highlighted_nodes);
+    const std::list<FixedArray<float, 3>>& highlighted_nodes,
+    float line_width = 0.05f);
 
 void plot_mesh_svg(
     const std::string& filename,
@@ -86,7 +89,8 @@ void plot_mesh_svg(
     float height,
     const std::list<FixedArray<OrderableFixedArray<float, 2>, 3>>& triangles,
     const std::list<std::vector<OrderableFixedArray<float, 2>>>& contours,
-    const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes);
+    const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes,
+    float line_width = 0.05f);
 
 void plot_mesh_svg(
     const std::string& filename,
@@ -94,6 +98,7 @@ void plot_mesh_svg(
     float height,
     const std::list<PTri>& triangles,
     const std::list<std::vector<p2t::Point*>>& contours,
-    const std::list<p2t::Point*>& highlighted_nodes);
+    const std::list<p2t::Point*>& highlighted_nodes,
+    float line_width = 0.05f);
 
 }

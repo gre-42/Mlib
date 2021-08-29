@@ -167,7 +167,8 @@ void Mlib::plot_mesh(
     Svg<float>& svg,
     const std::list<FixedArray<FixedArray<float, 2>, 3>>& triangles,
     const std::list<std::list<FixedArray<float, 2>>>& contours,
-    const std::list<FixedArray<float, 2>>& highlighted_nodes)
+    const std::list<FixedArray<float, 2>>& highlighted_nodes,
+    float line_width)
 {
     NormalizedPointsFixed np{ScaleMode::PRESERVE_ASPECT_RATIO, OffsetMode::MINIMUM};
     for (const auto& t : triangles) {
@@ -191,9 +192,9 @@ void Mlib::plot_mesh(
         auto a = trafo(t(0));
         auto b = trafo(t(1));
         auto c = trafo(t(2));
-        svg.draw_line(a(0), a(1), b(0), b(1), 0.05f, "black");
-        svg.draw_line(b(0), b(1), c(0), c(1), 0.05f, "black");
-        svg.draw_line(c(0), c(1), a(0), a(1), 0.05f, "black");
+        svg.draw_line(a(0), a(1), b(0), b(1), line_width, "black");
+        svg.draw_line(b(0), b(1), c(0), c(1), line_width, "black");
+        svg.draw_line(c(0), c(1), a(0), a(1), line_width, "black");
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, 4, Rgb24::blue());
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(b(0)), a2i(b(1))}, 4, Rgb24::blue());
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(c(0)), a2i(c(1))}, 4, Rgb24::blue());
@@ -206,7 +207,7 @@ void Mlib::plot_mesh(
             }
             auto a = trafo(*it0);
             auto b = trafo(*it);
-            svg.draw_line(a(0), a(1), b(0), b(1), 0.05f, "blue");
+            svg.draw_line(a(0), a(1), b(0), b(1), line_width, "blue");
         }
     }
     for (const auto& n : highlighted_nodes) {
@@ -214,7 +215,7 @@ void Mlib::plot_mesh(
         svg.draw_rectangle(
             a(0) - 0.2f, a(1) - 0.2f,
             a(0) + 0.2f, a(1) + 0.2f,
-            0.05f,
+            line_width,
             "red",
             1.f);
     }
@@ -257,7 +258,8 @@ void Mlib::plot_mesh(
     Svg<float>& svg,
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
     const std::list<std::list<FixedArray<float, 3>>>& contours,
-    const std::list<FixedArray<float, 3>>& highlighted_nodes)
+    const std::list<FixedArray<float, 3>>& highlighted_nodes,
+    float line_width)
 {
     std::list<FixedArray<FixedArray<float, 2>, 3>> triangles_2d;
     std::list<std::list<FixedArray<float, 2>>> contours_2d;
@@ -273,7 +275,7 @@ void Mlib::plot_mesh(
         contours,
         highlighted_nodes,
         crossed_nodes);
-    plot_mesh(svg, triangles_2d, contours_2d, highlighted_nodes_2d);
+    plot_mesh(svg, triangles_2d, contours_2d, highlighted_nodes_2d, line_width);
 }
 
 void Mlib::plot_mesh_svg(
@@ -282,14 +284,15 @@ void Mlib::plot_mesh_svg(
     float height,
     const std::list<const FixedArray<ColoredVertex, 3>*>& triangles,
     const std::list<std::list<FixedArray<float, 3>>>& contour,
-    const std::list<FixedArray<float, 3>>& highlighted_nodes)
+    const std::list<FixedArray<float, 3>>& highlighted_nodes,
+    float line_width)
 {
     std::ofstream ofstr{filename};
     Svg<float> svg{ofstr, width, height};
     if (ofstr.fail()) {
         throw std::runtime_error("Could not open file \"" + filename + '"');
     }
-    plot_mesh(svg, triangles, contour, highlighted_nodes);
+    plot_mesh(svg, triangles, contour, highlighted_nodes, line_width);
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
@@ -303,7 +306,8 @@ void Mlib::plot_mesh_svg(
     float height,
     const std::list<FixedArray<OrderableFixedArray<float, 2>, 3>>& triangles,
     const std::list<std::vector<OrderableFixedArray<float, 2>>>& contours,
-    const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes)
+    const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes,
+    float line_width)
 {
     ConvOrderable c{
         triangles,
@@ -319,7 +323,8 @@ void Mlib::plot_mesh_svg(
         svg,
         c.triangles_2d,
         c.contours_2d,
-        c.highlighted_nodes_2d);
+        c.highlighted_nodes_2d,
+        line_width);
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
@@ -333,7 +338,8 @@ void Mlib::plot_mesh_svg(
     float height,
     const std::list<PTri>& triangles,
     const std::list<std::vector<p2t::Point*>>& contours,
-    const std::list<p2t::Point*>& highlighted_nodes)
+    const std::list<p2t::Point*>& highlighted_nodes,
+    float line_width)
 {
     ConvPtri c{
         triangles,
@@ -349,7 +355,8 @@ void Mlib::plot_mesh_svg(
         svg,
         c.triangles_2d,
         c.contours_2d,
-        c.highlighted_nodes_2d);
+        c.highlighted_nodes_2d,
+        line_width);
     svg.finish();
     ofstr.flush();
     if (ofstr.fail()) {
