@@ -254,7 +254,7 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
     Array<FixedArray<float, 3>> points{ ArrayShape{ 0 } };
     Array<FixedArray<float, 3>> normals{ ArrayShape{ 0 } };
     Array<FixedArray<float, 3>> dys{ ArrayShape{ 0 } };
-    Array<FixedArray<float, 3>> zs{ ArrayShape{ 0 } };
+    Array<FixedArray<float, 3>> dzs{ ArrayShape{ 0 } };
 
     // Compute points and direction vectors.
     for (const auto& package : packages_) {
@@ -273,8 +273,8 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
                     package.second.depth(r, c)};
                 points.append(cpos.transform(pos0));
                 dys.append(package.second.ke.R()[1]);
-                FixedArray<float, 3> z{ cpos.rotate(pos0) };
-                zs.append(z / std::sqrt(sum(squared(z))));
+                FixedArray<float, 3> dz{ cpos.rotate(pos0) };
+                dzs.append(dz / std::sqrt(sum(squared(dz))));
             }
         }
     }
@@ -287,7 +287,7 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
         }
         for (size_t pi = 0; pi < points.length(); ++pi) {
             const auto& p = points(pi);
-            const auto& z = zs(pi);
+            const auto& dz = dzs(pi);
             std::vector<std::pair<float, const FixedArray<float, 3>*>> k_nearest = bvh.min_distances(
                 k,
                 p,
@@ -301,7 +301,7 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
                     if (len2 < 1e-12) {
                         continue;
                     }
-                    if (dot0d(n, z) < 0.f) {
+                    if (dot0d(n, dz) < 0.f) {
                         n = -n;
                     }
                     normal += n / std::sqrt(len2);
