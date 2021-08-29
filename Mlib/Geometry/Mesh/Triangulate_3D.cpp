@@ -41,30 +41,30 @@ private:
 };
 
 bool triangulate_point(
-    const TransformationMatrix<float, 3>& point,
+    const TransformationMatrix<float, 3>& central_point,
     const PointBvh& point_bvh,
     TriangleBvh& triangle_bvh,
     float boundary_radius,
     float z_thickness)
 {
-    TransformationMatrix<float, 3> projection = point.inverted();
+    TransformationMatrix<float, 3> projection = central_point.inverted();
 
     // Determine steiner points.
-    BoundingSphere<float, 3> bounding_sphere{ point.t(), std::sqrt(2.f) * boundary_radius };
+    BoundingSphere<float, 3> bounding_sphere{ central_point.t(), std::sqrt(2.f) * boundary_radius };
     IndexedPointSet3D indexed_points;
     if (!point_bvh.visit(
         bounding_sphere,
-        [&](const Point3& point)
+        [&](const Point3& steiner_point)
         {
-            if (dot0d(point.R().column(2), projection.R()[2]) <= 0) {
+            if (dot0d(steiner_point.R().column(2), projection.R()[2]) <= 0) {
                 return true;
             }
-            FixedArray<float, 3> pt = projection.transform(point.t());
+            FixedArray<float, 3> pt = projection.transform(steiner_point.t());
             if (std::abs(pt(2)) > z_thickness) {
                 return true;
             }
             int point_index;
-            if (!indexed_points(FixedArray<float, 2>{pt(0), pt(1)}, point.t(), point_index)) {
+            if (!indexed_points(FixedArray<float, 2>{pt(0), pt(1)}, steiner_point.t(), point_index)) {
                 return false;
             }
             return true;
@@ -121,7 +121,7 @@ bool triangulate_point(
         .triangleattributelist = nullptr,
         .trianglearealist = nullptr,
         .neighborlist = nullptr,
-        .numberoftriangles = (int)old_triangles_.length(),
+        .numberoftriangles = (int)(old_triangles_.length() / 3),
         .numberofcorners = 0,
         .numberoftriangleattributes = 0,
         .segmentlist = nullptr,
