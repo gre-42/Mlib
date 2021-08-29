@@ -15,6 +15,7 @@ public:
     IndexedPointSet();
     ~IndexedPointSet();
     int operator () (float x, float y);
+    bool exists(float x, float y);
     std::vector<double>& positions();
 private:
     std::map<OrderableFixedArray<float, 2>, int> pts_;

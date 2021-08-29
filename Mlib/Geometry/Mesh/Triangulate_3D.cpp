@@ -21,12 +21,15 @@ class IndexedPointSet3D {
 public:
     bool operator()(const FixedArray<float, 2>& p2, const FixedArray<float, 3>& p3, int& point_index) {
         point_index = indexed_points_(p2(0), p2(1));
-        auto res = to3d_.insert({point_index, &p3});
+        auto res = to3d_.insert({ point_index, &p3 });
         if (!res.second && !all(*res.first->second == p3)) {
             std::cerr << "Detected duplicate Steiner point after projection" << std::endl;
             return false;
         }
         return true;
+    }
+    bool exists(const FixedArray<float, 2>& p2) {
+        return indexed_points_.exists(p2(0), p2(1));
     }
     const FixedArray<float, 3>& p3(int i) {
         return *to3d_.at(i);
@@ -63,7 +66,7 @@ bool triangulate_point(
                 return true;
             }
             int point_index;
-            if (!indexed_points(FixedArray<float, 2>{pt(0), pt(1)}, steiner_point.t(), point_index)) {
+            if (!indexed_points(FixedArray<float, 2>{ pt(0), pt(1) }, steiner_point.t(), point_index)) {
                 return false;
             }
             return true;
@@ -79,17 +82,17 @@ bool triangulate_point(
         bounding_sphere,
         [&](const Triangle3& triangle)
         {
-            if (dot0d(triangle.normal, projection.R()[2]) <= 0) {
-                return true;
-            }
             FixedArray<FixedArray<float, 3>, 3> v{
                 projection.transform(triangle.v(0)),
                 projection.transform(triangle.v(1)),
                 projection.transform(triangle.v(2))};
-            for (size_t i = 0; i < 3; ++i) {
-                if (std::abs(v(i)(2)) > z_thickness) {
-                    return true;
+            if (dot0d(triangle.normal, projection.R()[2]) <= 0) {
+                for (size_t i = 0; i < 3; ++i) {
+                    if (indexed_points.exists(FixedArray<float, 2>{v(i)(0), v(i)(1)})) {
+                        return false;
+                    }
                 }
+                return true;
             }
             for (size_t i = 0; i < 3; ++i) {
                 int point_index;
