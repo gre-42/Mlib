@@ -7,7 +7,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 
 template <class TData>
-TData largest_cos_in_triangle(const FixedArray<FixedArray<TData, 2>, 3>& tri)
+TData triangle_largest_cosine(const FixedArray<FixedArray<TData, 2>, 3>& tri)
 {
     TData lengths[]{
         sum(squared(tri(1) - tri(2))),

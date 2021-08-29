@@ -14,6 +14,8 @@ Array<FixedArray<FixedArray<float, 3>, 3>> triangulate_3d(
     const Array<TransformationMatrix<float, 3>>& points,
     float boundary_radius,
     float z_thickness,
-    float cos_min_angle);
+    float cos_min_angle,
+    float largest_cos_in_triangle = 0.9f,
+    float triangle_search_eps = (float)1e-6);
 
 }

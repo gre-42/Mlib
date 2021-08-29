@@ -5,10 +5,13 @@
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Point_Set.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Images/Svg.hpp>
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 #include <Triangle/triangle.hpp>
+#include <set>
 
 using namespace Mlib;
 
@@ -49,6 +52,9 @@ private:
 };
 
 void plot(Svg<float>& svg, const triangle::triangulateio& io) {
+    if (io.numberoftriangles == 0) {
+        return;
+    }
     std::list<FixedArray<FixedArray<float, 2>, 3>> triangles;
     for (int* i = io.trianglelist; i < io.trianglelist + 3 * io.numberoftriangles; i += 3) {
         triangles.push_back({
@@ -78,19 +84,55 @@ void plot(const triangle::triangulateio& io, const std::string& filename, float 
     }
 }
 
+class OrderedTriangle {
+public:
+    OrderedTriangle(const FixedArray<int, 3>& p)
+    : p_{p},
+      s_{p}
+    {
+        std::sort(s_.flat_begin(), s_.flat_end());
+    }
+    int operator [] (size_t id) const {
+        return p_(id);
+    }
+    bool operator < (const OrderedTriangle& other) const {
+        return s_ < other.s_;
+    }
+private:
+    FixedArray<int, 3> p_;
+    OrderableFixedArray<int, 3> s_;
+};
+
+std::set<OrderedTriangle> get_sorted_triangles(const triangle::triangulateio& io) {
+    std::set<OrderedTriangle> result;
+    for (int i = 0; i < 3 * io.numberoftriangles; i += 3) {
+        FixedArray<int, 3> tri{
+            io.trianglelist[i],
+            io.trianglelist[i + 1],
+            io.trianglelist[i + 2] };
+        if (!result.insert(OrderedTriangle{ tri }).second) {
+            throw std::runtime_error("Duplicate triangle");
+        }
+    }
+    return result;
+}
+
 bool triangulate_point(
     const TransformationMatrix<float, 3>& central_point,
     const PointBvh& point_bvh,
     TriangleBvh& triangle_bvh,
     float boundary_radius,
     float z_thickness,
-    float cos_min_angle)
+    float cos_min_angle,
+    float largest_cos_in_triangle,
+    float triangle_search_eps)
 {
     TransformationMatrix<float, 3> projection = central_point.inverted();
 
     // Determine steiner points.
     BoundingSphere<float, 3> bounding_sphere{ central_point.t(), boundary_radius };
     AxisAlignedBoundingBox<float, 3> bounding_box{ central_point.t(), boundary_radius };
+    AxisAlignedBoundingBox<float, 3> bounding_box_plus_eps{ central_point.t(), boundary_radius + triangle_search_eps };
     IndexedPointSet3D indexed_points;
     if (!point_bvh.visit(
         bounding_box,
@@ -120,9 +162,9 @@ bool triangulate_point(
     int steiner_point_index_end = indexed_points.next_index();
 
     // Add existing triangles.
-    Array<int> old_triangles_{ ArrayShape{ 0 }};
+    Array<int> old_triangles{ ArrayShape{ 0 }};
     if (!triangle_bvh.visit(
-        bounding_box,
+        bounding_box_plus_eps,
         [&](const Triangle3& triangle)
         {
             FixedArray<FixedArray<float, 3>, 3> v{
@@ -142,7 +184,7 @@ bool triangulate_point(
                 if (!indexed_points(FixedArray<float, 2>{v(i)(0), v(i)(1)}, triangle.v(i), point_index)) {
                     return false;
                 }
-                old_triangles_.append(point_index);
+                old_triangles.append(point_index);
             }
             return true;
         }))
@@ -162,11 +204,11 @@ bool triangulate_point(
         .pointmarkerlist = nullptr,
         .numberofpoints = (int)(indexed_points.positions().size() / 2),
         .numberofpointattributes = 0,
-        .trianglelist = old_triangles_.flat_begin(),
+        .trianglelist = old_triangles.flat_begin(),
         .triangleattributelist = nullptr,
         .trianglearealist = nullptr,
         .neighborlist = nullptr,
-        .numberoftriangles = (int)(old_triangles_.length() / 3),
+        .numberoftriangles = (int)(old_triangles.length() / 3),
         .numberofcorners = 0,
         .numberoftriangleattributes = 0,
         .segmentlist = nullptr,
@@ -211,6 +253,10 @@ bool triangulate_point(
     // z: makes array indizes count from 0 (triangle counts from 1 otherwise)
     // -V -V -V: set printf debug level to 3
     // Q: quiet
+    // https://www.cs.cmu.edu/~quake/triangle.quality.html
+    // q5: Set minimum angle to 5 degrees.
+    //     Not used because the angle is also applied to the input triangles,
+    //     many of which have angles close to the prescribed quality.
     triangle::triangulate("z e Q", &in, &out, nullptr);
 
     std::unique_ptr<double, decltype(&triangle::trifree)> unique_pointlist{ out.pointlist, triangle::trifree };
@@ -223,28 +269,59 @@ bool triangulate_point(
         std::cerr << "Out number of points differs from in number of points" << std::endl;
         return false;
     }
+    if (out.numberoftriangles < in.numberoftriangles) {
+        std::cerr << "Triangles got removed (0)" << std::endl;
+        return false;
+    }
+    // for (int i = 0; i < 3 * in.numberoftriangles; ++i) {
+    //     if (in.trianglelist[i] != out.trianglelist[i]) {
+    //         std::cerr << "Triangles got rearranged" << std::endl;
+    //         return false;
+    //     }
+    // }
+    std::set<OrderedTriangle> sorted_old_triangles = get_sorted_triangles(in);
+    std::set<OrderedTriangle> sorted_new_triangles = get_sorted_triangles(out);
+    
+    for (const auto& ot : sorted_old_triangles) {
+        if (!sorted_new_triangles.contains(ot)) {
+            std::cerr << "Triangles got removed (1)" << std::endl;
+            return false;
+        }
+    }
     // Convert triangulation result to output format.
-    for (int* i = out.trianglelist + 3 * in.numberoftriangles; i < out.trianglelist + 3 * out.numberoftriangles; i += 3) {
+    for (const auto& i : sorted_new_triangles) {
         if ((i[0] >= steiner_point_index_end) ||
             (i[1] >= steiner_point_index_end) ||
             (i[2] >= steiner_point_index_end))
         {
             continue;
         }
+        if (sorted_old_triangles.contains(i)) {
+            continue;
+        }
+        FixedArray<FixedArray<float, 2>, 3> tri2{
+            FixedArray<float, 2>{ (float)out.pointlist[2 * i[0]], (float)out.pointlist[2 * i[0] + 1] },
+            FixedArray<float, 2>{ (float)out.pointlist[2 * i[1]], (float)out.pointlist[2 * i[1] + 1] },
+            FixedArray<float, 2>{ (float)out.pointlist[2 * i[2]], (float)out.pointlist[2 * i[2] + 1] }};
+        if (triangle_largest_cosine(tri2) > largest_cos_in_triangle) {
+            continue;
+        }
         FixedArray<FixedArray<float, 3>, 3> tri3{
             indexed_points.p3(i[0]),
             indexed_points.p3(i[1]),
             indexed_points.p3(i[2])};
-        // if (in.numberoftriangles == 1 && out.numberoftriangles == 2) {
-        //     plot(in, "/tmp/plot_in.svg", 40, 40);
-        //     plot(out, "/tmp/plot_out.svg", 40, 40);
-        // }
         triangle_bvh.insert(
             tri3,
             Triangle3{
                 .v = tri3,
-                .normal = triangle_normal(tri3, TriangleNormalErrorBehavior::WARN)});
+                .normal = triangle_normal(tri3)});
     }
+
+    // static int k = 0;
+    // plot(in, "/tmp/plot_in_" + std::to_string(k) + ".svg", 100, 100);
+    // plot(out, "/tmp/plot_out_" + std::to_string(k) + ".svg", 100, 100);
+    // assert_true(k != 10);
+    // ++k;
 
     return true;
 }
@@ -253,7 +330,9 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
     const Array<TransformationMatrix<float, 3>>& points,
     float boundary_radius,
     float z_thickness,
-    float cos_min_angle)
+    float cos_min_angle,
+    float largest_cos_in_triangle,
+    float triangle_search_eps)
 {
     TriangleBvh triangle_bvh{{0.1f, 0.1f, 0.1f}, 10};
     PointBvh point_bvh{{0.1f, 0.1f, 0.1f}, 10};
@@ -267,7 +346,9 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
             triangle_bvh,
             boundary_radius,
             z_thickness,
-            cos_min_angle);
+            cos_min_angle,
+            largest_cos_in_triangle,
+            triangle_search_eps);
     }
     Array<FixedArray<FixedArray<float, 3>, 3>> result{ ArrayShape{ 0 } };
     triangle_bvh.visit_all([&result](const std::pair<AxisAlignedBoundingBox<float, 3>, Triangle3>& tri3){
