@@ -163,16 +163,16 @@ bool triangulate_point(
         .numberofedges = 0,
     };
 
+    // z: makes array indizes count from 0 (triangle counts from 1 otherwise)
+    // -V -V -V: set printf debug level to 3
+    // Q: quiet
+    triangle::triangulate("z e Q", &in, &out, nullptr);
+
     std::unique_ptr<double, decltype(&triangle::trifree)> unique_pointlist{ out.pointlist, triangle::trifree };
     std::unique_ptr<int, decltype(&triangle::trifree)> unique_pointmarkerlist{ out.pointmarkerlist, triangle::trifree };
     std::unique_ptr<int, decltype(&triangle::trifree)> unique_trianglelist{ out.trianglelist, triangle::trifree };
     std::unique_ptr<int, decltype(&triangle::trifree)> unique_edgelist{ out.edgelist, triangle::trifree };
     std::unique_ptr<int, decltype(&triangle::trifree)> unique_edgemarkerlist{ out.edgemarkerlist, triangle::trifree };
-
-    // z: makes array indizes count from 0 (triangle counts from 1 otherwise)
-    // -V -V -V: set printf debug level to 3
-    // Q: quiet
-    triangle::triangulate("z e Q", &in, &out, nullptr);
 
     if (out.numberofpoints != in.numberofpoints) {
         std::cerr << "Out number of points differs from in number of points" << std::endl;
