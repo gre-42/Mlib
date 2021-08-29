@@ -20,7 +20,7 @@ TransformationMatrix<float, 2> intrinsic_matrix_from_dimensions(
  *   - https://fruty.io/2019/08/29/augmented-reality-with-opencv-and-opengl-the-tricky-projection-matrix/
  *   - https://strawlab.org/2011/11/05/augmented-reality-with-OpenGL/
  */
-FixedArray<float, 4, 4> opengl_matrix_from_hz_intrinsic_matrix(
+FixedArray<float, 4, 4> cv_to_opengl_hz_intrinsic_matrix(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     float width,
     float height,
@@ -34,5 +34,9 @@ TransformationMatrix<float, 3> cv_to_opengl_extrinsic_matrix(
 
 TransformationMatrix<float, 3> opengl_to_cv_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix);
+
+TransformationMatrix<float, 3> cv_to_opengl_matrix();
+
+TransformationMatrix<float, 3> opengl_to_cv_matrix();
 
 }}

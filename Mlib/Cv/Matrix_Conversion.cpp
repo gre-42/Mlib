@@ -21,7 +21,7 @@ TransformationMatrix<float, 2> Mlib::Cv::intrinsic_matrix_from_dimensions(
             picture_shape(id0) / 2.f}};
 }
 
-FixedArray<float, 4, 4> Mlib::Cv::opengl_matrix_from_hz_intrinsic_matrix(
+FixedArray<float, 4, 4> Mlib::Cv::cv_to_opengl_hz_intrinsic_matrix(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     float width,
     float height,
@@ -46,16 +46,24 @@ FixedArray<float, 3> Mlib::Cv::cv_to_opengl_coordinates(const FixedArray<float, 
 TransformationMatrix<float, 3> Mlib::Cv::cv_to_opengl_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix)
 {
-    static FixedArray<float, 4, 4> f{
-        1.f, 0.f, 0.f, 0.f,
-        0.f, -1.f, 0.f, 0.f,
-        0.f, 0.f, -1.f, 0.f,
-        0.f, 0.f, 0.f, 1.f};
-    return TransformationMatrix<float, 3>{ dot2d(dot2d(f, extrinsic_matrix.affine()), f) };
+    return cv_to_opengl_matrix() * extrinsic_matrix * opengl_to_cv_matrix();
 }
 
 TransformationMatrix<float, 3> Mlib::Cv::opengl_to_cv_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix)
 {
     return cv_to_opengl_extrinsic_matrix(extrinsic_matrix);
+}
+
+TransformationMatrix<float, 3> Mlib::Cv::cv_to_opengl_matrix() {
+    static TransformationMatrix<float, 3> result{FixedArray<float, 4, 4>{
+        1.f, 0.f, 0.f, 0.f,
+        0.f, -1.f, 0.f, 0.f,
+        0.f, 0.f, -1.f, 0.f,
+        0.f, 0.f, 0.f, 1.f}};
+    return result;
+}
+
+TransformationMatrix<float, 3> Mlib::Cv::opengl_to_cv_matrix() {
+    return cv_to_opengl_matrix();
 }

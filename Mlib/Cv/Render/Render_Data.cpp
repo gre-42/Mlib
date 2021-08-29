@@ -114,11 +114,15 @@ void Mlib::Cv::render_depth_maps(
         scene_node_resources.instantiate_renderable("PointCloudResource", "DepthMap", *root_node, SceneNodeResourceFilter());
     }
     if (!mesh.empty()) {
-        const auto r = std::make_shared<ColoredVertexArrayResource>(mesh, nullptr);
+        std::list<std::shared_ptr<ColoredVertexArray>> tmesh;
+        for (const auto& m : mesh) {
+            tmesh.push_back(m->transformed(cv_to_opengl_matrix()));
+        }
+        const auto r = std::make_shared<ColoredVertexArrayResource>(tmesh, nullptr);
         scene_node_resources.add_resource("ColoredVertexArrayResource", r);
         scene_node_resources.instantiate_renderable("ColoredVertexArrayResource", "ColoredVertexArray", *root_node, SceneNodeResourceFilter());
     }
-    std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(Cv::opengl_matrix_from_hz_intrinsic_matrix(
+    std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(Cv::cv_to_opengl_hz_intrinsic_matrix(
         intrinsic_matrix,
         width,
         height,
