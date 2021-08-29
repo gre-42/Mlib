@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Point_Set.hpp>
-#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 #include <Triangle/triangle.hpp>
@@ -87,7 +86,7 @@ bool triangulate_point(
                 projection.transform(triangle.v(0)),
                 projection.transform(triangle.v(1)),
                 projection.transform(triangle.v(2))};
-            for (size_t i = 0; i < 2; ++i) {
+            for (size_t i = 0; i < 3; ++i) {
                 if (std::abs(v(i)(2)) > z_thickness) {
                     return true;
                 }
