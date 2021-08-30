@@ -8,8 +8,6 @@ class FixedArray;
 template <class TData, size_t n>
 class TransformationMatrix;
 
-namespace Cv {
-
 TransformationMatrix<float, 2> intrinsic_matrix_from_dimensions(
     float focal_length,
     const FixedArray<float, 2>& sensor_size,
@@ -39,4 +37,4 @@ TransformationMatrix<float, 3> cv_to_opengl_matrix();
 
 TransformationMatrix<float, 3> opengl_to_cv_matrix();
 
-}}
+}

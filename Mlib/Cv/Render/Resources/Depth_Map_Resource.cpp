@@ -1,6 +1,6 @@
 #include "Depth_Map_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Cv/Matrix_Conversion.hpp>
+#include <Mlib/Geometry/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
@@ -39,7 +39,7 @@ DepthMapResource::DepthMapResource(
             FixedArray<float, 2> pos0 = iim.transform(i2a(id0));
             FixedArray<float, 2> pos1 = iim.transform(i2a(id1));
             ColoredVertex v00{
-                    Cv::cv_to_opengl_coordinates({
+                    cv_to_opengl_coordinates({
                         pos0(0) * Z(r, c),
                         pos0(1) * Z(r, c),
                         Z(r, c)}),
@@ -48,7 +48,7 @@ DepthMapResource::DepthMapResource(
                         G(r, c),
                         B(r, c)}};
             ColoredVertex v01{
-                    Cv::cv_to_opengl_coordinates({
+                    cv_to_opengl_coordinates({
                         pos1(0) * Z(r, c + 1),
                         pos0(1) * Z(r, c + 1),
                         Z(r, c + 1)}),
@@ -57,7 +57,7 @@ DepthMapResource::DepthMapResource(
                         G(r, c + 1),
                         B(r, c + 1)}};
             ColoredVertex v10{
-                    Cv::cv_to_opengl_coordinates({
+                    cv_to_opengl_coordinates({
                         pos0(0) * Z(r + 1, c),
                         pos1(1) * Z(r + 1, c),
                         Z(r + 1, c)}),
@@ -66,7 +66,7 @@ DepthMapResource::DepthMapResource(
                         G(r + 1, c),
                         B(r + 1, c)}};
             ColoredVertex v11{
-                    Cv::cv_to_opengl_coordinates({
+                    cv_to_opengl_coordinates({
                         pos1(0) * Z(r + 1, c + 1),
                         pos1(1) * Z(r + 1, c + 1),
                         Z(r + 1, c + 1)}),

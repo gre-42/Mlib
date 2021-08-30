@@ -1,11 +1,10 @@
-#include "Matrix_Conversion.hpp"
+#include "Coordinate_Conversion.hpp"
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
 using namespace Mlib;
-using namespace Mlib::Cv;
 
-TransformationMatrix<float, 2> Mlib::Cv::intrinsic_matrix_from_dimensions(
+TransformationMatrix<float, 2> Mlib::intrinsic_matrix_from_dimensions(
     float focal_length,
     const FixedArray<float, 2>& sensor_size,
     const FixedArray<size_t, 2>& picture_shape)
@@ -21,7 +20,7 @@ TransformationMatrix<float, 2> Mlib::Cv::intrinsic_matrix_from_dimensions(
             picture_shape(id0) / 2.f}};
 }
 
-FixedArray<float, 4, 4> Mlib::Cv::cv_to_opengl_hz_intrinsic_matrix(
+FixedArray<float, 4, 4> Mlib::cv_to_opengl_hz_intrinsic_matrix(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     float width,
     float height,
@@ -39,23 +38,23 @@ FixedArray<float, 4, 4> Mlib::Cv::cv_to_opengl_hz_intrinsic_matrix(
                           0.f,                    0.f,                                       -1.f,                                        0};
 }
 
-FixedArray<float, 3> Mlib::Cv::cv_to_opengl_coordinates(const FixedArray<float, 3>& p) {
+FixedArray<float, 3> Mlib::cv_to_opengl_coordinates(const FixedArray<float, 3>& p) {
     return FixedArray<float, 3>{ p(0), -p(1), -p(2) };
 }
 
-TransformationMatrix<float, 3> Mlib::Cv::cv_to_opengl_extrinsic_matrix(
+TransformationMatrix<float, 3> Mlib::cv_to_opengl_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix)
 {
     return cv_to_opengl_matrix() * extrinsic_matrix * opengl_to_cv_matrix();
 }
 
-TransformationMatrix<float, 3> Mlib::Cv::opengl_to_cv_extrinsic_matrix(
+TransformationMatrix<float, 3> Mlib::opengl_to_cv_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix)
 {
     return cv_to_opengl_extrinsic_matrix(extrinsic_matrix);
 }
 
-TransformationMatrix<float, 3> Mlib::Cv::cv_to_opengl_matrix() {
+TransformationMatrix<float, 3> Mlib::cv_to_opengl_matrix() {
     static TransformationMatrix<float, 3> result{FixedArray<float, 4, 4>{
         1.f, 0.f, 0.f, 0.f,
         0.f, -1.f, 0.f, 0.f,
@@ -64,6 +63,6 @@ TransformationMatrix<float, 3> Mlib::Cv::cv_to_opengl_matrix() {
     return result;
 }
 
-TransformationMatrix<float, 3> Mlib::Cv::opengl_to_cv_matrix() {
+TransformationMatrix<float, 3> Mlib::opengl_to_cv_matrix() {
     return cv_to_opengl_matrix();
 }

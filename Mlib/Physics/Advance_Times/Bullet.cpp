@@ -1,5 +1,5 @@
 #include "Bullet.hpp"
-#include <Mlib/Geometry/Look_At.hpp>
+#include <Mlib/Geometry/Gl_Look_At.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
@@ -44,7 +44,7 @@ void Bullet::advance_time(float dt) {
         std::lock_guard lock{ deletion_mutex_ };
         scene_.delete_root_node(bullet_node_name_);
     } else {
-        rigid_body_integrator_.rbp_.rotation_ = lookat_relative(rigid_body_integrator_.rbp_.v_ / std::sqrt(sum(squared(rigid_body_integrator_.rbp_.v_))));
+        rigid_body_integrator_.rbp_.rotation_ = gl_lookat_relative(rigid_body_integrator_.rbp_.v_ / std::sqrt(sum(squared(rigid_body_integrator_.rbp_.v_))));
     }
 }
 

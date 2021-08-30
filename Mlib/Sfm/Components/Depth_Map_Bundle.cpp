@@ -2,12 +2,11 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Depth_Minus.hpp>
-#include <Mlib/Cv/Matrix_Conversion.hpp>
 #include <Mlib/Cv/Project_Depth_Map.hpp>
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
+#include <Mlib/Geometry/Cv_Look_At.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
-#include <Mlib/Geometry/Look_At.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
@@ -334,13 +333,7 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(
         if (all(isnan(normal))) {
             continue;
         }
-        result.append(
-            opengl_to_cv_extrinsic_matrix(
-                TransformationMatrix<float, 3>{
-                lookat_relative(
-                    cv_to_opengl_coordinates(normals(i)),
-                    cv_to_opengl_coordinates(dys(i))),
-                cv_to_opengl_coordinates(points(i)) }));
+        result.append(cv_lookat_relative(points(i), normals(i), dys(i)));
     }
     return result;
 }

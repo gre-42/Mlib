@@ -1,5 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Geometry/Look_At.hpp>
+#include <Mlib/Geometry/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
@@ -520,7 +520,7 @@ int main(int argc, char** argv) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, std::make_unique<SceneNode>());
                 scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
-                scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat_absolute(
+                scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                     scene.get_node(name)->position(),
                     scene.get_node("obj")->position())));
                 lights.push_back(new Light{.node_name = name, .only_black = false, .shadow = true});
@@ -535,7 +535,7 @@ int main(int argc, char** argv) {
                     std::string name = "light_s" + std::to_string(i++);
                     scene.add_root_node(name, std::make_unique<SceneNode>());
                     scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
-                    scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(lookat_absolute(
+                    scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                         scene.get_node(name)->position(),
                         scene.get_node("obj")->position())));
                     lights.push_back(new Light{.node_name = name, .shadow = false});

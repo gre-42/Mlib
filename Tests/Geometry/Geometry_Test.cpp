@@ -1,5 +1,6 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cross.hpp>
+#include <Mlib/Geometry/Cv_Look_At.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
@@ -329,7 +330,7 @@ void test_distance_point_triangle() {
     assert_isclose(distance_point_to_triangle<float>({0.5, 0.2}, {0, 0}, {1, 0}, {1, 1}), 0.f);
 }
 
-void test_triangulate_3d() {
+void test_triangulate_3d_1() {
     const Array<TransformationMatrix<float, 3>> points{
         TransformationMatrix<float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{0.f, 0.f, 0.f}},
         TransformationMatrix<float, 3>{fixed_identity_array<float, 3>(), FixedArray<float, 3>{1.f, 0.f, 0.f}},
@@ -341,7 +342,7 @@ void test_triangulate_3d() {
         10.f,   // boundary_radius
         0.1f,   // z_thickness
         0.1f);  // cos_min_angle
-    
+
     assert_allequal(
         Array<float>{ Array<FixedArray<float, 3>>{ mesh } },
         Array<float>{ Array<FixedArray<float, 3>>{
@@ -350,6 +351,44 @@ void test_triangulate_3d() {
                     FixedArray<float, 3>{0, 0, 0},
                     FixedArray<float, 3>{1, 0, 0},
                     FixedArray<float, 3>{1, 1, 0}}}}});
+}
+
+TransformationMatrix<float, 3> generate_point_observation(const FixedArray<float, 3>& pos) {
+    return opengl_to_cv_extrinsic_matrix(
+        TransformationMatrix<float, 3>{
+            gl_lookat_absolute(
+                cv_to_opengl_coordinates({0.f, 2.f, -2.f}),
+                cv_to_opengl_coordinates(pos),
+                cv_to_opengl_coordinates({0.f, 1.f, 0.f})),
+            cv_to_opengl_coordinates(pos) });
+}
+
+void test_triangulate_3d_2() {
+    const Array<TransformationMatrix<float, 3>> points{
+        generate_point_observation({0.f, 0.f, -1.f}),
+        generate_point_observation({0.f, 0.f, 0.f}),
+        generate_point_observation({1.f, 0.f, 0.f}),
+        generate_point_observation({1.f, 1.f, 0.f})
+    };
+
+    Array<FixedArray<FixedArray<float, 3>, 3>> mesh = triangulate_3d(
+        points,
+        1.f,    // boundary_radius
+        10.f,   // z_thickness
+        -10.f); // cos_min_angle
+
+    assert_allequal(
+        Array<float>{ Array<FixedArray<float, 3>>{ mesh } },
+        Array<float>{ Array<FixedArray<float, 3>>{
+            Array<FixedArray<FixedArray<float, 3>, 3>>{
+                FixedArray<FixedArray<float, 3>, 3>{
+                    FixedArray<float, 3>{1, 0, 0},
+                    FixedArray<float, 3>{0, 0, 0},
+                    FixedArray<float, 3>{0, 0, -1}},
+                FixedArray<FixedArray<float, 3>, 3>{
+                    FixedArray<float, 3>{1, 0, 0},
+                    FixedArray<float, 3>{1, 1, 0},
+                    FixedArray<float, 3>{0, 0, 0}}}}});
 }
 
 void test_smallest_angle_in_triangle() {
@@ -378,7 +417,8 @@ int main(int argc, const char** argv) {
     test_roundness_estimator();
     // test_smoothen_edges();
     test_distance_point_triangle();
-    test_triangulate_3d();
+    test_triangulate_3d_1();
+    test_triangulate_3d_2();
     test_smallest_angle_in_triangle();
     return 0;
 }

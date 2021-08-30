@@ -1,6 +1,6 @@
 #include "Point_Cloud_Resource.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Cv/Matrix_Conversion.hpp>
+#include <Mlib/Geometry/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -21,20 +21,20 @@ PointCloudResource::PointCloudResource(
     for (const TransformationMatrix<float, 3>& t : points.flat_iterable()) {
         if (all(t.R() == 0.f)) {
             tris.draw_rectangle_wo_normals(
-                Cv::cv_to_opengl_coordinates(t.t() - d0 - d1),
-                Cv::cv_to_opengl_coordinates(t.t() + d0 - d1),
-                Cv::cv_to_opengl_coordinates(t.t() + d0 + d1),
-                Cv::cv_to_opengl_coordinates(t.t() - d0 + d1));
+                cv_to_opengl_coordinates(t.t() - d0 - d1),
+                cv_to_opengl_coordinates(t.t() + d0 - d1),
+                cv_to_opengl_coordinates(t.t() + d0 + d1),
+                cv_to_opengl_coordinates(t.t() - d0 + d1));
         } else {
             tris.draw_rectangle_with_normals(
-                Cv::cv_to_opengl_coordinates(t.transform(- d0 - d1)),
-                Cv::cv_to_opengl_coordinates(t.transform(+ d0 - d1)),
-                Cv::cv_to_opengl_coordinates(t.transform(+ d0 + d1)),
-                Cv::cv_to_opengl_coordinates(t.transform(- d0 + d1)),
-                Cv::cv_to_opengl_coordinates(t.inverted().R()[2]),
-                Cv::cv_to_opengl_coordinates(t.inverted().R()[2]),
-                Cv::cv_to_opengl_coordinates(t.inverted().R()[2]),
-                Cv::cv_to_opengl_coordinates(t.inverted().R()[2]));
+                cv_to_opengl_coordinates(t.transform(- d0 - d1)),
+                cv_to_opengl_coordinates(t.transform(+ d0 - d1)),
+                cv_to_opengl_coordinates(t.transform(+ d0 + d1)),
+                cv_to_opengl_coordinates(t.transform(- d0 + d1)),
+                cv_to_opengl_coordinates(t.inverted().R()[2]),
+                cv_to_opengl_coordinates(t.inverted().R()[2]),
+                cv_to_opengl_coordinates(t.inverted().R()[2]),
+                cv_to_opengl_coordinates(t.inverted().R()[2]));
         }
     }
     rva_ = std::make_shared<ColoredVertexArrayResource>(

@@ -1,6 +1,6 @@
 #include "Look_At_Movable.hpp"
+#include <Mlib/Geometry/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
-#include <Mlib/Geometry/Look_At.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -31,7 +31,7 @@ void LookAtMovable::advance_time(float dt) {
     }
     auto dmat = followed_->get_new_absolute_model_matrix();
     auto dpos = dmat.t();
-    transformation_matrix_.R() = lookat_absolute(transformation_matrix_.t(), dpos);
+    transformation_matrix_.R() = gl_lookat_absolute(transformation_matrix_.t(), dpos);
 }
 
 void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {

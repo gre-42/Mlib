@@ -5,7 +5,7 @@
 namespace Mlib {
 
 template <class TData>
-FixedArray<TData, 3, 3> lookat_relative(
+FixedArray<TData, 3, 3> gl_lookat_relative(
     const FixedArray<TData, 3>& dz,
     const FixedArray<TData, 3>& dy0 = { 0.f, 1.f, 0.f })
 {
@@ -19,12 +19,13 @@ FixedArray<TData, 3, 3> lookat_relative(
 }
 
 template <class TData>
-FixedArray<TData, 3, 3> lookat_absolute(
+FixedArray<TData, 3, 3> gl_lookat_absolute(
     const FixedArray<TData, 3>& camera_pos,
-    const FixedArray<TData, 3>& object_pos)
+    const FixedArray<TData, 3>& object_pos,
+    const FixedArray<TData, 3>& dy0 = { 0.f, 1.f, 0.f })
 {
     auto dz = object_pos - camera_pos;
-    return lookat_relative(dz / std::sqrt(sum(squared(dz))));
+    return gl_lookat_relative(dz / std::sqrt(sum(squared(dz))), dy0);
 }
 
 }

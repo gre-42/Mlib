@@ -1,7 +1,7 @@
 #include "Follow_Movable.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
+#include <Mlib/Geometry/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Homogeneous.hpp>
-#include <Mlib/Geometry/Look_At.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -81,7 +81,7 @@ void FollowMovable::advance_time(float dt) {
         y_adapt_ = y_adaptivity_ * exponential_smoother_(kalman_filter_(std::clamp(-dy / std::sqrt(dx2_len2), 0.f, 0.5f)));
     }
     transformation_matrix_.t()(1) += y_adapt_;
-    transformation_matrix_.R() = lookat_absolute(transformation_matrix_.t(), dpos3 + look_at_displacement_);
+    transformation_matrix_.R() = gl_lookat_absolute(transformation_matrix_.t(), dpos3 + look_at_displacement_);
     dpos_old_ = dpos3;
 }
 

@@ -1,8 +1,8 @@
 #include "Render_Data.hpp"
 #include <Mlib/Cv/Depth_Map_Package.hpp>
-#include <Mlib/Cv/Matrix_Conversion.hpp>
 #include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Cv/Render/Resources/Point_Cloud_Resource.hpp>
+#include <Mlib/Geometry/Coordinate_Conversion.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
@@ -122,7 +122,7 @@ void Mlib::Cv::render_depth_maps(
         scene_node_resources.add_resource("ColoredVertexArrayResource", r);
         scene_node_resources.instantiate_renderable("ColoredVertexArrayResource", "ColoredVertexArray", *root_node, SceneNodeResourceFilter());
     }
-    std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(Cv::cv_to_opengl_hz_intrinsic_matrix(
+    std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(cv_to_opengl_hz_intrinsic_matrix(
         intrinsic_matrix,
         width,
         height,
