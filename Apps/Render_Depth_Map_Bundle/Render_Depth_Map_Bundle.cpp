@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
             1.f,  // scale
             0.f,  // camera_z
             SceneGraphConfig(),
-            safe_stof(args.named_value("--point_radius", "0.1")),
+            safe_stof(args.named_value("--point_radius", "0.01")),
             safe_stof(args.named_value("--cos_threshold", "0")));
         if (args.has_named_value("--output")) {
             const Array<float>& array = render_results.outputs.at(rsd).rgb;
