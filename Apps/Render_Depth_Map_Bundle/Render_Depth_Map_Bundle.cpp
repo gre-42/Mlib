@@ -61,6 +61,7 @@ int main(int argc, char** argv) {
         "--point_radius",
         "--normal_k",
         "--normal_radius",
+        "--duplicate_distance",
         "--boundary_radius",
         "--z_thickness",
         "--cos_min_angle",
@@ -119,7 +120,8 @@ int main(int argc, char** argv) {
             Array<TransformationMatrix<float, 3>> dense_point_transformations =
                 bundle.points_and_normals(
                     safe_stoz(args.named_value("--normal_k", "5")),
-                    safe_stof(args.named_value("--normal_radius", "0.1")));
+                    safe_stof(args.named_value("--normal_radius", "0.1")),
+                    safe_stof(args.named_value("--duplicate_distance", "0.01")));
             if (args.has_named("--convert_to_mesh")) {
                 mesh = bundle.mesh(
                     dense_point_transformations,

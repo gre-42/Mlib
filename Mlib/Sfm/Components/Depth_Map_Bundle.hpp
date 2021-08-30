@@ -54,7 +54,8 @@ public:
         bool print_residual = false) const;
     Array<TransformationMatrix<float, 3>> points_and_normals(
         size_t k,
-        float normal_radius) const;
+        float normal_radius,
+        float duplicate_distance) const;
     std::list<std::shared_ptr<ColoredVertexArray>> mesh(
         const Array<TransformationMatrix<float, 3>>& point_cloud,
         float boundary_radius,

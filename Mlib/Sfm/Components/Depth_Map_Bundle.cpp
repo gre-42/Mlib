@@ -249,8 +249,12 @@ DepthMapBundle DepthMapBundle::reregistered(
     }
 }
 
-Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t k, float normal_radius) const
+Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(
+    size_t k,
+    float normal_radius,
+    float duplicate_distance) const
 {
+    Bvh<float, FixedArray<float, 3>, 3> bvh{ { 0.1f, 0.1f, 0.1f }, 10 };
     Array<FixedArray<float, 3>> points{ ArrayShape{ 0 } };
     Array<FixedArray<float, 3>> normals{ ArrayShape{ 0 } };
     Array<FixedArray<float, 3>> dys{ ArrayShape{ 0 } };
@@ -271,7 +275,18 @@ Array<TransformationMatrix<float, 3>> DepthMapBundle::points_and_normals(size_t 
                     lifted(0) * package.second.depth(r, c),
                     lifted(1) * package.second.depth(r, c),
                     package.second.depth(r, c)};
-                points.append(cpos.transform(pos0));
+                FixedArray<float, 3> pos1 = cpos.transform(pos0);
+                if (duplicate_distance != 0) {
+                    if (bvh.has_neighbor(
+                        pos1,
+                        squared(duplicate_distance),
+                        [&pos1](const FixedArray<float, 3>& other){return sum(squared(pos1 - other));}))
+                    {
+                        continue;
+                    }
+                    bvh.insert(pos1, pos1);
+                }
+                points.append(pos1);
                 dys.append(package.second.ke.R()[1]);
                 FixedArray<float, 3> dz{ cpos.rotate(pos0) };
                 dzs.append(dz / std::sqrt(sum(squared(dz))));
