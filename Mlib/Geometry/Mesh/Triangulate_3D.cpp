@@ -86,22 +86,18 @@ void plot(const triangle::triangulateio& io, const std::string& filename, float 
     }
 }
 
-class OrderedTriangle {
+class OrderedTriangle: public FixedArray<int, 3> {
 public:
     OrderedTriangle(const FixedArray<int, 3>& p)
-    : p_{p},
+    : FixedArray<int, 3>{p},
       s_{p}
     {
         std::sort(s_.flat_begin(), s_.flat_end());
     }
-    int operator [] (size_t id) const {
-        return p_(id);
-    }
-    bool operator < (const OrderedTriangle& other) const {
-        return s_ < other.s_;
+    std::strong_ordering operator <=> (const OrderedTriangle& other) const {
+        return s_ <=> other.s_;
     }
 private:
-    FixedArray<int, 3> p_;
     OrderableFixedArray<int, 3> s_;
 };
 
@@ -290,26 +286,23 @@ bool triangulate_point(
     
     // Convert triangulation result to output format.
     for (const auto& i : sorted_new_triangles) {
-        if ((i[0] >= steiner_point_index_end) ||
-            (i[1] >= steiner_point_index_end) ||
-            (i[2] >= steiner_point_index_end))
-        {
+        if (any(i >= steiner_point_index_end)) {
             continue;
         }
         if (sorted_old_triangles.contains(i)) {
             continue;
         }
         FixedArray<FixedArray<float, 2>, 3> tri2{
-            FixedArray<float, 2>{ (float)out.pointlist[2 * i[0]], (float)out.pointlist[2 * i[0] + 1] },
-            FixedArray<float, 2>{ (float)out.pointlist[2 * i[1]], (float)out.pointlist[2 * i[1] + 1] },
-            FixedArray<float, 2>{ (float)out.pointlist[2 * i[2]], (float)out.pointlist[2 * i[2] + 1] }};
+            FixedArray<float, 2>{ (float)out.pointlist[2 * i(0)], (float)out.pointlist[2 * i(0) + 1] },
+            FixedArray<float, 2>{ (float)out.pointlist[2 * i(1)], (float)out.pointlist[2 * i(1) + 1] },
+            FixedArray<float, 2>{ (float)out.pointlist[2 * i(2)], (float)out.pointlist[2 * i(2) + 1] }};
         if (triangle_largest_cosine(tri2) > largest_cos_in_triangle) {
             continue;
         }
         OrderableFixedArray<OrderableFixedArray<float, 3>, 3> otri3{
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i[0]) },
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i[1]) },
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i[2]) }};
+            OrderableFixedArray<float, 3>{ indexed_points.p3(i(0)) },
+            OrderableFixedArray<float, 3>{ indexed_points.p3(i(1)) },
+            OrderableFixedArray<float, 3>{ indexed_points.p3(i(2)) }};
         std::sort(otri3.flat_begin(), otri3.flat_end());
         auto pit = triangle_ptrs.find(otri3);
         if (pit != triangle_ptrs.end()) {
@@ -320,9 +313,9 @@ bool triangulate_point(
             }
         } else {
             FixedArray<FixedArray<float, 3>, 3> tri3{
-                indexed_points.p3(i[0]),
-                indexed_points.p3(i[1]),
-                indexed_points.p3(i[2])};
+                indexed_points.p3(i(0)),
+                indexed_points.p3(i(1)),
+                indexed_points.p3(i(2))};
             const Triangle3* ttri3 = triangle_bvh.insert(
                 tri3,
                 Triangle3{
@@ -339,9 +332,9 @@ bool triangulate_point(
             continue;
         }
         OrderableFixedArray<OrderableFixedArray<float, 3>, 3> otri3{
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i[0]) },
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i[1]) },
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i[2]) }};
+            OrderableFixedArray<float, 3>{ indexed_points.p3(i(0)) },
+            OrderableFixedArray<float, 3>{ indexed_points.p3(i(1)) },
+            OrderableFixedArray<float, 3>{ indexed_points.p3(i(2)) }};
         std::sort(otri3.flat_begin(), otri3.flat_end());
         auto it = triangle_ptrs.find(otri3);
         if (it == triangle_ptrs.end()) {
@@ -354,9 +347,9 @@ bool triangulate_point(
     }
 
     // static int k = 0;
-    // plot(in, "/tmp/plot_in_" + std::to_string(k) + ".svg", 100, 100);
-    // plot(out, "/tmp/plot_out_" + std::to_string(k) + ".svg", 100, 100);
-    // assert_true(k != 10);
+    // plot(in, "/tmp/plot_" + std::to_string(k) + "_in.svg", 100, 100);
+    // plot(out, "/tmp/plot_" + std::to_string(k) + "_out.svg", 100, 100);
+    // assert_true(k != 100);
     // ++k;
 
     return true;
