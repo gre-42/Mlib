@@ -125,8 +125,8 @@ int main(int argc, char** argv) {
             if (args.has_named("--convert_to_mesh")) {
                 mesh = bundle.mesh(
                     dense_point_transformations,
-                    safe_stof(args.named_value("--boundary_radius")),
-                    safe_stof(args.named_value("--z_thickness")),
+                    safe_stof(args.named_value("--boundary_radius", "0.05")),
+                    safe_stof(args.named_value("--z_thickness", "0.02")),
                     safe_stof(args.named_value("--cos_min_angle", "0.1")),
                     safe_stof(args.named_value("--largest_cos_in_triangle", "0.9")));
             } else {
