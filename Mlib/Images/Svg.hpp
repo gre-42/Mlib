@@ -19,20 +19,24 @@ public:
     explicit PathDrawer(
         std::ostream& ostr,
         const TData& stroke_width,
-        const std::string& stroke = "#000")
+        const std::string& stroke = "#000",
+        const std::string& fill = "none")
     :ostr_{ostr}
     {
         ostr_ <<
             "  <path "
             "stroke-width=\"" << stroke_width << "\" "
             "stroke=\"" << stroke << "\" "
-            "fill=\"none\" "
+            "fill=\"" << fill << "\" "
             "d=\"M ";
     }
     void draw_point(const TData& x, const TData& y) {
         ostr_ << x << "," << y << " ";
     }
-    void finish() {
+    void finish(bool close_path = false) {
+        if (close_path) {
+            ostr_ << " z";
+        }
         ostr_ <<
             "\"/>\n";
     }
@@ -128,16 +132,19 @@ public:
         const std::vector<TData>& x,
         const std::vector<TData>& y,
         const TData& stroke_width = 1.5,
+        const std::string& stroke = "#000",
+        const std::string& fill = "none",
+        bool close = false,
         size_t down_sampling = 1)
     {
         if (x.size() != y.size()) {
             throw std::runtime_error("Size mismatch in draw_path");
         }
-        PathDrawer pd{ostr_, stroke_width};
+        PathDrawer pd{ostr_, stroke_width, stroke, fill};
         for (size_t i = 0; i < x.size(); i += down_sampling) {
             pd.draw_point(x[i], y[i]);
         }
-        pd.finish();
+        pd.finish(close);
     }
 
     template <class TData>

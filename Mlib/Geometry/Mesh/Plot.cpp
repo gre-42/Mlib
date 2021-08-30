@@ -192,9 +192,17 @@ void Mlib::plot_mesh(
         auto a = trafo(t(0));
         auto b = trafo(t(1));
         auto c = trafo(t(2));
-        svg.draw_line(a(0), a(1), b(0), b(1), line_width, "black");
-        svg.draw_line(b(0), b(1), c(0), c(1), line_width, "black");
-        svg.draw_line(c(0), c(1), a(0), a(1), line_width, "black");
+        svg.draw_path(
+            {a(0), b(0), c(0)},
+            {a(1), b(1), c(1)},
+            line_width,
+            "#000",         // stroke
+            "red",          // fill
+            true,           // close
+            1);             // down_sampling
+        // svg.draw_line(a(0), a(1), b(0), b(1), line_width, "black");
+        // svg.draw_line(b(0), b(1), c(0), c(1), line_width, "black");
+        // svg.draw_line(c(0), c(1), a(0), a(1), line_width, "black");
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(a(0)), a2i(a(1))}, 4, Rgb24::blue());
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(b(0)), a2i(b(1))}, 4, Rgb24::blue());
         // im.draw_fill_rect(FixedArray<size_t, 2>{a2i(c(0)), a2i(c(1))}, 4, Rgb24::blue());
