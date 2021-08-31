@@ -43,14 +43,16 @@ int main(int argc, char** argv) {
         " [--boundary_radius <radius>"
         " [--z_thickness <thickness>"
         " [--cos_min_angle]"
-        " [--largest_cos_in_triangle]",
+        " [--largest_cos_in_triangle]"
+        " [--no_cull_faces]",
         {"--rotate",
         "--wire_frame",
         "--register_forward",
         "--register_backward",
         "--convert_to_points",
         "--convert_to_mesh",
-        "--show_beacon"},
+        "--show_beacon",
+        "--no_cull_faces"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -155,6 +157,7 @@ int main(int argc, char** argv) {
         }
         size_t num_renderings = SIZE_MAX;
         RenderConfig render_config{
+            .cull_faces = !args.has_named("--no_cull_faces"),
             .wire_frame = args.has_named("--wire_frame"),
             .screen_width = (int)ref->second.depth.shape(1),
             .screen_height = (int)ref->second.depth.shape(0),
