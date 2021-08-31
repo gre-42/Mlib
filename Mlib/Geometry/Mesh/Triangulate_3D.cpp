@@ -19,8 +19,8 @@ typedef TransformationMatrix<float, 3> Point3;
 struct Triangle3 {
     FixedArray<FixedArray<float, 3>, 3> v;
     FixedArray<float, 3> normal;
-    bool deleted;
 };
+typedef FixedArray<FixedArray<float, 2>, 2> Edge2;
 typedef Bvh<float, Point3, 3> PointBvh;
 typedef Bvh<float, Triangle3, 3> TriangleBvh;
 typedef std::map<OrderableFixedArray<OrderableFixedArray<float, 3>, 3>, Triangle3*> TrianglePointers;
@@ -54,7 +54,7 @@ private:
 };
 
 void plot(Svg<float>& svg, const triangle::triangulateio& io) {
-    if (io.numberoftriangles == 0) {
+    if ((io.numberoftriangles == 0) && (io.numberofsegments == 0)) {
         return;
     }
     std::list<FixedArray<FixedArray<float, 2>, 3>> triangles;
@@ -64,10 +64,16 @@ void plot(Svg<float>& svg, const triangle::triangulateio& io) {
             FixedArray<float, 2>{(float)io.pointlist[2 * i[1]], (float)io.pointlist[2 * i[1] + 1]},
             FixedArray<float, 2>{(float)io.pointlist[2 * i[2]], (float)io.pointlist[2 * i[2] + 1]}});
     }
+    std::list<std::list<FixedArray<float, 2>>> contours;
+    for (int* i = io.segmentlist; i < io.segmentlist + 2 * io.numberofsegments; i += 2) {
+        contours.push_back({
+            FixedArray<float, 2>{(float)io.pointlist[2 * i[0]], (float)io.pointlist[2 * i[0] + 1]},
+            FixedArray<float, 2>{(float)io.pointlist[2 * i[1]], (float)io.pointlist[2 * i[1] + 1]}});
+    }
     plot_mesh(
         svg,
         triangles,
-        {},
+        contours,
         {},
         1.f);
 }
@@ -86,36 +92,8 @@ void plot(const triangle::triangulateio& io, const std::string& filename, float 
     }
 }
 
-class OrderedTriangle: public FixedArray<int, 3> {
-public:
-    OrderedTriangle(const FixedArray<int, 3>& p)
-    : FixedArray<int, 3>{p},
-      s_{p}
-    {
-        std::sort(s_.flat_begin(), s_.flat_end());
-    }
-    std::strong_ordering operator <=> (const OrderedTriangle& other) const {
-        return s_ <=> other.s_;
-    }
-private:
-    OrderableFixedArray<int, 3> s_;
-};
-
-std::set<OrderedTriangle> get_sorted_triangles(const triangle::triangulateio& io) {
-    std::set<OrderedTriangle> result;
-    for (int i = 0; i < 3 * io.numberoftriangles; i += 3) {
-        FixedArray<int, 3> tri{
-            io.trianglelist[i],
-            io.trianglelist[i + 1],
-            io.trianglelist[i + 2] };
-        if (!result.insert(OrderedTriangle{ tri }).second) {
-            throw std::runtime_error("Duplicate triangle");
-        }
-    }
-    return result;
-}
-
 bool triangulate_point(
+    size_t k,
     const TransformationMatrix<float, 3>& central_point,
     const PointBvh& point_bvh,
     TriangleBvh& triangle_bvh,
@@ -161,37 +139,66 @@ bool triangulate_point(
     int steiner_point_index_end = indexed_points.next_index();
 
     // Add existing triangles.
-    Array<int> old_triangles{ ArrayShape{ 0 }};
-    if (!triangle_bvh.visit(
-        bounding_box_plus_eps,
-        [&](const Triangle3& triangle)
-        {
-            if (triangle.deleted) {
-                return true;
-            }
-            FixedArray<FixedArray<float, 3>, 3> v{
-                projection.transform(triangle.v(0)),
-                projection.transform(triangle.v(1)),
-                projection.transform(triangle.v(2))};
-            if (dot0d(triangle.normal, projection.R()[2]) <= cos_min_angle) {
+    Array<int> segment_list{ ArrayShape{ 0 }};
+    {
+        Bvh<float, Edge2, 2> segment_bvh{{0.1f, 0.1f}, 10};
+        if (!triangle_bvh.visit(
+            bounding_box_plus_eps,
+            [&](const Triangle3& triangle)
+            {
+                FixedArray<FixedArray<float, 3>, 3> v{
+                    projection.transform(triangle.v(0)),
+                    projection.transform(triangle.v(1)),
+                    projection.transform(triangle.v(2))};
+                if (dot0d(triangle.normal, projection.R()[2]) <= cos_min_angle) {
+                    for (size_t i = 0; i < 3; ++i) {
+                        if (indexed_points.exists(FixedArray<float, 2>{v(i)(0), v(i)(1)})) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
                 for (size_t i = 0; i < 3; ++i) {
-                    if (indexed_points.exists(FixedArray<float, 2>{v(i)(0), v(i)(1)})) {
+                    Edge2 edge2{
+                        FixedArray<float, 2>{v(i)(0), v(i)(1)},
+                        FixedArray<float, 2>{v((i + 1) % 3)(0), v((i + 1) % 3)(1)}};
+                    AxisAlignedBoundingBox aabb{edge2};
+                    if (!segment_bvh.visit(aabb, [&edge2](const Edge2& other)
+                        {
+                            FixedArray<float, 2> intersection;
+                            if (intersect_lines(
+                                intersection,
+                                edge2,
+                                other,
+                                0.f,
+                                0.f,
+                                false,  // compute_center
+                                true))  // check_bounds (returns false if any corners are identical)
+                            {
+                                std::cerr << "Detected segment intersection" << std::endl;
+                                return false;
+                            }
+                            return true;
+                        }))
+                    {
                         return false;
                     }
+                    segment_bvh.insert(aabb, edge2);
+                    int point_index;
+                    if (!indexed_points(edge2(0), triangle.v(i), point_index)) {
+                        return false;
+                    }
+                    segment_list.append(point_index);
+                    if (!indexed_points(edge2(1), triangle.v((i + 1) % 3), point_index)) {
+                        return false;
+                    }
+                    segment_list.append(point_index);
                 }
                 return true;
-            }
-            for (size_t i = 0; i < 3; ++i) {
-                int point_index;
-                if (!indexed_points(FixedArray<float, 2>{v(i)(0), v(i)(1)}, triangle.v(i), point_index)) {
-                    return false;
-                }
-                old_triangles.append(point_index);
-            }
-            return true;
-        }))
-    {
-        return false;
+            }))
+        {
+            return false;
+        }
     }
 
     if (indexed_points.positions().size() / 2 < 3) {
@@ -206,20 +213,26 @@ bool triangulate_point(
         .pointmarkerlist = nullptr,
         .numberofpoints = (int)(indexed_points.positions().size() / 2),
         .numberofpointattributes = 0,
-        .trianglelist = old_triangles.flat_begin(),
+        
+        .trianglelist = nullptr,
         .triangleattributelist = nullptr,
         .trianglearealist = nullptr,
         .neighborlist = nullptr,
-        .numberoftriangles = (int)(old_triangles.length() / 3),
+        .numberoftriangles = 0,
         .numberofcorners = 0,
         .numberoftriangleattributes = 0,
-        .segmentlist = nullptr,
+
+        .segmentlist = segment_list.flat_begin(),
         .segmentmarkerlist = nullptr,
-        .numberofsegments = 0,
+        .numberofsegments = (int)(segment_list.length() / 2),
+
         .holelist = nullptr,
         .numberofholes = 0,
+
         .regionlist = nullptr,
         .numberofregions = 0,
+
+        // Out only
         .edgelist = nullptr,
         .edgemarkerlist = nullptr,
         .normlist = nullptr,
@@ -232,6 +245,7 @@ bool triangulate_point(
         .pointmarkerlist = nullptr,
         .numberofpoints = 0,
         .numberofpointattributes = 0,
+
         .trianglelist = nullptr,
         .triangleattributelist = nullptr,
         .trianglearealist = nullptr,
@@ -239,19 +253,32 @@ bool triangulate_point(
         .numberoftriangles = 0,
         .numberofcorners = 0,
         .numberoftriangleattributes = 0,
+
         .segmentlist = nullptr,
         .segmentmarkerlist = nullptr,
         .numberofsegments = 0,
+
         .holelist = nullptr,
         .numberofholes = 0,
+
         .regionlist = nullptr,
         .numberofregions = 0,
+
+        // Out only
         .edgelist = nullptr,
         .edgemarkerlist = nullptr,
         .normlist = nullptr,
         .numberofedges = 0,
     };
 
+    // std::cerr << k << std::endl;
+    // if (k == 9513) {
+    //     plot(in, "/tmp/plot_" + std::to_string(k) + "_in.svg", 100, 100);
+    // }
+
+    // Documentation:
+    //   1. Read the comments in the triangle.hpp file.
+    //   2. Run the triangle binary with "-h" and read the help text.
     // z: makes array indizes count from 0 (triangle counts from 1 otherwise)
     // -V -V -V: set printf debug level to 3
     // Q: quiet
@@ -259,7 +286,14 @@ bool triangulate_point(
     // q5: Set minimum angle to 5 degrees.
     //     Not used because the angle is also applied to the input triangles,
     //     many of which have angles close to the prescribed quality.
-    triangle::triangulate("z e Q", &in, &out, nullptr);
+    // p: enable the segment list
+    // c: https://people.sc.fsu.edu/~jburkardt/data/triangle_files/triangle_files.html
+    //    "We need the -pc because we didn't surround our initial area with segments.""
+    triangle::triangulate("z e p c Q", &in, &out, nullptr);
+
+    // if (k == 9513) {
+    //     plot(out, "/tmp/plot_" + std::to_string(k) + "_out.svg", 100, 100);
+    // }
 
     std::unique_ptr<double, decltype(&triangle::trifree)> unique_pointlist{ out.pointlist, triangle::trifree };
     std::unique_ptr<int, decltype(&triangle::trifree)> unique_pointmarkerlist{ out.pointmarkerlist, triangle::trifree };
@@ -281,15 +315,14 @@ bool triangulate_point(
     //         return false;
     //     }
     // }
-    std::set<OrderedTriangle> sorted_old_triangles = get_sorted_triangles(in);
-    std::set<OrderedTriangle> sorted_new_triangles = get_sorted_triangles(out);
     
     // Convert triangulation result to output format.
-    for (const auto& i : sorted_new_triangles) {
+    for (int j = 0; j < 3 * out.numberoftriangles; j += 3) {
+        FixedArray<int, 3> i{
+            out.trianglelist[j],
+            out.trianglelist[j + 1],
+            out.trianglelist[j + 2] };
         if (any(i >= steiner_point_index_end)) {
-            continue;
-        }
-        if (sorted_old_triangles.contains(i)) {
             continue;
         }
         FixedArray<FixedArray<float, 2>, 3> tri2{
@@ -306,51 +339,21 @@ bool triangulate_point(
         std::sort(otri3.flat_begin(), otri3.flat_end());
         auto pit = triangle_ptrs.find(otri3);
         if (pit != triangle_ptrs.end()) {
-            if (pit->second->deleted) {
-                pit->second->deleted = false;
-            } else {
-                throw std::runtime_error("Could not undelete ordered triangle");
-            }
-        } else {
-            FixedArray<FixedArray<float, 3>, 3> tri3{
-                indexed_points.p3(i(0)),
-                indexed_points.p3(i(1)),
-                indexed_points.p3(i(2))};
-            const Triangle3* ttri3 = triangle_bvh.insert(
-                tri3,
-                Triangle3{
-                    .v = tri3,
-                    .normal = triangle_normal(tri3),
-                    .deleted = false});
-            if (!triangle_ptrs.insert({ otri3, const_cast<Triangle3*>(ttri3) }).second) {
-                throw std::runtime_error("Triangulate internal error");
-            }
-        }
-    }
-    for (const auto& i : sorted_old_triangles) {
-        if (sorted_new_triangles.contains(i)) {
             continue;
         }
-        OrderableFixedArray<OrderableFixedArray<float, 3>, 3> otri3{
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i(0)) },
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i(1)) },
-            OrderableFixedArray<float, 3>{ indexed_points.p3(i(2)) }};
-        std::sort(otri3.flat_begin(), otri3.flat_end());
-        auto it = triangle_ptrs.find(otri3);
-        if (it == triangle_ptrs.end()) {
-            throw std::runtime_error("Could not find triangle to be deleted");
+        FixedArray<FixedArray<float, 3>, 3> tri3{
+            indexed_points.p3(i(0)),
+            indexed_points.p3(i(1)),
+            indexed_points.p3(i(2))};
+        const Triangle3* ttri3 = triangle_bvh.insert(
+            tri3,
+            Triangle3{
+                .v = tri3,
+                .normal = triangle_normal(tri3)});
+        if (!triangle_ptrs.insert({ otri3, const_cast<Triangle3*>(ttri3) }).second) {
+            throw std::runtime_error("Triangulate internal error");
         }
-        if (it->second->deleted) {
-            throw std::runtime_error("Triangle is already deleted");
-        }
-        it->second->deleted = true;
     }
-
-    // static int k = 0;
-    // plot(in, "/tmp/plot_" + std::to_string(k) + "_in.svg", 100, 100);
-    // plot(out, "/tmp/plot_" + std::to_string(k) + "_out.svg", 100, 100);
-    // assert_true(k != 100);
-    // ++k;
 
     return true;
 }
@@ -369,23 +372,25 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
     for (const auto& p : points.flat_iterable()) {
         point_bvh.insert(p.t(), p);
     }
-    for (const TransformationMatrix<float, 3>& pt : points.flat_iterable()) {
-        triangulate_point(
-            pt,
-            point_bvh,
-            triangle_bvh,
-            triangle_ptrs,
-            boundary_radius,
-            z_thickness,
-            cos_min_angle,
-            largest_cos_in_triangle,
-            triangle_search_eps);
+    {
+        size_t k = 0;
+        for (const TransformationMatrix<float, 3>& pt : points.flat_iterable()) {
+            triangulate_point(
+                k,
+                pt,
+                point_bvh,
+                triangle_bvh,
+                triangle_ptrs,
+                boundary_radius,
+                z_thickness,
+                cos_min_angle,
+                largest_cos_in_triangle,
+                triangle_search_eps);
+            k++;
+        }
     }
     Array<FixedArray<FixedArray<float, 3>, 3>> result{ ArrayShape{ 0 } };
     triangle_bvh.visit_all([&result](const std::pair<AxisAlignedBoundingBox<float, 3>, Triangle3>& tri3){
-        if (tri3.second.deleted) {
-            return true;
-        }
         result.append(tri3.second.v);
         return true;
     });
