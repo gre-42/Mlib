@@ -14288,7 +14288,7 @@ int *regions;
 #ifndef TRILIBRARY
 
 #ifdef ANSI_DECLARATORS
-void finishfile(FILE *outfile, int argc, char **argv)
+void finishfile(FILE *outfile, int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 void finishfile(outfile, argc, argv)
 FILE *outfile;
@@ -14337,7 +14337,7 @@ int **pointmarkerlist;
 
 #ifdef ANSI_DECLARATORS
 void writenodes(struct mesh *m, struct behavior *b, char *nodefilename,
-                int argc, char **argv)
+                int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 void writenodes(m, b, nodefilename, argc, argv)
 struct mesh *m;
@@ -14508,7 +14508,7 @@ REAL **triangleattriblist;
 
 #ifdef ANSI_DECLARATORS
 void writeelements(struct mesh *m, struct behavior *b, char *elefilename,
-                   int argc, char **argv)
+                   int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 void writeelements(m, b, elefilename, argc, argv)
 struct mesh *m;
@@ -14650,7 +14650,7 @@ int **segmentmarkerlist;
 #ifdef ANSI_DECLARATORS
 void writepoly(struct mesh *m, struct behavior *b, char *polyfilename,
                REAL *holelist, int holes, REAL *regionlist, int regions,
-               int argc, char **argv)
+               int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 void writepoly(m, b, polyfilename, holelist, holes, regionlist, regions,
                argc, argv)
@@ -14795,7 +14795,7 @@ int **edgemarkerlist;
 
 #ifdef ANSI_DECLARATORS
 void writeedges(struct mesh *m, struct behavior *b, char *edgefilename,
-                int argc, char **argv)
+                int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 void writeedges(m, b, edgefilename, argc, argv)
 struct mesh *m;
@@ -14955,7 +14955,7 @@ REAL **vnormlist;
 
 #ifdef ANSI_DECLARATORS
 void writevoronoi(struct mesh *m, struct behavior *b, char *vnodefilename,
-                  char *vedgefilename, int argc, char **argv)
+                  char *vedgefilename, int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 void writevoronoi(m, b, vnodefilename, vedgefilename, argc, argv)
 struct mesh *m;
@@ -15160,7 +15160,7 @@ int **neighborlist;
 
 #ifdef ANSI_DECLARATORS
 void writeneighbors(struct mesh *m, struct behavior *b, char *neighborfilename,
-                    int argc, char **argv)
+                    int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 void writeneighbors(m, b, neighborfilename, argc, argv)
 struct mesh *m;
@@ -15264,7 +15264,7 @@ char **argv;
 
 #ifdef ANSI_DECLARATORS
 void writeoff(struct mesh *m, struct behavior *b, char *offfilename,
-              int argc, char **argv)
+              int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 void writeoff(m, b, offfilename, argc, argv)
 struct mesh *m;
@@ -15681,11 +15681,11 @@ struct triangulateio *vorout;
 #else /* not TRILIBRARY */
 
 #ifdef ANSI_DECLARATORS
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 #else /* not ANSI_DECLARATORS */
 int main(argc, argv)
 int argc;
-char **argv;
+const char **argv;
 #endif /* not ANSI_DECLARATORS */
 
 #endif /* not TRILIBRARY */
