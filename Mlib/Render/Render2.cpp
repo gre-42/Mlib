@@ -1,32 +1,24 @@
 #include "Render2.hpp"
-#include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
-#include <Mlib/Cv/Render/Resources/Point_Cloud_Resource.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Fps.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Rotating_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
-#include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
-#include <Mlib/Render/linmath.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
-#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
-#include <iostream>
+#include <thread>
 
 using namespace Mlib;
 
@@ -245,9 +237,16 @@ void Render2::operator () (
     bool rotate,
     float scale,
     float camera_z,
-    const SceneGraphConfig& scene_graph_config)
+    const SceneGraphConfig& scene_graph_config,
+    const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
 {
-    RotatingLogic rotating_logic{window_->window(), scene, rotate, scale, camera_z};
+    RotatingLogic rotating_logic{
+        window_->window(),
+        scene,
+        rotate,
+        scale,
+        camera_z,
+        beacon_locations};
     ReadPixelsLogic read_pixels_logic{ rotating_logic };
     (*this)(
         read_pixels_logic,
@@ -260,7 +259,8 @@ void Render2::render_node(
     float scale,
     float camera_z,
     const SceneGraphConfig& scene_graph_config,
-    std::unique_ptr<Camera>&& camera)
+    std::unique_ptr<Camera>&& camera,
+    const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
 {
     Scene scene;
     scene.add_root_node("obj", std::move(node));
@@ -275,7 +275,7 @@ void Render2::render_node(
         .node_name = "1234",
         .only_black = false,
         .shadow = false});
-    (*this)(scene, rotate, scale, camera_z, scene_graph_config);
+    (*this)(scene, rotate, scale, camera_z, scene_graph_config, beacon_locations);
 }
 
 GLFWwindow* Render2::window() const {

@@ -39,7 +39,8 @@ public:
         bool rotate = false,
         float scale = 1,
         float camera_z = 0,
-        const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
+        const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
+        const std::vector<TransformationMatrix<float, 3>>* beacon_locations = nullptr);
 
     void render_node(
         std::unique_ptr<SceneNode>&& node,
@@ -47,7 +48,8 @@ public:
         float scale,
         float camera_z,
         const SceneGraphConfig& scene_graph_config,
-        std::unique_ptr<Camera>&& camera);
+        std::unique_ptr<Camera>&& camera,
+        const std::vector<TransformationMatrix<float, 3>>* beacon_locations = nullptr);
     
     GLFWwindow* window() const;
 

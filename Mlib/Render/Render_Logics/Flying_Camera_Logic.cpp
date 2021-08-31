@@ -160,7 +160,7 @@ FlyingCameraLogic::FlyingCameraLogic(
             user_object_.angles = cn->rotation();
         }
         if (rotate_) {
-            auto on = scene_.get_node("obj");
+            auto on = scene_.get_node(user_object_.obj_node_name);
             user_object_.obj_position = on->position();
             user_object_.obj_angles = on->rotation();
         }

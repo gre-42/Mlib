@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <atomic>
+#include <vector>
 
 namespace Mlib {
 
@@ -12,11 +14,19 @@ public:
     float camera_z = 0;
     float angle_x = 0;
     float angle_y = 0;
+    const std::vector<TransformationMatrix<float, 3>>* beacon_locations;
+    std::atomic_size_t beacon_index;
 };
 
 class RotatingLogic: public RenderLogic {
 public:
-    explicit RotatingLogic(GLFWwindow* window, const Scene& scene, bool rotate, float scale, float camera_z);
+    explicit RotatingLogic(
+        GLFWwindow* window,
+        const Scene& scene,
+        bool rotate,
+        float scale,
+        float camera_z,
+        const std::vector<TransformationMatrix<float, 3>>* beacon_locations);
 
     virtual void render(
         int width,

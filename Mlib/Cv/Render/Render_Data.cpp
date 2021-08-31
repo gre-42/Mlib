@@ -3,6 +3,7 @@
 #include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Cv/Render/Resources/Point_Cloud_Resource.hpp>
 #include <Mlib/Geometry/Coordinate_Conversion.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
 #include <Mlib/Render/Cameras/Projection_Matrix_Camera.hpp>
@@ -57,6 +58,7 @@ void Mlib::Cv::render_depth_map(
         { package },
         Array<TransformationMatrix<float, 3>>{},
         { },
+        { },
         intrinsic_matrix,
         TransformationMatrix<float, 3>::identity(),
         (float)depth_picture.shape(1),
@@ -74,6 +76,7 @@ void Mlib::Cv::render_depth_maps(
     const std::vector<DepthMapPackage>& packages,
     const Array<TransformationMatrix<float, 3>>& points,
     const std::list<std::shared_ptr<ColoredVertexArray>>& mesh,
+    const std::vector<TransformationMatrix<float, 3>>& beacon_locations,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
     float width,
@@ -122,6 +125,24 @@ void Mlib::Cv::render_depth_maps(
         scene_node_resources.add_resource("ColoredVertexArrayResource", r);
         scene_node_resources.instantiate_renderable("ColoredVertexArrayResource", "ColoredVertexArray", *root_node, SceneNodeResourceFilter());
     }
+    std::vector<TransformationMatrix<float, 3>> transformed_beacon_locations;
+    transformed_beacon_locations.reserve(beacon_locations.size());
+    for (const auto& b : beacon_locations) {
+        transformed_beacon_locations.push_back(cv_to_opengl_extrinsic_matrix(b));
+    }
+    if (!beacon_locations.empty()) {
+        TriangleList tl{ "beacon", Material() };
+        tl.draw_rectangle_wo_normals(
+            {-1.f, 1.f, 0.f},
+            {1.f, 1.f, 0.f},
+            {1.f, -1.f, 0.f},
+            {-1.f, -1.f, 0.f});
+        const auto r = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array(), nullptr);
+        scene_node_resources.add_resource("beacon", r);
+        auto bn = std::make_unique<SceneNode>();
+        scene_node_resources.instantiate_renderable("beacon", "beacon", *bn, SceneNodeResourceFilter());
+        root_node->add_child("beacon", std::move(bn));
+    }
     std::unique_ptr<Camera> camera(new ProjectionMatrixCamera(cv_to_opengl_hz_intrinsic_matrix(
         intrinsic_matrix,
         width,
@@ -134,7 +155,8 @@ void Mlib::Cv::render_depth_maps(
         scale,
         camera_z,
         scene_graph_config,
-        std::move(camera));
+        std::move(camera),
+        &transformed_beacon_locations);
 }
 
 void Mlib::Cv::render_height_map(

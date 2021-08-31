@@ -31,6 +31,7 @@ int main(int argc, char** argv) {
         " [--register_backward]"
         " [--convert_to_points]"
         " [--convert_to_mesh]"
+        " [--show_beacon]"
         " [--rotate]"
         " [--wire_frame]"
         " [--reference_time <milliseconds>]"
@@ -48,7 +49,8 @@ int main(int argc, char** argv) {
         "--register_forward",
         "--register_backward",
         "--convert_to_points",
-        "--convert_to_mesh"},
+        "--convert_to_mesh",
+        "--show_beacon"},
         {"--median_filter_radius",
         "--near_plane",
         "--far_plane",
@@ -65,7 +67,8 @@ int main(int argc, char** argv) {
         "--boundary_radius",
         "--z_thickness",
         "--cos_min_angle",
-        "--largest_cos_in_triangle"},
+        "--largest_cos_in_triangle",
+        "--beacon_scale"},
         {"--packages", "--filter_references"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -116,7 +119,8 @@ int main(int argc, char** argv) {
 
         std::vector<DepthMapPackage> packages;
         std::list<std::shared_ptr<ColoredVertexArray>> mesh;
-        if (args.has_named("--convert_to_points") || args.has_named("--convert_to_mesh")) {
+        std::vector<TransformationMatrix<float, 3>> beacon_locations;
+        if (args.has_named("--convert_to_points") || args.has_named("--convert_to_mesh") || args.has_named("--show_beacon")) {
             Array<TransformationMatrix<float, 3>> dense_point_transformations =
                 bundle.points_and_normals(
                     safe_stoz(args.named_value("--normal_k", "5")),
@@ -131,6 +135,13 @@ int main(int argc, char** argv) {
                     safe_stof(args.named_value("--largest_cos_in_triangle", "0.9")));
             } else {
                 point_transformations.append(dense_point_transformations);
+            }
+            if (args.has_named("--show_beacon")) {
+                beacon_locations.resize(dense_point_transformations.length());
+                for (size_t i = 0; i < dense_point_transformations.length(); ++i) {
+                    beacon_locations[i] = dense_point_transformations(i);
+                    beacon_locations[i].R() *= safe_stof(args.named_value("--beacon_scale", "0.1"));
+                }
             }
         } else {
             packages.reserve(bundle.packages().size());
@@ -161,6 +172,7 @@ int main(int argc, char** argv) {
             packages,
             point_transformations,
             mesh,
+            beacon_locations,
             ref->second.ki,
             ref->second.ke,
             (float)ref->second.depth.shape(1),

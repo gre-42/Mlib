@@ -1,6 +1,7 @@
 #include "Rotating_Logic.hpp"
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/RenderGuards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -18,31 +19,65 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     }
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
-        switch (key) {
-            case GLFW_KEY_UP:
-                user_object->camera_z -= 0.1f;
-                break;
-            case GLFW_KEY_DOWN:
-                user_object->camera_z += 0.1f;
-                break;
-            case GLFW_KEY_LEFT:
-                user_object->angle_y += 0.04f;
-                break;
-            case GLFW_KEY_RIGHT:
-                user_object->angle_y -= 0.04f;
-                break;
-            case GLFW_KEY_PAGE_UP:
-                user_object->angle_x += 0.04f;
-                break;
-            case GLFW_KEY_PAGE_DOWN:
-                user_object->angle_x -= 0.04f;
-                break;
-            case GLFW_KEY_KP_ADD:
-                user_object->scale += 0.04f;
-                break;
-            case GLFW_KEY_KP_SUBTRACT:
-                user_object->scale -= 0.04f;
-                break;
+        if (mods & GLFW_MOD_SHIFT) {
+            if ((user_object->beacon_locations != nullptr) &&
+                !user_object->beacon_locations->empty())
+            {
+                user_object->beacon_index = std::clamp<size_t>(user_object->beacon_index, 0, user_object->beacon_locations->size() - 1);
+                switch(key) {
+                    case GLFW_KEY_UP:
+                        user_object->beacon_index += std::min<size_t>(1, user_object->beacon_locations->size() - 1 - user_object->beacon_index);
+                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
+                        break;
+                    case GLFW_KEY_DOWN:
+                        user_object->beacon_index -= std::min<size_t>(1, user_object->beacon_index);
+                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
+                        break;
+                    case GLFW_KEY_PAGE_UP:
+                        user_object->beacon_index += std::min<size_t>(10, user_object->beacon_locations->size() - 1 - user_object->beacon_index);
+                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
+                        break;
+                    case GLFW_KEY_PAGE_DOWN:
+                        user_object->beacon_index -= std::min<size_t>(10, user_object->beacon_index);
+                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
+                        break;
+                    case GLFW_KEY_HOME:
+                        user_object->beacon_index += std::min<size_t>(100, user_object->beacon_locations->size() - 1 - user_object->beacon_index);
+                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
+                        break;
+                    case GLFW_KEY_END:
+                        user_object->beacon_index -= std::min<size_t>(100, user_object->beacon_index);
+                        std::cerr << "Beacon index: " << user_object->beacon_index << std::endl;
+                        break;
+                }
+            }
+        } else {
+            switch (key) {
+                case GLFW_KEY_UP:
+                    user_object->camera_z -= 0.1f;
+                    break;
+                case GLFW_KEY_DOWN:
+                    user_object->camera_z += 0.1f;
+                    break;
+                case GLFW_KEY_LEFT:
+                    user_object->angle_y += 0.04f;
+                    break;
+                case GLFW_KEY_RIGHT:
+                    user_object->angle_y -= 0.04f;
+                    break;
+                case GLFW_KEY_PAGE_UP:
+                    user_object->angle_x += 0.04f;
+                    break;
+                case GLFW_KEY_PAGE_DOWN:
+                    user_object->angle_x -= 0.04f;
+                    break;
+                case GLFW_KEY_KP_ADD:
+                    user_object->scale += 0.04f;
+                    break;
+                case GLFW_KEY_KP_SUBTRACT:
+                    user_object->scale -= 0.04f;
+                    break;
+            }
         }
     }
     fullscreen_callback(window, key, scancode, action, mods);
@@ -53,12 +88,14 @@ RotatingLogic::RotatingLogic(
     const Scene& scene,
     bool rotate,
     float scale,
-    float camera_z)
+    float camera_z,
+    const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
 : scene_{scene},
   rotate_{rotate}
 {
     user_object_.scale = scale;
     user_object_.camera_z = camera_z;
+    user_object_.beacon_locations = beacon_locations;
     GLFW_CHK(glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y));
     GLFW_CHK(glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height));
     GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
@@ -93,6 +130,13 @@ void RotatingLogic::render(
             user_object_.angle_x,
             rotate_ ? (float)glfwGetTime() : user_object_.angle_y,
             0.f});
+    }
+    if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
+        SceneNode* bn = scene_.get_node("obj")->get_child("beacon");
+        size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
+        const TransformationMatrix<float, 3> pose = (*user_object_.beacon_locations)[beacon_index];
+        float scale = pose.get_scale();
+        bn->set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale);
     }
 
     RenderConfigGuard rcg{ render_config };

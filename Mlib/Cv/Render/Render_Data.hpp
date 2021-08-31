@@ -47,6 +47,7 @@ void render_depth_maps(
     const std::vector<DepthMapPackage>& packages,
     const Array<TransformationMatrix<float, 3>>& points,
     const std::list<std::shared_ptr<ColoredVertexArray>>& mesh,
+    const std::vector<TransformationMatrix<float, 3>>& beacon_locations,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const TransformationMatrix<float, 3>& extrinsic_matrix,
     float width,
