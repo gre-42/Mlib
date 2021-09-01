@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
-#include <Mlib/Geometry/Mesh/Flip_Edges_3D.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Point_Set.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
@@ -99,12 +98,14 @@ bool triangulate_point(
     const PointBvh& point_bvh,
     TriangleBvh& triangle_bvh,
     TrianglePointers& triangle_ptrs,
+    std::set<OrderableFixedArray<float, 3>>& triangulated_points,
     float boundary_radius,
     float z_thickness,
     float cos_min_angle,
     float largest_cos_in_triangle,
     float triangle_search_eps)
 {
+    triangulated_points.insert(OrderableFixedArray{ central_point.t() });
     TransformationMatrix<float, 3> projection = central_point.inverted();
 
     // Determine steiner points.
@@ -337,6 +338,16 @@ bool triangulate_point(
             OrderableFixedArray<float, 3>{ indexed_points.p3(i(0)) },
             OrderableFixedArray<float, 3>{ indexed_points.p3(i(1)) },
             OrderableFixedArray<float, 3>{ indexed_points.p3(i(2)) }};
+        bool triangle_touches_future_point = false;
+        for (const auto& p : otri3.flat_iterable()) {
+            if (!triangulated_points.contains(p)) {
+                triangle_touches_future_point = true;
+                break;
+            }
+        }
+        if (triangle_touches_future_point) {
+            continue;
+        }
         std::sort(otri3.flat_begin(), otri3.flat_end());
         auto pit = triangle_ptrs.find(otri3);
         if (pit != triangle_ptrs.end()) {
@@ -368,26 +379,31 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
     float triangle_search_eps)
 {
     TriangleBvh triangle_bvh{{0.1f, 0.1f, 0.1f}, 10};
-    PointBvh point_bvh{{0.1f, 0.1f, 0.1f}, 10};
-    TrianglePointers triangle_ptrs;
-    for (const auto& p : points.flat_iterable()) {
-        point_bvh.insert(p.t(), p);
-    }
     {
-        size_t k = 0;
-        for (const TransformationMatrix<float, 3>& pt : points.flat_iterable()) {
-            triangulate_point(
-                k,
-                pt,
-                point_bvh,
-                triangle_bvh,
-                triangle_ptrs,
-                boundary_radius,
-                z_thickness,
-                cos_min_angle,
-                largest_cos_in_triangle,
-                triangle_search_eps);
-            k++;
+        PointBvh point_bvh{{0.1f, 0.1f, 0.1f}, 10};
+        TrianglePointers triangle_ptrs;
+        std::set<OrderableFixedArray<float, 3>> triangulated_points;
+        for (const auto& p : points.flat_iterable()) {
+            point_bvh.insert(p.t(), p);
+        }
+        // Two passes, because in pass 2 the "triangulated_points" set is full.
+        for (size_t i = 0; i < 2; ++i) {
+            size_t k = 0;
+            for (const TransformationMatrix<float, 3>& pt : points.flat_iterable()) {
+                triangulate_point(
+                    k,
+                    pt,
+                    point_bvh,
+                    triangle_bvh,
+                    triangle_ptrs,
+                    triangulated_points,
+                    boundary_radius,
+                    z_thickness,
+                    cos_min_angle,
+                    largest_cos_in_triangle,
+                    triangle_search_eps);
+                k++;
+            }
         }
     }
     Array<FixedArray<FixedArray<float, 3>, 3>> result{ ArrayShape{ 0 } };
@@ -395,5 +411,5 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
         result.append(tri3.second.v);
         return true;
     });
-    return flip_edges_3d(result);
+    return result;
 }
