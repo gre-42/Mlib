@@ -143,7 +143,7 @@ bool triangulate_point(
     // Add existing triangles.
     Array<int> segment_list{ ArrayShape{ 0 }};
     {
-        Bvh<float, Edge2, 2> segment_bvh{{0.1f, 0.1f}, 10};
+        Bvh<float, Edge2, 2> segment_bvh{{0.05f, 0.05f}, 5};
         if (!triangle_bvh.visit(
             bounding_box_plus_eps,
             [&](const Triangle3& triangle)
