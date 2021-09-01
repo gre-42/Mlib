@@ -2,6 +2,8 @@
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
@@ -71,7 +73,8 @@ int main(int argc, char** argv) {
         "--z_thickness",
         "--cos_min_angle",
         "--largest_cos_in_triangle",
-        "--beacon_scale"},
+        "--beacon_scale",
+        "--obj_out"},
         {"--packages", "--filter_references"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -151,6 +154,15 @@ int main(int argc, char** argv) {
             for (const auto& package : bundle.packages()) {
                 packages.push_back(package.second);
             }
+        }
+        if (args.has_named_value("--obj_out")) {
+            std::list<FixedArray<ColoredVertex, 3>> triangles;
+            for (const auto& lst : mesh) {
+                for (const auto& t : lst->triangles) {
+                    triangles.push_back(t);
+                }
+            }
+            save_obj(args.named_value("--obj_out"), IndexedFaceSet<float, size_t>{ triangles });
         }
         const auto& ref = bundle.packages().find(std::chrono::milliseconds(safe_stou64(args.named_value("--reference_time"))));
         if (ref == bundle.packages().end()) {
