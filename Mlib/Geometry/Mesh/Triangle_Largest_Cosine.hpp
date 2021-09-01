@@ -1,13 +1,13 @@
 #pragma once
-#include <cstddef>
+#include <Mlib/Math/Fixed_Math.hpp>
 
 namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-template <class TData>
-TData triangle_largest_cosine(const FixedArray<FixedArray<TData, 2>, 3>& tri)
+template <class TData, size_t tndim>
+TData triangle_largest_cosine(const FixedArray<FixedArray<TData, tndim>, 3>& tri)
 {
     TData lengths[]{
         sum(squared(tri(1) - tri(2))),

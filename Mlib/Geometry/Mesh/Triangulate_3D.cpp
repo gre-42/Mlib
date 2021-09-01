@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
+#include <Mlib/Geometry/Mesh/Flip_Edges_3D.hpp>
 #include <Mlib/Geometry/Mesh/Indexed_Point_Set.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
@@ -394,5 +395,5 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
         result.append(tri3.second.v);
         return true;
     });
-    return result;
+    return flip_edges_3d(result);
 }

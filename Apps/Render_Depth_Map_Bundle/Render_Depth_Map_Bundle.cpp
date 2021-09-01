@@ -127,15 +127,15 @@ int main(int argc, char** argv) {
             Array<TransformationMatrix<float, 3>> dense_point_transformations =
                 bundle.points_and_normals(
                     safe_stoz(args.named_value("--normal_k", "5")),
-                    safe_stof(args.named_value("--normal_radius", "0.1")),
-                    safe_stof(args.named_value("--duplicate_distance", "0.01")));
+                    safe_stof(args.named_value("--normal_radius", "0.2")),
+                    safe_stof(args.named_value("--duplicate_distance", "0.1")));
             if (args.has_named("--convert_to_mesh")) {
                 mesh = bundle.mesh(
                     dense_point_transformations,
                     safe_stof(args.named_value("--boundary_radius", "0.05")),
                     safe_stof(args.named_value("--z_thickness", "0.02")),
                     safe_stof(args.named_value("--cos_min_angle", "0.1")),
-                    safe_stof(args.named_value("--largest_cos_in_triangle", "0.9")));
+                    safe_stof(args.named_value("--largest_cos_in_triangle", "0.99")));
             } else {
                 point_transformations.append(dense_point_transformations);
             }
