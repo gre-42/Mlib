@@ -327,7 +327,7 @@ void FlowingParticles::advance_flowing_particles() {
         generate_new_particles(new_frame);
     }
     particles_.insert(std::make_pair(image_frames_.rbegin()->first, new_frame));
-    StbImage bmp = StbImage::from_float_grayscale(image_frames_.rbegin()->second.grayscale);
+    StbImage bmp = StbImage::from_float_rgb(image_frames_.rbegin()->second.rgb);
     if (optical_flow_frames_.size() >= 1) {
         bmp.draw_mask(optical_flow_frames_.rbegin()->second.mask, Rgb24::red());
     }
