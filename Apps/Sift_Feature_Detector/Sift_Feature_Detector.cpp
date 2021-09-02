@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
                 sift(bitmap1.to_float_grayscale().applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);}), Array<uint8_t>(), keypoints, &descriptors1);
                 corners1 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
-                {
+                if (args.has_named_value("--response1")) {
                     StbImage bmp{bitmap1.copy()};
                     highlight_features(
                         corners1,
