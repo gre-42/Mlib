@@ -118,7 +118,7 @@ void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
 
 bool DtamReconstruction::can_track_on_its_own() const {
     bool res = cfg_.track_using_dtam_ &&
-        camera_frames_.size() > cfg_.tracking_start_ncams_ &&
+        (camera_frames_.size() > cfg_.tracking_start_ncams_) &&
         (DtamKeyframe::currently_tracking_keyframe(key_frames_) != nullptr);
     std::cerr << "can_track_on_its_own = " << res << ", #cams = " << camera_frames_.size() << std::endl;
     return res;
