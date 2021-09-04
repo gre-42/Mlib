@@ -25,7 +25,8 @@ public:
         const TransformationMatrix<float, 2>& intrinsic_matrix,
         const std::string& cache_dir,
         const DtamKeyframeConfig& cfg,
-        const std::chrono::milliseconds& key_frame_time);
+        const std::chrono::milliseconds& key_frame_time,
+        bool camera_computed_with_sift);
     DtamKeyframe(DtamKeyframe&&);
     DtamKeyframe(const DtamKeyframe&) = delete;
     DtamKeyframe& operator = (const DtamKeyframe&) = delete;
@@ -44,6 +45,9 @@ private:
     bool past_is_full() const;
     bool future_is_full() const;
     void draw_reconstruction(const std::string& suffix) const;
+    size_t nfuture_frames_per_keyframe() const;
+    size_t npast_frames_per_keyframe() const;
+    size_t min_channel_increments() const;
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames__;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;
     const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames_;
@@ -60,6 +64,7 @@ private:
     bool can_track_;
     size_t opt_id_;
     DtamKeyframeConfig cfg_;
+    bool camera_computed_with_sift_;
     Array<float> ai_;
     Array<float> depth_;
     // Array<float> masked_depth_;

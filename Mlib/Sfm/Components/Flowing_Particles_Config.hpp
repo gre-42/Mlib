@@ -1,16 +1,14 @@
 #pragma once
-#include <Mlib/Array/Array_Shape.hpp>
+#include <Mlib/Array/Fixed_Array.hpp>
 
 namespace Mlib::Sfm {
 
-enum class TrackingMode {
-    PATCH_NEW_POSITION_IN_BOX,
-    SIFT
-};
+enum class TrackingMode;
 
 class FlowingParticlesConfig {
 public:
-    TrackingMode tracking_mode = TrackingMode::PATCH_NEW_POSITION_IN_BOX;
+    TrackingMode tracking_mode;
+    size_t sift_nframes;
     bool draw_optical_flow = false;
     size_t target_nparticles = 100;
     float presmoothing_sigma = 0.5f;

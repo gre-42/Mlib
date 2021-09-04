@@ -2,6 +2,7 @@
 #include <Mlib/Debug_Prefix.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
+#include <Mlib/Sfm/Tracking_Mode.hpp>
 #include <filesystem>
 #include <iomanip>
 
@@ -24,7 +25,10 @@ TemplatePatchPipeline::TemplatePatchPipeline(
       features_down_sampler_.ds_image_frames_,
       optical_flows_.optical_flow_frames_,
       (fs::path{cache_dir} / "TracedParticles").string(),
-      FlowingParticlesConfig()},
+      FlowingParticlesConfig{
+          .tracking_mode = cfg.tracking_mode,
+          .sift_nframes = cfg.sift_nframes
+      }},
   sparse_reconstruction_{
       features_down_sampler_.ds_intrinsic_matrix_,
       camera_frames_,
@@ -74,7 +78,10 @@ void TemplatePatchPipeline::process_image_frame(
     }
     if (cfg_.enable_dtam) {
         // sparse_reconstruction_ may or may have not appended a new camera frame
-        dtam_reconstruction_.reconstruct(camera_frames_.find(time) != camera_frames_.end());
+        dtam_reconstruction_.reconstruct(
+            camera_frames_.find(time) != camera_frames_.end(),
+            (flowing_particles_.particles_.find(time) != flowing_particles_.particles_.end()) &&
+            (flowing_particles_.particles_.at(time).tracking_mode == TrackingMode::SIFT));
     }
 }
 

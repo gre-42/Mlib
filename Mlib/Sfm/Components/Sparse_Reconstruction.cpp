@@ -21,6 +21,7 @@
 #include <Mlib/Sfm/Rigid_Motion/Normalized_Projection.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Projection_To_TR.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Projection_To_TR_Ransac.hpp>
+#include <Mlib/Sfm/Tracking_Mode.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <deque>
 #include <filesystem>
@@ -78,8 +79,19 @@ void SparseReconstruction::compute_reconstruction_pair(
     std::list<FixedArray<float, 2>> y0_l;
     std::list<FixedArray<float, 2>> y1_l;
     auto second_particles = particles_.rbegin();
+    size_t nframes;
+    switch (second_particles->second.tracking_mode) {
+        case TrackingMode::PATCH_NEW_POSITION_IN_BOX:
+            nframes = cfg_.nframes;
+            break;
+        case TrackingMode::SIFT:
+            nframes = 2;
+            break;
+        default:
+            throw std::runtime_error("Unknown tracking mode");
+    }
     for (const auto& s : second_particles->second.tracked_points) {
-        std::shared_ptr<FeaturePoint> nth_parent = s.second->nth_from_end(cfg_.nframes - 1);
+        std::shared_ptr<FeaturePoint> nth_parent = s.second->nth_from_end(nframes - 1);
         if (nth_parent != nullptr) {
             ids_l.push_back(s.first);
             y0_l.push_back(nth_parent->position);
@@ -90,7 +102,7 @@ void SparseReconstruction::compute_reconstruction_pair(
     y0 = Array<FixedArray<float, 2>>(y0_l);
     y1 = Array<FixedArray<float, 2>>(y1_l);
     times.second = second_particles->first;
-    std::advance(second_particles, cfg_.nframes - 1);
+    std::advance(second_particles, nframes - 1);
     times.first = second_particles->first;
 }
 

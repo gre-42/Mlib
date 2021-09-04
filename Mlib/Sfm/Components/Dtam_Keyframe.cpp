@@ -34,7 +34,8 @@ DtamKeyframe::DtamKeyframe(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     const std::string& cache_dir,
     const DtamKeyframeConfig& cfg,
-    const std::chrono::milliseconds& key_frame_time)
+    const std::chrono::milliseconds& key_frame_time,
+    bool camera_computed_with_sift)
 : image_frames__{image_frames},
   camera_frames_{camera_frames},
   key_frames_{key_frames},
@@ -47,7 +48,8 @@ DtamKeyframe::DtamKeyframe(
   key_frame_time_{key_frame_time},
   can_track_(false),
   opt_id_{0},
-  cfg_{cfg}
+  cfg_{cfg},
+  camera_computed_with_sift_{camera_computed_with_sift}
 {}
 
 DtamKeyframe::DtamKeyframe(DtamKeyframe&&) = default;
@@ -299,8 +301,8 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
         ", ncams = " << cams_sorted.size() << std::endl;
     if ((vol_ == nullptr) &&
         (cfg_.incremental_update_ || (
-            navail_future >= cfg_.nfuture_frames_per_keyframe_ &&
-            navail_past >= cfg_.npast_frames_per_keyframe_)) &&
+            navail_future >= nfuture_frames_per_keyframe() &&
+            navail_past >= npast_frames_per_keyframe())) &&
         (cams_sorted.size() != 0))
     {
         first_integrated_time_ = key_frame_time_;
@@ -373,7 +375,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         std::to_string(last_integrated_time_.count());
     if (cost_volume_changed) {
         dsi_.destroy();
-        dsi_ = vol_->get(cfg_.min_channel_increments_);
+        dsi_ = vol_->get(min_channel_increments());
         if (dm_ != nullptr) {
             dm_->notify_cost_volume_changed(dsi_);
         }
@@ -606,21 +608,21 @@ bool DtamKeyframe::can_track() const {
 }
 
 bool DtamKeyframe::past_is_full() const {
-    if (cfg_.npast_frames_per_keyframe_ == 0) {
+    if (npast_frames_per_keyframe() == 0) {
         throw std::runtime_error("npast_frames_per_keyframe must be >= 1, counting also the keyframe itself");
     }
     auto it = times_integrated_.find(key_frame_time_);
     return it != times_integrated_.end() &&
-        size_t(std::distance(times_integrated_.begin(), it) + 1) >= cfg_.npast_frames_per_keyframe_;
+        size_t(std::distance(times_integrated_.begin(), it) + 1) >= npast_frames_per_keyframe();
 }
 
 bool DtamKeyframe::future_is_full() const {
-    if (cfg_.nfuture_frames_per_keyframe_ == 0) {
+    if (nfuture_frames_per_keyframe() == 0) {
         throw std::runtime_error("nfuture_frames_per_keyframe must be >= 1, counting also the keyframe itself");
     }
     auto it = times_integrated_.find(key_frame_time_);
     return it != times_integrated_.end() &&
-        size_t(std::distance(it, times_integrated_.end())) >= cfg_.nfuture_frames_per_keyframe_;
+        size_t(std::distance(it, times_integrated_.end())) >= nfuture_frames_per_keyframe();
 }
 
 const DtamKeyframe* DtamKeyframe::currently_tracking_keyframe(const std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames) {
@@ -637,4 +639,16 @@ const DtamKeyframe* DtamKeyframe::currently_tracking_keyframe(const std::map<std
 DtamKeyframe* DtamKeyframe::currently_tracking_keyframe(std::map<std::chrono::milliseconds, DtamKeyframe>& key_frames) {
     const auto& v = key_frames;
     return const_cast<DtamKeyframe*>(currently_tracking_keyframe(v));
+}
+
+size_t DtamKeyframe::nfuture_frames_per_keyframe() const {
+    return camera_computed_with_sift_ ? 2 : cfg_.nfuture_frames_per_keyframe_;
+}
+
+size_t DtamKeyframe::npast_frames_per_keyframe() const {
+    return camera_computed_with_sift_ ? 1 : cfg_.npast_frames_per_keyframe_;
+}
+
+size_t DtamKeyframe::min_channel_increments() const {
+    return camera_computed_with_sift_ ? 3 : cfg_.min_channel_increments_;
 }

@@ -4,7 +4,11 @@
 
 namespace Mlib::Sfm {
 
+enum class TrackingMode;
+
 struct TemplatePatchPipelineConfig {
+    TrackingMode tracking_mode;
+    size_t sift_nframes;
     bool enable_dtam = true;
     bool track_using_dtam = true;
     bool use_virtual_camera = false;

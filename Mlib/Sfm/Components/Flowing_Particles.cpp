@@ -10,6 +10,7 @@
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Traceable_Descriptor.hpp>
+#include <Mlib/Sfm/Tracking_Mode.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <filesystem>
 
@@ -70,8 +71,15 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
     }
     std::map<size_t, size_t> inserted_keypoints1;
     std::list<std::pair<size_t, size_t>> matches;
-    if (particles_.size() > 0) {
-        for (auto& s : particles_.rbegin()->second.tracked_points) {
+    if (cfg_.sift_nframes < 2) {
+        throw std::runtime_error("sift_nframes must be >= 2");
+    }
+    if (particles_.size() >= cfg_.sift_nframes) {
+        // auto pit = particles_.rbegin();
+        // std::advance(pit, cfg_.sift_nframes - 2);
+        auto pit = particles_.begin();
+        std::cerr << "SIFT: " << pit->first.count() << " <-> " << image_frames_.rbegin()->first.count() << " ms" << std::endl;
+        for (auto& s : pit->second.tracked_points) {
             size_t best_id1 = s.second->sequence.begin()->second->tracebale_descriptor.descriptor_id_in_parameter_list(descriptors1);
             if ((best_id1 != SIZE_MAX) && !inserted_keypoints1.contains(best_id1)) {
                 matches.push_back({ s.first, best_id1 });
@@ -82,7 +90,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
             if (inserted_keypoints1.at(m.second) == 1) {
                 try_insert_and_append_feature_point(
                     new_frame,
-                    *particles_.rbegin()->second.tracked_points.find(m.first),
+                    *pit->second.tracked_points.find(m.first),
                     keypoints1(m.second),
                     descriptors1[m.second]);
             }
@@ -307,6 +315,7 @@ void FlowingParticles::advance_existing_particles(
 void FlowingParticles::advance_flowing_particles() {
     assert(image_frames_.size() >= 1);
     FeaturePointFrame new_frame;
+    new_frame.tracking_mode = cfg_.tracking_mode;
     if (cfg_.tracking_mode == TrackingMode::SIFT) {
         generate_sift_correspondences(new_frame);
     } else {

@@ -22,10 +22,10 @@ public:
         const DtamComponentConfig& cfg);
     DtamReconstruction(const DtamReconstruction&) = delete;
     DtamReconstruction& operator = (const DtamReconstruction&) = delete;
-    void reconstruct(bool camera_frame_appended_externally);
+    void reconstruct(bool camera_frame_appended_externally, bool camera_computed_with_sift);
     bool can_track_on_its_own() const;
 private:
-    void insert_keyframe(const std::chrono::milliseconds& keyframe_time);
+    void insert_keyframe(const std::chrono::milliseconds& keyframe_time, bool camera_computed_with_sift);
     std::map<std::chrono::milliseconds, DtamKeyframe> key_frames_;
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames_;
     MarginalizedMap<std::map<std::chrono::milliseconds, CameraFrame>>& camera_frames_;

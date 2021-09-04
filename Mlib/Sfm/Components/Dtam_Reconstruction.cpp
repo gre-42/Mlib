@@ -25,7 +25,7 @@ DtamReconstruction::DtamReconstruction(
     fs::create_directories(cache_dir);
 }
 
-void DtamReconstruction::insert_keyframe(const std::chrono::milliseconds& keyframe_time) {
+void DtamReconstruction::insert_keyframe(const std::chrono::milliseconds& keyframe_time, bool camera_computed_with_sift) {
     if (key_frames_.find(keyframe_time) != key_frames_.end()) {
         throw std::runtime_error("Keyframe time conflict");
     }
@@ -41,10 +41,11 @@ void DtamReconstruction::insert_keyframe(const std::chrono::milliseconds& keyfra
             intrinsic_matrix_,
             cache_dir_,
             cfg_.keyframe_config_,
-            keyframe_time)));
+            keyframe_time,
+            camera_computed_with_sift)));
 }
 
-void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
+void DtamReconstruction::reconstruct(bool camera_frame_appended_externally, bool camera_computed_with_sift) {
     if (((image_frames_.size() % cfg_.nth_image_) != 0) &&
         (!cfg_.track_using_dtam_ || can_track_on_its_own()))
     {
@@ -75,7 +76,7 @@ void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
                 for (const auto& c : cams_sorted) {
                     if (i % cfg_.nframes_between_keyframes_ == 0) {
                         std::cerr << "Inserting rewinded keyframe at " << c.first.count() << " ms" << std::endl;
-                        insert_keyframe(c.first);
+                        insert_keyframe(c.first, camera_computed_with_sift && (c.first == cams_sorted.begin()->first));
                     }
                     ++i;
                 }
@@ -84,13 +85,14 @@ void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
                 // times are therefore different to those from modulo calculation.
                 // [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, ...]
                 std::cerr << "Inserting first keyframe at " << cams_sorted.rbegin()->first.count() << " ms" << std::endl;
-                insert_keyframe(cams_sorted.rbegin()->first);
+                insert_keyframe(cams_sorted.rbegin()->first, camera_computed_with_sift);
             }
         }
     } else if (!key_frames_.empty()) {
+        assert_true(!camera_computed_with_sift);
         if (cfg_.nframes_between_keyframes_ == SIZE_MAX) {
             if (!key_frames_.rbegin()->second.can_track()) {
-                insert_keyframe(cams_sorted.rbegin()->first);
+                insert_keyframe(cams_sorted.rbegin()->first, false);
             }
         } else {
             while(true) {
@@ -98,7 +100,7 @@ void DtamReconstruction::reconstruct(bool camera_frame_appended_externally) {
                 if (size_t(std::distance(last_keyframe_cam, cams_sorted.end())) > cfg_.nframes_between_keyframes_) {
                     std::advance(last_keyframe_cam, cfg_.nframes_between_keyframes_);
                     std::cerr << "Inserting keyframe at " << last_keyframe_cam->first.count() << " ms" << std::endl;
-                    insert_keyframe(last_keyframe_cam->first);
+                    insert_keyframe(last_keyframe_cam->first, false);
                 } else {
                     break;
                 }

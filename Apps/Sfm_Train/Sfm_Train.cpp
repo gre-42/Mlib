@@ -3,6 +3,7 @@
 #include <Mlib/Sfm/Data_Generators/Folder_Data_Generator.hpp>
 #include <Mlib/Sfm/Pipelines/Calibration/Chessboard_Calibration_Pipeline.hpp>
 #include <Mlib/Sfm/Pipelines/Reconstruction/Template_Patch_Pipeline.hpp>
+#include <Mlib/Sfm/Tracking_Mode.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <filesystem>
 
@@ -71,6 +72,8 @@ int main(int argc, char** argv) {
         "--camera_source <source_dir> "
         "[--no_dtam] "
         "[--no_dtam_tracking] "
+        "[--sift] "
+        "[--sift_nframes <nframes>] "
         "[--use_virtual_camera] "
         "--chess_r <chess_r> "
         "--chess_c <chess_c> "
@@ -84,6 +87,7 @@ int main(int argc, char** argv) {
         "[--regularization_filter_sigma <s>]",
         { "--no_dtam",
           "--no_dtam_tracking",
+          "--sift",
           "--use_virtual_camera",
           "--reverse" },
         { "--pipeline",
@@ -96,6 +100,7 @@ int main(int argc, char** argv) {
           "--nskipped",
           "--nimages",
           "--ncameras",
+          "--sift_nframes",
           "--features_down_sampling",
           "--dtam_down_sampling",
           "--regularization_filter_sigma",
@@ -124,6 +129,8 @@ int main(int argc, char** argv) {
             args.has_named_value("--ncameras") ? safe_stoz(args.named_value("--ncameras")) : SIZE_MAX,
             args.has_named("--reverse"),
             TemplatePatchPipelineConfig{
+                .tracking_mode = args.has_named("--sift") ? TrackingMode::SIFT : TrackingMode::PATCH_NEW_POSITION_IN_BOX,
+                .sift_nframes = safe_stoz(args.named_value("--sift_nframes", "19")),
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
                 .use_virtual_camera = args.has_named("--use_virtual_camera"),
