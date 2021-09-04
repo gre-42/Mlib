@@ -1,9 +1,11 @@
 #pragma once
+#include <Mlib/Array/Array.hpp>
 #include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Filtering_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Geometry_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
 #include <cstddef>
+#include <vector>
 
 namespace Mlib::Sfm {
 
@@ -31,7 +33,9 @@ struct DtamKeyframeConfig {
         Regularization regularization,
         float sigma_illumination_removal,
         float regularization_filter_sigma,
-        size_t regularization_filter_poly_degree);
+        size_t regularization_filter_poly_degree,
+        const Array<float>& registration_sigmas,
+        const Array<float>& registration_thresholds);
     bool rewind_first_keyframe_;
     bool use_virtual_camera_;
     bool incremental_update_;
@@ -49,6 +53,9 @@ struct DtamKeyframeConfig {
     float sigma_illumination_removal_;
     float regularization_filter_sigma_;
     size_t regularization_filter_poly_degree_;
+    Array<float> registration_sigmas__;
+    Array<float> registration_thresholds_;
+    Array<float> registration_sigmas_corrected(const ArrayShape& shape) const;
 };
 
 }

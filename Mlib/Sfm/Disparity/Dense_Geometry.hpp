@@ -31,6 +31,7 @@ public:
     DenseGeometryParameters parameters_;
     bool print_debug_;
     bool print_bmps_;
+    float lambda_corrected_;
 };
 
 void primary_parameter_optimization(

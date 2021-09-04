@@ -113,8 +113,8 @@ void DtamKeyframe::append_camera_frame() {
             down_sampler_.ds_intrinsic_matrix_,
             down_sampler_.ds_intrinsic_matrix_,
             down_sampler_.ds_intrinsic_matrix_,
-            {3.f, 1.f, 0.f},
-            {float(INFINITY), float(INFINITY)},  // robust thresholds: {0.1f, 0.01f}
+            cfg_.registration_sigmas_corrected(image_r0.grayscale.shape()),
+            cfg_.registration_thresholds_,
             k_external_inverse(x0_r1_r0),
             true,                                // estimate_rotation_first
             cfg_.print_residual_);               // print_residual
@@ -212,18 +212,18 @@ void DtamKeyframe::append_camera_frame() {
 
         // Transformation ke_lv: virtual -> live
         TransformationMatrix<float, 3> ke_lv = Rmfi::rigid_motion_from_images_robust(
-            rgb_picture_v,                                     // im_r0
-            down_sampler_.ds_image_frames_.at(time_r1).rgb,    // im_r1
-            image_frame_l->second.rgb,                         // im_l
-            depth_picture_v,                                   // im_r0_depth
-            down_sampler_.ds_intrinsic_matrix_,                // intrinsic_matrix_r0
-            down_sampler_.ds_intrinsic_matrix_,                // intrinsic_matrix_r1
-            down_sampler_.ds_intrinsic_matrix_,                // intrinsic_matrix_l
-            {3.f, 1.f, 0.f},                                   // sigmas
-            {float(INFINITY), float(INFINITY)},                // robust thresholds: {0.1f, 0.01f}
-            fixed_zeros<float, 6>(),                           // x0_r1_r0
-            true,                                              // estimate_rotation_first
-            cfg_.print_residual_);                             // print_residual
+            rgb_picture_v,                                                   // im_r0
+            down_sampler_.ds_image_frames_.at(time_r1).rgb,                  // im_r1
+            image_frame_l->second.rgb,                                       // im_l
+            depth_picture_v,                                                 // im_r0_depth
+            down_sampler_.ds_intrinsic_matrix_,                              // intrinsic_matrix_r0
+            down_sampler_.ds_intrinsic_matrix_,                              // intrinsic_matrix_r1
+            down_sampler_.ds_intrinsic_matrix_,                              // intrinsic_matrix_l
+            cfg_.registration_sigmas_corrected(image_r0.grayscale.shape()),  // sigmas
+            cfg_.registration_thresholds_,                                   // robust thresholds
+            fixed_zeros<float, 6>(),                                         // x0_r1_r0
+            true,                                                            // estimate_rotation_first
+            cfg_.print_residual_);                                           // print_residual
         
         TransformationMatrix<float, 3> gike = reconstruction_times_inverse(camera_frames_.rbegin()->second.reconstruction_matrix_3x4(), ke_lv);
         std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
@@ -419,7 +419,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             throw std::runtime_error("Unknown regularization mode");
         }
     }
-    if (false) {
+    if (false && !camera_computed_with_sift_) {
         std::cerr << "Parameter-search for keyframe " << key_frame_time_.count() << " ms" << std::endl;
         if (cfg_.regularization_ == Regularization::DTAM) {
             Dm::DenseMapping* dm = dynamic_cast<Dm::DenseMapping*>(dm_.get());

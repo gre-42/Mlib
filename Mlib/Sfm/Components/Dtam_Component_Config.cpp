@@ -1,4 +1,5 @@
 #include "Dtam_Component_Config.hpp"
+#include <cmath>
 #include <stdint.h>
 
 using namespace Mlib;
@@ -46,7 +47,7 @@ DtamComponentConfig::DtamComponentConfig(
             .theta_0__ = 0.1f * 0.2f,
             .theta_end__ = float{ 0.1 * 1e-4 },
             .beta = 0.0001,
-            .lambda = 200.f,
+            .lambda__ = 200.f * 320.f,
             .tau = 1 / 8.f,
             .nsteps = 400},
         Df::DenseFilteringParameters{
@@ -58,7 +59,10 @@ DtamComponentConfig::DtamComponentConfig(
         Regularization::DENSE_GEOMETRY,
         0.5f,                                // sigma_illumination_removal
         regularization_filter_sigma,         // regularization_filter_sigma
-        regularization_filter_poly_degree))
+        regularization_filter_poly_degree,
+        Array<float>{3.f, 1.f, 0.f} / 320.f,             // registration_sigmas
+        Array<float>{float(INFINITY), float(INFINITY)}   // registration_thresholds
+        ))
 {}
 
 DtamComponentConfig::DtamComponentConfig(

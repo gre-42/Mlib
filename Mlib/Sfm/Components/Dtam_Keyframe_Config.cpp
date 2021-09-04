@@ -1,4 +1,5 @@
 #include "Dtam_Keyframe_Config.hpp"
+#include <Mlib/Array/Array_Shape.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -21,7 +22,9 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     Regularization regularization,
     float sigma_illumination_removal,
     float regularization_filter_sigma,
-    size_t regularization_filter_poly_degree)
+    size_t regularization_filter_poly_degree,
+    const Array<float>& registration_sigmas,
+    const Array<float>& registration_thresholds)
 : rewind_first_keyframe_{rewind_first_keyframe},
   use_virtual_camera_{use_virtual_camera},
   incremental_update_(incremental_update),
@@ -38,5 +41,11 @@ DtamKeyframeConfig::DtamKeyframeConfig(
   regularization_{regularization},
   sigma_illumination_removal_{sigma_illumination_removal},
   regularization_filter_sigma_{regularization_filter_sigma},
-  regularization_filter_poly_degree_{regularization_filter_poly_degree}
+  regularization_filter_poly_degree_{regularization_filter_poly_degree},
+  registration_sigmas__(registration_sigmas),
+  registration_thresholds_(registration_thresholds)
 {}
+
+Array<float> DtamKeyframeConfig::registration_sigmas_corrected(const ArrayShape& shape) const {
+    return registration_sigmas__ * (float)std::max({ shape(0), shape(1), (size_t)320 });
+}

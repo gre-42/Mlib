@@ -74,13 +74,13 @@ void test_rigid_motion_from_images() {
         TransformationMatrix<float, 3> ke_s = rigid_motion_from_images_smooth(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, { 3.f });
         Array<float> im1t_s = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke_s);
 
-        TransformationMatrix<float, 3> ke_r = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, { 3.f }, {}, fixed_zeros<float, 6>(), false);  // false = estimate_rotation_first
+        TransformationMatrix<float, 3> ke_r = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, Array<float>{ 3.f }, Array<float>{}, fixed_zeros<float, 6>(), false);  // false = estimate_rotation_first
         Array<float> im1t_r = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke_r);
         draw_nan_masked_rgb(im1t_r, -0.05f, 0.05f).save_to_file("TestOut/rmfi-t-d_pr.png");
         assert_allclose(ke_s.affine(), ke_r.affine());
     }
     {
-        TransformationMatrix<float, 3> ke = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, {3.f, 1.f, 0.f}, {0.1f, 0.05f});
+        TransformationMatrix<float, 3> ke = rigid_motion_from_images_robust(im0, im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, intrinsic_matrix, Array<float>{3.f, 1.f, 0.f}, Array<float>{0.1f, 0.05f});
         Array<float> im1t = d_pr_bilinear(im0, im1, depth0, intrinsic_matrix, intrinsic_matrix, ke);
         draw_nan_masked_rgb(im1t, -0.05f, 0.05f).save_to_file("TestOut/rmfi-t-d_pr-3-0.png");
 
