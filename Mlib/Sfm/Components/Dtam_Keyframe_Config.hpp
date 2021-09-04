@@ -39,9 +39,9 @@ struct DtamKeyframeConfig {
     bool rewind_first_keyframe_;
     bool use_virtual_camera_;
     bool incremental_update_;
-    size_t nfuture_frames_per_keyframe_;
-    size_t npast_frames_per_keyframe_;
-    size_t min_channel_increments_;
+    size_t nfuture_frames_per_keyframe__;
+    size_t npast_frames_per_keyframe__;
+    size_t min_channel_increments__;
     float min_pixel_fraction_for_tracking_;
     size_t ninterleaved_iterations_;
     bool print_residual_;

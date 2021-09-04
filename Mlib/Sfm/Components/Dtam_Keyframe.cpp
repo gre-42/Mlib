@@ -506,18 +506,18 @@ void DtamKeyframe::optimize1() {
     draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth).save_to_file(cache_dir_ + "/a-" + suffix + ".png");
 
     if (dm_->is_converged()) {
+        depth_map_bundle_.insert(
+            DepthMapPackage{
+                .time = key_frame_time_,
+                .rgb = down_sampler_.ds_image_frames_.at(key_frame_time_).rgb,
+                .depth = depth_,
+                .ki = down_sampler_.ds_intrinsic_matrix_,
+                .ke = camera_frames_.at(key_frame_time_).projection_matrix_3x4()});
         draw_reconstruction(suffix);
     }
 }
 
 void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
-    depth_map_bundle_.insert(
-        DepthMapPackage{
-            .time = key_frame_time_,
-            .rgb = down_sampler_.ds_image_frames_.at(key_frame_time_).rgb,
-            .depth = depth_,
-            .ki = down_sampler_.ds_intrinsic_matrix_,
-            .ke = camera_frames_.at(key_frame_time_).projection_matrix_3x4()});
     {
         Array<float> err;
         size_t nerr;
@@ -642,13 +642,13 @@ DtamKeyframe* DtamKeyframe::currently_tracking_keyframe(std::map<std::chrono::mi
 }
 
 size_t DtamKeyframe::nfuture_frames_per_keyframe() const {
-    return camera_computed_with_sift_ ? 2 : cfg_.nfuture_frames_per_keyframe_;
+    return camera_computed_with_sift_ ? 2 : cfg_.nfuture_frames_per_keyframe__;
 }
 
 size_t DtamKeyframe::npast_frames_per_keyframe() const {
-    return camera_computed_with_sift_ ? 1 : cfg_.npast_frames_per_keyframe_;
+    return camera_computed_with_sift_ ? 1 : cfg_.npast_frames_per_keyframe__;
 }
 
 size_t DtamKeyframe::min_channel_increments() const {
-    return camera_computed_with_sift_ ? 3 : cfg_.min_channel_increments_;
+    return camera_computed_with_sift_ ? 3 : cfg_.min_channel_increments__;
 }
