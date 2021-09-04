@@ -142,7 +142,7 @@ Array<TData> intensity_jacobian_fast(
 
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 6 } };
 
-    Cv::RigidMotionSampler hs{ki_r, ki_l, Cv::k_external(kep), im_r_depth, im_l_di.shape().erased_first()};
+    Cv::RigidMotionSampler hs{ki_r, ki_l, Cv::k_external(kep), im_r_depth, im_l_di.shape().erased_first(2)};
     #pragma omp parallel for
     for (int i = 0; i < (int)im_r_di.shape(2); ++i) {
         size_t r = (size_t)i;
