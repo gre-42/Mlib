@@ -18,6 +18,7 @@ static const float GRADIENT_BOUNDARY_VALUE = 0;
 
 /**
  * From: Real-Time Dense Geometry from a Handheld Camera
+ *       https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.364.3412&rep=rep1&type=pdf
  */
 using namespace Mlib;
 using namespace Mlib::Sfm;
