@@ -374,8 +374,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         "-" +
         std::to_string(last_integrated_time_.count());
     if (cost_volume_changed) {
-        dsi_.destroy();
-        dsi_ = vol_->get(min_channel_increments());
+        dsi_.move() = vol_->get(min_channel_increments());
         if (dm_ != nullptr) {
             dm_->notify_cost_volume_changed(dsi_);
         }
