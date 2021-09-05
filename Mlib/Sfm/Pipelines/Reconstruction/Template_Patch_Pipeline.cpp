@@ -2,7 +2,7 @@
 #include <Mlib/Debug_Prefix.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
-#include <Mlib/Sfm/Tracking_Mode.hpp>
+#include <Mlib/Sfm/Configuration/Tracking_Mode.hpp>
 #include <filesystem>
 #include <iomanip>
 
@@ -50,6 +50,7 @@ TemplatePatchPipeline::TemplatePatchPipeline(
           cfg.track_using_dtam,
           cfg.use_virtual_camera,
           cfg.print_residual,
+          cfg.regularization,
           cfg.regularization_filter_sigma,
           cfg.regularization_filter_poly_degree) }
 {}

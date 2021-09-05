@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Sfm/Configuration/Regularization.hpp>
 #include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Filtering_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Geometry_Parameters.hpp>
@@ -8,12 +9,6 @@
 #include <vector>
 
 namespace Mlib::Sfm {
-
-enum class Regularization {
-    DTAM,
-    DENSE_GEOMETRY,
-    FILTERING
-};
 
 struct DtamKeyframeConfig {
     DtamKeyframeConfig(

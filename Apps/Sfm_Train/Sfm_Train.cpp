@@ -1,9 +1,10 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Sfm/Configuration/Regularization.hpp>
+#include <Mlib/Sfm/Configuration/Tracking_Mode.hpp>
 #include <Mlib/Sfm/Data_Generators/Folder_Data_Generator.hpp>
 #include <Mlib/Sfm/Pipelines/Calibration/Chessboard_Calibration_Pipeline.hpp>
 #include <Mlib/Sfm/Pipelines/Reconstruction/Template_Patch_Pipeline.hpp>
-#include <Mlib/Sfm/Tracking_Mode.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <filesystem>
 
@@ -83,6 +84,7 @@ int main(int argc, char** argv) {
         "[--reverse] "
         "[--features_down_sampling <n>] "
         "[--dtam_down_sampling <n>] "
+        "[--regularization {dtam,dense_geometry,filter}] "
         "[--regularization_filter_poly_degree <d>] "
         "[--regularization_filter_sigma <s>]",
         { "--no_dtam",
@@ -103,6 +105,7 @@ int main(int argc, char** argv) {
           "--sift_nframes",
           "--features_down_sampling",
           "--dtam_down_sampling",
+          "--regularization",
           "--regularization_filter_sigma",
           "--regularization_filter_poly_degree" });
 
@@ -130,6 +133,7 @@ int main(int argc, char** argv) {
             args.has_named("--reverse"),
             TemplatePatchPipelineConfig{
                 .tracking_mode = args.has_named("--sift") ? TrackingMode::SIFT : TrackingMode::PATCH_NEW_POSITION_IN_BOX,
+                .regularization = regularization_from_string(args.named_value("--regularization", "dense_geometry")),
                 .sift_nframes = safe_stoz(args.named_value("--sift_nframes", "19")),
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),

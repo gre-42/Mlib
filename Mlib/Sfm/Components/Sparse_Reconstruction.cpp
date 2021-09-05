@@ -10,6 +10,7 @@
 #include <Mlib/Math/Optimize/Generic_Optimization.hpp>
 #include <Mlib/Math/Optimize/Levenberg_Marquardt.hpp>
 #include <Mlib/Math/Quaternion.hpp>
+#include <Mlib/Sfm/Configuration/Tracking_Mode.hpp>
 #include <Mlib/Sfm/Disparity/Corresponding_Descriptors_In_Candidate_List.hpp>
 #include <Mlib/Sfm/Draw/Sparse_Projector.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
@@ -21,7 +22,6 @@
 #include <Mlib/Sfm/Rigid_Motion/Normalized_Projection.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Projection_To_TR.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Projection_To_TR_Ransac.hpp>
-#include <Mlib/Sfm/Tracking_Mode.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <deque>
 #include <filesystem>

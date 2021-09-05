@@ -9,8 +9,8 @@
 #include <Mlib/Images/OpenCV.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Sfm/Configuration/Tracking_Mode.hpp>
 #include <Mlib/Sfm/Disparity/Traceable_Descriptor.hpp>
-#include <Mlib/Sfm/Tracking_Mode.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <filesystem>
 

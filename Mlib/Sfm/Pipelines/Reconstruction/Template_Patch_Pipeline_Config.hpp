@@ -5,9 +5,11 @@
 namespace Mlib::Sfm {
 
 enum class TrackingMode;
+enum class Regularization;
 
 struct TemplatePatchPipelineConfig {
     TrackingMode tracking_mode;
+    Regularization regularization;
     size_t sift_nframes;
     bool enable_dtam = true;
     bool track_using_dtam = true;

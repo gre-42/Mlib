@@ -11,6 +11,7 @@ DtamComponentConfig::DtamComponentConfig(
     bool track_using_dtam,
     bool use_virtual_camera,
     bool print_residual,
+    Regularization regularization,
     float regularization_filter_sigma,
     size_t regularization_filter_poly_degree)
 : DtamComponentConfig(
@@ -56,7 +57,7 @@ DtamComponentConfig::DtamComponentConfig(
             .theta_end__ = float{ 1e-4 },
             .beta = 0.0001,
             .lambda = 1.f},
-        Regularization::DENSE_GEOMETRY,
+        regularization,
         0.5f,                                // sigma_illumination_removal
         regularization_filter_sigma,         // regularization_filter_sigma
         regularization_filter_poly_degree,
