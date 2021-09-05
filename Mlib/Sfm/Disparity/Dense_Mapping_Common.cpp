@@ -53,8 +53,9 @@ Array<float> Mlib::Sfm::exhaustive_search(
                 (sqrt_dsi_max_dmin(r, c) != 0))
             {
                 auto e_aux = [&](size_t h){
-                    return 1 / (2 * theta) * squared(d(r, c) - h)
-                        + lambda * dsi(h, r, c);
+                    // Dividing by lambda to support lambda=INFINITY.
+                    return 1 / (2 * theta * lambda) * squared(d(r, c) - h)
+                        + dsi(h, r, c);
                 };
                 size_t best_h_i = SIZE_MAX;
                 float best_value = NAN;
