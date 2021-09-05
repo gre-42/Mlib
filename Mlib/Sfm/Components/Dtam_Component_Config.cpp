@@ -50,7 +50,7 @@ DtamComponentConfig::DtamComponentConfig(
             .theta_0__ = 0.1f * 0.2f,
             .theta_end__ = float{ 0.1 * 1e-4 },
             .beta = 0.0001,
-            .lambda__ = 200.f * F_320,
+            .lambda = 200.f,
             .tau = 1 / 8.f,
             .nsteps = 400},
         Df::DenseFilteringParameters{
@@ -60,7 +60,7 @@ DtamComponentConfig::DtamComponentConfig(
             .beta = 0.0001,
             .lambda = 1.f},
         regularization,
-        0.5f / F_320,                                    // sigma_illumination_removal
+        0.5f,                                            // sigma_illumination_removal
         regularization_filter_sigma,                     // regularization_filter_sigma
         regularization_filter_poly_degree,
         Array<float>{3.f, 1.f, 0.f} / F_320,             // registration_sigmas

@@ -12,12 +12,11 @@ public:
     float theta_0__;
     float theta_end__;
     float beta;
-    float lambda__;
+    float lambda;
     float tau;
     size_t nsteps;
     float theta_0_corrected(const CostVolumeParameters& cost_volume_parameters) const;
     float theta_end_corrected(const CostVolumeParameters& cost_volume_parameters) const;
-    float lambda_corrected(const ArrayShape& shape) const;
     DtamExtensionConfig ext;
 };
 

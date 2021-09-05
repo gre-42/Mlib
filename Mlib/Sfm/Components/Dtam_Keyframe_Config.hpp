@@ -46,14 +46,13 @@ struct DtamKeyframeConfig {
     Dg::DenseGeometryParameters dg_params_;
     Df::DenseFilteringParameters df_params_;
     Regularization regularization_;
-    float sigma_illumination_removal__;
+    float sigma_illumination_removal_;
     float regularization_filter_sigma_;
     size_t regularization_filter_poly_degree_;
     Array<float> registration_sigmas__;
     Array<float> registration_thresholds_;
     bool optimize_parameters_;
     Array<float> registration_sigmas_corrected(const ArrayShape& shape) const;
-    float sigma_illumination_removal_corrected(const ArrayShape& shape) const;
 };
 
 }

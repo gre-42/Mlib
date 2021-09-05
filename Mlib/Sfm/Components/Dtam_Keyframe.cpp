@@ -324,8 +324,8 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
                 down_sampler_.ds_intrinsic_matrix_,
                 cams_sorted.at(key_frame_time_)->projection_matrix_3x4(),
                 it->second->projection_matrix_3x4(),
-                remove_illumination(kif.rgb, cfg_.sigma_illumination_removal_corrected(kif.grayscale.shape())),
-                remove_illumination(iif.rgb, cfg_.sigma_illumination_removal_corrected(iif.grayscale.shape())));
+                remove_illumination(kif.rgb, cfg_.sigma_illumination_removal_),
+                remove_illumination(iif.rgb, cfg_.sigma_illumination_removal_));
         };
         for (auto it = ++cams_sorted.find(last_integrated_time_);
             (it != cams_sorted.end()) && (!future_is_full());
