@@ -19,6 +19,7 @@ struct TemplatePatchPipelineConfig {
     size_t dtam_down_sampling = 0;
     float regularization_filter_sigma = 1.f;
     size_t regularization_filter_poly_degree = 0;
+    bool optimize_parameters = false;
 };
 
 }

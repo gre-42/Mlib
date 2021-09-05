@@ -86,12 +86,14 @@ int main(int argc, char** argv) {
         "[--dtam_down_sampling <n>] "
         "[--regularization {dtam,dense_geometry,filter}] "
         "[--regularization_filter_poly_degree <d>] "
-        "[--regularization_filter_sigma <s>]",
+        "[--regularization_filter_sigma <s>] "
+        "[--optimize_parameters]",
         { "--no_dtam",
           "--no_dtam_tracking",
           "--sift",
           "--use_virtual_camera",
-          "--reverse" },
+          "--reverse",
+          "--optimize_parameters" },
         { "--pipeline",
           "--cache",
           "--calib_source",
@@ -142,7 +144,8 @@ int main(int argc, char** argv) {
                 .features_down_sampling = safe_stoz(args.named_value("--features_down_sampling", "0")),
                 .dtam_down_sampling = safe_stoz(args.named_value("--dtam_down_sampling", "0")),
                 .regularization_filter_sigma = safe_stof(args.named_value("--regularization_filter_sigma", "1")),
-                .regularization_filter_poly_degree = safe_stoz(args.named_value("--regularization_filter_poly_degree", "0")) });
+                .regularization_filter_poly_degree = safe_stoz(args.named_value("--regularization_filter_poly_degree", "0")),
+                .optimize_parameters = args.has_named("--optimize_parameters") });
         return 0;
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

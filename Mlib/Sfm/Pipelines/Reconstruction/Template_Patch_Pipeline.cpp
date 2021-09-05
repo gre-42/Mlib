@@ -52,7 +52,8 @@ TemplatePatchPipeline::TemplatePatchPipeline(
           cfg.print_residual,
           cfg.regularization,
           cfg.regularization_filter_sigma,
-          cfg.regularization_filter_poly_degree) }
+          cfg.regularization_filter_poly_degree,
+          cfg.optimize_parameters) }
 {}
 
 void TemplatePatchPipeline::process_image_frame(

@@ -25,7 +25,8 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     float regularization_filter_sigma,
     size_t regularization_filter_poly_degree,
     const Array<float>& registration_sigmas,
-    const Array<float>& registration_thresholds)
+    const Array<float>& registration_thresholds,
+    bool optimize_parameters)
 : rewind_first_keyframe_{rewind_first_keyframe},
   use_virtual_camera_{use_virtual_camera},
   incremental_update_(incremental_update),
@@ -44,7 +45,8 @@ DtamKeyframeConfig::DtamKeyframeConfig(
   regularization_filter_sigma_{regularization_filter_sigma},
   regularization_filter_poly_degree_{regularization_filter_poly_degree},
   registration_sigmas__(registration_sigmas),
-  registration_thresholds_(registration_thresholds)
+  registration_thresholds_(registration_thresholds),
+  optimize_parameters_{optimize_parameters}
 {}
 
 Array<float> DtamKeyframeConfig::registration_sigmas_corrected(const ArrayShape& shape) const {

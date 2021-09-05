@@ -30,7 +30,8 @@ struct DtamKeyframeConfig {
         float regularization_filter_sigma,
         size_t regularization_filter_poly_degree,
         const Array<float>& registration_sigmas,
-        const Array<float>& registration_thresholds);
+        const Array<float>& registration_thresholds,
+        bool optimize_parameters);
     bool rewind_first_keyframe_;
     bool use_virtual_camera_;
     bool incremental_update_;
@@ -50,6 +51,7 @@ struct DtamKeyframeConfig {
     size_t regularization_filter_poly_degree_;
     Array<float> registration_sigmas__;
     Array<float> registration_thresholds_;
+    bool optimize_parameters_;
     Array<float> registration_sigmas_corrected(const ArrayShape& shape) const;
     float sigma_illumination_removal_corrected(const ArrayShape& shape) const;
 };

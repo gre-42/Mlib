@@ -420,7 +420,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             throw std::runtime_error("Unknown regularization mode");
         }
     }
-    if (false && !camera_computed_with_sift_) {
+    if (cfg_.optimize_parameters_ && !camera_computed_with_sift_) {
         std::cerr << "Parameter-search for keyframe " << key_frame_time_.count() << " ms" << std::endl;
         if (cfg_.regularization_ == Regularization::DTAM) {
             Dm::DenseMapping* dm = dynamic_cast<Dm::DenseMapping*>(dm_.get());
