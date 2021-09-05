@@ -1,5 +1,6 @@
 #include "Dtam_Keyframe_Config.hpp"
 #include <Mlib/Array/Array_Shape.hpp>
+#include <Mlib/Sfm/Configuration/Reference_Size.hpp>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -39,7 +40,7 @@ DtamKeyframeConfig::DtamKeyframeConfig(
   dg_params_{dg_params},
   df_params_(df_params),
   regularization_{regularization},
-  sigma_illumination_removal_{sigma_illumination_removal},
+  sigma_illumination_removal__{sigma_illumination_removal},
   regularization_filter_sigma_{regularization_filter_sigma},
   regularization_filter_poly_degree_{regularization_filter_poly_degree},
   registration_sigmas__(registration_sigmas),
@@ -47,5 +48,9 @@ DtamKeyframeConfig::DtamKeyframeConfig(
 {}
 
 Array<float> DtamKeyframeConfig::registration_sigmas_corrected(const ArrayShape& shape) const {
-    return registration_sigmas__ * (float)std::max({ shape(0), shape(1), (size_t)320 });
+    return registration_sigmas__ * (float)std::max(image_size(shape), S_320);
+}
+
+float DtamKeyframeConfig::sigma_illumination_removal_corrected(const ArrayShape& shape) const {
+    return sigma_illumination_removal__ * (float)image_size(shape);
 }

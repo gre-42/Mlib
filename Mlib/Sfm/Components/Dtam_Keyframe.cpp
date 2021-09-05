@@ -318,12 +318,14 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
             cost_volume_changed = true;
             times_integrated_.insert(it->first);
             std::cerr << "Integrating time " << it->first.count() << " ms into keyframe " << key_frame_time_.count() << " ms" << std::endl;
+            const ImageFrame& kif = down_sampler_.ds_image_frames_.at(key_frame_time_);
+            const ImageFrame& iif = down_sampler_.ds_image_frames_.at(it->first);
             vol_->increment(
                 down_sampler_.ds_intrinsic_matrix_,
                 cams_sorted.at(key_frame_time_)->projection_matrix_3x4(),
                 it->second->projection_matrix_3x4(),
-                remove_illumination(down_sampler_.ds_image_frames_.at(key_frame_time_).rgb, cfg_.sigma_illumination_removal_),
-                remove_illumination(down_sampler_.ds_image_frames_.at(it->first).rgb, cfg_.sigma_illumination_removal_));
+                remove_illumination(kif.rgb, cfg_.sigma_illumination_removal_corrected(kif.grayscale.shape())),
+                remove_illumination(iif.rgb, cfg_.sigma_illumination_removal_corrected(iif.grayscale.shape())));
         };
         for (auto it = ++cams_sorted.find(last_integrated_time_);
             (it != cams_sorted.end()) && (!future_is_full());
