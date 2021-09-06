@@ -15,7 +15,7 @@ static Dg::DenseGeometryParameters dgp{
     .lambda = 200.f,
     .tau = 1 / 8.f,
     .nsteps = 400};
-    
+
 DtamComponentConfig::DtamComponentConfig(
     bool track_using_dtam,
     bool use_virtual_camera,
