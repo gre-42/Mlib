@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/StbImage.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
 using namespace Mlib;

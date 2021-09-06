@@ -1,7 +1,7 @@
 #include "Dense_Filtering.hpp"
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Interpolate.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 
 /**

@@ -4,9 +4,9 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Inverse_Depth_Cost_Volume.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Draw/Dense_Projector.hpp>
 #include <Mlib/Sfm/Draw/Epilines.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>

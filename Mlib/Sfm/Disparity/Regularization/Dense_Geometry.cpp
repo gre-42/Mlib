@@ -4,7 +4,7 @@
 #include <Mlib/Images/Filters/Forward_Differences.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Math/Interpolate.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 #include <Mlib/Stats/Robust.hpp>

@@ -12,7 +12,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Gradient_Ascent_Descent.hpp>
 #include <Mlib/Math/Optimize/Gradient_Descent.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Stats/Quantile.hpp>

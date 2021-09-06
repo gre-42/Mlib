@@ -9,12 +9,12 @@
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Filtering.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Geometry.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Geometry_Pyramid.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Inverse_Depth_Cost_Volume.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Filtering.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry_Pyramid.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Draw/Dense_Projector.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>

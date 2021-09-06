@@ -1,7 +1,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Mapping_Common.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>

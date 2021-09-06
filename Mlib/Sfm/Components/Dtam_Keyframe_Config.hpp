@@ -2,9 +2,9 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Sfm/Configuration/Regularization.hpp>
 #include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Filtering_Parameters.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Geometry_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Filtering_Parameters.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry_Parameters.hpp>
 #include <cstddef>
 #include <vector>
 

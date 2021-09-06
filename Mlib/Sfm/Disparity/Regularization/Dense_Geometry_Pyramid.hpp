@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Depth_Estimation.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Geometry.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Geometry_Parameters.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Depth_Estimation.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry_Parameters.hpp>
 #include <cmath>
 
 namespace Mlib::Sfm::Dp {

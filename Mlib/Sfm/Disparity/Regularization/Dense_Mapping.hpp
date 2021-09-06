@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Sfm/Disparity/Dense_Depth_Estimation.hpp>
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
+#include <Mlib/Sfm/Disparity/Regularization/Dense_Depth_Estimation.hpp>
 
 namespace Mlib::Sfm::Dm {
 
