@@ -50,6 +50,34 @@ Array<TData> up_sample2(const Array<TData>& image)
     return result;
 }
 
+template <class TData>
+Array<TData> multichannel_down_sample2(const Array<TData>& image, size_t n = 1)
+{
+    Array<TData> result = image;
+    for (size_t i = 0; i < n; ++i) {
+        Array<TData> result2{ArrayShape{result.shape(0)}.concatenated((result.shape().erased_first() - 1) / 2 + 1)};
+        for (size_t h = 0; h < result.shape(0); ++h) {
+            result2[h] = down_sample2(result[h]);
+        }
+        result.move() = std::move(result2);
+    }
+    return result;
+}
+
+template <class TData>
+Array<TData> multichannel_up_sample2(const Array<TData>& image, size_t n = 1)
+{
+    Array<TData> result = image;
+    for (size_t i = 0; i < n; ++i) {
+        Array<TData> result2{ArrayShape{result.shape(0)}.concatenated((result.shape().erased_first() - 1) * 2 + 1)};
+        for (size_t h = 0; h < result.shape(0); ++h) {
+            result2[h] = up_sample2(result[h]);
+        }
+        result.move() = std::move(result2);
+    }
+    return result;
+}
+
 void resampling_pyramid(
     const Array<float>& images,
     size_t nlevels,
