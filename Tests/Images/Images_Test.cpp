@@ -18,6 +18,7 @@
 #include <Mlib/Images/Quantize.hpp>
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
+#include <Mlib/Images/Resample/Up_Sample_Average.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
@@ -254,6 +255,13 @@ void test_down_sample_average() {
     assert_true(all(d.shape() == ArrayShape{2, 1, 2}));
 }
 
+void test_up_sample_average() {
+    Array<float> a = arange<float>(5);
+    assert_allclose(
+        up_sample_average(a),
+        Array<float>{0.f, 0.25f, 0.75f, 1.25f, 1.75f, 2.25f, 2.75f, 3.25f, 3.75f, 4.f});
+}
+
 void test_meshgrid() {
     Array<float> mg{ArrayShape{3, 4}};
     meshgrid(mg, 1);
@@ -266,7 +274,7 @@ void test_meshgrid() {
 void test_local_polynomial_regression() {
     Array<float> image(random_array3<float>(ArrayShape{5, 6}, 1));
     meshgrid(image, 0);
-    std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN, 4.f, false);}, 2) << std::endl;
+    // std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN, 4.f, false);}, 2) << std::endl;
 }
 
 void test_waveform() {
@@ -302,6 +310,9 @@ int main(int argc, char **argv) {
     enable_floating_point_exceptions();
 
     try {
+        test_up_sample2();
+        test_down_sample_average();
+        test_up_sample_average();
         test_waveform();
         test_differences();
         test_forward_backward_differences();
@@ -310,7 +321,6 @@ int main(int argc, char **argv) {
         test_pyramid();
         test_quantize();
         test_median_filter_2d();
-        test_up_sample2();
         test_lowpass();
         test_color_spaces();
         test_central_differences();
@@ -318,7 +328,6 @@ int main(int argc, char **argv) {
         test_difference_of_boxes();
         test_bilinear_interpolation();
         test_division_by_brightness();
-        test_down_sample_average();
         test_meshgrid();
         test_local_polynomial_regression();
         test_polynomial_contrast();
