@@ -42,7 +42,7 @@ void DenseGeometryPyramid::iterate_atmost(size_t niters) {
 }
 
 bool DenseGeometryPyramid::is_converged() const {
-    return high_res_.is_converged();
+    return ((low_res_ == nullptr) || low_res_->is_converged()) && high_res_.is_converged();
 }
 
 void DenseGeometryPyramid::notify_cost_volume_changed(const Array<float>& dsi) {
