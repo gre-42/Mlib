@@ -27,6 +27,7 @@ void DenseGeometryPyramid::iterate_once() {
     if ((low_res_ != nullptr) && !low_res_->is_converged()) {
         low_res_->iterate_once();
         if (low_res_->is_converged()) {
+            high_res_.h_.move() = up_sample_average(low_res_->high_res_.h_);
             high_res_.p_.move() = multichannel_up_sample_average(low_res_->high_res_.p_);
         }
     } else {
