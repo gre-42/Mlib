@@ -36,10 +36,10 @@ Array<float> Mlib::Sfm::exhaustive_search(
     const Array<float>& d)
 {
     assert(dsi.ndim() == 3);
-    assert(nanmin(dsi) >= 0);
-    assert(nanmax(dsi) < 1 + 1e-6);
     assert(dsi.shape(0) >= 3);
     assert(all(d.shape() == dsi.shape().erased_first()));
+    assert(nanmin(dsi) >= 0);
+    assert(nanmax(dsi) < 1 + 1e-6);
 
     float sqrt_lambda_2_theta = std::sqrt(lambda * 2 * theta);
     Array<float> a{d.shape()};
