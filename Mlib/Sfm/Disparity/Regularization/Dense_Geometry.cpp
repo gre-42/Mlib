@@ -49,8 +49,8 @@ Array<float> update_p(const Array<float>& p, const Array<float>& h, float theta,
     Array<float> v = tau * forward_gradient_filter(backward_divergence_filter(p, GRADIENT_BOUNDARY_VALUE) - h / theta, GRADIENT_BOUNDARY_VALUE);
     Array<float> n = 1.f + l2q(v);
     Array<float> result{ p.shape() };
-    for (size_t h = 0; h < p.shape(0); ++h) {
-        result[h] = (p[h] + v[h]) / n;
+    for (size_t i = 0; i < p.shape(0); ++i) {
+        result[i] = (p[i] + v[i]) / n;
     }
     return result;
 }
