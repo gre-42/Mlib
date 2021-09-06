@@ -24,6 +24,7 @@ struct DtamKeyframeConfig {
         const CostVolumeParameters& cost_volume_parameters,
         const Dm::DtamParameters& dm_params,
         const Dg::DenseGeometryParameters& dg_params,
+        const std::vector<Dg::DenseGeometryParameters>& dp_params,
         const Df::DenseFilteringParameters& df_params,
         Regularization regularization,
         float sigma_illumination_removal,
@@ -44,6 +45,7 @@ struct DtamKeyframeConfig {
     CostVolumeParameters cost_volume_parameters_;
     Dm::DtamParameters dm_params_;
     Dg::DenseGeometryParameters dg_params_;
+    std::vector<Dg::DenseGeometryParameters> dp_params_;
     Df::DenseFilteringParameters df_params_;
     Regularization regularization_;
     float sigma_illumination_removal_;

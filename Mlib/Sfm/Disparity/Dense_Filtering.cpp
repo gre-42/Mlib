@@ -30,7 +30,7 @@ DenseFiltering::DenseFiltering(
 DenseFiltering::~DenseFiltering()
 {}
 
-void DenseFiltering::iterate_once(const Array<float>& dsi) {
+void DenseFiltering::iterate_once() {
     if (is_converged()) {
         throw std::runtime_error("Call to iterate_once despite convergence");
     }
@@ -39,16 +39,16 @@ void DenseFiltering::iterate_once(const Array<float>& dsi) {
     // d_ = median_filter_2d(a_, 3);
     Array<float> d = smoother_(a_);
     // std::cerr << "done" << std::endl;
-    a_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, d);
+    a_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, d);
     // std::cerr << "done3" << std::endl;
     // throw std::runtime_error("asd");
     theta_ *= (1 - parameters_.beta * n_);
     ++n_;
 }
 
-void DenseFiltering::iterate_atmost(const Array<float>& dsi, size_t niters) {
+void DenseFiltering::iterate_atmost(size_t niters) {
     while(!is_converged() && (niters-- != 0)) {
-        iterate_once(dsi);
+        iterate_once();
     }
 }
 
@@ -57,6 +57,7 @@ bool DenseFiltering::is_converged() const {
 }
 
 void DenseFiltering::notify_cost_volume_changed(const Array<float>& dsi) {
+    dsi_.ref() = dsi;
     sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
     a_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(sqrt_dsi_max_dmin_.shape()));
     theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
@@ -88,7 +89,7 @@ void Mlib::Sfm::Df::primary_parameter_optimization(
                 .beta = parameters.beta,
                 .lambda = LAMBDA},
             smoother};
-        df.iterate_atmost(dsi, SIZE_MAX);
+        df.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".png");
     }
 }
@@ -111,7 +112,7 @@ void Mlib::Sfm::Df::auxiliary_parameter_optimization(
             cost_volume_parameters,
             modified_parameters,
             smoother};
-        df.iterate_atmost(dsi, SIZE_MAX);
+        df.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-theta_0-" + std::to_string(THETA_0) + "-" + ".png");
     }
     for (float BETA : (parameters.beta * logspace(-1.f, 1.f, 7)).element_iterable()) {
@@ -126,7 +127,7 @@ void Mlib::Sfm::Df::auxiliary_parameter_optimization(
             cost_volume_parameters,
             modified_parameters,
             smoother};
-        df.iterate_atmost(dsi, SIZE_MAX);
+        df.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-beta-" + std::to_string(BETA) + ".png");
     }
 }

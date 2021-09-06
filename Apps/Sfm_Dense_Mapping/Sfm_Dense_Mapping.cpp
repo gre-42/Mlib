@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
                 params,
                 false,                              // print_energy
                 false};                             // print_bmps
-            dm.iterate_atmost(dsi, SIZE_MAX);
+            dm.iterate_atmost(SIZE_MAX);
             ai = dm.interpolated_inverse_depth_image();
             ai.save_binary(ai_filename);
         } else {

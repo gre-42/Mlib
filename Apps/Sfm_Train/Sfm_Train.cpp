@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
         "[--reverse] "
         "[--features_down_sampling <n>] "
         "[--dtam_down_sampling <n>] "
-        "[--regularization {dtam,dense_geometry,filter}] "
+        "[--regularization {dtam,dense_geometry,dense_geometry_pyramid,filter}] "
         "[--regularization_filter_poly_degree <d>] "
         "[--regularization_filter_sigma <s>] "
         "[--optimize_parameters]",

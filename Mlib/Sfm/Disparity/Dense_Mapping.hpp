@@ -2,7 +2,6 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Depth_Estimation.hpp>
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
-#include <cmath>
 
 namespace Mlib::Sfm::Dm {
 
@@ -89,13 +88,14 @@ public:
         const DtamParameters& parameters,
         bool print_debug = false,
         bool print_bmps = false);
-    virtual void iterate_once(const Array<float>& dsi) override;
-    virtual void iterate_atmost(const Array<float>& dsi, size_t niters) override;
+    virtual void iterate_once() override;
+    virtual void iterate_atmost(size_t niters) override;
     virtual bool is_converged() const override;
     virtual void notify_cost_volume_changed(const Array<float>& dsi) override;
     virtual Array<float> interpolated_inverse_depth_image() const override;
     virtual size_t current_number_of_iterations() const override;
 
+    Array<float> dsi_;
     Array<float> sqrt_dsi_max_dmin_;
     Array<float> d_;
     Array<float> a_;

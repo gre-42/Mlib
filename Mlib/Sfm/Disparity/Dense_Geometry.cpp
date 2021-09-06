@@ -60,7 +60,6 @@ Array<float> update_u(const Array<float>& p, Array<float>& h, float theta, float
 }
 
 DenseGeometry::DenseGeometry(
-    const Array<float>& dsi,
     const CostVolumeParameters& cost_volume_parameters,
     const DenseGeometryParameters& parameters,
     bool print_debug,
@@ -69,13 +68,9 @@ DenseGeometry::DenseGeometry(
   parameters_{parameters},
   print_debug_{print_debug},
   print_bmps_{print_bmps}
-{
-    assert(dsi.ndim() == 3);
+{}
 
-    notify_cost_volume_changed(dsi);
-}
-
-void DenseGeometry::iterate_once(const Array<float>& dsi) {
+void DenseGeometry::iterate_once() {
     if (is_converged()) {
         throw std::runtime_error("Call to iterate_once despite convergence");
     }
@@ -83,34 +78,34 @@ void DenseGeometry::iterate_once(const Array<float>& dsi) {
         std::cerr << "theta: " << theta_ << std::endl;
     }
     p_ = update_p(p_, h_, theta_, parameters_.tau);
-    u_ = update_u(p_, h_, theta_, (float)(dsi.shape(0) - 1));
+    Array<float> u = update_u(p_, h_, theta_, (float)(dsi_.shape(0) - 1));
 
     if (print_debug_) {
-        Array<float> eo = energy(parameters_.lambda, dsi, h_);
+        Array<float> eo = energy(parameters_.lambda, dsi_, h_);
         std::cerr << "eo: " << xsum(eo) << std::endl;
         if (print_bmps_ && n_ % 30 == 0) {
             draw_quantiled_grayscale(eo, 0.05f, 0.95f).save_to_file("eo-" + std::to_string(n_) + ".png");
         }
         if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(u_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("u-" + std::to_string(n_) + ".png");
+            draw_nan_masked_grayscale(u, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("u-" + std::to_string(n_) + ".png");
         }
     }
     // std::cerr << "done" << std::endl;
-    h_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, u_);
+    h_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, u);
     if (print_debug_) {
         // std::cerr << "done2" << std::endl;
         std::cerr << "h: " << nanmin(h_) << " - " << nanmedian(h_) << " - " << nanmax(h_) << std::endl;
         if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("h-" + std::to_string(n_) + ".png");
+            draw_nan_masked_grayscale(h_, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("h-" + std::to_string(n_) + ".png");
         }
     }
     theta_ *= (1 - parameters_.beta * n_);
     ++n_;
 }
 
-void DenseGeometry::iterate_atmost(const Array<float>& dsi, size_t niters) {
+void DenseGeometry::iterate_atmost(size_t niters) {
     while(!is_converged() && (niters-- != 0)) {
-        iterate_once(dsi);
+        iterate_once();
     }
 }
 
@@ -119,9 +114,10 @@ bool DenseGeometry::is_converged() const {
 }
 
 void DenseGeometry::notify_cost_volume_changed(const Array<float>& dsi) {
+    assert(dsi.ndim() == 3);
+    dsi_.ref() = dsi;
     sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
-    u_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(dsi.shape().erased_first()));
-    h_ = u_;
+    h_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(dsi.shape().erased_first()));
     p_.move() = zeros<float>(ArrayShape{ 2, h_.shape(0), h_.shape(1) });
     theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
     n_ = 0;
@@ -154,7 +150,6 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
 {
     for (float LAMBDA : (parameters.lambda * logspace(-2.f, 2.f, 5)).element_iterable()) {
         DenseGeometry dg{
-            dsi,
             cost_volume_parameters,
             DenseGeometryParameters{
                 .theta_0__ = parameters.theta_0__,
@@ -165,7 +160,8 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
                 .nsteps = parameters.nsteps},
             false,
             false};
-        dg.iterate_atmost(dsi, SIZE_MAX);
+        dg.notify_cost_volume_changed(dsi);
+        dg.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dg.h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("h-lambda-" + std::to_string(LAMBDA) + ".png");
         std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy(LAMBDA, dsi, dg.h_)) << std::endl;
     }
@@ -174,7 +170,6 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
     //       Page 3, bottom right: 1/4 is best in practice.
     for (float TAU : (1.f / 4.f * logspace(-1.f, 0.f, 5)).element_iterable()) {
         DenseGeometry dg{
-            dsi,
             cost_volume_parameters,
             DenseGeometryParameters{
                 .theta_0__ = parameters.theta_0__,
@@ -185,7 +180,8 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
                 .nsteps = parameters.nsteps},
             false,
             false};
-        dg.iterate_atmost(dsi, SIZE_MAX);
+        dg.notify_cost_volume_changed(dsi);
+        dg.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dg.h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-tau-" + to_string_with_precision(TAU, 10) + ".png");
         std::cerr << "tau " << TAU << " energy " << xsum(energy(parameters.lambda, dsi, dg.h_)) << std::endl;
     }
@@ -207,12 +203,12 @@ void Mlib::Sfm::Dg::auxiliary_parameter_optimization(
                 .tau = parameters.tau,
                 .nsteps = parameters.nsteps};
             DenseGeometry dg{
-                dsi,
                 cost_volume_parameters,
                 modified_parameters,
                 false,
                 false};
-            dg.iterate_atmost(dsi, SIZE_MAX);
+            dg.notify_cost_volume_changed(dsi);
+            dg.iterate_atmost(SIZE_MAX);
             float nrg = xsum(energy(parameters.lambda, dsi, dg.h_));
             energies.push_back(std::make_tuple(modified_parameters, nrg, dg.h_));
             std::cerr << modified_parameters << " energy " << nrg << std::endl;

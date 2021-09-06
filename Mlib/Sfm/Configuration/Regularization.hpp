@@ -6,6 +6,7 @@ namespace Mlib::Sfm {
 enum class Regularization {
     DTAM,
     DENSE_GEOMETRY,
+    DENSE_GEOMETRY_PYRAMID,
     FILTERING
 };
 

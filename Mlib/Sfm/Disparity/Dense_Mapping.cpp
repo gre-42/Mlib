@@ -473,7 +473,7 @@ DenseMapping::DenseMapping(
     notify_cost_volume_changed(dsi);
 }
 
-void DenseMapping::iterate_once(const Array<float>& dsi) {
+void DenseMapping::iterate_once() {
     if (is_converged()) {
         throw std::runtime_error("Call to iterate_once despite convergence");
     }
@@ -506,13 +506,13 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
         std::cerr << "Computing q" << std::endl;
         q_ = gradient_descent(
             q_,
-            [&](const Array<float>& qq) { return -xsum(energy(g_, theta_, parameters_.lambda_, parameters_.epsilon_, dsi, d_, a_, qq)); },
+            [&](const Array<float>& qq) { return -xsum(energy(g_, theta_, parameters_.lambda_, parameters_.epsilon_, dsi_, d_, a_, qq)); },
             [&](const Array<float>& qq) { return -energy_dq(g_, parameters_.epsilon_, d_, qq); },
             10);
         std::cerr << "Computing d" << std::endl;
         d_ = gradient_descent(
             d_,
-            [&](const Array<float>& dd) { return xsum(energy(g_, theta_, parameters_.lambda_, parameters_.epsilon_, dsi, dd, a_, q_)); },
+            [&](const Array<float>& dd) { return xsum(energy(g_, theta_, parameters_.lambda_, parameters_.epsilon_, dsi_, dd, a_, q_)); },
             [&](const Array<float>& dd) { return energy_dd(g_, theta_, dd, a_, q_); },
             10);
     } else {
@@ -527,11 +527,11 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
             std::cerr << "sigma_q " << sigma_q << " sigma_d " << sigma_d << std::endl;
         }
         q_ = update_q(g_, q_, d_, parameters_.epsilon_, sigma_q);
-        d_ = update_d(g_, q_, d_, a_, theta_, sigma_d, (float)(dsi.shape(0) - 1));
+        d_ = update_d(g_, q_, d_, a_, theta_, sigma_d, (float)(dsi_.shape(0) - 1));
     }
     if (print_debug_) {
-        Array<float> eo = energy_orig(g_, parameters_.lambda_, parameters_.epsilon_, dsi, a_);
-        Array<float> en = energy(g_, theta_, parameters_.lambda_, parameters_.epsilon_, dsi, d_, a_, q_);
+        Array<float> eo = energy_orig(g_, parameters_.lambda_, parameters_.epsilon_, dsi_, a_);
+        Array<float> en = energy(g_, theta_, parameters_.lambda_, parameters_.epsilon_, dsi_, d_, a_, q_);
         std::cerr << "q: " << xsum(squared(q_)) << std::endl;
         std::cerr << "q: " << nanquantiles(q_, Array<float>{0.f, 0.05f, 0.5f, 0.95f, 1.f}) << std::endl;
         std::cerr << "d: " << nanquantiles(d_, Array<float>{0.f, 0.05f, 0.5f, 0.95f, 1.f}) << std::endl;
@@ -551,16 +551,16 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
             draw_quantiled_grayscale(en, 0.05f, 0.95f).save_to_file("en-" + std::to_string(n_) + ".png");
         }
         if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(d_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("d-" + std::to_string(n_) + ".png");
+            draw_nan_masked_grayscale(d_, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("d-" + std::to_string(n_) + ".png");
         }
     }
     // std::cerr << "done" << std::endl;
-    a_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, theta_, parameters_.lambda_, d_);
+    a_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, parameters_.lambda_, d_);
     if (print_debug_) {
         // std::cerr << "done2" << std::endl;
         std::cerr << "a: " << nanmin(a_) << " - " << nanmedian(a_) << " - " << nanmax(a_) << std::endl;
         if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(n_) + ".png");
+            draw_nan_masked_grayscale(a_, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("a-" + std::to_string(n_) + ".png");
         }
     }
     // std::cerr << "done3" << std::endl;
@@ -569,9 +569,9 @@ void DenseMapping::iterate_once(const Array<float>& dsi) {
     ++n_;
 }
 
-void DenseMapping::iterate_atmost(const Array<float>& dsi, size_t niters) {
+void DenseMapping::iterate_atmost(size_t niters) {
     while(!is_converged() && (niters-- != 0)) {
-        iterate_once(dsi);
+        iterate_once();
     }
 }
 
@@ -580,6 +580,7 @@ bool DenseMapping::is_converged() const {
 }
 
 void DenseMapping::notify_cost_volume_changed(const Array<float>& dsi) {
+    dsi_.ref() = dsi;
     sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
     d_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(g_.shape()));
     a_ = d_;
@@ -635,7 +636,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.nsteps_),
             false,
             false};
-        dm.iterate_atmost(dsi, SIZE_MAX);
+        dm.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dm.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".png");
         std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, dm.a_)) << std::endl;
     }
@@ -655,7 +656,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.nsteps_),
             false,
             false};
-        dm.iterate_atmost(dsi, SIZE_MAX);
+        dm.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dm.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-epsilon-" + to_string_with_precision(EPSILON, 10) + ".png");
         std::cerr << "eps " << EPSILON << " energy " << xsum(energy_orig(g, parameters.lambda_, EPSILON, dsi, dm.a_)) << std::endl;
     }
@@ -686,7 +687,7 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
                 modified_parameters,
                 false,
                 false};
-            dm.iterate_atmost(dsi, SIZE_MAX);
+            dm.iterate_atmost(SIZE_MAX);
             float energy = xsum(energy_orig(g, parameters.lambda_, parameters.epsilon_, dsi, dm.a_));
             energies.push_back(std::make_tuple(modified_parameters, energy, dm.a_));
             std::cerr << modified_parameters << " energy " << energy << std::endl;

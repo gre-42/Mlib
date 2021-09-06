@@ -11,6 +11,7 @@
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Filtering.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Geometry.hpp>
+#include <Mlib/Sfm/Disparity/Dense_Geometry_Pyramid.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Inverse_Depth_Cost_Volume.hpp>
@@ -402,9 +403,14 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             draw_nan_masked_grayscale(g, 0, 1).save_to_file(cache_dir_ + "/g-" + suffix + ".png");
         } else if (cfg_.regularization_ == Regularization::DENSE_GEOMETRY) {
             dm_ = std::make_unique<Dg::DenseGeometry>(
-                dsi_,
                 cfg_.cost_volume_parameters_,
                 cfg_.dg_params_);
+            dm_->notify_cost_volume_changed(dsi_);
+        } else if (cfg_.regularization_ == Regularization::DENSE_GEOMETRY_PYRAMID) {
+            dm_ = std::make_unique<Dp::DenseGeometryPyramid>(
+                cfg_.cost_volume_parameters_,
+                cfg_.dp_params_);
+            dm_->notify_cost_volume_changed(dsi_);
         } else if (cfg_.regularization_ == Regularization::FILTERING) {
             auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, cfg_.regularization_filter_poly_degree_);};
             // auto w = [this](const Array<double>& d){return gaussian_filter_NWE(d, double{cfg_.regularization_filter_sigma_}, double{NAN}, 4., false);};
@@ -464,9 +470,9 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         std::cerr <<
             "Keyframe " << key_frame_time_.count() <<
             " updated incrementally. n = " << dm_->current_number_of_iterations() << std::endl;
-        dm_->iterate_atmost(dsi_, cfg_.ninterleaved_iterations_);
+        dm_->iterate_atmost(cfg_.ninterleaved_iterations_);
     } else {
-        dm_->iterate_atmost(dsi_, SIZE_MAX);
+        dm_->iterate_atmost(SIZE_MAX);
     }
 }
 

@@ -126,7 +126,7 @@ void test_boundary_and_nan() {
     Dm::DtamParameters p;
     p.nsteps_ = 20;
     Dm::DenseMapping dm{ dsi, g, c, p };
-    dm.iterate_atmost(dsi, SIZE_MAX);
+    dm.iterate_atmost(SIZE_MAX);
     //std::cerr << a << std::endl;
 
     for (size_t dc = 0; dc < 2; ++dc) {
@@ -149,7 +149,7 @@ void test_boundary_and_nan() {
         //std::cerr << dsiN << std::endl;
         //std::cerr << gN << std::endl;
         Dm::DenseMapping dmN{ dsiN, gN, c, p };
-        dmN.iterate_atmost(dsiN, SIZE_MAX);
+        dmN.iterate_atmost(SIZE_MAX);
         //std::cerr << dmN.a_ << std::endl;
         for (size_t r = 0; r < dm.a_.shape(0); ++r) {
             for (size_t c = 0; c < dm.a_.shape(1); ++c) {

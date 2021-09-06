@@ -8,6 +8,14 @@ using namespace Mlib::Sfm;
 
 static bool interactive = false;
 
+static Dg::DenseGeometryParameters dgp{
+    .theta_0__ = 0.1f * 0.2f,
+    .theta_end__ = float{ 0.1 * 1e-4 },
+    .beta = 0.0001,
+    .lambda = 200.f,
+    .tau = 1 / 8.f,
+    .nsteps = 400};
+    
 DtamComponentConfig::DtamComponentConfig(
     bool track_using_dtam,
     bool use_virtual_camera,
@@ -46,13 +54,8 @@ DtamComponentConfig::DtamComponentConfig(
             1.f,                    // lambda (1 for the first keyframe)
             float{ 1e-4 },          // epsilon (1e-4)
             400),                   // nsteps
-        Dg::DenseGeometryParameters{
-            .theta_0__ = 0.1f * 0.2f,
-            .theta_end__ = float{ 0.1 * 1e-4 },
-            .beta = 0.0001,
-            .lambda = 200.f,
-            .tau = 1 / 8.f,
-            .nsteps = 400},
+        dgp,
+        {dgp, dgp},
         Df::DenseFilteringParameters{
             .nsteps = 400,
             .theta_0__ = 0.2,
