@@ -9,7 +9,6 @@ enum class Regularization;
 
 struct TemplatePatchPipelineConfig {
     TrackingMode tracking_mode;
-    CostVolumeType cost_volume_type;
     Regularization regularization;
     size_t sift_nframes;
     bool enable_dtam = true;

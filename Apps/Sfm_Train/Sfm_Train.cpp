@@ -84,7 +84,6 @@ int main(int argc, char** argv) {
         "[--reverse] "
         "[--features_down_sampling <n>] "
         "[--dtam_down_sampling <n>] "
-        "[--cost_volume {multichannel_flat,multichannel_pyramid}] "
         "[--regularization {dtam,dense_geometry,dense_geometry_pyramid,filter}] "
         "[--regularization_filter_poly_degree <d>] "
         "[--regularization_filter_sigma <s>] "
@@ -137,7 +136,6 @@ int main(int argc, char** argv) {
             args.has_named("--reverse"),
             TemplatePatchPipelineConfig{
                 .tracking_mode = args.has_named("--sift") ? TrackingMode::SIFT : TrackingMode::PATCH_NEW_POSITION_IN_BOX,
-                .cost_volume_type = cost_volume_type_from_string(args.named_value("--cost_volume", "multichannel_flat")),
                 .regularization = regularization_from_string(args.named_value("--regularization", "dense_geometry")),
                 .sift_nframes = safe_stoz(args.named_value("--sift_nframes", "19")),
                 .enable_dtam = !args.has_named("--no_dtam"),

@@ -11,7 +11,6 @@
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
-#include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume_Pyramid.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Filtering.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry_Pyramid.hpp>
@@ -311,17 +310,9 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
         last_integrated_time_ = key_frame_time_;
         times_integrated_.insert(key_frame_time_);
         std::cerr << "Creating cost volume at time " << key_frame_time_.count() << " ms" << std::endl;
-        if (cfg_.cost_volume_type_ == CostVolumeType::MUTLICHANNEL_FLAT) {
-            vol_acc_ = std::make_unique<InverseDepthCostVolumeAccumulator>(
-                down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale.shape(),
-                cfg_.cost_volume_parameters_.inverse_depths());
-        } else if (cfg_.cost_volume_type_ == CostVolumeType::MUTLICHANNEL_PYRAMID) {
-            vol_acc_ = std::make_unique<InverseDepthCostVolumePyramidAccumulator>(
-                down_sampler_.ds_image_frames_.at(key_frame_time_).rgb.shape(),
-                cfg_.cost_volume_parameters_.inverse_depths());
-        } else {
-            throw std::runtime_error("Unknown cost volume type");
-        }
+        vol_acc_ = std::make_unique<InverseDepthCostVolumeAccumulator>(
+            down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale.shape(),
+            cfg_.cost_volume_parameters_.inverse_depths());
     }
     if (vol_acc_ != nullptr) {
         auto increment_volume = [&](auto it){
