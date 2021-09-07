@@ -109,8 +109,8 @@ std::unique_ptr<CostVolume> InverseDepthCostVolumePyramidAccumulator::get(size_t
     ArrayShape eshape = ArrayShape{nelements_idsi_.shape(0) * nelements_idsi_.shape(1)}.concatenated(nelements_idsi_.shape().erased_first(2));
     Array<bool> all_set = all(nelements_idsi_.reshaped(eshape) >= (min_channel_increments / nelements_idsi_.shape(0)), 0);
     for (size_t di = 0; di < inverse_depths_.length(); ++di) {
-        for (size_t r = 0; r < res.shape(1); ++r) {
-            for (size_t c = 0; c < res.shape(2); ++c) {
+        for (size_t r = 0; r < res.shape(2); ++r) {
+            for (size_t c = 0; c < res.shape(3); ++c) {
                 if (!all_set(r, c)) {
                     for (size_t h = 0; h < res.shape(0); ++h) {
                         res(h, di, r, c) = NAN;

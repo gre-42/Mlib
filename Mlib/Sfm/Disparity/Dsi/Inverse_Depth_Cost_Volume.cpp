@@ -126,7 +126,7 @@ std::unique_ptr<CostVolume> InverseDepthCostVolumeAccumulator::get(size_t min_ch
     Array<float> res = idsi_sum_.array_array_binop(nelements_idsi_, [&](float s, size_t n) {
         return n == 0 ? NAN : s / n;
     });
-    Array<bool> all_set = all(nelements_idsi_ >= size_t(min_channel_increments), 0);
+    Array<bool> all_set = all(nelements_idsi_ >= min_channel_increments, 0);
     for (size_t di = 0; di < inverse_depths_.length(); ++di) {
         for (size_t r = 0; r < res.shape(1); ++r) {
             for (size_t c = 0; c < res.shape(2); ++c) {
