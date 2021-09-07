@@ -12,7 +12,7 @@ static Dg::DenseGeometryParameters dgp{
     .theta_0__ = 0.1f * 0.2f,
     .theta_end__ = float{ 0.1 * 1e-4 },
     .beta = 0.0001,
-    .lambda = 200.f,
+    .lambda__ = 200.f * F_320,
     .tau = 1 / 8.f,
     .nsteps = 400};
 static Dg::DenseGeometryParameters dgp0 = [](){auto res = dgp; res.nsteps = 0; return res;}();

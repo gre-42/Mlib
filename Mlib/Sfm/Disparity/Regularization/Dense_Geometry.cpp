@@ -82,8 +82,9 @@ void DenseGeometry::iterate_once() {
     p_.move() = update_p(p_, h_, theta_, parameters_.tau);
     Array<float> u = update_u(p_, h_, theta_, (float)(dsi_.shape(0) - 1));
 
+    float lambda_corrected = parameters_.lambda_corrected(dsi_.shape().erased_first());
     if (print_debug_) {
-        Array<float> eo = energy(parameters_.lambda, dsi_, h_);
+        Array<float> eo = energy(lambda_corrected, dsi_, h_);
         std::cerr << "eo: " << xsum(eo) << std::endl;
         if (print_bmps_ && n_ % 30 == 0) {
             draw_quantiled_grayscale(eo, 0.05f, 0.95f).save_to_file("eo-" + std::to_string(n_) + ".png");
@@ -93,7 +94,7 @@ void DenseGeometry::iterate_once() {
         }
     }
     // std::cerr << "done" << std::endl;
-    h_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, u);
+    h_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, lambda_corrected, u);
     if (print_debug_) {
         // std::cerr << "done2" << std::endl;
         std::cerr << "h: " << nanmin(h_) << " - " << nanmedian(h_) << " - " << nanmax(h_) << std::endl;
@@ -150,14 +151,14 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
     const CostVolumeParameters& cost_volume_parameters,
     const DenseGeometryParameters& parameters)
 {
-    for (float LAMBDA : (parameters.lambda * logspace(-2.f, 2.f, 5)).element_iterable()) {
+    for (float LAMBDA : (parameters.lambda__ * logspace(-2.f, 2.f, 5)).element_iterable()) {
         DenseGeometry dg{
             cost_volume_parameters,
             DenseGeometryParameters{
                 .theta_0__ = parameters.theta_0__,
                 .theta_end__ = parameters.theta_end__,
                 .beta = parameters.beta,
-                .lambda = LAMBDA,
+                .lambda__ = LAMBDA,
                 .tau = parameters.tau,
                 .nsteps = parameters.nsteps},
             false,
@@ -177,7 +178,7 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
                 .theta_0__ = parameters.theta_0__,
                 .theta_end__ = parameters.theta_end__,
                 .beta = parameters.beta,
-                .lambda = parameters.lambda,
+                .lambda__ = parameters.lambda__,
                 .tau = TAU,
                 .nsteps = parameters.nsteps},
             false,
@@ -185,7 +186,7 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
         dg.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         dg.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dg.h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-tau-" + to_string_with_precision(TAU, 10) + ".png");
-        std::cerr << "tau " << TAU << " energy " << xsum(energy(parameters.lambda, dsi, dg.h_)) << std::endl;
+        std::cerr << "tau " << TAU << " energy " << xsum(energy(parameters.lambda_corrected(dsi.shape().erased_first()), dsi, dg.h_)) << std::endl;
     }
 }
 
@@ -201,7 +202,7 @@ void Mlib::Sfm::Dg::auxiliary_parameter_optimization(
                 .theta_0__ = THETA_0,
                 .theta_end__ = THETA_0 / 0.2f * float{ 1e-4 },
                 .beta = BETA,
-                .lambda = parameters.lambda,
+                .lambda__ = parameters.lambda__,
                 .tau = parameters.tau,
                 .nsteps = parameters.nsteps};
             DenseGeometry dg{
@@ -211,7 +212,7 @@ void Mlib::Sfm::Dg::auxiliary_parameter_optimization(
                 false};
             dg.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
             dg.iterate_atmost(SIZE_MAX);
-            float nrg = xsum(energy(parameters.lambda, dsi, dg.h_));
+            float nrg = xsum(energy(parameters.lambda_corrected(dsi.shape().erased_first()), dsi, dg.h_));
             energies.push_back(std::make_tuple(modified_parameters, nrg, dg.h_));
             std::cerr << modified_parameters << " energy " << nrg << std::endl;
         }
