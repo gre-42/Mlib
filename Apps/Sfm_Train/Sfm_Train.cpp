@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
         "[--reverse] "
         "[--features_down_sampling <n>] "
         "[--dtam_down_sampling <n>] "
-        "[--cost_volume_type {multichannel_flat,multichannel_pyramid}] "
+        "[--cost_volume {multichannel_flat,multichannel_pyramid}] "
         "[--regularization {dtam,dense_geometry,dense_geometry_pyramid,filter}] "
         "[--regularization_filter_poly_degree <d>] "
         "[--regularization_filter_sigma <s>] "
@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
           "--sift_nframes",
           "--features_down_sampling",
           "--dtam_down_sampling",
-          "--cost_volume_type",
+          "--cost_volume",
           "--regularization",
           "--regularization_filter_sigma",
           "--regularization_filter_poly_degree" });

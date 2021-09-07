@@ -12,7 +12,7 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 InverseDepthCostVolume::InverseDepthCostVolume(const Array<float>& dsi)
-: dsi_{dsi}
+: dsi_(dsi)
 {}
 
 Array<float> InverseDepthCostVolume::dsi() const {
