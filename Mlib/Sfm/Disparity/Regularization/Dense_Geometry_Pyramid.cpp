@@ -49,7 +49,7 @@ bool DenseGeometryPyramid::is_converged() const {
 void DenseGeometryPyramid::notify_cost_volume_changed(const CostVolume& dsi) {
     high_res_.notify_cost_volume_changed(dsi);
     if (low_res_ != nullptr) {
-        if (any((high_res_.dsi_.shape().erased_first(2) % 2) != ArrayShape{0, 0})) {
+        if (any((high_res_.dsi_.shape().erased_first() % 2) != ArrayShape{0, 0})) {
             throw std::runtime_error("Image size not a multiple of 2");
         }
         low_res_->notify_cost_volume_changed(*dsi.down_sampled());

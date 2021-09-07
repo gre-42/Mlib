@@ -18,7 +18,7 @@ InverseDepthCostVolumePyramid::InverseDepthCostVolumePyramid(const Array<float>&
 }
 
 Array<float> InverseDepthCostVolumePyramid::dsi() const {
-    return sum(abs(arr_), 0);
+    return sum(abs(arr_), 0) / (float)arr_.shape(0);
 }
 
 std::unique_ptr<CostVolume> InverseDepthCostVolumePyramid::down_sampled() const {
