@@ -15,6 +15,7 @@ static Dg::DenseGeometryParameters dgp{
     .lambda = 200.f,
     .tau = 1 / 8.f,
     .nsteps = 400};
+static Dg::DenseGeometryParameters dgp0 = [](){auto res = dgp; res.nsteps = 0; return res;}();
 
 DtamComponentConfig::DtamComponentConfig(
     bool track_using_dtam,
