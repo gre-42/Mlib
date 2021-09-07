@@ -1,6 +1,7 @@
 #include "Dense_Geometry_Pyramid.hpp"
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Images/Resample/Up_Sample_Average.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -45,14 +46,14 @@ bool DenseGeometryPyramid::is_converged() const {
     return ((low_res_ == nullptr) || low_res_->is_converged()) && high_res_.is_converged();
 }
 
-void DenseGeometryPyramid::notify_cost_volume_changed(const Array<float>& dsi) {
+void DenseGeometryPyramid::notify_cost_volume_changed(const CostVolume& dsi) {
+    high_res_.notify_cost_volume_changed(dsi);
     if (low_res_ != nullptr) {
-        if (any((dsi.shape().erased_first() / 2) * 2 != dsi.shape().erased_first())) {
+        if (any((high_res_.dsi_.shape().erased_first(2) % 2) != ArrayShape{0, 0})) {
             throw std::runtime_error("Image size not a multiple of 2");
         }
-        low_res_->notify_cost_volume_changed(multichannel_down_sample_average(dsi));
+        low_res_->notify_cost_volume_changed(*dsi.down_sampled());
     }
-    high_res_.notify_cost_volume_changed(dsi);
 }
 
 Array<float> DenseGeometryPyramid::interpolated_inverse_depth_image() const {

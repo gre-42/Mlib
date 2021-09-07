@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Sfm/Configuration/Cost_Volume_Type.hpp>
 #include <Mlib/Sfm/Configuration/Regularization.hpp>
 #include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
@@ -26,6 +27,7 @@ struct DtamKeyframeConfig {
         const Dg::DenseGeometryParameters& dg_params,
         const std::vector<Dg::DenseGeometryParameters>& dp_params,
         const Df::DenseFilteringParameters& df_params,
+        CostVolumeType cost_volume_type,
         Regularization regularization,
         float sigma_illumination_removal,
         float regularization_filter_sigma,
@@ -47,6 +49,7 @@ struct DtamKeyframeConfig {
     Dg::DenseGeometryParameters dg_params_;
     std::vector<Dg::DenseGeometryParameters> dp_params_;
     Df::DenseFilteringParameters df_params_;
+    CostVolumeType cost_volume_type_;
     Regularization regularization_;
     float sigma_illumination_removal_;
     float regularization_filter_sigma_;

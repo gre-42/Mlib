@@ -4,6 +4,8 @@
 #include <Mlib/Images/Filters/Forward_Differences.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Math/Interpolate.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Logspace.hpp>
@@ -113,11 +115,11 @@ bool DenseGeometry::is_converged() const {
     return !((theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)) && (n_ < parameters_.nsteps));
 }
 
-void DenseGeometry::notify_cost_volume_changed(const Array<float>& dsi) {
-    assert(dsi.ndim() == 3);
-    dsi_.ref() = dsi;
-    sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
-    h_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(dsi.shape().erased_first()));
+void DenseGeometry::notify_cost_volume_changed(const CostVolume& dsi) {
+    dsi_.ref() = dsi.dsi();
+    assert(dsi_.ndim() == 3);
+    sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi_);
+    h_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(dsi_.shape().erased_first()));
     p_.move() = zeros<float>(ArrayShape{ 2, h_.shape(0), h_.shape(1) });
     theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
     n_ = 0;
@@ -160,7 +162,7 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
                 .nsteps = parameters.nsteps},
             false,
             false};
-        dg.notify_cost_volume_changed(dsi);
+        dg.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         dg.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dg.h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("h-lambda-" + std::to_string(LAMBDA) + ".png");
         std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy(LAMBDA, dsi, dg.h_)) << std::endl;
@@ -180,7 +182,7 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
                 .nsteps = parameters.nsteps},
             false,
             false};
-        dg.notify_cost_volume_changed(dsi);
+        dg.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         dg.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dg.h_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-tau-" + to_string_with_precision(TAU, 10) + ".png");
         std::cerr << "tau " << TAU << " energy " << xsum(energy(parameters.lambda, dsi, dg.h_)) << std::endl;
@@ -207,7 +209,7 @@ void Mlib::Sfm::Dg::auxiliary_parameter_optimization(
                 modified_parameters,
                 false,
                 false};
-            dg.notify_cost_volume_changed(dsi);
+            dg.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
             dg.iterate_atmost(SIZE_MAX);
             float nrg = xsum(energy(parameters.lambda, dsi, dg.h_));
             energies.push_back(std::make_tuple(modified_parameters, nrg, dg.h_));

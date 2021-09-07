@@ -2,6 +2,7 @@
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>
 #include <random>
@@ -125,7 +126,8 @@ void test_boundary_and_nan() {
     CostVolumeParameters c;
     Dm::DtamParameters p;
     p.nsteps_ = 20;
-    Dm::DenseMapping dm{ dsi, g, c, p };
+    Dm::DenseMapping dm{ g, c, p };
+    dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
     dm.iterate_atmost(SIZE_MAX);
     //std::cerr << a << std::endl;
 
@@ -148,7 +150,8 @@ void test_boundary_and_nan() {
         //std::cerr << g << std::endl;
         //std::cerr << dsiN << std::endl;
         //std::cerr << gN << std::endl;
-        Dm::DenseMapping dmN{ dsiN, gN, c, p };
+        Dm::DenseMapping dmN{ gN, c, p };
+        dmN.notify_cost_volume_changed(InverseDepthCostVolume{ dsiN });
         dmN.iterate_atmost(SIZE_MAX);
         //std::cerr << dmN.a_ << std::endl;
         for (size_t r = 0; r < dm.a_.shape(0); ++r) {

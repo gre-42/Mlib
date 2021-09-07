@@ -10,7 +10,8 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
-#include <Mlib/Sfm/Disparity/Inverse_Depth_Cost_Volume.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume_Pyramid.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Filtering.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Geometry_Pyramid.hpp>
@@ -300,7 +301,7 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
         " ms: navail_future = " << navail_future <<
         ", navail_past = " << navail_past <<
         ", ncams = " << cams_sorted.size() << std::endl;
-    if ((vol_ == nullptr) &&
+    if ((vol_acc_ == nullptr) &&
         (cfg_.incremental_update_ || (
             navail_future >= nfuture_frames_per_keyframe() &&
             navail_past >= npast_frames_per_keyframe())) &&
@@ -310,18 +311,26 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
         last_integrated_time_ = key_frame_time_;
         times_integrated_.insert(key_frame_time_);
         std::cerr << "Creating cost volume at time " << key_frame_time_.count() << " ms" << std::endl;
-        vol_ = std::make_unique<InverseDepthCostVolume>(
-            down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale.shape(),
-            cfg_.cost_volume_parameters_.inverse_depths());
+        if (cfg_.cost_volume_type_ == CostVolumeType::MUTLICHANNEL_FLAT) {
+            vol_acc_ = std::make_unique<InverseDepthCostVolumeAccumulator>(
+                down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale.shape(),
+                cfg_.cost_volume_parameters_.inverse_depths());
+        } else if (cfg_.cost_volume_type_ == CostVolumeType::MUTLICHANNEL_PYRAMID) {
+            vol_acc_ = std::make_unique<InverseDepthCostVolumePyramidAccumulator>(
+                down_sampler_.ds_image_frames_.at(key_frame_time_).rgb.shape(),
+                cfg_.cost_volume_parameters_.inverse_depths());
+        } else {
+            throw std::runtime_error("Unknown cost volume type");
+        }
     }
-    if (vol_ != nullptr) {
+    if (vol_acc_ != nullptr) {
         auto increment_volume = [&](auto it){
             cost_volume_changed = true;
             times_integrated_.insert(it->first);
             std::cerr << "Integrating time " << it->first.count() << " ms into keyframe " << key_frame_time_.count() << " ms" << std::endl;
             const ImageFrame& kif = down_sampler_.ds_image_frames_.at(key_frame_time_);
             const ImageFrame& iif = down_sampler_.ds_image_frames_.at(it->first);
-            vol_->increment(
+            vol_acc_->increment(
                 down_sampler_.ds_intrinsic_matrix_,
                 cams_sorted.at(key_frame_time_)->projection_matrix_3x4(),
                 it->second->projection_matrix_3x4(),
@@ -377,9 +386,10 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         "-" +
         std::to_string(last_integrated_time_.count());
     if (cost_volume_changed) {
-        dsi_.move() = vol_->get(min_channel_increments());
+        vol_ = vol_acc_->get(min_channel_increments());
+        dsi_ = vol_->dsi();
         if (dm_ != nullptr) {
-            dm_->notify_cost_volume_changed(dsi_);
+            dm_->notify_cost_volume_changed(*vol_);
         }
         if (is_full()) {
             for (size_t i = 0; i < dsi_.shape(0); i += dsi_.shape(0) / 5) {
@@ -396,7 +406,6 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale,
                 cfg_.dm_params_);
             dm_ = std::make_unique<Dm::DenseMapping>(
-                dsi_,
                 g,
                 cfg_.cost_volume_parameters_,
                 cfg_.dm_params_);
@@ -405,18 +414,15 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             dm_ = std::make_unique<Dg::DenseGeometry>(
                 cfg_.cost_volume_parameters_,
                 cfg_.dg_params_);
-            dm_->notify_cost_volume_changed(dsi_);
         } else if (cfg_.regularization_ == Regularization::DENSE_GEOMETRY_PYRAMID) {
             dm_ = std::make_unique<Dp::DenseGeometryPyramid>(
                 cfg_.cost_volume_parameters_,
                 cfg_.dp_params_);
-            dm_->notify_cost_volume_changed(dsi_);
         } else if (cfg_.regularization_ == Regularization::FILTERING) {
             auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, cfg_.regularization_filter_poly_degree_);};
             // auto w = [this](const Array<double>& d){return gaussian_filter_NWE(d, double{cfg_.regularization_filter_sigma_}, double{NAN}, 4., false);};
             // auto l = [&w](const Array<float>& d){return local_polynomial_regression(d.casted<double>(), w, 2).casted<float>();};
             dm_ = std::make_unique<Df::DenseFiltering>(
-                dsi_,
                 cfg_.cost_volume_parameters_,
                 cfg_.df_params_,
                 // w);
@@ -425,6 +431,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         } else {
             throw std::runtime_error("Unknown regularization mode");
         }
+        dm_->notify_cost_volume_changed(*vol_);
     }
     if (cfg_.optimize_parameters_ && !camera_computed_with_sift_) {
         std::cerr << "Parameter-search for keyframe " << key_frame_time_.count() << " ms" << std::endl;

@@ -5,7 +5,7 @@
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
-#include <Mlib/Sfm/Disparity/Inverse_Depth_Cost_Volume.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping.hpp>
 #include <Mlib/Sfm/Draw/Dense_Projector.hpp>
 #include <Mlib/Sfm/Draw/Epilines.hpp>
@@ -99,14 +99,14 @@ int main(int argc, char **argv) {
             std::cerr << dsi_filename + " does not exist, recomputing..." << std::endl;
             Array<float> disparity0;
             if (use_inverse_depth) {
-                InverseDepthCostVolume vol{im0_gray.shape(), inverse_depths};
+                InverseDepthCostVolumeAccumulator vol{im0_gray.shape(), inverse_depths};
                 vol.increment(
                     intrinsic_matrix,
                     c0,
                     c1,
                     im0_rgb,
                     im1_rgb);
-                dsi = vol.get(1 * 3);  // 1 * 3 = min_channel_increments
+                dsi.move() = vol.get(1 * 3)->dsi();  // 1 * 3 = min_channel_increments
                 disparity0 = argmin(dsi, 0).take(inverse_depths);
             } else {
                 if (false) {
@@ -163,12 +163,12 @@ int main(int argc, char **argv) {
             std::cerr << ai_filename << " does not exist, computing..." << std::endl;
             Dm::DtamParameters params;
             Dm::DenseMapping dm{
-                dsi,
                 Dm::g_from_grayscale(im0_gray, params),
                 CostVolumeParameters(),
                 params,
                 false,                              // print_energy
                 false};                             // print_bmps
+            dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
             dm.iterate_atmost(SIZE_MAX);
             ai = dm.interpolated_inverse_depth_image();
             ai.save_binary(ai_filename);

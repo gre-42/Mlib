@@ -9,7 +9,6 @@ namespace Mlib::Sfm::Df {
 class DenseFiltering: public DenseDepthEstimation {
 public:
     explicit DenseFiltering(
-        const Array<float>& dsi,
         const CostVolumeParameters& cost_volume_parameters,
         const DenseFilteringParameters& parameters,
         const std::function<Array<float>(const Array<float>& d)>& smoother);
@@ -17,7 +16,7 @@ public:
     virtual void iterate_once() override;
     virtual void iterate_atmost(size_t niters) override;
     virtual bool is_converged() const override;
-    virtual void notify_cost_volume_changed(const Array<float>& dsi) override;
+    virtual void notify_cost_volume_changed(const CostVolume& dsi) override;
     virtual Array<float> interpolated_inverse_depth_image() const override;
     virtual size_t current_number_of_iterations() const override;
     Array<float> a_;

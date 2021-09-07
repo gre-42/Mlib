@@ -178,6 +178,10 @@ inline ArrayShape operator / (const ArrayShape& a, const ArrayShape& b) {
     return arrayshape_arrayshape_binop(a, b, [&](size_t x, size_t y){ return x / y; });
 }
 
+inline ArrayShape operator % (const ArrayShape& a, const ArrayShape& b) {
+    return arrayshape_arrayshape_binop(a, b, [&](size_t x, size_t y){ return x % y; });
+}
+
 inline ArrayShape operator + (const ArrayShape& a, size_t b) {
     return arrayshape_apply(a, [&](size_t x){ return x + b; });
 }
@@ -196,6 +200,10 @@ inline ArrayShape operator * (size_t a, const ArrayShape& b) {
 
 inline ArrayShape operator / (const ArrayShape& a, size_t b) {
     return arrayshape_apply(a, [&](size_t x){ return x / b; });
+}
+
+inline ArrayShape operator % (const ArrayShape& a, size_t b) {
+    return arrayshape_apply(a, [&](size_t x){ return x % b; });
 }
 
 inline ArrayShape operator & (const ArrayShape& a, size_t b) {

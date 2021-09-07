@@ -1,6 +1,8 @@
 #include "Dense_Filtering.hpp"
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Interpolate.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 
@@ -14,7 +16,6 @@ using namespace Mlib::Sfm;
 using namespace Mlib::Sfm::Df;
 
 DenseFiltering::DenseFiltering(
-    const Array<float>& dsi,
     const CostVolumeParameters& cost_volume_parameters,
     const DenseFilteringParameters& parameters,
     const std::function<Array<float>(const Array<float>& d)>& smoother)
@@ -22,9 +23,6 @@ DenseFiltering::DenseFiltering(
   parameters_{parameters},
   smoother_{smoother}
 {
-    assert(dsi.ndim() == 3);
-
-    notify_cost_volume_changed(dsi);
 }
 
 DenseFiltering::~DenseFiltering()
@@ -56,10 +54,11 @@ bool DenseFiltering::is_converged() const {
     return !((theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)) && (n_ < parameters_.nsteps));
 }
 
-void DenseFiltering::notify_cost_volume_changed(const Array<float>& dsi) {
-    dsi_.ref() = dsi;
-    sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
-    a_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(sqrt_dsi_max_dmin_.shape()));
+void DenseFiltering::notify_cost_volume_changed(const CostVolume& dsi) {
+    dsi_.ref() = dsi.dsi();
+    assert(dsi_.ndim() == 3);
+    sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi_);
+    a_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(sqrt_dsi_max_dmin_.shape()));
     theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
     n_ = 0;
 }
@@ -80,7 +79,6 @@ void Mlib::Sfm::Df::primary_parameter_optimization(
 {
     for (float LAMBDA : (parameters.lambda * logspace(-2.f, 2.f, 5)).element_iterable()) {
         DenseFiltering df{
-            dsi,
             cost_volume_parameters,
             DenseFilteringParameters{
                 .nsteps = parameters.nsteps,
@@ -89,6 +87,7 @@ void Mlib::Sfm::Df::primary_parameter_optimization(
                 .beta = parameters.beta,
                 .lambda = LAMBDA},
             smoother};
+        df.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         df.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".png");
     }
@@ -108,10 +107,10 @@ void Mlib::Sfm::Df::auxiliary_parameter_optimization(
             .beta = parameters.beta,
             .lambda = parameters.lambda};
         DenseFiltering df{
-            dsi,
             cost_volume_parameters,
             modified_parameters,
             smoother};
+        df.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         df.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-theta_0-" + std::to_string(THETA_0) + "-" + ".png");
     }
@@ -123,10 +122,10 @@ void Mlib::Sfm::Df::auxiliary_parameter_optimization(
             .beta = BETA,
             .lambda = parameters.lambda};
         DenseFiltering df{
-            dsi,
             cost_volume_parameters,
             modified_parameters,
             smoother};
+        df.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         df.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-beta-" + std::to_string(BETA) + ".png");
     }

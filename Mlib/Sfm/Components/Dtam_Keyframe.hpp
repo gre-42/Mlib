@@ -13,6 +13,8 @@ namespace Mlib::Sfm {
 class InverseDepthCostVolume;
 class DenseDepthEstimation;
 class DepthMapBundle;
+class CostVolumeAccumulator;
+class CostVolume;
 
 class DtamKeyframe {
 public:
@@ -59,7 +61,8 @@ private:
     std::chrono::milliseconds first_integrated_time_;
     std::chrono::milliseconds last_integrated_time_;
     const std::chrono::milliseconds key_frame_time_;
-    std::unique_ptr<InverseDepthCostVolume> vol_;
+    std::unique_ptr<CostVolumeAccumulator> vol_acc_;
+    std::unique_ptr<CostVolume> vol_;
     std::unique_ptr<DenseDepthEstimation> dm_;
     bool can_track_;
     size_t opt_id_;

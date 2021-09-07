@@ -12,6 +12,8 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Gradient_Ascent_Descent.hpp>
 #include <Mlib/Math/Optimize/Gradient_Descent.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -452,7 +454,6 @@ Array<float> Mlib::Sfm::Dm::g_from_grayscale(
 }
 
 DenseMapping::DenseMapping(
-    const Array<float>& dsi,
     const Array<float>& g,
     const CostVolumeParameters& cost_volume_parameters,
     const DtamParameters& parameters,
@@ -464,13 +465,9 @@ DenseMapping::DenseMapping(
   print_debug_{print_debug},
   print_bmps_{print_bmps}
 {
-    assert(dsi.ndim() == 3);
-    assert(all(dsi.shape().erased_first() == g.shape()));
-
     if (print_bmps) {
         draw_nan_masked_grayscale(g, 0, 1).save_to_file("g.png");
     }
-    notify_cost_volume_changed(dsi);
 }
 
 void DenseMapping::iterate_once() {
@@ -579,10 +576,14 @@ bool DenseMapping::is_converged() const {
     return !((theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)) && (n_ < parameters_.nsteps_));
 }
 
-void DenseMapping::notify_cost_volume_changed(const Array<float>& dsi) {
-    dsi_.ref() = dsi;
-    sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi);
-    d_.move() = exhaustive_search(dsi, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(g_.shape()));
+void DenseMapping::notify_cost_volume_changed(const CostVolume& dsi) {
+    dsi_.ref() = dsi.dsi();
+
+    assert(dsi_.ndim() == 3);
+    assert(all(dsi_.shape().erased_first() == g_.shape()));
+
+    sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi_);
+    d_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(g_.shape()));
     a_ = d_;
     q_ = zeros<float>(
         regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES ||
@@ -622,7 +623,6 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
 {
     for (float LAMBDA : (parameters.lambda_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
         DenseMapping dm{
-            dsi,
             g,
             cost_volume_parameters,
             DtamParameters(
@@ -636,13 +636,13 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.nsteps_),
             false,
             false};
+        dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         dm.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dm.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".png");
         std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, dm.a_)) << std::endl;
     }
     for (float EPSILON : (parameters.epsilon_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
         DenseMapping dm{
-            dsi,
             g,
             cost_volume_parameters,
             DtamParameters(
@@ -656,6 +656,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.nsteps_),
             false,
             false};
+        dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         dm.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dm.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-epsilon-" + to_string_with_precision(EPSILON, 10) + ".png");
         std::cerr << "eps " << EPSILON << " energy " << xsum(energy_orig(g, parameters.lambda_, EPSILON, dsi, dm.a_)) << std::endl;
@@ -681,12 +682,12 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
                 parameters.epsilon_,
                 parameters.nsteps_);
             DenseMapping dm{
-                dsi,
                 g,
                 cost_volume_parameters,
                 modified_parameters,
                 false,
                 false};
+            dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
             dm.iterate_atmost(SIZE_MAX);
             float energy = xsum(energy_orig(g, parameters.lambda_, parameters.epsilon_, dsi, dm.a_));
             energies.push_back(std::make_tuple(modified_parameters, energy, dm.a_));

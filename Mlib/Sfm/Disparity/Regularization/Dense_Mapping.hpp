@@ -82,7 +82,6 @@ Array<float> g_from_grayscale(
 class DenseMapping: public DenseDepthEstimation {
 public:
     explicit DenseMapping(
-        const Array<float>& dsi,
         const Array<float>& g,
         const CostVolumeParameters& cost_volume_parameters,
         const DtamParameters& parameters,
@@ -91,7 +90,7 @@ public:
     virtual void iterate_once() override;
     virtual void iterate_atmost(size_t niters) override;
     virtual bool is_converged() const override;
-    virtual void notify_cost_volume_changed(const Array<float>& dsi) override;
+    virtual void notify_cost_volume_changed(const CostVolume& dsi) override;
     virtual Array<float> interpolated_inverse_depth_image() const override;
     virtual size_t current_number_of_iterations() const override;
 

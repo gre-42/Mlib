@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
 
 namespace Mlib {
    
@@ -8,9 +9,18 @@ class TransformationMatrix;
 
 namespace Sfm {
 
-class InverseDepthCostVolume {
+class InverseDepthCostVolume: public CostVolume {
 public:
-    InverseDepthCostVolume(
+    explicit InverseDepthCostVolume(const Array<float>& dsi);
+    virtual Array<float> dsi() const override;
+    virtual std::unique_ptr<CostVolume> down_sampled() const override;
+private:
+    Array<float> dsi_;
+};
+
+class InverseDepthCostVolumeAccumulator: public CostVolumeAccumulator {
+public:
+    InverseDepthCostVolumeAccumulator(
         const ArrayShape& space_shape,
         const Array<float>& inverse_depths);
 
@@ -20,9 +30,9 @@ public:
         const TransformationMatrix<float, 3>& c1,
         const Array<float>& im0_rgb,
         const Array<float>& im1_rgb,
-        const float epipole_radius = 0);
+        const float epipole_radius = 0) override;
 
-    Array<float> get(size_t min_channel_increments) const;
+    std::unique_ptr<CostVolume> get(size_t min_channel_increments) const override;
 
 private:
     const ArrayShape space_shape_;
