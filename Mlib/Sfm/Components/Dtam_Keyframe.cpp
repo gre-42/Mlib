@@ -447,6 +447,11 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 dsi_,
                 cfg_.cost_volume_parameters_,
                 cfg_.dg_params_);
+        } else if (cfg_.regularization_ == Regularization::DENSE_GEOMETRY_PYRAMID) {
+            Dp::auxiliary_parameter_optimization(
+                *vol_,
+                cfg_.cost_volume_parameters_,
+                cfg_.dp_params_);
         } else if (cfg_.regularization_ == Regularization::FILTERING) {
             auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, cfg_.regularization_filter_poly_degree_);};
             Df::primary_parameter_optimization(

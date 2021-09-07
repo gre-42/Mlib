@@ -1,7 +1,9 @@
 #include "Dense_Geometry_Pyramid.hpp"
+#include <Mlib/Images/Draw_Bmp.cpp>
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Images/Resample/Up_Sample_Average.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
+#include <Mlib/Stats/Logspace.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -64,4 +66,33 @@ size_t DenseGeometryPyramid::current_number_of_iterations() const {
     return
         ((low_res_ == nullptr) ? 0 : low_res_->current_number_of_iterations()) +
         high_res_.current_number_of_iterations();
+}
+
+void Mlib::Sfm::Dp::auxiliary_parameter_optimization(
+    const CostVolume& vol,
+    const CostVolumeParameters& cost_volume_parameters,
+    const std::vector<Dg::DenseGeometryParameters>& parameters)
+{
+    if (parameters.size() < 2) {
+        throw std::runtime_error("Parameter vector must have length >= 2");
+    }
+    for (float THETA_0 : (parameters.front().theta_0__ * logspace(-4.f, 0.f, 7)).element_iterable()) {
+        Dg::DenseGeometryParameters modified_parameters{
+            .theta_0__ = THETA_0,
+            .theta_end__ = THETA_0 / 0.2f * float{ 1e-4 },
+            .beta = parameters.front().beta,
+            .lambda__ = parameters.front().lambda__,
+            .tau = parameters.front().tau,
+            .nsteps = 400};
+        std::vector<Dg::DenseGeometryParameters> modified_parameter_vector;
+        modified_parameter_vector.reserve(parameters.size());
+        modified_parameter_vector.push_back(modified_parameters);
+        modified_parameter_vector.insert(modified_parameter_vector.end(), parameters.begin() + 1, parameters.end());
+        DenseGeometryPyramid dp{
+            cost_volume_parameters,
+            modified_parameter_vector};
+        dp.notify_cost_volume_changed(vol);
+        dp.iterate_atmost(SIZE_MAX);
+        draw_nan_masked_grayscale(dp.high_res_.h_, 0.f, (float)(vol.nlayers() - 1)).save_to_file("h-theta_0-" + std::to_string(THETA_0) + ".png");
+    }
 }

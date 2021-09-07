@@ -12,6 +12,7 @@ class CostVolume {
 public:
     virtual Array<float> dsi() const = 0;
     virtual std::unique_ptr<CostVolume> down_sampled() const = 0;
+    virtual size_t nlayers() const = 0;
 };
 
 class CostVolumeAccumulator {

@@ -23,6 +23,10 @@ std::unique_ptr<CostVolume> InverseDepthCostVolume::down_sampled() const {
     return std::make_unique<InverseDepthCostVolume>(multichannel_down_sample_average(dsi_));
 }
 
+size_t InverseDepthCostVolume::nlayers() const {
+    return dsi_.shape(0);
+}
+
 InverseDepthCostVolumeAccumulator::InverseDepthCostVolumeAccumulator(
     const ArrayShape& space_shape,
     const Array<float>& inverse_depths)

@@ -25,4 +25,9 @@ public:
     Mlib::Sfm::Dg::DenseGeometry high_res_;
 };
 
+void auxiliary_parameter_optimization(
+    const CostVolume& vol,
+    const CostVolumeParameters& cost_volume_parameters,
+    const std::vector<Mlib::Sfm::Dg::DenseGeometryParameters>& parameters);
+
 }

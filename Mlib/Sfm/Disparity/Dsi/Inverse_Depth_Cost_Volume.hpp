@@ -14,6 +14,7 @@ public:
     explicit InverseDepthCostVolume(const Array<float>& dsi);
     virtual Array<float> dsi() const override;
     virtual std::unique_ptr<CostVolume> down_sampled() const override;
+    virtual size_t nlayers() const override;
 private:
     Array<float> dsi_;
 };

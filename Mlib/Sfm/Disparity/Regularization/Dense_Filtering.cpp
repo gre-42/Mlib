@@ -112,7 +112,7 @@ void Mlib::Sfm::Df::auxiliary_parameter_optimization(
             smoother};
         df.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         df.iterate_atmost(SIZE_MAX);
-        draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-theta_0-" + std::to_string(THETA_0) + "-" + ".png");
+        draw_nan_masked_grayscale(df.a_, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-theta_0-" + std::to_string(THETA_0) + ".png");
     }
     for (float BETA : (parameters.beta * logspace(-1.f, 1.f, 7)).element_iterable()) {
         DenseFilteringParameters modified_parameters{
