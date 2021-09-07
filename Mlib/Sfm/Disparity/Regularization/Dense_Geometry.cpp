@@ -77,7 +77,7 @@ void DenseGeometry::iterate_once() {
     if (print_debug_) {
         std::cerr << "theta: " << theta_ << std::endl;
     }
-    p_ = update_p(p_, h_, theta_, parameters_.tau);
+    p_.move() = update_p(p_, h_, theta_, parameters_.tau);
     Array<float> u = update_u(p_, h_, theta_, (float)(dsi_.shape(0) - 1));
 
     if (print_debug_) {
