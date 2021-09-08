@@ -8,6 +8,7 @@
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Stats/Log2space.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 #include <Mlib/Stats/Robust.hpp>
 #include <iomanip>
@@ -151,7 +152,7 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
     const CostVolumeParameters& cost_volume_parameters,
     const DenseGeometryParameters& parameters)
 {
-    for (float LAMBDA : (parameters.lambda__ * logspace(-2.f, 2.f, 5)).element_iterable()) {
+    for (float LAMBDA : (parameters.lambda__ * log2space(-2.f, 2.f, 5)).element_iterable()) {
         DenseGeometry dg{
             cost_volume_parameters,
             DenseGeometryParameters{
