@@ -573,7 +573,7 @@ void DenseMapping::iterate_atmost(size_t niters) {
 }
 
 bool DenseMapping::is_converged() const {
-    return !((theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)) && (n_ < parameters_.nsteps_));
+    return !((n_ < parameters_.nsteps_) && (theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)));
 }
 
 void DenseMapping::notify_cost_volume_changed(const CostVolume& dsi) {

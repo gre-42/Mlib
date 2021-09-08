@@ -113,7 +113,7 @@ void DenseGeometry::iterate_atmost(size_t niters) {
 }
 
 bool DenseGeometry::is_converged() const {
-    return !((theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)) && (n_ < parameters_.nsteps));
+    return !((n_ < parameters_.nsteps) && (theta_ > parameters_.theta_end_corrected(cost_volume_parameters_)));
 }
 
 void DenseGeometry::notify_cost_volume_changed(const CostVolume& dsi) {
