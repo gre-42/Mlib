@@ -172,7 +172,7 @@ void Mlib::Sfm::Dg::primary_parameter_optimization(
     // From: An algorithm for total variation minimization and applications
     //       https://www.uni-muenster.de/AMM/num/Vorlesungen/MathemBV_SS16/literature/Chambolle2004.pdf
     //       Page 3, bottom right: 1/4 is best in practice.
-    for (float TAU : (1.f / 4.f * logspace(-1.f, 0.f, 5)).element_iterable()) {
+    for (float TAU : log2space(-4.f, -2.f, 3).element_iterable()) {
         DenseGeometry dg{
             cost_volume_parameters,
             DenseGeometryParameters{
