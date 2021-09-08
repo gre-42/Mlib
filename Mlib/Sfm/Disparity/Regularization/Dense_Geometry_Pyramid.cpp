@@ -4,6 +4,7 @@
 #include <Mlib/Images/Resample/Up_Sample_Average.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
 #include <Mlib/Stats/Logspace.hpp>
+#include <Mlib/Stats/Mean.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -76,6 +77,31 @@ void Mlib::Sfm::Dp::auxiliary_parameter_optimization(
     if (parameters.size() < 2) {
         throw std::runtime_error("Parameter vector must have length >= 2");
     }
+    {
+        Dg::DenseGeometryParameters modified_parameters{
+            .theta_0__ = NAN,
+            .theta_end__ = NAN,
+            .beta = NAN,
+            .lambda__ = NAN,
+            .tau = NAN,
+            .nsteps = 0};
+        for (float LAMBDA : (parameters[1].lambda__ * logspace(-1.f, 2.f, 10)).element_iterable()) {
+            std::vector<Dg::DenseGeometryParameters> modified_parameter_vector;
+            modified_parameter_vector.reserve(parameters.size());
+            modified_parameter_vector.push_back(modified_parameters);
+            modified_parameter_vector.insert(modified_parameter_vector.end(), parameters.begin() + 1, parameters.end());
+            modified_parameter_vector[1].lambda__ = LAMBDA;
+            DenseGeometryPyramid dp{
+                cost_volume_parameters,
+                modified_parameter_vector};
+            dp.notify_cost_volume_changed(vol);
+            dp.iterate_atmost(SIZE_MAX);
+            draw_nan_masked_grayscale(dp.high_res_.h_, 0.f, (float)(vol.nlayers() - 1)).save_to_file("h0-lambda-" + std::to_string(LAMBDA) + ".png");
+            draw_nan_masked_grayscale(dp.high_res_.p_[0], -1.f, 1.f).save_to_file("p0-0-lambda-" + std::to_string(LAMBDA) + ".png");
+            draw_nan_masked_grayscale(dp.high_res_.p_[1], -1.f, 1.f).save_to_file("p0-1-lambda-" + std::to_string(LAMBDA) + ".png");
+            std::cerr << "lambda " << LAMBDA << " energy " << nanmean(Dg::energy(parameters[0].lambda__, dp.high_res_.dsi_, dp.high_res_.h_)) << std::endl;
+        }
+    }
     for (float THETA_0 : (parameters.front().theta_0__ * logspace(-4.f, 0.f, 7)).element_iterable()) {
         Dg::DenseGeometryParameters modified_parameters{
             .theta_0__ = THETA_0,
@@ -94,5 +120,7 @@ void Mlib::Sfm::Dp::auxiliary_parameter_optimization(
         dp.notify_cost_volume_changed(vol);
         dp.iterate_atmost(SIZE_MAX);
         draw_nan_masked_grayscale(dp.high_res_.h_, 0.f, (float)(vol.nlayers() - 1)).save_to_file("h-theta_0-" + std::to_string(THETA_0) + ".png");
+        draw_nan_masked_grayscale(dp.high_res_.p_[0], -1.f, 1.f).save_to_file("p-0-theta_0-" + std::to_string(THETA_0) + ".png");
+        draw_nan_masked_grayscale(dp.high_res_.p_[1], -1.f, 1.f).save_to_file("p-1-theta_0-" + std::to_string(THETA_0) + ".png");
     }
 }
