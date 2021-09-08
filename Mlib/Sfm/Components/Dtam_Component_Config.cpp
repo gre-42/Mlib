@@ -8,14 +8,20 @@ using namespace Mlib::Sfm;
 
 static bool interactive = false;
 
-static Dg::DenseGeometryParameters dgp{
+static Dg::DenseGeometryParameters dgp_320{
     .theta_0__ = 0.1f * 0.2f,
     .theta_end__ = float{ 0.1 * 1e-4 },
     .beta = 0.0001,
     .lambda__ = 200.f * F_320,
     .tau = 1 / 8.f,
     .nsteps = 400};
-static Dg::DenseGeometryParameters dgp0 = [](){auto res = dgp; res.nsteps = 0; return res;}();
+// static Dg::DenseGeometryParameters dgp_640{
+//     .theta_0__ = 0.1f * 0.2f,
+//     .theta_end__ = float{ 0.1 * 1e-4 },
+//     .beta = 0.000005,
+//     .lambda__ = 200.f * F_320,
+//     .tau = 1 / 8.f,
+//     .nsteps = 3200};
 
 DtamComponentConfig::DtamComponentConfig(
     bool track_using_dtam,
@@ -55,8 +61,8 @@ DtamComponentConfig::DtamComponentConfig(
             1.f,                    // lambda (1 for the first keyframe)
             float{ 1e-4 },          // epsilon (1e-4)
             400),                   // nsteps
-        dgp,
-        {dgp, dgp},
+        dgp_320,
+        {dgp_320, dgp_320},
         Df::DenseFilteringParameters{
             .nsteps = 400,
             .theta_0__ = 0.2,
