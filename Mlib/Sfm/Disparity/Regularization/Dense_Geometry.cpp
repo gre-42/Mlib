@@ -39,7 +39,7 @@ static Array<float> l2q(const Array<float>& q) {
     return sqrt(sum(squared(q), 0));
 }
 
-Array<float> energy(
+Array<float> Mlib::Sfm::Dg::energy(
     float lambda,
     const Array<float>& dsi,
     const Array<float>& u)

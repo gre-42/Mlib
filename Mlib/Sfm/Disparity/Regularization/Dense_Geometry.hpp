@@ -41,4 +41,9 @@ void auxiliary_parameter_optimization(
     const CostVolumeParameters& cost_volume_parameters,
     const DenseGeometryParameters& parameters);
 
+Array<float> energy(
+    float lambda,
+    const Array<float>& dsi,
+    const Array<float>& u);
+
 }
