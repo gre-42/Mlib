@@ -1,10 +1,10 @@
 #include "Dense_Mapping.hpp"
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/Filters/Backward_Differences.hpp>
+#include <Mlib/Images/Filters/Backward_Differences_Pad_Zeros.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Difference_Of_Boxes.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
-#include <Mlib/Images/Filters/Forward_Differences.hpp>
+#include <Mlib/Images/Filters/Forward_Differences_Valid.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Math/Huber_Norm.hpp>
@@ -141,7 +141,7 @@ static Array<float> AGd(
     if (regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES) {
         // d becomes NAN because a is added to it.
         return substitute_nans(
-            Array<float>({g, g}) * forward_gradient_filter(d, GRADIENT_BOUNDARY_VALUE),
+            Array<float>({g, g}) * forward_gradient_filter_valid(d, GRADIENT_BOUNDARY_VALUE),
             GRADIENT_BOUNDARY_VALUE);
     }
     if (regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING) {
@@ -171,8 +171,8 @@ static Array<float> AGaq(
         return -g * (Aq0 + Aq1);
     }
     if (regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES) {
-        Array<float> Aq0 = backward_differences_1d(q[0], GRADIENT_BOUNDARY_VALUE, 0);
-        Array<float> Aq1 = backward_differences_1d(q[1], GRADIENT_BOUNDARY_VALUE, 1);
+        Array<float> Aq0 = backward_differences_pad_zeros_1d(q[0], 0);
+        Array<float> Aq1 = backward_differences_pad_zeros_1d(q[1], 1);
         return -g * (Aq0 + Aq1);
     }
     if (regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING) {

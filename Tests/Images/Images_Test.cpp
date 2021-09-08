@@ -3,12 +3,12 @@
 #include <Mlib/Images/Color_Spaces.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Features.hpp>
-#include <Mlib/Images/Filters/Backward_Differences.hpp>
+#include <Mlib/Images/Filters/Backward_Differences_Pad_Zeros.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Difference_Of_Boxes.hpp>
 #include <Mlib/Images/Filters/Divide_By_Brightness.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
-#include <Mlib/Images/Filters/Forward_Differences.hpp>
+#include <Mlib/Images/Filters/Forward_Differences_Valid.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
@@ -54,11 +54,11 @@ void test_differences() {
 
 void test_forward_backward_differences() {
     assert_allclose(
-        forward_differences_1d(Array<float>{1,2,0,1,0,0,4}, NAN, 0),
+        forward_differences_valid_1d(Array<float>{1,2,0,1,0,0,4}, NAN, 0),
         Array<float>{1, -2, 1, -1, 0, 4, NAN});
     assert_allclose(
-        backward_differences_1d(Array<float>{1,2,0,1,0,0,4}, NAN, 0),
-        Array<float>{NAN, 1, -2, 1, -1, 0, 4});
+        backward_differences_pad_zeros_1d(Array<float>{1,2,0,1,0,0,4}, 0),
+        Array<float>{1, 1, -2, 1, -1, 0, 4});
 }
 
 void test_laplace() {

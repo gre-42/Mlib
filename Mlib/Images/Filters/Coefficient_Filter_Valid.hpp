@@ -4,7 +4,7 @@
 namespace Mlib {
 
 template <class TData>
-Array<TData> coefficient_filter_1d(
+Array<TData> coefficient_filter_valid_1d(
     const Array<TData>& image,
     const Array<TData>& coeffs,
     const TData& boundary_value,
@@ -13,8 +13,8 @@ Array<TData> coefficient_filter_1d(
 {
     assert(coeffs.ndim() == 1);
 
-    if (coeffs.length() <= 1) {
-        return image.copy();
+    if (coeffs.length() == 0) {
+        return zeros<TData>(image.shape());
     }
 
     Array<TData> result(image.shape());
