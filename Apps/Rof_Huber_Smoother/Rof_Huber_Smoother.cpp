@@ -24,18 +24,22 @@ int main(int argc, char **argv) {
         " [--smoothed_out <smoothed_out.png>]"
         " [--depth_out <depth_out.png>]"
         " --alpha <alpha (e.g. 100)>"
-        " --beta <beta (e.g. 1.6)>"
+        " --beta_G <beta (e.g. 1.6)>"
         " --lambda <lambda (e.g. 1.0)>"
+        " --beta_I <beta (e.g. 0.0001 or 0.001)>"
         " [--niterations <n>]"
         " [--theta <theta (e.g. 0.2)>]"
         " [--epsilon <epsilon (e.g. 1e-4)>]"
-        " [--remove_edge_blobs]",
-        {"--remove_edge_blobs"},
+        " [--remove_edge_blobs]"
+        " [--optimize_parameters]",
+        {"--remove_edge_blobs",
+        "--optimize_parameters"},
         {"--im",
         "--dsi",
         "--lambda",
+        "--beta_I",
         "--alpha",
-        "--beta",
+        "--beta_G",
         "--g_out",
         "--smoothed_out",
         "--niterations",
@@ -52,14 +56,14 @@ int main(int argc, char **argv) {
             im.to_float_grayscale(),
             EdgeImageConfig{
                 .alpha = safe_stof(args.named_value("--alpha")),
-                .beta = safe_stof(args.named_value("--beta")),
+                .beta = safe_stof(args.named_value("--beta_G")),
                 .remove_edge_blobs = args.has_named("--remove_edge_blobs")});
 
         if (args.has_named_value("--g_out")) {
             StbImage::from_float_grayscale(g).save_to_file(args.named_value("--g_out"));
         }
 
-        if (args.has_named_value("--depth_out")) {
+        if (args.has_named_value("--depth_out") || args.has_named("--optimize_parameters")) {
             Array<float> dsi = Array<float>::load_binary(args.named_value("--dsi"));
             if (dsi.ndim() != 3) {
                 throw std::runtime_error("DSI has incorrect number of dimensions");
@@ -72,9 +76,9 @@ int main(int argc, char **argv) {
                     .alpha = NAN,
                     .beta = NAN,
                     .remove_edge_blobs = false},
-                safe_stof(args.named_value("--theta")), // theta_0
-                0.f,                                    // theta_end
-                0.f,                                    // beta
+                safe_stof(args.named_value("--theta")),                      // theta_0
+                float{1e-4 / 0.2} * safe_stof(args.named_value("--theta")),  // theta_end
+                safe_stof(args.named_value("--beta_I")),                     // beta
                 safe_stof(args.named_value("--lambda")),
                 safe_stof(args.named_value("--epsilon")),
                 safe_stoz(args.named_value("--niterations")));
@@ -82,20 +86,26 @@ int main(int argc, char **argv) {
                 .min_depth = 1.f,
                 .max_depth = 10.f,
                 .ndepths = dsi.shape(0)};
-            Dm::DenseMapping dm{
-                g,
-                cost_volume_parameters,
-                params,
-                false,                              // print_energy
-                false};                             // print_bmps
-            dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
-            dm.iterate_atmost(SIZE_MAX);
-            Array<float> ai = dm.interpolated_inverse_depth_image();
-            draw_nan_masked_grayscale(
-                ai,
-                1.f / cost_volume_parameters.max_depth,
-                1.f / cost_volume_parameters.min_depth)
-            .save_to_file(args.named_value("--depth_out"));
+            if (args.has_named("--optimize_parameters")) {
+                Dm::primary_parameter_optimization(dsi, g, cost_volume_parameters, params);
+                Dm::auxiliary_parameter_optimization(dsi, g, cost_volume_parameters, params);
+            }
+            if (args.has_named_value("--depth_out")) {
+                Dm::DenseMapping dm{
+                    g,
+                    cost_volume_parameters,
+                    params,
+                    false,                              // print_energy
+                    false};                             // print_bmps
+                dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
+                dm.iterate_atmost(SIZE_MAX);
+                Array<float> ai = dm.interpolated_inverse_depth_image();
+                draw_nan_masked_grayscale(
+                    ai,
+                    1.f / cost_volume_parameters.max_depth,
+                    1.f / cost_volume_parameters.min_depth)
+                .save_to_file(args.named_value("--depth_out"));
+            }
         }
         if (args.has_named_value("--smoothed_out")) {
             size_t niterations = safe_stoz(args.named_value("--niterations"));
