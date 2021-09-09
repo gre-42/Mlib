@@ -387,6 +387,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             for (size_t i = 0; i < dsi_.shape(0); i += dsi_.shape(0) / 5) {
                 draw_nan_masked_grayscale(dsi_[i], 0, 1).save_to_file(cache_dir_ + "/vol-" + suffix + "-" + std::to_string(i) + ".png");
             }
+            dsi_.save_binary(cache_dir_ + "/vol-" + suffix + ".array");
         }
     } else if (!dsi_.initialized()) {
         throw std::runtime_error("Cost volume not initialized");
