@@ -176,6 +176,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.theta_end__,
                 parameters.beta_,
                 LAMBDA,
+                NAN,  // lambda_initial
                 parameters.epsilon_,
                 parameters.nsteps_),
             false,
@@ -196,6 +197,7 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
                 parameters.theta_end__,
                 parameters.beta_,
                 parameters.lambda_,
+                NAN,  // lambda_initial
                 EPSILON,
                 parameters.nsteps_),
             false,
@@ -223,6 +225,7 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
                 THETA_0 / 0.2f * float{ 1e-4 },
                 BETA,
                 parameters.lambda_,
+                NAN,  // lambda_initial
                 parameters.epsilon_,
                 parameters.nsteps_);
             DenseMapping dm{

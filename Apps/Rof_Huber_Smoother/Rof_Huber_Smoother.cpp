@@ -80,11 +80,12 @@ int main(int argc, char **argv) {
                 float{1e-4 / 0.2} * safe_stof(args.named_value("--theta")),  // theta_end
                 safe_stof(args.named_value("--beta_I")),                     // beta
                 safe_stof(args.named_value("--lambda")),
+                NAN, // lambda_initial
                 safe_stof(args.named_value("--epsilon")),
                 safe_stoz(args.named_value("--niterations")));
             CostVolumeParameters cost_volume_parameters{
-                .min_depth = 1.f,
-                .max_depth = 10.f,
+                .min_depth = 3.5f,
+                .max_depth = 12.f,
                 .ndepths = dsi.shape(0)};
             if (args.has_named("--optimize_parameters")) {
                 Dm::primary_parameter_optimization(dsi, g, cost_volume_parameters, params);

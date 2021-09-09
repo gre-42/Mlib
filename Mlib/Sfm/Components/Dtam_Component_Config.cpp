@@ -55,15 +55,16 @@ DtamComponentConfig::DtamComponentConfig(
         },
         Dm::DtamParameters(
             EdgeImageConfig{
-                .alpha = 100.f,
-                .beta = 1.6f,
+                .alpha = 10.f,
+                .beta = 1.f,
                 .remove_edge_blobs = false},
             0.2,                    // theta_0 (0.2)
             float{ 1e-4 },          // theta_end (1e-4)
             0.0001f,                // beta (0.0001 - 0.001)
-            1.f,                    // lambda (1 for the first keyframe)
-            float{ 1e-4 },          // epsilon (1e-4)
-            400),                   // nsteps
+            10.f,                   // lambda (1 for the first keyframe)
+            500.f,                  // lambda_initial
+            float{ 1e-3 },          // epsilon (1e-4)
+            500),                   // nsteps
         dgp_320,
         {dgp_320, dgp_320},
         Df::DenseFilteringParameters{

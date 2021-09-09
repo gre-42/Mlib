@@ -19,6 +19,7 @@ public:
         float theta_end,
         float beta,
         float lambda,
+        float lambda_initial,
         float epsilon,
         size_t nsteps);
     size_t ndepths_;
@@ -27,6 +28,7 @@ public:
     float theta_end__;
     float beta_;
     float lambda_;
+    float lambda_initial_;
     float epsilon_;
     size_t nsteps_;
     float theta_0_corrected(const CostVolumeParameters& cost_volume_parameters) const;

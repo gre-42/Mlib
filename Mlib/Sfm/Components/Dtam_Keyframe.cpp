@@ -52,7 +52,11 @@ DtamKeyframe::DtamKeyframe(
   opt_id_{0},
   cfg_{cfg},
   camera_computed_with_sift_{camera_computed_with_sift}
-{}
+{
+    if (camera_computed_with_sift) {
+        cfg_.dm_params_.lambda_ = cfg_.dm_params_.lambda_initial_;
+    }
+}
 
 DtamKeyframe::DtamKeyframe(DtamKeyframe&&) = default;
 
