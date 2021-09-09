@@ -75,12 +75,12 @@ DenseMapping::DenseMapping(
     const DtamParameters& parameters,
     bool print_debug,
     bool print_bmps)
-: huber_rof_solver_{ g, print_debug, print_bmps },
+: n_{ SIZE_MAX },
+  huber_rof_solver_{ g, print_debug, print_bmps },
   cost_volume_parameters_{ cost_volume_parameters },
   parameters_{ parameters },
   print_debug_{ print_debug },
-  print_bmps_{ print_bmps },
-  n_{ SIZE_MAX }
+  print_bmps_{ print_bmps }
 {}
 
 void DenseMapping::iterate_once() {
@@ -131,16 +131,11 @@ void DenseMapping::notify_cost_volume_changed(const CostVolume& dsi) {
     Array<float>& g = huber_rof_solver_.g_;
     Array<float>& d = huber_rof_solver_.d_;
     Array<float>& a = huber_rof_solver_.a_;
-    Array<float>& q = huber_rof_solver_.q_;
     sqrt_dsi_max_dmin_ = get_sqrt_dsi_max_dmin(dsi_);
     d.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, INFINITY, 1, zeros<float>(g.shape()));
-    a = d;
-    q = zeros<float>(
-        regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES ||
-        regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING ||
-        regularizer == Regularizer::CENTRAL_DIFFERENCES
-            ? ArrayShape{2, g.shape(0), g.shape(1)}
-            : g.shape());
+    a.ref() = d;
+    huber_rof_solver_.initialize_q();
+    
     theta_ = parameters_.theta_0_corrected(cost_volume_parameters_);
     n_ = 0;
 }

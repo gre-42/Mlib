@@ -94,6 +94,7 @@ public:
         const Array<float>& g,
         bool print_debug = false,
         bool print_bmps = false);
+    void initialize_q();
     void iterate(const HuberRof::HuberRofConfig& config);
     Array<float> d_;
     Array<float> a_;

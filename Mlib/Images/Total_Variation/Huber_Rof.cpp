@@ -458,6 +458,15 @@ HuberRofSolver::HuberRofSolver(
     }
 }
 
+void HuberRofSolver::initialize_q() {
+    q_ = zeros<float>(
+        regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES ||
+        regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING ||
+        regularizer == Regularizer::CENTRAL_DIFFERENCES
+            ? ArrayShape{2, g_.shape(0), g_.shape(1)}
+            : g_.shape());
+}
+
 void HuberRofSolver::iterate(const HuberRof::HuberRofConfig& config) {
     if (false) {
         gradient_ascent_descent(
@@ -470,26 +479,26 @@ void HuberRofSolver::iterate(const HuberRof::HuberRofConfig& config) {
             10);
     } else if (false) {
         float sigma = 0.01f;
-        q_ = gradient_descent(
+        q_.move() = gradient_descent(
             q_,
             [&](const Array<float>& qq) { return prox_sigma_fs(sigma, g_, config.epsilon, d_, qq); },
             [&](const Array<float>& qq) { return prox_sigma_fs_dq(sigma, g_, config.epsilon, d_, qq); },
             10);
         float tau = 0.01f;
-        d_ = gradient_descent(
+        d_.move() = gradient_descent(
             d_,
             [&](const Array<float>& dd) { return prox_tau_gs(tau, g_, config.theta, dd, a_, q_); },
             [&](const Array<float>& dd) { return prox_tau_gs_dd(tau, g_, config.theta, dd, a_, q_); },
             10);
     } else if (false) {
         std::cerr << "Computing q" << std::endl;
-        q_ = gradient_descent(
+        q_.move() = gradient_descent(
             q_,
             [&](const Array<float>& qq) { return -xsum(energy_dual(g_, config.theta, config.epsilon, d_, a_, qq)); },
             [&](const Array<float>& qq) { return -energy_dq(g_, config.epsilon, d_, qq); },
             10);
         std::cerr << "Computing d" << std::endl;
-        d_ = gradient_descent(
+        d_.move() = gradient_descent(
             d_,
             [&](const Array<float>& dd) { return xsum(energy_dual(g_, config.theta, config.epsilon, dd, a_, q_)); },
             [&](const Array<float>& dd) { return energy_dd(g_, config.theta, dd, a_, q_); },
@@ -505,8 +514,8 @@ void HuberRofSolver::iterate(const HuberRof::HuberRofConfig& config) {
         if (print_debug_) {
             std::cerr << "sigma_q " << sigma_q << " sigma_d " << sigma_d << std::endl;
         }
-        q_ = update_q(g_, q_, d_, config.epsilon, sigma_q);
-        d_ = update_d(g_, q_, d_, a_, config.theta, sigma_d, config.d_min, config.d_max);
+        q_.move() = update_q(g_, q_, d_, config.epsilon, sigma_q);
+        d_.move() = update_d(g_, q_, d_, a_, config.theta, sigma_d, config.d_min, config.d_max);
     }
     if (print_debug_) {
         Array<float> eo = energy_primal(g_, config.theta, config.epsilon, d_, a_);
