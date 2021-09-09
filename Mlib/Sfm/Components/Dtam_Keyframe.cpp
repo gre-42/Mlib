@@ -25,6 +25,7 @@
 using namespace Mlib;
 using namespace Mlib::Cv;
 using namespace Mlib::Sfm;
+using namespace Mlib::HuberRof;
 
 DtamKeyframe::DtamKeyframe(
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames,
@@ -393,9 +394,9 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
 
     if (dm_ == nullptr) {
         if (cfg_.regularization_ == Regularization::DTAM) {
-            Array<float> g = Dm::g_from_grayscale(
+            Array<float> g = g_from_grayscale(
                 down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale,
-                cfg_.dm_params_);
+                cfg_.dm_params_.edge_image_config_);
             dm_ = std::make_unique<Dm::DenseMapping>(
                 g,
                 cfg_.cost_volume_parameters_,
@@ -430,12 +431,12 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
             Dm::DenseMapping* dm = dynamic_cast<Dm::DenseMapping*>(dm_.get());
             Dm::primary_parameter_optimization(
                 dsi_,
-                dm->g_,
+                dm->huber_rof_solver_.g_,
                 cfg_.cost_volume_parameters_,
                 cfg_.dm_params_);
             Dm::auxiliary_parameter_optimization(
                 dsi_,
-                dm->g_,
+                dm->huber_rof_solver_.g_,
                 cfg_.cost_volume_parameters_,
                 cfg_.dm_params_);
         } else if (cfg_.regularization_ == Regularization::DENSE_GEOMETRY) {

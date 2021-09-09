@@ -5,7 +5,7 @@
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/Features.cpp>
+#include <Mlib/Images/Features.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Optimize/Generic_Optimization.hpp>
 #include <Mlib/Math/Optimize/Levenberg_Marquardt.hpp>

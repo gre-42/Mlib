@@ -1,4 +1,5 @@
 #include "Dtam_Parameters.hpp"
+#include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <iomanip>
 #include <ostream>
@@ -6,6 +7,7 @@
 using namespace Mlib;
 using namespace Mlib::Sfm;
 using namespace Mlib::Sfm::Dm;
+using namespace Mlib::HuberRof;
 
 // OpenDTAM:
 // thetaStart = 10.0;
@@ -23,8 +25,11 @@ using namespace Mlib::Sfm::Dm;
 
 DtamParameters::DtamParameters()
 : DtamParameters(
-    100.f,                              // alpha_G
-    1.6f,                               // beta_G
+    EdgeImageConfig{
+        .alpha = 100.f,
+        .beta = 1.6f,
+        .remove_edge_blobs = false,
+    },
     8.f,                                // theta_0 (0.2)
     8.f / 0.2f * float{ 1e-4 },         // theta_end (1e-4)
     0.0001f,                            // beta (0.0001 - 0.001)
@@ -44,16 +49,14 @@ DtamParameters::DtamParameters()
 // {}
 
 DtamParameters::DtamParameters(
-    float alpha_G,
-    float beta_G,
+    const EdgeImageConfig& edge_image_config,
     float theta_0,
     float theta_end,
     float beta,
     float lambda,
     float epsilon,
     size_t nsteps)
-: alpha_G_(alpha_G),
-  beta_G_(beta_G),
+: edge_image_config_{edge_image_config},
   theta_0__(theta_0),
   theta_end__(theta_end),
   beta_(beta),
@@ -72,8 +75,9 @@ float DtamParameters::theta_end_corrected(const CostVolumeParameters& cost_volum
 
 std::ostream& Mlib::Sfm::Dm::operator << (std::ostream& str, const DtamParameters& params) {
     str <<
-        "alpha_G " << std::setw(15) << params.alpha_G_ <<
-        " beta_G " << std::setw(15) << params.beta_G_ <<
+        "alpha_G " << std::setw(15) << params.edge_image_config_.alpha <<
+        " beta_G " << std::setw(15) << params.edge_image_config_.beta <<
+        " remove_edge_blobs " << std::setw(2) << (int)params.edge_image_config_.remove_edge_blobs <<
         " theta_0 " << std::setw(15) << params.theta_0__ <<
         " theta_end " << std::setw(15) << params.theta_end__ <<
         " lambda " << std::setw(15) << params.lambda_ <<

@@ -28,7 +28,7 @@ void test_numerical_differentiation() {
     Array<float> d = 1.f + uniform_random_array<float>(g.shape(), 2);
     Array<float> a = 1.f + uniform_random_array<float>(g.shape(), 3);
     Array<float> q = uniform_random_array<float>(
-        Dm::regularizer == Dm::Regularizer::DIFFERENCE_OF_BOXES
+        HuberRof::regularizer == HuberRof::Regularizer::DIFFERENCE_OF_BOXES
             ? g.shape()
             : ArrayShape{2}.concatenated(g.shape()),
         4) / float(g.nelements());
@@ -45,7 +45,7 @@ void test_numerical_differentiation() {
                 qq.reshaped(q.shape())))};
         };
         assert_allclose(
-            Dm::energy_dq(g, epsilon, d, q),
+            HuberRof::energy_dq(g, epsilon, d, q),
             numerical_differentiation(f, q.flattened()).reshaped(q.shape()),
             2e-3);
     }
@@ -64,13 +64,13 @@ void test_numerical_differentiation() {
         // ignores boundary effects from transposition of the gradient
         assert_isclose(
             numerical_differentiation(f, d.flattened()).reshaped(g.shape())(3, 4),
-            Dm::energy_dd(g, theta, d, a, q)(3, 4),
+            HuberRof::energy_dd(g, theta, d, a, q)(3, 4),
             1e-3);
     }
     {
         float sigma = 0.1;
         auto f = [&](const Array<float>& qq) {
-            return Array<float>{Dm::prox_sigma_fs(
+            return Array<float>{HuberRof::prox_sigma_fs(
                 sigma,
                 g,
                 epsilon,
@@ -79,13 +79,13 @@ void test_numerical_differentiation() {
         };
         assert_allclose(
             numerical_differentiation(f, q.flattened()).reshaped(q.shape()),
-            Dm::prox_sigma_fs_dq(sigma, g, epsilon, d, q),
+            HuberRof::prox_sigma_fs_dq(sigma, g, epsilon, d, q),
             1e-2);
     }
     {
         float tau = 0.1;
         auto f = [&](const Array<float>& dd) {
-            return Array<float>{Dm::prox_tau_gs(
+            return Array<float>{HuberRof::prox_tau_gs(
                 tau,
                 g,
                 theta,
@@ -99,7 +99,7 @@ void test_numerical_differentiation() {
         // ignores boundary effects from transposition of the gradient
         assert_isclose(
             numerical_differentiation(f, d.flattened()).reshaped(g.shape())(3, 4),
-            Dm::prox_tau_gs_dd(tau, g, theta, d, a, q)(3, 4),
+            HuberRof::prox_tau_gs_dd(tau, g, theta, d, a, q)(3, 4),
             1e-2);
     }
 }
@@ -154,9 +154,9 @@ void test_boundary_and_nan() {
         dmN.notify_cost_volume_changed(InverseDepthCostVolume{ dsiN });
         dmN.iterate_atmost(SIZE_MAX);
         //std::cerr << dmN.a_ << std::endl;
-        for (size_t r = 0; r < dm.a_.shape(0); ++r) {
-            for (size_t c = 0; c < dm.a_.shape(1); ++c) {
-                assert_isclose(dmN.a_(r, c + dc), dm.a_(r, c));
+        for (size_t r = 0; r < dm.huber_rof_solver_.a_.shape(0); ++r) {
+            for (size_t c = 0; c < dm.huber_rof_solver_.a_.shape(1); ++c) {
+                assert_isclose(dmN.huber_rof_solver_.a_(r, c + dc), dm.huber_rof_solver_.a_(r, c));
             }
         }
     }

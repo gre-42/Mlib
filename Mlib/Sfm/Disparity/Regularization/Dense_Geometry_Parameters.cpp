@@ -1,4 +1,5 @@
 #include "Dense_Geometry_Parameters.hpp"
+#include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <iomanip>
 #include <ostream>

@@ -4,6 +4,7 @@
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Images/Total_Variation/Edge_Image_Config.hpp>
 #include <Mlib/Sfm/Disparity/Dense_Point_Cloud.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping.hpp>
@@ -22,6 +23,7 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
+using namespace Mlib::HuberRof;
 
 
 int main(int argc, char **argv) {
@@ -163,7 +165,7 @@ int main(int argc, char **argv) {
             std::cerr << ai_filename << " does not exist, computing..." << std::endl;
             Dm::DtamParameters params;
             Dm::DenseMapping dm{
-                Dm::g_from_grayscale(im0_gray, params),
+                g_from_grayscale(im0_gray, params.edge_image_config_),
                 CostVolumeParameters(),
                 params,
                 false,                              // print_energy

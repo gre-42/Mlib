@@ -1,5 +1,5 @@
 #include "Dense_Geometry_Pyramid.hpp"
-#include <Mlib/Images/Draw_Bmp.cpp>
+#include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Images/Resample/Up_Sample_Average.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>

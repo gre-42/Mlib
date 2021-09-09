@@ -1,9 +1,12 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
-#include <Mlib/Sfm/Disparity/Dtam_Extension_Config.hpp>
-#include <cstddef>
+#include <Mlib/Images/Total_Variation/Edge_Image_Config.hpp>
 #include <iosfwd>
+
+namespace Mlib::Sfm {
+
+struct CostVolumeParameters;
+
+}
 
 namespace Mlib::Sfm::Dm {
 
@@ -11,8 +14,7 @@ class DtamParameters {
 public:
     DtamParameters();
     DtamParameters(
-        float alpha_G,
-        float beta_G,
+        const HuberRof::EdgeImageConfig& edge_image_config,
         float theta_0,
         float theta_end,
         float beta,
@@ -20,8 +22,7 @@ public:
         float epsilon,
         size_t nsteps);
     size_t ndepths_;
-    float alpha_G_;
-    float beta_G_;
+    HuberRof::EdgeImageConfig edge_image_config_;
     float theta_0__;
     float theta_end__;
     float beta_;
@@ -30,7 +31,6 @@ public:
     size_t nsteps_;
     float theta_0_corrected(const CostVolumeParameters& cost_volume_parameters) const;
     float theta_end_corrected(const CostVolumeParameters& cost_volume_parameters) const;
-    DtamExtensionConfig ext;
 };
 
 std::ostream& operator << (std::ostream& str, const DtamParameters& params);

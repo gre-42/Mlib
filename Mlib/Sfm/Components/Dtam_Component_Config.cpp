@@ -5,6 +5,7 @@
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
+using namespace Mlib::HuberRof;
 
 static bool interactive = false;
 
@@ -53,8 +54,10 @@ DtamComponentConfig::DtamComponentConfig(
             .ndepths = 32
         },
         Dm::DtamParameters(
-            100.f,                  // alpha_G
-            1.6f,                   // beta_G
+            EdgeImageConfig{
+                .alpha = 100.f,
+                .beta = 1.6f,
+                .remove_edge_blobs = false},
             0.2,                    // theta_0 (0.2)
             float{ 1e-4 },          // theta_end (1e-4)
             0.0001f,                // beta (0.0001 - 0.001)

@@ -1,18 +1,11 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Images/Total_Variation/Huber_Rof.hpp>
+#include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Dtam_Parameters.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Depth_Estimation.hpp>
 
 namespace Mlib::Sfm::Dm {
-
-enum class Regularizer {
-    FORWARD_BACKWARD_DIFFERENCES,
-    FORWARD_BACKWARD_WEIGHTING,
-    CENTRAL_DIFFERENCES,
-    DIFFERENCE_OF_BOXES  // a.k.a. Laplace
-};
-
-static const Regularizer regularizer = Regularizer::FORWARD_BACKWARD_WEIGHTING;
 
 Array<float> energy_orig(
     const Array<float>& g,
@@ -31,54 +24,6 @@ Array<float> energy(
     const Array<float>& a,
     const Array<float>& q);
 
-Array<float> energy_dq(
-    const Array<float>& g,
-    float epsilon,
-    const Array<float>& d,
-    const Array<float>& q);
-
-Array<float> energy_dd(
-    const Array<float>& g,
-    float theta,
-    const Array<float>& d,
-    const Array<float>& a,
-    const Array<float>& q);
-
-float prox_sigma_fs(
-    float sigma,
-    const Array<float>& g,
-    float epsilon,
-    const Array<float>& dm,
-    const Array<float>& q);
-
-Array<float> prox_sigma_fs_dq(
-    float sigma,
-    const Array<float>& g,
-    float epsilon,
-    const Array<float>& dm,
-    const Array<float>& q);
-
-float prox_tau_gs(
-    float tau,
-    const Array<float>& g,
-    float theta,
-    const Array<float>& d,
-    const Array<float>& a,
-    const Array<float>& q,
-    bool zero_sum = false);
-
-Array<float> prox_tau_gs_dd(
-    float tau,
-    const Array<float>& g,
-    float theta,
-    const Array<float>& d,
-    const Array<float>& a,
-    const Array<float>& q);
-
-Array<float> g_from_grayscale(
-    const Array<float>& im_ref_gray,
-    const DtamParameters& parameters);
-
 class DenseMapping: public DenseDepthEstimation {
 public:
     explicit DenseMapping(
@@ -96,12 +41,9 @@ public:
 
     Array<float> dsi_;
     Array<float> sqrt_dsi_max_dmin_;
-    Array<float> d_;
-    Array<float> a_;
-    Array<float> q_;
-    Array<float> g_;
     float theta_;
     size_t n_;
+    HuberRof::HuberRofSolver huber_rof_solver_;
     CostVolumeParameters cost_volume_parameters_;
     DtamParameters parameters_;
     bool print_debug_;

@@ -1,9 +1,17 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Sfm/Disparity/Cost_Volume_Parameters.hpp>
-#include <Mlib/Sfm/Disparity/Dtam_Extension_Config.hpp>
-#include <cstddef>
 #include <iosfwd>
+
+namespace Mlib {
+
+class ArrayShape;
+
+}
+
+namespace Mlib::Sfm {
+
+struct CostVolumeParameters;
+
+}
 
 namespace Mlib::Sfm::Dg {
 
@@ -18,7 +26,6 @@ public:
     float theta_0_corrected(const CostVolumeParameters& cost_volume_parameters) const;
     float theta_end_corrected(const CostVolumeParameters& cost_volume_parameters) const;
     float lambda_corrected(const ArrayShape& shape) const;
-    DtamExtensionConfig ext;
 };
 
 std::ostream& operator << (std::ostream& str, const DenseGeometryParameters& params);
