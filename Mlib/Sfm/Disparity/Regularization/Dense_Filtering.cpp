@@ -40,7 +40,7 @@ void DenseFiltering::iterate_once() {
     a_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, d);
     // std::cerr << "done3" << std::endl;
     // throw std::runtime_error("asd");
-    theta_ *= (1 - parameters_.beta * n_);
+    theta_ *= std::max(1 - parameters_.beta * n_, 0.f);
     ++n_;
 }
 

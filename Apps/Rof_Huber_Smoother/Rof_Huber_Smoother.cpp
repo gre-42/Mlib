@@ -34,7 +34,8 @@ int main(int argc, char **argv) {
         " --lambda <lambda (e.g. 1.0)>"
         " --beta_I <beta (e.g. 0.0001 or 0.001)>"
         " [--niterations <n>]"
-        " [--theta <theta (e.g. 0.2)>]"
+        " [--theta_0 <theta_0 (e.g. 0.2)>]"
+        " [--theta_end <theta_end (e.g. 1e-4)>]"
         " [--epsilon <epsilon (e.g. 1e-4)>]"
         " [--remove_edge_blobs]"
         " [--optimize_with_true_depth]"
@@ -53,7 +54,8 @@ int main(int argc, char **argv) {
         "--g_out",
         "--smoothed_out",
         "--niterations",
-        "--theta",
+        "--theta_0",
+        "--theta_end",
         "--epsilon",
         "--depth_out",
         "--depth_array_out",
@@ -95,8 +97,8 @@ int main(int argc, char **argv) {
             }
             Dm::DtamParameters params(
                 edge_image_config,
-                safe_stof(args.named_value("--theta")),                      // theta_0
-                float{1e-4 / 0.2} * safe_stof(args.named_value("--theta")),  // theta_end
+                safe_stof(args.named_value("--theta_0")),                    // theta_0
+                safe_stof(args.named_value("--theta_end")),                  // theta_end
                 safe_stof(args.named_value("--beta_I")),                     // beta
                 safe_stof(args.named_value("--lambda")),
                 NAN, // lambda_initial

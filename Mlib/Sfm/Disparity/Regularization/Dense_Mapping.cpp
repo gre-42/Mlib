@@ -111,7 +111,7 @@ void DenseMapping::iterate_once() {
     }
     // std::cerr << "done3" << std::endl;
     // throw std::runtime_error("asd");
-    theta_ *= (1 - parameters_.beta_ * n_);
+    theta_ *= std::max(1 - parameters_.beta_ * n_, 0.f);
     ++n_;
 }
 
@@ -169,7 +169,7 @@ void Mlib::Sfm::Dm::qualitative_primary_parameter_optimization(
     const CostVolumeParameters& cost_volume_parameters,
     const DtamParameters& parameters)
 {
-    for (float LAMBDA : (parameters.lambda_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
+    for (float LAMBDA : (parameters.lambda_ * logspace(-2.f, 2.f, 5, 2.f)).element_iterable()) {
         DenseMapping dm{
             g,
             cost_volume_parameters,
@@ -190,7 +190,7 @@ void Mlib::Sfm::Dm::qualitative_primary_parameter_optimization(
         draw_nan_masked_grayscale(a, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".png");
         std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, a)) << std::endl;
     }
-    for (float EPSILON : (parameters.epsilon_ * logspace(-2.f, 2.f, 5)).element_iterable()) {
+    for (float EPSILON : (parameters.epsilon_ * logspace(-2.f, 2.f, 5, 2.f)).element_iterable()) {
         DenseMapping dm{
             g,
             cost_volume_parameters,
@@ -226,7 +226,8 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
         return Array<float>{
             params.edge_image_config_.alpha * float{ 1e0 },
             params.edge_image_config_.beta * float{ 1e0 },
-            params.theta_0__ * float{ 1e1 },
+            params.theta_0__ * float{ 1e2 },
+            params.theta_end__ * float{ 1e6 },
             params.beta_ * float{ 1e4 },
             params.lambda_ * float{ 1e-1 },
             params.epsilon_ * float{ 1e4 }};
@@ -237,18 +238,19 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
                 .alpha = x(0) / float{ 1e0 },
                 .beta = x(1) / float{ 1e0 },
                 .remove_edge_blobs = parameters.edge_image_config_.remove_edge_blobs},
-            x(2) / float{ 1e1 },                       // theta_0
-            x(2) / float{ 1e1 } / 0.2 * float{ 1e-4 }, // theta_end
-            x(3) / float{ 1e4 },                       // beta
-            x(4) / float{ 1e-1 },                      // lambda
+            x(2) / float{ 1e2 },                       // theta_0
+            x(3) / float{ 1e6 },                       // theta_end
+            x(4) / float{ 1e4 },                       // beta
+            x(5) / float{ 1e-1 },                      // lambda
             NAN,                                       // lambda_initial
-            x(5) / float{ 1e4 },                       // epsilon
+            x(6) / float{ 1e4 },                       // epsilon
             parameters.nsteps_);
     };
     Array<bool> mask = !isnan(true_inverse_depth);
     auto f = [&mask, &copy_out, &grayscale, &cost_volume_parameters, &dsi, &call_counter, draw_bmps](const Array<float>& x){
         std::cerr << "x: " << x << std::endl;
         DtamParameters params = copy_out(x);
+        std::cerr << "p: " << params << std::endl;
         Array<float> g = g_from_grayscale(grayscale, params.edge_image_config_);
         Dm::DenseMapping dm{
             g,

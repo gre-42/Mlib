@@ -104,7 +104,7 @@ void DenseGeometry::iterate_once() {
             }
         }
     }
-    theta_ *= (1 - parameters_.beta * n_);
+    theta_ *= std::max(1 - parameters_.beta * n_, 0.f);
     ++n_;
 }
 
