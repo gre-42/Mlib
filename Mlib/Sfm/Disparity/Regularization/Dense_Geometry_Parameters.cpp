@@ -27,6 +27,7 @@ std::ostream& Mlib::Sfm::Dg::operator << (std::ostream& str, const DenseGeometry
         " lambda " << std::setw(15) << params.lambda__ <<
         " tau " << std::setw(15) << params.tau <<
         " beta " << std::setw(15) << params.beta <<
-        " nsteps " << std::setw(15) << params.nsteps;
+        " nsteps " << std::setw(15) << params.nsteps <<
+        " nsteps_inner " << std::setw(15) << params.nsteps_inner;
     return str;
 }

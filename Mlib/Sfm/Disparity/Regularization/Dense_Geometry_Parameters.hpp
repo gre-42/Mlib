@@ -23,6 +23,7 @@ public:
     float lambda__;
     float tau;
     size_t nsteps;
+    size_t nsteps_inner;
     float theta_0_corrected(const CostVolumeParameters& cost_volume_parameters) const;
     float theta_end_corrected(const CostVolumeParameters& cost_volume_parameters) const;
     float lambda_corrected(const ArrayShape& shape) const;

@@ -15,7 +15,8 @@ static Dg::DenseGeometryParameters dgp_320{
     .beta = 0.0001,
     .lambda__ = 200.f * F_320,
     .tau = 1 / 8.f,
-    .nsteps = 400};
+    .nsteps = 400,
+    .nsteps_inner = 1};
 // static Dg::DenseGeometryParameters dgp_640{
 //     .theta_0__ = 0.1f * 0.2f,
 //     .theta_end__ = float{ 0.1 * 1e-4 },

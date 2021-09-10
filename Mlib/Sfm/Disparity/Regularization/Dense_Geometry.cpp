@@ -79,27 +79,29 @@ void DenseGeometry::iterate_once() {
     if (print_debug_) {
         std::cerr << "theta: " << theta_ << std::endl;
     }
-    p_.move() = update_p(p_, h_, theta_, parameters_.tau);
-    Array<float> u = update_u(p_, h_, theta_, (float)(dsi_.shape(0) - 1));
+    for (size_t i = 0; i < parameters_.nsteps_inner; ++i) {
+        p_.move() = update_p(p_, h_, theta_, parameters_.tau);
+        Array<float> u = update_u(p_, h_, theta_, (float)(dsi_.shape(0) - 1));
 
-    float lambda_corrected = parameters_.lambda_corrected(dsi_.shape().erased_first());
-    if (print_debug_) {
-        Array<float> eo = energy(lambda_corrected, dsi_, h_);
-        std::cerr << "eo: " << xsum(eo) << std::endl;
-        if (print_bmps_ && n_ % 30 == 0) {
-            draw_quantiled_grayscale(eo, 0.05f, 0.95f).save_to_file("eo-" + std::to_string(n_) + ".png");
+        float lambda_corrected = parameters_.lambda_corrected(dsi_.shape().erased_first());
+        if (print_debug_) {
+            Array<float> eo = energy(lambda_corrected, dsi_, h_);
+            std::cerr << "eo: " << xsum(eo) << std::endl;
+            if (print_bmps_ && n_ % 30 == 0) {
+                draw_quantiled_grayscale(eo, 0.05f, 0.95f).save_to_file("eo-" + std::to_string(n_) + ".png");
+            }
+            if (print_bmps_ && n_ % 30 == 0) {
+                draw_nan_masked_grayscale(u, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("u-" + std::to_string(n_) + ".png");
+            }
         }
-        if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(u, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("u-" + std::to_string(n_) + ".png");
-        }
-    }
-    // std::cerr << "done" << std::endl;
-    h_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, lambda_corrected, u);
-    if (print_debug_) {
-        // std::cerr << "done2" << std::endl;
-        std::cerr << "h: " << nanmin(h_) << " - " << nanmedian(h_) << " - " << nanmax(h_) << std::endl;
-        if (print_bmps_ && n_ % 30 == 0) {
-            draw_nan_masked_grayscale(h_, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("h-" + std::to_string(n_) + ".png");
+        // std::cerr << "done" << std::endl;
+        h_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, lambda_corrected, u);
+        if (print_debug_) {
+            // std::cerr << "done2" << std::endl;
+            std::cerr << "h: " << nanmin(h_) << " - " << nanmedian(h_) << " - " << nanmax(h_) << std::endl;
+            if (print_bmps_ && n_ % 30 == 0) {
+                draw_nan_masked_grayscale(h_, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("h-" + std::to_string(n_) + ".png");
+            }
         }
     }
     theta_ *= (1 - parameters_.beta * n_);
@@ -160,7 +162,8 @@ void Mlib::Sfm::Dg::qualitative_primary_parameter_optimization(
                 .beta = parameters.beta,
                 .lambda__ = LAMBDA,
                 .tau = parameters.tau,
-                .nsteps = parameters.nsteps},
+                .nsteps = parameters.nsteps,
+                .nsteps_inner = parameters.nsteps_inner},
             false,
             false};
         dg.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
@@ -180,7 +183,8 @@ void Mlib::Sfm::Dg::qualitative_primary_parameter_optimization(
                 .beta = parameters.beta,
                 .lambda__ = parameters.lambda__,
                 .tau = TAU,
-                .nsteps = parameters.nsteps},
+                .nsteps = parameters.nsteps,
+                .nsteps_inner = parameters.nsteps_inner},
             false,
             false};
         dg.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
@@ -204,7 +208,8 @@ void Mlib::Sfm::Dg::auxiliary_parameter_optimization(
                 .beta = BETA,
                 .lambda__ = parameters.lambda__,
                 .tau = parameters.tau,
-                .nsteps = parameters.nsteps};
+                .nsteps = parameters.nsteps,
+                .nsteps_inner = parameters.nsteps_inner};
             DenseGeometry dg{
                 cost_volume_parameters,
                 modified_parameters,

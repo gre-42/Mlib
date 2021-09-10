@@ -84,7 +84,8 @@ void Mlib::Sfm::Dp::auxiliary_parameter_optimization(
             .beta = NAN,
             .lambda__ = NAN,
             .tau = NAN,
-            .nsteps = 0};
+            .nsteps = 0,
+            .nsteps_inner = 0};
         for (float LAMBDA : (parameters[1].lambda__ * logspace(-1.f, 2.f, 10)).element_iterable()) {
             std::vector<Dg::DenseGeometryParameters> modified_parameter_vector;
             modified_parameter_vector.reserve(parameters.size());
@@ -109,7 +110,8 @@ void Mlib::Sfm::Dp::auxiliary_parameter_optimization(
             .beta = parameters.front().beta,
             .lambda__ = parameters.front().lambda__,
             .tau = parameters.front().tau,
-            .nsteps = 400};
+            .nsteps = 400,
+            .nsteps_inner = 1};
         std::vector<Dg::DenseGeometryParameters> modified_parameter_vector;
         modified_parameter_vector.reserve(parameters.size());
         modified_parameter_vector.push_back(modified_parameters);
