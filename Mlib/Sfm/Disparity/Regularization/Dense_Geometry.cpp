@@ -8,7 +8,6 @@
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
 #include <Mlib/Stats/Linspace.hpp>
-#include <Mlib/Stats/Log2space.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 #include <Mlib/Stats/Robust.hpp>
 #include <iomanip>
@@ -152,7 +151,7 @@ void Mlib::Sfm::Dg::qualitative_primary_parameter_optimization(
     const CostVolumeParameters& cost_volume_parameters,
     const DenseGeometryParameters& parameters)
 {
-    for (float LAMBDA : (parameters.lambda__ * log2space(-2.f, 2.f, 5)).element_iterable()) {
+    for (float LAMBDA : (parameters.lambda__ * logspace(-2.f, 2.f, 5, 2.f)).element_iterable()) {
         DenseGeometry dg{
             cost_volume_parameters,
             DenseGeometryParameters{
@@ -172,7 +171,7 @@ void Mlib::Sfm::Dg::qualitative_primary_parameter_optimization(
     // From: An algorithm for total variation minimization and applications
     //       https://www.uni-muenster.de/AMM/num/Vorlesungen/MathemBV_SS16/literature/Chambolle2004.pdf
     //       Page 3, bottom right: 1/4 is best in practice.
-    for (float TAU : log2space(-4.f, -2.f, 3).element_iterable()) {
+    for (float TAU : logspace(-4.f, -2.f, 3, 2.f).element_iterable()) {
         DenseGeometry dg{
             cost_volume_parameters,
             DenseGeometryParameters{

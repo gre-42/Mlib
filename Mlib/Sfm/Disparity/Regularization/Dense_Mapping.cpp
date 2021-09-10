@@ -6,7 +6,6 @@
 #include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
-#include <Mlib/Stats/Log2space.hpp>
 #include <Mlib/Stats/Logspace.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Robust.hpp>
@@ -221,7 +220,7 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization(
 {
     std::list<std::tuple<DtamParameters, float, Array<float>>> errors;
     for (float ALPHA : (parameters.edge_image_config_.alpha * logspace(-1.f, 1.f, 3)).element_iterable()) {
-        for (float BETA_G : (parameters.edge_image_config_.beta * log2space(-1.f, 1.f, 3)).element_iterable()) {
+        for (float BETA_G : (parameters.edge_image_config_.beta * logspace(-1.f, 1.f, 3, 2.f)).element_iterable()) {
             EdgeImageConfig edge_image_config{
                 .alpha = ALPHA,
                 .beta = BETA_G,
