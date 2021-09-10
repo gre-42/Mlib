@@ -218,31 +218,35 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
     const Array<float>& grayscale,
     const Array<float>& true_inverse_depth,
     const CostVolumeParameters& cost_volume_parameters,
-    const DtamParameters& parameters)
+    const DtamParameters& parameters,
+    bool draw_bmps)
 {
+    size_t call_counter = 0;
     auto copy_in = [](const DtamParameters& params){
         return Array<float>{
-            params.edge_image_config_.alpha,
-            params.edge_image_config_.beta,
-            params.lambda_,
-            params.epsilon_};
+            params.edge_image_config_.alpha * float{ 1e0 },
+            params.edge_image_config_.beta * float{ 1e0 },
+            params.theta_0__ * float{ 1e1 },
+            params.beta_ * float{ 1e4 },
+            params.lambda_ * float{ 1e-1 },
+            params.epsilon_ * float{ 1e4 }};
     };
     auto copy_out = [&parameters](const Array<float>& x){
         return DtamParameters(
             EdgeImageConfig{
-                .alpha = x(0),
-                .beta = x(1),
+                .alpha = x(0) / float{ 1e0 },
+                .beta = x(1) / float{ 1e0 },
                 .remove_edge_blobs = parameters.edge_image_config_.remove_edge_blobs},
-            parameters.theta_0__,
-            parameters.theta_end__,
-            parameters.beta_,
-            x(2), // lambda
-            NAN,  // lambda_initial
-            x(3), // epsilon
+            x(2) / float{ 1e1 },                       // theta_0
+            x(2) / float{ 1e1 } / 0.2 * float{ 1e-4 }, // theta_end
+            x(3) / float{ 1e4 },                       // beta
+            x(4) / float{ 1e-1 },                      // lambda
+            NAN,                                       // lambda_initial
+            x(5) / float{ 1e4 },                       // epsilon
             parameters.nsteps_);
     };
     Array<bool> mask = !isnan(true_inverse_depth);
-    auto f = [&mask, &copy_out, &grayscale, &cost_volume_parameters, &dsi](const Array<float>& x){
+    auto f = [&mask, &copy_out, &grayscale, &cost_volume_parameters, &dsi, &call_counter, draw_bmps](const Array<float>& x){
         std::cerr << "x: " << x << std::endl;
         DtamParameters params = copy_out(x);
         Array<float> g = g_from_grayscale(grayscale, params.edge_image_config_);
@@ -254,6 +258,15 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
             false};                             // print_bmps
         dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
         dm.iterate_atmost(SIZE_MAX);
+        if (draw_bmps && (call_counter == 0)) {
+            draw_nan_masked_grayscale(
+                dm.interpolated_inverse_depth_image(),
+                1.f / cost_volume_parameters.max_depth,
+                1.f / cost_volume_parameters.min_depth)
+            .save_to_file("ai.png");
+        }
+        // Modulo by x.length() + 1 because the residual is called also.
+        call_counter = (call_counter + 1) % (x.length() + 1);
         return dm.interpolated_inverse_depth_image()[mask];
     };
     Array<float> x = levenberg_marquardt(

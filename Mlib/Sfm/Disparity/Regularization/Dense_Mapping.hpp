@@ -61,7 +61,8 @@ void quantitative_primary_parameter_optimization_lm(
     const Array<float>& grayscale,
     const Array<float>& true_inverse_depth,
     const CostVolumeParameters& cost_volume_parameters,
-    const DtamParameters& parameters);
+    const DtamParameters& parameters,
+    bool draw_bmps = false);
 
 void quantitative_primary_parameter_optimization_grid(
     const Array<float>& dsi,
