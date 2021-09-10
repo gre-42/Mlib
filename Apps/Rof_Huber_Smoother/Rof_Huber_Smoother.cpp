@@ -1,4 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/StbImage.hpp>
@@ -23,6 +24,10 @@ int main(int argc, char **argv) {
         " --g_out <g_out.png>"
         " [--smoothed_out <smoothed_out.png>]"
         " [--depth_out <depth_out.png>]"
+        " [--depth_array_out <depth_array_out.array>]"
+        " [--package_out <package_out.png>]"
+        " [--intrinsic_matrix <intrinsic_matrix.m>]"
+        " [--extrinsic_matrix <extrinsic_matrix.m>]"
         " --alpha <alpha (e.g. 100)>"
         " --beta_G <beta (e.g. 1.6)>"
         " --lambda <lambda (e.g. 1.0)>"
@@ -45,7 +50,11 @@ int main(int argc, char **argv) {
         "--niterations",
         "--theta",
         "--epsilon",
-        "--depth_out"});
+        "--depth_out",
+        "--depth_array_out",
+        "--package_out",
+        "--intrinsic_matrix",
+        "--extrinsic_matrix"});
 
     try {
         auto args = parser.parsed(argc, argv);
@@ -63,7 +72,11 @@ int main(int argc, char **argv) {
             StbImage::from_float_grayscale(g).save_to_file(args.named_value("--g_out"));
         }
 
-        if (args.has_named_value("--depth_out") || args.has_named("--optimize_parameters")) {
+        if (args.has_named_value("--depth_out") ||
+            args.has_named_value("--depth_array_out") ||
+            args.has_named_value("--package_out") ||
+            args.has_named("--optimize_parameters"))
+        {
             Array<float> dsi = Array<float>::load_binary(args.named_value("--dsi"));
             if (dsi.ndim() != 3) {
                 throw std::runtime_error("DSI has incorrect number of dimensions");
@@ -91,7 +104,10 @@ int main(int argc, char **argv) {
                 Dm::primary_parameter_optimization(dsi, g, cost_volume_parameters, params);
                 Dm::auxiliary_parameter_optimization(dsi, g, cost_volume_parameters, params);
             }
-            if (args.has_named_value("--depth_out")) {
+            if (args.has_named_value("--depth_out") ||
+                args.has_named_value("--depth_array_out") ||
+                args.has_named_value("--package_out"))
+            {
                 Dm::DenseMapping dm{
                     g,
                     cost_volume_parameters,
@@ -101,11 +117,25 @@ int main(int argc, char **argv) {
                 dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
                 dm.iterate_atmost(SIZE_MAX);
                 Array<float> ai = dm.interpolated_inverse_depth_image();
-                draw_nan_masked_grayscale(
-                    ai,
-                    1.f / cost_volume_parameters.max_depth,
-                    1.f / cost_volume_parameters.min_depth)
-                .save_to_file(args.named_value("--depth_out"));
+                if (args.has_named_value("--depth_out")) {
+                    draw_nan_masked_grayscale(
+                        ai,
+                        1.f / cost_volume_parameters.max_depth,
+                        1.f / cost_volume_parameters.min_depth)
+                    .save_to_file(args.named_value("--depth_out"));
+                }
+                if (args.has_named_value("--depth_array_out")) {
+                    (1.f / ai).save_binary(args.named_value("--depth_array_out"));
+                }
+                if (args.has_named_value("--package_out")) {
+                    Cv::save_depth_map_package(
+                        args.named_value("--package_out"),
+                        std::chrono::milliseconds{0},
+                        args.named_value("--im"),
+                        args.named_value("--depth_array_out"),
+                        args.named_value("--intrinsic_matrix"),
+                        args.named_value("--extrinsic_matrix"));
+                }
             }
         }
         if (args.has_named_value("--smoothed_out")) {
