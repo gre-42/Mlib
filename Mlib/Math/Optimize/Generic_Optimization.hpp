@@ -23,7 +23,9 @@ TX generic_optimization(
     // -J * d = f(x0)
     // -J^T * J * d = J^T * f(x0)
     TX x;
+    TX x_best;
     x = x0;
+    x_best = x0;
     TData old_ssq_residual = std::numeric_limits<TData>::infinity();
     Array<TData> residual;
     size_t i;
@@ -59,6 +61,8 @@ TX generic_optimization(
             if (--nmisses == 0) {
                 break;
             }
+        } else {
+            x_best = x;
         }
         if (!std::isnan(redux) && (redux < min_redux)) {
             break;
@@ -70,7 +74,7 @@ TX generic_optimization(
         *final_residual = residual;
     }
     if ((i < niterations) || nothrow) {
-        return x;
+        return x_best;
     } else {
         throw std::runtime_error("levenberg_marquardt did not converge");
     }
