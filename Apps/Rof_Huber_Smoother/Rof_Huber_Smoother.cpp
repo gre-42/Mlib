@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
         " [--package_out <package_out.png>]"
         " [--intrinsic_matrix <intrinsic_matrix.m>]"
         " [--extrinsic_matrix <extrinsic_matrix.m>]"
+        " [--true_depth <true_depth.array>]"
         " --alpha <alpha (e.g. 100)>"
         " --beta_G <beta (e.g. 1.6)>"
         " --lambda <lambda (e.g. 1.0)>"
@@ -36,8 +37,10 @@ int main(int argc, char **argv) {
         " [--theta <theta (e.g. 0.2)>]"
         " [--epsilon <epsilon (e.g. 1e-4)>]"
         " [--remove_edge_blobs]"
+        " [--optimize_with_true_depth]"
         " [--optimize_parameters]",
         {"--remove_edge_blobs",
+        "--optimize_with_true_depth",
         "--optimize_parameters"},
         {"--im",
         "--dsi",
@@ -54,19 +57,22 @@ int main(int argc, char **argv) {
         "--depth_array_out",
         "--package_out",
         "--intrinsic_matrix",
-        "--extrinsic_matrix"});
+        "--extrinsic_matrix",
+        "--true_depth"});
 
     try {
         auto args = parser.parsed(argc, argv);
 
         StbImage im = StbImage::load_from_file(args.named_value("--im"));
 
+        EdgeImageConfig edge_image_config{
+            .alpha = safe_stof(args.named_value("--alpha")),
+            .beta = safe_stof(args.named_value("--beta_G")),
+            .remove_edge_blobs = args.has_named("--remove_edge_blobs")};
+
         Array<float> g = g_from_grayscale(
             im.to_float_grayscale(),
-            EdgeImageConfig{
-                .alpha = safe_stof(args.named_value("--alpha")),
-                .beta = safe_stof(args.named_value("--beta_G")),
-                .remove_edge_blobs = args.has_named("--remove_edge_blobs")});
+            edge_image_config);
 
         if (args.has_named_value("--g_out")) {
             StbImage::from_float_grayscale(g).save_to_file(args.named_value("--g_out"));
@@ -75,6 +81,7 @@ int main(int argc, char **argv) {
         if (args.has_named_value("--depth_out") ||
             args.has_named_value("--depth_array_out") ||
             args.has_named_value("--package_out") ||
+            args.has_named("--optimize_with_true_depth") ||
             args.has_named("--optimize_parameters"))
         {
             Array<float> dsi = Array<float>::load_binary(args.named_value("--dsi"));
@@ -85,10 +92,7 @@ int main(int argc, char **argv) {
                 throw std::runtime_error("DSI has incorrect shape");
             }
             Dm::DtamParameters params(
-                EdgeImageConfig{
-                    .alpha = NAN,
-                    .beta = NAN,
-                    .remove_edge_blobs = false},
+                edge_image_config,
                 safe_stof(args.named_value("--theta")),                      // theta_0
                 float{1e-4 / 0.2} * safe_stof(args.named_value("--theta")),  // theta_end
                 safe_stof(args.named_value("--beta_I")),                     // beta
@@ -100,8 +104,15 @@ int main(int argc, char **argv) {
                 .min_depth = 3.5f,
                 .max_depth = 12.f,
                 .ndepths = dsi.shape(0)};
+            if (args.has_named("--optimize_with_true_depth")) {
+                Array<float> true_ai = 1.f / Array<float>::load_binary(args.named_value("--true_depth"));
+                if (!all(true_ai.shape() == g.shape())) {
+                    throw std::runtime_error("True depth shape incorrect");
+                }
+                Dm::quantitative_primary_parameter_optimization(dsi, im.to_float_grayscale(), true_ai, cost_volume_parameters, params);
+            }
             if (args.has_named("--optimize_parameters")) {
-                Dm::primary_parameter_optimization(dsi, g, cost_volume_parameters, params);
+                Dm::qualitative_primary_parameter_optimization(dsi, g, cost_volume_parameters, params);
                 Dm::auxiliary_parameter_optimization(dsi, g, cost_volume_parameters, params);
             }
             if (args.has_named_value("--depth_out") ||

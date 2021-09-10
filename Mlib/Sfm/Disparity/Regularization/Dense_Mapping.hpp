@@ -50,9 +50,16 @@ public:
     bool print_bmps_;
 };
 
-void primary_parameter_optimization(
+void qualitative_primary_parameter_optimization(
     const Array<float>& dsi,
     const Array<float>& g,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DtamParameters& parameters);
+
+void quantitative_primary_parameter_optimization(
+    const Array<float>& dsi,
+    const Array<float>& grayscale,
+    const Array<float>& true_inverse_depth,
     const CostVolumeParameters& cost_volume_parameters,
     const DtamParameters& parameters);
 

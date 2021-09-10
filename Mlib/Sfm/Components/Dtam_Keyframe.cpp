@@ -434,7 +434,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         std::cerr << "Parameter-search for keyframe " << key_frame_time_.count() << " ms" << std::endl;
         if (cfg_.regularization_ == Regularization::DTAM) {
             Dm::DenseMapping* dm = dynamic_cast<Dm::DenseMapping*>(dm_.get());
-            Dm::primary_parameter_optimization(
+            Dm::qualitative_primary_parameter_optimization(
                 dsi_,
                 dm->huber_rof_solver_.g_,
                 cfg_.cost_volume_parameters_,
@@ -445,7 +445,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 cfg_.cost_volume_parameters_,
                 cfg_.dm_params_);
         } else if (cfg_.regularization_ == Regularization::DENSE_GEOMETRY) {
-            Dg::primary_parameter_optimization(
+            Dg::qualitative_primary_parameter_optimization(
                 dsi_,
                 cfg_.cost_volume_parameters_,
                 cfg_.dg_params_);
@@ -460,7 +460,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 cfg_.dp_params_);
         } else if (cfg_.regularization_ == Regularization::FILTERING) {
             auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, cfg_.regularization_filter_poly_degree_);};
-            Df::primary_parameter_optimization(
+            Df::qualitative_primary_parameter_optimization(
                 dsi_,
                 cfg_.cost_volume_parameters_,
                 cfg_.df_params_,

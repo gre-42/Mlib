@@ -32,7 +32,7 @@ public:
     bool print_bmps_;
 };
 
-void primary_parameter_optimization(
+void qualitative_primary_parameter_optimization(
     const Array<float>& dsi,
     const CostVolumeParameters& cost_volume_parameters,
     const DenseGeometryParameters& parameters);

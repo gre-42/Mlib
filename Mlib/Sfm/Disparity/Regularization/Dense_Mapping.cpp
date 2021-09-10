@@ -6,7 +6,9 @@
 #include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
+#include <Mlib/Stats/Log2space.hpp>
 #include <Mlib/Stats/Logspace.hpp>
+#include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Stats/Robust.hpp>
 #include <iomanip>
 #include <list>
@@ -160,7 +162,7 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
     return out.str();
 }
 
-void Mlib::Sfm::Dm::primary_parameter_optimization(
+void Mlib::Sfm::Dm::qualitative_primary_parameter_optimization(
     const Array<float>& dsi,
     const Array<float>& g,
     const CostVolumeParameters& cost_volume_parameters,
@@ -210,6 +212,58 @@ void Mlib::Sfm::Dm::primary_parameter_optimization(
     }
 }
 
+void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization(
+    const Array<float>& dsi,
+    const Array<float>& grayscale,
+    const Array<float>& true_inverse_depth,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DtamParameters& parameters)
+{
+    std::list<std::tuple<DtamParameters, float, Array<float>>> errors;
+    for (float ALPHA : (parameters.edge_image_config_.alpha * logspace(-1.f, 1.f, 3)).element_iterable()) {
+        for (float BETA_G : (parameters.edge_image_config_.beta * log2space(-1.f, 1.f, 3)).element_iterable()) {
+            EdgeImageConfig edge_image_config{
+                .alpha = ALPHA,
+                .beta = BETA_G,
+                .remove_edge_blobs = parameters.edge_image_config_.remove_edge_blobs};
+            Array<float> g = g_from_grayscale(grayscale, edge_image_config);
+            for (float LAMBDA : (parameters.lambda_ * logspace(-1.f, 1.f, 3)).element_iterable()) {
+                for (float EPSILON : (parameters.epsilon_ * logspace(-1.f, 1.f, 3)).element_iterable()) {
+                    DtamParameters modified_parameters(
+                        edge_image_config,
+                        parameters.theta_0__,
+                        parameters.theta_end__,
+                        parameters.beta_,
+                        LAMBDA,
+                        NAN,  // lambda_initial
+                        EPSILON,
+                        parameters.nsteps_);
+                    Dm::DenseMapping dm{
+                        g,
+                        cost_volume_parameters,
+                        modified_parameters,
+                        false,                              // print_energy
+                        false};                             // print_bmps
+                    dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
+                    dm.iterate_atmost(SIZE_MAX);
+                    Array<float> ai = dm.interpolated_inverse_depth_image();
+                    float error = nanmean(abs(ai - true_inverse_depth));
+                    errors.push_back(std::make_tuple(modified_parameters, error, ai));
+                    std::cerr << modified_parameters << " error " << error << std::endl;
+                }
+            }
+        }
+    }
+    errors.sort([](const auto& a, const auto& b) -> bool { return std::get<1>(a) < std::get<1>(b); });
+    size_t rank = 0;
+    for (const auto& p : errors) {
+        std::cerr << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " error " << std::get<1>(p) << std::endl;
+        draw_nan_masked_grayscale(std::get<2>(p), 1.f / cost_volume_parameters.max_depth, 1.f / cost_volume_parameters.min_depth).save_to_file("ai-" + std::to_string(rank) + ".png");
+        // draw_quantiled_grayscale(std::get<2>(p), 0.05, 0.5).save_to_file("aiq-" + std::to_string(rank) + ".png");
+        ++rank;
+    }
+}
+
 void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
     const Array<float>& dsi,
     const Array<float>& g,
@@ -232,8 +286,8 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
                 g,
                 cost_volume_parameters,
                 modified_parameters,
-                false,
-                false};
+                false,                     // print_energy
+                false};                    // print_bmps
             dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
             dm.iterate_atmost(SIZE_MAX);
             Array<float>& a = dm.huber_rof_solver_.a_;

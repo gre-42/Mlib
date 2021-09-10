@@ -71,7 +71,7 @@ size_t DenseFiltering::current_number_of_iterations() const {
     return n_;
 }
 
-void Mlib::Sfm::Df::primary_parameter_optimization(
+void Mlib::Sfm::Df::qualitative_primary_parameter_optimization(
     const Array<float>& dsi,
     const CostVolumeParameters& cost_volume_parameters,
     const DenseFilteringParameters& parameters,
