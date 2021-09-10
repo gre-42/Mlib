@@ -226,9 +226,6 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
         return Array<float>{
             params.edge_image_config_.alpha * float{ 1e0 },
             params.edge_image_config_.beta * float{ 1e0 },
-            params.theta_0__ * float{ 1e2 },
-            params.theta_end__ * float{ 1e6 },
-            params.beta_ * float{ 1e4 },
             params.lambda_ * float{ 1e-1 },
             params.epsilon_ * float{ 1e4 }};
     };
@@ -238,12 +235,12 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
                 .alpha = x(0) / float{ 1e0 },
                 .beta = x(1) / float{ 1e0 },
                 .remove_edge_blobs = parameters.edge_image_config_.remove_edge_blobs},
-            x(2) / float{ 1e2 },                       // theta_0
-            x(3) / float{ 1e6 },                       // theta_end
-            x(4) / float{ 1e4 },                       // beta
-            x(5) / float{ 1e-1 },                      // lambda
+            parameters.theta_0__,                      // theta_0
+            parameters.theta_end__,                    // theta_end
+            parameters.beta_,                          // beta
+            x(2) / float{ 1e-1 },                      // lambda
             NAN,                                       // lambda_initial
-            x(6) / float{ 1e4 },                       // epsilon
+            x(3) / float{ 1e4 },                       // epsilon
             parameters.nsteps_);
     };
     Array<bool> mask = !isnan(true_inverse_depth);
