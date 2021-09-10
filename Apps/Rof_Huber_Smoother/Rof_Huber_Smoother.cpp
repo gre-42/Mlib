@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
                 if (!all(true_ai.shape() == g.shape())) {
                     throw std::runtime_error("True depth shape incorrect");
                 }
-                Dm::quantitative_primary_parameter_optimization(dsi, im.to_float_grayscale(), true_ai, cost_volume_parameters, params);
+                Dm::quantitative_primary_parameter_optimization_lm(dsi, im.to_float_grayscale(), true_ai, cost_volume_parameters, params);
             }
             if (args.has_named("--optimize_parameters")) {
                 Dm::qualitative_primary_parameter_optimization(dsi, g, cost_volume_parameters, params);

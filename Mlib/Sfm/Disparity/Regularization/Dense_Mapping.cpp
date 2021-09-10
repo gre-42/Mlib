@@ -3,6 +3,8 @@
 #include <Mlib/Math/Huber_Norm.hpp>
 #include <Mlib/Math/Interpolate.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Optimize/Levenberg_Marquardt.hpp>
+#include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Dsi/Inverse_Depth_Cost_Volume.hpp>
 #include <Mlib/Sfm/Disparity/Regularization/Dense_Mapping_Common.hpp>
@@ -211,7 +213,66 @@ void Mlib::Sfm::Dm::qualitative_primary_parameter_optimization(
     }
 }
 
-void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization(
+void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
+    const Array<float>& dsi,
+    const Array<float>& grayscale,
+    const Array<float>& true_inverse_depth,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DtamParameters& parameters)
+{
+    auto copy_in = [](const DtamParameters& params){
+        return Array<float>{
+            params.edge_image_config_.alpha,
+            params.edge_image_config_.beta,
+            params.lambda_,
+            params.epsilon_};
+    };
+    auto copy_out = [&parameters](const Array<float>& x){
+        return DtamParameters(
+            EdgeImageConfig{
+                .alpha = x(0),
+                .beta = x(1),
+                .remove_edge_blobs = parameters.edge_image_config_.remove_edge_blobs},
+            parameters.theta_0__,
+            parameters.theta_end__,
+            parameters.beta_,
+            x(2), // lambda
+            NAN,  // lambda_initial
+            x(3), // epsilon
+            parameters.nsteps_);
+    };
+    Array<bool> mask = !isnan(true_inverse_depth);
+    auto f = [&mask, &copy_out, &grayscale, &cost_volume_parameters, &dsi](const Array<float>& x){
+        std::cerr << "x: " << x << std::endl;
+        DtamParameters params = copy_out(x);
+        Array<float> g = g_from_grayscale(grayscale, params.edge_image_config_);
+        Dm::DenseMapping dm{
+            g,
+            cost_volume_parameters,
+            params,
+            false,                              // print_energy
+            false};                             // print_bmps
+        dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
+        dm.iterate_atmost(SIZE_MAX);
+        return dm.interpolated_inverse_depth_image()[mask];
+    };
+    Array<float> x = levenberg_marquardt(
+        copy_in(parameters),
+        true_inverse_depth[mask],
+        f,
+        [&f](const Array<float>& x){
+            return numerical_differentiation(f, x);
+        },
+        0.01f, // alpha
+        0.01f, // beta
+        0.01f, // alpha2
+        0.01f, // beta2
+        float{ 1e-6 }); // min_redux
+    std::cerr << "Optimal parameters: " << copy_out(x) << std::endl;
+}
+
+
+void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_grid(
     const Array<float>& dsi,
     const Array<float>& grayscale,
     const Array<float>& true_inverse_depth,
@@ -219,15 +280,15 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization(
     const DtamParameters& parameters)
 {
     std::list<std::tuple<DtamParameters, float, Array<float>>> errors;
-    for (float ALPHA : (parameters.edge_image_config_.alpha * logspace(-1.f, 1.f, 3)).element_iterable()) {
+    for (float ALPHA : (parameters.edge_image_config_.alpha * logspace(-1.f, 1.f, 3, 2.f)).element_iterable()) {
         for (float BETA_G : (parameters.edge_image_config_.beta * logspace(-1.f, 1.f, 3, 2.f)).element_iterable()) {
             EdgeImageConfig edge_image_config{
                 .alpha = ALPHA,
                 .beta = BETA_G,
                 .remove_edge_blobs = parameters.edge_image_config_.remove_edge_blobs};
             Array<float> g = g_from_grayscale(grayscale, edge_image_config);
-            for (float LAMBDA : (parameters.lambda_ * logspace(-1.f, 1.f, 3)).element_iterable()) {
-                for (float EPSILON : (parameters.epsilon_ * logspace(-1.f, 1.f, 3)).element_iterable()) {
+            for (float LAMBDA : (parameters.lambda_ * logspace(-1.f, 1.f, 3, 2.f)).element_iterable()) {
+                for (float EPSILON : (parameters.epsilon_ * logspace(-1.f, 1.f, 3, 2.f)).element_iterable()) {
                     DtamParameters modified_parameters(
                         edge_image_config,
                         parameters.theta_0__,
@@ -246,7 +307,7 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization(
                     dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
                     dm.iterate_atmost(SIZE_MAX);
                     Array<float> ai = dm.interpolated_inverse_depth_image();
-                    float error = nanmean(abs(ai - true_inverse_depth));
+                    float error = nanmean(squared(ai - true_inverse_depth));
                     errors.push_back(std::make_tuple(modified_parameters, error, ai));
                     std::cerr << modified_parameters << " error " << error << std::endl;
                 }

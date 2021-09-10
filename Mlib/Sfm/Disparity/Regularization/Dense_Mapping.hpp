@@ -56,7 +56,14 @@ void qualitative_primary_parameter_optimization(
     const CostVolumeParameters& cost_volume_parameters,
     const DtamParameters& parameters);
 
-void quantitative_primary_parameter_optimization(
+void quantitative_primary_parameter_optimization_lm(
+    const Array<float>& dsi,
+    const Array<float>& grayscale,
+    const Array<float>& true_inverse_depth,
+    const CostVolumeParameters& cost_volume_parameters,
+    const DtamParameters& parameters);
+
+void quantitative_primary_parameter_optimization_grid(
     const Array<float>& dsi,
     const Array<float>& grayscale,
     const Array<float>& true_inverse_depth,
