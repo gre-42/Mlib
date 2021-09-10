@@ -274,7 +274,7 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
         true_inverse_depth[mask],
         f,
         [&f](const Array<float>& x){
-            return numerical_differentiation(f, x);
+            return numerical_differentiation(f, x, float{ 1e-2 });
         },
         0.01f, // alpha
         0.01f, // beta
