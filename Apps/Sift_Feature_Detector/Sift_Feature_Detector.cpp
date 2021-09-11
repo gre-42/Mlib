@@ -1,6 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Images/CvSift/CvSift.hpp>
+#include <Mlib/Images/CvSift/CvSift2.hpp>
 #include <Mlib/Images/CvSift/KeyPoint.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/OpenCV.hpp>
@@ -19,6 +20,24 @@ using namespace Mlib;
 using namespace Mlib::Sift;
 using namespace Mlib::Sfm;
 
+enum class SiftImpl {
+    ONE,
+    TWO,
+    CV
+};
+
+SiftImpl parse_sift_impl(const std::string& impl_str) {
+    if (impl_str == "1") {
+        return SiftImpl::ONE;
+    } else if (impl_str == "2") {
+        return SiftImpl::TWO;
+    } else if (impl_str == "cv") {
+        return SiftImpl::CV;
+    } else {
+        throw std::runtime_error("Unknown SIFT implementation");
+    }
+}
+
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
     const ArgParser parser(
@@ -34,10 +53,11 @@ int main(int argc, char** argv) {
         "[--response <response>] "
         "[--clip-min <clip-min>] "
         "[--clip-max <clip-max>] "
-        "[--cv_impl] "
+        "[--impl {1,2,cv}] "
         "[--intrinsic_matrix <ki>]",
-        { "--multi-scale", "--cv_impl" },
+        { "--multi-scale" },
         { "--source1",
+          "--impl",
           "--k",
           "--distance-sigma",
           "--size",
@@ -64,11 +84,18 @@ int main(int argc, char** argv) {
         }
         Array<float> descriptors0;
         Array<FixedArray<float, 2>> corners0;
+        SiftImpl impl = parse_sift_impl(args.named_value("--impl", "cv"));
         {
-            if (!args.has_named("--cv_impl")) {
+            if (impl == SiftImpl::ONE) {
                 ocv::SIFT sift{ safe_stoi(args.unnamed_value(2)) };
                 std::vector<ocv::KeyPoint> keypoints;
                 sift(bitmap0.to_float_grayscale().applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);}), Array<uint8_t>(), keypoints, &descriptors0);
+                corners0 = Array<ocv::KeyPoint>(keypoints)
+                    .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
+            } else if (impl == SiftImpl::TWO) {
+                ocv::SIFT2 sift{ safe_stoi(args.unnamed_value(2)) };
+                std::vector<ocv::KeyPoint> keypoints;
+                sift.detectAndCompute(bitmap0.to_float_grayscale().applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);}), Array<uint8_t>(), keypoints, &descriptors0);
                 corners0 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
             } else {
@@ -97,10 +124,24 @@ int main(int argc, char** argv) {
         Array<FixedArray<float, 2>> corners1;
         if (args.has_named_value("--source1")) {
             auto bitmap1 = StbImage::load_from_file(args.named_value("--source1"));
-            if (!args.has_named("--cv_impl")) {
+            if (impl == SiftImpl::ONE) {
                 ocv::SIFT sift{ safe_stoi(args.unnamed_value(2)) };
                 std::vector<ocv::KeyPoint> keypoints;
                 sift(bitmap1.to_float_grayscale().applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);}), Array<uint8_t>(), keypoints, &descriptors1);
+                corners1 = Array<ocv::KeyPoint>(keypoints)
+                    .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
+                if (args.has_named_value("--response1")) {
+                    StbImage bmp{bitmap1.copy()};
+                    highlight_features(
+                        corners1,
+                        bmp,
+                        safe_stoi(args.named_value("--size", "1")));
+                    bmp.save_to_file(args.named_value("--response1"));
+                }
+            } else if (impl == SiftImpl::TWO) {
+                ocv::SIFT2 sift{ safe_stoi(args.unnamed_value(2)) };
+                std::vector<ocv::KeyPoint> keypoints;
+                sift.detectAndCompute(bitmap1.to_float_grayscale().applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);}), Array<uint8_t>(), keypoints, &descriptors1);
                 corners1 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
                 if (args.has_named_value("--response1")) {

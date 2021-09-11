@@ -1,6 +1,7 @@
 #include "Flowing_Particles.hpp"
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/CvSift/CvSift.hpp>
+#include <Mlib/Images/CvSift/CvSift2.hpp>
 #include <Mlib/Images/CvSift/KeyPoint.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/Features.hpp>
@@ -43,11 +44,23 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
 
     Array<FixedArray<float, 2>>& keypoints1 = new_frame.keypoints;
     Array<float>& descriptors1 = new_frame.descriptors;
+    Array<uint8_t> grayscale_u8 = image_frames_.rbegin()->second.grayscale.applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);});
     if (false) {
         std::vector<ocv::KeyPoint> keypoints1_;
         ocv::SIFT sift{ (int)cfg_.target_nparticles };
-        sift((image_frames_.rbegin()->second.grayscale * 255.f).casted<uint8_t>(),
-            ones<uint8_t>(image_frames_.rbegin()->second.grayscale.shape()),
+        sift(grayscale_u8,
+            ones<uint8_t>(grayscale_u8.shape()),
+            keypoints1_,
+            &descriptors1);
+        keypoints1.resize(ArrayShape{keypoints1_.size()});
+        for (size_t i = 0; i < keypoints1_.size(); ++i) {
+            keypoints1(i) = keypoints1_[i].pt;
+        }
+    } else if (false) {
+        std::vector<ocv::KeyPoint> keypoints1_;
+        ocv::SIFT2 sift{ (int)cfg_.target_nparticles };
+        sift.detectAndCompute(grayscale_u8,
+            ones<uint8_t>(grayscale_u8.shape()),
             keypoints1_,
             &descriptors1);
         keypoints1.resize(ArrayShape{keypoints1_.size()});
@@ -59,7 +72,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
         std::vector<cv::KeyPoint> cv_keypoints;
         cv::Mat_<float> cv_descriptors1;
         sift->detectAndCompute(
-            array_to_cv_mat(image_frames_.rbegin()->second.grayscale.applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);})),
+            array_to_cv_mat(grayscale_u8),
             cv::Mat_<uint8_t>(),
             cv_keypoints,
             cv_descriptors1);
