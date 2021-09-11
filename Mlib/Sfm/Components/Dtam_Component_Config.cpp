@@ -32,6 +32,7 @@ DtamComponentConfig::DtamComponentConfig(
     Regularization regularization,
     float regularization_filter_sigma,
     size_t regularization_filter_poly_degree,
+    float regularization_lambda,
     bool optimize_parameters)
 : DtamComponentConfig(
     0,                              // tracking_start_ncams
@@ -61,7 +62,7 @@ DtamComponentConfig::DtamComponentConfig(
             0.005f * 0.2f,          // theta_0 (0.2)
             float{ 0.005 * 1e-4 },  // theta_end (1e-4)
             float{ 4.02438e-05 },   // beta (0.0001 - 0.001)
-            70.597f,                // lambda (1 for the first keyframe)
+            regularization_lambda,  // lambda (1 for the first keyframe)
             0.0504097f,             // epsilon (1e-4)
             500),                   // nsteps
         dgp_320,

@@ -53,6 +53,7 @@ TemplatePatchPipeline::TemplatePatchPipeline(
           cfg.regularization,
           cfg.regularization_filter_sigma,
           cfg.regularization_filter_poly_degree,
+          cfg.regularization_lambda,
           cfg.optimize_parameters) }
 {}
 

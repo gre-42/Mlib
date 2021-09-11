@@ -11,6 +11,7 @@ struct DtamComponentConfig {
         Regularization regularization,
         float regularization_filter_sigma,
         size_t regularization_filter_poly_degree,
+        float regularization_lambda,
         bool optimize_parameters);
     DtamComponentConfig(
         size_t tracking_start_ncams,

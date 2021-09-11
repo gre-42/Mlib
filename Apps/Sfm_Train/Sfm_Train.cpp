@@ -87,6 +87,7 @@ int main(int argc, char** argv) {
         "[--regularization {dtam,dense_geometry,dense_geometry_pyramid,filter}] "
         "[--regularization_filter_poly_degree <d>] "
         "[--regularization_filter_sigma <s>] "
+        "[--regularization_lambda <lambda> ]"
         "[--optimize_parameters]",
         { "--no_dtam",
           "--no_dtam_tracking",
@@ -110,7 +111,8 @@ int main(int argc, char** argv) {
           "--cost_volume",
           "--regularization",
           "--regularization_filter_sigma",
-          "--regularization_filter_poly_degree" });
+          "--regularization_filter_poly_degree",
+          "--regularization_lambda" });
 
     try {
         auto args = parser.parsed(argc, argv);
@@ -138,6 +140,7 @@ int main(int argc, char** argv) {
                 .tracking_mode = args.has_named("--sift") ? TrackingMode::SIFT : TrackingMode::PATCH_NEW_POSITION_IN_BOX,
                 .regularization = regularization_from_string(args.named_value("--regularization", "dense_geometry")),
                 .sift_nframes = safe_stoz(args.named_value("--sift_nframes", "19")),
+                .regularization_lambda = safe_stof(args.named_value("--regularization_lambda")),
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
                 .use_virtual_camera = args.has_named("--use_virtual_camera"),
