@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
         "--camera_source <source_dir> "
         "[--no_dtam] "
         "[--no_dtam_tracking] "
-        "[--sift] "
+        "[--tracking_mode {patches,cv_sift,cv_sift_0,cv_sift_1}] "
         "[--sift_nframes <nframes>] "
         "[--use_virtual_camera] "
         "--chess_r <chess_r> "
@@ -91,7 +91,6 @@ int main(int argc, char** argv) {
         "[--optimize_parameters]",
         { "--no_dtam",
           "--no_dtam_tracking",
-          "--sift",
           "--use_virtual_camera",
           "--reverse",
           "--optimize_parameters" },
@@ -105,6 +104,7 @@ int main(int argc, char** argv) {
           "--nskipped",
           "--nimages",
           "--ncameras",
+          "--tracking_mode",
           "--sift_nframes",
           "--features_down_sampling",
           "--dtam_down_sampling",
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
             args.has_named_value("--ncameras") ? safe_stoz(args.named_value("--ncameras")) : SIZE_MAX,
             args.has_named("--reverse"),
             TemplatePatchPipelineConfig{
-                .tracking_mode = args.has_named("--sift") ? TrackingMode::SIFT : TrackingMode::PATCH_NEW_POSITION_IN_BOX,
+                .tracking_mode = tracking_mode_from_string(args.named_value("--tracking_mode", "patches")),
                 .regularization = regularization_from_string(args.named_value("--regularization", "dense_geometry")),
                 .sift_nframes = safe_stoz(args.named_value("--sift_nframes", "19")),
                 .regularization_lambda = safe_stof(args.named_value("--regularization_lambda")),

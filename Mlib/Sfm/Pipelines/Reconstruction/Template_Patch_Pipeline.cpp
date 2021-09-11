@@ -84,7 +84,7 @@ void TemplatePatchPipeline::process_image_frame(
         dtam_reconstruction_.reconstruct(
             camera_frames_.find(time) != camera_frames_.end(),
             (flowing_particles_.particles_.find(time) != flowing_particles_.particles_.end()) &&
-            (flowing_particles_.particles_.at(time).tracking_mode == TrackingMode::SIFT));
+            (flowing_particles_.particles_.at(time).tracking_mode & TrackingMode::SIFT));
     }
 }
 

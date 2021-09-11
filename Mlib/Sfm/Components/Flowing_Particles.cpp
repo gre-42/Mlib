@@ -45,7 +45,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
     Array<FixedArray<float, 2>>& keypoints1 = new_frame.keypoints;
     Array<float>& descriptors1 = new_frame.descriptors;
     Array<uint8_t> grayscale_u8 = image_frames_.rbegin()->second.grayscale.applied<uint8_t>([](float v){return (uint8_t)(std::min(v, 1.f) * 255);});
-    if (false) {
+    if (cfg_.tracking_mode == TrackingMode::CV_SIFT_0) {
         std::vector<ocv::KeyPoint> keypoints1_;
         ocv::SIFT sift{ (int)cfg_.target_nparticles };
         sift(grayscale_u8,
@@ -56,7 +56,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
         for (size_t i = 0; i < keypoints1_.size(); ++i) {
             keypoints1(i) = keypoints1_[i].pt;
         }
-    } else if (false) {
+    } else if (cfg_.tracking_mode == TrackingMode::CV_SIFT_1) {
         std::vector<ocv::KeyPoint> keypoints1_;
         ocv::SIFT2 sift{ (int)cfg_.target_nparticles };
         sift.detectAndCompute(grayscale_u8,
@@ -67,7 +67,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
         for (size_t i = 0; i < keypoints1_.size(); ++i) {
             keypoints1(i) = keypoints1_[i].pt;
         }
-    } else {
+    } else if (cfg_.tracking_mode == TrackingMode::CV_SIFT) {
         auto sift = cv::SIFT::create((int)cfg_.target_nparticles);
         std::vector<cv::KeyPoint> cv_keypoints;
         cv::Mat_<float> cv_descriptors1;
@@ -81,6 +81,8 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
         for (size_t i = 0; i < cv_keypoints.size(); ++i) {
             keypoints1(i) = FixedArray<float, 2>{ cv_keypoints[i].pt.x, cv_keypoints[i].pt.y };
         }
+    } else {
+        throw std::runtime_error("Unknown tracking mode");
     }
     std::map<size_t, size_t> inserted_keypoints1;
     std::list<std::pair<size_t, size_t>> matches;
@@ -329,7 +331,7 @@ void FlowingParticles::advance_flowing_particles() {
     assert(image_frames_.size() >= 1);
     FeaturePointFrame new_frame;
     new_frame.tracking_mode = cfg_.tracking_mode;
-    if (cfg_.tracking_mode == TrackingMode::SIFT) {
+    if (cfg_.tracking_mode & TrackingMode::SIFT) {
         generate_sift_correspondences(new_frame);
     } else {
         if (particles_.size() > 0) {
@@ -454,6 +456,6 @@ void FlowingParticles::draw(StbImage& bmp) {
 bool FlowingParticles::requires_optical_flow() const {
     return
         (cfg_.tracking_mode != TrackingMode::PATCH_NEW_POSITION_IN_BOX &&
-         cfg_.tracking_mode != TrackingMode::SIFT) ||
+         !(cfg_.tracking_mode & TrackingMode::SIFT)) ||
         cfg_.draw_optical_flow;
 }

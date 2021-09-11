@@ -80,15 +80,12 @@ void SparseReconstruction::compute_reconstruction_pair(
     std::list<FixedArray<float, 2>> y1_l;
     auto second_particles = particles_.rbegin();
     size_t nframes;
-    switch (second_particles->second.tracking_mode) {
-        case TrackingMode::PATCH_NEW_POSITION_IN_BOX:
-            nframes = cfg_.nframes;
-            break;
-        case TrackingMode::SIFT:
-            nframes = 2;
-            break;
-        default:
-            throw std::runtime_error("Unknown tracking mode");
+    if (second_particles->second.tracking_mode & TrackingMode::SIFT) {
+        nframes = 2;
+    } else if (second_particles->second.tracking_mode == TrackingMode::PATCH_NEW_POSITION_IN_BOX) {
+        nframes = cfg_.nframes;
+    } else {
+        throw std::runtime_error("Unknown tracking mode");
     }
     for (const auto& s : second_particles->second.tracked_points) {
         std::shared_ptr<FeaturePoint> nth_parent = s.second->nth_from_end(nframes - 1);
