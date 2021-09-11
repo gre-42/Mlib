@@ -104,7 +104,13 @@ void Mlib::ocv::exp(const TData* src, TData* dst, int len) {
 template <class TData>
 void Mlib::ocv::fastAtan2(const TData* Y, const TData* X, TData* Ori, int len) {
     for (int i = 0; i < len; ++i) {
-        Ori[i] = std::atan2(Y[i], X[i]);
+        Ori[i] = std::atan2(Y[i], X[i]) * 180.f / float{ M_PI };
+        if (Ori[i] < 0.f) {
+            Ori[i] += 360.f;
+        }
+        if (Ori[i] >= 360.f) {
+            Ori[i] -= 360.f;
+        }
     }
 }
 
