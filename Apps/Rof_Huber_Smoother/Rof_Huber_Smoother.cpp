@@ -40,7 +40,9 @@ int main(int argc, char **argv) {
         " [--remove_edge_blobs]"
         " [--optimize_with_true_depth]"
         " [--draw_lm_pngs]"
-        " [--optimize_parameters]",
+        " [--optimize_parameters]"
+        " [--min_depth]"
+        " [--max_depth]",
         {"--remove_edge_blobs",
         "--optimize_with_true_depth",
         "--draw_lm_pngs",
@@ -62,12 +64,15 @@ int main(int argc, char **argv) {
         "--package_out",
         "--intrinsic_matrix",
         "--extrinsic_matrix",
-        "--true_depth"});
+        "--true_depth",
+        "--min_depth",
+        "--max_depth"});
 
     try {
         auto args = parser.parsed(argc, argv);
 
         StbImage im = StbImage::load_from_file(args.named_value("--im"));
+        (Array<Rgb24>&)im = Rgb24::white();
 
         EdgeImageConfig edge_image_config{
             .alpha = safe_stof(args.named_value("--alpha")),
@@ -79,7 +84,7 @@ int main(int argc, char **argv) {
             edge_image_config);
 
         if (args.has_named_value("--g_out")) {
-            StbImage::from_float_grayscale(g).save_to_file(args.named_value("--g_out"));
+            StbImage::from_float_grayscale(0.1f * g).save_to_file(args.named_value("--g_out"));
         }
 
         if (args.has_named_value("--depth_out") ||
@@ -101,12 +106,11 @@ int main(int argc, char **argv) {
                 safe_stof(args.named_value("--theta_end")),                  // theta_end
                 safe_stof(args.named_value("--beta_I")),                     // beta
                 safe_stof(args.named_value("--lambda")),
-                NAN, // lambda_initial
                 safe_stof(args.named_value("--epsilon")),
                 safe_stoz(args.named_value("--niterations")));
             CostVolumeParameters cost_volume_parameters{
-                .min_depth = 3.5f,
-                .max_depth = 12.f,
+                .min_depth = safe_stof(args.named_value("--min_depth")),
+                .max_depth = safe_stof(args.named_value("--max_depth")),
                 .ndepths = dsi.shape(0)};
             if (args.has_named("--optimize_with_true_depth")) {
                 Array<float> true_ai = 1.f / Array<float>::load_binary(args.named_value("--true_depth"));

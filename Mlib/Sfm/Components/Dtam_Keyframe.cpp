@@ -54,7 +54,9 @@ DtamKeyframe::DtamKeyframe(
   camera_computed_with_sift_{camera_computed_with_sift}
 {
     if (camera_computed_with_sift) {
-        cfg_.dm_params_.lambda_ = cfg_.dm_params_.lambda_initial_;
+        cfg_.regularization_ = Regularization::DENSE_GEOMETRY;
+        cfg_.dg_params_.nsteps = 400;
+        cfg_.dg_params_.nsteps_inner = 1;
     }
 }
 

@@ -12,7 +12,6 @@ namespace Mlib::Sfm {
 
 struct DtamKeyframeConfig {
     DtamKeyframeConfig(
-        bool rewind_first_keyframe,
         bool use_virtual_camera,
         bool incremental_update,
         size_t nfuture_frames_per_keyframe,
@@ -33,7 +32,6 @@ struct DtamKeyframeConfig {
         const Array<float>& registration_sigmas,
         const Array<float>& registration_thresholds,
         bool optimize_parameters);
-    bool rewind_first_keyframe_;
     bool use_virtual_camera_;
     bool incremental_update_;
     size_t nfuture_frames_per_keyframe__;

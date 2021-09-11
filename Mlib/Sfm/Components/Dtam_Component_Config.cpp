@@ -16,7 +16,7 @@ static Dg::DenseGeometryParameters dgp_320{
     .lambda__ = 200.f * F_320,
     .tau = 1 / 8.f,
     .nsteps = 400,
-    .nsteps_inner = 1};
+    .nsteps_inner = 10};
 // static Dg::DenseGeometryParameters dgp_640{
 //     .theta_0__ = 0.1f * 0.2f,
 //     .theta_end__ = float{ 0.1 * 1e-4 },
@@ -40,7 +40,6 @@ DtamComponentConfig::DtamComponentConfig(
     track_using_dtam,               // track_using_dtam
     1,                              // nth_image
     DtamKeyframeConfig(
-        false,                      // rewind_first_keyframe
         use_virtual_camera,         // use_virtual_camera
         interactive,                // incremental_update
         interactive ? 20 : 20,      // nfuture_frames_per_keyframe
@@ -56,15 +55,14 @@ DtamComponentConfig::DtamComponentConfig(
         },
         Dm::DtamParameters(
             EdgeImageConfig{
-                .alpha = 10.f,
-                .beta = 1.f,
+                .alpha = 0.f,
+                .beta = 2.f,
                 .remove_edge_blobs = false},
-            0.2,                    // theta_0 (0.2)
-            float{ 1e-4 },          // theta_end (1e-4)
-            0.0001f,                // beta (0.0001 - 0.001)
-            10.f,                   // lambda (1 for the first keyframe)
-            500.f,                  // lambda_initial
-            float{ 1e-3 },          // epsilon (1e-4)
+            0.005f * 0.2f,          // theta_0 (0.2)
+            float{ 0.005 * 1e-4 },  // theta_end (1e-4)
+            float{ 4.02438e-05 },   // beta (0.0001 - 0.001)
+            70.597f,                // lambda (1 for the first keyframe)
+            0.0504097f,             // epsilon (1e-4)
             500),                   // nsteps
         dgp_320,
         {dgp_320, dgp_320},

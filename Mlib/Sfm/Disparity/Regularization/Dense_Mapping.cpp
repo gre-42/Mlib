@@ -179,7 +179,6 @@ void Mlib::Sfm::Dm::qualitative_primary_parameter_optimization(
                 parameters.theta_end__,
                 parameters.beta_,
                 LAMBDA,
-                NAN,  // lambda_initial
                 parameters.epsilon_,
                 parameters.nsteps_),
             false,
@@ -200,7 +199,6 @@ void Mlib::Sfm::Dm::qualitative_primary_parameter_optimization(
                 parameters.theta_end__,
                 parameters.beta_,
                 parameters.lambda_,
-                NAN,  // lambda_initial
                 EPSILON,
                 parameters.nsteps_),
             false,
@@ -239,7 +237,6 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
             parameters.theta_end__,                    // theta_end
             parameters.beta_,                          // beta
             x(2) / float{ 1e-1 },                      // lambda
-            NAN,                                       // lambda_initial
             x(3) / float{ 1e4 },                       // epsilon
             parameters.nsteps_);
     };
@@ -307,7 +304,6 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_grid(
                         parameters.theta_end__,
                         parameters.beta_,
                         LAMBDA,
-                        NAN,  // lambda_initial
                         EPSILON,
                         parameters.nsteps_);
                     Dm::DenseMapping dm{
@@ -351,7 +347,6 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
                 THETA_0 / 0.2f * float{ 1e-4 },
                 BETA,
                 parameters.lambda_,
-                NAN,  // lambda_initial
                 parameters.epsilon_,
                 parameters.nsteps_);
             DenseMapping dm{

@@ -7,7 +7,6 @@ using namespace Mlib;
 using namespace Mlib::Sfm;
 
 DtamKeyframeConfig::DtamKeyframeConfig(
-    bool rewind_first_keyframe,
     bool use_virtual_camera,
     bool incremental_update,
     size_t nfuture_frames_per_keyframe,
@@ -28,8 +27,7 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     const Array<float>& registration_sigmas,
     const Array<float>& registration_thresholds,
     bool optimize_parameters)
-: rewind_first_keyframe_{rewind_first_keyframe},
-  use_virtual_camera_{use_virtual_camera},
+: use_virtual_camera_{use_virtual_camera},
   incremental_update_(incremental_update),
   nfuture_frames_per_keyframe__(nfuture_frames_per_keyframe),
   npast_frames_per_keyframe__(npast_frames_per_keyframe),

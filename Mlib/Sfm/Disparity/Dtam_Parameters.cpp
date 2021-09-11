@@ -34,7 +34,6 @@ DtamParameters::DtamParameters()
     8.f / 0.2f * float{ 1e-4 },         // theta_end (1e-4)
     0.0001f,                            // beta (0.0001 - 0.001)
     1.f,                                // lambda (1 for the first keyframe)
-    1.f,                                // lambda_initial
     0.2f,                               // epsilon (1e-4)
     400)                                // nsteps
 {}
@@ -55,7 +54,6 @@ DtamParameters::DtamParameters(
     float theta_end,
     float beta,
     float lambda,
-    float lambda_initial,
     float epsilon,
     size_t nsteps)
 : edge_image_config_{edge_image_config},
@@ -63,7 +61,6 @@ DtamParameters::DtamParameters(
   theta_end__(theta_end),
   beta_(beta),
   lambda_(lambda),
-  lambda_initial_(lambda_initial),
   epsilon_(epsilon),
   nsteps_(nsteps)
 {}
