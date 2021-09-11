@@ -220,25 +220,42 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
     bool draw_bmps)
 {
     size_t call_counter = 0;
-    auto copy_in = [](const DtamParameters& params){
-        return Array<float>{
-            params.edge_image_config_.alpha * float{ 1e0 },
-            params.edge_image_config_.beta * float{ 1e0 },
-            params.lambda_ * float{ 1e-1 },
-            params.epsilon_ * float{ 1e4 }};
+    auto copy_in = [&parameters](const DtamParameters& params){
+        if (parameters.edge_image_config_.alpha == 0) {
+            return Array<float>{
+                params.lambda_ * float{ 1e-1 },
+                params.epsilon_ * float{ 1e4 }};
+        } else {
+            return Array<float>{
+                params.edge_image_config_.alpha * float{ 1e0 },
+                params.edge_image_config_.beta * float{ 1e0 },
+                params.lambda_ * float{ 1e-1 },
+                params.epsilon_ * float{ 1e4 }};
+        }
     };
     auto copy_out = [&parameters](const Array<float>& x){
-        return DtamParameters(
-            EdgeImageConfig{
-                .alpha = x(0) / float{ 1e0 },
-                .beta = x(1) / float{ 1e0 },
-                .remove_edge_blobs = parameters.edge_image_config_.remove_edge_blobs},
-            parameters.theta_0__,                      // theta_0
-            parameters.theta_end__,                    // theta_end
-            parameters.beta_,                          // beta
-            x(2) / float{ 1e-1 },                      // lambda
-            x(3) / float{ 1e4 },                       // epsilon
-            parameters.nsteps_);
+        if (parameters.edge_image_config_.alpha == 0) {
+            return DtamParameters(
+                parameters.edge_image_config_,
+                parameters.theta_0__,                      // theta_0
+                parameters.theta_end__,                    // theta_end
+                parameters.beta_,                          // beta
+                x(0) / float{ 1e-1 },                      // lambda
+                x(1) / float{ 1e4 },                       // epsilon
+                parameters.nsteps_);
+        } else {
+            return DtamParameters(
+                EdgeImageConfig{
+                    .alpha = x(0) / float{ 1e0 },
+                    .beta = x(1) / float{ 1e0 },
+                    .remove_edge_blobs = parameters.edge_image_config_.remove_edge_blobs},
+                parameters.theta_0__,                      // theta_0
+                parameters.theta_end__,                    // theta_end
+                parameters.beta_,                          // beta
+                x(2) / float{ 1e-1 },                      // lambda
+                x(3) / float{ 1e4 },                       // epsilon
+                parameters.nsteps_);
+        }
     };
     Array<bool> mask = !isnan(true_inverse_depth);
     auto f = [&mask, &copy_out, &grayscale, &cost_volume_parameters, &dsi, &call_counter, draw_bmps](const Array<float>& x){
