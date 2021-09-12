@@ -11,6 +11,7 @@ struct TemplatePatchPipelineConfig {
     TrackingMode tracking_mode;
     Regularization regularization;
     size_t sift_nframes;
+    FixedArray<float, 2> fov_distances;
     float regularization_lambda;
     bool enable_dtam = true;
     bool track_using_dtam = true;

@@ -38,7 +38,8 @@ TemplatePatchPipeline::TemplatePatchPipeline(
       (fs::path{cache_dir} / "SparseReconstruction").string(),
       ReconstructionConfig{
           .sift_nframes = cfg.sift_nframes,
-          .print_residual = cfg.print_residual} },
+          .print_residual = cfg.print_residual,
+          .fov_distances = cfg.fov_distances} },
   depth_map_bundle_(),
   dtam_reconstruction_{
       image_frames_,

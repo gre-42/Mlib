@@ -75,6 +75,8 @@ int main(int argc, char** argv) {
         "[--no_dtam_tracking] "
         "[--tracking_mode {patches,cv_sift,cv_sift_0,cv_sift_1}] "
         "[--sift_nframes <nframes>] "
+        "[--fov_min <value>] "
+        "[--fov_max <value>] "
         "[--use_virtual_camera] "
         "--chess_r <chess_r> "
         "--chess_c <chess_c> "
@@ -106,6 +108,8 @@ int main(int argc, char** argv) {
           "--ncameras",
           "--tracking_mode",
           "--sift_nframes",
+          "--fov_min",
+          "--fov_max",
           "--features_down_sampling",
           "--dtam_down_sampling",
           "--cost_volume",
@@ -140,6 +144,9 @@ int main(int argc, char** argv) {
                 .tracking_mode = tracking_mode_from_string(args.named_value("--tracking_mode", "patches")),
                 .regularization = regularization_from_string(args.named_value("--regularization", "dense_geometry")),
                 .sift_nframes = safe_stoz(args.named_value("--sift_nframes", "19")),
+                .fov_distances = {
+                    safe_stof(args.named_value("--fov_min", "0.1")),
+                    safe_stof(args.named_value("--fov_max", "20"))},
                 .regularization_lambda = safe_stof(args.named_value("--regularization_lambda")),
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
