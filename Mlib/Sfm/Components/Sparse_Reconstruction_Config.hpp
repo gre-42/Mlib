@@ -22,7 +22,7 @@ struct ReconstructionConfig {
 
     bool print_residual = false;
     bool print_point_updates = false;
-    FixedArray<float, 2> fov_distances = { 0.1f, 20.f };
+    FixedArray<float, 2> fov_distances = { 0.1f, 100.f };
     float bad_point_residual_multiplier = 4.f;
     float max_residual_normalized = 0.1f;
     float max_residual_unnormalized = 10;

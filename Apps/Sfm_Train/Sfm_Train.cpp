@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
                 .sift_nframes = safe_stoz(args.named_value("--sift_nframes", "19")),
                 .fov_distances = {
                     safe_stof(args.named_value("--fov_min", "0.1")),
-                    safe_stof(args.named_value("--fov_max", "20"))},
+                    safe_stof(args.named_value("--fov_max", "100"))},
                 .regularization_lambda = safe_stof(args.named_value("--regularization_lambda")),
                 .enable_dtam = !args.has_named("--no_dtam"),
                 .track_using_dtam = !args.has_named("--no_dtam_tracking"),
