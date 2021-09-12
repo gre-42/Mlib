@@ -86,12 +86,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
     }
     std::map<size_t, size_t> inserted_keypoints1;
     std::list<std::pair<size_t, size_t>> matches;
-    if (cfg_.sift_nframes < 2) {
-        throw std::runtime_error("sift_nframes must be >= 2");
-    }
-    if (particles_.size() >= cfg_.sift_nframes) {
-        // auto pit = particles_.rbegin();
-        // std::advance(pit, cfg_.sift_nframes - 2);
+    if (particles_.size() >= 1) {
         auto pit = particles_.begin();
         std::cerr << "SIFT: " << pit->first.count() << " <-> " << image_frames_.rbegin()->first.count() << " ms" << std::endl;
         for (auto& s : pit->second.tracked_points) {

@@ -26,8 +26,7 @@ TemplatePatchPipeline::TemplatePatchPipeline(
       optical_flows_.optical_flow_frames_,
       (fs::path{cache_dir} / "TracedParticles").string(),
       FlowingParticlesConfig{
-          .tracking_mode = cfg.tracking_mode,
-          .sift_nframes = cfg.sift_nframes
+          .tracking_mode = cfg.tracking_mode
       }},
   sparse_reconstruction_{
       features_down_sampler_.ds_intrinsic_matrix_,
@@ -37,7 +36,9 @@ TemplatePatchPipeline::TemplatePatchPipeline(
       flowing_particles_.bad_points_,
       flowing_particles_.last_sq_residual_,
       (fs::path{cache_dir} / "SparseReconstruction").string(),
-      ReconstructionConfig{.print_residual = cfg.print_residual} },
+      ReconstructionConfig{
+          .sift_nframes = cfg.sift_nframes,
+          .print_residual = cfg.print_residual} },
   depth_map_bundle_(),
   dtam_reconstruction_{
       image_frames_,
@@ -80,7 +81,7 @@ void TemplatePatchPipeline::process_image_frame(
             (camera_frame != nullptr) && camera_is_initializer);
     }
     if (cfg_.enable_dtam) {
-        // sparse_reconstruction_ may or may have not appended a new camera frame
+        // sparse_reconstruction_ may or may not have appended a new camera frame
         dtam_reconstruction_.reconstruct(
             camera_frames_.find(time) != camera_frames_.end(),
             (flowing_particles_.particles_.find(time) != flowing_particles_.particles_.end()) &&

@@ -68,39 +68,49 @@ SparseReconstruction::SparseReconstruction(
       dropped_observations_,
       bad_points } {}
 
-void SparseReconstruction::compute_reconstruction_pair(
+bool SparseReconstruction::compute_reconstruction_pair(
     Array<size_t>& ids,
     Array<FixedArray<float, 2>>& y0,
     Array<FixedArray<float, 2>>& y1,
     std::pair<std::chrono::milliseconds, std::chrono::milliseconds>& times)
 {
-    assert(cfg_.nframes > 1);
+    if (cfg_.nframes <= 1) {
+        throw std::runtime_error("nframes is <= 1");
+    }
     std::list<size_t> ids_l;
     std::list<FixedArray<float, 2>> y0_l;
     std::list<FixedArray<float, 2>> y1_l;
     auto second_particles = particles_.rbegin();
-    size_t nframes;
     if (second_particles->second.tracking_mode & TrackingMode::SIFT) {
-        nframes = 2;
-    } else if (second_particles->second.tracking_mode == TrackingMode::PATCH_NEW_POSITION_IN_BOX) {
-        nframes = cfg_.nframes;
+        if (particles_.size() < cfg_.sift_nframes) {
+            return false;
+        }
+        times.first = particles_.begin()->first;
     } else {
-        throw std::runtime_error("Unknown tracking mode");
+        if (particles_.size() < cfg_.nframes) {
+            return false;
+        }
+        auto first_particles = second_particles;
+        std::advance(first_particles, cfg_.nframes - 1);
+        times.first = first_particles->first;
     }
+    times.second = second_particles->first;
+
+    std::cerr << "Computing reconstruction pair: " << times.first.count() << " <-> " << times.second.count() << " ms" << std::endl;
+
     for (const auto& s : second_particles->second.tracked_points) {
-        std::shared_ptr<FeaturePoint> nth_parent = s.second->nth_from_end(nframes - 1);
-        if (nth_parent != nullptr) {
+        auto it = s.second->sequence.find(times.first);
+        if (it != s.second->sequence.end()) {
             ids_l.push_back(s.first);
-            y0_l.push_back(nth_parent->position);
+            y0_l.push_back(it->second->position);
             y1_l.push_back(s.second->sequence.rbegin()->second->position);
         }
     }
+
     ids = Array<size_t>(ids_l);
     y0 = Array<FixedArray<float, 2>>(y0_l);
     y1 = Array<FixedArray<float, 2>>(y1_l);
-    times.second = second_particles->first;
-    std::advance(second_particles, nframes - 1);
-    times.first = second_particles->first;
+    return true;
 }
 
 void SparseReconstruction::reconstruct_initial_with_camera() {
@@ -111,7 +121,10 @@ void SparseReconstruction::reconstruct_initial_with_camera() {
     Array<FixedArray<float, 2>> y1;
     std::pair<std::chrono::milliseconds, std::chrono::milliseconds> times;
 
-    compute_reconstruction_pair(active_sequence_ids, y0, y1, times);
+    if (!compute_reconstruction_pair(active_sequence_ids, y0, y1, times)) {
+        std::cerr << "Can not yet compute initial reconstruction pair" << std::endl;
+        return;
+    }
 
     std::cerr << "Found " << y0.length() << " points, waiting for " << cfg_.npoints << std::endl;
     if (y0.length() >= cfg_.npoints) {
@@ -141,7 +154,10 @@ void SparseReconstruction::reconstruct_initial_with_svd() {
     Array<FixedArray<float, 2>> y1;
 
     std::pair<std::chrono::milliseconds, std::chrono::milliseconds> times;
-    compute_reconstruction_pair(active_sequence_ids, y0, y1, times);
+    if (!compute_reconstruction_pair(active_sequence_ids, y0, y1, times)) {
+        std::cerr << "Can not yet compute initial reconstruction pair" << std::endl;
+        return;
+    }
 
     std::cerr << "Found " << y0.length() << " points, waiting for " << cfg_.npoints << std::endl;
     if (y0.length() >= cfg_.npoints) {
@@ -755,44 +771,64 @@ void SparseReconstruction::global_bundle_adjustment(bool marginalize) {
     delete_bad_points();
 }
 
+void SparseReconstruction::insert_missing_cameras_by_interpolation() {
+    if (camera_frames_.size() != 2) {
+        throw std::runtime_error("Number of cameras is not 2");
+    }
+    const auto& c0 = *camera_frames_.begin();
+    const auto& c1 = *camera_frames_.rbegin();
+    for (const auto& p : particles_) {
+        if (p.first < c0.first) {
+            throw std::runtime_error("Cannot interpolate camera, time too low");
+        }
+        if (p.first > c1.first) {
+            throw std::runtime_error("Cannot interpolate camera, time too high");
+        }
+        if (p.first == c0.first) {
+            continue;
+        }
+        if (p.first == c1.first) {
+            continue;
+        }
+        float alpha = (p.first - c0.first).count() / float((c1.first - c0.first).count());
+        OffsetAndQuaternion<float> rs =
+            OffsetAndQuaternion<float>{ c0.second.pose.affine() }
+            .slerp(OffsetAndQuaternion<float>{ c1.second.pose.affine() }, alpha);
+        TransformationMatrix<float, 3> pose{ tait_bryan_angles_2_matrix(rs.quaternion().to_tait_bryan_angles()), rs.offset() };
+        set_camera_frame(p.first, CameraFrame{ pose });
+    }
+    global_bundle_adjustment(false);
+}
+
+void SparseReconstruction::insert_missing_cameras_by_append() {
+    if (cfg_.enable_global_bundle_adjustment) {
+        // camera_frames_.clear();
+        // This potentially deletes particles.
+        for (const auto& p : particles_) {
+            camera_frame_append(p.first);
+        }
+        global_bundle_adjustment(cfg_.marginalize);
+    }
+}
+
+void SparseReconstruction::insert_missing_cameras() {
+    if (cfg_.interpolate_initial_cameras) {
+        insert_missing_cameras_by_interpolation();
+    } else {
+        insert_missing_cameras_by_append();
+    }
+}
+
 void SparseReconstruction::reconstruct(bool is_last_frame, bool camera_initializer_set) {
     if (camera_initializer_set) {
         reconstruct_initial_with_camera();
-    } else if (reconstructed_points_.size() == 0) {
+    } else if (reconstructed_points_.empty()) {
         if (cfg_.initialize_with_bundle_adjustment) {
             reconstruct_initial_for_bundle_adjustment();
-            if (reconstructed_points_.size() != 0) {
+            if (!reconstructed_points_.empty()) {
                 global_bundle_adjustment(false);
                 for (const auto& c : camera_frames_) {
                     std::cerr << "Initial bundle adjustment cam position: " << c.second.pose.t() << std::endl;
-                }
-                if (cfg_.interpolate_initial_cameras) {
-                    if (camera_frames_.size() != 2) {
-                        throw std::runtime_error("Number of cameras is not 2");
-                    }
-                    const auto& c0 = *camera_frames_.begin();
-                    const auto& c1 = *camera_frames_.rbegin();
-                    for (const auto& p : particles_) {
-                        if (p.first < c0.first) {
-                            throw std::runtime_error("Cannot interpolate camera, time too low");
-                        }
-                        if (p.first > c1.first) {
-                            throw std::runtime_error("Cannot interpolate camera, time too high");
-                        }
-                        if (p.first == c0.first) {
-                            continue;
-                        }
-                        if (p.first == c1.first) {
-                            continue;
-                        }
-                        float alpha = (p.first - c0.first).count() / float((c1.first - c0.first).count());
-                        OffsetAndQuaternion<float> rs =
-                            OffsetAndQuaternion<float>{ c0.second.pose.affine() }
-                            .slerp(OffsetAndQuaternion<float>{ c1.second.pose.affine() }, alpha);
-                        TransformationMatrix<float, 3> pose{ tait_bryan_angles_2_matrix(rs.quaternion().to_tait_bryan_angles()), rs.offset() };
-                        set_camera_frame(p.first, CameraFrame{ pose });
-                    }
-                    global_bundle_adjustment(false);
                 }
                 // for (const auto& p : particles_) {
                 //     camera_frame_append(p.first);
@@ -802,15 +838,12 @@ void SparseReconstruction::reconstruct(bool is_last_frame, bool camera_initializ
         } else {
             reconstruct_initial_with_svd();
         }
+        // Disabled, as a hack for SIFT to work on 2 cameras.
+        // if (!reconstructed_points_.empty()) {
+        //     insert_missing_cameras();
+        // }
     } else if (is_last_frame || (particles_.size() % cfg_.recompute_interval == 0)) {
-        if (cfg_.enable_global_bundle_adjustment) {
-            // camera_frames_.clear();
-            // This potentially deletes particles.
-            for (const auto& p : particles_) {
-                camera_frame_append(p.first);
-            }
-            global_bundle_adjustment(cfg_.marginalize);
-        }
+        insert_missing_cameras();
         reconstruct_append();
         global_bundle_adjustment(cfg_.marginalize);
         if (cfg_.enable_partial_bundle_adjustment) {

@@ -9,7 +9,6 @@ namespace Mlib::Sfm {
 
 class FeaturePointSequence {
 public:
-    std::shared_ptr<FeaturePoint> nth_from_end(size_t n);
     std::map<std::chrono::milliseconds, std::shared_ptr<FeaturePoint>> sequence;
 };
 

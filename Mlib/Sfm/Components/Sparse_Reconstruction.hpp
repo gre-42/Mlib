@@ -34,7 +34,7 @@ public:
     CameraFrame& get_camera_frame(const std::chrono::milliseconds& time);
     void print_arrays() const;
 private:
-    void compute_reconstruction_pair(
+    [[nodiscard]] bool compute_reconstruction_pair(
         Array<size_t>& ids,
         Array<FixedArray<float, 2>>& y0,
         Array<FixedArray<float, 2>>& y1,
@@ -52,6 +52,9 @@ private:
     void global_bundle_adjustment_lvm();
     void reject_large_projection_residuals(const GlobalBundle& gb);
     void delete_bad_points();
+    void insert_missing_cameras_by_interpolation();
+    void insert_missing_cameras_by_append();
+    void insert_missing_cameras();
 #ifdef REJECT_LARGE_RESIDUALS
     void reject_large_projection_residuals(
         const Array<float>& residual,

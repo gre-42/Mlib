@@ -15,6 +15,7 @@ enum class AppendMode {
 struct ReconstructionConfig {
     size_t npoints = 10;
     size_t nframes = 40;
+    size_t sift_nframes = 19;
     bool recompute_first_camera = false;
     bool recompute_second_camera = false;
     size_t recompute_interval = 5;
@@ -36,7 +37,7 @@ struct ReconstructionConfig {
     bool clear_all_cameras = true;
     bool two_pass = false;
     bool initialize_with_bundle_adjustment = false;
-    bool interpolate_initial_cameras = true;
+    bool interpolate_initial_cameras = false;
     AppendMode append_mode = AppendMode::PROJECTION;
     bool marginalize = true;
     GlobalBundleConfig gb {
