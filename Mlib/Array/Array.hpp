@@ -11,6 +11,7 @@
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Sized_Iterable.hpp>
+#include <Mlib/Strings/From_Number.hpp>
 #include <cassert>
 #include <complex>
 #include <cstddef>
@@ -964,20 +965,10 @@ public:
             TData value;
             std::string svalue;
             while(srow >> svalue) {
-                if (svalue == "nan") {
-                    value = NAN;
-                } if (svalue == "-nan") {
-                    value = -NAN;
-                } else if (svalue == "inf") {
-                    value = INFINITY;
-                } else if (svalue == "-inf") {
-                    value = -INFINITY;
-                } else {
-                    std::stringstream ssvalue(svalue);
-                    ssvalue >> value;
-                    if (ssvalue.fail()) {
-                        throw std::runtime_error{ "Could not read value of file \"" + filename + '"' };
-                    }
+                try {
+                    value = safe_sto<TData>(svalue);
+                } catch (const std::runtime_error& e) {
+                    throw std::runtime_error{ "Could not read value of file \"" + filename + "\": " + e.what() };
                 }
                 rowv.push_back(value);
             }
