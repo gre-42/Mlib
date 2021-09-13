@@ -291,8 +291,8 @@ Array<float> Mlib::Sfm::move_along_disparity(
 Array<float> Mlib::Sfm::reconstruct_disparity(
     const Array<float>& disparity,
     const FixedArray<float, 3, 3>& F,
-    const TransformationMatrix<float, 3>& extrinsic_matrix,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 3>& extrinsic_matrix,
     Array<float>* condition_number)
 {
     Array<float> x{ArrayShape{3}.concatenated(disparity.shape())};
@@ -358,9 +358,11 @@ Array<float> Mlib::Sfm::reconstruct_disparity(
 
 Array<float> Mlib::Sfm::reconstruct_depth(
     const Array<float>& depth,
-    const TransformationMatrix<float, 2>& intrinsic_matrix)
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 3>& extrinsic_matrix)
 {
     assert(depth.ndim() == 2);
+    auto cpose = extrinsic_matrix.inverted();
     Array<float> x{ArrayShape{3}.concatenated(depth.shape())};
     FixedArray<float, 3, 3> ipi{inv(intrinsic_matrix.affine())};
     for (size_t r = 0; r < depth.shape(0); ++r) {
@@ -368,11 +370,10 @@ Array<float> Mlib::Sfm::reconstruct_depth(
             FixedArray<size_t, 2> id{r, c};
             FixedArray<float, 3> y = homogenized_3(i2a(id));
             FixedArray<float, 3> xx = dot1d(ipi, y);
-            xx /= xx(2);
-            float cdepth = depth(r, c);
-            x(0, r, c) = cdepth * xx(0);
-            x(1, r, c) = cdepth * xx(1);
-            x(2, r, c) = cdepth * xx(2);
+            FixedArray<float, 3> xxx = cpose.transform(xx * depth(r, c) / xx(2));
+            x(0, r, c) = xxx(0);
+            x(1, r, c) = xxx(1);
+            x(2, r, c) = xxx(2);
         }
     }
     return x;

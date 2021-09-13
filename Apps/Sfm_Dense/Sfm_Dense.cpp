@@ -316,7 +316,7 @@ int main(int argc, char **argv) {
 
             // Array<float> disparity_0_f = guided_filter(im0_gray, disparity_0, ArrayShape{10, 10}, float(1e-3));
 
-            x = reconstruct_disparity(disparity_0, F, ke, intrinsic_matrix, &condition_number);
+            x = reconstruct_disparity(disparity_0, F, intrinsic_matrix, ke, &condition_number);
             x[0].save_txt_2d("x-0.m");
             x[1].save_txt_2d("x-1.m");
             x[2].save_txt_2d("x-2.m");

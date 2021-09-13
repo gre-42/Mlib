@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
                 }
             }
             if (!use_inverse_depth) {
-                Array<float> x = reconstruct_disparity(disparity0 * d_multiplier, F, ke, intrinsic_matrix);
+                Array<float> x = reconstruct_disparity(disparity0 * d_multiplier, F, intrinsic_matrix, ke);
                 draw_quantiled_grayscale(x[2], 0.05, 0.95).save_to_file("xo-2.png");
                 draw_nan_masked_grayscale(
                     disparity0,
@@ -185,9 +185,9 @@ int main(int argc, char **argv) {
         if (use_inverse_depth) {
             Array<float> depth = 1.f / ai;
             draw_nan_masked_grayscale(depth, min(1.f / inverse_depths), max(1.f / inverse_depths)).save_to_file("depth.png");
-            x = reconstruct_depth(depth, intrinsic_matrix);
+            x = reconstruct_depth(depth, intrinsic_matrix, TransformationMatrix<float, 3>::identity());
         } else {
-            x = reconstruct_disparity(ai * d_multiplier, F, ke, intrinsic_matrix, &condition_number);
+            x = reconstruct_disparity(ai * d_multiplier, F, intrinsic_matrix, ke, &condition_number);
             draw_quantiled_grayscale(condition_number, 0.05, 0.95).save_to_file("condition_number.png");
         }
         draw_quantiled_grayscale(x[0], 0.05, 0.95).save_to_file("x-0.png");

@@ -584,7 +584,8 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         img.save_to_file(cache_dir_ + "/epipoles-" + suffix + ".png");
     }
     draw_nan_masked_grayscale(depth_, cfg_.cost_volume_parameters_.min_depth, cfg_.cost_volume_parameters_.max_depth).save_to_file(cache_dir_ + "/depth-" + suffix + ".png");
-    Array<float> x = reconstruct_depth(depth_, down_sampler_.ds_intrinsic_matrix_);
+    auto extrinsic_matrix = camera_frames_.at(key_frame_time_).projection_matrix_3x4();
+    Array<float> x = reconstruct_depth(depth_, down_sampler_.ds_intrinsic_matrix_, extrinsic_matrix);
     draw_quantiled_grayscale(x[0], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-0-" + suffix + ".png");
     draw_quantiled_grayscale(x[1], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-1-" + suffix + ".png");
     draw_quantiled_grayscale(x[2], 0.05f, 0.95f).save_to_file(cache_dir_ + "/x-2-" + suffix + ".png");
@@ -595,9 +596,9 @@ void DtamKeyframe::draw_reconstruction(const std::string& suffix) const {
         Array<float> condition_number;
         const Array<float>& im0_rgb = down_sampler_.ds_image_frames_.at(key_frame_time_).rgb;
         // using "reconstruct_depth" -> identity projection matrix
-        DenseProjector::from_image(camera_frames_, 0, 1, 2, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-1-" + suffix + ".png");
-        DenseProjector::from_image(camera_frames_, 0, 2, 1, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-2-" + suffix + ".png");
-        DenseProjector::from_image(camera_frames_, 2, 1, 0, x, condition_number, down_sampler_.ds_intrinsic_matrix_, TransformationMatrix<float, 3>::identity(), im0_rgb).normalize(256).draw(cache_dir_ + "/dense-2-1-" + suffix + ".png");
+        DenseProjector::from_image(camera_frames_, 0, 1, 2, x, condition_number, down_sampler_.ds_intrinsic_matrix_, extrinsic_matrix, im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-1-" + suffix + ".png");
+        DenseProjector::from_image(camera_frames_, 0, 2, 1, x, condition_number, down_sampler_.ds_intrinsic_matrix_, extrinsic_matrix, im0_rgb).normalize(256).draw(cache_dir_ + "/dense-0-2-" + suffix + ".png");
+        DenseProjector::from_image(camera_frames_, 2, 1, 0, x, condition_number, down_sampler_.ds_intrinsic_matrix_, extrinsic_matrix, im0_rgb).normalize(256).draw(cache_dir_ + "/dense-2-1-" + suffix + ".png");
 
         draw_nan_masked_grayscale(ai_, 1 / cfg_.cost_volume_parameters_.max_depth, 1 / cfg_.cost_volume_parameters_.min_depth).save_to_file(cache_dir_ + "/pkg-" + suffix + "-a.png");
         StbImage::from_float_rgb(im0_rgb).save_to_file(cache_dir_ + "/pkg-" + suffix + "-rgb.png");

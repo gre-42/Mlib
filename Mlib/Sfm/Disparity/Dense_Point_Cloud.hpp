@@ -69,12 +69,13 @@ Array<float> move_along_disparity(
 Array<float> reconstruct_disparity(
     const Array<float>& disparity,
     const FixedArray<float, 3, 3>& F,
-    const TransformationMatrix<float, 3>& extrinsic_matrix,
     const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 3>& extrinsic_matrix,
     Array<float>* condition_number = nullptr);
 
 Array<float> reconstruct_depth(
     const Array<float>& depth,
-    const TransformationMatrix<float, 2>& intrinsic_matrix);
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const TransformationMatrix<float, 3>& extrinsic_matrix);
 
 }}

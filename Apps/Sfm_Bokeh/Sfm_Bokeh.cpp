@@ -89,8 +89,8 @@ void dense_reconstruction(
         Array<float> x = reconstruct_disparity(
             disparity,
             F,
-            ptr.ke,
             intrinsic_matrix,
+            ptr.ke,
             &condition_number);
         StbImage::from_float_grayscale(
             normalized_and_clipped(x[0], -1.f, 1.f)
