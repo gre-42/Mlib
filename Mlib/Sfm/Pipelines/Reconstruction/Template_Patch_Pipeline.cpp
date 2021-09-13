@@ -56,7 +56,8 @@ TemplatePatchPipeline::TemplatePatchPipeline(
           cfg.regularization_filter_sigma,
           cfg.regularization_filter_poly_degree,
           cfg.regularization_lambda,
-          cfg.optimize_parameters) }
+          cfg.optimize_parameters,
+          cfg.epipole_radius) }
 {}
 
 void TemplatePatchPipeline::process_image_frame(

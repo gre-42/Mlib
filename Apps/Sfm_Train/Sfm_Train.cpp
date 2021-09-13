@@ -82,6 +82,7 @@ int main(int argc, char** argv) {
         "--chess_r <chess_r> "
         "--chess_c <chess_c> "
         "[--calibration_rotations <n>] "
+        "[--epipole_radius <r>] "
         "[--nskipped <nskipped>] "
         "[--nimages <nimages>] "
         "[--ncameras <ncameras>] "
@@ -106,6 +107,7 @@ int main(int argc, char** argv) {
           "--chess_r",
           "--chess_c",
           "--calibration_rotations",
+          "--epipole_radius",
           "--nskipped",
           "--nimages",
           "--ncameras",
@@ -160,7 +162,8 @@ int main(int argc, char** argv) {
                 .regularization_filter_sigma = safe_stof(args.named_value("--regularization_filter_sigma", "1")),
                 .regularization_filter_poly_degree = safe_stoz(args.named_value("--regularization_filter_poly_degree", "0")),
                 .optimize_parameters = args.has_named("--optimize_parameters"),
-                .calibration_rotations = safe_stoi(args.named_value("--calibration_rotations", "0")) });
+                .calibration_rotations = safe_stoi(args.named_value("--calibration_rotations", "0")),
+                .epipole_radius = safe_stof(args.named_value("--epipole_radius", "0")) });
         return 0;
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

@@ -26,7 +26,8 @@ DtamKeyframeConfig::DtamKeyframeConfig(
     size_t regularization_filter_poly_degree,
     const Array<float>& registration_sigmas,
     const Array<float>& registration_thresholds,
-    bool optimize_parameters)
+    bool optimize_parameters,
+    float epipole_radius)
 : use_virtual_camera_{use_virtual_camera},
   incremental_update_(incremental_update),
   nfuture_frames_per_keyframe__(nfuture_frames_per_keyframe),
@@ -46,7 +47,8 @@ DtamKeyframeConfig::DtamKeyframeConfig(
   regularization_filter_poly_degree_{regularization_filter_poly_degree},
   registration_sigmas__(registration_sigmas),
   registration_thresholds_(registration_thresholds),
-  optimize_parameters_{optimize_parameters}
+  optimize_parameters_{optimize_parameters},
+  epipole_radius_{epipole_radius}
 {}
 
 Array<float> DtamKeyframeConfig::registration_sigmas_corrected(const ArrayShape& shape) const {

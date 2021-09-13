@@ -23,6 +23,7 @@ struct TemplatePatchPipelineConfig {
     size_t regularization_filter_poly_degree = 0;
     bool optimize_parameters = false;
     int calibration_rotations = 0;
+    float epipole_radius = 0.f;
 };
 
 }

@@ -31,7 +31,8 @@ struct DtamKeyframeConfig {
         size_t regularization_filter_poly_degree,
         const Array<float>& registration_sigmas,
         const Array<float>& registration_thresholds,
-        bool optimize_parameters);
+        bool optimize_parameters,
+        float epipole_radius);
     bool use_virtual_camera_;
     bool incremental_update_;
     size_t nfuture_frames_per_keyframe__;
@@ -52,6 +53,7 @@ struct DtamKeyframeConfig {
     Array<float> registration_sigmas__;
     Array<float> registration_thresholds_;
     bool optimize_parameters_;
+    float epipole_radius_;
     Array<float> registration_sigmas_corrected(const ArrayShape& shape) const;
 };
 

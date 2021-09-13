@@ -33,7 +33,8 @@ DtamComponentConfig::DtamComponentConfig(
     float regularization_filter_sigma,
     size_t regularization_filter_poly_degree,
     float regularization_lambda,
-    bool optimize_parameters)
+    bool optimize_parameters,
+    float epipole_radius)
 : DtamComponentConfig(
     0,                              // tracking_start_ncams
     !interactive,                   // rewind_first_keyframe
@@ -79,7 +80,8 @@ DtamComponentConfig::DtamComponentConfig(
         regularization_filter_poly_degree,
         Array<float>{3.f, 1.f, 0.f} / F_320,             // registration_sigmas
         Array<float>{float(INFINITY), float(INFINITY)},  // registration_thresholds
-        optimize_parameters))
+        optimize_parameters,
+        epipole_radius))
 {}
 
 DtamComponentConfig::DtamComponentConfig(

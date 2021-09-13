@@ -333,7 +333,8 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
                 cams_sorted.at(key_frame_time_)->projection_matrix_3x4(),
                 it->second->projection_matrix_3x4(),
                 remove_illumination(kif.rgb, cfg_.sigma_illumination_removal_),
-                remove_illumination(iif.rgb, cfg_.sigma_illumination_removal_));
+                remove_illumination(iif.rgb, cfg_.sigma_illumination_removal_),
+                cfg_.epipole_radius_);
         };
         for (auto it = ++cams_sorted.find(last_integrated_time_);
             (it != cams_sorted.end()) && (!future_is_full());
