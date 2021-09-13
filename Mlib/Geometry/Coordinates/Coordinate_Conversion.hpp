@@ -14,8 +14,9 @@ TransformationMatrix<float, 2> intrinsic_matrix_from_dimensions(
     const FixedArray<size_t, 2>& picture_shape);
 
 TransformationMatrix<float, 2> rotated_intrinsic_matrix(
-    const TransformationMatrix<float, 2>& m,
-    float angle);
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const FixedArray<size_t, 2>& sensor_size,
+    int num_rotations);
 
 /**
  * From:

@@ -1,5 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Sfm/Configuration/Regularization.hpp>
 #include <Mlib/Sfm/Configuration/Tracking_Mode.hpp>
 #include <Mlib/Sfm/Data_Generators/Folder_Data_Generator.hpp>
@@ -45,10 +46,10 @@ static void run_reconstruction_pipeline(
             calib_source_dir,
             cache_dir,
             chessboard_shape);
-        pipeline = std::unique_ptr<ImagePipeline>(new TemplatePatchPipeline(
+        pipeline = std::make_unique<TemplatePatchPipeline>(
             cache_dir,
-            calibration->intrinsic_matrix(),
-            cfg));
+            rotated_intrinsic_matrix(calibration->intrinsic_matrix(), calibration->sensor_size(), cfg.calibration_rotations),
+            cfg);
     }
     process_folder_with_pipeline(
         cache_dir,
@@ -80,6 +81,7 @@ int main(int argc, char** argv) {
         "[--use_virtual_camera] "
         "--chess_r <chess_r> "
         "--chess_c <chess_c> "
+        "[--calibration_rotations <n>] "
         "[--nskipped <nskipped>] "
         "[--nimages <nimages>] "
         "[--ncameras <ncameras>] "
@@ -103,6 +105,7 @@ int main(int argc, char** argv) {
           "--camera_source",
           "--chess_r",
           "--chess_c",
+          "--calibration_rotations",
           "--nskipped",
           "--nimages",
           "--ncameras",
@@ -156,7 +159,8 @@ int main(int argc, char** argv) {
                 .dtam_down_sampling = safe_stoz(args.named_value("--dtam_down_sampling", "0")),
                 .regularization_filter_sigma = safe_stof(args.named_value("--regularization_filter_sigma", "1")),
                 .regularization_filter_poly_degree = safe_stoz(args.named_value("--regularization_filter_poly_degree", "0")),
-                .optimize_parameters = args.has_named("--optimize_parameters") });
+                .optimize_parameters = args.has_named("--optimize_parameters"),
+                .calibration_rotations = safe_stoi(args.named_value("--calibration_rotations", "0")) });
         return 0;
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

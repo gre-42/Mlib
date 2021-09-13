@@ -1,4 +1,5 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Coordinates/Cv_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Cross.hpp>
@@ -18,6 +19,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
 using namespace Mlib;
@@ -400,6 +402,35 @@ void test_smallest_angle_in_triangle() {
         0.8f);
 }
 
+void test_rotate_intrinsic_matrix() {
+    TransformationMatrix<float, 2> intrinsic_matrix{FixedArray<float, 3, 3>{
+        100.f, 0.f, 51.f,
+        0.f, 200.f, 107.f,
+        0.f, 0.f, 1.f}};
+    FixedArray<size_t, 2> sensor_size{ 100, 200 };
+    assert_allclose(
+        rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 1).affine(),
+        FixedArray<float, 3, 3>{
+            200, 0, 107,
+            0, 100, 49,
+            0, 0, 1});
+    assert_allclose(
+        rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, -1).affine(),
+        FixedArray<float, 3, 3>{
+            200, 0, 93,
+            0, 100, 51,
+            0, 0, 1});
+    assert_allclose(
+        rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, -1).affine(),
+        rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 3).affine());
+    assert_allclose(
+        intrinsic_matrix.affine(),
+        rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 0).affine());
+    assert_allclose(
+        intrinsic_matrix.affine(),
+        rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 4).affine());
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -420,5 +451,6 @@ int main(int argc, const char** argv) {
     test_triangulate_3d_1();
     test_triangulate_3d_2();
     test_smallest_angle_in_triangle();
+    test_rotate_intrinsic_matrix();
     return 0;
 }

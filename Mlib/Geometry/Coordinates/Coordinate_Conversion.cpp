@@ -20,15 +20,46 @@ TransformationMatrix<float, 2> Mlib::intrinsic_matrix_from_dimensions(
             picture_shape(id0) / 2.f}};
 }
 
+static float icos(int n) {
+    return float((std::abs(n) % 4) == 0) - float((std::abs(n) % 4) == 2);
+}
+
+static float isin(int n) {
+    return sign(n) * (float((std::abs(n) % 4) == 1) - float((std::abs(n) % 4) == 3));
+}
+
 TransformationMatrix<float, 2> Mlib::rotated_intrinsic_matrix(
-    const TransformationMatrix<float, 2>& m,
-    float angle)
+    const TransformationMatrix<float, 2>& intrinsic_matrix,
+    const FixedArray<size_t, 2>& sensor_size,
+    int num_rotations)
 {
-    FixedArray<float, 3, 3> r{
-        std::cos(angle), -std::sin(angle), 0.f,
-        std::sin(angle), std::cos(angle), 0.f,
+    // r_world defines the rotation of the camera relative to world coordinates,
+    // thereby defining where the "up" and "right" direction are.
+    FixedArray<float, 3, 3> r_world{
+        icos(num_rotations), -isin(num_rotations), 0.f,
+        isin(num_rotations), icos(num_rotations), 0.f,
         0.f, 0.f, 1.f};
-    return TransformationMatrix<float, 2>{ dot2d(r.T(), dot2d(m.affine(), r)) };
+
+    // r_sensor defines how the camera electronics swapped the image on the sensor,
+    // s.t. "up" in pixel coordinates is approximately "up" in world coordinates.
+    FixedArray<float, 3, 3> r_sensor = fixed_identity_array<float, 3>();
+    FixedArray<float, 2> sz = sensor_size.casted<float>();
+    while (num_rotations != 0) {
+        int n = 1 - 2 * (num_rotations > 0);
+        FixedArray<float, 3, 3> r{
+            icos(n), -isin(n), n < 0 ? 0.f : sz(1),
+            isin(n), icos(n), n < 0 ? sz(0) : 0.f,
+            0.f, 0.f, 1.f};
+        r_sensor = dot2d(r_sensor, r);
+        std::swap(sz(0), sz(1));
+        num_rotations -= sign(num_rotations);
+    }
+    return TransformationMatrix<float, 2>{
+        dot2d(
+            r_sensor,
+            dot2d(
+                intrinsic_matrix.affine(),
+                r_world)) };
 }
 
 FixedArray<float, 4, 4> Mlib::cv_to_opengl_hz_intrinsic_matrix(

@@ -21,15 +21,18 @@ public:
         bool camera_is_initializer = false) override;
     virtual void print_statistics(std::ostream& ostream) override;
     const TransformationMatrix<float, 2>& intrinsic_matrix() const;
+    const FixedArray<size_t, 2>& sensor_size() const;
     bool is_cached() const;
 private:
     Array<FixedArray<float, 2>> p_x_;
     std::list<Array<FixedArray<float, 2>>> p_y_;
     TransformationMatrix<float, 2> intrinsic_matrix_;
+    FixedArray<size_t, 2> sensor_size_;
     bool is_cached_;
     const ArrayShape chessboard_shape_;
     const std::string cache_dir_;
     const std::string camera_intrinsics_filename_;
+    const std::string camera_sensor_size_filename_;
 };
 
 }
