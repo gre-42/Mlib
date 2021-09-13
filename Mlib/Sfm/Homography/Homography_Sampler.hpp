@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Math.hpp>

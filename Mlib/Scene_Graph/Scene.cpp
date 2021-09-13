@@ -1,5 +1,5 @@
 #include "Scene.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Log.hpp>

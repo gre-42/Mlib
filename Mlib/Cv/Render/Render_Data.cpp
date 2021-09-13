@@ -2,7 +2,7 @@
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Render/Resources/Depth_Map_Resource.hpp>
 #include <Mlib/Cv/Render/Resources/Point_Cloud_Resource.hpp>
-#include <Mlib/Geometry/Coordinate_Conversion.hpp>
+#include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>

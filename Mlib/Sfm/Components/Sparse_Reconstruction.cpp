@@ -1,7 +1,7 @@
 #include "Sparse_Reconstruction.hpp"
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Cv/Project_Points.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>

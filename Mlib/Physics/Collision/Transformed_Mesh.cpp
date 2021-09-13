@@ -1,5 +1,5 @@
 #include "Transformed_Mesh.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>

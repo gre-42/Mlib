@@ -1,5 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Features.hpp>

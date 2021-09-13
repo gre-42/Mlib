@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 
 namespace Mlib::Sfm {

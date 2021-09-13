@@ -1,6 +1,6 @@
 #include "Dense_Projector.hpp"
 #include <Mlib/Cv/Project_Points.hpp>
-#include <Mlib/Geometry/Normalized_Points.hpp>
+#include <Mlib/Geometry/Coordinates/Normalized_Points.hpp>
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Math.hpp>

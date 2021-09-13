@@ -1,5 +1,5 @@
 #include "Folder_Data_Generator.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>

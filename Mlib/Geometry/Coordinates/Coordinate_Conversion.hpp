@@ -13,6 +13,10 @@ TransformationMatrix<float, 2> intrinsic_matrix_from_dimensions(
     const FixedArray<float, 2>& sensor_size,
     const FixedArray<size_t, 2>& picture_shape);
 
+TransformationMatrix<float, 2> rotated_intrinsic_matrix(
+    const TransformationMatrix<float, 2>& m,
+    float angle);
+
 /**
  * From:
  *   - https://fruty.io/2019/08/29/augmented-reality-with-opencv-and-opengl-the-tricky-projection-matrix/
@@ -25,7 +29,8 @@ FixedArray<float, 4, 4> cv_to_opengl_hz_intrinsic_matrix(
     float z_near,
     float z_far);
 
-FixedArray<float, 3> cv_to_opengl_coordinates(const FixedArray<float, 3>& p);
+FixedArray<float, 3> cv_to_opengl_coordinates(
+    const FixedArray<float, 3>& p);
 
 TransformationMatrix<float, 3> cv_to_opengl_extrinsic_matrix(
     const TransformationMatrix<float, 3>& extrinsic_matrix);

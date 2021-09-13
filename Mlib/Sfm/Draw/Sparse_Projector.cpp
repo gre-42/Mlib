@@ -1,5 +1,5 @@
 #include "Sparse_Projector.hpp"
-#include <Mlib/Geometry/Normalized_Points.hpp>
+#include <Mlib/Geometry/Coordinates/Normalized_Points.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Points/Reconstructed_Point.hpp>

@@ -1,6 +1,6 @@
 #include "Synthetic_Scene.hpp"
 #include <Mlib/Cv/Project_Points.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Math.hpp>

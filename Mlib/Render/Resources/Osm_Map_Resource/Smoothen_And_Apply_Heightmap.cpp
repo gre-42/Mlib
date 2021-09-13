@@ -1,7 +1,7 @@
 #include "Smoothen_And_Apply_Heightmap.hpp"
+#include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Apply_Heightmap.hpp>

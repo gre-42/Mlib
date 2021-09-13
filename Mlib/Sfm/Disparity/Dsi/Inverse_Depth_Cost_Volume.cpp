@@ -1,5 +1,5 @@
 #include "Inverse_Depth_Cost_Volume.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Resample/Down_Sample_Average.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>

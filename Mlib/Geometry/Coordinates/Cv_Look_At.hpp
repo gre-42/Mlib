@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Geometry/Coordinate_Conversion.hpp>
-#include <Mlib/Geometry/Gl_Look_At.hpp>
+#include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
+#include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 
 namespace Mlib {

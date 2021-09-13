@@ -1,5 +1,5 @@
 #include "Epilines.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Approximate_Rank.hpp>

@@ -1,5 +1,5 @@
 #include "Colored_Vertex_Array_Resource.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>

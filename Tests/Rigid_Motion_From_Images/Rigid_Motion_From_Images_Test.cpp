@@ -1,5 +1,5 @@
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>

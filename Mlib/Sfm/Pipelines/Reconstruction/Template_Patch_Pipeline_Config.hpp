@@ -22,6 +22,7 @@ struct TemplatePatchPipelineConfig {
     float regularization_filter_sigma = 1.f;
     size_t regularization_filter_poly_degree = 0;
     bool optimize_parameters = false;
+    float calibration_angle = 0.f;
 };
 
 }

@@ -1,5 +1,5 @@
 #include "Normalized_Points_Fixed.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Stats/Min_Max.hpp>

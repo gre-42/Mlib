@@ -1,7 +1,7 @@
 #include "Plot.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
-#include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Images/Svg.hpp>

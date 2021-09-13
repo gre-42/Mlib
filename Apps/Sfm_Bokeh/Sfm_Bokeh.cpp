@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <Mlib/Geometry/Base_Projector.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Base_Projector.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Guided_Filter.hpp>

@@ -1,6 +1,6 @@
 #include "Projection_To_TR.hpp"
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Sfm/Draw/Epilines.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Fundamental_Matrix.hpp>

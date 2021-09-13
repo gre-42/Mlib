@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Normalized_Points.hpp>
+#include <Mlib/Geometry/Coordinates/Normalized_Points.hpp>
 #include <Mlib/Sfm/Draw/Projector_With_Cameras.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
 #include <chrono>

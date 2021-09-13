@@ -1,5 +1,5 @@
 #include "Normalized_Projection.hpp"
-#include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
+#include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;

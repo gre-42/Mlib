@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip_Sampler.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 
 namespace Mlib::Cv {
 

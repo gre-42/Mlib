@@ -1,7 +1,7 @@
 #include "Global_Bundle.hpp"
 #include <Mlib/Array/Sparse_Array.hpp>
 #include <Mlib/Cv/Project_Points.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>

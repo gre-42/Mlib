@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Base_Projector.hpp>
+#include <Mlib/Geometry/Coordinates/Base_Projector.hpp>
 #include <Mlib/Sfm/Frames/Camera_Frame.hpp>
 #include <Mlib/Sfm/Sparse_Bundle/Marginalized_Map.hpp>
 #include <chrono>

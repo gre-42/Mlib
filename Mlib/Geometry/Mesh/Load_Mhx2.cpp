@@ -1,8 +1,8 @@
 #include "Load_Mhx2.hpp"
+#include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/Geometry/Normalized_Points_Fixed.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <filesystem>
 #include <nlohmann/json.hpp>

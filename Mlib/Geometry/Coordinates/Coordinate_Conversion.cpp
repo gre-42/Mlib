@@ -20,6 +20,17 @@ TransformationMatrix<float, 2> Mlib::intrinsic_matrix_from_dimensions(
             picture_shape(id0) / 2.f}};
 }
 
+TransformationMatrix<float, 2> Mlib::rotated_intrinsic_matrix(
+    const TransformationMatrix<float, 2>& m,
+    float angle)
+{
+    FixedArray<float, 3, 3> r{
+        std::cos(angle), -std::sin(angle), 0.f,
+        std::sin(angle), std::cos(angle), 0.f,
+        0.f, 0.f, 1.f};
+    return TransformationMatrix<float, 2>{ dot2d(r.T(), dot2d(m.affine(), r)) };
+}
+
 FixedArray<float, 4, 4> Mlib::cv_to_opengl_hz_intrinsic_matrix(
     const TransformationMatrix<float, 2>& intrinsic_matrix,
     float width,

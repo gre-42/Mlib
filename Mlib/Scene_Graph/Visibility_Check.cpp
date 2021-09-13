@@ -1,5 +1,5 @@
 #include "Visibility_Check.hpp"
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>

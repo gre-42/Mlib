@@ -1,6 +1,6 @@
 #include "Ground_Bvh.hpp"
-#include <Mlib/Geometry/Barycentric_Coordinates.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Coordinates/Barycentric_Coordinates.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 

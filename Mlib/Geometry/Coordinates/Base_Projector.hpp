@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 
 

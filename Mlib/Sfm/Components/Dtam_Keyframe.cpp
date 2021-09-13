@@ -2,7 +2,7 @@
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Project_Depth_Map.hpp>
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Roundtrip.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Features.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>

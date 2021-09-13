@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Filters/Box_Filter.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>

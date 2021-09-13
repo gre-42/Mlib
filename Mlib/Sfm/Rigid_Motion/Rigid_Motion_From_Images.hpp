@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Cv/Project_Points.hpp>
 #include <Mlib/Cv/Rigid_Motion/Rigid_Motion_Sampler.hpp>
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Math.hpp>

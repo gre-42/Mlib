@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/BoneWeight.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Quaternion.hpp>
