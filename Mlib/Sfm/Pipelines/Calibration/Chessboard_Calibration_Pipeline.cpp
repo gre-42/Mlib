@@ -1,6 +1,6 @@
 #include "Chessboard_Calibration_Pipeline.hpp"
-#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Images/Coordinates.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Sfm/Components/Detect_Chessboard.hpp>
 #include <Mlib/Sfm/Frames/Image_Frame.hpp>
 #include <Mlib/Sfm/Rigid_Motion/Initial_Reconstruction2.hpp>

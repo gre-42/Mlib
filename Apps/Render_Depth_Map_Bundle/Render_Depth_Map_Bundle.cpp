@@ -2,6 +2,7 @@
 #include <Mlib/Cv/Depth_Map_Package.hpp>
 #include <Mlib/Cv/Render/Render_Data.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Images/Filters/Median_Filter.hpp>
@@ -159,7 +160,7 @@ int main(int argc, char** argv) {
             std::list<FixedArray<ColoredVertex, 3>> triangles;
             for (const auto& lst : mesh) {
                 for (const auto& t : lst->triangles) {
-                    triangles.push_back(t);
+                    triangles.push_back(t.applied([](const ColoredVertex& t){return t.transformed(cv_to_opengl_matrix());}));
                 }
             }
             save_obj(args.named_value("--obj_out"), IndexedFaceSet<float, size_t>{ triangles });
