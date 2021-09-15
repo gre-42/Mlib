@@ -84,6 +84,8 @@ void Player::reset_node() {
     tire_angles_right_.clear();
     surface_power_forward_ = NAN;
     surface_power_backward_ = NAN;
+    angular_velocity_left_ = NAN;
+    angular_velocity_right_ = NAN;
 }
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
