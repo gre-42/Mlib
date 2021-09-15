@@ -82,7 +82,7 @@ public:
     bool has_camera() const;
     void set_camera(std::unique_ptr<Camera>&& camera);
     Camera* get_camera() const;
-    void add_light(Light* light);
+    void add_light(std::unique_ptr<Light>&& light);
     void move(const TransformationMatrix<float, 3>& v, float dt);
     bool requires_render_pass() const;
     void render(

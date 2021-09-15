@@ -167,15 +167,14 @@ void test_physics_engine() {
     scene_nodeL->set_position({0.f, 50.f, -40.f});
     scene_nodeL->set_rotation({-90.f * M_PI / 180.f, 0.f, 0.f});
     SelectedCameras selected_cameras{scene};
-    Light* shadow_light = new Light{
+    scene_nodeL->add_light(std::make_unique<Light>(Light{
         .node_name = "light_node",
         .only_black = false,
-        .shadow = true};
-    scene_nodeL->add_light(shadow_light);
-    scene_nodeL->add_light(new Light{
+        .shadow = true}));
+    scene_nodeL->add_light(std::make_unique<Light>(Light{
         .node_name = "1234",
         .only_black = false,
-        .shadow = false});
+        .shadow = false}));
 
     scene.add_root_node("obj", std::move(scene_nodeR));
     scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
@@ -248,7 +247,7 @@ void test_physics_engine() {
     auto lightmap_logic = std::make_shared<LightmapLogic>(
         *read_pixels_logic,
         ResourceUpdateCycle::ALWAYS,
-        shadow_light->node_name,
+        "light_node",
         "",    // black_node_name
         true); // with_depth_texture
 

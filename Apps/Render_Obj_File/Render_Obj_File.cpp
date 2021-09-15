@@ -499,8 +499,9 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--light_angle_x", "-45")) * float{M_PI} / 180.f,
                 safe_stof(args.named_value("--light_angle_y", "0")) * float{M_PI} / 180.f,
                 safe_stof(args.named_value("--light_angle_z", "0")) * float{M_PI} / 180.f});
-            lights.push_back(new Light{.node_name = "light_node0", .only_black = false, .shadow = true});
-            scene.get_node("light_node0")->add_light(lights.back());
+            auto light = std::make_unique<Light>(Light{.node_name = "light_node0", .only_black = false, .shadow = true});
+            lights.push_back(light.get());
+            scene.get_node("light_node0")->add_light(std::move(light));
             scene.get_node("light_node0")->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
             add_light_beacon_if_set(*scene.get_node("light_node0"));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
@@ -523,8 +524,9 @@ int main(int argc, char** argv) {
                 scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                     scene.get_node(name)->position(),
                     scene.get_node("obj")->position())));
-                lights.push_back(new Light{.node_name = name, .only_black = false, .shadow = true});
-                scene.get_node(name)->add_light(lights.back());
+                auto light = std::make_unique<Light>(Light{.node_name = name, .only_black = false, .shadow = true});
+                lights.push_back(light.get());
+                scene.get_node(name)->add_light(std::move(light));
                 scene.get_node(name)->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
                 lights.back()->ambience *= 2.f / (n * (1 + (int)with_diffusivity));
                 lights.back()->diffusivity = 0;
@@ -538,8 +540,9 @@ int main(int argc, char** argv) {
                     scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
                         scene.get_node(name)->position(),
                         scene.get_node("obj")->position())));
-                    lights.push_back(new Light{.node_name = name, .shadow = false});
-                    scene.get_node(name)->add_light(lights.back());
+                    auto light = std::make_unique<Light>(Light{.node_name = name, .shadow = false});
+                    lights.push_back(light.get());
+                    scene.get_node(name)->add_light(std::move(light));
                     scene.get_node(name)->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
                     lights.back()->ambience = 0;
                     lights.back()->diffusivity /= (float)(2 * n);
@@ -552,8 +555,9 @@ int main(int argc, char** argv) {
         if (args.has_named_value("--background_light_ambience")) {
             std::string name = "background_light";
             scene.add_root_node(name, std::make_unique<SceneNode>());
-            lights.push_back(new Light{.node_name = name, .only_black = false, .shadow = false});
-            scene.get_node(name)->add_light(lights.back());
+            auto light = std::make_unique<Light>(Light{.node_name = name, .only_black = false, .shadow = false});
+            lights.push_back(light.get());
+            scene.get_node(name)->add_light(std::move(light));
             scene.get_node(name)->set_camera(std::make_unique<GenericCamera>(CameraConfig(), GenericCamera::Mode::PERSPECTIVE));
             lights.back()->ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
             lights.back()->diffusivity = 0.f;

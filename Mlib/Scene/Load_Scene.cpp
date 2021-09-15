@@ -2187,7 +2187,7 @@ void LoadScene::operator()(
                 node_name,
                 match[2].str(),               // black_node_name
                 safe_stob(match[4].str())));  // with_depth_texture
-            node->add_light(new Light{
+            node->add_light(std::make_unique<Light>(Light{
                 .ambience = {
                     safe_stof(match[5].str()),
                     safe_stof(match[6].str()),
@@ -2202,7 +2202,7 @@ void LoadScene::operator()(
                     safe_stof(match[13].str())},
                 .node_name = node_name,
                 .only_black = !match[2].str().empty(),
-                .shadow = safe_stob(match[14].str())});
+                .shadow = safe_stob(match[14].str())}));
         } else if (Mlib::re::regex_match(line, match, look_at_node_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());

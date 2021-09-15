@@ -268,13 +268,13 @@ void Render2::render_node(
     // std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE)
     scene.get_node("camera")->set_camera(std::move(camera));
     scene.add_root_node("light", std::make_unique<SceneNode>());
-    scene.get_node("light")->add_light(new Light{
+    scene.get_node("light")->add_light(std::make_unique<Light>(Light{
         .ambience = {0.5f, 0.5f, 0.5f},
         .diffusivity = {1.f, 1.f, 1.f},
         .specularity = {1.f, 1.f, 1.f},
         .node_name = "1234",
         .only_black = false,
-        .shadow = false});
+        .shadow = false}));
     (*this)(scene, rotate, scale, camera_z, scene_graph_config, beacon_locations);
 }
 

@@ -230,8 +230,8 @@ Camera* SceneNode::get_camera() const {
     return camera_.get();
 }
 
-void SceneNode::add_light(Light* light) {
-    lights_.push_back(std::unique_ptr<Light>{light});
+void SceneNode::add_light(std::unique_ptr<Light>&& light) {
+    lights_.push_back(std::move(light));
 }
 
 void SceneNode::set_style(Style* style) {
