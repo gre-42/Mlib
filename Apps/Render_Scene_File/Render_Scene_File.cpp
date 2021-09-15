@@ -9,6 +9,9 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 using namespace Mlib;
 
@@ -143,7 +146,7 @@ int main(int argc, char** argv) {
 
         args.assert_num_unamed(2);
         std::string working_directory = args.unnamed_value(0);
-        std::string main_scene_filename = args.unnamed_value(1);
+        std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 
         size_t num_renderings;
         RenderConfig render_config{
