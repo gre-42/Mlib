@@ -759,10 +759,16 @@ void LoadScene::operator()(
                     });
                 };
                 auto add_barrier_textures = [&value, &fpath, &config](){
-                    static const DECLARE_REGEX(barrier_texture_reg, "(?:\\s*texture:(#?[\\w-.\\(\\)/+-]+) uv:([\\w+-.]+) ([\\w+-.]+) blend_mode:(off|binary|semi_continuous|continuous) reorient_uv0:(0|1)|([\\s\\S]+))");
+                    static const DECLARE_REGEX(
+                        barrier_texture_reg,
+                        "(?:\\s*texture:(#?[\\w-.\\(\\)/+-]+) "
+                        "uv:([\\w+-.]+) ([\\w+-.]+) "
+                        "blend_mode:(off|binary|semi_continuous|continuous) "
+                        "wrap_mode_t:(repeat|clamp_to_edge|clamp_to_border) "
+                        "reorient_uv0:(0|1)|([\\s\\S]+))");
                     find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {
-                        if (match3[6].matched) {
-                            throw std::runtime_error("Unknown element: \"" + match3[6].str() + '"');
+                        if (match3[7].matched) {
+                            throw std::runtime_error("Unknown element: \"" + match3[7].str() + '"');
                         }
                         BarrierStyle as{
                             .texture = fpath(match3[1].str()),
@@ -770,7 +776,8 @@ void LoadScene::operator()(
                                 safe_stof(match3[2].str()),
                                 safe_stof(match3[3].str())},
                             .blend_mode = blend_mode_from_string(match3[4].str()),
-                            .reorient_uv0 = safe_stob(match3[5].str())};
+                            .wrap_mode_t = wrap_mode_from_string(match3[5].str()),
+                            .reorient_uv0 = safe_stob(match3[6].str())};
                         config.barrier_textures.push_back(as);
                     });
                 };
@@ -1327,7 +1334,7 @@ void LoadScene::operator()(
                     .histogram = fpath(match[6].str()),
                     .mixed = match[7].str(),
                     .overlap_npixels = match[8].matched ? safe_stoz(match[8].str()) : 0,
-                    .mean_color = 
+                    .mean_color =
                         OrderableFixedArray<float, 3>{
                             match[9].matched ? safe_stof(match[9].str()) : -1.f,
                             match[10].matched ? safe_stof(match[10].str()) : -1.f,
@@ -2371,7 +2378,7 @@ void LoadScene::operator()(
             secondary_rendering_context.rendering_resources->set_offset("dirtmap", safe_stof(match[2].str()));
             secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[3].str()));
             secondary_rendering_context.rendering_resources->set_scale("dirtmap", safe_stof(match[4].str()));
-            secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", clamp_mode_from_string(match[5].str()));
+            secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", wrap_mode_from_string(match[5].str()));
         } else if (Mlib::re::regex_match(line, match, set_soft_light_reg)) {
             post_processing_logic.set_soft_light_filename(fpath(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, set_skybox_reg)) {

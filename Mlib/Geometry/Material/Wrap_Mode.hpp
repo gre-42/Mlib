@@ -10,7 +10,7 @@ enum class WrapMode {
     CLAMP_TO_BORDER
 };
 
-inline WrapMode clamp_mode_from_string(const std::string& str) {
+inline WrapMode wrap_mode_from_string(const std::string& str) {
     if (str == "repeat") {
         return WrapMode::REPEAT;
     } else if (str == "clamp_to_edge") {

@@ -21,6 +21,7 @@ class Interp;
 enum class RoadType;
 struct RoadProperties;
 enum class TerrainType;
+enum class WrapMode;
 
 struct RoadStyle {
     std::string texture;
@@ -31,6 +32,7 @@ struct BarrierStyle {
     std::string texture;
     FixedArray<float, 2> uv;
     BlendMode blend_mode;
+    WrapMode wrap_mode_t;
     bool reorient_uv0;
 };
 
