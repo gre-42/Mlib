@@ -104,7 +104,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_specularity || fragments_depend_on_distance) {
+    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic)) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
@@ -195,7 +195,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1) / 2;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_specularity || fragments_depend_on_distance) {
+    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic)) {
         sstr << "    FragPos = vec3(M * vec4(vPosInstance, 1.0));" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
@@ -298,7 +298,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!specularity.all_equal(0)) {
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || !specularity.all_equal(0) || fragments_depend_on_distance) {
+    if (reorient_uv0 || reorient_normals || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic)) {
         sstr << "in vec3 FragPos;" << std::endl;
         if (orthographic) {
             sstr << "uniform vec3 viewDir;" << std::endl;
@@ -337,9 +337,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     sstr << "    float alpha_fac = 1;" << std::endl;
     if (alpha_distances != default_distances) {
         if (orthographic) {
-            throw std::runtime_error("Orthographic not supported with alpha distances");
+            // throw std::runtime_error("Orthographic not supported with alpha distances");
+            sstr << "    float dist = 1. / 0.;" << std::endl;
+        } else {
+            sstr << "    float dist = distance(FragPos, viewPos);" << std::endl;
         }
-        sstr << "    float dist = distance(FragPos, viewPos);" << std::endl;
     }
     if (alpha_distances(0) != 0) {
         sstr << "    if (dist < " << alpha_distances(0) << ')' << std::endl;
@@ -419,9 +421,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             for (const BlendMapTexture* t : textures) {
                 if (t->distances != default_distances) {
                     if (orthographic) {
-                        throw std::runtime_error("Distances not supported by orthographic projection");
+                        // throw std::runtime_error("Distances not supported by orthographic projection");
+                        sstr << "    float dist = 1. / 0.;" << std::endl;
+                    } else {
+                        sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
                     }
-                    sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
                     break;
                 }
             }
@@ -916,7 +920,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         }
         {
             bool light_dir_required = !id.diffusivity.all_equal(0) || !id.specularity.all_equal(0);
-            if (id.reorient_uv0 || light_dir_required || id.fragments_depend_on_distance || id.fragments_depend_on_normal) {
+            if (id.reorient_uv0 || light_dir_required || (id.fragments_depend_on_distance && !id.orthographic) || id.fragments_depend_on_normal) {
                 rp->m_location = checked_glGetUniformLocation(rp->program, "M");
                 if (light_dir_required) {
                     for (size_t i = 0; i < filtered_lights.size(); ++i) {
@@ -944,7 +948,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
             }
         }
-        if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_uv0 || id.reorient_normals || id.fragments_depend_on_distance) {
+        if (id.has_lookat || !id.specularity.all_equal(0) || id.reorient_uv0 || id.reorient_normals || (id.fragments_depend_on_distance && !id.orthographic)) {
             if (id.orthographic) {
                 rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
                 rp->view_pos = 0;
@@ -965,7 +969,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         throw std::runtime_error(
             std::string("Could not generate render program.\n") +
             e.what() +
-            "\nCould not generate render program.\nVertex shader:\n" + vs_text +
+            "\nVertex shader:\n" + vs_text +
             "\nFragment shader:\n" + fs_text);
     }
 }

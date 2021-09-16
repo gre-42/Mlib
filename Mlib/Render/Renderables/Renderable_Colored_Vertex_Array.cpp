@@ -357,7 +357,7 @@ void RenderableColoredVertexArray::render_cva(
             ++i;
         }
     }
-    if (has_lookat || any(specularity != 0.f) || fragments_depend_on_distance) {
+    if (has_lookat || any(specularity != 0.f) || (fragments_depend_on_distance && !vc.orthographic())) {
         if (vc.orthographic()) {
             auto d = z3_from_3x3(iv.R());
             d /= std::sqrt(sum(squared(d)));
