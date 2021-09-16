@@ -53,7 +53,7 @@ struct DrawStreetsInput {
     float default_lane_width;
     float default_tunnel_pipe_width;
     float default_tunnel_pipe_height;
-    bool only_raceways;
+    bool only_raceways_and_walls;
     const std::string& name_pattern;
     const std::set<std::string>& excluded_highways;
     const std::set<std::string>& path_tags;

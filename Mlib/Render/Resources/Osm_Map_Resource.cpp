@@ -197,7 +197,7 @@ OsmMapResource::OsmMapResource(
                 config.default_lane_width,
                 config.default_tunnel_pipe_width,
                 config.default_tunnel_pipe_height,
-                config.only_raceways,
+                config.only_raceways_and_walls,
                 config.highway_name_pattern,
                 config.excluded_highways,
                 config.path_tags,

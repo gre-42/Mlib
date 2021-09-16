@@ -145,9 +145,10 @@ void DrawStreets::calculate_neighbors() {
             }
         }
         if (tags.find("highway") != tags.end() && (!excluded_highways.contains(tags.at("highway")))) {
-            if (only_raceways &&
+            if (only_raceways_and_walls &&
                     !tags.contains("highway", "raceway") &&
-                    !tags.contains("raceway", "yes"))
+                    !tags.contains("raceway", "yes") &&
+                    !tags.contains("highway", "wall"))
             {
                 continue;
             }

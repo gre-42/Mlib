@@ -96,7 +96,7 @@ struct OsmResourceConfig {
     float min_dist_to_road = 0.5f;
     bool with_terrain = true;
     bool with_buildings = true;
-    bool only_raceways = false;
+    bool only_raceways_and_walls = false;
     std::string highway_name_pattern = "";
     std::set<std::string> excluded_highways = { "pedestrian", "path", "footway", "cycleway", "steps" };
     std::set<std::string> path_tags = { "track", "tertiary" };

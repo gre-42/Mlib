@@ -1028,8 +1028,8 @@ void LoadScene::operator()(
                 else if (key == "with_buildings") {
                     config.with_buildings = safe_stob(value);
                 }
-                else if (key == "only_raceways") {
-                    config.only_raceways = safe_stob(value);
+                else if (key == "only_raceways_and_walls") {
+                    config.only_raceways_and_walls = safe_stob(value);
                 }
                 else if (key == "highway_name_pattern") {
                     config.highway_name_pattern = value;
