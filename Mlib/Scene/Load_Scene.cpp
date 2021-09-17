@@ -744,16 +744,26 @@ void LoadScene::operator()(
                 std::string key = match2[1].str();
                 std::string value = rtrim_copy(match2[2].str());
                 auto add_street_textures = [&value, &fpath, &config](RoadType road_type){
-                    static const DECLARE_REGEX(street_texture_reg, "(?:\\s*lanes:(\\d+) texture:(#?[\\w-.\\(\\)/+-]+)(?: uvx:([\\w+-.]+))?|([\\s\\S]+))");
+                    static const DECLARE_REGEX(
+                        street_texture_reg,
+                        "(?:\\s*lanes:(\\d+) "
+                        "texture0:(#?[\\w-.\\(\\)/+-]+)"
+                        "(?: texture1:(#?[\\w-.\\(\\)/+-]+))?"
+                        "(?: uvx:([\\w+-.]+))?|"
+                        "([\\s\\S]+))");
                     find_all(value, street_texture_reg, [&](const Mlib::re::smatch& match3) {
-                        if (match3[4].matched) {
-                            throw std::runtime_error("Unknown element: \"" + match3[4].str() + '"');
+                        if (match3[5].matched) {
+                            throw std::runtime_error("Unknown element: \"" + match3[5].str() + '"');
                         }
                         RoadProperties rp{.type=road_type, .nlanes = safe_stoz(match3[1].str())};
+                        std::vector<std::string> textures =
+                            match3[3].matched
+                                ? std::vector<std::string>{ fpath(match3[2].str()), fpath(match3[3].str()) }
+                                : std::vector<std::string>{ fpath(match3[2].str()) };
                         RoadStyle rs{
-                            .texture = fpath(match3[2].str()),
-                            .uvx = match3[3].matched
-                                ? safe_stof(match3[3].str())
+                            .textures = textures,
+                            .uvx = match3[4].matched
+                                ? safe_stof(match3[4].str())
                                 : 1.f};
                         config.street_texture[rp] = rs;
                     });
@@ -842,7 +852,7 @@ void LoadScene::operator()(
                 }
                 else if (key == "street_texture") {
                     RoadProperties rp{.type=RoadType::STREET, .nlanes = 1};
-                    RoadStyle rs{.texture = fpath(value), .uvx = 1.f};
+                    RoadStyle rs{.textures = { fpath(value) }, .uvx = 1.f};
                     config.street_texture[rp] = rs;
                 }
                 else if (key == "street_textures") {
@@ -853,7 +863,7 @@ void LoadScene::operator()(
                 }
                 else if (key == "path_texture") {
                     RoadProperties rp{.type=RoadType::PATH, .nlanes = 1};
-                    RoadStyle rs{.texture = fpath(value), .uvx = 1.f};
+                    RoadStyle rs{.textures = { fpath(value) }, .uvx = 1.f};
                     config.street_texture[rp] = rs;
                 }
                 else if (key == "wall_textures") {

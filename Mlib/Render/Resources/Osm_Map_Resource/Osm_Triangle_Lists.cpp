@@ -8,6 +8,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
+#include <ranges>
 
 using namespace Mlib;
 
@@ -114,6 +115,9 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     }
     for (const auto& s : config.street_texture) {
         bool blend = config.blend_street && (s.first.type != RoadType::WALL);
+        auto textures = s.second.textures | std::views::transform([&primary_rendering_resources](
+            const std::string& texture){
+                return primary_rendering_resources->get_blend_map_texture(texture);});
         tl_street.append(StyledRoadEntry{
             .road_properties = s.first,
             .styled_road = StyledRoad{
@@ -121,7 +125,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                     .continuous_blending_z_order = blend ? 1 : 0,
                     .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                     .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
-                    .textures = {primary_rendering_resources->get_blend_map_texture(s.second.texture)},
+                    .textures = std::vector<BlendMapTexture>(textures.begin(), textures.end()),
                     .dirt_texture = config.street_dirt_texture,
                     .occluded_type = (s.first.type != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
                     .occluder_type = (s.first.type != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,

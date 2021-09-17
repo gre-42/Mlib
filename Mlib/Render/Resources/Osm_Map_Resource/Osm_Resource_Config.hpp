@@ -24,7 +24,7 @@ enum class TerrainType;
 enum class WrapMode;
 
 struct RoadStyle {
-    std::string texture;
+    std::vector<std::string> textures;
     float uvx;
 };
 
