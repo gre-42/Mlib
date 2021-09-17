@@ -761,24 +761,27 @@ void LoadScene::operator()(
                 auto add_barrier_textures = [&value, &fpath, &config](){
                     static const DECLARE_REGEX(
                         barrier_texture_reg,
-                        "(?:\\s*texture:(#?[\\w-.\\(\\)/+-]+) "
+                        "(?:\\s*name:(\\w+) "
+                        "texture:(#?[\\w-.\\(\\)/+-]+) "
                         "uv:([\\w+-.]+) ([\\w+-.]+) "
                         "blend_mode:(off|binary|semi_continuous|continuous) "
                         "wrap_mode_t:(repeat|clamp_to_edge|clamp_to_border) "
                         "reorient_uv0:(0|1)|([\\s\\S]+))");
                     find_all(value, barrier_texture_reg, [&](const Mlib::re::smatch& match3) {
-                        if (match3[7].matched) {
-                            throw std::runtime_error("Unknown element: \"" + match3[7].str() + '"');
+                        if (match3[8].matched) {
+                            throw std::runtime_error("Unknown element: \"" + match3[8].str() + '"');
                         }
                         BarrierStyle as{
-                            .texture = fpath(match3[1].str()),
+                            .texture = fpath(match3[2].str()),
                             .uv = FixedArray<float, 2>{
-                                safe_stof(match3[2].str()),
-                                safe_stof(match3[3].str())},
-                            .blend_mode = blend_mode_from_string(match3[4].str()),
-                            .wrap_mode_t = wrap_mode_from_string(match3[5].str()),
-                            .reorient_uv0 = safe_stob(match3[6].str())};
-                        config.barrier_textures.push_back(as);
+                                safe_stof(match3[3].str()),
+                                safe_stof(match3[4].str())},
+                            .blend_mode = blend_mode_from_string(match3[5].str()),
+                            .wrap_mode_t = wrap_mode_from_string(match3[6].str()),
+                            .reorient_uv0 = safe_stob(match3[7].str())};
+                        if (!config.barrier_textures.insert({match3[1].str(), as}).second) {
+                            throw std::runtime_error("Duplicate barrier style");
+                        }
                     });
                 };
                 if (key.starts_with("#")) {

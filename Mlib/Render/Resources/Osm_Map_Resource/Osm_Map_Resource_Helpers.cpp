@@ -20,6 +20,7 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <ranges>
 #include <regex>
 
 using namespace Mlib;
@@ -535,17 +536,29 @@ void Mlib::draw_wall_barriers(
     float scale,
     float uv_scale,
     float max_width,
-    const std::vector<BarrierStyle>& barrier_styles)
+    const std::map<std::string, BarrierStyle>& barrier_styles)
 {
     if (barrier_styles.empty()) {
         throw std::runtime_error("Barrier textures empty");
     }
+    auto style_values = barrier_styles | std::views::values;
+    std::vector<BarrierStyle> barrier_styles_vector(style_values.begin(), style_values.end());
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
             tls.push_back(std::make_shared<TriangleList>("building_walls", material));
-            const BarrierStyle& bs = barrier_styles.at(bid % barrier_styles.size());
+            auto get_style = [&]() -> const BarrierStyle& {
+                if (bu.style.empty()) {
+                    return barrier_styles_vector.at(bid % barrier_styles.size());
+                } else {
+                    if (barrier_styles.find(bu.style) == barrier_styles.end()) {
+                        throw std::runtime_error("Could not find barrier style with name \"" + bu.style + '"');
+                    }
+                    return barrier_styles.at(bu.style);
+                }
+            };
+            const BarrierStyle& bs = get_style();
             tls.back()->material_.textures = { {.texture_descriptor = {.color = bs.texture}} };
             tls.back()->material_.blend_mode = bs.blend_mode;
             tls.back()->material_.wrap_mode_t = bs.wrap_mode_t;

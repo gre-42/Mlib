@@ -60,7 +60,8 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                         .top = building_top,
                         .bottom = socle_height,
                         .type = BuildingLevelType::MIDDLE}
-                } });
+                },
+                .style = tags.contains("style") ? tags.get("style") : "" });
         } else if ((vs == tags.end()) || (vs->second == "no")) {
             result.push_back(Building{
                 .id = w.first,
@@ -69,7 +70,8 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     .top = building_top,
                     .bottom = building_bottom,
                     .type = BuildingLevelType::MIDDLE
-                }} });
+                }},
+                .style = tags.contains("style") ? tags.get("style") : "" });
         } else {
             throw std::runtime_error("Unknown vertical_subdivision: " + vs->second);
         }

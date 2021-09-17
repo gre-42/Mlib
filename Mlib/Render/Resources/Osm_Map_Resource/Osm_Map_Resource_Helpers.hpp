@@ -112,6 +112,7 @@ struct Building {
     const Way& way;
     std::list<BuildingLevel> levels;
     float area = 0;
+    std::string style;
 };
 
 enum class BuildingType {
@@ -256,7 +257,7 @@ void draw_wall_barriers(
     float scale,
     float uv_scale,
     float max_width,
-    const std::vector<BarrierStyle>& barrier_style);
+    const std::map<std::string, BarrierStyle>& barrier_style);
 
 void draw_building_walls(
     std::list<std::shared_ptr<TriangleList>>& tls,
