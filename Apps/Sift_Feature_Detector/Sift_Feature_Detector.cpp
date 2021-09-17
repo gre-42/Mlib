@@ -14,7 +14,10 @@
 #include <Mlib/Sfm/Rigid_Motion/Projection_To_TR_Ransac.hpp>
 #include <Mlib/Stats/RansacOptions.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+
+#ifdef WITH_OPENCV
 #include <opencv2/features2d.hpp>
+#endif
 
 using namespace Mlib;
 using namespace Mlib::Sift;
@@ -99,6 +102,7 @@ int main(int argc, char** argv) {
                 corners0 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
             } else {
+#ifdef WITH_OPENCV
                 std::vector<cv::KeyPoint> keypoints;
                 auto sift = cv::SIFT::create(safe_stoi(args.unnamed_value(2)));
                 cv::Mat_<float> cv_descriptors0;
@@ -110,6 +114,9 @@ int main(int argc, char** argv) {
                 descriptors0 = cv_mat_to_array(cv_descriptors0);
                 corners0 = Array<cv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const cv::KeyPoint& v){return FixedArray<float, 2>{ v.pt.x, v.pt.y };});
+#else
+                throw std::runtime_error("Compiled without OpenCV");
+#endif
             }
             {
                 StbImage bmp{bitmap0.copy()};
@@ -153,6 +160,7 @@ int main(int argc, char** argv) {
                     bmp.save_to_file(args.named_value("--response1"));
                 }
             } else {
+#ifdef WITH_OPENCV
                 std::vector<cv::KeyPoint> keypoints;
                 auto sift = cv::SIFT::create(safe_stoi(args.unnamed_value(2)));
                 cv::Mat_<float> cv_descriptors1;
@@ -164,6 +172,9 @@ int main(int argc, char** argv) {
                 descriptors1 = cv_mat_to_array(cv_descriptors1);
                 corners1 = Array<cv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const cv::KeyPoint& v){return FixedArray<float, 2>{ v.pt.x, v.pt.y };});
+#else
+                throw std::runtime_error("Compiled without OpenCV");
+#endif
             }
             CorrespondingDescriptorsInCandidateList cf{corners0, corners1, descriptors0, descriptors1};
             {

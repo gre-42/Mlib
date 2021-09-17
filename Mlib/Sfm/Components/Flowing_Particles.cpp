@@ -15,10 +15,11 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <filesystem>
 
-namespace fs = std::filesystem;
-
-#if 0
+#ifdef WITH_OPENCV
+#include <opencv2/features2d.hpp>
 #endif
+
+namespace fs = std::filesystem;
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
@@ -30,9 +31,6 @@ FlowingParticles::FlowingParticles(
     const FlowingParticlesConfig& cfg)
 : image_frames_{image_frames},
   optical_flow_frames_{optical_flow_frames},
-#if 0
-  orb_{cv::ORB::create(cfg_.target_nparticles)},
-#endif
   shape_{SIZE_MAX},
   cache_dir_{cache_dir},
   cfg_{cfg}
@@ -68,6 +66,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
             keypoints1(i) = keypoints1_[i].pt;
         }
     } else if (cfg_.tracking_mode == TrackingMode::CV_SIFT) {
+#ifdef WITH_OPENCV
         auto sift = cv::SIFT::create((int)cfg_.target_nparticles);
         std::vector<cv::KeyPoint> cv_keypoints;
         cv::Mat_<float> cv_descriptors1;
@@ -81,6 +80,9 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
         for (size_t i = 0; i < cv_keypoints.size(); ++i) {
             keypoints1(i) = FixedArray<float, 2>{ cv_keypoints[i].pt.x, cv_keypoints[i].pt.y };
         }
+#else
+        throw std::runtime_error("Compiled without OpenCV");
+#endif
     } else {
         throw std::runtime_error("Unknown tracking mode");
     }
@@ -358,66 +360,6 @@ void FlowingParticles::advance_flowing_particles() {
         std::to_string(image_frames_.rbegin()->first.count()) +
         ".png")).string());
 }
-
-#if 0
-void FlowingParticles::advance_flowing_particles_cv() {
-    assert(image_frames_.size() >= 1);
-    FeaturePointFrame new_frame;
-    shape_ = image_frames_.rbegin()->second.grayscale.shape();
-
-    std::vector<cv::KeyPoint> keypoints1t;
-    cv::Mat_<uint8_t> descriptors1t;
-    orb_->detectAndCompute(
-        array_to_cv_mat((clipped(image_frames_.rbegin()->second.grayscale, 0.f, 1.f) * 255.f).casted<uint8_t>()),
-        cv::noArray(),
-        keypoints1t,
-        descriptors1t);
-    Array<uint8_t> des1t = cv_mat_to_array(descriptors1t);
-    std::set<size_t> unmatched_ids1t;
-    for (size_t i = 0; i < des1t.shape(0); ++i) {
-        unmatched_ids1t.insert(i);
-    }
-    if (particles_.size() > 0) {
-        Array<uint8_t> des0q{ArrayShape{particles_.rbegin()->second.size(), des1t.shape(1)}};
-        std::vector<size_t> ids0q;
-        for (const auto& p0 : particles_.rbegin()->second) {
-            des0q[ids0q.size()] = p0.second->sequence.begin()->second->descriptor;
-            ids0q.push_back(p0.first);
-        }
-        std::vector<cv::DMatch> matches;
-        bfm_.match(array_to_cv_mat(des0q), descriptors1t, matches);
-        // std::sort(matches.begin(), matches.end());
-        std::cerr << "Matched " << matches.size() << " existing particles" << std::endl;
-        for (const auto& m : matches) {
-            unmatched_ids1t.erase(m.trainIdx);
-            try_insert_and_append_feature_point(
-                new_frame,
-                *particles_.rbegin()->second.find(ids0q.at(m.queryIdx)),
-                Array<float>{keypoints1t.at(m.trainIdx).pt.x, keypoints1t.at(m.trainIdx).pt.y},
-                cv_mat_to_array(descriptors1t.row(m.trainIdx)));
-        }
-    }
-    std::cerr << "Trying to generate " << unmatched_ids1t.size() << " new particles" << std::endl;
-    for (size_t i1t : unmatched_ids1t) {
-        try_generate_feature_point_sequence(
-            new_frame,
-            Array<float>{keypoints1t.at(i1t).pt.x, keypoints1t.at(i1t).pt.y},
-            des1t[i1t]);
-    }
-
-    particles_.insert(std::make_pair(image_frames_.rbegin()->first, new_frame));
-    Bgr565Bitmap bmp = Bgr565Bitmap::from_float_grayscale(image_frames_.rbegin()->second.grayscale);
-    if (optical_flow_frames_.size() >= 1) {
-        bmp.draw_mask(optical_flow_frames_.rbegin()->second.mask, Bgr565::red());
-    }
-    draw(bmp);
-    bmp.save_to_file(
-        cache_dir_ +
-        "/particles-" +
-        std::to_string(image_frames_.rbegin()->first.count()) +
-        ".bmp");
-}
-#endif
 
 void FlowingParticles::draw(StbImage& bmp) {
     assert(all(bmp.fixed_shape<2>() == shape_));

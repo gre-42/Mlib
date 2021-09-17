@@ -10,10 +10,6 @@
 #include <memory>
 #include <set>
 
-#ifdef WITH_OPENCV
-#include <opencv2/features2d.hpp>
-#endif
-
 namespace Mlib {
 
 class StbImage;
@@ -56,10 +52,6 @@ private:
         const Array<float>& descriptor) const;
     const std::map<std::chrono::milliseconds, ImageFrame>& image_frames_;
     const std::map<std::chrono::milliseconds, ImageFrame>& optical_flow_frames_;
-#if 0
-    cv::Ptr<cv::ORB> orb_;
-    cv::BFMatcher bfm_;
-#endif
     FixedArray<size_t, 2> shape_;
     std::string cache_dir_;
     FlowingParticlesConfig cfg_;
