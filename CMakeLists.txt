@@ -86,7 +86,4 @@ add_subdirectory(Mlib)
 add_subdirectory(poly2tri)
 add_subdirectory(stb_image)
 add_subdirectory(Tests)
-# Requires 32 bit or disabled warnings.
-if (NOT (MINGW OR MSVC))
-    add_subdirectory(Triangle)
-endif()
+add_subdirectory(Triangle)
