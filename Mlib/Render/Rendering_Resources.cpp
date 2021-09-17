@@ -394,16 +394,21 @@ TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std:
 
 BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_blending_min " + name);
-    if (auto it = blend_map_textures_.find(name); it == blend_map_textures_.end()) {
-        return BlendMapTexture{ .texture_descriptor = { .color = name } };
+    if (auto bit = blend_map_textures_.find(name); bit == blend_map_textures_.end()) {
+        auto tit = texture_descriptors_.find(name);
+        if (tit == texture_descriptors_.end()) {
+            return BlendMapTexture{ .texture_descriptor = { .color = name } };
+        } else {
+            return BlendMapTexture{ .texture_descriptor = { .color = name, .normal = tit->second.normal } };
+        }
     } else {
-        return it->second;
+        return bit->second;
     }
 }
 
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
     if (!blend_map_textures_.insert({ name, bmt }).second) {
-        throw std::runtime_error("Blend map texture with name \"" + name + "\" already exist");
+        throw std::runtime_error("Blend map texture with name \"" + name + "\" already exists");
     }
 }
 
