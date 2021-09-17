@@ -3685,27 +3685,27 @@ struct otri *t;
   struct osub printsh;
   vertex printvertex;
 
-  printf("triangle x%" PRIXPTR " with orientation %d:\n", (uintptr_t) t->tri,
+  printf("triangle x%" PRIxPTR " with orientation %d:\n", (uintptr_t) t->tri,
          t->orient);
   decode(t->tri[0], printtri);
   if (printtri.tri == m->dummytri) {
     printf("    [0] = Outer space\n");
   } else {
-    printf("    [0] = x%" PRIXPTR "  %d\n", (uintptr_t) printtri.tri,
+    printf("    [0] = x%" PRIxPTR "  %d\n", (uintptr_t) printtri.tri,
            printtri.orient);
   }
   decode(t->tri[1], printtri);
   if (printtri.tri == m->dummytri) {
     printf("    [1] = Outer space\n");
   } else {
-    printf("    [1] = x%" PRIXPTR "  %d\n", (uintptr_t) printtri.tri,
+    printf("    [1] = x%" PRIxPTR "  %d\n", (uintptr_t) printtri.tri,
            printtri.orient);
   }
   decode(t->tri[2], printtri);
   if (printtri.tri == m->dummytri) {
     printf("    [2] = Outer space\n");
   } else {
-    printf("    [2] = x%" PRIXPTR "  %d\n", (uintptr_t) printtri.tri,
+    printf("    [2] = x%" PRIxPTR "  %d\n", (uintptr_t) printtri.tri,
            printtri.orient);
   }
 
@@ -3713,38 +3713,38 @@ struct otri *t;
   if (printvertex == (vertex) NULL)
     printf("    Origin[%d] = NULL\n", (t->orient + 1) % 3 + 3);
   else
-    printf("    Origin[%d] = x%" PRIXPTR "  (%.12g, %.12g)\n",
+    printf("    Origin[%d] = x%" PRIxPTR "  (%.12g, %.12g)\n",
            (t->orient + 1) % 3 + 3, (uintptr_t) printvertex,
            printvertex[0], printvertex[1]);
   dest(*t, printvertex);
   if (printvertex == (vertex) NULL)
     printf("    Dest  [%d] = NULL\n", (t->orient + 2) % 3 + 3);
   else
-    printf("    Dest  [%d] = x%" PRIXPTR "  (%.12g, %.12g)\n",
+    printf("    Dest  [%d] = x%" PRIxPTR "  (%.12g, %.12g)\n",
            (t->orient + 2) % 3 + 3, (uintptr_t) printvertex,
            printvertex[0], printvertex[1]);
   apex(*t, printvertex);
   if (printvertex == (vertex) NULL)
     printf("    Apex  [%d] = NULL\n", t->orient + 3);
   else
-    printf("    Apex  [%d] = x%" PRIXPTR "  (%.12g, %.12g)\n",
+    printf("    Apex  [%d] = x%" PRIxPTR "  (%.12g, %.12g)\n",
            t->orient + 3, (uintptr_t) printvertex,
            printvertex[0], printvertex[1]);
 
   if (b->usesegments) {
     sdecode(t->tri[6], printsh);
     if (printsh.ss != m->dummysub) {
-      printf("    [6] = x%" PRIXPTR "  %d\n", (uintptr_t) printsh.ss,
+      printf("    [6] = x%" PRIxPTR "  %d\n", (uintptr_t) printsh.ss,
              printsh.ssorient);
     }
     sdecode(t->tri[7], printsh);
     if (printsh.ss != m->dummysub) {
-      printf("    [7] = x%" PRIXPTR "  %d\n", (uintptr_t) printsh.ss,
+      printf("    [7] = x%" PRIxPTR "  %d\n", (uintptr_t) printsh.ss,
              printsh.ssorient);
     }
     sdecode(t->tri[8], printsh);
     if (printsh.ss != m->dummysub) {
-      printf("    [8] = x%" PRIXPTR "  %d\n", (uintptr_t) printsh.ss,
+      printf("    [8] = x%" PRIxPTR "  %d\n", (uintptr_t) printsh.ss,
              printsh.ssorient);
     }
   }
@@ -3779,20 +3779,20 @@ struct osub *s;
   struct otri printtri;
   vertex printvertex;
 
-  printf("subsegment x%" PRIXPTR " with orientation %d and mark %d:\n",
+  printf("subsegment x%" PRIxPTR " with orientation %d and mark %d:\n",
          (uintptr_t) s->ss, s->ssorient, mark(*s));
   sdecode(s->ss[0], printsh);
   if (printsh.ss == m->dummysub) {
     printf("    [0] = No subsegment\n");
   } else {
-    printf("    [0] = x%" PRIXPTR "  %d\n", (uintptr_t) printsh.ss,
+    printf("    [0] = x%" PRIxPTR "  %d\n", (uintptr_t) printsh.ss,
            printsh.ssorient);
   }
   sdecode(s->ss[1], printsh);
   if (printsh.ss == m->dummysub) {
     printf("    [1] = No subsegment\n");
   } else {
-    printf("    [1] = x%" PRIXPTR "  %d\n", (uintptr_t) printsh.ss,
+    printf("    [1] = x%" PRIxPTR "  %d\n", (uintptr_t) printsh.ss,
            printsh.ssorient);
   }
 
@@ -3800,14 +3800,14 @@ struct osub *s;
   if (printvertex == (vertex) NULL)
     printf("    Origin[%d] = NULL\n", 2 + s->ssorient);
   else
-    printf("    Origin[%d] = x%" PRIXPTR "  (%.12g, %.12g)\n",
+    printf("    Origin[%d] = x%" PRIxPTR "  (%.12g, %.12g)\n",
            2 + s->ssorient, (uintptr_t) printvertex,
            printvertex[0], printvertex[1]);
   sdest(*s, printvertex);
   if (printvertex == (vertex) NULL)
     printf("    Dest  [%d] = NULL\n", 3 - s->ssorient);
   else
-    printf("    Dest  [%d] = x%" PRIXPTR "  (%.12g, %.12g)\n",
+    printf("    Dest  [%d] = x%" PRIxPTR "  (%.12g, %.12g)\n",
            3 - s->ssorient, (uintptr_t) printvertex,
            printvertex[0], printvertex[1]);
 
@@ -3815,14 +3815,14 @@ struct osub *s;
   if (printtri.tri == m->dummytri) {
     printf("    [6] = Outer space\n");
   } else {
-    printf("    [6] = x%" PRIXPTR "  %d\n", (uintptr_t) printtri.tri,
+    printf("    [6] = x%" PRIxPTR "  %d\n", (uintptr_t) printtri.tri,
            printtri.orient);
   }
   decode(s->ss[7], printtri);
   if (printtri.tri == m->dummytri) {
     printf("    [7] = Outer space\n");
   } else {
-    printf("    [7] = x%" PRIXPTR "  %d\n", (uintptr_t) printtri.tri,
+    printf("    [7] = x%" PRIxPTR "  %d\n", (uintptr_t) printtri.tri,
            printtri.orient);
   }
 
@@ -3830,14 +3830,14 @@ struct osub *s;
   if (printvertex == (vertex) NULL)
     printf("    Segment origin[%d] = NULL\n", 4 + s->ssorient);
   else
-    printf("    Segment origin[%d] = x%" PRIXPTR "  (%.12g, %.12g)\n",
+    printf("    Segment origin[%d] = x%" PRIxPTR "  (%.12g, %.12g)\n",
            4 + s->ssorient, (uintptr_t) printvertex,
            printvertex[0], printvertex[1]);
   segdest(*s, printvertex);
   if (printvertex == (vertex) NULL)
     printf("    Segment dest  [%d] = NULL\n", 5 - s->ssorient);
   else
-    printf("    Segment dest  [%d] = x%" PRIXPTR "  (%.12g, %.12g)\n",
+    printf("    Segment dest  [%d] = x%" PRIxPTR "  (%.12g, %.12g)\n",
            5 - s->ssorient, (uintptr_t) printvertex,
            printvertex[0], printvertex[1]);
 }
@@ -11303,7 +11303,7 @@ FILE *polyfile;
       corner[j] = trianglelist[vertexindex++];
       if ((corner[j] < b->firstnumber) ||
           (corner[j] >= b->firstnumber + m->invertices)) {
-        printf("Error:  Triangle %ld has an invalid vertex index.\n",
+        printf("Error:  Triangle %" PRId64 " has an invalid vertex index.\n",
                elementnumber);
         triexit(1);
       }
@@ -11314,14 +11314,14 @@ FILE *polyfile;
     for (j = 0; j < 3; j++) {
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Triangle %ld is missing vertex %d in %s.\n",
+        printf("Error:  Triangle %" PRId64 " is missing vertex %d in %s.\n",
                elementnumber, j + 1, elefilename);
         triexit(1);
       } else {
         corner[j] = (int) strtol(stringptr, &stringptr, 0);
         if ((corner[j] < b->firstnumber) ||
             (corner[j] >= b->firstnumber + m->invertices)) {
-          printf("Error:  Triangle %ld has an invalid vertex index.\n",
+          printf("Error:  Triangle %" PRId64 " has an invalid vertex index.\n",
                  elementnumber);
           triexit(1);
         }
@@ -11459,7 +11459,7 @@ FILE *polyfile;
       /* Skip the first (segment number) field. */
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Segment %ld has no endpoints in %s.\n", segmentnumber,
+        printf("Error:  Segment %" PRId64 " has no endpoints in %s.\n", segmentnumber,
                polyfilename);
         triexit(1);
       } else {
@@ -11467,7 +11467,7 @@ FILE *polyfile;
       }
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Segment %ld is missing its second endpoint in %s.\n",
+        printf("Error:  Segment %" PRId64 " is missing its second endpoint in %s.\n",
                segmentnumber, polyfilename);
         triexit(1);
       } else {
@@ -11485,7 +11485,7 @@ FILE *polyfile;
       for (j = 0; j < 2; j++) {
         if ((end[j] < b->firstnumber) ||
             (end[j] >= b->firstnumber + m->invertices)) {
-          printf("Error:  Segment %ld has an invalid vertex index.\n",
+          printf("Error:  Segment %" PRId64 " has an invalid vertex index.\n",
                  segmentnumber);
           triexit(1);
         }
@@ -13693,7 +13693,7 @@ struct behavior *b;
       printf("  one encroached subsegment, and therefore might not be truly\n"
              );
     } else {
-      printf("  %ld encroached subsegments, and therefore might not be truly\n"
+      printf("  %" PRId64 " encroached subsegments, and therefore might not be truly\n"
              , m->badsubsegs.items);
     }
     printf("  Delaunay.  If the Delaunay property is important to you,\n");
@@ -14407,7 +14407,7 @@ char **argv;
   }
   /* Number of vertices, number of dimensions, number of vertex attributes, */
   /*   and number of boundary markers (zero or one).                        */
-  fprintf(outfile, "%ld  %d  %d  %d\n", outvertices, m->mesh_dim,
+  fprintf(outfile, "%" PRId64 "  %d  %d  %d\n", outvertices, m->mesh_dim,
           m->nextras, 1 - b->nobound);
 #endif /* not TRILIBRARY */
 
@@ -14569,7 +14569,7 @@ char **argv;
     triexit(1);
   }
   /* Number of triangles, vertices per triangle, attributes per triangle. */
-  fprintf(outfile, "%ld  %d  %d\n", m->triangles.items,
+  fprintf(outfile, "%" PRId64 "  %d  %d\n", m->triangles.items,
           (b->order + 1) * (b->order + 2) / 2, m->eextras);
 #endif /* not TRILIBRARY */
 
@@ -14716,7 +14716,7 @@ char **argv;
   fprintf(outfile, "%d  %d  %d  %d\n", 0, m->mesh_dim, m->nextras,
           1 - b->nobound);
   /* Number of segments, number of boundary markers (zero or one). */
-  fprintf(outfile, "%ld  %d\n", m->subsegs.items, 1 - b->nobound);
+  fprintf(outfile, "%" PRId64 "  %d\n", m->subsegs.items, 1 - b->nobound);
 #endif /* not TRILIBRARY */
 
   traversalinit(&m->subsegs);
@@ -14851,7 +14851,7 @@ char **argv;
     triexit(1);
   }
   /* Number of edges, number of boundary markers (zero or one). */
-  fprintf(outfile, "%ld  %d\n", m->edges, 1 - b->nobound);
+  fprintf(outfile, "%" PRId64 "  %d\n", m->edges, 1 - b->nobound);
 #endif /* not TRILIBRARY */
 
   traversalinit(&m->triangles);
@@ -15022,7 +15022,7 @@ char **argv;
   }
   /* Number of triangles, two dimensions, number of vertex attributes, */
   /*   no markers.                                                     */
-  fprintf(outfile, "%ld  %d  %d  %d\n", m->triangles.items, 2, m->nextras, 0);
+  fprintf(outfile, "%" PRId64 "  %d  %d  %d\n", m->triangles.items, 2, m->nextras, 0);
 #endif /* not TRILIBRARY */
 
   traversalinit(&m->triangles);
@@ -15090,7 +15090,7 @@ char **argv;
     triexit(1);
   }
   /* Number of edges, zero boundary markers. */
-  fprintf(outfile, "%ld  %d\n", m->edges, 0);
+  fprintf(outfile, "%" PRId64 "  %d\n", m->edges, 0);
 #endif /* not TRILIBRARY */
 
   traversalinit(&m->triangles);
@@ -15209,7 +15209,7 @@ char **argv;
     triexit(1);
   }
   /* Number of triangles, three neighbors per triangle. */
-  fprintf(outfile, "%ld  %d\n", m->triangles.items, 3);
+  fprintf(outfile, "%" PRId64 "  %d\n", m->triangles.items, 3);
 #endif /* not TRILIBRARY */
 
   traversalinit(&m->triangles);
@@ -15301,7 +15301,7 @@ char **argv;
     triexit(1);
   }
   /* Number of vertices, triangles, and edges. */
-  fprintf(outfile, "OFF\n%ld  %ld  %ld\n", outvertices, m->triangles.items,
+  fprintf(outfile, "OFF\n%" PRId64 "  %" PRId64 "  %" PRId64 "\n", outvertices, m->triangles.items,
           m->edges);
 
   /* Write the vertices. */
@@ -15572,14 +15572,14 @@ struct behavior *b;
     }
   }
 
-  printf("\n  Mesh vertices: %ld\n", m->vertices.items - m->undeads);
-  printf("  Mesh triangles: %ld\n", m->triangles.items);
-  printf("  Mesh edges: %ld\n", m->edges);
-  printf("  Mesh exterior boundary edges: %ld\n", m->hullsize);
+  printf("\n  Mesh vertices: %" PRId64 "\n", m->vertices.items - m->undeads);
+  printf("  Mesh triangles: %" PRId64 "\n", m->triangles.items);
+  printf("  Mesh edges: %" PRId64 "\n", m->edges);
+  printf("  Mesh exterior boundary edges: %" PRId64 "\n", m->hullsize);
   if (b->poly || b->refine) {
-    printf("  Mesh interior boundary edges: %ld\n",
+    printf("  Mesh interior boundary edges: %" PRId64 "\n",
            m->subsegs.items - m->hullsize);
-    printf("  Mesh subsegments (constrained edges): %ld\n",
+    printf("  Mesh subsegments (constrained edges): %" PRId64 "\n",
            m->subsegs.items);
   }
   printf("\n");
@@ -15587,31 +15587,31 @@ struct behavior *b;
   if (b->verbose) {
     quality_statistics(m, b);
     printf("Memory allocation statistics:\n\n");
-    printf("  Maximum number of vertices: %ld\n", m->vertices.maxitems);
-    printf("  Maximum number of triangles: %ld\n", m->triangles.maxitems);
+    printf("  Maximum number of vertices: %" PRId64 "\n", m->vertices.maxitems);
+    printf("  Maximum number of triangles: %" PRId64 "\n", m->triangles.maxitems);
     if (m->subsegs.maxitems > 0) {
-      printf("  Maximum number of subsegments: %ld\n", m->subsegs.maxitems);
+      printf("  Maximum number of subsegments: %" PRId64 "\n", m->subsegs.maxitems);
     }
     if (m->viri.maxitems > 0) {
-      printf("  Maximum number of viri: %ld\n", m->viri.maxitems);
+      printf("  Maximum number of viri: %" PRId64 "\n", m->viri.maxitems);
     }
     if (m->badsubsegs.maxitems > 0) {
-      printf("  Maximum number of encroached subsegments: %ld\n",
+      printf("  Maximum number of encroached subsegments: %" PRId64 "\n",
              m->badsubsegs.maxitems);
     }
     if (m->badtriangles.maxitems > 0) {
-      printf("  Maximum number of bad triangles: %ld\n",
+      printf("  Maximum number of bad triangles: %" PRId64 "\n",
              m->badtriangles.maxitems);
     }
     if (m->flipstackers.maxitems > 0) {
-      printf("  Maximum number of stacked triangle flips: %ld\n",
+      printf("  Maximum number of stacked triangle flips: %" PRId64 "\n",
              m->flipstackers.maxitems);
     }
     if (m->splaynodes.maxitems > 0) {
-      printf("  Maximum number of splay tree nodes: %ld\n",
+      printf("  Maximum number of splay tree nodes: %" PRId64 "\n",
              m->splaynodes.maxitems);
     }
-    printf("  Approximate heap memory use (bytes): %ld\n\n",
+    printf("  Approximate heap memory use (bytes): %" PRId64 "\n\n",
            m->vertices.maxitems * m->vertices.itembytes +
            m->triangles.maxitems * m->triangles.itembytes +
            m->subsegs.maxitems * m->subsegs.itembytes +
@@ -15623,21 +15623,21 @@ struct behavior *b;
 
     printf("Algorithmic statistics:\n\n");
     if (!b->weighted) {
-      printf("  Number of incircle tests: %ld\n", m->incirclecount);
+      printf("  Number of incircle tests: %" PRId64 "\n", m->incirclecount);
     } else {
-      printf("  Number of 3D orientation tests: %ld\n", m->orient3dcount);
+      printf("  Number of 3D orientation tests: %" PRId64 "\n", m->orient3dcount);
     }
-    printf("  Number of 2D orientation tests: %ld\n", m->counterclockcount);
+    printf("  Number of 2D orientation tests: %" PRId64 "\n", m->counterclockcount);
     if (m->hyperbolacount > 0) {
-      printf("  Number of right-of-hyperbola tests: %ld\n",
+      printf("  Number of right-of-hyperbola tests: %" PRId64 "\n",
              m->hyperbolacount);
     }
     if (m->circletopcount > 0) {
-      printf("  Number of circle top computations: %ld\n",
+      printf("  Number of circle top computations: %" PRId64 "\n",
              m->circletopcount);
     }
     if (m->circumcentercount > 0) {
-      printf("  Number of triangle circumcenter computations: %ld\n",
+      printf("  Number of triangle circumcenter computations: %" PRId64 "\n",
              m->circumcentercount);
     }
     printf("\n");
@@ -15764,7 +15764,7 @@ const char **argv;
     } else {
       printf("Delaunay");
     }
-    printf(" milliseconds:  %ld\n", 1000l * (tv2.tv_sec - tv1.tv_sec) +
+    printf(" milliseconds:  %" PRId64 "\n", 1000l * (tv2.tv_sec - tv1.tv_sec) +
            (tv2.tv_usec - tv1.tv_usec) / 1000l);
   }
 #endif /* not NO_TIMER */
@@ -15792,7 +15792,7 @@ const char **argv;
   if (!b.quiet) {
     gettimeofday(&tv3, &tz);
     if (b.usesegments && !b.refine) {
-      printf("Segment milliseconds:  %ld\n",
+      printf("Segment milliseconds:  %" PRId64 "\n",
              1000l * (tv3.tv_sec - tv2.tv_sec) +
              (tv3.tv_usec - tv2.tv_usec) / 1000l);
     }
@@ -15825,7 +15825,7 @@ const char **argv;
   if (!b.quiet) {
     gettimeofday(&tv4, &tz);
     if (b.poly && !b.refine) {
-      printf("Hole milliseconds:  %ld\n", 1000l * (tv4.tv_sec - tv3.tv_sec) +
+      printf("Hole milliseconds:  %" PRId64 "\n", 1000l * (tv4.tv_sec - tv3.tv_sec) +
              (tv4.tv_usec - tv3.tv_usec) / 1000l);
     }
   }
@@ -15842,7 +15842,7 @@ const char **argv;
     gettimeofday(&tv5, &tz);
 #ifndef CDT_ONLY
     if (b.quality) {
-      printf("Quality milliseconds:  %ld\n",
+      printf("Quality milliseconds:  %" PRId64 "\n",
              1000l * (tv5.tv_sec - tv4.tv_sec) +
              (tv5.tv_usec - tv4.tv_usec) / 1000l);
     }
@@ -15987,10 +15987,10 @@ const char **argv;
   if (!b.quiet) {
 #ifndef NO_TIMER
     gettimeofday(&tv6, &tz);
-    printf("\nOutput milliseconds:  %ld\n",
+    printf("\nOutput milliseconds:  %" PRId64 "\n",
            1000l * (tv6.tv_sec - tv5.tv_sec) +
            (tv6.tv_usec - tv5.tv_usec) / 1000l);
-    printf("Total running milliseconds:  %ld\n",
+    printf("Total running milliseconds:  %" PRId64 "\n",
            1000l * (tv6.tv_sec - tv0.tv_sec) +
            (tv6.tv_usec - tv0.tv_usec) / 1000l);
 #endif /* not NO_TIMER */
