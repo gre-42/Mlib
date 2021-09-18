@@ -197,6 +197,7 @@
 // For the patch proposed in https://stackoverflow.com/a/48230910/2292832
 #include <cstdint>
 #include <inttypes.h>
+#include <ctime>
 
 #define ANSI_DECLARATORS
 
@@ -15764,8 +15765,8 @@ const char **argv;
     } else {
       printf("Delaunay");
     }
-    printf(" milliseconds:  %" PRId64 "\n", 1000l * (tv2.tv_sec - tv1.tv_sec) +
-           (tv2.tv_usec - tv1.tv_usec) / 1000l);
+    printf(" milliseconds:  %f\n", 1000.0 * difftime(tv2.tv_sec, tv1.tv_sec) +
+           difftime(tv2.tv_usec, tv1.tv_usec) / 1000.0);
   }
 #endif /* not NO_TIMER */
 
@@ -15792,9 +15793,9 @@ const char **argv;
   if (!b.quiet) {
     gettimeofday(&tv3, &tz);
     if (b.usesegments && !b.refine) {
-      printf("Segment milliseconds:  %" PRId64 "\n",
-             1000l * (tv3.tv_sec - tv2.tv_sec) +
-             (tv3.tv_usec - tv2.tv_usec) / 1000l);
+      printf("Segment milliseconds:  %f\n",
+             1000.0 * difftime(tv3.tv_sec, tv2.tv_sec) +
+             difftime(tv3.tv_usec, tv2.tv_usec) / 1000.0);
     }
   }
 #endif /* not NO_TIMER */
@@ -15825,8 +15826,8 @@ const char **argv;
   if (!b.quiet) {
     gettimeofday(&tv4, &tz);
     if (b.poly && !b.refine) {
-      printf("Hole milliseconds:  %" PRId64 "\n", 1000l * (tv4.tv_sec - tv3.tv_sec) +
-             (tv4.tv_usec - tv3.tv_usec) / 1000l);
+      printf("Hole milliseconds:  %f\n", 1000.0 * difftime(tv4.tv_sec, tv3.tv_sec) +
+             difftime(tv4.tv_usec, tv3.tv_usec) / 1000.0);
     }
   }
 #endif /* not NO_TIMER */
@@ -15842,9 +15843,9 @@ const char **argv;
     gettimeofday(&tv5, &tz);
 #ifndef CDT_ONLY
     if (b.quality) {
-      printf("Quality milliseconds:  %" PRId64 "\n",
-             1000l * (tv5.tv_sec - tv4.tv_sec) +
-             (tv5.tv_usec - tv4.tv_usec) / 1000l);
+      printf("Quality milliseconds:  %f\n",
+             1000.0 * difftime(tv5.tv_sec, tv4.tv_sec) +
+             difftime(tv5.tv_usec, tv4.tv_usec) / 1000.0);
     }
 #endif /* not CDT_ONLY */
   }
@@ -15987,12 +15988,12 @@ const char **argv;
   if (!b.quiet) {
 #ifndef NO_TIMER
     gettimeofday(&tv6, &tz);
-    printf("\nOutput milliseconds:  %" PRId64 "\n",
-           1000l * (tv6.tv_sec - tv5.tv_sec) +
-           (tv6.tv_usec - tv5.tv_usec) / 1000l);
-    printf("Total running milliseconds:  %" PRId64 "\n",
-           1000l * (tv6.tv_sec - tv0.tv_sec) +
-           (tv6.tv_usec - tv0.tv_usec) / 1000l);
+    printf("\nOutput milliseconds:  %f\n",
+           1000.0 * difftime(tv6.tv_sec, tv5.tv_sec) +
+           difftime(tv6.tv_usec, tv5.tv_usec) / 1000.0);
+    printf("Total running milliseconds:  %f\n",
+           1000.0 * difftime(tv6.tv_sec, tv0.tv_sec) +
+           difftime(tv6.tv_usec, tv0.tv_usec) / 1000.0);
 #endif /* not NO_TIMER */
 
     statistics(&m, &b);
