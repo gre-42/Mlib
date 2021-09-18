@@ -15765,8 +15765,8 @@ const char **argv;
     } else {
       printf("Delaunay");
     }
-    printf(" milliseconds:  %f\n", 1000.0 * difftime(tv2.tv_sec, tv1.tv_sec) +
-           difftime(tv2.tv_usec, tv1.tv_usec) / 1000.0);
+    printf(" milliseconds:  %u\n", 1000 * (unsigned int)(tv2.tv_sec - tv1.tv_sec) +
+           (unsigned int)(tv2.tv_usec - tv1.tv_usec) / 1000);
   }
 #endif /* not NO_TIMER */
 
@@ -15793,9 +15793,9 @@ const char **argv;
   if (!b.quiet) {
     gettimeofday(&tv3, &tz);
     if (b.usesegments && !b.refine) {
-      printf("Segment milliseconds:  %f\n",
-             1000.0 * difftime(tv3.tv_sec, tv2.tv_sec) +
-             difftime(tv3.tv_usec, tv2.tv_usec) / 1000.0);
+      printf("Segment milliseconds:  %u\n",
+             1000 * (unsigned int)(tv3.tv_sec - tv2.tv_sec) +
+             (unsigned int)(tv3.tv_usec - tv2.tv_usec) / 1000);
     }
   }
 #endif /* not NO_TIMER */
@@ -15826,8 +15826,8 @@ const char **argv;
   if (!b.quiet) {
     gettimeofday(&tv4, &tz);
     if (b.poly && !b.refine) {
-      printf("Hole milliseconds:  %f\n", 1000.0 * difftime(tv4.tv_sec, tv3.tv_sec) +
-             difftime(tv4.tv_usec, tv3.tv_usec) / 1000.0);
+      printf("Hole milliseconds:  %u\n", 1000 * (unsigned int)(tv4.tv_sec - tv3.tv_sec) +
+             (unsigned int)(tv4.tv_usec - tv3.tv_usec) / 1000);
     }
   }
 #endif /* not NO_TIMER */
@@ -15843,9 +15843,9 @@ const char **argv;
     gettimeofday(&tv5, &tz);
 #ifndef CDT_ONLY
     if (b.quality) {
-      printf("Quality milliseconds:  %f\n",
-             1000.0 * difftime(tv5.tv_sec, tv4.tv_sec) +
-             difftime(tv5.tv_usec, tv4.tv_usec) / 1000.0);
+      printf("Quality milliseconds:  %u\n",
+             1000 * (unsigned int)(tv5.tv_sec - tv4.tv_sec) +
+             (unsigned int)(tv5.tv_usec - tv4.tv_usec) / 1000);
     }
 #endif /* not CDT_ONLY */
   }
@@ -15988,12 +15988,12 @@ const char **argv;
   if (!b.quiet) {
 #ifndef NO_TIMER
     gettimeofday(&tv6, &tz);
-    printf("\nOutput milliseconds:  %f\n",
-           1000.0 * difftime(tv6.tv_sec, tv5.tv_sec) +
-           difftime(tv6.tv_usec, tv5.tv_usec) / 1000.0);
-    printf("Total running milliseconds:  %f\n",
-           1000.0 * difftime(tv6.tv_sec, tv0.tv_sec) +
-           difftime(tv6.tv_usec, tv0.tv_usec) / 1000.0);
+    printf("\nOutput milliseconds:  %u\n",
+           1000 * (unsigned int)(tv6.tv_sec - tv5.tv_sec) +
+           (unsigned int)(tv6.tv_usec - tv5.tv_usec) / 1000);
+    printf("Total running milliseconds:  %u\n",
+           1000 * (unsigned int)(tv6.tv_sec - tv0.tv_sec) +
+           (unsigned int)(tv6.tv_usec - tv0.tv_usec) / 1000);
 #endif /* not NO_TIMER */
 
     statistics(&m, &b);
