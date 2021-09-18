@@ -435,7 +435,7 @@ public:
         }
         return *this;
     }
-    Array<bool> operator == (const Array &rhs) {
+    Array<bool> operator == (const Array &rhs) const {
         assert(all(shape() == rhs.shape()));
         Array<bool> result{shape()};
         Array f = flattened();
@@ -446,7 +446,7 @@ public:
         }
         return result;
     }
-    Array<bool> operator != (const Array &rhs) {
+    Array<bool> operator != (const Array &rhs) const {
         assert(all(shape() == rhs.shape()));
         Array<bool> result{shape()};
         Array f = flattened();

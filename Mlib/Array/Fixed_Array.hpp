@@ -238,9 +238,9 @@ public:
     }
     template <size_t... tnew_shape>
     constexpr FixedArray<TData, tnew_shape...>& reshaped() {
-        FixedArray<TData, tnew_shape...>& result = *reinterpret_cast<FixedArray<TData, tnew_shape...>*>(this);
-        static_assert(result.nelements() <= nelements());
-        return result;
+        typedef FixedArray<TData, tnew_shape...> Result;
+        static_assert(Result::nelements() <= nelements());
+        return *reinterpret_cast<Result*>(this);
     }
     template <size_t... tnew_shape>
     constexpr const FixedArray<TData, tnew_shape...>& reshaped() const {
@@ -387,11 +387,12 @@ private:
  */
 template <typename TData, size_t tshape0, size_t... tshape>
 std::ostream& operator << (std::ostream& ostream, const FixedArray<TData, tshape0, tshape...>& a) {
-    if constexpr (a.ndim() == 1) {
+    typedef FixedArray<TData, tshape0, tshape...> A;
+    if constexpr (A::ndim() == 1) {
         for (size_t i = 0; i < a.length(); ++i) {
             ostream << a(i) << (i == a.length() -1 ? "" : " ");
         }
-    } else if constexpr (a.ndim() != 0) {
+    } else if constexpr (A::ndim() != 0) {
         for (size_t i = 0; i < tshape0; ++i) {
             ostream << a[i] << std::endl;
         }

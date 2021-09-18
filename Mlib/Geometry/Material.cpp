@@ -58,5 +58,3 @@ bool Material::fragments_depend_on_normal() const {
     }
     return false;
 }
-
-std::partial_ordering Material::operator <=> (const Material&) const = default;

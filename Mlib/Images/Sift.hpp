@@ -9,13 +9,13 @@ struct KeyPoint {
     int octave;
     float size;
     float response;
-    std::strong_ordering operator <=> (const KeyPoint& kp) const = default;
+    std::partial_ordering operator <=> (const KeyPoint& kp) const = default;
 };
 
 struct KeyPointWithOrientation {
     KeyPoint kp;
     float angle;
-    std::strong_ordering operator <=> (const KeyPointWithOrientation& kp) const = default;
+    std::partial_ordering operator <=> (const KeyPointWithOrientation& kp) const = default;
 };
 
 struct SiftFeatures {

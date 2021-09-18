@@ -49,7 +49,7 @@ struct Material {
     bool has_normalmap() const;
     bool fragments_depend_on_distance() const;
     bool fragments_depend_on_normal() const;
-    std::partial_ordering operator <=> (const Material&) const;
+    std::partial_ordering operator <=> (const Material&) const = default;
 };
 
 }

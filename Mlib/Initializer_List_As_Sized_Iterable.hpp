@@ -5,10 +5,10 @@ namespace Mlib {
 template <class TData>
 class InitializerListAsSizedIterable {
 public:
-    typedef std::initializer_list<TData>::value_type value_type;
-    typedef std::initializer_list<TData>::iterator iterator;
-    typedef std::initializer_list<TData>::const_iterator const_iterator;
-    typedef std::initializer_list<TData>::size_type size_type;
+    typedef typename std::initializer_list<TData>::value_type value_type;
+    typedef typename std::initializer_list<TData>::iterator iterator;
+    typedef typename std::initializer_list<TData>::const_iterator const_iterator;
+    typedef typename std::initializer_list<TData>::size_type size_type;
     InitializerListAsSizedIterable(std::initializer_list<TData> data)
     : data_(data)
     {}

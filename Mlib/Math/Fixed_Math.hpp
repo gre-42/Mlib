@@ -38,7 +38,10 @@ auto outer(
     // a.shape = (a_l0, a_l1, n)
     // b.shape = (b_l0, b_l1, n)
     // r.shape = (a_l0, a_l1, b_r0, b_r1)
-    if constexpr ((a.ndim() != 2) || (b.ndim() != 2)) {
+    if constexpr (
+        (FixedArray<TData, tsize_a...>::ndim() != 2) ||
+        (FixedArray<TData, tsize_b...>::ndim() != 2))
+    {
         const auto& a2 = a.rows_as_1D();
         const auto& b2 = b.rows_as_1D();
         auto r = outer2d(a2, b2);
@@ -80,7 +83,10 @@ auto dot(
     // a.shape = (a_l0, a_l1, n)
     // b.shape = (n, b_l0, b_l1)
     // r.shape = (a_l0, a_l1, b_r0, b_r1)
-    if constexpr ((a.ndim() != 2) || (b.ndim() != 2)) {
+    if constexpr (
+        (FixedArray<TData, tsize_a...>::ndim() != 2) ||
+        (FixedArray<TData, tsize_b...>::ndim() != 2))
+    {
         const auto& a2 = a.rows_as_1D();
         const auto& b2 = b.columns_as_1D();
         auto r = dot2d(a2, b2);
