@@ -3,6 +3,7 @@
 #include "Fixed_Array_Shape.hpp"
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Template.hpp>
+#include <array>
 #include <cassert>
 #include <cstddef>
 #include <ostream>
@@ -41,6 +42,20 @@ class FixedArray<TData, tshape0, tshape...>: public BaseDenseArray<FixedArray<TD
 public:
     typedef TData value_type;
 
+    static constexpr size_t nelements() {
+        return tshape0 * FixedArray<TData, tshape...>::nelements();
+    }
+    static constexpr size_t nbytes() {
+        return nelements() * sizeof(TData);
+    }
+    static constexpr size_t length() {
+        static_assert(ndim() == 1);
+        return tshape0;
+    }
+    static constexpr size_t ndim() {
+        return 1 + FixedArray<TData, tshape...>::ndim();
+    }
+
     FixedArray() = default;
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
@@ -49,17 +64,20 @@ public:
     }
     explicit FixedArray(const Array<TData>& a) {
         assert(all(a.shape() == ArrayShape{tshape0, tshape...}));
-        std::copy(a.flat_iterable().begin(), a.flat_iterable().end(), flat_begin());
+        std::copy(a.flat_begin(), a.flat_end(), flat_begin());
     }
     explicit FixedArray(const std::vector<TData>& v) {
         assert(v.size() == nelements());
-        std::copy(v.data(), v.data() + v.size(), flat_begin());
+        std::copy(v.begin(), v.end(), flat_begin());
     }
     explicit FixedArray(const ArrayShape& shape);
+    explicit FixedArray(const std::array<TData, FixedArray<TData, tshape0, tshape...>::nelements()>& v) {
+        std::copy(v.begin(), v.end(), flat_begin());
+    }
     explicit FixedArray(const TData* data, size_t nelements)
     {
         assert(nelements == this->nelements());
-        set_values_from_ptr(data);
+        std::copy(data, data + nelements, flat_begin());
     }
     template<typename... Values>
     FixedArray(const TData& v0, const Values&... values) {
@@ -81,9 +99,6 @@ public:
         // (*this)(i) = v;
         set_values<i + 1>(values...);
     }
-    void set_values_from_ptr(const TData* v) {
-        std::copy(v, v + nelements(), flat_begin());
-    }
     template <typename... Ids>
     const TData& operator() (size_t id0, Ids... ids) const {
         assert(id0 < tshape0);
@@ -101,19 +116,6 @@ public:
     FixedArray<TData, tshape...>& operator [] (size_t id) {
         assert(id < tshape0);
         return data_[id];
-    }
-    static constexpr size_t nelements() {
-        return tshape0 * FixedArray<TData, tshape...>::nelements();
-    }
-    static constexpr size_t nbytes() {
-        return nelements() * sizeof(TData);
-    }
-    static constexpr size_t length() {
-        static_assert(ndim() == 1);
-        return tshape0;
-    }
-    static constexpr size_t ndim() {
-        return 1 + FixedArray<TData, tshape...>::ndim();
     }
     constexpr PointerIterable<const TData> flat_iterable() const {
         return PointerIterable<const TData>{flat_begin(), flat_end()};
@@ -297,7 +299,12 @@ public:
     }
     Array<TData> to_array() const {
         Array<TData> result{ ArrayShape{tshape0, tshape...} };
-        std::copy(flat_begin(), flat_end(), result.flat_iterable().begin());
+        std::copy(flat_begin(), flat_end(), result.flat_begin());
+        return result;
+    }
+    std::array<TData, nelements()> to_std_array() const {
+        std::array<TData, nelements()> result;
+        std::copy(flat_begin(), flat_end(), result.begin());
         return result;
     }
     ArrayShape to_array_shape() const;

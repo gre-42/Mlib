@@ -12,6 +12,9 @@ public:
     explicit OrderableFixedArray(const FixedArray<TData, tshape...>& rhs)
     : FixedArray<TData, tshape...>{rhs}
     {}
+    explicit OrderableFixedArray(const std::array<TData, FixedArray<TData, tshape...>::nelements()>& rhs)
+    : FixedArray<TData, tshape...>{rhs}
+    {}
     template<typename... Values>
     OrderableFixedArray(const TData& v0, const Values&... values)
     : FixedArray<TData, tshape...>{v0, values...}
