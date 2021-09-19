@@ -8,7 +8,7 @@ namespace Mlib {
 template <class TData, size_t... tshape>
 class OrderableFixedArray: public FixedArray<TData, tshape...> {
 public:
-    explicit OrderableFixedArray() {}
+    OrderableFixedArray() {}
     explicit OrderableFixedArray(const FixedArray<TData, tshape...>& rhs)
     : FixedArray<TData, tshape...>{rhs}
     {}
