@@ -19,7 +19,7 @@ public:
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual AggregateMode aggregate_mode() const override;
-    virtual void downsample(size_t n);
+    virtual void downsample(size_t n) override;
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance) override;
