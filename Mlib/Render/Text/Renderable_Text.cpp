@@ -117,7 +117,7 @@ void TextResource::render(
     float y = pos(1);
     size_t line_number = 0;
     vdata_.clear();
-    for (char c : text) {
+    for (unsigned char c : text) {
         if (vdata_.size() == vdata_.capacity()) {
             break;
         }
