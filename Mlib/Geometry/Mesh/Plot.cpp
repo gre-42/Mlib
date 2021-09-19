@@ -48,7 +48,7 @@ struct ConvOrderable {
         const std::list<OrderableFixedArray<float, 2>>& highlighted_nodes,
         const std::list<OrderableFixedArray<float, 2>>& crossed_nodes)
     : triangles_2d{reinterpret_cast<const std::list<FixedArray<FixedArray<float, 2>, 3>>&>(triangles)},
-      highlighted_nodes_2d{reinterpret_cast<const std::list<FixedArray<float, 2>>&>(highlighted_nodes_2d)},
+      highlighted_nodes_2d{reinterpret_cast<const std::list<FixedArray<float, 2>>&>(highlighted_nodes)},
       crossed_nodes_2d{reinterpret_cast<const std::list<FixedArray<float, 2>>&>(crossed_nodes)}
     {
         for (const auto& c : contours) {
