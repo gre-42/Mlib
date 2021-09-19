@@ -19,11 +19,11 @@ namespace FasUtils {
 template <size_t... tsize>
 class FixedArrayShape {
 public:
-    constexpr static const FixedArrayShape<tsize...>* a = nullptr;
+    using A = FixedArrayShape;
     constexpr static auto erased_first();
     constexpr static auto erased_last();
     template <size_t... tsize_b>
-    constexpr static auto concatenated(const FixedArrayShape<tsize_b...>& b) { return ::Mlib::FasUtils::concatenated(*a, b); }
+    constexpr static auto concatenated(const FixedArrayShape<tsize_b...>& b) { return ::Mlib::FasUtils::concatenated(A(), b); }
     constexpr static auto last();
     constexpr static auto nelements();
     constexpr static auto rows_as_1D();
@@ -191,22 +191,22 @@ namespace ElemUtils {
 }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::erased_first() { return ::Mlib::FasUtils::erased_first(*a); }
+constexpr auto FixedArrayShape<tsize...>::erased_first() { return ::Mlib::FasUtils::erased_first(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::erased_last() { return ::Mlib::FasUtils::erased_last(*a); }
+constexpr auto FixedArrayShape<tsize...>::erased_last() { return ::Mlib::FasUtils::erased_last(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::last() { return ::Mlib::FasUtils::last(*a); }
+constexpr auto FixedArrayShape<tsize...>::last() { return ::Mlib::FasUtils::last(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::nelements() { return ::Mlib::FasUtils::nelements(*a); }
+constexpr auto FixedArrayShape<tsize...>::nelements() { return ::Mlib::FasUtils::nelements(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::rows_as_1D() { return ::Mlib::FasUtils::rows_as_1D(*a); }
+constexpr auto FixedArrayShape<tsize...>::rows_as_1D() { return ::Mlib::FasUtils::rows_as_1D(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::columns_as_1D() { return ::Mlib::FasUtils::columns_as_1D(*a); }
+constexpr auto FixedArrayShape<tsize...>::columns_as_1D() { return ::Mlib::FasUtils::columns_as_1D(A()); }
 
 template <size_t... tsize>
 template <size_t N>
