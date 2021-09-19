@@ -196,7 +196,7 @@ public:
     typedef TData value_type;
     ArrayResizer resize;
     ArrayResizer reshape;
-    explicit Array():
+    Array():
         offset_{0},
         resize{[this](const ArrayShape& shape){ do_resize(shape); }},
         reshape{[this](const ArrayShape& shape){ do_reshape(shape); }} {}
