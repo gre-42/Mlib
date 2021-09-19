@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
 #include <map>
 #include <stdexcept>
 #include <vector>
@@ -8,6 +7,8 @@ namespace Mlib {
 
 struct Light;
 struct BlendMapTexture;
+template <class TData, size_t n>
+class TransformationMatrix;
 
 template <class Func>
 class GenShaderText {
