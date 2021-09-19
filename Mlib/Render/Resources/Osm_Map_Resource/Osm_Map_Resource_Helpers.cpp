@@ -20,7 +20,6 @@
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
-#include <ranges>
 #include <regex>
 
 using namespace Mlib;
@@ -541,8 +540,11 @@ void Mlib::draw_wall_barriers(
     if (barrier_styles.empty()) {
         throw std::runtime_error("Barrier textures empty");
     }
-    auto style_values = barrier_styles | std::views::values;
-    std::vector<BarrierStyle> barrier_styles_vector(style_values.begin(), style_values.end());
+    std::vector<BarrierStyle> barrier_styles_vector;
+    barrier_styles_vector.reserve(barrier_styles.size());
+    for (const auto& v : barrier_styles) {
+        barrier_styles_vector.push_back(v.second);
+    }
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;

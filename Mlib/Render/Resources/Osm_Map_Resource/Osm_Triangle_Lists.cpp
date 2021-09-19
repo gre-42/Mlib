@@ -8,7 +8,6 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
-#include <ranges>
 
 using namespace Mlib;
 
@@ -115,9 +114,11 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
     }
     for (const auto& s : config.street_texture) {
         bool blend = config.blend_street && (s.first.type != RoadType::WALL);
-        auto textures = s.second.textures | std::views::transform([&primary_rendering_resources](
-            const std::string& texture){
-                return primary_rendering_resources->get_blend_map_texture(texture);});
+        std::vector<BlendMapTexture> textures;
+        textures.reserve(s.second.textures.size());
+        for (const std::string& texture : s.second.textures) {
+            textures.push_back(primary_rendering_resources->get_blend_map_texture(texture));
+        }
         tl_street.append(StyledRoadEntry{
             .road_properties = s.first,
             .styled_road = StyledRoad{
@@ -125,7 +126,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
                     .continuous_blending_z_order = blend ? 1 : 0,
                     .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                     .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
-                    .textures = std::vector<BlendMapTexture>(textures.begin(), textures.end()),
+                    .textures = textures,
                     .dirt_texture = config.street_dirt_texture,
                     .occluded_type = (s.first.type != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
                     .occluder_type = (s.first.type != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
@@ -141,7 +142,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .occluded_type = (s.first != RoadType::WALL) ? OccludedType::LIGHT_MAP_COLOR : OccludedType::OFF,
             .occluder_type = (s.first != RoadType::WALL) ? OccluderType::WHITE : OccluderType::BLACK,
             .wrap_mode_s = curb_wrap_mode_s,
-            .specularity = OrderableFixedArray{fixed_full<float, 3>((float)(config.extrude_curb_amount == 0 && s.first != RoadType::WALL))},
+            .specularity = OrderableFixedArray<float, 3>{fixed_full<float, 3>((float)(config.extrude_curb_amount == 0 && s.first != RoadType::WALL))},
             .draw_distance_noperations = 1000}.compute_color_mode())); // mixed_texture: terrain_texture
     }
     for (const auto& s : config.curb2_street_texture) {
@@ -427,6 +428,10 @@ std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::street_triangles() con
 #undef INSERT2
 #undef INSERT3
 
+namespace Mlib {
+
 template class EntityTypeTriangleList<RoadType>;
 template class EntityTypeTriangleList<TerrainType>;
 template class EntityTypeTriangleList<WaterType>;
+
+}
