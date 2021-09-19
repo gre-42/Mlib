@@ -10,6 +10,7 @@ namespace Sfm {
 
 class CostVolume {
 public:
+    virtual ~CostVolume() = default;
     virtual Array<float> dsi() const = 0;
     virtual std::unique_ptr<CostVolume> down_sampled() const = 0;
     virtual size_t nlayers() const = 0;
@@ -17,6 +18,8 @@ public:
 
 class CostVolumeAccumulator {
 public:
+    virtual ~CostVolumeAccumulator() = default;
+
     virtual void increment(
         const TransformationMatrix<float, 2>& intrinsic_matrix,
         const TransformationMatrix<float, 3>& c0,
@@ -26,13 +29,6 @@ public:
         const float epipole_radius = 0) = 0;
 
     virtual std::unique_ptr<CostVolume> get(size_t min_channel_increments) const = 0;
-
-private:
-    const ArrayShape space_shape_;
-    const Array<float> inverse_depths_;
-    Array<float> idsi_sum_;
-    Array<size_t> nelements_idsi_;
-    size_t nchannel_increments_;
 };
 
 }}
