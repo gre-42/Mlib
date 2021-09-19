@@ -39,7 +39,7 @@ public:
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to) override;
     virtual AggregateMode aggregate_mode() const override;
     virtual void set_absolute_joint_poses(const std::vector<OffsetAndQuaternion<float>>& poses);
-    virtual void downsample(size_t factor);
+    virtual void downsample(size_t factor) override;
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance) override;

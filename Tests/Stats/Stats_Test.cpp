@@ -82,9 +82,9 @@ void test_quantiles() {
 }
 
 void test_argmin() {
-    assert_isclose<float>(argmin(Array<float>{3, 5, 2, 1, 3, NAN}), 3);
-    assert_isclose<float>(argmin(Array<float>{NAN}), SIZE_MAX);
-    assert_isclose<float>(
+    assert_isequal<size_t>(argmin(Array<float>{3, 5, 2, 1, 3, NAN}), 3);
+    assert_isequal<size_t>(argmin(Array<float>{NAN}), SIZE_MAX);
+    assert_isequal<size_t>(
         argmin(Array<float>{3, 5, 2, 1, 3, NAN}, 0)(),
         3);
     assert_allequal(

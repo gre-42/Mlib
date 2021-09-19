@@ -277,7 +277,7 @@ void test_bvh_performance() {
     if (false) {
         std::ofstream ostr("img.svg");
         Svg svg{ostr, 800, 600};
-        svg.plot(std::vector<int>{0, 1, 2, 3, 4}, std::vector<int>{0*0, 1*1, 2*2, 3*3, 4*4});
+        svg.plot(std::vector<float>{0, 1, 2, 3, 4}, std::vector<float>{0*0, 1*1, 2*2, 3*3, 4*4});
         svg.finish();
         ostr.flush();
         if (ostr.fail()) {
