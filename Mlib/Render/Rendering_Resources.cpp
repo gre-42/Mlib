@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Math/Is_Power_Of_Two.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
@@ -20,13 +21,6 @@
 #include <vector>
 
 using namespace Mlib;
-
-/**
- * From: https://stackoverflow.com/questions/108318/whats-the-simplest-way-to-test-whether-a-number-is-a-power-of-2-in-c/108360#108360
- */
-bool is_power_of_two(int n) {
-    return n > 0 && ((n & (n - 1)) == 0);
-}
 
 /**
  * From: https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c
