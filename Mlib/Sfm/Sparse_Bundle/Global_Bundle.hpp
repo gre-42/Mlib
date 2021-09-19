@@ -26,7 +26,7 @@ public:
     size_t dimension;
     Y(const std::chrono::milliseconds time, size_t index, size_t dimension);
 public:
-    std::strong_ordering operator <=> (const Y& y) const;
+    std::strong_ordering operator <=> (const Y& y) const = default;
 };
 
 struct XP {
@@ -34,7 +34,7 @@ struct XP {
     size_t dimension;
     XP(size_t index, size_t dimension);
 public:
-    std::strong_ordering operator <=> (const XP& xp) const;
+    std::strong_ordering operator <=> (const XP& xp) const = default;
 };
 
 class XKi {
@@ -42,7 +42,7 @@ public:
     size_t dimension;
     explicit XKi(size_t dimension);
 public:
-    std::strong_ordering operator <=> (const XKi& xki) const;
+    std::strong_ordering operator <=> (const XKi& xki) const = default;
 };
 
 class XKe {
@@ -51,7 +51,7 @@ public:
     size_t dimension;
     XKe(const std::chrono::milliseconds time, size_t dimension);
 public:
-    std::strong_ordering operator <=> (const XKe& xki) const;
+    std::strong_ordering operator <=> (const XKe& xki) const = default;
 };
 
 struct GlobalBundleConfig {

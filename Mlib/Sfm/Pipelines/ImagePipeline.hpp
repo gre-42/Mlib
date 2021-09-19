@@ -8,6 +8,7 @@ namespace Mlib::Sfm {
 
 class ImagePipeline {
 public:
+    virtual ~ImagePipeline() = default;
     virtual void process_image_frame(
         const std::chrono::milliseconds& time,
         const ImageFrame& image_frame,

@@ -16,22 +16,14 @@ using namespace Mlib::Sfm;
 Y::Y(const std::chrono::milliseconds time, size_t index, size_t dimension)
   : time(time), index(index), dimension(dimension) {}
 
-std::strong_ordering Y::operator <=> (const Y& y) const = default;
-
 XP::XP(size_t index, size_t dimension)
 : index(index), dimension(dimension) {}
-
-std::strong_ordering XP::operator <=> (const XP& xp) const = default;
 
 XKi::XKi(size_t dimension)
 : dimension(dimension) {}
 
-std::strong_ordering XKi::operator <=> (const XKi& xki) const = default;
-
 XKe::XKe(const std::chrono::milliseconds time, size_t dimension)
 : time(time), dimension(dimension) {}
-
-std::strong_ordering XKe::operator <=> (const XKe& xke) const = default;
 
 GlobalBundle::GlobalBundle(
     const std::string& cache_dir,

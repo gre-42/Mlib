@@ -15,6 +15,7 @@ struct FocusFilter;
 
 class RenderLogic {
 public:
+    virtual ~RenderLogic();
     virtual void render(
         int width,
         int height,

@@ -54,7 +54,7 @@ void filter_distance_to_camera(Array<float>& x, Array<float>& cond, const Array<
             for (size_t c = 0; c < x.shape(2); ++c) {
                 if (!std::isnan(dist(r, c)) &&
                     !std::isnan(distf(r, c)) &&
-                    abs(dist(r, c) - distf(r, c)) < 0.5)
+                    std::abs(dist(r, c) - distf(r, c)) < 0.5)
                 {
                     for (size_t d = 0; d < x.shape(0); ++d) {
                         x(d, r, c) = x(d, r, c);
