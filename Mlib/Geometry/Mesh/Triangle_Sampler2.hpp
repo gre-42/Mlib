@@ -21,7 +21,15 @@ public:
         const std::function<void(const TData& a, const TData& b, const TData& c)>& func)
     {
         float area = triangle_area(t0, t1, t2);
-        for (size_t i = 0; i < (size_t)(area / (squared(distance / 2) * float(M_PI))); ++i) {
+        // triangle_area / tree_area = 1
+        // => thr ~ 0.5
+        float thr = 0.5f * area / (squared(distance / 2) * float(M_PI));
+        float pp = 0.f;
+        while (true) {
+            pp += rng2_();
+            if (pp >= thr) {
+                break;
+            }
             // https://chrischoy.github.io/research/barycentric-coordinate-for-mesh-sampling/
             float r1q = std::sqrt(rng2_());
             float r2 = rng2_();
