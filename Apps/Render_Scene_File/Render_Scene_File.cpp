@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
         "    [--max_distance_small <distance>]\n"
+        "    [--max_distance_near_small <distance>]\n"
         "    [--aggregate_update_interval <interval>]\n"
         "    [--screen_width <width>]\n"
         "    [--screen_height <height>]\n"
@@ -115,6 +116,7 @@ int main(int argc, char** argv) {
          "--lightmap_nsamples_msaa",
          "--anisotropic_filtering_level",
          "--max_distance_small",
+         "--max_distance_near_small",
          "--aggregate_update_interval",
          "--screen_width",
          "--screen_height",
@@ -195,6 +197,7 @@ int main(int argc, char** argv) {
 
             SceneGraphConfig scene_graph_config{
                 .max_distance_small = safe_stof(args.named_value("--max_distance_small", "1000")),
+                .max_distance_near_small = safe_stof(args.named_value("--max_distance_near_small", "400")),
                 .aggregate_update_interval = safe_stoz(args.named_value("--aggregate_update_interval", "100"))};
 
             PhysicsEngineConfig physics_engine_config{
