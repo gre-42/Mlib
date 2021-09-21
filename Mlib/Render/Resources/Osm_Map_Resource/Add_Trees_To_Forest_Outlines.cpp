@@ -5,6 +5,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Stats/N_Random_Numbers.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 
 using namespace Mlib;
@@ -24,8 +25,8 @@ void Mlib::add_trees_to_forest_outlines(
     float tree_inwards_distance,
     float scale)
 {
+    UniformRandomNumberGenerator<float> na_rng{ 0 };
     NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
-    NormalRandomNumberGenerator<float> rng2{0, 0.f, 1.2f};
     // size_t rid = 0;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
@@ -42,14 +43,10 @@ void Mlib::add_trees_to_forest_outlines(
                 FixedArray<float, 2> p0 = nodes.at(*it).position;
                 FixedArray<float, 2> p1 = nodes.at(*s).position;
                 float len = std::sqrt(sum(squared(p0 - p1)));
-                FixedArray<float, 2> n{p0(1) - p1(1), p1(0) - p0(0)};
-                n /= len;
-                for (float a = 0.1f; a < 0.91f; a += tree_distance * scale / len) {
-                    float aa = a + rng2() * tree_distance * scale / len;
-                    if (aa < 0 || aa > 0.91f) {
-                        continue;
-                    }
-                    FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * n * sign(area);
+                FixedArray<float, 2> normal{p0(1) - p1(1), p1(0) - p0(0)};
+                normal /= len;
+                n_random_numbers(len / (tree_distance * scale), na_rng, [&](float aa){
+                    FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * normal * sign(area);
                     if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(p, min_dist_to_road * scale)) {
                         float height;
                         if (ground_bvh.height(height, p)) {
@@ -66,7 +63,7 @@ void Mlib::add_trees_to_forest_outlines(
                         //     .distance_to_road = NAN});
                         // }
                     }
-                }
+                });
             }
         }
     }
