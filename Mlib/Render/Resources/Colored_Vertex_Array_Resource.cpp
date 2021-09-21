@@ -1028,7 +1028,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
+            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), positions.data(), GL_STATIC_DRAW));
 
             CHK(glEnableVertexAttribArray(5));
             CHK(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
@@ -1043,7 +1043,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions.front(), GL_STATIC_DRAW));
+            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), positions.data(), GL_STATIC_DRAW));
 
             CHK(glEnableVertexAttribArray(5));
             CHK(glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(positions[0]), nullptr));
