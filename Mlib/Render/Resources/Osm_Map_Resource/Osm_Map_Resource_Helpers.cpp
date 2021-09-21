@@ -537,9 +537,6 @@ void Mlib::draw_wall_barriers(
     float max_width,
     const std::map<std::string, BarrierStyle>& barrier_styles)
 {
-    if (barrier_styles.empty()) {
-        throw std::runtime_error("Barrier textures empty");
-    }
     std::vector<BarrierStyle> barrier_styles_vector;
     barrier_styles_vector.reserve(barrier_styles.size());
     for (const auto& v : barrier_styles) {
@@ -552,6 +549,9 @@ void Mlib::draw_wall_barriers(
             tls.push_back(std::make_shared<TriangleList>("building_walls", material));
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
+                    if (barrier_styles.empty()) {
+                        throw std::runtime_error("Barrier textures empty");
+                    }
                     return barrier_styles_vector.at(bid % barrier_styles.size());
                 } else {
                     if (barrier_styles.find(bu.style) == barrier_styles.end()) {
