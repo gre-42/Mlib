@@ -1062,7 +1062,7 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
         }
         scene_node.add_instances_child(p.first, std::move(node));
         for (const auto& r : p.second) {
-            scene_node.add_instances_position(p.first, r.position, r.yangle);
+            scene_node.add_instances_position(p.first, r.position, r.yangle, r.billboard_id);
         }
     }
     if (near_grass_terrain_style_.is_visible() ||
@@ -1076,7 +1076,7 @@ void OsmMapResource::instantiate_renderable(const std::string& name, SceneNode& 
     // }
     // rbvh_->instantiate_renderable(name, scene_node, resource_filter);
     if (rcva_ == nullptr) {
-        rcva_ = std::make_shared<ColoredVertexArrayResource>(cvas_, nullptr);
+        rcva_ = std::make_shared<ColoredVertexArrayResource>(cvas_);
     }
     rcva_->instantiate_renderable(name, scene_node, resource_filter);
 }

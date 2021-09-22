@@ -16,7 +16,8 @@ void Mlib::add_parsed_resource_name(
     ResourceInstanceDescriptor rid{
         .position = p,
         .yangle = yangle,
-        .scale = scale};
+        .scale = scale,
+        .billboard_id = prn.billboard_id};
     if (prn.aggregate_mode & (AggregateMode::INSTANCES_ONCE | AggregateMode::INSTANCES_SORTED_CONTINUOUSLY)) {
         resource_instance_positions[prn.name].push_back(rid);
     } else {

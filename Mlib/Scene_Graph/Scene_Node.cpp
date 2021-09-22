@@ -203,13 +203,17 @@ void SceneNode::add_instances_child(
 void SceneNode::add_instances_position(
     const std::string& name,
     const FixedArray<float, 3>& position,
-    float yangle)
+    float yangle,
+    uint32_t billboard_id)
 {
     auto it = instances_children_.find(name);
     if (it == instances_children_.end()) {
         throw std::runtime_error("Could not find instance node with name " + name);
     }
-    it->second.instances.push_back(PositionAndYAngle{position, yangle});
+    it->second.instances.push_back(PositionAndYAngle{
+        .position = position,
+        .yangle = yangle,
+        .billboard_id = billboard_id});
 }
 
 bool SceneNode::has_camera() const {
@@ -410,7 +414,7 @@ void SceneNode::append_small_instances_to_queue(
     FixedArray<float, 4, 4> mvp = dot2d(vp, rel.affine());
     TransformationMatrix<float, 3> m = parent_m * rel;
     for (const auto& r : renderables_) {
-        r.second->append_sorted_instances_to_queue(mvp, m, scene_graph_config, external_render_pass, instances_queue);
+        r.second->append_sorted_instances_to_queue(mvp, m, delta_pose.billboard_id, scene_graph_config, external_render_pass, instances_queue);
     }
     for (const auto& n : children_) {
         n.second.scene_node->append_small_instances_to_queue(mvp, m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f}, instances_queue, scene_graph_config, external_render_pass);
@@ -437,7 +441,7 @@ void SceneNode::append_large_instances_to_queue(
     }
     TransformationMatrix<float, 3> m = parent_m * rel;
     for (const auto& r : renderables_) {
-        r.second->append_large_instances_to_queue(m, scene_graph_config, instances_queue);
+        r.second->append_large_instances_to_queue(m, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& n : children_) {
         n.second.scene_node->append_large_instances_to_queue(m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f}, instances_queue, scene_graph_config);

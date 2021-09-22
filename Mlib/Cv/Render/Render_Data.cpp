@@ -121,7 +121,7 @@ void Mlib::Cv::render_depth_maps(
         for (const auto& m : mesh) {
             tmesh.push_back(m->transformed(cv_to_opengl_matrix()));
         }
-        const auto r = std::make_shared<ColoredVertexArrayResource>(tmesh, nullptr);
+        const auto r = std::make_shared<ColoredVertexArrayResource>(tmesh);
         scene_node_resources.add_resource("ColoredVertexArrayResource", r);
         scene_node_resources.instantiate_renderable("ColoredVertexArrayResource", "ColoredVertexArray", *root_node, SceneNodeResourceFilter());
     }
@@ -137,7 +137,7 @@ void Mlib::Cv::render_depth_maps(
             {1.f, 1.f, 0.f},
             {1.f, -1.f, 0.f},
             {-1.f, -1.f, 0.f});
-        const auto r = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array(), nullptr);
+        const auto r = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array());
         scene_node_resources.add_resource("beacon", r);
         auto bn = std::make_unique<SceneNode>();
         scene_node_resources.instantiate_renderable("beacon", "beacon", *bn, SceneNodeResourceFilter());

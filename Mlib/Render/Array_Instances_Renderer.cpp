@@ -23,16 +23,16 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
     // }
     // std::cerr << "Update instances: " << ntris << std::endl;
 
-    std::map<std::shared_ptr<ColoredVertexArray>, std::list<TransformationMatrix<float, 3>>> cva_lists;
+    std::map<std::shared_ptr<ColoredVertexArray>, std::list<TransformationAndBillboardId>> cva_lists;
     for (const auto& a : instances_queue) {
-        cva_lists[a.cva].push_back(a.transformation_matrix);
+        cva_lists[a.cva].push_back(a.trafo);
     }
     std::list<std::shared_ptr<ColoredVertexArray>> mat_vectors;
     for (const auto& a : cva_lists) {
         mat_vectors.push_back(a.first);
     }
     sort_for_rendering(mat_vectors);
-    auto cva_instances = std::make_unique<std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>>();
+    auto cva_instances = std::make_unique<std::map<const ColoredVertexArray*, std::vector<TransformationAndBillboardId>>>();
     for (const auto& a : cva_lists) {
         cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});
     }

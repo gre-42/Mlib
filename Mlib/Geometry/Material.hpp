@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Depth_Func.hpp>
@@ -14,6 +15,7 @@
 namespace Mlib {
 
 std::strong_ordering operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b);
+std::strong_ordering operator <=> (const std::vector<BillboardAtlasInstance>& a, const std::vector<BillboardAtlasInstance>& b);
 
 struct Material {
     // First element to support sorting.
@@ -34,6 +36,7 @@ struct Material {
     bool collide = true;
     AggregateMode aggregate_mode = AggregateMode::OFF;
     TransformationMode transformation_mode = TransformationMode::ALL;
+    std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     size_t number_of_frames = 1;
     OrderableFixedArray<float, 2> distances{ default_distances_hard };
     bool is_small = false;

@@ -1,6 +1,7 @@
 #include "Colored_Vertex_Array_Resource.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Import_Bone_Weights.hpp>
+#include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Rays.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
@@ -35,6 +36,7 @@ static GenShaderText vertex_shader_text_gen{[](
     const std::vector<BlendMapTexture*>& textures,
     size_t nlights,
     size_t ntextures_color,
+    uint32_t nbillboard_ids,
     bool has_lightmap_color,
     bool has_lightmap_depth,
     bool has_normalmap,
@@ -77,9 +79,15 @@ static GenShaderText vertex_shader_text_gen{[](
     } else if (has_lookat) {
         sstr << "uniform vec3 instancePosition;" << std::endl;
     }
+    if (nbillboard_ids != 0) {
+        sstr << "layout (location=6) in uint billboard_id;" << std::endl;
+        sstr << "uniform vec2 vertex_scale[" << nbillboard_ids << "];" << std::endl;
+        sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
+        sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;
+    }
     if (nbones != 0) {
-        sstr << "layout (location=6) in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
-        sstr << "layout (location=7) in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
+        sstr << "layout (location=7) in lowp uvec" << ANIMATION_NINTERPOLATED << " bone_ids;" << std::endl;
+        sstr << "layout (location=8) in vec" << ANIMATION_NINTERPOLATED << " bone_weights;" << std::endl;
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
@@ -149,6 +157,12 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
     }
+    if (nbillboard_ids != 0) {
+        sstr << "    vPosInstance.xy = vPosInstance.xy * vertex_scale[billboard_id];" << std::endl;
+        sstr << "    tex_coord = vTexCoord * uv_scale[billboard_id] + uv_offset[billboard_id];" << std::endl;
+    } else {
+        sstr << "    tex_coord = vTexCoord;" << std::endl;
+    }
     // if (has_lookat && !has_instances) {
     //     throw std::runtime_error("has_lookat requires has_instances");
     // }
@@ -182,7 +196,6 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "    gl_Position = MVP * vec4(vPosInstance, 1.0);" << std::endl;
     sstr << "    color = vCol;" << std::endl;
-    sstr << "    tex_coord = vTexCoord;" << std::endl;
     if (has_uv_offset_u) {
         sstr << "    tex_coord.s += uv_offset_u;" << std::endl;
     }
@@ -682,6 +695,19 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 #endif
 }
 
+ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles)
+: ColoredVertexArrayResource(triangles, nullptr)
+{}
+
+ColoredVertexArrayResource::ColoredVertexArrayResource(const std::list<std::shared_ptr<ColoredVertexArray>>& triangles)
+: ColoredVertexArrayResource(triangles, nullptr)
+{}
+
+ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<ColoredVertexArray>& triangles)
+: ColoredVertexArrayResource(triangles, nullptr)
+{}
+
+
 ColoredVertexArrayResource::~ColoredVertexArrayResource()
 {}
 
@@ -807,6 +833,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         textures,
         filtered_lights.size(),
         id.ntextures_color,
+        id.nbillboard_ids,
         id.has_lightmap_color,
         id.has_lightmap_depth,
         id.ntextures_normal != 0,
@@ -878,6 +905,11 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         } else {
             // Do nothing
             // rp->mvp_light_location = 0;
+        }
+        if (id.nbillboard_ids != 0) {
+            rp->vertex_scale_location = checked_glGetUniformLocation(rp->program, "vertex_scale");
+            rp->uv_scale_location = checked_glGetUniformLocation(rp->program, "uv_scale");
+            rp->uv_offset_location = checked_glGetUniformLocation(rp->program, "uv_offset");
         }
         assert(!(id.has_lightmap_color && id.has_lightmap_depth));
         if (id.has_lightmap_color) {
@@ -1014,17 +1046,19 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex), &cv->tangent));
     }
     if (instances_ != nullptr) {
-        const std::vector<TransformationMatrix<float, 3>>& inst = instances_->at(cva.get());
+        const std::vector<TransformationAndBillboardId>& inst = instances_->at(cva.get());
         if (inst.empty()) {
             throw std::runtime_error("ColoredVertexArrayResource::get_vertex_array received empty instances \"" + cva->name + '"');
         }
         if (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE) {
-            std::vector<PositionAndYAngle> positions;
+            std::vector<FixedArray<float, 4>> positions;
             positions.reserve(inst.size());
-            for (const TransformationMatrix<float, 3>& m : inst) {
-                positions.push_back(PositionAndYAngle{
-                    .position = m.t(),
-                    .yangle = std::atan2(-m.R()(2, 0), m.R()(0, 0))});
+            for (const TransformationAndBillboardId& m : inst) {
+                positions.push_back(FixedArray<float, 4>{
+                    m.transformation_matrix.t()(0),
+                    m.transformation_matrix.t()(1),
+                    m.transformation_matrix.t()(2),
+                    std::atan2(-m.transformation_matrix.R()(2, 0), m.transformation_matrix.R()(0, 0))});
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
@@ -1038,8 +1072,8 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         {
             std::vector<FixedArray<float, 3>> positions;
             positions.reserve(inst.size());
-            for (const TransformationMatrix<float, 3>& m : inst) {
-                positions.push_back(m.t());
+            for (const TransformationAndBillboardId& m : inst) {
+                positions.push_back(m.transformation_matrix.t());
             }
             CHK(glGenBuffers(1, &va.position_buffer));
             CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
@@ -1050,6 +1084,23 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             CHK(glVertexAttribDivisor(5, 1));
         } else {
             throw std::runtime_error("Unsupported transformation mode for instances");
+        }
+        if (!cva->material.billboard_atlas_instances.empty()) {
+            std::vector<uint32_t> billboard_ids;
+            billboard_ids.reserve(inst.size());
+            for (const TransformationAndBillboardId& m : inst) {
+                if (m.billboard_id >= cva->material.billboard_atlas_instances.size()) {
+                    throw std::runtime_error("Billboard ID too large");
+                }
+                billboard_ids.push_back(m.billboard_id);
+            }
+            CHK(glGenBuffers(1, &va.position_buffer));
+            CHK(glBindBuffer(GL_ARRAY_BUFFER, va.position_buffer));
+            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(billboard_ids[0]) * billboard_ids.size(), billboard_ids.data(), GL_STATIC_DRAW));
+
+            CHK(glEnableVertexAttribArray(6));
+            CHK(glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, sizeof(billboard_ids[0]), nullptr));
+            CHK(glVertexAttribDivisor(6, 1));
         }
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
@@ -1099,10 +1150,10 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size(), &triangle_bone_weights.front(), GL_STATIC_DRAW));
 
         ShaderBoneWeight* bw = nullptr;
-        CHK(glEnableVertexAttribArray(6));
-        CHK(glVertexAttribIPointer(6, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
         CHK(glEnableVertexAttribArray(7));
-        CHK(glVertexAttribPointer(7, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
+        CHK(glVertexAttribIPointer(7, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
+        CHK(glEnableVertexAttribArray(8));
+        CHK(glVertexAttribPointer(8, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
     }
 
     CHK(glBindVertexArray(0));

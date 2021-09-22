@@ -30,6 +30,9 @@ struct ColoredRenderProgram: public RenderProgram {
     GLint texture_dirtmap_location;
     GLint texture_dirt_location;
     GLint uv_offset_u_location;
+    GLint vertex_scale_location;
+    GLint uv_scale_location;
+    GLint uv_offset_location;
 };
 
 struct RenderProgramIdentifier {
@@ -47,6 +50,7 @@ struct RenderProgramIdentifier {
     bool has_lookat;
     bool has_yangle;
     bool has_uv_offset_u;
+    uint32_t nbillboard_ids;
     bool reorient_normals;
     bool reorient_uv0;
     bool calculate_lightmap;

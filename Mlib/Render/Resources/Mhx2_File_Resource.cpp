@@ -10,7 +10,7 @@ Mhx2FileResource::Mhx2FileResource(
     const LoadMeshConfig& cfg)
 {
     acvas_ = load_mhx2(filename, cfg);
-    rva_ = std::make_shared<ColoredVertexArrayResource>(acvas_, nullptr);
+    rva_ = std::make_shared<ColoredVertexArrayResource>(acvas_);
 #ifdef DEBUG
     acvas_->check_consistency();
 #endif

@@ -771,16 +771,17 @@ ResourceNameCycle::ResourceNameCycle(
 : index_{1, 0, names.size() - 1},
   probability_{1234321}
 {
-    static const DECLARE_REGEX(re, "^(.*?)\\(p:([\\d+.e-]+)\\)(?:\\(hitbox:(\\w+)\\))?$");
+    static const DECLARE_REGEX(re, "^([^.(]*)(?:\\.(\\d+))?\\(p:([\\d+.e-]+)\\)(?:\\(hitbox:(\\w+)\\))?$");
     names_.reserve(names.size());
     for (const std::string& name : names) {
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(name, match, re)) {
             names_.push_back(ParsedResourceName{
                 .name = match[1].str(),
-                .probability = safe_stof(match[2].str()),
+                .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
+                .probability = safe_stof(match[3].str()),
                 .aggregate_mode = resources.aggregate_mode(match[1].str()),
-                .hitbox = match[3].str()});
+                .hitbox = match[4].str()});
             if (names_.back().probability < 1e-7) {
                 throw std::runtime_error("ResourceNameCycle: threshold too small");
             }
@@ -790,6 +791,7 @@ ResourceNameCycle::ResourceNameCycle(
         } else {
             names_.push_back(ParsedResourceName{
                 .name = name,
+                .billboard_id = UINT32_MAX,
                 .probability = 1,
                 .aggregate_mode = resources.aggregate_mode(name)});
         }

@@ -252,7 +252,8 @@ void RenderableColoredVertexArray::render_cva(
             .has_instances = has_instances,
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
-            .has_uv_offset_u = (cva->material.number_of_frames != 1),
+            .has_uv_offset_u = (cva->material.number_of_frames != 1),  // Texture is required in lightmap also due to alpha channel.
+            .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
             .calculate_lightmap = render_pass.external.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE,
@@ -292,6 +293,20 @@ void RenderableColoredVertexArray::render_cva(
             uv_offset_u = 0;
         }
         CHK(glUniform1f(rp.uv_offset_u_location, uv_offset_u));
+    }
+    if (!cva->material.billboard_atlas_instances.empty()) {
+        size_t n = cva->material.billboard_atlas_instances.size();
+        std::vector<FixedArray<float, 2>> vertex_scale(n);
+        std::vector<FixedArray<float, 2>> uv_scale(n);
+        std::vector<FixedArray<float, 2>> uv_offset(n);
+        for (size_t i = 0; i < n; ++i) {
+            uv_offset[i] = cva->material.billboard_atlas_instances[i].uv_offset;
+            uv_scale[i] = cva->material.billboard_atlas_instances[i].uv_scale;
+            vertex_scale[i] = cva->material.billboard_atlas_instances[i].vertex_scale;
+        }
+        CHK(glUniform2fv(rp.uv_offset_location, n, (const GLfloat*)uv_offset.data()));
+        CHK(glUniform2fv(rp.uv_scale_location, n, (const GLfloat*)uv_scale.data()));
+        CHK(glUniform2fv(rp.vertex_scale_location, n, (const GLfloat*)vertex_scale.data()));
     }
     if (!has_instances && has_lookat) {
         CHK(glUniform3fv(rp.instance_position_location, 1, (const GLfloat*) m.t().flat_begin()));
@@ -638,6 +653,7 @@ void RenderableColoredVertexArray::append_large_aggregates_to_queue(
 void RenderableColoredVertexArray::append_sorted_instances_to_queue(
     const FixedArray<float, 4, 4>& mvp,
     const TransformationMatrix<float, 3>& m,
+    uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
@@ -648,7 +664,11 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
             if (vc.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
                 float sorting_key = vc.sorting_key(cva->material, scene_graph_config);
-                instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{.cva = cva, .transformation_matrix = m} });
+                instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{
+                    .cva = cva,
+                    .trafo = TransformationAndBillboardId{
+                        .transformation_matrix = m,
+                        .billboard_id = billboard_id}} });
             }
         }
     }
@@ -656,12 +676,17 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
 
 void RenderableColoredVertexArray::append_large_instances_to_queue(
     const TransformationMatrix<float, 3>& m,
+    uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     std::list<TransformedColoredVertexArray>& aggregate_queue) const
 {
     for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_ONCE) {
-            aggregate_queue.push_back({.cva = cva, .transformation_matrix = m});
+            aggregate_queue.push_back(TransformedColoredVertexArray{
+                .cva = cva,
+                .trafo = TransformationAndBillboardId{
+                    .transformation_matrix = m,
+                    .billboard_id = billboard_id}});
         }
     }
 }

@@ -44,8 +44,7 @@ PointCloudResource::PointCloudResource(
             std::move(std::vector(tris.triangles_.begin(), tris.triangles_.end())),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
-        nullptr);
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }
 
 void PointCloudResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const

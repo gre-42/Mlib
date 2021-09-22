@@ -14,6 +14,7 @@ struct ResourceInstanceDescriptor {
     FixedArray<float, 3> position;
     float yangle = 0.f;
     float scale = 1.f;  // Currently not used
+    uint32_t billboard_id;
 };
 
 }

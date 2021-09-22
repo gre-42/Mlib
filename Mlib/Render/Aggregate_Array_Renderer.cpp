@@ -50,7 +50,7 @@ void AggregateArrayRenderer::update_aggregates(const std::list<std::shared_ptr<C
             std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
     }
     sort_for_rendering(mat_vectors);
-    auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors, nullptr);
+    auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors);
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, SceneNodeResourceFilter());
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};

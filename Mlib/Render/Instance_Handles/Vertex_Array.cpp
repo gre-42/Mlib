@@ -25,6 +25,9 @@ void VertexArray::deallocate() {
     if (bone_weight_buffer != (GLuint)-1) {
         WARN(glDeleteBuffers(1, &bone_weight_buffer));
     }
+    if (billboard_id_buffer != (GLuint)-1) {
+        WARN(glDeleteBuffers(1, &billboard_id_buffer));
+    }
 }
 
 void VertexArray::gc_deallocate() {
@@ -39,5 +42,8 @@ void VertexArray::gc_deallocate() {
     }
     if (bone_weight_buffer != (GLuint)-1) {
         gc_buffers.push_back(bone_weight_buffer);
+    }
+    if (billboard_id_buffer != (GLuint)-1) {
+        gc_buffers.push_back(billboard_id_buffer);
     }
 }

@@ -44,11 +44,13 @@ public:
     virtual void append_sorted_instances_to_queue(
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float, 3>& m,
+        uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
         std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const override;
     virtual void append_large_instances_to_queue(
         const TransformationMatrix<float, 3>& m,
+        uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         std::list<TransformedColoredVertexArray>& instances_queue) const override;
     void print_stats(std::ostream& ostr) const;

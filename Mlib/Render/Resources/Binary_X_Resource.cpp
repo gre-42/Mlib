@@ -50,8 +50,7 @@ BinaryXResource::BinaryXResource(
             std::move(triangles_0),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
-        nullptr);  // instances
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 
     rva_90_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray>(
@@ -60,8 +59,7 @@ BinaryXResource::BinaryXResource(
             std::move(triangles_90),
             std::move(std::vector<FixedArray<ColoredVertex, 2>>()),
             std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())),
-        nullptr);  // instances
+            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
 }
 
 void BinaryXResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const

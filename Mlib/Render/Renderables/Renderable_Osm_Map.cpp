@@ -67,6 +67,7 @@ void RenderableOsmMap::append_large_aggregates_to_queue(
 void RenderableOsmMap::append_sorted_instances_to_queue(
     const FixedArray<float, 4, 4>& mvp,
     const TransformationMatrix<float, 3>& m,
+    uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const
@@ -113,7 +114,8 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                         auto mvp_instance = dot2d(mvp, mi_rel.affine());
                         auto m_instance = m * mi_rel;
                         VisibilityCheck vc_instance{ mvp_instance };
-                        for (const auto& cva : scene_node_resources.get_animated_arrays(rnc().name)->cvas) {
+                        const ParsedResourceName& prn = rnc();
+                        for (const auto& cva : scene_node_resources.get_animated_arrays(prn.name)->cvas) {
                             if (vc_instance.is_visible(cva->material, scene_graph_config, external_render_pass, max_distance_near))
                             {
                                 if (boundary_bvh != nullptr) {
@@ -134,7 +136,11 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                                 }
                                 instances_queue.push_back({
                                     vc_instance.sorting_key(cva->material, scene_graph_config),
-                                    TransformedColoredVertexArray{ cva, m_instance } });
+                                    TransformedColoredVertexArray{
+                                        .cva = cva,
+                                        .trafo = TransformationAndBillboardId{
+                                            .transformation_matrix = m_instance,
+                                            .billboard_id = prn.billboard_id}}});
                             }
                         }
                     });
@@ -193,6 +199,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
 
 void RenderableOsmMap::append_large_instances_to_queue(
     const TransformationMatrix<float, 3>& m,
+    uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     std::list<TransformedColoredVertexArray>& instances_queue) const
 {}

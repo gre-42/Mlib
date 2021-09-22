@@ -32,6 +32,7 @@ struct Blended {
 struct PositionAndYAngle {
     FixedArray<float, 3> position;
     float yangle;
+    uint32_t billboard_id;
 };
 
 struct SceneNodeInstances {
@@ -78,7 +79,8 @@ public:
     void add_instances_position(
         const std::string& name,
         const FixedArray<float, 3>& position,
-        float yangle);
+        float yangle,
+        uint32_t billboard_id);
     bool has_camera() const;
     void set_camera(std::unique_ptr<Camera>&& camera);
     Camera* get_camera() const;

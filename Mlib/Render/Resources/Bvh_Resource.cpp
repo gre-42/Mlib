@@ -61,7 +61,7 @@ static void instantiate_bvh(
             lcvas.back()->material.is_small = true;
             lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }
-        std::make_shared<ColoredVertexArrayResource>(lcvas, nullptr)->
+        std::make_shared<ColoredVertexArrayResource>(lcvas)->
             instantiate_renderable("renderable_bvh", *node, resource_filter);
         scene_node.add_child(name + "_data", std::move(node));
     }

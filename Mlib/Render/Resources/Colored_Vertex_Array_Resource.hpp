@@ -14,6 +14,7 @@ struct ColoredRenderProgram;
 struct Light;
 class SubstitutionInfo;
 class RenderingResources;
+struct TransformationAndBillboardId;
 
 class ColoredVertexArrayResource:
     public SceneNodeResource,
@@ -21,18 +22,23 @@ class ColoredVertexArrayResource:
 {
     friend class RenderableColoredVertexArray;
 public:
-    typedef std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>> Instances;
+    typedef std::map<const ColoredVertexArray*, std::vector<TransformationAndBillboardId>> Instances;
     ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
-    explicit ColoredVertexArrayResource(
+    ColoredVertexArrayResource(
         const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
         std::unique_ptr<Instances>&& instances);
-    explicit ColoredVertexArrayResource(
+    ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
         std::unique_ptr<Instances>&& instances);
-    explicit ColoredVertexArrayResource(
+    ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray>& triangles,
         std::unique_ptr<Instances>&& instances);
+    
+    explicit ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles);
+    explicit ColoredVertexArrayResource(const std::list<std::shared_ptr<ColoredVertexArray>>& triangles);
+    explicit ColoredVertexArrayResource(const std::shared_ptr<ColoredVertexArray>& triangles);
+
     ~ColoredVertexArrayResource();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;

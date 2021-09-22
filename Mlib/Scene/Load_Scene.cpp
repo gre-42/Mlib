@@ -187,7 +187,8 @@ void LoadScene::operator()(
         "(?:\\s+translation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
-        "(?:\\s+number_of_frames=(\\d+))?$");
+        "(?:\\s+number_of_frames=(\\d+))?"
+        "(?:\\s+billboards=([\\s\\S]*))?$");
     static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w+-. \\(\\)/\\\\:]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(binary_x_resource_reg,
         "^\\s*binary_x_resource"
@@ -532,6 +533,11 @@ void LoadScene::operator()(
         "\\s+cosine=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+scale=([\\w+-.]+)"
         "\\s+weight=([\\w+-.]+)$");
+    static const DECLARE_REGEX(add_texture_atlas_reg,
+        "^\\s*add_texture_atlas"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+size=(\\d+) (\\d+)"
+        "\\s+images=([\\s\\S]*)$");
     static const DECLARE_REGEX(record_track_reg,
         "^\\s*record_track"
         "\\s+node=([\\w+-.]+)"
@@ -1204,6 +1210,24 @@ void LoadScene::operator()(
             // 29: aggregate_mode
             // 30: transformation_mode
             // 31: number_of_frames
+            // 32: billboards
+            std::vector<BillboardAtlasInstance> billboard_atlas_instances;
+            static const DECLARE_REGEX(
+                street_texture_reg,
+                "(?:\\s*uv_scale:([\\w+-.]+) ([\\w+-.]+)"
+                "\\s+uv_offset:([\\w+-.]+) ([\\w+-.]+)"
+                "\\s+vertex_scale:([\\w+-.]+) ([\\w+-.]+)"
+                "|([\\s\\S]+))");
+            find_all(match[32].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
+                if (match3[7].matched) {
+                    throw std::runtime_error("Unknown element: \"" + match3[7].str() + '"');
+                }
+                billboard_atlas_instances.push_back(BillboardAtlasInstance{
+                    .uv_scale = OrderableFixedArray<float, 2>{safe_stof(match3[1].str()), safe_stof(match3[2].str())},
+                    .uv_offset = OrderableFixedArray<float, 2>{safe_stof(match3[3].str()), safe_stof(match3[4].str())},
+                    .vertex_scale = OrderableFixedArray<float, 2>{safe_stof(match3[5].str()), safe_stof(match3[6].str())}
+                });
+            });
             scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
@@ -1235,6 +1259,7 @@ void LoadScene::operator()(
                     .collide = false,
                     .aggregate_mode = aggregate_mode_from_string(match[29].str()),
                     .transformation_mode = transformation_mode_from_string(match[30].str()),
+                    .billboard_atlas_instances = billboard_atlas_instances,
                     .number_of_frames = match[31].matched ? safe_stou(match[31].str()) : 1,
                     .distances = OrderableFixedArray<float, 2>{
                         match[7].matched ? safe_stof(match[7].str()) : 0.f,
@@ -1380,6 +1405,26 @@ void LoadScene::operator()(
                     .scale = safe_stof(match[16].str()),
                     .weight = safe_stof(match[17].str()) });
             return true;
+        }
+        if (Mlib::re::regex_match(line, match, add_texture_atlas_reg)) {
+            // RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
+            //     match[1].str(),
+            //     TextureDescriptor{
+            //         .color = fpath(match[2].str()),
+            //         .normal = fpath(match[3].str()),
+            //         .color_mode = color_mode_from_string(match[4].str()),
+            //         .desaturate = match[5].matched ? safe_stob(match[5].str()) : false,
+            //         .histogram = fpath(match[6].str()),
+            //         .mixed = match[7].str(),
+            //         .overlap_npixels = match[8].matched ? safe_stoz(match[8].str()) : 0,
+            //         .mean_color =
+            //             OrderableFixedArray<float, 3>{
+            //                 match[9].matched ? safe_stof(match[9].str()) : -1.f,
+            //                 match[10].matched ? safe_stof(match[10].str()) : -1.f,
+            //                 match[11].matched ? safe_stof(match[11].str()) : -1.f},
+            //         .anisotropic_filtering_level = safe_stou(match[12].str())});
+            // return true;
+            throw std::runtime_error("add_texture_atlas_reg not yet implemented");
         }
         if (Mlib::re::regex_match(line, match, add_companion_renderable_reg)) {
             scene_node_resources.add_companion(

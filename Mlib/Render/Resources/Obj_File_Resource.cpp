@@ -11,7 +11,7 @@ ObjFileResource::ObjFileResource(
 {
     acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
     acvas_->cvas = load_obj(filename, cfg);
-    rva_ = std::make_shared<ColoredVertexArrayResource>(acvas_, nullptr);
+    rva_ = std::make_shared<ColoredVertexArrayResource>(acvas_);
 }
 
 ObjFileResource::~ObjFileResource()

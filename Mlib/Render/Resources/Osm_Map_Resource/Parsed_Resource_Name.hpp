@@ -13,6 +13,7 @@ struct ObjectResourceDescriptor;
 
 struct ParsedResourceName {
     std::string name;
+    uint32_t billboard_id;
     float probability;
     AggregateMode aggregate_mode;
     std::string hitbox;

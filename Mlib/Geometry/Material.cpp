@@ -2,7 +2,8 @@
 
 using namespace Mlib;
 
-std::strong_ordering Mlib::operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b) {
+template <class TData>
+static std::strong_ordering compare_vectors(const std::vector<TData>& a, const std::vector<TData>& b) {
     if (a.size() < b.size()) {
         return std::strong_ordering::less;
     }
@@ -18,6 +19,14 @@ std::strong_ordering Mlib::operator <=> (const std::vector<BlendMapTexture>& a, 
         }
     }
     return std::strong_ordering::equal;
+}
+
+std::strong_ordering Mlib::operator <=> (const std::vector<BlendMapTexture>& a, const std::vector<BlendMapTexture>& b) {
+    return compare_vectors(a, b);
+}
+
+std::strong_ordering Mlib::operator <=> (const std::vector<BillboardAtlasInstance>& a, const std::vector<BillboardAtlasInstance>& b) {
+    return compare_vectors(a, b);
 }
 
 Material& Material::compute_color_mode() {
