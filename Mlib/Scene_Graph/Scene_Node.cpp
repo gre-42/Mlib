@@ -417,7 +417,7 @@ void SceneNode::append_small_instances_to_queue(
         r.second->append_sorted_instances_to_queue(mvp, m, delta_pose.billboard_id, scene_graph_config, external_render_pass, instances_queue);
     }
     for (const auto& n : children_) {
-        n.second.scene_node->append_small_instances_to_queue(mvp, m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f}, instances_queue, scene_graph_config, external_render_pass);
+        n.second.scene_node->append_small_instances_to_queue(mvp, m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config, external_render_pass);
     }
     for (const auto& i : instances_children_) {
         // The transformation is swapped, meaning
@@ -444,7 +444,7 @@ void SceneNode::append_large_instances_to_queue(
         r.second->append_large_instances_to_queue(m, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& n : children_) {
-        n.second.scene_node->append_large_instances_to_queue(m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f}, instances_queue, scene_graph_config);
+        n.second.scene_node->append_large_instances_to_queue(m, PositionAndYAngle{fixed_zeros<float, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
     }
     for (const auto& i : instances_children_) {
         for (const auto& j : i.second.instances) {
