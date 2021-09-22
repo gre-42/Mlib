@@ -21,17 +21,18 @@ class ColoredVertexArrayResource:
 {
     friend class RenderableColoredVertexArray;
 public:
+    typedef std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>> Instances;
     ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
     explicit ColoredVertexArrayResource(
         const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
+        std::unique_ptr<Instances>&& instances);
     explicit ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
+        std::unique_ptr<Instances>&& instances);
     explicit ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray>& triangles,
-        std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances);
+        std::unique_ptr<Instances>&& instances);
     ~ColoredVertexArrayResource();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
@@ -56,7 +57,7 @@ private:
     mutable std::map<const ColoredVertexArray*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
     std::shared_ptr<RenderingResources> rendering_resources_;
     mutable std::mutex mutex_;
-    std::unique_ptr<std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>> instances_;
+    std::unique_ptr<Instances> instances_;
     mutable bool textures_preloaded_;
 };
 

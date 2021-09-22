@@ -32,11 +32,11 @@ void ArrayInstancesRenderer::update_instances(const std::list<TransformedColored
         mat_vectors.push_back(a.first);
     }
     sort_for_rendering(mat_vectors);
-    auto cva_instances = new std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>;
+    auto cva_instances = std::make_unique<std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>>();
     for (const auto& a : cva_lists) {
         cva_instances->insert({a.first.get(), std::vector(a.second.begin(), a.second.end())});
     }
-    auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors, cva_instances);
+    auto rcva = std::make_shared<ColoredVertexArrayResource>(mat_vectors, std::move(cva_instances));
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, SceneNodeResourceFilter());
     {
         std::lock_guard<std::mutex> lock_guard{mutex_};

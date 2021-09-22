@@ -645,10 +645,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<AnimatedColoredVertexArrays>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances)
+    std::unique_ptr<Instances>&& instances)
 : triangles_res_{triangles},
   rendering_resources_{RenderingContextStack::primary_rendering_resources()},
-  instances_{instances},
+  instances_{std::move(instances)},
   textures_preloaded_{false}
 {
 #ifdef DEBUG
@@ -658,10 +658,10 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray>>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances)
+    std::unique_ptr<Instances>&& instances)
 : ColoredVertexArrayResource{
     std::make_shared<AnimatedColoredVertexArrays>(),
-    instances}
+    std::move(instances)}
 {
     triangles_res_->cvas = triangles;
 #ifdef DEBUG
@@ -671,10 +671,10 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray>& triangles,
-    std::map<const ColoredVertexArray*, std::vector<TransformationMatrix<float, 3>>>* instances)
+    std::unique_ptr<Instances>&& instances)
 : ColoredVertexArrayResource(
     std::list<std::shared_ptr<ColoredVertexArray>>{triangles},
-    instances)
+    std::move(instances))
 {
     triangles_res_->cvas.push_back(triangles);
 #ifdef DEBUG
