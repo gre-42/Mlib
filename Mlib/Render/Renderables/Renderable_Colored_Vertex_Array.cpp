@@ -627,12 +627,10 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
-            if (VisibilityCheck{mvp}.is_visible(cva->material, scene_graph_config, external_render_pass))
+            VisibilityCheck vc{mvp};
+            if (vc.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
-                float sorting_key = (cva->material.blend_mode == BlendMode::CONTINUOUS)
-                    ? -mvp(2, 3)
-                    : -INFINITY;
-                aggregate_queue.push_back({ sorting_key, std::move(cva->transformed(m)) });
+                aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed(m)) });
             }
         }
     }
@@ -663,7 +661,7 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
             VisibilityCheck vc{ mvp };
             if (vc.is_visible(cva->material, scene_graph_config, external_render_pass))
             {
-                float sorting_key = vc.sorting_key(cva->material, scene_graph_config);
+                float sorting_key = vc.sorting_key(cva->material);
                 instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{
                     .cva = cva,
                     .trafo = TransformationAndBillboardId{

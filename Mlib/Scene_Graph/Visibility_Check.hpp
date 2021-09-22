@@ -17,7 +17,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
         float max_distance = NAN) const;
-    float sorting_key(const Material& m, const SceneGraphConfig& scene_graph_config) const;
+    float sorting_key(const Material& m) const;
     bool orthographic() const;
 private:
     const FixedArray<float, 4, 4>& mvp_;

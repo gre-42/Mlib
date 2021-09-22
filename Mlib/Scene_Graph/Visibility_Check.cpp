@@ -40,8 +40,8 @@ bool VisibilityCheck::is_visible(
     return (dist2 >= squared(m.distances(0))) && (dist2 <= squared(max_dist));
 }
 
-float VisibilityCheck::sorting_key(const Material& m, const SceneGraphConfig& scene_graph_config) const {
-    return ((m.blend_mode == BlendMode::CONTINUOUS) && !orthographic_)
+float VisibilityCheck::sorting_key(const Material& m) const {
+    return (!orthographic_ && ((m.blend_mode & BlendMode::ANY_CONTINUOUS) != 0))
         ? -mvp_(2, 3)
         : -INFINITY;
 }

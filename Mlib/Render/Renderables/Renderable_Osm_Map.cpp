@@ -135,7 +135,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                                     }
                                 }
                                 instances_queue.push_back({
-                                    vc_instance.sorting_key(cva->material, scene_graph_config),
+                                    vc_instance.sorting_key(cva->material),
                                     TransformedColoredVertexArray{
                                         .cva = cva,
                                         .trafo = TransformationAndBillboardId{
