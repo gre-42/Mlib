@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <stb_image/stb_array.h>
-#include <stb_image/stb_image_load.h>
+#include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_write.h>
 
 using namespace Mlib;

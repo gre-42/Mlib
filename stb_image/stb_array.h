@@ -1,5 +1,5 @@
 #pragma once
-#include "stb_image_load.h"
+#include "stb_image_load.hpp"
 #include <Mlib/Array/Array.hpp>
 
 namespace Mlib {

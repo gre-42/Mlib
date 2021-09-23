@@ -6,7 +6,7 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <cpp-httplib/httplib.h>
-#include <stb_image/stb_image_load.h>
+#include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_write.h>
 
 using namespace Mlib;

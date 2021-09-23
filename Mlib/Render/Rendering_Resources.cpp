@@ -14,7 +14,7 @@
 #include <stb_image/stb_array.h>
 #include <stb_image/stb_colorize.hpp>
 #include <stb_image/stb_desaturate.hpp>
-#include <stb_image/stb_image_load.h>
+#include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_resize.h>
 #include <stb_image/stb_mipmaps.h>
 #include <string>

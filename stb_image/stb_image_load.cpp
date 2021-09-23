@@ -1,4 +1,5 @@
-#include "stb_image_load.h"
+#include "stb_image_load.hpp"
+#include <cstdlib>
 #include <stdexcept>
 
 void stb_image_flip_horizontally(const StbInfo& image) {
@@ -29,5 +30,15 @@ StbInfo stb_load(const std::string& filename, bool flip_vertically, bool flip_ho
     if (flip_horizontally) {
         stb_image_flip_horizontally(result);
     }
+    return result;
+}
+
+StbInfo stb_create(int width, int height, int nrChannels) {
+    StbInfo result{
+        .width = width,
+        .height = height,
+        .nrChannels = nrChannels
+    };
+    result.data.reset((unsigned char*)malloc(width * height * nrChannels));
     return result;
 }

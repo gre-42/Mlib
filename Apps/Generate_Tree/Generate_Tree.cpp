@@ -4,7 +4,7 @@
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <stb_image/stb_array.h>
-#include <stb_image/stb_image_load.h>
+#include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_resize.h>
 #include <vector>
 

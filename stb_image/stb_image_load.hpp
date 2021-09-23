@@ -3,6 +3,10 @@
 #include <memory>
 #include <string>
 
+#if defined(STBI_MALLOC) || defined(STBI_FREE) || defined(STBI_REALLOC) || defined(STBI_REALLOC_SIZED)
+#error Do not define STBI_MALLOC etc.
+#endif
+
 struct StbInfo {
     int width;
     int height;
@@ -13,3 +17,4 @@ struct StbInfo {
 void stb_image_flip_horizontally(const StbInfo& image);
 
 StbInfo stb_load(const std::string& filename, bool flip_vertically, bool flip_horizontally);
+StbInfo stb_create(int width, int height, int nrChannels);

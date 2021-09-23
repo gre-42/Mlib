@@ -3,7 +3,7 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <fstream>
 #include <regex>
-#include <stb_image/stb_image_load.h>
+#include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_write.h>
 
 using namespace Mlib;
