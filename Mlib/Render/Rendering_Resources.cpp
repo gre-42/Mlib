@@ -80,6 +80,7 @@ static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
         //     VectorialPixels<float, 4> vpf{vpa};
         //     std::transform(vpf.flat_iterable().begin()->flat_begin(), vpf.flat_iterable().end()->flat_begin(), im.data, [](float f){return std::clamp(f * 255.f, 0.f, 255.f);});
         // }
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
         CHK(glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, im.data));
         // if ((w > 1) && (h > 1)) {
         //     if (level > 2) {
@@ -298,6 +299,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
         assert_true(m.shape(2) == (size_t)si0.width);
         array_2_stb_image(m, si0.data.get());
     }
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
                      nchannels2format(size_t(desc.color_mode)),
@@ -339,6 +341,7 @@ GLuint RenderingResources::get_cubemap(const std::string& name,
                              false,  // false=rgba
                              false,  // false=flip_vertically
                              true);  // true=flip_horizontally
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
         CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                             0,
                             GL_RGB,
