@@ -513,7 +513,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(add_texture_descriptor_reg,
         "^\\s*add_texture_descriptor"
         "\\s+name=([\\w+-.]+)"
-        "\\s+color=([\\w-. \\(\\)/+-]+)"
+        "\\s+color=(#?[\\w-. \\(\\)/+-]+)"
         "(?:\\s+normal=([#\\w-. \\(\\)/+-]+))?"
         "\\s+color_mode=(grayscale|rgb|rgba)"
         "(?:\\s+desaturate=(0|1))?"
@@ -536,7 +536,9 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(add_texture_atlas_reg,
         "^\\s*add_texture_atlas"
         "\\s+name=([\\w+-.]+)"
-        "\\s+size=(\\d+) (\\d+)"
+        "\\s+width=(\\d+)"
+        "\\s+height=(\\d+)"
+        "\\s+color_mode=(grayscale|rgb|rgba)"
         "\\s+images=([\\s\\S]*)$");
     static const DECLARE_REGEX(record_track_reg,
         "^\\s*record_track"
@@ -1407,24 +1409,29 @@ void LoadScene::operator()(
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_texture_atlas_reg)) {
-            // RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
-            //     match[1].str(),
-            //     TextureDescriptor{
-            //         .color = fpath(match[2].str()),
-            //         .normal = fpath(match[3].str()),
-            //         .color_mode = color_mode_from_string(match[4].str()),
-            //         .desaturate = match[5].matched ? safe_stob(match[5].str()) : false,
-            //         .histogram = fpath(match[6].str()),
-            //         .mixed = match[7].str(),
-            //         .overlap_npixels = match[8].matched ? safe_stoz(match[8].str()) : 0,
-            //         .mean_color =
-            //             OrderableFixedArray<float, 3>{
-            //                 match[9].matched ? safe_stof(match[9].str()) : -1.f,
-            //                 match[10].matched ? safe_stof(match[10].str()) : -1.f,
-            //                 match[11].matched ? safe_stof(match[11].str()) : -1.f},
-            //         .anisotropic_filtering_level = safe_stou(match[12].str())});
-            // return true;
-            throw std::runtime_error("add_texture_atlas_reg not yet implemented");
+            std::vector<AtlasTileDescriptor> tiles;
+            static const DECLARE_REGEX(
+                atlas_tile_reg,
+                "(?:\\s*texture_pos:(\\d+) (\\d+) "
+                "texture:(#?[\\w-.\\(\\)/+-]+)|"
+                "([\\s\\S]+))");
+            find_all(match[5].str(), atlas_tile_reg, [&](const Mlib::re::smatch& match2) {
+                if (match2[4].matched) {
+                    throw std::runtime_error("Unknown element: \"" + match2[4].str() + '"');
+                }
+                tiles.push_back(AtlasTileDescriptor{
+                    .left = safe_stoi(match2[1].str()),
+                    .bottom = safe_stoi(match2[2].str()),
+                    .filename = fpath(match2[3].str())});
+            });
+            RenderingContextStack::primary_rendering_resources()->add_texture_atlas(
+                match[1].str(),
+                TextureAtlasDescriptor{
+                    .width = safe_stoi(match[2].str()),
+                    .height = safe_stoi(match[3].str()),
+                    .color_mode = color_mode_from_string(match[4].str()),
+                    .tiles = tiles});
+            return true;
         }
         if (Mlib::re::regex_match(line, match, add_companion_renderable_reg)) {
             scene_node_resources.add_companion(

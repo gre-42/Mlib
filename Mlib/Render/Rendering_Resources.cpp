@@ -14,6 +14,7 @@
 #include <stb_image/stb_array.h>
 #include <stb_image/stb_colorize.hpp>
 #include <stb_image/stb_desaturate.hpp>
+#include <stb_image/stb_image_atlas.hpp>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_resize.h>
 #include <stb_image/stb_mipmaps.h>
@@ -43,6 +44,73 @@ static StbInfo stb_load_texture(const std::string& filename,
         std::cerr << filename << " size: " << result.width << 'x' << result.height << std::endl;
     }
     return result;
+}
+
+static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
+    StbInfo si0 = stb_load_texture(
+        desc.color, (size_t)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
+    if (!desc.mixed.empty()) {
+        auto si1_raw = stb_load_texture(
+            desc.mixed, (size_t)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
+        std::unique_ptr<unsigned char[]> si1_resized{
+            new unsigned char[(size_t)(si0.width * si0.height * si1_raw.nrChannels)]};
+        stbir_resize_uint8(si1_raw.data.get(),
+                            si1_raw.width,
+                            si1_raw.height,
+                            0,
+                            si1_resized.get(),
+                            si0.width,
+                            si0.height,
+                            0,
+                            si1_raw.nrChannels);
+        //int max_dist = si0.width * overlap_npixels;
+        int max_dist = 5;
+        for (int r = 0; r < si0.height; ++r) {
+            for (int c = 0; c < si0.width; ++c) {
+                int dist = std::min(c, si0.width - c - 1);
+                float fac;
+                if (dist < max_dist) {
+                    fac = float(dist) / max_dist;
+                } else {
+                    fac = 1;
+                }
+                for (int d = 0; d < si0.nrChannels; ++d) {
+                    int i0 = (r * si0.width + c) * si0.nrChannels + d;
+                    int i1 = (r * si0.width + c) * si1_raw.nrChannels + d;
+                    si0.data.get()[i0] =
+                        (unsigned char)(fac * si0.data.get()[i0] + (1 - fac) * si1_resized.get()[i1]);
+                }
+            }
+        }
+    }
+    if (desc.desaturate) {
+        stb_desaturate(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels);
+    }
+    if (!desc.mean_color.all_equal(-1.f)) {
+        if (!stb_colorize(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (desc.mean_color * 255.f).casted<unsigned char>().flat_begin()))
+        {
+            std::cerr << "alpha = 0: " << desc.color << std::endl;
+        }
+    }
+    if (!desc.histogram.empty()) {
+        Array<unsigned char> image = stb_image_2_array(si0);
+        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.histogram, false, false, false));
+        Array<unsigned char> m = match_rgba_histograms(image, ref);
+        assert_true(m.shape(0) == (size_t)si0.nrChannels);
+        assert_true(m.shape(1) == (size_t)si0.height);
+        assert_true(m.shape(2) == (size_t)si0.width);
+        array_2_stb_image(m, si0.data.get());
+    }
+    return si0;
 }
 
 static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
@@ -236,81 +304,19 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
             CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
         }
     }
-    StbInfo si0 = stb_load_texture(
-        desc.color, (size_t)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
-    if (!desc.mixed.empty()) {
-        auto si1_raw = stb_load_texture(
-            desc.mixed, (size_t)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
-        std::unique_ptr<unsigned char[]> si1_resized{
-            new unsigned char[(size_t)(si0.width * si0.height * si1_raw.nrChannels)]};
-        stbir_resize_uint8(si1_raw.data.get(),
-                            si1_raw.width,
-                            si1_raw.height,
-                            0,
-                            si1_resized.get(),
-                            si0.width,
-                            si0.height,
-                            0,
-                            si1_raw.nrChannels);
-        //int max_dist = si0.width * overlap_npixels;
-        int max_dist = 5;
-        for (int r = 0; r < si0.height; ++r) {
-            for (int c = 0; c < si0.width; ++c) {
-                int dist = std::min(c, si0.width - c - 1);
-                float fac;
-                if (dist < max_dist) {
-                    fac = float(dist) / max_dist;
-                } else {
-                    fac = 1;
-                }
-                for (int d = 0; d < si0.nrChannels; ++d) {
-                    int i0 = (r * si0.width + c) * si0.nrChannels + d;
-                    int i1 = (r * si0.width + c) * si1_raw.nrChannels + d;
-                    si0.data.get()[i0] =
-                        (unsigned char)(fac * si0.data.get()[i0] + (1 - fac) * si1_resized.get()[i1]);
-                }
-            }
-        }
-    }
-    if (desc.desaturate) {
-        stb_desaturate(
-            si0.data.get(),
-            si0.width,
-            si0.height,
-            si0.nrChannels);
-    }
-    if (!desc.mean_color.all_equal(-1.f)) {
-        if (!stb_colorize(
-            si0.data.get(),
-            si0.width,
-            si0.height,
-            si0.nrChannels,
-            (desc.mean_color * 255.f).casted<unsigned char>().flat_begin()))
-        {
-            std::cerr << "alpha = 0: " << desc.color << std::endl;
-        }
-    }
-    if (!desc.histogram.empty()) {
-        Array<unsigned char> image = stb_image_2_array(si0);
-        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.histogram, false, false, false));
-        Array<unsigned char> m = match_rgba_histograms(image, ref);
-        assert_true(m.shape(0) == (size_t)si0.nrChannels);
-        assert_true(m.shape(1) == (size_t)si0.height);
-        assert_true(m.shape(2) == (size_t)si0.width);
-        array_2_stb_image(m, si0.data.get());
-    }
+    StbInfo si = get_texture_data(desc);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
                      nchannels2format(size_t(desc.color_mode)),
-                     si0.width,
-                     si0.height,
+                     si.width,
+                     si.height,
                      0,
-                     nchannels2format(si0.nrChannels),
+                     nchannels2format(si.nrChannels),
                      GL_UNSIGNED_BYTE,
-                     si0.data.get()));
-    if (si0.nrChannels == 4) {
-        generate_rgba_mipmaps_inplace(si0);
+                     si.data.get()));
+    if (si.nrChannels == 4) {
+        generate_rgba_mipmaps_inplace(si);
     } else {
         CHK(glGenerateMipmap(GL_TEXTURE_2D));
     }
@@ -387,6 +393,38 @@ TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std:
         throw std::runtime_error("Could not find texture descriptor: " + name);
     }
     return it->second;
+}
+
+void RenderingResources::add_texture_atlas(
+    const std::string& name,
+    const TextureAtlasDescriptor& texture_atlas_descriptor)
+{
+    if (auto it = atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
+        throw std::runtime_error("Atlas descriptor with name " + name + " already exists");
+    } 
+}
+
+StbInfo RenderingResources::get_texture_data(const TextureDescriptor& descriptor) const {
+    if (auto it = atlas_tile_descriptors_.find(descriptor.color); it != atlas_tile_descriptors_.end()) {
+        StbInfo si = stb_create(it->second.width, it->second.height, (int)it->second.color_mode);
+        std::vector<AtlasTile> atlas_tiles;
+        atlas_tiles.reserve(it->second.tiles.size());
+        for (const auto& atd : it->second.tiles) {
+            auto dit = texture_descriptors_.find(atd.filename);
+            TextureDescriptor desc = dit != texture_descriptors_.end()
+                ? dit->second
+                : TextureDescriptor{
+                    .color = atd.filename,
+                    .color_mode = descriptor.color_mode};
+            atlas_tiles.push_back(AtlasTile{
+                .left = atd.left,
+                .bottom = atd.bottom,
+                .image = get_texture_data(desc)});
+        }
+        build_image_atlas(si, atlas_tiles);
+        return si;
+    }
+    return stb_load_and_transform_texture(descriptor);
 }
 
 BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {

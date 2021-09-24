@@ -13,18 +13,35 @@
 #include <vector>
 #include <list>
 
+struct StbInfo;
+
 namespace Mlib {
 
-struct TextureHandleAndNeedsGc {
-    GLuint handle;
-    bool needs_gc;
-};
 struct TextureDescriptor;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 class SceneNodeResources;
 class RenderingResources;
 struct BlendMapTexture;
+enum class ColorMode;
+
+struct TextureHandleAndNeedsGc {
+    GLuint handle;
+    bool needs_gc;
+};
+
+struct AtlasTileDescriptor {
+    int left;
+    int bottom;
+    std::string filename;
+};
+
+struct TextureAtlasDescriptor {
+    int width;
+    int height;
+    ColorMode color_mode;
+    std::vector<AtlasTileDescriptor> tiles;
+};
 
 enum class DeletionFailureMode {
     WARN,
@@ -46,6 +63,7 @@ public:
     void set_texture(const std::string& name, GLuint id);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
+    void add_texture_atlas(const std::string& name, const TextureAtlasDescriptor& texture_atlas_descriptor);
 
     BlendMapTexture get_blend_map_texture(const std::string& name) const;
     void set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt);
@@ -71,8 +89,11 @@ public:
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
 private:
+    StbInfo get_texture_data(const TextureDescriptor& descriptor) const;
+
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
+    mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;
     mutable std::recursive_mutex mutex_;
     std::map<std::string, FixedArray<float, 4, 4>> vps_;
     std::map<std::string, float> offsets_;
