@@ -42,7 +42,7 @@ bool VisibilityCheck::is_visible(
 
 float VisibilityCheck::sorting_key(const Material& m) const {
     return (!orthographic_ && ((m.blend_mode & BlendMode::ANY_CONTINUOUS) != 0))
-        ? -mvp_(2, 3)
+        ? -std::abs(mvp_(2, 3))
         : -INFINITY;
 }
 
