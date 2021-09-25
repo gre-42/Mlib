@@ -874,6 +874,9 @@ void LoadScene::operator()(
                     RoadStyle rs{.textures = { fpath(value) }, .uvx = 1.f};
                     config.street_texture[rp] = rs;
                 }
+                else if (key == "path_textures") {
+                    add_street_textures(RoadType::PATH);
+                }
                 else if (key == "wall_textures") {
                     add_street_textures(RoadType::WALL);
                 }
