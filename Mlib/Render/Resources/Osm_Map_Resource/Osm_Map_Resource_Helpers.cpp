@@ -771,7 +771,7 @@ ResourceNameCycle::ResourceNameCycle(
 : index_{1, 0, names.size() - 1},
   probability_{1234321}
 {
-    static const DECLARE_REGEX(re, "^([^.(]*)(?:\\.(\\d+))?\\(p:([\\d+.e-]+)\\)(?:\\(hitbox:(\\w+)\\))?$");
+    static const DECLARE_REGEX(re, "^([^.(]*)(?:\\.(\\d+))?(?:\\(p:([\\d+.e-]+)\\))?(?:\\(hitbox:(\\w+)\\))?$");
     names_.reserve(names.size());
     for (const std::string& name : names) {
         Mlib::re::smatch match;
@@ -779,7 +779,7 @@ ResourceNameCycle::ResourceNameCycle(
             names_.push_back(ParsedResourceName{
                 .name = match[1].str(),
                 .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
-                .probability = safe_stof(match[3].str()),
+                .probability = match[3].matched ? safe_stof(match[3].str()) : 1,
                 .aggregate_mode = resources.aggregate_mode(match[1].str()),
                 .hitbox = match[4].str()});
             if (names_.back().probability < 1e-7) {
