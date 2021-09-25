@@ -52,6 +52,7 @@ void Mlib::add_models_to_model_nodes(
             const auto& p = n.second.position;
             ParsedResourceName prn{
                 .name = mit->second,
+                .billboard_id = UINT32_MAX,
                 .probability = NAN,
                 .aggregate_mode = resources.aggregate_mode(mit->second),
                 .hitbox = (hit == tags.end()) ? "" : hit->second};
