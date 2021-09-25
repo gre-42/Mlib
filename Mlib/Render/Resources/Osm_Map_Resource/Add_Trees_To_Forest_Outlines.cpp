@@ -45,7 +45,8 @@ void Mlib::add_trees_to_forest_outlines(
                 float len = std::sqrt(sum(squared(p0 - p1)));
                 FixedArray<float, 2> normal{p0(1) - p1(1), p1(0) - p0(0)};
                 normal /= len;
-                n_random_numbers(len / (tree_distance * scale), na_rng, [&](float aa){
+                n_random_numbers(len / (tree_distance * scale), na_rng, [&](){
+                    float aa = na_rng();
                     FixedArray<float, 2> p = (aa * p0 + (1 - aa) * p1) - tree_inwards_distance * scale * normal * sign(area);
                     if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(p, min_dist_to_road * scale)) {
                         float height;

@@ -11,7 +11,7 @@ template <class TData>
 class TriangleSampler2 {
 public:
     explicit TriangleSampler2(unsigned int seed)
-    : rng2_{ seed }
+    : rng_{ seed }
     {}
     template <size_t tsize>
     void sample_triangle_interior(
@@ -23,10 +23,10 @@ public:
     {
         TData area = triangle_area(t0, t1, t2);
         TData n = area / (squared(distance / 2) * TData(M_PI));
-        n_random_numbers(n, rng2_, [&func, this](float r1){
+        n_random_numbers(n, rng_, [&func, this](){
             // https://chrischoy.github.io/research/barycentric-coordinate-for-mesh-sampling/
-            TData r1q = std::sqrt(r1);
-            TData r2 = rng2_();
+            TData r1q = std::sqrt(rng_());
+            TData r2 = rng_();
             TData a = (1 - r1q);
             TData b = r1q * (1 - r2);
             TData c = r1q * r2;
@@ -34,10 +34,10 @@ public:
         });
     }
     void seed(unsigned int seed) {
-        rng2_.seed(seed);
+        rng_.seed(seed);
     }
 private:
-    UniformRandomNumberGenerator<TData> rng2_;
+    UniformRandomNumberGenerator<TData> rng_;
 };
 
 }

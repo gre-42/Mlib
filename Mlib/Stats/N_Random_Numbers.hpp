@@ -31,7 +31,7 @@ void n_random_numbers(const TData& n, TUniformRandomNumberGenerator& rng, const 
         if (pp >= thr) {
             break;
         }
-        op(rn);
+        op();
     }
 }
 
