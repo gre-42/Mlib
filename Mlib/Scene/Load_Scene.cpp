@@ -990,7 +990,13 @@ void LoadScene::operator()(
                     config.uv_scale_terrain = safe_stof(value);
                 }
                 else if (key == "uv_scale_street") {
-                    config.uv_scale_street = safe_stof(value);
+                    config.uv_scales_street[RoadType::STREET] = safe_stof(value);
+                }
+                else if (key == "uv_scale_path") {
+                    config.uv_scales_street[RoadType::PATH] = safe_stof(value);
+                }
+                else if (key == "uv_scale_wall") {
+                    config.uv_scales_street[RoadType::WALL] = safe_stof(value);
                 }
                 else if (key == "uv_scale_facade") {
                     config.uv_scale_facade = safe_stof(value);

@@ -32,6 +32,7 @@ struct ColoredVertex;
 struct WayInfo;
 struct NodeHoleVertex;
 class HeightBinding;
+enum class RoadType;
 
 struct DrawStreetsInput {
     OsmTriangleLists& ground_triangles;
@@ -48,7 +49,8 @@ struct DrawStreetsInput {
     const std::map<std::string, Node>& nodes;
     const std::map<std::string, Way>& ways;
     float scale;
-    float uv_scale;
+    std::map<RoadType, float> uv_scales;
+    float uv_scale_crossings;
     float default_street_width;
     float default_lane_width;
     float default_tunnel_pipe_width;

@@ -456,6 +456,11 @@ void DrawStreets::draw_holes() {
                 tlist2 = &ground_triangles;
             }
         }
+        auto sit = uv_scales.find(road_type);
+        if (sit == uv_scales.end()) {
+            throw std::runtime_error("Could not find uv_scale for " + road_type_to_string(road_type));
+        }
+        float uv_scale = sit->second;
         float curb_alpha = NAN;
         float curb2_alpha = NAN;
         for (const auto& e : nh.second) {
@@ -589,9 +594,9 @@ void DrawStreets::draw_holes() {
                 // t(0).color = way_color;
                 // t(1).color = way_color;
                 // t(2).color = way_color;
-                t(0).uv = {t(0).position(0) / scale * uv_scale, t(0).position(1) / scale * uv_scale};
-                t(1).uv = {t(1).position(0) / scale * uv_scale, t(1).position(1) / scale * uv_scale};
-                t(2).uv = {t(2).position(0) / scale * uv_scale, t(2).position(1) / scale * uv_scale};
+                t(0).uv = {t(0).position(0) / scale * uv_scale_crossings, t(0).position(1) / scale * uv_scale_crossings};
+                t(1).uv = {t(1).position(0) / scale * uv_scale_crossings, t(1).position(1) / scale * uv_scale_crossings};
+                t(2).uv = {t(2).position(0) / scale * uv_scale_crossings, t(2).position(1) / scale * uv_scale_crossings};
             }
         }
     }
@@ -685,6 +690,11 @@ void DrawStreets::draw_streets_draw_ways(
     const std::string& node_id,
     const AngleWay& angle_way)
 {
+    auto sit = uv_scales.find(angle_way.road_type);
+    if (sit == uv_scales.end()) {
+        throw std::runtime_error("Could not find uv_scale for " + road_type_to_string(angle_way.road_type));
+    }
+    float uv_scale = sit->second;
     // Way length is used to get connected street textures where possible.
     auto len0 = node_way_info.find(node_id);
     auto len1 = node_way_info.find(angle_way.neighbor_id);

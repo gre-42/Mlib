@@ -192,7 +192,8 @@ OsmMapResource::OsmMapResource(
                 nodes,
                 ways,
                 config.scale,
-                config.uv_scale_street,
+                config.uv_scales_street,
+                config.uv_scale_crossings,
                 config.default_street_width,
                 config.default_lane_width,
                 config.default_tunnel_pipe_width,
@@ -507,8 +508,8 @@ OsmMapResource::OsmMapResource(
                 nullptr,
                 config.extrude_air_curb_amount * config.scale,
                 config.scale,
-                config.uv_scale_street,
-                config.uv_scale_street,
+                config.uv_scales_street.at(RoadType::STREET),
+                config.uv_scales_street.at(RoadType::STREET),
                 false);  // uvs_equal_lengths
             if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
                 TriangleList::extrude(
@@ -519,8 +520,8 @@ OsmMapResource::OsmMapResource(
                     nullptr,
                     config.extrude_air_curb_amount * config.scale,
                     config.scale,
-                    config.uv_scale_street,
-                    config.uv_scale_street,
+                    config.uv_scales_street.at(RoadType::PATH),
+                    config.uv_scales_street.at(RoadType::PATH),
                     false);  // uvs_equal_lengths
             }
         }
@@ -533,8 +534,8 @@ OsmMapResource::OsmMapResource(
                 nullptr,
                 config.extrude_curb_amount * config.scale,
                 config.scale,
-                config.uv_scale_street,
-                config.uv_scale_street,
+                config.uv_scales_street.at(RoadType::STREET),
+                config.uv_scales_street.at(RoadType::STREET),
                 false);  // uvs_equal_lengths
             if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
                 TriangleList::extrude(
@@ -545,8 +546,8 @@ OsmMapResource::OsmMapResource(
                     nullptr,
                     config.extrude_curb_amount * config.scale,
                     config.scale,
-                    config.uv_scale_street,
-                    config.uv_scale_street,
+                    config.uv_scales_street.at(RoadType::PATH),
+                    config.uv_scales_street.at(RoadType::PATH),
                     false);  // uvs_equal_lengths
             }
         }
@@ -559,7 +560,7 @@ OsmMapResource::OsmMapResource(
                 nullptr,
                 config.extrude_wall_amount * config.scale,
                 config.scale,
-                0.3f,
+                1.f,
                 config.uv_scale_highway_wall,
                 false);  // uvs_equal_lengths
         }
@@ -590,7 +591,7 @@ OsmMapResource::OsmMapResource(
                 config.extrude_grass_amount * config.scale,
                 config.scale,
                 1.f,
-                config.uv_scale_street,
+                config.uv_scale_grass,
                 true);  // uvs_equal_lengths
         }
         if ((config.extrude_elevated_grass_amount != 0) &&

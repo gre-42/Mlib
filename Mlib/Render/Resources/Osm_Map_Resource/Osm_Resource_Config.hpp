@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
@@ -18,7 +19,6 @@ enum class DrivingDirection;
 struct WaysideResourceNames;
 template <class TData>
 class Interp;
-enum class RoadType;
 struct RoadProperties;
 enum class TerrainType;
 enum class WrapMode;
@@ -77,7 +77,12 @@ struct OsmResourceConfig {
     float roof_width = 2;
     float scale = 1;
     float uv_scale_terrain = 1;
-    float uv_scale_street = 1;
+    std::map<RoadType, float> uv_scales_street{
+        {RoadType::PATH, 1.f},
+        {RoadType::STREET, 1.f},
+        {RoadType::WALL, 1.f}};
+    float uv_scale_grass = 1;
+    float uv_scale_crossings = 1.f;
     float uv_scale_facade = 1;
     float uv_scale_ceiling = 1;
     float uv_scale_barrier_wall = 1;
