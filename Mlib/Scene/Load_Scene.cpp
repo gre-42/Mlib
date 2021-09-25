@@ -1216,9 +1216,9 @@ void LoadScene::operator()(
             std::vector<BillboardAtlasInstance> billboard_atlas_instances;
             static const DECLARE_REGEX(
                 street_texture_reg,
-                "(?:\\s*uv_scale:([\\w+-.]+) ([\\w+-.]+)"
-                "\\s+uv_offset:([\\w+-.]+) ([\\w+-.]+)"
-                "\\s+vertex_scale:([\\w+-.]+) ([\\w+-.]+)"
+                "(?:\\s*uv_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
+                "\\s+uv_offset:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
+                "\\s+vertex_scale:\\s*([\\w+-.]+)\\s+([\\w+-.]+)"
                 "\\s+is_small:(0|1)"
                 "|([\\s\\S]+))");
             find_all(match[32].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
