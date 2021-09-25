@@ -1219,15 +1219,17 @@ void LoadScene::operator()(
                 "(?:\\s*uv_scale:([\\w+-.]+) ([\\w+-.]+)"
                 "\\s+uv_offset:([\\w+-.]+) ([\\w+-.]+)"
                 "\\s+vertex_scale:([\\w+-.]+) ([\\w+-.]+)"
+                "\\s+is_small:(0|1)"
                 "|([\\s\\S]+))");
             find_all(match[32].str(), street_texture_reg, [&](const Mlib::re::smatch& match3) {
-                if (match3[7].matched) {
-                    throw std::runtime_error("Unknown element: \"" + match3[7].str() + '"');
+                if (match3[8].matched) {
+                    throw std::runtime_error("Unknown element: \"" + match3[8].str() + '"');
                 }
                 billboard_atlas_instances.push_back(BillboardAtlasInstance{
                     .uv_scale = OrderableFixedArray<float, 2>{safe_stof(match3[1].str()), safe_stof(match3[2].str())},
                     .uv_offset = OrderableFixedArray<float, 2>{safe_stof(match3[3].str()), safe_stof(match3[4].str())},
-                    .vertex_scale = OrderableFixedArray<float, 2>{safe_stof(match3[5].str()), safe_stof(match3[6].str())}
+                    .vertex_scale = OrderableFixedArray<float, 2>{safe_stof(match3[5].str()), safe_stof(match3[6].str())},
+                    .is_small = safe_stob(match3[7].str())
                 });
             });
             scene_node_resources.add_resource(match[1].str(), std::make_shared<SquareResource>(

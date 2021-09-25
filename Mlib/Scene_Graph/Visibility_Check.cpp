@@ -14,6 +14,7 @@ VisibilityCheck::VisibilityCheck(const FixedArray<float, 4, 4>& mvp)
 
 bool VisibilityCheck::is_visible(
     const Material& m,
+    uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
     float max_distance) const
@@ -25,7 +26,24 @@ bool VisibilityCheck::is_visible(
             return m.is_black;
         }
     }
-    if (!m.is_small && std::isnan(max_distance) && (m.distances == default_distances_hard)) {
+    bool is_small;
+    if (billboard_id == UINT32_MAX) {
+        is_small = m.is_small;
+    } else {
+        if (billboard_id >= m.billboard_atlas_instances.size()) {
+            auto tit = m.textures.begin();
+            std::string color = (tit == m.textures.end())
+                ? "<no texture>"
+                : tit->texture_descriptor.color;
+            throw std::runtime_error(
+                "Billboard ID out of bounds in material \"" + color + "\" (" +
+                std::to_string(billboard_id) +
+                " >= " +
+                std::to_string(m.billboard_atlas_instances.size()) + ')');
+        }
+        is_small = m.billboard_atlas_instances[billboard_id].is_small;
+    }
+    if (!is_small && std::isnan(max_distance) && (m.distances == default_distances_hard)) {
         return true;
     }
     if (orthographic_) {

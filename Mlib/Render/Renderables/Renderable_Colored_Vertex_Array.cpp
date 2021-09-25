@@ -135,7 +135,7 @@ void RenderableColoredVertexArray::render_cva(
     VisibilityCheck vc{mvp};
     // Instance arrays are large and therefore do not need a visibility check.
     if (rcva_->instances_ == nullptr) {
-        if (!vc.is_visible(cva->material, scene_graph_config, render_pass.external))
+        if (!vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, render_pass.external))
         {
             return;
         }
@@ -628,7 +628,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
     for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
             VisibilityCheck vc{mvp};
-            if (vc.is_visible(cva->material, scene_graph_config, external_render_pass))
+            if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass))
             {
                 aggregate_queue.push_back({ vc.sorting_key(cva->material), std::move(cva->transformed(m)) });
             }
@@ -659,7 +659,7 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
     for (const auto& cva : aggregate_triangles_res_subset_) {
         if (cva->material.aggregate_mode == AggregateMode::INSTANCES_SORTED_CONTINUOUSLY) {
             VisibilityCheck vc{ mvp };
-            if (vc.is_visible(cva->material, scene_graph_config, external_render_pass))
+            if (vc.is_visible(cva->material, billboard_id, scene_graph_config, external_render_pass))
             {
                 float sorting_key = vc.sorting_key(cva->material);
                 instances_queue.push_back({ sorting_key, TransformedColoredVertexArray{

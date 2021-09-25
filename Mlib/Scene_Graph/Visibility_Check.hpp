@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <cstdint>
 
 namespace Mlib {
 
@@ -14,6 +15,7 @@ public:
     explicit VisibilityCheck(const FixedArray<float, 4, 4>& mvp);
     bool is_visible(
         const Material& m,
+        uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
         float max_distance = NAN) const;
