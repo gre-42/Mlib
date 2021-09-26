@@ -1481,7 +1481,7 @@ void LoadScene::operator()(
         auto& skybox_logic = cit->second->skybox_logic_;
         auto& game_logic = cit->second->game_logic_;
         auto& base_log = cit->second->fifo_log_;
-        auto& mutex = cit->second->mutex_;
+        auto& deletion_mutex = cit->second->deletion_mutex_;
 
         Linker linker{physics_engine.advance_times_};
         if (Mlib::re::regex_match(line, match, root_node_instance_reg)) {
@@ -1547,10 +1547,10 @@ void LoadScene::operator()(
             }
             scene.register_node(match[3].str(), node_ptr);
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
-            std::lock_guard lock{ mutex };
+            std::lock_guard lock{ deletion_mutex };
             scene.delete_root_node(match[1].str());
         } else if (Mlib::re::regex_match(line, match, delete_root_nodes_reg)) {
-            std::lock_guard lock{ mutex };
+            std::lock_guard lock{ deletion_mutex };
             scene.delete_root_nodes(Mlib::compile_regex(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, delete_scheduled_advance_times_reg)) {
             physics_engine.advance_times_.delete_scheduled_advance_times();
@@ -1625,7 +1625,7 @@ void LoadScene::operator()(
                     safe_stof(match[10].str()),     // bullet-size-x
                     safe_stof(match[11].str()),     // bullet-size-y
                     safe_stof(match[12].str())},    // bullet-size-z
-                mutex);                             // mutex
+                deletion_mutex);                    // deletion_mutex
             linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
         } else if (Mlib::re::regex_match(line, match, trigger_gun_ai_reg)) {
             auto base_shooter_node = scene.get_node(match[1].str());
@@ -1662,7 +1662,7 @@ void LoadScene::operator()(
                 physics_engine.advance_times_,
                 match[1].str(),
                 safe_stof(match[2].str()),
-                mutex);
+                deletion_mutex);
             physics_engine.advance_times_.add_advance_time(d);
             if (rb->damageable_ != nullptr) {
                 throw std::runtime_error("Rigid body already has a damageable");
@@ -1785,7 +1785,7 @@ void LoadScene::operator()(
                 unstuck_mode_from_string(match[4].str()),
                 driving_modes.at(match[5].str()),
                 driving_direction_from_string(match[6].str()),
-                mutex);
+                deletion_mutex);
             players.add_player(*player);
             physics_engine.advance_times_.add_advance_time(player);
             physics_engine.add_external_force_provider(player.get());
@@ -2264,7 +2264,7 @@ void LoadScene::operator()(
             node->get_camera()->set_top_plane(safe_stof(match[7].str()));
             node->get_camera()->set_requires_postprocessing(safe_stoi(match[8].str()));
         } else if (Mlib::re::regex_match(line, match, light_reg)) {
-            std::lock_guard lock_guard{mutex};
+            std::lock_guard lock_guard{ deletion_mutex };
             std::string node_name = match[1].str();
             SceneNode* node = scene.get_node(node_name);
             render_logics.prepend(node, std::make_shared<LightmapLogic>(

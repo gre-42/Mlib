@@ -92,7 +92,7 @@ public:
     std::shared_ptr<DirtmapLogic> dirtmap_logic_;
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
-    std::recursive_mutex mutex_;
+    std::recursive_mutex deletion_mutex_;
     RenderLogics render_logics_;
     Players players_;
     GameLogic game_logic_;
