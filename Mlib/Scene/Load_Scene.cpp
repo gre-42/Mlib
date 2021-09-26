@@ -1010,6 +1010,9 @@ void LoadScene::operator()(
                 else if (key == "uv_scale_highway_wall") {
                     config.uv_scale_highway_wall = safe_stof(value);
                 }
+                else if (key == "uv_scale_crossings") {
+                    config.uv_scale_crossings = safe_stof(value);
+                }
                 else if (key == "with_roofs") {
                     config.with_roofs = safe_stob(value);
                 }
