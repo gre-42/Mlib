@@ -28,6 +28,7 @@ CheckPoints::CheckPoints(
     float radius,
     SceneNodeResources& scene_node_resources,
     Scene& scene,
+    std::recursive_mutex& deletion_mutex,
     const Focuses& focuses,
     bool enable_height_changed_mode)
 : advance_times_{advance_times},
@@ -44,6 +45,7 @@ CheckPoints::CheckPoints(
   i01_{0},
   scene_node_resources_{scene_node_resources},
   scene_{scene},
+  deletion_mutex_{deletion_mutex},
   focuses_{focuses},
   enable_height_changed_mode_{enable_height_changed_mode}
 {
@@ -65,6 +67,7 @@ CheckPoints::~CheckPoints() {
     // Scene destruction happens before physics destruction,
     // so the checkpoints might already have been deleted.
     static const DECLARE_REGEX(re, "^check_point_beacon_.*");
+    std::lock_guard lock{ deletion_mutex_ };
     scene_.delete_root_nodes(re);
 }
 

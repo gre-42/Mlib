@@ -2442,6 +2442,7 @@ void LoadScene::operator()(
                 safe_stof(match[7].str()),              // radius
                 scene_node_resources,
                 scene,
+                deletion_mutex,
                 ui_focus.focuses,
                 safe_stob(match[8].str())));            // enable_height_changed_mode
         } else if (Mlib::re::regex_match(line, match, set_camera_cycle_reg)) {

@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
 #include <chrono>
 #include <fstream>
+#include <mutex>
 
 namespace Mlib {
 
@@ -38,6 +39,7 @@ public:
         float radius,
         SceneNodeResources& scene_node_resources,
         Scene& scene,
+        std::recursive_mutex& deletion_mutex,
         const Focuses& focuses,
         bool enable_height_changed_mode = false);
     ~CheckPoints();
@@ -59,6 +61,7 @@ private:
     size_t i01_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
+    std::recursive_mutex& deletion_mutex_;
     const Focuses& focuses_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
     std::list<TrackElement> movable_track_;
