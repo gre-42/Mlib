@@ -64,10 +64,6 @@ BinaryXResource::BinaryXResource(
 
 void BinaryXResource::instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const
 {
-    // std::unique_lock lock_guard0{scene.dynamic_mutex_};
-    // std::unique_lock lock_guard1{scene.static_mutex_};
-    // std::unique_lock lock_guard2{scene.aggregate_mutex_};
-
     rva_0_->instantiate_renderable(name, scene_node, SceneNodeResourceFilter());
 
     auto node90 = std::make_unique<SceneNode>();

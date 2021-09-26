@@ -27,7 +27,7 @@ void BackgroundLoop::shutdown() {
         return;
     }
     {
-        std::unique_lock lock{ mutex_ };
+        std::lock_guard lock{ mutex_ };
         shutdown_requested_ = true;
     }
     task_ready_cv_.notify_one();
@@ -54,7 +54,7 @@ void BackgroundLoop::run(const std::function<void()>& task) {
     if (!done_) {
         throw std::runtime_error("BackgroundLoop::run despite not done");
     }
-    std::unique_lock lck{ mutex_ };
+    std::lock_guard lck{ mutex_ };
     task_ = task;
     done_ = false;
     task_ready_cv_.notify_one();
