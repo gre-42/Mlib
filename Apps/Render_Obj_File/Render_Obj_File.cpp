@@ -27,6 +27,7 @@
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
@@ -277,7 +278,8 @@ int main(int argc, char** argv) {
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
         AggregateRendererGuard small_sorted_aggregate_renderer_guard{std::make_shared<AggregateArrayRenderer>()};
         AggregateArrayRenderer large_aggregate_renderer;
-        Scene scene{&large_aggregate_renderer};
+        DeleteNodeMutex deletion_mutex;
+        Scene scene{ deletion_mutex, &large_aggregate_renderer };
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = std::make_unique<SceneNode>();
         {
@@ -603,7 +605,7 @@ int main(int argc, char** argv) {
                 true));                       // with_depth_texture
         }
 
-        std::recursive_mutex mutex;
+        DeleteNodeMutex mutex;
         UiFocus ui_focus;
         RenderLogics render_logics{mutex, ui_focus};
         render_logics.append(nullptr, flying_camera_logic);

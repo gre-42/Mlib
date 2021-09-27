@@ -22,6 +22,7 @@ RenderableScene::RenderableScene(
   // => Create PhysicsEngine before Scene
   physics_engine_{scene_config.physics_engine_config},
   scene_{
+      deletion_mutex_,
       &large_aggregate_array_renderer_,
       &large_instances_renderer_},
   selected_cameras_{scene_},

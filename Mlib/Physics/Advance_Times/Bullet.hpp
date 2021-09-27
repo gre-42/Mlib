@@ -13,6 +13,7 @@ class Scene;
 class SceneNode;
 class AdvanceTimes;
 class SceneNodeResources;
+class DeleteNodeMutex;
 
 class Bullet: public DestructionObserver, public CollisionObserver, public AdvanceTime {
 public:
@@ -25,7 +26,7 @@ public:
         const std::string& bullet_node_name,
         float max_lifetime,
         float damage,
-        std::recursive_mutex& deletion_mutex);
+        DeleteNodeMutex& deletion_mutex);
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
@@ -43,7 +44,7 @@ private:
     float max_lifetime_;
     float lifetime_;
     float damage_;
-    std::recursive_mutex& deletion_mutex_;
+    DeleteNodeMutex& deletion_mutex_;
 };
 
 }

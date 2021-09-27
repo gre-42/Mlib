@@ -1,6 +1,7 @@
 #include "Render_Logics.hpp"
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -16,7 +17,7 @@ static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
         [node](const auto& v){ return v.second.node == node; });
 }
 
-RenderLogics::RenderLogics(std::recursive_mutex& deletion_mutex, UiFocus& ui_focus)
+RenderLogics::RenderLogics(DeleteNodeMutex& deletion_mutex, UiFocus& ui_focus)
 : deletion_mutex_{deletion_mutex},
   ui_focus_{ui_focus},
   next_smallest_id_{0},

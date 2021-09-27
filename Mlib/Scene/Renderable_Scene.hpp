@@ -24,6 +24,7 @@
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -92,7 +93,7 @@ public:
     std::shared_ptr<DirtmapLogic> dirtmap_logic_;
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
-    std::recursive_mutex deletion_mutex_;
+    DeleteNodeMutex deletion_mutex_;
     RenderLogics render_logics_;
     Players players_;
     GameLogic game_logic_;

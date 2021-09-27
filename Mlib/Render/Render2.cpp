@@ -14,6 +14,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Set_Fps.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
@@ -262,7 +263,8 @@ void Render2::render_node(
     std::unique_ptr<Camera>&& camera,
     const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
 {
-    Scene scene;
+    DeleteNodeMutex deletion_mutex;
+    Scene scene{ deletion_mutex };
     scene.add_root_node("obj", std::move(node));
     scene.add_root_node("camera", std::make_unique<SceneNode>());
     // std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE)

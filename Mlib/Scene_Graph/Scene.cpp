@@ -5,6 +5,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Renderer.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Instances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
@@ -12,9 +13,11 @@
 using namespace Mlib;
 
 Scene::Scene(
+    DeleteNodeMutex& delete_node_mutex,
     AggregateRenderer* large_aggregate_renderer,
     InstancesRenderer* large_instances_renderer)
-: large_aggregate_renderer_{large_aggregate_renderer},
+: delete_node_mutex_{delete_node_mutex},
+  large_aggregate_renderer_{large_aggregate_renderer},
   large_instances_renderer_{large_instances_renderer},
   large_aggregate_renderer_initialized_{false},
   large_instances_renderer_initialized_{false},
@@ -97,6 +100,9 @@ void Scene::delete_scheduled_root_nodes() const {
 
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
+    if (!delete_node_mutex_.is_locked()) {
+        throw std::runtime_error("Scene::delete_root_node: delete node mutex is not locked");
+    }
     // Temporary unique_ptr to allow recursive calls to delete_root_node.
     std::unique_ptr<SceneNode> to_delete;
     auto it = root_nodes_.find(name);
@@ -110,6 +116,9 @@ void Scene::delete_root_node(const std::string& name) {
 
 void Scene::delete_root_nodes(const Mlib::regex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
+    if (!delete_node_mutex_.is_locked()) {
+        throw std::runtime_error("Scene::delete_root_nodes: delete node mutex is not locked");
+    }
     for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
         auto n = it++;
         if (Mlib::re::regex_match(n->first, regex)) {
@@ -152,12 +161,18 @@ void Scene::register_node(
 }
 
 void Scene::unregister_node(const std::string& name) {
+    if (!delete_node_mutex_.is_locked()) {
+        throw std::runtime_error("Scene::unregister_node: delete node mutex is not locked");
+    }
     if (nodes_.erase(name) != 1) {
         throw std::runtime_error("Could not find node with name \"" + name + '"');
     }
 }
 
 void Scene::unregister_nodes(const Mlib::regex& regex) {
+    if (!delete_node_mutex_.is_locked()) {
+        throw std::runtime_error("Scene::unregister_nodes: delete node mutex is not locked");
+    }
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (Mlib::re::regex_match(n.first, regex)) {

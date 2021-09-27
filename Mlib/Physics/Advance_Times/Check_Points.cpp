@@ -4,6 +4,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -28,7 +29,7 @@ CheckPoints::CheckPoints(
     float radius,
     SceneNodeResources& scene_node_resources,
     Scene& scene,
-    std::recursive_mutex& deletion_mutex,
+    DeleteNodeMutex& deletion_mutex,
     const Focuses& focuses,
     bool enable_height_changed_mode)
 : advance_times_{advance_times},

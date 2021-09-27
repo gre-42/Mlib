@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -20,7 +21,7 @@ Bullet::Bullet(
     const std::string& bullet_node_name,
     float max_lifetime,
     float damage,
-    std::recursive_mutex& deletion_mutex)
+    DeleteNodeMutex& deletion_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
   advance_times_{ advance_times },

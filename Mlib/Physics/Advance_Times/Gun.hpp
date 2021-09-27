@@ -14,6 +14,7 @@ struct RigidBodyIntegrator;
 class Scene;
 class RigidBodies;
 class AdvanceTimes;
+class DeleteNodeMutex;
 
 class Gun: public DestructionObserver, public AbsoluteObserver, public AdvanceTime {
 public:
@@ -30,7 +31,7 @@ public:
         float bullet_lifetime,
         float bullet_damage,
         const FixedArray<float, 3>& bullet_size,
-        std::recursive_mutex& deletion_mutex);
+        DeleteNodeMutex& deletion_mutex);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
@@ -52,7 +53,7 @@ private:
     float cool_down_;
     float seconds_since_last_shot_;
     TransformationMatrix<float, 3> absolute_model_matrix_;
-    std::recursive_mutex& deletion_mutex_;
+    DeleteNodeMutex& deletion_mutex_;
 };
 
 }

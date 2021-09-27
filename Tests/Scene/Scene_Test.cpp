@@ -31,6 +31,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Camera_Config.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Set_Fps.hpp>
@@ -115,7 +116,8 @@ void test_physics_engine() {
             .werror = true});
 
     SceneNodeResources scene_node_resources;
-    Scene scene;
+    DeleteNodeMutex deletion_mutex;
+    Scene scene{ deletion_mutex };
     RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
     scene_node_resources.add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles0));
     scene_node_resources.add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
@@ -202,7 +204,7 @@ void test_physics_engine() {
     GravityEfp gefp({0, -9.8, 0});
     pe.add_external_force_provider(&gefp);
 
-    std::recursive_mutex mutex;
+    DeleteNodeMutex mutex;
     SetFps physics_set_fps{"Physics FPS: "};
     PhysicsIteration pi{
         scene_node_resources,

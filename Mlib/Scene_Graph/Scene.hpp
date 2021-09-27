@@ -13,11 +13,13 @@ namespace Mlib {
 
 class AggregateRenderer;
 class InstancesRenderer;
+class DeleteNodeMutex;
 
 class Scene {
 public:
     // Noncopyable because of mutex_
     Scene(
+        DeleteNodeMutex& delete_node_mutex,
         AggregateRenderer* large_aggregate_renderer = nullptr,
         InstancesRenderer* large_instances_renderer = nullptr);
     Scene(const Scene&) = delete;
@@ -73,6 +75,7 @@ private:
     std::map<std::string, std::unique_ptr<SceneNode>> static_root_nodes_;
     std::map<std::string, std::unique_ptr<SceneNode>> root_aggregate_nodes_;
     std::map<std::string, std::unique_ptr<SceneNode>> root_instances_nodes_;
+    DeleteNodeMutex& delete_node_mutex_;
     AggregateRenderer* large_aggregate_renderer_;
     InstancesRenderer* large_instances_renderer_;
     mutable bool large_aggregate_renderer_initialized_;

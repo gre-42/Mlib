@@ -25,6 +25,7 @@ template <class TData, class TPayload, size_t tndim>
 class Bvh;
 enum class DrivingDirection;
 enum class WayPointLocation;
+class DeleteNodeMutex;
 
 struct PlayerStats {
     size_t nwins = 0;
@@ -84,7 +85,7 @@ public:
         UnstuckMode unstuck_mode,
         const DrivingMode& driving_mode,
         DrivingDirection driving_direction,
-        std::recursive_mutex& deletion_mutex);
+        DeleteNodeMutex& deletion_mutex);
     ~Player();
     void set_can_drive(bool value);
     void set_can_aim(bool value);
@@ -185,7 +186,7 @@ private:
     UnstuckMode unstuck_mode_;
     DrivingMode driving_mode_;
     DrivingDirection driving_direction_;
-    std::recursive_mutex& deletion_mutex_;
+    DeleteNodeMutex& deletion_mutex_;
     std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
     bool spotted_by_vip_;
     size_t nunstucked_;

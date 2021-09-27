@@ -11,6 +11,7 @@
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -48,7 +49,8 @@ void Mlib::Cv::project_depth_map(
     auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
 
-    Scene scene;
+    DeleteNodeMutex deletion_mutex;
+    Scene scene{ deletion_mutex };
     scene.add_root_node("obj", std::move(on));
     scene.add_root_node("camera", std::make_unique<SceneNode>());
     TransformationMatrix<float, 3> cpose = cv_to_opengl_extrinsic_matrix(ke_1_0).inverted();

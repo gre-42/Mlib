@@ -9,6 +9,7 @@ class PhysicsEngine;
 struct PhysicsEngineConfig;
 class SetFps;
 class BaseLog;
+class DeleteNodeMutex;
 
 class PhysicsIteration {
 public:
@@ -16,7 +17,7 @@ public:
         SceneNodeResources& scene_node_resources,
         Scene& scene,
         PhysicsEngine& physics_engine,
-        std::recursive_mutex& deletion_mutex,
+        DeleteNodeMutex& deletion_mutex,
         const PhysicsEngineConfig& physics_cfg,
         BaseLog* base_log = nullptr);
     ~PhysicsIteration();
@@ -26,7 +27,7 @@ private:
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
     PhysicsEngine& physics_engine_;
-    std::recursive_mutex& deletion_mutex_;
+    DeleteNodeMutex& deletion_mutex_;
     const PhysicsEngineConfig& physics_cfg_;
     BaseLog* base_log_;
 };

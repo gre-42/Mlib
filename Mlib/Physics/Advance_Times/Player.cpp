@@ -29,7 +29,7 @@ Player::Player(
     UnstuckMode unstuck_mode,
     const DrivingMode& driving_mode,
     DrivingDirection driving_direction,
-    std::recursive_mutex& deletion_mutex)
+    DeleteNodeMutex& deletion_mutex)
 : scene_{scene},
   collision_query_{collision_query},
   players_{players},

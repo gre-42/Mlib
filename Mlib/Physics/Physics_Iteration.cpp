@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -15,7 +16,7 @@ PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,
     Scene& scene,
     PhysicsEngine& physics_engine,
-    std::recursive_mutex& deletion_mutex,
+    DeleteNodeMutex& deletion_mutex,
     const PhysicsEngineConfig& physics_cfg,
     BaseLog* base_log)
 : scene_node_resources_{ scene_node_resources },

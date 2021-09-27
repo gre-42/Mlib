@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <chrono>
@@ -34,7 +35,7 @@ GameLogic::GameLogic(
     Scene& scene,
     AdvanceTimes& advance_times,
     Players& players,
-    std::recursive_mutex& deletion_mutex)
+    DeleteNodeMutex& deletion_mutex)
 : scene_{scene},
   advance_times_{advance_times},
   players_{players},

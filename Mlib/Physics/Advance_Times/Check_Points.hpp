@@ -17,6 +17,7 @@ class Players;
 class Player;
 class SceneNodeResources;
 class Scene;
+class DeleteNodeMutex;
 
 struct CheckPointPose {
     FixedArray<float, 3> position;
@@ -39,7 +40,7 @@ public:
         float radius,
         SceneNodeResources& scene_node_resources,
         Scene& scene,
-        std::recursive_mutex& deletion_mutex,
+        DeleteNodeMutex& deletion_mutex,
         const Focuses& focuses,
         bool enable_height_changed_mode = false);
     ~CheckPoints();
@@ -61,7 +62,7 @@ private:
     size_t i01_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
-    std::recursive_mutex& deletion_mutex_;
+    DeleteNodeMutex& deletion_mutex_;
     const Focuses& focuses_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
     std::list<TrackElement> movable_track_;

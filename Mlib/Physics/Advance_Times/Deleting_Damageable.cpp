@@ -1,5 +1,6 @@
 #include "Deleting_Damageable.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
@@ -9,7 +10,7 @@ DeletingDamageable::DeletingDamageable(
     AdvanceTimes& advance_times,
     const std::string& root_node_name,
     float health,
-    std::recursive_mutex& deletion_mutex)
+    DeleteNodeMutex& deletion_mutex)
 : scene_{scene},
   advance_times_{advance_times},
   root_node_name_{root_node_name},

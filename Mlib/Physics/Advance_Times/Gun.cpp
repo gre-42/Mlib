@@ -30,7 +30,7 @@ Gun::Gun(
     float bullet_lifetime,
     float bullet_damage,
     const FixedArray<float, 3>& bullet_size,
-    std::recursive_mutex& deletion_mutex)
+    DeleteNodeMutex& deletion_mutex)
 : scene_{scene},
   scene_node_resources_{scene_node_resources},
   rigid_bodies_{rigid_bodies},
