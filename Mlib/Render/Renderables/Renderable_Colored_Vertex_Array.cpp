@@ -188,7 +188,11 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);
-    size_t ntextures_color = ((render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) || (cva->material.blend_mode != BlendMode::OFF)) ? cva->material.textures.size() : 0;
+    size_t ntextures_color = (
+        (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ||
+        ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL)))
+            ? cva->material.textures.size()
+            : 0;
     bool has_lightmap_color = (cva->material.occluded_type == OccludedType::LIGHT_MAP_COLOR) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
     bool has_lightmap_depth = (cva->material.occluded_type == OccludedType::LIGHT_MAP_DEPTH) && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0));
     size_t ntextures_normal = color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && (render_pass.external.pass != ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) ? cva->material.textures.size() : 0;

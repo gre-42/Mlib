@@ -425,7 +425,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         compute_normal();
     }
     if (ntextures_color > 1) {
-        sstr << "    vec4 texture_color = vec4(0, 0, 0, 1);" << std::endl;
+        sstr << "    vec4 texture_color = vec4(0, 0, 0, texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ").a);" << std::endl;
         if (has_normalmap) {
             sstr << "    vec3 tnorm = vec3(0, 0, 0);" << std::endl;
         }
