@@ -1,6 +1,6 @@
 #include "Triangulate_3D.hpp"
 
-#ifndef WITH_TRIANGLE
+#ifdef WITHOUT_TRIANGLE
 #include <Mlib/Array/Array.hpp>
 
 using namespace Mlib;

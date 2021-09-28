@@ -50,24 +50,24 @@ find_package(OpenSSL)
 # Add compile definitions #
 ###########################
 
-if (BUILD_OPENCV AND OpenCV_FOUND)
-    add_compile_definitions(WITH_OPENCV)
+if (NOT (BUILD_OPENCV AND OpenCV_FOUND))
+    add_compile_definitions(WITHOUT_OPENCV)
 endif()
 
-if (OPENSSL_FOUND)
-    add_compile_definitions(WITH_OPENSSL)
+if (NOT OPENSSL_FOUND)
+    add_compile_definitions(WITHOUT_OPENSSL)
 endif()
 
-if (glfw3_FOUND)
-    add_compile_definitions(WITH_GLFW3)
+if (NOT glfw3_FOUND)
+    add_compile_definitions(WITHOUT_GLFW3)
 endif()
 
-if (BUILD_TRIANGLE)
-    add_compile_definitions(WITH_TRIANGLE)
+if (NOT BUILD_TRIANGLE)
+    add_compile_definitions(WITHOUT_TRIANGLE)
 endif()
 
-if (BUILD_CORK)
-    add_compile_definitions(WITH_CORK)
+if (NOT BUILD_CORK)
+    add_compile_definitions(WITHOUT_CORK)
 endif()
 
 #####################

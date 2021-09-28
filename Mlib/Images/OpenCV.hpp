@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef WITH_OPENCV
+#ifndef WITHOUT_OPENCV
 
 #include <Mlib/Array/Array.hpp>
 #include <opencv2/core.hpp>

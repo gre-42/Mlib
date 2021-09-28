@@ -15,7 +15,7 @@
 #include <Mlib/Stats/RansacOptions.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 
-#ifdef WITH_OPENCV
+#ifndef WITHOUT_OPENCV
 #include <opencv2/features2d.hpp>
 #endif
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
                 corners0 = Array<ocv::KeyPoint>(keypoints)
                     .applied<FixedArray<float, 2>>([](const ocv::KeyPoint& v){return v.pt;});
             } else {
-#ifdef WITH_OPENCV
+#ifndef WITHOUT_OPENCV
                 std::vector<cv::KeyPoint> keypoints;
                 auto sift = cv::SIFT::create(safe_stoi(args.unnamed_value(2)));
                 cv::Mat_<float> cv_descriptors0;
@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
                     bmp.save_to_file(args.named_value("--response1"));
                 }
             } else {
-#ifdef WITH_OPENCV
+#ifndef WITHOUT_OPENCV
                 std::vector<cv::KeyPoint> keypoints;
                 auto sift = cv::SIFT::create(safe_stoi(args.unnamed_value(2)));
                 cv::Mat_<float> cv_descriptors1;

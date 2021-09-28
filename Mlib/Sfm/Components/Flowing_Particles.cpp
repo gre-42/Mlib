@@ -15,7 +15,7 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <filesystem>
 
-#ifdef WITH_OPENCV
+#ifndef WITHOUT_OPENCV
 #include <opencv2/features2d.hpp>
 #endif
 
@@ -66,7 +66,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
             keypoints1(i) = keypoints1_[i].pt;
         }
     } else if (cfg_.tracking_mode == TrackingMode::CV_SIFT) {
-#ifdef WITH_OPENCV
+#ifndef WITHOUT_OPENCV
         auto sift = cv::SIFT::create((int)cfg_.target_nparticles);
         std::vector<cv::KeyPoint> cv_keypoints;
         cv::Mat_<float> cv_descriptors1;
