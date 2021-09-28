@@ -55,7 +55,7 @@ for d in $SOURCE_DIRS; do
             /cygdrive/d/Programs/cmake/bin/cmake.exe ../
             echo "Use BuildDebug.bat for building"
         else
-            cmake -G Ninja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../
+            cmake -G Ninja ${CMAKE_OPTIONS-} -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../
             ninja -v
         fi
         cd -

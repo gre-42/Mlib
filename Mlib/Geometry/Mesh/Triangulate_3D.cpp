@@ -1,4 +1,21 @@
 #include "Triangulate_3D.hpp"
+
+#ifndef WITH_TRIANGLE
+#include <Mlib/Array/Array.hpp>
+
+using namespace Mlib;
+
+Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
+    const Array<TransformationMatrix<float, 3>>& points,
+    float boundary_radius,
+    float z_thickness,
+    float cos_min_angle,
+    float largest_cos_in_triangle,
+    float triangle_search_eps)
+{
+    throw std::runtime_error("triangulate_3d: Compiled without Triangle library");
+}
+#else
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
@@ -439,3 +456,5 @@ Array<FixedArray<FixedArray<float, 3>, 3>> Mlib::triangulate_3d(
     });
     return result;
 }
+
+#endif

@@ -1,4 +1,4 @@
-#if !defined(__MINGW32__) && !defined(_MSC_VER)
+#if defined(BUILD_CORK) && !defined(__MINGW32__) && !defined(_MSC_VER)
 
 #include "Mesh_Subtract.hpp"
 #include <Mlib/Geometry/Mesh/Indexed_Face_Set.hpp>

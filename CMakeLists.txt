@@ -8,8 +8,18 @@ warn_all()
 add_compiler_color()
 ddebug()
 optional_omp()
-set (CMAKE_CXX_STANDARD 20)
-set (CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
+###############
+# Add options #
+###############
+
+option(BUILD_TRIANGLE "Build the Triangle library" ON)
+option(BUILD_CORK "Build the Cork Boolean/CSG library" OFF)
+option(BUILD_SFM "Build the structure from motion library" ON)
+option(BUILD_CV "Build the computer vision library" ON)
+option(BUILD_OPENCV "Build the Open Computer Vision Library" ON)
 
 ####################
 # Add dependencies #
@@ -23,9 +33,9 @@ set (CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 # endif()
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
-    set (glfw3_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/glfw_vc2019/lib/glfw3dll.lib)
-    set (glfw3_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw_vc2019/include)
-    set (glfw3_FOUND true)
+    set(glfw3_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/glfw_vc2019/lib/glfw3dll.lib)
+    set(glfw3_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw_vc2019/include)
+    set(glfw3_FOUND true)
 else()
     find_package(glfw3)
 endif()
@@ -36,7 +46,11 @@ find_package(glm)
 find_package(OpenCV OPTIONAL_COMPONENTS features2d)
 find_package(OpenSSL)
 
-if (OpenCV_FOUND)
+###########################
+# Add compile definitions #
+###########################
+
+if (BUILD_OPENCV AND OpenCV_FOUND)
     add_compile_definitions(WITH_OPENCV)
 endif()
 
@@ -46,6 +60,14 @@ endif()
 
 if (glfw3_FOUND)
     add_compile_definitions(WITH_GLFW3)
+endif()
+
+if (BUILD_TRIANGLE)
+    add_compile_definitions(WITH_TRIANGLE)
+endif()
+
+if (BUILD_CORK)
+    add_compile_definitions(WITH_CORK)
 endif()
 
 #####################
@@ -78,7 +100,7 @@ endif()
 ######################
 
 add_subdirectory(Apps)
-if (NOT (MINGW OR MSVC))
+if (BUILD_CORK AND (NOT (MINGW OR MSVC)))
     add_subdirectory(cork)
 endif()
 add_subdirectory(cpp-httplib)
@@ -86,4 +108,6 @@ add_subdirectory(Mlib)
 add_subdirectory(poly2tri)
 add_subdirectory(stb_image)
 add_subdirectory(Tests)
-add_subdirectory(Triangle)
+if (BUILD_TRIANGLE)
+    add_subdirectory(Triangle)
+endif()
