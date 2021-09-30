@@ -342,6 +342,12 @@ public:
     FixedArray<TResultData, tshape0, tshape...> casted() const {
         return applied<TResultData>([&](const TData& v){ return (TResultData)v; });
     }
+    template <class Archive>
+    void serialize(Archive& archive) {
+        for (TData& v : flat_iterable()) {
+            archive(v);
+        }
+    }
 private:
     FixedArray<TData, tshape...> data_[tshape0];
 };
@@ -384,6 +390,10 @@ public:
     }
     bool less_than(const FixedArray& rhs) const {
         return value_ < rhs.value_;
+    }
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(value_);
     }
 private:
     TData value_;

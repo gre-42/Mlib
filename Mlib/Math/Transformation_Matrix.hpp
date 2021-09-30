@@ -121,6 +121,12 @@ public:
             R_.template casted<TResultData>(),
             t_.template casted<TResultData>()};
     }
+
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(R_);
+        archive(t_);
+    }
 private:
     FixedArray<TData, n, n> R_;
     FixedArray<TData, n> t_;

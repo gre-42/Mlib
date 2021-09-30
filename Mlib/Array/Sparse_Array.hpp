@@ -148,6 +148,13 @@ public:
         return shape_ != nullptr;
     }
 
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(conjugated_transposed);
+        archive(data_);
+        archive(shape_);
+    }
+
     bool conjugated_transposed = false;
 private:
     std::shared_ptr<std::vector<std::map<size_t, TData>>> data_;

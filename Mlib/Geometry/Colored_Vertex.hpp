@@ -50,6 +50,10 @@ struct ColoredVertex {
         result.tangent /= std::sqrt(sum(squared(result.tangent)));
         return result;
     }
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(position, color, uv, normal, tangent);
+    }
 };
 
 #ifdef __GNUC__

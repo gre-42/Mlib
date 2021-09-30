@@ -38,6 +38,10 @@ public:
     bool contains(EntityType road_type) const;
     const std::shared_ptr<TriangleList>& operator [] (EntityType road_type) const;
     const std::map<EntityType, std::shared_ptr<TriangleList>>& map() const;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(lst_);
+    }
 private:
     std::map<EntityType, std::shared_ptr<TriangleList>> lst_;
 };

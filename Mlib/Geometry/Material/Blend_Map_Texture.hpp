@@ -15,6 +15,17 @@ struct BlendMapTexture {
     float scale = 1;
     float weight = 1;
     std::partial_ordering operator <=> (const BlendMapTexture&) const = default;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(texture_descriptor);
+        archive(min_height);
+        archive(max_height);
+        archive(distances);
+        archive(normal);
+        archive(cosines);
+        archive(scale);
+        archive(weight);
+    }
 };
 
 }

@@ -9,6 +9,10 @@ struct BillboardAtlasInstance {
     OrderableFixedArray<float, 2> vertex_scale;
     bool is_small;
     std::partial_ordering operator <=> (const BillboardAtlasInstance&) const = default;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(uv_scale, uv_offset, vertex_scale, is_small);
+    }
 };
 
 }

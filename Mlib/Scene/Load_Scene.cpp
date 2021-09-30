@@ -1171,11 +1171,19 @@ void LoadScene::operator()(
             config.layer_heights = Interp<float>(
                 layer_heights_layer,
                 layer_heights_height);
-            scene_node_resources.add_resource(
-                resource_name,
-                std::make_shared<OsmMapResource>(
+            std::string cache_filename = fpath(config.filename + '_' + config.game_level + ".cereal.binary");
+            std::shared_ptr<OsmMapResource> osm_map_resource;
+            if (fs::exists(cache_filename)) {
+                osm_map_resource = std::make_shared<OsmMapResource>(
                     scene_node_resources,
-                    config));
+                    cache_filename);
+            } else {
+                osm_map_resource = std::make_shared<OsmMapResource>(
+                    scene_node_resources,
+                    config);
+                osm_map_resource->save_to_file(cache_filename);
+            }
+            scene_node_resources.add_resource(resource_name, osm_map_resource);
             return true;
         }
         if (Mlib::re::regex_match(line, match, gen_ray_reg)) {

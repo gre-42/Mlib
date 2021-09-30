@@ -36,6 +36,15 @@ struct ColoredVertexArray {
     std::vector<CollisionTriangleAabb> transformed_triangles_bbox(const TransformationMatrix<float, 3>& tm) const;
     std::vector<FixedArray<FixedArray<float, 3>, 2>> transformed_lines(const TransformationMatrix<float, 3>& tm) const;
     void downsample_triangles(size_t n);
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(name);
+        archive(material);
+        archive(triangles);
+        archive(lines);
+        archive(triangle_bone_weights);
+        archive(line_bone_weights);
+    }
 };
 
 void sort_for_rendering(std::list<std::shared_ptr<ColoredVertexArray>>& colored_vertex_arrays);

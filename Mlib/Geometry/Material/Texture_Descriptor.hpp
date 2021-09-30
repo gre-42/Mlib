@@ -17,6 +17,18 @@ struct TextureDescriptor {
     OrderableFixedArray<float, 3> mean_color = {-1.f, -1.f, -1.f};
     unsigned int anisotropic_filtering_level = 0;
     std::strong_ordering operator <=> (const TextureDescriptor&) const = default;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(color);
+        archive(normal);
+        archive(color_mode);
+        archive(desaturate);
+        archive(histogram);
+        archive(mixed);
+        archive(overlap_npixels);
+        archive(mean_color);
+        archive(anisotropic_filtering_level);
+    }
 };
 
 inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t) {

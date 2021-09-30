@@ -12,6 +12,14 @@
 
 using namespace Mlib;
 
+TriangleList::TriangleList()
+{}
+
+TriangleList::TriangleList(const std::string& name, const Material& material)
+: name_{name},
+  material_{material}
+{}
+
 void TriangleList::draw_triangle_with_normals(
     const FixedArray<float, 3>& p00,
     const FixedArray<float, 3>& p10,

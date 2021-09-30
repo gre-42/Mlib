@@ -11,6 +11,12 @@ struct TerrainStyle {
     inline bool is_visible() const {
         return !near_resource_names.empty() && (much_near_distance != INFINITY);
     }
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(near_resource_names);
+        archive(much_near_distance);
+        archive(is_small);
+    }
 };
 
 }

@@ -12,6 +12,11 @@ inline std::ostream &operator << (std::ostream &ostream, const ArrayShape &v);
 class ArrayShape {
     std::vector<size_t> shape_;
 public:
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(shape_);
+    }
+
     ArrayShape() = default;
     ArrayShape(const ArrayShape& shape) = default;
     ArrayShape(ArrayShape&& shape) = default;

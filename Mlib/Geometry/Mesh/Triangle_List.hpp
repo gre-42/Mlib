@@ -21,10 +21,8 @@ class TriangleList {
 public:
     TriangleList(const TriangleList&) = delete;
     TriangleList& operator = (const TriangleList&) = delete;
-    explicit TriangleList(const std::string& name, const Material& material)
-    : name_{name},
-      material_{material}
-    {}
+    TriangleList();
+    TriangleList(const std::string& name, const Material& material);
     void draw_triangle_with_normals(
         const FixedArray<float, 3>& p00,
         const FixedArray<float, 3>& p10,
@@ -145,6 +143,13 @@ public:
         bool move_only_z = false,
         float decay = 0.97);
     std::shared_ptr<ColoredVertexArray> triangle_array() const;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(name_);
+        archive(material_);
+        archive(triangles_);
+        archive(triangle_bone_weights_);
+    }
     std::string name_;
     Material material_;
     std::list<FixedArray<ColoredVertex, 3>> triangles_;

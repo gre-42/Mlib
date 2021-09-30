@@ -26,12 +26,32 @@ public:
     OsmMapResource(
         SceneNodeResources& scene_node_resources,
         const OsmResourceConfig& config);
+    OsmMapResource(
+        SceneNodeResources& scene_node_resources,
+        const std::string& level_filename);
     ~OsmMapResource();
     virtual void instantiate_renderable(const std::string& name, SceneNode& scene_node, const SceneNodeResourceFilter& resource_filter) const override;
     virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
     virtual std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points() const override;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(cvas_);
+        archive(object_resource_descriptors_);
+        archive(resource_instance_positions_);
+        archive(hitboxes_);
+        archive(scale_);
+        archive(spawn_points_);
+        archive(way_points_);
+        archive(normalization_matrix_);
+        archive(tl_terrain_);
+        archive(tls_no_grass_);
+        archive(near_grass_terrain_style_);
+        archive(near_flowers_terrain_style_);
+        archive(dirt_decals_terrain_style_);
+    }
+    void save_to_file(const std::string& filename) const;
 private:
     std::list<std::shared_ptr<ColoredVertexArray>> cvas_;
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;

@@ -53,6 +53,36 @@ struct Material {
     bool fragments_depend_on_distance() const;
     bool fragments_depend_on_normal() const;
     std::partial_ordering operator <=> (const Material&) const = default;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(continuous_blending_z_order);
+        archive(blend_mode);
+        archive(depth_func);
+        archive(textures);
+        archive(dirt_texture);
+        archive(occluded_type);
+        archive(occluder_type);
+        archive(occluded_by_black);
+        archive(is_black);
+        archive(alpha_distances);
+        archive(wrap_mode_s);
+        archive(wrap_mode_t);
+        archive(collide);
+        archive(aggregate_mode);
+        archive(transformation_mode);
+        archive(billboard_atlas_instances);
+        archive(number_of_frames);
+        archive(distances);
+        archive(is_small);
+        archive(cull_faces);
+        archive(reorient_uv0);
+        archive(ambience);
+        archive(diffusivity);
+        archive(specularity);
+        archive(draw_distance_add);
+        archive(draw_distance_slop);
+        archive(draw_distance_noperations);
+    }
 };
 
 }

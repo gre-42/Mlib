@@ -10,6 +10,12 @@ struct PointsAndAdjacency {
     std::vector<FixedArray<TData, tndim>> points;
     SparseArrayCcs<TData> adjacency;
 
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(points);
+        archive(adjacency);
+    }
+
     void subdivide(const TData& max_length) {
         std::list<FixedArray<TData, tndim>> new_points;
         std::map<size_t, std::map<size_t, TData>> new_columns;

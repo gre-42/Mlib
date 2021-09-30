@@ -48,6 +48,13 @@
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/list.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/vector.hpp>
+#include <fstream>
 #include <poly2tri/point_exception.hpp>
 
 // #undef LOG_FUNCTION
@@ -1030,6 +1037,35 @@ OsmMapResource::OsmMapResource(
                 cvas_.push_back(l2->triangle_array());
             }
         }
+    }
+}
+
+OsmMapResource::OsmMapResource(
+    SceneNodeResources& scene_node_resources,
+    const std::string& level_filename)
+: scene_node_resources_{ scene_node_resources }
+{
+    std::ifstream ifstr{ level_filename, std::ios::binary };
+    if (ifstr.fail()) {
+        throw std::runtime_error("Could not open file \"" + level_filename + '"');
+    }
+    cereal::BinaryInputArchive iarchive(ifstr);
+    iarchive(*this);
+    if (ifstr.fail()) {
+        throw std::runtime_error("Could not write to file \"" + level_filename + '"');
+    }
+}
+
+void OsmMapResource::save_to_file(const std::string& filename) const {
+    std::ofstream ofstr{ filename, std::ios::binary };
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
+    cereal::BinaryOutputArchive oarchive(ofstr);
+    oarchive(*this);
+    ofstr.flush();
+    if (ofstr.fail()) {
+        throw std::runtime_error("Could not write to file \"" + filename + '"');
     }
 }
 
