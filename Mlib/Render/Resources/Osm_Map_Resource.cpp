@@ -408,9 +408,9 @@ OsmMapResource::OsmMapResource(
             auto& tl = *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type];
             for (const auto& t : osm_triangle_lists.street_triangles()) {
                 tl.draw_triangle_wo_normals(
-                    {t(0).position(0), t(0).position(1), 0.f},
-                    {t(1).position(0), t(1).position(1), 0.f},
-                    {t(2).position(0), t(2).position(1), 0.f},
+                    t(0).position,
+                    t(1).position,
+                    t(2).position,
                     terrain_color,
                     terrain_color,
                     terrain_color,
