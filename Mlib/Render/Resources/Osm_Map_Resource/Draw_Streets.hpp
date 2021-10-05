@@ -46,6 +46,9 @@ struct DrawStreetsInput {
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_bdry_triangles;
+    std::vector<FixedArray<ColoredVertex, 3>>* street_surface_central_triangles;
+    std::vector<FixedArray<ColoredVertex, 3>>* street_surface_endpoint0_triangles;
+    std::vector<FixedArray<ColoredVertex, 3>>* street_surface_endpoint1_triangles;
     const std::map<std::string, Node>& nodes;
     const std::map<std::string, Way>& ways;
     float scale;

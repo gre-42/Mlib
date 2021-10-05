@@ -755,7 +755,23 @@ void DrawStreets::draw_streets_draw_ways(
         uv_len0 = 0;
         uv_len1 = std::sqrt(sum(squared(nodes.at(node_id).position - nodes.at(angle_way.neighbor_id).position))) / scale * uv_scale;
     }
-    rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, uv_len0, uv_len1, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+    if (((street_surface_central_triangles != nullptr) != (street_surface_endpoint0_triangles != nullptr)) ||
+        ((street_surface_central_triangles != nullptr) != (street_surface_endpoint1_triangles != nullptr))) {
+        throw std::runtime_error("Inconsistent definition of surface central / endpoint");
+    }
+    if ((street_surface_central_triangles != nullptr) &&
+        ((node_angles.at(node_id).size() < 3) || (node_angles.at(angle_way.neighbor_id).size() < 3)))
+    {
+        if ((node_angles.at(node_id).size() >= 3) && (node_angles.at(angle_way.neighbor_id).size() < 3)) {
+            rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_endpoint1_triangles, scale, 1.f, 1.f);
+        } else if ((node_angles.at(node_id).size() < 3) && (node_angles.at(angle_way.neighbor_id).size() >= 3)) {
+            rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_endpoint0_triangles, scale, 1.f, 1.f);
+        } else {
+            rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_central_triangles, scale, 1.f, 1.f);
+        }
+    } else {
+        rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, uv_len0, uv_len1, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+    }
     if (angle_way.layer > 0) {
         rect.draw_z0(*air_triangles.tl_air_support, nullptr, height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, 1, uv_len0, uv_len1, -1, 1, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
     }

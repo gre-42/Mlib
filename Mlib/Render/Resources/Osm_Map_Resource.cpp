@@ -2,6 +2,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -155,16 +156,20 @@ OsmMapResource::OsmMapResource(
     std::list<std::pair<TerrainType, std::list<FixedArray<float, 3>>>> terrain_region_contours =
         get_terrain_region_contours(nodes, ways);
 
-    auto& tunnel_pipe_cvas = scene_node_resources.get_animated_arrays(config.tunnel_pipe_resource_name)->cvas;
-    if (tunnel_pipe_cvas.size() != 1) {
-        throw std::runtime_error("Pipe does not have exactly one mesh");
-    }
-    auto& tunnel_pipe_cva = tunnel_pipe_cvas.front();
-    auto& tunnel_bdry_cvas = scene_node_resources.get_animated_arrays(config.tunnel_bdry_resource_name)->cvas;
-    if (tunnel_bdry_cvas.size() != 1) {
-        throw std::runtime_error("bdry does not have exactly one mesh");
-    }
-    auto& tunnel_bdry_cva = tunnel_bdry_cvas.front();
+    auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> std::vector<FixedArray<ColoredVertex, 3>>& {
+        auto& cvas = scene_node_resources.get_animated_arrays(resource_name)->cvas;
+        if (cvas.size() != 1) {
+            throw std::runtime_error('"' + resource_name + "\" does not have exactly one mesh");
+        }
+        auto& cva = cvas.front();
+        return cva->triangles;
+    };
+    
+    auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
+    auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
+    auto street_central = config.street_surface_central_resource_name.empty() ? nullptr : &model_triangles(config.street_surface_central_resource_name);
+    auto street_endpoint0 = config.street_surface_endpoint0_resource_name.empty() ? nullptr : &model_triangles(config.street_surface_endpoint0_resource_name);
+    auto street_endpoint1 = config.street_surface_endpoint1_resource_name.empty() ? nullptr : &model_triangles(config.street_surface_endpoint1_resource_name);
 
     OsmTriangleLists osm_triangle_lists{config};
     OsmTriangleLists air_triangle_lists{config};
@@ -194,8 +199,11 @@ OsmMapResource::OsmMapResource(
                 height_bindings,
                 way_point_edges_1_lane,
                 way_point_edges_2_lanes,
-                tunnel_pipe_cva->triangles,
-                tunnel_bdry_cva->triangles,
+                tunnel_pipe,
+                tunnel_bdry,
+                street_central,
+                street_endpoint0,
+                street_endpoint1,
                 nodes,
                 ways,
                 config.scale,
@@ -308,7 +316,13 @@ OsmMapResource::OsmMapResource(
 
     if (config.with_terrain) {
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
-        // save_obj("/tmp/tl_street.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_street->triangles_});
+        {
+            size_t i = 0;
+            for (const auto& e : osm_triangle_lists.tl_street.list()) {
+                save_obj("/tmp/tl_street_" + std::to_string(i) + ".obj", IndexedFaceSet<float, size_t>{e.styled_road.triangle_list->triangles_});
+                ++i;
+            }
+        }
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
         if (const char* prefix = getenv("MESH_AROUND_PREFIX"); prefix != nullptr) {
             std::vector<float> coords = string_to_vector(getenv("MESH_AROUND_POS"), safe_stof);
