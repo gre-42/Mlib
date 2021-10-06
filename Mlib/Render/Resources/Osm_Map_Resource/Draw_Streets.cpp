@@ -760,13 +760,15 @@ void DrawStreets::draw_streets_draw_ways(
         throw std::runtime_error("Inconsistent definition of surface central / endpoint");
     }
     if ((street_surface_central_triangles != nullptr) &&
-        ((node_angles.at(node_id).size() < 3) || (node_angles.at(angle_way.neighbor_id).size() < 3)))
+        ((node_angles.at(node_id).size() == 2) || (node_angles.at(angle_way.neighbor_id).size() == 2)))
     {
-        if ((node_angles.at(node_id).size() >= 3) && (node_angles.at(angle_way.neighbor_id).size() < 3)) {
+        if ((node_angles.at(node_id).size() != 2) && (node_angles.at(angle_way.neighbor_id).size() == 2)) {
             rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_endpoint1_triangles, scale, 1.f, 1.f);
-        } else if ((node_angles.at(node_id).size() < 3) && (node_angles.at(angle_way.neighbor_id).size() >= 3)) {
+        } else if ((node_angles.at(node_id).size() == 2) && (node_angles.at(angle_way.neighbor_id).size() != 2)) {
             rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_endpoint0_triangles, scale, 1.f, 1.f);
         } else {
+            assert_true(node_angles.at(node_id).size() <= 2);
+            assert_true(node_angles.at(angle_way.neighbor_id).size() <= 2);
             rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_central_triangles, scale, 1.f, 1.f);
         }
     } else {

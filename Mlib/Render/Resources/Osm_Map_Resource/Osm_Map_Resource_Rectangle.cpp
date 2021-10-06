@@ -220,16 +220,29 @@ WarpedSegment::WarpedSegment(const Rectangle& r)
 : c0_{(r.p00_ + r.p01_) / 2.f},
   c1_{(r.p10_ + r.p11_) / 2.f},
   d0_{r.p01_ - r.p00_},
-  d1_{r.p11_ - r.p10_}
+  d1_{r.p11_ - r.p10_},
+  r_{r}
 {}
 
 FixedArray<float, 2> WarpedSegment::warp_0(float x) const
 {
+    if (x == -1) {
+        return r_.p00_;
+    }
+    if (x == 1) {
+        return r_.p01_;
+    }
     return c0_ + (x / 2) * d0_;
 }
 
 FixedArray<float, 2> WarpedSegment::warp_1(float x) const
 {
+    if (x == -1) {
+        return r_.p10_;
+    }
+    if (x == 1) {
+        return r_.p11_;
+    }
     return c1_ + (x / 2) * d1_;
 }
 

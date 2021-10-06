@@ -2,7 +2,6 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
-#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -316,13 +315,27 @@ OsmMapResource::OsmMapResource(
 
     if (config.with_terrain) {
         // save_obj("/tmp/tl_tunnel_entrance.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_tunnel_entrance->triangles_});
-        {
-            size_t i = 0;
-            for (const auto& e : osm_triangle_lists.tl_street.list()) {
-                save_obj("/tmp/tl_street_" + std::to_string(i) + ".obj", IndexedFaceSet<float, size_t>{e.styled_road.triangle_list->triangles_});
-                ++i;
-            }
-        }
+        // {
+        //     size_t i = 0;
+        //     for (const auto& e : osm_triangle_lists.tl_street.list()) {
+        //         save_obj("/tmp/tl_street_" + std::to_string(i) + ".obj", IndexedFaceSet<float, size_t>{e.styled_road.triangle_list->triangles_});
+        //         ++i;
+        //         for (const auto& t : e.styled_road.triangle_list->triangles_) {
+        //             for (const auto& v : t.flat_iterable()) {
+        //                 if (max(abs(v.position - FixedArray<float, 3>{-0.627685, 1.276513, 0.000000})) < 1e-6) {
+        //                     std::cerr << std::setprecision(15) << v << std::endl;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // {
+        //     size_t i = 0;
+        //     for (const auto& e : osm_triangle_lists.tls_crossing_only()) {
+        //         save_obj("/tmp/tl_crossing_" + std::to_string(i) + ".obj", IndexedFaceSet<float, size_t>{e->triangles_});
+        //         ++i;
+        //     }
+        // }
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
         if (const char* prefix = getenv("MESH_AROUND_PREFIX"); prefix != nullptr) {
             std::vector<float> coords = string_to_vector(getenv("MESH_AROUND_POS"), safe_stof);

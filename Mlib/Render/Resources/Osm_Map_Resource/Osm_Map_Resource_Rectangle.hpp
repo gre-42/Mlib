@@ -91,6 +91,7 @@ private:
     FixedArray<float, 2> c1_;
     FixedArray<float, 2> d0_;
     FixedArray<float, 2> d1_;
+    const Rectangle& r_;
 };
 
 struct CurbedStreet {
