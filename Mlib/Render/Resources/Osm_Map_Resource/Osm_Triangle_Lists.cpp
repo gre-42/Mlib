@@ -412,6 +412,12 @@ std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::street_hole_triangles(
     return result;
 }
 
+std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::no_trees_triangles() const {
+    std::list<FixedArray<ColoredVertex, 3>> result = street_hole_triangles();
+    if (tl_terrain->contains(TerrainType::FLOWERS)) INSERT((*tl_terrain)[TerrainType::FLOWERS]);
+    return result;
+}
+
 std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::building_hole_triangles() const {
     std::list<FixedArray<ColoredVertex, 3>> result;
     INSERT4(tls_buildings_ground);

@@ -13,7 +13,6 @@ using namespace Mlib;
 void Mlib::add_street_steiner_points(
     std::list<SteinerPointInfo>& steiner_points,
     const StreetBvh& ground_bvh,
-    const StreetBvh& air_bvh,
     const BoundingInfo& bounding_info,
     float scale,
     const std::vector<float>& steiner_point_distances_road,
@@ -38,7 +37,6 @@ void Mlib::add_street_steiner_points(
         for (float y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {
             FixedArray<float, 2> pt{x + rng2() * scale, y + rng2() * scale};
             float min_distance = ground_bvh.min_dist(pt, dist1);
-            float air_min_distance = air_bvh.min_dist(pt, dist1);
             if (min_distance > 0) {
                 float dist = interp(min_distance / scale);
                 if (dist != INFINITY) {
@@ -47,9 +45,7 @@ void Mlib::add_street_steiner_points(
                     if (is_included) {
                         steiner_points.push_back(SteinerPointInfo{
                             .position = {pt(0), pt(1), 0.f},
-                            .type = SteinerPointType::STREET_NEIGHBOR,
-                            .distance_to_road = min_distance,
-                            .distance_to_air_road = air_min_distance});
+                            .type = SteinerPointType::STREET_NEIGHBOR});
                     }
                 }
             }

@@ -16,8 +16,6 @@ enum class SteinerPointType {
 struct SteinerPointInfo {
     FixedArray<float, 3> position;
     SteinerPointType type;
-    float distance_to_road;
-    float distance_to_air_road;
 };
 
 }

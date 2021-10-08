@@ -375,7 +375,6 @@ OsmMapResource::OsmMapResource(
         add_street_steiner_points(
             steiner_points,
             ground_street_bvh,
-            StreetBvh{air_triangle_lists.street_hole_triangles()},
             bounding_info,
             config.scale,
             config.steiner_point_distances_road,
@@ -416,6 +415,21 @@ OsmMapResource::OsmMapResource(
             handle_edge_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
         } catch (const TriangleException& e) {
             handle_triangle_exception(e, "Could not triangulate terrain (TERRAIN_{CONTOUR|TRIANGLE}_FILENAME environment variables for debugging)");
+        }
+        for (const WaysideResourceNames& ws : config.waysides) {
+            LOG_INFO("add_grass_on_steiner_points");
+            ResourceNameCycle rnc{scene_node_resources, ws.resource_names};
+            add_grass_on_steiner_points(
+                resource_instance_positions_,
+                object_resource_descriptors_,
+                hitboxes_,
+                rnc,
+                StreetBvh{ osm_triangle_lists.no_trees_triangles() },
+                StreetBvh{ air_triangle_lists.street_hole_triangles() },
+                steiner_points,
+                config.scale,
+                ws.min_dist,
+                ws.max_dist);
         }
         if (config.blend_street) {
             auto& tl = *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type];
@@ -928,19 +942,6 @@ OsmMapResource::OsmMapResource(
     //     colorize_height_map(l->triangles_);
     // }
 
-    for (const WaysideResourceNames& ws : config.waysides) {
-        LOG_INFO("add_grass_on_steiner_points");
-        ResourceNameCycle rnc{scene_node_resources, ws.resource_names};
-        add_grass_on_steiner_points(
-            resource_instance_positions_,
-            object_resource_descriptors_,
-            hitboxes_,
-            rnc,
-            steiner_points,
-            config.scale,
-            ws.min_dist,
-            ws.max_dist);
-    }
     if (!config.grass_resource_names.empty()) {
         ResourceNameCycle rnc{scene_node_resources, config.grass_resource_names};
         LOG_INFO("add_grass_inside_triangles");

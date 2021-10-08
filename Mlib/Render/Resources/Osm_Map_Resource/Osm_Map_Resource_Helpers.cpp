@@ -579,8 +579,7 @@ void Mlib::draw_wall_barriers(
                     if (steiner_points != nullptr) {
                         steiner_points->push_back({
                             .position = {p0(0), p0(1), 0.f},
-                            .type = SteinerPointType::WALL,
-                            .distance_to_road = NAN});
+                            .type = SteinerPointType::WALL});
                     }
                     FixedArray<float, 2> uv = 1.f / scale * uv_scale * bs.uv;
                     // some buildings are clock-wise, others counter-clock-wise
@@ -647,8 +646,7 @@ void Mlib::draw_building_walls(
                 if ((steiner_points != nullptr) && (&bl == &*bu.levels.begin())) {
                     steiner_points->push_back({
                         .position = {p0(0), p0(1), 0.f},
-                        .type = SteinerPointType::WALL,
-                        .distance_to_road = NAN});
+                        .type = SteinerPointType::WALL});
                 }
                 ColoredVertex* pp00a;
                 ColoredVertex* pp11a;
