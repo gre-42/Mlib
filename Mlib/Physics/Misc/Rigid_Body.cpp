@@ -334,7 +334,7 @@ void RigidBody::write_status(std::ostream& ostr, StatusComponents log_components
             ostr << "d: " << 2 * std::sqrt(sum(squared(rbi_.rbp_.v_)) / w2) << " m" << std::endl;
             ostr << "d / d2(9.8): " << 9.8 / std::sqrt(w2 * sum(squared(rbi_.rbp_.v_))) << std::endl;
         } else {
-            ostr << "d: " << " undefined" << std::endl;
+            ostr << "d: undefined" << std::endl;
             ostr << "d / d2(9.8): undefined" << std::endl;
         }
     }
@@ -344,7 +344,7 @@ void RigidBody::write_status(std::ostream& ostr, StatusComponents log_components
         if (float a2 = sum(squared(rbi_.a_)); a2 > 1e-2) {
             ostr << "d2: " << 2 * sum(squared(rbi_.rbp_.v_)) / std::sqrt(a2) << " m" << std::endl;
         } else {
-            ostr << "d2: " << " undefined" << std::endl;
+            ostr << "d2: undefined" << std::endl;
         }
         // Not implemented: https://de.wikipedia.org/wiki/Wendekreis_(Fahrzeug)
         // D = 2 L / sin(alpha)
