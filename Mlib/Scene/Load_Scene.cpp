@@ -521,6 +521,7 @@ void LoadScene::operator()(
         "(?:\\s+mixed=([#\\w-. \\(\\)/+-]+))?"
         "(?:\\s+overlap_npixels=(\\d+))?"
         "(?:\\s+mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:\\s+lighten=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+anisotropic_filtering_level=(\\d+)$");
     static const DECLARE_REGEX(add_blend_map_texture_reg,
         "^\\s*add_blend_map_texture"
@@ -1410,7 +1411,12 @@ void LoadScene::operator()(
                             match[9].matched ? safe_stof(match[9].str()) : -1.f,
                             match[10].matched ? safe_stof(match[10].str()) : -1.f,
                             match[11].matched ? safe_stof(match[11].str()) : -1.f},
-                    .anisotropic_filtering_level = safe_stou(match[12].str())});
+                    .lighten =
+                        OrderableFixedArray<float, 3>{
+                            match[12].matched ? safe_stof(match[12].str()) : 0.f,
+                            match[13].matched ? safe_stof(match[13].str()) : 0.f,
+                            match[14].matched ? safe_stof(match[14].str()) : 0.f},
+                    .anisotropic_filtering_level = safe_stou(match[15].str())});
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_blend_map_texture_reg)) {

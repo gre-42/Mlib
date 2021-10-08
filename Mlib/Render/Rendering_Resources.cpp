@@ -17,6 +17,7 @@
 #include <stb_image/stb_image_atlas.hpp>
 #include <stb_image/stb_image_load.hpp>
 #include <stb_image/stb_image_resize.h>
+#include <stb_image/stb_lighten.hpp>
 #include <stb_image/stb_mipmaps.h>
 #include <string>
 #include <vector>
@@ -109,6 +110,14 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
         assert_true(m.shape(1) == (size_t)si0.height);
         assert_true(m.shape(2) == (size_t)si0.width);
         array_2_stb_image(m, si0.data.get());
+    }
+    if (!desc.lighten.all_equal(0.f)) {
+        stb_lighten(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (desc.lighten * 255.f).casted<short>().flat_begin());
     }
     return si0;
 }

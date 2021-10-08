@@ -15,6 +15,7 @@ struct TextureDescriptor {
     std::string mixed = "";
     size_t overlap_npixels = 5;
     OrderableFixedArray<float, 3> mean_color = {-1.f, -1.f, -1.f};
+    OrderableFixedArray<float, 3> lighten = {0.f, 0.f, 0.f};
     unsigned int anisotropic_filtering_level = 0;
     std::strong_ordering operator <=> (const TextureDescriptor&) const = default;
     template <class Archive>
@@ -39,7 +40,8 @@ inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t
         "histogram: " << t.histogram << '\n' <<
         "mixed: " << t.mixed << '\n' <<
         "overlap_npixels: " << t.overlap_npixels << '\n' <<
-        "mean_color: " << t.mean_color << '\n';
+        "mean_color: " << t.mean_color << '\n' <<
+        "lighten: " << t.lighten << '\n';
     return ostr;
 }
 
