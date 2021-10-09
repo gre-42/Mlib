@@ -13,6 +13,8 @@ for path, dirs, files in os.walk('.'):
         'URelWithDebInfo',
         'VRelease',
         'AURelWithDebInfo',
+        'GURelease',
+        'GURelWithDebInfo',
         'TestOut',
         'Data',
         '.git',
