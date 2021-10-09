@@ -161,6 +161,7 @@ OsmTriangleLists::OsmTriangleLists(const OsmResourceConfig& config)
             .wrap_mode_s = curb_wrap_mode_s,
             .draw_distance_noperations = 1000}.compute_color_mode()));
     }
+    tl_ditch = std::make_shared<TriangleList>("ditch", Material());
     tl_air_support = std::make_shared<TriangleList>("air_support", Material{
         .textures = {primary_rendering_resources->get_blend_map_texture(config.air_support_texture)},
         .occluded_type = OccludedType::LIGHT_MAP_COLOR,
@@ -232,6 +233,18 @@ std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_wall_wo_curb() co
 std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_street() const {
     auto res = std::list<std::shared_ptr<TriangleList>>{
         tl_air_support};
+    for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
+    for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
+    for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
+    for (const auto& e : tl_street_curb2.map()) {res.push_back(e.second);}
+    for (const auto& e : tl_air_street_curb.map()) {res.push_back(e.second);}
+    return res;
+}
+
+std::list<std::shared_ptr<TriangleList>> OsmTriangleLists::tls_terrain_nosmooth() const {
+    auto res = std::list<std::shared_ptr<TriangleList>>{
+        tl_air_support,
+        tl_ditch};
     for (const auto& e : tl_street_crossing.map()) {res.push_back(e.second);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
     for (const auto& e : tl_street_curb.map()) {res.push_back(e.second);}
@@ -395,6 +408,7 @@ std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::all_hole_triangles() c
     INSERT3(tl_street);
     INSERT2(tl_street_curb);
     INSERT2(tl_street_curb2);
+    INSERT(tl_ditch);
     INSERT(tl_entrance.at(EntranceType::TUNNEL));
     INSERT(tl_entrance.at(EntranceType::BRIDGE));
     INSERT4(tls_buildings_ground);
@@ -407,6 +421,7 @@ std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::street_hole_triangles(
     INSERT3(tl_street);
     INSERT2(tl_street_curb);
     INSERT2(tl_street_curb2);
+    INSERT(tl_ditch);
     INSERT(tl_entrance.at(EntranceType::TUNNEL));
     INSERT(tl_entrance.at(EntranceType::BRIDGE));
     return result;
@@ -427,6 +442,12 @@ std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::building_hole_triangle
 std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::street_triangles() const {
     std::list<FixedArray<ColoredVertex, 3>> result;
     INSERT3(tl_street);
+    return result;
+}
+
+std::list<FixedArray<ColoredVertex, 3>> OsmTriangleLists::ditch_triangles() const {
+    std::list<FixedArray<ColoredVertex, 3>> result;
+    INSERT(tl_ditch);
     return result;
 }
 

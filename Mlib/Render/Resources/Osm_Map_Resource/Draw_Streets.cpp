@@ -1,6 +1,7 @@
 #include "Draw_Streets.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
@@ -762,14 +763,27 @@ void DrawStreets::draw_streets_draw_ways(
     if ((street_surface_central_triangles != nullptr) &&
         ((node_angles.at(node_id).size() == 2) || (node_angles.at(angle_way.neighbor_id).size() == 2)))
     {
+        auto draw_street_with_ditch = [this, &rect, &street_lst, &tlists, &node_id, &angle_way](const std::list<std::shared_ptr<ColoredVertexArray>>& cvas){
+            for (const auto& cva : cvas) {
+                TriangleList* destination_triangles;
+                if (cva->name == "street") {
+                    destination_triangles = street_lst.triangle_list.get();
+                } else if (cva->name == "ditch") {
+                    destination_triangles = tlists.tl_ditch.get();
+                } else {
+                    throw std::runtime_error("Unknown street name \"" + cva->name + "\", must be \"street\" or \"ditch\"");
+                }
+                rect.draw(*destination_triangles, height_bindings, node_id, angle_way.neighbor_id, cva->triangles, scale, 1.f, 1.f);
+            }
+        };
         if ((node_angles.at(node_id).size() != 2) && (node_angles.at(angle_way.neighbor_id).size() == 2)) {
-            rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_endpoint1_triangles, scale, 1.f, 1.f);
+            draw_street_with_ditch(*street_surface_endpoint1_triangles);
         } else if ((node_angles.at(node_id).size() == 2) && (node_angles.at(angle_way.neighbor_id).size() != 2)) {
-            rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_endpoint0_triangles, scale, 1.f, 1.f);
+            draw_street_with_ditch(*street_surface_endpoint0_triangles);
         } else {
             assert_true(node_angles.at(node_id).size() <= 2);
             assert_true(node_angles.at(angle_way.neighbor_id).size() <= 2);
-            rect.draw(*street_lst.triangle_list, height_bindings, node_id, angle_way.neighbor_id, *street_surface_central_triangles, scale, 1.f, 1.f);
+            draw_street_with_ditch(*street_surface_central_triangles);
         }
     } else {
         rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, uv_len0, uv_len1, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);

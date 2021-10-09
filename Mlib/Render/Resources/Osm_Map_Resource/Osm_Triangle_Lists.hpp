@@ -65,6 +65,7 @@ struct OsmTriangleLists {
     std::shared_ptr<TriangleList> tl_tunnel_pipe;
     std::shared_ptr<TriangleList> tl_tunnel_bdry;
     std::shared_ptr<TriangleList> tl_tunnel_crossing;
+    std::shared_ptr<TriangleList> tl_ditch;
     std::map<EntranceType, std::shared_ptr<TriangleList>> tl_entrance;
     std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>> entrances;
     WaterTypeTriangleList tl_water;
@@ -73,6 +74,7 @@ struct OsmTriangleLists {
     std::list<std::shared_ptr<TriangleList>> tls_street_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_wall_wo_curb() const;
     std::list<std::shared_ptr<TriangleList>> tls_street() const;
+    std::list<std::shared_ptr<TriangleList>> tls_terrain_nosmooth() const;
     std::list<std::shared_ptr<TriangleList>> tls_wo_subtraction_and_water() const;
     std::list<std::shared_ptr<TriangleList>> tls_wo_subtraction_w_water() const;
     std::list<std::shared_ptr<TriangleList>> tls_raised() const;
@@ -88,6 +90,7 @@ struct OsmTriangleLists {
     std::list<FixedArray<ColoredVertex, 3>> no_trees_triangles() const;
     std::list<FixedArray<ColoredVertex, 3>> building_hole_triangles() const;
     std::list<FixedArray<ColoredVertex, 3>> street_triangles() const;
+    std::list<FixedArray<ColoredVertex, 3>> ditch_triangles() const;
 };
 
 }

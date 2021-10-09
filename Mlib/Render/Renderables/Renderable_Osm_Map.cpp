@@ -118,10 +118,10 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                         for (const auto& cva : scene_node_resources.get_animated_arrays(prn.name)->cvas) {
                             if (vc_instance.is_visible(cva->material, prn.billboard_id, scene_graph_config, external_render_pass, max_distance_near))
                             {
-                                if (boundary_bvh != nullptr) {
+                                if ((terrain_style.min_near_distance_to_bdry != 0) && (boundary_bvh != nullptr)) {
                                     float min_dist = boundary_bvh->min_distance(
                                         p,
-                                        scene_graph_config.min_distance_near * scale,
+                                        terrain_style.min_near_distance_to_bdry * scale,
                                         [&p](auto& tt)
                                         {
                                             return std::sqrt(sum(squared(distance_point_to_triangle_3d(
@@ -130,7 +130,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                                                 tt(1),
                                                 tt(2)))));
                                         });
-                                    if (min_dist < scene_graph_config.min_distance_near * scale) {
+                                    if (min_dist < terrain_style.min_near_distance_to_bdry * scale) {
                                         continue;
                                     }
                                 }

@@ -166,9 +166,9 @@ OsmMapResource::OsmMapResource(
     
     auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
     auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
-    auto street_central = config.street_surface_central_resource_name.empty() ? nullptr : &model_triangles(config.street_surface_central_resource_name);
-    auto street_endpoint0 = config.street_surface_endpoint0_resource_name.empty() ? nullptr : &model_triangles(config.street_surface_endpoint0_resource_name);
-    auto street_endpoint1 = config.street_surface_endpoint1_resource_name.empty() ? nullptr : &model_triangles(config.street_surface_endpoint1_resource_name);
+    std::shared_ptr<AnimatedColoredVertexArrays> street_central = config.street_surface_central_resource_name.empty() ? nullptr : scene_node_resources.get_animated_arrays(config.street_surface_central_resource_name);
+    std::shared_ptr<AnimatedColoredVertexArrays> street_endpoint0 = config.street_surface_endpoint0_resource_name.empty() ? nullptr : scene_node_resources.get_animated_arrays(config.street_surface_endpoint0_resource_name);
+    std::shared_ptr<AnimatedColoredVertexArrays> street_endpoint1 = config.street_surface_endpoint1_resource_name.empty() ? nullptr : scene_node_resources.get_animated_arrays(config.street_surface_endpoint1_resource_name);
 
     OsmTriangleLists osm_triangle_lists{config};
     OsmTriangleLists air_triangle_lists{config};
@@ -200,9 +200,9 @@ OsmMapResource::OsmMapResource(
                 way_point_edges_2_lanes,
                 tunnel_pipe,
                 tunnel_bdry,
-                street_central,
-                street_endpoint0,
-                street_endpoint1,
+                street_central == nullptr ? nullptr : &street_central->cvas,
+                street_endpoint0 == nullptr ? nullptr : &street_endpoint0->cvas,
+                street_endpoint1 == nullptr ? nullptr : &street_endpoint1->cvas,
                 nodes,
                 ways,
                 config.scale,
@@ -431,10 +431,9 @@ OsmMapResource::OsmMapResource(
                 ws.min_dist,
                 ws.max_dist);
         }
-        if (config.blend_street) {
-            auto& tl = *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type];
-            for (const auto& t : osm_triangle_lists.street_triangles()) {
-                tl.draw_triangle_wo_normals(
+        auto draw_terrain_triangles = [&config](TriangleList& dest, const std::list<FixedArray<ColoredVertex, 3>>& source){
+            for (const auto& t : source) {
+                dest.draw_triangle_wo_normals(
                     t(0).position,
                     t(1).position,
                     t(2).position,
@@ -445,7 +444,15 @@ OsmMapResource::OsmMapResource(
                     {t(1).position(0) / config.scale * config.uv_scale_terrain, t(1).position(1) / config.scale * config.uv_scale_terrain},
                     {t(2).position(0) / config.scale * config.uv_scale_terrain, t(2).position(1) / config.scale * config.uv_scale_terrain});
             }
+        };
+        if (config.blend_street) {
+            draw_terrain_triangles(
+                *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type],
+                osm_triangle_lists.street_triangles());
         }
+        draw_terrain_triangles(
+            *(*osm_triangle_lists.tl_terrain)[config.default_terrain_type],
+            osm_triangle_lists.ditch_triangles());
         // save_obj("/tmp/tl_terrain.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     }
     if (config.with_roofs) {

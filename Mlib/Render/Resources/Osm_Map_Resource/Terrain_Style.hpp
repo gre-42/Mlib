@@ -6,6 +6,7 @@ namespace Mlib {
 
 struct TerrainStyle {
     std::vector<std::string> near_resource_names;
+    float min_near_distance_to_bdry = 0.f;
     float much_near_distance = INFINITY;
     bool is_small = true;
     inline bool is_visible() const {
