@@ -18,8 +18,15 @@ PitchLookAtNode::PitchLookAtNode(
     float bullet_start_offset,
     float bullet_velocity,
     float gravity,
+    float pitch_min,
+    float pitch_max,
+    float dpitch_max,
     const PhysicsEngineConfig& cfg)
-: followed_node_{nullptr},
+: pitch_{NAN},
+  pitch_min_{pitch_min},
+  pitch_max_{pitch_max},
+  dpitch_max_{dpitch_max},
+  followed_node_{nullptr},
   advance_times_{advance_times},
   follower_{follower},
   followed_{nullptr},
@@ -74,7 +81,9 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
         rbi.rbp_.v_ -= follower_.rbp_.v_;
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
-        pitch_ += std::atan2(p(1), -p(2));
+        float dpitch = std::atan2(p(1), -p(2));
+        pitch_ += sign(dpitch) * std::min(std::abs(dpitch), dpitch_max_);
+        pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
     }
 }
 

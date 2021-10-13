@@ -499,7 +499,19 @@ void LoadScene::operator()(
         "\\s+shadow=(0|1)$");
     static const DECLARE_REGEX(look_at_node_reg, "^\\s*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
     static const DECLARE_REGEX(keep_offset_reg, "^\\s*keep_offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const DECLARE_REGEX(yaw_pitch_look_at_nodes_reg, "^\\s*yaw_pitch_look_at_nodes yaw_node=([\\w+-.]+) pitch_node=([\\w+-.]+) parent_follower_rigid_body_node=([\\w+-.]+) followed=([\\w+-.]*) bullet_start_offset=([\\w+-.]+) bullet_velocity=([\\w+-.]+) gravity=([\\w+-.]+)$");
+    static const DECLARE_REGEX(yaw_pitch_look_at_nodes_reg,
+        "^\\s*yaw_pitch_look_at_nodes"
+        "\\s+yaw_node=([\\w+-.]+)"
+        "\\s+pitch_node=([\\w+-.]+)"
+        "\\s+parent_follower_rigid_body_node=([\\w+-.]+)"
+        "\\s+followed=([\\w+-.]*)"
+        "\\s+bullet_start_offset=([\\w+-.]+)"
+        "\\s+bullet_velocity=([\\w+-.]+)"
+        "\\s+gravity=([\\w+-.]+)"
+        "\\s+dyaw_max=([\\w+-.]+)"
+        "\\s+pitch_min=([\\w+-.]+)"
+        "\\s+pitch_max=([\\w+-.]+)"
+        "\\s+dpitch_max=([\\w+-.]+)$");
     static const DECLARE_REGEX(follow_node_reg,
         "^\\s*follow_node\\r?\\n"
         "\\s*follower=([\\w+-.]+)\\r?\\n"
@@ -2361,6 +2373,10 @@ void LoadScene::operator()(
                 safe_stof(match[5].str()),
                 safe_stof(match[6].str()),
                 safe_stof(match[7].str()),
+                safe_stof(match[8].str()) / 180.f * float(M_PI),
+                safe_stof(match[9].str()) / 180.f * float(M_PI),
+                safe_stof(match[10].str()) / 180.f * float(M_PI),
+                safe_stof(match[11].str()) / 180.f * float(M_PI),
                 scene_config.physics_engine_config);
             linker.link_relative_movable(*yaw_node, follower);
             linker.link_relative_movable(*pitch_node, follower->pitch_look_at_node());

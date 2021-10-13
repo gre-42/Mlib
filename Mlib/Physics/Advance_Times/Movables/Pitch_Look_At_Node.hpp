@@ -20,6 +20,9 @@ public:
         float bullet_start_offset,
         float bullet_velocity,
         float gravity,
+        float pitch_min,
+        float pitch_max,
+        float dpitch_max,
         const PhysicsEngineConfig& cfg);
     ~PitchLookAtNode();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
@@ -33,6 +36,9 @@ public:
 
 private:
     float pitch_;
+    float pitch_min_;
+    float pitch_max_;
+    float dpitch_max_;
     FixedArray<float, 3> relative_position_;
     SceneNode* followed_node_;
     AdvanceTimes& advance_times_;

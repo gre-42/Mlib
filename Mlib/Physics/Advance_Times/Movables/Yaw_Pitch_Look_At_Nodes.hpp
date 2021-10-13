@@ -21,6 +21,10 @@ public:
         float bullet_start_offset,
         float bullet_velocity,
         float gravity,
+        float dyaw_max,
+        float pitch_min,
+        float pitch_max,
+        float dpitch_max,
         const PhysicsEngineConfig& cfg);
     ~YawPitchLookAtNodes();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
@@ -35,6 +39,7 @@ public:
 
 private:
     float yaw_;
+    float dyaw_max_;
     FixedArray<float, 3> relative_position_;
     SceneNode* followed_node_;
     AdvanceTimes& advance_times_;

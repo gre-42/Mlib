@@ -19,12 +19,29 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     float bullet_start_offset,
     float bullet_velocity,
     float gravity,
+    float dyaw_max,
+    float pitch_min,
+    float pitch_max,
+    float dpitch_max,
     const PhysicsEngineConfig& cfg)
-: followed_node_{nullptr},
+: yaw_{NAN},
+  dyaw_max_{dyaw_max},
+  followed_node_{nullptr},
   advance_times_{advance_times},
   follower_{follower},
   followed_{nullptr},
-  pitch_look_at_node_{std::make_shared<PitchLookAtNode>(followed_node, advance_times, follower, followed, bullet_start_offset, bullet_velocity, gravity, cfg)},
+  pitch_look_at_node_{std::make_shared<PitchLookAtNode>(
+      followed_node,
+      advance_times,
+      follower,
+      followed,
+      bullet_start_offset,
+      bullet_velocity,
+      gravity,
+      pitch_min,
+      pitch_max,
+      dpitch_max,
+      cfg)},
   bullet_start_offset_{bullet_start_offset},
   bullet_velocity_{bullet_velocity},
   gravity_{gravity},
@@ -76,7 +93,8 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
         rbi.rbp_.v_ -= follower_.rbp_.v_;
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
-        yaw_ -= std::atan2(p(0), -p(2));
+        float dyaw = -std::atan2(p(0), -p(2));
+        yaw_ += sign(dyaw) * std::min(std::abs(dyaw), dyaw_max_);
     }
 }
 
