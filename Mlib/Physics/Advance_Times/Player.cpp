@@ -86,6 +86,8 @@ void Player::reset_node() {
     surface_power_backward_ = NAN;
     angular_velocity_left_ = NAN;
     angular_velocity_right_ = NAN;
+    stuck_start_ = std::chrono::steady_clock::time_point();
+    unstuck_start_ = std::chrono::steady_clock::time_point();
 }
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
@@ -396,8 +398,6 @@ bool Player::unstuck() {
                 // std::lock_guard lock{ mutex_ };
                 // scene_.delete_root_node(scene_node_name_);
                 scene_.schedule_delete_root_node(scene_node_name_);
-                stuck_start_ = std::chrono::steady_clock::time_point();
-                unstuck_start_ = std::chrono::steady_clock::time_point();
             } else {
                 throw std::runtime_error("Unsupported unstuck mode");
             }
