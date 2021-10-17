@@ -1,6 +1,7 @@
 #pragma once
 #include <iosfwd>
 #include <list>
+#include <mutex>
 #include <string>
 
 namespace Mlib {
@@ -43,6 +44,7 @@ private:
     void save_and_discard();
     size_t max_tracks_;
     std::list<LapTimeEventAndId> lap_time_events_;
+    mutable std::mutex lap_time_events_mutex_;
 };
 
 }

@@ -55,6 +55,7 @@ void GameHistory::load() {
         }
         for (const auto& l : j) {
             try {
+                std::lock_guard guard{ lap_time_events_mutex_ };
                 lap_time_events_.push_back(LapTimeEventAndId{
                     .event = LapTimeEvent{
                         .level = l["level"].get<std::string>(),
@@ -71,29 +72,32 @@ void GameHistory::load() {
 
 void GameHistory::save_and_discard() {
     json j;
-    std::map<std::string, size_t> ntracks;
-    lap_time_events_.remove_if([&ntracks, &j, this](const LapTimeEventAndId& l){
-        size_t& i = ntracks[l.event.level];
-        if (i < max_tracks_) {
-            json entry;
-            entry["id"] = l.id;
-            entry["level"] = l.event.level;
-            entry["lap_time"] = l.event.lap_time;
-            entry["player_name"] = l.event.player_name;
-            entry["vehicle"] = l.event.vehicle;
-            j.push_back(entry);
-            ++i;
-            return false;
-        } else {
-            std::string fn = track_m_filename(l.id);
-            try {
-                fs::remove(fn);
-            } catch (const fs::filesystem_error& e) {
-                throw std::runtime_error("Could not delete file \"" + fn + '"');
+    {
+        std::map<std::string, size_t> ntracks;
+        std::lock_guard guard{ lap_time_events_mutex_ };
+        lap_time_events_.remove_if([&ntracks, &j, this](const LapTimeEventAndId& l){
+            size_t& i = ntracks[l.event.level];
+            if (i < max_tracks_) {
+                json entry;
+                entry["id"] = l.id;
+                entry["level"] = l.event.level;
+                entry["lap_time"] = l.event.lap_time;
+                entry["player_name"] = l.event.player_name;
+                entry["vehicle"] = l.event.vehicle;
+                j.push_back(entry);
+                ++i;
+                return false;
+            } else {
+                std::string fn = track_m_filename(l.id);
+                try {
+                    fs::remove(fn);
+                } catch (const fs::filesystem_error& e) {
+                    throw std::runtime_error("Could not delete file \"" + fn + '"');
+                }
+                return true;
             }
-            return true;
-        }
-    });
+        });
+    }
     {
         std::string old_json_filename = stats_json_filename();
         std::string new_json_filename = old_json_filename + "~";
@@ -143,15 +147,21 @@ void GameHistory::notify_lap_time(
     }
     LapTimeEventAndId lid{lap_time_event, max_id};
     // From: https://stackoverflow.com/a/35840954/2292832
-    lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lid), lid);
+    {
+        std::lock_guard guard{ lap_time_events_mutex_ };
+        lap_time_events_.insert(std::lower_bound(lap_time_events_.begin(), lap_time_events_.end(), lid), lid);
+    }
     save_and_discard();
 }
 
 std::string GameHistory::get_level_history(const std::string& level) const {
     std::stringstream sstr;
-    for (const auto& l : lap_time_events_) {
-        if (l.event.level == level) {
-            sstr << "Player: " << l.event.player_name << ", lap time: " << format_minutes_seconds(l.event.lap_time) << std::endl;
+    {
+        std::lock_guard guard{ lap_time_events_mutex_ };
+        for (const auto& l : lap_time_events_) {
+            if (l.event.level == level) {
+                sstr << "Player: " << l.event.player_name << ", lap time: " << format_minutes_seconds(l.event.lap_time) << std::endl;
+            }
         }
     }
     return sstr.str();
@@ -159,6 +169,7 @@ std::string GameHistory::get_level_history(const std::string& level) const {
 
 LapTimeEventAndIdAndMfilename GameHistory::get_winner_track_filename(const std::string& level, size_t rank) const {
     size_t i = 0;
+    std::lock_guard guard{ lap_time_events_mutex_ };
     for (const auto& l : lap_time_events_) {
         if (l.event.level != level) {
             continue;
