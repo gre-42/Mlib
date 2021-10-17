@@ -21,11 +21,14 @@ PitchLookAtNode::PitchLookAtNode(
     float pitch_min,
     float pitch_max,
     float dpitch_max,
+    float locked_on_max,
     const PhysicsEngineConfig& cfg)
 : pitch_{NAN},
   pitch_min_{pitch_min},
   pitch_max_{pitch_max},
   dpitch_max_{dpitch_max},
+  locked_on_max_{locked_on_max},
+  target_locked_on_{false},
   followed_node_{nullptr},
   advance_times_{advance_times},
   follower_{follower},
@@ -54,6 +57,7 @@ void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatr
 }
 
 void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+    target_locked_on_ = false;
     if (followed_ == nullptr) {
         return;
     }
@@ -70,7 +74,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
             bullet_start_offset_,
             bullet_velocity_,
             gravity_,
-            float(1e-6),
+            (float)1e-6,
             10};
         t = aim.time;
         offset(1) = aim.aim_offset;
@@ -84,6 +88,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
         float dpitch = std::atan2(p(1), -p(2));
         pitch_ += sign(dpitch) * std::min(std::abs(dpitch), dpitch_max_);
         pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
+        target_locked_on_ = (std::abs(dpitch) < locked_on_max_);
     }
 }
 
@@ -103,6 +108,10 @@ void PitchLookAtNode::set_followed(SceneNode* followed_node, const RigidBodyInte
     if (followed_node != nullptr) {
         followed_node->add_destruction_observer(this);
     }
+}
+
+bool PitchLookAtNode::target_locked_on() const {
+    return target_locked_on_;
 }
 
 void PitchLookAtNode::notify_destroyed(void* obj) {

@@ -529,7 +529,7 @@ void Player::aim_and_shoot() {
     if (!skills_.can_shoot) {
         return;
     }
-    if (target_scene_node_ != nullptr) {
+    if ((target_scene_node_ != nullptr) && (ypln_->target_locked_on())) {
         gun_->trigger();
     }
 }

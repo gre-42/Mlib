@@ -23,9 +23,13 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     float pitch_min,
     float pitch_max,
     float dpitch_max,
+    float yaw_locked_on_max,
+    float pitch_locked_on_max,
     const PhysicsEngineConfig& cfg)
 : yaw_{NAN},
   dyaw_max_{dyaw_max},
+  yaw_locked_on_max_{yaw_locked_on_max},
+  yaw_target_locked_on_{false},
   followed_node_{nullptr},
   advance_times_{advance_times},
   follower_{follower},
@@ -41,6 +45,7 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
       pitch_min,
       pitch_max,
       dpitch_max,
+      pitch_locked_on_max,
       cfg)},
   bullet_start_offset_{bullet_start_offset},
   bullet_velocity_{bullet_velocity},
@@ -66,6 +71,7 @@ void YawPitchLookAtNodes::set_updated_relative_model_matrix(const Transformation
 }
 
 void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+    yaw_target_locked_on_ = false;
     if (followed_ == nullptr) {
         return;
     }
@@ -95,6 +101,8 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
         FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
         float dyaw = -std::atan2(p(0), -p(2));
         yaw_ += sign(dyaw) * std::min(std::abs(dyaw), dyaw_max_);
+        yaw_ = std::fmod(yaw_, float(2 * M_PI));
+        yaw_target_locked_on_ = (std::abs(dyaw) < yaw_locked_on_max_);
     }
 }
 
@@ -115,6 +123,10 @@ void YawPitchLookAtNodes::set_followed(SceneNode* followed_node, const RigidBody
         followed_node->add_destruction_observer(this);
     }
     pitch_look_at_node_->set_followed(followed_node, followed);
+}
+
+bool YawPitchLookAtNodes::target_locked_on() const {
+    return yaw_target_locked_on_ && pitch_look_at_node_->target_locked_on();
 }
 
 std::shared_ptr<PitchLookAtNode> YawPitchLookAtNodes::pitch_look_at_node() const {

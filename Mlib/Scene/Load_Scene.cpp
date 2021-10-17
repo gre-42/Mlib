@@ -511,7 +511,9 @@ void LoadScene::operator()(
         "\\s+dyaw_max=([\\w+-.]+)"
         "\\s+pitch_min=([\\w+-.]+)"
         "\\s+pitch_max=([\\w+-.]+)"
-        "\\s+dpitch_max=([\\w+-.]+)$");
+        "\\s+dpitch_max=([\\w+-.]+)"
+        "\\s+yaw_locked_on_max=([\\w+-.]+)"
+        "\\s+pitch_locked_on_max=([\\w+-.]+)$");
     static const DECLARE_REGEX(follow_node_reg,
         "^\\s*follow_node\\r?\\n"
         "\\s*follower=([\\w+-.]+)\\r?\\n"
@@ -2377,6 +2379,8 @@ void LoadScene::operator()(
                 safe_stof(match[9].str()) / 180.f * float(M_PI),
                 safe_stof(match[10].str()) / 180.f * float(M_PI),
                 safe_stof(match[11].str()) / 180.f * float(M_PI),
+                safe_stof(match[12].str()) / 180.f * float(M_PI),
+                safe_stof(match[13].str()) / 180.f * float(M_PI),
                 scene_config.physics_engine_config);
             linker.link_relative_movable(*yaw_node, follower);
             linker.link_relative_movable(*pitch_node, follower->pitch_look_at_node());

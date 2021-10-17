@@ -23,6 +23,7 @@ public:
         float pitch_min,
         float pitch_max,
         float dpitch_max,
+        float locked_on_max,
         const PhysicsEngineConfig& cfg);
     ~PitchLookAtNode();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
@@ -34,11 +35,15 @@ public:
 
     void set_followed(SceneNode* followed_node, const RigidBodyIntegrator* followed);
 
+    bool target_locked_on() const;
+
 private:
     float pitch_;
     float pitch_min_;
     float pitch_max_;
     float dpitch_max_;
+    float locked_on_max_;
+    bool target_locked_on_;
     FixedArray<float, 3> relative_position_;
     SceneNode* followed_node_;
     AdvanceTimes& advance_times_;
