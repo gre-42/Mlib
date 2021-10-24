@@ -40,6 +40,7 @@ struct NeighborWay {
 };
 
 struct NodeWayInfo {
+    std::string way_id;
     float way_length;
 };
 
@@ -193,12 +194,14 @@ void DrawStreets::calculate_neighbors() {
             }
             float way_length = 0;
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
-                if (node_no_way_length.find(*it) == node_no_way_length.end()) {
+                if (!node_no_way_length.contains(*it)) {
                     if (node_way_info.find(*it) != node_way_info.end()) {
                         node_no_way_length.insert(*it);
                         node_way_info.erase(*it);
                     } else {
-                        node_way_info.insert(std::make_pair(*it, NodeWayInfo{.way_length = way_length}));
+                        node_way_info.insert(std::make_pair(*it, NodeWayInfo{
+                            .way_id = w.first,
+                            .way_length = way_length}));
                     }
                 }
                 auto s = it;
@@ -258,23 +261,23 @@ void DrawStreets::draw_streets() {
     // To avoid duplicates, the computations are done at each lexicographically
     // smaller node.
     for (const auto& na : node_angles) {
-        for (auto it = na.second.begin(); it != na.second.end(); ++it) {
-            if (it->second.neighbor_id < na.first) {
+        for (const auto& it : na.second) {
+            if (it.second.neighbor_id < na.first) {
                 // node index: na.first
-                // neighbor index: it->second.neighbor_id
-                // angle of neighbor: it->first
-                // angle at neighbor: node_neighbors.at(it->second).at(na.first)
+                // neighbor index: it.second.neighbor_id
+                // angle of neighbor: it.first
+                // angle at neighbor: node_neighbors.at(it.second).at(na.first)
                 const std::string* aL;
                 const std::string* aR;
-                get_neighbors(it->second.neighbor_id, node_neighbors.at(na.first), na.second, &aL, &aR);
+                get_neighbors(it.second.neighbor_id, node_neighbors.at(na.first), na.second, &aL, &aR);
                 const std::string* dL;
                 const std::string* dR;
-                get_neighbors(na.first, node_neighbors.at(it->second.neighbor_id), node_angles.at(it->second.neighbor_id), &dL, &dR);
-                if (sum(squared(nodes.at(na.first).position - nodes.at(it->second.neighbor_id).position)) < squared(0.1 * scale))
+                get_neighbors(na.first, node_neighbors.at(it.second.neighbor_id), node_angles.at(it.second.neighbor_id), &dL, &dR);
+                if (sum(squared(nodes.at(na.first).position - nodes.at(it.second.neighbor_id).position)) < squared(0.1 * scale))
                 {
                     std::cerr << "Skipping street because it is too short. " <<
-                        it->second.neighbor_id << " <-> " << na.first << ", (" <<
-                        nodes.at(it->second.neighbor_id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
+                        it.second.neighbor_id << " <-> " << na.first << ", (" <<
+                        nodes.at(it.second.neighbor_id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
                     continue;
                 }
                 Rectangle rect;
@@ -283,65 +286,65 @@ void DrawStreets::draw_streets() {
                     nodes.at(*aR).position,
                     nodes.at(*aL).position,
                     nodes.at(na.first).position,
-                    nodes.at(it->second.neighbor_id).position,
+                    nodes.at(it.second.neighbor_id).position,
                     nodes.at(*dL).position,
                     nodes.at(*dR).position,
-                    *aR == na.first ? it->second.width : node_neighbors.at(*aR).at(na.first).width,
-                    *aL == na.first ? it->second.width : node_neighbors.at(*aL).at(na.first).width,
-                    it->second.width,
-                    it->second.width,
-                    *dL == na.first ? it->second.width : node_neighbors.at(*dL).at(it->second.neighbor_id).width,
-                    *dR == na.first ? it->second.width : node_neighbors.at(*dR).at(it->second.neighbor_id).width))
+                    *aR == na.first ? it.second.width : node_neighbors.at(*aR).at(na.first).width,
+                    *aL == na.first ? it.second.width : node_neighbors.at(*aL).at(na.first).width,
+                    it.second.width,
+                    it.second.width,
+                    *dL == na.first ? it.second.width : node_neighbors.at(*dL).at(it.second.neighbor_id).width,
+                    *dR == na.first ? it.second.width : node_neighbors.at(*dR).at(it.second.neighbor_id).width))
                 {
                     std::cerr << "Error triangulating street nodes " <<
-                        it->second.neighbor_id << " <-> " << na.first << ", (" <<
-                        nodes.at(it->second.neighbor_id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
+                        it.second.neighbor_id << " <-> " << na.first << ", (" <<
+                        nodes.at(it.second.neighbor_id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
                     continue;
                 }
                 draw_streets_draw_ways(
                     rect,
                     na.first,
-                    it->second);
+                    it.second);
                 draw_streets_find_hole_contours(
                     rect,
                     na.first,
-                    it->second,
-                    it->first);
+                    it.second,
+                    it.first);
                 {
-                    const auto& wi = way_infos.at(it->second.way_id);
+                    const auto& wi = way_infos.at(it.second.way_id);
                     float lane_alpha;
                     float sidewalk_alpha0 = 0.75f * wi.curb2_alpha + 0.25f * 1.f;
                     float sidewalk_alpha1 = 0.25f * wi.curb2_alpha + 0.75f * 1.f;
-                    if (it->second.nlanes <= 2) {
+                    if (it.second.nlanes <= 2) {
                         // alpha is in [-1 .. +1]
                         lane_alpha = 0.5f * wi.curb_alpha;
                     } else {
                         // alpha is in [-1 .. +1]
                         lane_alpha = 0.25f * wi.curb_alpha;
                     }
-                    if (it->second.road_type != RoadType::WALL) {
+                    if (it.second.road_type != RoadType::WALL) {
                         draw_streets_add_waypoints(
                             rect,
                             wi.curb_alpha,
                             wi.curb2_alpha,
-                            it->second.nlanes,
+                            it.second.nlanes,
                             lane_alpha,
                             sidewalk_alpha0,
                             sidewalk_alpha1,
                             na.first,
-                            it->second.neighbor_id);
+                            it.second.neighbor_id);
                     }
                     draw_streets_find_hole_waypoints(
                         rect,
                         na.first,
-                        it->second.neighbor_id,
+                        it.second.neighbor_id,
                         wi.curb_alpha,
                         wi.curb2_alpha,
                         lane_alpha,
                         sidewalk_alpha0,
                         sidewalk_alpha1);
                 }
-                if ((it->second.road_type != RoadType::WALL) && (!street_lights.empty())) {
+                if ((it.second.road_type != RoadType::WALL) && (!street_lights.empty())) {
                     float radius = 10 * scale;
                     auto add_distant_point = [&](const FixedArray<float, 2>& p) {
                         bool p_found = !street_light_bvh.visit(AxisAlignedBoundingBox{ p, radius }, [&p_found](bool){return false;});
@@ -697,40 +700,38 @@ void DrawStreets::draw_streets_draw_ways(
     }
     float uv_scale = sit->second;
     // Way length is used to get connected street textures where possible.
-    auto len0 = node_way_info.find(node_id);
-    auto len1 = node_way_info.find(angle_way.neighbor_id);
+    auto node_way_info0 = node_way_info.find(node_id);
+    auto node_way_info1 = node_way_info.find(angle_way.neighbor_id);
+    const auto& node0 = nodes.at(node_id);
+    const auto& node1 = nodes.at(angle_way.neighbor_id);
+    const auto& node_angles0 = node_angles.at(node_id);
+    const auto& node_angles1 = node_angles.at(angle_way.neighbor_id);
     auto& tlists = angle_way.layer == 0 ? ground_triangles : air_triangles;
     auto& street_lst = tlists.tl_street[RoadProperties{angle_way.road_type, angle_way.nlanes}];
     bool with_b_height_binding;
     bool with_c_height_binding;
-    {
-        const auto& tags = nodes.at(node_id).tags;
-        with_b_height_binding = with_height_bindings && !tags.contains("bind_height", "no");
-    }
-    {
-        const auto& tags = nodes.at(angle_way.neighbor_id).tags;
-        with_c_height_binding = with_height_bindings && !tags.contains("bind_height", "no");
-    }
+    with_b_height_binding = with_height_bindings && !node0.tags.contains("bind_height", "no");
+    with_c_height_binding = with_height_bindings && !node1.tags.contains("bind_height", "no");
     EntranceType b_entrance_type = EntranceType::NONE;
     EntranceType c_entrance_type = EntranceType::NONE;
     if (angle_way.layer < 0) {
-        for (const auto& e : node_angles.at(node_id)) {
+        for (const auto& e : node_angles0) {
             if (e.second.layer == 0) {
                 c_entrance_type = EntranceType::TUNNEL;
             }
         }
-        for (const auto& e : node_angles.at(angle_way.neighbor_id)) {
+        for (const auto& e : node_angles1) {
             if (e.second.layer == 0) {
                 b_entrance_type = EntranceType::TUNNEL;
             }
         }
     } else if (angle_way.layer > 0) {
-        for (const auto& e : node_angles.at(node_id)) {
+        for (const auto& e : node_angles0) {
             if (e.second.layer == 0) {
                 c_entrance_type = EntranceType::BRIDGE;
             }
         }
-        for (const auto& e : node_angles.at(angle_way.neighbor_id)) {
+        for (const auto& e : node_angles1) {
             if (e.second.layer == 0) {
                 b_entrance_type = EntranceType::BRIDGE;
             }
@@ -747,21 +748,41 @@ void DrawStreets::draw_streets_draw_ways(
     const auto& wi = way_infos.at(angle_way.way_id);
     float uv_len0;
     float uv_len1;
-    if ((len0 != node_way_info.end()) &&
-        (len1 != node_way_info.end()))
+    if ((node_way_info0 != node_way_info.end()) &&
+        (node_way_info1 != node_way_info.end()))
     {
-        uv_len0 = len0->second.way_length / scale * uv_scale;
-        uv_len1 = len1->second.way_length / scale * uv_scale;
+        uv_len0 = node_way_info0->second.way_length / scale * uv_scale;
+        uv_len1 = node_way_info1->second.way_length / scale * uv_scale;
     } else {
         uv_len0 = 0;
-        uv_len1 = std::sqrt(sum(squared(nodes.at(node_id).position - nodes.at(angle_way.neighbor_id).position))) / scale * uv_scale;
+        uv_len1 = std::sqrt(sum(squared(node0.position - node1.position))) / scale * uv_scale;
     }
     if (((street_surface_central_triangles != nullptr) != (street_surface_endpoint0_triangles != nullptr)) ||
         ((street_surface_central_triangles != nullptr) != (street_surface_endpoint1_triangles != nullptr))) {
         throw std::runtime_error("Inconsistent definition of surface central / endpoint");
     }
-    if ((street_surface_central_triangles != nullptr) &&
-        ((node_angles.at(node_id).size() == 2) || (node_angles.at(angle_way.neighbor_id).size() == 2)))
+    auto* model_central = street_surface_central_triangles;
+    auto* model_endpoint0 = street_surface_endpoint0_triangles;
+    auto* model_endpoint1 = street_surface_endpoint1_triangles;
+    if (street_surface_central_triangles != nullptr) {
+        if ((node_way_info0 == node_way_info.end()) ||
+            (node_angles0.size() != 2) ||
+            ways.at(node_way_info0->second.way_id).tags.contains("model_central", "no"))
+        {
+            model_central = nullptr;
+            model_endpoint0 = nullptr;
+        }
+        if ((node_way_info1 == node_way_info.end()) ||
+            (node_angles1.size() != 2) ||
+            ways.at(node_way_info1->second.way_id).tags.contains("model_central", "no"))
+        {
+            model_central = nullptr;
+            model_endpoint1 = nullptr;
+        }
+    }
+    if ((model_central != nullptr) ||
+        (model_endpoint0 != nullptr) ||
+        (model_endpoint1 != nullptr))
     {
         auto draw_street_with_ditch = [this, &rect, &street_lst, &tlists, &node_id, &angle_way](const std::list<std::shared_ptr<ColoredVertexArray>>& cvas){
             for (const auto& cva : cvas) {
@@ -776,14 +797,20 @@ void DrawStreets::draw_streets_draw_ways(
                 rect.draw(*destination_triangles, height_bindings, node_id, angle_way.neighbor_id, cva->triangles, scale, 1.f, 1.f);
             }
         };
-        if ((node_angles.at(node_id).size() != 2) && (node_angles.at(angle_way.neighbor_id).size() == 2)) {
-            draw_street_with_ditch(*street_surface_endpoint1_triangles);
-        } else if ((node_angles.at(node_id).size() == 2) && (node_angles.at(angle_way.neighbor_id).size() != 2)) {
-            draw_street_with_ditch(*street_surface_endpoint0_triangles);
+        if (model_central != nullptr) {
+            assert_true(node_angles0.size() == 2);
+            assert_true(node_angles1.size() == 2);
+            draw_street_with_ditch(*model_central);
+        } else if (model_endpoint0 != nullptr) {
+            // assert_true(node_angles.at(node_id).size() != 2);
+            assert_true(node_angles0.size() == 2);
+            draw_street_with_ditch(*model_endpoint0);
+        } else if (model_endpoint1 != nullptr) {
+            assert_true(node_angles1.size() == 2);
+            // assert_true(node_angles.at(angle_way.neighbor_id).size() != 2);
+            draw_street_with_ditch(*model_endpoint1);
         } else {
-            assert_true(node_angles.at(node_id).size() <= 2);
-            assert_true(node_angles.at(angle_way.neighbor_id).size() <= 2);
-            draw_street_with_ditch(*street_surface_central_triangles);
+            throw std::runtime_error("Draw streets internal error");
         }
     } else {
         rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, uv_len0, uv_len1, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
