@@ -20,22 +20,27 @@ int main(int argc, char **argv) {
         "Usage: match_histograms --image image --ref ref --out <out>",
         {},
         {"--image", "--ref", "--out"});
-    const auto args = parser.parsed(argc, argv);
-    args.assert_num_unamed(0);
-    Array<unsigned char> image = safe_load_rgb(args.named_value("--image"));
-    Array<unsigned char> ref = safe_load_rgb(args.named_value("--ref"));
-    Array<unsigned char> out = match_rgba_histograms(image, ref);
-    std::unique_ptr<unsigned char> iout{new unsigned char[image.nelements()]};
-    array_2_stb_image(out, iout.get());
-    if (!stbi_write_png(
-        args.named_value("--out").c_str(),
-        image.shape(2),
-        image.shape(1),
-        image.shape(0),
-        iout.get(),
-        0))
-    {
-        throw std::runtime_error("Could not write " + args.named_value("--out"));
+    try {
+        const auto args = parser.parsed(argc, argv);
+        args.assert_num_unamed(0);
+        Array<unsigned char> image = safe_load_rgb(args.named_value("--image"));
+        Array<unsigned char> ref = safe_load_rgb(args.named_value("--ref"));
+        Array<unsigned char> out = match_rgba_histograms(image, ref);
+        std::unique_ptr<unsigned char> iout{new unsigned char[image.nelements()]};
+        array_2_stb_image(out, iout.get());
+        if (!stbi_write_png(
+            args.named_value("--out").c_str(),
+            image.shape(2),
+            image.shape(1),
+            image.shape(0),
+            iout.get(),
+            0))
+        {
+            throw std::runtime_error("Could not write " + args.named_value("--out"));
+        }
+        return 0;
+    } catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
     }
-    return 0;
 }
