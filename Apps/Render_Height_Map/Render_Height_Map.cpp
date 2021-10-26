@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
 #include <Mlib/Images/PgmImage.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -18,7 +18,7 @@ using namespace Mlib::Cv;
 int main(int argc, char** argv) {
 
     const ArgParser parser(
-        "Usage: render_height_map --rgb <filename.ppm> --height <filename.pgm> [--xy_scale <scale>] [--z_scale <scale>] [--rotate]",
+        "Usage: render_height_map --rgb <filename.png> --height <filename.pgm> [--xy_scale <scale>] [--z_scale <scale>] [--rotate]",
         {"--rotate"},
         {"--rgb", "--height", "--xy_scale", "--z_scale"});
     try {
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 
         args.assert_num_unamed(0);
 
-        PpmImage img = PpmImage::load_from_file(args.named_value("--rgb"));
+        StbImage img = StbImage::load_from_file(args.named_value("--rgb"));
         PgmImage height = PgmImage::load_from_file(args.named_value("--height"));
         if (!all(height.shape() == img.shape())) {
             throw std::runtime_error("Depth and image shape differ");
