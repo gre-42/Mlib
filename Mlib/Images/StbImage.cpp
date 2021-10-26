@@ -105,6 +105,9 @@ void StbImage::draw_streamline(
 
 StbImage StbImage::load_from_file(const std::string& filename) {
     StbInfo image = stb_load(filename, false, false);
+    if (image.nrChannels != 3) {
+        throw std::runtime_error("Image does not have 3 channels: \"" + filename + '"');
+    }
     StbImage result{ ArrayShape{ (size_t)image.height, (size_t)image.width } };
     memcpy(&result(0, 0), image.data.get(), result.nbytes());
     return result;
