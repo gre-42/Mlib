@@ -10,12 +10,6 @@ build:
 test:
 	./build.sh ${CMAKE_BUILD_TYPE} test
 
-build10:
-	CXX=g++-10 make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-
-test10:
-	CXX=g++-10 make test CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-
 debug:
 	make build CMAKE_BUILD_TYPE=Debug
 
@@ -28,30 +22,15 @@ test_debug: debug
 test_release: release
 	make test CMAKE_BUILD_TYPE=Release
 
-debug10:
-	make build10 CMAKE_BUILD_TYPE=Debug
-
-release10:
-	make build10 CMAKE_BUILD_TYPE=Release
-
-release10_dbg:
-	make build10 CMAKE_BUILD_TYPE=RelWithDebInfo
-
-test_debug10: debug10
-	make test10 CMAKE_BUILD_TYPE=Debug
-
-test_release10: release10
-	make test10 CMAKE_BUILD_TYPE=Release
-
-test_release10_dbg: release10_dbg
-	make test10 CMAKE_BUILD_TYPE=RelWithDebInfo
+release_dbg:
+	make build CMAKE_BUILD_TYPE=RelWithDebInfo
 
 build_clang:
 	CC=/usr/bin/clang CXX=/usr/bin/clang++ BUILD_PREFIX=L \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
 build_asan10:
-	CXX=g++-10 CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=A \
+	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=A \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
 distclean:
