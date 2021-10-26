@@ -26,8 +26,10 @@ int main(int argc, char** argv) {
 
         args.assert_num_unamed(0);
 
-        StbImage img = StbImage::load_from_file(args.named_value("--rgb"));
         PgmImage height = PgmImage::load_from_file(args.named_value("--height"));
+        StbImage img = args.has_named_value("--rgb")
+            ? StbImage::load_from_file(args.named_value("--rgb"))
+            : StbImage{ height.shape(), Rgb24::white() };
         if (!all(height.shape() == img.shape())) {
             throw std::runtime_error("Depth and image shape differ");
         }
@@ -45,7 +47,7 @@ int main(int argc, char** argv) {
             height.to_float() * safe_stof(args.named_value("--z_scale", "1")),
             np.normalization_matrix().pre_scaled(safe_stof(args.named_value("--xy_scale", "1"))),
             args.has_named("--rotate"));
-    } catch (const CommandLineArgumentError& e) {
+    } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;
     }
