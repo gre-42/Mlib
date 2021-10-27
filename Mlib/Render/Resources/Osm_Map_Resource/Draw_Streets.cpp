@@ -42,6 +42,7 @@ struct NeighborWay {
 struct NodeWayInfo {
     std::string way_id;
     float way_length;
+    std::string model_central;
 };
 
 struct AngleCurb {
@@ -133,7 +134,6 @@ void DrawStreets::initialize_arrays() {
 
 void DrawStreets::calculate_neighbors() {
     DECLARE_REGEX(name_re, name_pattern);
-    std::set<std::string> node_no_way_length;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;
         {
@@ -192,16 +192,21 @@ void DrawStreets::calculate_neighbors() {
             if ((layer != 0) && !layer_heights.is_within_range(layer)) {
                 continue;
             }
+            std::string model_central = tags.contains("model_central") ? tags.at("model_central") : "";
             float way_length = 0;
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
-                if (!node_no_way_length.contains(*it)) {
-                    if (node_way_info.find(*it) != node_way_info.end()) {
-                        node_no_way_length.insert(*it);
-                        node_way_info.erase(*it);
+                {
+                    auto nwi = node_way_info.find(*it);
+                    if (nwi != node_way_info.end()) {
+                        nwi->second.way_length = NAN;
+                        if (nwi->second.model_central != model_central) {
+                            nwi->second.model_central = "no";
+                        }
                     } else {
                         node_way_info.insert(std::make_pair(*it, NodeWayInfo{
                             .way_id = w.first,
-                            .way_length = way_length}));
+                            .way_length = way_length,
+                            .model_central = model_central}));
                     }
                 }
                 auto s = it;
@@ -749,7 +754,9 @@ void DrawStreets::draw_streets_draw_ways(
     float uv_len0;
     float uv_len1;
     if ((node_way_info0 != node_way_info.end()) &&
-        (node_way_info1 != node_way_info.end()))
+        (node_way_info1 != node_way_info.end()) &&
+        !std::isnan(node_way_info0->second.way_length) &&
+        !std::isnan(node_way_info1->second.way_length))
     {
         uv_len0 = node_way_info0->second.way_length / scale * uv_scale;
         uv_len1 = node_way_info1->second.way_length / scale * uv_scale;
