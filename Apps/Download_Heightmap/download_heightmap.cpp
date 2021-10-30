@@ -55,7 +55,7 @@ public:
         float max_y_id,
         float min_x_id,
         float max_x_id)
-    : map_{map},
+    : map_(map),
       min_y_id_{min_y_id},
       max_y_id_{max_y_id},
       min_x_id_{min_x_id},
@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
                     // https://www.mapzen.com/blog/elevation/
                     res(ga, go) = (rgb[0] * 256.f + rgb[1] + rgb[2] / 256.f) - 32768.f;
                     for (size_t c = 0; c < 3; ++c) {
-                        res_rgb[(ga * res.shape(1)  + go) * 3 + c] = rgb[c];
+                        res_rgb[(ga * res.shape(1) + go) * 3 + c] = rgb[c];
                     }
                 }
             }
