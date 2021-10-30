@@ -32,7 +32,7 @@ public:
     inline bool sample_destination(const FixedArray<TData, 3>& pr, BilinearInterpolator<TData>& bi) const {
         FixedArray<TData, 3> dp3 = dot1d(T_, homogenized_4(pr));
         FixedArray<TData, 2> id_d{a2fi(FixedArray<TData, 2>{dp3(0) / dp3(2), dp3(1) / dp3(2)})};
-        return bilinear_interpolation(id_d(0), id_d(1), shape1_, bi);
+        return bilinear_interpolation(id_d(0), id_d(1), shape1_(0), shape1_(1), bi);
     }
     inline bool sample_destination(size_t r, size_t c, BilinearInterpolator<TData>& bi) const {
         FixedArray<TData, 3> pr = point_in_reference(r, c);

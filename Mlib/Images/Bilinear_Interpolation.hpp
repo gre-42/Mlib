@@ -21,8 +21,7 @@ public:
 };
 
 template <class TData>
-bool bilinear_interpolation(TData rf, TData cf, const ArrayShape& shape, BilinearInterpolator<TData>& bi) {
-    assert(shape.ndim() == 2);
+bool bilinear_interpolation(TData rf, TData cf, size_t nrows, size_t ncols, BilinearInterpolator<TData>& bi) {
     if (rf < 0 || cf < 0) {
         return false;
     }
@@ -30,15 +29,15 @@ bool bilinear_interpolation(TData rf, TData cf, const ArrayShape& shape, Bilinea
     bi.r1 = bi.r0 + 1;
     bi.c0 = size_t(cf);
     bi.c1 = bi.c0 + 1;
-    if (bi.r1 == shape(0)) {
+    if (bi.r1 == nrows) {
         --bi.r1;
         --bi.r0;
     }
-    if (bi.c1 == shape(1)) {
+    if (bi.c1 == ncols) {
         --bi.c1;
         --bi.c0;
     }
-    if (bi.r1 >= shape(0) || bi.c1 >= shape(1)) {
+    if (bi.r1 >= nrows || bi.c1 >= ncols) {
         return false;
     }
     bi.a0 = (rf - bi.r0);
@@ -48,8 +47,9 @@ bool bilinear_interpolation(TData rf, TData cf, const ArrayShape& shape, Bilinea
 
 template <class TData>
 bool bilinear_grayscale_interpolation(TData rf, TData cf, const Array<TData>& im, TData& intensity) {
+    assert(im.ndim() == 2);
     BilinearInterpolator<TData> bi;
-    if (bilinear_interpolation(rf, cf, im.shape(), bi)) {
+    if (bilinear_interpolation(rf, cf, im.shape(0), im.shape(1), bi)) {
         intensity = bi(im);
         return true;
     } else {

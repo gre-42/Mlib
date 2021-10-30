@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Apply_Heightmap.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
@@ -110,7 +111,17 @@ void Mlib::smoothen_and_apply_heightmap(
         }
     };
     if (!config.heightmap.empty()) {
-        Array<float> heightmap = PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX);
+        Array<float> heightmap;
+        if (config.heightmap.ends_with(".pgm")) {
+            heightmap = PgmImage::load_from_file(config.heightmap).to_float() / 64.f * float(UINT16_MAX);
+        } else {
+            auto im_rgb = StbImage::load_from_file(config.heightmap).to_float_rgb() * 255.f;
+            if (im_rgb.shape(0) != 3) {
+                throw std::runtime_error("Height map is no PGM image and does not have 3 channels");
+            }
+            // https://www.mapzen.com/blog/elevation/
+            heightmap = im_rgb[0] * 256.f + im_rgb[1] + im_rgb[2] / 256.f - 32768.f;
+        }
         Array<bool> heightmap_mask;
         if (!config.heightmap_mask.empty()) {
             heightmap_mask = PgmImage::load_from_file(config.heightmap_mask).casted<bool>();

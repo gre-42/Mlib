@@ -108,7 +108,7 @@ void InverseDepthCostVolumeAccumulator::increment(
                     }
                 } else {
                     BilinearInterpolator<float> bi;
-                    if (hs.sample_destination(r, c, space_shape_, bi)) {
+                    if (hs.sample_destination(r, c, space_shape_(0), space_shape_(1), bi)) {
                         for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
                             float v = bi(im1_rgb, h);
                             if (!std::isnan(v)) {

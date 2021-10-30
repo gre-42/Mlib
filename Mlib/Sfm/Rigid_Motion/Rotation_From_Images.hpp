@@ -106,14 +106,13 @@ Array<TData> d_pr_bilinear(
     assert(im_r.ndim() == 3);
     assert(all(im_r.shape() == im_l.shape()));
     Array<TData> result{ im_r.shape() };
-    ArrayShape space_shape{ im_r.shape(1), im_r.shape(2) };
     HomographySampler hs{coordinate_transform(R, intrinsic_matrix_r, intrinsic_matrix_l)};
     #pragma omp parallel for
     for (int i = 0; i < (int)result.shape(1); ++i) {
         size_t r = (size_t)i;
         for (size_t c = 0; c < result.shape(2); ++c) {
             BilinearInterpolator<TData> bi;
-            if (hs.sample_destination(r, c, space_shape, bi)) {
+            if (hs.sample_destination(r, c, im_r.shape(1), im_r.shape(2), bi)) {
                 for (size_t color = 0; color < result.shape(0); ++color) {
                     result(color, r, c) = bi(im_l, color) - im_r(color, r, c);
                 }
@@ -135,7 +134,6 @@ Array<TData> intensity_jacobian(
     const TransformationMatrix<TData, 2>& ki_l,
     const FixedArray<TData, 3>& theta)
 {
-    ArrayShape space_shape = ArrayShape{ im_r_di.shape(2), im_r_di.shape(3) };
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 3 } };
     HomographySampler hs{coordinate_transform(tait_bryan_angles_2_matrix(theta), ki_r, ki_l)};
     #pragma omp parallel for
@@ -148,7 +146,7 @@ Array<TData> intensity_jacobian(
             for (size_t color = 0; color < im_r_di.shape(0); ++color) {
                 FixedArray<float, 2> im_grad{im_r_di(color, id1, r, c), im_r_di(color, id0, r, c)};
                 BilinearInterpolator<TData> bi;
-                if (hs.sample_destination(r, c, space_shape, bi)) {
+                if (hs.sample_destination(r, c, im_r_di.shape(2), im_r_di.shape(3), bi)) {
                     im_grad(0) = (im_grad(0) + bi(im_l_di, color, id1)) / 2;
                     im_grad(1) = (im_grad(1) + bi(im_l_di, color, id0)) / 2;
                 }
@@ -194,7 +192,6 @@ Array<TData> intensity_jacobian_fast(
     FixedArray<TData, 3, 3> RR1 = dot2d(R2, dot2d(R1, cross1));
     FixedArray<TData, 3, 3> RR0 = dot2d(R2, dot2d(R1, dot2d(R0, cross0)));
 
-    ArrayShape space_shape = ArrayShape{ im_r_di.shape(2), im_r_di.shape(3) };
     Array<TData> result{ArrayShape{ im_r_di.shape(0), im_r_di.shape(2), im_r_di.shape(3), 3 } };
     HomographySampler hs{coordinate_transform(R, ki_r, ki_l)};
     const auto m = ki_l.affine().template row_range<0, 2>();
@@ -231,7 +228,7 @@ Array<TData> intensity_jacobian_fast(
             for (size_t color = 0; color < im_r_di.shape(0); ++color) {
                 FixedArray<TData, 2> im_grad{ im_r_di(color, id1, r, c), im_r_di(color, id0, r, c) };
                 BilinearInterpolator<TData> bi;
-                if (hs.sample_destination(r, c, space_shape, bi)) {
+                if (hs.sample_destination(r, c, im_r_di.shape(2), im_r_di.shape(3), bi)) {
                     im_grad(0) = (im_grad(0) + bi(im_l_di, color, id1)) / 2;
                     im_grad(1) = (im_grad(1) + bi(im_l_di, color, id0)) / 2;
                 }

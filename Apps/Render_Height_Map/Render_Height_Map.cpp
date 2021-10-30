@@ -26,7 +26,17 @@ int main(int argc, char** argv) {
 
         args.assert_num_unamed(0);
 
-        PgmImage height = PgmImage::load_from_file(args.named_value("--height"));
+        Array<float> height;
+        if (args.named_value("--height").ends_with(".pgm")) {
+            height = PgmImage::load_from_file(args.named_value("--height")).to_float();
+        } else {
+            auto im_rgb = StbImage::load_from_file(args.named_value("--height")).to_float_rgb() * 255.f;
+            if (im_rgb.shape(0) != 3) {
+                throw std::runtime_error("Height map is no PGM image and does not have 3 channels");
+            }
+            // https://www.mapzen.com/blog/elevation/
+            height = im_rgb[0] * 256.f + im_rgb[1] + im_rgb[2] / 256.f - 32768.f;
+        }
         StbImage img = args.has_named_value("--rgb")
             ? StbImage::load_from_file(args.named_value("--rgb"))
             : StbImage{ height.shape(), Rgb24::white() };
@@ -44,7 +54,7 @@ int main(int argc, char** argv) {
         render_height_map(
             render,
             img.to_float_rgb(),
-            height.to_float() * safe_stof(args.named_value("--z_scale", "1")),
+            height * safe_stof(args.named_value("--z_scale", "1")),
             np.normalization_matrix().pre_scaled(safe_stof(args.named_value("--xy_scale", "1"))),
             args.has_named("--rotate"));
     } catch (const std::runtime_error& e) {
