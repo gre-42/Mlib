@@ -15,6 +15,7 @@ for path, dirs, files in os.walk('.'):
         'AURelWithDebInfo',
         'GURelease',
         'GURelWithDebInfo',
+        'GUDebug',
         'TestOut',
         'Data',
         '.git',
