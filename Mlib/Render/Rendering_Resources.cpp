@@ -34,17 +34,17 @@ int log2(int n) {
 }
 
 static StbInfo stb_load_texture(const std::string& filename,
-                                size_t nchannels,
+                                int nchannels,
                                 bool flip_vertically,
                                 bool flip_horizontally) {
     StbInfo result = stb_load(filename, flip_vertically, flip_horizontally);
-    if ((size_t)result.nrChannels < nchannels) {
+    if (result.nrChannels < std::abs(nchannels)) {
         throw std::runtime_error(filename + " does not have at least " + std::to_string(nchannels) + " channels");
     }
     if (!is_power_of_two(result.width) || !is_power_of_two(result.height)) {
         std::cerr << filename << " size: " << result.width << 'x' << result.height << std::endl;
     }
-    if ((size_t)result.nrChannels != nchannels) {
+    if ((nchannels > 0) && (result.nrChannels != nchannels)) {
         std::cerr << filename << " #channels: " << result.nrChannels << std::endl;
     }
     return result;
@@ -52,10 +52,10 @@ static StbInfo stb_load_texture(const std::string& filename,
 
 static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
     StbInfo si0 = stb_load_texture(
-        desc.color, (size_t)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
+        desc.color, (int)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
     if (!desc.mixed.empty()) {
         auto si1_raw = stb_load_texture(
-            desc.mixed, (size_t)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
+            desc.mixed, (int)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
         std::unique_ptr<unsigned char[]> si1_resized{
             new unsigned char[(size_t)(si0.width * si0.height * si1_raw.nrChannels)]};
         stbir_resize_uint8(si1_raw.data.get(),
@@ -107,7 +107,7 @@ static StbInfo stb_load_and_transform_texture(const TextureDescriptor& desc) {
     }
     if (!desc.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
-        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.histogram, false, false, false));
+        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.histogram, -3, false, false));
         Array<unsigned char> m = match_rgba_histograms(image, ref);
         assert_true(m.shape(0) == (size_t)si0.nrChannels);
         assert_true(m.shape(1) == (size_t)si0.height);
@@ -356,7 +356,7 @@ GLuint RenderingResources::get_cubemap(const std::string& name,
     for (GLuint i = 0; i < filenames.size(); i++) {
         StbInfo info =
             stb_load_texture(filenames[i],
-                             false,  // false=rgba
+                             3,      // nchannels
                              false,  // false=flip_vertically
                              true);  // true=flip_horizontally
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
