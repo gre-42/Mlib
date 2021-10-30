@@ -2602,7 +2602,10 @@ ssize_t Stream::write_format(const char *fmt, const Args &... args) {
 #if defined(_MSC_VER) && _MSC_VER < 1900
   auto sn = _snprintf_s(buf.data(), bufsiz - 1, buf.size() - 1, fmt, args...);
 #else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   auto sn = snprintf(buf.data(), buf.size() - 1, fmt, args...);
+#pragma GCC diagnostic pop
 #endif
   if (sn <= 0) { return sn; }
 
@@ -3710,7 +3713,10 @@ bool ClientImpl::read_response_line(Stream &strm, const Request &req,
                                            Response &res) {
   std::array<char, 2048> buf;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   detail::stream_line_reader line_reader(strm, buf.data(), buf.size());
+#pragma GCC diagnostic pop
 
   if (!line_reader.getline()) { return false; }
 
