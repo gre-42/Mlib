@@ -44,6 +44,9 @@ static StbInfo stb_load_texture(const std::string& filename,
     if (!is_power_of_two(result.width) || !is_power_of_two(result.height)) {
         std::cerr << filename << " size: " << result.width << 'x' << result.height << std::endl;
     }
+    if ((size_t)result.nrChannels != nchannels) {
+        std::cerr << filename << " #channels: " << result.nrChannels << std::endl;
+    }
     return result;
 }
 
