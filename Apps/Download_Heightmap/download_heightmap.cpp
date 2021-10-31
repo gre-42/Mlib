@@ -145,7 +145,11 @@ int main(int argc, char** argv) {
         size_t ntiles_x = (tiles_max_x - tiles_min_x) + 1;
         std::cerr << "ntiles_y " << ntiles_y << std::endl;
         std::cerr << "ntiles_x " << ntiles_x << std::endl;
-        std::cerr << tiles_min_x << '/' << tiles_min_y << " - " << tiles_max_x << '/' << tiles_max_y << std::endl;
+        std::cerr <<
+            tiles_min_x << '/' <<
+            (ntiles_global_y - 1 - tiles_max_y) << " - " <<
+            tiles_max_x << '/' <<
+            (ntiles_global_y - 1 - tiles_min_y) << std::endl;
         if (tiles_min_y >= ntiles_global_y) {
             throw std::runtime_error("min_y out of range");
         }
