@@ -194,9 +194,9 @@ int main(int argc, char** argv) {
             }
         }
         float min_y_actual = tiles_min_y * tile_len_y + min_y_global;
-        float max_y_actual = (tiles_max_y + 1) * tile_len_y + min_y_global;
+        float max_y_actual = (tiles_max_y + 1 - 1.f / tile_pixels) * tile_len_y + min_y_global;
         float min_lon_actual = tiles_min_x * tile_len_x - 180;
-        float max_lon_actual = (tiles_max_x + 1) * tile_len_x - 180;
+        float max_lon_actual = (tiles_max_x + 1 - 1.f / tile_pixels) * tile_len_x - 180;
         // float min_lat_actual = (tile_len_y * (2 * min_y - 1) - 180) / 2;
         // float max_lat_actual = (tile_len_y * (2 * max_y - 1) - 180) / 2;
         // float min_lon_actual = (tile_len_x * (2 * min_x - 1) - 360) / 2;
