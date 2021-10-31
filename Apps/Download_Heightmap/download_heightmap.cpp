@@ -135,8 +135,8 @@ int main(int argc, char** argv) {
         size_t ntiles_global_x = std::pow(2, zoom);
         float tile_len_y = (max_y_global - min_y_global) / ntiles_global_y;
         float tile_len_x = 360.f / ntiles_global_x;
-        float requested_min_y = get_y(min_lat / 180 * M_PI);
-        float requested_max_y = get_y(max_lat / 180 * M_PI);
+        float requested_min_y = get_y(-max_lat / 180 * M_PI);
+        float requested_max_y = get_y(-min_lat / 180 * M_PI);
         size_t tiles_min_y = std::floor((requested_min_y - min_y_global) / tile_len_y);
         size_t tiles_max_y = std::ceil ((requested_max_y - min_y_global) / tile_len_y);
         size_t tiles_min_x = std::floor((min_lon + 180) / tile_len_x);
@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
                     tile_pixels,
                     zoom,
                     x,
-                    ntiles_global_y - 1 - y,
+                    y,
                     args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
                     tmp_png);
                 StbInfo image = stb_load(tmp_png, false, false);
@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
                 for (size_t da = 0; da < tile_pixels; ++da) {
                     for (size_t dl = 0; dl < tile_pixels; ++dl) {
                         unsigned char* rgb = &image.data.get()[(da * image.width  + dl) * image.nrChannels];
-                        size_t ga = da + (ntiles_y - 1 - a) * tile_pixels;
+                        size_t ga = da + a * tile_pixels;
                         size_t go = dl + o * tile_pixels;
                         // https://www.mapzen.com/blog/elevation/
                         stitched(ga, go) = (rgb[0] * 256.f + rgb[1] + rgb[2] / 256.f) - 32768.f;
@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
             }
         }
         float min_y_actual = tiles_min_y * tile_len_y + min_y_global;
-        float max_y_actual = tiles_max_y * tile_len_y + min_y_global;
+        float max_y_actual = (tiles_max_y + 1) * tile_len_y + min_y_global;
         float min_lon_actual = tiles_min_x * tile_len_x - 180;
         float max_lon_actual = (tiles_max_x + 1) * tile_len_x - 180;
         // float min_lat_actual = (tile_len_y * (2 * min_y - 1) - 180) / 2;
