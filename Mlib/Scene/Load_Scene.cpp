@@ -121,6 +121,37 @@ private:
     AdvanceTimes& advance_times_;
 };
 
+FixedArray<float, 3> parse_position(
+    const TransformationMatrix<double, 3>* inverse_geographic_coordinates,
+    const std::string& x_str,
+    const std::string& y_str,
+    const std::string& z_str)
+{
+    static const DECLARE_REGEX(re, "^([\\d.-]+)_deg");
+    Mlib::re::smatch match_x;
+    Mlib::re::smatch match_y;
+    bool mx = Mlib::re::regex_match(x_str, match_x, re);
+    bool my = Mlib::re::regex_match(y_str, match_y, re);
+    if (mx != my) {
+        throw std::runtime_error("Inconsistent positions: " + x_str + ", " + y_str);
+    }
+    if (mx) {
+        if (inverse_geographic_coordinates == nullptr) {
+            throw std::runtime_error("World coordinates not defined");
+        }
+        return inverse_geographic_coordinates->transform(
+            FixedArray<double, 3>{
+                safe_stof(match_y[1].str()),
+                safe_stof(match_x[1].str()),
+                safe_stof(z_str)}).casted<float>();
+    } else {
+        return FixedArray<float, 3>{
+            safe_stof(x_str),
+            safe_stof(y_str),
+            safe_stof(z_str)};
+    }
+}
+
 void LoadScene::operator()(
     const std::string& working_directory,
     const std::string& script_filename,
@@ -1528,10 +1559,11 @@ void LoadScene::operator()(
             // 6, 7, 8: rotation
             // 9: scale
             auto node = std::make_unique<SceneNode>(&scene);
-            node->set_position(FixedArray<float, 3>{
-                safe_stof(match[3].str()),
-                safe_stof(match[4].str()),
-                safe_stof(match[5].str())});
+            node->set_position(parse_position(
+                scene_node_resources.get_geographic_mapping("world.inverse"),
+                match[3].str(),
+                match[4].str(),
+                match[5].str()));
             node->set_rotation(FixedArray<float, 3>{
                 safe_stof(match[6].str()) / 180.f * float(M_PI),
                 safe_stof(match[7].str()) / 180.f * float(M_PI),

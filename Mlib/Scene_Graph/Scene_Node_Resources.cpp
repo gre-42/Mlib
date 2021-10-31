@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
@@ -72,16 +73,17 @@ void SceneNodeResources::register_geographic_mapping(
     if (it == resources_.end()) {
         throw std::runtime_error("Could not find resource with name \"" + resource_name + '"');
     }
-    bool success;
+    TransformationMatrix<double, 3> m;
     try {
-        success = geographic_mappings_.insert({
-            instance_name,
-            it->second->get_geographic_mapping(scene_node)}).second;
+        m = it->second->get_geographic_mapping(scene_node);
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("register_geographic_mapping for resource \"" + resource_name + "\" failed: " + e.what());
     }
-    if (!success) {
-        throw std::runtime_error("Resource with name \"" + resource_name + "\" already exists");
+    if (!geographic_mappings_.insert({ instance_name, m }).second) {
+        throw std::runtime_error("Geographic mapping with name \"" + instance_name + "\" already exists");
+    }
+    if (!geographic_mappings_.insert({ instance_name + ".inverse", TransformationMatrix<double, 3>{ inv(m.affine()) } }).second) {
+        throw std::runtime_error("Geographic mapping with name \"" + instance_name + ".inverse\" already exists");
     }
 }
 

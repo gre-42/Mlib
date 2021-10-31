@@ -172,8 +172,9 @@ Array<float> homogenized_4x4(const Array<float>& a);
 
 Array<float> homogenized_4(const Array<float>& a);
 
-inline FixedArray<float, 4> homogenized_4(const FixedArray<float, 3>& a) {
-    return FixedArray<float, 4>{a(0), a(1), a(2), 1.f};
+template <class TData>
+inline FixedArray<TData, 4> homogenized_4(const FixedArray<TData, 3>& a) {
+    return FixedArray<TData, 4>{a(0), a(1), a(2), (TData)1};
 }
 
 Array<float> homogenized_3(const Array<float>& a);
