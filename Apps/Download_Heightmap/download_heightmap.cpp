@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unamed(0);
-        float zoom = safe_stof(args.named_value("--zoom"));
+        size_t zoom = safe_stoz(args.named_value("--zoom"));
         float min_lat = safe_stof(args.named_value("--min_lat"));
         float min_lon = safe_stof(args.named_value("--min_lon"));
         float max_lat = safe_stof(args.named_value("--max_lat"));
@@ -147,9 +147,9 @@ int main(int argc, char** argv) {
         std::cerr << "ntiles_x " << ntiles_x << std::endl;
         std::cerr <<
             tiles_min_x << '/' <<
-            (ntiles_global_y - 1 - tiles_max_y) << " - " <<
+            tiles_min_y << " - " <<
             tiles_max_x << '/' <<
-            (ntiles_global_y - 1 - tiles_min_y) << std::endl;
+            tiles_max_y << std::endl;
         if (tiles_min_y >= ntiles_global_y) {
             throw std::runtime_error("min_y out of range");
         }
