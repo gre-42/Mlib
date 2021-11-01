@@ -1107,6 +1107,9 @@ void LoadScene::operator()(
                 else if (key == "dirt_decals_distance") {
                     config.dirt_decals_terrain_style.much_near_distance = safe_stof(value);
                 }
+                else if (key == "much_near_grass_distance_to_bdry") {
+                    config.near_grass_terrain_style.min_near_distance_to_bdry = safe_stof(value);
+                }
                 else if (key == "raceway_beacon_distance") {
                     config.raceway_beacon_distance = safe_stof(value);
                 }
