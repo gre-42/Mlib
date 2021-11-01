@@ -15,6 +15,7 @@ struct TerrainStyle {
     template <class Archive>
     void serialize(Archive& archive) {
         archive(near_resource_names);
+        archive(min_near_distance_to_bdry);
         archive(much_near_distance);
         archive(is_small);
     }
