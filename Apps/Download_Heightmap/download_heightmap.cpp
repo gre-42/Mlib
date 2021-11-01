@@ -129,8 +129,8 @@ int main(int argc, char** argv) {
         std::string tmp_png = args.named_value("--tmp_png", "/tmp/tile.png");
 
         // From: https://epsg.io/3857
-        float max_y_global = get_y(85.06 / 180 * M_PI);
-        float min_y_global = get_y(-85.06 / 180 * M_PI);
+        float max_y_global = M_PI;  // get_y(85.06 / 180 * M_PI);
+        float min_y_global = -M_PI; // get_y(-85.06 / 180 * M_PI);
         size_t ntiles_global_y = std::pow(2, zoom);
         size_t ntiles_global_x = std::pow(2, zoom);
         float tile_len_y = (max_y_global - min_y_global) / ntiles_global_y;
