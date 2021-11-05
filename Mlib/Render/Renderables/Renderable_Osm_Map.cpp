@@ -89,6 +89,8 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         float max_distance_near = terrain_style.is_small
             ? scene_graph_config.max_distance_near_small
             : scene_graph_config.max_distance_near_large;
+        float dboundary = terrain_style.min_near_distance_to_bdry * scale;
+        float dboundary2 = squared(dboundary);
         for (const auto& t : gtl.triangles_) {
             auto center = (t(0).position + t(1).position + t(2).position) / 3.f;
             auto mvp_center = dot2d(mvp, TransformationMatrix<float, 3>{ fixed_identity_array<float, 3>(), center }.affine());
@@ -119,18 +121,18 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                             if (vc_instance.is_visible(cva->material, prn.billboard_id, scene_graph_config, external_render_pass, max_distance_near))
                             {
                                 if ((terrain_style.min_near_distance_to_bdry != 0) && (boundary_bvh != nullptr)) {
-                                    float min_dist = boundary_bvh->min_distance(
+                                    float min_dist2 = boundary_bvh->min_distance(
                                         p,
-                                        terrain_style.min_near_distance_to_bdry * scale,
+                                        dboundary,
                                         [&p](auto& tt)
                                         {
-                                            return std::sqrt(sum(squared(distance_point_to_triangle_3d(
+                                            return sum(squared(distance_point_to_triangle_3d(
                                                 p,
                                                 tt(0),
                                                 tt(1),
-                                                tt(2)))));
+                                                tt(2))));
                                         });
-                                    if (min_dist < terrain_style.min_near_distance_to_bdry * scale) {
+                                    if (min_dist2 < dboundary2) {
                                         continue;
                                     }
                                 }
