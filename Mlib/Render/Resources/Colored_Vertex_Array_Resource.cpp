@@ -494,11 +494,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ";" << std::endl;
                     sstr << "            }" << std::endl;
                 }
-                if (t->texture_descriptor.color_mode == ColorMode::RGBA) {
+                if ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
                     sstr << "            vec4 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgba;" << std::endl;
-                    sstr << "            weight *= clamp(0.5 + 2 * (bcolor.a - 0.5), 0, 1);" << std::endl;
+                    sstr << "            weight *= clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
                     // sstr << "            weight *= bcolor.a;" << std::endl;
-                } else if (t->texture_descriptor.color_mode == ColorMode::RGB) {
+                } else if (
+                    (t->texture_descriptor.color_mode == ColorMode::RGB) ||
+                    ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness == 0)))
+                {
                     sstr << "            vec3 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgb;" << std::endl;
                 } else {
                     throw std::runtime_error("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');

@@ -577,6 +577,7 @@ void LoadScene::operator()(
         "\\s+distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+normal=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+cosine=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "(?:\\s+discreteness=([\\w+-.]+))?"
         "\\s+scale=([\\w+-.]+)"
         "\\s+weight=([\\w+-.]+)$");
     static const DECLARE_REGEX(add_texture_atlas_reg,
@@ -1493,8 +1494,9 @@ void LoadScene::operator()(
                         safe_stof(match[13].str()),
                         safe_stof(match[14].str()),
                         safe_stof(match[15].str())},
-                    .scale = safe_stof(match[16].str()),
-                    .weight = safe_stof(match[17].str()) });
+                    .discreteness = match[16].matched ? safe_stof(match[16].str()) : 2,
+                    .scale = safe_stof(match[17].str()),
+                    .weight = safe_stof(match[18].str()) });
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_texture_atlas_reg)) {
