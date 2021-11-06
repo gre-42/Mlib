@@ -494,7 +494,16 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ";" << std::endl;
                     sstr << "            }" << std::endl;
                 }
-                sstr << "            texture_color.rgb += weight * texture(textures_color[" << i << "], tex_coord_flipped * scale).rgb;" << std::endl;
+                if (t->texture_descriptor.color_mode == ColorMode::RGBA) {
+                    sstr << "            vec4 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgba;" << std::endl;
+                    sstr << "            weight *= clamp(0.5 + 2 * (bcolor.a - 0.5), 0, 1);" << std::endl;
+                    // sstr << "            weight *= bcolor.a;" << std::endl;
+                } else if (t->texture_descriptor.color_mode == ColorMode::RGB) {
+                    sstr << "            vec3 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgb;" << std::endl;
+                } else {
+                    throw std::runtime_error("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
+                }
+                sstr << "            texture_color.rgb += weight * bcolor.rgb;" << std::endl;
                 if (has_normalmap && !t->texture_descriptor.normal.empty()) {
                     sstr << "            tnorm += weight * (2 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1);" << std::endl;
                 }
@@ -506,7 +515,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 ++i;
             }
         }
-        sstr << "    if (sum_weights < 1e-1) {" << std::endl;
+        sstr << "    if (sum_weights < 1e-3) {" << std::endl;
         sstr << "        texture_color.rgb = vec3(1, 0, 1);" << std::endl;
         sstr << "    } else {" << std::endl;
         sstr << "        texture_color.rgb /= sum_weights;" << std::endl;

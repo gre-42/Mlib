@@ -57,15 +57,15 @@ void MacroLineExecutor::operator () (
     static const DECLARE_REGEX(include_reg, "^\\s*include ([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(empty_reg, "^[\\s]*$");
 
-    auto fpath = [&](const fs::path& f) -> std::string {
+    auto fpath = [&](const fs::path& f) -> FPath {
         if (f.empty()) {
-            return "";
+            return FPath{.is_variable = false, .path = ""};
         } else if (f.string()[0] == '#') {
-            return f.string().substr(1, f.string().length() - 1);
+            return FPath{.is_variable = true, .path = f.string().substr(1, f.string().length() - 1)};
         } else if (f.is_absolute()) {
-            return f.string();
+            return FPath{.is_variable = false, .path = f.string()};
         } else {
-            return fs::weakly_canonical(fs::path(working_directory_) / f).string();
+            return FPath{.is_variable = false, .path = fs::weakly_canonical(fs::path(working_directory_) / f).string()};
         }
     };
 

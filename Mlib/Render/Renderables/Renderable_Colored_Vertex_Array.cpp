@@ -173,18 +173,24 @@ void RenderableColoredVertexArray::render_cva(
     for (size_t i = 0; i < blended_textures.size(); ++i) {
         blended_textures[i] = &cva->material.textures[i];
     }
-    for (const auto& t : cva->material.textures) {
-        if (t.texture_descriptor.color.empty()) {
-            throw std::runtime_error("Empty colors not supported, cva: " + cva->name);
-        }
-        if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
-            throw std::runtime_error("Material's color texture \"" + t.texture_descriptor.color + "\" has undefined color mode");
-        }
-        if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGBA)) {
-            throw std::runtime_error("Opaque material's color texture \"" + t.texture_descriptor.color + "\" was loaded as RGBA");
-        }
-        if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGB)) {
-            throw std::runtime_error("Transparent material's color texture \"" + t.texture_descriptor.color + "\" was not loaded as RGB");
+    {
+        size_t i = 0;
+        for (const auto& t : cva->material.textures) {
+            if (t.texture_descriptor.color.empty()) {
+                throw std::runtime_error("Empty colors not supported, cva: " + cva->name);
+            }
+            if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
+                throw std::runtime_error("Material's color texture \"" + t.texture_descriptor.color + "\" has undefined color mode");
+            }
+            if (i == 0) {
+                if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGBA)) {
+                    throw std::runtime_error("Opaque material's color texture \"" + t.texture_descriptor.color + "\" was loaded as RGBA");
+                }
+                if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGB)) {
+                    throw std::runtime_error("Transparent material's color texture \"" + t.texture_descriptor.color + "\" was not loaded as RGB");
+                }
+            }
+            ++i;
         }
     }
     bool color_requires_normal = !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0);

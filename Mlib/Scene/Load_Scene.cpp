@@ -681,11 +681,12 @@ void LoadScene::operator()(
 
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
-        const std::function<std::string(const std::string&)>& fpath,
+        const std::function<FPath(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line,
         SubstitutionMap* local_substitutions) -> bool
     {
+        auto fpathp = [&](const std::string& v){return fpath(v).path;};
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(line, match, create_scene_reg)) {
             RenderingContextGuard rrg{
@@ -759,7 +760,7 @@ void LoadScene::operator()(
                     : TriangleTangentErrorBehavior::RAISE,
                 .apply_static_lighting = false,
                 .werror = !match[28].matched};
-            std::string filename = fpath(match[2].str());
+            std::string filename = fpathp(match[2].str());
             if (filename.ends_with(".obj")) {
                 scene_node_resources.add_resource(match[1].str(), std::make_shared<ObjFileResource>(
                     filename,
@@ -797,7 +798,7 @@ void LoadScene::operator()(
                 }
                 std::string key = match2[1].str();
                 std::string value = rtrim_copy(match2[2].str());
-                auto add_street_textures = [&value, &fpath, &config](RoadType road_type){
+                auto add_street_textures = [&value, &fpathp, &config](RoadType road_type){
                     static const DECLARE_REGEX(
                         street_texture_reg,
                         "(?:\\s*lanes:(\\d+) "
@@ -812,8 +813,8 @@ void LoadScene::operator()(
                         RoadProperties rp{.type=road_type, .nlanes = safe_stoz(match3[1].str())};
                         std::vector<std::string> textures =
                             match3[3].matched
-                                ? std::vector<std::string>{ fpath(match3[2].str()), fpath(match3[3].str()) }
-                                : std::vector<std::string>{ fpath(match3[2].str()) };
+                                ? std::vector<std::string>{ fpathp(match3[2].str()), fpathp(match3[3].str()) }
+                                : std::vector<std::string>{ fpathp(match3[2].str()) };
                         RoadStyle rs{
                             .textures = textures,
                             .uvx = match3[4].matched
@@ -822,7 +823,7 @@ void LoadScene::operator()(
                         config.street_texture[rp] = rs;
                     });
                 };
-                auto add_barrier_textures = [&value, &fpath, &config](){
+                auto add_barrier_textures = [&value, &fpathp, &config](){
                     static const DECLARE_REGEX(
                         barrier_texture_reg,
                         "(?:\\s*name:(\\w+) "
@@ -836,7 +837,7 @@ void LoadScene::operator()(
                             throw std::runtime_error("Unknown element: \"" + match3[8].str() + '"');
                         }
                         BarrierStyle as{
-                            .texture = fpath(match3[2].str()),
+                            .texture = fpathp(match3[2].str()),
                             .uv = FixedArray<float, 2>{
                                 safe_stof(match3[3].str()),
                                 safe_stof(match3[4].str())},
@@ -854,70 +855,70 @@ void LoadScene::operator()(
                     resource_name = value;
                 }
                 else if (key == "filename") {
-                    config.filename = fpath(value);
+                    config.filename = fpathp(value);
                 }
                 else if (key == "heightmap") {
-                    config.heightmap = fpath(value);
+                    config.heightmap = fpathp(value);
                 }
                 else if (key == "heightmap_mask") {
-                    config.heightmap_mask = fpath(value);
+                    config.heightmap_mask = fpathp(value);
                 }
                 else if (key == "heightmap_extension") {
                     config.heightmap_extension = safe_stoz(value);
                 }
                 else if (key == "terrain_undefined_textures") {
-                    config.terrain_textures[TerrainType::UNDEFINED] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::UNDEFINED] = string_to_vector(value, fpathp);
                 }
                 else if (key == "terrain_grass_textures") {
-                    config.terrain_textures[TerrainType::GRASS] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::GRASS] = string_to_vector(value, fpathp);
                 }
                 else if (key == "terrain_flowers_textures") {
-                    config.terrain_textures[TerrainType::FLOWERS] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::FLOWERS] = string_to_vector(value, fpathp);
                 }
                 else if (key == "terrain_elevated_grass_textures") {
-                    config.terrain_textures[TerrainType::ELEVATED_GRASS] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::ELEVATED_GRASS] = string_to_vector(value, fpathp);
                 }
                 else if (key == "terrain_elevated_grass_base_textures") {
-                    config.terrain_textures[TerrainType::ELEVATED_GRASS_BASE] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::ELEVATED_GRASS_BASE] = string_to_vector(value, fpathp);
                 }
                 else if (key == "terrain_stone_textures") {
-                    config.terrain_textures[TerrainType::STONE] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::STONE] = string_to_vector(value, fpathp);
                 }
                 else if (key == "terrain_asphalt_textures") {
-                    config.terrain_textures[TerrainType::ASPHALT] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::ASPHALT] = string_to_vector(value, fpathp);
                 }
                 else if (key == "terrain_water_floor_textures") {
-                    config.terrain_textures[TerrainType::WATER_FLOOR] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::WATER_FLOOR] = string_to_vector(value, fpathp);
                 }
                 else if (key == "terrain_water_floor_base_textures") {
-                    config.terrain_textures[TerrainType::WATER_FLOOR_BASE] = string_to_vector(value, fpath);
+                    config.terrain_textures[TerrainType::WATER_FLOOR_BASE] = string_to_vector(value, fpathp);
                 }
                 else if (key == "stone_dirt_texture") {
-                    config.terrain_dirt_textures[TerrainType::STONE] = fpath(value);
+                    config.terrain_dirt_textures[TerrainType::STONE] = fpathp(value);
                 }
                 else if (key == "grass_dirt_texture") {
-                    config.terrain_dirt_textures[TerrainType::GRASS] = fpath(value);
+                    config.terrain_dirt_textures[TerrainType::GRASS] = fpathp(value);
                 }
                 else if (key == "street_dirt_texture") {
-                    config.street_dirt_texture = fpath(value);
+                    config.street_dirt_texture = fpathp(value);
                 }
                 else if (key == "street_crossing_texture") {
-                    config.street_crossing_texture[RoadType::STREET] = fpath(value);
+                    config.street_crossing_texture[RoadType::STREET] = fpathp(value);
                 }
                 else if (key == "street_texture") {
                     RoadProperties rp{.type=RoadType::STREET, .nlanes = 1};
-                    RoadStyle rs{.textures = { fpath(value) }, .uvx = 1.f};
+                    RoadStyle rs{.textures = { fpathp(value) }, .uvx = 1.f};
                     config.street_texture[rp] = rs;
                 }
                 else if (key == "street_textures") {
                     add_street_textures(RoadType::STREET);
                 }
                 else if (key == "path_crossing_texture") {
-                    config.street_crossing_texture[RoadType::PATH] = fpath(value);
+                    config.street_crossing_texture[RoadType::PATH] = fpathp(value);
                 }
                 else if (key == "path_texture") {
                     RoadProperties rp{.type=RoadType::PATH, .nlanes = 1};
-                    RoadStyle rs{.textures = { fpath(value) }, .uvx = 1.f};
+                    RoadStyle rs{.textures = { fpathp(value) }, .uvx = 1.f};
                     config.street_texture[rp] = rs;
                 }
                 else if (key == "path_textures") {
@@ -927,49 +928,49 @@ void LoadScene::operator()(
                     add_street_textures(RoadType::WALL);
                 }
                 else if (key == "curb_street_texture") {
-                    config.curb_street_texture[RoadType::STREET] = fpath(value);
+                    config.curb_street_texture[RoadType::STREET] = fpathp(value);
                 }
                 else if (key == "curb_path_texture") {
-                    config.curb_street_texture[RoadType::PATH] = fpath(value);
+                    config.curb_street_texture[RoadType::PATH] = fpathp(value);
                 }
                 else if (key == "curb_wall_texture") {
-                    config.curb_street_texture[RoadType::WALL] = fpath(value);
+                    config.curb_street_texture[RoadType::WALL] = fpathp(value);
                 }
                 else if (key == "curb2_street_texture") {
-                    config.curb2_street_texture[RoadType::STREET] = fpath(value);
+                    config.curb2_street_texture[RoadType::STREET] = fpathp(value);
                 }
                 else if (key == "curb2_path_texture") {
-                    config.curb2_street_texture[RoadType::PATH] = fpath(value);
+                    config.curb2_street_texture[RoadType::PATH] = fpathp(value);
                 }
                 else if (key == "curb2_wall_texture") {
-                    config.curb2_street_texture[RoadType::WALL] = fpath(value);
+                    config.curb2_street_texture[RoadType::WALL] = fpathp(value);
                 }
                 else if (key == "air_curb_street_texture") {
-                    config.air_curb_street_texture[RoadType::STREET] = fpath(value);
+                    config.air_curb_street_texture[RoadType::STREET] = fpathp(value);
                 }
                 else if (key == "air_curb_path_texture") {
-                    config.air_curb_street_texture[RoadType::PATH] = fpath(value);
+                    config.air_curb_street_texture[RoadType::PATH] = fpathp(value);
                 }
                 else if (key == "air_support_texture") {
-                    config.air_support_texture = fpath(value);
+                    config.air_support_texture = fpathp(value);
                 }
                 else if (key == "socle_textures") {
-                    config.socle_textures = string_to_vector(value, fpath);
+                    config.socle_textures = string_to_vector(value, fpathp);
                 }
                 else if (key == "facade_textures") {
-                    config.facade_textures = string_to_vector(value, fpath);
+                    config.facade_textures = string_to_vector(value, fpathp);
                 }
                 else if (key == "ceiling_texture") {
-                    config.ceiling_texture = fpath(value);
+                    config.ceiling_texture = fpathp(value);
                 }
                 else if (key == "barrier_textures") {
                     add_barrier_textures();
                 }
                 else if (key == "roof_texture") {
-                    config.roof_texture = fpath(value);
+                    config.roof_texture = fpathp(value);
                 }
                 else if (key == "tunnel_pipe_texture") {
-                    config.tunnel_pipe_texture = fpath(value);
+                    config.tunnel_pipe_texture = fpathp(value);
                 }
                 else if (key == "tunnel_pipe_resource_name") {
                     config.tunnel_pipe_resource_name = value;
@@ -987,7 +988,7 @@ void LoadScene::operator()(
                     config.street_surface_endpoint1_resource_name = value;
                 }
                 else if (key == "water_texture") {
-                    config.water_texture = fpath(value);
+                    config.water_texture = fpathp(value);
                 }
                 else if (key == "water_height") {
                     config.water_height = safe_stof(value);
@@ -1229,7 +1230,7 @@ void LoadScene::operator()(
             config.layer_heights = Interp<float>(
                 layer_heights_layer,
                 layer_heights_height);
-            std::string cache_filename = fpath(config.filename + '_' + config.game_level + ".cereal.binary");
+            std::string cache_filename = fpathp(config.filename + '_' + config.game_level + ".cereal.binary");
             std::shared_ptr<OsmMapResource> osm_map_resource;
             if (fs::exists(cache_filename)) {
                 osm_map_resource = std::make_shared<OsmMapResource>(
@@ -1327,7 +1328,7 @@ void LoadScene::operator()(
                 Material{
                     .blend_mode = blend_mode_from_string(match[16].str()),
                     .depth_func = match[17].matched ? depth_func_from_string(match[17].str()) : DepthFunc::LESS,
-                    .textures = {{.texture_descriptor = {.color = fpath(match[2].str())}}},
+                    .textures = {{.texture_descriptor = {.color = fpathp(match[2].str())}}},
                     .occluded_type =  occluded_type_from_string(match[10].str()),
                     .occluder_type = occluder_type_from_string(match[11].str()),
                     .occluded_by_black = safe_stob(match[12].str()),
@@ -1361,7 +1362,7 @@ void LoadScene::operator()(
                 FixedArray<float, 2, 2>{
                     safe_stof(match[3].str()), safe_stof(match[4].str()),
                     safe_stof(match[5].str()), safe_stof(match[6].str())},
-                fpath(match[2].str())));
+                fpathp(match[2].str())));
             return true;
         }
         if (Mlib::re::regex_match(line, match, binary_x_resource_reg)) {
@@ -1412,8 +1413,8 @@ void LoadScene::operator()(
                 .specularity = {0.f, 0.f, 0.f}};
             Material material_0{material};
             Material material_90{material};
-            material_0.textures = {{.texture_descriptor = {.color = fpath(match[2].str())}}};
-            material_90.textures = {{.texture_descriptor = {.color = fpath(match[3].str())}}};
+            material_0.textures = {{.texture_descriptor = {.color = fpathp(match[2].str())}}};
+            material_90.textures = {{.texture_descriptor = {.color = fpathp(match[3].str())}}};
             material_0.compute_color_mode();
             material_90.compute_color_mode();
             scene_node_resources.add_resource(match[1].str(), std::make_shared<BinaryXResource>(
@@ -1439,7 +1440,7 @@ void LoadScene::operator()(
             cfg.periodic = safe_stob(match[5].str());
             scene_node_resources.add_bvh_file(
                 match[1].str(),
-                fpath(match[2].str()),
+                fpathp(match[2].str()),
                 cfg);
             return true;
         }
@@ -1447,11 +1448,11 @@ void LoadScene::operator()(
             RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
                 match[1].str(),
                 TextureDescriptor{
-                    .color = fpath(match[2].str()),
-                    .normal = fpath(match[3].str()),
+                    .color = fpathp(match[2].str()),
+                    .normal = fpathp(match[3].str()),
                     .color_mode = color_mode_from_string(match[4].str()),
                     .desaturate = match[5].matched ? safe_stob(match[5].str()) : false,
-                    .histogram = fpath(match[6].str()),
+                    .histogram = fpathp(match[6].str()),
                     .mixed = match[7].str(),
                     .overlap_npixels = match[8].matched ? safe_stoz(match[8].str()) : 0,
                     .mean_color =
@@ -1469,10 +1470,13 @@ void LoadScene::operator()(
         }
         if (Mlib::re::regex_match(line, match, add_blend_map_texture_reg)) {
             auto rr = RenderingContextStack::primary_rendering_resources();
+            auto tex = fpath(match[2].str());
             rr->set_blend_map_texture(
                 match[1].str(),
                 BlendMapTexture{
-                    .texture_descriptor = TextureDescriptor{ .color = fpath(match[2].str()) },
+                    .texture_descriptor = tex.is_variable
+                        ? RenderingContextStack::primary_rendering_resources()->get_existing_texture_descriptor(tex.path)
+                        : TextureDescriptor{ .color = tex.path },
                     .min_height = safe_stof(match[3].str()),
                     .max_height = safe_stof(match[4].str()),
                     .distances = {
@@ -1507,7 +1511,7 @@ void LoadScene::operator()(
                 tiles.push_back(AtlasTileDescriptor{
                     .left = safe_stoi(match2[1].str()),
                     .bottom = safe_stoi(match2[2].str()),
-                    .filename = fpath(match2[3].str())});
+                    .filename = fpathp(match2[3].str())});
             });
             RenderingContextStack::primary_rendering_resources()->add_texture_atlas(
                 match[1].str(),
@@ -1993,7 +1997,7 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, visual_global_log_reg)) {
             auto logger = std::make_shared<VisualGlobalLog>(
                 base_log,
-                fpath(match[1].str()),
+                fpathp(match[1].str()),
                 FixedArray<float, 2>{
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
@@ -2015,7 +2019,7 @@ void LoadScene::operator()(
                 physics_engine.advance_times_,
                 lo,
                 log_components,
-                fpath(match[3].str()),
+                fpathp(match[3].str()),
                 FixedArray<float, 2>{
                     safe_stof(match[4].str()),
                     safe_stof(match[5].str())},
@@ -2037,7 +2041,7 @@ void LoadScene::operator()(
                 physics_engine.advance_times_,
                 lo,
                 log_components,
-                fpath(match[3].str()),
+                fpathp(match[3].str()),
                 FixedArray<float, 2>{
                     safe_stof(match[4].str()),
                     safe_stof(match[5].str())},
@@ -2047,7 +2051,7 @@ void LoadScene::operator()(
             physics_engine.advance_times_.add_advance_time(logger);
         } else if (Mlib::re::regex_match(line, match, countdown_reg)) {
             auto countdown_logic = std::make_shared<CountDownLogic>(
-                fpath(match[1].str()),            // ttf_filename
+                fpathp(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
@@ -2059,7 +2063,7 @@ void LoadScene::operator()(
             render_logics.append(nullptr, countdown_logic);
         } else if (Mlib::re::regex_match(line, match, loading_reg)) {
             auto loading_logic = std::make_shared<LoadingTextLogic>(
-                fpath(match[1].str()),            // ttf_filename
+                fpathp(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
@@ -2071,7 +2075,7 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, players_stats_reg)) {
             auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
                 players,
-                fpath(match[1].str()),            // ttf_filename
+                fpathp(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
@@ -2095,7 +2099,7 @@ void LoadScene::operator()(
             for (const auto& e : find_all_name_values(match[8].str(), "[\\w+-. \\(\\)/:]+", "[\\w+-. \\(\\)/:]+")) {
                 scene_entries.push_back(SceneEntry{
                     .name = e.first,
-                    .filename = fpath(e.second)});
+                    .filename = fpathp(e.second)});
             }
             std::string id = match[1].str();
             std::string title = match[2].str();
@@ -2103,7 +2107,7 @@ void LoadScene::operator()(
             auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
                 "",
                 std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
-                fpath(match[3].str()),            // ttf_filename
+                fpathp(match[3].str()),            // ttf_filename
                 FixedArray<float, 2>{             // position
                     safe_stof(match[4].str()),
                     safe_stof(match[5].str())},
@@ -2183,7 +2187,7 @@ void LoadScene::operator()(
             std::shared_ptr<ControlsLogic> controls_logic;
             ui_focus.insert_submenu(id, title, 0);
             controls_logic = std::make_shared<ControlsLogic>(
-                fpath(match[3].str()),            // gamepad_texture
+                fpathp(match[3].str()),            // gamepad_texture
                 FixedArray<float, 2>{             // position
                     safe_stof(match[4].str()),
                     safe_stof(match[5].str())},
@@ -2200,7 +2204,7 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, parameter_setter_reg)) {
             std::string id = match[1].str();
             std::string title = match[2].str();
-            std::string ttf_filename = fpath(match[3].str());
+            std::string ttf_filename = fpathp(match[3].str());
             FixedArray<float, 2> position{
                 safe_stof(match[4].str()),
                 safe_stof(match[5].str()) };
@@ -2243,7 +2247,7 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, tab_menu_reg)) {
             std::string id = match[1].str();
             std::string title = match[2].str();
-            std::string ttf_filename = fpath(match[3].str());
+            std::string ttf_filename = fpathp(match[3].str());
             FixedArray<float, 2> position{
                 safe_stof(match[4].str()),
                 safe_stof(match[5].str()) };
@@ -2277,7 +2281,7 @@ void LoadScene::operator()(
             render_logics.append(nullptr, tab_menu_logic);
         } else if (Mlib::re::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
-                fpath(match[1].str()),
+                fpathp(match[1].str()),
                 resource_update_cycle_from_string(match[2].str()),
                 FocusFilter{ .focus_mask = focus_from_string(match[3].str()) });
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
@@ -2308,7 +2312,7 @@ void LoadScene::operator()(
             auto hud_image = std::make_shared<HudImageLogic>(
                 *node,
                 physics_engine.advance_times_,
-                fpath(match[2].str()),
+                fpathp(match[2].str()),
                 resource_update_cycle_from_string(match[3].str()),
                 FixedArray<float, 2>{
                     safe_stof(match[4].str()),
@@ -2449,7 +2453,7 @@ void LoadScene::operator()(
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
             physics_engine.advance_times_.add_advance_time(std::make_shared<RigidBodyRecorder>(
-                fpath(match[2].str()),
+                fpathp(match[2].str()),
                 physics_engine.advance_times_,
                 recorder_node,
                 &rb->rbi_,
@@ -2461,7 +2465,7 @@ void LoadScene::operator()(
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
             physics_engine.advance_times_.add_advance_time(std::make_shared<RigidBodyRecorderGpx>(
-                fpath(match[2].str()),
+                fpathp(match[2].str()),
                 physics_engine.advance_times_,
                 recorder_node,
                 &rb->rbi_,
@@ -2470,7 +2474,7 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, playback_track_reg)) {
             auto playback_node = scene.get_node(match[1].str());
             auto playback = std::make_shared<RigidBodyPlayback>(
-                fpath(match[3].str()),
+                fpathp(match[3].str()),
                 physics_engine.advance_times_,
                 ui_focus.focuses,
                 safe_stof(match[2].str()));
@@ -2507,7 +2511,7 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
             physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
-                fpath(match[9].str()),                  // filename
+                fpathp(match[9].str()),                  // filename
                 physics_engine.advance_times_,
                 moving_node,
                 moving_node->get_absolute_movable(),
@@ -2532,21 +2536,21 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, set_camera_reg)) {
             selected_cameras.set_camera_node_name(match[1].str());
         } else if (Mlib::re::regex_match(line, match, set_dirtmap_reg)) {
-            dirtmap_logic.set_filename(fpath(match[1].str()));
+            dirtmap_logic.set_filename(fpathp(match[1].str()));
             secondary_rendering_context.rendering_resources->set_offset("dirtmap", safe_stof(match[2].str()));
             secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", safe_stof(match[3].str()));
             secondary_rendering_context.rendering_resources->set_scale("dirtmap", safe_stof(match[4].str()));
             secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", wrap_mode_from_string(match[5].str()));
         } else if (Mlib::re::regex_match(line, match, set_soft_light_reg)) {
-            post_processing_logic.set_soft_light_filename(fpath(match[1].str()));
+            post_processing_logic.set_soft_light_filename(fpathp(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, set_skybox_reg)) {
             skybox_logic.set_filenames({
-                fpath(match[2].str()),
-                fpath(match[3].str()),
-                fpath(match[4].str()),
-                fpath(match[5].str()),
-                fpath(match[6].str()),
-                fpath(match[7].str())},
+                fpathp(match[2].str()),
+                fpathp(match[3].str()),
+                fpathp(match[4].str()),
+                fpathp(match[5].str()),
+                fpathp(match[6].str()),
+                fpathp(match[7].str())},
                 match[1].str());
         } else if (Mlib::re::regex_match(line, match, set_preferred_car_spawner_reg)) {
             std::string player = match[1].str();

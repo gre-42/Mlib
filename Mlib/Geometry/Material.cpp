@@ -31,9 +31,11 @@ std::strong_ordering Mlib::operator <=> (const std::vector<BillboardAtlasInstanc
 
 Material& Material::compute_color_mode() {
     for (auto& t : textures) {
-        t.texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)
-            ? ColorMode::RGB
-            : ColorMode::RGBA;
+        if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
+            t.texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)
+                ? ColorMode::RGB
+                : ColorMode::RGBA;
+        }
     }
     return *this;
 }

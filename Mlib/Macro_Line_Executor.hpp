@@ -10,12 +10,17 @@ namespace Mlib {
 class MacroRecorder;
 class SubstitutionMap;
 
+struct FPath {
+    bool is_variable;
+    std::string path;
+};
+
 class MacroLineExecutor {
     friend MacroRecorder;
 public:
     typedef std::function<bool(
         const std::string& context,
-        const std::function<std::string(const std::string&)>& fpath,
+        const std::function<FPath(const std::string&)>& fpath,
         const MacroLineExecutor& macro_line_executor,
         const std::string& line,
         SubstitutionMap* local_substitutions)> UserFunction;

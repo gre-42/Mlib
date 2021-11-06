@@ -28,6 +28,7 @@ struct TextureDescriptor {
         archive(mixed);
         archive(overlap_npixels);
         archive(mean_color);
+        archive(lighten);
         archive(anisotropic_filtering_level);
     }
 };
@@ -41,7 +42,8 @@ inline std::ostream& operator << (std::ostream& ostr, const TextureDescriptor& t
         "mixed: " << t.mixed << '\n' <<
         "overlap_npixels: " << t.overlap_npixels << '\n' <<
         "mean_color: " << t.mean_color << '\n' <<
-        "lighten: " << t.lighten << '\n';
+        "lighten: " << t.lighten << '\n' <<
+        "anisotropic_filtering_level: " << t.anisotropic_filtering_level << '\n';
     return ostr;
 }
 
