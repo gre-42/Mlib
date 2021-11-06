@@ -99,7 +99,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             {
                 ts.seed(392743 + (unsigned int)(size_t)&t);
                 rnc.seed(4624052 + (unsigned int)(size_t)&t);
-                ts.sample_triangle_interior<3>(
+                ts.sample_triangle_interior(
                     t(0).position,
                     t(1).position,
                     t(2).position,
