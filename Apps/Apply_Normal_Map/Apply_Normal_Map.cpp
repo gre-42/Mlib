@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
     const ArgParser parser(
         "Usage: render_obj_file\n"
         "--color <color>\n"
+        "[--histogram <color>]\n"
         "--normal <normal>\n"
         "--output <output>\n"
         "--light_x <x>\n"
@@ -35,6 +36,7 @@ int main(int argc, char** argv) {
         "--light_configuration {one, shifted_circle, circle}",
         {},
         {"--color",
+         "--histogram",
          "--normal",
          "--output",
          "--light_x",
@@ -75,7 +77,8 @@ int main(int argc, char** argv) {
                 .textures{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
                     .color = args.named_value("--color"),
                     .normal = args.named_value("--normal"),
-                    .color_mode = ColorMode::RGB}} }
+                    .color_mode = ColorMode::RGB,
+                    .histogram = args.named_value("--histogram", "")}} }
                 }};
             tl.draw_rectangle_wo_normals(
                 FixedArray<float, 3>{-1, -1, -10},
