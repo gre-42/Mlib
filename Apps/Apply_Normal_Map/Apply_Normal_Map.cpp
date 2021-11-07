@@ -29,19 +29,29 @@ int main(int argc, char** argv) {
         "--color <color>\n"
         "[--histogram <color>]\n"
         "--normal <normal>\n"
+        "[--width <width>]\n"
+        "[--height <height>]\n"
         "--output <output>\n"
         "--light_x <x>\n"
         "--light_y <y>\n"
         "--light_z <z>\n"
+        "--light_angle_x <x>\n"
+        "--light_angle_y <y>\n"
+        "--light_angle_z <z>\n"
         "--light_configuration {one, shifted_circle, circle}",
         {},
         {"--color",
          "--histogram",
          "--normal",
+         "--width",
+         "--height",
          "--output",
          "--light_x",
          "--light_y",
          "--light_z",
+         "--light_angle_x",
+         "--light_angle_y",
+         "--light_angle_z",
          "--light_configuration"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -57,8 +67,8 @@ int main(int argc, char** argv) {
         }
         auto in_color = StbImage::load_from_file(args.named_value("--color"));
         RenderConfig render_config{
-            .screen_width = (int)in_color.shape(1),
-            .screen_height = (int)in_color.shape(0)};
+            .screen_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
+            .screen_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
         Render2 render2{
             render_config,
             num_renderings,
