@@ -177,7 +177,7 @@ void RenderableColoredVertexArray::render_cva(
         size_t i = 0;
         for (const auto& t : cva->material.textures) {
             if (t.texture_descriptor.color.empty()) {
-                throw std::runtime_error("Empty colors not supported, cva: " + cva->name);
+                throw std::runtime_error("Empty color texture not supported, cva: " + cva->name);
             }
             if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
                 throw std::runtime_error("Material's color texture \"" + t.texture_descriptor.color + "\" has undefined color mode");
