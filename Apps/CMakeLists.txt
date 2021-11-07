@@ -34,6 +34,7 @@ if (BUILD_SFM)
 endif()
 
 if (glfw3_FOUND)
+    add_subdirectory(Apply_Normal_Map)
     add_subdirectory(Explicit_Mipmaps)
     add_subdirectory(Glfw_Tearing_Demo)
     add_subdirectory(Glfw_Tearing_Demo_Multithreaded)

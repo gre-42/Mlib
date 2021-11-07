@@ -1,0 +1,174 @@
+#include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
+#include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Images/StbImage.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Render/Cameras/Generic_Camera.hpp>
+#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/Render/Render_Results.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
+#include <Mlib/Stats/Linspace.hpp>
+#include <vector>
+
+using namespace Mlib;
+
+int main(int argc, char** argv) {
+
+    const ArgParser parser(
+        "Usage: render_obj_file\n"
+        "--color <color>\n"
+        "--normal <normal>\n"
+        "--output <output>\n"
+        "--light_x <x>\n"
+        "--light_y <y>\n"
+        "--light_z <z>\n"
+        "--light_configuration {one, shifted_circle, circle}",
+        {},
+        {"--color",
+         "--normal",
+         "--output",
+         "--light_x",
+         "--light_y",
+         "--light_z",
+         "--light_configuration"});
+    try {
+        const auto args = parser.parsed(argc, argv);
+
+        args.assert_num_unamed(0);
+
+        // Declared as first class to let destructors of other classes succeed.
+        size_t num_renderings = SIZE_MAX;
+        RenderResults render_results;
+        RenderedSceneDescriptor rsd;
+        if (args.has_named_value("--output")) {
+            render_results.outputs[rsd] = {};
+        }
+        auto in_color = StbImage::load_from_file(args.named_value("--color"));
+        RenderConfig render_config{
+            .screen_width = (int)in_color.shape(1),
+            .screen_height = (int)in_color.shape(0)};
+        Render2 render2{
+            render_config,
+            num_renderings,
+            &render_results};
+
+        render2.print_hardware_info();
+
+        SceneNodeResources scene_node_resources;
+        RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
+        DeleteNodeMutex deletion_mutex;
+        Scene scene{ deletion_mutex, nullptr };
+        std::string light_configuration = args.named_value("--light_configuration", "one");
+        auto scene_node = std::make_unique<SceneNode>();
+        {
+            TriangleList tl{ "tl", Material{
+                .textures{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
+                    .color = args.named_value("--color"),
+                    .normal = args.named_value("--normal"),
+                    .color_mode = ColorMode::RGB}} }
+                }};
+            tl.draw_rectangle_wo_normals(
+                FixedArray<float, 3>{-1, -1, -10},
+                FixedArray<float, 3>{1, -1, -10},
+                FixedArray<float, 3>{1, 1, -10},
+                FixedArray<float, 3>{-1, 1, -10},
+                fixed_ones<float, 3>(),
+                fixed_ones<float, 3>(),
+                fixed_ones<float, 3>(),
+                fixed_ones<float, 3>());
+            auto cva = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array());
+            scene_node_resources.add_resource("tl", cva);
+            scene_node_resources.instantiate_renderable(
+                "tl",
+                "tl",
+                *scene_node,
+                SceneNodeResourceFilter());
+        }
+        scene.add_root_node("obj", std::move(scene_node));
+
+        std::list<Light*> lights;
+        if (light_configuration == "one") {
+            scene.add_root_node("light_node0", std::make_unique<SceneNode>());
+            scene.get_node("light_node0")->set_position({
+                safe_stof(args.named_value("--light_x", "0")),
+                safe_stof(args.named_value("--light_y", "50")),
+                safe_stof(args.named_value("--light_z", "0"))});
+            scene.get_node("light_node0")->set_rotation({
+                safe_stof(args.named_value("--light_angle_x", "-45")) * float{M_PI} / 180.f,
+                safe_stof(args.named_value("--light_angle_y", "0")) * float{M_PI} / 180.f,
+                safe_stof(args.named_value("--light_angle_z", "0")) * float{M_PI} / 180.f});
+            auto light = std::make_unique<Light>(Light{.node_name = "light_node0"});
+            lights.push_back(light.get());
+            scene.get_node("light_node0")->add_light(std::move(light));
+        } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
+            size_t n = 10;
+            float r = 50;
+            size_t i = 0;
+            FixedArray<float, 3> center;
+            if (light_configuration == "circle") {
+                center = {0.f, 10.f, 0.f};
+            } else if (light_configuration == "shifted_circle") {
+                center = {-50.f, 50.f, -20.f};
+            } else {
+                throw std::runtime_error("Unknown light configuration");
+            }
+            for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
+                std::string name = "light" + std::to_string(i++);
+                scene.add_root_node(name, std::make_unique<SceneNode>());
+                scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
+                scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
+                    scene.get_node(name)->position(),
+                    scene.get_node("obj")->position())));
+                auto light = std::make_unique<Light>(Light{.node_name = name});
+                lights.push_back(light.get());
+                scene.get_node(name)->add_light(std::move(light));
+                lights.back()->ambience *= 2.f / n;
+                lights.back()->diffusivity *= 2.f / n;
+                lights.back()->specularity *= 2.f / n;
+            }
+        } else if (light_configuration != "none") {
+            throw std::runtime_error("Unknown light configuration");
+        }
+        
+        scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
+        scene.get_node("follower_camera")->set_camera(std::make_unique<GenericCamera>(
+            CameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
+            GenericCamera::Mode::ORTHO));
+        
+        // scene.print();
+        SelectedCameras selected_cameras{scene};
+        StandardCameraLogic standard_camera_logic{scene, selected_cameras};
+        StandardRenderLogic standard_render_logic{
+            scene,
+            standard_camera_logic,
+            ClearMode::COLOR_AND_DEPTH};
+        auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
+
+        DeleteNodeMutex mutex;
+
+        render2(
+            *read_pixels_logic,
+            SceneGraphConfig());
+        if (args.has_named_value("--output")) {
+            const Array<float>& array = render_results.outputs.at(rsd).rgb;
+            if (!array.initialized()) {
+                throw std::runtime_error("Rendered scene descriptor not initialized");
+            }
+            StbImage::from_float_rgb(array).save_to_file(args.named_value("--output"));
+        }
+    } catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
+    return 0;
+}

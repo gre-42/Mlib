@@ -519,7 +519,7 @@ int main(int argc, char** argv) {
             } else {
                 throw std::runtime_error("Unknown light configuration");
             }
-            for (float a : linspace<float>(0.f, 2.f * float{ M_PI }, n).flat_iterable()) {
+            for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, std::make_unique<SceneNode>());
                 scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
@@ -535,7 +535,7 @@ int main(int argc, char** argv) {
                 lights.back()->specularity = 0;
             }
             if (with_diffusivity) {
-                for (float a : linspace<float>(0.f, 2.f * float{ M_PI }, n).flat_iterable()) {
+                for (float a : Linspace<float>(0.f, 2.f * float{ M_PI }, n)) {
                     std::string name = "light_s" + std::to_string(i++);
                     scene.add_root_node(name, std::make_unique<SceneNode>());
                     scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});

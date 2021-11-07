@@ -390,7 +390,7 @@ void Mlib::add_beacons_to_raceways(
 //     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
 //     GammaRandomNumberGenerator<float> rng3{0, 3, 2};
 //     NextGrassResourceName ntrn{continuous};
-//     for (float f : linspace<float>(tree_inwards_distance, tree_inwards_distance + 5.f, 3).flat_iterable()) {
+//     for (float f : Linspace<float>(tree_inwards_distance, tree_inwards_distance + 5.f, 3)) {
 //         for (const auto& w : ways) {
 //             const auto& tags = w.second.tags;
 //             if ((tags.find("landuse") != tags.end() && (tags.at("landuse") == "farmland" || tags.at("landuse") == "meadow")))
