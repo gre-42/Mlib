@@ -507,8 +507,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     throw std::runtime_error("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
                 }
                 sstr << "            texture_color.rgb += weight * bcolor.rgb;" << std::endl;
-                if (has_normalmap && !t->texture_descriptor.normal.empty()) {
-                    sstr << "            tnorm += weight * (2 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1);" << std::endl;
+                if (has_normalmap) {
+                    if (t->texture_descriptor.normal.empty()) {
+                        sstr << "            tnorm.z += weight;" << std::endl;
+                    } else {
+                        sstr << "            tnorm += weight * (2 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1);" << std::endl;
+                    }
                 }
                 sstr << "            sum_weights += weight;" << std::endl;
                 if (!checks.empty()) {
