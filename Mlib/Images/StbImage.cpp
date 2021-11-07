@@ -113,25 +113,17 @@ StbImage StbImage::load_from_file(const std::string& filename) {
     return result;
 }
 
-void StbImage::save_to_file(const std::string& filename) const {
-    if (!filename.ends_with(".png") && !filename.ends_with(".jpg")) {
+void StbImage::save_to_file(const std::string& filename, int jpg_quality) const {
+    if (filename.ends_with(".png")) {
+        if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 3, flat_begin(), 0)) {
+            throw std::runtime_error("Could not save to file " + filename);
+        }
+    } else if (filename.ends_with(".jpg")) {
+        if (!stbi_write_jpg(filename.c_str(), (int)shape(1), (int)shape(0), 3, flat_begin(), jpg_quality)) {
+            throw std::runtime_error("Could not save to file " + filename);
+        }
+    } else {
         throw std::runtime_error("Filename does not have png or jpg extension: \"" + filename + '"');
-    }
-    if (!stbi_write_png(filename.c_str(), (int)shape(1), (int)shape(0), 3, (void*)&(*this)(0, 0), 0)) {
-        throw std::runtime_error("Could not save to file " + filename);
-    }
-}
-
-void StbImage::save_to_stream(std::ostream& ostream) const {
-    if (ndim() != 2) {
-        throw std::runtime_error("save_to_stream: image does not have ndim=2, but " + shape().str());
-    }
-    std::string header{"P6\n" + std::to_string(shape(1)) + " " + std::to_string(shape(0)) + "\n255\n"};
-    ostream.write(header.c_str(), header.length());
-    ostream.write((const char*)flat_iterable().begin(), nbytes());
-    ostream.flush();
-    if (ostream.fail()) {
-        throw std::runtime_error("Could not write PPM");
     }
 }
 

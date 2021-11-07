@@ -25,8 +25,7 @@ public:
     static StbImage load_from_file(const std::string& filename);
     static StbImage load_from_stream(std::istream& istream);
 
-    void save_to_file(const std::string &filename) const;
-    void save_to_stream(std::ostream& ostream) const;
+    void save_to_file(const std::string &filename, int jpg_quality = 95) const;
 
     static StbImage from_float_rgb(const Array<float>& grayscale);
     static StbImage from_float_grayscale(const Array<float>& grayscale);
