@@ -11,6 +11,8 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
+#include <stb_image/stb_array.h>
+#include <stb_image/stb_image_load.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -31,12 +33,15 @@ int main(int argc, char** argv) {
         if (args.named_value("--height").ends_with(".pgm")) {
             height = PgmImage::load_from_file(args.named_value("--height")).to_float() / 64.f * float(UINT16_MAX);
         } else {
-            auto im_rgb = StbImage::load_from_file(args.named_value("--height")).to_float_rgb() * 255.f;
-            if (im_rgb.shape(0) != 3) {
-                throw std::runtime_error("Height map is no PGM image and does not have 3 channels");
+            Array<float> im = stb_image_2_array(stb_load(args.named_value("--height"), false, false)).casted<float>();
+            if (im.shape(0) == 3) {
+                // https://www.mapzen.com/blog/elevation/
+                height = im[0] * 256.f + im[1] + im[2] / 256.f - 32768.f;
+            } else if (im.shape(0) == 1) {
+                height = im[0] / 255.f;
+            } else {
+                throw std::runtime_error("Height map is no PGM image and does not have 1 or 3 channels");
             }
-            // https://www.mapzen.com/blog/elevation/
-            height = im_rgb[0] * 256.f + im_rgb[1] + im_rgb[2] / 256.f - 32768.f;
         }
         Array<float> color = args.has_named_value("--rgb")
             ? StbImage::load_from_file(args.named_value("--rgb")).to_float_rgb()
