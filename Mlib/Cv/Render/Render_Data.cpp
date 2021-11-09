@@ -164,6 +164,7 @@ void Mlib::Cv::render_height_map(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
     const TransformationMatrix<float, 2>& normalization_matrix,
+    NormalType normal_type,
     bool rotate,
     float scale,
     float camera_z,
@@ -171,7 +172,7 @@ void Mlib::Cv::render_height_map(
     const CameraConfig& camera_config)
 {
     auto& scene_node_resources = RenderingContextStack::primary_rendering_resources()->scene_node_resources();
-    const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix);
+    const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
     scene_node_resources.add_resource("HeightMapResource", r);
     auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("HeightMapResource", "HeightMapResource", *on, SceneNodeResourceFilter());

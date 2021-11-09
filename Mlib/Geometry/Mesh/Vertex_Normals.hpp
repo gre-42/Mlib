@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <map>
 

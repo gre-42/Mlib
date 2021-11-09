@@ -16,6 +16,7 @@ template <class TData, size_t n>
 class TransformationMatrix;
 class Render2;
 struct ColoredVertexArray;
+enum class NormalType;
 
 namespace Cv {
 
@@ -66,6 +67,7 @@ void render_height_map(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
     const TransformationMatrix<float, 2>& normalization_matrix,
+    NormalType normal_type,
     bool rotate = false,
     float scale = 1,
     float camera_z = 0,

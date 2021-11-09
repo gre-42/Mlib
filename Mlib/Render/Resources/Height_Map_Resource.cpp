@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
@@ -10,7 +11,8 @@ using namespace Mlib;
 HeightMapResource::HeightMapResource(
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
-    const TransformationMatrix<float, 2>& normalization_matrix)
+    const TransformationMatrix<float, 2>& normalization_matrix,
+    NormalType normal_type)
 {
     std::vector<FixedArray<ColoredVertex, 3>> triangles;
     triangles.reserve(2 * height_picture.nelements());
@@ -79,6 +81,18 @@ HeightMapResource::HeightMapResource(
             };
             add_triangle(v00, v11, v01);
             add_triangle(v11, v00, v10);
+        }
+    }
+    if (normal_type == NormalType::VERTEX) {
+        VertexNormals vertex_normals;
+        vertex_normals.add_triangles(
+            triangles.begin(),
+            triangles.end());
+        vertex_normals.compute_vertex_normals();
+        for (auto& it : triangles) {
+            for (auto& v : it.flat_iterable()) {
+                v.normal = vertex_normals.get_normal(v.position);
+            }
         }
     }
     rva_ = std::make_shared<ColoredVertexArrayResource>(

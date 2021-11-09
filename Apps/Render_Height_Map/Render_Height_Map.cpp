@@ -9,6 +9,7 @@
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Normal_Type.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/From_Number.hpp>
 #include <stb_image/stb_array.h>
@@ -21,9 +22,9 @@ using namespace Mlib::Cv;
 int main(int argc, char** argv) {
 
     const ArgParser parser(
-        "Usage: render_height_map --rgb <filename.png> --height <filename.pgm> [--xy_scale <scale>] [--z_scale <scale>] [--rotate] [--down_sample <n>]",
+        "Usage: render_height_map --rgb <filename.png> --height <filename.pgm> [--xy_scale <scale>] [--z_scale <scale>] [--rotate] [--down_sample <n>] [--normal_type {face,vertex}]",
         {"--rotate"},
-        {"--rgb", "--height", "--xy_scale", "--z_scale", "--down_sample"});
+        {"--rgb", "--height", "--xy_scale", "--z_scale", "--down_sample", "--normal_type"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -66,6 +67,7 @@ int main(int argc, char** argv) {
             color,
             height * safe_stof(args.named_value("--z_scale", "0.001")),
             np.normalization_matrix().pre_scaled(safe_stof(args.named_value("--xy_scale", "1"))),
+            normal_type_from_string(args.named_value("--normal_type", "face")),
             args.has_named("--rotate"));
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
