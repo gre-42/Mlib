@@ -51,6 +51,7 @@ struct DrawStreetsInput {
     std::list<std::shared_ptr<ColoredVertexArray>>* street_surface_central_triangles;
     std::list<std::shared_ptr<ColoredVertexArray>>* street_surface_endpoint0_triangles;
     std::list<std::shared_ptr<ColoredVertexArray>>* street_surface_endpoint1_triangles;
+    std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments;
     const std::map<std::string, Node>& nodes;
     const std::map<std::string, Way>& ways;
     float scale;

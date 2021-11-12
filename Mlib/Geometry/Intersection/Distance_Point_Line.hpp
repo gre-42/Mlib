@@ -8,12 +8,8 @@
 
 namespace Mlib {
 
-/**
- * From: https://stackoverflow.com/a/2049593/2292832
- */
 template <class TData>
-TData distance_point_to_line(
-    const FixedArray<TData, 2>& p,
+FixedArray<TData, 2> line_normal(
     const FixedArray<TData, 2>& l0,
     const FixedArray<TData, 2>& l1,
     bool normalize)
@@ -26,6 +22,20 @@ TData distance_point_to_line(
         }
         n /= len;
     }
+    return n;
+}
+
+/**
+ * From: https://stackoverflow.com/a/2049593/2292832
+ */
+template <class TData>
+TData distance_point_to_line(
+    const FixedArray<TData, 2>& p,
+    const FixedArray<TData, 2>& l0,
+    const FixedArray<TData, 2>& l1,
+    bool normalize)
+{
+    FixedArray<float, 2> n = line_normal(l0, l1, normalize);
     return dot0d(p - l0, n);
 }
 
@@ -53,6 +63,36 @@ FixedArray<TData, 2> transform_to_line_coordinates(
             dot0d(p - l0, d) / dist,
             dot0d(p - l0, n)};
     }
+}
+
+template <class TData>
+void distance_point_to_line(
+    const FixedArray<TData, 2>& pt,
+    const FixedArray<TData, 2>& l0,
+    const FixedArray<TData, 2>& l1,
+    FixedArray<TData, 2>& dir,
+    TData& distance)
+{
+    FixedArray<TData, 2> dl = transform_to_line_coordinates(pt, l0, l1);
+    if ((dl(0) >= 0) && (dl(0) <= 1)) {
+        dir = sign(dl(1)) * line_normal(l0, l1, true);  // true = normalize
+        distance = std::abs(dl(1));
+        return;
+    }
+    if (dl(0) < 0) {
+        dir = pt - l0;
+    } else if (dl(0) > 1) {
+        dir = pt - l1;
+    } else {
+        throw std::runtime_error("distance_point_to_line internal error");
+    }
+    distance = std::sqrt(sum(squared(dir)));
+    if (distance < 1e-12) {
+        dir = 0;
+        distance = 0;
+        return;
+    }
+    dir /= distance;
 }
 
 }

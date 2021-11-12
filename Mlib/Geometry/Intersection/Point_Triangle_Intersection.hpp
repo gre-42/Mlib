@@ -14,7 +14,7 @@ namespace Mlib {
  * From: https://stackoverflow.com/a/2049593/2292832
  */
 template <class TData>
-bool point_is_in_triangle (
+bool point_is_in_triangle(
     const FixedArray<TData, 2>& pt,
     const FixedArray<TData, 2>& v1,
     const FixedArray<TData, 2>& v2,
@@ -31,7 +31,7 @@ bool point_is_in_triangle (
  * From: https://stackoverflow.com/a/2049593/2292832
  */
 template <class TData>
-TData distance_point_to_triangle (
+TData distance_point_to_triangle(
     const FixedArray<TData, 2>& pt,
     const FixedArray<TData, 2>& v1,
     const FixedArray<TData, 2>& v2,
@@ -75,7 +75,7 @@ TData distance_point_to_triangle (
 }
 
 template <class TData>
-FixedArray<TData, 2> distance_point_to_triangle_3d (
+FixedArray<TData, 2> distance_point_to_triangle_3d(
     const FixedArray<TData, 3>& pt,
     const FixedArray<TData, 3>& v1,
     const FixedArray<TData, 3>& v2,
@@ -96,7 +96,7 @@ FixedArray<TData, 2> distance_point_to_triangle_3d (
 }
 
 template <class TData>
-FixedArray<TData, 2> distance_point_to_triangle_3d (
+FixedArray<TData, 2> distance_point_to_triangle_3d(
     const FixedArray<TData, 3>& pt,
     const FixedArray<TData, 3>& v1,
     const FixedArray<TData, 3>& v2,

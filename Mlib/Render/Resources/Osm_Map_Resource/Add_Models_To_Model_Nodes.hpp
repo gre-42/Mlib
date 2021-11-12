@@ -20,6 +20,7 @@ void add_models_to_model_nodes(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
+    const std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments,
     const GroundBvh& ground_bvh,
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,

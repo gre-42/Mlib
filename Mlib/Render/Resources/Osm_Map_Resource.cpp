@@ -181,6 +181,7 @@ OsmMapResource::OsmMapResource(
     std::list<StreetRectangle> street_rectangles;
     std::list<std::pair<std::string, std::string>> way_point_edges_1_lane;
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>> way_point_edges_2_lanes;
+    std::list<FixedArray<FixedArray<float, 2>, 2>> way_segments;
     {
         ResourceNameCycle street_lights{scene_node_resources, config.street_light_resource_names};
 
@@ -203,6 +204,7 @@ OsmMapResource::OsmMapResource(
                 street_central == nullptr ? nullptr : &street_central->cvas,
                 street_endpoint0 == nullptr ? nullptr : &street_endpoint0->cvas,
                 street_endpoint1 == nullptr ? nullptr : &street_endpoint1->cvas,
+                way_segments,
                 nodes,
                 ways,
                 config.scale,
@@ -776,6 +778,7 @@ OsmMapResource::OsmMapResource(
                 resource_instance_positions_,
                 object_resource_descriptors_,
                 hitboxes_,
+                way_segments,
                 ground_bvh,
                 scene_node_resources,
                 nodes,

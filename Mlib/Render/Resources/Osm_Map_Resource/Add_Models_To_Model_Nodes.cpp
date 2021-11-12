@@ -4,6 +4,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Way_Bvh.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <Mlib/Strings/From_Number.hpp>
@@ -14,6 +15,7 @@ void Mlib::add_models_to_model_nodes(
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
+    const std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments,
     const GroundBvh& ground_bvh,
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
@@ -21,6 +23,7 @@ void Mlib::add_models_to_model_nodes(
     float scale,
     const std::string& game_level)
 {
+    WayBvh way_bvh{ way_segments };
     std::map<std::string, std::string> prev_neighbor;
     std::map<std::string, std::string> next_neighbor;
     for (const auto& w : ways) {
@@ -49,7 +52,22 @@ void Mlib::add_models_to_model_nodes(
                 continue;
             }
             auto hit = tags.find("hitbox");
-            const auto& p = n.second.position;
+            FixedArray<float, 2> p;
+            if (n.second.tags.contains("distance_to_way")) {
+                float wanted_distance = scale * safe_stof(n.second.tags.at("distance_to_way"));
+                FixedArray<float, 2> dir;
+                float distance;
+                way_bvh.nearest_way(n.second.position, 2.f * wanted_distance, dir, distance);
+                if (distance == INFINITY) {
+                    throw std::runtime_error("Could not find way for node \"" + n.first + '"');
+                } else if (distance == 0) {
+                    throw std::runtime_error("Node \"" + n.first + "\" is on a way");
+                } else {
+                    p = n.second.position + dir * (wanted_distance - distance);
+                }
+            } else {
+                p = n.second.position;
+            }
             ParsedResourceName prn{
                 .name = mit->second,
                 .billboard_id = UINT32_MAX,
