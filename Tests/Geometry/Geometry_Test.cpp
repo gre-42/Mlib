@@ -28,14 +28,14 @@ void test_cross() {
     FixedArray<float, 3> a{7, 3, 9};
     FixedArray<float, 3> b{5, 2, 8};
     assert_allclose(
-        dot1d(cross(a), b).to_array(),
-        cross(a, b).to_array());
+        dot1d(cross(a), b),
+        cross(a, b));
     assert_allclose(
-        dot1d(cross(a.to_array()), b.to_array()),
-        cross(a, b).to_array());
+        dot1d(cross(a), b),
+        cross(a, b));
     assert_allclose(
-        dot1d(cross(a), b).to_array(),
-        cross(a.to_array(), b.to_array()));
+        dot1d(cross(a), b),
+        cross(a, b));
 }
 
 void test_triangle_area() {
@@ -100,8 +100,8 @@ void test_invert_scaled_4x4() {
     auto t = FixedArray<float, 3>{5, 1, 2};
     auto scale = 1.23f;
     auto m = assemble_homogeneous_4x4(R * scale, t);
-    assert_allclose(dot2d(m, inverted_scaled_se3(m)).to_array(), identity_array<float>(4));
-    assert_allclose(dot2d(inverted_scaled_se3(m), m).to_array(), identity_array<float>(4));
+    assert_allclose(dot2d(m, inverted_scaled_se3(m)), fixed_identity_array<float, 4>());
+    assert_allclose(dot2d(inverted_scaled_se3(m), m), fixed_identity_array<float, 4>());
 }
 
 //void test_octree() {
@@ -112,9 +112,9 @@ void test_invert_scaled_4x4() {
 void test_intersect_lines() {
     FixedArray<FixedArray<float, 2>, 2> l0{FixedArray<float, 2>{-1, 2}, FixedArray<float, 2>{1, 2}};
     FixedArray<FixedArray<float, 2>, 2> l1{FixedArray<float, 2>{1.1, -3}, FixedArray<float, 2>{1.1, 4}};
-    assert_allclose(intersect_lines(l0, l1, 0.f, 0.f).to_array(), Array<float>{1.1, 2});
-    assert_allclose(intersect_lines(l0, l1, 0.1f, 0.f).to_array(), Array<float>{1.1, 2.05});
-    assert_allclose(intersect_lines(l0, l1, 0.1f, 0.2f).to_array(), Array<float>{1, 2.05});
+    assert_allclose(intersect_lines(l0, l1, 0.f, 0.f), FixedArray<float, 2>{1.1, 2});
+    assert_allclose(intersect_lines(l0, l1, 0.1f, 0.f), FixedArray<float, 2>{1.1, 2.05});
+    assert_allclose(intersect_lines(l0, l1, 0.1f, 0.2f), FixedArray<float, 2>{1, 2.05});
 }
 
 void test_lines_to_rectangles() {
@@ -151,10 +151,10 @@ void test_lines_to_rectangles() {
         width_bcR,
         width_cdL,
         width_cdR);
-    assert_allclose(p00.to_array(), Array<float>{0.0414214, 0.1});
-    assert_allclose(p01.to_array(), Array<float>{0.0414214, -0.1});
-    assert_allclose(p10.to_array(), Array<float>{0.958579, 0.1});
-    assert_allclose(p11.to_array(), Array<float>{0.958579, -0.1});
+    assert_allclose(p00, FixedArray<float, 2>{0.0414214, 0.1});
+    assert_allclose(p01, FixedArray<float, 2>{0.0414214, -0.1});
+    assert_allclose(p10, FixedArray<float, 2>{0.958579, 0.1});
+    assert_allclose(p11, FixedArray<float, 2>{0.958579, -0.1});
 }
 
 FixedArray<float, 3> a2k(const FixedArray<float, 3>& angles) {
@@ -170,19 +170,19 @@ void test_inverse_rodrigues() {
         FixedArray<float, 3> k{1, 3, 1.2};
         k /= std::sqrt(sum(squared(k)));
         k *= 0.45;
-        assert_allclose(k.to_array(), inverse_rodrigues(rodrigues(k)).to_array());
+        assert_allclose(k, inverse_rodrigues(rodrigues(k)));
     }
     {
         FixedArray<float, 3> k{fixed_zeros<float, 3>()};
-        assert_allclose(k.to_array(), inverse_rodrigues(rodrigues(k)).to_array());
+        assert_allclose(k, inverse_rodrigues(rodrigues(k)));
     }
     {
         FixedArray<float, 3> a{-3.13672, -3.92299e-05, -3.14133};
         assert_allclose(
-            tait_bryan_angles_2_matrix(a).to_array(),
-            tait_bryan_angles_2_matrix(k2a(a2k(a))).to_array(),
+            tait_bryan_angles_2_matrix(a),
+            tait_bryan_angles_2_matrix(k2a(a2k(a))),
             1e-4);
-        assert_allclose(k2a(a2k(a)).to_array(), a.to_array(), 1e-4);
+        assert_allclose(k2a(a2k(a)), a, 1e-4);
     }
 }
 
