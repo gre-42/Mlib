@@ -4,6 +4,12 @@
 
 using namespace Mlib;
 
+/* From: https://en.wikipedia.org/wiki/List_of_trigonometric_identities#Half-angle_formulae
+ */
+float half_angle_cos(float cos) {
+    return std::sqrt((1 + cos) / 2.f);
+}
+
 /**
  * Create rectangle for line segment (b .. c), with given widths,
  * contained in crossings [aL; ...; aR] >-- (b -- c) --< [dL; ...; dR].
@@ -53,10 +59,17 @@ bool Mlib::lines_to_rectangles(
     FixedArray<float, 2> n_cR = (n_cdR + n_bc) / 2.f;
 
     // Rescale normals after averaging.
-    n_bL *= (width_aLb + width_bcL) / 2 / sum(squared(n_bL));
-    n_bR *= (width_aRb + width_bcR) / 2 / sum(squared(n_bR));
-    n_cL *= (width_cdL + width_bcL) / 2 / sum(squared(n_cL));
-    n_cR *= (width_cdR + width_bcR) / 2 / sum(squared(n_cR));
+
+    // Good approximation, however using exact formula below instead.
+    // n_bL *= (width_aLb + width_bcL) / 2 / sum(squared(n_bL));
+    // n_bR *= (width_aRb + width_bcR) / 2 / sum(squared(n_bR));
+    // n_cL *= (width_cdL + width_bcL) / 2 / sum(squared(n_cL));
+    // n_cR *= (width_cdR + width_bcR) / 2 / sum(squared(n_cR));
+
+    n_bL *= (width_aLb + width_bcL) / 2 / std::sqrt(sum(squared(n_bL))) / half_angle_cos(std::abs(dot0d(n_aLb, n_bc)));
+    n_bR *= (width_aRb + width_bcR) / 2 / std::sqrt(sum(squared(n_bR))) / half_angle_cos(std::abs(dot0d(n_aRb, n_bc)));
+    n_cL *= (width_cdL + width_bcL) / 2 / std::sqrt(sum(squared(n_cL))) / half_angle_cos(std::abs(dot0d(n_cdL, n_bc)));
+    n_cR *= (width_cdR + width_bcR) / 2 / std::sqrt(sum(squared(n_cR))) / half_angle_cos(std::abs(dot0d(n_cdR, n_bc)));
 
     if ((sum(squared(n_bL)) > 3 * width_bcL) ||
         (sum(squared(n_bR)) > 3 * width_bcR) ||
