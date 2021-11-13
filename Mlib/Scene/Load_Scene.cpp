@@ -1,4 +1,5 @@
 #include "Load_Scene.hpp"
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Macro_Line_Executor.hpp>
@@ -1233,7 +1234,8 @@ void LoadScene::operator()(
                 layer_heights_height);
             std::string cache_filename = fpathp(config.filename + '_' + config.game_level + ".cereal.binary");
             std::shared_ptr<OsmMapResource> osm_map_resource;
-            if (fs::exists(cache_filename)) {
+            bool enable_cache = getenv_default_bool("ENABLE_OSM_MAP_CACHE", true);
+            if (enable_cache && fs::exists(cache_filename)) {
                 osm_map_resource = std::make_shared<OsmMapResource>(
                     scene_node_resources,
                     cache_filename);
@@ -1241,7 +1243,9 @@ void LoadScene::operator()(
                 osm_map_resource = std::make_shared<OsmMapResource>(
                     scene_node_resources,
                     config);
-                osm_map_resource->save_to_file(cache_filename);
+                if (enable_cache) {
+                    osm_map_resource->save_to_file(cache_filename);
+                }
             }
             scene_node_resources.add_resource(resource_name, osm_map_resource);
             return true;
