@@ -271,6 +271,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
     float max_width,
     DrawBuildingPartType tpe)
 {
+    size_t mid = 0;
     for (const auto& bu : buildings) {
         if (bu.way.nd.empty()) {
             std::cerr << "Building " + bu.id + ": outline is empty" << std::endl;
@@ -291,7 +292,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
         }
         std::vector<FixedArray<float, 2>> outline{sw.begin(), sw.end()};
         outline = removed_duplicates(outline);
-        tls.push_back(std::make_shared<TriangleList>("ceilings", material));
+        tls.push_back(std::make_shared<TriangleList>("ceilings_" + std::to_string(mid++), material));
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
         BoundingInfo bounding_info{outline, {}, 0.1f};
@@ -542,11 +543,12 @@ void Mlib::draw_wall_barriers(
     for (const auto& v : barrier_styles) {
         barrier_styles_vector.push_back(v.second);
     }
+    size_t mid = 0;
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
-            tls.push_back(std::make_shared<TriangleList>("building_walls", material));
+            tls.push_back(std::make_shared<TriangleList>("wall_barriers_" + std::to_string(mid++), material));
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
                     if (barrier_styles.empty()) {
@@ -615,12 +617,13 @@ void Mlib::draw_building_walls(
     const std::vector<std::string>& socle_textures,
     const std::vector<std::string>& facade_textures)
 {
+    size_t mid = 0;
     size_t bid = 0;
     for (const auto& bu : buildings) {
         ++bid;
         std::list<FixedArray<FixedArray<float, 2>, 2>> swG;
         for (const auto& bl : bu.levels) {
-            tls.push_back(std::make_shared<TriangleList>("building_walls", material));
+            tls.push_back(std::make_shared<TriangleList>("building_walls_" + std::to_string(mid++), material));
             std::string texture;
             if (bl.type == BuildingLevelType::SOCLE) {
                 if (socle_textures.empty()) {

@@ -52,6 +52,7 @@ public:
         archive(dirt_decals_terrain_style_);
     }
     void save_to_file(const std::string& filename) const;
+    void save_to_obj_file(const std::string& filename) const;
 private:
     std::list<std::shared_ptr<ColoredVertexArray>> cvas_;
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;

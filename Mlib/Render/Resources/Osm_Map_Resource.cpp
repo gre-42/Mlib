@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Images/StbImage.hpp>
@@ -1105,6 +1106,26 @@ void OsmMapResource::save_to_file(const std::string& filename) const {
     if (ofstr.fail()) {
         throw std::runtime_error("Could not write to file \"" + filename + '"');
     }
+}
+
+void OsmMapResource::save_to_obj_file(const std::string& filename) const {
+    std::set<std::string> names;
+    std::vector<NamedInputTriangles<std::vector<FixedArray<ColoredVertex, 3>>>> itris;
+    itris.reserve(cvas_.size());
+    for (const std::shared_ptr<ColoredVertexArray>& cva : cvas_) {
+        if (cva->name.empty()) {
+            if (!cva->material.textures.empty()) {
+                throw std::runtime_error("Empty name, material: \"" + cva->material.textures.front().texture_descriptor.color);
+            } else {
+                throw std::runtime_error("Empty name, no material color texture");
+            }
+        }
+        if (!names.insert(cva->name).second) {
+            throw std::runtime_error("Duplicate name: \"" + cva->name + '"');
+        }
+        itris.push_back({cva->name, cva->triangles});
+    }
+    save_obj(filename, IndexedFaceSet<float, size_t>{ itris });
 }
 
 OsmMapResource::~OsmMapResource()
