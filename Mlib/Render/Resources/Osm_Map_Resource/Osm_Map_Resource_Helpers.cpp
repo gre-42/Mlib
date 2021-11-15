@@ -123,6 +123,19 @@ void Mlib::draw_nodes(
 //     rect.draw_z0(tl);
 // }
 
+std::string Mlib::parse_string(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    const std::string& default_value)
+{
+    auto it = tags.find(key);
+    if (it != tags.end()) {
+        return it->second;
+    } else {
+        return default_value;
+    }
+}
+
 float Mlib::parse_meters(
     const std::map<std::string, std::string>& tags,
     const std::string& key,

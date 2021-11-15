@@ -74,6 +74,11 @@ void draw_nodes(
 //     TriangleList& tl,
 //     float width);
 
+std::string parse_string(
+    const std::map<std::string, std::string>& tags,
+    const std::string& key,
+    const std::string& default_value);
+
 float parse_meters(
     const std::map<std::string, std::string>& tags,
     const std::string& key,

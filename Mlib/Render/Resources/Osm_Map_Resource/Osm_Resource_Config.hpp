@@ -59,9 +59,9 @@ struct OsmResourceConfig {
     std::string tunnel_pipe_texture;
     std::string tunnel_pipe_resource_name = "pipe_box";
     std::string tunnel_bdry_resource_name = "pipe_box_boundary";
-    std::string street_surface_central_resource_name;
-    std::string street_surface_endpoint0_resource_name;
-    std::string street_surface_endpoint1_resource_name;
+    std::map<RoadType, std::string> street_surface_central_resource_name;
+    std::map<RoadType, std::string> street_surface_endpoint0_resource_name;
+    std::map<RoadType, std::string> street_surface_endpoint1_resource_name;
     std::string water_texture;
     float water_height = 0;
     std::string roof_texture;

@@ -13,6 +13,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <typename TData, size_t... tshape>
 class OrderableFixedArray;
+class SceneNodeResources;
 class TriangleList;
 struct ResourceInstanceDescriptor;
 struct StreetRectangle;
@@ -37,6 +38,7 @@ enum class RoadType;
 struct ColoredVertexArray;
 
 struct DrawStreetsInput {
+    SceneNodeResources& scene_node_resources;
     OsmTriangleLists& ground_triangles;
     OsmTriangleLists& air_triangles;
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions;
@@ -48,10 +50,10 @@ struct DrawStreetsInput {
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_bdry_triangles;
-    std::list<std::shared_ptr<ColoredVertexArray>>* street_surface_central_triangles;
-    std::list<std::shared_ptr<ColoredVertexArray>>* street_surface_endpoint0_triangles;
-    std::list<std::shared_ptr<ColoredVertexArray>>* street_surface_endpoint1_triangles;
     std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments;
+    const std::map<RoadType, std::string>& street_surface_central_resource_name;
+    const std::map<RoadType, std::string>& street_surface_endpoint0_resource_name;
+    const std::map<RoadType, std::string>& street_surface_endpoint1_resource_name;
     const std::map<std::string, Node>& nodes;
     const std::map<std::string, Way>& ways;
     float scale;

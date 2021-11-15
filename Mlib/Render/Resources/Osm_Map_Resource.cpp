@@ -167,9 +167,6 @@ OsmMapResource::OsmMapResource(
     
     auto& tunnel_pipe = model_triangles(config.tunnel_pipe_resource_name);
     auto& tunnel_bdry = model_triangles(config.tunnel_bdry_resource_name);
-    std::shared_ptr<AnimatedColoredVertexArrays> street_central = config.street_surface_central_resource_name.empty() ? nullptr : scene_node_resources.get_animated_arrays(config.street_surface_central_resource_name);
-    std::shared_ptr<AnimatedColoredVertexArrays> street_endpoint0 = config.street_surface_endpoint0_resource_name.empty() ? nullptr : scene_node_resources.get_animated_arrays(config.street_surface_endpoint0_resource_name);
-    std::shared_ptr<AnimatedColoredVertexArrays> street_endpoint1 = config.street_surface_endpoint1_resource_name.empty() ? nullptr : scene_node_resources.get_animated_arrays(config.street_surface_endpoint1_resource_name);
 
     OsmTriangleLists osm_triangle_lists{config};
     OsmTriangleLists air_triangle_lists{config};
@@ -191,6 +188,7 @@ OsmMapResource::OsmMapResource(
         // draw_ways(vertices, nodes, ways, 0.002);
         try {
             DrawStreets{DrawStreetsInput{
+                scene_node_resources,
                 osm_triangle_lists,
                 air_triangle_lists,
                 resource_instance_positions_,
@@ -202,10 +200,10 @@ OsmMapResource::OsmMapResource(
                 way_point_edges_2_lanes,
                 tunnel_pipe,
                 tunnel_bdry,
-                street_central == nullptr ? nullptr : &street_central->cvas,
-                street_endpoint0 == nullptr ? nullptr : &street_endpoint0->cvas,
-                street_endpoint1 == nullptr ? nullptr : &street_endpoint1->cvas,
                 way_segments,
+                config.street_surface_central_resource_name,
+                config.street_surface_endpoint0_resource_name,
+                config.street_surface_endpoint1_resource_name,
                 nodes,
                 ways,
                 config.scale,
