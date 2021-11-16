@@ -45,6 +45,7 @@ struct NodeWayInfo {
     std::string way_id;
     float way_length;
     std::string model;
+    float layer;  // Has type float to support NAN
 };
 
 struct AngleCurb {
@@ -205,11 +206,17 @@ void DrawStreets::calculate_neighbors() {
                         if (nwi->second.model != model) {
                             nwi->second.model = "plain";
                         }
+                        if (!std::isnan(nwi->second.layer) &&
+                            (nwi->second.layer != (float)layer))
+                        {
+                            nwi->second.layer = NAN;
+                        }
                     } else {
                         node_way_info.insert(std::make_pair(*it, NodeWayInfo{
                             .way_id = w.first,
                             .way_length = way_length,
-                            .model = model}));
+                            .model = model,
+                            .layer = (float)layer}));
                     }
                 }
                 auto s = it;
@@ -802,14 +809,18 @@ void DrawStreets::draw_streets_draw_ways(
         if (!street_surface_central_resource_name.empty()) {
             if ((node_way_info0 == node_way_info.end()) ||
                 (node_angles0.size() != 2) ||
-                !node_way_info0->second.model.empty())
+                !node_way_info0->second.model.empty() ||
+                std::isnan(node_way_info0->second.layer) ||
+                (angle_way.layer != 0))
             {
                 model_central = nullptr;
                 model_endpoint0 = nullptr;
             }
             if ((node_way_info1 == node_way_info.end()) ||
                 (node_angles1.size() != 2) ||
-                !node_way_info1->second.model.empty())
+                !node_way_info1->second.model.empty() ||
+                std::isnan(node_way_info1->second.layer) ||
+                (angle_way.layer != 0))
             {
                 model_central = nullptr;
                 model_endpoint1 = nullptr;
