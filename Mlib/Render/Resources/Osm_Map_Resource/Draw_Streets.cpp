@@ -11,6 +11,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Road_Connection_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
@@ -44,7 +45,6 @@ struct NeighborWay {
 struct NodeWayInfo {
     std::string way_id;
     float way_length;
-    std::string model;
     float layer;  // Has type float to support NAN
 };
 
@@ -203,9 +203,6 @@ void DrawStreets::calculate_neighbors() {
                     auto nwi = node_way_info.find(*it);
                     if (nwi != node_way_info.end()) {
                         nwi->second.way_length = NAN;
-                        if (nwi->second.model != model) {
-                            nwi->second.model = "plain";
-                        }
                         if (!std::isnan(nwi->second.layer) &&
                             (nwi->second.layer != (float)layer))
                         {
@@ -215,7 +212,6 @@ void DrawStreets::calculate_neighbors() {
                         node_way_info.insert(std::make_pair(*it, NodeWayInfo{
                             .way_id = w.first,
                             .way_length = way_length,
-                            .model = model,
                             .layer = (float)layer}));
                     }
                 }
@@ -279,7 +275,7 @@ void DrawStreets::draw_streets() {
     // smaller node.
     for (const auto& na : node_angles) {
         for (const auto& it : na.second) {
-            if (it.second.neighbor_id < na.first) {
+            if (it.second.neighbor_is_second) {
                 // node index: na.first
                 // neighbor index: it.second.neighbor_id
                 // angle of neighbor: it.first
@@ -799,17 +795,39 @@ void DrawStreets::draw_streets_draw_ways(
             } else {
                 throw std::runtime_error("Unknown street name \"" + cva->name + "\", must be \"street\" or \"ditch\"");
             }
+            assert_true(angle_way.neighbor_is_second);
             rect.draw(*destination_triangles, height_bindings, node_id, angle_way.neighbor_id, cva->triangles, scale, 1.f, 1.f);
         }
     };
-    if (wi.model.empty() || (wi.model == "plain")) {
+    if (wi.model.empty() || (wi.model == "endpoint")) {
         auto* model_central = cvas(street_surface_central_resource_name);
         auto* model_endpoint0 = cvas(street_surface_endpoint0_resource_name);
         auto* model_endpoint1 = cvas(street_surface_endpoint1_resource_name);
+        auto get_neighbor_road_connection_type = [this](const std::string& node_id){
+            const auto& node_angles0 = node_angles.at(node_id);
+            if (node_angles0.size() == 2) {
+                auto it0 = node_angles0.begin();
+                if (it0->second.neighbor_id == node_id) {
+                    ++it0;
+                }
+                RoadConnectionType rct0;
+                RoadConnectionType rct1;
+                road_connection_types_from_model_name(way_infos.at(it0->second.way_id).model, rct0, rct1);
+                if (it0->second.neighbor_is_second) {
+                    return rct0;
+                } else {
+                    return rct1;
+                }
+            } else {
+                return RoadConnectionType::AUTO;
+            }
+        };
+        RoadConnectionType rct0 = get_neighbor_road_connection_type(node_id);
+        RoadConnectionType rct1 = get_neighbor_road_connection_type(angle_way.neighbor_id);
         if (!street_surface_central_resource_name.empty()) {
             if ((node_way_info0 == node_way_info.end()) ||
                 (node_angles0.size() != 2) ||
-                !node_way_info0->second.model.empty() ||
+                (rct0 == RoadConnectionType::ENDPOINT) ||
                 std::isnan(node_way_info0->second.layer) ||
                 (angle_way.layer != 0))
             {
@@ -818,7 +836,7 @@ void DrawStreets::draw_streets_draw_ways(
             }
             if ((node_way_info1 == node_way_info.end()) ||
                 (node_angles1.size() != 2) ||
-                !node_way_info1->second.model.empty() ||
+                (rct1 == RoadConnectionType::ENDPOINT) ||
                 std::isnan(node_way_info1->second.layer) ||
                 (angle_way.layer != 0))
             {
