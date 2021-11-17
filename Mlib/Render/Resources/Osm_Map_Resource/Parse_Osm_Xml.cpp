@@ -22,6 +22,9 @@ void Mlib::parse_osm_xml(
     std::map<std::string, Way>& ways)
 {
     std::ifstream ifs{ filename };
+    if (ifs.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
     static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
     static const DECLARE_REGEX(way_reg, "^ +<way id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].*>$");
     static const DECLARE_REGEX(way_end_reg, "^ +</way>$");

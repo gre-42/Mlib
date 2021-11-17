@@ -10,6 +10,9 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     std::map<std::string, ObjMaterial> mtllib;
 
     std::ifstream ifs{filename};
+    if (ifs.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
 
     static const DECLARE_REGEX(newmtl_reg, "^newmtl (.+)$");
     static const DECLARE_REGEX(Ka_reg, "^\\s*Ka +(\\S+) (\\S+) (\\S+)$");

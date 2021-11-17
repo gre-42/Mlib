@@ -8,6 +8,10 @@ using namespace Mlib;
 void MacroRecorder::operator()(const MacroLineExecutor& macro_line_executor, const RegexSubstitutionCache& rsc)
 {
     std::ifstream ifs{macro_line_executor.script_filename_};
+    if (ifs.fail()) {
+        throw std::runtime_error("Could not open file \"" + macro_line_executor.script_filename_ + '"');
+    }
+
     static const DECLARE_REGEX(macro_begin_reg, "^\\s*macro_begin ([\\w+-.]+)$");
     static const DECLARE_REGEX(macro_end_reg, "^\\s*macro_end$");
 

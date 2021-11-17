@@ -46,6 +46,9 @@ std::list<std::shared_ptr<ColoredVertexArray>> Mlib::load_obj(
     StaticFaceLightning sfl;
 
     std::ifstream ifs{filename};
+    if (ifs.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
 
     static const DECLARE_REGEX(vertex_reg, "^v +(\\S+) (\\S+) (\\S+)(?: (\\S+) (\\S+) (\\S+) (\\S+))?$");
     static const DECLARE_REGEX(vertex_normal_reg, "^vn +(\\S+) (\\S+) (\\S+)$");
