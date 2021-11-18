@@ -22,13 +22,15 @@ Array<unsigned char> Mlib::match_rgba_histograms(
     if (ref.shape(0) != 3 && ref.shape(0) != 4) {
         throw std::runtime_error("Reference image does not have 3 or 4 channels");
     }
-    if (image.shape(0) == 3) {
+    if ((image.shape(0) == 3) && (ref.shape(0) == 3)) {
         for (size_t d = 0; d < 3; ++d) {
             out[d] = histogram_matching<unsigned char, unsigned char, float>(image[d].flattened(), ref[d].flattened(), 256);
         }
-    } else if (image.shape(0) == 4) {
-        Array<bool> mask = (image[3] > alpha_threshold);
-        Array<bool> mask_ref = ref.shape(0) == 3
+    } else {
+        Array<bool> mask = (image.shape(0) == 3)
+            ? ones<bool>(image.shape().erased_first())
+            : (image[3] > alpha_threshold);
+        Array<bool> mask_ref = (ref.shape(0) == 3)
             ? ones<bool>(ref.shape().erased_first())
             : (ref[3] > alpha_threshold);
         for (size_t d = 0; d < 3; ++d) {
@@ -42,8 +44,6 @@ Array<unsigned char> Mlib::match_rgba_histograms(
         if (image.shape(0) == 4) {
             out[3] = image[3];
         }
-    } else {
-        throw std::runtime_error("Image does not have 3 or 4 channels");
     }
     out.reshape(image.shape());
     return out;
