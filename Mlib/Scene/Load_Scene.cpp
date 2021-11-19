@@ -516,7 +516,13 @@ void LoadScene::operator()(
         "\\s+update=(once|always)"
         "\\s+center=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
-    static const DECLARE_REGEX(perspective_camera_reg, "^\\s*perspective_camera node=([\\w+-.]+) y_fov=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
+    static const DECLARE_REGEX(perspective_camera_reg,
+        "^\\s*perspective_camera"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+y_fov=([\\w+-.]+)"
+        "\\s+near_plane=([\\w+-.]+)"
+        "\\s+far_plane=([\\w+-.]+)"
+        "\\s+requires_postprocessing=(0|1)$");
     static const DECLARE_REGEX(ortho_camera_reg, "^\\s*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
     static const DECLARE_REGEX(light_reg,
         "^\\s*light"
