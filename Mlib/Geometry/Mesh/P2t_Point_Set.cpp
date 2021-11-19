@@ -27,9 +27,10 @@ p2t::Point* P2tPointSet::operator () (float x, float y) {
         steiner_pts_.erase(it);
         return pt;
     }
-    auto pt = new p2t::Point{x, y};
-    pts_.insert({p, std::unique_ptr<p2t::Point>(pt)});
-    return pt;
+    auto pt = std::make_unique<p2t::Point>(x, y);
+    p2t::Point* ppt = pt.get();
+    pts_.insert({p, std::move(pt)});
+    return ppt;
 }
 
 std::vector<p2t::Point*> P2tPointSet::remaining_steiner_points() {

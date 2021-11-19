@@ -133,10 +133,13 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 auto R = fixed_identity_array<float, 3>();
                 initial_absolute_transformation = assemble_homogeneous_4x4(R, t);
             }
-            Bone* new_bone = new Bone{
-                .index = result->bone_indices.size(),
-                .initial_absolute_transformation = OffsetAndQuaternion<float>{initial_absolute_transformation}};
+            auto new_bone = std::make_unique<Bone>(
+                result->bone_indices.size(),                                   // index
+                OffsetAndQuaternion<float>{initial_absolute_transformation});  // initial_absolute_transformation
             std::string new_bone_name = bone.at("name").get<std::string>();
+            if (!bone_names.insert({new_bone_name, new_bone.get()}).second) {
+                throw std::runtime_error("Could not insert bone " + new_bone_name);
+            }
             result->bone_indices.insert({new_bone_name, new_bone->index});
             if (parent != bone.end()) {
                 std::string parent_name = parent.value().get<std::string>();
@@ -144,15 +147,12 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 if (par == bone_names.end()) {
                     throw std::runtime_error("Unknown bone " + parent_name);
                 }
-                par->second->children.push_back(std::unique_ptr<Bone>(new_bone));
+                par->second->children.push_back(std::move(new_bone));
             } else {
                 if (result->skeleton != nullptr) {
                     throw std::runtime_error("Found multiple root bones");
                 }
-                result->skeleton.reset(new_bone);
-            }
-            if (!bone_names.insert({new_bone_name, new_bone}).second) {
-                throw std::runtime_error("Could not insert bone " + new_bone_name);
+                result->skeleton = std::move(new_bone);
             }
         }
         if (result->skeleton == nullptr) {

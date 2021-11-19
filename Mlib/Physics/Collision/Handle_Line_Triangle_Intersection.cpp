@@ -145,7 +145,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         const NormalImpulse* normal_impulse = nullptr;
         if (c.cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
             if (c.o0.mass() != INFINITY) {
-                NormalContactInfo2* ci = new NormalContactInfo2{
+                auto ci = std::make_unique<NormalContactInfo2>(
                     c.o1.rbi_.rbp_,
                     c.o0.rbi_.rbp_,
                     BoundedPlaneInequalityConstraint{
@@ -168,12 +168,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                         for (auto& c1 : c.o1.collision_observers_) {
                             c1->notify_impact(c.o0, CollisionRole::SECONDARY, plane.normal, lambda_final, c.base_log);
                         }
-                    }};
-                c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                    });
                 normal_impulse = &ci->normal_impulse();
+                c.contact_infos.push_back(std::move(ci));
             } else {
                 if (c.tire_id == SIZE_MAX) {
-                    NormalContactInfo1* ci = new NormalContactInfo1{
+                    auto ci = std::make_unique<NormalContactInfo1>(
                         c.o1.rbi_.rbp_,
                         BoundedPlaneInequalityConstraint{
                             .constraint{
@@ -184,13 +184,13 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                             },
                             .lambda_min = c.o1.mass() * c.cfg.lambda_min / c.cfg.oversampling,
                             .lambda_max = 0},
-                        c.l1(penetrating_id)};
-                    c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                        c.l1(penetrating_id));
                     normal_impulse = &ci->normal_impulse();
+                    c.contact_infos.push_back(std::move(ci));
                 } else {
                     float sap = std::min(0.05f, c.cfg.wheel_penetration_depth + dot0d(c.l1(penetrating_id) - intersection_point, plane.normal));
                     c.o1.tires_.at(c.tire_id).shock_absorber_position = -sap;
-                    ShockAbsorberContactInfo1* ci = new ShockAbsorberContactInfo1{
+                    auto ci = std::make_unique<ShockAbsorberContactInfo1>(
                         c.o1.rbi_.rbp_,
                         BoundedShockAbsorberConstraint{
                             .constraint{
@@ -201,9 +201,9 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                             },
                             .lambda_min = c.o1.mass() * c.cfg.lambda_min / c.cfg.oversampling,
                             .lambda_max = 0},
-                        intersection_point};
-                    c.contact_infos.push_back(std::unique_ptr<ContactInfo>(ci));
+                        intersection_point);
                     normal_impulse = &ci->normal_impulse();
+                    c.contact_infos.push_back(std::move(ci));
                 }
             }
         } else if (c.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
