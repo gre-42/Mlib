@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Nullable.hpp>
 #include <map>
 #include <stdexcept>
 
@@ -28,6 +29,14 @@ public:
             throw std::runtime_error("Could not find entry with key \"" + key + '"');
         }
         return it->second;
+    }
+
+    const Nullable<const TValue> try_get(const TKey& key) const {
+        auto it = this->find(key);
+        if (it == this->end()) {
+            return nullptr;
+        }
+        return Nullable{ &it->second };
     }
 };
 

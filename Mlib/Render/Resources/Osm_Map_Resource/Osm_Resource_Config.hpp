@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Style.hpp>
@@ -59,9 +60,9 @@ struct OsmResourceConfig {
     std::string tunnel_pipe_texture;
     std::string tunnel_pipe_resource_name = "pipe_box";
     std::string tunnel_bdry_resource_name = "pipe_box_boundary";
-    std::map<RoadType, std::string> street_surface_central_resource_name;
-    std::map<RoadType, std::string> street_surface_endpoint0_resource_name;
-    std::map<RoadType, std::string> street_surface_endpoint1_resource_name;
+    Map<RoadType, std::string> street_surface_central_resource_names;
+    Map<RoadType, std::string> street_surface_endpoint0_resource_names;
+    Map<RoadType, std::string> street_surface_endpoint1_resource_names;
     std::string water_texture;
     float water_height = 0;
     std::string roof_texture;

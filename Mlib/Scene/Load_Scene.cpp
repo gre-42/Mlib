@@ -987,22 +987,22 @@ void LoadScene::operator()(
                     config.tunnel_bdry_resource_name = value;
                 }
                 else if (key == "street_surface_central_resource_name") {
-                    config.street_surface_central_resource_name[RoadType::STREET] = value;
+                    config.street_surface_central_resource_names[RoadType::STREET] = value;
                 }
                 else if (key == "street_surface_endpoint0_resource_name") {
-                    config.street_surface_endpoint0_resource_name[RoadType::STREET] = value;
+                    config.street_surface_endpoint0_resource_names[RoadType::STREET] = value;
                 }
                 else if (key == "street_surface_endpoint1_resource_name") {
-                    config.street_surface_endpoint1_resource_name[RoadType::STREET] = value;
+                    config.street_surface_endpoint1_resource_names[RoadType::STREET] = value;
                 }
                 else if (key == "path_surface_central_resource_name") {
-                    config.street_surface_central_resource_name[RoadType::PATH] = value;
+                    config.street_surface_central_resource_names[RoadType::PATH] = value;
                 }
                 else if (key == "path_surface_endpoint0_resource_name") {
-                    config.street_surface_endpoint0_resource_name[RoadType::PATH] = value;
+                    config.street_surface_endpoint0_resource_names[RoadType::PATH] = value;
                 }
                 else if (key == "path_surface_endpoint1_resource_name") {
-                    config.street_surface_endpoint1_resource_name[RoadType::PATH] = value;
+                    config.street_surface_endpoint1_resource_names[RoadType::PATH] = value;
                 }
                 else if (key == "water_texture") {
                     config.water_texture = fpathp(value);

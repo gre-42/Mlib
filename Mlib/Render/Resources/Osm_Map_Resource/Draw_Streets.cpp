@@ -772,16 +772,21 @@ void DrawStreets::draw_streets_draw_ways(
         uv_len0 = 0;
         uv_len1 = std::sqrt(sum(squared(node0.position - node1.position))) / scale * uv_scale;
     }
-    if ((street_surface_central_resource_name.empty() != street_surface_endpoint0_resource_name.empty()) ||
-        (street_surface_central_resource_name.empty() != street_surface_endpoint1_resource_name.empty())) {
+    if ((street_surface_central_resource_names.empty() != street_surface_endpoint0_resource_names.empty()) ||
+        (street_surface_central_resource_names.empty() != street_surface_endpoint1_resource_names.empty())) {
         throw std::runtime_error("Inconsistent definition of surface central / endpoint");
     }
-    auto cvas = [&](const std::map<RoadType, std::string>& res) -> std::list<std::shared_ptr<ColoredVertexArray>>* {
+    auto model_name = [&](const std::map<RoadType, std::string>& res) -> Nullable<const std::string> {
         auto it = res.find(angle_way.road_type);
-        if (it == res.end()) {
-            return nullptr;
-        }
-        return &scene_node_resources.get_animated_arrays(it->second)->cvas;
+        return Nullable<const std::string>{
+            (it == res.end())
+                ? nullptr
+                : &it->second};
+    };
+    auto cvas = [&](const std::string* name) -> std::list<std::shared_ptr<ColoredVertexArray>>* {
+        return (name == nullptr)
+            ? nullptr
+            : &scene_node_resources.get_animated_arrays(*name)->cvas;
     };
     auto draw_street_with_ditch = [&](const std::list<std::shared_ptr<ColoredVertexArray>>& cvas){
         for (const auto& cva : cvas) {
@@ -800,48 +805,73 @@ void DrawStreets::draw_streets_draw_ways(
         }
     };
     if (wi.model.empty() || (wi.model == "endpoint")) {
-        auto* model_central = cvas(street_surface_central_resource_name);
-        auto* model_endpoint0 = cvas(street_surface_endpoint0_resource_name);
-        auto* model_endpoint1 = cvas(street_surface_endpoint1_resource_name);
-        auto get_neighbor_road_connection_type = [this](const std::string& node_id){
+        Nullable<const std::string> model_name_central = model_name(street_surface_central_resource_names);
+        Nullable<const std::string> model_name_endpoint0 = model_name(street_surface_endpoint0_resource_names);
+        Nullable<const std::string> model_name_endpoint1 = model_name(street_surface_endpoint1_resource_names);
+
+        auto* model_central = cvas(model_name_central);
+        auto* model_endpoint0 = cvas(model_name_endpoint0);
+        auto* model_endpoint1 = cvas(model_name_endpoint1);
+        auto get_neighbor_road_connection_type = [this](
+            const std::string& node_id,
+            const std::string& not_node_id,
+            RoadType& rt,
+            RoadConnectionType& rct)
+        {
             const auto& node_angles0 = node_angles.at(node_id);
-            if (node_angles0.size() == 2) {
-                auto it0 = node_angles0.begin();
-                if (it0->second.neighbor_id == node_id) {
-                    ++it0;
-                }
-                RoadConnectionType rct0;
-                RoadConnectionType rct1;
-                road_connection_types_from_model_name(way_infos.at(it0->second.way_id).model, rct0, rct1);
-                if (it0->second.neighbor_is_second) {
-                    return rct0;
-                } else {
-                    return rct1;
-                }
+            if (node_angles0.size() != 2) {
+                throw std::runtime_error("get_neighbor_road_connection_type internal error");
+            }
+            auto it0 = node_angles0.begin();
+            if (it0->second.neighbor_id == not_node_id) {
+                ++it0;
+            }
+            rt = it0->second.road_type;
+            RoadConnectionType rct0;
+            RoadConnectionType rct1;
+            road_connection_types_from_model_name(way_infos.at(it0->second.way_id).model, rct0, rct1);
+            if (it0->second.neighbor_is_second) {
+                rct = rct0;
             } else {
-                return RoadConnectionType::AUTO;
+                rct = rct1;
             }
         };
-        RoadConnectionType rct0 = get_neighbor_road_connection_type(node_id);
-        RoadConnectionType rct1 = get_neighbor_road_connection_type(angle_way.neighbor_id);
-        if (!street_surface_central_resource_name.empty()) {
-            if ((node_way_info0 == node_way_info.end()) ||
-                (node_angles0.size() != 2) ||
-                (rct0 == RoadConnectionType::ENDPOINT) ||
-                std::isnan(node_way_info0->second.layer) ||
-                (angle_way.layer != 0))
-            {
+        if (!street_surface_central_resource_names.empty()) {
+            if (node_angles0.size() != 2) {
                 model_central = nullptr;
                 model_endpoint0 = nullptr;
+            } else {
+                RoadType rt0;
+                RoadConnectionType rct0;
+                get_neighbor_road_connection_type(node_id, angle_way.neighbor_id, rt0, rct0);
+                Nullable<const std::string> model_central_0 = street_surface_central_resource_names.try_get(rt0);
+                if ((node_way_info0 == node_way_info.end()) ||
+                    (rct0 == RoadConnectionType::ENDPOINT) ||
+                    std::isnan(node_way_info0->second.layer) ||
+                    (angle_way.layer != 0) ||
+                    (model_name_central != model_central_0))
+                {
+                    model_central = nullptr;
+                    model_endpoint0 = nullptr;
+                }
             }
-            if ((node_way_info1 == node_way_info.end()) ||
-                (node_angles1.size() != 2) ||
-                (rct1 == RoadConnectionType::ENDPOINT) ||
-                std::isnan(node_way_info1->second.layer) ||
-                (angle_way.layer != 0))
-            {
+            if (node_angles1.size() != 2) {
                 model_central = nullptr;
                 model_endpoint1 = nullptr;
+            } else {
+                RoadType rt1;
+                RoadConnectionType rct1;
+                get_neighbor_road_connection_type(angle_way.neighbor_id, node_id, rt1, rct1);
+                Nullable<const std::string> model_central_1 = street_surface_central_resource_names.try_get(rt1);
+                if ((node_way_info1 == node_way_info.end()) ||
+                    (rct1 == RoadConnectionType::ENDPOINT) ||
+                    std::isnan(node_way_info1->second.layer) ||
+                    (angle_way.layer != 0) ||
+                    (model_name_central != model_central_1))
+                {
+                    model_central = nullptr;
+                    model_endpoint1 = nullptr;
+                }
             }
         }
         if ((model_central != nullptr) ||

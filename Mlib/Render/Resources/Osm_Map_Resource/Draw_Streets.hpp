@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <list>
 #include <map>
@@ -51,9 +52,9 @@ struct DrawStreetsInput {
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_bdry_triangles;
     std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments;
-    const std::map<RoadType, std::string>& street_surface_central_resource_name;
-    const std::map<RoadType, std::string>& street_surface_endpoint0_resource_name;
-    const std::map<RoadType, std::string>& street_surface_endpoint1_resource_name;
+    const Map<RoadType, std::string>& street_surface_central_resource_names;
+    const Map<RoadType, std::string>& street_surface_endpoint0_resource_names;
+    const Map<RoadType, std::string>& street_surface_endpoint1_resource_names;
     const std::map<std::string, Node>& nodes;
     const std::map<std::string, Way>& ways;
     float scale;
