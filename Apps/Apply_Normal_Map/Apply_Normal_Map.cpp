@@ -67,8 +67,8 @@ int main(int argc, char** argv) {
         }
         auto in_color = StbImage::load_from_file(args.named_value("--color"));
         RenderConfig render_config{
-            .screen_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
-            .screen_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
+            .windowed_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
+            .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
         Render2 render2{
             render_config,
             num_renderings,

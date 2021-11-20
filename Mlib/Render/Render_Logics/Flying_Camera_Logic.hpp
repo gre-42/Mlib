@@ -17,8 +17,9 @@ class SetFps;
 class ButtonStates;
 class CursorStates;
 
-class FlyingCameraUserClass: public BaseUserObject {
+class FlyingCameraUserClass {
 public:
+    BaseUserObject base_user_object;
     ButtonStates& button_states;
     CursorStates& cursor_states;
     SelectedCameras& cameras;

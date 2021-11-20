@@ -58,19 +58,19 @@ Render2::Render2(
     if (render_config.nsamples_msaa != 1) {
         GLFW_CHK(glfwWindowHint(GLFW_SAMPLES, render_config.nsamples_msaa));
     }
-    if (render_config.window_maximized) {
+    if (render_config.fullscreen) {
         GLFW_CHK(glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE));
     }
     {
 #ifdef __linux__
         TemporarilyIgnoreFloatingPointExeptions ignore_except;
 #endif
-        GLFWmonitor* monitor = !render_config.full_screen
+        GLFWmonitor* monitor = !render_config.fullscreen
             ? nullptr
             : GLFW_CHK(glfwGetPrimaryMonitor());
         window_ = std::make_unique<Window>(
-            render_config.screen_width,
-            render_config.screen_height,
+            render_config.fullscreen ? render_config.fullscreen_width : render_config.windowed_width,
+            render_config.fullscreen ? render_config.fullscreen_height : render_config.windowed_height,
             render_config.window_title.c_str(),
             monitor,
             nullptr,

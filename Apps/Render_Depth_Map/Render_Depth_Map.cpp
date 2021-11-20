@@ -82,8 +82,8 @@ int main(int argc, char** argv) {
         }
         size_t num_renderings = SIZE_MAX;
         RenderConfig render_config{
-            .screen_width = (int)depth.shape(1),
-            .screen_height = (int)depth.shape(0)};
+            .windowed_width = (int)depth.shape(1),
+            .windowed_height = (int)depth.shape(0)};
         SceneNodeResources scene_node_resources;
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
         Render2 render{ render_config, num_renderings };

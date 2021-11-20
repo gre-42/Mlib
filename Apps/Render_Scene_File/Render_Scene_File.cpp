@@ -30,14 +30,15 @@ int main(int argc, char** argv) {
         "    [--max_distance_small <distance>]\n"
         "    [--max_distance_near_small <distance>]\n"
         "    [--aggregate_update_interval <interval>]\n"
-        "    [--screen_width <width>]\n"
-        "    [--screen_height <height>]\n"
+        "    [--windowed_width <width>]\n"
+        "    [--windowed_height <height>]\n"
+        "    [--fullscreen_width <width>]\n"
+        "    [--fullscreen_height <height>]\n"
         "    [--scene_lightmap_width <width>]\n"
         "    [--scene_lightmap_height <height>]\n"
         "    [--black_lightmap_width <width>]\n"
         "    [--black_lightmap_height <height>]\n"
-        "    [--window_maximized]\n"
-        "    [--full_screen]\n"
+        "    [--fullscreen]\n"
         "    [--double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
         "    [--no_normalmaps]\n"
@@ -86,8 +87,7 @@ int main(int argc, char** argv) {
          "--fly",
          "--rotate",
          "--no_physics",
-         "--window_maximized",
-         "--full_screen",
+         "--fullscreen",
          "--double_buffer",
          "--no_normalmaps",
          "--print_physics_residual_time",
@@ -118,8 +118,10 @@ int main(int argc, char** argv) {
          "--max_distance_small",
          "--max_distance_near_small",
          "--aggregate_update_interval",
-         "--screen_width",
-         "--screen_height",
+         "--windowed_width",
+         "--windowed_height",
+         "--fullscreen_width",
+         "--fullscreen_height",
          "--scene_lightmap_width",
          "--scene_lightmap_height",
          "--black_lightmap_width",
@@ -157,15 +159,16 @@ int main(int argc, char** argv) {
             .cull_faces = !args.has_named("--no_cull_faces"),
             .wire_frame = args.has_named("--wire_frame"),
             .window_title = main_scene_filename,
-            .screen_width = safe_stoi(args.named_value("--screen_width", "640")),
-            .screen_height = safe_stoi(args.named_value("--screen_height", "480")),
+            .windowed_width = safe_stoi(args.named_value("--windowed_width", "640")),
+            .windowed_height = safe_stoi(args.named_value("--windowed_height", "480")),
+            .fullscreen_width = safe_stoi(args.named_value("--fullscreen_width", "0")),
+            .fullscreen_height = safe_stoi(args.named_value("--fullscreen_height", "0")),
             .scene_lightmap_width = safe_stoi(args.named_value("--scene_lightmap_width", "2048")),
             .scene_lightmap_height = safe_stoi(args.named_value("--scene_lightmap_height", "2048")),
             .black_lightmap_width = safe_stoi(args.named_value("--black_lightmap_width", "512")),
             .black_lightmap_height = safe_stoi(args.named_value("--black_lightmap_height", "512")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
-            .window_maximized = args.has_named("--window_maximized"),
-            .full_screen = args.has_named("--full_screen"),
+            .fullscreen = args.has_named("--fullscreen"),
             .double_buffer = args.has_named("--double_buffer"),
             .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "8")),
             .normalmaps = !args.has_named("--no_normalmaps"),

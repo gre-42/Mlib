@@ -173,8 +173,8 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .cull_faces = !args.has_named("--no_cull_faces"),
             .wire_frame = args.has_named("--wire_frame"),
-            .screen_width = (int)ref->second.depth.shape(1),
-            .screen_height = (int)ref->second.depth.shape(0),
+            .windowed_width = (int)ref->second.depth.shape(1),
+            .windowed_height = (int)ref->second.depth.shape(0),
             .double_buffer = true};
         SceneNodeResources scene_node_resources;
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};

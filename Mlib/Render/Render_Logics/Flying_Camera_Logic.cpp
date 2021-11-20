@@ -148,8 +148,8 @@ FlyingCameraLogic::FlyingCameraLogic(
   fly_{fly},
   rotate_{rotate}
 {
-    // GLFW_CHK(glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y));
-    // GLFW_CHK(glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height));
+    // GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
+    // GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
     GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
     if (fly_ || rotate_) {
         GLFW_CHK(glfwSetKeyCallback(window, flying_key_callback));

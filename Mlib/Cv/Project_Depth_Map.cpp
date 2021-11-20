@@ -33,7 +33,7 @@ void Mlib::Cv::project_depth_map(
     float z_far)
 {
     size_t num_renderings = 1;
-    RenderConfig render_config{ .screen_width = width, .screen_height = height };
+    RenderConfig render_config{ .windowed_width = width, .windowed_height = height };
     RenderResults render_results;
     RenderedSceneDescriptor rsd;
     render_results.outputs[rsd] = { .with_depth_texture = true };

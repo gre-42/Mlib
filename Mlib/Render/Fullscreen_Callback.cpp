@@ -23,25 +23,25 @@ void Mlib::fullscreen_callback(GLFWwindow* window, int key, int scancode, int ac
             {
                 GLFW_CHK(GLFWmonitor* monitor = glfwGetWindowMonitor(window));
                 if (monitor != nullptr) {
-                    if (user_object->window_width == 0) {
+                    if (user_object->windowed_width == 0) {
                         throw std::runtime_error("window width is zero");
                     }
-                    if (user_object->window_height == 0) {
+                    if (user_object->windowed_height == 0) {
                         throw std::runtime_error("window height is zero");
                     }
                     std::cerr << "Going to window mode" << std::endl;
                     GLFW_CHK(glfwSetWindowMonitor(
                         window,
                         nullptr,
-                        user_object->window_x,
-                        user_object->window_y,
-                        user_object->window_width,
-                        user_object->window_height,
+                        user_object->windowed_x,
+                        user_object->windowed_y,
+                        user_object->windowed_width,
+                        user_object->windowed_height,
                         0));
                 } else {
                     // Backup window position and size before going to fullscreen.
-                    GLFW_CHK(glfwGetWindowPos(window, &user_object->window_x, &user_object->window_y));
-                    GLFW_CHK(glfwGetWindowSize(window, &user_object->window_width, &user_object->window_height));
+                    GLFW_CHK(glfwGetWindowPos(window, &user_object->windowed_x, &user_object->windowed_y));
+                    GLFW_CHK(glfwGetWindowSize(window, &user_object->windowed_width, &user_object->windowed_height));
                     
                     // Go to fullscreen.
                     GLFW_CHK(GLFWmonitor* monitor = glfwGetPrimaryMonitor());
@@ -58,8 +58,8 @@ void Mlib::fullscreen_callback(GLFWwindow* window, int key, int scancode, int ac
                         monitor,
                         0,
                         0,
-                        mode->width,
-                        mode->height,
+                        user_object->fullscreen_width == 0 ? mode->width : user_object->fullscreen_width,
+                        user_object->fullscreen_height == 0 ? mode->height : user_object->fullscreen_height,
                         mode->refreshRate));
                 }
                 break;

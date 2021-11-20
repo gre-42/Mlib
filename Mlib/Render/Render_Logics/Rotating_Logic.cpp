@@ -96,8 +96,8 @@ RotatingLogic::RotatingLogic(
     user_object_.scale = scale;
     user_object_.camera_z = camera_z;
     user_object_.beacon_locations = beacon_locations;
-    GLFW_CHK(glfwGetWindowPos(window, &user_object_.window_x, &user_object_.window_y));
-    GLFW_CHK(glfwGetWindowSize(window, &user_object_.window_width, &user_object_.window_height));
+    GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
+    GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
     GLFW_CHK(glfwSetWindowUserPointer(window, &user_object_));
     GLFW_CHK(glfwSetKeyCallback(window, key_callback));
 }

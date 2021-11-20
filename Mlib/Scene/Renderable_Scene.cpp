@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
+#include <Mlib/Scene/Scene_Config.hpp>
 
 using namespace Mlib;
 
@@ -29,6 +30,10 @@ RenderableScene::RenderableScene(
   button_states_{button_states},
   cursor_states_{cursor_states},
   user_object_{
+      .base_user_object{
+          .fullscreen_width = scene_config.render_config.fullscreen_width,
+          .fullscreen_height = scene_config.render_config.fullscreen_height,
+      },
       .button_states = button_states,
       .cursor_states = cursor_states,
       .cameras = selected_cameras_,

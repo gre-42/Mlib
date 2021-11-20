@@ -258,8 +258,8 @@ int main(int argc, char** argv) {
             .lightmap_nsamples_msaa = safe_stoi(args.named_value("--lightmap_nsamples_msaa", "1")),
             .cull_faces = !args.has_named("--no_cull_faces"),
             .wire_frame = args.has_named("--wire_frame"),
-            .screen_width = safe_stoi(args.named_value("--width", "640")),
-            .screen_height = safe_stoi(args.named_value("--height", "480")),
+            .windowed_width = safe_stoi(args.named_value("--width", "640")),
+            .windowed_height = safe_stoi(args.named_value("--height", "480")),
             .double_buffer = args.has_named("--double_buffer"),
             .show_mouse_cursor = true,
             .background_color = {
