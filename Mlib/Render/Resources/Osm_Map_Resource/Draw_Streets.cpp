@@ -804,7 +804,10 @@ void DrawStreets::draw_streets_draw_ways(
             rect.draw(*destination_triangles, height_bindings, node_id, angle_way.neighbor_id, cva->triangles, scale, 1.f, 1.f);
         }
     };
-    if (wi.model.empty() || (wi.model == "endpoint")) {
+    auto draw_procedural_street = [&](){
+        rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, uv_len0, uv_len1, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+    };
+    if (wi.model.empty()) {
         Nullable<const std::string> model_name_central = model_name(street_surface_central_resource_names);
         Nullable<const std::string> model_name_endpoint0 = model_name(street_surface_endpoint0_resource_names);
         Nullable<const std::string> model_name_endpoint1 = model_name(street_surface_endpoint1_resource_names);
@@ -894,8 +897,10 @@ void DrawStreets::draw_streets_draw_ways(
                 throw std::runtime_error("Draw streets internal error");
             }
         } else {
-            rect.draw_z0(*street_lst.triangle_list, ground_triangles.tl_entrance[et].get(), height_bindings, ground_triangles.entrances, node_id, angle_way.neighbor_id, wi.colors(0), 0, street_lst.uvx, uv_len0, uv_len1, -wi.curb_alpha, wi.curb_alpha, RectangleOrientation::CENTER, with_b_height_binding, with_c_height_binding, b_entrance_type, c_entrance_type, angle_way.road_type);
+            draw_procedural_street();
         }
+    } else if (wi.model == "endpoint") {
+        draw_procedural_street();
     } else {
         draw_street_with_ditch(scene_node_resources.get_animated_arrays(wi.model)->cvas);
     }
