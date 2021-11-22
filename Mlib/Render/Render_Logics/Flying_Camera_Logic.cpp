@@ -1,4 +1,5 @@
 #include "Flying_Camera_Logic.hpp"
+#include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -10,7 +11,6 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
-#include <Mlib/Set_Fps.hpp>
 
 using namespace Mlib;
 

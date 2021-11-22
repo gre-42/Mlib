@@ -1,7 +1,8 @@
 #include "Physics_Loop.hpp"
+#include <Mlib/Fps/Lag_Finder.hpp>
+#include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Iteration.hpp>
-#include <Mlib/Set_Fps.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <vector>
@@ -21,7 +22,9 @@ PhysicsLoop::PhysicsLoop(
     try {
         set_thread_name("Physics");
         size_t nframes2 = nframes;
+        // LagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
         while (!exit_physics_) {
+            // lag_finder.start();
             // TimeGuard::initialize(5 * 60);
             if (nframes2 != SIZE_MAX) {
                 if (nframes2-- == 0) {
@@ -33,6 +36,7 @@ PhysicsLoop::PhysicsLoop(
             // TimeGuard tg2{"physics tick"};
             set_fps.tick(physics_cfg.dt, physics_cfg.max_residual_time, physics_cfg.print_residual_time);
             // TimeGuard::print_groups(std::cerr);
+            // lag_finder.stop();
         }
     } catch (const std::runtime_error&) {
         add_unhandled_exception(std::current_exception());

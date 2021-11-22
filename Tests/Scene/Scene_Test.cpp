@@ -1,5 +1,6 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
@@ -34,7 +35,6 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Set_Fps.hpp>
 #include <atomic>
 #include <thread>
 

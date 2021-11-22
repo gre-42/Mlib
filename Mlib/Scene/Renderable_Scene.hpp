@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
@@ -28,7 +29,6 @@
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
-#include <Mlib/Set_Fps.hpp>
 #include <vector>
 
 namespace Mlib {

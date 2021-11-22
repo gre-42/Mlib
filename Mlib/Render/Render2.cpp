@@ -1,6 +1,8 @@
 #include "Render2.hpp"
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <Mlib/Fps.hpp>
+#include <Mlib/Fps/Fps.hpp>
+#include <Mlib/Fps/Lag_Finder.hpp>
+#include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -16,7 +18,6 @@
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
-#include <Mlib/Set_Fps.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <thread>
@@ -130,8 +131,10 @@ void Render2::operator () (
         try {
             set_thread_name("Render2");
             GlContextGuard gcg{ window_->window() };
+            // LagFinder lag_finder{ "Render: ", std::chrono::milliseconds{ 100 }};
             while (continue_rendering())
             {
+                // lag_finder.start();
                 TIME_GUARD_INITIALIZE(1000 * 60, MaxLogLengthExceededBehavior::THROW_EXCEPTION);
                 if (num_renderings_ != SIZE_MAX) {
                     --num_renderings_;
@@ -211,6 +214,7 @@ void Render2::operator () (
                     TimeGuard::print_groups(std::cerr);
                 }
                 #endif
+                // lag_finder.stop();
             }
         } catch (const std::runtime_error&) {
             GLFW_CHK(glfwSetWindowShouldClose(window_->window(), GLFW_TRUE));
@@ -221,10 +225,19 @@ void Render2::operator () (
         RenderingContextStack::primary_rendering_context(),
         RenderingContextStack::rendering_context());
     std::thread render_thread{ thread_runner(render_thread_func) };
+    std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
     while (continue_rendering()) {
+        std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(start_time - end_time).count() > 10) {
+            std::cerr << "start " << std::chrono::duration_cast<std::chrono::milliseconds>(start_time - end_time).count() << std::endl;
+        }
         GLFW_CHK(glfwPollEvents());
         if (button_states != nullptr) {
             button_states->update_gamepad_state();
+        }
+        end_time = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() > 10) {
+            std::cerr << "end " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << std::endl;
         }
     }
     render_thread.join();

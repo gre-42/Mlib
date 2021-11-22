@@ -1,7 +1,7 @@
 #include "Pause_On_Lose_Focus_Logic.hpp"
+#include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Set_Fps.hpp>
 
 using namespace Mlib;
 
