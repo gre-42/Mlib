@@ -15,7 +15,6 @@ PhysicsLoop::PhysicsLoop(
     size_t nframes,
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background)
 : exit_physics_{false},
-  idle_{false},
   set_fps_{set_fps},
   physics_iteration_{physics_iteration},
   physics_thread_{run_in_background([&, nframes](){
@@ -32,9 +31,7 @@ PhysicsLoop::PhysicsLoop(
             physics_iteration();
             // std::cerr << rb0->get_new_absolute_model_matrix() << std::endl;
             // TimeGuard tg2{"physics tick"};
-            idle_ = true;
             set_fps.tick(physics_cfg.dt, physics_cfg.max_residual_time, physics_cfg.print_residual_time);
-            idle_ = false;
             // TimeGuard::print_groups(std::cerr);
         }
     } catch (const std::runtime_error&) {

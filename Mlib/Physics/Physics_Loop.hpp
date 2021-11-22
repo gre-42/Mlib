@@ -23,7 +23,6 @@ public:
     void join();
 private:
     std::atomic_bool exit_physics_;
-    std::atomic_bool idle_;
     SetFps& set_fps_;
     PhysicsIteration& physics_iteration_;
     std::thread physics_thread_;
