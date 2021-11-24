@@ -25,6 +25,8 @@ option(BUILD_OPENCV "Build the Open Computer Vision Library" ON)
 # Add dependencies #
 ####################
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 # Replaced with MSYS2 package
 # if (MINGW)
 #     cmake_policy(SET CMP0074 NEW)
@@ -45,6 +47,8 @@ find_package(Vulkan)
 find_package(glm)
 find_package(OpenCV OPTIONAL_COMPONENTS features2d)
 find_package(OpenSSL)
+find_package(OpenAL)
+find_package(ALUT)
 
 ###########################
 # Add compile definitions #
@@ -68,6 +72,14 @@ endif()
 
 if (NOT BUILD_CORK)
     add_compile_definitions(WITHOUT_CORK)
+endif()
+
+if (NOT OPENAL_FOUND)
+    add_compile_definitions(WITHOUT_OPENAL)
+endif()
+
+if (NOT ALUT_FOUND)
+    add_compile_definitions(WITHOUT_ALUT)
 endif()
 
 #####################
