@@ -34,16 +34,26 @@ CrossFade::~CrossFade() {
     fader_.join();
 }
 
-void CrossFade::play(const AudioBuffer& audio_buffer) {
+void CrossFade::play(const AudioBuffer& audio_buffer, float pitch) {
     std::lock_guard lock{ mutex_ };
     auto sg = std::make_unique<AudioSourceAndGain>();
     sg->source.attach(audio_buffer);
     sg->source.set_gain(0.f);
+    sg->source.set_pitch(pitch);
     sg->source.set_loop(true);
     sg->source.play();
     sources_.push_back(std::move(sg));
 }
 
+void CrossFade::set_pitch(float value) {
+    std::lock_guard lock{ mutex_ };
+    if (sources_.empty()) {
+        throw std::runtime_error("Cannot set pitch without a source");
+    }
+    sources_.back()->source.set_pitch(value);
+}
+
 void CrossFade::stop() {
+    std::lock_guard lock{ mutex_ };
     sources_.clear();
 }
