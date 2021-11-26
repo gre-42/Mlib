@@ -1,4 +1,5 @@
 #include "Load_Scene.hpp"
+#include <Mlib/Audio/Audio_Resources.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
@@ -68,6 +69,7 @@
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
@@ -304,7 +306,8 @@ void LoadScene::operator()(
         "\\s+rigid_body=([\\w+-.]+)"
         "\\s+name=([\\w+-.]+)"
         "\\s+power=([\\w+-.]+)"
-        "(?:\\s+hand_brake_pulled=(0|1))?$");
+        "(?:\\s+hand_brake_pulled=(0|1))?"
+        "(?:\\s+audio=([\\w-. \\(\\)/+-]+))?$");
     static const DECLARE_REGEX(player_create_reg,
         "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
@@ -562,6 +565,10 @@ void LoadScene::operator()(
         "\\s*snappiness=([\\w+-.]+)\\r?\\n"
         "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
         "\\s*y_snappiness=([\\w+-.]+)$");
+    static const DECLARE_REGEX(add_audio_reg,
+        "^\\s*add_audio"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+filename=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(add_texture_descriptor_reg,
         "^\\s*add_texture_descriptor"
         "\\s+name=([\\w+-.]+)"
@@ -1464,6 +1471,12 @@ void LoadScene::operator()(
                 cfg);
             return true;
         }
+        if (Mlib::re::regex_match(line, match, add_audio_reg)) {
+            AudioResourceContextStack::primary_audio_resources()->add_buffer(
+                match[1].str(),
+                match[2].str());
+            return true;
+        }
         if (Mlib::re::regex_match(line, match, add_texture_descriptor_reg)) {
             RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
                 match[1].str(),
@@ -1557,8 +1570,14 @@ void LoadScene::operator()(
         }
         auto primary_rendering_context = cit->second->primary_rendering_context_;
         auto secondary_rendering_context = cit->second->secondary_rendering_context_;
-        RenderingContextGuard rrg0{primary_rendering_context};
-        RenderingContextGuard rrg1{secondary_rendering_context};
+        RenderingContextGuard rrg0{ primary_rendering_context };
+        RenderingContextGuard rrg1{ secondary_rendering_context };
+
+        auto primary_audio_context = cit->second->primary_audio_resource_context_;
+        auto secondary_audio_context = cit->second->secondary_audio_resource_context_;
+        AudioResourceContextGuard arg0{ primary_audio_context };
+        AudioResourceContextGuard arg1{ secondary_audio_context };
+
         auto& scene_node_resources = cit->second->scene_node_resources_;
         auto& players = cit->second->players_;
         auto& scene = cit->second->scene_;
@@ -1867,7 +1886,8 @@ void LoadScene::operator()(
                 match[2].str(),
                 RigidBodyEngine{
                     safe_stof(match[3].str()),
-                    match[4].str().empty() ? false : safe_stob(match[4].str())}});  // hand_brake_pulled
+                    match[4].str().empty() ? false : safe_stob(match[4].str()),  // hand_brake_pulled
+                    match[5].matched ? std::make_shared<EngineAudio>(match[5].str()) : nullptr}});
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }

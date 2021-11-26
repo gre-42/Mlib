@@ -1,4 +1,6 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Audio/Audio_Context.hpp>
+#include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
@@ -261,6 +263,9 @@ int main(int argc, char** argv) {
             LoadScene load_scene;
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
+            AudioResourceContextGuard arcg{ AudioResourceContext() };
+            AudioDevice audio_device;
+            AudioContext audio_context{ audio_device };
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;
             {

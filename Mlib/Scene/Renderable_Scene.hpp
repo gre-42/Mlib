@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
@@ -103,6 +104,8 @@ public:
     std::unique_ptr<PhysicsLoop> physics_loop_;
     RenderingContext primary_rendering_context_;
     RenderingContext secondary_rendering_context_;
+    AudioResourceContext primary_audio_resource_context_;
+    AudioResourceContext secondary_audio_resource_context_;
 };
 
 }

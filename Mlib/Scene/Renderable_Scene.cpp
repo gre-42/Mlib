@@ -93,7 +93,9 @@ RenderableScene::RenderableScene(
       scene_config_.physics_engine_config,
       &fifo_log_},
   primary_rendering_context_{RenderingContextStack::primary_rendering_context()},
-  secondary_rendering_context_{RenderingContextStack::rendering_context()}
+  secondary_rendering_context_{RenderingContextStack::rendering_context()},
+  primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()},
+  secondary_audio_resource_context_{AudioResourceContextStack::resource_context()}
 {
     if (config.with_flying_logic) {
         render_logics_.append(nullptr, flying_camera_logic_);

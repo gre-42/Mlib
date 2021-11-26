@@ -142,6 +142,9 @@ void RigidBody::advance_time(
     for (auto& t : tires_) {
         t.second.advance_time(dt);
     }
+    for (auto& e : engines_) {
+        e.second.advance_time(dt);
+    }
 #ifdef COMPUTE_POWER
     float nrg = energy();
     if (!std::isnan(energy_old_)) {
