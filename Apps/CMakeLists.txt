@@ -34,6 +34,7 @@ if (BUILD_SFM)
 endif()
 
 if (OPENAL_FOUND)
+    add_subdirectory(Audio_Cross_Fade)
     add_subdirectory(Audio_Loop)
 endif()
 if (glfw3_FOUND)

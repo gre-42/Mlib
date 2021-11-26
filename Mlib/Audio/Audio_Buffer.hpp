@@ -11,6 +11,8 @@ class AudioBuffer {
 public:
     AudioBuffer();
     ~AudioBuffer();
+    AudioBuffer(const AudioBuffer&) = delete;
+    AudioBuffer& operator = (const AudioBuffer&) = delete;
     void load_wave(const std::string& filename);
 private:
     ALuint buffer_;

@@ -9,7 +9,12 @@ class AudioSource {
 public:
     AudioSource();
     ~AudioSource();
-    void attach(AudioBuffer& buffer);
+    AudioSource(const AudioSource&) = delete;
+    AudioSource& operator = (const AudioSource&) = delete;
+    void attach(const AudioBuffer& buffer);
+    void set_loop(bool value);
+    void set_gain(float f);
+    void set_pitch(float f);
     void play();
     void join();
 private:

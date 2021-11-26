@@ -4,4 +4,4 @@ my_add_executable(audio_loop "1")
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(audio_loop MlibAudio)
+target_link_libraries(audio_loop MlibAudio MlibStrings)
