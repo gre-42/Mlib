@@ -13,9 +13,9 @@ using namespace Mlib;
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: audio_cross_fade filename ... [--dgain <value>] [--dt_fade <ms>] [--dt_append <ms>] [--pitch <value>]",
+        "Usage: audio_cross_fade filename ... [--dgain <value>] [--dt_fade <ms>] [--dt_append <ms>] [--gain <value>] [--pitch <value>]",
         {},
-        {"--dgain", "--dt_fade", "--dt_append", "--pitch"});
+        {"--dgain", "--dt_fade", "--dt_append", "--gain", "--pitch"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unamed_atleast(1);
@@ -31,12 +31,11 @@ int main(int argc, char** argv) {
         float dgain = safe_stof(args.named_value("--dgain"));
         float dt_fade = safe_stof(args.named_value("--dt_fade"));
         float dt_append = safe_stof(args.named_value("--dt_append"));
-        float pitch = args.has_named_value("--pitch")
-            ? safe_stof(args.named_value("--pitch"))
-            : 1.f;
+        float pitch = safe_stof(args.named_value("--pitch", "1"));
+        float gain_factor = safe_stof(args.named_value("--gain", "1"));
         CrossFade cross_fade{ dgain, dt_fade };
         for (const auto& b : buffers) {
-            cross_fade.play(b, pitch);
+            cross_fade.play(b, gain_factor, pitch);
             std::this_thread::sleep_for(std::chrono::duration<float>(dt_append));
         }
     } catch (const std::runtime_error& e) {

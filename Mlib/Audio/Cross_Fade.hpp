@@ -8,17 +8,16 @@ namespace Mlib {
 
 class AudioBuffer;
 
-struct AudioSourceAndGain {
-    AudioSource source;
-    float gain;
-};
+struct AudioSourceAndGain;
 
 class CrossFade {
 public:
     explicit CrossFade(float dgain = 0.1, float dt = 0.01);
     ~CrossFade();
-    void play(const AudioBuffer& audio_buffer, float pitch = 1.f);
-    void set_pitch(float value);
+    void play(
+        const AudioBuffer& audio_buffer,
+        float gain_factor = 1.f,
+        float pitch = 1.f);
     void stop();
 private:
     std::list<std::unique_ptr<AudioSourceAndGain>> sources_;
