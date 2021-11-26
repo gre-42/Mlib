@@ -1,4 +1,5 @@
 #include "Cross_Fade.hpp"
+#include <Mlib/Threads/Set_Thread_Name.hpp>
 
 using namespace Mlib;
 
@@ -21,6 +22,7 @@ void AudioSourceAndGain::apply_gain() {
 CrossFade::CrossFade(float dgain, float dt)
 : shutdown_requested_{false},
   fader_{[this, dgain, dt](){
+    set_thread_name("Audio CrossFade");
     while (!shutdown_requested_) {
         {
             std::lock_guard lock{ mutex_ };
