@@ -26,7 +26,7 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power() {
         return PowerIntent{.power = surface_power_, .type = PowerIntentType::BREAK_OR_IDLE};
     }
     if (surface_power_nconsumed_ >= ntires_) {
-        return PowerIntent{.power = sign(surface_power_), .type=PowerIntentType::BREAK_OR_IDLE};
+        throw std::runtime_error("Consumed surface power more often than number of tires");
     }
     ++surface_power_nconsumed_;
     return PowerIntent{.power = surface_power_ / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
