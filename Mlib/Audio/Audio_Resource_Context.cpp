@@ -24,3 +24,10 @@ std::shared_ptr<AudioResources> AudioResourceContextStack::audio_resources() {
 
 template ResourceContextGuard<AudioResourceContext>::ResourceContextGuard(const AudioResourceContext& resource_context);
 template ResourceContextGuard<AudioResourceContext>::~ResourceContextGuard();
+
+template AudioResourceContext ResourceContextStack<AudioResourceContext>::primary_resource_context();
+template AudioResourceContext ResourceContextStack<AudioResourceContext>::resource_context();
+template std::function<std::function<void()>(std::function<void()>)>
+    ResourceContextStack<AudioResourceContext>::generate_thread_runner(
+        const AudioResourceContext& primary_resource_context,
+        const AudioResourceContext& secondary_resource_context);

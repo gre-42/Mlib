@@ -222,8 +222,8 @@ void Render2::operator () (
         }
     };
     auto thread_runner = RenderingContextStack::generate_thread_runner(
-        RenderingContextStack::primary_rendering_context(),
-        RenderingContextStack::rendering_context());
+        RenderingContextStack::primary_resource_context(),
+        RenderingContextStack::resource_context());
     std::thread render_thread{ thread_runner(render_thread_func) };
     std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
     while (continue_rendering()) {

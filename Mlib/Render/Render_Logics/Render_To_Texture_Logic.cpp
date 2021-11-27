@@ -23,7 +23,7 @@ RenderToTextureLogic::RenderToTextureLogic(
     int texture_height,
     const FocusFilter& focus_filter)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::rendering_context()},
+  rendering_context_{RenderingContextStack::resource_context()},
   update_cycle_{update_cycle},
   with_depth_texture_{with_depth_texture},
   color_texture_name_{color_texture_name},

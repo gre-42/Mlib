@@ -20,7 +20,7 @@ LightmapLogic::LightmapLogic(
     const std::string& black_node_name,
     bool with_depth_texture)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::rendering_context()},
+  rendering_context_{RenderingContextStack::resource_context()},
   update_cycle_{update_cycle},
   light_node_name_{light_node_name},
   black_node_name_{black_node_name},

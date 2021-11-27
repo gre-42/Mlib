@@ -10,7 +10,7 @@ using namespace Mlib;
 DirtmapLogic::DirtmapLogic(
     RenderLogic& child_logic)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::rendering_context()},
+  rendering_context_{RenderingContextStack::resource_context()},
   generated_{false}
 {}
 

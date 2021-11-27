@@ -92,8 +92,8 @@ RenderableScene::RenderableScene(
       deletion_mutex_,
       scene_config_.physics_engine_config,
       &fifo_log_},
-  primary_rendering_context_{RenderingContextStack::primary_rendering_context()},
-  secondary_rendering_context_{RenderingContextStack::rendering_context()},
+  primary_rendering_context_{RenderingContextStack::primary_resource_context()},
+  secondary_rendering_context_{RenderingContextStack::resource_context()},
   primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()},
   secondary_audio_resource_context_{AudioResourceContextStack::resource_context()}
 {

@@ -19,7 +19,7 @@ StandardRenderLogic::StandardRenderLogic(
 : scene_{scene},
   child_logic_{child_logic},
   clear_mode_{clear_mode},
-  rendering_context_{RenderingContextStack::rendering_context()},
+  rendering_context_{RenderingContextStack::resource_context()},
   small_sorted_aggregate_renderer_{AggregateRenderer::small_sorted_aggregate_renderer()},
   small_instances_renderer_{InstancesRenderer::small_instances_renderer()}
 {}
@@ -66,7 +66,7 @@ void StandardRenderLogic::render(
         RenderConfigGuard rcg{ render_config };
 
         {
-            auto primary_rendering_context = RenderingContextStack::primary_rendering_context();
+            auto primary_rendering_context = RenderingContextStack::primary_resource_context();
             scene_.render(
                 child_logic_.vp(),
                 child_logic_.iv(),

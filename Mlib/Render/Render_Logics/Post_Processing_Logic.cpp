@@ -126,7 +126,7 @@ PostProcessingLogic::PostProcessingLogic(
     bool low_pass,
     bool high_pass)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::rendering_context()},
+  rendering_context_{RenderingContextStack::resource_context()},
   generated_{false},
   depth_fog_{depth_fog},
   low_pass_{low_pass},

@@ -23,7 +23,7 @@ public:
             const TResourceContext& primary_resource_context,
             const TResourceContext& secondary_resource_context);
     static void print_stack(std::ostream& ostr);
-private:
+protected:
     static std::list<TResourceContext>& resource_context_stack();
 };
 

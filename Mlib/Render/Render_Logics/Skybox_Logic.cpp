@@ -82,7 +82,7 @@ float skybox_vertices[] = {
 
 SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::rendering_context()},
+  rendering_context_{RenderingContextStack::resource_context()},
   loaded_{false}
 {}
 
