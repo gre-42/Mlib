@@ -7,6 +7,9 @@
 
 namespace Mlib {
 
+/**
+ * Like BackgroundTask, but reuses the same thread for each task.
+ */
 class BackgroundLoop {
 public:
     BackgroundLoop();
