@@ -12,6 +12,7 @@ public:
     explicit AudioContext(AudioDevice& device);
     ~AudioContext();
 private:
+    ALCdevice* device_;
     ALCcontext* context_;
 };
 

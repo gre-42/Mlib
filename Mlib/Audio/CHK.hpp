@@ -34,9 +34,3 @@ extern std::mutex al_error_mutex;
             } \
         } \
     }
-
-#define AL_UNCHECKED(f) \
-    { \
-        std::lock_guard mutex{ Mlib::al_error_mutex }; \
-        f; \
-    }
