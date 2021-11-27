@@ -17,15 +17,15 @@ void AudioSource::attach(const AudioBuffer& buffer) {
 }    
 
 void AudioSource::set_loop(bool value) {
-    alSourcei(source_, AL_LOOPING, value);
+    AL_CHK(alSourcei(source_, AL_LOOPING, value));
 }
 
 void AudioSource::set_gain(float value) {
-    alSourcef(source_, AL_GAIN, value);
+    AL_CHK(alSourcef(source_, AL_GAIN, value));
 }
 
 void AudioSource::set_pitch(float value) {
-    alSourcef(source_, AL_PITCH, value);
+    AL_CHK(alSourcef(source_, AL_PITCH, value));
 }
 
 void AudioSource::play() {
