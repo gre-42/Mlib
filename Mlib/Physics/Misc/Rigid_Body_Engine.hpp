@@ -36,10 +36,11 @@ public:
     void advance_time(float dt);
     void notify_off();
     void notify_idle();
-    void notify_accelerate();
+    void notify_accelerate(float w);
 
 private:
     EngineState engine_state;
+    float w_;
     float surface_power_;
     std::set<size_t> tires_consumed_;
     float max_surface_power_;

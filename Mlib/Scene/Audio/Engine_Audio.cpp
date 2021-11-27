@@ -19,6 +19,6 @@ void EngineAudio::notify_idle() {
     cross_fade_.play(*idle_buffer, idle_gain);
 }
 
-void EngineAudio::notify_driving() {
-    cross_fade_.play(*driving_buffer, driving_gain);
+void EngineAudio::notify_driving(float w) {
+    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * 0.25f) / (200.f / 3.6f));
 }

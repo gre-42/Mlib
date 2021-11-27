@@ -234,7 +234,7 @@ void RigidBody::set_tire_angular_velocity(size_t id, float w, TireAngularVelocit
         engines_.at(tire.engine).notify_idle();
     }
     if (ch == TireAngularVelocityChange::ACCELERATE) {
-        engines_.at(tire.engine).notify_accelerate();
+        engines_.at(tire.engine).notify_accelerate(w);
     }
 }
 
