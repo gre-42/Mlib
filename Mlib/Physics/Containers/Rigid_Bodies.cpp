@@ -155,11 +155,16 @@ void RigidBodies::delete_rigid_body(const RigidBody* rigid_body) {
             throw std::runtime_error("Could not delete rigid body (3)");
         }
     } else if (it->second == CollidableMode::SMALL_MOVING) {
-        auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
-        if (it == objects_.end()) {
-            throw std::runtime_error("Could not delete dynamic rigid body (4)");
+        {
+            auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return e.rigid_body.get() == rigid_body; });
+            if (it == objects_.end()) {
+                throw std::runtime_error("Could not delete dynamic rigid body (4)");
+            }
+            objects_.erase(it);
         }
-        objects_.erase(it);
+        std::erase_if(transformed_objects_, [rigid_body](const RigidBodyAndTransformedMeshes& rbtm){
+            return (rbtm.rigid_body.get() == rigid_body);
+        });
     } else {
         throw std::runtime_error("Could not delete rigid body (5)");
     }
