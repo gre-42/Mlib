@@ -7,6 +7,8 @@ using namespace Mlib;
 EngineAudio::EngineAudio(const std::string& resource_name) {
     idle_buffer = AudioResourceContextStack::primary_audio_resources()->get_buffer(resource_name + ".idle");
     driving_buffer = AudioResourceContextStack::primary_audio_resources()->get_buffer(resource_name + ".driving");
+    idle_gain = AudioResourceContextStack::primary_audio_resources()->get_gain(resource_name + ".idle");
+    driving_gain = AudioResourceContextStack::primary_audio_resources()->get_gain(resource_name + ".driving");
 }
 
 void EngineAudio::notify_off() {
@@ -14,9 +16,9 @@ void EngineAudio::notify_off() {
 }
 
 void EngineAudio::notify_idle() {
-    cross_fade_.play(*idle_buffer);
+    cross_fade_.play(*idle_buffer, idle_gain);
 }
 
 void EngineAudio::notify_driving() {
-    cross_fade_.play(*driving_buffer);
+    cross_fade_.play(*driving_buffer, driving_gain);
 }

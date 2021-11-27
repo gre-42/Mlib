@@ -17,6 +17,8 @@ public:
 private:
     std::shared_ptr<AudioBuffer> driving_buffer;
     std::shared_ptr<AudioBuffer> idle_buffer;
+    float driving_gain;
+    float idle_gain;
     CrossFade cross_fade_;
 };
 
