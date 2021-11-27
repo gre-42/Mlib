@@ -35,7 +35,7 @@ public:
     void reset_forces();
     void advance_time(float dt);
     void notify_off();
-    void notify_idle();
+    void notify_idle(float w);
     void notify_accelerate(float w);
 
 private:

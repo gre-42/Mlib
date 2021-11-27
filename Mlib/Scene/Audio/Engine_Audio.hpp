@@ -12,7 +12,7 @@ class EngineAudio: public EngineEventListener {
 public:
     explicit EngineAudio(const std::string& resource_name);
     virtual void notify_off() override;
-    virtual void notify_idle() override;
+    virtual void notify_idle(float w) override;
     virtual void notify_driving(float w) override;
 private:
     std::shared_ptr<AudioBuffer> driving_buffer;

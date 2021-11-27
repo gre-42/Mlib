@@ -70,7 +70,7 @@ void RigidBodyEngine::advance_time(float dt) {
         if ((engine_state == EngineState::OFF) || hand_brake_pulled_) {
             audio_->notify_off();
         } else if (engine_state == EngineState::IDLE) {
-            audio_->notify_idle();
+            audio_->notify_idle(w_);
         } else if (engine_state == EngineState::ACCELERATE) {
             audio_->notify_driving(w_);
         }
@@ -81,8 +81,9 @@ void RigidBodyEngine::notify_off() {
     engine_state = EngineState::OFF;
 }
 
-void RigidBodyEngine::notify_idle() {
+void RigidBodyEngine::notify_idle(float w) {
     engine_state = EngineState::IDLE;
+    w_ = w;
 }
 
 void RigidBodyEngine::notify_accelerate(float w) {
