@@ -154,6 +154,9 @@ int main(int argc, char** argv) {
         std::string working_directory = args.unnamed_value(0);
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 
+        AudioDevice audio_device;
+        AudioContext audio_context{ audio_device };
+
         size_t num_renderings;
         RenderConfig render_config{
             .nsamples_msaa = safe_stoi(args.named_value("--nsamples_msaa", "2")),
@@ -264,8 +267,6 @@ int main(int argc, char** argv) {
             std::map<std::string, std::shared_ptr<RenderableScene>> renderable_scenes;
             RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
             AudioResourceContextGuard arcg{ AudioResourceContext() };
-            AudioDevice audio_device;
-            AudioContext audio_context{ audio_device };
             std::string next_scene_filename;
             RegexSubstitutionCache rsc;
             {
