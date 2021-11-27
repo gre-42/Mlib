@@ -225,20 +225,14 @@ void Render2::operator () (
         RenderingContextStack::primary_resource_context(),
         RenderingContextStack::resource_context());
     std::thread render_thread{ thread_runner(render_thread_func) };
-    std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
+    // LagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
     while (continue_rendering()) {
-        std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(start_time - end_time).count() > 10) {
-            std::cerr << "start " << std::chrono::duration_cast<std::chrono::milliseconds>(start_time - end_time).count() << std::endl;
-        }
+        // lag_finder.start();
         GLFW_CHK(glfwPollEvents());
         if (button_states != nullptr) {
             button_states->update_gamepad_state();
         }
-        end_time = std::chrono::steady_clock::now();
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() > 10) {
-            std::cerr << "end " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << std::endl;
-        }
+        // lag_finder.stop();
     }
     render_thread.join();
     if (teptr != nullptr) {
