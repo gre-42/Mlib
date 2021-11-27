@@ -263,13 +263,13 @@ float RigidBody::get_tire_radius(size_t id) const {
 PowerIntent RigidBody::consume_tire_surface_power(size_t id) {
     auto en = tires_.find(id);
     if (en == tires_.end()) {
-        return PowerIntent{.power = 0, .type = PowerIntentType::ALWAYS_IDLE};
+        throw std::runtime_error("Unknown tire ID: " + std::to_string(id));
     }
     auto e = engines_.find(en->second.engine);
     if (e == engines_.end()) {
         throw std::runtime_error("No engine with name \"" + en->second.engine + "\" exists");
     }
-    return e->second.consume_abs_surface_power();
+    return e->second.consume_abs_surface_power(id);
 }
 
 void RigidBody::set_surface_power(const std::string& engine_name, float surface_power) {

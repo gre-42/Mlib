@@ -21,7 +21,6 @@ RigidBodyEngine::RigidBodyEngine(
     const std::shared_ptr<EngineEventListener>& audio)
 : engine_state{EngineState::OFF},
   surface_power_{0},
-  surface_power_nconsumed_{0},
   max_surface_power_{max_surface_power},
   ntires_{0},
   hand_brake_pulled_{hand_brake_pulled},
@@ -33,20 +32,22 @@ RigidBodyEngine::~RigidBodyEngine()
 
 void RigidBodyEngine::reset_forces() {
     engine_state = EngineState::OFF;
-    surface_power_nconsumed_ = 0;
+    tires_consumed_.clear();
 }
 
-PowerIntent RigidBodyEngine::consume_abs_surface_power() {
+PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id) {
+    if (!tires_consumed_.insert(tire_id).second) {
+        return PowerIntent{.power = 0, .type = PowerIntentType::ALWAYS_IDLE};
+    }
+    if (tires_consumed_.size() > ntires_) {
+        throw std::runtime_error("Consumed surface power more often than number of tires");
+    }
     if (hand_brake_pulled_ || std::isnan(surface_power_)) {
         return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
     }
     if (max_surface_power_ == 0) {
         return PowerIntent{.power = surface_power_, .type = PowerIntentType::BREAK_OR_IDLE};
     }
-    if (surface_power_nconsumed_ >= ntires_) {
-        throw std::runtime_error("Consumed surface power more often than number of tires");
-    }
-    ++surface_power_nconsumed_;
     return PowerIntent{.power = surface_power_ / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
 }
 
