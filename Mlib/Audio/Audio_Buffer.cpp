@@ -1,6 +1,6 @@
 #include "Audio_Buffer.hpp"
+#include <Mlib/Audio/Alut_Init_Without_Context.hpp>
 #include <Mlib/Audio/CHK.hpp>
-#include <Mlib/Audio/Alut_Init.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -67,7 +67,7 @@ void AudioBuffer::load_wave(const std::string& filename) {
     // }
     // WaveCloseFile(wave);
 
-    AlutInit alut_init;
+    AlutInitWithoutContext alut_init_without_context;
     buffer_ = alutCreateBufferFromFile(filename.c_str());
     if (buffer_ == AL_NONE) {
         ALenum error = alutGetError();
