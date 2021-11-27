@@ -1,4 +1,5 @@
 #include "List_Audio_Devices.hpp"
+#include <Mlib/Audio/CHK.hpp>
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <cstddef>
@@ -8,6 +9,7 @@
 using namespace Mlib;
 
 void Mlib::list_audio_devices() {
+    std::lock_guard lock{ al_error_mutex };
     const ALCchar* devices = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
     if (devices == nullptr) {
         throw std::runtime_error("Could not list audio devices");

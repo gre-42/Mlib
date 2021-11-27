@@ -2,6 +2,9 @@
 
 import os.path
 
+def is_project_header(l):
+    return l.startswith('#include <Mlib') or l.startswith('#include "')
+
 for path, dirs, files in os.walk('.'):
     dirs[:] = [d for d in dirs if d not in [
         'MRelease',
@@ -63,8 +66,8 @@ for path, dirs, files in os.walk('.'):
                     else:
                         rest.append(l)
 
-                inc_project = [l for l in inc if l.startswith('include <Mlib')]
-                inc_third_party = [l for l in inc if not l.startswith('include <Mlib')]
+                inc_project = [l for l in inc if is_project_header(l)]
+                inc_third_party = [l for l in inc if not is_project_header(l)]
                 new = '\n'.join(top + sorted(inc_project) + sorted(inc_third_party) + rest)
             if new != s:
                 print('%s needs to be fixed' % filename)

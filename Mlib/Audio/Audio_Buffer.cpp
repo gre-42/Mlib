@@ -10,7 +10,7 @@ AudioBuffer::AudioBuffer() {
 }
 
 AudioBuffer::~AudioBuffer() {
-    alDeleteBuffers((ALuint)1, &buffer_); 
+    AL_UNCHECKED(alDeleteBuffers((ALuint)1, &buffer_));
 }
 
 static ALenum to_al_format(short channels, short samples)

@@ -1,8 +1,8 @@
 #include "Audio_Context.hpp"
-#include <AL/al.h>
-#include <AL/alc.h>
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#include <AL/al.h>
+#include <AL/alc.h>
 #include <stdexcept>
 
 using namespace Mlib;
@@ -16,6 +16,6 @@ AudioContext::AudioContext(AudioDevice& device) {
 }
 
 AudioContext::~AudioContext() {
-    alcMakeContextCurrent(nullptr);
-    alcDestroyContext(context_);
+    AL_UNCHECKED(alcMakeContextCurrent(nullptr));
+    AL_UNCHECKED(alcDestroyContext(context_));
 }
