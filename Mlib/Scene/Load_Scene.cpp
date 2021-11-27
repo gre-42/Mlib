@@ -568,7 +568,8 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(add_audio_reg,
         "^\\s*add_audio"
         "\\s+name=([\\w+-.]+)"
-        "\\s+filename=([\\w-. \\(\\)/+-]+)$");
+        "\\s+filename=([\\w-. \\(\\)/+-]+)"
+        "\\s+gain=([\\w+-.]+)$");
     static const DECLARE_REGEX(add_texture_descriptor_reg,
         "^\\s*add_texture_descriptor"
         "\\s+name=([\\w+-.]+)"
@@ -1474,7 +1475,8 @@ void LoadScene::operator()(
         if (Mlib::re::regex_match(line, match, add_audio_reg)) {
             AudioResourceContextStack::primary_audio_resources()->add_buffer(
                 match[1].str(),
-                match[2].str());
+                match[2].str(),
+                match[3].matched ? safe_stof(match[3].str()) : 1);
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_texture_descriptor_reg)) {

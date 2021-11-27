@@ -62,7 +62,7 @@ void accelerate_positive(
     float w;
     float v;
     optimal_angular_velocity_positive(rb, street_velocity, surface_normal, cfg, tire_id, w, &v);
-    rb.set_tire_angular_velocity(tire_id, -w);
+    rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
     force_min = u * power / std::min(-0.001f, v);
     force_max = 0;
 }
@@ -89,7 +89,7 @@ void accelerate_negative(
     float w;
     float v;
     optimal_angular_velocity_negative(rb, street_velocity, surface_normal, cfg, tire_id, w, &v);
-    rb.set_tire_angular_velocity(tire_id, -w);
+    rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
     force_min = 0;
     force_max = -u * power / std::max(0.001f, -v);
 }
@@ -106,9 +106,9 @@ void break_positive(
     float w;
     optimal_angular_velocity_positive(rb, street_velocity, surface_normal, cfg, tire_id, w);
     if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
-        rb.set_tire_angular_velocity(tire_id, 0);
+        rb.set_tire_angular_velocity(tire_id, 0, TireAngularVelocityChange::BREAK);
     } else {
-        rb.set_tire_angular_velocity(tire_id, -w);
+        rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BREAK);
     }
     force_min = -rb.tires_.at(tire_id).break_force;
     force_max = 0;
@@ -145,9 +145,9 @@ void break_negative(
     float w;
     optimal_angular_velocity_negative(rb, street_velocity, surface_normal, cfg, tire_id, w);
     if (sign(rb.get_tire_angular_velocity(tire_id)) != sign(-w)) {
-        rb.set_tire_angular_velocity(tire_id, 0);
+        rb.set_tire_angular_velocity(tire_id, 0, TireAngularVelocityChange::BREAK);
     } else {
-        rb.set_tire_angular_velocity(tire_id, -w);
+        rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::BREAK);
     }
     force_min = 0;
     force_max = rb.tires_.at(tire_id).break_force;
@@ -180,7 +180,7 @@ void idle(
     float& force_min,
     float& force_max)
 {
-    rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(surface_normal, street_velocity, tire_id));
+    rb.set_tire_angular_velocity(tire_id, rb.get_angular_velocity_at_tire(surface_normal, street_velocity, tire_id), TireAngularVelocityChange::IDLE);
     force_min = 0;
     force_max = 0;
 }

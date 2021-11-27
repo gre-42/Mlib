@@ -224,8 +224,18 @@ float RigidBody::get_tire_angular_velocity(size_t id) const {
     return get_tire(id).angular_velocity;
 }
 
-void RigidBody::set_tire_angular_velocity(size_t id, float w) {
-    get_tire(id).angular_velocity = w;
+void RigidBody::set_tire_angular_velocity(size_t id, float w, TireAngularVelocityChange ch) {
+    Tire& tire = get_tire(id);
+    tire.angular_velocity = w;
+    if (ch == TireAngularVelocityChange::OFF) {
+        engines_.at(tire.engine).notify_off();
+    }
+    if ((ch == TireAngularVelocityChange::IDLE) || (ch == TireAngularVelocityChange::BREAK)) {
+        engines_.at(tire.engine).notify_idle();
+    }
+    if (ch == TireAngularVelocityChange::ACCELERATE) {
+        engines_.at(tire.engine).notify_accelerate();
+    }
 }
 
 FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(

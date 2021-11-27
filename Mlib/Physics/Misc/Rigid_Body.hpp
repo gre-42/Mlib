@@ -23,6 +23,13 @@ struct Beacon;
 class Damageable;
 class Player;
 
+enum class TireAngularVelocityChange {
+    OFF,
+    IDLE,
+    ACCELERATE,
+    BREAK
+};
+
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
@@ -62,7 +69,7 @@ public:
     FixedArray<float, 3, 3> get_abs_tire_rotation_matrix(size_t id) const;
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;
-    void set_tire_angular_velocity(size_t id, float w);
+    void set_tire_angular_velocity(size_t id, float w, TireAngularVelocityChange ch);
     FixedArray<float, 3> get_velocity_at_tire_contact(
         const FixedArray<float, 3>& surface_normal,
         size_t id) const;

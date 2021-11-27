@@ -19,6 +19,8 @@ struct PowerIntent {
     PowerIntentType type;
 };
 
+enum class EngineState;
+
 class RigidBodyEngine {
 public:
     explicit RigidBodyEngine(
@@ -31,11 +33,14 @@ public:
     void increment_ntires();
     void reset_forces();
     void advance_time(float dt);
+    void notify_off();
+    void notify_idle();
+    void notify_accelerate();
 
 private:
+    EngineState engine_state;
     float surface_power_;
     size_t surface_power_nconsumed_;
-    float surface_power_consumed_;
     float max_surface_power_;
     size_t ntires_;
     bool hand_brake_pulled_;

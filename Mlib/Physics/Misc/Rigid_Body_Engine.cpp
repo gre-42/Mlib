@@ -5,13 +5,23 @@
 
 using namespace Mlib;
 
+namespace Mlib {
+
+enum class EngineState {
+    OFF,
+    IDLE,
+    ACCELERATE
+};
+
+}
+
 RigidBodyEngine::RigidBodyEngine(
     float max_surface_power,
     bool hand_brake_pulled,
     const std::shared_ptr<EngineEventListener>& audio)
-: surface_power_{0},
+: engine_state{EngineState::OFF},
+  surface_power_{0},
   surface_power_nconsumed_{0},
-  surface_power_consumed_{0},
   max_surface_power_{max_surface_power},
   ntires_{0},
   hand_brake_pulled_{hand_brake_pulled},
@@ -22,7 +32,7 @@ RigidBodyEngine::~RigidBodyEngine()
 {}
 
 void RigidBodyEngine::reset_forces() {
-    surface_power_consumed_ = 0.f;
+    engine_state = EngineState::OFF;
     surface_power_nconsumed_ = 0;
 }
 
@@ -37,9 +47,7 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power() {
         throw std::runtime_error("Consumed surface power more often than number of tires");
     }
     ++surface_power_nconsumed_;
-    float power = surface_power_ / float(ntires_);
-    surface_power_consumed_ += power;
-    return PowerIntent{.power = power, .type = PowerIntentType::ACCELERATE_OR_BREAK};
+    return PowerIntent{.power = surface_power_ / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
 }
 
 void RigidBodyEngine::set_surface_power(float surface_power) {
@@ -58,10 +66,24 @@ void RigidBodyEngine::increment_ntires() {
 
 void RigidBodyEngine::advance_time(float dt) {
     if (audio_ != nullptr) {
-        if (surface_power_consumed_ != 0) {
-            audio_->notify_driving();
-        } else {
+        if (engine_state == EngineState::OFF) {
+            audio_->notify_off();
+        } else if (engine_state == EngineState::IDLE) {
             audio_->notify_idle();
+        } else if (engine_state == EngineState::ACCELERATE) {
+            audio_->notify_driving();
         }
     }
+}
+
+void RigidBodyEngine::notify_off() {
+    engine_state = EngineState::OFF;
+}
+
+void RigidBodyEngine::notify_idle() {
+    engine_state = EngineState::IDLE;
+}
+
+void RigidBodyEngine::notify_accelerate() {
+    engine_state = EngineState::ACCELERATE;
 }
