@@ -13,7 +13,7 @@ public:
         --nlocked_;
         mutex_.unlock();
     }
-    bool is_locked() {
+    bool is_locked() const {
         return nlocked_ > 0;
     }
 private:

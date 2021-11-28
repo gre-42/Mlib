@@ -45,7 +45,8 @@ RenderableScene::RenderableScene(
   gefp_{FixedArray<float, 3>{0.f, -9.8f, 0.f}},
   standard_camera_logic_{
       scene_,
-      selected_cameras_},
+      selected_cameras_,
+      deletion_mutex_},
   skybox_logic_{standard_camera_logic_},
   standard_render_logic_{std::make_shared<StandardRenderLogic>(
       scene_,

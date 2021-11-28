@@ -573,7 +573,10 @@ int main(int argc, char** argv) {
         Focuses focuses = {Focus::SCENE};
         ButtonStates button_states;
         CursorStates cursor_states;
-        StandardCameraLogic standard_camera_logic{scene, selected_cameras};
+        StandardCameraLogic standard_camera_logic{
+            scene,
+            selected_cameras,
+            deletion_mutex};
         StandardRenderLogic standard_render_logic{
             scene,
             standard_camera_logic,
@@ -605,9 +608,8 @@ int main(int argc, char** argv) {
                 true));                       // with_depth_texture
         }
 
-        DeleteNodeMutex mutex;
         UiFocus ui_focus;
-        RenderLogics render_logics{mutex, ui_focus};
+        RenderLogics render_logics{deletion_mutex, ui_focus};
         render_logics.append(nullptr, flying_camera_logic);
         for (const auto& l : lightmap_logics) {
             render_logics.append(nullptr, l);

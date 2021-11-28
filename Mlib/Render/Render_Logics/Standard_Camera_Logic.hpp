@@ -8,10 +8,14 @@ namespace Mlib {
 
 class Scene;
 class SelectedCameras;
+class DeleteNodeMutex;
 
 class StandardCameraLogic: public RenderLogic {
 public:
-    explicit StandardCameraLogic(const Scene& scene, SelectedCameras& cameras);
+    explicit StandardCameraLogic(
+        const Scene& scene,
+        SelectedCameras& cameras,
+        const DeleteNodeMutex& deletion_mutex);
 
     virtual void render(
         int width,
@@ -30,6 +34,7 @@ public:
 private:
     const Scene& scene_;
     SelectedCameras& cameras_;
+    const DeleteNodeMutex& deletion_mutex_;
     FixedArray<float, 4, 4> vp_;
     TransformationMatrix<float, 3> iv_;
 };

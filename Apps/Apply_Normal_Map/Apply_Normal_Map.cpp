@@ -160,14 +160,15 @@ int main(int argc, char** argv) {
         
         // scene.print();
         SelectedCameras selected_cameras{scene};
-        StandardCameraLogic standard_camera_logic{scene, selected_cameras};
+        StandardCameraLogic standard_camera_logic{
+            scene,
+            selected_cameras,
+            deletion_mutex};
         StandardRenderLogic standard_render_logic{
             scene,
             standard_camera_logic,
             ClearMode::COLOR_AND_DEPTH};
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
-
-        DeleteNodeMutex mutex;
 
         render2(
             *read_pixels_logic,

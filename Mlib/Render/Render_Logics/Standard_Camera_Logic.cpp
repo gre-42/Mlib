@@ -5,6 +5,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 
@@ -12,9 +13,11 @@ using namespace Mlib;
 
 StandardCameraLogic::StandardCameraLogic(
     const Scene& scene,
-    SelectedCameras& cameras)
-: scene_{scene},
-  cameras_{cameras}
+    SelectedCameras& cameras,
+    const DeleteNodeMutex& deletion_mutex)
+: scene_{ scene },
+  cameras_{ cameras },
+  deletion_mutex_{ deletion_mutex }
 {}
 
 void StandardCameraLogic::render(
@@ -32,6 +35,9 @@ void StandardCameraLogic::render(
     float aspect_ratio = width / (float) height;
 
     SceneNode* cn;
+    if (!deletion_mutex_.is_locked()) {
+        throw std::runtime_error("Deletion mutex not locked in StandardCameraLogic::render");
+    }
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
         cn = scene_.get_node(frame_id.light_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {

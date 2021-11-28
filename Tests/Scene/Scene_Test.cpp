@@ -204,13 +204,12 @@ void test_physics_engine() {
     GravityEfp gefp({0, -9.8, 0});
     pe.add_external_force_provider(&gefp);
 
-    DeleteNodeMutex mutex;
     SetFps physics_set_fps{"Physics FPS: "};
     PhysicsIteration pi{
         scene_node_resources,
         scene,
         pe,
-        mutex,
+        deletion_mutex,
         physics_cfg};
     PhysicsLoop pl{
         pi,
@@ -221,7 +220,10 @@ void test_physics_engine() {
         pl.join();
     }
 
-    StandardCameraLogic standard_camera_logic{scene, selected_cameras};
+    StandardCameraLogic standard_camera_logic{
+        scene,
+        selected_cameras,
+        deletion_mutex};
     StandardRenderLogic standard_render_logic{
         scene,
         standard_camera_logic,
@@ -254,7 +256,7 @@ void test_physics_engine() {
         true); // with_depth_texture
 
     UiFocus ui_focus;
-    RenderLogics render_logics{mutex, ui_focus};
+    RenderLogics render_logics{deletion_mutex, ui_focus};
     render_logics.append(nullptr, flying_camera_logic);
     render_logics.append(nullptr, lightmap_logic);
     render_logics.append(nullptr, read_pixels_logic);
