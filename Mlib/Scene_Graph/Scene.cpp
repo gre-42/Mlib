@@ -34,7 +34,7 @@ void Scene::add_root_node(
         throw std::runtime_error("Node \"" + name + "\" is scheduled for deletion");
     }
     register_node(name, scene_node.get());
-    if (!root_nodes_.insert(std::make_pair(name, std::move(scene_node))).second) {
+    if (!root_nodes_.insert({ name, std::move(scene_node) }).second) {
         throw std::runtime_error("add_root_node could not insert node");
     };
 }
@@ -44,7 +44,7 @@ void Scene::add_static_root_node(
     std::unique_ptr<SceneNode>&& scene_node)
 {
     register_node(name, scene_node.get());
-    if (!static_root_nodes_.insert(std::make_pair(name, std::move(scene_node))).second) {
+    if (!static_root_nodes_.insert({ name, std::move(scene_node) }).second) {
         throw std::runtime_error("add_static_root_node could not insert node");
     }
 }
@@ -54,7 +54,7 @@ void Scene::add_root_aggregate_node(
     std::unique_ptr<SceneNode>&& scene_node)
 {
     register_node(name, scene_node.get());
-    if (!root_aggregate_nodes_.insert(std::make_pair(name, std::move(scene_node))).second) {
+    if (!root_aggregate_nodes_.insert({ name, std::move(scene_node) }).second) {
         throw std::runtime_error("add_root_aggregate_node could not insert node");
     }
 }
@@ -64,7 +64,7 @@ void Scene::add_root_instances_node(
     std::unique_ptr<SceneNode>&& scene_node)
 {
     register_node(name, scene_node.get());
-    if (!root_instances_nodes_.insert(std::make_pair(name, std::move(scene_node))).second) {
+    if (!root_instances_nodes_.insert({ name, std::move(scene_node) }).second) {
         throw std::runtime_error("add_root_instances_node could not insert node");
     }
 }
@@ -160,7 +160,7 @@ void Scene::register_node(
     if (name.empty()) {
         throw std::runtime_error("register_node received empty name");
     }
-    if (!nodes_.insert(std::make_pair(name, scene_node)).second) {
+    if (!nodes_.insert({ name, scene_node }).second) {
         throw std::runtime_error("Scene node with name \"" + name + "\" already exists");
     }
 }
