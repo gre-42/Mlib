@@ -526,7 +526,16 @@ void LoadScene::operator()(
         "\\s+near_plane=([\\w+-.]+)"
         "\\s+far_plane=([\\w+-.]+)"
         "\\s+requires_postprocessing=(0|1)$");
-    static const DECLARE_REGEX(ortho_camera_reg, "^\\s*ortho_camera node=([\\w+-.]+) near_plane=([\\w+-.]+) far_plane=([\\w+-.]+) left_plane=([\\w+-.]+) right_plane=([\\w+-.]+) bottom_plane=([\\w+-.]+) top_plane=([\\w+-.]+) requires_postprocessing=(0|1)$");
+    static const DECLARE_REGEX(ortho_camera_reg,
+        "^\\s*ortho_camera"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+near_plane=([\\w+-.]+)"
+        "\\s+far_plane=([\\w+-.]+)"
+        "\\s+left_plane=([\\w+-.]+)"
+        "\\s+right_plane=([\\w+-.]+)"
+        "\\s+bottom_plane=([\\w+-.]+)"
+        "\\s+top_plane=([\\w+-.]+)"
+        "\\s+requires_postprocessing=(0|1)$");
     static const DECLARE_REGEX(light_reg,
         "^\\s*light"
         "\\s+node=([\\w+-.]+)"
@@ -538,8 +547,15 @@ void LoadScene::operator()(
         "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+shadow=(0|1)$");
-    static const DECLARE_REGEX(look_at_node_reg, "^\\s*look_at_node follower=([\\w+-.]+) followed=([\\w+-.]+)$");
-    static const DECLARE_REGEX(keep_offset_reg, "^\\s*keep_offset follower=([\\w+-.]+) followed=([\\w+-.]+) offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(look_at_node_reg,
+        "^\\s*look_at_node"
+        "\\s+follower=([\\w+-.]+)"
+        "\\s+followed=([\\w+-.]+)$");
+    static const DECLARE_REGEX(keep_offset_reg,
+        "^\\s*keep_offset"
+        "\\s+follower=([\\w+-.]+)"
+        "\\s+followed=([\\w+-.]+)"
+        "\\s+offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(yaw_pitch_look_at_nodes_reg,
         "^\\s*yaw_pitch_look_at_nodes"
         "\\s+yaw_node=([\\w+-.]+)"
