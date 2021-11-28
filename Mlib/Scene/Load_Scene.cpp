@@ -710,6 +710,9 @@ void LoadScene::operator()(
         "^\\s*pause_on_lose_focus"
         "\\s+focus_mask=(menu|loading|countdown_any|scene)"
         "\\s+submenu=(\\w*)$");
+    static const DECLARE_REGEX(repeat_reg,
+        "^\\s*repeat"
+        "\\s+([\\s\\S]+)$");
 
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
@@ -1579,6 +1582,13 @@ void LoadScene::operator()(
                 match[1].str(),
                 match[2].str(),
                 { .regex = Mlib::compile_regex(match[3].str()) });
+            return true;
+        }
+        if (Mlib::re::regex_match(line, match, repeat_reg)) {
+            while (true) {
+                std::cerr << "-";
+                macro_line_executor(match[1].str(), local_substitutions, rsc);
+            }
             return true;
         }
 
