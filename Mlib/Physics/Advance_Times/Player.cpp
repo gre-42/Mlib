@@ -28,8 +28,7 @@ Player::Player(
     GameMode game_mode,
     UnstuckMode unstuck_mode,
     const DrivingMode& driving_mode,
-    DrivingDirection driving_direction,
-    DeleteNodeMutex& deletion_mutex)
+    DrivingDirection driving_direction)
 : scene_{scene},
   collision_query_{collision_query},
   players_{players},
@@ -53,7 +52,6 @@ Player::Player(
   unstuck_mode_{unstuck_mode},
   driving_mode_{driving_mode},
   driving_direction_{driving_direction},
-  deletion_mutex_{deletion_mutex},
   spotted_by_vip_{false},
   nunstucked_{0},
   record_waypoints_{false}

@@ -1903,8 +1903,7 @@ void LoadScene::operator()(
                 game_mode_from_string(match[3].str()),
                 unstuck_mode_from_string(match[4].str()),
                 driving_modes.at(match[5].str()),
-                driving_direction_from_string(match[6].str()),
-                deletion_mutex);
+                driving_direction_from_string(match[6].str()));
             players.add_player(*player);
             physics_engine.advance_times_.add_advance_time(player);
             physics_engine.add_external_force_provider(player.get());
