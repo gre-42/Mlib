@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
         "    [--bvh_max_size <r>]\n"
         "    [--static_radius <r>]\n"
         "    [--print_search_time]\n"
+        "    [--num_renderings <n>]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--no_cull_faces",
@@ -146,7 +147,8 @@ int main(int argc, char** argv) {
          "--lateral_friction_steepness",
          "--wheel_penetration_depth",
          "--draw_distance_add",
-         "--far_plane"});
+         "--far_plane",
+         "--num_renderings"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -198,8 +200,9 @@ int main(int argc, char** argv) {
         SubstitutionMap external_substitutions;
         // FifoLog fifo_log{10 * 1000};
 
+        size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
-            num_renderings = SIZE_MAX;
+            num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_titles.clear();
 
@@ -341,6 +344,10 @@ int main(int argc, char** argv) {
                         lrl,
                         scene_config.scene_graph_config,
                         &button_states);
+                }
+                if (args_num_renderings != SIZE_MAX) {
+                    std::cout << "Exiting because of --num_renderings" << std::endl;
+                    return 0;
                 }
                 if (!render2.window_should_close()) {
                     ui_focus.focuses = {Focus::SCENE, Focus::LOADING};
