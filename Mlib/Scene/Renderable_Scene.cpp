@@ -91,6 +91,7 @@ RenderableScene::RenderableScene(
       scene_,
       physics_engine_,
       deletion_mutex_,
+      delete_rigid_body_mutex_,
       scene_config_.physics_engine_config,
       &fifo_log_},
   primary_rendering_context_{RenderingContextStack::primary_resource_context()},

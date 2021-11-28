@@ -7,6 +7,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
+#include <Mlib/Physics/Delete_Rigid_Body_Mutex.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
@@ -205,11 +206,13 @@ void test_physics_engine() {
     pe.add_external_force_provider(&gefp);
 
     SetFps physics_set_fps{"Physics FPS: "};
+    DeleteRigidBodyMutex delete_rigid_body_mutex;
     PhysicsIteration pi{
         scene_node_resources,
         scene,
         pe,
         deletion_mutex,
+        delete_rigid_body_mutex,
         physics_cfg};
     PhysicsLoop pl{
         pi,

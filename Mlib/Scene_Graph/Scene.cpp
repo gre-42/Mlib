@@ -129,10 +129,15 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
 }
 
 Scene::~Scene() {
-    shutdown();
+    if (!shutting_down_) {
+        std::cerr << "WARNING: Scene::shutdown not called" << std::endl;
+    }
 }
 
 void Scene::shutdown() {
+    if (!delete_node_mutex_.is_locked()) {
+        throw std::runtime_error("Scene::shutdown: delete node mutex is not locked");
+    }
     shutting_down_ = true;
     aggregation_bg_worker_.shutdown();
     instances_bg_worker_.shutdown();

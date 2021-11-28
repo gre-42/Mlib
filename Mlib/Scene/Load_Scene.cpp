@@ -28,6 +28,7 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Physics/Delete_Rigid_Body_Mutex.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
@@ -1625,6 +1626,7 @@ void LoadScene::operator()(
         auto& game_logic = cit->second->game_logic_;
         auto& base_log = cit->second->fifo_log_;
         auto& deletion_mutex = cit->second->deletion_mutex_;
+        auto& delete_rigid_body_mutex = cit->second->delete_rigid_body_mutex_;
 
         Linker linker{physics_engine.advance_times_};
         if (Mlib::re::regex_match(line, match, root_node_instance_reg)) {
@@ -1691,10 +1693,12 @@ void LoadScene::operator()(
             }
             scene.register_node(match[3].str(), node_ptr);
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
-            std::lock_guard lock{ deletion_mutex };
+            std::lock_guard rb_lock{ delete_rigid_body_mutex };
+            std::lock_guard node_lock{ deletion_mutex };
             scene.delete_root_node(match[1].str());
         } else if (Mlib::re::regex_match(line, match, delete_root_nodes_reg)) {
-            std::lock_guard lock{ deletion_mutex };
+            std::lock_guard rb_lock{ delete_rigid_body_mutex };
+            std::lock_guard node_lock{ deletion_mutex };
             scene.delete_root_nodes(Mlib::compile_regex(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, delete_scheduled_advance_times_reg)) {
             physics_engine.advance_times_.delete_scheduled_advance_times();
@@ -2302,7 +2306,7 @@ void LoadScene::operator()(
                 external_substitutions,
                 button_press,
                 ui_focus.selection_ids.at(id),
-                [macro_line_executor, on_change, &rsc]() {
+                [macro_line_executor, on_change, &delete_rigid_body_mutex, &rsc]() {
                     if (!on_change.empty()) {
                         macro_line_executor(on_change, nullptr, rsc);
                     }
