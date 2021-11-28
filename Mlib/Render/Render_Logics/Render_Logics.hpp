@@ -24,7 +24,7 @@ struct SceneNodeAndRenderLogic {
 
 class RenderLogics: public RenderLogic, public DestructionObserver {
 public:
-    RenderLogics(DeleteNodeMutex& deletion_mutex, UiFocus& ui_focus);
+    RenderLogics(DeleteNodeMutex& delete_node_mutex, UiFocus& ui_focus);
     ~RenderLogics();
     virtual void render(
         int width,
@@ -42,7 +42,7 @@ public:
 private:
     void insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
     std::map<ZorderAndId, SceneNodeAndRenderLogic> render_logics_;
-    DeleteNodeMutex& deletion_mutex_;
+    DeleteNodeMutex& delete_node_mutex_;
     UiFocus& ui_focus_;
     int next_smallest_id_;
     int next_largest_id_;

@@ -14,10 +14,10 @@ using namespace Mlib;
 StandardCameraLogic::StandardCameraLogic(
     const Scene& scene,
     SelectedCameras& cameras,
-    const DeleteNodeMutex& deletion_mutex)
+    const DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   cameras_{ cameras },
-  deletion_mutex_{ deletion_mutex }
+  delete_node_mutex_{ delete_node_mutex }
 {}
 
 void StandardCameraLogic::render(
@@ -35,7 +35,7 @@ void StandardCameraLogic::render(
     float aspect_ratio = width / (float) height;
 
     SceneNode* cn;
-    if (!deletion_mutex_.is_locked()) {
+    if (!delete_node_mutex_.is_locked()) {
         throw std::runtime_error("Deletion mutex not locked in StandardCameraLogic::render");
     }
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {

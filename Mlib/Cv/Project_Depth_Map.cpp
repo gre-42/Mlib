@@ -49,8 +49,8 @@ void Mlib::Cv::project_depth_map(
     auto on = std::make_unique<SceneNode>();
     scene_node_resources.instantiate_renderable("DepthMapResource", "DepthMapResource", *on, SceneNodeResourceFilter());
 
-    DeleteNodeMutex deletion_mutex;
-    Scene scene{ deletion_mutex };
+    DeleteNodeMutex delete_node_mutex;
+    Scene scene{ delete_node_mutex };
     scene.add_root_node("obj", std::move(on));
     scene.add_root_node("camera", std::make_unique<SceneNode>());
     TransformationMatrix<float, 3> cpose = cv_to_opengl_extrinsic_matrix(ke_1_0).inverted();

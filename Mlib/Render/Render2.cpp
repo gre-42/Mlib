@@ -270,8 +270,8 @@ void Render2::render_node(
     std::unique_ptr<Camera>&& camera,
     const std::vector<TransformationMatrix<float, 3>>* beacon_locations)
 {
-    DeleteNodeMutex deletion_mutex;
-    Scene scene{ deletion_mutex };
+    DeleteNodeMutex delete_node_mutex;
+    Scene scene{ delete_node_mutex };
     scene.add_root_node("obj", std::move(node));
     scene.add_root_node("camera", std::make_unique<SceneNode>());
     // std::make_shared<GenericCamera>(camera_config, GenericCamera::Mode::PERSPECTIVE)

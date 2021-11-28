@@ -18,7 +18,7 @@ public:
         SceneNodeResources& scene_node_resources,
         Scene& scene,
         PhysicsEngine& physics_engine,
-        DeleteNodeMutex& deletion_mutex,
+        DeleteNodeMutex& delete_node_mutex,
         DeleteRigidBodyMutex& delete_rigid_body_mutex,
         const PhysicsEngineConfig& physics_cfg,
         BaseLog* base_log = nullptr);
@@ -29,7 +29,7 @@ private:
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
     PhysicsEngine& physics_engine_;
-    DeleteNodeMutex& deletion_mutex_;
+    DeleteNodeMutex& delete_node_mutex_;
     DeleteRigidBodyMutex& delete_rigid_body_mutex_;
     const PhysicsEngineConfig& physics_cfg_;
     BaseLog* base_log_;

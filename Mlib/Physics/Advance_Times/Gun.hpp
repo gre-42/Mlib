@@ -31,7 +31,7 @@ public:
         float bullet_lifetime,
         float bullet_damage,
         const FixedArray<float, 3>& bullet_size,
-        DeleteNodeMutex& deletion_mutex);
+        DeleteNodeMutex& delete_node_mutex);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
@@ -53,7 +53,7 @@ private:
     float cool_down_;
     float seconds_since_last_shot_;
     TransformationMatrix<float, 3> absolute_model_matrix_;
-    DeleteNodeMutex& deletion_mutex_;
+    DeleteNodeMutex& delete_node_mutex_;
 };
 
 }

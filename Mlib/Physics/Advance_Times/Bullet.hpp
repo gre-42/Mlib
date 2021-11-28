@@ -26,7 +26,7 @@ public:
         const std::string& bullet_node_name,
         float max_lifetime,
         float damage,
-        DeleteNodeMutex& deletion_mutex);
+        DeleteNodeMutex& delete_node_mutex);
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
@@ -44,7 +44,7 @@ private:
     float max_lifetime_;
     float lifetime_;
     float damage_;
-    DeleteNodeMutex& deletion_mutex_;
+    DeleteNodeMutex& delete_node_mutex_;
 };
 
 }

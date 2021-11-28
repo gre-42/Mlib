@@ -117,8 +117,8 @@ void test_physics_engine() {
             .werror = true});
 
     SceneNodeResources scene_node_resources;
-    DeleteNodeMutex deletion_mutex;
-    Scene scene{ deletion_mutex };
+    DeleteNodeMutex delete_node_mutex;
+    Scene scene{ delete_node_mutex };
     RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", 16, 0};
     scene_node_resources.add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles0));
     scene_node_resources.add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
@@ -211,7 +211,7 @@ void test_physics_engine() {
         scene_node_resources,
         scene,
         pe,
-        deletion_mutex,
+        delete_node_mutex,
         delete_rigid_body_mutex,
         physics_cfg};
     PhysicsLoop pl{
@@ -226,7 +226,7 @@ void test_physics_engine() {
     StandardCameraLogic standard_camera_logic{
         scene,
         selected_cameras,
-        deletion_mutex};
+        delete_node_mutex};
     StandardRenderLogic standard_render_logic{
         scene,
         standard_camera_logic,
@@ -259,7 +259,7 @@ void test_physics_engine() {
         true); // with_depth_texture
 
     UiFocus ui_focus;
-    RenderLogics render_logics{deletion_mutex, ui_focus};
+    RenderLogics render_logics{delete_node_mutex, ui_focus};
     render_logics.append(nullptr, flying_camera_logic);
     render_logics.append(nullptr, lightmap_logic);
     render_logics.append(nullptr, read_pixels_logic);

@@ -17,8 +17,8 @@ static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
         [node](const auto& v){ return v.second.node == node; });
 }
 
-RenderLogics::RenderLogics(DeleteNodeMutex& deletion_mutex, UiFocus& ui_focus)
-: deletion_mutex_{deletion_mutex},
+RenderLogics::RenderLogics(DeleteNodeMutex& delete_node_mutex, UiFocus& ui_focus)
+: delete_node_mutex_{delete_node_mutex},
   ui_focus_{ui_focus},
   next_smallest_id_{0},
   next_largest_id_{1}
@@ -42,7 +42,7 @@ void RenderLogics::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    std::lock_guard lock{ deletion_mutex_ };
+    std::lock_guard lock{ delete_node_mutex_ };
 
     LOG_FUNCTION("RenderLogics::render");
     for (const auto& c : render_logics_) {
@@ -85,7 +85,7 @@ void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLog
 }
 
 void RenderLogics::notify_destroyed(void* destroyed_object) {
-    std::lock_guard lock{ deletion_mutex_ };
+    std::lock_guard lock{ delete_node_mutex_ };
     size_t nfound = 0;
     while(true) {
         auto del = [this, destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {

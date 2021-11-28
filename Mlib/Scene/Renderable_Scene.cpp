@@ -23,7 +23,7 @@ RenderableScene::RenderableScene(
   // => Create PhysicsEngine before Scene
   physics_engine_{scene_config.physics_engine_config},
   scene_{
-      deletion_mutex_,
+      delete_node_mutex_,
       &large_aggregate_array_renderer_,
       &large_instances_renderer_},
   selected_cameras_{scene_},
@@ -46,7 +46,7 @@ RenderableScene::RenderableScene(
   standard_camera_logic_{
       scene_,
       selected_cameras_,
-      deletion_mutex_},
+      delete_node_mutex_},
   skybox_logic_{standard_camera_logic_},
   standard_render_logic_{std::make_shared<StandardRenderLogic>(
       scene_,
@@ -78,19 +78,19 @@ RenderableScene::RenderableScene(
       config.depth_fog,
       config.low_pass,
       config.high_pass)},
-  render_logics_{deletion_mutex_, ui_focus},
+  render_logics_{delete_node_mutex_, ui_focus},
   players_{physics_engine_.advance_times_, level_name, max_tracks},
   game_logic_{
       scene_,
       physics_engine_.advance_times_,
       players_,
-      deletion_mutex_},
+      delete_node_mutex_},
   scene_config_{scene_config},
   physics_iteration_{
       scene_node_resources_,
       scene_,
       physics_engine_,
-      deletion_mutex_,
+      delete_node_mutex_,
       delete_rigid_body_mutex_,
       scene_config_.physics_engine_config,
       &fifo_log_},
@@ -118,7 +118,7 @@ RenderableScene::~RenderableScene() {
     RenderingContextGuard rrg0{primary_rendering_context_};
     RenderingContextGuard rrg1{secondary_rendering_context_};
     stop_and_join();
-    std::lock_guard lock{ deletion_mutex_ };
+    std::lock_guard lock{ delete_node_mutex_ };
     scene_.shutdown();
 }
 

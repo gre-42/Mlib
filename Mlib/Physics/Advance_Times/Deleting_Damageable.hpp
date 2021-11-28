@@ -19,7 +19,7 @@ public:
         AdvanceTimes& advance_times,
         const std::string& root_node_name,
         float health,
-        DeleteNodeMutex& deletion_mutex);
+        DeleteNodeMutex& delete_node_mutex);
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
@@ -30,7 +30,7 @@ protected:
     AdvanceTimes& advance_times_;
     std::string root_node_name_;
     float health_;
-    DeleteNodeMutex& deletion_mutex_;
+    DeleteNodeMutex& delete_node_mutex_;
 };
 
 }

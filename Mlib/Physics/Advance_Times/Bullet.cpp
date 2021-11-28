@@ -21,7 +21,7 @@ Bullet::Bullet(
     const std::string& bullet_node_name,
     float max_lifetime,
     float damage,
-    DeleteNodeMutex& deletion_mutex)
+    DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
   advance_times_{ advance_times },
@@ -30,7 +30,7 @@ Bullet::Bullet(
   max_lifetime_{ max_lifetime },
   lifetime_{ 0 },
   damage_{ damage },
-  deletion_mutex_{ deletion_mutex }
+  delete_node_mutex_{ delete_node_mutex }
 {
     bullet_node.add_destruction_observer(this);
 }
@@ -42,7 +42,7 @@ void Bullet::notify_destroyed(void* obj) {
 void Bullet::advance_time(float dt) {
     lifetime_ += dt;
     if (lifetime_ > max_lifetime_) {
-        std::lock_guard lock{ deletion_mutex_ };
+        std::lock_guard lock{ delete_node_mutex_ };
         scene_.delete_root_node(bullet_node_name_);
     } else {
         rigid_body_integrator_.rbp_.rotation_ = gl_lookat_relative(rigid_body_integrator_.rbp_.v_ / std::sqrt(sum(squared(rigid_body_integrator_.rbp_.v_))));

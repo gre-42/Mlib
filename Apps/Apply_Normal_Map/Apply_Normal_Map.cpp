@@ -78,8 +78,8 @@ int main(int argc, char** argv) {
 
         SceneNodeResources scene_node_resources;
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
-        DeleteNodeMutex deletion_mutex;
-        Scene scene{ deletion_mutex, nullptr };
+        DeleteNodeMutex delete_node_mutex;
+        Scene scene{ delete_node_mutex, nullptr };
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = std::make_unique<SceneNode>();
         {
@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
         StandardCameraLogic standard_camera_logic{
             scene,
             selected_cameras,
-            deletion_mutex};
+            delete_node_mutex};
         StandardRenderLogic standard_render_logic{
             scene,
             standard_camera_logic,

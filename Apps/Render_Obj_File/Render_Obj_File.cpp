@@ -278,8 +278,8 @@ int main(int argc, char** argv) {
         RenderingContextGuard rrg{scene_node_resources, "primary_rendering_resources", render_config.anisotropic_filtering_level, 0};
         AggregateRendererGuard small_sorted_aggregate_renderer_guard{std::make_shared<AggregateArrayRenderer>()};
         AggregateArrayRenderer large_aggregate_renderer;
-        DeleteNodeMutex deletion_mutex;
-        Scene scene{ deletion_mutex, &large_aggregate_renderer };
+        DeleteNodeMutex delete_node_mutex;
+        Scene scene{ delete_node_mutex, &large_aggregate_renderer };
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = std::make_unique<SceneNode>();
         {
@@ -576,7 +576,7 @@ int main(int argc, char** argv) {
         StandardCameraLogic standard_camera_logic{
             scene,
             selected_cameras,
-            deletion_mutex};
+            delete_node_mutex};
         StandardRenderLogic standard_render_logic{
             scene,
             standard_camera_logic,
@@ -609,7 +609,7 @@ int main(int argc, char** argv) {
         }
 
         UiFocus ui_focus;
-        RenderLogics render_logics{deletion_mutex, ui_focus};
+        RenderLogics render_logics{delete_node_mutex, ui_focus};
         render_logics.append(nullptr, flying_camera_logic);
         for (const auto& l : lightmap_logics) {
             render_logics.append(nullptr, l);

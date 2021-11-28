@@ -35,12 +35,12 @@ GameLogic::GameLogic(
     Scene& scene,
     AdvanceTimes& advance_times,
     Players& players,
-    DeleteNodeMutex& deletion_mutex)
+    DeleteNodeMutex& delete_node_mutex)
 : scene_{scene},
   advance_times_{advance_times},
   players_{players},
   vip_{nullptr},
-  deletion_mutex_{deletion_mutex},
+  delete_node_mutex_{delete_node_mutex},
   current_bystander_rng_{0},
   current_bvh_rng_{0},
   current_bvh_{0}
@@ -122,7 +122,7 @@ void GameLogic::respawn_all_players() {
         if (!node_name.empty()) {
             // Lock guard avoids this error during rendering:
             // "Could not find black node with name ..."
-            std::lock_guard lock{ deletion_mutex_ };
+            std::lock_guard lock{ delete_node_mutex_ };
             scene_.delete_root_node(node_name);
             // ++ndelete_;
         }
@@ -317,7 +317,7 @@ bool GameLogic::delete_for_vip(
     return false;
     delete_player:
     // TimeGuard time_guard{"delete", "delete"};
-    // std::lock_guard lock{ deletion_mutex_ };
+    // std::lock_guard lock{ delete_node_mutex_ };
     scene_.schedule_delete_root_node(player.scene_node_name());
     // ++ndelete_;
     return true;
@@ -341,7 +341,7 @@ void GameLogic::spawn_at_spawn_point(
     SpawnPoint sp2 = sp;
     sp2.position(1) += cfg.spawn_y_offset;
     // TimeGuard time_guard{"spawn", "spawn"};
-    // std::lock_guard lock{ deletion_mutex_ };
+    // std::lock_guard lock{ delete_node_mutex_ };
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // ++nspawns_;
     // auto start = std::chrono::steady_clock::now();
@@ -351,7 +351,7 @@ void GameLogic::spawn_at_spawn_point(
         throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
     }
     // while (true) {
-    //     std::lock_guard lock{ deletion_mutex_ };
+    //     std::lock_guard lock{ delete_node_mutex_ };
     //     spawn_macro->second(sp2);
     //     if (player.scene_node_name().empty()) {
     //         throw std::runtime_error("After spawning, scene node name empty for player " + player.name());
