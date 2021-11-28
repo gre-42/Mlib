@@ -62,8 +62,9 @@ public:
     void shutdown();
     bool shutting_down() const;
 private:
-    // Must be above garbage-collected members
-    // for deregistration in dtors to work.
+    // Must be above garbage-collected members for
+    // deregistration of child nodes in SceneNode
+    // dtor to work.
     std::map<std::string, SceneNode*> nodes_;
     // |         |Lights|Blended|Large|Small|Move|
     // |---------|------|-------|-----|-----|----|
