@@ -2124,35 +2124,35 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, countdown_reg)) {
             auto countdown_logic = std::make_shared<CountDownLogic>(
                 fpathp(match[1].str()),            // ttf_filename
-                FixedArray<float, 2>{             // position
+                FixedArray<float, 2>{              // position
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
-                safe_stof(match[4].str()),        // font_height_pixels
-                safe_stof(match[5].str()),        // line_distance_pixels
+                safe_stof(match[4].str()),         // font_height_pixels
+                safe_stof(match[5].str()),         // line_distance_pixels
                 ui_focus.focuses,
-                safe_stof(match[6].str()));       // nseconds
+                safe_stof(match[6].str()));        // nseconds
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, countdown_logic);
         } else if (Mlib::re::regex_match(line, match, loading_reg)) {
             auto loading_logic = std::make_shared<LoadingTextLogic>(
                 fpathp(match[1].str()),            // ttf_filename
-                FixedArray<float, 2>{             // position
+                FixedArray<float, 2>{              // position
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
-                safe_stof(match[4].str()),        // font_height_pixels
-                safe_stof(match[5].str()),        // line_distance_pixels
-                match[6].str());                  // text
+                safe_stof(match[4].str()),         // font_height_pixels
+                safe_stof(match[5].str()),         // line_distance_pixels
+                match[6].str());                   // text
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, loading_logic);
         } else if (Mlib::re::regex_match(line, match, players_stats_reg)) {
             auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
                 players,
                 fpathp(match[1].str()),            // ttf_filename
-                FixedArray<float, 2>{             // position
+                FixedArray<float, 2>{              // position
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
-                safe_stof(match[4].str()),        // font_height_pixels
-                safe_stof(match[5].str()));       // line_distance_pixels
+                safe_stof(match[4].str()),         // font_height_pixels
+                safe_stof(match[5].str()));        // line_distance_pixels
             render_logics.append(nullptr, players_stats_logic);
         } else if (Mlib::re::regex_match(line, match, pause_on_lose_focus_reg)) {
             auto wit = renderable_scenes.find("primary_scene");
@@ -2342,11 +2342,13 @@ void LoadScene::operator()(
                 ui_focus.selection_ids.at(id),
                 script_filename,
                 next_scene_filename,
-                [macro_line_executor, reload_transient_objects, &physics_set_fps, &rsc]() {
+                [macro_line_executor, reload_transient_objects, &delete_rigid_body_mutex, &rsc]() {
                     if (!reload_transient_objects.empty()) {
-                        physics_set_fps.execute([macro_line_executor, reload_transient_objects, &rsc](){
-                            macro_line_executor(reload_transient_objects, nullptr, rsc);
-                        });
+                        // physics_set_fps.execute([macro_line_executor, reload_transient_objects, &rsc](){
+                        //     macro_line_executor(reload_transient_objects, nullptr, rsc);
+                        // });
+                        std::lock_guard rb_lock{ delete_rigid_body_mutex };
+                        macro_line_executor(reload_transient_objects, nullptr, rsc);
                     }
                 });
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
