@@ -61,6 +61,9 @@ public:
     void print(std::ostream& ostr) const;
     void shutdown();
     bool shutting_down() const;
+    void add_node_not_allowed_to_be_unregistered(const std::string& name);
+    void remove_node_not_allowed_to_be_unregistered(const std::string& name);
+    void clear_nodes_not_allowed_to_be_unregistered();
 private:
     // Must be above garbage-collected members for
     // deregistration of child nodes in SceneNode
@@ -89,6 +92,7 @@ private:
     std::unique_ptr<const Style> style_;
     std::set<std::string> root_nodes_to_delete_;
     mutable std::mutex root_nodes_to_delete_mutex_;
+    std::set<std::string> nodes_not_allowed_to_be_unregistered_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

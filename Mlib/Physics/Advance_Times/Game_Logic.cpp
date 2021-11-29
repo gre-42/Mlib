@@ -318,6 +318,7 @@ bool GameLogic::delete_for_vip(
     delete_player:
     // TimeGuard time_guard{"delete", "delete"};
     // std::lock_guard lock{ delete_node_mutex_ };
+    scene_.clear_nodes_not_allowed_to_be_unregistered();
     scene_.schedule_delete_root_node(player.scene_node_name());
     // ++ndelete_;
     return true;

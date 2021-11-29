@@ -714,6 +714,14 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(repeat_reg,
         "^\\s*repeat"
         "\\s+([\\s\\S]+)$");
+    static const DECLARE_REGEX(add_node_not_allowed_to_be_unregistered_reg,
+        "^\\s*add_node_not_allowed_to_be_unregistered"
+        "\\s+name=([\\w+-.]+)$");
+    static const DECLARE_REGEX(remove_node_not_allowed_to_be_unregistered_reg,
+        "^\\s*remove_node_not_allowed_to_be_unregistered"
+        "\\s+name=([\\w+-.]+)$");
+    static const DECLARE_REGEX(clear_nodes_not_allowed_to_be_unregistered_reg,
+        "^\\s*clear_nodes_not_allowed_to_be_unregistered$");
 
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
@@ -2682,6 +2690,12 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, burn_in_reg)) {
             physics_engine.burn_in(safe_stof(match[1].str()));
             scene.move(0.f); // dt
+        } else if (Mlib::re::regex_match(line, match, add_node_not_allowed_to_be_unregistered_reg)) {
+            scene.add_node_not_allowed_to_be_unregistered(match[1].str());
+        } else if (Mlib::re::regex_match(line, match, remove_node_not_allowed_to_be_unregistered_reg)) {
+            scene.remove_node_not_allowed_to_be_unregistered(match[1].str());
+        } else if (Mlib::re::regex_match(line, match, clear_nodes_not_allowed_to_be_unregistered_reg)) {
+            scene.clear_nodes_not_allowed_to_be_unregistered();
         } else {
             return false;
         }

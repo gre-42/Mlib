@@ -320,6 +320,9 @@ int main(int argc, char** argv) {
 
             if (args.has_named("--no_render")) {
                 std::cout << "Exiting because of --no_render" << std::endl;
+                for (const auto& p : renderable_scenes) {
+                    p.second->scene_.clear_nodes_not_allowed_to_be_unregistered();
+                }
                 return 0;
             } else {
                 auto rs = renderable_scenes.find("primary_scene");
@@ -347,6 +350,9 @@ int main(int argc, char** argv) {
                 }
                 if (args_num_renderings != SIZE_MAX) {
                     std::cout << "Exiting because of --num_renderings" << std::endl;
+                    for (const auto& p : renderable_scenes) {
+                        p.second->scene_.clear_nodes_not_allowed_to_be_unregistered();
+                    }
                     return 0;
                 }
                 if (!render2.window_should_close()) {
@@ -361,6 +367,7 @@ int main(int argc, char** argv) {
 
             for (const auto& p : renderable_scenes) {
                 p.second->stop_and_join();
+                p.second->scene_.clear_nodes_not_allowed_to_be_unregistered();
             }
             main_scene_filename = next_scene_filename;
         }

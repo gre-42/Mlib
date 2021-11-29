@@ -103,13 +103,13 @@ void Scene::delete_root_node(const std::string& name) {
     if (!delete_node_mutex_.is_locked()) {
         throw std::runtime_error("Scene::delete_root_node: delete node mutex is not locked");
     }
-    // Temporary unique_ptr to allow recursive calls to delete_root_node.
-    std::unique_ptr<SceneNode> to_delete;
     auto it = root_nodes_.find(name);
     if (it == root_nodes_.end()) {
         throw std::runtime_error("Could not find root node with name " + name);
     }
-    to_delete = std::move(it->second);
+    // Temporary "unique_ptr" in case the reference "name" points to the
+    // node to be deleted.
+    std::unique_ptr<SceneNode> to_delete = std::move(it->second);
     root_nodes_.erase(it);
     unregister_node(name);
 }
@@ -137,6 +137,9 @@ Scene::~Scene() {
 void Scene::shutdown() {
     if (!delete_node_mutex_.is_locked()) {
         throw std::runtime_error("Scene::shutdown: delete node mutex is not locked");
+    }
+    if (!nodes_not_allowed_to_be_unregistered_.empty()) {
+        throw std::runtime_error("Scene::shutdown: some nodes are not allowed to be deleted");
     }
     shutting_down_ = true;
     aggregation_bg_worker_.shutdown();
@@ -166,11 +169,14 @@ void Scene::register_node(
 }
 
 void Scene::unregister_node(const std::string& name) {
+    if (nodes_not_allowed_to_be_unregistered_.contains(name)) {
+        throw std::runtime_error("Node \"" + name + "\" may not be unregistered");
+    }
     if (!delete_node_mutex_.is_locked()) {
         throw std::runtime_error("Scene::unregister_node: delete node mutex is not locked");
     }
     if (nodes_.erase(name) != 1) {
-        throw std::runtime_error("Could not find node with name \"" + name + '"');
+        throw std::runtime_error("Could not find node with name (0) \"" + name + '"');
     }
 }
 
@@ -181,6 +187,9 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (Mlib::re::regex_match(n.first, regex)) {
+            if (nodes_not_allowed_to_be_unregistered_.contains(n.first)) {
+                throw std::runtime_error("Node \"" + n.first + "\" may not be unregistered");
+            }
             if (nodes_.erase(n.first) != 1) {
                 throw std::runtime_error("Could not find node with name \"" + n.first + '"');
             }
@@ -401,6 +410,28 @@ void Scene::print(std::ostream& ostr) const {
 
 bool Scene::shutting_down() const {
     return shutting_down_;
+}
+
+void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
+    if (!contains_node(name)) {
+        throw std::runtime_error("Could not find node with name (0) \"" + name + '"');
+    }
+    if (!nodes_not_allowed_to_be_unregistered_.insert(name).second) {
+        throw std::runtime_error("Node \"" + name + "\" already in list of nodes not allowed to be unregistered");
+    }
+}
+
+void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) {
+    if (!contains_node(name)) {
+        throw std::runtime_error("Could not find node with name (1) \"" + name + '"');
+    }
+    if (nodes_not_allowed_to_be_unregistered_.erase(name) != 1) {
+        throw std::runtime_error("Could not find node \"" + name + "\" in list of nodes not allowed to be unregistered");
+    }
+}
+
+void Scene::clear_nodes_not_allowed_to_be_unregistered() {
+    nodes_not_allowed_to_be_unregistered_.clear();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {
