@@ -2362,7 +2362,7 @@ void LoadScene::operator()(
             render_logics.append(nullptr, bg);
         } else if (Mlib::re::regex_match(line, match, set_renderable_style_reg)) {
             auto node = scene.get_node(match[2].str());
-            node->set_style(new Style{
+            node->set_style(std::unique_ptr<Style>(new Style{
                 .selector = Mlib::compile_regex(match[1].str()),
                 .ambience = {
                     safe_stof(match[3].str()),
@@ -2380,7 +2380,7 @@ void LoadScene::operator()(
                 .skelletal_animation_frame = {
                     .begin = safe_stof(match[13].str()),
                     .end = safe_stof(match[14].str()),
-                    .time = safe_stof(match[15].str())}});
+                    .time = safe_stof(match[15].str())}}));
         } else if (Mlib::re::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(
