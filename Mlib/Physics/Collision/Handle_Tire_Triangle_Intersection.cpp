@@ -52,10 +52,10 @@ void accelerate_positive(
     float& force_min,
     float& force_max)
 {
-    // r = v / w
+    // r = v / w => more power needed on outer wheel, because p = f * v and dv = f / m * dt
     float u = 1;
-    if (float vc2 = sum(squared(vc)); vc2 > 1e-12) {
-        if (-v0 > 1e-12) {
+    if (-v0 > 1e-12) {
+        if (float vc2 = sum(squared(vc)); vc2 > 1e-12) {
             u = std::clamp<float>(-v0 / std::sqrt(vc2), float(1e-1), float(1e1));
         }
     }
@@ -79,10 +79,10 @@ void accelerate_negative(
     float& force_min,
     float& force_max)
 {
-    // r = v / w
+    // r = v / w => more power needed on outer wheel, because p = f * v and dv = f / m * dt
     float u = 1;
-    if (float vc2 = sum(squared(vc)); vc2 > 1e-12) {
-        if (v0 > 1e-12) {
+    if (v0 > 1e-12) {
+        if (float vc2 = sum(squared(vc)); vc2 > 1e-12) {
             u = std::clamp<float>(v0 / std::sqrt(vc2), float(1e-1), float(1e1));
         }
     }
