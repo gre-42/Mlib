@@ -2,6 +2,8 @@
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Audio/Audio_Resources.hpp>
 
+static const float WHEEL_RADIUS = 0.25f;
+
 using namespace Mlib;
 
 EngineAudio::EngineAudio(const std::string& resource_name) {
@@ -16,13 +18,13 @@ void EngineAudio::notify_off() {
 }
 
 void EngineAudio::notify_idle(float w) {
-    if (std::abs(w * 0.25f) < 1) {
+    if (std::abs(w * WHEEL_RADIUS) < 1) {
         cross_fade_.play(*idle_buffer, idle_gain);
     } else {
-        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * 0.25f) / (200.f / 3.6f));
+        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (200.f / 3.6f));
     }
 }
 
 void EngineAudio::notify_driving(float w) {
-    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * 0.25f) / (200.f / 3.6f));
+    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (200.f / 3.6f));
 }

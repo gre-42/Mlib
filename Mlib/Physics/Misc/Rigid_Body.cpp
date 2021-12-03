@@ -10,6 +10,8 @@
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <chrono>
 
+static const float WHEEL_RADIUS = 0.25f;
+
 using namespace Mlib;
 
 RigidBody::RigidBody(
@@ -250,7 +252,8 @@ FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(
 float RigidBody::get_angular_velocity_at_tire(
     const FixedArray<float, 3>& surface_normal,
     const FixedArray<float, 3>& street_velocity,
-    size_t id) const {
+    size_t id) const
+{
     auto z = get_abs_tire_z(id);
     auto v = get_velocity_at_tire_contact(surface_normal, id) - street_velocity;
     return -dot0d(v, z) / get_tire_radius(id);
@@ -261,15 +264,12 @@ float RigidBody::get_tire_radius(size_t id) const {
 }
 
 PowerIntent RigidBody::consume_tire_surface_power(size_t id) {
-    auto en = tires_.find(id);
-    if (en == tires_.end()) {
-        throw std::runtime_error("Unknown tire ID: " + std::to_string(id));
-    }
-    auto e = engines_.find(en->second.engine);
+    Tire& tire = get_tire(id);
+    auto e = engines_.find(tire.engine);
     if (e == engines_.end()) {
-        throw std::runtime_error("No engine with name \"" + en->second.engine + "\" exists");
+        throw std::runtime_error("No engine with name \"" + tire.engine + "\" exists");
     }
-    return e->second.consume_abs_surface_power(id);
+    return e->second.consume_abs_surface_power(id, tire.angular_velocity);
 }
 
 void RigidBody::set_surface_power(const std::string& engine_name, float surface_power) {
@@ -337,8 +337,9 @@ void RigidBody::write_status(std::ostream& ostr, StatusComponents log_components
         ostr << "a: " << std::sqrt(sum(squared(rbi_.a_))) << " m/s^2" << std::endl;
     }
     if (log_components & StatusComponents::ANGULAR_VELOCITY) {
-        ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) * float(180 / M_PI) << " °/s" << std::endl;
+        ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.w_))) * float(180 / M_PI) << " °/s" << std::endl;
     }
+    ostr << "wt: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / WHEEL_RADIUS << " rad/s" << std::endl;
     if (log_components & StatusComponents::DIAMETER) {
         // T = 2 PI r / v, T = 2 PI / w
         // r = v / w

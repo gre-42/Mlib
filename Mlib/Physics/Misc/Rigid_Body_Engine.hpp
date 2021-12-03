@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Physics/Misc/Engine_Power.hpp>
 #include <cstddef>
 #include <memory>
 #include <set>
@@ -25,12 +26,12 @@ enum class EngineState;
 class RigidBodyEngine {
 public:
     explicit RigidBodyEngine(
-        float max_surface_power,
+        const EnginePower& engine_power,
         bool hand_brake_pulled,
         const std::shared_ptr<EngineEventListener>& audio);
     ~RigidBodyEngine();
     void set_surface_power(float surface_power);
-    PowerIntent consume_abs_surface_power(size_t tire_id);
+    PowerIntent consume_abs_surface_power(size_t tire_id, float w);
     void increment_ntires();
     void reset_forces();
     void advance_time(float dt);
@@ -43,7 +44,7 @@ private:
     float w_;
     float surface_power_;
     std::set<size_t> tires_consumed_;
-    float max_surface_power_;
+    EnginePower engine_power_;
     size_t ntires_;
     bool hand_brake_pulled_;
     std::shared_ptr<EngineEventListener> audio_;

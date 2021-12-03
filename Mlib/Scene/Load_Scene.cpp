@@ -306,9 +306,11 @@ void LoadScene::operator()(
         "^\\s*create_engine"
         "\\s+rigid_body=([\\w+-.]+)"
         "\\s+name=([\\w+-.]+)"
-        "\\s+power=([\\w+-.]+)"
+        "\\s+angular_vels=([ \\w+-.]+)"
+        "\\s+powers=([ \\w+-.]+)"
+        "\\s+gear_ratios=([ \\w+-.]+)"
         "(?:\\s+hand_brake_pulled=(0|1))?"
-        "(?:\\s+audio=([\\w-. \\(\\)/+-]+))?$");
+        "(?:\\s+audio=([\\w-. \\(\\)/+-]+))?");
     static const DECLARE_REGEX(player_create_reg,
         "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
@@ -1922,12 +1924,18 @@ void LoadScene::operator()(
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
+            EnginePower engine_power{
+                Interp<float>{
+                    string_to_vector(match[3].str(), safe_stof),
+                    string_to_vector(match[4].str(), safe_stof),
+                    OutOfRangeBehavior::CLAMP},
+                string_to_vector(match[5].str(), safe_stof)};
             auto ep = rb->engines_.insert({
                 match[2].str(),
                 RigidBodyEngine{
-                    safe_stof(match[3].str()),
-                    match[4].str().empty() ? false : safe_stob(match[4].str()),  // hand_brake_pulled
-                    match[5].matched ? std::make_shared<EngineAudio>(match[5].str()) : nullptr}});
+                    engine_power,
+                    match[6].str().empty() ? false : safe_stob(match[6].str()),  // hand_brake_pulled
+                    match[7].matched ? std::make_shared<EngineAudio>(match[7].str()) : nullptr}});
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }
