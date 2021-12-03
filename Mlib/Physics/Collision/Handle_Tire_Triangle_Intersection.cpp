@@ -91,7 +91,7 @@ void accelerate_negative(
     optimal_angular_velocity_negative(rb, street_velocity, surface_normal, cfg, tire_id, w, &v);
     rb.set_tire_angular_velocity(tire_id, -w, TireAngularVelocityChange::ACCELERATE);
     force_min = 0;
-    force_max = -u * power / std::max(0.001f, -v);
+    force_max = -u * power / std::max(0.001f, v);
 }
 
 void break_positive(
