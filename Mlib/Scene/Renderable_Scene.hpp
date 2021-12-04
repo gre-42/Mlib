@@ -35,6 +35,7 @@
 
 namespace Mlib {
 
+class AudioListenerUpdater;
 class PhysicsLoop;
 struct ButtonStates;
 struct CursorStates;
@@ -101,6 +102,7 @@ public:
     RenderLogics render_logics_;
     Players players_;
     GameLogic game_logic_;
+    std::shared_ptr<AudioListenerUpdater> audio_listener_updater_;
 
     const SceneConfig& scene_config_;
     PhysicsIteration physics_iteration_;

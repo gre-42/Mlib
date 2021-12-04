@@ -1,7 +1,7 @@
 #include "Renderable_Scene.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
-#include <Mlib/Scene/Audio/Audio_Listener_Position_Updater.hpp>
+#include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 
@@ -121,6 +121,9 @@ RenderableScene::~RenderableScene() {
     stop_and_join();
     std::lock_guard lock{ delete_node_mutex_ };
     scene_.shutdown();
+    if (audio_listener_updater_ != nullptr) {
+        physics_engine_.advance_times_.schedule_delete_advance_time(audio_listener_updater_.get());
+    }
 }
 
 void RenderableScene::start_physics_loop() {
@@ -153,8 +156,6 @@ void RenderableScene::stop_and_join() {
 }
 
 void RenderableScene::instantiate_audio_listener() {
-    physics_engine_.advance_times_.add_advance_time(
-        std::make_shared<AudioListenerPositionUpdater>(
-            selected_cameras_,
-            scene_));
+    audio_listener_updater_ = std::make_shared<AudioListenerUpdater>(selected_cameras_, scene_);
+    physics_engine_.advance_times_.add_advance_time(audio_listener_updater_);
 }

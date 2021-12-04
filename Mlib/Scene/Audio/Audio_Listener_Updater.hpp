@@ -7,9 +7,9 @@ class AudioListener;
 class SelectedCameras;
 class Scene;
 
-class AudioListenerPositionUpdater: public AdvanceTime {
+class AudioListenerUpdater: public AdvanceTime {
 public:
-    AudioListenerPositionUpdater(
+    AudioListenerUpdater(
         const SelectedCameras& selected_cameras,
         const Scene& scene);
     virtual void advance_time(float dt) override;
