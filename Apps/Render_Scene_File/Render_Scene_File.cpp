@@ -329,6 +329,7 @@ int main(int argc, char** argv) {
                 if (rs == renderable_scenes.end()) {
                     throw std::runtime_error("Could not find renderable scene with name \"primary_scene\"");
                 }
+                rs->second->instantiate_audio_listener();
                 if (!args.has_named("--single_threaded")) {
                     render2(
                         rs->second->render_logics_,

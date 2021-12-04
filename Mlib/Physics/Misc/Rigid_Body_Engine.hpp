@@ -7,6 +7,8 @@
 
 namespace Mlib {
 
+template <typename TData, size_t... tshape>
+class FixedArray;
 class EngineEventListener;
 
 enum class PowerIntentType {
@@ -34,7 +36,7 @@ public:
     PowerIntent consume_abs_surface_power(size_t tire_id, float w);
     void increment_ntires();
     void reset_forces();
-    void advance_time(float dt);
+    void advance_time(float dt, const FixedArray<float, 3>& position);
     void notify_off();
     void notify_idle(float w);
     void notify_accelerate(float w);

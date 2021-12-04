@@ -19,6 +19,7 @@ public:
         float gain_factor = 1.f,
         float pitch = 1.f);
     void stop();
+    void set_position(const FixedArray<float, 3>& position);
 private:
     std::list<std::unique_ptr<AudioSourceAndGain>> sources_;
     bool shutdown_requested_;

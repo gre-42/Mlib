@@ -145,7 +145,7 @@ void RigidBody::advance_time(
         t.second.advance_time(dt);
     }
     for (auto& e : engines_) {
-        e.second.advance_time(dt);
+        e.second.advance_time(dt, abs_com());
     }
 #ifdef COMPUTE_POWER
     float nrg = energy();

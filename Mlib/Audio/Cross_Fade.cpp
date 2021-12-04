@@ -74,3 +74,10 @@ void CrossFade::stop() {
     std::lock_guard lock{ mutex_ };
     sources_.clear();
 }
+
+void CrossFade::set_position(const FixedArray<float, 3>& position) {
+    std::lock_guard lock{ mutex_ };
+    for (auto& s : sources_) {
+        s->source.set_position(position);
+    }
+}

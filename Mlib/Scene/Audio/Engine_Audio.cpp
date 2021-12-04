@@ -28,3 +28,7 @@ void EngineAudio::notify_idle(float w) {
 void EngineAudio::notify_driving(float w) {
     cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (200.f / 3.6f));
 }
+
+void EngineAudio::set_position(const FixedArray<float, 3>& position) {
+    cross_fade_.set_position(position);
+}

@@ -73,7 +73,7 @@ void RigidBodyEngine::increment_ntires() {
     ++ntires_;
 }
 
-void RigidBodyEngine::advance_time(float dt) {
+void RigidBodyEngine::advance_time(float dt, const FixedArray<float, 3>& position) {
     if (!std::isnan(w_)) {
         engine_power_.auto_set_gear(w_);
     }
@@ -85,6 +85,7 @@ void RigidBodyEngine::advance_time(float dt) {
         } else if (engine_state == EngineState::ACCELERATE) {
             audio_->notify_driving(engine_power_.engine_w(w_));
         }
+        audio_->set_position(position);
     }
 }
 
