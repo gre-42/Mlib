@@ -31,7 +31,8 @@ CheckPoints::CheckPoints(
     Scene& scene,
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses,
-    bool enable_height_changed_mode)
+    bool enable_height_changed_mode,
+    const std::function<void()>& on_finish)
 : advance_times_{advance_times},
   track_reader_{filename},
   moving_node_{moving_node},
@@ -48,7 +49,8 @@ CheckPoints::CheckPoints(
   scene_{scene},
   delete_node_mutex_{delete_node_mutex},
   focuses_{focuses},
-  enable_height_changed_mode_{enable_height_changed_mode}
+  enable_height_changed_mode_{enable_height_changed_mode},
+  on_finish_{on_finish}
 {
     if (nbeacons == 0) {
         throw std::runtime_error("Need at least one beacon node");
@@ -130,6 +132,7 @@ void CheckPoints::advance_time(float dt) {
         players_->notify_lap_time(player_, elapsed_time.count(), movable_track_);
         track_reader_.restart();
         advance_time(0);
+        on_finish_();
     }
 }
 

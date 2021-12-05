@@ -42,7 +42,8 @@ public:
         Scene& scene,
         DeleteNodeMutex& delete_node_mutex,
         const Focuses& focuses,
-        bool enable_height_changed_mode = false);
+        bool enable_height_changed_mode = false,
+        const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
@@ -68,6 +69,7 @@ private:
     std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
     bool enable_height_changed_mode_;
+    std::function<void()> on_finish_;
 };
 
 }

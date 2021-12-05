@@ -185,7 +185,7 @@ void FlyingCameraLogic::render(
             if (user_object_.focuses.size() > 1) {
                 user_object_.focuses.pop_back();
             }
-        } else if (user_object_.focuses.countdown_active() || ((focus & (Focus::LOADING | Focus::SCENE)) != Focus::NONE)) {
+        } else if (user_object_.focuses.countdown_active() || ((focus & (Focus::LOADING | Focus::SCENE | Focus::GAME_OVER)) != Focus::NONE)) {
             user_object_.focuses.push_back(Focus::MENU);
         } else if (focus != Focus::BASE) {
             throw std::runtime_error("Unknown focus value");

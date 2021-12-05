@@ -47,8 +47,8 @@
 #include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Focused_Text_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Loading_Text_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Main_Menu_Background_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Pause_On_Lose_Focus_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -393,12 +393,13 @@ void LoadScene::operator()(
         "\\s+offset=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
-    static const DECLARE_REGEX(loading_reg,
-        "^\\s*loading"
+    static const DECLARE_REGEX(focused_text_reg,
+        "^\\s*focused_text"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
         "\\s+text=(.*)$");
     static const DECLARE_REGEX(countdown_reg,
         "^\\s*countdown"
@@ -443,7 +444,7 @@ void LoadScene::operator()(
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)"
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
         "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(fill_pixel_region_with_texture_reg,
         "^\\s*fill_pixel_region_with_texture"
@@ -452,14 +453,14 @@ void LoadScene::operator()(
         "\\s+update=(once|always)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)"
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
         "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(scene_to_pixel_region_reg,
         "^\\s*scene_to_pixel_region"
         "\\s+target_scene=([\\w+-.]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|always)"
+        "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
         "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(controls_reg,
         "^\\s*controls"
@@ -653,7 +654,8 @@ void LoadScene::operator()(
         "\\s+nahead=(\\d+)"
         "\\s+radius=([\\w+-.]+)"
         "\\s+height_changed=(0|1)"
-        "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)$");
+        "\\s+track_filename=([\\w+-. \\(\\)/\\\\:]+)"
+        "\\s+on_finish=([\\w+-.:= ]*)$");
     static const DECLARE_REGEX(set_camera_cycle_reg, "^\\s*set_camera_cycle name=(near|far)((?: [\\w+-.]+)*)$");
     static const DECLARE_REGEX(set_camera_reg, "^\\s*set_camera ([\\w+-.]+)$");
     static const DECLARE_REGEX(set_dirtmap_reg,
@@ -680,7 +682,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(burn_in_reg, "^\\s*burn_in seconds=([\\w+-.]+)$");
     static const DECLARE_REGEX(append_focus_reg,
         "^\\s*append_focus"
-        "\\s+(menu|loading|countdown_pending|scene)$");
+        "\\s+(menu|loading|countdown_pending|scene|game_over)$");
     static const DECLARE_REGEX(set_focuses_reg,
         "^\\s*set_focuses"
         "((\\s+(?:menu|loading|countdown_pending|scene))+)$");
@@ -2149,15 +2151,16 @@ void LoadScene::operator()(
                 safe_stof(match[6].str()));        // nseconds
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, countdown_logic);
-        } else if (Mlib::re::regex_match(line, match, loading_reg)) {
-            auto loading_logic = std::make_shared<LoadingTextLogic>(
+        } else if (Mlib::re::regex_match(line, match, focused_text_reg)) {
+            auto loading_logic = std::make_shared<FocusedTextLogic>(
                 fpathp(match[1].str()),            // ttf_filename
                 FixedArray<float, 2>{              // position
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
                 safe_stof(match[4].str()),         // font_height_pixels
                 safe_stof(match[5].str()),         // line_distance_pixels
-                match[6].str());                   // text
+                focus_from_string(match[6].str()), // focus mask
+                match[7].str());                   // text
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, loading_logic);
         } else if (Mlib::re::regex_match(line, match, players_stats_reg)) {
@@ -2600,6 +2603,7 @@ void LoadScene::operator()(
             linker.link_absolute_movable(*playback_node, playback);
         } else if (Mlib::re::regex_match(line, match, check_points_reg)) {
             auto moving_node = scene.get_node(match[1].str());
+            std::string on_finish = match[10].str();
             physics_engine.advance_times_.add_advance_time(std::make_shared<CheckPoints>(
                 fpathp(match[9].str()),                  // filename
                 physics_engine.advance_times_,
@@ -2616,7 +2620,9 @@ void LoadScene::operator()(
                 scene,
                 delete_node_mutex,
                 ui_focus.focuses,
-                safe_stob(match[8].str())));            // enable_height_changed_mode
+                safe_stob(match[8].str()),              // enable_height_changed_mode
+                [on_finish, macro_line_executor, &rsc](){
+                    macro_line_executor(on_finish, nullptr, rsc);}));
         } else if (Mlib::re::regex_match(line, match, set_camera_cycle_reg)) {
             std::string cameras = match[2].str();
             auto& cycle = (match[1].str() == "near")

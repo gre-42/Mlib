@@ -5,15 +5,16 @@
 
 namespace Mlib {
 
-class LoadingTextLogic: public RenderLogic, public RenderTextLogic {
+class FocusedTextLogic: public RenderLogic, public RenderTextLogic {
 public:
-    LoadingTextLogic(
+    FocusedTextLogic(
         const std::string& ttf_filename,
         const FixedArray<float, 2>& position,
         float font_height_pixels,
         float line_distance_pixels,
+        Focus focus_mask,
         const std::string& text);
-    ~LoadingTextLogic();
+    ~FocusedTextLogic();
 
     virtual void render(
         int width,
@@ -27,6 +28,7 @@ public:
 
 private:
     const std::string text_;
+    Focus focus_mask_;
 };
 
 }
