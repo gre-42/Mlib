@@ -682,7 +682,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(burn_in_reg, "^\\s*burn_in seconds=([\\w+-.]+)$");
     static const DECLARE_REGEX(append_focuses_reg,
         "^\\s*append_focuses"
-        "(\\s+(?:menu|loading|countdown_pending|scene|game_over)+)$");
+        "((?:\\s+(?:menu|loading|countdown_pending|scene|game_over))+)$");
     static const DECLARE_REGEX(set_focuses_reg,
         "^\\s*set_focuses"
         "((\\s+(?:menu|loading|countdown_pending|scene))+)$");
