@@ -680,9 +680,9 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(set_vip_reg, "^\\s*set_vip player=([\\w+-.]+)$");
     static const DECLARE_REGEX(respawn_all_players_reg, "^\\s*respawn_all_players$");
     static const DECLARE_REGEX(burn_in_reg, "^\\s*burn_in seconds=([\\w+-.]+)$");
-    static const DECLARE_REGEX(append_focus_reg,
-        "^\\s*append_focus"
-        "\\s+(menu|loading|countdown_pending|scene|game_over)$");
+    static const DECLARE_REGEX(append_focuses_reg,
+        "^\\s*append_focuses"
+        "(\\s+(?:menu|loading|countdown_pending|scene|game_over))+$");
     static const DECLARE_REGEX(set_focuses_reg,
         "^\\s*set_focuses"
         "((\\s+(?:menu|loading|countdown_pending|scene))+)$");
@@ -1485,8 +1485,10 @@ void LoadScene::operator()(
                 material_90));
             return true;
         }
-        if (Mlib::re::regex_match(line, match, append_focus_reg)) {
-            ui_focus.focuses.push_back(focus_from_string(match[1].str()));
+        if (Mlib::re::regex_match(line, match, append_focuses_reg)) {
+            for (Focus focus : string_to_vector(match[1].str(), focus_from_string)) {
+                ui_focus.focuses.push_back(focus);
+            }
             return true;
         }
         if (Mlib::re::regex_match(line, match, set_focuses_reg)) {
