@@ -32,7 +32,7 @@ void PlayersStatsLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    renderable_text().render(position_, players_.get_score_board(), width, height, line_distance_pixels_, true);  // true=periodic_position
+    renderable_text().render(position_, players_.get_score_board(), {width, height}, line_distance_pixels_, true);  // true=periodic_position
 }
 
 void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {

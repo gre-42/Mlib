@@ -34,8 +34,7 @@ void FocusedTextLogic::render(
     renderable_text().render(
         position_,
         text_,
-        width,
-        height,
+        FixedArray<int, 2>{ width, height },
         line_distance_pixels_,
         true);  // true=periodic_position
 }

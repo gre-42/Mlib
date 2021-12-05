@@ -122,7 +122,7 @@ void ListView<TOption>::render(int width, int height, bool periodic_position)
         }
         ++i;
     }
-    renderable_text_->render(position_, sstr.str(), width, height, line_distance_pixels_, periodic_position);
+    renderable_text_->render(position_, sstr.str(), {width, height}, line_distance_pixels_, periodic_position);
 }
 
 template <class TOption>

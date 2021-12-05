@@ -42,8 +42,7 @@ void CountDownLogic::render(
             renderable_text().render(
                 position_,
                 std::to_string((unsigned int)std::ceil(nseconds_ - elapsed_time.count())),
-                width,
-                height,
+                {width, height},
                 line_distance_pixels_,
                 true);  // true=periodic_position
         }

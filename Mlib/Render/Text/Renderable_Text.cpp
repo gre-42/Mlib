@@ -85,8 +85,7 @@ TextResource::TextResource(
 void TextResource::render(
     const FixedArray<float, 2>& position,
     const std::string& text,
-    int screen_width,
-    int screen_height,
+    const FixedArray<int, 2>& screen_size,
     float line_distance_pixels,
     bool periodic_position) const
 {
@@ -100,9 +99,9 @@ void TextResource::render(
     mat4x4_ortho(
         projection,
         0,
-        (float)screen_width,
-        (float)(flip_y_ ? 0 : screen_height),
-        (float)(flip_y_ ? screen_height : 0),
+        (float)screen_size(0),
+        (float)(flip_y_ ? 0 : screen_size(1)),
+        (float)(flip_y_ ? screen_size(1) : 0),
         -2,
         2);
     CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*) projection));
@@ -110,8 +109,8 @@ void TextResource::render(
     CHK(glBindVertexArray(va_.vertex_array));
 
     FixedArray<float, 2> pos{
-        !periodic_position || position(0) >= 0 ? position(0) : screen_width + position(0),
-        !periodic_position || position(1) >= 0 ? position(1) : screen_height + position(1)};
+        std::isnan(position(0)) ? 0 : !periodic_position || position(0) >= 0 ? position(0) : screen_size(0) + position(0),
+        std::isnan(position(1)) ? 0 : !periodic_position || position(1) >= 0 ? position(1) : screen_size(1) + position(1)};
 
     float x = pos(0);
     float y = pos(1);
@@ -125,17 +124,34 @@ void TextResource::render(
             stbtt_aligned_quad q;
             stbtt_GetBakedQuad(cdata_.data(), 512, 512, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
             // update VBO for each character
-            vdata_.push_back(FixedArray<float, 2, 3, 4>{
-                q.x0, screen_height - q.y0, q.s0, q.t0,
-                q.x0, screen_height - q.y1, q.s0, q.t1,
-                q.x1, screen_height - q.y1, q.s1, q.t1,
+            vdata_.push_back(FixedArray<VData, 2, 3>{
+                VData{ q.x0, screen_size(1) - q.y0, q.s0, q.t0 },
+                VData{ q.x0, screen_size(1) - q.y1, q.s0, q.t1 },
+                VData{ q.x1, screen_size(1) - q.y1, q.s1, q.t1 },
 
-                q.x0, screen_height - q.y0, q.s0, q.t0,
-                q.x1, screen_height - q.y1, q.s1, q.t1,
-                q.x1, screen_height - q.y0, q.s1, q.t0});
+                VData{ q.x0, screen_size(1) - q.y0, q.s0, q.t0 },
+                VData{ q.x1, screen_size(1) - q.y1, q.s1, q.t1 },
+                VData{ q.x1, screen_size(1) - q.y0, q.s1, q.t0 }});
         } else if (c == '\n') {
             x = pos(0);
             y = pos(1) + (++line_number) * line_distance_pixels;
+        }
+    }
+    for (size_t dim = 0; dim < 2; ++dim) {
+        if (std::isnan(position(dim))) {
+            float min_v = INFINITY;
+            float max_v = -INFINITY;
+            for (const auto& t : vdata_) {
+                for (const auto& v : t.flat_iterable()) {
+                    min_v = std::min(min_v, v.pos(dim));
+                    max_v = std::max(max_v, v.pos(dim));
+                }
+            }
+            for (auto& t : vdata_) {
+                for (auto& v : t.flat_iterable()) {
+                    v.pos(dim) = v.pos(dim) - min_v + screen_size(dim) / 2.f - (max_v - min_v) / 2;
+                }
+            }
         }
     }
     // update content of VBO memory
