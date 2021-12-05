@@ -29,7 +29,11 @@ void Mlib::fullscreen_callback(GLFWwindow* window, int key, int scancode, int ac
                     if (user_object->windowed_height == 0) {
                         throw std::runtime_error("window height is zero");
                     }
-                    std::cerr << "Going to window mode" << std::endl;
+                    std::cerr <<
+                        "Going to window mode (x: " << user_object->windowed_x <<
+                        ", y: " << user_object->windowed_y << 
+                        ", width: " << user_object->windowed_width << 
+                        ", height: " << user_object->windowed_height << ')' << std::endl;
                     GLFW_CHK(glfwSetWindowMonitor(
                         window,
                         nullptr,
@@ -52,14 +56,18 @@ void Mlib::fullscreen_callback(GLFWwindow* window, int key, int scancode, int ac
                     if (mode == nullptr) {
                         throw std::runtime_error("Could not get video mode");
                     }
-                    std::cerr << "Going to full screen" << std::endl;
+                    int width = user_object->fullscreen_width == 0 ? mode->width : user_object->fullscreen_width;
+                    int height = user_object->fullscreen_height == 0 ? mode->height : user_object->fullscreen_height;
+                    std::cerr <<
+                        "Going to full screen (width: " << width <<
+                        ", height: " << height << ')' << std::endl;
                     GLFW_CHK(glfwSetWindowMonitor(
                         window,
                         monitor,
                         0,
                         0,
-                        user_object->fullscreen_width == 0 ? mode->width : user_object->fullscreen_width,
-                        user_object->fullscreen_height == 0 ? mode->height : user_object->fullscreen_height,
+                        width,
+                        height,
                         mode->refreshRate));
                 }
                 break;
