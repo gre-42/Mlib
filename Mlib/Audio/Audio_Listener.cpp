@@ -16,3 +16,7 @@ void AudioListener::set_transformation(const TransformationMatrix<float, 3>& tra
     };
     AL_CHK(alListenerfv(AL_ORIENTATION, orientation));
 }
+
+void AudioListener::set_gain(float f) {
+    AL_CHK(alListenerf(AL_GAIN, f));
+}

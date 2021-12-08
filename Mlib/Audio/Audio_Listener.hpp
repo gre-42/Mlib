@@ -13,6 +13,7 @@ public:
     AudioListener(const AudioListener&) = delete;
     AudioListener& operator = (const AudioListener&) = delete;
     static void set_transformation(const TransformationMatrix<float, 3>& trafo);
+    static void set_gain(float f);
 };
 
 }
