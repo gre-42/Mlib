@@ -3,6 +3,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Stats/N_Random_Numbers.hpp>

@@ -4,10 +4,12 @@
 
 namespace Mlib {
 
+struct ParsedResourceName;
+
 struct WaysideResourceNames {
     float min_dist;
     float max_dist;
-    std::vector<std::string> resource_names;
+    std::vector<ParsedResourceName> resource_names;
 };
 
 }

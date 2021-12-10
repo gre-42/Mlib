@@ -4,8 +4,10 @@
 
 namespace Mlib {
 
+struct ParsedResourceName;
+
 struct TerrainStyle {
-    std::vector<std::string> near_resource_names;
+    std::vector<ParsedResourceName> near_resource_names;
     float min_near_distance_to_bdry = 0.f;
     float much_near_distance = INFINITY;
     bool is_small = true;

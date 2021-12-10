@@ -64,6 +64,7 @@
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
@@ -1006,7 +1007,7 @@ void LoadScene::operator()(
                     config.socle_textures = string_to_vector(value, fpathp);
                 }
                 else if (key == "facade_textures") {
-                    config.facade_textures = string_to_vector(value, fpathp);
+                    config.facade_textures = string_to_vector(value, parse_facade_texture);
                 }
                 else if (key == "ceiling_texture") {
                     config.ceiling_texture = fpathp(value);
@@ -1051,19 +1052,19 @@ void LoadScene::operator()(
                     config.water_height = safe_stof(value);
                 }
                 else if (key == "tree_resource_names") {
-                    config.tree_resource_names = string_to_vector(value);
+                    config.tree_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
                 }
                 else if (key == "grass_resource_names") {
-                    config.grass_resource_names = string_to_vector(value);
+                    config.grass_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
                 }
                 else if (key == "near_grass_resource_names") {
-                    config.near_grass_terrain_style.near_resource_names = string_to_vector(value);
+                    config.near_grass_terrain_style.near_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
                 }
                 else if (key == "near_flowers_resource_names") {
-                    config.near_flowers_terrain_style.near_resource_names = string_to_vector(value);
+                    config.near_flowers_terrain_style.near_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
                 }
                 else if (key == "dirt_decals_resource_names") {
-                    config.dirt_decals_terrain_style.near_resource_names = string_to_vector(value);
+                    config.dirt_decals_terrain_style.near_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
                 }
                 else if (key == "wayside_resource_names") {
                     Mlib::re::smatch match2;
@@ -1073,7 +1074,7 @@ void LoadScene::operator()(
                     config.waysides.push_back(WaysideResourceNames{
                         .min_dist = safe_stof(match2[1].str()),
                         .max_dist = safe_stof(match2[2].str()),
-                        .resource_names = string_to_vector(match2[3].str()) });
+                        .resource_names = string_to_vector(match2[3].str(), [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);}) });
                 }
                 else if (key == "bounding_terrain_type") {
                     config.bounding_terrain_type = terrain_type_from_string(value);
@@ -1245,7 +1246,7 @@ void LoadScene::operator()(
                     config.extrude_water_floor_amout = safe_stof(value);
                 }
                 else if (key == "street_light_resource_names") {
-                    config.street_light_resource_names = string_to_vector(value);
+                    config.street_light_resource_names = string_to_vector(value, [&scene_node_resources](const std::string& name){return parse_resource_name(scene_node_resources, name);});
                 }
                 else if (key == "max_wall_width") {
                     config.max_wall_width = safe_stof(value);

@@ -10,6 +10,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 struct ResourceInstanceDescriptor;
 struct ObjectResourceDescriptor;
+class SceneNodeResources;
 
 struct ParsedResourceName {
     std::string name;
@@ -17,7 +18,19 @@ struct ParsedResourceName {
     float probability;
     AggregateMode aggregate_mode;
     std::string hitbox;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(name);
+        archive(billboard_id);
+        archive(probability);
+        archive(aggregate_mode);
+        archive(hitbox);
+    }
 };
+
+ParsedResourceName parse_resource_name(
+    const SceneNodeResources& resources,
+    const std::string& name);
 
 void add_parsed_resource_name(
     const FixedArray<float, 3>& p,

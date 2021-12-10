@@ -30,6 +30,7 @@ struct SteinerPointInfo;
 class StreetBvh;
 class VertexHeightBinding;
 struct BarrierStyle;
+struct FacadeTexture;
 
 static const FixedArray<float, 3> way_color{1.f, 1.f, 1.f };      // replaced with texture
 static const FixedArray<float, 3> terrain_color{1.f, 1.f, 1.f };  // replaced with texture
@@ -125,22 +126,6 @@ enum class BuildingType {
     WALL_BARRIER,
     SPAWN_LINE,
     WAYPOINTS
-};
-
-class ResourceNameCycle {
-public:
-    ResourceNameCycle(
-        const SceneNodeResources& resources,
-        const std::vector<std::string>& names);
-    ~ResourceNameCycle();
-    const ParsedResourceName* try_once();
-    const ParsedResourceName& operator () ();
-    bool empty() const;
-    void seed(unsigned int seed);
-private:
-    std::vector<ParsedResourceName> names_;
-    UniformIntRandomNumberGenerator<size_t> index_;
-    UniformRandomNumberGenerator<float> probability_;
 };
 
 void draw_roofs(
@@ -263,19 +248,6 @@ void draw_wall_barriers(
     float uv_scale,
     float max_width,
     const std::map<std::string, BarrierStyle>& barrier_style);
-
-void draw_building_walls(
-    std::list<std::shared_ptr<TriangleList>>& tls,
-    std::list<SteinerPointInfo>* steiner_points,
-    std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
-    const Material& material,
-    const std::list<Building>& buildings,
-    const std::map<std::string, Node>& nodes,
-    float scale,
-    float uv_scale,
-    float max_width,
-    const std::vector<std::string>& socle_textures,
-    const std::vector<std::string>& facade_textures);
 
 std::vector<FixedArray<float, 2>> removed_duplicates(const std::vector<FixedArray<float, 2>>& nodes, bool verbose = true);
 std::list<FixedArray<float, 2>> removed_duplicates(const std::list<FixedArray<float, 2>>& nodes, bool verbose = true);

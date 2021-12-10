@@ -2,6 +2,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Style.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
@@ -38,6 +40,8 @@ struct BarrierStyle {
 };
 
 struct OsmResourceConfig {
+    OsmResourceConfig(const OsmResourceConfig&) = delete;
+    OsmResourceConfig& operator = (const OsmResourceConfig&) = delete;
     OsmResourceConfig();
     ~OsmResourceConfig();
     std::string filename;
@@ -54,7 +58,7 @@ struct OsmResourceConfig {
     std::map<RoadType, std::string> air_curb_street_texture;
     std::string air_support_texture;
     std::vector<std::string> socle_textures;
-    std::vector<std::string> facade_textures;
+    std::vector<FacadeTexture> facade_textures;
     std::string ceiling_texture;
     std::map<std::string, BarrierStyle> barrier_textures;
     std::string tunnel_pipe_texture;
@@ -66,8 +70,8 @@ struct OsmResourceConfig {
     std::string water_texture;
     float water_height = 0;
     std::string roof_texture;
-    std::vector<std::string> tree_resource_names;
-    std::vector<std::string> grass_resource_names;
+    std::vector<ParsedResourceName> tree_resource_names;
+    std::vector<ParsedResourceName> grass_resource_names;
     TerrainStyle near_grass_terrain_style{ .much_near_distance = 2 };
     TerrainStyle near_flowers_terrain_style{ .much_near_distance = 2, .is_small = false };
     TerrainStyle dirt_decals_terrain_style{ .much_near_distance = 10 };
@@ -122,7 +126,7 @@ struct OsmResourceConfig {
     float extrude_grass_amount = 0;
     float extrude_elevated_grass_amount = 0;
     float extrude_water_floor_amout = 0;
-    std::vector<std::string> street_light_resource_names = {};
+    std::vector<ParsedResourceName> street_light_resource_names = {};
     float max_wall_width = 5;
     bool with_height_bindings = false;
     float street_node_smoothness = 0;

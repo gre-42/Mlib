@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 
 using namespace Mlib;
 

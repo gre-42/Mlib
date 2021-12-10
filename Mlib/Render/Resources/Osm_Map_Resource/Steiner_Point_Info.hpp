@@ -1,10 +1,7 @@
 #pragma once
-#include <cstddef>
+#include <Mlib/Array/Fixed_Array.hpp>
 
 namespace Mlib {
-
-template <typename TData, size_t... tshape>
-class FixedArray;
 
 enum class SteinerPointType {
     STREET_NEIGHBOR,

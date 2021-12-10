@@ -11,6 +11,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Rectangle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Connection_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>

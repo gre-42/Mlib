@@ -22,7 +22,9 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Building_Walls.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
@@ -34,6 +36,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parse_Osm_Xml.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Report_Osm_Problems.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
@@ -181,7 +184,7 @@ OsmMapResource::OsmMapResource(
     std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>> way_point_edges_2_lanes;
     std::list<FixedArray<FixedArray<float, 2>, 2>> way_segments;
     {
-        ResourceNameCycle street_lights{scene_node_resources, config.street_light_resource_names};
+        ResourceNameCycle street_lights{ scene_node_resources, config.street_light_resource_names };
 
         // draw_nodes(vertices, nodes, ways);
         // draw_test_lines(vertices, 0.02);
@@ -234,6 +237,7 @@ OsmMapResource::OsmMapResource(
 
     if (config.with_buildings) {
         LOG_INFO("draw_building_walls (facade)");
+        FacadeTextureCycle ftc{ config.facade_textures };
         draw_building_walls(
             tls_buildings,
             nullptr,            // Steiner points not required due to existance of ground triangles.
@@ -250,7 +254,7 @@ OsmMapResource::OsmMapResource(
             config.uv_scale_facade,
             config.max_wall_width,
             config.socle_textures,
-            config.facade_textures);
+            ftc);
         LOG_INFO("draw building ground");
         draw_buildings_ceiling_or_ground(
             osm_triangle_lists.tls_buildings_ground,
@@ -419,7 +423,7 @@ OsmMapResource::OsmMapResource(
         }
         for (const WaysideResourceNames& ws : config.waysides) {
             LOG_INFO("add_grass_on_steiner_points");
-            ResourceNameCycle rnc{scene_node_resources, ws.resource_names};
+            ResourceNameCycle rnc{ scene_node_resources, ws.resource_names };
             add_grass_on_steiner_points(
                 resource_instance_positions_,
                 object_resource_descriptors_,
@@ -952,7 +956,7 @@ OsmMapResource::OsmMapResource(
     // }
 
     if (!config.grass_resource_names.empty()) {
-        ResourceNameCycle rnc{scene_node_resources, config.grass_resource_names};
+        ResourceNameCycle rnc{ scene_node_resources, config.grass_resource_names };
         LOG_INFO("add_grass_inside_triangles");
         add_grass_inside_triangles(
             resource_instance_positions_,
