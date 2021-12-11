@@ -1,7 +1,6 @@
 #include "Physics_Iteration.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
-#include <Mlib/Physics/Delete_Rigid_Body_Mutex.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
@@ -18,14 +17,12 @@ PhysicsIteration::PhysicsIteration(
     Scene& scene,
     PhysicsEngine& physics_engine,
     DeleteNodeMutex& delete_node_mutex,
-    DeleteRigidBodyMutex& delete_rigid_body_mutex,
     const PhysicsEngineConfig& physics_cfg,
     BaseLog* base_log)
 : scene_node_resources_{ scene_node_resources },
   scene_{ scene },
   physics_engine_{ physics_engine },
   delete_node_mutex_{ delete_node_mutex },
-  delete_rigid_body_mutex_{ delete_rigid_body_mutex },
   physics_cfg_{ physics_cfg },
   base_log_{ base_log }
 {}
@@ -34,8 +31,6 @@ PhysicsIteration::~PhysicsIteration()
 {}
 
 void PhysicsIteration::operator()() {
-    std::lock_guard lock{ delete_rigid_body_mutex_ };
-
     std::list<Beacon> beacons;
     for (size_t i = 0; i < physics_cfg_.oversampling; ++i) {
         std::list<Beacon>* bcns = (i == physics_cfg_.oversampling - 1)

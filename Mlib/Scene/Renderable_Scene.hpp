@@ -4,7 +4,6 @@
 #include <Mlib/Images/PpmImage.hpp>
 #include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
-#include <Mlib/Physics/Delete_Rigid_Body_Mutex.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Iteration.hpp>
@@ -98,7 +97,6 @@ public:
     std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::shared_ptr<PostProcessingLogic> post_processing_logic_;
     DeleteNodeMutex delete_node_mutex_;
-    DeleteRigidBodyMutex delete_rigid_body_mutex_;
     RenderLogics render_logics_;
     Players players_;
     GameLogic game_logic_;

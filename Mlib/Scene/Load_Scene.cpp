@@ -28,7 +28,6 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
-#include <Mlib/Physics/Delete_Rigid_Body_Mutex.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
@@ -1664,7 +1663,6 @@ void LoadScene::operator()(
         auto& game_logic = cit->second->game_logic_;
         auto& base_log = cit->second->fifo_log_;
         auto& delete_node_mutex = cit->second->delete_node_mutex_;
-        auto& delete_rigid_body_mutex = cit->second->delete_rigid_body_mutex_;
 
         Linker linker{physics_engine.advance_times_};
         if (Mlib::re::regex_match(line, match, root_node_instance_reg)) {
@@ -1731,11 +1729,9 @@ void LoadScene::operator()(
             }
             scene.register_node(match[3].str(), node_ptr);
         } else if (Mlib::re::regex_match(line, match, delete_root_node_reg)) {
-            std::lock_guard rb_lock{ delete_rigid_body_mutex };
             std::lock_guard node_lock{ delete_node_mutex };
             scene.delete_root_node(match[1].str());
         } else if (Mlib::re::regex_match(line, match, delete_root_nodes_reg)) {
-            std::lock_guard rb_lock{ delete_rigid_body_mutex };
             std::lock_guard node_lock{ delete_node_mutex };
             scene.delete_root_nodes(Mlib::compile_regex(match[1].str()));
         } else if (Mlib::re::regex_match(line, match, delete_scheduled_advance_times_reg)) {
@@ -2351,7 +2347,7 @@ void LoadScene::operator()(
                 external_substitutions,
                 button_press,
                 ui_focus.selection_ids.at(id),
-                [macro_line_executor, on_change, &delete_rigid_body_mutex, &rsc]() {
+                [macro_line_executor, on_change, &rsc]() {
                     if (!on_change.empty()) {
                         macro_line_executor(on_change, nullptr, rsc);
                     }
@@ -2387,13 +2383,14 @@ void LoadScene::operator()(
                 ui_focus.selection_ids.at(id),
                 script_filename,
                 next_scene_filename,
-                [macro_line_executor, reload_transient_objects, &delete_rigid_body_mutex, &rsc]() {
+                [macro_line_executor, reload_transient_objects, &physics_set_fps, &rsc]() {
                     if (!reload_transient_objects.empty()) {
-                        // physics_set_fps.execute([macro_line_executor, reload_transient_objects, &rsc](){
-                        //     macro_line_executor(reload_transient_objects, nullptr, rsc);
-                        // });
-                        std::lock_guard rb_lock{ delete_rigid_body_mutex };
-                        macro_line_executor(reload_transient_objects, nullptr, rsc);
+                        physics_set_fps.execute([macro_line_executor, reload_transient_objects, &rsc](){
+                            macro_line_executor(reload_transient_objects, nullptr, rsc);
+                        });
+                        // This results in a deadlock because both "delete_node_mutex" and "delete_rigid_body_mutex" are acquired.
+                        // std::lock_guard rb_lock{ delete_rigid_body_mutex };
+                        // macro_line_executor(reload_transient_objects, nullptr, rsc);
                     }
                 });
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
