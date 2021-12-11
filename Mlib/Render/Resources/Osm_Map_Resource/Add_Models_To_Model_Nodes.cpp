@@ -1,4 +1,5 @@
 #include "Add_Models_To_Model_Nodes.hpp"
+#include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Parsed_Resource_Name.hpp>
@@ -68,11 +69,16 @@ void Mlib::add_models_to_model_nodes(
             } else {
                 p = n.second.position;
             }
+            static const DECLARE_REGEX(model_re, "^([^.]+)(?:\\.(\\d+) \\((\\w+)\\))?$");
+            Mlib::re::smatch match;
+            if (!Mlib::re::regex_match(mit->second, match, model_re)) {
+                throw std::runtime_error("Could not parse model name \"" + mit->second + '"');
+            }
             ParsedResourceName prn{
-                .name = mit->second,
-                .billboard_id = UINT32_MAX,
+                .name = match[1].str(),
+                .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
                 .probability = NAN,
-                .aggregate_mode = resources.aggregate_mode(mit->second),
+                .aggregate_mode = resources.aggregate_mode(match[1].str()),
                 .hitbox = (hit == tags.end()) ? "" : hit->second};
             auto yit = tags.find("yangle");
             float yangle;
