@@ -94,6 +94,8 @@
 #include <filesystem>
 #include <fstream>
 #include <regex>
+#include <stb_image/stb_image_load.hpp>
+#include <stb_image/stb_image_write.h>
 
 namespace fs = std::filesystem;
 
@@ -623,6 +625,11 @@ void LoadScene::operator()(
         "\\s+height=(\\d+)"
         "\\s+color_mode=(grayscale|rgb|rgba)"
         "\\s+images=([\\s\\S]*)$");
+    static const DECLARE_REGEX(save_texture_atlas_png_reg,
+        "^\\s*save_texture_atlas_png"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
+        "\\s+color_mode=(grayscale|rgb|rgba)");
     static const DECLARE_REGEX(record_track_reg,
         "^\\s*record_track"
         "\\s+node=([\\w+-.]+)"
@@ -1591,6 +1598,22 @@ void LoadScene::operator()(
                     .height = safe_stoi(match[3].str()),
                     .color_mode = color_mode_from_string(match[4].str()),
                     .tiles = tiles});
+            return true;
+        }
+        if (Mlib::re::regex_match(line, match, save_texture_atlas_png_reg)) {
+            StbInfo img = RenderingContextStack::primary_rendering_resources()->get_texture_data(TextureDescriptor{
+                .color = match[1].str(),
+                .color_mode = color_mode_from_string(match[3].str())});
+            if (!stbi_write_png(
+                match[2].str().c_str(),
+                img.width,
+                img.height,
+                img.nrChannels,
+                img.data.get(),
+                0))
+            {
+                throw std::runtime_error("Could not write \"" + match[2].str() + '"');
+            }
             return true;
         }
         if (Mlib::re::regex_match(line, match, add_companion_renderable_reg)) {
