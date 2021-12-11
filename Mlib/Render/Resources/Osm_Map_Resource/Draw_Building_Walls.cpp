@@ -1,5 +1,7 @@
 #include "Draw_Building_Walls.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
@@ -22,6 +24,7 @@ void Mlib::draw_building_walls(
     const std::vector<std::string>& socle_textures,
     FacadeTextureCycle& ftc)
 {
+    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     size_t mid = 0;
     size_t bid = 0;
     for (const auto& bu : buildings) {
@@ -41,7 +44,7 @@ void Mlib::draw_building_walls(
                 }
                 texture = ftc(bu).name;
             }
-            tls.back()->material_.textures = { {.texture_descriptor = {.color = texture}} };
+            tls.back()->material_.textures = { { primary_rendering_resources->get_existing_texture_descriptor(texture) } };
             tls.back()->material_.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
