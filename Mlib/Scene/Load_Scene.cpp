@@ -733,6 +733,9 @@ void LoadScene::operator()(
         "\\s+name=([\\w+-.]+)$");
     static const DECLARE_REGEX(clear_nodes_not_allowed_to_be_unregistered_reg,
         "^\\s*clear_nodes_not_allowed_to_be_unregistered$");
+    static const DECLARE_REGEX(execute_in_physics_thread_reg,
+        "^\\s*execute_in_physics_thread"
+        "\\s+([\\s\\S]+)$");
 
     MacroLineExecutor::UserFunction user_function = [&](
         const std::string& context,
@@ -2347,9 +2350,9 @@ void LoadScene::operator()(
                 external_substitutions,
                 button_press,
                 ui_focus.selection_ids.at(id),
-                [macro_line_executor, on_change, &physics_set_fps, &rsc]() {
+                [macro_line_executor, on_change, &rsc]() {
                     if (!on_change.empty()) {
-                        physics_set_fps.execute([macro_line_executor, on_change, &rsc](){macro_line_executor(on_change, nullptr, rsc);});
+                        macro_line_executor(on_change, nullptr, rsc);
                     }
                 });
             if (!on_init.empty()) {
@@ -2383,11 +2386,9 @@ void LoadScene::operator()(
                 ui_focus.selection_ids.at(id),
                 script_filename,
                 next_scene_filename,
-                [macro_line_executor, reload_transient_objects, &physics_set_fps, &rsc]() {
+                [macro_line_executor, reload_transient_objects, &rsc]() {
                     if (!reload_transient_objects.empty()) {
-                        physics_set_fps.execute([macro_line_executor, reload_transient_objects, &rsc](){
-                            macro_line_executor(reload_transient_objects, nullptr, rsc);
-                        });
+                        macro_line_executor(reload_transient_objects, nullptr, rsc);
                         // This results in a deadlock because both "delete_node_mutex" and "delete_rigid_body_mutex" are acquired.
                         // std::lock_guard rb_lock{ delete_rigid_body_mutex };
                         // macro_line_executor(reload_transient_objects, nullptr, rsc);
@@ -2645,7 +2646,7 @@ void LoadScene::operator()(
                 ui_focus.focuses,
                 safe_stob(match[8].str()),              // enable_height_changed_mode
                 [on_finish, macro_line_executor, &physics_set_fps, &rsc](){
-                    physics_set_fps.execute([macro_line_executor, on_finish, &rsc](){macro_line_executor(on_finish, nullptr, rsc);});
+                    macro_line_executor(on_finish, nullptr, rsc);
                 }));
         } else if (Mlib::re::regex_match(line, match, set_camera_cycle_reg)) {
             std::string cameras = match[2].str();
@@ -2734,6 +2735,9 @@ void LoadScene::operator()(
             scene.remove_node_not_allowed_to_be_unregistered(match[1].str());
         } else if (Mlib::re::regex_match(line, match, clear_nodes_not_allowed_to_be_unregistered_reg)) {
             scene.clear_nodes_not_allowed_to_be_unregistered();
+        } else if (Mlib::re::regex_match(line, match, execute_in_physics_thread_reg)) {
+            std::string command = match[1].str();
+            physics_set_fps.execute([macro_line_executor, command, &rsc](){macro_line_executor(command, nullptr, rsc);});
         } else {
             return false;
         }

@@ -1,11 +1,14 @@
 #pragma once
+#include <iostream>
 #include <mutex>
+#include <sstream>
 #include <stdexcept>
 #include <thread>
 
 namespace Mlib {
 
 class DeleteNodeMutex {
+    friend std::ostream& operator << (std::ostream& ostr, const DeleteNodeMutex& delete_node_mutex);
 public:
     explicit DeleteNodeMutex()
     : deleter_thread_id_{ std::this_thread::get_id() }
@@ -23,7 +26,9 @@ public:
     }
     void notify_deleting() const {
         if (std::this_thread::get_id() != deleter_thread_id_) {
-            throw std::runtime_error("Deletion by wrong thread");
+            std::stringstream sstr;
+            sstr << "Deletion by wrong thread (" << std::this_thread::get_id() << " vs. " << deleter_thread_id_ << ')';
+            throw std::runtime_error(sstr.str());
         }
         if (!is_locked()) {
             throw std::runtime_error("Delete node mutex is not locked");
@@ -57,5 +62,10 @@ public:
 private:
     DeleteNodeMutex& delete_node_mutex_;
 };
+
+inline std::ostream& operator << (std::ostream& ostr, const Mlib::DeleteNodeMutex& delete_node_mutex) {
+    ostr << "Deleter thread ID: " << delete_node_mutex.deleter_thread_id_;
+    return ostr;
+}
 
 }
