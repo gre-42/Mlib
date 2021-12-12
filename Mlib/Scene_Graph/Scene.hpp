@@ -18,7 +18,7 @@ class DeleteNodeMutex;
 class Scene {
 public:
     // Noncopyable because of mutex_
-    Scene(
+    explicit Scene(
         DeleteNodeMutex& delete_node_mutex,
         AggregateRenderer* large_aggregate_renderer = nullptr,
         InstancesRenderer* large_instances_renderer = nullptr);
