@@ -22,7 +22,7 @@ bool stb_colorize(
             }
         }
         for (int d = 0; d < 3; ++d) {
-            means[d] /= width * height * nrChannels;
+            means[d] /= width * height;
         }
     } else {
         float sum_alpha = 0;
