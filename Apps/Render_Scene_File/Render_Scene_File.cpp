@@ -321,6 +321,7 @@ int main(int argc, char** argv) {
                 !args.has_named("--single_threaded"))
             {
                 for (const auto& p : renderable_scenes) {
+                    p.second->delete_node_mutex_.clear_deleter_thread();
                     p.second->start_physics_loop();
                 }
             }
@@ -375,6 +376,8 @@ int main(int argc, char** argv) {
 
             for (const auto& p : renderable_scenes) {
                 p.second->stop_and_join();
+                p.second->delete_node_mutex_.clear_deleter_thread();
+                p.second->delete_node_mutex_.set_deleter_thread();
                 p.second->scene_.clear_nodes_not_allowed_to_be_unregistered();
             }
             main_scene_filename = next_scene_filename;

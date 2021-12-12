@@ -11,8 +11,10 @@ class SetFps;
 class BaseLog;
 class DeleteNodeMutex;
 class DeleteRigidBodyMutex;
+class PhysicsLoop;
 
 class PhysicsIteration {
+    friend PhysicsLoop;
 public:
     PhysicsIteration(
         SceneNodeResources& scene_node_resources,

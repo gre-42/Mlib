@@ -100,9 +100,7 @@ void Scene::delete_scheduled_root_nodes() const {
 
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
-    if (!delete_node_mutex_.is_locked()) {
-        throw std::runtime_error("Scene::delete_root_node: delete node mutex is not locked");
-    }
+    delete_node_mutex_.notify_deleting();
     auto it = root_nodes_.find(name);
     if (it == root_nodes_.end()) {
         throw std::runtime_error("Could not find root node with name " + name);
@@ -116,9 +114,7 @@ void Scene::delete_root_node(const std::string& name) {
 
 void Scene::delete_root_nodes(const Mlib::regex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
-    if (!delete_node_mutex_.is_locked()) {
-        throw std::runtime_error("Scene::delete_root_nodes: delete node mutex is not locked");
-    }
+    delete_node_mutex_.notify_deleting();
     for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
         auto n = it++;
         if (Mlib::re::regex_match(n->first, regex)) {

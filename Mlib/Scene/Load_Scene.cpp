@@ -2347,9 +2347,9 @@ void LoadScene::operator()(
                 external_substitutions,
                 button_press,
                 ui_focus.selection_ids.at(id),
-                [macro_line_executor, on_change, &rsc]() {
+                [macro_line_executor, on_change, &physics_set_fps, &rsc]() {
                     if (!on_change.empty()) {
-                        macro_line_executor(on_change, nullptr, rsc);
+                        physics_set_fps.execute([macro_line_executor, on_change, &rsc](){macro_line_executor(on_change, nullptr, rsc);});
                     }
                 });
             if (!on_init.empty()) {
@@ -2644,8 +2644,9 @@ void LoadScene::operator()(
                 delete_node_mutex,
                 ui_focus.focuses,
                 safe_stob(match[8].str()),              // enable_height_changed_mode
-                [on_finish, macro_line_executor, &rsc](){
-                    macro_line_executor(on_finish, nullptr, rsc);}));
+                [on_finish, macro_line_executor, &physics_set_fps, &rsc](){
+                    physics_set_fps.execute([macro_line_executor, on_finish, &rsc](){macro_line_executor(on_finish, nullptr, rsc);});
+                }));
         } else if (Mlib::re::regex_match(line, match, set_camera_cycle_reg)) {
             std::string cameras = match[2].str();
             auto& cycle = (match[1].str() == "near")

@@ -3,6 +3,7 @@
 #include <Mlib/Fps/Set_Fps.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Iteration.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <vector>
@@ -21,6 +22,7 @@ PhysicsLoop::PhysicsLoop(
   physics_thread_{run_in_background([&, nframes](){
     try {
         set_thread_name("Physics");
+        SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration.delete_node_mutex_ };
         size_t nframes2 = nframes;
         // LagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
         while (!exit_physics_) {
