@@ -339,7 +339,9 @@ void RigidBody::write_status(std::ostream& ostr, StatusComponents log_components
     if (log_components & StatusComponents::ANGULAR_VELOCITY) {
         ostr << "w: " << std::sqrt(sum(squared(rbi_.rbp_.w_))) * float(180 / M_PI) << " °/s" << std::endl;
     }
-    ostr << "wt: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / WHEEL_RADIUS << " rad/s" << std::endl;
+    if (log_components & StatusComponents::WHEEL_ANGULAR_VELOCITY) {
+        ostr << "wt: " << std::sqrt(sum(squared(rbi_.rbp_.v_))) / WHEEL_RADIUS << " rad/s" << std::endl;
+    }
     if (log_components & StatusComponents::DIAMETER) {
         // T = 2 PI r / v, T = 2 PI / w
         // r = v / w
