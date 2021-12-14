@@ -100,16 +100,22 @@ void Scene::delete_scheduled_root_nodes() const {
 
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
+    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (0) \"" << name << '"' << std::endl;
     delete_node_mutex_.notify_deleting();
+    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (1) \"" << name << '"' << std::endl;
     auto it = root_nodes_.find(name);
     if (it == root_nodes_.end()) {
-        throw std::runtime_error("Could not find root node with name " + name);
+        throw std::runtime_error("Could not find root node with name \"" + name + '"');
     }
     // Temporary "unique_ptr" in case the reference "name" points to the
     // node to be deleted.
+    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (2) \"" << name << '"' << std::endl;
     std::unique_ptr<SceneNode> to_delete = std::move(it->second);
+    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (3) \"" << name << '"' << std::endl;
     root_nodes_.erase(it);
+    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (4) \"" << name << '"' << std::endl;
     unregister_node(name);
+    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (5) \"" << name << '"' << std::endl;
 }
 
 void Scene::delete_root_nodes(const Mlib::regex& regex) {
