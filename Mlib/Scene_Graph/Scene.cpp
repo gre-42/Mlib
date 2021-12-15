@@ -70,6 +70,9 @@ void Scene::add_root_instances_node(
 }
 
 bool Scene::root_node_scheduled_for_deletion(const std::string& name) const {
+    if (!delete_node_mutex_.is_locked_by_this_thread() && !delete_node_mutex_.this_thread_is_deleter_thread()) {
+        throw std::runtime_error("Scene::root_node_scheduled_for_deletion: delete node mutex is not locked, and this thread is not the deleter thread");
+    }
     std::lock_guard lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {
         throw std::runtime_error("No root node with name \"" + name + "\" exists");
@@ -78,6 +81,7 @@ bool Scene::root_node_scheduled_for_deletion(const std::string& name) const {
 }
 
 void Scene::schedule_delete_root_node(const std::string& name) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     std::lock_guard lock{ root_nodes_to_delete_mutex_ };
     if (root_nodes_.find(name) == root_nodes_.end()) {
         throw std::runtime_error("No root node with name \"" + name + "\" exists");
@@ -113,6 +117,7 @@ void Scene::delete_root_node(const std::string& name) {
     std::unique_ptr<SceneNode> to_delete = std::move(it->second);
     std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (3) \"" << name << '"' << std::endl;
     root_nodes_.erase(it);
+    root_nodes_to_delete_.erase(name);
     std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (4) \"" << name << '"' << std::endl;
     unregister_node(name);
     std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (5) \"" << name << '"' << std::endl;
@@ -125,6 +130,7 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
         auto n = it++;
         if (Mlib::re::regex_match(n->first, regex)) {
             root_nodes_.erase(n->first);
+            root_nodes_to_delete_.erase(n->first);
         }
     }
     unregister_nodes(regex);
@@ -137,7 +143,8 @@ Scene::~Scene() {
 }
 
 void Scene::shutdown() {
-    if (!delete_node_mutex_.is_locked()) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Scene::shutdown: delete node mutex is not locked");
     }
     if (!nodes_not_allowed_to_be_unregistered_.empty()) {
@@ -171,10 +178,11 @@ void Scene::register_node(
 }
 
 void Scene::unregister_node(const std::string& name) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (nodes_not_allowed_to_be_unregistered_.contains(name)) {
         throw std::runtime_error("Node \"" + name + "\" may not be unregistered");
     }
-    if (!delete_node_mutex_.is_locked()) {
+    if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Scene::unregister_node: delete node mutex is not locked");
     }
     if (nodes_.erase(name) != 1) {
@@ -183,7 +191,8 @@ void Scene::unregister_node(const std::string& name) {
 }
 
 void Scene::unregister_nodes(const Mlib::regex& regex) {
-    if (!delete_node_mutex_.is_locked()) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Scene::unregister_nodes: delete node mutex is not locked");
     }
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
@@ -219,6 +228,9 @@ void Scene::render(
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background) const
 {
     LOG_FUNCTION("Scene::render");
+    if (!delete_node_mutex_.is_locked_by_this_thread()) {
+        throw std::runtime_error("Scene::render: delete node mutex is not locked");
+    }
     std::list<std::pair<TransformationMatrix<float, 3>, Light*>> lights;
     std::list<Blended> blended;
     if ((external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) && !external_render_pass.black_node_name.empty()) {
@@ -369,6 +381,7 @@ void Scene::render(
 
 void Scene::move(float dt) {
     LOG_FUNCTION("Scene::move");
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!root_nodes_to_delete_.empty()) {
         throw std::runtime_error("Moving with root nodes scheduled for deletion");
     }
@@ -415,6 +428,7 @@ bool Scene::shutting_down() const {
 }
 
 void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
         throw std::runtime_error("Could not find node with name (0) \"" + name + '"');
     }
@@ -424,6 +438,7 @@ void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
 }
 
 void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
         throw std::runtime_error("Could not find node with name (1) \"" + name + '"');
     }
@@ -433,6 +448,7 @@ void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) 
 }
 
 void Scene::clear_nodes_not_allowed_to_be_unregistered() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     nodes_not_allowed_to_be_unregistered_.clear();
 }
 

@@ -35,7 +35,7 @@ void StandardCameraLogic::render(
     float aspect_ratio = width / (float) height;
 
     SceneNode* cn;
-    if (!delete_node_mutex_.is_locked()) {
+    if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Deletion mutex not locked in StandardCameraLogic::render");
     }
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
