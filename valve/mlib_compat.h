@@ -83,14 +83,19 @@ inline const char* INFOKEY_VALUE (const char* info_key_buffer, const std::string
 static const int MAX_AMMO_SLOTS = 32; // total ammo amounts (1 array for each bot)
 static const int MAX_WEAPONS = 32;
 
-struct hudtextparms_t{
-    float holdTime;
-    int channel;
-    Vector2D vec;
-    inline float& operator()(int i) {
-        return vec(i);
-    }
-};
+typedef struct hudtextparms_s
+{
+    float        x;
+    float        y;
+    int          effect;
+    uint8_t      r1, g1, b1, a1;
+    uint8_t      r2, g2, b2, a2;
+    float        fadeinTime;
+    float        fadeoutTime;
+    float        holdTime;
+    float        fxTime;
+    int          channel;
+} hudtextparms_t;
 
 static const bool TRUE = true;
 static const bool FALSE = false;
@@ -102,19 +107,19 @@ float RANDOM_FLOAT(float min, float max);
 edict_t* INDEXENT(int index);
 
 #define eoNullEntity 0
-// inline BOOL FNullEnt(EOFFSET eoffset)			{ return eoffset == 0; }
-inline bool FNullEnt(const edict_t* pent)	{ return true; }
-// inline BOOL FNullEnt(entvars_t* pev)				{ return pev == NULL || FNullEnt(OFFSET(pev)); }
+// inline BOOL FNullEnt(EOFFSET eoffset)            { return eoffset == 0; }
+inline bool FNullEnt(const edict_t* pent)    { return true; }
+// inline BOOL FNullEnt(entvars_t* pev)                { return pev == NULL || FNullEnt(OFFSET(pev)); }
 
 typedef const char *string_t;
-#define NULL_STRING				0
-#define STRING( c_str )			( c_str )
-#define MAKE_STRING( c_str )	( c_str )
-#define IDENT_STRINGS( s1, s2 )	*((void **)&(s1)) == *((void **)&(s2))
+#define NULL_STRING                0
+#define STRING( c_str )            ( c_str )
+#define MAKE_STRING( c_str )       ( c_str )
+#define IDENT_STRINGS( s1, s2 )    *((void **)&(s1)) == *((void **)&(s2))
 
 inline bool FStrEq(const char *sz1, const char *sz2)
 {
-	return(strcmp(sz1, sz2) == 0);
+    return(strcmp(sz1, sz2) == 0);
 }
 
 #define FREE_PRIVATE(entity) free(entity->pvPrivateData)
@@ -246,7 +251,7 @@ typedef plugin_info_t* plid_t;
 
 extern plugin_info_t Plugin_info;
 
-#define PLID	&Plugin_info
+#define PLID    &Plugin_info
 
 int GET_USER_MSG_ID (plid_t plid, const char* name, int* size);
 
@@ -282,11 +287,11 @@ struct enginefuncs_t{
 };
 
 typedef enum {
-	MRES_UNSET = 0,
-	MRES_IGNORED,		// plugin didn't take any action
-	MRES_HANDLED,		// plugin did something, but real function should still be called
-	MRES_OVERRIDE,		// call real function, but use my return value
-	MRES_SUPERCEDE,		// skip real function; use my return value
+    MRES_UNSET = 0,
+    MRES_IGNORED,        // plugin didn't take any action
+    MRES_HANDLED,        // plugin did something, but real function should still be called
+    MRES_OVERRIDE,       // call real function, but use my return value
+    MRES_SUPERCEDE,      // skip real function; use my return value
 } META_RES;
 
 int COMPARE_FILE_TIME(const std::string& filename1, const std::string& filename2, int* iCompare);

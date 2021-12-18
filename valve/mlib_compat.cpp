@@ -49,3 +49,49 @@ int COMPARE_FILE_TIME(const std::string& filename1, const std::string& filename2
 void SERVER_COMMAND(const char* cmd) {
     std::cerr << "SERVER_COMMAND: " << cmd << std::endl;
 }
+
+edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const Vector& origin, float radius) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+void UTIL_ServerPrint(char const*, ...) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+void FakeClientCommand(edict_t*, char const*, ...) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+void MAKE_VECTORS(Mlib::FixedArray<float, 3ul> const&) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+void TRACE_LINE(Mlib::FixedArray<float, 3ul> const&, Mlib::FixedArray<float, 3ul> const&, int, edict_t const*, TraceResult*) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+void UTIL_HostPrint(char const*, ...) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+void EMIT_SOUND_DYN2(edict_t*, int, char const*, float, float, int, float) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+void TRACE_HULL(Mlib::FixedArray<float, 3ul> const&, Mlib::FixedArray<float, 3ul> const&, IGNORE_MONSTERS, HULL, edict_t*, TraceResult*) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+void UTIL_HudMessage(edict_t*, hudtextparms_t const&, char*) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+int POINT_CONTENTS(const Vector& vec) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+int GET_USER_MSG_ID (plid_t plid, const char* name, int* size) {
+    throw std::runtime_error("Not yet implemented");
+}
+
+plugin_info_t Plugin_info;

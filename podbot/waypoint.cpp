@@ -2795,8 +2795,8 @@ void WaypointThink (void)
 //         return;
       }
 // KWo - 16.01.2010 -
-      g_hudset(0) = 0.033;
-      g_hudset(1) = 0.061;
+      g_hudset.x = 0.033;
+      g_hudset.y = 0.061;
 //      g_hudset.a1 = 1;
       g_hudset.holdTime = 1.055;
       g_hudset.channel = 1;

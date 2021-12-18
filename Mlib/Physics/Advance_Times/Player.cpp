@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Pod_Bot.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -55,7 +56,11 @@ Player::Player(
   spotted_by_vip_{false},
   nunstucked_{0},
   record_waypoints_{false}
-{}
+{
+    if (game_mode_ == GameMode::GUNFIGHT) {
+        pod_bot_ = std::make_unique<PodBot>(name);
+    }
+}
 
 Player::~Player()
 {}

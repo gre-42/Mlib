@@ -162,7 +162,7 @@ int g_iAliveTs;                                 // KWo - 19.01.2008
 saved_buttons_t ButtonsData[MAX_BUTTONS];       // KWo - 07.02.2006
 saved_break_t BreakablesData[MAX_BREAKABLES];   // KWo - 10.02.2006
 saved_hostages_t HostagesData[MAX_HOSTAGES];    // KWo - 16.05.2006 - to compare if the hostages been moving
-// hudtextparms_t g_hudset = {0.0, 0.0, 0, 255, 255, 255, 0, 255, 255, 255, 0, 0.0, 0.0, 0.0, 0.0, 0};                        // KWo - 16.01.2010
+hudtextparms_t g_hudset = {0.0, 0.0, 0, 255, 255, 255, 0, 255, 255, 255, 0, 0.0, 0.0, 0.0, 0.0, 0};                        // KWo - 16.01.2010
 
 float g_f_cvars_upd_time = 0.0;                 // KWo - 02.05.2006
 float g_f_host_upd_time = 0.0;                  // KWo - 18.05.2006

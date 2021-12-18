@@ -8937,8 +8937,8 @@ void BotThink (bot_t *pBot)
          }
 
          char szMessage[256];
-         g_hudset(0) = -1.0;
-         g_hudset(1) = 0.8;
+         g_hudset.x = -1.0;
+         g_hudset.y = 0.8;
 //       g_hudset.a1 = 1;
          g_hudset.holdTime = 0.1;
          g_hudset.channel = 2;

@@ -1756,8 +1756,8 @@ bool BotHasNvg(bot_t *pBot)
 //    WRITE_STRING(pMessage);
 //    MESSAGE_END();
 
-//    g_hudset(0) = -1.0;
-//    g_hudset(1) = -1.0;
+//    g_hudset.x = -1.0;
+//    g_hudset.y = -1.0;
 //    g_hudset.effect = 0;
 //    g_hudset.r1 = 255;
 //    g_hudset.g1 = 255;

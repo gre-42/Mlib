@@ -26,6 +26,7 @@ class Bvh;
 enum class DrivingDirection;
 enum class WayPointLocation;
 class DeleteNodeMutex;
+class PodBot;
 
 struct PlayerStats {
     size_t nwins = 0;
@@ -193,6 +194,7 @@ private:
     size_t nunstucked_;
     bool record_waypoints_;
     Skills skills_;
+    std::unique_ptr<PodBot> pod_bot_;
 };
 
 };

@@ -5608,8 +5608,8 @@ nobypass:
                     pBot->name, pBot->bPlayerCollision ? "is" : "is not", STRING (pNearestPlayer->v.netname), (int)f_nearestdistance, pBot->f_moved_distance,
                     (pBot->fNoCollTime <= gpGlobals->time) ? "<=" : ">", g_TaskNames[pBot->pTasks->iTask]);
 
-                  g_hudset(0) = 0.033;
-                  g_hudset(1) = 0.85;
+                  g_hudset.x = 0.033;
+                  g_hudset.y = 0.85;
                   g_hudset.holdTime = 1.055;
                   g_hudset.channel = 2;
                   UTIL_HudMessage(pHostEdict, g_hudset, szMessage);
@@ -5641,8 +5641,8 @@ nobypass:
 
             UTIL_SplitHudMessage(szMessage);
 
-            g_hudset(0) = 0.033;
-            g_hudset(1) = 0.70;
+            g_hudset.x = 0.033;
+            g_hudset.y = 0.70;
             g_hudset.channel = 2;
             UTIL_HudMessage(pHostEdict, g_hudset, szMessage);
          }
@@ -5785,8 +5785,8 @@ nobypass:
 
                   UTIL_SplitHudMessage(szMessage);
 
-                  g_hudset(0) = 0.033;
-                  g_hudset(1) = 0.80;
+                  g_hudset.x = 0.033;
+                  g_hudset.y = 0.80;
                   g_hudset.channel = 4;
                   UTIL_HudMessage(pHostEdict, g_hudset, szMessage);
                }
@@ -5895,8 +5895,8 @@ nobypass:
 
                                  UTIL_SplitHudMessage(szMessage);
 
-                                 g_hudset(0) = 0.033;
-                                 g_hudset(1) = 0.80;
+                                 g_hudset.x = 0.033;
+                                 g_hudset.y = 0.80;
                                  g_hudset.channel = 1;
                                  UTIL_HudMessage(pHostEdict, g_hudset, szMessage);
                               }
@@ -6489,8 +6489,8 @@ nobypass:
 
                   UTIL_SplitHudMessage(szMessage);
 
-                  g_hudset(0) = -1;
-                  g_hudset(1) = 0.75;
+                  g_hudset.x = -1;
+                  g_hudset.y = 0.75;
                   g_hudset.channel = 1;
                   g_hudset.holdTime = 0.1;
                   UTIL_HudMessage(pHostEdict, g_hudset, szMessage);
@@ -6543,8 +6543,8 @@ nobypass:
 
                         UTIL_SplitHudMessage(szMessage);
 
-                        g_hudset(0) = 0.033;
-                        g_hudset(1) = 0.75;
+                        g_hudset.x = 0.033;
+                        g_hudset.y = 0.75;
                         g_hudset.channel = 3;
                         UTIL_HudMessage(pHostEdict, g_hudset, szMessage);
                      }
