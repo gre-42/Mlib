@@ -317,7 +317,7 @@ void LoadScene::operator()(
         "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
         "\\s+team=([\\w+-.]+)"
-        "\\s+game_mode=(ramming|racing|bystander)"
+        "\\s+game_mode=(ramming|racing|bystander|gunfight)"
         "\\s+unstuck_mode=(off|reverse|delete)"
         "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");
@@ -2039,6 +2039,11 @@ void LoadScene::operator()(
                     match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
                     match[4].str().empty() ? 1.f : safe_stof(match[4].str())}});
         } else if (Mlib::re::regex_match(line, match, abs_key_binding_reg)) {
+            try {
+                scene.get_node(match[1].str())->get_absolute_movable();
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Node \"" + match[1].str() + "\": " + e.what());
+            }
             key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
                 .base_key = {
                     .key = match[2].str(),
@@ -2071,6 +2076,11 @@ void LoadScene::operator()(
                     match[21].str().empty() ? 0.f : safe_stof(match[21].str()),
                     match[22].str().empty() ? 0.f : safe_stof(match[22].str())}});
         } else if (Mlib::re::regex_match(line, match, rel_key_binding_reg)) {
+            try {
+                scene.get_node(match[1].str())->get_relative_movable();
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Node \"" + match[1].str() + "\": " + e.what());
+            }
             key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
                 .base_key = {
                     .key = match[2].str(),

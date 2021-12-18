@@ -323,7 +323,9 @@ void Player::advance_time(float dt) {
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in) {
-        if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
+        if (game_mode_ == GameMode::GUNFIGHT) {
+            throw std::runtime_error("Game mode gunfight not yet implemented");
+        } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
             if (ramming()) {
                 auto tpos = target_rbi_->abs_position();
                 set_waypoint({tpos(0), tpos(2)});

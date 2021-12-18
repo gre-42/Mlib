@@ -34,7 +34,8 @@ struct PlayerStats {
 enum class GameMode {
     RAMMING,
     RACING,
-    BYSTANDER
+    BYSTANDER,
+    GUNFIGHT
 };
 
 inline GameMode game_mode_from_string(const std::string& game_mode) {
@@ -44,6 +45,8 @@ inline GameMode game_mode_from_string(const std::string& game_mode) {
         return GameMode::RACING;
     } else if (game_mode == "bystander") {
         return GameMode::BYSTANDER;
+    } else if (game_mode == "gunfight") {
+        return GameMode::GUNFIGHT;
     } else {
         throw std::runtime_error("Unknown game mode: " + game_mode);
     }
