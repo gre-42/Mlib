@@ -38,6 +38,7 @@ class AudioListenerUpdater;
 class PhysicsLoop;
 struct ButtonStates;
 struct CursorStates;
+class PodBots;
 
 struct SceneConfigResource {
     bool fly;
@@ -50,6 +51,7 @@ struct SceneConfigResource {
     bool with_dirtmap;
     bool with_skybox;
     bool with_flying_logic;
+    bool with_pod_bot;
     ClearMode clear_mode;
 };
 
@@ -99,6 +101,7 @@ public:
     DeleteNodeMutex delete_node_mutex_;
     RenderLogics render_logics_;
     Players players_;
+    std::unique_ptr<PodBots> pod_bots_;
     GameLogic game_logic_;
     std::shared_ptr<AudioListenerUpdater> audio_listener_updater_;
 

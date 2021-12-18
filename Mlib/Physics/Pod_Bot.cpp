@@ -1,5 +1,5 @@
 #include "Pod_Bot.hpp"
-#include <podbot/bot_globals.h>
+#include <pod_bot/bot_globals.h>
 
 using namespace Mlib;
 

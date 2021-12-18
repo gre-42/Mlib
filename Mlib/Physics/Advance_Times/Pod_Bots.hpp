@@ -3,9 +3,15 @@
 
 namespace Mlib {
 
-class PodBots: public AdvanceTime {
-    virtual void advance_time(float dt) override;
+class AdvanceTimes;
 
+class PodBots: public AdvanceTime {
+public:
+    PodBots(AdvanceTimes& advance_times);
+    ~PodBots();
+    virtual void advance_time(float dt) override;
+private:
+    AdvanceTimes& advance_times_;
 };
 
 }

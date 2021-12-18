@@ -430,6 +430,7 @@ void LoadScene::operator()(
         "\\s+with_dirtmap=(0|1)"
         "\\s+with_skybox=(0|1)"
         "\\s+with_flying_logic=(0|1)"
+        "\\s+with_pod_bot=(0|1)"
         "\\s+clear_mode=(off|color|depth|color_and_depth)"
         "\\s+max_tracks=(\\d+)$");
     static const DECLARE_REGEX(scene_selector_reg,
@@ -772,9 +773,10 @@ void LoadScene::operator()(
                     .with_dirtmap = safe_stob(match[10].str()),
                     .with_skybox = safe_stob(match[11].str()),
                     .with_flying_logic = safe_stob(match[12].str()),
-                    .clear_mode = clear_mode_from_string(match[13].str())},
+                    .with_pod_bot = safe_stob(match[13].str()),
+                    .clear_mode = clear_mode_from_string(match[14].str())},
                 script_filename,
-                safe_stoz(match[14].str()));
+                safe_stoz(match[15].str()));
             if (!renderable_scenes.insert({match[1].str(), rs}).second) {
                 throw std::runtime_error("Scene with name \"" + match[1].str() + "\" already exists");
             }

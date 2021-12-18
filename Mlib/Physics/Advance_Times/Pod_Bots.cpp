@@ -1,7 +1,18 @@
 #include "Pod_Bots.hpp"
-#include <podbot/bot_globals.h>
+#include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <pod_bot/bot_globals.h>
 
 using namespace Mlib;
+
+PodBots::PodBots(AdvanceTimes& advance_times)
+: advance_times_{advance_times}
+{
+    advance_times_.add_advance_time(*this);
+}
+
+PodBots::~PodBots() {
+    advance_times_.schedule_delete_advance_time(this);
+}
 
 void PodBots::advance_time(float dt) {
     // Go through all active Bots, calling their Think function

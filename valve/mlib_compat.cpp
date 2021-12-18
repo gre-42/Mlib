@@ -109,3 +109,12 @@ int GET_USER_MSG_ID (plid_t plid, const char* name, int* size) {
 }
 
 plugin_info_t Plugin_info;
+
+globalvars_t* gpGlobals = new globalvars_t{
+    .maxClients = 32,
+    .time = 0,
+    .frametime = 0,
+    .v_right = Vector{1.f, 0.f, 0.f},
+    .v_forward = Vector{0.f, 1.f, 0.f},
+    .mapname = "undefined_map_name"
+};

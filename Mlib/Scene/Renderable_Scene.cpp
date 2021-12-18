@@ -1,5 +1,6 @@
 #include "Renderable_Scene.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Advance_Times/Pod_Bots.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
@@ -81,6 +82,7 @@ RenderableScene::RenderableScene(
       config.high_pass)},
   render_logics_{delete_node_mutex_, ui_focus},
   players_{physics_engine_.advance_times_, level_name, max_tracks},
+  pod_bots_{config.with_pod_bot ? std::make_unique<PodBots>(physics_engine_.advance_times_) : nullptr},
   game_logic_{
       scene_,
       physics_engine_.advance_times_,
