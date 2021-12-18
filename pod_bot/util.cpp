@@ -663,9 +663,12 @@ void UTIL_SaveButtonsData (void)    // KWo - 10.02.2006
          {
             ButtonsData[g_iNumButtons].EntIndex = ENTINDEX(pButton);
             v_button_origin = VecBModelOrigin (pButton);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-security"
             snprintf (ButtonsData[g_iNumButtons].classname, sizeof (ButtonsData[g_iNumButtons].classname), STRING (pButton->v.classname));
             ButtonsData[g_iNumButtons].origin = v_button_origin;
             snprintf (ButtonsData[g_iNumButtons].target, sizeof (ButtonsData[g_iNumButtons].target), STRING (pButton->v.target));
+#pragma GCC pop
             g_iNumButtons++;
          }
          pButton = FIND_ENTITY_BY_CLASSNAME (pButton, button_name);

@@ -606,7 +606,10 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
    memset (pBot, 0, sizeof (bot_t));
    pBot->pEdict = BotEnt;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-security"
    snprintf (pBot->name, sizeof (pBot->name), STRING (pBot->pEdict->v.netname));
+#pragma GCC pop
    pBot->is_used = TRUE;
    pBot->not_started = 1; // hasn't joined game yet
    pBot->start_action = MSG_CS_IDLE;
