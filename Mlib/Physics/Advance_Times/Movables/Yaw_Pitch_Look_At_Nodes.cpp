@@ -90,20 +90,21 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
             gravity_,
             (float)1e-6,
             10};
+        if (std::isnan(aim.aim_offset)) {
+            return;
+        }
         t = aim.time;
         offset(1) = aim.aim_offset;
     }
-    if (!std::isnan(offset(1))) {
-        RigidBodyIntegrator rbi = *followed_;
-        rbi.a_ = 0;
-        rbi.rbp_.v_ -= follower_.rbp_.v_;
-        rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
-        FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
-        float dyaw = -std::atan2(p(0), -p(2));
-        yaw_ += sign(dyaw) * std::min(std::abs(dyaw), dyaw_max_);
-        yaw_ = std::fmod(yaw_, float(2 * M_PI));
-        yaw_target_locked_on_ = (std::abs(dyaw) < yaw_locked_on_max_);
-    }
+    RigidBodyIntegrator rbi = *followed_;
+    rbi.a_ = 0;
+    rbi.rbp_.v_ -= follower_.rbp_.v_;
+    rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
+    FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
+    float dyaw = -std::atan2(p(0), -p(2));
+    yaw_ += sign(dyaw) * std::min(std::abs(dyaw), dyaw_max_);
+    yaw_ = std::fmod(yaw_, float(2 * M_PI));
+    yaw_target_locked_on_ = (std::abs(dyaw) < yaw_locked_on_max_);
 }
 
 TransformationMatrix<float, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {

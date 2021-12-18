@@ -76,20 +76,21 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
             gravity_,
             (float)1e-6,
             10};
+        if (std::isnan(aim.aim_offset)) {
+            return;
+        }
         t = aim.time;
         offset(1) = aim.aim_offset;
     }
-    if (!std::isnan(offset(1))) {
-        RigidBodyIntegrator rbi = *followed_;
-        rbi.a_ = 0;
-        rbi.rbp_.v_ -= follower_.rbp_.v_;
-        rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
-        FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
-        float dpitch = std::atan2(p(1), -p(2));
-        pitch_ += sign(dpitch) * std::min(std::abs(dpitch), dpitch_max_);
-        pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
-        target_locked_on_ = (std::abs(dpitch) < locked_on_max_);
-    }
+    RigidBodyIntegrator rbi = *followed_;
+    rbi.a_ = 0;
+    rbi.rbp_.v_ -= follower_.rbp_.v_;
+    rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
+    FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
+    float dpitch = std::atan2(p(1), -p(2));
+    pitch_ += sign(dpitch) * std::min(std::abs(dpitch), dpitch_max_);
+    pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
+    target_locked_on_ = (std::abs(dpitch) < locked_on_max_);
 }
 
 TransformationMatrix<float, 3> PitchLookAtNode::get_new_relative_model_matrix() const {
