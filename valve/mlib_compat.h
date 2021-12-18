@@ -206,9 +206,16 @@ inline bool IS_DEDICATED_SERVER() {
 }
 
 struct cvar_t{
+    const char* name;
     const char* string;
-    const char* string2;
-    int value;
+    int flags;
+    float value;
+    cvar_t(const char* name, const char* string, int flags)
+    : name{name},
+      string{string},
+      flags{flags},
+      value(atof(string))
+    {}
 };
 
 static const Vector VEC_HULL_MIN{0.f, 0.f, 1.8f};

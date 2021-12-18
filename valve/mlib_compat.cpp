@@ -1,5 +1,6 @@
 #include "mlib_compat.h"
 #include <filesystem>
+#include <stdarg.h>
 
 edict_t* INDEXENT(int index) {
     static std::map<int, edict_t*> map;
@@ -54,8 +55,21 @@ edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const Vector& origin, float radiu
     throw std::runtime_error("Not yet implemented");
 }
 
-void UTIL_ServerPrint(char const*, ...) {
-    throw std::runtime_error("Not yet implemented");
+void UTIL_ServerPrint(const char *fmt, ...) {
+    /* Declare a va_list type variable */
+    va_list myargs;
+
+    /* Initialise the va_list variable with the ... after fmt */
+
+    va_start(myargs, fmt);
+
+    /* Forward the '...' to vprintf */
+    if (vprintf(fmt, myargs) < 0) {
+        std::cerr << "UTIL_ServerPrint failed" << std::endl;
+    }
+
+    /* Clean up the va_list */
+    va_end(myargs);
 }
 
 void FakeClientCommand(edict_t*, char const*, ...) {
