@@ -169,8 +169,8 @@ void EMIT_SOUND_DYN2(edict_t*, int, char const*, float, float, int, float) {
     throw std::runtime_error("Not yet implemented");
 }
 
-void TRACE_HULL(Mlib::FixedArray<float, 3ul> const&, Mlib::FixedArray<float, 3ul> const&, IGNORE_MONSTERS, HULL, edict_t*, TraceResult*) {
-    throw std::runtime_error("Not yet implemented");
+void TRACE_HULL(const Vector& vecMidPoint, const Vector& vecTemp, IGNORE_MONSTERS ignore_monsters, HULL hull, edict_t* pEdict, TraceResult* tr) {
+    TRACE_LINE(vecMidPoint, vecTemp, ignore_monsters, pEdict, tr);
 }
 
 void UTIL_HudMessage(edict_t*, hudtextparms_t const&, char*) {

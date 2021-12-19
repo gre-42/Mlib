@@ -6,6 +6,7 @@
 using namespace Mlib;
 
 void InitWaypointTypes();
+void init_pod_bot_experience_tab();
 
 void Mlib::set_pod_bot_way_points(
    const SceneNode& node,
@@ -91,4 +92,38 @@ void Mlib::set_pod_bot_way_points(
    InitPathMatrix ();
 
    g_bWaypointsChanged = FALSE;
+
+   init_pod_bot_experience_tab();
+}
+
+void init_pod_bot_experience_tab() {
+   int i, j;
+
+   if (pBotExperienceData != NULL)
+      delete [](pBotExperienceData);
+   pBotExperienceData = NULL;
+
+   if (g_iNumWaypoints == 0)
+      return;
+
+   pBotExperienceData = new experience_t[g_iNumWaypoints * g_iNumWaypoints];
+
+   g_iHighestDamageT = 1;  // KWo 09.04.2006
+   g_iHighestDamageCT = 1;  // KWo 09.04.2006
+   g_iHighestDamageWpT = -1;  // KWo 05.01.2008
+   g_iHighestDamageWpCT = -1;  // KWo 05.01.2008
+
+   // initialize table by hand to correct values, and NOT zero it out, got it Markus ? ;)
+   for (i = 0; i < g_iNumWaypoints; i++)
+   {
+      for (j = 0; j < g_iNumWaypoints; j++)
+      {
+         (pBotExperienceData + (i * g_iNumWaypoints) + j)->iTeam0_danger_index = -1;
+         (pBotExperienceData + (i * g_iNumWaypoints) + j)->iTeam1_danger_index = -1;
+         (pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam0Damage = 0;
+         (pBotExperienceData + (i * g_iNumWaypoints) + j)->uTeam1Damage = 0;
+         (pBotExperienceData + (i * g_iNumWaypoints) + j)->wTeam0Value = 0;
+         (pBotExperienceData + (i * g_iNumWaypoints) + j)->wTeam1Value = 0;
+      }
+   }
 }
