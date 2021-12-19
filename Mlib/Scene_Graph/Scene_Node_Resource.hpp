@@ -41,7 +41,7 @@ public:
     virtual void generate_ray(const FixedArray<float, 3>& from, const FixedArray<float, 3>& to);
     virtual AggregateMode aggregate_mode() const;
     virtual std::list<SpawnPoint> spawn_points() const;
-    virtual std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points() const;
+    virtual std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points() const;
     virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses);
     virtual void downsample(size_t factor);
     virtual void import_bone_weights(

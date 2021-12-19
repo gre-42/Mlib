@@ -33,6 +33,7 @@
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
+#include <Mlib/Physics/Pod_Bot/Set_Pod_Bot_Way_Points.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
@@ -326,8 +327,14 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(player_set_surface_power_reg, "^\\s*player_set_surface_power player_name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
     static const DECLARE_REGEX(player_set_tire_angle_reg, "^\\s*player_set_tire_angle player_name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
     static const DECLARE_REGEX(player_set_angular_velocity_reg, "^\\s*player_set_angular_velocity player_name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
-    static const DECLARE_REGEX(player_set_waypoint_reg, "^\\s*player_set_waypoint player_name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
-    static const DECLARE_REGEX(team_set_waypoint_reg, "^\\s*team_set_waypoint team-name=([\\w+-.]+) position=([\\w+-.]*) ([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_waypoint_reg,
+        "^\\s*player_set_waypoint"
+        "\\s+player_name=([\\w+-.]+)"
+        "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
+    static const DECLARE_REGEX(team_set_waypoint_reg,
+        "^\\s*team_set_waypoint"
+        "\\s+team-name=([\\w+-.]+)"
+        "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
     static const DECLARE_REGEX(camera_key_binding_reg, "^\\s*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
     static const DECLARE_REGEX(abs_idle_binding_reg,
         "^\\s*abs_idle_binding\\r?\\n"
@@ -705,6 +712,10 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(set_way_points_reg, "^\\s*"
         "set_way_points"
         "\\s+player=([\\w+-.]+)"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+resource=([\\w+-.]+)$");
+    static const DECLARE_REGEX(set_pod_bot_way_points_reg, "^\\s*"
+        "set_pod_bot_way_points"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
     static const DECLARE_REGEX(set_can_drive_reg, "^\\s*"
@@ -2020,12 +2031,14 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, player_set_waypoint_reg)) {
             players.get_player(match[1].str()).set_waypoint({
                 safe_stof(match[2].str()),
-                safe_stof(match[3].str())});
+                safe_stof(match[3].str()),
+                safe_stof(match[4].str())});
         } else if (Mlib::re::regex_match(line, match, team_set_waypoint_reg)) {
             players.set_team_waypoint(
                 match[1].str(), {
                     safe_stof(match[2].str()),
-                    safe_stof(match[3].str())});
+                    safe_stof(match[3].str()),
+                    safe_stof(match[4].str())});
         } else if (Mlib::re::regex_match(line, match, camera_key_binding_reg)) {
             key_bindings.add_camera_key_binding(CameraKeyBinding{
                 .base = {
@@ -2727,8 +2740,12 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, set_way_points_reg)) {
             Player& player = players.get_player(match[1].str());
             SceneNode* node = scene.get_node(match[2].str());
-            std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points = scene_node_resources.way_points(match[3].str());
+            std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[3].str());
             player.set_waypoints(*node, way_points);
+        } else if (Mlib::re::regex_match(line, match, set_pod_bot_way_points_reg)) {
+            SceneNode* node = scene.get_node(match[1].str());
+            std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[2].str());
+            set_pod_bot_way_points(*node, way_points);
         } else if (Mlib::re::regex_match(line, match, set_can_drive_reg)) {
             Player& player = players.get_player(match[1].str());
             player.set_can_drive(safe_stob(match[2].str()));

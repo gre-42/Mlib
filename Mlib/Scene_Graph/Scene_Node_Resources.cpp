@@ -156,7 +156,7 @@ std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) 
     }
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<float, 2>> SceneNodeResources::way_points(const std::string& name) const
+std::map<WayPointLocation, PointsAndAdjacency<float, 3>> SceneNodeResources::way_points(const std::string& name) const
 {
     auto it = resources_.find(name);
     if (it == resources_.end()) {

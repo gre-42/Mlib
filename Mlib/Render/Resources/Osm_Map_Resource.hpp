@@ -34,7 +34,7 @@ public:
     virtual TransformationMatrix<double, 3> get_geographic_mapping(const SceneNode& scene_node) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
-    virtual std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points() const override;
+    virtual std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points() const override;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(cvas_);
@@ -62,7 +62,7 @@ private:
     SceneNodeResources& scene_node_resources_;
     float scale_;
     std::list<SpawnPoint> spawn_points_;
-    std::map<WayPointLocation, PointsAndAdjacency<float, 2>> way_points_;
+    std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points_;
     TransformationMatrix<double, 2> normalization_matrix_;
 
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain_;

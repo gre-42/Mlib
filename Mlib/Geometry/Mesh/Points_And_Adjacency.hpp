@@ -57,7 +57,7 @@ struct PointsAndAdjacency {
 
     template <class TSize>
     void plot(Svg<TSize>& svg, float line_width = 1.5) const {
-        static_assert(tndim == 2);
+        static_assert(tndim == 3);
         std::vector<TData> x_start;
         std::vector<TData> y_start;
         std::vector<TData> x_stop;

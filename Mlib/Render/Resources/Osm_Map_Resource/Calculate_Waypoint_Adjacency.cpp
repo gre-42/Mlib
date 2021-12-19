@@ -1,16 +1,18 @@
 #include "Calculate_Waypoint_Adjacency.hpp"
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 
 using namespace Mlib;
 
 void Mlib::calculate_waypoint_adjacency(
-    PointsAndAdjacency<float, 2>& way_points,
+    PointsAndAdjacency<float, 3>& way_points,
     const std::list<Building>& way_point_lines,
     const std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
     const std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes,
     const std::map<std::string, Node>& nodes,
+    const GroundBvh& ground_bvh,
     float scale)
 {
     std::map<std::string, size_t> indices_1_lane;
@@ -29,11 +31,19 @@ void Mlib::calculate_waypoint_adjacency(
         indices_2_lanes.insert({OrderableFixedArray<float, 2>{e.second(0), e.second(1)}, indices_2_lanes.size()});
     }
     way_points.points.resize(indices_1_lane.size() + indices_2_lanes.size());
+    auto p2_to_p3 = [&way_points, &ground_bvh](const FixedArray<float, 2>& p2){
+        float height;
+        if (ground_bvh.height(height, p2)) {
+            return FixedArray<float, 3>{p2(0), p2(1), height};
+        } else {
+            throw std::runtime_error("Could not determine waypoint height");
+        }
+    };
     for (const auto& p : indices_1_lane) {
-        way_points.points[p.second] = nodes.at(p.first).position;
+        way_points.points[p.second] = p2_to_p3(nodes.at(p.first).position);
     }
     for (const auto& p : indices_2_lanes) {
-        way_points.points[indices_1_lane.size() + p.second] = p.first;
+        way_points.points[indices_1_lane.size() + p.second] = p2_to_p3(p.first);
     }
     way_points.adjacency = SparseArrayCcs<float>{ArrayShape{
         indices_1_lane.size() + indices_2_lanes.size(),

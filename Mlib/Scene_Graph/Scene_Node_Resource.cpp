@@ -24,7 +24,7 @@ AggregateMode SceneNodeResource::aggregate_mode() const {
 std::list<SpawnPoint> SceneNodeResource::spawn_points() const {
     throw std::runtime_error("spawn_points not implemented");
 }
-std::map<WayPointLocation, PointsAndAdjacency<float, 2>> SceneNodeResource::way_points() const {
+std::map<WayPointLocation, PointsAndAdjacency<float, 3>> SceneNodeResource::way_points() const {
     throw std::runtime_error("way_points not implemented");
 }
 void SceneNodeResource::set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float>>& poses) {

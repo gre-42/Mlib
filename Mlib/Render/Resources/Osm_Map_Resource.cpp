@@ -904,6 +904,33 @@ OsmMapResource::OsmMapResource(
                 }
             }
         }
+        {
+            std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
+                BuildingType::WAYPOINTS,
+                ways,
+                0,  // building_bottom
+                0); // default_building_top
+            calculate_waypoint_adjacency(
+                way_points_[WayPointLocation::STREET],
+                way_point_lines,
+                way_point_edges_1_lane,
+                way_point_edges_2_lanes[WayPointLocation::STREET],
+                nodes,
+                ground_bvh,
+                config.scale);
+            calculate_waypoint_adjacency(
+                way_points_[WayPointLocation::SIDEWALK],
+                way_point_lines,
+                {},
+                way_point_edges_2_lanes[WayPointLocation::SIDEWALK],
+                nodes,
+                ground_bvh,
+                config.scale);
+        }
+        if (const char* wf = getenv("WAYPOINT_DEBUG_PREFIX"); (wf != nullptr)) {
+            way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1f);
+            way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1f);
+        }
     }
 
     {
@@ -989,31 +1016,6 @@ OsmMapResource::OsmMapResource(
                 }
             }
         }
-    }
-    {
-        std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
-            BuildingType::WAYPOINTS,
-            ways,
-            0,  // building_bottom
-            0); // default_building_top
-        calculate_waypoint_adjacency(
-            way_points_[WayPointLocation::STREET],
-            way_point_lines,
-            way_point_edges_1_lane,
-            way_point_edges_2_lanes[WayPointLocation::STREET],
-            nodes,
-            config.scale);
-        calculate_waypoint_adjacency(
-            way_points_[WayPointLocation::SIDEWALK],
-            way_point_lines,
-            {},
-            way_point_edges_2_lanes[WayPointLocation::SIDEWALK],
-            nodes,
-            config.scale);
-    }
-    if (const char* wf = getenv("WAYPOINT_DEBUG_PREFIX"); (wf != nullptr)) {
-        way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1f);
-        way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1f);
     }
 
     if (!std::isnan(config.extrude_air_curb_amount)) {
@@ -1219,6 +1221,6 @@ std::list<SpawnPoint> OsmMapResource::spawn_points() const {
     return spawn_points_;
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<float, 2>> OsmMapResource::way_points() const {
+std::map<WayPointLocation, PointsAndAdjacency<float, 3>> OsmMapResource::way_points() const {
     return way_points_;
 }

@@ -1,5 +1,4 @@
 #include "Player.hpp"
-#include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
@@ -12,7 +11,7 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
-#include <Mlib/Physics/Pod_Bot.hpp>
+#include <Mlib/Physics/Pod_Bot/Pod_Bot.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -45,7 +44,7 @@ Player::Player(
   surface_power_backward_{NAN},
   angular_velocity_left_{NAN},
   angular_velocity_right_{NAN},
-  waypoint_{fixed_nans<float, 2>()},
+  waypoint_{fixed_nans<float, 3>()},
   waypoint_id_{SIZE_MAX},
   waypoint_reached_{false},
   nwaypoints_reached_{0},
@@ -156,7 +155,7 @@ void Player::set_angular_velocity(float angular_velocity_left, float angular_vel
     angular_velocity_right_ = angular_velocity_right;
 }
 
-void Player::set_waypoint(const FixedArray<float, 2>& waypoint, size_t waypoint_id) {
+void Player::set_waypoint(const FixedArray<float, 3>& waypoint, size_t waypoint_id) {
     waypoint_ = waypoint;
     waypoint_id_ = waypoint_id;
     if (record_waypoints_ && !any(Mlib::isnan(waypoint))) {
@@ -165,7 +164,7 @@ void Player::set_waypoint(const FixedArray<float, 2>& waypoint, size_t waypoint_
     waypoint_reached_ = false;
 }
 
-void Player::set_waypoint(const FixedArray<float, 2>& waypoint) {
+void Player::set_waypoint(const FixedArray<float, 3>& waypoint) {
     set_waypoint(waypoint, SIZE_MAX);
 }
 
@@ -175,20 +174,17 @@ void Player::set_waypoint(size_t waypoint_id) {
 
 void Player::set_waypoints(
     const SceneNode& node,
-    const std::map<WayPointLocation, PointsAndAdjacency<float, 2>>& all_waypoints)
+    const std::map<WayPointLocation, PointsAndAdjacency<float, 3>>& all_waypoints)
 {
     all_waypoints_bvh_.clear();
     all_waypoints_ = all_waypoints;
-    FixedArray<float, 4, 4> m = node.absolute_model_matrix().affine();
-    FixedArray<float, 2, 3> m2{
-        m(0, 0), m(0, 1), m(0, 3),
-        m(2, 0), m(2, 1), m(2, 3)};
+    TransformationMatrix<float, 3> m = node.absolute_model_matrix();
     for (auto& wps : all_waypoints_) {
-        wps.second.adjacency = wps.second.adjacency / node.scale();
-        Bvh<float, size_t, 2> bvh{{100.f, 100.f}, 10};
+        wps.second.adjacency = wps.second.adjacency * m.get_scale();
+        Bvh<float, size_t, 3> bvh{{100.f, 100.f, 100.f}, 10};
         size_t i = 0;
-        for (FixedArray<float, 2>& p : wps.second.points) {
-            p = dot1d(m2, homogenized_3(p));
+        for (FixedArray<float, 3>& p : wps.second.points) {
+            p = m.transform(p);
             bvh.insert(p, i++);
         }
         // bvh.optimize_search_time(std::cout);
@@ -291,7 +287,7 @@ void Player::notify_spawn() {
     for (auto& l : last_visited_) {
         l = std::chrono::time_point<std::chrono::steady_clock>();
     }
-    set_waypoint(fixed_nans<float, 2>());
+    set_waypoint(fixed_nans<float, 3>());
     nwaypoints_reached_ = 0;
     spawn_time_ = std::chrono::steady_clock::now();
     spotted_by_vip_ = false;
@@ -333,7 +329,7 @@ void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody
         } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
             if (ramming()) {
                 auto tpos = target_rbi_->abs_position();
-                set_waypoint({tpos(0), tpos(2)});
+                set_waypoint(tpos);
             } else {
                 if (has_waypoints()) {
                     select_next_waypoint();
@@ -495,7 +491,7 @@ bool Player::has_rigid_body() const {
     return true;
 }
 
-const PointsAndAdjacency<float, 2>& Player::waypoints() const {
+const PointsAndAdjacency<float, 3>& Player::waypoints() const {
     auto it = all_waypoints_.find(driving_mode_.way_point_location);
     if (it == all_waypoints_.end()) {
         throw std::runtime_error("Could not find waypoints for the specified location");
@@ -517,6 +513,9 @@ bool Player::is_pedestrian() const {
 
 void Player::aim_and_shoot() {
     if (!skills_.can_aim) {
+        return;
+    }
+    if (game_mode_ == GameMode::GUNFIGHT) {
         return;
     }
     assert_true(!target_scene_node_ == !target_rbi_);
@@ -546,8 +545,8 @@ void Player::select_next_waypoint() {
     if (!has_rigid_body()) {
         return;
     }
-    FixedArray<float, 2> z2{rb_->rbi_.abs_z()(0), rb_->rbi_.abs_z()(2)};
-    FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
+    FixedArray<float, 3> z3 = rb_->rbi_.abs_z();
+    FixedArray<float, 3> pos3 = rb_->rbi_.abs_position();
     if (waypoint_id_ == SIZE_MAX) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;
@@ -555,14 +554,14 @@ void Player::select_next_waypoint() {
         float closest_distance2 = INFINITY;
         const auto& wps = waypoints();
         all_waypoints_bvh_.at(driving_mode_.way_point_location).visit(
-            {pos2, max_distance},
+            {pos3, max_distance},
             [&](size_t i)
         {
             const auto& rs = wps.points.at(i);
-            auto diff = rs - pos2;
+            auto diff = rs - pos3;
             auto dist2 = sum(squared(diff));
             if ((dist2 < 1e-6) ||
-                (dot0d(diff / std::sqrt(dist2), z2) < -std::cos(45 * M_PI / 180)))
+                (dot0d(diff / std::sqrt(dist2), z3) < -std::cos(45 * M_PI / 180)))
             {
                 if (dist2 < closest_distance2) {
                     closest_distance2 = dist2;
@@ -581,7 +580,7 @@ void Player::select_next_waypoint() {
                 size_t best_id = SIZE_MAX;
                 float best_distance = INFINITY;
                 for (const auto& rs : waypoints().adjacency.column(waypoint_id_)) {
-                    float dist = dot0d(waypoints().points.at(rs.first) - pos2, z2);
+                    float dist = dot0d(waypoints().points.at(rs.first) - pos3, z3);
                     if (dist < best_distance) {
                         best_id = rs.first;
                         best_distance = dist;
@@ -637,8 +636,8 @@ void Player::move_to_waypoint() {
     }
     // Stop when distance to waypoint is small enough (break).
     if (!ramming()) {
-        FixedArray<float, 2> pos2{rb_->rbi_.abs_position()(0), rb_->rbi_.abs_position()(2)};
-        if (sum(squared(pos2 - waypoint_)) < squared(driving_mode_.rest_radius)) {
+        FixedArray<float, 3> pos3 = rb_->rbi_.abs_position();
+        if (sum(squared(pos3 - waypoint_)) < squared(driving_mode_.rest_radius)) {
             step_on_breaks();
             if (waypoint_id_ != SIZE_MAX) {
                 last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
@@ -707,7 +706,7 @@ void Player::move_to_waypoint() {
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
         auto p = rb_->rbi_.rbp_.abs_position();
-        auto wpt = waypoint_ - FixedArray<float, 2>(p(0), p(2));
+        auto wpt = FixedArray<float, 2>{waypoint_(0), waypoint_(2)} - FixedArray<float, 2>{p(0), p(2)};
         FixedArray<float, 2, 2> m{
             z(1), -z(0),
             z(0), z(1)};
