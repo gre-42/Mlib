@@ -32,7 +32,7 @@ void Mlib::set_pod_bot_way_points(
          }
          const auto& column = w.second.adjacency.column(i);
          auto cit = column.begin();
-         auto path = *new PATH;
+         auto& path = *new PATH;
          paths[g_iNumWaypoints] = &path;
          path.iPathNumber = g_iNumWaypoints;
          path.flags = 0;
