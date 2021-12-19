@@ -76,7 +76,7 @@ edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const Vector& origin, float radiu
         it = indexent_.begin();
     } else {
         int start_index = ENTINDEX(pent);
-        auto it = indexent_.find(start_index);
+        it = indexent_.find(start_index);
         if (it == indexent_.end()) {
             throw std::runtime_error("Could not find start entity");
         }
