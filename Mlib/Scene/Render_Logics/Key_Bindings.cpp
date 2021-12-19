@@ -166,7 +166,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             if (any(abs(rb->tires_z_) > float(1e-12))) {
                 rb->tires_z_ /= std::sqrt(sum(squared(rb->tires_z_)));
             } else {
-                rb->tires_z_ = {0.f, 0.f, 1.f };
+                rb->tires_z_ = { 0.f, 0.f, 1.f };
                 rb->set_surface_power("main", NAN);
                 rb->set_surface_power("breaks", NAN);
             }
