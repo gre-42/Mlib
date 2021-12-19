@@ -5,9 +5,7 @@ namespace Mlib {
 
 class PodBot {
 public:
-    explicit PodBot(const std::string& name);
-private:
-    std::string name_;
+    explicit PodBot(const std::string& name, const std::string& team);
 };
 
 }

@@ -314,3 +314,13 @@ static const int FCVAR_PROTECTED = 32;       // It's a server cvar, but we don't
 static const int FCVAR_SPONLY = 64;          // This cvar cannot be changed by clients connected to a multiplayer server.
 static const int FCVAR_PRINTABLEONLY = 128;  // This cvar's string cannot contain unprintable characters (e.g. used for player name etc)
 static const int FCVAR_UNLOGGED = 256;       // If this is a FCVAR_SERVER, don't log changes to the log file / console if we are creating a log
+
+namespace Mlib {
+
+class Players;
+
+void pod_bot_set_players(Players* players);
+
+int pod_bot_team_id(const std::string& team_name);
+
+}

@@ -57,7 +57,7 @@ Player::Player(
   record_waypoints_{false}
 {
     if (game_mode_ == GameMode::GUNFIGHT) {
-        pod_bot_ = std::make_unique<PodBot>(name);
+        pod_bot_ = std::make_unique<PodBot>(name, team);
     }
 }
 
@@ -406,6 +406,22 @@ bool Player::unstuck() {
         }
     }
     return false;
+}
+
+void Player::run_move(float forwardmove, float sidemove) {
+    if (!has_rigid_body()) {
+        throw std::runtime_error("run_move despite nullptr");
+    }
+    FixedArray<float, 3> direction{ sidemove, 0.f, forwardmove };
+    float len2 = sum(squared(direction));
+    if (len2 < 1e-12) {
+        step_on_breaks();
+    } else {
+        float len = std::sqrt(len2);
+        rb_->tires_z_ = direction / len;
+        rb_->set_surface_power("main", len * surface_power_forward_);
+        rb_->set_surface_power("breaks", len * surface_power_forward_);
+    }
 }
 
 void Player::step_on_breaks() {

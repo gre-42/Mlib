@@ -1,4 +1,6 @@
 #include "mlib_compat.h"
+#include <Mlib/Physics/Advance_Times/Player.hpp>
+#include <Mlib/Physics/Containers/Players.hpp>
 #include <filesystem>
 #include <stdarg.h>
 
@@ -9,7 +11,7 @@ edict_t* INDEXENT(int index) {
 
 int ENTINDEX(const edict_t* e) {
     static std::map<const edict_t*, int> map;
-    auto it = map.insert({e, map.size()});
+    auto it = map.insert({ e, map.size() });
     return it.second;
 }
 
@@ -123,13 +125,36 @@ bool FNullEnt(const edict_t* pent) {
     return pent == nullptr;
 }
 
+static Mlib::Players* g_players;
+static std::map<edict_t*, Mlib::Player*> g_player_map;
+
 edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
     edict_t* result = new edict_t;
     strncpy(result->v.netname, name, sizeof(result->v.netname));
     result->v.netname[sizeof(result->v.netname) - 1] = '\0';
+    result->v.health = 100;
     return result;
 }
 
 void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangles, float forwardmove, float sidemove, float upmove, unsigned short buttons, uint8_t impulse, uint8_t msec) {
-    throw std::runtime_error("pfnRunPlayerMove not implemented");
+    if (g_players == nullptr) {
+        throw std::runtime_error("pfnRunPlayerMove without previous call to set_players");
+    }
+    auto& player = g_players->get_player(fakeclient->v.netname);
+    if (player.has_rigid_body()) {
+        player.run_move(forwardmove, sidemove);
+    }
+}
+
+void Mlib::pod_bot_set_players(Players* players) {
+    if (g_players != nullptr) {
+        throw std::runtime_error("Players already set");
+    }
+    g_players = players;
+}
+
+int Mlib::pod_bot_team_id(const std::string& team_name) {
+    std::map<std::string, int> team_ids_;
+    auto it = team_ids_.insert({ team_name, team_ids_.size() });
+    return it.second;
 }

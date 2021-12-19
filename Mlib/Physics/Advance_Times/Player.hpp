@@ -136,6 +136,7 @@ public:
     bool is_pedestrian() const;
     bool has_rigid_body() const;
     std::string vehicle_name() const;
+    void run_move(float forwardmove, float sidemove);
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;

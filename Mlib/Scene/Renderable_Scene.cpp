@@ -82,7 +82,7 @@ RenderableScene::RenderableScene(
       config.high_pass)},
   render_logics_{delete_node_mutex_, ui_focus},
   players_{physics_engine_.advance_times_, level_name, max_tracks},
-  pod_bots_{config.with_pod_bot ? std::make_unique<PodBots>(physics_engine_.advance_times_) : nullptr},
+  pod_bots_{config.with_pod_bot ? std::make_unique<PodBots>(physics_engine_.advance_times_, players_) : nullptr},
   game_logic_{
       scene_,
       physics_engine_.advance_times_,
