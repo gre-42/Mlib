@@ -279,3 +279,11 @@ edict_t* Mlib::get_edict(const std::string& player_name) {
     }
     return it->second;
 }
+
+void Mlib::pod_bot_initialize_edict(edict_t* edict) {
+    edict->v.absmin = edict->v.origin - ::Vector{ 0.5f, 0.5f, 1.f };
+    edict->v.size = ::Vector{ 1.f, 1.f, 1.8f };
+    const size_t PRIVATE_DATA_SIZE = 1000 * 1000;
+    edict->pvPrivateData = malloc(PRIVATE_DATA_SIZE);
+    std::fill((char*)edict->pvPrivateData, (char*)edict->pvPrivateData + PRIVATE_DATA_SIZE, 0);
+}

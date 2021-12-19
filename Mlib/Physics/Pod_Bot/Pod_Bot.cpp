@@ -20,4 +20,6 @@ PodBot::PodBot(
         bot_team,
         bot_class,
         bot_name);
+    
+    pod_bot_initialize_edict(get_edict(name));
 }

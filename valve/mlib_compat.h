@@ -334,4 +334,6 @@ std::string get_player_name(const RigidBodyIntegrator& rbi);
 
 edict_t* get_edict(const std::string& player_name);
 
+void pod_bot_initialize_edict(edict_t* edict);
+
 }
