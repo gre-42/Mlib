@@ -26,14 +26,11 @@ edict_t* INDEXENT(int index) {
 }
 
 int ENTINDEX(edict_t* e) {
-    auto it = entindex_.insert({ e, entindex_.size() });
-    if (it.second) {
-        auto it2 = indexent_.insert({ it.first->second, e });
-        if (!it2.second) {
-            throw std::runtime_error("Could not insert into indexent");
-        }
+    auto it = entindex_.find(e);
+    if (it == entindex_.end()) {
+        throw std::runtime_error("Not index for entity exists");
     }
-    return it.first->second;
+    return it->second;
 }
 
 int DECAL_INDEX(const char *pszDecalName) {
@@ -220,6 +217,13 @@ edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
     }
     if (!g_player_name_to_edict.insert({ fakeclient->v.netname, fakeclient }).second) {
         throw std::runtime_error("Could not insert into player to edict map");
+    }
+    auto eit = entindex_.insert({ fakeclient, entindex_.size() });
+    if (!eit.second) {
+        throw std::runtime_error("Could not insert fake client into entindex");
+    }
+    if (!indexent_.insert({ eit.first->second, fakeclient }).second) {
+        throw std::runtime_error("Could not insert fake client into indexent");
     }
     return fakeclient;
 }
