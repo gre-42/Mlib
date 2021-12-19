@@ -196,6 +196,7 @@ struct globalvars_t {
     float frametime;
     Vector v_right;
     Vector v_forward;
+    Vector v_up;
     const char* mapname;
 };
 

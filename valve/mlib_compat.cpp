@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <stdarg.h>
 
-#define VEC_VIEW			Vector( 0, 0, 28 )
+#define VEC_VIEW Vector( 0, 0, 28 )
 
 static std::map<int, edict_t*> indexent_;
 static std::map<edict_t*, int> entindex_;
@@ -91,28 +91,79 @@ edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const Vector& origin, float radiu
 }
 
 void UTIL_ServerPrint(const char *fmt, ...) {
-    /* Declare a va_list type variable */
+    // Declare a va_list type variable
     va_list myargs;
 
-    /* Initialise the va_list variable with the ... after fmt */
-
+    // Initialise the va_list variable with the ... after fmt
     va_start(myargs, fmt);
 
-    /* Forward the '...' to vprintf */
+    // Forward the '...' to vprintf
     if (vprintf(fmt, myargs) < 0) {
         std::cerr << "UTIL_ServerPrint failed" << std::endl;
     }
 
-    /* Clean up the va_list */
+    // Clean up the va_list
     va_end(myargs);
 }
 
-void FakeClientCommand(edict_t*, char const*, ...) {
-    throw std::runtime_error("Not yet implemented");
+void FakeClientCommand(edict_t* edict, char const* fmt, ...) {
+    // Declare a va_list type variable
+    va_list myargs;
+
+    // Initialise the va_list variable with the ... after fmt
+    va_start(myargs, fmt);
+
+    // Forward the '...' to vprintf
+    if (vprintf(fmt, myargs) < 0) {
+        std::cerr << "FakeClientCommand failed" << std::endl;
+    }
+
+    // Clean up the va_list
+    va_end(myargs);
 }
 
-void MAKE_VECTORS(Mlib::FixedArray<float, 3ul> const&) {
-    throw std::runtime_error("Not yet implemented");
+// up / down
+#define PITCH 0
+// left / right
+#define YAW   1
+// fall over
+#define ROLL  2 
+
+void AngleVectors (const Vector& angles, Vector& forward, Vector& right, Vector& up)
+{
+    float angle;
+    float sr, sp, sy, cr, cp, cy;
+    
+    angle = angles(YAW) * (M_PI*2 / 360);
+    sy = sin(angle);
+    cy = cos(angle);
+    angle = angles(PITCH) * (M_PI*2 / 360);
+    sp = sin(angle);
+    cp = cos(angle);
+    angle = angles(ROLL) * (M_PI*2 / 360);
+    sr = sin(angle);
+    cr = cos(angle);
+
+    forward(0) = cp*cy;
+    forward(1) = cp*sy;
+    forward(2) = -sp;
+
+    right(0) = (-1*sr*sp*cy+-1*cr*-sy);
+    right(1) = (-1*sr*sp*sy+-1*cr*cy);
+    right(2) = -1*sr*cp;
+
+    up(0) = (cr*sp*cy+-sr*-sy);
+    up(1) = (cr*sp*sy+-sr*cy);
+    up(2) = cr*cp;
+}
+
+void pfnMakeVectors(const Vector& angles)
+{
+	AngleVectors(angles, gpGlobals->v_forward, gpGlobals->v_right, gpGlobals->v_up);
+}
+
+void MAKE_VECTORS(const Vector& angles) {
+    pfnMakeVectors(angles);
 }
 
 Mlib::Player& Mlib::pod_bot_edict_to_player(const edict_t* edict) {
