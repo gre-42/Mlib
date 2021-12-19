@@ -133,6 +133,7 @@ edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
     strncpy(result->v.netname, name, sizeof(result->v.netname));
     result->v.netname[sizeof(result->v.netname) - 1] = '\0';
     result->v.health = 100;
+    result->v.flags = 0;
     return result;
 }
 
