@@ -46,7 +46,7 @@ struct entvars_t{
     int button;
     int oldbuttons;
     char netname[32];
-    const char* classname = nullptr;
+    char classname[32];
     const char* model = nullptr;
     const char* viewmodel = nullptr;
     const char* target = nullptr;
@@ -126,7 +126,7 @@ inline bool FStrEq(const char *sz1, const char *sz2)
 
 #define CALL_GAME_ENTITY(PLID, class_name, v)
 
-int ENTINDEX(const edict_t* e);
+int ENTINDEX(edict_t* e);
 
 int DECAL_INDEX(const char *pszDecalName);
 

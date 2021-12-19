@@ -4,15 +4,28 @@
 #include <filesystem>
 #include <stdarg.h>
 
+#define VEC_VIEW			Vector( 0, 0, 28 )
+
+static std::map<int, edict_t*> indexent_;
+static std::map<edict_t*, int> entindex_;
+
 edict_t* INDEXENT(int index) {
-    static std::map<int, edict_t*> map;
-    return map[index];
+    auto it = indexent_.find(index);
+    if (it == indexent_.end()) {
+        throw std::runtime_error("No entity with index exists");
+    }
+    return it->second;
 }
 
-int ENTINDEX(const edict_t* e) {
-    static std::map<const edict_t*, int> map;
-    auto it = map.insert({ e, map.size() });
-    return it.second;
+int ENTINDEX(edict_t* e) {
+    auto it = entindex_.insert({ e, entindex_.size() });
+    if (!it.second) {
+        auto it2 = indexent_.insert({ it.first->second, e });
+        if (!it2.second) {
+            throw std::runtime_error("Could not insert into indexent");
+        }
+    }
+    return it.first->second;
 }
 
 int DECAL_INDEX(const char *pszDecalName) {
@@ -54,7 +67,23 @@ void SERVER_COMMAND(const char* cmd) {
 }
 
 edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const Vector& origin, float radius) {
-    throw std::runtime_error("Not yet implemented");
+    std::map<int, edict_t*>::iterator it;
+    if (pent == nullptr) {
+        it = indexent_.begin();
+    } else {
+        int start_index = ENTINDEX(pent) + 1;
+        auto it = indexent_.find(start_index);
+        if (it == indexent_.end()) {
+            throw std::runtime_error("Could not find start entity");
+        }
+        ++it;
+    }
+    for (; it != indexent_.end(); ++it) {
+        if (sum(squared(it->second->v.origin - origin)) < Mlib::squared(radius)) {
+            return it->second;
+        }
+    }
+    return nullptr;
 }
 
 void UTIL_ServerPrint(const char *fmt, ...) {
@@ -82,7 +111,7 @@ void MAKE_VECTORS(Mlib::FixedArray<float, 3ul> const&) {
     throw std::runtime_error("Not yet implemented");
 }
 
-void TRACE_LINE(Mlib::FixedArray<float, 3ul> const&, Mlib::FixedArray<float, 3ul> const&, int, edict_t const*, TraceResult*) {
+void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, const edict_t* dct, TraceResult* tr) {
     throw std::runtime_error("Not yet implemented");
 }
 
@@ -134,6 +163,8 @@ edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
     result->v.netname[sizeof(result->v.netname) - 1] = '\0';
     result->v.health = 100;
     result->v.flags = 0;
+    result->v.view_ofs = VEC_VIEW;
+    strcpy(result->v.classname, "player");
     return result;
 }
 
