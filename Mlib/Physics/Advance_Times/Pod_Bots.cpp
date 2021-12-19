@@ -1,16 +1,20 @@
 #include "Pod_Bots.hpp"
+#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <pod_bot/bot_globals.h>
 #include <valve/mlib_compat.h>
 
 using namespace Mlib;
 
-PodBots::PodBots(AdvanceTimes& advance_times, Players& players)
+PodBots::PodBots(
+    AdvanceTimes& advance_times,
+    Players& players,
+    CollisionQuery& collision_query)
 : advance_times_{advance_times},
   start_time_{ std::chrono::steady_clock::now() }
 {
     advance_times_.add_advance_time(*this);
-    pod_bot_set_players(&players);
+    pod_bot_set_players(players, collision_query);
 }
 
 PodBots::~PodBots() {
@@ -25,13 +29,15 @@ void PodBots::advance_time(float dt) {
     g_iNum_bots = 0;
     for (int bot_index = 0; bot_index < gpGlobals->maxClients; bot_index++)
     {
-       if (bots[bot_index].is_used
-           && !FNullEnt (bots[bot_index].pEdict))
-       {
-            bots[bot_index].not_started = false;
-            g_i_botthink_index = bot_index; // KWo - 02.05.2006
-            BotThink (&bots[bot_index]);
-            g_iNum_bots++;
-       }
+        bot_t& bot = bots[bot_index];
+        if (bot.is_used && !FNullEnt(bot.pEdict))
+        {
+            if (pod_bot_edict_to_player(bot.pEdict).has_rigid_body()) {
+                bot.not_started = false;
+                g_i_botthink_index = bot_index; // KWo - 02.05.2006
+                BotThink (&bot);
+                g_iNum_bots++;
+            }
+        }
     }
 }

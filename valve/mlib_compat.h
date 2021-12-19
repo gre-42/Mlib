@@ -48,7 +48,7 @@ struct entvars_t{
     char netname[32];
     char classname[32];
     const char* model = nullptr;
-    const char* viewmodel = nullptr;
+    char viewmodel[32];
     const char* target = nullptr;
     const char* targetname = nullptr;
     edict_t* owner = nullptr;
@@ -142,7 +142,7 @@ inline void MDLL_ClientPutInServer(edict_t* BotEnt)
 {}
 
 typedef enum { ignore_monsters=1, dont_ignore_monsters=0, missile=2 } IGNORE_MONSTERS;
-typedef enum { ignore_glass } IGNORE_GLASS;
+typedef enum { ignore_glass=1 } IGNORE_GLASS;
 
 Vector UTIL_VecToAngles(const Vector& v);
 
@@ -317,10 +317,21 @@ static const int FCVAR_UNLOGGED = 256;       // If this is a FCVAR_SERVER, don't
 
 namespace Mlib {
 
+class Player;
 class Players;
+class CollisionQuery;
+class RigidBodyIntegrator;
 
-void pod_bot_set_players(Players* players);
+void pod_bot_set_players(Players& players, CollisionQuery& collision_query);
 
 int pod_bot_team_id(const std::string& team_name);
+
+Player& pod_bot_edict_to_player(const edict_t* edict);
+
+void set_player_rigid_body_integrator(const RigidBodyIntegrator& rbi, const std::string& player_name);
+
+std::string get_player_name(const RigidBodyIntegrator& rbi);
+
+edict_t* get_edict(const std::string& player_name);
 
 }

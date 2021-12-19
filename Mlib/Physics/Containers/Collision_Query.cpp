@@ -15,7 +15,10 @@ bool CollisionQuery::can_see(
     const FixedArray<float, 3>& watched,
     const RigidBodyIntegrator* excluded0,
     const RigidBodyIntegrator* excluded1,
-    bool only_terrain)
+    bool only_terrain,
+    FixedArray<float, 3>* intersection_point,
+    FixedArray<float, 3>* intersection_normal,
+    const RigidBodyIntegrator** seen_object)
 {
     FixedArray<float, 3> start = watcher;
     FixedArray<float, 3> dir = watched - start;
@@ -32,7 +35,9 @@ bool CollisionQuery::can_see(
         FixedArray<FixedArray<float, 3>, 2> l{
             start + alpha0 * dir,
             start + alpha1 * dir};
-        BoundingSphere<float, 3> bs{l};
+        float t_min = INFINITY;
+        const FixedArray<FixedArray<float, 3>, 3>* triangle_min;
+        BoundingSphere<float, 3> bs{ l };
         if (!only_terrain) {
             for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
                 if (&o0.rigid_body->rbi_ == excluded0 ||
@@ -51,37 +56,71 @@ bool CollisionQuery::can_see(
                         if (!t0.bounding_sphere.intersects(bs)) {
                             continue;
                         }
-                        FixedArray<float, 3> intersection_point;
+                        float t;
+                        FixedArray<float, 3> intersection_pt;
                         if (line_intersects_triangle(
                             l(0),
                             l(1),
                             t0.triangle,
-                            intersection_point))
+                            t,
+                            &intersection_pt))
                         {
-                            return false;
+                            if (t < t_min) {
+                                t_min = t;
+                                if (intersection_point != nullptr) {
+                                    *intersection_point = intersection_pt;
+                                }
+                                if (intersection_normal != nullptr) {
+                                    triangle_min = &t0.triangle;
+                                }
+                                if (seen_object != nullptr) {
+                                    *seen_object = &o0.rigid_body->rbi_;
+                                }
+                            } else {
+                                return false;
+                            }
                         }
                     }
                 }
             }
         }
         if (physics_engine_.cfg_.bvh) {
-            bool intersects = false;
             physics_engine_.rigid_bodies_.bvh_.visit(
                 AxisAlignedBoundingBox{ bs.center(), bs.radius() },
                 [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                    FixedArray<float, 3> intersection_point;
-                    if (!intersects) {
-                        intersects = (line_intersects_triangle(
-                            l(0),
-                            l(1),
-                            t0.ctp.triangle,
-                            intersection_point));
+                    float t;
+                    FixedArray<float, 3> intersection_pt;
+                    if (line_intersects_triangle(
+                        l(0),
+                        l(1),
+                        t0.ctp.triangle,
+                        t,
+                        &intersection_pt))
+                    {
+                        if (t < t_min) {
+                            t_min = t;
+                            if (intersection_point != nullptr) {
+                                *intersection_point = intersection_pt;
+                            }
+                            if (intersection_normal != nullptr) {
+                                triangle_min = &t0.ctp.triangle;
+                            }
+                            if (seen_object != nullptr) {
+                                *seen_object = nullptr;
+                            }
+                            return true;
+                        } else {
+                            return false;
+                        }
                     }
                     return true;
                 });
-            if (intersects) {
-                return false;
+        }
+        if (t_min != INFINITY) {
+            if (intersection_normal != nullptr) {
+                *intersection_normal = triangle_normal(*triangle_min);
             }
+            return false;
         }
     }
     return true;
@@ -92,7 +131,10 @@ bool CollisionQuery::can_see(
     const RigidBodyIntegrator& watched,
     bool only_terrain,
     float height_offset,
-    float time_offset)
+    float time_offset,
+    FixedArray<float, 3>* intersection_point,
+    FixedArray<float, 3>* intersection_normal,
+    const RigidBodyIntegrator** seen_object)
 {
     FixedArray<float, 3> d = {0.f, height_offset, 0.f};
     if (time_offset != 0) {
@@ -105,14 +147,20 @@ bool CollisionQuery::can_see(
             watched_rbp.abs_position() + d,
             &watcher,
             &watched,
-            only_terrain);
+            only_terrain,
+            intersection_point,
+            intersection_normal,
+            seen_object);
     } else {
         return can_see(
             watcher.abs_position() + d,
             watched.abs_position() + d,
             &watcher,
             &watched,
-            only_terrain);
+            only_terrain,
+            intersection_point,
+            intersection_normal,
+            seen_object);
     }
 }
 
@@ -121,7 +169,10 @@ bool CollisionQuery::can_see(
     const FixedArray<float, 3>& watched,
     bool only_terrain,
     float height_offset,
-    float time_offset)
+    float time_offset,
+    FixedArray<float, 3>* intersection_point,
+    FixedArray<float, 3>* intersection_normal,
+    const RigidBodyIntegrator** seen_object)
 {
     FixedArray<float, 3> d = {0.f, height_offset, 0.f };
     if (time_offset != 0) {
@@ -132,13 +183,19 @@ bool CollisionQuery::can_see(
             watched + d,
             &watcher,
             nullptr,
-            only_terrain);
+            only_terrain,
+            intersection_point,
+            intersection_normal,
+            seen_object);
     } else {
         return can_see(
             watcher.abs_position() + d,
             watched + d,
             &watcher,
             nullptr,
-            only_terrain);
+            only_terrain,
+            intersection_point,
+            intersection_normal,
+            seen_object);
     }
 }

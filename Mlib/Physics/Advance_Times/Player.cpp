@@ -118,6 +118,13 @@ void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene
     scene_node.add_destruction_observer(this);
 }
 
+const RigidBody& Player::rigid_body() const {
+    if (!has_rigid_body()) {
+        throw std::runtime_error("Player has no rigid body");
+    }
+    return *rb_;
+}
+
 const std::string& Player::scene_node_name() const {
     return scene_node_name_;
 }

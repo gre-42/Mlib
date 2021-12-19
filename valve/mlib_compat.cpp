@@ -1,6 +1,8 @@
 #include "mlib_compat.h"
 #include <Mlib/Physics/Advance_Times/Player.hpp>
+#include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <filesystem>
 #include <stdarg.h>
 
@@ -8,6 +10,12 @@
 
 static std::map<int, edict_t*> indexent_;
 static std::map<edict_t*, int> entindex_;
+static Mlib::Players* g_players;
+static Mlib::CollisionQuery* g_collision_query;
+static std::map<edict_t*, std::string> g_edict_to_player_name;
+static std::map<std::string, edict_t*> g_player_name_to_edict;
+static std::map<const Mlib::RigidBodyIntegrator*, std::string> g_rbi_to_player_name;
+static std::map<std::string, int> decal_map;
 
 edict_t* INDEXENT(int index) {
     auto it = indexent_.find(index);
@@ -19,7 +27,7 @@ edict_t* INDEXENT(int index) {
 
 int ENTINDEX(edict_t* e) {
     auto it = entindex_.insert({ e, entindex_.size() });
-    if (!it.second) {
+    if (it.second) {
         auto it2 = indexent_.insert({ it.first->second, e });
         if (!it2.second) {
             throw std::runtime_error("Could not insert into indexent");
@@ -29,8 +37,7 @@ int ENTINDEX(edict_t* e) {
 }
 
 int DECAL_INDEX(const char *pszDecalName) {
-    static std::map<std::string, int> map;
-    auto it = map.insert({pszDecalName, map.size()});
+    auto it = decal_map.insert({pszDecalName, decal_map.size()});
     return it.second;
 }
 
@@ -71,7 +78,7 @@ edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const Vector& origin, float radiu
     if (pent == nullptr) {
         it = indexent_.begin();
     } else {
-        int start_index = ENTINDEX(pent) + 1;
+        int start_index = ENTINDEX(pent);
         auto it = indexent_.find(start_index);
         if (it == indexent_.end()) {
             throw std::runtime_error("Could not find start entity");
@@ -111,8 +118,50 @@ void MAKE_VECTORS(Mlib::FixedArray<float, 3ul> const&) {
     throw std::runtime_error("Not yet implemented");
 }
 
-void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, const edict_t* dct, TraceResult* tr) {
-    throw std::runtime_error("Not yet implemented");
+Mlib::Player& Mlib::pod_bot_edict_to_player(const edict_t* edict) {
+    auto pit = g_edict_to_player_name.find(const_cast<edict_t*>(edict));
+    if (pit == g_edict_to_player_name.end()) {
+        throw std::runtime_error("Could not find player for entity");
+    }
+    return g_players->get_player(pit->second);
+}
+
+void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, const edict_t* pentIgnore, TraceResult* tr) {
+    if (g_collision_query == nullptr) {
+        throw std::runtime_error("TRACE_LINE without collision query");
+    }
+    Vector intersection_point;
+    Vector intersection_normal;
+    Mlib::Player& player = Mlib::pod_bot_edict_to_player(pentIgnore);
+    const Mlib::RigidBodyIntegrator* excluded0 = &player.rigid_body().rbi_;
+    const Mlib::RigidBodyIntegrator* excluded1 = nullptr;
+    const Mlib::RigidBodyIntegrator* seen_object = nullptr;
+    if (g_collision_query->can_see(
+        vecSource,
+        vecDest,
+        excluded0,
+        excluded1,
+        bool(ignored & IGNORE_MONSTERS::ignore_monsters),
+        &intersection_point,
+        &intersection_normal,
+        &seen_object))
+    {
+        tr->fAllSolid = 0.f;
+        tr->flFraction = 0.f;
+        tr->fStartSolid = 0.f;
+        tr->pHit = nullptr;
+    } else {
+        tr->fAllSolid = 1.f;
+        tr->flFraction = 1.f;
+        tr->fStartSolid = 1.f;
+        if (seen_object == nullptr) {
+            tr->pHit = nullptr;
+        } else {
+            tr->pHit = Mlib::get_edict(Mlib::get_player_name(*seen_object));
+        }
+        tr->vecEndPos = *intersection_point;
+        tr->vecPlaneNormal = *intersection_normal;
+    }
 }
 
 void UTIL_HostPrint(char const*, ...) {
@@ -154,18 +203,25 @@ bool FNullEnt(const edict_t* pent) {
     return pent == nullptr;
 }
 
-static Mlib::Players* g_players;
-static std::map<edict_t*, Mlib::Player*> g_player_map;
-
 edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
-    edict_t* result = new edict_t;
-    strncpy(result->v.netname, name, sizeof(result->v.netname));
-    result->v.netname[sizeof(result->v.netname) - 1] = '\0';
-    result->v.health = 100;
-    result->v.flags = 0;
-    result->v.view_ofs = VEC_VIEW;
-    strcpy(result->v.classname, "player");
-    return result;
+    if (g_players == nullptr) {
+        throw std::runtime_error("pfnCreateFakeClient without previous call to set_players");
+    }
+    edict_t* fakeclient = new edict_t;
+    strncpy(fakeclient->v.netname, name, sizeof(fakeclient->v.netname));
+    fakeclient->v.netname[sizeof(fakeclient->v.netname) - 1] = '\0';
+    fakeclient->v.health = 100;
+    fakeclient->v.flags = 0;
+    fakeclient->v.view_ofs = VEC_VIEW;
+    strcpy(fakeclient->v.classname, "player");
+    strcpy(fakeclient->v.viewmodel, "undefined_viewmodel");
+    if (!g_edict_to_player_name.insert({ fakeclient, fakeclient->v.netname }).second) {
+        throw std::runtime_error("Could not insert into edict to player map");
+    }
+    if (!g_player_name_to_edict.insert({ fakeclient->v.netname, fakeclient }).second) {
+        throw std::runtime_error("Could not insert into player to edict map");
+    }
+    return fakeclient;
 }
 
 void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangles, float forwardmove, float sidemove, float upmove, unsigned short buttons, uint8_t impulse, uint8_t msec) {
@@ -178,15 +234,44 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
     }
 }
 
-void Mlib::pod_bot_set_players(Players* players) {
+void Mlib::pod_bot_set_players(Players& players, CollisionQuery& collision_query) {
     if (g_players != nullptr) {
         throw std::runtime_error("Players already set");
     }
-    g_players = players;
+    if (g_collision_query != nullptr) {
+        throw std::runtime_error("Collision query already set");
+    }
+    g_players = &players;
+    g_collision_query = &collision_query;
 }
 
 int Mlib::pod_bot_team_id(const std::string& team_name) {
     std::map<std::string, int> team_ids_;
     auto it = team_ids_.insert({ team_name, team_ids_.size() });
     return it.second;
+}
+
+void Mlib::set_player_rigid_body_integrator(
+    const Mlib::RigidBodyIntegrator& rbi,
+    const std::string& player_name)
+{
+    if (!g_rbi_to_player_name.insert({ &rbi, player_name }).second) {
+        throw std::runtime_error("Could not set player rigid body integrator");
+    }
+}
+
+std::string Mlib::get_player_name(const Mlib::RigidBodyIntegrator& rbi) {
+    auto it = g_rbi_to_player_name.find(&rbi);
+    if (it == g_rbi_to_player_name.end()) {
+        throw std::runtime_error("Could not find player name for rigid body integrator");
+    }
+    return it->second;
+}
+
+edict_t* Mlib::get_edict(const std::string& player_name) {
+    auto it = g_player_name_to_edict.find(player_name);
+    if (it == g_player_name_to_edict.end()) {
+        throw std::runtime_error("Could not find edict for player name");
+    }
+    return it->second;
 }

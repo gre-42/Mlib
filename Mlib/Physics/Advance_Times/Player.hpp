@@ -95,6 +95,7 @@ public:
     void set_can_shoot(bool value);
     void reset_node();
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
+    const RigidBody& rigid_body() const;
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
     void set_surface_power(float forward, float backward);

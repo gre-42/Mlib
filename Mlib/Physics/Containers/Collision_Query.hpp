@@ -14,19 +14,28 @@ public:
         const FixedArray<float, 3>& watched,
         const RigidBodyIntegrator* excluded0 = nullptr,
         const RigidBodyIntegrator* excluded1 = nullptr,
-        bool only_terrain = false);
+        bool only_terrain = false,
+        FixedArray<float, 3>* intersection_point = nullptr,
+        FixedArray<float, 3>* intersection_normal = nullptr,
+        const RigidBodyIntegrator** seen_object = nullptr);
     bool can_see(
         const RigidBodyIntegrator& watcher,
         const RigidBodyIntegrator& watched,
         bool only_terrain = false,
         float height_offset = 0,
-        float time_offset = 0);
+        float time_offset = 0,
+        FixedArray<float, 3>* intersection_point = nullptr,
+        FixedArray<float, 3>* intersection_normal = nullptr,
+        const RigidBodyIntegrator** seen_object = nullptr);
     bool can_see(
         const RigidBodyIntegrator& watcher,
         const FixedArray<float, 3>& watched,
         bool only_terrain = false,
         float height_offset = 0,
-        float time_offset = 0);
+        float time_offset = 0,
+        FixedArray<float, 3>* intersection_point = nullptr,
+        FixedArray<float, 3>* intersection_normal = nullptr,
+        const RigidBodyIntegrator** seen_object = nullptr);
 private:
     PhysicsEngine& physics_engine_;
 };

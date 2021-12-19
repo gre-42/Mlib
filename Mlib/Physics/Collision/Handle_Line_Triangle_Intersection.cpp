@@ -20,13 +20,17 @@ using namespace Mlib;
 void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
 {
     FixedArray<float, 3> intersection_point;
-    bool intersects = line_intersects_triangle(
-        c.l1(0),
-        c.l1(1),
-        c.t0,
-        intersection_point);
-    if (!intersects) {
-        return;
+    {
+        float t;
+        if (!line_intersects_triangle(
+            c.l1(0),
+            c.l1(1),
+            c.t0,
+            t,
+            &intersection_point))
+        {
+            return;
+        }
     }
     CollisionType collision_type = CollisionType::REFLECT;
     bool abort = false;

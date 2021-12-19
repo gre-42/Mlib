@@ -6,10 +6,14 @@ namespace Mlib {
 
 class AdvanceTimes;
 class Players;
+class CollisionQuery;
 
 class PodBots: public AdvanceTime {
 public:
-    PodBots(AdvanceTimes& advance_times, Players& players);
+    PodBots(
+        AdvanceTimes& advance_times,
+        Players& players,
+        CollisionQuery& collision_query);
     ~PodBots();
     virtual void advance_time(float dt) override;
 private:
