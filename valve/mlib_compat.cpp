@@ -118,3 +118,18 @@ globalvars_t* gpGlobals = new globalvars_t{
     .v_forward = Vector{0.f, 1.f, 0.f},
     .mapname = "undefined_map_name"
 };
+
+bool FNullEnt(const edict_t* pent) {
+    return pent == nullptr;
+}
+
+edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
+    edict_t* result = new edict_t;
+    strncpy(result->v.netname, name, sizeof(result->v.netname));
+    result->v.netname[sizeof(result->v.netname) - 1] = '\0';
+    return result;
+}
+
+void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangles, float forwardmove, float sidemove, float upmove, unsigned short buttons, uint8_t impulse, uint8_t msec) {
+    throw std::runtime_error("pfnRunPlayerMove not implemented");
+}

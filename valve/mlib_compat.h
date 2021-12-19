@@ -12,7 +12,7 @@ typedef Mlib::FixedArray<float, 3> vec3_t;
 
 struct edict_t;
 
-struct V{
+struct entvars_t{
     int flags;
     int effects;
     int weapons;
@@ -45,15 +45,15 @@ struct V{
     uint32_t frags;
     int button;
     int oldbuttons;
-    const char* netname;
-    const char* classname;
-    const char* model;
-    const char* viewmodel;
-    const char* target;
-    const char* targetname;
-    edict_t* owner;
-    edict_t* dmg_inflictor;
-    edict_t* groundentity;
+    char netname[32];
+    const char* classname = nullptr;
+    const char* model = nullptr;
+    const char* viewmodel = nullptr;
+    const char* target = nullptr;
+    const char* targetname = nullptr;
+    edict_t* owner = nullptr;
+    edict_t* dmg_inflictor = nullptr;
+    edict_t* groundentity = nullptr;
     double dmgtime;
     int renderfx;
     int rendermode;
@@ -63,9 +63,9 @@ struct V{
 };
 
 struct edict_t {
-    V v;
+    entvars_t v;
     std::map<std::string, const char*> info_key_buffer;
-    void* pvPrivateData;
+    void* pvPrivateData = nullptr;
 };
 
 inline char* GET_INFOKEYBUFFER(edict_t* edict) {
@@ -108,7 +108,7 @@ edict_t* INDEXENT(int index);
 
 #define eoNullEntity 0
 // inline BOOL FNullEnt(EOFFSET eoffset)            { return eoffset == 0; }
-inline bool FNullEnt(const edict_t* pent)    { return true; }
+bool FNullEnt(const edict_t* pent);
 // inline BOOL FNullEnt(entvars_t* pev)                { return pev == NULL || FNullEnt(OFFSET(pev)); }
 
 typedef const char *string_t;
@@ -285,12 +285,8 @@ inline int GETENTITYILLUM(edict_t *pEnt) {
 }
 
 struct enginefuncs_t{
-    inline edict_t* pfnCreateFakeClient(const char* name) {
-        return nullptr;
-    }
-    inline void pfnRunPlayerMove(edict_t *fakeclient, const float *viewangles, float forwardmove, float sidemove, float upmove, unsigned short buttons, uint8_t impulse, uint8_t msec) {
-        throw std::runtime_error("pfnRunPlayerMove not implemented");
-    }
+    edict_t* pfnCreateFakeClient(const char* name);
+    void pfnRunPlayerMove(edict_t *fakeclient, const float *viewangles, float forwardmove, float sidemove, float upmove, unsigned short buttons, uint8_t impulse, uint8_t msec);
 };
 
 typedef enum {

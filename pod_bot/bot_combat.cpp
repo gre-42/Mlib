@@ -1365,7 +1365,10 @@ bool BotFireWeapon (Vector v_enemy, bot_t *pBot)
 
    if (!FNullEnt (pBot->pBotEnemy))
    {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
       strncpy (szEnemyModelName, (INFOKEY_VALUE (GET_INFOKEYBUFFER (pBot->pBotEnemy), "model")), sizeof (szEnemyModelName)); // KWo - 04.07.2008
+#pragma GCC diagnostic pop
       bEnemyIsChicken = ((strncmp ("chicken", szEnemyModelName, 7) == 0)
          || (strncmp ("zomb", szEnemyModelName, 4) == 0)); // KWo - 04.07.2008
 
@@ -2214,7 +2217,10 @@ void BotSelectBestWeapon (bot_t *pBot)
       iEnemyIndex = ENTINDEX(pBot->pBotEnemy)-1;
       iWeaponEnemy = clients[iEnemyIndex].iCurrentWeaponId;
       iDistance = (int)Length(pBot->pEdict->v.origin - pBot->pBotEnemy->v.origin); // KWo - 24.06.2008
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
       strncpy (szEnemyModelName, (INFOKEY_VALUE (GET_INFOKEYBUFFER (pBot->pBotEnemy), "model")), sizeof (szEnemyModelName)); // KWo - 04.07.2008
+#pragma GCC diagnostic pop
       bEnemyIsChicken = ((strncmp ("chicken", szEnemyModelName, 7) == 0)
          || (strncmp ("zomb", szEnemyModelName, 4) == 0)); // KWo - 04.07.2008
    }
