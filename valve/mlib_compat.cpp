@@ -174,9 +174,27 @@ Mlib::Player& Mlib::pod_bot_edict_to_player(const edict_t* edict) {
     return g_players->get_player(pit->second);
 }
 
+static edict_t solid_edict;
+// static edict_t null_edict;
+
+static struct DefaultEdictInitializer {
+    DefaultEdictInitializer() {
+        strcpy(solid_edict.v.classname, "default_solid_xyz");
+        // strcpy(null_edict.v.classname, "default_null_xyz");
+    }
+} default_edict_initializer;
+
 void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, const edict_t* pentIgnore, TraceResult* tr) {
     if (g_collision_query == nullptr) {
         throw std::runtime_error("TRACE_LINE without collision query");
+    }
+    if (Mlib::all(vecSource == vecDest)) {
+        tr->fAllSolid = 0.f;
+        tr->flFraction = 1.f;
+        tr->fStartSolid = 0.f;
+        tr->pHit = nullptr;
+        // tr->pHit = &null_edict;
+        return;
     }
     Vector intersection_point;
     Vector intersection_normal;
@@ -195,16 +213,17 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
         &seen_object))
     {
         tr->fAllSolid = 0.f;
-        tr->flFraction = 0.f;
+        tr->flFraction = 1.f;
         tr->fStartSolid = 0.f;
         tr->pHit = nullptr;
     } else {
-        tr->fAllSolid = 1.f;
-        tr->flFraction = 1.f;
-        tr->fStartSolid = 1.f;
+        tr->fAllSolid = 0.f;
+        tr->flFraction = 0.9f;
         if (seen_object == nullptr) {
-            tr->pHit = nullptr;
+            tr->fStartSolid = 1.f;
+            tr->pHit = &solid_edict;
         } else {
+            tr->fStartSolid = 0.f;
             tr->pHit = Mlib::get_edict(Mlib::get_player_name(*seen_object));
         }
         tr->vecEndPos = *intersection_point;

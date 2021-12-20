@@ -5715,17 +5715,19 @@ void BotChooseAimDirection (bot_t *pBot)
                   || (pBot->iWPTFlags & W_FL_CAMP)))// KWo - 23.03.2006
          {
             v_src = paths[pBot->prev_wpt_index[0]]->origin;
-            vecDirection = Normalize(pBot->dest_origin - v_src);
-            v_dest = pBot->dest_origin + vecDirection * 80.f;
+            if (sum(squared(v_src - pBot->dest_origin)) > 1e-3) {
+               vecDirection = Normalize(pBot->dest_origin - v_src);
+               v_dest = pBot->dest_origin + vecDirection * 80.f;
 
-            // trace forward...
-            TRACE_LINE (pBot->dest_origin, v_dest, dont_ignore_monsters, pEdict, &tr);
-            // check if the trace hit a wall, then look back (I hate them looking at the wall :) )
-            if ((tr.flFraction < 1.0) && (FStrEq("worldspawn", STRING (tr.pHit->v.classname))))
-            {
-               pBot->vecLookAt = paths[pBot->prev_wpt_index[0]]->origin + pBot->pEdict->v.view_ofs;
-               pBot->fChangeAimDirectionTime = gpGlobals->time + 0.6f; // KWo - 09.12.2007
-               bDestAimingSelected = TRUE; // KWo - 09.12.2007
+               // trace forward...
+               TRACE_LINE (pBot->dest_origin, v_dest, dont_ignore_monsters, pEdict, &tr);
+               // check if the trace hit a wall, then look back (I hate them looking at the wall :) )
+               if ((tr.flFraction < 1.0) && (FStrEq("worldspawn", STRING (tr.pHit->v.classname))))
+               {
+                  pBot->vecLookAt = paths[pBot->prev_wpt_index[0]]->origin + pBot->pEdict->v.view_ofs;
+                  pBot->fChangeAimDirectionTime = gpGlobals->time + 0.6f; // KWo - 09.12.2007
+                  bDestAimingSelected = TRUE; // KWo - 09.12.2007
+               }
             }
          }
       }
