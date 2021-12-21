@@ -2145,21 +2145,25 @@ bool BotHeadTowardWaypoint (bot_t *pBot)
             && (pBot->curr_wpt_index > -1) && (pBot->curr_wpt_index < g_iNumWaypoints)
             && (pBot->pEdict->v.movetype != MOVETYPE_FLY) && (paths[pBot->curr_wpt_index]->Radius < 17))  // KWo - 24.01.2010
          {
-            v2_prev2 = Normalize(Make2D(paths[pBot->prev_wpt_index[1]]->origin - paths[pBot->prev_wpt_index[0]]->origin));
-            v2_prev1 = Normalize(Make2D(paths[pBot->curr_wpt_index]->origin - paths[pBot->prev_wpt_index[0]]->origin));
-            fDot = DotProduct(v2_prev2, v2_prev1);
-/*
-            if (pHostEdict)
-            {
-               if ((pHostEdict->v.origin - pBot->pEdict->v.origin).Length() < 30.0)
+            auto a = Make2D(paths[pBot->prev_wpt_index[1]]->origin - paths[pBot->prev_wpt_index[0]]->origin);
+            auto b = Make2D(paths[pBot->curr_wpt_index]->origin - paths[pBot->prev_wpt_index[0]]->origin);
+            if (Mlib::sum(Mlib::squared(a)) > 1e-3 && Mlib::sum(Mlib::squared(b)) > 1e-3) {
+               v2_prev2 = Normalize(a);
+               v2_prev1 = Normalize(b);
+               fDot = DotProduct(v2_prev2, v2_prev1);
+   /*
+               if (pHostEdict)
                {
-                  ALERT (at_logged, "[Debug] Bot %s checks the direction change, fDot = %0.3f.\n", pBot->name, fDot);
-                  UTIL_HostPrint ("Bot %s checks the direction change, fDot = %0.3f.\n", pBot->name, fDot);
+                  if ((pHostEdict->v.origin - pBot->pEdict->v.origin).Length() < 30.0)
+                  {
+                     ALERT (at_logged, "[Debug] Bot %s checks the direction change, fDot = %0.3f.\n", pBot->name, fDot);
+                     UTIL_HostPrint ("Bot %s checks the direction change, fDot = %0.3f.\n", pBot->name, fDot);
+                  }
                }
+   */
+               if (fDot > -0.6)
+                  pBot->f_wpt_tim_str_chg = gpGlobals->time;
             }
-*/
-            if (fDot > -0.6)
-               pBot->f_wpt_tim_str_chg = gpGlobals->time;
          }
       }
    }
