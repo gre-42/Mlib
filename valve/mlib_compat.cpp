@@ -308,7 +308,11 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
         Vector right;
         Vector up;
         AngleVectors(*(const Vector*)viewangles, forward, right, up);
-        player.run_move(u_q2o(forward), u_q2o(right), u_q2o(up), forwardmove, sidemove);
+        Mlib::FixedArray<float, 3, 3> R{
+            right(0), forward(0), up(0),
+            right(1), forward(1), up(1),
+            right(2), forward(2), up(2)};
+        player.run_move(Mlib::mm_q2o(R), forwardmove, sidemove);
     }
 }
 

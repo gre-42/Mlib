@@ -339,14 +339,28 @@ void pod_bot_initialize_edict(edict_t* edict);
 
 static float s_o2q = 120.f / 2.f;
 
+// From: https://community.khronos.org/t/quake3-coordinate-system/41901
+static const FixedArray<float, 3, 3> m_q2o{
+    1.f, 0.f, 0.f,
+    0.f, 0.f, 1.f,
+    0.f, -1.f, 0.f};
+
+static const FixedArray<float, 3, 3> m_o2q = m_q2o.T();
+
+inline FixedArray<float, 3, 3> mm_q2o(const FixedArray<float, 3, 3>& R) {
+    return dot2d(m_q2o, dot2d(R, m_o2q));
+}
+
 // Position
 inline ::Vector p_o2q(const ::Vector& o) {
-    return ::Vector{ o(0), o(2), o(1) } * s_o2q;
+    return dot1d(m_o2q, o) * s_o2q;
+    // return ::Vector{ o(0), -o(2), o(1) } * s_o2q;
 }
 
 // Unit vector
 inline ::Vector u_q2o(const ::Vector& o) {
-    return ::Vector{ o(0), o(2), o(1) };
+    return dot1d(m_q2o, o);
+    // return ::Vector{ o(0), o(2), -o(1) };
 }
 
 }

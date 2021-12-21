@@ -417,9 +417,7 @@ bool Player::unstuck() {
 }
 
 void Player::run_move(
-    const FixedArray<float, 3>& forward,
-    const FixedArray<float, 3>& right,
-    const FixedArray<float, 3>& up,
+    const FixedArray<float, 3, 3>& R,
     float forwardmove,
     float sidemove)
 {
@@ -427,10 +425,6 @@ void Player::run_move(
         throw std::runtime_error("run_move despite nullptr");
     }
 
-    FixedArray<float, 3, 3> R{
-        right(0), up(0), forward(0),
-        right(1), up(1), forward(1),
-        right(2), up(2), forward(2)};
     rb_->rbi_.rbp_.set_pose(R, rb_->rbi_.rbp_.abs_position());
 
     FixedArray<float, 3> direction{ sidemove, 0.f, -forwardmove };

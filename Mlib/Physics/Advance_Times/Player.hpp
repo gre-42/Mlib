@@ -138,9 +138,7 @@ public:
     bool has_rigid_body() const;
     std::string vehicle_name() const;
     void run_move(
-        const FixedArray<float, 3>& forward,
-        const FixedArray<float, 3>& right,
-        const FixedArray<float, 3>& up,
+        const FixedArray<float, 3, 3>& R,
         float forwardmove,
         float sidemove);
 
