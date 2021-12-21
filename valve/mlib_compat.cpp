@@ -304,7 +304,11 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
     }
     auto& player = g_players->get_player(fakeclient->v.netname);
     if (player.has_rigid_body()) {
-        player.run_move(forwardmove, sidemove);
+        Vector forward;
+        Vector right;
+        Vector up;
+        AngleVectors(*(const Vector*)viewangles, forward, right, up);
+        player.run_move(u_q2o(forward), u_q2o(right), u_q2o(up), forwardmove, sidemove);
     }
 }
 
@@ -351,8 +355,6 @@ edict_t* Mlib::get_edict(const std::string& player_name) {
 }
 
 void Mlib::pod_bot_initialize_edict(edict_t* edict) {
-    edict->v.absmin = edict->v.origin - ::Vector{ 0.5f, 0.5f, 1.f };
-    edict->v.size = ::Vector{ 1.f, 1.f, 1.8f };
     const size_t PRIVATE_DATA_SIZE = 1000 * 1000;
     edict->pvPrivateData = malloc(PRIVATE_DATA_SIZE);
     std::fill((char*)edict->pvPrivateData, (char*)edict->pvPrivateData + PRIVATE_DATA_SIZE, 0);

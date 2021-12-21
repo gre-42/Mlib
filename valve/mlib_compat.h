@@ -18,12 +18,12 @@ struct entvars_t{
     int weapons;
     int solid;
     int light_level;
-    Vector origin;
-    Vector angles;
-    Vector v_angle;
-    Vector absmin;
-    Vector velocity;
-    Vector view_ofs;
+    ::Vector origin;
+    ::Vector angles;
+    ::Vector v_angle;
+    ::Vector absmin;
+    ::Vector velocity;
+    ::Vector view_ofs;
     bool takedamage;
     int impulse;
     int dmg;
@@ -41,7 +41,7 @@ struct entvars_t{
     float yaw_speed;
     float pitch_speed;
     float fov;
-    Vector punchangle;
+    ::Vector punchangle;
     uint32_t frags;
     int button;
     int oldbuttons;
@@ -57,8 +57,8 @@ struct entvars_t{
     double dmgtime;
     int renderfx;
     int rendermode;
-    Vector rendercolor;
-    Vector size;
+    ::Vector rendercolor;
+    ::Vector size;
     float renderamt;
 };
 
@@ -99,7 +99,7 @@ typedef struct hudtextparms_s
 
 static const bool TRUE = true;
 static const bool FALSE = false;
-static const Vector g_vecZero{0.f, 0.f, 0.f};
+static const ::Vector g_vecZero{0.f, 0.f, 0.f};
 
 long RANDOM_LONG(long min, long max);
 float RANDOM_FLOAT(float min, float max);
@@ -144,27 +144,27 @@ inline void MDLL_ClientPutInServer(edict_t* BotEnt)
 typedef enum { ignore_monsters=1, dont_ignore_monsters=0, missile=2 } IGNORE_MONSTERS;
 typedef enum { ignore_glass=1 } IGNORE_GLASS;
 
-Vector UTIL_VecToAngles(const Vector& v);
+::Vector UTIL_VecToAngles(const ::Vector& v);
 
 struct TraceResult{
     bool fStartSolid;
-    Vector vecEndPos;
+    ::Vector vecEndPos;
     float flFraction;
     float fAllSolid;
-    Vector vecPlaneNormal;
+    ::Vector vecPlaneNormal;
     edict_t* pHit;
 };
 
-void UTIL_TraceLine (const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
-void UTIL_TraceLine (const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
+void UTIL_TraceLine (const ::Vector &vecStart, const ::Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
+void UTIL_TraceLine (const ::Vector &vecStart, const ::Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
 
-Vector GetGunPosition(const edict_t* dct);
-void TRACE_LINE (const Vector& vecSource, const Vector& vecDest, int ignored, const edict_t* dct, TraceResult* tr);
+::Vector GetGunPosition(const edict_t* dct);
+void TRACE_LINE (const ::Vector& vecSource, const ::Vector& vecDest, int ignored, const edict_t* dct, TraceResult* tr);
 
-void MAKE_VECTORS(const Vector& v);
+void MAKE_VECTORS(const ::Vector& v);
 
-inline Vector2D Make2D(const Vector& v) {
-    return Vector2D(v(0), v(1));
+inline ::Vector2D Make2D(const ::Vector& v) {
+    return ::Vector2D(v(0), v(1));
 }
 
 template <size_t tndim>
@@ -182,9 +182,9 @@ Mlib::FixedArray<float, tndim> Normalize(const Mlib::FixedArray<float, tndim>& v
     return v / Length(v);
 }
 
-edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const Vector& origin, float radius);
+edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const ::Vector& origin, float radius);
 
-inline float Length2D(const Vector& v) {
+inline float Length2D(const ::Vector& v) {
     return Length(Make2D(v));
 }
 
@@ -194,9 +194,9 @@ struct globalvars_t {
     int maxClients;
     float time;
     float frametime;
-    Vector v_right;
-    Vector v_forward;
-    Vector v_up;
+    ::Vector v_right;
+    ::Vector v_forward;
+    ::Vector v_up;
     const char* mapname;
 };
 
@@ -219,14 +219,14 @@ struct cvar_t{
     {}
 };
 
-static const Vector VEC_HULL_MIN{0.f, 0.f, 1.8f};
-static const Vector VEC_DUCK_HULL_MIN{0.f, 0.f, 1.f};
+static const ::Vector VEC_HULL_MIN{0.f, 0.f, 1.8f};
+static const ::Vector VEC_DUCK_HULL_MIN{0.f, 0.f, 1.f};
 
-int POINT_CONTENTS(const Vector& vec);
+int POINT_CONTENTS(const ::Vector& vec);
 
 enum HULL {head_hull, human_hull, point_hull};
 
-void TRACE_HULL (const Vector& vecMidPoint, const Vector& vecTemp, IGNORE_MONSTERS ignore_monsters, HULL hull, edict_t* pEdict, TraceResult* tr);
+void TRACE_HULL (const ::Vector& vecMidPoint, const ::Vector& vecTemp, IGNORE_MONSTERS ignore_monsters, HULL hull, edict_t* pEdict, TraceResult* tr);
 
 enum MESSAGE {
     SVC_TEMPENTITY = 23,
@@ -302,7 +302,7 @@ int COMPARE_FILE_TIME(const std::string& filename1, const std::string& filename2
 
 void SERVER_COMMAND(const char* cmd);
 
-inline void SET_ORIGIN (edict_t* edict, const Vector& v) {
+inline void SET_ORIGIN (edict_t* edict, const ::Vector& v) {
     edict->v.origin = v;
 }
 
@@ -336,5 +336,17 @@ std::string get_player_name(const RigidBodyIntegrator& rbi);
 edict_t* get_edict(const std::string& player_name);
 
 void pod_bot_initialize_edict(edict_t* edict);
+
+static float s_o2q = 120.f / 2.f;
+
+// Position
+inline ::Vector p_o2q(const ::Vector& o) {
+    return ::Vector{ o(0), o(2), o(1) } * s_o2q;
+}
+
+// Unit vector
+inline ::Vector u_q2o(const ::Vector& o) {
+    return ::Vector{ o(0), o(2), o(1) };
+}
 
 }

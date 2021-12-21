@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <pod_bot/bot_globals.h>
+#include <valve/mlib_compat.h>
 
 using namespace Mlib;
 
@@ -37,7 +38,7 @@ void Mlib::set_pod_bot_way_points(
          paths[g_iNumWaypoints] = &path;
          path.iPathNumber = g_iNumWaypoints;
          path.flags = 0;
-         path.origin = m.transform(w.second.points[i]);
+         path.origin = p_o2q(m.transform(w.second.points[i]));
          path.Radius = 1.f;
          path.fcampstartx = 0.f;
          path.fcampstarty = 0.f;
@@ -55,14 +56,14 @@ void Mlib::set_pod_bot_way_points(
             std::cerr << "WARNING: Waypoint has too many neighbors" << std::endl;
          }
          cit = column.begin();
-         path.distance[0] = cit == column.end() ? -1 : (cit++)->second * scale;
-         path.distance[1] = cit == column.end() ? -1 : (cit++)->second * scale;
-         path.distance[2] = cit == column.end() ? -1 : (cit++)->second * scale;
-         path.distance[3] = cit == column.end() ? -1 : (cit++)->second * scale;
-         path.distance[4] = cit == column.end() ? -1 : (cit++)->second * scale;
-         path.distance[5] = cit == column.end() ? -1 : (cit++)->second * scale;
-         path.distance[6] = cit == column.end() ? -1 : (cit++)->second * scale;
-         path.distance[7] = cit == column.end() ? -1 : (cit++)->second * scale;
+         path.distance[0] = cit == column.end() ? -1 : (cit++)->second * scale * s_o2q;
+         path.distance[1] = cit == column.end() ? -1 : (cit++)->second * scale * s_o2q;
+         path.distance[2] = cit == column.end() ? -1 : (cit++)->second * scale * s_o2q;
+         path.distance[3] = cit == column.end() ? -1 : (cit++)->second * scale * s_o2q;
+         path.distance[4] = cit == column.end() ? -1 : (cit++)->second * scale * s_o2q;
+         path.distance[5] = cit == column.end() ? -1 : (cit++)->second * scale * s_o2q;
+         path.distance[6] = cit == column.end() ? -1 : (cit++)->second * scale * s_o2q;
+         path.distance[7] = cit == column.end() ? -1 : (cit++)->second * scale * s_o2q;
          path.connectflag[0] = 0;
          path.connectflag[1] = 0;
          path.connectflag[2] = 0;
