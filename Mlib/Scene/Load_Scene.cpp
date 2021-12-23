@@ -33,6 +33,7 @@
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
+#include <Mlib/Physics/Pod_Bot/Set_Pod_Bot_Game_Mode.hpp>
 #include <Mlib/Physics/Pod_Bot/Set_Pod_Bot_Way_Points.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -718,6 +719,9 @@ void LoadScene::operator()(
         "set_pod_bot_way_points"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
+    static const DECLARE_REGEX(set_pod_bot_game_mode_reg, "^\\s*"
+        "set_pod_bot_game_mode"
+        "\\s+(as|cs|de|awp|aim|fy|es)$");
     static const DECLARE_REGEX(set_can_drive_reg, "^\\s*"
         "set_can_drive"
         "\\s+player=([\\w+-.]+)"
@@ -2746,6 +2750,8 @@ void LoadScene::operator()(
             SceneNode* node = scene.get_node(match[1].str());
             std::map<WayPointLocation, PointsAndAdjacency<float, 3>> way_points = scene_node_resources.way_points(match[2].str());
             set_pod_bot_way_points(*node, way_points);
+        } else if (Mlib::re::regex_match(line, match, set_pod_bot_game_mode_reg)) {
+            set_pod_bot_game_mode(match[1].str());
         } else if (Mlib::re::regex_match(line, match, set_can_drive_reg)) {
             Player& player = players.get_player(match[1].str());
             player.set_can_drive(safe_stob(match[2].str()));

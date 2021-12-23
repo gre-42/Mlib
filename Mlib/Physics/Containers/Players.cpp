@@ -15,7 +15,7 @@ Players::Players(
     size_t max_tracks)
 : advance_times_{advance_times},
   level_name_{level_name},
-  game_history_{new GameHistory(max_tracks)}
+  game_history_{std::make_unique<GameHistory>(max_tracks)}
 {}
 
 Players::~Players()

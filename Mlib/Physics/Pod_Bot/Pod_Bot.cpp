@@ -24,5 +24,8 @@ PodBot::PodBot(
     edict_t* edict = get_edict(name);
 
     pod_bot_initialize_edict(edict);
-    pod_bot_get_client(edict)->iTeam = bot_team;
+
+    client_t* client = pod_bot_get_client(edict);
+    client->iTeam = bot_team;
+    client->iFlags |= CLIENT_ALIVE;
 }

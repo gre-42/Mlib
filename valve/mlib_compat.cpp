@@ -252,7 +252,7 @@ void UTIL_HudMessage(edict_t*, hudtextparms_t const&, char*) {
 }
 
 int POINT_CONTENTS(const Vector& vec) {
-    throw std::runtime_error("Not yet implemented");
+    return CONTENTS_EMPTY;
 }
 
 int GET_USER_MSG_ID (plid_t plid, const char* name, int* size) {

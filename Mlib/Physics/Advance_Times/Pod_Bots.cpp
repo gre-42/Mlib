@@ -50,13 +50,15 @@ void PodBots::advance_time(float dt) {
         Player& player = pod_bot_edict_to_player(bot.pEdict);
         const RigidBodyPulses& rbp = player.rigid_body().rbi_.rbp_;
         bot.pEdict->v.origin = p_o2q(rbp.abs_position());
-        bot.pEdict->v.angles = UTIL_VecToAngles(p_o2q(rbp.abs_z()));
-        bot.pEdict->v.v_angle = UTIL_VecToAngles(p_o2q(rbp.abs_z()));
+        bot.pEdict->v.angles = UTIL_VecToAngles(p_o2q(-rbp.abs_z()));
+        bot.pEdict->v.v_angle = UTIL_VecToAngles(p_o2q(-rbp.abs_z()));
         bot.pEdict->v.absmin = bot.pEdict->v.origin + ::Vector{ -0.5f, -0.5f, -1.f } * s_o2q;
         bot.pEdict->v.size = ::Vector{ 1.f, 1.f, 1.8f } * s_o2q;
         bot.pEdict->v.velocity = p_o2q(rbp.v_);
         bot.pEdict->v.view_ofs = ::Vector{ 0.f, 0.f, 50.f };
         bot.pEdict->v.maxspeed = 100.f;
+        bot.pEdict->v.fov = 130.f;
+        bot.pEdict->v.light_level = 100;
     }
     // Go through all active Bots, calling their Think function
     for (int bot_index = 0; bot_index < g_iNum_bots; bot_index++)
