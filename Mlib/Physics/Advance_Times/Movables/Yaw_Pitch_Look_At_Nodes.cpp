@@ -107,6 +107,13 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     yaw_target_locked_on_ = (std::abs(dyaw) < yaw_locked_on_max_);
 }
 
+void YawPitchLookAtNodes::set_yaw(float angle) {
+    if (followed_ != nullptr) {
+        throw std::runtime_error("YawPitchLookAtNodes::set_yaw despite non-null followed");
+    }
+    yaw_ = angle;
+}
+
 TransformationMatrix<float, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {
     return TransformationMatrix<float, 3>{
         tait_bryan_angles_2_matrix(FixedArray<float, 3>{0, yaw_, 0.f}),

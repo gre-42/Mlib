@@ -6,6 +6,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
@@ -56,7 +57,7 @@ Player::Player(
   nunstucked_{0},
   record_waypoints_{false}
 {
-    if (game_mode_ == GameMode::GUNFIGHT) {
+    if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
         pod_bot_ = std::make_unique<PodBot>(name, team);
     }
 }
@@ -331,9 +332,9 @@ void Player::advance_time(float dt) {
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in) {
-        if (game_mode_ == GameMode::GUNFIGHT) {
+        if (game_mode_ == GameMode::POD_BOT_NPC) {
             // Do nothing, is handled by PodBots
-            // std::cerr << "Game mode gunfight not yet implemented" << std::endl;
+            // std::cerr << "Game mode pod_bot_npc not yet implemented" << std::endl;
         } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
             if (ramming()) {
                 auto tpos = target_rbi_->abs_position();
@@ -417,15 +418,20 @@ bool Player::unstuck() {
 }
 
 void Player::run_move(
-    const FixedArray<float, 3, 3>& R,
+    float yaw,
+    float pitch,
     float forwardmove,
     float sidemove)
 {
     if (!has_rigid_body()) {
-        throw std::runtime_error("run_move despite nullptr");
+        throw std::runtime_error("run_move despite rigid body nullptr");
+    }
+    if (ypln_ == nullptr) {
+        throw std::runtime_error("run_move despite ypln nullptr");
     }
 
-    rb_->rbi_.rbp_.set_pose(R, rb_->rbi_.rbp_.abs_position());
+    ypln_->set_yaw(yaw);
+    ypln_->pitch_look_at_node()->set_pitch(pitch);
 
     FixedArray<float, 3> direction{ sidemove, 0.f, -forwardmove };
     float len2 = sum(squared(direction));
@@ -546,7 +552,7 @@ void Player::aim_and_shoot() {
     if (!skills_.can_aim) {
         return;
     }
-    if (game_mode_ == GameMode::GUNFIGHT) {
+    if (game_mode_ == GameMode::POD_BOT_NPC) {
         return;
     }
     assert_true(!target_scene_node_ == !target_rbi_);

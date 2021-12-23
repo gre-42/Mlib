@@ -312,15 +312,20 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
     }
     auto& player = g_players->get_player(fakeclient->v.netname);
     if (player.has_rigid_body()) {
-        Vector forward;
-        Vector right;
-        Vector up;
-        AngleVectors(*(const Vector*)viewangles, forward, right, up);
-        Mlib::FixedArray<float, 3, 3> R{
-            right(0), forward(0), up(0),
-            right(1), forward(1), up(1),
-            right(2), forward(2), up(2)};
-        player.run_move(Mlib::mm_q2o(R), forwardmove, sidemove);
+        // Vector forward;
+        // Vector right;
+        // Vector up;
+        // AngleVectors(*(const Vector*)viewangles, forward, right, up);
+        // Mlib::FixedArray<float, 3, 3> R{
+        //     right(0), forward(0), up(0),
+        //     right(1), forward(1), up(1),
+        //     right(2), forward(2), up(2)};
+        // Mlib::mm_q2o(R)
+        player.run_move(
+            viewangles[YAW] * float{M_PI} / 180.f,
+            viewangles[PITCH] * float{M_PI} / 180.f,
+            forwardmove,
+            sidemove);
 
         if (buttons & IN_ATTACK) std::cerr << "attack" << std::endl;
         if (buttons & IN_JUMP) std::cerr << "jump" << std::endl;

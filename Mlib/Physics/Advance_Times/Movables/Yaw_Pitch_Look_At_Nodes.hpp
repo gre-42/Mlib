@@ -35,6 +35,7 @@ public:
     virtual TransformationMatrix<float, 3> get_new_relative_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
     virtual void advance_time(float dt) override;
+    void set_yaw(float angle);
 
     void set_followed(SceneNode* followed_node, const RigidBodyIntegrator* followed);
     std::shared_ptr<PitchLookAtNode> pitch_look_at_node() const;

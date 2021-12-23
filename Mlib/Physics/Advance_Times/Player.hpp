@@ -36,7 +36,8 @@ enum class GameMode {
     RAMMING,
     RACING,
     BYSTANDER,
-    GUNFIGHT
+    POD_BOT_NPC,
+    POD_BOT_PC
 };
 
 inline GameMode game_mode_from_string(const std::string& game_mode) {
@@ -46,8 +47,10 @@ inline GameMode game_mode_from_string(const std::string& game_mode) {
         return GameMode::RACING;
     } else if (game_mode == "bystander") {
         return GameMode::BYSTANDER;
-    } else if (game_mode == "gunfight") {
-        return GameMode::GUNFIGHT;
+    } else if (game_mode == "pod_bot_npc") {
+        return GameMode::POD_BOT_NPC;
+    } else if (game_mode == "pod_bot_pc") {
+        return GameMode::POD_BOT_PC;
     } else {
         throw std::runtime_error("Unknown game mode: " + game_mode);
     }
@@ -138,7 +141,8 @@ public:
     bool has_rigid_body() const;
     std::string vehicle_name() const;
     void run_move(
-        const FixedArray<float, 3, 3>& R,
+        float yaw,
+        float pitch,
         float forwardmove,
         float sidemove);
 

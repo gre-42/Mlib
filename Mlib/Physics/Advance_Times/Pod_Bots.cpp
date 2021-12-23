@@ -65,7 +65,9 @@ void PodBots::advance_time(float dt) {
     {
         bot_t& bot = bots[client_indices[bot_index]];
         bot.not_started = false;
-        g_i_botthink_index = bot_index; // KWo - 02.05.2006
-        BotThink (&bot);
+        if (pod_bot_edict_to_player(bot.pEdict).game_mode() != GameMode::POD_BOT_PC) {
+            g_i_botthink_index = bot_index; // KWo - 02.05.2006
+            BotThink (&bot);
+        }
     }
 }

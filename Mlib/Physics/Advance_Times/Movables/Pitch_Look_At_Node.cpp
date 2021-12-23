@@ -93,6 +93,13 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
     target_locked_on_ = (std::abs(dpitch) < locked_on_max_);
 }
 
+void PitchLookAtNode::set_pitch(float angle) {
+    if (followed_ != nullptr) {
+        throw std::runtime_error("PitchLookAtNode::set_yaw despite non-null followed");
+    }
+    pitch_ = angle;
+}
+
 TransformationMatrix<float, 3> PitchLookAtNode::get_new_relative_model_matrix() const {
     return TransformationMatrix<float, 3>{
         tait_bryan_angles_2_matrix(FixedArray<float, 3>{pitch_, 0.f, 0.f}),
