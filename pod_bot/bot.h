@@ -499,7 +499,7 @@ enum clientflags
 };
 
 // Records some Player Stats each Frame and holds sound events playing
-typedef struct
+struct client_t
 {
    int iFlags;
    edict_t *pEdict; // Ptr to actual Edict
@@ -516,7 +516,7 @@ typedef struct
    float fReloadingTime;   // KWo - 15.08.2007
    float fDeathTime;       // KWo - 14.03.2010
    menutext_t *pUserMenu;  // Which menus is open for admin?
-} client_t;
+};
 
 
 // Experience Data hold in memory while playing

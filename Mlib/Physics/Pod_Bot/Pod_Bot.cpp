@@ -21,5 +21,8 @@ PodBot::PodBot(
         bot_class,
         bot_name);
     
-    pod_bot_initialize_edict(get_edict(name));
+    edict_t* edict = get_edict(name);
+
+    pod_bot_initialize_edict(edict);
+    pod_bot_get_client(edict)->iTeam = bot_team;
 }

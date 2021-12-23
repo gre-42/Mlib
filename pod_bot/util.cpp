@@ -91,7 +91,11 @@ short FixedSigned16 (float value, float scale)
 int UTIL_GetTeam (edict_t *pEntity)
 {
    // return team number 1 through 2 based what MOD uses for team numbers
-   return (clients[ENTINDEX (pEntity) - 1].iTeam);
+   int clientIndex = ENTINDEX (pEntity) - 1;
+   if (clientIndex < 0 || clientIndex >= 32) {
+      throw std::runtime_error("Client index out of bounds");
+   }
+   return (clients[clientIndex].iTeam);
 }
 
 

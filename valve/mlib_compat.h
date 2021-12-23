@@ -11,6 +11,7 @@ typedef Mlib::FixedArray<float, 3> Vector;
 typedef Mlib::FixedArray<float, 3> vec3_t;
 
 struct edict_t;
+struct client_t;
 
 struct entvars_t{
     int flags;
@@ -334,6 +335,8 @@ void set_player_rigid_body_integrator(const RigidBodyIntegrator& rbi, const std:
 std::string get_player_name(const RigidBodyIntegrator& rbi);
 
 edict_t* get_edict(const std::string& player_name);
+
+client_t* pod_bot_get_client(edict_t* edict);
 
 void pod_bot_initialize_edict(edict_t* edict);
 

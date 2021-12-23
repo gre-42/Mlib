@@ -4,7 +4,9 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <filesystem>
+#include <pod_bot/bot_globals.h>
 #include <stdarg.h>
+#include <valve/in_buttons.h>
 
 #define VEC_VIEW Vector( 0, 0, 28 )
 
@@ -16,6 +18,8 @@ static std::map<edict_t*, std::string> g_edict_to_player_name;
 static std::map<std::string, edict_t*> g_player_name_to_edict;
 static std::map<const Mlib::RigidBodyIntegrator*, std::string> g_rbi_to_player_name;
 static std::map<std::string, int> decal_map;
+
+extern client_t clients[32];
 
 edict_t* INDEXENT(int index) {
     auto it = indexent_.find(index);
@@ -288,14 +292,18 @@ edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
     if (!g_player_name_to_edict.insert({ fakeclient->v.netname, fakeclient }).second) {
         throw std::runtime_error("Could not insert into player to edict map");
     }
-    auto eit = entindex_.insert({ fakeclient, entindex_.size() });
-    if (!eit.second) {
-        throw std::runtime_error("Could not insert fake client into entindex");
+    // From: https://developer.valvesoftware.com/wiki/Entity_index
+    // "Worldspawn is always entity 0, while indices 1 to <maxplayers> are reserved for players.""
+    for (int i = 1; i <= 32; ++i) {
+        if (indexent_.insert({ i, fakeclient }).second) {
+            auto eit = entindex_.insert({ fakeclient, i });
+            if (!eit.second) {
+                throw std::runtime_error("Could not insert fake client into entindex");
+            }
+            return fakeclient;
+        }
     }
-    if (!indexent_.insert({ eit.first->second, fakeclient }).second) {
-        throw std::runtime_error("Could not insert fake client into indexent");
-    }
-    return fakeclient;
+    throw std::runtime_error("Could not find free client slot for \"" + std::string(fakeclient->v.netname) + '"');
 }
 
 void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangles, float forwardmove, float sidemove, float upmove, unsigned short buttons, uint8_t impulse, uint8_t msec) {
@@ -313,6 +321,24 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
             right(1), forward(1), up(1),
             right(2), forward(2), up(2)};
         player.run_move(Mlib::mm_q2o(R), forwardmove, sidemove);
+
+        if (buttons & IN_ATTACK) std::cerr << "attack" << std::endl;
+        if (buttons & IN_JUMP) std::cerr << "jump" << std::endl;
+        if (buttons & IN_DUCK) std::cerr << "duck" << std::endl;
+        if (buttons & IN_FORWARD) std::cerr << "forward" << std::endl;
+        if (buttons & IN_BACK) std::cerr << "back" << std::endl;
+        if (buttons & IN_USE) std::cerr << "use" << std::endl;
+        if (buttons & IN_CANCEL) std::cerr << "cancel" << std::endl;
+        if (buttons & IN_LEFT) std::cerr << "left" << std::endl;
+        if (buttons & IN_RIGHT) std::cerr << "right" << std::endl;
+        if (buttons & IN_MOVELEFT) std::cerr << "moveleft" << std::endl;
+        if (buttons & IN_MOVERIGHT) std::cerr << "moveright" << std::endl;
+        if (buttons & IN_ATTACK2) std::cerr << "attack2" << std::endl;
+        if (buttons & IN_RUN) std::cerr << "run" << std::endl;
+        if (buttons & IN_RELOAD) std::cerr << "reload" << std::endl;
+        if (buttons & IN_ALT1) std::cerr << "alt1" << std::endl;
+        if (buttons & IN_SCORE) std::cerr << "score" << std::endl;
+
     }
 }
 
@@ -328,9 +354,21 @@ void Mlib::pod_bot_set_players(Players& players, CollisionQuery& collision_query
 }
 
 int Mlib::pod_bot_team_id(const std::string& team_name) {
-    std::map<std::string, int> team_ids_;
-    auto it = team_ids_.insert({ team_name, team_ids_.size() });
-    return it.second;
+    // Copy & paste from podbot/bot.h
+    // TEAM_CS_UNASSIGNED = 0,
+    // TEAM_CS_TERRORIST = 1,
+    // TEAM_CS_COUNTER = 2,
+    // TEAM_CS_SPECTATOR = 3
+    if (team_name == "terrorist") {
+        return 1;
+    } else if (team_name == "counter") {
+        return 2;
+    } else {
+        throw std::runtime_error("Unknown team name, choose between \"terrorist\" and \"counter\"");
+    }
+    // static std::map<std::string, int> team_ids_;
+    // auto it = team_ids_.insert({ team_name, team_ids_.size() });
+    // return it.second;
 }
 
 void Mlib::set_player_rigid_body_integrator(
@@ -356,6 +394,16 @@ edict_t* Mlib::get_edict(const std::string& player_name) {
         throw std::runtime_error("Could not find edict for player name");
     }
     return it->second;
+}
+
+client_t* Mlib::pod_bot_get_client(edict_t* edict) {
+    // From: https://developer.valvesoftware.com/wiki/Entity_index
+    // "Worldspawn is always entity 0, while indices 1 to <maxplayers> are reserved for players.""
+    int index = ENTINDEX(edict) - 1;
+    if (index < 0 || index >= 32) {
+        throw std::runtime_error("Client index out of bounds");
+    }
+    return &clients[index];
 }
 
 void Mlib::pod_bot_initialize_edict(edict_t* edict) {
