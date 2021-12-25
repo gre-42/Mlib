@@ -1,4 +1,4 @@
-#include "mlib_compat.h"
+#include "compat.h"
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <pod_bot/bot_globals.h>
 #include <stdarg.h>
-#include <valve/in_buttons.h>
 
 #define VEC_VIEW Vector( 0, 0, 28 )
 

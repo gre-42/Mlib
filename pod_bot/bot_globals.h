@@ -22,8 +22,7 @@
 #include <ctype.h>
 #endif
 
-#include <valve/const.h>
-#include <valve/com_model.h>
+#include <pod_bot_mlib_compat/compat.h>
 //#include <entity_state.h> // Removed by THE STORM
 
 #include "bot.h"

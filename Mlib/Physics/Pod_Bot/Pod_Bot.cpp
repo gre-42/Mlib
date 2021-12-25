@@ -1,6 +1,6 @@
 #include "Pod_Bot.hpp"
 #include <pod_bot/bot_globals.h>
-#include <valve/mlib_compat.h>
+#include <pod_bot_mlib_compat/compat.h>
 
 using namespace Mlib;
 
