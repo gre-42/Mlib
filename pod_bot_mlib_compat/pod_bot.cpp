@@ -306,10 +306,16 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
         //     right(0), forward(0), up(0),
         //     right(1), forward(1), up(1),
         //     right(2), forward(2), up(2)};
-        // Mlib::mm_q2o(R)
+        // // This can cause nonzero roll-angles, compensated by the other angles.
+        // Vector ma = Mlib::matrix_2_tait_bryan_angles(Mlib::mm_q2o(R));
+        // player.run_move(
+        //     ma(1),
+        //     ma(0),
+        //     forwardmove,
+        //     sidemove);
         player.run_move(
-            viewangles[YAW] * float{M_PI} / 180.f,
-            viewangles[PITCH] * float{M_PI} / 180.f,
+            (viewangles[YAW] - 90.f) * float{M_PI} / 180.f,
+            -viewangles[PITCH] * float{M_PI} / 180.f,
             forwardmove,
             sidemove);
         
