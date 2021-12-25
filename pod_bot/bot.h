@@ -564,7 +564,7 @@ typedef struct
 
 
 // Main Bot Structure
-typedef struct
+struct bot_t
 {
    bool is_used; // Bot used in the Game
    edict_t *pEdict; // ptr to actual Player edict
@@ -846,7 +846,7 @@ typedef struct
    int i_TaskDeep; // KWo - 30.08.2006 added to test if stack for tasks is working correctly (new/delete)
    int i_PathDeep; // KWo - 30.08.2006 added to test if stack for paths is working correctly (new/delete)
    int i_ChatDeep; // KWo - 30.08.2006 added to test if stack for chat is working correctly (new/delete)
-} bot_t;
+};
 
 
 #define MAX_BUTTONS 60  // KWo 07.02.2006

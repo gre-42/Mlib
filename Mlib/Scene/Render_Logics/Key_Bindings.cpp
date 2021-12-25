@@ -3,6 +3,8 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
@@ -174,32 +176,55 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         for (const auto& k : relative_movable_key_bindings_) {
             auto m = k.node->get_relative_movable();
             auto rt = dynamic_cast<RelativeTransformer*>(m);
-            if (rt == nullptr) {
-                throw std::runtime_error("Relative movable is not a relative transformer");
+            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(m);
+            if (rt != nullptr) {
+                rt->w_ = 0.f;
+            } else if (ypln != nullptr) {
+                // Do nothing (yet)
+            } else {
+                throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
             }
-            rt->w_ = 0.f;
         }
         for (auto& k : relative_movable_key_bindings_) {
+            auto m = k.node->get_relative_movable();
+            auto rt = dynamic_cast<RelativeTransformer*>(m);
+            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(m);
             float alpha = button_press_.key_alpha(k.base_key);
             if (!std::isnan(alpha)) {
-                auto m = k.node->get_relative_movable();
-                auto rt = dynamic_cast<RelativeTransformer*>(m);
-                if (rt == nullptr) {
-                    throw std::runtime_error("Relative movable is not a relative transformer");
+                float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
+                if (rt != nullptr) {
+                    rt->w_ = w * k.rotation_axis;
+                } else if (ypln != nullptr) {
+                    if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {
+                        ypln->increment_yaw(w * cfg.dt);
+                    } else if (all(k.rotation_axis == FixedArray<float, 3>{1, 0, 0})) {
+                        ypln->pitch_look_at_node()->increment_pitch(w * cfg.dt);
+                    } else {
+                        throw std::runtime_error("Unsupported rotation axis for yaw/pitch-look-at-nodes");
+                    }
+                } else {
+                    throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
                 }
-                rt->w_ = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat) * k.rotation_axis;
             }
             float beta = k.cursor_movement->axis_alpha(k.base_cursor_axis);
             if (!std::isnan(beta)) {
-                auto m = k.node->get_relative_movable();
-                auto rt = dynamic_cast<RelativeTransformer*>(m);
-                if (rt == nullptr) {
-                    throw std::runtime_error("Relative movable is not a relative transformer");
+                float dangle = beta * k.speed_cursor * k.angular_velocity_repeat;
+                if (rt != nullptr) {
+                    // rt->w_ = beta * k.angular_velocity_repeat;
+                    rt->transformation_matrix_.R() = dot2d(
+                        rodrigues(k.rotation_axis, dangle),
+                        rt->transformation_matrix_.R());
+                } else if (ypln != nullptr) {
+                    if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {
+                        ypln->increment_yaw(dangle);
+                    } else if (all(k.rotation_axis == FixedArray<float, 3>{1, 0, 0})) {
+                        ypln->pitch_look_at_node()->increment_pitch(dangle);
+                    } else {
+                        throw std::runtime_error("Unsupported rotation axis for yaw/pitch-look-at-nodes");
+                    }
+                } else {
+                    throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
                 }
-                // rt->w_ = beta * k.angular_velocity_repeat;
-                rt->transformation_matrix_.R() = dot2d(
-                    rodrigues(k.rotation_axis, beta * k.speed_cursor * k.angular_velocity_repeat),
-                    rt->transformation_matrix_.R());
             }
         }
         for (const auto& k : gun_key_bindings_) {

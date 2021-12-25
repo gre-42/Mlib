@@ -102,16 +102,17 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
     FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
     float dyaw = -std::atan2(p(0), -p(2));
-    yaw_ += sign(dyaw) * std::min(std::abs(dyaw), dyaw_max_);
-    yaw_ = std::fmod(yaw_, float(2 * M_PI));
+    increment_yaw(dyaw);
     yaw_target_locked_on_ = (std::abs(dyaw) < yaw_locked_on_max_);
 }
 
-void YawPitchLookAtNodes::set_yaw(float angle) {
-    if (followed_ != nullptr) {
-        throw std::runtime_error("YawPitchLookAtNodes::set_yaw despite non-null followed");
-    }
-    yaw_ = angle;
+void YawPitchLookAtNodes::increment_yaw(float dyaw) {
+    yaw_ += sign(dyaw) * std::min(std::abs(dyaw), dyaw_max_);
+    yaw_ = std::fmod(yaw_, float(2 * M_PI));
+}
+
+void YawPitchLookAtNodes::set_yaw(float yaw) {
+    increment_yaw(std::fmod(yaw - yaw_, float(2 * M_PI)));
 }
 
 TransformationMatrix<float, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {

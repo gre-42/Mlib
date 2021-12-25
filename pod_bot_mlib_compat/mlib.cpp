@@ -7,8 +7,6 @@
 
 static std::map<const Mlib::RigidBodyIntegrator*, std::string> g_rbi_to_player_name;
 
-extern client_t clients[32];
-
 void Mlib::pod_bot_set_players(Players& players, CollisionQuery& collision_query) {
     if (g_players != nullptr) {
         throw std::runtime_error("Players already set");
@@ -63,14 +61,14 @@ edict_t* Mlib::get_edict(const std::string& player_name) {
     return it->second;
 }
 
-client_t* Mlib::pod_bot_get_client(edict_t* edict) {
+Mlib::ClientAndBot Mlib::pod_bot_get_client_and_bot(edict_t* edict) {
     // From: https://developer.valvesoftware.com/wiki/Entity_index
     // "Worldspawn is always entity 0, while indices 1 to <maxplayers> are reserved for players.""
     int index = ENTINDEX(edict) - 1;
     if (index < 0 || index >= 32) {
         throw std::runtime_error("Client index out of bounds");
     }
-    return &clients[index];
+    return Mlib::ClientAndBot{clients + index, bots + index};
 }
 
 void Mlib::pod_bot_initialize_edict(edict_t* edict) {

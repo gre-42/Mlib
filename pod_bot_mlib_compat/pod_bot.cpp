@@ -312,11 +312,15 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
             viewangles[PITCH] * float{M_PI} / 180.f,
             forwardmove,
             sidemove);
+        
+        if (buttons & IN_ATTACK) {
+            player.trigger_gun();
+        }
 
         if (buttons & IN_ATTACK) std::cerr << "attack" << std::endl;
         if (buttons & IN_JUMP) std::cerr << "jump" << std::endl;
         if (buttons & IN_DUCK) std::cerr << "duck" << std::endl;
-        if (buttons & IN_FORWARD) std::cerr << "forward" << std::endl;
+        // if (buttons & IN_FORWARD) std::cerr << "forward" << std::endl;
         if (buttons & IN_BACK) std::cerr << "back" << std::endl;
         if (buttons & IN_USE) std::cerr << "use" << std::endl;
         if (buttons & IN_CANCEL) std::cerr << "cancel" << std::endl;

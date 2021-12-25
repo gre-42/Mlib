@@ -88,16 +88,17 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
     rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
     FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
     float dpitch = std::atan2(p(1), -p(2));
-    pitch_ += sign(dpitch) * std::min(std::abs(dpitch), dpitch_max_);
-    pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
+    increment_pitch(dpitch);
     target_locked_on_ = (std::abs(dpitch) < locked_on_max_);
 }
 
-void PitchLookAtNode::set_pitch(float angle) {
-    if (followed_ != nullptr) {
-        throw std::runtime_error("PitchLookAtNode::set_yaw despite non-null followed");
-    }
-    pitch_ = angle;
+void PitchLookAtNode::increment_pitch(float dpitch) {
+    pitch_ += sign(dpitch) * std::min(std::abs(dpitch), dpitch_max_);
+    pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
+}
+
+void PitchLookAtNode::set_pitch(float pitch) {
+    increment_pitch(std::fmod(pitch - pitch_, float(2 * M_PI)));
 }
 
 TransformationMatrix<float, 3> PitchLookAtNode::get_new_relative_model_matrix() const {

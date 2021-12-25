@@ -36,6 +36,7 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
     void trigger();
+    const TransformationMatrix<float, 3>& absolute_model_matrix() const;
 private:
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;

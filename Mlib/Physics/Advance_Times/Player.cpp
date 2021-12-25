@@ -417,6 +417,13 @@ bool Player::unstuck() {
     return false;
 }
 
+FixedArray<float, 3> Player::gun_direction() const {
+    if (gun_ == nullptr) {
+        throw std::runtime_error("gun_direction despite gun nullptr in player \"" + name() + '"');
+    }
+    return -z3_from_3x3(gun_->absolute_model_matrix().R());
+}
+
 void Player::run_move(
     float yaw,
     float pitch,
@@ -443,6 +450,13 @@ void Player::run_move(
         rb_->set_surface_power("main", len * surface_power_forward_);
         rb_->set_surface_power("breaks", len * surface_power_forward_);
     }
+}
+
+void Player::trigger_gun() {
+    if (gun_ == nullptr) {
+        throw std::runtime_error("Player::trigger despite gun nullptr");
+    }
+    gun_->trigger();
 }
 
 void Player::step_on_breaks() {

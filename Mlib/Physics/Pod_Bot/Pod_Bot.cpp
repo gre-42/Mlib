@@ -25,7 +25,20 @@ PodBot::PodBot(
 
     pod_bot_initialize_edict(edict);
 
-    client_t* client = pod_bot_get_client(edict);
-    client->iTeam = bot_team;
-    client->iFlags |= CLIENT_ALIVE;
+    auto cb = pod_bot_get_client_and_bot(edict);
+
+    int weapon = CS_WEAPON_M4A1;
+    int ammo = 999;
+
+    cb.client->iTeam = bot_team;
+    cb.client->iFlags |= CLIENT_ALIVE;
+    cb.client->iCurrentWeaponId = weapon;
+
+    cb.bot->current_weapon.iId = weapon;
+    cb.bot->m_rgAmmoInClip[weapon] = ammo;
+    cb.bot->current_weapon.iClip = ammo;
+    cb.bot->current_weapon.iAmmo1 = 0;
+    cb.bot->current_weapon.iAmmo2 = 0;
+
+    edict->v.weapons = (1 << weapon);
 }

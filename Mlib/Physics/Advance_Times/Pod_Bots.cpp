@@ -51,7 +51,7 @@ void PodBots::advance_time(float dt) {
         const RigidBodyPulses& rbp = player.rigid_body().rbi_.rbp_;
         bot.pEdict->v.origin = p_o2q(rbp.abs_position());
         bot.pEdict->v.angles = UTIL_VecToAngles(p_o2q(-rbp.abs_z()));
-        bot.pEdict->v.v_angle = UTIL_VecToAngles(p_o2q(-rbp.abs_z()));
+        bot.pEdict->v.v_angle = UTIL_VecToAngles(p_o2q(player.gun_direction()));
         bot.pEdict->v.absmin = bot.pEdict->v.origin + ::Vector{ -0.5f, -0.5f, -1.f } * s_o2q;
         bot.pEdict->v.size = ::Vector{ 1.f, 1.f, 1.8f } * s_o2q;
         bot.pEdict->v.velocity = p_o2q(rbp.v_);

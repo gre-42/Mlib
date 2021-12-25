@@ -5,6 +5,8 @@
 struct edict_t;
 struct globalvars_t;
 struct plugin_info_t;
+struct client_t;
+struct bot_t;
 
 namespace Mlib {
 
@@ -23,3 +25,6 @@ extern std::map<std::string, edict_t*> g_player_name_to_edict;
 extern globalvars_t *gpGlobals;
 extern plugin_info_t Plugin_info;
 #define PLID &Plugin_info
+
+extern client_t clients[32];
+extern bot_t bots[32];

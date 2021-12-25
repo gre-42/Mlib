@@ -140,11 +140,13 @@ public:
     bool is_pedestrian() const;
     bool has_rigid_body() const;
     std::string vehicle_name() const;
+    FixedArray<float, 3> gun_direction() const;
     void run_move(
         float yaw,
         float pitch,
         float forwardmove,
         float sidemove);
+    void trigger_gun();
 
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;

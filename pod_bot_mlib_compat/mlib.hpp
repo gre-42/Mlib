@@ -1,12 +1,20 @@
 #pragma once
 #include <pod_bot_mlib_compat/types.hpp>
 
+struct client_t;
+struct bot_t;
+
 namespace Mlib {
 
 class Player;
 class Players;
 class CollisionQuery;
 class RigidBodyIntegrator;
+
+struct ClientAndBot {
+    client_t* client;
+    bot_t* bot;
+};
 
 void pod_bot_set_players(Players& players, CollisionQuery& collision_query);
 
@@ -20,7 +28,7 @@ std::string get_player_name(const RigidBodyIntegrator& rbi);
 
 edict_t* get_edict(const std::string& player_name);
 
-client_t* pod_bot_get_client(edict_t* edict);
+ClientAndBot pod_bot_get_client_and_bot(edict_t* edict);
 
 void pod_bot_initialize_edict(edict_t* edict);
 

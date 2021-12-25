@@ -107,3 +107,7 @@ void Gun::trigger() {
         triggered_ = true;
     }
 }
+
+const TransformationMatrix<float, 3>& Gun::absolute_model_matrix() const {
+    return absolute_model_matrix_;
+}
