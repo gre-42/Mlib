@@ -22,8 +22,6 @@
 #include <ctype.h>
 #endif
 
-#include <pod_bot_mlib_compat/compat.h>
-
 #include "bot.h"
 #include "bot_weapons.h"
 #include "waypoint.h"

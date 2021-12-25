@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <pod_bot/bot_globals.h>
-#include <pod_bot_mlib_compat/compat.h>
+#include <pod_bot_mlib_compat/mlib.hpp>
 
 using namespace Mlib;
 

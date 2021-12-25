@@ -3,7 +3,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <pod_bot/bot_globals.h>
-#include <pod_bot_mlib_compat/compat.h>
+#include <pod_bot_mlib_compat/mlib.hpp>
 
 using namespace Mlib;
 

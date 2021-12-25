@@ -1,7 +1,7 @@
 #include "Dtam_Component_Config.hpp"
 #include <Mlib/Sfm/Configuration/Reference_Size.hpp>
 #include <cmath>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace Mlib;
 using namespace Mlib::Sfm;
