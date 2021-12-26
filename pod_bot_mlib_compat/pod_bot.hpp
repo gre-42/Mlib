@@ -57,8 +57,8 @@ inline void MDLL_ClientConnect(edict_t* BotEnt, const char* c_name, const char* 
 inline void MDLL_ClientPutInServer(edict_t* BotEnt)
 {}
 
-typedef enum { ignore_monsters=1, dont_ignore_monsters=0, missile=2 } IGNORE_MONSTERS;
-typedef enum { ignore_glass=1 } IGNORE_GLASS;
+typedef enum { ignore_monsters=1, dont_ignore_monsters=0 } IGNORE_MONSTERS;
+typedef enum { ignore_glass=2 } IGNORE_GLASS;
 
 ::Vector UTIL_VecToAngles(const ::Vector& v);
 

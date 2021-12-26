@@ -52,10 +52,16 @@ inline ::Vector p_o2q(const ::Vector& o) {
     // return ::Vector{ o(0), -o(2), o(1) } * s_o2q;
 }
 
+// Position
+inline ::Vector p_q2o(const ::Vector& q) {
+    return dot1d(m_q2o, q) / s_o2q;
+    // return ::Vector{ o(0), o(2), -o(1) } * s_o2q;
+}
+
 // Unit vector
-inline ::Vector u_q2o(const ::Vector& o) {
-    return dot1d(m_q2o, o);
-    // return ::Vector{ o(0), o(2), -o(1) };
+inline ::Vector u_o2q(const ::Vector& o) {
+    return dot1d(m_o2q, o);
+    // return ::Vector{ o(0), -o(2), o(1) };
 }
 
 }

@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <fstream>
+#include <pod_bot_mlib_compat/mlib.hpp>
 
 using namespace Mlib;
 
@@ -116,6 +117,9 @@ void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene
     }
     rb_ = &rb;
     rb.driver_ = this;
+    if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
+        set_player_rigid_body_integrator(rb.rbi_, name());
+    }
     scene_node.add_destruction_observer(this);
 }
 
