@@ -4,6 +4,13 @@
 namespace Mlib {
 
 template <class TData>
+std::pair<TData, TData> linspace_multipliers(size_t i, size_t count) {
+    return std::make_pair(
+        (count - i - 1) / (TData)(count - 1),
+        i / (TData)(count - 1));
+}
+
+template <class TData>
 class LinspaceIterator;
 
 template <class TData>
@@ -59,9 +66,7 @@ Array<std::pair<TFloat, TFloat>> linspace_multipliers(size_t count) {
         result = std::make_pair(1 / TFloat(2), 1 / TFloat(2));
     } else {
         for (size_t i = 0; i < count; ++i) {
-            result(i) = std::make_pair(
-                (count - i - 1) / (TFloat)(count - 1),
-                i / (TFloat)(count - 1));
+            result(i) = linspace_multipliers<TFloat>(i, count);
         }
     }
     return result;

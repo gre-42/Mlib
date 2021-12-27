@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
+#include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
@@ -431,6 +432,20 @@ void test_rotate_intrinsic_matrix() {
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 4).affine());
 }
 
+void test_subdivide_points_and_adjacency() {
+    PointsAndAdjacency<float, 2> pa;
+    pa.points = {FixedArray<float, 2>{0.1, 0.2}, FixedArray<float, 2>{0.78, 0.56}};
+    pa.adjacency = SparseArrayCcs<float>(ArrayShape{ 2, 2 });
+    pa.adjacency(0, 1) = 0.4;
+    pa.adjacency(1, 0) = 0.4;
+    std::cerr << pa.adjacency << std::endl;
+    pa.subdivide(0.1f);
+    std::cerr << pa.adjacency << std::endl;
+    for (const auto& p : pa.points) {
+        std::cerr << p << std::endl;
+    }
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -448,9 +463,12 @@ int main(int argc, const char** argv) {
     test_roundness_estimator();
     // test_smoothen_edges();
     test_distance_point_triangle();
+#ifndef WITHOUT_TRIANGLE
     test_triangulate_3d_1();
     test_triangulate_3d_2();
+#endif
     test_smallest_angle_in_triangle();
     test_rotate_intrinsic_matrix();
+    // test_subdivide_points_and_adjacency();
     return 0;
 }

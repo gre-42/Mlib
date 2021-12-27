@@ -17,6 +17,7 @@ struct PointsAndAdjacency {
     }
 
     void subdivide(const TData& max_length) {
+        std::map<std::tuple<size_t, size_t, size_t>, size_t> new_point_ids;
         std::list<FixedArray<TData, tndim>> new_points;
         std::map<size_t, std::map<size_t, TData>> new_columns;
         {
@@ -27,16 +28,22 @@ struct PointsAndAdjacency {
                     if (npoints > 2) {
                         size_t r = row->first;
                         col.erase(row++);
-                        Linspace<float> ls{0, 1, npoints};
                         size_t old_id = c;
                         FixedArray<TData, tndim> old_point = points.at(c);
-                        for (size_t i = 1; i < ls.length(); ++i) {
-                            float alpha = ls[i];
-                            FixedArray<TData, tndim> pn = points.at(c) * (1 - alpha) + points.at(r) * alpha;
-                            size_t new_id = points.size() + new_points.size();
+                        for (size_t i = 1; i < npoints - 1; ++i) {
+                            std::pair<TData, TData> lm = linspace_multipliers<TData>(i, npoints);
+                            FixedArray<TData, tndim> pn = points.at(c) * lm.first + points.at(r) * lm.second;
+                            auto key = (r < c)
+                                ? std::tuple<size_t, size_t, size_t>{r, c, i}
+                                : std::tuple<size_t, size_t, size_t>{c, r, npoints - i - 1};
+                            auto it = new_point_ids.insert({key, points.size() + new_points.size()});
+                            size_t new_id = it.first->second;
                             new_columns[old_id].insert({new_id, std::sqrt(sum(squared(pn - old_point)))});
-                            new_points.push_back(pn);
+                            if (it.second) {
+                                new_points.push_back(pn);
+                            }
                             old_id = new_id;
+                            old_point = pn;
                         }
                         new_columns[old_id].insert({r, std::sqrt(sum(squared(points.at(r) - old_point)))});
                     } else {
