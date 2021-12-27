@@ -60,6 +60,10 @@ void PodBots::advance_time(float dt) {
         bot.pEdict->v.fov = 130.f;
         bot.pEdict->v.light_level = 100;
     }
+    if (g_f_cvars_upd_time <= gpGlobals->time) {
+       UTIL_CheckCvars();
+       g_f_cvars_upd_time = gpGlobals->time + 1.f;
+    }
     // Go through all active Bots, calling their Think function
     for (int bot_index = 0; bot_index < g_iNum_bots; bot_index++)
     {

@@ -1071,7 +1071,7 @@ bool FireHurtsFriend (bot_t *pBot, float fDistance)
 //   TRACE_HULL (GetGunPosition (pEdict), GetGunPosition (pEdict) + vecDirection * fDistance, dont_ignore_monsters, head_hull, pEdict, &tr);
    TRACE_LINE (GetGunPosition (pEdict), GetGunPosition (pEdict) + vecDirection * fDistance, dont_ignore_monsters, pEdict, &tr); // KWo - 13.10.2006
 
-   if (!FNullEnt (tr.pHit))
+   if (!FNullEnt (tr.pHit) && (tr.pHit != g_solid_edict))
    {
       i = ENTINDEX (tr.pHit) - 1;
       if ((i >= 0) && (i < gpGlobals->maxClients))  // KWo - 13.03.2006

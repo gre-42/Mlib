@@ -750,9 +750,9 @@ void UTIL_SaveBreakableData (void)    // KWo - 04.03.2006
 void UTIL_CheckCvars (void) // KWo - 06.04.2006
 {
    unsigned int i;
-   int pl_index;
-   edict_t *pPlayer;  // KWo - 02.05.2006
-   char *infobuffer;  // KWo - 02.05.2006
+   // int pl_index;
+   // edict_t *pPlayer;  // KWo - 02.05.2006
+   // char *infobuffer;  // KWo - 02.05.2006
 
 // Check restrictions
 // Thanks to Bailopan (AMX MOD X) for the solution
@@ -1136,97 +1136,98 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    if (CVAR_GET_FLOAT ("sv_parachute") > 0.f)
       g_b_cv_Parachute = true;
 
-// KWo - 02.03.2010 - added ping for bots calculation
-   int ping, loss, humans;
-   double ping_av, loss_av;
-   ping = 0;
-   loss = 0;
-   humans = 0;
-   ping_av = 0;
-   loss_av = 0;
+   // // KWo - 02.03.2010 - added ping for bots calculation
+   //    int ping, loss, humans;
+   //    double ping_av, loss_av;
+   //    ping = 0;
+   //    loss = 0;
+   //    humans = 0;
+   //    ping_av = 0;
+   //    loss_av = 0;
 
-   for (pl_index = 0; pl_index < gpGlobals->maxClients; pl_index++)
-   {
-      pPlayer = INDEXENT (pl_index + 1);
-
-      if (!FNullEnt (pPlayer) && (pPlayer->v.flags & FL_CLIENT) && (!(pPlayer->v.flags & FL_FAKECLIENT)))
-      {
-         infobuffer = GET_INFOKEYBUFFER (clients[pl_index].pEdict);
-         if (clients[pl_index].iFlags & CLIENT_ADMIN)
-         {
-            if ((*g_sz_cv_PasswordField == 0) && (*g_sz_cv_Password == 0))
-               clients[pl_index].iFlags &= ~CLIENT_ADMIN;
-            else
-            {
-               if (!FStrEq (g_sz_cv_Password, INFOKEY_VALUE (infobuffer, const_cast<char *>(g_sz_cv_PasswordField))))
-               {
-                  clients[pl_index].iFlags &= ~CLIENT_ADMIN;
-                  UTIL_ServerPrint ("Player %s is no longer an admin for podbot mm.\n", STRING(pPlayer->v.netname));
-               }
-            }
-         }
-         else if ((*g_sz_cv_PasswordField != 0) && (*g_sz_cv_Password != 0))
-         {
-            if (FStrEq (g_sz_cv_Password, INFOKEY_VALUE (infobuffer, const_cast<char *>(g_sz_cv_PasswordField))))
-            {
-               clients[pl_index].iFlags |= CLIENT_ADMIN;
-               UTIL_ServerPrint ("Player %s became an admin for podbot mm.\n", STRING(pPlayer->v.netname));
-            }
-         }
-         humans++;
-         PLAYER_CNX_STATS(pPlayer, &ping, &loss);
-         if ((ping < 0) || (ping > 4095))
-            ping = 100;
-         ping_av += ping;
-         loss_av += loss;
-      }
-   }
-   if (humans > 0)
-   {
-      ping_av = ping_av / humans;
-      loss_av = loss_av / humans;
-   }
-   else
-   {
-      ping_av = 100;
-      loss_av = 0;
-   }
-   for (pl_index = 0; pl_index < gpGlobals->maxClients; pl_index++) // thanks to MeRcyLeZZ
-   {
-      if (bots[pl_index].is_used)
-      {
-//         ping = (int)RANDOM_LONG((int)ping_av - int(0.2 * ping_av), (int)ping_av + int(0.2 * ping_av));
-         ping = (int)RANDOM_LONG(30, 50);
-         if (ping < 10)
-            ping = 10;
-         else if (ping > 4095)
-            ping = 4095;
-
-      // First argument's ping
-         for (bots[pl_index].iOffsetPing[0] = 0; bots[pl_index].iOffsetPing[0] < 4; bots[pl_index].iOffsetPing[0]++)
-         {
-            if ((ping - bots[pl_index].iOffsetPing[0]) % 4 == 0)
-            {
-               bots[pl_index].iArgPing[0] = (ping - bots[pl_index].iOffsetPing[0]) / 4;
-               break;
-            }
-         }
-         // Second argument's ping
-         for (bots[pl_index].iOffsetPing[1] = 0; bots[pl_index].iOffsetPing[1] < 2; bots[pl_index].iOffsetPing[1]++)
-         {
-            if ((ping - bots[pl_index].iOffsetPing[1]) % 2 == 0)
-            {
-               bots[pl_index].iArgPing[1] = (ping - bots[pl_index].iOffsetPing[1]) / 2;
-               break;
-            }
-         }
-         // Third argument's ping
-         bots[pl_index].iArgPing[2] = ping;
-      }
-   }
-
-
-//   UTIL_ServerPrint ("[Debug] Cvars tested. Min_bots = %d, Max_bots = %d .\n", g_i_cv_MinBots, g_i_cv_MaxBots);
+   // Disabled block of code  // Your Name 27.12.2021
+   //    for (pl_index = 0; pl_index < gpGlobals->maxClients; pl_index++)
+   //    {
+   //       pPlayer = INDEXENT (pl_index + 1);
+   // 
+   //       if (!FNullEnt (pPlayer) && (pPlayer->v.flags & FL_CLIENT) && (!(pPlayer->v.flags & FL_FAKECLIENT)))
+   //       {
+   //          infobuffer = GET_INFOKEYBUFFER (clients[pl_index].pEdict);
+   //          if (clients[pl_index].iFlags & CLIENT_ADMIN)
+   //          {
+   //             if ((*g_sz_cv_PasswordField == 0) && (*g_sz_cv_Password == 0))
+   //                clients[pl_index].iFlags &= ~CLIENT_ADMIN;
+   //             else
+   //             {
+   //                if (!FStrEq (g_sz_cv_Password, INFOKEY_VALUE (infobuffer, const_cast<char *>(g_sz_cv_PasswordField))))
+   //                {
+   //                   clients[pl_index].iFlags &= ~CLIENT_ADMIN;
+   //                   UTIL_ServerPrint ("Player %s is no longer an admin for podbot mm.\n", STRING(pPlayer->v.netname));
+   //                }
+   //             }
+   //          }
+   //          else if ((*g_sz_cv_PasswordField != 0) && (*g_sz_cv_Password != 0))
+   //          {
+   //             if (FStrEq (g_sz_cv_Password, INFOKEY_VALUE (infobuffer, const_cast<char *>(g_sz_cv_PasswordField))))
+   //             {
+   //                clients[pl_index].iFlags |= CLIENT_ADMIN;
+   //                UTIL_ServerPrint ("Player %s became an admin for podbot mm.\n", STRING(pPlayer->v.netname));
+   //             }
+   //          }
+   //          humans++;
+   //          PLAYER_CNX_STATS(pPlayer, &ping, &loss);
+   //          if ((ping < 0) || (ping > 4095))
+   //             ping = 100;
+   //          ping_av += ping;
+   //          loss_av += loss;
+   //       }
+   //    }
+   //    if (humans > 0)
+   //    {
+   //       ping_av = ping_av / humans;
+   //       loss_av = loss_av / humans;
+   //    }
+   //    else
+   //    {
+   //       ping_av = 100;
+   //       loss_av = 0;
+   //    }
+   //    for (pl_index = 0; pl_index < gpGlobals->maxClients; pl_index++) // thanks to MeRcyLeZZ
+   //    {
+   //       if (bots[pl_index].is_used)
+   //       {
+   // //         ping = (int)RANDOM_LONG((int)ping_av - int(0.2 * ping_av), (int)ping_av + int(0.2 * ping_av));
+   //          ping = (int)RANDOM_LONG(30, 50);
+   //          if (ping < 10)
+   //             ping = 10;
+   //          else if (ping > 4095)
+   //             ping = 4095;
+   // 
+   //       // First argument's ping
+   //          for (bots[pl_index].iOffsetPing[0] = 0; bots[pl_index].iOffsetPing[0] < 4; bots[pl_index].iOffsetPing[0]++)
+   //          {
+   //             if ((ping - bots[pl_index].iOffsetPing[0]) % 4 == 0)
+   //             {
+   //                bots[pl_index].iArgPing[0] = (ping - bots[pl_index].iOffsetPing[0]) / 4;
+   //                break;
+   //             }
+   //          }
+   //          // Second argument's ping
+   //          for (bots[pl_index].iOffsetPing[1] = 0; bots[pl_index].iOffsetPing[1] < 2; bots[pl_index].iOffsetPing[1]++)
+   //          {
+   //             if ((ping - bots[pl_index].iOffsetPing[1]) % 2 == 0)
+   //             {
+   //                bots[pl_index].iArgPing[1] = (ping - bots[pl_index].iOffsetPing[1]) / 2;
+   //                break;
+   //             }
+   //          }
+   //          // Third argument's ping
+   //          bots[pl_index].iArgPing[2] = ping;
+   //       }
+   //    }
+   // 
+   // 
+   // //   UTIL_ServerPrint ("[Debug] Cvars tested. Min_bots = %d, Max_bots = %d .\n", g_i_cv_MinBots, g_i_cv_MaxBots);
    return;
 }
 

@@ -26,7 +26,7 @@ edict_t* INDEXENT(int index) {
 int ENTINDEX(edict_t* e) {
     auto it = entindex_.find(e);
     if (it == entindex_.end()) {
-        throw std::runtime_error("Not index for entity exists");
+        throw std::runtime_error("No index for entity exists");
     }
     return it->second;
 }
@@ -164,13 +164,10 @@ void MAKE_VECTORS(const Vector& angles) {
     pfnMakeVectors(angles);
 }
 
-static edict_t solid_edict;
-// static edict_t null_edict;
-
 static struct DefaultEdictInitializer {
     DefaultEdictInitializer() {
-        strcpy(solid_edict.v.classname, "default_solid_xyz");
-        // strcpy(null_edict.v.classname, "default_null_xyz");
+        g_solid_edict = new edict_t();
+        strcpy(g_solid_edict->v.classname, "default_solid_xyz");
     }
 } default_edict_initializer;
 
@@ -211,7 +208,7 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
         tr->flFraction = 0.9f;
         if (seen_object == nullptr) {
             tr->fStartSolid = 1.f;
-            tr->pHit = &solid_edict;
+            tr->pHit = g_solid_edict;
         } else {
             tr->fStartSolid = 0.f;
             tr->pHit = Mlib::get_edict(Mlib::get_player_name(*seen_object));
@@ -226,7 +223,7 @@ void UTIL_HostPrint(char const*, ...) {
 }
 
 void EMIT_SOUND_DYN2(edict_t*, int, char const*, float, float, int, float) {
-    throw std::runtime_error("Not yet implemented");
+    std::cerr << "EMIT_SOUND_DYN2\n";
 }
 
 void TRACE_HULL(const Vector& vecMidPoint, const Vector& vecTemp, IGNORE_MONSTERS ignore_monsters, HULL hull, edict_t* pEdict, TraceResult* tr) {
@@ -239,6 +236,38 @@ void UTIL_HudMessage(edict_t*, hudtextparms_t const&, char*) {
 
 int POINT_CONTENTS(const Vector& vec) {
     return CONTENTS_EMPTY;
+}
+
+float CVAR_GET_FLOAT(const std::string& name) {
+    if (name == "fps_max") {
+        return 60.f;
+    } else if (name == "sv_gravity") {
+        return 800.f;
+    } else if (name == "mp_friendlyfire") {
+        return 1.f;
+    } else if (name == "mp_footsteps") {
+        return 1.f;
+    } else if (name == "mp_c4timer") {
+        return 40.f;
+    } else if (name == "mp_freezetime") {
+        return 15.f;
+    } else if (name == "sv_skycolor_r") {
+        return 0.f;
+    } else if (name == "sv_skycolor_g") {
+        return 0.f;
+    } else if (name == "sv_skycolor_b") {
+        return 0.f;
+    } else if (name == "mp_flashlight") {
+        return 0.f;
+    } else if (name == "sv_parachute") {
+        return 0.f;
+    } else {
+        throw std::runtime_error("Unknown float value: \"" + name + '"');
+    }
+}
+
+const char* CVAR_GET_STRING(const char* key) {
+    throw std::runtime_error("CVAR_GET_STRING not implemented");
 }
 
 int GET_USER_MSG_ID (plid_t plid, const char* name, int* size) {

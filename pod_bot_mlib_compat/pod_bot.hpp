@@ -120,10 +120,7 @@ inline void MESSAGE_END() {}
 static const int SF_PUSH_BREAKABLE = 0;
 static const int SF_BREAK_TRIGGER_ONLY = 1;
 
-inline float CVAR_GET_FLOAT(const std::string& name) {
-    throw std::runtime_error("Unknown float value: \"" + name + '"');
-}
-
+float CVAR_GET_FLOAT(const std::string& name);
 int GET_USER_MSG_ID (plid_t plid, const char* name, int* size);
 
 inline edict_t* FIND_ENTITY_BY_CLASSNAME(edict_t* pStartEntity, const char* name) {
@@ -131,9 +128,7 @@ inline edict_t* FIND_ENTITY_BY_CLASSNAME(edict_t* pStartEntity, const char* name
     return nullptr;
 }
 
-inline const char* CVAR_GET_STRING(const char* key) {
-    return key;
-}
+const char* CVAR_GET_STRING(const char* key);
 
 inline void PLAYER_CNX_STATS(const edict_t *pClient, int *ping, int *packet_loss) {
     *ping = 42;

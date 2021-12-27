@@ -28,3 +28,5 @@ extern plugin_info_t Plugin_info;
 
 extern client_t clients[32];
 extern bot_t bots[32];
+
+extern edict_t* g_solid_edict;
