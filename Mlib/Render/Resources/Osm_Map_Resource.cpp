@@ -29,6 +29,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -45,6 +46,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -905,11 +907,7 @@ OsmMapResource::OsmMapResource(
             }
         }
         {
-            std::list<Building> way_point_lines = get_buildings_or_wall_barriers(
-                BuildingType::WAYPOINTS,
-                ways,
-                0,  // building_bottom
-                0); // default_building_top
+            std::list<WayPoints> way_point_lines = get_way_points(ways);
             calculate_waypoint_adjacency(
                 way_points_[WayPointLocation::STREET],
                 way_point_lines,

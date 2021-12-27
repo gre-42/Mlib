@@ -124,8 +124,7 @@ struct Building {
 enum class BuildingType {
     BUILDING,
     WALL_BARRIER,
-    SPAWN_LINE,
-    WAYPOINTS
+    SPAWN_LINE
 };
 
 void draw_roofs(

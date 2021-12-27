@@ -29,10 +29,6 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             if ((building_type != BuildingType::SPAWN_LINE) || (tags.at("spawn_line") != "yes")) {
                 continue;
             }
-        } else if (tags.find("way_points") != tags.end()) {
-            if ((building_type != BuildingType::WAYPOINTS) || (tags.at("way_points") != "yes")) {
-                continue;
-            }
         } else {
             continue;
         }

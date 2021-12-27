@@ -3,12 +3,13 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Way_Points.hpp>
 
 using namespace Mlib;
 
 void Mlib::calculate_waypoint_adjacency(
     PointsAndAdjacency<float, 3>& way_points,
-    const std::list<Building>& way_point_lines,
+    const std::list<WayPoints>& way_point_lines,
     const std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
     const std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes,
     const std::map<std::string, Node>& nodes,
@@ -16,8 +17,8 @@ void Mlib::calculate_waypoint_adjacency(
     float scale)
 {
     std::map<std::string, size_t> indices_1_lane;
-    for (const Building& bu : way_point_lines) {
-        for (const std::string& n : bu.way.nd) {
+    for (const WayPoints& wps : way_point_lines) {
+        for (const std::string& n : wps.way.nd) {
             indices_1_lane.insert({n, indices_1_lane.size()});
         }
     }
@@ -50,26 +51,28 @@ void Mlib::calculate_waypoint_adjacency(
         indices_1_lane.size() + indices_2_lanes.size()}};
     
     {
-        auto insert_edge_1_lane = [&way_points, &nodes, &indices_1_lane](const std::string& a, const std::string& b) {
+        auto insert_edge_1_lane = [&way_points, &nodes, &indices_1_lane](const std::string& a, const std::string& b, WayPointsOrientation orientation) {
             float dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
             if (!way_points.adjacency.column(indices_1_lane.at(a)).insert({indices_1_lane.at(b), dist}).second) {
                 throw std::runtime_error("Could not insert waypoint (0)");
             }
-            if (!way_points.adjacency.column(indices_1_lane.at(b)).insert({indices_1_lane.at(a), dist}).second) {
-                throw std::runtime_error("Could not insert waypoint (1)");
+            if (orientation == WayPointsOrientation::BIDIRECTIONAL) {
+                if (!way_points.adjacency.column(indices_1_lane.at(b)).insert({indices_1_lane.at(a), dist}).second) {
+                    throw std::runtime_error("Could not insert waypoint (1)");
+                }
             }
         };
-        for (const Building& bu : way_point_lines) {
-            for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+        for (const WayPoints& wps : way_point_lines) {
+            for (auto it = wps.way.nd.begin(); it != wps.way.nd.end(); ++it) {
                 auto s = it;
                 ++s;
-                if (s != bu.way.nd.end()) {
-                    insert_edge_1_lane(*s, *it);
+                if (s != wps.way.nd.end()) {
+                    insert_edge_1_lane(*s, *it, wps.orientation);
                 }
             }
         }
         for (const auto& e : way_point_edges_1_lane) {
-            insert_edge_1_lane(e.first, e.second);
+            insert_edge_1_lane(e.first, e.second, WayPointsOrientation::BIDIRECTIONAL);
         }
         for (size_t i = 0; i < indices_1_lane.size(); ++i) {
             if (!way_points.adjacency.column(i).insert({i, 0.f}).second) {
