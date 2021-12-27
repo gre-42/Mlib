@@ -84,7 +84,7 @@ void Mlib::set_pod_bot_way_points(
       }
    }
 
-   for (int index = 0; index < g_iNumWaypoints; index++)
+   for (int index = 0; index < g_iNumWaypoints - 1; index++)
       paths[index]->next = paths[index + 1];
    if (g_iNumWaypoints > 0)
       paths[g_iNumWaypoints - 1]->next = NULL;
