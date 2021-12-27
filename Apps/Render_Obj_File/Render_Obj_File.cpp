@@ -615,7 +615,10 @@ int main(int argc, char** argv) {
             render_logics.append(nullptr, l);
         }
         render_logics.append(nullptr, read_pixels_logic);
-        render_logics.append(nullptr, std::make_shared<MoveSceneLogic>(scene, safe_stof(args.named_value("--speed", "1"))));
+        render_logics.append(nullptr, std::make_shared<MoveSceneLogic>(
+            scene,
+            delete_node_mutex,
+            safe_stof(args.named_value("--speed", "1"))));
 
         render2(
             render_logics,
@@ -627,6 +630,8 @@ int main(int argc, char** argv) {
             }
             StbImage::from_float_rgb(array).save_to_file(args.named_value("--output"));
         }
+        delete_node_mutex.clear_deleter_thread();
+        delete_node_mutex.set_deleter_thread();
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;

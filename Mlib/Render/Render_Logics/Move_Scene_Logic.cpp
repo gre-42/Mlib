@@ -3,13 +3,19 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
 
-MoveSceneLogic::MoveSceneLogic(Scene& scene, float speed)
-: scene_{scene},
-  speed_{speed}
+MoveSceneLogic::MoveSceneLogic(
+    Scene& scene,
+    DeleteNodeMutex& delete_node_mutex,
+    float speed)
+: scene_{ scene },
+  deleter_thread_set_{ false },
+  delete_node_mutex_{ delete_node_mutex },
+  speed_{ speed }
 {}
 
 void MoveSceneLogic::render(
@@ -22,6 +28,11 @@ void MoveSceneLogic::render(
 {
     LOG_FUNCTION("MoveSceneLogic::render");
 
+    if (!deleter_thread_set_) {
+        delete_node_mutex_.clear_deleter_thread();
+        delete_node_mutex_.set_deleter_thread();
+        deleter_thread_set_ = true;
+    }
     scene_.move(render_config.dt * speed_);
 }
 

@@ -4,10 +4,14 @@
 namespace Mlib {
 
 class Scene;
+class DeleteNodeMutex;
 
 class MoveSceneLogic: public RenderLogic {
 public:
-    explicit MoveSceneLogic(Scene& scene, float speed = 1);
+    explicit MoveSceneLogic(
+        Scene& scene,
+        DeleteNodeMutex& delete_node_mutex,
+        float speed = 1);
 
     virtual void render(
         int width,
@@ -20,6 +24,8 @@ public:
 
 private:
     Scene& scene_;
+    bool deleter_thread_set_;
+    DeleteNodeMutex& delete_node_mutex_;
     float speed_;
 };
 

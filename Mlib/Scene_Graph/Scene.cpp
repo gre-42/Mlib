@@ -137,12 +137,14 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
 }
 
 Scene::~Scene() {
-    if (!shutting_down_) {
-        std::cerr << "WARNING: Scene::shutdown not called" << std::endl;
-    }
+    std::lock_guard lock{ delete_node_mutex_ };
+    shutdown();
 }
 
 void Scene::shutdown() {
+    if (shutting_down_) {
+        return;
+    }
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Scene::shutdown: delete node mutex is not locked");
