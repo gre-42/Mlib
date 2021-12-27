@@ -39,7 +39,7 @@ void Mlib::set_pod_bot_way_points(
          path.iPathNumber = g_iNumWaypoints;
          path.flags = 0;
          path.origin = p_o2q(m.transform(w.second.points[i]));
-         path.Radius = 1.f;
+         path.Radius = 1.f * s_o2q;
          path.fcampstartx = 0.f;
          path.fcampstarty = 0.f;
          path.fcampendx = 0.f;
