@@ -4697,19 +4697,15 @@ bool BotEnemyIsThreat (bot_t *pBot)
        || (BotGetSafeTask(pBot)->iTask == TASK_SEEKCOVER))
       return (FALSE);
 
-   if (!FNullEnt (pBot->pBotEnemy))
-   {
-      iEnemyIndex = ENTINDEX(pBot->pBotEnemy) - 1; // KWo - 24.06.2008
-      iWeaponEnemy = CS_WEAPON_KNIFE;
-      if ((iEnemyIndex > 0) && (iEnemyIndex <= gpGlobals->maxClients))
-      {
-         iWeaponEnemy = clients[iEnemyIndex].iCurrentWeaponId; // KWo - 24.06.2008
-      }
-      Vector vDest = pBot->pBotEnemy->v.origin - pBot->pEdict->v.origin;
-      fDistance = Length(vDest);
-   }
-   else
-      return (FALSE);
+   // Your Name - 27.12.2021
+   iEnemyIndex = ENTINDEX(pBot->pBotEnemy) - 1; // KWo - 24.06.2008
+   iWeaponEnemy = CS_WEAPON_KNIFE;
+   if ((iEnemyIndex < 0) || (iEnemyIndex >= gpGlobals->maxClients)) {  // Your Name - 27.12.2021
+      throw std::runtime_error("Enemy index out of bounds");           // Your Name - 27.12.2021
+   }                                                                   // Your Name - 27.12.2021
+   iWeaponEnemy = clients[iEnemyIndex].iCurrentWeaponId; // KWo - 24.06.2008
+   Vector vDest = pBot->pBotEnemy->v.origin - pBot->pEdict->v.origin;
+   fDistance = Length(vDest);
 
    // If Bot is camping, he should be firing anyway and NOT leaving his position
    if (BotGetSafeTask(pBot)->iTask == TASK_CAMP)

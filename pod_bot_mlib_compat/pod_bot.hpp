@@ -76,12 +76,12 @@ inline ::Vector2D Make2D(const ::Vector& v) {
 
 template <size_t tndim>
 float DotProduct(const Mlib::FixedArray<float, tndim>& a, const Mlib::FixedArray<float, tndim>& b) {
-    return Mlib::sum(a * b);
+    return Mlib::dot0d(a, b);
 }
 
 template <size_t tndim>
 float Length(const Mlib::FixedArray<float, tndim>& v) {
-    return std::sqrt(Mlib::sum(Mlib::squared(v)));
+    return std::sqrt(Mlib::dot0d(v, v));
 }
 
 template <size_t tndim>
