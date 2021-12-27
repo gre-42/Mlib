@@ -112,7 +112,7 @@ void YawPitchLookAtNodes::increment_yaw(float dyaw) {
 }
 
 void YawPitchLookAtNodes::set_yaw(float yaw) {
-    increment_yaw(std::fmod(yaw - yaw_, float(2 * M_PI)));
+    increment_yaw(std::remainderf(yaw - yaw_, float(2 * M_PI)));
 }
 
 TransformationMatrix<float, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {

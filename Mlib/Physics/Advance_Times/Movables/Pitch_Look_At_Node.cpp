@@ -98,7 +98,7 @@ void PitchLookAtNode::increment_pitch(float dpitch) {
 }
 
 void PitchLookAtNode::set_pitch(float pitch) {
-    increment_pitch(std::fmod(pitch - pitch_, float(2 * M_PI)));
+    increment_pitch(std::remainderf(pitch - pitch_, float(2 * M_PI)));
 }
 
 TransformationMatrix<float, 3> PitchLookAtNode::get_new_relative_model_matrix() const {
