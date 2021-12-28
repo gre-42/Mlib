@@ -157,8 +157,8 @@ int g_iEquipAmmoRestricted[NUM_EQUIPMENTS];     // KWo - 10.03.2006
 int g_iFrameCounter = 0;                        // KWo - 10.03.2006
 bool g_bPathWasCalculated = FALSE;              // KWo - 24.03.2007
 bool g_bSaveVisTable = FALSE;                   // KWo - 24.03.2007
-const int g_iAliveCTs = 0;                                // KWo - 19.01.2008
-const int g_iAliveTs = 0;                                 // KWo - 19.01.2008
+int g_iAliveCTs = 0;                                // KWo - 19.01.2008
+int g_iAliveTs = 0;                                 // KWo - 19.01.2008
 saved_buttons_t ButtonsData[MAX_BUTTONS];       // KWo - 07.02.2006
 saved_break_t BreakablesData[MAX_BREAKABLES];   // KWo - 10.02.2006
 saved_hostages_t HostagesData[MAX_HOSTAGES];    // KWo - 16.05.2006 - to compare if the hostages been moving

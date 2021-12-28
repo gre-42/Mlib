@@ -38,7 +38,7 @@ void Mlib::set_pod_bot_way_points(
          auto& path = *new PATH;
          paths[g_iNumWaypoints] = &path;
          path.iPathNumber = g_iNumWaypoints;
-         path.flags = 0;
+         path.flags = 0;  // 0 means W_FL_TERRORIST and W_FL_COUNTER;
          path.origin = p_o2q(m.transform(w.second.points[i]));
          path.Radius = 1.f * s_o2q;
          path.fcampstartx = 0.f;

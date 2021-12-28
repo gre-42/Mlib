@@ -31,15 +31,54 @@ void PodBots::advance_time(float dt) {
     }
     int client_indices[32];
     g_iNum_bots = 0;
+    g_iAliveTs = 0;
+    g_iAliveCTs = 0;
     // Determine active bots
     for (int client_index = 0; client_index < gpGlobals->maxClients; client_index++)
     {
         bot_t& bot = bots[client_index];
-        if (bot.is_used && !FNullEnt(bot.pEdict))
-        {
-            Player& player = pod_bot_edict_to_player(bot.pEdict);
-            if (player.has_rigid_body()) {
-                client_indices[g_iNum_bots++] = client_index;
+        if (!FNullEnt(bot.pEdict)) {
+            if (bot.is_used)
+            {
+                Player& player = pod_bot_edict_to_player(bot.pEdict);
+                if (player.has_rigid_body()) {
+                    client_indices[g_iNum_bots++] = client_index;
+                }
+                bot.pEdict->v.flags |= FL_CLIENT | CLIENT_USED;
+
+//              if ((pPlayer->v.flags & FL_FAKECLIENT) && (clients[player_index].iFlags & CLIENT_ALIVE)) // KWo - 23.03.2012 - thanks to Immortal_BLG
+//                  pPlayer->v.light_level = Light::R_LightPoint (pPlayer->v.origin);
+
+                if ((clients[client_index].iTeam == TEAM_CS_TERRORIST) && (clients[client_index].iFlags & CLIENT_ALIVE)) // KWo - 19.01.2008
+                    g_iAliveTs++;
+                if ((clients[client_index].iTeam == TEAM_CS_COUNTER) && (clients[client_index].iFlags & CLIENT_ALIVE))    // KWo - 19.01.2008
+                    g_iAliveCTs++;
+
+//              if (!(pPlayer->v.flags & FL_FAKECLIENT) && !(bots[player_index].is_used)
+//                 && ((!g_i_cv_BotsQuotaMatch) || (clients[player_index].iTeam == TEAM_CS_TERRORIST)
+//                      || (clients[player_index].iTeam == TEAM_CS_COUNTER))) // KWo - 16.10.2006
+//                 g_iNum_humans++;
+//
+//              if (!(pPlayer->v.flags & FL_FAKECLIENT) && !(bots[player_index].is_used)
+//                 && ((clients[player_index].iTeam == TEAM_CS_TERRORIST)
+//                      || (clients[player_index].iTeam == TEAM_CS_COUNTER))) // KWo - 08.03.2010
+//                 g_iNum_hum_tm++;
+//
+//               if (!(pPlayer->v.flags & FL_FAKECLIENT) && !(bots[player_index].is_used) && (clients[player_index].iFlags & CLIENT_ALIVE) && g_b_cv_autokill) // KWo - 02.05.2006
+//               {
+//                  bAliveHumans = true;
+//      //            if (g_iFrameCounter == 10)
+//      //               UTIL_ServerPrint("[Debug] Player %s is alive.\n", STRING(pPlayer->v.netname));
+//               }
+            }
+            if (bot.is_used && (bot.pEdict->v.health > 0)) {
+                bot.bDead = false;
+                bot.pEdict->v.deadflag = DEAD_NO;
+                clients[client_index].iFlags |= CLIENT_ALIVE;
+            } else {
+                bot.bDead = true;
+                bot.pEdict->v.deadflag = DEAD_DEAD;
+                clients[client_index].iFlags &= ~CLIENT_ALIVE;
             }
         }
     }

@@ -213,8 +213,8 @@ extern int g_iEquipAmmoRestricted[NUM_EQUIPMENTS];   // KWo - 10.03.2006
 
 extern bool g_bPathWasCalculated;               // KWo - 24.03.2007
 extern bool g_bSaveVisTable;                    // KWo - 24.03.2007
-extern const int g_iAliveCTs;                         // KWo - 19.01.2008
-extern const int g_iAliveTs;                          // KWo - 19.01.2008
+extern int g_iAliveCTs;                         // KWo - 19.01.2008
+extern int g_iAliveTs;                          // KWo - 19.01.2008
 extern saved_buttons_t ButtonsData[MAX_BUTTONS]; // KWo 07.02.2006
 extern saved_break_t BreakablesData[MAX_BREAKABLES];  // KWo 10.02.2006
 extern saved_hostages_t HostagesData[MAX_HOSTAGES];   // KWo - 16.05.2006

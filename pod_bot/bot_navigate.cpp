@@ -4876,7 +4876,7 @@ int BotFindGoal (bot_t *pBot)
    iTacticChoice = iBackoffDesire;
    iTactic = 0;
 
-   if (iCampDesire > iTacticChoice)
+   if ((iCampDesire > iTacticChoice) && (g_iNumCampPoints > 0))
    {
       iTacticChoice = iCampDesire;
       iTactic = 1;
@@ -4886,7 +4886,7 @@ int BotFindGoal (bot_t *pBot)
       iTacticChoice = iForwardDesire;
       iTactic = 2;
    }
-   if (iGoalDesire > iTacticChoice)
+   if ((iGoalDesire > iTacticChoice) && (g_iNumGoalPoints > 0))
    {
       iTacticChoice = iGoalDesire;
       iTactic = 3;

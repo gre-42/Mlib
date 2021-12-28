@@ -36,7 +36,7 @@ int DECAL_INDEX(const char *pszDecalName) {
 }
 
 long RANDOM_LONG(long min, long max) {
-    return std::rand() % (max - min) + min;
+    return std::rand() % (max - min + 1) + min;
 }
 
 float RANDOM_FLOAT(float min, float max) {
@@ -152,8 +152,9 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
     }
     Vector intersection_point;
     Vector intersection_normal;
-    Mlib::Player& player = Mlib::pod_bot_edict_to_player(pentIgnore);
-    const Mlib::RigidBodyIntegrator* excluded0 = &player.rigid_body().rbi_;
+    const Mlib::RigidBodyIntegrator* excluded0 = (pentIgnore == nullptr)
+        ? nullptr
+        : &Mlib::pod_bot_edict_to_player(pentIgnore).rigid_body().rbi_;
     const Mlib::RigidBodyIntegrator* excluded1 = nullptr;
     const Mlib::RigidBodyIntegrator* seen_object = nullptr;
     if (g_collision_query->can_see(

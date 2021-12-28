@@ -1898,6 +1898,15 @@ void InitWaypointTypes (void)
          g_rgiRescueWaypoints[g_iNumRescuePoints] = index;
          g_iNumRescuePoints++;
       }
+
+      else
+      {
+         g_rgiTerrorWaypoints[g_iNumTerrorPoints] = index;
+         g_iNumTerrorPoints++;
+
+         g_rgiCTWaypoints[g_iNumCTPoints] = index;
+         g_iNumCTPoints++;
+      }
    }
 
    return;
