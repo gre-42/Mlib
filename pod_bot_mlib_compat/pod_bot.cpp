@@ -7,7 +7,6 @@
 #include <pod_bot/bot_globals.h>
 #include <pod_bot_mlib_compat/mlib.hpp>
 #include <pod_bot_mlib_compat/primitive_constants.hpp>
-#include <stdarg.h>
 
 #define VEC_VIEW Vector( 0, 0, 28 )
 
@@ -86,38 +85,6 @@ edict_t* FIND_ENTITY_IN_SPHERE (edict_t* pent, const Vector& origin, float radiu
         }
     }
     return nullptr;
-}
-
-void UTIL_ServerPrint(const char *fmt, ...) {
-    // Declare a va_list type variable
-    va_list myargs;
-
-    // Initialise the va_list variable with the ... after fmt
-    va_start(myargs, fmt);
-
-    // Forward the '...' to vprintf
-    if (vprintf(fmt, myargs) < 0) {
-        std::cerr << "UTIL_ServerPrint failed" << std::endl;
-    }
-
-    // Clean up the va_list
-    va_end(myargs);
-}
-
-void FakeClientCommand(edict_t* edict, char const* fmt, ...) {
-    // Declare a va_list type variable
-    va_list myargs;
-
-    // Initialise the va_list variable with the ... after fmt
-    va_start(myargs, fmt);
-
-    // Forward the '...' to vprintf
-    if (vprintf(fmt, myargs) < 0) {
-        std::cerr << "FakeClientCommand failed" << std::endl;
-    }
-
-    // Clean up the va_list
-    va_end(myargs);
 }
 
 // up / down
@@ -218,20 +185,12 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
     }
 }
 
-void UTIL_HostPrint(char const*, ...) {
-    throw std::runtime_error("Not yet implemented");
-}
-
 void EMIT_SOUND_DYN2(edict_t*, int, char const*, float, float, int, float) {
     std::cerr << "EMIT_SOUND_DYN2\n";
 }
 
 void TRACE_HULL(const Vector& vecMidPoint, const Vector& vecTemp, IGNORE_MONSTERS ignore_monsters, HULL hull, edict_t* pEdict, TraceResult* tr) {
     TRACE_LINE(vecMidPoint, vecTemp, ignore_monsters, pEdict, tr);
-}
-
-void UTIL_HudMessage(edict_t*, hudtextparms_t const&, char*) {
-    throw std::runtime_error("Not yet implemented");
 }
 
 int POINT_CONTENTS(const Vector& vec) {

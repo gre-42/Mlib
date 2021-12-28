@@ -12,7 +12,7 @@
 #include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
-#include <Mlib/Physics/Pod_Bot/Pod_Bot.hpp>
+#include <Mlib/Physics/Pod_Bot/Pod_Bot_Player.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -59,7 +59,7 @@ Player::Player(
   record_waypoints_{false}
 {
     if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
-        pod_bot_ = std::make_unique<PodBot>(name, team);
+        pod_bot_player_ = std::make_unique<PodBotPlayer>(*this);
     }
 }
 
@@ -79,6 +79,9 @@ void Player::set_can_shoot(bool value) {
 }
 
 void Player::reset_node() {
+    if ((rb_ != nullptr) && (pod_bot_player_ != nullptr)) {
+        pod_bot_player_->clear_rigid_body_integrator();
+    }
     scene_node_name_.clear();
     scene_node_ = nullptr;
     rb_ = nullptr;
@@ -98,8 +101,8 @@ void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene
     if (rb.driver_ != nullptr) {
         throw std::runtime_error("Rigid body already has a driver");
     }
-    if (scene_node_ != nullptr || rb_ != nullptr) {
-        throw std::runtime_error("Player rb already set");
+    if ((scene_node_ != nullptr) || (rb_ != nullptr)) {
+        throw std::runtime_error("Player scene node or rb already set");
     }
     if (scene_node_name.empty()) {
         throw std::runtime_error("Player received empty node name");
@@ -109,16 +112,12 @@ void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene
     }
     scene_node_name_ = scene_node_name;
     scene_node_ = &scene_node;
-    if (rb_ != nullptr) {
-        if (rb_->driver_ != this) {
-            throw std::runtime_error("Old rigid body has unexpected driver");
-        }
-        rb_->driver_ = nullptr;
-    }
+    assert_true(rb.driver_ == nullptr);
+    assert_true(rb_ == nullptr);
     rb_ = &rb;
     rb.driver_ = this;
-    if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
-        set_player_rigid_body_integrator(rb.rbi_, name());
+    if (pod_bot_player_ != nullptr) {
+        pod_bot_player_->set_rigid_body_integrator();
     }
     scene_node.add_destruction_observer(this);
 }
@@ -332,6 +331,9 @@ void Player::notify_destroyed(void* destroyed_object) {
 
 void Player::advance_time(float dt) {
     aim_and_shoot();
+    if (pod_bot_player_ != nullptr) {
+        pod_bot_player_->update_health();
+    }
 }
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {

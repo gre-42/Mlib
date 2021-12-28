@@ -26,7 +26,7 @@ class Bvh;
 enum class DrivingDirection;
 enum class WayPointLocation;
 class DeleteNodeMutex;
-class PodBot;
+class PodBotPlayer;
 
 struct PlayerStats {
     size_t nwins = 0;
@@ -81,6 +81,7 @@ struct Skills {
 };
 
 class Player: public DestructionObserver, public AdvanceTime, public ExternalForceProvider {
+    friend PodBotPlayer;
 public:
     Player(
         Scene& scene,
@@ -205,7 +206,7 @@ private:
     size_t nunstucked_;
     bool record_waypoints_;
     Skills skills_;
-    std::unique_ptr<PodBot> pod_bot_;
+    std::unique_ptr<PodBotPlayer> pod_bot_player_;
 };
 
 };

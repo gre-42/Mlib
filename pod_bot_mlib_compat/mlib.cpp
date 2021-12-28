@@ -45,6 +45,15 @@ void Mlib::set_player_rigid_body_integrator(
     }
 }
 
+void Mlib::clear_player_rigid_body_integrator(
+    const Mlib::RigidBodyIntegrator& rbi,
+    const std::string& player_name)
+{
+    if (g_rbi_to_player_name.erase(&rbi) != 1) {
+        throw std::runtime_error("Could not clear player rigid body integrator");
+    }
+}
+
 std::string Mlib::get_player_name(const Mlib::RigidBodyIntegrator& rbi) {
     auto it = g_rbi_to_player_name.find(&rbi);
     if (it == g_rbi_to_player_name.end()) {
