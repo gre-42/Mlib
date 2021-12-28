@@ -95,6 +95,7 @@ void PodBots::advance_time(float dt) {
         bot.pEdict->v.size = ::Vector{ 1.f, 1.f, 1.8f } * s_o2q;
         bot.pEdict->v.velocity = p_o2q(rbp.v_);
         bot.pEdict->v.view_ofs = ::Vector{ 0.f, 0.f, 50.f };
+        bot.pEdict->v.punchangle = ::Vector{ 0.f, 0.f, 0.f };
         bot.pEdict->v.maxspeed = 100.f;
         bot.pEdict->v.fov = 130.f;
         bot.pEdict->v.light_level = 100;

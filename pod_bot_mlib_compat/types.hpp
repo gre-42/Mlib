@@ -22,6 +22,7 @@ struct entvars_t{
     ::Vector absmin;
     ::Vector velocity;
     ::Vector view_ofs;
+    ::Vector punchangle;
     bool takedamage;
     int impulse;
     int dmg;
@@ -39,7 +40,6 @@ struct entvars_t{
     float yaw_speed;
     float pitch_speed;
     float fov;
-    ::Vector punchangle;
     uint32_t frags;
     int button;
     int oldbuttons;
