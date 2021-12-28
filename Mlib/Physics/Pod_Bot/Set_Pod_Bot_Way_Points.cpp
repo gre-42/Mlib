@@ -28,6 +28,7 @@ void Mlib::set_pod_bot_way_points(
    }
 
    g_iNumWaypoints = 0;
+   size_t index_offset = 0;
    for (const auto& w : all_waypoints) {
       for (int i = 0; i < (int)w.second.points.size(); ++i) {
          if (g_iNumWaypoints == MAX_WAYPOINTS) {
@@ -45,14 +46,14 @@ void Mlib::set_pod_bot_way_points(
          path.fcampstarty = 0.f;
          path.fcampendx = 0.f;
          path.fcampendy = 0.f;
-         path.index[0] = cit == column.end() ? -1 : (cit++)->first;
-         path.index[1] = cit == column.end() ? -1 : (cit++)->first;
-         path.index[2] = cit == column.end() ? -1 : (cit++)->first;
-         path.index[3] = cit == column.end() ? -1 : (cit++)->first;
-         path.index[4] = cit == column.end() ? -1 : (cit++)->first;
-         path.index[5] = cit == column.end() ? -1 : (cit++)->first;
-         path.index[6] = cit == column.end() ? -1 : (cit++)->first;
-         path.index[7] = cit == column.end() ? -1 : (cit++)->first;
+         path.index[0] = cit == column.end() ? -1 : (cit++)->first + index_offset;
+         path.index[1] = cit == column.end() ? -1 : (cit++)->first + index_offset;
+         path.index[2] = cit == column.end() ? -1 : (cit++)->first + index_offset;
+         path.index[3] = cit == column.end() ? -1 : (cit++)->first + index_offset;
+         path.index[4] = cit == column.end() ? -1 : (cit++)->first + index_offset;
+         path.index[5] = cit == column.end() ? -1 : (cit++)->first + index_offset;
+         path.index[6] = cit == column.end() ? -1 : (cit++)->first + index_offset;
+         path.index[7] = cit == column.end() ? -1 : (cit++)->first + index_offset;
          if (cit != column.end()) {
             std::cerr << "WARNING: Waypoint has too many neighbors" << std::endl;
          }
@@ -83,6 +84,7 @@ void Mlib::set_pod_bot_way_points(
          path.vecConnectVel[7] = g_vecZero;
          ++g_iNumWaypoints;
       }
+      index_offset += w.second.points.size();
    }
 
    for (int index = 0; index < g_iNumWaypoints - 1; index++)
