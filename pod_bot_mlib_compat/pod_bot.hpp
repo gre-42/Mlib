@@ -101,9 +101,6 @@ inline bool IS_DEDICATED_SERVER() {
     return false;
 }
 
-static const ::Vector VEC_HULL_MIN{0.f, 0.f, 1.8f};
-static const ::Vector VEC_DUCK_HULL_MIN{0.f, 0.f, 1.f};
-
 int POINT_CONTENTS(const ::Vector& vec);
 
 enum HULL {head_hull, human_hull, point_hull};

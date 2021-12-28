@@ -312,22 +312,22 @@ void enginefuncs_t::pfnRunPlayerMove(edict_t *fakeclient, const float *viewangle
             player.trigger_gun();
         }
 
-        if (buttons & IN_ATTACK) std::cerr << "attack" << std::endl;
-        if (buttons & IN_JUMP) std::cerr << "jump" << std::endl;
-        if (buttons & IN_DUCK) std::cerr << "duck" << std::endl;
-        // if (buttons & IN_FORWARD) std::cerr << "forward" << std::endl;
-        if (buttons & IN_BACK) std::cerr << "back" << std::endl;
-        if (buttons & IN_USE) std::cerr << "use" << std::endl;
-        if (buttons & IN_CANCEL) std::cerr << "cancel" << std::endl;
-        if (buttons & IN_LEFT) std::cerr << "left" << std::endl;
-        if (buttons & IN_RIGHT) std::cerr << "right" << std::endl;
-        if (buttons & IN_MOVELEFT) std::cerr << "moveleft" << std::endl;
-        if (buttons & IN_MOVERIGHT) std::cerr << "moveright" << std::endl;
-        if (buttons & IN_ATTACK2) std::cerr << "attack2" << std::endl;
-        if (buttons & IN_RUN) std::cerr << "run" << std::endl;
-        if (buttons & IN_RELOAD) std::cerr << "reload" << std::endl;
-        if (buttons & IN_ALT1) std::cerr << "alt1" << std::endl;
-        if (buttons & IN_SCORE) std::cerr << "score" << std::endl;
+        // if (buttons & IN_ATTACK) std::cerr << "attack" << std::endl;
+        // if (buttons & IN_JUMP) std::cerr << "jump" << std::endl;
+        // if (buttons & IN_DUCK) std::cerr << "duck" << std::endl;
+        // // if (buttons & IN_FORWARD) std::cerr << "forward" << std::endl;
+        // if (buttons & IN_BACK) std::cerr << "back" << std::endl;
+        // if (buttons & IN_USE) std::cerr << "use" << std::endl;
+        // if (buttons & IN_CANCEL) std::cerr << "cancel" << std::endl;
+        // if (buttons & IN_LEFT) std::cerr << "left" << std::endl;
+        // if (buttons & IN_RIGHT) std::cerr << "right" << std::endl;
+        // if (buttons & IN_MOVELEFT) std::cerr << "moveleft" << std::endl;
+        // if (buttons & IN_MOVERIGHT) std::cerr << "moveright" << std::endl;
+        // if (buttons & IN_ATTACK2) std::cerr << "attack2" << std::endl;
+        // if (buttons & IN_RUN) std::cerr << "run" << std::endl;
+        // if (buttons & IN_RELOAD) std::cerr << "reload" << std::endl;
+        // if (buttons & IN_ALT1) std::cerr << "alt1" << std::endl;
+        // if (buttons & IN_SCORE) std::cerr << "score" << std::endl;
 
     }
 }

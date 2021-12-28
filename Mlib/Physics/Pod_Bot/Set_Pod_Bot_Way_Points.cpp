@@ -3,6 +3,7 @@
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <pod_bot/bot_globals.h>
 #include <pod_bot_mlib_compat/mlib.hpp>
+#include <pod_bot_mlib_compat/vectorial_constants.hpp>
 
 using namespace Mlib;
 
@@ -40,7 +41,7 @@ void Mlib::set_pod_bot_way_points(
          paths[g_iNumWaypoints] = &path;
          path.iPathNumber = g_iNumWaypoints;
          path.flags = 0;  // 0 means W_FL_TERRORIST and W_FL_COUNTER;
-         path.origin = p_o2q(m.transform(w.second.points[i]));
+         path.origin = p_o2q(m.transform(w.second.points[i])) + WAYPOINT_OFS;
          path.Radius = 1.f * s_o2q;
          path.fcampstartx = 0.f;
          path.fcampstarty = 0.f;
