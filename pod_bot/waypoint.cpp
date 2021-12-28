@@ -173,7 +173,7 @@ bool WaypointNodeReachable (int i_src, int i_dest) // KWo - 06.01.2008
    if ((tr.flFraction >= 1.0) || (strncmp ("func_door", STRING (tr.pHit->v.classname), 9) == 0))
    {
       // If it's a door check if nothing blocks behind
-      if (strncmp ("func_door", STRING (tr.pHit->v.classname), 9) == 0)
+      if ((tr.flFraction < 1.0) && (strncmp ("func_door", STRING (tr.pHit->v.classname), 9) == 0))
       {
          Vector vDoorEnd = tr.vecEndPos;
 
