@@ -83,9 +83,9 @@ void PodBots::advance_time(float dt) {
         }
     }
     // Copy information from Mlib -> PodBot
-    for (int bot_index = 0; bot_index < g_iNum_bots; bot_index++)
+    for (int bot_rel_index = 0; bot_rel_index < g_iNum_bots; bot_rel_index++)
     {
-        bot_t& bot = bots[client_indices[bot_index]];
+        bot_t& bot = bots[client_indices[bot_rel_index]];
         Player& player = pod_bot_edict_to_player(bot.pEdict);
         const RigidBodyPulses& rbp = player.rigid_body().rbi_.rbp_;
         bot.pEdict->v.origin = p_o2q(rbp.abs_position());
@@ -108,12 +108,12 @@ void PodBots::advance_time(float dt) {
        g_f_cvars_upd_time = gpGlobals->time + 1.f;
     }
     // Go through all active Bots, calling their Think function
-    for (int bot_index = 0; bot_index < g_iNum_bots; bot_index++)
+    for (int bot_rel_index = 0; bot_rel_index < g_iNum_bots; bot_rel_index++)
     {
-        bot_t& bot = bots[client_indices[bot_index]];
+        bot_t& bot = bots[client_indices[bot_rel_index]];
         bot.not_started = false;
         if (pod_bot_edict_to_player(bot.pEdict).game_mode() != GameMode::POD_BOT_PC) {
-            g_i_botthink_index = bot_index; // KWo - 02.05.2006
+            g_i_botthink_index = client_indices[bot_rel_index]; // KWo - 02.05.2006
             BotThink (&bot);
         }
     }
