@@ -910,7 +910,7 @@ OsmMapResource::OsmMapResource(
             std::list<WayPoints> way_point_lines = get_way_points(ways);
             calculate_waypoint_adjacency(
                 way_points_[WayPointLocation::STREET],
-                way_point_lines,
+                {},
                 way_point_edges_1_lane,
                 way_point_edges_2_lanes[WayPointLocation::STREET],
                 nodes,
@@ -918,9 +918,17 @@ OsmMapResource::OsmMapResource(
                 config.scale);
             calculate_waypoint_adjacency(
                 way_points_[WayPointLocation::SIDEWALK],
-                way_point_lines,
+                {},
                 {},
                 way_point_edges_2_lanes[WayPointLocation::SIDEWALK],
+                nodes,
+                ground_bvh,
+                config.scale);
+            calculate_waypoint_adjacency(
+                way_points_[WayPointLocation::EXPLICIT],
+                way_point_lines,
+                {},
+                way_point_edges_2_lanes[WayPointLocation::EXPLICIT],
                 nodes,
                 ground_bvh,
                 config.scale);
