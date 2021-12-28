@@ -6,6 +6,7 @@
 
 using namespace Mlib;
 
+void validate_way_points();
 void InitWaypointTypes();
 void init_pod_bot_experience_tab();
 
@@ -89,12 +90,36 @@ void Mlib::set_pod_bot_way_points(
    if (g_iNumWaypoints > 0)
       paths[g_iNumWaypoints - 1]->next = NULL;
 
+   validate_way_points();
+
    InitWaypointTypes ();
    InitPathMatrix ();
 
    g_bWaypointsChanged = FALSE;
 
    init_pod_bot_experience_tab();
+}
+
+void validate_way_points() {
+   for (int i = 0; i < g_iNumWaypoints; i++)
+   {
+      int iConnections = 0;
+      for (int n = 0; n < MAX_PATH_INDEX; n++)
+      {
+         if (paths[i]->index[n] != -1)
+         {
+            iConnections++;
+            break;  // Found some connection, check another WP
+         }
+      }
+      if (iConnections == 0)
+      {
+         if (!WaypointIsConnected (i))
+         {
+            throw std::runtime_error("Waypoint problem! No path found from node " + std::to_string(i));
+         }
+      }
+   }
 }
 
 void init_pod_bot_experience_tab() {
