@@ -439,7 +439,7 @@ void test_subdivide_points_and_adjacency() {
     pa.adjacency(0, 1) = 0.4;
     pa.adjacency(1, 0) = 0.4;
     std::cerr << pa.adjacency << std::endl;
-    pa.subdivide(0.1f);
+    pa.subdivide(0.1f, interpolate_default<float, 2>);
     std::cerr << pa.adjacency << std::endl;
     for (const auto& p : pa.points) {
         std::cerr << p << std::endl;

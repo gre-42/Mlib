@@ -95,5 +95,16 @@ void Mlib::calculate_waypoint_adjacency(
             }
         }
     }
-    way_points.subdivide(50 * scale);
+    way_points.subdivide(50 * scale, [&ground_bvh](
+        const FixedArray<float, 3>& p0,
+        const FixedArray<float, 3>& p1,
+        float a0,
+        float a1)
+    {
+        FixedArray<float, 3> res = p0 * a0 + p1 * a1;
+        if (!ground_bvh.height(res(2), FixedArray<float, 2>{ res(0), res(1) })) {
+            throw std::runtime_error("Could not determine waypoint height");
+        }
+        return res;
+    });
 }

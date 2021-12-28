@@ -6,6 +6,16 @@
 namespace Mlib {
 
 template <class TData, size_t tndim>
+FixedArray<TData, tndim> interpolate_default(
+    const FixedArray<TData, tndim>& p0,
+    const FixedArray<TData, tndim>& p1,
+    TData a0,
+    TData a1)
+{
+    return p0 * a0 + p1 * a1;
+}
+
+template <class TData, size_t tndim>
 struct PointsAndAdjacency {
     std::vector<FixedArray<TData, tndim>> points;
     SparseArrayCcs<TData> adjacency;
@@ -16,7 +26,8 @@ struct PointsAndAdjacency {
         archive(adjacency);
     }
 
-    void subdivide(const TData& max_length) {
+    template <class TInterpolate>
+    void subdivide(const TData& max_length, const TInterpolate& interpolate) {
         std::map<std::tuple<size_t, size_t, size_t>, size_t> new_point_ids;
         std::list<FixedArray<TData, tndim>> new_points;
         std::map<size_t, std::map<size_t, TData>> new_columns;
@@ -32,7 +43,7 @@ struct PointsAndAdjacency {
                         FixedArray<TData, tndim> old_point = points.at(c);
                         for (size_t i = 1; i < npoints - 1; ++i) {
                             std::pair<TData, TData> lm = linspace_multipliers<TData>(i, npoints);
-                            FixedArray<TData, tndim> pn = points.at(c) * lm.first + points.at(r) * lm.second;
+                            FixedArray<TData, tndim> pn = interpolate(points.at(c), points.at(r), lm.first, lm.second);
                             auto key = (r < c)
                                 ? std::tuple<size_t, size_t, size_t>{r, c, i}
                                 : std::tuple<size_t, size_t, size_t>{c, r, npoints - i - 1};
