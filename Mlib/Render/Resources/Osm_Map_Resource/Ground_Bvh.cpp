@@ -35,7 +35,7 @@ bool GroundBvh::height(float& height, const FixedArray<float, 2>& pt) const
             FixedArray<float, 2>{t(2)(0), t(2)(1)}};
         FixedArray<float, 3> coords;
         barycentric(pt, tri2(0), tri2(1), tri2(2), coords(0), coords(1), coords(2));
-        if (all(coords >= 0.f) && all(coords <= 1.f)) {
+        if (all(coords >= float{ -1e-3 }) && all(coords <= 1.f + float{ 1e-3 })) {
             height =
                 coords(0) * t(0)(2) +
                 coords(1) * t(1)(2) +
