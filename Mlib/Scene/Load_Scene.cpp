@@ -423,7 +423,8 @@ void LoadScene::operator()(
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
         "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)$");
+        "\\s+line_distance=([\\w+-.]+)"
+        "\\s+score_board=(\\d+)$");
     static const DECLARE_REGEX(create_scene_reg,
         "^\\s*create_scene"
         "\\s+name=([\\w+-.]+)"
@@ -2221,12 +2222,13 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, players_stats_reg)) {
             auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
                 players,
-                fpathp(match[1].str()),            // ttf_filename
-                FixedArray<float, 2>{              // position
+                fpathp(match[1].str()),                               // ttf_filename
+                FixedArray<float, 2>{                                 // position
                     safe_stof(match[2].str()),
                     safe_stof(match[3].str())},
-                safe_stof(match[4].str()),         // font_height_pixels
-                safe_stof(match[5].str()));        // line_distance_pixels
+                safe_stof(match[4].str()),                            // font_height_pixels
+                safe_stof(match[5].str()),                            // line_distance_pixels
+                (ScoreBoardConfiguration)safe_stoi(match[6].str()));  // score board configuration
             render_logics.append(nullptr, players_stats_logic);
         } else if (Mlib::re::regex_match(line, match, pause_on_lose_focus_reg)) {
             auto wit = renderable_scenes.find("primary_scene");

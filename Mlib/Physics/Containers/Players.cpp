@@ -2,6 +2,7 @@
 #include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
+#include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Time.hpp>
 #include <filesystem>
 
@@ -71,18 +72,26 @@ LapTimeEventAndIdAndMfilename Players::get_winner_track_filename(size_t rank) co
     return game_history_->get_winner_track_filename(level_stem(), rank);
 }
 
-std::string Players::get_score_board() const {
+std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     std::stringstream sstr;
     for (const auto& p : players_) {
         if (p.second->game_mode() != GameMode::BYSTANDER) {
-            sstr <<
-                "Player: " << p.first <<
-                ", team: " << p.second->team() <<
-                ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.second.get())) <<
-                ", car HP: " << p.second->car_health() << std::endl;
+            sstr << "Player: " << p.first;
+            if (config & ScoreBoardConfiguration::TEAM) {
+                sstr << ", team: " << p.second->team();
+            }
+            if (config & ScoreBoardConfiguration::BEST_LAP_TIME) {
+                sstr << ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.second.get()));
+            }
+            if (config & ScoreBoardConfiguration::CAR_HP) {
+                sstr << ", car HP: " << p.second->car_health();
+            }
             sstr << std::endl;
-            sstr << "History" << std::endl;
-            sstr << game_history_->get_level_history(level_stem()) << std::endl;
+            if (config & ScoreBoardConfiguration::HISTORY) {
+                sstr << std::endl;
+                sstr << "History" << std::endl;
+                sstr << game_history_->get_level_history(level_stem()) << std::endl;
+            }
         }
     }
     return sstr.str();

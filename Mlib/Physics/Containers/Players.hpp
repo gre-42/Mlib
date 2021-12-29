@@ -12,6 +12,7 @@ struct LapTimeEventAndIdAndMfilename;
 class AdvanceTimes;
 class Player;
 class GameHistory;
+enum class ScoreBoardConfiguration;
 
 class Players {
     friend std::ostream& operator << (std::ostream& ostr, const Players& players);
@@ -29,7 +30,7 @@ public:
         float lap_time,
         const std::list<TrackElement>& track);
     LapTimeEventAndIdAndMfilename get_winner_track_filename(size_t rank) const;
-    std::string get_score_board() const;
+    std::string get_score_board(ScoreBoardConfiguration config) const;
     std::map<std::string, std::unique_ptr<Player>>& players();
     const std::map<std::string, std::unique_ptr<Player>>& players() const;
 private:

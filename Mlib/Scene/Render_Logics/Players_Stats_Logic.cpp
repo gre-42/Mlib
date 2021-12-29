@@ -12,13 +12,15 @@ PlayersStatsLogic::PlayersStatsLogic(
     const std::string& ttf_filename,
     const FixedArray<float, 2>& position,
     float font_height_pixels,
-    float line_distance_pixels)
+    float line_distance_pixels,
+    ScoreBoardConfiguration score_board_configuration)
 : RenderTextLogic{
     ttf_filename,
     position,
     font_height_pixels,
     line_distance_pixels},
-  players_{players}
+  players_{players},
+  score_board_configuration_{score_board_configuration}
 {}
 
 PlayersStatsLogic::~PlayersStatsLogic()
@@ -32,7 +34,7 @@ void PlayersStatsLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    renderable_text().render(position_, players_.get_score_board(), {width, height}, line_distance_pixels_, true);  // true=periodic_position
+    renderable_text().render(position_, players_.get_score_board(score_board_configuration_), {width, height}, line_distance_pixels_, true);  // true=periodic_position
 }
 
 void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {
