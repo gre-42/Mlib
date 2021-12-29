@@ -16,6 +16,8 @@ struct ClientAndBot {
     bot_t* bot;
 };
 
+void pod_bot_destroy_player(const Player& player);
+
 void pod_bot_set_players(Players& players, CollisionQuery& collision_query);
 
 void pod_bot_clear_players();

@@ -10,7 +10,7 @@
 
 #define VEC_VIEW Vector( 0, 0, 28 )
 
-static std::map<int, edict_t*> indexent_;
+std::map<int, edict_t*> indexent_;
 static std::map<edict_t*, int> entindex_;
 static std::map<std::string, int> decal_map;
 

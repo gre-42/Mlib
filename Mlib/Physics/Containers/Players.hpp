@@ -21,7 +21,7 @@ public:
         const std::string& level_name,
         size_t max_tracks);
     ~Players();
-    void add_player(Player& player);
+    void add_player(std::unique_ptr<Player>&& player);
     Player& get_player(const std::string& name);
     void set_team_waypoint(const std::string& team_name, const FixedArray<float, 3>& waypoint);
     void notify_lap_time(
@@ -30,11 +30,11 @@ public:
         const std::list<TrackElement>& track);
     LapTimeEventAndIdAndMfilename get_winner_track_filename(size_t rank) const;
     std::string get_score_board() const;
-    std::map<std::string, Player*>& players();
-    const std::map<std::string, Player*>& players() const;
+    std::map<std::string, std::unique_ptr<Player>>& players();
+    const std::map<std::string, std::unique_ptr<Player>>& players() const;
 private:
     std::string level_stem() const;
-    std::map<std::string, Player*> players_;
+    std::map<std::string, std::unique_ptr<Player>> players_;
     std::map<const Player*, float> best_lap_time_;
     AdvanceTimes& advance_times_;
     const std::string& level_name_;

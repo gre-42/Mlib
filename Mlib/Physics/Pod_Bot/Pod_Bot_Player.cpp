@@ -47,6 +47,15 @@ PodBotPlayer::PodBotPlayer(const Player& player)
     edict->v.weapons = (1 << weapon);
 }
 
+PodBotPlayer::~PodBotPlayer() {
+    edict_t* edict = get_edict(player_.name());
+    auto cb = pod_bot_get_client_and_bot(edict);
+    delete cb.bot->pEdict;
+    cb.bot->pEdict = nullptr;
+
+    pod_bot_destroy_player(player_);
+}
+
 void PodBotPlayer::set_rigid_body_integrator() {
     if (!player_.has_rigid_body()) {
         throw std::runtime_error("PodBotPlayer::set_rigid_body_integrator despite no rigid body set");

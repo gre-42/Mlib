@@ -21,15 +21,17 @@ Players::Players(
 Players::~Players()
 {
     for (const auto& p : players_) {
-        advance_times_.schedule_delete_advance_time(p.second);
+        advance_times_.schedule_delete_advance_time(p.second.get());
     }
 }
 
-void Players::add_player(Player& player) {
-    if (!players_.insert(std::make_pair(player.name(), &player)).second) {
-        throw std::runtime_error("Player with name \"" + player.name() + "\" already exists");
+void Players::add_player(std::unique_ptr<Player>&& player) {
+    std::string player_name = player->name();
+    Player* p = player.get();
+    if (!players_.insert(std::make_pair(player->name(), std::move(player))).second) {
+        throw std::runtime_error("Player with name \"" + player_name + "\" already exists");
     }
-    if (!best_lap_time_.insert({&player, INFINITY}).second) {
+    if (!best_lap_time_.insert({p, INFINITY}).second) {
         throw std::runtime_error("Can not set lap time, player already exists");
     }
 }
@@ -76,7 +78,7 @@ std::string Players::get_score_board() const {
             sstr <<
                 "Player: " << p.first <<
                 ", team: " << p.second->team() <<
-                ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.second)) <<
+                ", best lap time: " << format_minutes_seconds(best_lap_time_.at(p.second.get())) <<
                 ", car HP: " << p.second->car_health() << std::endl;
             sstr << std::endl;
             sstr << "History" << std::endl;
@@ -86,11 +88,11 @@ std::string Players::get_score_board() const {
     return sstr.str();
 }
 
-std::map<std::string, Player*>& Players::players() {
+std::map<std::string, std::unique_ptr<Player>>& Players::players() {
     return players_;
 }
 
-const std::map<std::string, Player*>& Players::players() const {
+const std::map<std::string, std::unique_ptr<Player>>& Players::players() const {
     return players_;
 }
 

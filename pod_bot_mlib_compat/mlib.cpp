@@ -1,11 +1,34 @@
 #include "mlib.hpp"
+#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <pod_bot/bot.h>
 #include <pod_bot_mlib_compat/globals.hpp>
 #include <pod_bot_mlib_compat/pod_bot.hpp>
 #include <pod_bot_mlib_compat/types.hpp>
 
 static std::map<const Mlib::RigidBodyIntegrator*, std::string> g_rbi_to_player_name;
+extern std::map<int, edict_t*> indexent_;
+
+void Mlib::pod_bot_destroy_player(const Player& player) {
+    edict_t* edict = get_edict(player.name());
+    if (g_edict_to_player_name.erase(edict) != 1) {
+        throw std::runtime_error("Could not erase edict");
+    }
+    if (g_player_name_to_edict.erase(player.name()) != 1) {
+        throw std::runtime_error("Could not erase player");
+    }
+    // From: https://developer.valvesoftware.com/wiki/Entity_index
+    // "Worldspawn is always entity 0, while indices 1 to <maxplayers> are reserved for players.""
+    if (std::erase_if(indexent_, [&edict](const auto& it){ return it.second == edict; }) != 1) {
+        throw std::runtime_error("Could not erase from indexent");
+    }
+    if (player.has_rigid_body()) {
+        if (g_rbi_to_player_name.erase(&player.rigid_body().rbi_) != 1) {
+            throw std::runtime_error("Could not erase rbi");
+        }
+    }
+}
 
 void Mlib::pod_bot_set_players(Players& players, CollisionQuery& collision_query) {
     if (g_players != nullptr) {

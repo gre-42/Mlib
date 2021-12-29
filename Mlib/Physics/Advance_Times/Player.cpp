@@ -64,7 +64,9 @@ Player::Player(
 }
 
 Player::~Player()
-{}
+{
+    pod_bot_player_.reset();
+}
 
 void Player::set_can_drive(bool value) {
     skills_.can_drive = value;
@@ -707,7 +709,7 @@ void Player::move_to_waypoint() {
     float d_wpt = 0;
     // Avoid collisions with other players (break).
     for (const auto& p : players_.players()) {
-        if (p.second == this) {
+        if (p.second.get() == this) {
             continue;
         }
         if (!p.second->has_rigid_body()) {

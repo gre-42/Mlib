@@ -93,7 +93,7 @@ public:
         UnstuckMode unstuck_mode,
         const DrivingMode& driving_mode,
         DrivingDirection driving_direction);
-    ~Player();
+    virtual ~Player() override;
     void set_can_drive(bool value);
     void set_can_aim(bool value);
     void set_can_shoot(bool value);
