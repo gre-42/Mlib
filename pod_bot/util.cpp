@@ -1308,9 +1308,9 @@ void UTIL_CheckHostages (void)    // KWo 17.05.2006
          HostagesData[i].OldOrigin = pHostage->v.origin;
 
 #if !defined __amd64__
-         int following = *((int *)pHostage->pvPrivateData + OFFSET_HOSTAGEFOLLOW);
+         uint32_t following = *((uint32_t *)pHostage->pvPrivateData + OFFSET_HOSTAGEFOLLOW);
 #else
-         long following = *((long *)pHostage->pvPrivateData + OFFSET_HOSTAGEFOLLOW);
+         uint64_t following = *((uint64_t *)pHostage->pvPrivateData + OFFSET_HOSTAGEFOLLOW);
 #endif
 
          if (following == 0)
