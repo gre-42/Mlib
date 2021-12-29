@@ -18,6 +18,17 @@ void Mlib::pod_bot_set_players(Players& players, CollisionQuery& collision_query
     g_collision_query = &collision_query;
 }
 
+void Mlib::pod_bot_clear_players() {
+    if (g_players == nullptr) {
+        throw std::runtime_error("Players not set");
+    }
+    if (g_collision_query == nullptr) {
+        throw std::runtime_error("Collision query not set");
+    }
+    g_players = nullptr;
+    g_collision_query = nullptr;
+}
+
 int Mlib::pod_bot_team_id(const std::string& team_name) {
     // Copy & paste from podbot/bot.h
     // TEAM_CS_UNASSIGNED = 0,

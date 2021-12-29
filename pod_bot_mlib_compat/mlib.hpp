@@ -18,6 +18,8 @@ struct ClientAndBot {
 
 void pod_bot_set_players(Players& players, CollisionQuery& collision_query);
 
+void pod_bot_clear_players();
+
 int pod_bot_team_id(const std::string& team_name);
 
 Player& pod_bot_edict_to_player(const edict_t* edict);
