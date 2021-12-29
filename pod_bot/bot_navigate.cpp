@@ -1138,6 +1138,26 @@ int nodeEqual (PATHNODE *a, PATHNODE *b)
    return (a->iIndex == b->iIndex);
 }
 
+int NearestWaypoint(bot_t *pBot) {
+   if (g_iNumWaypoints == 0) {
+      throw std::runtime_error("No waypoints exist");
+   }
+   int best_id = -1;
+   float best_distance = INFINITY;
+   for (int i = 0; i < g_iNumWaypoints; i++)
+   {
+      float distance = Length(paths[i]->origin - pBot->pEdict->v.origin);
+      if (distance < best_distance) {
+         best_id = i;
+         best_distance = distance;
+      }
+   }
+   if (best_id == -1) {
+      throw std::runtime_error("Could not determine nearest waypoint");
+   }
+   return best_id;
+}
+
 bool BotFindWaypoint (bot_t *pBot)
 {
    // Finds a Waypoint in the near of the Bot if he lost his Path or if Pathfinding needs
@@ -1247,7 +1267,8 @@ bool BotFindWaypoint (bot_t *pBot)
    }
    else
    {
-      wpt_index[0] = RANDOM_LONG (0, g_iNumWaypoints - 1);
+      wpt_index[0] = NearestWaypoint(pBot);                  // Your Name - 29.12.2021
+//      wpt_index[0] = RANDOM_LONG (0, g_iNumWaypoints - 1); // Your Name - 29.12.2021
 //      ALERT(at_logged, "[Debug] Bot %s didn't find a good waypoint - need to use a random one - %i.\n", pBot->name, wpt_index[0]);
       i = 0;
    }
