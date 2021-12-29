@@ -41,6 +41,8 @@ PodBotPlayer::PodBotPlayer(const Player& player)
     cb.bot->current_weapon.iClip = ammo;
     cb.bot->current_weapon.iAmmo1 = 0;
     cb.bot->current_weapon.iAmmo2 = 0;
+    cb.bot->f_view_distance = 500.f * s_o2q;
+    cb.bot->f_maxview_distance = 500.f * s_o2q;
 
     edict->v.weapons = (1 << weapon);
 }

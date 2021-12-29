@@ -312,7 +312,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
    vecTarget = pTargetEdict->v.origin;
 
    // Check direct Line to waist
-   UTIL_TraceLine (vecLookerOrigin, vecTarget, ignore_monsters, ignore_glass, pEdict, &tr);
+   UTIL_TraceLine (vecLookerOrigin, vecTarget, dont_ignore_monsters, ignore_glass, pEdict, &tr);
 
    if ((tr.flFraction >= 1.0) || (tr.pHit == pTargetEdict))
    {
@@ -330,7 +330,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
       vecTarget = vecTarget + Vector(0.0, 0.0, 1.0);  // KWo - 02.04.2010
    }
 
-   UTIL_TraceLine (vecLookerOrigin, vecTarget, ignore_monsters, ignore_glass, pEdict, &tr);
+   UTIL_TraceLine (vecLookerOrigin, vecTarget, dont_ignore_monsters, ignore_glass, pEdict, &tr);
 
    // if the player is rendered, his head cannot be good seen...
    if (((tr.flFraction >= 1.0) || (tr.pHit == pTargetEdict)) && (!SemiTransparent))

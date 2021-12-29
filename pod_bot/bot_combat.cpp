@@ -440,8 +440,8 @@ bool BotFindEnemy (bot_t *pBot)
          // Zero out reaction time
          pBot->f_actual_reaction_time = 0.0;
          pBot->pLastEnemy = pNewEnemy;
-//         pBot->vecLastEnemyOrigin = vecVisible; // KWo - 10.10.2006
-//         pBot->vecVisPos = vecVisible; // KWo - 25.01.2008 // KWo - 08.01.2012
+         pBot->vecLastEnemyOrigin = vecVisible; // KWo - 10.10.2006, Your Name - 29.12.2021
+         pBot->vecVisPos = vecVisible; // KWo - 25.01.2008 // KWo - 08.01.2012, Your Name - 29.12.2021
          pBot->pBotUser = NULL;  // don't follow user when enemy found
          pBot->f_bot_see_enemy_time = gpGlobals->time;
          return (TRUE);
