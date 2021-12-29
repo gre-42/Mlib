@@ -29,29 +29,31 @@ void PodBots::advance_time(float dt) {
     if (gpGlobals->maxClients > 32) {
         throw std::runtime_error("maxClients too large");
     }
-    int client_indices[32];
+    int player_indices[32];
     g_iNum_bots = 0;
     g_iAliveTs = 0;
     g_iAliveCTs = 0;
     // Determine active bots
-    for (int client_index = 0; client_index < gpGlobals->maxClients; client_index++)
+    for (int player_index = 0; player_index < gpGlobals->maxClients; ++player_index)
     {
-        bot_t& bot = bots[client_index];
+        bot_t& bot = bots[player_index];
+        client_t& client = clients[player_index];
         if (!FNullEnt(bot.pEdict)) {
             if (bot.is_used)
             {
                 Player& player = pod_bot_edict_to_player(bot.pEdict);
                 if (player.has_rigid_body()) {
-                    client_indices[g_iNum_bots++] = client_index;
+                    player_indices[g_iNum_bots++] = player_index;
                 }
-                bot.pEdict->v.flags |= FL_CLIENT | CLIENT_USED;
+                bot.pEdict->v.flags |= FL_CLIENT;
+                client.iFlags |= CLIENT_USED;
 
 //              if ((pPlayer->v.flags & FL_FAKECLIENT) && (clients[player_index].iFlags & CLIENT_ALIVE)) // KWo - 23.03.2012 - thanks to Immortal_BLG
 //                  pPlayer->v.light_level = Light::R_LightPoint (pPlayer->v.origin);
 
-                if ((clients[client_index].iTeam == TEAM_CS_TERRORIST) && (clients[client_index].iFlags & CLIENT_ALIVE)) // KWo - 19.01.2008
+                if ((client.iTeam == TEAM_CS_TERRORIST) && (client.iFlags & CLIENT_ALIVE)) // KWo - 19.01.2008
                     g_iAliveTs++;
-                if ((clients[client_index].iTeam == TEAM_CS_COUNTER) && (clients[client_index].iFlags & CLIENT_ALIVE))    // KWo - 19.01.2008
+                if ((client.iTeam == TEAM_CS_COUNTER) && (client.iFlags & CLIENT_ALIVE))    // KWo - 19.01.2008
                     g_iAliveCTs++;
 
 //              if (!(pPlayer->v.flags & FL_FAKECLIENT) && !(bots[player_index].is_used)
@@ -74,18 +76,18 @@ void PodBots::advance_time(float dt) {
             if (bot.is_used && (bot.pEdict->v.health > 0)) {
                 bot.bDead = false;
                 bot.pEdict->v.deadflag = DEAD_NO;
-                clients[client_index].iFlags |= CLIENT_ALIVE;
+                client.iFlags |= CLIENT_ALIVE;
             } else {
                 bot.bDead = true;
                 bot.pEdict->v.deadflag = DEAD_DEAD;
-                clients[client_index].iFlags &= ~CLIENT_ALIVE;
+                client.iFlags &= ~CLIENT_ALIVE;
             }
         }
     }
     // Copy information from Mlib -> PodBot
     for (int bot_rel_index = 0; bot_rel_index < g_iNum_bots; bot_rel_index++)
     {
-        bot_t& bot = bots[client_indices[bot_rel_index]];
+        bot_t& bot = bots[player_indices[bot_rel_index]];
         Player& player = pod_bot_edict_to_player(bot.pEdict);
         const RigidBodyPulses& rbp = player.rigid_body().rbi_.rbp_;
         bot.pEdict->v.origin = p_o2q(rbp.abs_position());
@@ -111,10 +113,10 @@ void PodBots::advance_time(float dt) {
     // Go through all active Bots, calling their Think function
     for (int bot_rel_index = 0; bot_rel_index < g_iNum_bots; bot_rel_index++)
     {
-        bot_t& bot = bots[client_indices[bot_rel_index]];
+        bot_t& bot = bots[player_indices[bot_rel_index]];
         bot.not_started = false;
         if (pod_bot_edict_to_player(bot.pEdict).game_mode() != GameMode::POD_BOT_PC) {
-            g_i_botthink_index = client_indices[bot_rel_index]; // KWo - 02.05.2006
+            g_i_botthink_index = player_indices[bot_rel_index]; // KWo - 02.05.2006
             BotThink (&bot);
         }
     }
