@@ -128,7 +128,7 @@ RenderableScene::~RenderableScene() {
     std::lock_guard lock{ delete_node_mutex_ };
     scene_.shutdown();
     if (audio_listener_updater_ != nullptr) {
-        physics_engine_.advance_times_.schedule_delete_advance_time(audio_listener_updater_.get());
+        physics_engine_.advance_times_.delete_advance_time(audio_listener_updater_.get());
     }
 }
 
@@ -162,6 +162,6 @@ void RenderableScene::stop_and_join() {
 }
 
 void RenderableScene::instantiate_audio_listener() {
-    audio_listener_updater_ = std::make_shared<AudioListenerUpdater>(selected_cameras_, scene_);
-    physics_engine_.advance_times_.add_advance_time(audio_listener_updater_);
+    audio_listener_updater_ = std::make_unique<AudioListenerUpdater>(selected_cameras_, scene_);
+    physics_engine_.advance_times_.add_advance_time(*audio_listener_updater_.get());
 }

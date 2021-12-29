@@ -103,7 +103,7 @@ public:
     Players players_;
     std::unique_ptr<PodBots> pod_bots_;
     GameLogic game_logic_;
-    std::shared_ptr<AudioListenerUpdater> audio_listener_updater_;
+    std::unique_ptr<AudioListenerUpdater> audio_listener_updater_;
 
     const SceneConfig& scene_config_;
     PhysicsIteration physics_iteration_;

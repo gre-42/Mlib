@@ -21,7 +21,7 @@ Players::Players(
 Players::~Players()
 {
     for (const auto& p : players_) {
-        advance_times_.schedule_delete_advance_time(p.second.get());
+        advance_times_.delete_advance_time(p.second.get());
     }
 }
 

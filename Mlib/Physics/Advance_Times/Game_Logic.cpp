@@ -49,7 +49,7 @@ GameLogic::GameLogic(
 }
 
 GameLogic::~GameLogic() {
-    advance_times_.schedule_delete_advance_time(this);
+    advance_times_.delete_advance_time(this);
 }
 
 void GameLogic::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {

@@ -19,7 +19,7 @@ PodBots::PodBots(
 }
 
 PodBots::~PodBots() {
-    advance_times_.schedule_delete_advance_time(this);
+    advance_times_.delete_advance_time(this);
     pod_bot_clear_players();
 }
 
