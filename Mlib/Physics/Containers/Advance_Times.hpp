@@ -13,7 +13,7 @@ public:
     AdvanceTimes();
     ~AdvanceTimes();
     void add_advance_time(const std::shared_ptr<AdvanceTime>& advance_time);
-    void add_advance_time(AdvanceTime& advance_time);
+    void add_advance_time(AdvanceTime* advance_time);
     void schedule_delete_advance_time(const AdvanceTime* advance_time);
     void delete_advance_time(const AdvanceTime* advance_time);
     void delete_scheduled_advance_times();

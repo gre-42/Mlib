@@ -14,7 +14,7 @@ PodBots::PodBots(
 : advance_times_{advance_times},
   start_time_{ std::chrono::steady_clock::now() }
 {
-    advance_times_.add_advance_time(*this);
+    advance_times_.add_advance_time(this);
     pod_bot_set_players(players, collision_query);
 }
 

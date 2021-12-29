@@ -163,5 +163,5 @@ void RenderableScene::stop_and_join() {
 
 void RenderableScene::instantiate_audio_listener() {
     audio_listener_updater_ = std::make_unique<AudioListenerUpdater>(selected_cameras_, scene_);
-    physics_engine_.advance_times_.add_advance_time(*audio_listener_updater_.get());
+    physics_engine_.advance_times_.add_advance_time(audio_listener_updater_.get());
 }

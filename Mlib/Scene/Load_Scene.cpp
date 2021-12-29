@@ -1996,7 +1996,7 @@ void LoadScene::operator()(
                 driving_direction_from_string(match[6].str()));
             Player* p = player.get();
             players.add_player(std::move(player));
-            physics_engine.advance_times_.add_advance_time(*p);
+            physics_engine.advance_times_.add_advance_time(p);
             physics_engine.add_external_force_provider(p);
         } else if (Mlib::re::regex_match(line, match, player_set_node_reg)) {
             auto node = scene.get_node(match[2].str());

@@ -45,7 +45,7 @@ GameLogic::GameLogic(
   current_bvh_rng_{0},
   current_bvh_{0}
 {
-    advance_times_.add_advance_time(*this);
+    advance_times_.add_advance_time(this);
 }
 
 GameLogic::~GameLogic() {
