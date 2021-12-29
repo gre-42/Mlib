@@ -1,4 +1,5 @@
 #include "Calculate_Waypoint_Adjacency.hpp"
+#include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
@@ -37,7 +38,7 @@ void Mlib::calculate_waypoint_adjacency(
         if (ground_bvh.height(height, p2)) {
             return FixedArray<float, 3>{p2(0), p2(1), height};
         } else {
-            throw std::runtime_error("Could not determine waypoint height");
+            throw PointException<2>{ p2, "Could not determine height of original waypoint" };
         }
     };
     for (const auto& p : indices_1_lane) {
@@ -103,7 +104,7 @@ void Mlib::calculate_waypoint_adjacency(
     {
         FixedArray<float, 3> res = p0 * a0 + p1 * a1;
         if (!ground_bvh.height(res(2), FixedArray<float, 2>{ res(0), res(1) })) {
-            throw std::runtime_error("Could not determine waypoint height");
+            throw PointException<3>{ res, "Could not determine height of interpolated waypoint" };
         }
         return res;
     });

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
+#include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -92,6 +93,16 @@ OsmMapResource::OsmMapResource(
         nodes,
         ways);
     
+    auto handle_point_exception3 = [this](const PointException<3>& e, const std::string& message) {
+        auto m = get_geographic_mapping(SceneNode());
+        std::stringstream sstr;
+        sstr.precision(15);
+        sstr << message << " at position " << e.point << " | " << m.transform(e.point.casted<double>()) << ": " << e.what() << std::endl;
+        throw std::runtime_error(sstr.str());
+    };
+    auto handle_point_exception2 = [this, &handle_point_exception3](const PointException<2>& e, const std::string& message) {
+        handle_point_exception3(PointException<3>{FixedArray<float, 3>{ e.point(0), e.point(1), 0. }, e.what()}, message);
+    };
     auto handle_point_exception = [this](const p2t::PointException& e, const std::string& message) {
         FixedArray<double, 3> pos{e.point.x, e.point.y, 0.};
         auto m = get_geographic_mapping(SceneNode());
@@ -908,30 +919,38 @@ OsmMapResource::OsmMapResource(
         }
         {
             std::list<WayPoints> way_point_lines = get_way_points(ways);
-            calculate_waypoint_adjacency(
-                way_points_[WayPointLocation::STREET],
-                {},
-                way_point_edges_1_lane,
-                way_point_edges_2_lanes[WayPointLocation::STREET],
-                nodes,
-                ground_bvh,
-                config.scale);
-            calculate_waypoint_adjacency(
-                way_points_[WayPointLocation::SIDEWALK],
-                {},
-                {},
-                way_point_edges_2_lanes[WayPointLocation::SIDEWALK],
-                nodes,
-                ground_bvh,
-                config.scale);
-            calculate_waypoint_adjacency(
-                way_points_[WayPointLocation::EXPLICIT],
-                way_point_lines,
-                {},
-                way_point_edges_2_lanes[WayPointLocation::EXPLICIT],
-                nodes,
-                ground_bvh,
-                config.scale);
+            try {
+                calculate_waypoint_adjacency(
+                    way_points_[WayPointLocation::STREET],
+                    {},
+                    way_point_edges_1_lane,
+                    way_point_edges_2_lanes[WayPointLocation::STREET],
+                    nodes,
+                    ground_bvh,
+                    config.scale);
+                calculate_waypoint_adjacency(
+                    way_points_[WayPointLocation::SIDEWALK],
+                    {},
+                    {},
+                    way_point_edges_2_lanes[WayPointLocation::SIDEWALK],
+                    nodes,
+                    ground_bvh,
+                    config.scale);
+                calculate_waypoint_adjacency(
+                    way_points_[WayPointLocation::EXPLICIT],
+                    way_point_lines,
+                    {},
+                    way_point_edges_2_lanes[WayPointLocation::EXPLICIT],
+                    nodes,
+                    ground_bvh,
+                    config.scale);
+            } catch (const PointException<2>& e) {
+                handle_point_exception2(e, "Could not calculate waypoint adjacency");
+            } catch (const PointException<3>& e) {
+                handle_point_exception3(e, "Could not calculate waypoint adjacency");
+            } catch (const TriangleException& e) {
+                handle_triangle_exception(e, "Could not calculate waypoint adjacency");
+            }
         }
         if (const char* wf = getenv("WAYPOINT_DEBUG_PREFIX"); (wf != nullptr)) {
             way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1f);

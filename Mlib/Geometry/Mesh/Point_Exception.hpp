@@ -4,13 +4,14 @@
 
 namespace Mlib {
 
+template <size_t tndim>
 class PointException: public std::runtime_error {
 public:
-    PointException(const FixedArray<float, 3>& point, const std::string& what)
+    PointException(const FixedArray<float, tndim>& point, const std::string& what)
     : std::runtime_error{what},
       point{point}
     {}
-    FixedArray<float, 3> point;
+    FixedArray<float, tndim> point;
 };
 
 }
