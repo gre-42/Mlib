@@ -335,7 +335,7 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
    // Don't allow creating Bots when no waypoints are loaded
    if (g_iNumWaypoints < 1)
    {
-      UTIL_ServerPrint ("No Waypoints for this Map, can't create Bot !\n");
+      throw std::runtime_error ("No Waypoints for this Map, can't create Bot !\n");
       memset (BotCreateTab, 0, sizeof (BotCreateTab));
       botcreation_time = 0.0;
       return;
@@ -346,7 +346,7 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
              || ((g_i_cv_BotsQuotaMatch > 0) && (g_iNum_bots > g_iMax_bots)))
              && (g_iMax_bots > 0) && (g_iNum_bots >= g_iMin_bots))  // KWo - 08.03.2007
    {
-      UTIL_ServerPrint ("Max Bots reached, can't create Bot !\n");
+      throw std::runtime_error ("Max Bots reached, can't create Bot !\n");
       memset (BotCreateTab, 0, sizeof (BotCreateTab));
       botcreation_time = 0.0;
       return;
@@ -355,7 +355,7 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
    // if Waypoints have changed don't allow it because Distance Tables are messed up
    else if (g_bWaypointsChanged)
    {
-      UTIL_ServerPrint ("Waypoints changed/not initialised, can't create Bot !\n");
+      throw std::runtime_error ("Waypoints changed/not initialised, can't create Bot !\n");
       memset (BotCreateTab, 0, sizeof (BotCreateTab));
       botcreation_time = 0.0;
       return;
@@ -390,7 +390,7 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
       // If as many Bots as NumBotnames, don't allow Bot Creation
       if (g_iNum_bots >= iNumBotNames)
       {
-         UTIL_ServerPrint ("Not enough Bot Names in botnames.txt, can't create Bot !\n");
+         throw std::runtime_error ("Not enough Bot Names in botnames.txt, can't create Bot !\n");
          memset (BotCreateTab, 0, sizeof (BotCreateTab));
          botcreation_time = 0.0;
          return;
@@ -542,7 +542,7 @@ void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class,
    // Did the Call succeed ?
    if (FNullEnt (BotEnt))
    {
-      UTIL_ServerPrint ("Max Players reached. Can't create bot!\n");
+      throw std::runtime_error ("Max Players reached. Can't create bot!\n");
       memset (BotCreateTab, 0, sizeof (BotCreateTab));
       botcreation_time = 0.0;
       return;
