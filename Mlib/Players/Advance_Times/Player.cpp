@@ -14,6 +14,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -30,7 +31,8 @@ Player::Player(
     GameMode game_mode,
     UnstuckMode unstuck_mode,
     const DrivingMode& driving_mode,
-    DrivingDirection driving_direction)
+    DrivingDirection driving_direction,
+    DeleteNodeMutex& delete_node_mutex)
 : scene_{scene},
   collision_query_{collision_query},
   players_{players},
@@ -56,8 +58,10 @@ Player::Player(
   driving_direction_{driving_direction},
   spotted_by_vip_{false},
   nunstucked_{0},
-  record_waypoints_{false}
+  record_waypoints_{false},
+  delete_node_mutex_{delete_node_mutex}
 {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
         pod_bot_player_ = std::make_unique<PodBotPlayer>(*this);
     }
@@ -65,22 +69,27 @@ Player::Player(
 
 Player::~Player()
 {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     pod_bot_player_.reset();
 }
 
 void Player::set_can_drive(bool value) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     skills_.can_drive = value;
 }
 
 void Player::set_can_aim(bool value) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     skills_.can_aim = value;
 }
 
 void Player::set_can_shoot(bool value) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     skills_.can_shoot = value;
 }
 
 void Player::reset_node() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if ((rb_ != nullptr) && (pod_bot_player_ != nullptr)) {
         pod_bot_player_->clear_rigid_body_integrator();
     }
@@ -100,6 +109,7 @@ void Player::reset_node() {
 }
 
 void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (rb.driver_ != nullptr) {
         throw std::runtime_error("Rigid body already has a driver");
     }
@@ -125,6 +135,7 @@ void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene
 }
 
 const RigidBody& Player::rigid_body() const {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         throw std::runtime_error("Player has no rigid body");
     }
@@ -132,10 +143,12 @@ const RigidBody& Player::rigid_body() const {
 }
 
 const std::string& Player::scene_node_name() const {
+    delete_node_mutex_.notify_reading();
     return scene_node_name_;
 }
 
 void Player::set_ypln(YawPitchLookAtNodes& ypln, Gun* gun) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (ypln_ != nullptr || gun_ != nullptr) {
         throw std::runtime_error("ypln already set");
     }
@@ -211,22 +224,27 @@ void Player::set_waypoints(
 }
 
 const std::string& Player::name() const {
+    delete_node_mutex_.notify_reading();
     return name_;
 }
 
 const std::string& Player::team() const {
+    delete_node_mutex_.notify_reading();
     return team_;
 }
 
 PlayerStats& Player::stats() {
+    delete_node_mutex_.notify_reading();
     return stats_;
 }
 
 const PlayerStats& Player::stats() const {
+    delete_node_mutex_.notify_reading();
     return stats_;
 }
 
 float Player::car_health() const {
+    delete_node_mutex_.notify_reading();
     if (has_rigid_body() && (rb_->damageable_ != nullptr)) {
         return rb_->damageable_->health();
     } else {
@@ -235,10 +253,12 @@ float Player::car_health() const {
 }
 
 std::string Player::vehicle_name() const {
+    delete_node_mutex_.notify_reading();
     return has_rigid_body() ? rb_->name() : "";
 }
 
 GameMode Player::game_mode() const {
+    delete_node_mutex_.notify_reading();
     return game_mode_;
 }
 
@@ -248,6 +268,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
+    delete_node_mutex_.notify_reading();
     if (!has_rigid_body()) {
         throw std::runtime_error("Player::can_see requires rb");
     }
@@ -265,6 +286,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
+    delete_node_mutex_.notify_reading();
     if (!has_rigid_body()) {
         throw std::runtime_error("Player::can_see requires rb");
     }
@@ -282,6 +304,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
+    delete_node_mutex_.notify_reading();
     if (!has_rigid_body()) {
         throw std::runtime_error("Player::can_see requires rb");
     }
@@ -297,6 +320,7 @@ bool Player::can_see(
 }
 
 void Player::notify_spawn() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (auto& l : last_visited_) {
         l = std::chrono::time_point<std::chrono::steady_clock>();
     }
@@ -308,6 +332,7 @@ void Player::notify_spawn() {
 }
 
 float Player::seconds_since_spawn() const {
+    delete_node_mutex_.notify_reading();
     if (spawn_time_ == std::chrono::time_point<std::chrono::steady_clock>()) {
         throw std::runtime_error("Seconds since spawn requires previous call to notify_spawn");
     }
@@ -315,13 +340,16 @@ float Player::seconds_since_spawn() const {
 }
 
 bool Player::spotted_by_vip() const {
+    delete_node_mutex_.notify_reading();
     return spotted_by_vip_;
 }
 void Player::set_spotted_by_vip() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     spotted_by_vip_ = true;
 }
 
 void Player::notify_destroyed(void* destroyed_object) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (destroyed_object == scene_node_) {
         reset_node();
     }
@@ -332,6 +360,7 @@ void Player::notify_destroyed(void* destroyed_object) {
 }
 
 void Player::advance_time(float dt) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     aim_and_shoot();
     if (pod_bot_player_ != nullptr) {
         pod_bot_player_->update_health();
@@ -339,6 +368,7 @@ void Player::advance_time(float dt) {
 }
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!burn_in) {
         if (game_mode_ == GameMode::POD_BOT_NPC) {
             // Do nothing, is handled by PodBots
@@ -358,6 +388,7 @@ void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody
 }
 
 void Player::draw_waypoint_history(const std::string& filename) const {
+    delete_node_mutex_.notify_reading();
     if (!record_waypoints_) {
         throw std::runtime_error("draw_waypoint_history but recording is not enabled");
     }
@@ -385,6 +416,7 @@ void Player::draw_waypoint_history(const std::string& filename) const {
 }
 
 bool Player::unstuck() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         return false;
     }
@@ -426,6 +458,7 @@ bool Player::unstuck() {
 }
 
 FixedArray<float, 3> Player::gun_direction() const {
+    delete_node_mutex_.notify_reading();
     if (gun_ == nullptr) {
         throw std::runtime_error("gun_direction despite gun nullptr in player \"" + name() + '"');
     }
@@ -438,6 +471,7 @@ void Player::run_move(
     float forwardmove,
     float sidemove)
 {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         throw std::runtime_error("run_move despite rigid body nullptr");
     }
@@ -461,6 +495,7 @@ void Player::run_move(
 }
 
 void Player::trigger_gun() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (gun_ == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
@@ -468,6 +503,7 @@ void Player::trigger_gun() {
 }
 
 void Player::step_on_breaks() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         throw std::runtime_error("step_on_breaks despite nullptr");
     }
@@ -476,6 +512,7 @@ void Player::step_on_breaks() {
 }
 
 void Player::drive_forward() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         throw std::runtime_error("drive_forward despite nullptr");
     }
@@ -484,6 +521,7 @@ void Player::drive_forward() {
 }
 
 void Player::drive_backwards() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         throw std::runtime_error("drive_backwards despite nullptr");
     }
@@ -492,6 +530,7 @@ void Player::drive_backwards() {
 }
 
 void Player::roll() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         throw std::runtime_error("roll despite nullptr");
     }
@@ -500,6 +539,7 @@ void Player::roll() {
 }
 
 void Player::steer_left_full() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (const auto& x : tire_angles_left_) {
         rb_->set_tire_angle_y(x.first, x.second);
     }
@@ -509,6 +549,7 @@ void Player::steer_left_full() {
 }
 
 void Player::steer_right_full() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (const auto& x : tire_angles_right_) {
         rb_->set_tire_angle_y(x.first, x.second);
     }
@@ -518,6 +559,7 @@ void Player::steer_right_full() {
 }
 
 void Player::steer_left_partial(float angle) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (const auto& x : tire_angles_left_) {
         float ang = sign(x.second) * std::min(angle, std::abs(x.second));
         rb_->set_tire_angle_y(x.first, ang);
@@ -529,6 +571,7 @@ void Player::steer_left_partial(float angle) {
 }
 
 void Player::steer_right_partial(float angle) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (const auto& x : tire_angles_right_) {
         float ang = sign(x.second) * std::min(angle, std::abs(x.second));
         rb_->set_tire_angle_y(x.first, ang);
@@ -540,6 +583,7 @@ void Player::steer_right_partial(float angle) {
 }
 
 bool Player::has_rigid_body() const {
+    delete_node_mutex_.notify_reading();
     if (rb_ == nullptr) {
         return false;
     }
@@ -551,6 +595,7 @@ bool Player::has_rigid_body() const {
 }
 
 const PointsAndAdjacency<float, 3>& Player::waypoints() const {
+    delete_node_mutex_.notify_reading();
     auto it = all_waypoints_.find(driving_mode_.way_point_location);
     if (it == all_waypoints_.end()) {
         throw std::runtime_error("Could not find waypoints for the specified location");
@@ -559,6 +604,7 @@ const PointsAndAdjacency<float, 3>& Player::waypoints() const {
 }
 
 bool Player::has_waypoints() const {
+    delete_node_mutex_.notify_reading();
     auto it = all_waypoints_.find(driving_mode_.way_point_location);
     if (it == all_waypoints_.end()) {
         return false;
@@ -567,10 +613,12 @@ bool Player::has_waypoints() const {
 }
 
 bool Player::is_pedestrian() const {
+    delete_node_mutex_.notify_reading();
     return driving_mode_.way_point_location == WayPointLocation::SIDEWALK;
 }
 
 void Player::aim_and_shoot() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!skills_.can_aim) {
         return;
     }
@@ -598,6 +646,7 @@ void Player::aim_and_shoot() {
 }
 
 void Player::select_next_waypoint() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!waypoints().adjacency.initialized()) {
         return;
     }
@@ -673,10 +722,12 @@ void Player::select_next_waypoint() {
 }
 
 bool Player::ramming() const {
+    delete_node_mutex_.notify_reading();
     return (game_mode_ == GameMode::RAMMING) && (target_rbi_ != nullptr);
 }
 
 void Player::move_to_waypoint() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!skills_.can_drive) {
         return;
     }
@@ -793,6 +844,7 @@ void Player::move_to_waypoint() {
 }
 
 void Player::select_opponent() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     assert_true(!scene_node_ == !rb_);
     if (!has_rigid_body()) {
         return;
@@ -822,5 +874,6 @@ void Player::notify_lap_time(
     float lap_time,
     const std::list<TrackElement>& track)
 {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     players_.notify_lap_time(this, lap_time, track);
 }

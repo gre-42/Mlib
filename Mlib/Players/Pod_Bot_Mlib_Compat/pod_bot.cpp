@@ -173,7 +173,7 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
         tr->pHit = nullptr;
     } else {
         tr->fAllSolid = 0.f;
-        tr->flFraction = 0.9f;
+        tr->flFraction = 0.f;
         if (seen_object == nullptr) {
             tr->fStartSolid = 1.f;
             tr->pHit = g_solid_edict;

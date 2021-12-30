@@ -1994,7 +1994,8 @@ void LoadScene::operator()(
                 game_mode_from_string(match[3].str()),
                 unstuck_mode_from_string(match[4].str()),
                 driving_modes.at(match[5].str()),
-                driving_direction_from_string(match[6].str()));
+                driving_direction_from_string(match[6].str()),
+                delete_node_mutex);
             Player* p = player.get();
             players.add_player(std::move(player));
             physics_engine.advance_times_.add_advance_time(p);

@@ -93,7 +93,8 @@ public:
         GameMode game_mode,
         UnstuckMode unstuck_mode,
         const DrivingMode& driving_mode,
-        DrivingDirection driving_direction);
+        DrivingDirection driving_direction,
+        DeleteNodeMutex& delete_node_mutex);
     virtual ~Player() override;
     void set_can_drive(bool value);
     void set_can_aim(bool value);
@@ -211,6 +212,7 @@ private:
     bool record_waypoints_;
     Skills skills_;
     std::unique_ptr<PodBotPlayer> pod_bot_player_;
+    DeleteNodeMutex& delete_node_mutex_;
 };
 
 };

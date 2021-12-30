@@ -54,6 +54,11 @@ public:
             throw std::runtime_error("Delete node mutex is not locked by this thread");
         }
     }
+    void notify_reading() const {
+        if (!is_locked_by_this_thread() && !this_thread_is_deleter_thread()) {
+            throw std::runtime_error("Reading without locking on non-deleter-thread");
+        }
+    }
     void set_deleter_thread() {
         if (deleter_thread_id_ != std::thread::id()) {
             throw std::runtime_error("Deleter thread already set");

@@ -504,8 +504,8 @@ struct client_t
    int iFlags;
    edict_t *pEdict; // Ptr to actual Edict
    int iTeam; // What Team
-   Vector vOrigin; // Position in the world
-   Vector vecSoundPosition; // Position Sound was played
+   ::Vector vOrigin; // Position in the world
+   ::Vector vecSoundPosition; // Position Sound was played
    float fHearingDistance; // Distance this Sound is heared
    float fTimeSoundLasting; // Real Time sound is played/heared (to compare wit the current one)
    float fMaxTimeSoundLasting; // Max time sound is played/heared (to divide the diffrence between that above one and the current one) KWo - 01.08.2006
@@ -620,7 +620,7 @@ struct bot_t
 
    float prev_time; // Time previously checked movement speed
    float prev_speed; // Speed some frames before
-   Vector v_prev_origin; // Origin " " "
+   ::Vector v_prev_origin; // Origin " " "
    float f_moved_distance; // moved distance during 1 frame - KWo - 19.07.2006
 
    bool bCanJump; // Bot can jump over obstacle
@@ -651,7 +651,7 @@ struct bot_t
    int iPickupType; // Type of Entity which needs to be used/picked up
 
    edict_t *pShootBreakable; // Ptr to Breakable Entity
-   Vector vecBreakable; // Origin of Breakable
+   ::Vector vecBreakable; // Origin of Breakable
    edict_t *pBreakableIgnore; // Ptr to Entity to ignore for break
 
    int iNumWeaponPickups; // Counter of Pickups done
@@ -676,10 +676,10 @@ struct bot_t
    bool bBotNeedsObviateObstacle; // the bot needs omit a teamnate or a hostage - KWo - 16.07.2006
    bool bHitDoor; // the bot hits a door - KWo - 24.10.2009
 
-   Vector wpt_origin; // Origin of Current Waypoint
-   Vector dest_origin; // Origin of move destination
-   Vector str_l_origin; // Origin of strafe left destination // KWo - 14.09.2006
-   Vector str_r_origin; // Origin of strafe right destination // KWo - 14.09.2006
+   ::Vector wpt_origin; // Origin of Current Waypoint
+   ::Vector dest_origin; // Origin of move destination
+   ::Vector str_l_origin; // Origin of strafe left destination // KWo - 14.09.2006
+   ::Vector str_r_origin; // Origin of strafe right destination // KWo - 14.09.2006
 
    PATHNODE *pWaypointNodes; // Ptr to current Node from Path
    PATHNODE *pWayNodesStart; // Ptr to start of Pathfinding Nodes
@@ -691,7 +691,7 @@ struct bot_t
    int prev_wpt_index[5]; // Previous wpt indices from waypointfind
    int iWPTFlags;
    unsigned short curr_travel_flags; // Connection Flags like jumping
-   Vector vecDesiredVelocity; // Desired Velocity for jump waypoints
+   ::Vector vecDesiredVelocity; // Desired Velocity for jump waypoints
    float f_wpt_timeset; // Time waypoint chosen by Bot
    float f_wpt_tim_str_chg; // Time waypoint strong change (<120 degrees)   // KWo - 02.11.2009
 
@@ -718,31 +718,31 @@ struct bot_t
    float rgfPitchHistory[2];
 
    edict_t *pLastEnemy; // ptr to last Enemy Entity
-   Vector vecLastEnemyOrigin; // Origin of last enemy
+   ::Vector vecLastEnemyOrigin; // Origin of last enemy
    unsigned char ucVisibility; // Which Parts are visible
-   Vector vecVisPos; // visible origin KWo - 25.01.2008
+   ::Vector vecVisPos; // visible origin KWo - 25.01.2008
    edict_t *pLastVictim; // ptr to killed Entity
    edict_t *pTrackingEdict; // ptr to last tracked Player when camping/hiding
    float fTimeNextTracking; // Time Waypoint Index for tracking Player is recalculated
    edict_t *pHuntEnemy; // ptr to enemy to be hunted  KWo - 11.04.2010
-   Vector vecHuntEnemyOrigin; // Rememebered origin of hunt enemy KWo - 11.04.2010
+   ::Vector vecHuntEnemyOrigin; // Rememebered origin of hunt enemy KWo - 11.04.2010
 
    unsigned int iAimFlags; // Aiming Conditions
    bool bCanChooseAimDirection;
-   Vector vecLookAt; // Vector Bot should look at
-   Vector vecThrow; // Origin of Waypoint to Throw Grens
+   ::Vector vecLookAt; // ::Vector Bot should look at
+   ::Vector vecThrow; // Origin of Waypoint to Throw Grens
    float fChangeAimDirectionTime; // Time to change the aiming direction if AIM_DEST is used - KWo - 09.12.2007
    char cFlashBat; // Flash battery for flashlight
    bool bUsesNVG;  // bot uses nightvision google
 
-   Vector vecEnemy; // Target Origin chosen for shooting
-   Vector vecEnemyRandomOffset;  // Target Origin random offset chosen for shooting - 04.10.2009
-   Vector vecGrenade; // Calculated Vector for Grenades
-   Vector vecEntity; // Origin of Entities like Buttons etc.
-   Vector vecCamp; // Aiming Vector when camping.
+   ::Vector vecEnemy; // Target Origin chosen for shooting
+   ::Vector vecEnemyRandomOffset;  // Target Origin random offset chosen for shooting - 04.10.2009
+   ::Vector vecGrenade; // Calculated ::Vector for Grenades
+   ::Vector vecEntity; // Origin of Entities like Buttons etc.
+   ::Vector vecCamp; // Aiming ::Vector when camping.
 
    int iLiftUsageState;  // KWo - 22.04.2006
-   Vector v_LiftTravelPos;   // KWo - 22.04.2006
+   ::Vector v_LiftTravelPos;   // KWo - 22.04.2006
    edict_t *pLift; // ptr to lift entity KWo - 18.04.2006
    float f_UsageLiftTime; // time using a lift in any state of usage it KWo - 22.04.2006
 
@@ -754,7 +754,7 @@ struct bot_t
    edict_t *pSmokeGrenade; // ptr to Smoke Grenade Entity
    float fTimeAvoidGrenade; // Time to check greanes around again
 
-   Vector vecPosition; // Position to Move To (TASK_MOVETOPOSITION)
+   ::Vector vecPosition; // Position to Move To (TASK_MOVETOPOSITION)
 
    edict_t *pBotUser; // ptr to User Entity (using a Bot)
    float f_bot_use_time; // Time last seen User
@@ -824,16 +824,16 @@ struct bot_t
    int m_rgAmmo[MAX_AMMO_SLOTS]; // total ammo amounts (1 array for each bot)
    int m_rgAmmoInClip[MAX_WEAPONS]; // ammo in clip for each weapons
 
-   Vector ideal_angles; // angle wanted
-   Vector randomized_ideal_angles; // angle wanted with noise
-   Vector angular_deviation; // angular deviation from current to ideal angles
-   Vector aim_speed; // aim speed calculated
-   Vector target_angular_speed;  // target/enemy angular speed (to calculate pos. anticipation) // KWo - 02.03.2006
-   Vector randomized_angles; // noising angle
+   ::Vector ideal_angles; // angle wanted
+   ::Vector randomized_ideal_angles; // angle wanted with noise
+   ::Vector angular_deviation; // angular deviation from current to ideal angles
+   ::Vector aim_speed; // aim speed calculated
+   ::Vector target_angular_speed;  // target/enemy angular speed (to calculate pos. anticipation) // KWo - 02.03.2006
+   ::Vector randomized_angles; // noising angle
    float randomize_angles_time; // time last randomized location
    float player_target_time; // time last targeting
    float fRecoilTime;
-   Vector rgvecRecoil[5];
+   ::Vector rgvecRecoil[5];
 
    int iOffsetPing[2];     // KWo - 02.03.2010
    int iArgPing[3];        // KWo - 02.03.2010
@@ -886,8 +886,8 @@ typedef struct
 void EstimateNextFrameDuration (void);
 void BotSpawnInit (bot_t *pBot);
 void BotCreate (int bot_skill, int bot_personality, int bot_team, int bot_class, const char *bot_name);
-bool IsDeadlyDropAtPos (bot_t *pBot, Vector vecTargetPos);     // KWo - 02.04.2010
-bool IsDeadlyDrop (bot_t *pBot, Vector vecTargetPos);
+bool IsDeadlyDropAtPos (bot_t *pBot, ::Vector vecTargetPos);     // KWo - 02.04.2010
+bool IsDeadlyDrop (bot_t *pBot, ::Vector vecTargetPos);
 void BotPushTask (bot_t *pBot,bottask_t *pTask);
 void BotTaskComplete (bot_t *pBot);
 void BotResetTasks (bot_t *pBot);
@@ -899,8 +899,8 @@ bool BotReactOnEnemy (bot_t *pBot);
 bool BotHasHostage (bot_t *pBot);
 int GetBestWeaponCarried (bot_t *pBot);
 int GetBestSecondaryWeaponCarried (bot_t *pBot);
-int BotInFieldOfView (bot_t *pBot, Vector dest);               // KWo - 29.01.2008
-bool BotEntityIsVisible (bot_t *pBot, Vector dest);
+int BotInFieldOfView (bot_t *pBot, ::Vector dest);               // KWo - 29.01.2008
+bool BotEntityIsVisible (bot_t *pBot, ::Vector dest);
 int BotGetMessageQueue (bot_t *pBot);
 void BotPushMessageQueue (bot_t *pBot, int iMessage);
 void BotPlayRadioMessage (bot_t *pBot, int iMessage);
@@ -908,12 +908,12 @@ void BotFreeAllMemory (void);
 void TestDecal (edict_t *pEdict, char *pszDecalName);
 
 // bot_combat.cpp functions...
-int NumTeammatesNearPos (bot_t *pBot, Vector vecPosition, int iRadius);
-int NumEnemiesNearPos (bot_t *pBot, Vector vecPosition, int iRadius);
+int NumTeammatesNearPos (bot_t *pBot, ::Vector vecPosition, int iRadius);
+int NumEnemiesNearPos (bot_t *pBot, ::Vector vecPosition, int iRadius);
 bool BotFindEnemy (bot_t *pBot);
 bool BotEnemyIsVisible (bot_t *pBot, edict_t *pEnemy);         // KWo - 27.01.2008
-bool IsShootableThruObstacle (edict_t *pEdict, Vector vecDest);
-bool BotFireWeapon (Vector v_enemy, bot_t *pBot);
+bool IsShootableThruObstacle (edict_t *pEdict, ::Vector vecDest);
+bool BotFireWeapon (::Vector v_enemy, bot_t *pBot);
 bool BotCheckZoom  (bot_t *pBot);                              // KWo - 07.07.2008
 bool BotCheckCorridor (bot_t *pBot);                           // KWo - 21.03.2006
 void BotFocusEnemy (bot_t *pBot);
@@ -946,9 +946,9 @@ void BotSelectBestWeapon (bot_t *pBot);
 void SelectWeaponByName (bot_t *pBot, const char *pszName);
 void SelectWeaponByNumber (bot_t *pBot, int iNum);
 void BotCommandTeam (bot_t *pBot);
-bool IsGroupOfEnemies (bot_t *pBot, Vector vLocation);
-Vector VecCheckToss (bot_t *pBot, const Vector &vecSpot1, Vector vecSpot2);
-Vector VecCheckThrow (bot_t *pBot, const Vector &vecSpot1, Vector vecSpot2, float flSpeed);  // KWo - 22.03.2006
+bool IsGroupOfEnemies (bot_t *pBot, ::Vector vLocation);
+::Vector VecCheckToss (bot_t *pBot, const ::Vector &vecSpot1, ::Vector vecSpot2);
+::Vector VecCheckThrow (bot_t *pBot, const ::Vector &vecSpot1, ::Vector vecSpot2, float flSpeed);  // KWo - 22.03.2006
 
 // bot_sound.cpp functions...
 void SoundAttachToThreat (edict_t *pEdict, const char *pszSample, float fVolume);
@@ -1002,22 +1002,22 @@ short FixedSigned16 (float value, float scale);
 int UTIL_GetTeam (edict_t *pEntity);
 bot_t *UTIL_GetBotPointer (edict_t *pEdict);
 bool IsAlive (edict_t *pEdict);
-bool FInViewCone (Vector *pOrigin, edict_t *pEdict);
-float GetShootingConeDeviation (edict_t *pEdict, Vector *pvecPosition);
+bool FInViewCone (::Vector *pOrigin, edict_t *pEdict);
+float GetShootingConeDeviation (edict_t *pEdict, ::Vector *pvecPosition);
 bool IsShootableBreakable (edict_t *pent);
-bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned char *ucBodyPart);
-bool FVisible (const Vector &vecOrigin, edict_t *pEdict);
-Vector Center (edict_t *pEdict);
-Vector GetGunPosition (edict_t *pEdict);
-Vector VecBModelOrigin (edict_t *pEdict);
+bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, ::Vector *pvHit, unsigned char *ucBodyPart);
+bool FVisible (const ::Vector &vecOrigin, edict_t *pEdict);
+::Vector Center (edict_t *pEdict);
+::Vector GetGunPosition (edict_t *pEdict);
+::Vector VecBModelOrigin (edict_t *pEdict);
 void UTIL_ShowMenu (edict_t *pEdict, menutext_t *pMenu);
 void UTIL_DisplayWpMenuWelcomeMessage (void);
 void UTIL_DecalTrace (TraceResult *pTrace, char *pszDecalName);
-int UTIL_GetNearestPlayerIndex (Vector vecOrigin);
+int UTIL_GetNearestPlayerIndex (::Vector vecOrigin);
 void UTIL_HostPrint (const char *fmt, ...);
 void UTIL_ServerPrint (const char *fmt, ...);
 // void UTIL_ClampAngle (float *fAngle);
-// void UTIL_ClampVector (Vector *vecAngles);
+// void UTIL_ClampVector (::Vector *vecAngles);
 void UTIL_RoundStart (void);
 void UTIL_GameStarted (void);                                  // KWo 09.02.2006
 void UTIL_RoundEnd (void);                                     // KWo 02.05.2006
@@ -1028,8 +1028,8 @@ void UTIL_CheckHostages (void);                                // KWo 17.05.2006
 void UTIL_CheckCvars (void);                                   // KWo 06.04.2006
 bool UTIL_CanUseWeapon (int iId);                              // KWo 10.03.2006
 void UTIL_FindButtonInSphere (void);                           // KWo 09.02.2006
-float UTIL_GetVectorsCone (Vector vec1_start, Vector vec1_end, Vector vec2_start, Vector vec2_end);  // KWo - 13.02.2006
-void UTIL_DrawBeam (Vector start, Vector end, int life, int width, int noise, int red, int green, int blue, int brightness, int speed);  // KWo - 21.03.2006
+float UTIL_GetVectorsCone (::Vector vec1_start, ::Vector vec1_end, ::Vector vec2_start, ::Vector vec2_end);  // KWo - 13.02.2006
+void UTIL_DrawBeam (::Vector start, ::Vector end, int life, int width, int noise, int red, int green, int blue, int brightness, int speed);  // KWo - 21.03.2006
 void UTIL_CheckSmokeGrenades(void);                            // KWo - 29.01.2008
 float UTIL_IlluminationOf (edict_t *pEdict);                   // KWo - 26.03.2008
 void SetBotNvg(bot_t *pBot, bool setnv);                       // KWo - 28.05.2008

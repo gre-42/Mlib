@@ -86,7 +86,8 @@ RenderableScene::RenderableScene(
         ? std::make_unique<PodBots>(
             physics_engine_.advance_times_,
             players_,
-            physics_engine_.collision_query_)
+            physics_engine_.collision_query_,
+            delete_node_mutex_)
         : nullptr},
   game_logic_{
       scene_,

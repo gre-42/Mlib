@@ -4,26 +4,32 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Pod_Bot/bot_globals.h>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 
 using namespace Mlib;
 
 PodBots::PodBots(
     AdvanceTimes& advance_times,
     Players& players,
-    CollisionQuery& collision_query)
+    CollisionQuery& collision_query,
+    DeleteNodeMutex& delete_node_mutex)
 : advance_times_{advance_times},
-  start_time_{ std::chrono::steady_clock::now() }
+  start_time_{ std::chrono::steady_clock::now() },
+  delete_node_mutex_{delete_node_mutex}
 {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     advance_times_.add_advance_time(this);
     pod_bot_set_players(players, collision_query);
 }
 
 PodBots::~PodBots() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     advance_times_.delete_advance_time(this);
     pod_bot_clear_players();
 }
 
 void PodBots::advance_time(float dt) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     std::chrono::duration<float> elapsed_seconds = std::chrono::steady_clock::now() - start_time_;
     gpGlobals->time = elapsed_seconds.count();
     gpGlobals->frametime = elapsed_seconds.count();
