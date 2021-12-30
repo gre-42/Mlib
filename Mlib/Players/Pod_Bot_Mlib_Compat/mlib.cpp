@@ -24,9 +24,7 @@ void Mlib::pod_bot_destroy_player(const Player& player) {
         throw std::runtime_error("Could not erase from indexent");
     }
     if (player.has_rigid_body()) {
-        if (g_rbi_to_player_name.erase(&player.rigid_body().rbi_) != 1) {
-            throw std::runtime_error("Could not erase rbi");
-        }
+        clear_player_rigid_body_integrator(player.rigid_body().rbi_);
     }
 }
 
@@ -79,12 +77,24 @@ void Mlib::set_player_rigid_body_integrator(
     }
 }
 
-void Mlib::clear_player_rigid_body_integrator(
-    const Mlib::RigidBodyIntegrator& rbi,
-    const std::string& player_name)
+void Mlib::clear_player_rigid_body_integrator(const Mlib::RigidBodyIntegrator& rbi)
 {
+    std::string player_name = get_player_name(rbi);
+    edict_t* edict = get_edict(player_name);
     if (g_rbi_to_player_name.erase(&rbi) != 1) {
         throw std::runtime_error("Could not clear player rigid body integrator");
+    }
+    for (int player_index = 0; player_index < gpGlobals->maxClients; ++player_index)
+    {
+        bot_t& bot = bots[player_index];
+        if (!FNullEnt(bot.pEdict)) {
+            if (bot.pBotEnemy == edict) {
+                bot.pBotEnemy = nullptr;
+            }
+            if (bot.pLastEnemy == edict) {
+                bot.pLastEnemy = nullptr;
+            }
+        }
     }
 }
 

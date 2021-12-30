@@ -28,7 +28,7 @@ Player& pod_bot_edict_to_player(const edict_t* edict);
 
 void set_player_rigid_body_integrator(const RigidBodyIntegrator& rbi, const std::string& player_name);
 
-void clear_player_rigid_body_integrator(const RigidBodyIntegrator& rbi, const std::string& player_name);
+void clear_player_rigid_body_integrator(const RigidBodyIntegrator& rbi);
 
 std::string get_player_name(const RigidBodyIntegrator& rbi);
 

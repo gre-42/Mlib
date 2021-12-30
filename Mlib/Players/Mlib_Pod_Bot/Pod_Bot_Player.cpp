@@ -70,7 +70,7 @@ void PodBotPlayer::clear_rigid_body_integrator() {
     if (player_.rb_ == nullptr) {
         throw std::runtime_error("PodBotPlayer::clear_rigid_body_integrator despite no rigid body set");
     }
-    clear_player_rigid_body_integrator(player_.rb_->rbi_, player_.name());
+    clear_player_rigid_body_integrator(player_.rb_->rbi_);
 }
 
 void PodBotPlayer::update_health() {
