@@ -1146,7 +1146,7 @@ bool IsShootableThruObstacle (edict_t *pEdict, Vector vecDest)
    edict_t *pentIgnore = pEdict;
    TraceResult tr;
 
-   UTIL_TraceLine (vecSrc, vecDest, ignore_monsters, ignore_glass, pentIgnore, &tr);
+   TRACE_LINE (vecSrc, vecDest, ignore_monsters | ignore_glass, pentIgnore, &tr);
 
    while ((tr.flFraction != 1.0) && (iHits < 3))
    {
@@ -1160,7 +1160,7 @@ bool IsShootableThruObstacle (edict_t *pEdict, Vector vecDest)
          iThickness++;
       }
 
-      UTIL_TraceLine (vecPoint, vecDest, ignore_monsters, ignore_glass, pentIgnore, &tr);
+      TRACE_LINE (vecPoint, vecDest, ignore_monsters | ignore_glass, pentIgnore, &tr);
    }
 
    if ((iHits < 3) && (iThickness < 98)) // KWo - 23.10.2006
@@ -2105,7 +2105,7 @@ void BotDoAttackMovement (bot_t *pBot)
             && (!(pEdict->v.button & IN_ATTACK) || !bUsesSniper)
             && !pBot->bIsReloading) // KWo - 24.06.2008
          {
-            UTIL_TraceLine(pEdict->v.origin, GetGunPosition(pBot->pBotEnemy), ignore_monsters, ignore_glass, pEdict, &tr);
+            TRACE_LINE(pEdict->v.origin, GetGunPosition(pBot->pBotEnemy), ignore_monsters | ignore_glass, pEdict, &tr);
             if (tr.flFraction >= 1.0)
             {
                pBot->f_ducktime = gpGlobals->time + 3.0;

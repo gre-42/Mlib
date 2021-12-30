@@ -1479,7 +1479,7 @@ int BotFindDefendWaypoint (bot_t *pBot, Vector vecPosition)
       if (iDistance < 1024)
       {
          vecSource = paths[i]->origin;
-         UTIL_TraceLine (vecSource, vecDest, dont_ignore_monsters, ignore_glass, pEdict, &tr); // KWo - 06.07.2008
+         TRACE_LINE (vecSource, vecDest, dont_ignore_monsters | ignore_glass, pEdict, &tr); // KWo - 06.07.2008
          if (tr.flFraction != 1.0)
             continue;
 
@@ -1781,7 +1781,7 @@ int BotFindCoverWaypoint (bot_t *pBot, float maxdistance)
          v_source = pBot->vecLastEnemyOrigin + Vector (0, 0, 36);
          v_dest = paths[wpt_index[i]]->origin;
 
-         UTIL_TraceLine (v_source, v_dest, ignore_monsters, ignore_glass, pEdict, &tr);
+         TRACE_LINE (v_source, v_dest, ignore_monsters | ignore_glass, pEdict, &tr);
          if (tr.flFraction < 1.0)
             return (wpt_index[i]);
       }
@@ -6251,13 +6251,13 @@ nobypass:
                         MAKE_VECTORS (vecMoveAngles);
                         v_src = GetGunPosition (pEdict);
                         v_src = v_src + gpGlobals->v_right * 15.f;
-                        UTIL_TraceLine (v_src, pBot->dest_origin, ignore_monsters, ignore_glass, pEdict, &tr2);
+                        TRACE_LINE (v_src, pBot->dest_origin, ignore_monsters | ignore_glass, pEdict, &tr2);
 
                         if (tr2.flFraction >= 1.0)
                         {
                            v_src = GetGunPosition (pEdict);
                            v_src = v_src + (-gpGlobals->v_right * 15.f);
-                           UTIL_TraceLine (v_src, pBot->dest_origin, ignore_monsters, ignore_glass, pEdict, &tr2);
+                           TRACE_LINE (v_src, pBot->dest_origin, ignore_monsters | ignore_glass, pEdict, &tr2);
 
                            if (tr2.flFraction >= 1.0)
                               cState[i] += 5;
@@ -6269,7 +6269,7 @@ nobypass:
                      else
                         v_src = pEdict->v.origin + Vector (0, 0, -17);
                      v_dest = v_src + vecDirectionNormal * 30.f;
-                     UTIL_TraceLine (v_src, v_dest, ignore_monsters, ignore_glass, pEdict, &tr2);
+                     TRACE_LINE (v_src, v_dest, ignore_monsters | ignore_glass, pEdict, &tr2);
 
                      if (tr2.flFraction != 1.0)
                         cState[i] += 10;

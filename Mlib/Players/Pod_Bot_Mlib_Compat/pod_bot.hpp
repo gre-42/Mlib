@@ -57,17 +57,16 @@ inline void MDLL_ClientConnect(edict_t* BotEnt, const char* c_name, const char* 
 inline void MDLL_ClientPutInServer(edict_t* BotEnt)
 {}
 
-typedef enum { ignore_monsters=1, dont_ignore_monsters=0 } IGNORE_MONSTERS;
-typedef enum { ignore_glass=2 } IGNORE_GLASS;
+enum IGNORE_MONSTERS {
+    dont_ignore_monsters = 0,
+    ignore_monsters = 1,
+    ignore_glass = 2
+};
 
-::Vector UTIL_VecToAngles(const ::Vector& v);
-
-void UTIL_TraceLine (const ::Vector &vecStart, const ::Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
-void UTIL_TraceLine (const ::Vector &vecStart, const ::Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
-
-::Vector GetGunPosition(const edict_t* dct);
 void TRACE_LINE (const ::Vector& vecSource, const ::Vector& vecDest, int ignored, const edict_t* dct, TraceResult* tr);
 
+::Vector UTIL_VecToAngles(const ::Vector& v);
+::Vector GetGunPosition(const edict_t* dct);
 void MAKE_VECTORS(const ::Vector& v);
 
 inline ::Vector2D Make2D(const ::Vector& v) {

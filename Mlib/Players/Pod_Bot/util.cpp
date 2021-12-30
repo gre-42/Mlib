@@ -44,20 +44,6 @@ Vector UTIL_VecToAngles (const Vector &vec)
    return Vector (fPitch, fYaw, 0);
 }
 
-
-// Overloaded to add IGNORE_GLASS
-void UTIL_TraceLine (const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr)
-{
-   TRACE_LINE (vecStart, vecEnd, (igmon == ignore_monsters ? TRUE : FALSE) | (ignoreGlass ? 0x100 : 0), pentIgnore, ptr);
-}
-
-
-void UTIL_TraceLine (const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr)
-{
-   TRACE_LINE (vecStart, vecEnd, (igmon == ignore_monsters ? TRUE : FALSE), pentIgnore, ptr);
-}
-
-
 unsigned short FixedUnsigned16 (float value, float scale)
 {
    int output;
@@ -312,7 +298,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
    vecTarget = pTargetEdict->v.origin;
 
    // Check direct Line to waist
-   UTIL_TraceLine (vecLookerOrigin, vecTarget, dont_ignore_monsters, ignore_glass, pEdict, &tr);
+   TRACE_LINE (vecLookerOrigin, vecTarget, dont_ignore_monsters | ignore_glass, pEdict, &tr);
 
    if ((tr.flFraction >= 1.0) || (tr.pHit == pTargetEdict))
    {
@@ -330,7 +316,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
       vecTarget = vecTarget + Vector(0.0, 0.0, 1.0);  // KWo - 02.04.2010
    }
 
-   UTIL_TraceLine (vecLookerOrigin, vecTarget, dont_ignore_monsters, ignore_glass, pEdict, &tr);
+   TRACE_LINE (vecLookerOrigin, vecTarget, dont_ignore_monsters | ignore_glass, pEdict, &tr);
 
    // if the player is rendered, his head cannot be good seen...
    if (((tr.flFraction >= 1.0) || (tr.pHit == pTargetEdict)) && (!SemiTransparent))
@@ -397,7 +383,7 @@ bool FBoxVisible (bot_t *pBot, edict_t *pTargetEdict, Vector *pvHit, unsigned ch
       vecTarget(2) += RANDOM_FLOAT (pTargetEdict->v.mins(2), pTargetEdict->v.maxs(2));
 */
 
-      UTIL_TraceLine (vecLookerOrigin, vecTarget, dont_ignore_monsters, ignore_glass, pEdict, &tr);
+      TRACE_LINE (vecLookerOrigin, vecTarget, dont_ignore_monsters | ignore_glass, pEdict, &tr);
 
       if ((tr.flFraction >= 1.0) && (tr.pHit == pTargetEdict))
       {
@@ -425,7 +411,7 @@ bool FVisible (const Vector &vecOrigin, edict_t *pEdict)
        != (POINT_CONTENTS (vecLookerOrigin) == CONTENTS_WATER))
       return (FALSE);
 
-   UTIL_TraceLine (vecLookerOrigin, vecOrigin, ignore_monsters, ignore_glass, pEdict, &tr);
+   TRACE_LINE (vecLookerOrigin, vecOrigin, ignore_monsters | ignore_glass, pEdict, &tr);
 
    if (tr.flFraction != 1.0)
       return (FALSE);  // Line of sight is not established
