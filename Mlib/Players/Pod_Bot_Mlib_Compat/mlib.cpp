@@ -101,9 +101,6 @@ void Mlib::clear_player_rigid_body_integrator(const Mlib::RigidBodyIntegrator& r
                 bot.pEdict->v.dmg_inflictor = nullptr;
             }
         }
-        if (bot.pEdict == edict) {
-            bot.pEdict = nullptr;
-        }
     }
 }
 

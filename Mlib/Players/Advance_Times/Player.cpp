@@ -362,9 +362,6 @@ void Player::notify_destroyed(void* destroyed_object) {
 void Player::advance_time(float dt) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     aim_and_shoot();
-    if (pod_bot_player_ != nullptr) {
-        pod_bot_player_->update_health();
-    }
 }
 
 void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {

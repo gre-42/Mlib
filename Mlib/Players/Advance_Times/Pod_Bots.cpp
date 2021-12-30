@@ -1,5 +1,6 @@
 #include "Pod_Bots.hpp"
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Pod_Bot/bot_globals.h>
@@ -45,7 +46,16 @@ void PodBots::advance_time(float dt) {
     {
         bot_t& bot = bots[player_index];
         client_t& client = clients[player_index];
+
+        // Overwritten below
+        bot.bDead = true;
+        client.iFlags &= ~CLIENT_ALIVE;
+
         if (!FNullEnt(bot.pEdict)) {
+            // Overwritten below
+            bot.pEdict->v.deadflag = DEAD_DEAD;
+            bot.pEdict->v.health = 0;
+
             if (bot.is_used)
             {
                 Player& player = pod_bot_edict_to_player(bot.pEdict);
@@ -80,21 +90,13 @@ void PodBots::advance_time(float dt) {
 //      //               UTIL_ServerPrint("[Debug] Player %s is alive.\n", STRING(pPlayer->v.netname));
 //               }
             }
-            if (bot.is_used && (bot.pEdict->v.health > 0)) {
-                bot.bDead = false;
-                bot.pEdict->v.deadflag = DEAD_NO;
-                client.iFlags |= CLIENT_ALIVE;
-            } else {
-                bot.bDead = true;
-                bot.pEdict->v.deadflag = DEAD_DEAD;
-                client.iFlags &= ~CLIENT_ALIVE;
-            }
         }
     }
     // Copy information from Mlib -> PodBot
     for (int bot_rel_index = 0; bot_rel_index < g_iNum_bots; bot_rel_index++)
     {
         bot_t& bot = bots[player_indices[bot_rel_index]];
+        client_t& client = clients[player_indices[bot_rel_index]];
         Player& player = pod_bot_edict_to_player(bot.pEdict);
         const RigidBodyPulses& rbp = player.rigid_body().rbi_.rbp_;
         bot.pEdict->v.origin = p_o2q(rbp.abs_position());
@@ -108,6 +110,12 @@ void PodBots::advance_time(float dt) {
         bot.pEdict->v.maxspeed = 100.f;
         bot.pEdict->v.fov = 130.f;
         bot.pEdict->v.light_level = 100;
+        bot.pEdict->v.health = player.rigid_body().damageable_->health();
+        if (bot.pEdict->v.health > 0) {
+            bot.bDead = false;
+            bot.pEdict->v.deadflag = DEAD_NO;
+            client.iFlags |= CLIENT_ALIVE;
+        }
     }
     g_iFrameCounter++;
     if (g_iFrameCounter >= gpGlobals->maxClients) {

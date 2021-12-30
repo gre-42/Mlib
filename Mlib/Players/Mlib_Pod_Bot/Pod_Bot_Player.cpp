@@ -67,12 +67,3 @@ void PodBotPlayer::clear_rigid_body_integrator() {
     }
     clear_player_rigid_body_integrator(player_.rb_->rbi_);
 }
-
-void PodBotPlayer::update_health() {
-    edict_t* edict = get_edict(player_.name());
-    if (player_.rb_ == nullptr) {
-        edict->v.health = 0;
-    } else {
-        edict->v.health = player_.rb_->damageable_->health();
-    }
-}

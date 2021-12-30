@@ -10,7 +10,6 @@ public:
     ~PodBotPlayer();
     void set_rigid_body_integrator();
     void clear_rigid_body_integrator();
-    void update_health();
 private:
     const Player& player_;
 };
