@@ -1,12 +1,12 @@
 #include "pod_bot.hpp"
-#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
-#include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Pod_Bot/bot_globals.h>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/primitive_constants.hpp>
 #include <filesystem>
-#include <pod_bot/bot_globals.h>
-#include <pod_bot_mlib_compat/mlib.hpp>
-#include <pod_bot_mlib_compat/primitive_constants.hpp>
 
 #define VEC_VIEW Vector( 0, 0, 28 )
 
@@ -236,14 +236,18 @@ int GET_USER_MSG_ID (plid_t plid, const char* name, int* size) {
 
 plugin_info_t Plugin_info;
 
-globalvars_t* gpGlobals = new globalvars_t{
-    .maxClients = 32,
-    .time = 0,
-    .frametime = 0,
-    .v_right = Vector{1.f, 0.f, 0.f},
-    .v_forward = Vector{0.f, 1.f, 0.f},
-    .mapname = "undefined_map_name"
-};
+static struct GpGlobalsInitializer {
+    GpGlobalsInitializer() {
+        gpGlobals = new globalvars_t{
+            .maxClients = 32,
+            .time = 0,
+            .frametime = 0,
+            .v_right = Vector{1.f, 0.f, 0.f},
+            .v_forward = Vector{0.f, 1.f, 0.f},
+            .mapname = "undefined_map_name"
+        };
+    }
+} gp_globals_initializer;
 
 bool FNullEnt(const edict_t* pent) {
     return pent == nullptr;

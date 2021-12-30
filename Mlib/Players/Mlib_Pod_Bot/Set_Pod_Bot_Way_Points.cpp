@@ -1,9 +1,9 @@
 #include "Set_Pod_Bot_Way_Points.hpp"
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Players/Pod_Bot/bot_globals.h>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/vectorial_constants.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
-#include <pod_bot/bot_globals.h>
-#include <pod_bot_mlib_compat/mlib.hpp>
-#include <pod_bot_mlib_compat/vectorial_constants.hpp>
 
 using namespace Mlib;
 

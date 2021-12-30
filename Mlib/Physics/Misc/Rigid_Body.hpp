@@ -21,7 +21,7 @@ class RigidBodies;
 class RigidBodyEngine;
 struct Beacon;
 class Damageable;
-class Player;
+class IPlayer;
 
 enum class TireAngularVelocityChange {
     OFF,
@@ -111,7 +111,7 @@ public:
 
     std::string name_;
     Damageable* damageable_;
-    Player* driver_;
+    IPlayer* driver_;
     const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;
 };

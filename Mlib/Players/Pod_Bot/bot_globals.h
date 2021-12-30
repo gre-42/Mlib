@@ -22,10 +22,10 @@
 #include <ctype.h>
 #endif
 
-#include <pod_bot_mlib_compat/primitive_constants.hpp>
-#include <pod_bot_mlib_compat/vectorial_constants.hpp>
-#include <pod_bot_mlib_compat/types.hpp>
-#include <pod_bot_mlib_compat/pod_bot.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/primitive_constants.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/vectorial_constants.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/types.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/pod_bot.hpp>
 //#include <entity_state.h> // Removed by THE STORM
 
 #include "bot.h"

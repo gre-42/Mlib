@@ -5,8 +5,8 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Pi.hpp>
-#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
+#include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <chrono>
 

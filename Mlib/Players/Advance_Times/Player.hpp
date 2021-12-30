@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Driving_Mode.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
+#include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <chrono>
 #include <list>
 #include <map>
@@ -80,7 +81,7 @@ struct Skills {
     bool can_shoot = true;
 };
 
-class Player: public DestructionObserver, public AdvanceTime, public ExternalForceProvider {
+class Player: public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
     friend PodBotPlayer;
 public:
     Player(
@@ -112,7 +113,6 @@ public:
     void set_waypoints(
         const SceneNode& node,
         const std::map<WayPointLocation, PointsAndAdjacency<float, 3>>& all_waypoints);
-    const std::string& name() const;
     const std::string& team() const;
     PlayerStats& stats();
     const PlayerStats& stats() const;
@@ -149,6 +149,10 @@ public:
         float sidemove);
     void trigger_gun();
 
+    virtual const std::string& name() const override;
+    virtual void notify_lap_time(
+        float lap_time,
+        const std::list<TrackElement>& track) override;
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;
     virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;

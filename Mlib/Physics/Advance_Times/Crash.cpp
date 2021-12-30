@@ -1,8 +1,8 @@
 #include "Crash.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
+#include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>

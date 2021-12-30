@@ -13,8 +13,7 @@ class Focuses;
 class AbsoluteMovable;
 class AdvanceTimes;
 class SceneNode;
-class Players;
-class Player;
+class IPlayer;
 class SceneNodeResources;
 class Scene;
 class DeleteNodeMutex;
@@ -32,8 +31,7 @@ public:
         SceneNode* moving_node,
         AbsoluteMovable* moving,
         const std::string& resource_name,
-        Players* players,
-        Player* player,
+        IPlayer* player,
         size_t nbeacons,
         size_t nth,
         size_t nahead,
@@ -54,8 +52,7 @@ private:
     AbsoluteMovable* moving_;
     std::vector<SceneNode*> beacon_nodes_;
     std::string resource_name_;
-    Players* players_;
-    Player* player_;
+    IPlayer* player_;
     float radius_;
     size_t nbeacons_;
     size_t nth_;

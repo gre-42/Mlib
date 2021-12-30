@@ -66,7 +66,7 @@ void Mlib::Cv::project_depth_map(
 
     SelectedCameras selected_cameras{ scene };
     selected_cameras.set_camera_node_name("camera");
-    StandardCameraLogic camera_logic{ scene, selected_cameras };
+    StandardCameraLogic camera_logic{ scene, selected_cameras, delete_node_mutex };
     StandardRenderLogic render_logic{ scene, camera_logic, ClearMode::COLOR_AND_DEPTH };
     ReadPixelsLogic read_pixels_logic{ render_logic };
     render2(read_pixels_logic);

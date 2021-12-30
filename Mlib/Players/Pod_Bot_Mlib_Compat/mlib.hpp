@@ -1,5 +1,5 @@
 #pragma once
-#include <pod_bot_mlib_compat/types.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/types.hpp>
 
 struct client_t;
 struct bot_t;

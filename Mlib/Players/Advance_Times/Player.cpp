@@ -9,15 +9,15 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
-#include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
-#include <Mlib/Physics/Pod_Bot/Pod_Bot_Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <fstream>
-#include <pod_bot_mlib_compat/mlib.hpp>
 
 using namespace Mlib;
 
@@ -816,4 +816,11 @@ void Player::select_opponent() {
             }
         }
     }
+}
+
+void Player::notify_lap_time(
+    float lap_time,
+    const std::list<TrackElement>& track)
+{
+    players_.notify_lap_time(this, lap_time, track);
 }

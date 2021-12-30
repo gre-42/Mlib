@@ -1,11 +1,11 @@
 #include "mlib.hpp"
-#include <Mlib/Physics/Advance_Times/Player.hpp>
-#include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
-#include <pod_bot/bot.h>
-#include <pod_bot_mlib_compat/globals.hpp>
-#include <pod_bot_mlib_compat/pod_bot.hpp>
-#include <pod_bot_mlib_compat/types.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Pod_Bot/bot.h>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/globals.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/pod_bot.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/types.hpp>
 
 static std::map<const Mlib::RigidBodyIntegrator*, std::string> g_rbi_to_player_name;
 extern std::map<int, edict_t*> indexent_;

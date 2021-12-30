@@ -4,9 +4,9 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
-#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>

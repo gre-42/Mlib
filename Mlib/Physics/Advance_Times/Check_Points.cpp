@@ -3,7 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Containers/Players.hpp>
+#include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
@@ -21,8 +21,7 @@ CheckPoints::CheckPoints(
     SceneNode* moving_node,
     AbsoluteMovable* moving,
     const std::string& resource_name,
-    Players* players,
-    Player* player,
+    IPlayer* player,
     size_t nbeacons,
     size_t nth,
     size_t nahead,
@@ -38,7 +37,6 @@ CheckPoints::CheckPoints(
   moving_node_{moving_node},
   moving_{moving},
   resource_name_{resource_name},
-  players_{players},
   player_{player},
   radius_{radius},
   nbeacons_{nbeacons},
@@ -129,7 +127,7 @@ void CheckPoints::advance_time(float dt) {
     {
         std::chrono::duration<float> elapsed_time{std::chrono::steady_clock::now() - start_time_};
         std::cerr << "Elapsed time: " << format_minutes_seconds(elapsed_time.count()) << std::endl;
-        players_->notify_lap_time(player_, elapsed_time.count(), movable_track_);
+        player_->notify_lap_time(elapsed_time.count(), movable_track_);
         track_reader_.restart();
         advance_time(0);
         on_finish_();

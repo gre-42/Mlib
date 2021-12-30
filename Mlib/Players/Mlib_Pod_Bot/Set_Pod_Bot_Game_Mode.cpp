@@ -1,5 +1,5 @@
 #include "Set_Pod_Bot_Game_Mode.hpp"
-#include <pod_bot/bot_globals.h>
+#include <Mlib/Players/Pod_Bot/bot_globals.h>
 
 using namespace Mlib;
 

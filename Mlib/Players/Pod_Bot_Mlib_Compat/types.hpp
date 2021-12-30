@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/primitive_constants.hpp>
 #include <map>
-#include <pod_bot_mlib_compat/primitive_constants.hpp>
 
 typedef Mlib::FixedArray<float, 2> Vector2D;
 typedef Mlib::FixedArray<float, 3> Vector;

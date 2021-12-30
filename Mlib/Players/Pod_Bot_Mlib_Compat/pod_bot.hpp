@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/globals.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/types.hpp>
 #include <cstdint>
 #include <map>
-#include <pod_bot_mlib_compat/globals.hpp>
-#include <pod_bot_mlib_compat/types.hpp>
 #include <string>
 
 inline char* GET_INFOKEYBUFFER(edict_t* edict) {

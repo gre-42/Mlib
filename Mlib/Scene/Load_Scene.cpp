@@ -10,7 +10,6 @@
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Physics/Advance_Times/Crash.hpp>
 #include <Mlib/Physics/Advance_Times/Deleting_Damageable.hpp>
-#include <Mlib/Physics/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movable_Logger.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Follow_Movable.hpp>
@@ -21,20 +20,21 @@
 #include <Mlib/Physics/Advance_Times/Movables/Rigid_Body_Playback.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
-#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
 #include <Mlib/Physics/Advance_Times/Trigger_Gun_Ai.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
-#include <Mlib/Physics/Containers/Players.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
-#include <Mlib/Physics/Pod_Bot/Set_Pod_Bot_Game_Mode.hpp>
-#include <Mlib/Physics/Pod_Bot/Set_Pod_Bot_Way_Points.hpp>
+#include <Mlib/Players/Advance_Times/Game_Logic.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Mlib_Pod_Bot/Set_Pod_Bot_Game_Mode.hpp>
+#include <Mlib/Players/Mlib_Pod_Bot/Set_Pod_Bot_Way_Points.hpp>
 #include <Mlib/Regex.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Render/Cameras/Generic_Camera.hpp>
@@ -2666,7 +2666,6 @@ void LoadScene::operator()(
                 moving_node,
                 moving_node->get_absolute_movable(),
                 match[2].str(),                         // resource
-                &players,
                 &players.get_player(match[3].str()),
                 safe_stoi(match[4].str()),              // nbeacons
                 safe_stoi(match[5].str()),              // nth

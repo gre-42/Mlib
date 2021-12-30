@@ -1,5 +1,5 @@
 #pragma once
-#include <pod_bot_mlib_compat/types.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/types.hpp>
 
 static const ::Vector g_vecZero{0.f, 0.f, 0.f};
 static const ::Vector VEC_HULL_MIN{0.f, 0.f, 1.8f * 60.f};

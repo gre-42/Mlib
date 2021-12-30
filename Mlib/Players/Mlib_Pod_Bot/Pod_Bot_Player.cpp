@@ -1,9 +1,9 @@
 #include "Pod_Bot_Player.hpp"
-#include <Mlib/Physics/Advance_Times/Player.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body.hpp>
-#include <pod_bot/bot_globals.h>
-#include <pod_bot_mlib_compat/mlib.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Pod_Bot/bot_globals.h>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
 
 using namespace Mlib;
 
