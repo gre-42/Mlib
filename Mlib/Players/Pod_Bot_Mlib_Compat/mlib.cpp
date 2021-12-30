@@ -26,6 +26,25 @@ void Mlib::pod_bot_destroy_player(const Player& player) {
     if (player.has_rigid_body()) {
         clear_player_rigid_body_integrator(player.rigid_body().rbi_);
     }
+    for (int player_index = 0; player_index < gpGlobals->maxClients; ++player_index)
+    {
+        bot_t& bot = bots[player_index];
+        if (!FNullEnt(bot.pEdict)) {
+            if (bot.pBotEnemy == edict) {
+                bot.pBotEnemy = nullptr;
+            }
+            if (bot.pLastEnemy == edict) {
+                bot.pLastEnemy = nullptr;
+            }
+            if (bot.pEdict->v.dmg_inflictor == edict) {
+                bot.pEdict->v.dmg_inflictor = nullptr;
+            }
+        }
+        if (bot.pEdict == edict) {
+            bot.pEdict = nullptr;
+        }
+    }
+    delete edict;
 }
 
 void Mlib::pod_bot_set_players(Players& players, CollisionQuery& collision_query) {
@@ -84,18 +103,8 @@ void Mlib::clear_player_rigid_body_integrator(const Mlib::RigidBodyIntegrator& r
     if (g_rbi_to_player_name.erase(&rbi) != 1) {
         throw std::runtime_error("Could not clear player rigid body integrator");
     }
-    for (int player_index = 0; player_index < gpGlobals->maxClients; ++player_index)
-    {
-        bot_t& bot = bots[player_index];
-        if (!FNullEnt(bot.pEdict)) {
-            if (bot.pBotEnemy == edict) {
-                bot.pBotEnemy = nullptr;
-            }
-            if (bot.pLastEnemy == edict) {
-                bot.pLastEnemy = nullptr;
-            }
-        }
-    }
+    auto cb = pod_bot_get_client_and_bot(edict);
+    cb.client->fDeathTime = gpGlobals->time;
 }
 
 std::string Mlib::get_player_name(const Mlib::RigidBodyIntegrator& rbi) {
