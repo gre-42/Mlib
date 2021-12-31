@@ -1,5 +1,6 @@
 #include "Smoothen_And_Apply_Heightmap.hpp"
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
+#include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Images/PgmImage.hpp>
@@ -34,6 +35,7 @@ void Mlib::smoothen_and_apply_heightmap(
     const std::list<std::shared_ptr<TriangleList>>& tls_wall_barriers,
     const OsmTriangleLists& osm_triangle_lists,
     const OsmTriangleLists& air_triangle_lists,
+    VertexOutOfHeightMapBehavior vertex_out_of_height_map_behavior,
     std::list<ObjectResourceDescriptor>& object_resource_descriptors,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& resource_instance_positions,
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes,
@@ -149,19 +151,29 @@ void Mlib::smoothen_and_apply_heightmap(
             vertex_height_bindings,
             config.street_node_smoothness,
             config.layer_heights);
-        for (auto& l : tls_smoothed) {
-            l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
-                bool del =
-                    vertices_to_delete.contains(&v(0).position) ||
-                    vertices_to_delete.contains(&v(1).position) ||
-                    vertices_to_delete.contains(&v(2).position);
-                if (del) {
-                    vertices_to_delete.insert(&v(0).position);
-                    vertices_to_delete.insert(&v(1).position);
-                    vertices_to_delete.insert(&v(2).position);
+        if (!vertices_to_delete.empty()) {
+            if (vertex_out_of_height_map_behavior == VertexOutOfHeightMapBehavior::THROW) {
+                const FixedArray<float, 3>& v0 = **vertices_to_delete.begin();
+                std::cerr << v0 << std::endl;
+                throw PointException<2>(FixedArray<float, 2>{ v0(0), v0(1) }, "One or more vertices out of heightmap range");
+            } else if (vertex_out_of_height_map_behavior == VertexOutOfHeightMapBehavior::DELETE) {
+                for (auto& l : tls_smoothed) {
+                    l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex, 3>& v){
+                        bool del =
+                            vertices_to_delete.contains(&v(0).position) ||
+                            vertices_to_delete.contains(&v(1).position) ||
+                            vertices_to_delete.contains(&v(2).position);
+                        if (del) {
+                            vertices_to_delete.insert(&v(0).position);
+                            vertices_to_delete.insert(&v(1).position);
+                            vertices_to_delete.insert(&v(2).position);
+                        }
+                        return del;
+                    });
                 }
-                return del;
-            });
+            } else {
+                throw std::runtime_error("Unknown vertex out of heightmap behavior");
+            }
         }
         object_resource_descriptors.remove_if([&vertices_to_delete](const ObjectResourceDescriptor& d){
             return vertices_to_delete.contains(&d.position);

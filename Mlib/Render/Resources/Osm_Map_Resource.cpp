@@ -528,24 +528,29 @@ OsmMapResource::OsmMapResource(
         map_outer_contour3.push_back(FixedArray<float, 3>{ p(0), p(1), 0.f });
     }
 
-    smoothen_and_apply_heightmap(
-        config,
-        height_bindings,
-        vertex_height_bindings,
-        nodes,
-        ways,
-        normalized_points,
-        tls_buildings,
-        tls_wall_barriers,
-        osm_triangle_lists,
-        air_triangle_lists,
-        object_resource_descriptors_,
-        resource_instance_positions_,
-        hitboxes_,
-        steiner_points,
-        map_outer_contour3,
-        street_rectangles,
-        way_point_edges_2_lanes);
+    try {
+        smoothen_and_apply_heightmap(
+            config,
+            height_bindings,
+            vertex_height_bindings,
+            nodes,
+            ways,
+            normalized_points,
+            tls_buildings,
+            tls_wall_barriers,
+            osm_triangle_lists,
+            air_triangle_lists,
+            VertexOutOfHeightMapBehavior::THROW,
+            object_resource_descriptors_,
+            resource_instance_positions_,
+            hitboxes_,
+            steiner_points,
+            map_outer_contour3,
+            street_rectangles,
+            way_point_edges_2_lanes);
+    } catch (const PointException<2>& e) {
+        handle_point_exception2(e, "Could not smoothen and apply heighmap");
+    }
 
     // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
     // {
