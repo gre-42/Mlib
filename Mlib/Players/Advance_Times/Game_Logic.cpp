@@ -108,7 +108,7 @@ void GameLogic::handle_team_deathmatch() {
         (spawn_points_.size() > 1))
     {
         for (auto& p : players_.players()) {
-            if (p.second->team() == *winner_teams.begin()) {
+            if (!winner_teams.empty() && (p.second->team() == *winner_teams.begin())) {
                 ++p.second->stats().nwins;
             }
         }

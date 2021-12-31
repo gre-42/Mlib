@@ -270,6 +270,7 @@ edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
     fakeclient->v.weaponanim = 0;
     fakeclient->v.effects = 0;
     fakeclient->v.waterlevel = 0;
+    fakeclient->v.origin = g_vecZero;
     strcpy(fakeclient->v.classname, "player");
     strcpy(fakeclient->v.viewmodel, "undefined_viewmodel");
     if (!g_edict_to_player_name.insert({ fakeclient, fakeclient->v.netname }).second) {
