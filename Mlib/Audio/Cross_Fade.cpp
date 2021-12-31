@@ -20,10 +20,9 @@ void AudioSourceAndGain::apply_gain() {
 }
 
 CrossFade::CrossFade(float dgain, float dt)
-: shutdown_requested_{false},
-  fader_{[this, dgain, dt](){
+: fader_{[this, dgain, dt](){
     set_thread_name("Audio CrossFade");
-    while (!shutdown_requested_) {
+    while (!fader_.get_stop_token().stop_requested()) {
         {
             std::lock_guard lock{ mutex_ };
             float total_gain = 0;
@@ -45,10 +44,8 @@ CrossFade::CrossFade(float dgain, float dt)
     }}}
 {}
 
-CrossFade::~CrossFade() {
-    shutdown_requested_ = true;
-    fader_.join();
-}
+CrossFade::~CrossFade()
+{}
 
 void CrossFade::play(const AudioBuffer& audio_buffer, float gain_factor, float pitch) {
     std::lock_guard lock{ mutex_ };

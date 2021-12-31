@@ -3,35 +3,34 @@
 
 using namespace Mlib;
 
-BackgroundLoop::BackgroundLoop() {
-    thread_ = std::thread{[this](){
+BackgroundLoop::BackgroundLoop()
+: thread_{std::jthread{[this](){
         set_thread_name("Background loop");
         while (true) {
             std::unique_lock lck{ mutex_ };
-            task_ready_cv_.wait(lck, [this]() { return !done_ || shutdown_requested_; });
-            if (shutdown_requested_) {
+            task_ready_cv_.wait(lck, [this]() { return !done_ || thread_.get_stop_token().stop_requested(); });
+            if (thread_.get_stop_token().stop_requested()) {
                 return;
             }
             task_();
             done_ = true;
         }
-    }};
-}
+    }}}
+{}
 
 BackgroundLoop::~BackgroundLoop() {
     shutdown();
 }
 
 void BackgroundLoop::shutdown() {
-    if (shutdown_requested_) {
+    if (thread_.get_stop_token().stop_requested()) {
         return;
     }
     {
         std::lock_guard lock{ mutex_ };
-        shutdown_requested_ = true;
+        thread_.request_stop();
     }
     task_ready_cv_.notify_one();
-    thread_.join();
 }
 
 WorkerStatus BackgroundLoop::tick(size_t update_interval) {

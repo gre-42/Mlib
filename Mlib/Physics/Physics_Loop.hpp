@@ -22,10 +22,9 @@ public:
     //! Useful if nframes != SIZE_MAX
     void join();
 private:
-    std::atomic_bool exit_physics_;
     SetFps& set_fps_;
     PhysicsIteration& physics_iteration_;
-    std::thread physics_thread_;
+    std::jthread physics_thread_;
 };
 
 }

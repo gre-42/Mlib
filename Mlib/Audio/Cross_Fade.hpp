@@ -22,9 +22,8 @@ public:
     void set_position(const FixedArray<float, 3>& position);
 private:
     std::list<std::unique_ptr<AudioSourceAndGain>> sources_;
-    bool shutdown_requested_;
     std::mutex mutex_;
-    std::thread fader_;
+    std::jthread fader_;
 };
 
 }

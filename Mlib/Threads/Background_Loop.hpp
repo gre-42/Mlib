@@ -19,13 +19,12 @@ public:
     bool done() const;
     void shutdown();
 private:
-    std::thread thread_;
     std::function<void()> task_;
     size_t i_ = 0;
     std::atomic_bool done_ = true;
-    std::atomic_bool shutdown_requested_ = false;
     std::condition_variable task_ready_cv_;
     std::mutex mutex_;
+    std::jthread thread_;
 };
 
 }

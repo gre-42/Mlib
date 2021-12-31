@@ -16,8 +16,7 @@ PhysicsLoop::PhysicsLoop(
     SetFps& set_fps,
     size_t nframes,
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background)
-: exit_physics_{false},
-  set_fps_{set_fps},
+: set_fps_{set_fps},
   physics_iteration_{physics_iteration},
   physics_thread_{run_in_background([&, nframes](){
     try {
@@ -25,7 +24,7 @@ PhysicsLoop::PhysicsLoop(
         SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration.delete_node_mutex_ };
         size_t nframes2 = nframes;
         // LagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
-        while (!exit_physics_) {
+        while (!physics_thread_.get_stop_token().stop_requested()) {
             // lag_finder.start();
             // TimeGuard::initialize(5 * 60);
             if (nframes2 != SIZE_MAX) {
@@ -51,7 +50,7 @@ PhysicsLoop::~PhysicsLoop() {
 }
 
 void PhysicsLoop::stop_and_join() {
-    exit_physics_ = true;
+    physics_thread_.request_stop();
     set_fps_.resume();
     join();
 }
