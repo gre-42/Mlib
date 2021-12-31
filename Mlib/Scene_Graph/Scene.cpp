@@ -111,16 +111,13 @@ void Scene::delete_root_node(const std::string& name) {
     if (it == root_nodes_.end()) {
         throw std::runtime_error("Could not find root node with name \"" + name + '"');
     }
-    // Temporary "unique_ptr" in case the reference "name" points to the
-    // node to be deleted.
     std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (2) \"" << name << '"' << std::endl;
-    std::unique_ptr<SceneNode> to_delete = std::move(it->second);
+    unregister_node(name);
     std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (3) \"" << name << '"' << std::endl;
-    root_nodes_.erase(it);
     root_nodes_to_delete_.erase(name);
     std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (4) \"" << name << '"' << std::endl;
-    unregister_node(name);
-    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (5) \"" << name << '"' << std::endl;
+    root_nodes_.erase(it);
+    std::cerr << "Thread " << std::this_thread::get_id() << ": Scene::delete_root_node (5)" << std::endl;
 }
 
 void Scene::delete_root_nodes(const Mlib::regex& regex) {
