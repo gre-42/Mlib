@@ -751,6 +751,7 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
    {
       strncpy (str1, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTRWEAPONS]), 26);
    }
+   str1[26] = '\0';
    size_t len1 = strlen(str1);
    for (i = 0; i < len1; i++)
    {
@@ -764,6 +765,7 @@ void UTIL_CheckCvars (void) // KWo - 06.04.2006
       strncpy (str2, g_rgcvarPointer[PBCVAR_RESTREQUIPAMMO]->string, 9);
    else
       strncpy (str2, CVAR_GET_STRING(g_rgpszPbCvars[PBCVAR_RESTREQUIPAMMO]),9);
+   str2[9] = '\0';
    size_t len2 = strlen(str2);
    for (i = 0; i < len2; i++)
    {

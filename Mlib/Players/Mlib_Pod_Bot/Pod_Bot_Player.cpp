@@ -43,6 +43,9 @@ PodBotPlayer::PodBotPlayer(const Player& player)
     cb.bot->current_weapon.iAmmo2 = 0;
     cb.bot->f_view_distance = 500.f * s_o2q;
     cb.bot->f_maxview_distance = 500.f * s_o2q;
+    cb.bot->bOnLadder = false;
+    cb.bot->bInWater = false;
+    cb.bot->curr_travel_flags = 0;
 
     edict->v.weapons = (1 << weapon);
 }

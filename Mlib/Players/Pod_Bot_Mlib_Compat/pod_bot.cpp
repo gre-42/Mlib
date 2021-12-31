@@ -6,9 +6,8 @@
 #include <Mlib/Players/Pod_Bot/bot_globals.h>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/primitive_constants.hpp>
+#include <Mlib/Players/Pod_Bot_Mlib_Compat/vectorial_constants.hpp>
 #include <filesystem>
-
-#define VEC_VIEW Vector( 0, 0, 28 )
 
 std::map<int, edict_t*> indexent_;
 static std::map<edict_t*, int> entindex_;
@@ -263,6 +262,14 @@ edict_t* enginefuncs_t::pfnCreateFakeClient(const char* name) {
     fakeclient->v.health = 100;
     fakeclient->v.flags = 0;
     fakeclient->v.view_ofs = VEC_VIEW;
+    fakeclient->v.dmgtime = 0.f;
+    fakeclient->v.oldbuttons = 0;
+    fakeclient->v.renderfx = kRenderFxNone;
+    fakeclient->v.rendermode = kRenderNormal;
+    fakeclient->v.renderamt = 100.f;
+    fakeclient->v.weaponanim = 0;
+    fakeclient->v.effects = 0;
+    fakeclient->v.waterlevel = 0;
     strcpy(fakeclient->v.classname, "player");
     strcpy(fakeclient->v.viewmodel, "undefined_viewmodel");
     if (!g_edict_to_player_name.insert({ fakeclient, fakeclient->v.netname }).second) {

@@ -112,6 +112,11 @@ void PodBots::advance_time(float dt) {
         bot.pEdict->v.fov = 130.f;
         bot.pEdict->v.light_level = 100;
         bot.pEdict->v.health = player.rigid_body().damageable_->health();
+        if (sum(squared(rbp.v_)) > 1.f) {
+            bot.pEdict->v.movetype = MOVETYPE_WALK;
+        } else {
+            bot.pEdict->v.movetype = MOVETYPE_NONE;
+        }
         if (bot.pEdict->v.health > 0) {
             bot.bDead = false;
             bot.pEdict->v.deadflag = DEAD_NO;

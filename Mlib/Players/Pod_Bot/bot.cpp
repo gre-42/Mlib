@@ -1328,7 +1328,7 @@ void BotFindItem (bot_t *pBot)
       bBomb = FALSE;
       if (((strcmp ("weaponbox", STRING (pent->v.classname)) == 0)
                   && (strcmp ("models/w_backpack.mdl", STRING (pent->v.model)) == 0))
-         || ((strcmp ("grenade", vclassname) == 0)
+         || ((strcmp ("grenade", STRING (pent->v.classname)) == 0)
                   && ((strcmp ("models/w_c4.mdl", STRING (pent->v.model)) == 0)
                        || ((pent->v.dmg >= 100) && (pent->v.movetype == 6))))) // KWo - 29.08.2008
       {
