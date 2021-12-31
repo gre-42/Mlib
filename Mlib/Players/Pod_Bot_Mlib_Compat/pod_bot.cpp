@@ -186,16 +186,16 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
     }
 }
 
-void EMIT_SOUND_DYN2(edict_t*, int, char const*, float, float, int, float) {
-    std::cerr << "EMIT_SOUND_DYN2\n";
-}
-
 void TRACE_HULL(const Vector& vecMidPoint, const Vector& vecTemp, IGNORE_MONSTERS ignore_monsters, HULL hull, edict_t* pEdict, TraceResult* tr) {
     TRACE_LINE(vecMidPoint, vecTemp, ignore_monsters, pEdict, tr);
 }
 
 int POINT_CONTENTS(const Vector& vec) {
     return CONTENTS_EMPTY;
+}
+
+void EMIT_SOUND_DYN2(edict_t*, int, char const*, float, float, int, float) {
+    std::cerr << "EMIT_SOUND_DYN2\n";
 }
 
 float CVAR_GET_FLOAT(const std::string& name) {

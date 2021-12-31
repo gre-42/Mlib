@@ -65,6 +65,16 @@ enum IGNORE_MONSTERS {
 
 void TRACE_LINE (const ::Vector& vecSource, const ::Vector& vecDest, int ignored, const edict_t* dct, TraceResult* tr);
 
+enum HULL {
+    head_hull,
+    human_hull,
+    point_hull
+};
+
+void TRACE_HULL (const ::Vector& vecMidPoint, const ::Vector& vecTemp, IGNORE_MONSTERS ignore_monsters, HULL hull, edict_t* pEdict, TraceResult* tr);
+
+int POINT_CONTENTS(const ::Vector& vec);
+
 ::Vector UTIL_VecToAngles(const ::Vector& v);
 ::Vector GetGunPosition(const edict_t* dct);
 void MAKE_VECTORS(const ::Vector& v);
@@ -99,12 +109,6 @@ void EMIT_SOUND_DYN2 (edict_t* pent, int  channel, const char*, float volume, fl
 inline bool IS_DEDICATED_SERVER() {
     return false;
 }
-
-int POINT_CONTENTS(const ::Vector& vec);
-
-enum HULL {head_hull, human_hull, point_hull};
-
-void TRACE_HULL (const ::Vector& vecMidPoint, const ::Vector& vecTemp, IGNORE_MONSTERS ignore_monsters, HULL hull, edict_t* pEdict, TraceResult* tr);
 
 inline void MESSAGE_BEGIN (int priority, MESSAGE msg, void* unknown = nullptr, edict_t* pHostEdict = nullptr) {}
 inline void WRITE_CHAR(char) {}
