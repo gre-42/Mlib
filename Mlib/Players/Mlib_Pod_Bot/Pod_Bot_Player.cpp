@@ -48,6 +48,10 @@ PodBotPlayer::PodBotPlayer(const Player& player)
 }
 
 PodBotPlayer::~PodBotPlayer() {
+    edict_t* edict = get_edict(player_.name());
+    auto cb = pod_bot_get_client_and_bot(edict);
+    DeleteSearchNodes(cb.bot);
+    BotResetTasks(cb.bot);
     pod_bot_destroy_player(player_);
 }
 

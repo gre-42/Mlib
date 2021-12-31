@@ -27,6 +27,7 @@ PodBots::~PodBots() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     advance_times_.delete_advance_time(this);
     pod_bot_clear_players();
+    BotFreeAllMemory();
 }
 
 void PodBots::advance_time(float dt) {
