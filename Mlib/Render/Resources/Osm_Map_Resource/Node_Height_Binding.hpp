@@ -6,12 +6,12 @@
 
 namespace Mlib {
 
-class HeightBinding {
+class NodeHeightBinding {
 public:
-    HeightBinding()
+    NodeHeightBinding()
     : value_{"<undefined>"}
     {}
-    HeightBinding& operator = (const std::string& v) {
+    NodeHeightBinding& operator = (const std::string& v) {
         if ((value_ != "<undefined>") && (v != value_)) {
             throw std::runtime_error("Height binding already set to a different value");
         }

@@ -21,7 +21,7 @@ struct Way;
 template <class TData>
 class Interp;
 enum class EntranceType;
-class HeightBinding;
+class NodeHeightBinding;
 class VertexHeightBinding;
 enum class TerrainType;
 template <class EntityType>
@@ -42,7 +42,7 @@ void apply_heightmap(
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
+    const std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
     const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     float street_node_smoothness,
     const Interp<float>& layer_height);

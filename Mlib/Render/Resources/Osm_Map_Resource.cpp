@@ -32,7 +32,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -189,7 +189,7 @@ OsmMapResource::OsmMapResource(
     tl_terrain_ = osm_triangle_lists.tl_terrain;
     std::list<std::shared_ptr<TriangleList>> tls_buildings;
     std::list<std::shared_ptr<TriangleList>> tls_wall_barriers;
-    std::map<OrderableFixedArray<float, 2>, HeightBinding> height_bindings;
+    std::map<OrderableFixedArray<float, 2>, NodeHeightBinding> node_height_bindings;
     std::map<const FixedArray<float, 3>*, VertexHeightBinding> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
@@ -211,7 +211,7 @@ OsmMapResource::OsmMapResource(
                 object_resource_descriptors_,
                 hitboxes_,
                 street_rectangles,
-                height_bindings,
+                node_height_bindings,
                 way_point_edges_1_lane,
                 way_point_edges_2_lanes,
                 tunnel_pipe,
@@ -538,7 +538,7 @@ OsmMapResource::OsmMapResource(
     try {
         smoothen_and_apply_heightmap(
             config,
-            height_bindings,
+            node_height_bindings,
             vertex_height_bindings,
             nodes,
             ways,
@@ -1044,8 +1044,8 @@ OsmMapResource::OsmMapResource(
         for (const auto& p : osm_triangle_lists.tls_street()) {
             for (const auto& t : p->triangles_) {
                 for (const auto& v : t.flat_iterable()) {
-                    auto it = height_bindings.find(OrderableFixedArray<float, 2>{v.position(0), v.position(1)});
-                    if (it != height_bindings.end()) {
+                    auto it = node_height_bindings.find(OrderableFixedArray<float, 2>{v.position(0), v.position(1)});
+                    if (it != node_height_bindings.end()) {
                         if (it->second == "1792772911") {  // node 1792772911 4002287619
                             resource_instance_positions_["grass12y"].push_back(ResourceInstanceDescriptor{.position = v.position});
                         }

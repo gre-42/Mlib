@@ -6,7 +6,7 @@
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Extended_Image.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Type.hpp>
@@ -46,7 +46,7 @@ void Mlib::apply_heightmap(
     float scale,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
+    const std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
     const std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     float street_node_smoothness,
     const Interp<float>& layer_heights)
@@ -202,7 +202,7 @@ void Mlib::apply_heightmap(
         save_obj("/tmp/terrain_tunnel_entraces.obj", IndexedFaceSet<float, size_t>{tcp});
     }
     // Transfer smoothening of street nodes to the triangles they produced.
-    // The mapping node -> triangle vertices is stored in the "height_bindings" mapping.
+    // The mapping node -> triangle vertices is stored in the "node_height_bindings" mapping.
     // Note that the 2D coordinates of OSM nodes are garantueed to be unique to exactly one height.
     // Also, duplicate nodes were already removed while parsing the OSM XML-file.
     std::map<OrderableFixedArray<float, 2>, std::list<FixedArray<float, 3>*>> vertex_instances_map;
@@ -219,8 +219,8 @@ void Mlib::apply_heightmap(
     for (auto& position : vertex_instances_map) {
         FixedArray<float, 2> vc;
         // Try to apply height bindings.
-        auto it = height_bindings.find(OrderableFixedArray<float, 2>{position.first(0), position.first(1)});
-        if (it != height_bindings.end()) {
+        auto it = node_height_bindings.find(OrderableFixedArray<float, 2>{position.first(0), position.first(1)});
+        if (it != node_height_bindings.end()) {
             // Note that node_height is empty if street_node_smoothness == 0,
             // so this test will then always return false.
             if (auto hit = node_height.find(it->second.str()); hit != node_height.end()) {

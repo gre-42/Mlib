@@ -10,7 +10,7 @@ class OrderableFixedArray;
 class TriangleList;
 struct ColoredVertex;
 enum class EntranceType;
-class HeightBinding;
+class NodeHeightBinding;
 enum class RoadType;
 
 enum class RectangleOrientation {
@@ -43,7 +43,7 @@ public:
     void draw_z0(
         TriangleList& tl_road,
         TriangleList* tl_entrance,
-        std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
+        std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
         std::map<EntranceType, std::set<OrderableFixedArray<float, 2>>>& entrances,
         const std::string& b,
         const std::string& c,
@@ -63,7 +63,7 @@ public:
     
     void draw(
         TriangleList& tl,
-        std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
+        std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
         const std::string& b,
         const std::string& c,
         const std::vector<FixedArray<ColoredVertex, 3>>& triangles,

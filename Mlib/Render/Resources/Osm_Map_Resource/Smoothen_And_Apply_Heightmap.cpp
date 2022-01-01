@@ -7,7 +7,7 @@
 #include <Mlib/Images/StbImage.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Apply_Heightmap.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Height_Binding.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -26,7 +26,7 @@ enum class SmoothingClass {
 
 void Mlib::smoothen_and_apply_heightmap(
     const OsmResourceConfig& config,
-    const std::map<OrderableFixedArray<float, 2>, HeightBinding>& height_bindings,
+    const std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings,
     std::map<const FixedArray<float, 3>*, VertexHeightBinding>& vertex_height_bindings,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
@@ -147,7 +147,7 @@ void Mlib::smoothen_and_apply_heightmap(
             config.scale,
             nodes,
             ways,
-            height_bindings,
+            node_height_bindings,
             vertex_height_bindings,
             config.street_node_smoothness,
             config.layer_heights);
