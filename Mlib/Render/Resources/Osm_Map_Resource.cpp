@@ -249,6 +249,13 @@ OsmMapResource::OsmMapResource(
     }
 
     if (config.with_buildings) {
+        for (const auto& bu : buildings) {
+            if (bu.way.nd.empty()) {
+                std::cerr << "Building " << bu.id << " is empty" << std::endl;
+            } else if (bu.way.nd.front() != bu.way.nd.back()) {
+                std::cerr << "Building " << bu.id << " has no closed outline" << std::endl;
+            }
+        }
         LOG_INFO("draw_building_walls (facade)");
         FacadeTextureCycle ftc{ config.facade_textures };
         draw_building_walls(
