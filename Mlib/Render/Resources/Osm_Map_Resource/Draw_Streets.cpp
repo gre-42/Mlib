@@ -393,7 +393,7 @@ void DrawStreets::draw_holes() {
     {
         auto connect = [](
             const std::map<std::string, HoleWaypoint>& node_hole_waypoints,
-            std::list<std::pair<VertexWayPoint, VertexWayPoint>>& way_point_edge_descriptors)
+            std::list<std::pair<StreetWayPoint, StreetWayPoint>>& way_point_edge_descriptors)
         {
             for (const auto& nw : node_hole_waypoints) {
                 for (const auto& x : nw.second.in) {
@@ -402,8 +402,8 @@ void DrawStreets::draw_holes() {
                             continue;
                         }
                         way_point_edge_descriptors.push_back({
-                            VertexWayPoint{.alpha = x.alpha, .edge = o23(x.edge)},
-                            VertexWayPoint{.alpha = y.alpha, .edge = o23(y.edge)}});
+                            StreetWayPoint{.alpha = x.alpha, .edge = o23(x.edge)},
+                            StreetWayPoint{.alpha = y.alpha, .edge = o23(y.edge)}});
                     }
                 }
             }
@@ -650,17 +650,17 @@ void DrawStreets::draw_streets_add_waypoints(
     if (driving_direction == DrivingDirection::CENTER) {
         CurbedStreet c5{rect, -curb_alpha, curb_alpha};
         way_point_edge_descriptors[WayPointLocation::STREET].push_back({
-            VertexWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s00, c5.s01)}},
-            VertexWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s10, c5.s11)}}});
+            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s00, c5.s01)}},
+            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s10, c5.s11)}}});
     } else if (driving_direction == DrivingDirection::LEFT) {
-        auto add = [&rect](float start, float stop, float shift, std::list<std::pair<VertexWayPoint, VertexWayPoint>>& lanes){
+        auto add = [&rect](float start, float stop, float shift, std::list<std::pair<StreetWayPoint, StreetWayPoint>>& lanes){
             CurbedStreet c5{rect, start, stop};
             lanes.push_back({
-                VertexWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c5.s00, c5.s01)}},
-                VertexWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c5.s10, c5.s11)}}});
+                StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c5.s00, c5.s01)}},
+                StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c5.s10, c5.s11)}}});
             lanes.push_back({
-                VertexWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c5.s10, c5.s11)}},
-                VertexWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c5.s00, c5.s01)}}});
+                StreetWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c5.s10, c5.s11)}},
+                StreetWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c5.s00, c5.s01)}}});
         };
         add(-curb_alpha, curb_alpha, lane_shift, way_point_edge_descriptors[WayPointLocation::STREET]);
         if (curb2_alpha != 1) {
@@ -668,14 +668,14 @@ void DrawStreets::draw_streets_add_waypoints(
             add(-curb2_alpha, -curb_alpha, 0.f, way_point_edge_descriptors[WayPointLocation::SIDEWALK]);
         }
     } else if (driving_direction == DrivingDirection::RIGHT) {
-        auto add = [&rect](float start, float stop, float shift, std::list<std::pair<VertexWayPoint, VertexWayPoint>>& lanes){
+        auto add = [&rect](float start, float stop, float shift, std::list<std::pair<StreetWayPoint, StreetWayPoint>>& lanes){
             CurbedStreet c5{rect, start, stop};
             lanes.push_back({
-                VertexWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c5.s10, c5.s11)}},
-                VertexWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c5.s00, c5.s01)}}});
+                StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c5.s10, c5.s11)}},
+                StreetWayPoint{.alpha{0.75f - shift, 0.25f + shift}, .edge{o23(c5.s00, c5.s01)}}});
             lanes.push_back({
-                VertexWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c5.s00, c5.s01)}},
-                VertexWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c5.s10, c5.s11)}}});
+                StreetWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c5.s00, c5.s01)}},
+                StreetWayPoint{.alpha{0.25f + shift, 0.75f - shift}, .edge{o23(c5.s10, c5.s11)}}});
         };
         add(-curb_alpha, curb_alpha, lane_shift, way_point_edge_descriptors[WayPointLocation::STREET]);
         if (curb2_alpha != 1) {

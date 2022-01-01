@@ -4,64 +4,57 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Way_Points.hpp>
 
 using namespace Mlib;
 
 void Mlib::calculate_waypoint_adjacency(
     PointsAndAdjacency<float, 3>& way_points,
-    const std::list<WayPoints>& way_point_lines,
-    const std::list<std::pair<VertexWayPoint, VertexWayPoint>>& way_point_edge_descriptors,
+    const std::list<TerrainWayPoints>& terrain_way_point_lines,
+    const std::list<std::pair<StreetWayPoint, StreetWayPoint>>& street_way_point_edge_descriptors,
     const std::map<std::string, Node>& nodes,
     const GroundBvh& ground_bvh,
     float scale)
 {
-    std::map<std::string, size_t> indices_1_lane;
-    for (const WayPoints& wps : way_point_lines) {
+    std::map<std::string, size_t> indices_terrain_wpts;
+    for (const TerrainWayPoints& wps : terrain_way_point_lines) {
         for (const std::string& n : wps.way.nd) {
-            indices_1_lane.insert({n, indices_1_lane.size()});
+            indices_terrain_wpts.insert({n, indices_terrain_wpts.size()});
         }
     }
-    std::map<OrderableFixedArray<float, 2>, size_t> indices_2_lanes;
-    for (const auto& e : way_point_edge_descriptors) {
+    std::map<OrderableFixedArray<float, 3>, size_t> indices_street_wpts;
+    for (const auto& e : street_way_point_edge_descriptors) {
         auto p0 = e.first.position();
         auto p1 = e.second.position();
-        indices_2_lanes.insert({OrderableFixedArray<float, 2>{p0(0), p0(1)}, indices_2_lanes.size()});
-        indices_2_lanes.insert({OrderableFixedArray<float, 2>{p1(0), p1(1)}, indices_2_lanes.size()});
+        indices_street_wpts.insert({OrderableFixedArray<float, 3>{ p0 }, indices_street_wpts.size()});
+        indices_street_wpts.insert({OrderableFixedArray<float, 3>{ p1 }, indices_street_wpts.size()});
     }
-    way_points.points.resize(indices_1_lane.size() + indices_2_lanes.size());
-    auto p2_to_p3 = [&way_points, &ground_bvh](const FixedArray<float, 2>& p2){
-        float height;
-        if (ground_bvh.height(height, p2)) {
-            return FixedArray<float, 3>{p2(0), p2(1), height};
-        } else {
-            throw PointException<2>{ p2, "Could not determine height of original waypoint" };
-        }
-    };
-    for (const auto& p : indices_1_lane) {
-        way_points.points[p.second] = p2_to_p3(nodes.at(p.first).position);
+    way_points.points.resize(indices_terrain_wpts.size() + indices_street_wpts.size());
+    for (const auto& p : indices_terrain_wpts) {
+        auto p2 = nodes.at(p.first).position;
+        way_points.points[p.second] = OrderableFixedArray<float, 3>{ p2(0), p2(1), NAN };
     }
-    for (const auto& p : indices_2_lanes) {
-        way_points.points[indices_1_lane.size() + p.second] = p2_to_p3(p.first);
+    for (const auto& p : indices_street_wpts) {
+        way_points.points[indices_terrain_wpts.size() + p.second] = p.first;
     }
     way_points.adjacency = SparseArrayCcs<float>{ArrayShape{
-        indices_1_lane.size() + indices_2_lanes.size(),
-        indices_1_lane.size() + indices_2_lanes.size()}};
+        indices_terrain_wpts.size() + indices_street_wpts.size(),
+        indices_terrain_wpts.size() + indices_street_wpts.size()}};
     
     {
-        auto insert_edge_1_lane = [&way_points, &nodes, &indices_1_lane](const std::string& a, const std::string& b, WayPointsOrientation orientation) {
+        auto insert_edge_1_lane = [&way_points, &nodes, &indices_terrain_wpts](const std::string& a, const std::string& b, WayPointsOrientation orientation) {
             float dist = std::sqrt(sum(squared(nodes.at(a).position - nodes.at(b).position)));
-            if (!way_points.adjacency.column(indices_1_lane.at(a)).insert({indices_1_lane.at(b), dist}).second) {
+            if (!way_points.adjacency.column(indices_terrain_wpts.at(a)).insert({indices_terrain_wpts.at(b), dist}).second) {
                 throw std::runtime_error("Could not insert waypoint (0)");
             }
             if (orientation == WayPointsOrientation::BIDIRECTIONAL) {
-                if (!way_points.adjacency.column(indices_1_lane.at(b)).insert({indices_1_lane.at(a), dist}).second) {
+                if (!way_points.adjacency.column(indices_terrain_wpts.at(b)).insert({indices_terrain_wpts.at(a), dist}).second) {
                     throw std::runtime_error("Could not insert waypoint (1)");
                 }
             }
         };
-        for (const WayPoints& wps : way_point_lines) {
+        for (const TerrainWayPoints& wps : terrain_way_point_lines) {
             for (auto it = wps.way.nd.begin(); it != wps.way.nd.end(); ++it) {
                 auto s = it;
                 ++s;
@@ -70,25 +63,25 @@ void Mlib::calculate_waypoint_adjacency(
                 }
             }
         }
-        for (size_t i = 0; i < indices_1_lane.size(); ++i) {
+        for (size_t i = 0; i < indices_terrain_wpts.size(); ++i) {
             if (!way_points.adjacency.column(i).insert({i, 0.f}).second) {
                 throw std::runtime_error("Could not insert waypoint (2)");
             }
         }
     }
     {
-        for (const auto& e : way_point_edge_descriptors) {
+        for (const auto& e : street_way_point_edge_descriptors) {
             auto p0 = e.first.position();
             auto p1 = e.second.position();
             float dist = std::sqrt(sum(squared(p0 - p1)));
-            size_t col_id_0 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{p0(0), p0(1)});
-            size_t col_id_1 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{p1(0), p1(1)});
+            size_t col_id_0 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p0 });
+            size_t col_id_1 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p1 });
             if (!way_points.adjacency.column(col_id_0).insert({col_id_1, dist}).second) {
                 throw std::runtime_error("Could not insert waypoint (3)");
             }
         }
-        for (size_t i = 0; i < indices_2_lanes.size(); ++i) {
-            if (!way_points.adjacency.column(indices_1_lane.size() + i).insert({indices_1_lane.size() + i, 0.f}).second) {
+        for (size_t i = 0; i < indices_street_wpts.size(); ++i) {
+            if (!way_points.adjacency.column(indices_terrain_wpts.size() + i).insert({indices_terrain_wpts.size() + i, 0.f}).second) {
                 throw std::runtime_error("Could not insert waypoint (4)");
             }
         }
@@ -100,7 +93,7 @@ void Mlib::calculate_waypoint_adjacency(
         float a1)
     {
         FixedArray<float, 3> res = p0 * a0 + p1 * a1;
-        if (!ground_bvh.height(res(2), FixedArray<float, 2>{ res(0), res(1) })) {
+        if (std::isnan(res(2)) && !ground_bvh.height(res(2), FixedArray<float, 2>{ res(0), res(1) })) {
             throw PointException<3>{ res, "Could not determine height of interpolated waypoint" };
         }
         return res;

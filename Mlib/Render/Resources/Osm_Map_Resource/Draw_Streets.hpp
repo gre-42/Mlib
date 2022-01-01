@@ -37,7 +37,7 @@ struct NodeHoleVertex;
 class NodeHeightBinding;
 enum class RoadType;
 struct ColoredVertexArray;
-struct VertexWayPoint;
+struct StreetWayPoint;
 
 struct DrawStreetsInput {
     SceneNodeResources& scene_node_resources;
@@ -48,7 +48,7 @@ struct DrawStreetsInput {
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes;
     std::list<StreetRectangle>& street_rectangles;
     std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings;
-    std::map<WayPointLocation, std::list<std::pair<VertexWayPoint, VertexWayPoint>>>& way_point_edge_descriptors;
+    std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_bdry_triangles;
     std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments;

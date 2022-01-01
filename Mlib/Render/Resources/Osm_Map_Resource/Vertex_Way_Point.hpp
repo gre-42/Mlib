@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-struct VertexWayPoint {
+struct StreetWayPoint {
     std::pair<float, float> alpha;
     std::pair<FixedArray<float, 3>, FixedArray<float, 3>> edge;
     FixedArray<float, 3> position() const {

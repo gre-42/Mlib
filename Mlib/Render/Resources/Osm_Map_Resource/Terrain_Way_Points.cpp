@@ -1,4 +1,4 @@
-#include "Way_Points.hpp"
+#include "Terrain_Way_Points.hpp"
 #include <stdexcept>
 
 using namespace Mlib;

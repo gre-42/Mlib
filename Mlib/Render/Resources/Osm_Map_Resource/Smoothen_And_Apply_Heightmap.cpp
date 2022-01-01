@@ -43,7 +43,7 @@ void Mlib::smoothen_and_apply_heightmap(
     std::list<SteinerPointInfo>& steiner_points,
     std::list<FixedArray<float, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,
-    std::map<WayPointLocation, std::list<std::pair<VertexWayPoint, VertexWayPoint>>>& way_point_edge_descriptors)
+    std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors)
 {
     LOG_FUNCTION("smoothen_and_apply_heightmap");
     if (config.heightmap.empty() && config.street_edge_smoothness == 0 && config.terrain_edge_smoothness == 0) {

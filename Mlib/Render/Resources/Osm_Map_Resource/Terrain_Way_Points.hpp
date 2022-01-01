@@ -12,7 +12,7 @@ enum class WayPointsOrientation {
 
 WayPointsOrientation way_point_orientation_from_string(const std::string& orientation);
 
-struct WayPoints {
+struct TerrainWayPoints {
     const Way& way;
     WayPointsOrientation orientation;
 };

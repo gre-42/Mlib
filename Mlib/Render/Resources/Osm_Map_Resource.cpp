@@ -29,8 +29,8 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Map_Outer_Contour.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Terrain_Region_Contours.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Terrain_Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Get_Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -44,11 +44,11 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Terrain_Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
-#include <Mlib/Render/Resources/Osm_Map_Resource/Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resources.hpp>
@@ -194,7 +194,7 @@ OsmMapResource::OsmMapResource(
     std::map<const FixedArray<float, 3>*, VertexHeightBinding> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
-    std::map<WayPointLocation, std::list<std::pair<VertexWayPoint, VertexWayPoint>>> way_point_edge_descriptors;
+    std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
     std::list<FixedArray<FixedArray<float, 2>, 2>> way_segments;
     {
         ResourceNameCycle street_lights{ scene_node_resources, config.street_light_resource_names };
@@ -929,7 +929,7 @@ OsmMapResource::OsmMapResource(
             }
         }
         {
-            std::list<WayPoints> way_point_lines = get_way_points(ways);
+            std::list<TerrainWayPoints> terrain_way_point_lines = get_terrain_way_points(ways);
             try {
                 calculate_waypoint_adjacency(
                     way_points_[WayPointLocation::STREET],
@@ -947,7 +947,7 @@ OsmMapResource::OsmMapResource(
                     config.scale);
                 calculate_waypoint_adjacency(
                     way_points_[WayPointLocation::EXPLICIT],
-                    way_point_lines,
+                    terrain_way_point_lines,
                     way_point_edge_descriptors[WayPointLocation::EXPLICIT],
                     nodes,
                     ground_bvh,
