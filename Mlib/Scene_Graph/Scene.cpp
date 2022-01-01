@@ -142,7 +142,9 @@ void Scene::shutdown() {
     if (shutting_down_) {
         return;
     }
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    delete_node_mutex_.clear_deleter_thread();
+    delete_node_mutex_.set_deleter_thread();
+    clear_nodes_not_allowed_to_be_unregistered();
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Scene::shutdown: delete node mutex is not locked");
     }

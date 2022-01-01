@@ -630,8 +630,6 @@ int main(int argc, char** argv) {
             }
             StbImage::from_float_rgb(array).save_to_file(args.named_value("--output"));
         }
-        delete_node_mutex.clear_deleter_thread();
-        delete_node_mutex.set_deleter_thread();
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;
