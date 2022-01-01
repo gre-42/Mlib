@@ -55,6 +55,6 @@ static std::map<std::string, DrivingMode> driving_modes{
         .stuck_velocity = 2 / 3.6f,
         .stuck_seconds = 3,
         .unstuck_seconds = 5,
-        .way_point_location = WayPointLocation::STREET}}};
+        .way_point_location = WayPointLocation::EXPLICIT}}};
 
 }
