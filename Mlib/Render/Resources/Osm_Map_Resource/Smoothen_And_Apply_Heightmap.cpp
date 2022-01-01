@@ -13,6 +13,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
 #include <Mlib/Render/Resources/Resource_Instance_Descriptor.hpp>
 #include <list>
 #include <memory>
@@ -42,7 +43,7 @@ void Mlib::smoothen_and_apply_heightmap(
     std::list<SteinerPointInfo>& steiner_points,
     std::list<FixedArray<float, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,
-    std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes)
+    std::map<WayPointLocation, std::list<std::pair<VertexWayPoint, VertexWayPoint>>>& way_point_edge_descriptors)
 {
     LOG_FUNCTION("smoothen_and_apply_heightmap");
     if (config.heightmap.empty() && config.street_edge_smoothness == 0 && config.terrain_edge_smoothness == 0) {
@@ -99,10 +100,12 @@ void Mlib::smoothen_and_apply_heightmap(
                 smoothed_vertices.push_back(&p);
             }
         }
-        for (auto& w : way_point_edges_2_lanes) {
+        for (auto& w : way_point_edge_descriptors) {
             for (auto& e : w.second) {
-                smoothed_vertices.push_back(&e.first);
-                smoothed_vertices.push_back(&e.second);
+                smoothed_vertices.push_back(&e.first.edge.first);
+                smoothed_vertices.push_back(&e.first.edge.second);
+                smoothed_vertices.push_back(&e.second.edge.first);
+                smoothed_vertices.push_back(&e.second.edge.second);
             }
         }
         {

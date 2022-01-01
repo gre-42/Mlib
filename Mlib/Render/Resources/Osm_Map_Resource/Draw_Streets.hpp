@@ -37,6 +37,7 @@ struct NodeHoleVertex;
 class NodeHeightBinding;
 enum class RoadType;
 struct ColoredVertexArray;
+struct VertexWayPoint;
 
 struct DrawStreetsInput {
     SceneNodeResources& scene_node_resources;
@@ -47,8 +48,7 @@ struct DrawStreetsInput {
     std::map<std::string, std::list<ResourceInstanceDescriptor>>& hitboxes;
     std::list<StreetRectangle>& street_rectangles;
     std::map<OrderableFixedArray<float, 2>, NodeHeightBinding>& node_height_bindings;
-    std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane_street;
-    std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes;
+    std::map<WayPointLocation, std::list<std::pair<VertexWayPoint, VertexWayPoint>>>& way_point_edge_descriptors;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_pipe_triangles;
     std::vector<FixedArray<ColoredVertex, 3>>& tunnel_bdry_triangles;
     std::list<FixedArray<FixedArray<float, 2>, 2>>& way_segments;
@@ -93,9 +93,7 @@ private:
         float curb_alpha,
         float curb2_alpha,
         unsigned int nlanes,
-        float lane_alpha,
-        float sidewalk_alpha0,
-        float sidewalk_alpha1,
+        float lane_shift,
         const std::string& node_id,
         const std::string& neighbor_id);
     void draw_streets_draw_ways(
@@ -113,9 +111,7 @@ private:
         const std::string& neighbor_id,
         float curb_alpha,
         float curb2_alpha,
-        float lane_alpha,
-        float sidewalk_alpha0,
-        float sidewalk_alpha1);
+        float lane_shift);
     std::map<std::string, WayInfo> way_infos;
     std::map<std::string, std::map<float, AngleWay>> node_angles;
     std::map<std::string, std::map<std::string, NeighborWay>> node_neighbors;

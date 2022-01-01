@@ -4,6 +4,7 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Way_Points.hpp>
 
 using namespace Mlib;
@@ -11,8 +12,7 @@ using namespace Mlib;
 void Mlib::calculate_waypoint_adjacency(
     PointsAndAdjacency<float, 3>& way_points,
     const std::list<WayPoints>& way_point_lines,
-    const std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
-    const std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes,
+    const std::list<std::pair<VertexWayPoint, VertexWayPoint>>& way_point_edge_descriptors,
     const std::map<std::string, Node>& nodes,
     const GroundBvh& ground_bvh,
     float scale)
@@ -23,14 +23,12 @@ void Mlib::calculate_waypoint_adjacency(
             indices_1_lane.insert({n, indices_1_lane.size()});
         }
     }
-    for (const auto& e : way_point_edges_1_lane) {
-        indices_1_lane.insert({e.first, indices_1_lane.size()});
-        indices_1_lane.insert({e.second, indices_1_lane.size()});
-    }
     std::map<OrderableFixedArray<float, 2>, size_t> indices_2_lanes;
-    for (const auto& e : way_point_edges_2_lanes) {
-        indices_2_lanes.insert({OrderableFixedArray<float, 2>{e.first(0), e.first(1)}, indices_2_lanes.size()});
-        indices_2_lanes.insert({OrderableFixedArray<float, 2>{e.second(0), e.second(1)}, indices_2_lanes.size()});
+    for (const auto& e : way_point_edge_descriptors) {
+        auto p0 = e.first.position();
+        auto p1 = e.second.position();
+        indices_2_lanes.insert({OrderableFixedArray<float, 2>{p0(0), p0(1)}, indices_2_lanes.size()});
+        indices_2_lanes.insert({OrderableFixedArray<float, 2>{p1(0), p1(1)}, indices_2_lanes.size()});
     }
     way_points.points.resize(indices_1_lane.size() + indices_2_lanes.size());
     auto p2_to_p3 = [&way_points, &ground_bvh](const FixedArray<float, 2>& p2){
@@ -72,9 +70,6 @@ void Mlib::calculate_waypoint_adjacency(
                 }
             }
         }
-        for (const auto& e : way_point_edges_1_lane) {
-            insert_edge_1_lane(e.first, e.second, WayPointsOrientation::BIDIRECTIONAL);
-        }
         for (size_t i = 0; i < indices_1_lane.size(); ++i) {
             if (!way_points.adjacency.column(i).insert({i, 0.f}).second) {
                 throw std::runtime_error("Could not insert waypoint (2)");
@@ -82,10 +77,12 @@ void Mlib::calculate_waypoint_adjacency(
         }
     }
     {
-        for (const auto& e : way_point_edges_2_lanes) {
-            float dist = std::sqrt(sum(squared(e.first - e.second)));
-            size_t col_id_0 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{e.first(0), e.first(1)});
-            size_t col_id_1 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{e.second(0), e.second(1)});
+        for (const auto& e : way_point_edge_descriptors) {
+            auto p0 = e.first.position();
+            auto p1 = e.second.position();
+            float dist = std::sqrt(sum(squared(p0 - p1)));
+            size_t col_id_0 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{p0(0), p0(1)});
+            size_t col_id_1 = indices_1_lane.size() + indices_2_lanes.at(OrderableFixedArray<float, 2>{p1(0), p1(1)});
             if (!way_points.adjacency.column(col_id_0).insert({col_id_1, dist}).second) {
                 throw std::runtime_error("Could not insert waypoint (3)");
             }

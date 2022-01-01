@@ -13,12 +13,12 @@ class FixedArray;
 struct WayPoints;
 struct Node;
 class GroundBvh;
+struct VertexWayPoint;
 
 void calculate_waypoint_adjacency(
     PointsAndAdjacency<float, 3>& way_points,
     const std::list<WayPoints>& way_point_lines,
-    const std::list<std::pair<std::string, std::string>>& way_point_edges_1_lane,
-    const std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>& way_point_edges_2_lanes,
+    const std::list<std::pair<VertexWayPoint, VertexWayPoint>>& way_point_edge_descriptors,
     const std::map<std::string, Node>& nodes,
     const GroundBvh& ground_bvh,
     float scale);

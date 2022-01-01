@@ -46,6 +46,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Styled_Road.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Triangulate_Terrain_Or_Ceilings.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Height_Binding.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Vertex_Way_Point.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Way_Points.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Wayside_Resource_Names.hpp>
@@ -193,8 +194,7 @@ OsmMapResource::OsmMapResource(
     std::map<const FixedArray<float, 3>*, VertexHeightBinding> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
-    std::list<std::pair<std::string, std::string>> way_point_edges_1_lane;
-    std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>> way_point_edges_2_lanes;
+    std::map<WayPointLocation, std::list<std::pair<VertexWayPoint, VertexWayPoint>>> way_point_edge_descriptors;
     std::list<FixedArray<FixedArray<float, 2>, 2>> way_segments;
     {
         ResourceNameCycle street_lights{ scene_node_resources, config.street_light_resource_names };
@@ -212,8 +212,7 @@ OsmMapResource::OsmMapResource(
                 hitboxes_,
                 street_rectangles,
                 node_height_bindings,
-                way_point_edges_1_lane,
-                way_point_edges_2_lanes,
+                way_point_edge_descriptors,
                 tunnel_pipe,
                 tunnel_bdry,
                 way_segments,
@@ -554,7 +553,7 @@ OsmMapResource::OsmMapResource(
             steiner_points,
             map_outer_contour3,
             street_rectangles,
-            way_point_edges_2_lanes);
+            way_point_edge_descriptors);
     } catch (const PointException<2>& e) {
         handle_point_exception2(e, "Could not smoothen and apply heighmap");
     }
@@ -935,24 +934,21 @@ OsmMapResource::OsmMapResource(
                 calculate_waypoint_adjacency(
                     way_points_[WayPointLocation::STREET],
                     {},
-                    way_point_edges_1_lane,
-                    way_point_edges_2_lanes[WayPointLocation::STREET],
+                    way_point_edge_descriptors[WayPointLocation::STREET],
                     nodes,
                     ground_bvh,
                     config.scale);
                 calculate_waypoint_adjacency(
                     way_points_[WayPointLocation::SIDEWALK],
                     {},
-                    {},
-                    way_point_edges_2_lanes[WayPointLocation::SIDEWALK],
+                    way_point_edge_descriptors[WayPointLocation::SIDEWALK],
                     nodes,
                     ground_bvh,
                     config.scale);
                 calculate_waypoint_adjacency(
                     way_points_[WayPointLocation::EXPLICIT],
                     way_point_lines,
-                    {},
-                    way_point_edges_2_lanes[WayPointLocation::EXPLICIT],
+                    way_point_edge_descriptors[WayPointLocation::EXPLICIT],
                     nodes,
                     ground_bvh,
                     config.scale);
@@ -967,6 +963,7 @@ OsmMapResource::OsmMapResource(
         if (const char* wf = getenv("WAYPOINT_DEBUG_PREFIX"); (wf != nullptr)) {
             way_points_.at(WayPointLocation::STREET).plot(std::string(wf) + "street.svg", 600, 600, 0.1f);
             way_points_.at(WayPointLocation::SIDEWALK).plot(std::string(wf) + "sidewalk.svg", 600, 600, 0.1f);
+            way_points_.at(WayPointLocation::EXPLICIT).plot(std::string(wf) + "explicit.svg", 600, 600, 0.1f);
         }
     }
 

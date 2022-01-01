@@ -24,6 +24,7 @@ enum class WayPointLocation;
 struct OsmResourceConfig;
 class NodeHeightBinding;
 class VertexHeightBinding;
+struct VertexWayPoint;
 
 enum class VertexOutOfHeightMapBehavior {
     THROW,
@@ -48,6 +49,6 @@ void smoothen_and_apply_heightmap(
     std::list<SteinerPointInfo>& steiner_points,
     std::list<FixedArray<float, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,
-    std::map<WayPointLocation, std::list<std::pair<FixedArray<float, 3>, FixedArray<float, 3>>>>& way_point_edges_2_lanes);
+    std::map<WayPointLocation, std::list<std::pair<VertexWayPoint, VertexWayPoint>>>& way_point_edge_descriptors);
 
 }
