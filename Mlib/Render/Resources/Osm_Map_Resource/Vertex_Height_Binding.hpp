@@ -28,7 +28,7 @@ public:
     }
     std::strong_ordering operator <=> (const FixedArray<float, 2>& v) const {
         if (is_undefined()) {
-            throw std::runtime_error("Height binding undefiend");
+            throw std::runtime_error("Height binding undefined");
         }
         return OrderableFixedArray{ value_ } <=> OrderableFixedArray{ v };
     }
