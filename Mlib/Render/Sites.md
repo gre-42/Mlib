@@ -87,3 +87,7 @@ google: bvh walk file download
 - https://thomasmakehuman.wordpress.com/makewalk/where-to-find-bvh-files/
   - https://sites.google.com/a/cgspeed.com/cgspeed/motion-capture
     - https://sites.google.com/a/cgspeed.com/cgspeed/motion-capture/daz-friendly-release
+
+google: blender MakeWalk plugin
+
+- https://blenderartists.org/t/bvh-retargeter-the-add-on-formerly-known-as-makewalk/1216579
