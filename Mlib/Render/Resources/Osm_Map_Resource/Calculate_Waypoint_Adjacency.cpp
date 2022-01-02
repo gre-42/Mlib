@@ -31,9 +31,19 @@ void Mlib::calculate_waypoint_adjacency(
         indices_street_wpts.insert({OrderableFixedArray<float, 3>{ p1 }, indices_street_wpts.size()});
     }
     way_points.points.resize(indices_terrain_wpts.size() + indices_street_wpts.size());
+    std::set<OrderableFixedArray<float, 2>> terrain_way_points;
+    auto terrain_wpt_p2_to_p3 = [&way_points, &ground_bvh](const FixedArray<float, 2>& p2){
+        float height;
+        if (ground_bvh.height(height, p2)) {
+            return FixedArray<float, 3>{p2(0), p2(1), height};
+        } else {
+            throw PointException<2>{ p2, "Could not determine height of original waypoint" };
+        }
+    };
     for (const auto& p : indices_terrain_wpts) {
         auto p2 = nodes.at(p.first).position;
-        way_points.points[p.second] = OrderableFixedArray<float, 3>{ p2(0), p2(1), NAN };
+        way_points.points[p.second] = terrain_wpt_p2_to_p3(p2);
+        terrain_way_points.insert(OrderableFixedArray<float, 2>{ p2(0), p2(1) });
     }
     for (const auto& p : indices_street_wpts) {
         way_points.points[indices_terrain_wpts.size() + p.second] = p.first;
@@ -86,15 +96,19 @@ void Mlib::calculate_waypoint_adjacency(
             }
         }
     }
-    way_points.subdivide(50 * scale, [&ground_bvh](
+    way_points.subdivide(50 * scale, [&ground_bvh, &terrain_way_points](
         const FixedArray<float, 3>& p0,
         const FixedArray<float, 3>& p1,
         float a0,
         float a1)
     {
         FixedArray<float, 3> res = p0 * a0 + p1 * a1;
-        if (std::isnan(res(2)) && !ground_bvh.height(res(2), FixedArray<float, 2>{ res(0), res(1) })) {
-            throw PointException<3>{ res, "Could not determine height of interpolated waypoint" };
+        if (terrain_way_points.contains(OrderableFixedArray<float, 2>{ p0(0), p0(1) }) ||
+            terrain_way_points.contains(OrderableFixedArray<float, 2>{ p1(0), p1(1) }))
+        {
+            if (!ground_bvh.height(res(2), FixedArray<float, 2>{ res(0), res(1) })) {
+                throw PointException<3>{ res, "Could not determine height of interpolated waypoint" };
+            }
         }
         return res;
     });
