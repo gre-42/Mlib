@@ -91,3 +91,7 @@ google: bvh walk file download
 google: blender MakeWalk plugin
 
 - https://blenderartists.org/t/bvh-retargeter-the-add-on-formerly-known-as-makewalk/1216579
+
+google: blender retarget animation
+
+- https://www.youtube.com/watch?v=qnJFOSisDLQ
