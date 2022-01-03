@@ -296,16 +296,50 @@ void LoadScene::operator()(
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+collidable_mode=(terrain|small_static|small_moving)"
         "(?:\\s+name=([\\w+-.]+))?$");
-    static const DECLARE_REGEX(gun_reg, "^\\s*gun node=([\\w+-.]+) parent_rigid_body_node=([\\w+-.]+) cool-down=([\\w+-.]+) renderable=([\\w-. \\(\\)/+-]+) hitbox=([\\w-. \\(\\)/+-]+) mass=([\\w+-.]+) velocity=([\\w+-.]+) lifetime=([\\w+-.]+) damage=([\\w+-.]+) size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const DECLARE_REGEX(trigger_gun_ai_reg, "^\\s*trigger_gun_ai base_shooter_node=([\\w+-.]+) base_target_node=([\\w+-.]+) gun_node=([\\w+-.]+)$");
-    static const DECLARE_REGEX(damageable_reg, "^\\s*damageable node=([\\w+-.]+) health=([\\w+-.]+)$");
-    static const DECLARE_REGEX(crash_reg, "^\\s*crash node=([\\w+-.]+) damage=([\\w+-.]+)$");
+    static const DECLARE_REGEX(gun_reg,
+        "^\\s*gun node=([\\w+-.]+)"
+        "\\s+parent_rigid_body_node=([\\w+-.]+)"
+        "\\s+cool-down=([\\w+-.]+)"
+        "\\s+renderable=([\\w-. \\(\\)/+-]+)"
+        "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
+        "\\s+mass=([\\w+-.]+)"
+        "\\s+velocity=([\\w+-.]+)"
+        "\\s+lifetime=([\\w+-.]+)"
+        "\\s+damage=([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(trigger_gun_ai_reg,
+        "^\\s*trigger_gun_ai"
+        "\\s+base_shooter_node=([\\w+-.]+)"
+        "\\s+base_target_node=([\\w+-.]+)"
+        "\\s+gun_node=([\\w+-.]+)$");
+    static const DECLARE_REGEX(damageable_reg,
+        "^\\s*damageable node=([\\w+-.]+)"
+        "\\s+health=([\\w+-.]+)$");
+    static const DECLARE_REGEX(crash_reg,
+        "^\\s*crash node=([\\w+-.]+)"
+        "\\s+damage=([\\w+-.]+)$");
     static const DECLARE_REGEX(relative_transformer_reg,
         "^\\s*relative_transformer"
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
-    static const DECLARE_REGEX(wheel_reg, "^\\s*wheel rigid_body=([\\w+-.]+) node=([\\w+-.]*) position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) radius=([\\w+-.]+) engine=([\\w+-.]+) break_force=([\\w+-.]+) sKs=([\\w+-.]+) sKa=([\\w+-.]+) pKs=([\\w+-.]+) pKa=([\\w+-.]+) musF=([ \\w+-.]+) musC=([ \\w+-.]+) mufF=([ \\w+-.]+) mufC=([ \\w+-.]+) tire_id=(\\d+)$");
+    static const DECLARE_REGEX(wheel_reg,
+        "^\\s*wheel"
+        "\\s+rigid_body=([\\w+-.]+)"
+        "\\s+node=([\\w+-.]*)"
+        "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+radius=([\\w+-.]+)"
+        "\\s+engine=([\\w+-.]+)"
+        "\\s+break_force=([\\w+-.]+)"
+        "\\s+sKs=([\\w+-.]+)"
+        "\\s+sKa=([\\w+-.]+)"
+        "\\s+pKs=([\\w+-.]+)"
+        "\\s+pKa=([\\w+-.]+)"
+        "\\s+musF=([ \\w+-.]+)"
+        "\\s+musC=([ \\w+-.]+)"
+        "\\s+mufF=([ \\w+-.]+)"
+        "\\s+mufC=([ \\w+-.]+)"
+        "\\s+tire_id=(\\d+)$");
     static const DECLARE_REGEX(create_engine_reg,
         "^\\s*create_engine"
         "\\s+rigid_body=([\\w+-.]+)"
@@ -323,11 +357,31 @@ void LoadScene::operator()(
         "\\s+unstuck_mode=(off|reverse|delete)"
         "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");
-    static const DECLARE_REGEX(player_set_node_reg, "^\\s*player_set_node player_name=([\\w+-.]+) node=([\\w+-.]+)$");
-    static const DECLARE_REGEX(player_set_aiming_gun_reg, "^\\s*player_set_aiming_gun player_name=([\\w+-.]+) yaw_node=([\\w+-.]+) gun_node=([\\w+-.]*)$");
-    static const DECLARE_REGEX(player_set_surface_power_reg, "^\\s*player_set_surface_power player_name=([\\w+-.]+) forward=([\\w+-.]+) backward=([\\w+-.]*)$");
-    static const DECLARE_REGEX(player_set_tire_angle_reg, "^\\s*player_set_tire_angle player_name=([\\w+-.]+) tire_id=(\\d+) tire_angle_left=([\\w+-.]*) tire_angle_right=([\\w+-.]*)$");
-    static const DECLARE_REGEX(player_set_angular_velocity_reg, "^\\s*player_set_angular_velocity player_name=([\\w+-.]+) angular_velocity_left=([\\w+-.]*) angular_velocity_right=([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_node_reg,
+        "^\\s*player_set_node"
+        "\\s+player_name=([\\w+-.]+)"
+        "\\s+node=([\\w+-.]+)$");
+    static const DECLARE_REGEX(player_set_aiming_gun_reg,
+        "^\\s*player_set_aiming_gun"
+        "\\s+player_name=([\\w+-.]+)"
+        "\\s+yaw_node=([\\w+-.]+)"
+        "\\s+gun_node=([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_surface_power_reg,
+        "^\\s*player_set_surface_power"
+        "\\s+player_name=([\\w+-.]+)"
+        "\\s+forward=([\\w+-.]+)"
+        "\\s+backward=([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_tire_angle_reg,
+        "^\\s*player_set_tire_angle "
+        "\\s+player_name=([\\w+-.]+)"
+        "\\s+tire_id=(\\d+)"
+        "\\s+tire_angle_left=([\\w+-.]*)"
+        "\\s+tire_angle_right=([\\w+-.]*)$");
+    static const DECLARE_REGEX(player_set_angular_velocity_reg,
+        "^\\s*player_set_angular_velocity"
+        "\\s+player_name=([\\w+-.]+)"
+        "\\s+angular_velocity_left=([\\w+-.]*)"
+        "\\s+angular_velocity_right=([\\w+-.]*)$");
     static const DECLARE_REGEX(player_set_waypoint_reg,
         "^\\s*player_set_waypoint"
         "\\s+player_name=([\\w+-.]+)"
@@ -336,7 +390,12 @@ void LoadScene::operator()(
         "^\\s*team_set_waypoint"
         "\\s+team-name=([\\w+-.]+)"
         "\\s+position=([\\w+-.]*) ([\\w+-.]*) ([\\w+-.]*)$");
-    static const DECLARE_REGEX(camera_key_binding_reg, "^\\s*camera_key_binding key=([\\w+-.]+) gamepad_button=([\\w+-.]*) joystick_digital_axis=([\\w+-.]*) joystick_digital_axis_sign=([\\w+-.]+)$");
+    static const DECLARE_REGEX(camera_key_binding_reg,
+        "^\\s*camera_key_binding"
+        "\\s+key=([\\w+-.]+)"
+        "\\s+gamepad_button=([\\w+-.]*)"
+        "\\s+joystick_digital_axis=([\\w+-.]*)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+)$");
     static const DECLARE_REGEX(abs_idle_binding_reg,
         "^\\s*abs_idle_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
