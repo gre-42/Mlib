@@ -29,7 +29,13 @@ void AvatarAnimationUpdater::update_style(Style* style) {
     if (std::isnan(surface_power_) || (surface_power_ == 0)) {
         new_animation = resource_name_ + ".idle";
     } else {
-        new_animation = resource_name_ + ".run";
+        if (sum(abs(rb_.tires_z_ - FixedArray<float, 3>{ -1, 0.f, 0.f })) < 1e-12) {
+            new_animation = resource_name_ + ".strafe_left";
+        } else if (sum(abs(rb_.tires_z_ - FixedArray<float, 3>{ 1, 0.f, 0.f })) < 1e-12) {
+            new_animation = resource_name_ + ".strafe_right";
+        } else {
+            new_animation = resource_name_ + ".run";
+        }
     }
     if (new_animation != style->skelletal_animation_name) {
         style->skelletal_animation_name = new_animation;
