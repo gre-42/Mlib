@@ -136,7 +136,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
         throw std::runtime_error("Could not find rigid body for deletion");
     }
     if (rigid_body->mass() == INFINITY) {
-        if (cfg_.bvh && it->second == CollidableMode::TERRAIN) {
+        if (cfg_.bvh && (it->second == CollidableMode::TERRAIN)) {
             auto it = std::find_if(static_rigid_bodies_.begin(), static_rigid_bodies_.end(), [rigid_body](const auto& e){ return e.get() == rigid_body; });
             if (it == static_rigid_bodies_.end()) {
                 throw std::runtime_error("Could not delete static rigid body (0)");
