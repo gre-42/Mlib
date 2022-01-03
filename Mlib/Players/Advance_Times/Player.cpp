@@ -18,6 +18,7 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Style_Updater.hpp>
 #include <fstream>
 
 using namespace Mlib;
@@ -489,6 +490,9 @@ void Player::run_move(
         rb_->set_surface_power("main", len * surface_power_forward_);
         rb_->set_surface_power("breaks", len * surface_power_forward_);
     }
+    if (rb_->style_updater_ != nullptr) {
+        rb_->style_updater_->notify_movement_intent();
+    }
 }
 
 void Player::trigger_gun() {
@@ -526,7 +530,7 @@ void Player::drive_backwards() {
     rb_->set_surface_power("breaks", 0);
 }
 
-void Player::roll() {
+void Player::roll_tires() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         throw std::runtime_error("roll despite nullptr");
@@ -797,7 +801,7 @@ void Player::move_to_waypoint() {
         if (dvel < 0) {
             drive_forward();
         } else if (dvel < driving_mode_.max_delta_velocity_break) {
-            roll();
+            roll_tires();
         } else {
             step_on_breaks();
         }

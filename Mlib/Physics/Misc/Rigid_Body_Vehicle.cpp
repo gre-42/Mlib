@@ -29,6 +29,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   rbi_{rbi},
   name_{name},
   damageable_{nullptr},
+  style_updater_{nullptr},
   driver_{nullptr},
   geographic_mapping_{geographic_mapping}
 {}

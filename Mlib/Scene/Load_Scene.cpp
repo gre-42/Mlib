@@ -72,6 +72,7 @@
 #include <Mlib/Render/Resources/Square_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -397,9 +398,9 @@ void LoadScene::operator()(
         "\\s+joystick_digital_axis=([\\w+-.]*)"
         "\\s+joystick_digital_axis_sign=([\\w+-.]+)$");
     static const DECLARE_REGEX(abs_idle_binding_reg,
-        "^\\s*abs_idle_binding\\r?\\n"
-        "\\s*node=([\\w+-.]+)\\r?\\n"
-        "\\s*tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "^\\s*abs_idle_binding"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(abs_key_binding_reg,
         "^\\s*abs_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
@@ -565,19 +566,23 @@ void LoadScene::operator()(
         "\\s+default=([\\d]+)"
         "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
     static const DECLARE_REGEX(set_renderable_style_reg,
-        "^\\s*set_renderable_style\\r?\\n"
-        "\\s*selector=([\\w+-.]*)\\r?\\n"
-        "\\s*node=([\\w+-.]+)\\r?\\n"
-        "\\s*ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*animation_name=([\\w+-.]*)\\r?\\n"
-        "\\s*animation_loop_begin=([\\w+-.]+)\\r?\\n"
-        "\\s*animation_loop_end=([\\w+-.]+)\\r?\\n"
-        "\\s*animation_loop_time=([\\w+-.]+)$");
+        "^\\s*set_renderable_style"
+        "\\s+selector=([\\w+-.]*)"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+animation_name=([\\w+-.]*)"
+        "\\s+animation_loop_begin=([\\w+-.]+)"
+        "\\s+animation_loop_end=([\\w+-.]+)"
+        "\\s+animation_loop_time=([\\w+-.]+)$");
+    static const DECLARE_REGEX(set_renderable_style_updater_reg,
+        "^\\s*set_renderable_style_updater"
+        "\\s+node=([\\w+-.]*)"
+        "\\s+resource=([\\w+-.]+)$");
     static const DECLARE_REGEX(add_bvh_resource_reg,
         "^\\s*add_bvh_resource"
-        "\\s+name=([\\w+-.]+)\\r?\\n"
+        "\\s+name=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+smooth_radius=([\\w+-.]+)"
         "\\s+smooth_alpha=([\\w+-.]+)"
@@ -647,15 +652,15 @@ void LoadScene::operator()(
         "\\s+yaw_locked_on_max=([\\w+-.]+)"
         "\\s+pitch_locked_on_max=([\\w+-.]+)$");
     static const DECLARE_REGEX(follow_node_reg,
-        "^\\s*follow_node\\r?\\n"
-        "\\s*follower=([\\w+-.]+)\\r?\\n"
-        "\\s*followed=([\\w+-.]+)\\r?\\n"
-        "\\s*distance=([\\w+-.]+)\\r?\\n"
-        "\\s*node_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*look_at_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*snappiness=([\\w+-.]+)\\r?\\n"
-        "\\s*y_adaptivity=([\\w+-.]+)\\r?\\n"
-        "\\s*y_snappiness=([\\w+-.]+)$");
+        "^\\s*follow_node"
+        "\\s+follower=([\\w+-.]+)"
+        "\\s+followed=([\\w+-.]+)"
+        "\\s+distance=([\\w+-.]+)"
+        "\\s+node_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+look_at_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+snappiness=([\\w+-.]+)"
+        "\\s+y_adaptivity=([\\w+-.]+)"
+        "\\s+y_snappiness=([\\w+-.]+)$");
     static const DECLARE_REGEX(add_audio_reg,
         "^\\s*add_audio"
         "\\s+name=([\\w+-.]+)"
@@ -2516,6 +2521,19 @@ void LoadScene::operator()(
                     .begin = safe_stof(match[13].str()),
                     .end = safe_stof(match[14].str()),
                     .time = safe_stof(match[15].str())}}));
+        } else if (Mlib::re::regex_match(line, match, set_renderable_style_updater_reg)) {
+            auto node = scene.get_node(match[1].str());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Styled node movable is not a rigid body");
+            }
+            if (rb->style_updater_ != nullptr) {
+                throw std::runtime_error("Rigid body already has a style updater");
+            }
+            auto updater = std::make_unique<AvatarAnimationUpdater>(*rb, match[2].str());
+            StyleUpdater* ptr = updater.get();
+            node->set_style_updater(std::move(updater));
+            rb->style_updater_ = ptr;
         } else if (Mlib::re::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());
             auto hud_image = std::make_shared<HudImageLogic>(

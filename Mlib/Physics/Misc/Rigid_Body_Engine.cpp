@@ -65,6 +65,10 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) 
     return PowerIntent{.power = sp / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
 }
 
+float RigidBodyEngine::surface_power() const {
+    return surface_power_;
+}
+
 void RigidBodyEngine::set_surface_power(float surface_power) {
     surface_power_ = surface_power;
 }

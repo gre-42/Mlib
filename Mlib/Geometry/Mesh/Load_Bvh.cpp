@@ -258,3 +258,10 @@ void BvhLoader::smoothen() {
     }
     transformed_frames_ = std::move(smoothed_transformed_frames);
 }
+
+float BvhLoader::duration() const {
+    if (transformed_frames_.size() < 2) {
+        throw std::runtime_error("Computation of animation duration requires at least two frames");
+    }
+    return frame_time_ * (transformed_frames_.size() - 1);
+}

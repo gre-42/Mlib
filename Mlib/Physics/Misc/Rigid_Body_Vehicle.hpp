@@ -22,6 +22,7 @@ class RigidBodyEngine;
 struct Beacon;
 class Damageable;
 class IPlayer;
+class StyleUpdater;
 
 enum class TireAngularVelocityChange {
     OFF,
@@ -111,6 +112,7 @@ public:
 
     std::string name_;
     Damageable* damageable_;
+    StyleUpdater* style_updater_;
     IPlayer* driver_;
     const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;

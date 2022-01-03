@@ -167,7 +167,7 @@ private:
     void step_on_breaks();
     void drive_forward();
     void drive_backwards();
-    void roll();
+    void roll_tires();
     void steer_left_full();
     void steer_right_full();
     void steer_left_partial(float angle);

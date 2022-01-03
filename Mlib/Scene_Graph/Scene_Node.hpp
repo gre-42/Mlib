@@ -17,6 +17,7 @@ namespace Mlib {
 struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
+class StyleUpdater;
 
 struct Blended {
     int z_order;
@@ -142,6 +143,7 @@ public:
     TransformationMatrix<float, 3> absolute_view_matrix() const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     void set_style(std::unique_ptr<Style>&& style);
+    void set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater);
     bool to_be_deleted() const;
 private:
     void set_parent(SceneNode* parent);
@@ -162,6 +164,7 @@ private:
     float scale_;
     mutable FixedArray<float, 3, 3> rotation_matrix_;
     std::unique_ptr<Style> style_;
+    std::unique_ptr<StyleUpdater> style_updater_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SceneNode& node);

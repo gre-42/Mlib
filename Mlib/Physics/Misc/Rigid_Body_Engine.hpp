@@ -32,6 +32,7 @@ public:
         bool hand_brake_pulled,
         const std::shared_ptr<EngineEventListener>& audio);
     ~RigidBodyEngine();
+    float surface_power() const;
     void set_surface_power(float surface_power);
     PowerIntent consume_abs_surface_power(size_t tire_id, float w);
     void increment_ntires();

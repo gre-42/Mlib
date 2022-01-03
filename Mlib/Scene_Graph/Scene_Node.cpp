@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Style.hpp>
+#include <Mlib/Scene_Graph/Style_Updater.hpp>
 
 using namespace Mlib;
 
@@ -242,13 +243,29 @@ void SceneNode::set_style(std::unique_ptr<Style>&& style) {
     if (!renderables_.empty()) {
         throw std::runtime_error("Style was set after renderables, this leads to a race condition");
     }
+    if (style_ != nullptr) {
+        throw std::runtime_error("Scene node already has a style");
+    }
     style_ = std::move(style);
+}
+
+void SceneNode::set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater) {
+    if (!renderables_.empty()) {
+        throw std::runtime_error("StyleUpdater was set after renderables, this leads to a race condition");
+    }
+    if (style_updater_ != nullptr) {
+        throw std::runtime_error("Scene node already has a style updater");
+    }
+    style_updater_ = std::move(style_updater);
 }
 
 void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
     if (style_ != nullptr) {
         style_->skelletal_animation_frame.advance_time(dt, AnimationWrapMode::PERIODIC);
         style_->texture_animation.advance_time(dt, AnimationWrapMode::APERIODIC);
+        if (style_updater_ != nullptr) {
+            style_updater_->update_style(style_.get());
+        }
     }
     TransformationMatrix<float, 3> v2;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {

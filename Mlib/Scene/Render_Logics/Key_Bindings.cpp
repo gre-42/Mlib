@@ -16,6 +16,7 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Scene_Graph/Style_Updater.hpp>
 
 using namespace Mlib;
 
@@ -171,6 +172,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 rb->tires_z_ = { 0.f, 0.f, 1.f };
                 rb->set_surface_power("main", NAN);
                 rb->set_surface_power("breaks", NAN);
+            }
+            if (rb->style_updater_ != nullptr) {
+                rb->style_updater_->notify_movement_intent();
             }
         }
         for (const auto& k : relative_movable_key_bindings_) {

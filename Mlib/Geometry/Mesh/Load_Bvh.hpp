@@ -51,6 +51,7 @@ public:
         const BvhConfig& cfg = blender_bvh_config);
     const std::map<std::string, OffsetAndQuaternion<float>>& get_frame(size_t id) const;
     std::map<std::string, OffsetAndQuaternion<float>> get_interpolated_frame(float seconds) const;
+    float duration() const;
 private:
     void smoothen();
     std::vector<std::map<std::string, OffsetAndQuaternion<float>>> transformed_frames_;

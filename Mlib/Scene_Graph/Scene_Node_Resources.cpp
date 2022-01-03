@@ -184,8 +184,7 @@ void SceneNodeResources::set_relative_joint_poses(
     }
 }
 
-std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResources::get_poses(const std::string& name, float seconds) const
-{
+BvhLoader* SceneNodeResources::get_bvh_loader(const std::string& name) const {
     auto it = bvh_loaders_.find(name);
     if (it == bvh_loaders_.end()) {
         throw std::runtime_error("Could not find BVH-loader with name \"" + name + '"');
@@ -197,10 +196,23 @@ std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResources::get_poses(
             it->second.loader = std::make_unique<BvhLoader>(it->second.filename, it->second.config);
         }
     }
+    return it->second.loader.get();
+}
+
+std::map<std::string, OffsetAndQuaternion<float>> SceneNodeResources::get_poses(const std::string& name, float seconds) const
+{
     try {
-        return it->second.loader->get_interpolated_frame(seconds);
+        return get_bvh_loader(name)->get_interpolated_frame(seconds);
     } catch(const std::runtime_error& e) {
         throw std::runtime_error("get_poses for resource \"" + name + "\" failed: " + e.what());
+    }
+}
+
+float SceneNodeResources::get_animation_duration(const std::string& name) const {
+    try {
+        return get_bvh_loader(name)->duration();
+    } catch(const std::runtime_error& e) {
+        throw std::runtime_error("get_animation_duration for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
