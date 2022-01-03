@@ -160,7 +160,7 @@ BvhLoader::BvhLoader(
     if (std::isnan(frame_time_)) {
         throw std::runtime_error("Frame time not set");
     }
-    transformed_frames_.resize(raw_frames.size() + (cfg.periodic && !transformed_frames_.empty()));
+    transformed_frames_.resize(raw_frames.size() + (cfg.periodic && !raw_frames.empty()));
     for (size_t i = 0; i < raw_frames.size(); ++i) {
         for (const auto& p : raw_frames[i]) {
             const FixedArray<float, 3>& position = p.second[0];
@@ -180,7 +180,7 @@ BvhLoader::BvhLoader(
         }
     }
     smoothen();
-    if (cfg.periodic && !transformed_frames_.empty()) {
+    if (cfg.periodic && !raw_frames.empty()) {
         transformed_frames_[transformed_frames_.size() - 1] = transformed_frames_[0];
     }
 }
