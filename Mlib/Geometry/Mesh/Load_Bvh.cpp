@@ -41,11 +41,11 @@ BvhLoader::BvhLoader(
     size_t nframes = SIZE_MAX;
     while (std::getline(f, line)) {
         if (!in_data_section) {
-            static const DECLARE_REGEX(name_re, "^[\\s\\n\\r]*(?:ROOT|JOINT)\\s+(\\w+)[\\s\\n\\r]*$");
-            static const DECLARE_REGEX(ends_re, "^[\\s\\n\\r]*End Site[\\s\\n\\r]*$");
-            static const DECLARE_REGEX(offs_re, "^[\\s\\n\\r]*OFFSET\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)[\\n\\r]*$");
-            static const DECLARE_REGEX(chan_re, "^[\\s\\n\\r]*CHANNELS\\s+(\\d+)\\s+(.+)[\\n\\r]*$");
-            static const DECLARE_REGEX(motion_re, "^[\\s\\n\\r]*MOTION[\\s\\n\\r]*$");
+            static const DECLARE_REGEX(name_re, "^\\s*(?:ROOT|JOINT)\\s+(.+?)\\s*$");
+            static const DECLARE_REGEX(ends_re, "^\\s*End Site\\s*$");
+            static const DECLARE_REGEX(offs_re, "^\\s*OFFSET\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
+            static const DECLARE_REGEX(chan_re, "^\\s*CHANNELS\\s+(\\d+)\\s+(.+)\\s*$");
+            static const DECLARE_REGEX(motion_re, "^\\s*MOTION\\s*$");
             Mlib::re::smatch match;
             if (Mlib::re::regex_match(line, match, name_re)) {
                 joint_name = match[1].str();
