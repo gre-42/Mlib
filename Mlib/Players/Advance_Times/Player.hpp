@@ -14,7 +14,7 @@
 
 namespace Mlib {
 
-class RigidBody;
+class RigidBodyVehicle;
 struct RigidBodyIntegrator;
 class Players;
 class SceneNode;
@@ -100,8 +100,8 @@ public:
     void set_can_aim(bool value);
     void set_can_shoot(bool value);
     void reset_node();
-    void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb);
-    const RigidBody& rigid_body() const;
+    void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBodyVehicle& rb);
+    const RigidBodyVehicle& rigid_body() const;
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
     void set_surface_power(float forward, float backward);
@@ -156,7 +156,7 @@ public:
         const std::list<TrackElement>& track) override;
     virtual void notify_destroyed(void* destroyed_object) override;
     virtual void advance_time(float dt) override;
-    virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
+    virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
 private:
     void select_opponent();
     void aim_and_shoot();
@@ -181,7 +181,7 @@ private:
     std::string scene_node_name_;
     SceneNode* scene_node_;
     SceneNode* target_scene_node_;
-    RigidBody* rb_;
+    RigidBodyVehicle* rb_;
     RigidBodyIntegrator* target_rbi_;
     YawPitchLookAtNodes* ypln_;
     Gun* gun_;

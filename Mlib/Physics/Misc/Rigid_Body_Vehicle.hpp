@@ -33,14 +33,14 @@ enum class TireAngularVelocityChange {
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBody: public DestructionObserver, public AbsoluteMovable, public StatusWriter {
+class RigidBodyVehicle: public DestructionObserver, public AbsoluteMovable, public StatusWriter {
 public:
-    RigidBody(
+    RigidBodyVehicle(
         RigidBodies& rigid_bodies,
         const RigidBodyIntegrator& rbi,
         const TransformationMatrix<double, 3>* geographic_mapping = nullptr,
         const std::string& name = "");
-    ~RigidBody();
+    ~RigidBodyVehicle();
     void reset_forces();
     void integrate_force(const VectorAtPosition<float, 3>& F);
     void integrate_force(

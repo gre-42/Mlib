@@ -1,8 +1,8 @@
 #include "Rigid_Primitives.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
@@ -68,7 +68,7 @@ RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
     };
 }
 
-std::shared_ptr<RigidBody> Mlib::rigid_cuboid(
+std::shared_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
     RigidBodies& rigid_bodies,
     float mass,
     const FixedArray<float, 3>& size,
@@ -78,7 +78,7 @@ std::shared_ptr<RigidBody> Mlib::rigid_cuboid(
     const TransformationMatrix<double, 3>* geographic_coordinates,
     const std::string& name)
 {
-    return std::make_shared<RigidBody>(
+    return std::make_shared<RigidBodyVehicle>(
         rigid_bodies,
         rigid_cuboid_integrator(mass, size, com, v, w),
         geographic_coordinates,

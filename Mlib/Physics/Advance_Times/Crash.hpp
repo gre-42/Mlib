@@ -6,16 +6,16 @@ namespace Mlib {
 class Crash: public CollisionObserver {
 public:
     explicit Crash(
-        RigidBody& rigid_body,
+        RigidBodyVehicle& rigid_body,
         float damage);
     virtual void notify_impact(
-        RigidBody& rigid_body,
+        RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         const FixedArray<float, 3>& normal,
         float lambda_final,
         BaseLog* base_log) override;
 private:
-    const RigidBody& rigid_body_;
+    const RigidBodyVehicle& rigid_body_;
     float damage_;
 };
 

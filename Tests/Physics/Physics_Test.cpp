@@ -6,7 +6,7 @@
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
@@ -138,8 +138,8 @@ void test_com() {
     FixedArray<float, 3> size{2, 3, 4};
     FixedArray<float, 3> com0{0, 0, 0};
     FixedArray<float, 3> com1{0, 1, 0};
-    std::shared_ptr<RigidBody> r0 = rigid_cuboid(rbs, mass, size, com0);
-    std::shared_ptr<RigidBody> r1 = rigid_cuboid(rbs, mass, size, com1);
+    std::shared_ptr<RigidBodyVehicle> r0 = rigid_cuboid(rbs, mass, size, com0);
+    std::shared_ptr<RigidBodyVehicle> r1 = rigid_cuboid(rbs, mass, size, com1);
     r0->rbi_.rbp_.abs_com_ = 0;
     r1->rbi_.rbp_.abs_com_ = com1;
     r0->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();

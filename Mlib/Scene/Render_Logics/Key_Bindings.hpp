@@ -25,7 +25,7 @@ public:
 
     virtual void notify_destroyed(void* destroyed_object) override;
 
-    virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
+    virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
 
     void add_camera_key_binding(const CameraKeyBinding& b);
     void add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);

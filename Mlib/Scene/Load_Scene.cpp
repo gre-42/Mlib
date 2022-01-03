@@ -25,8 +25,8 @@
 #include <Mlib/Physics/Advance_Times/Trigger_Gun_Ai.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
@@ -1830,7 +1830,7 @@ void LoadScene::operator()(
                 match[1].str(),
                 *node);
         } else if (Mlib::re::regex_match(line, match, rigid_cuboid_reg)) {
-            std::shared_ptr<RigidBody> rb = rigid_cuboid(
+            std::shared_ptr<RigidBodyVehicle> rb = rigid_cuboid(
                 physics_engine.rigid_bodies_,
                 safe_stof(match[4].str()),
                 FixedArray<float, 3>{
@@ -1866,7 +1866,7 @@ void LoadScene::operator()(
                 collidable_mode_from_string(match[17].str()));
         } else if (Mlib::re::regex_match(line, match, gun_reg)) {
             auto parent_rb_node = scene.get_node(match[2].str());
-            auto rb = dynamic_cast<RigidBody*>(parent_rb_node->get_absolute_movable());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(parent_rb_node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -1891,12 +1891,12 @@ void LoadScene::operator()(
             linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
         } else if (Mlib::re::regex_match(line, match, trigger_gun_ai_reg)) {
             auto base_shooter_node = scene.get_node(match[1].str());
-            auto rb_shooter = dynamic_cast<RigidBody*>(base_shooter_node->get_absolute_movable());
+            auto rb_shooter = dynamic_cast<RigidBodyVehicle*>(base_shooter_node->get_absolute_movable());
             if (rb_shooter == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
             auto base_target_node = scene.get_node(match[2].str());
-            auto rb_target = dynamic_cast<RigidBody*>(base_target_node->get_absolute_movable());
+            auto rb_target = dynamic_cast<RigidBodyVehicle*>(base_target_node->get_absolute_movable());
             if (rb_target == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -1915,7 +1915,7 @@ void LoadScene::operator()(
                 *gun);
             physics_engine.advance_times_.add_advance_time(trigger_gun_ai);
         } else if (Mlib::re::regex_match(line, match, damageable_reg)) {
-            auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -1931,7 +1931,7 @@ void LoadScene::operator()(
             }
             rb->damageable_ = d.get();
         } else if (Mlib::re::regex_match(line, match, crash_reg)) {
-            auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -1969,7 +1969,7 @@ void LoadScene::operator()(
             Interp<float> muk{string_to_vector(match[15].str(), safe_stof), string_to_vector(match[16].str(), safe_stof), OutOfRangeBehavior::CLAMP};
             size_t tire_id = safe_stoi(match[17].str());
 
-            auto rb = dynamic_cast<RigidBody*>(scene.get_node(rigid_body)->get_absolute_movable());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(rigid_body)->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -2024,7 +2024,7 @@ void LoadScene::operator()(
                 }
             }
         } else if (Mlib::re::regex_match(line, match, create_engine_reg)) {
-            auto rb = dynamic_cast<RigidBody*>(scene.get_node(match[1].str())->get_absolute_movable());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -2061,7 +2061,7 @@ void LoadScene::operator()(
             physics_engine.add_external_force_provider(p);
         } else if (Mlib::re::regex_match(line, match, player_set_node_reg)) {
             auto node = scene.get_node(match[2].str());
-            auto rb = dynamic_cast<RigidBody*>(node->get_absolute_movable());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Follower movable is not a rigid body");
             }
@@ -2602,15 +2602,15 @@ void LoadScene::operator()(
             auto yaw_node = scene.get_node(match[1].str());
             auto pitch_node = scene.get_node(match[2].str());
             auto follower_node = scene.get_node(match[3].str());
-            auto follower_rb = dynamic_cast<RigidBody*>(follower_node->get_absolute_movable());
+            auto follower_rb = dynamic_cast<RigidBodyVehicle*>(follower_node->get_absolute_movable());
             if (follower_rb == nullptr) {
                 throw std::runtime_error("Follower movable is not a rigid body");
             }
             SceneNode* followed_node = nullptr;
-            RigidBody* followed_rb = nullptr;
+            RigidBodyVehicle* followed_rb = nullptr;
             if (!match[4].str().empty()) {
                 followed_node = scene.get_node(match[4].str());
-                followed_rb = dynamic_cast<RigidBody*>(followed_node->get_absolute_movable());
+                followed_rb = dynamic_cast<RigidBodyVehicle*>(followed_node->get_absolute_movable());
                 if (followed_rb == nullptr) {
                     throw std::runtime_error("Followed movable is not a rigid body");
                 }
@@ -2657,7 +2657,7 @@ void LoadScene::operator()(
             follower->initialize(*follower_node);
         } else if (Mlib::re::regex_match(line, match, record_track_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
-            auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(recorder_node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -2669,7 +2669,7 @@ void LoadScene::operator()(
                 ui_focus.focuses));
         } else if (Mlib::re::regex_match(line, match, record_track_gpx_reg)) {
             auto recorder_node = scene.get_node(match[1].str());
-            auto rb = dynamic_cast<RigidBody*>(recorder_node->get_absolute_movable());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(recorder_node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }

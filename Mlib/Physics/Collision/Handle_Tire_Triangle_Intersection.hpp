@@ -3,13 +3,13 @@
 
 namespace Mlib {
 
-class RigidBody;
+class RigidBodyVehicle;
 struct PhysicsEngineConfig;
 struct PowerIntent;
 
 FixedArray<float, 3> updated_tire_speed(
     const PowerIntent& P,
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,
@@ -21,7 +21,7 @@ FixedArray<float, 3> updated_tire_speed(
     float& force_max);
 
 FixedArray<float, 3> handle_tire_triangle_intersection(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,

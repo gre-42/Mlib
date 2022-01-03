@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-class RigidBody;
+class RigidBodyVehicle;
 struct RigidBodyIntegrator;
 class Scene;
 class SceneNode;
@@ -22,7 +22,7 @@ public:
         SceneNodeResources& scene_node_resources,
         SceneNode& bullet_node,
         AdvanceTimes& advance_times,
-        RigidBody& rigid_body,
+        RigidBodyVehicle& rigid_body,
         const std::string& bullet_node_name,
         float max_lifetime,
         float damage,
@@ -31,7 +31,7 @@ public:
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
         const FixedArray<float, 3>& intersection_point,
-        RigidBody& rigid_body,
+        RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,
         bool& abort) override;

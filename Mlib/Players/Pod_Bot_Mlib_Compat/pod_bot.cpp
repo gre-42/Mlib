@@ -1,6 +1,6 @@
 #include "pod_bot.hpp"
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Pod_Bot/bot_globals.h>

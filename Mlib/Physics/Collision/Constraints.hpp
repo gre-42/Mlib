@@ -7,7 +7,7 @@
 
 namespace Mlib {
 
-class RigidBody;
+class RigidBodyVehicle;
 class RigidBodyPulses;
 struct PhysicsEngineConfig;
 
@@ -222,7 +222,7 @@ class TireContactInfo1: public ContactInfo {
 public:
     TireContactInfo1(
         const FrictionContactInfo1& fci,
-        RigidBody& rb,
+        RigidBodyVehicle& rb,
         size_t tire_id,
         const FixedArray<float, 3>& vc,
         const FixedArray<float, 3>& n3,
@@ -232,7 +232,7 @@ public:
     void finalize() override;
 private:
     FrictionContactInfo1 fci_;
-    RigidBody& rb_;
+    RigidBodyVehicle& rb_;
     PowerIntent P_;
     size_t tire_id_;
     FixedArray<float, 3> vc_;

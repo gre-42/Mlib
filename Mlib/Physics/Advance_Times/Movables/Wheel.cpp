@@ -2,12 +2,12 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
 Wheel::Wheel(
-    RigidBody& rigid_body,
+    RigidBodyVehicle& rigid_body,
     AdvanceTimes& advance_times,
     size_t tire_id,
     float radius,

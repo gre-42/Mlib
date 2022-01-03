@@ -1,11 +1,11 @@
 #include "Handle_Tire_Triangle_Intersection.hpp"
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
 void optimal_angular_velocity_positive(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
@@ -23,7 +23,7 @@ void optimal_angular_velocity_positive(
 }
 
 void optimal_angular_velocity_negative(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
@@ -41,7 +41,7 @@ void optimal_angular_velocity_negative(
 }
 
 void accelerate_positive(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     float power,
     const FixedArray<float, 3>& vc,
@@ -68,7 +68,7 @@ void accelerate_positive(
 }
 
 void accelerate_negative(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     float power,
     const FixedArray<float, 3>& vc,
@@ -95,7 +95,7 @@ void accelerate_negative(
 }
 
 void break_positive(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
@@ -134,7 +134,7 @@ void break_positive(
 }
 
 void break_negative(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& surface_normal,
     const PhysicsEngineConfig& cfg,
@@ -173,7 +173,7 @@ void break_negative(
 }
 
 void idle(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& surface_normal,
     size_t tire_id,
@@ -187,7 +187,7 @@ void idle(
 
 FixedArray<float, 3> Mlib::updated_tire_speed(
     const PowerIntent& P,
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,
@@ -238,7 +238,7 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
 }
 
 FixedArray<float, 3> Mlib::handle_tire_triangle_intersection(
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     const FixedArray<float, 3>& street_velocity,
     const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,

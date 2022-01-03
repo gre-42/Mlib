@@ -10,12 +10,12 @@
 namespace Mlib {
 
 class AdvanceTimes;
-class RigidBody;
+class RigidBodyVehicle;
 
 class Wheel: public DestructionObserver, public RelativeMovable, public AdvanceTime {
 public:
     explicit Wheel(
-        RigidBody& rigid_body,
+        RigidBodyVehicle& rigid_body,
         AdvanceTimes& advance_times,
         size_t tire_id,
         float radius,
@@ -28,7 +28,7 @@ public:
     virtual TransformationMatrix<float, 3> get_new_relative_model_matrix() const override;
     virtual void advance_time(float dt) override;
     virtual void notify_destroyed(void* obj) override;
-    RigidBody& rigid_body_;
+    RigidBodyVehicle& rigid_body_;
     AdvanceTimes& advance_times_;
     TransformationMatrix<float, 3> transformation_matrix_;
     size_t tire_id_;

@@ -3,14 +3,14 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 
 using namespace Mlib;
 
 Crash::Crash(
-    RigidBody& rigid_body,
+    RigidBodyVehicle& rigid_body,
     float damage)
 : rigid_body_{rigid_body},
   damage_{damage}
@@ -28,7 +28,7 @@ float calculate_damage(
 }
 
 void Crash::notify_impact(
-    RigidBody& rigid_body,
+    RigidBodyVehicle& rigid_body,
     CollisionRole collision_role,
     const FixedArray<float, 3>& normal,
     float lambda_final,

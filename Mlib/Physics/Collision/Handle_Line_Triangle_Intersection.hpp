@@ -9,7 +9,7 @@
 
 namespace Mlib {
 
-class RigidBody;
+class RigidBodyVehicle;
 class TransformedMesh;
 template <class TData, size_t n>
 class PlaneNd;
@@ -20,8 +20,8 @@ class ContactInfo;
 class BaseLog;
 
 struct IntersectionScene {
-    RigidBody& o0;
-    RigidBody& o1;
+    RigidBodyVehicle& o0;
+    RigidBodyVehicle& o1;
     const std::shared_ptr<TransformedMesh>& mesh0;
     const std::shared_ptr<TransformedMesh>& mesh1;
     const FixedArray<FixedArray<float, 3>, 2>& l1;

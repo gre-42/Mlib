@@ -1,4 +1,4 @@
-#include "Rigid_Body.hpp"
+#include "Rigid_Body_Vehicle.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -14,7 +14,7 @@ static const float WHEEL_RADIUS = 0.25f;
 
 using namespace Mlib;
 
-RigidBody::RigidBody(
+RigidBodyVehicle::RigidBodyVehicle(
     RigidBodies& rigid_bodies,
     const RigidBodyIntegrator& rbi,
     const TransformationMatrix<double, 3>* geographic_mapping,
@@ -33,22 +33,22 @@ RigidBody::RigidBody(
   geographic_mapping_{geographic_mapping}
 {}
 
-RigidBody::~RigidBody()
+RigidBodyVehicle::~RigidBodyVehicle()
 {}
 
-void RigidBody::reset_forces() {
+void RigidBodyVehicle::reset_forces() {
     rbi_.reset_forces();
     for (auto& e : engines_) {
         e.second.reset_forces();
     }
 }
 
-void RigidBody::integrate_force(const VectorAtPosition<float, 3>& F)
+void RigidBodyVehicle::integrate_force(const VectorAtPosition<float, 3>& F)
 {
     rbi_.integrate_force(F);
 }
 
-void RigidBody::integrate_force(
+void RigidBodyVehicle::integrate_force(
     const VectorAtPosition<float, 3>& F,
     const FixedArray<float, 3>& n,
     float damping,
@@ -69,11 +69,11 @@ void RigidBody::integrate_force(
     }
 }
 
-void RigidBody::integrate_gravity(const FixedArray<float, 3>& g) {
+void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
     rbi_.integrate_gravity(g);
 }
 
-void RigidBody::advance_time(
+void RigidBodyVehicle::advance_time(
     float dt,
     float min_acceleration,
     float min_velocity,
@@ -156,56 +156,56 @@ void RigidBody::advance_time(
 #endif
 }
 
-float RigidBody::mass() const {
+float RigidBodyVehicle::mass() const {
     return rbi_.rbp_.mass_;
 }
 
-FixedArray<float, 3> RigidBody::abs_com() const {
+FixedArray<float, 3> RigidBodyVehicle::abs_com() const {
     return rbi_.rbp_.abs_com_;
 }
 
-FixedArray<float, 3, 3> RigidBody::abs_I() const {
+FixedArray<float, 3, 3> RigidBodyVehicle::abs_I() const {
     return rbi_.abs_I();
 }
 
-VectorAtPosition<float, 3> RigidBody::abs_F(const VectorAtPosition<float, 3>& F) const {
+VectorAtPosition<float, 3> RigidBodyVehicle::abs_F(const VectorAtPosition<float, 3>& F) const {
     return {
         .vector = dot1d(rbi_.rbp_.rotation_, F.vector),
         .position = dot1d(rbi_.rbp_.rotation_, F.position) + rbi_.rbp_.abs_com_};
 }
 
-FixedArray<float, 3> RigidBody::velocity_at_position(const FixedArray<float, 3>& position) const {
+FixedArray<float, 3> RigidBodyVehicle::velocity_at_position(const FixedArray<float, 3>& position) const {
     return rbi_.velocity_at_position(position);
 }
 
-void RigidBody::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
+void RigidBodyVehicle::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) {
     rbi_.set_pose(
         absolute_model_matrix.R(),
         absolute_model_matrix.t());
 }
 
-TransformationMatrix<float, 3> RigidBody::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, 3> RigidBodyVehicle::get_new_absolute_model_matrix() const {
     std::lock_guard lock{advance_time_mutex_};
     return TransformationMatrix<float, 3>{rbi_.rbp_.rotation_, rbi_.abs_position()};
 }
 
-void RigidBody::notify_destroyed(void* obj) {
+void RigidBodyVehicle::notify_destroyed(void* obj) {
     rigid_bodies_.delete_rigid_body(this);
 }
 
-void RigidBody::set_max_velocity(float max_velocity) {
+void RigidBodyVehicle::set_max_velocity(float max_velocity) {
     max_velocity_ = max_velocity;
 }
 
-void RigidBody::set_tire_angle_y(size_t id, float angle_y) {
+void RigidBodyVehicle::set_tire_angle_y(size_t id, float angle_y) {
     get_tire(id).angle_y = angle_y;
 }
 
-// void RigidBody::set_tire_accel_x(size_t id, float accel_x) {
+// void RigidBodyVehicle::set_tire_accel_x(size_t id, float accel_x) {
 //     get_tire(id).accel_x = accel_x;
 // }
 
-FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const {
+FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
         return dot2d(rbi_.rbp_.rotation_, rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y));
     } else {
@@ -213,7 +213,7 @@ FixedArray<float, 3, 3> RigidBody::get_abs_tire_rotation_matrix(size_t id) const
     }
 }
 
-FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
+FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_z(size_t id) const {
     FixedArray<float, 3> z{tires_z_};
     if (auto t = tires_.find(id); t != tires_.end()) {
         z = dot1d(rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y), z);
@@ -222,11 +222,11 @@ FixedArray<float, 3> RigidBody::get_abs_tire_z(size_t id) const {
     return z;
 }
 
-float RigidBody::get_tire_angular_velocity(size_t id) const {
+float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
     return get_tire(id).angular_velocity;
 }
 
-void RigidBody::set_tire_angular_velocity(size_t id, float w, TireAngularVelocityChange ch) {
+void RigidBodyVehicle::set_tire_angular_velocity(size_t id, float w, TireAngularVelocityChange ch) {
     Tire& tire = get_tire(id);
     tire.angular_velocity = w;
     if (ch == TireAngularVelocityChange::OFF) {
@@ -240,7 +240,7 @@ void RigidBody::set_tire_angular_velocity(size_t id, float w, TireAngularVelocit
     }
 }
 
-FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(
+FixedArray<float, 3> RigidBodyVehicle::get_velocity_at_tire_contact(
     const FixedArray<float, 3>& surface_normal,
     size_t id) const
 {
@@ -249,7 +249,7 @@ FixedArray<float, 3> RigidBody::get_velocity_at_tire_contact(
     return v;
 }
 
-float RigidBody::get_angular_velocity_at_tire(
+float RigidBodyVehicle::get_angular_velocity_at_tire(
     const FixedArray<float, 3>& surface_normal,
     const FixedArray<float, 3>& street_velocity,
     size_t id) const
@@ -259,11 +259,11 @@ float RigidBody::get_angular_velocity_at_tire(
     return -dot0d(v, z) / get_tire_radius(id);
 }
 
-float RigidBody::get_tire_radius(size_t id) const {
+float RigidBodyVehicle::get_tire_radius(size_t id) const {
     return get_tire(id).radius;
 }
 
-PowerIntent RigidBody::consume_tire_surface_power(size_t id) {
+PowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
     Tire& tire = get_tire(id);
     auto e = engines_.find(tire.engine);
     if (e == engines_.end()) {
@@ -272,7 +272,7 @@ PowerIntent RigidBody::consume_tire_surface_power(size_t id) {
     return e->second.consume_abs_surface_power(id, tire.angular_velocity);
 }
 
-void RigidBody::set_surface_power(const std::string& engine_name, float surface_power) {
+void RigidBodyVehicle::set_surface_power(const std::string& engine_name, float surface_power) {
     auto e = engines_.find(engine_name);
     if (e == engines_.end()) {
         throw std::runtime_error("No engine with name \"" + engine_name + "\" exists");
@@ -280,23 +280,23 @@ void RigidBody::set_surface_power(const std::string& engine_name, float surface_
     e->second.set_surface_power(surface_power);
 }
 
-float RigidBody::get_tire_break_force(size_t id) const {
+float RigidBodyVehicle::get_tire_break_force(size_t id) const {
     return get_tire(id).break_force;
 }
 
-TrackingWheel& RigidBody::get_tire_tracking_wheel(size_t id) {
+TrackingWheel& RigidBodyVehicle::get_tire_tracking_wheel(size_t id) {
     return get_tire(id).tracking_wheel;
 }
 
-FixedArray<float, 3> RigidBody::get_abs_tire_contact_position(size_t id) const {
+FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_contact_position(size_t id) const {
     return rbi_.rbp_.transform_to_world_coordinates(get_tire(id).position - FixedArray<float, 3>{0.f, -get_tire(id).radius, 0.f});
 }
 
-const Tire& RigidBody::get_tire(size_t id) const {
-    return const_cast<RigidBody*>(this)->get_tire(id);
+const Tire& RigidBodyVehicle::get_tire(size_t id) const {
+    return const_cast<RigidBodyVehicle*>(this)->get_tire(id);
 }
 
-Tire& RigidBody::get_tire(size_t id) {
+Tire& RigidBodyVehicle::get_tire(size_t id) {
     auto it = tires_.find(id);
     if (it == tires_.end()) {
         throw std::runtime_error("No tire with ID " + std::to_string(id) + " exists");
@@ -304,18 +304,18 @@ Tire& RigidBody::get_tire(size_t id) {
     return it->second;
 }
 
-float RigidBody::energy() const {
+float RigidBodyVehicle::energy() const {
     return rbi_.energy();
 }
 
-const std::string& RigidBody::name() const {
+const std::string& RigidBodyVehicle::name() const {
     return name_;
 }
 
-// void RigidBody::set_tire_sliding(size_t id, bool value) {
+// void RigidBodyVehicle::set_tire_sliding(size_t id, bool value) {
 //     tire_sliding_[id] = value;
 // }
-// bool RigidBody::get_tire_sliding(size_t id) const {
+// bool RigidBodyVehicle::get_tire_sliding(size_t id) const {
 //     auto t = tire_sliding_.find(id);
 //     if (t != tire_sliding_.end()) {
 //         return t->second;
@@ -323,7 +323,7 @@ const std::string& RigidBody::name() const {
 //     return false;
 // }
 
-void RigidBody::write_status(std::ostream& ostr, StatusComponents log_components) const {
+void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_components) const {
     if (log_components & StatusComponents::TIME) {
         static const std::chrono::steady_clock::time_point epoch_time = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();

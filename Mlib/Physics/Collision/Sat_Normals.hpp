@@ -9,7 +9,7 @@
 
 namespace Mlib {
 
-class RigidBody;
+class RigidBodyVehicle;
 template <class TData, size_t n>
 class PlaneNd;
 class TransformedMesh;
@@ -17,17 +17,17 @@ class TransformedMesh;
 class SatTracker {
 public:
     void get_collision_plane(
-        const RigidBody& o0,
-        const RigidBody& o1,
+        const RigidBodyVehicle& o0,
+        const RigidBodyVehicle& o1,
         const std::shared_ptr<TransformedMesh>& mesh0,
         const std::shared_ptr<TransformedMesh>& mesh1,
         float& min_overlap,
         PlaneNd<float, 3>& plane) const;
 private:
     mutable std::map<
-        const RigidBody*,
+        const RigidBodyVehicle*,
         std::map<
-            const RigidBody*,
+            const RigidBodyVehicle*,
             std::map<
                 std::shared_ptr<TransformedMesh>,
                 std::map<std::shared_ptr<TransformedMesh>,

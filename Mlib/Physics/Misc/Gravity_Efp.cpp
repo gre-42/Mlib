@@ -1,6 +1,6 @@
 #include "Gravity_Efp.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
@@ -8,7 +8,7 @@ GravityEfp::GravityEfp(const FixedArray<float, 3>& gravity)
 : gravity_{gravity}
 {}
 
-void GravityEfp::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
+void GravityEfp::increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     for (auto& rb : olist) {
         if (rb->mass() != INFINITY) {
             if (cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {

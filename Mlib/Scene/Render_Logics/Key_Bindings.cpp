@@ -5,7 +5,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
@@ -72,7 +72,7 @@ void KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
     gun_key_bindings_.push_back(b);
 }
 
-void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
+void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     if (!burn_in && (focuses_.focus() == Focus::SCENE)) {
         // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
@@ -105,7 +105,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         }
         for (const auto& k : absolute_movable_idle_bindings_) {
             auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBody*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
@@ -122,7 +122,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
             float alpha = button_press_.key_alpha(k.base_key, 0.05f);
             if (!std::isnan(alpha)) {
                 auto m = k.node->get_absolute_movable();
-                auto rb = dynamic_cast<RigidBody*>(m);
+                auto rb = dynamic_cast<RigidBodyVehicle*>(m);
                 if (rb == nullptr) {
                     throw std::runtime_error("Absolute movable is not a rigid body");
                 }
@@ -161,7 +161,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         }
         for (const auto& k : absolute_movable_idle_bindings_) {
             auto m = k.node->get_absolute_movable();
-            auto rb = dynamic_cast<RigidBody*>(m);
+            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }

@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
@@ -37,8 +37,8 @@ static float sat_overlap(
 }
 
 void SatTracker::get_collision_plane(
-    const RigidBody& o0,
-    const RigidBody& o1,
+    const RigidBodyVehicle& o0,
+    const RigidBodyVehicle& o1,
     const std::shared_ptr<TransformedMesh>& mesh0,
     const std::shared_ptr<TransformedMesh>& mesh1,
     float& min_overlap,
@@ -48,7 +48,7 @@ void SatTracker::get_collision_plane(
         collision_planes_.insert(std::make_pair(
             &o0,
             std::map<
-                const RigidBody*,
+                const RigidBodyVehicle*,
                 std::map<std::shared_ptr<TransformedMesh>,
                     std::map<std::shared_ptr<TransformedMesh>,
                         std::pair<float, PlaneNd<float, 3>>>>>()));

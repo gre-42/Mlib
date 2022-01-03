@@ -6,7 +6,7 @@
 
 namespace Mlib {
 
-class RigidBody;
+class RigidBodyVehicle;
 class BaseLog;
 
 enum class CollisionRole {
@@ -20,12 +20,12 @@ public:
     virtual ~CollisionObserver() = default;
     virtual void notify_collided(
         const FixedArray<float, 3>& intersection_point,
-        RigidBody& rigid_body,
+        RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,
         bool& abort) {};
     virtual void notify_impact(
-        RigidBody& rigid_body,
+        RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         const FixedArray<float, 3>& normal,
         float lambda_final,

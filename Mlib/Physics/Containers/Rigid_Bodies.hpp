@@ -11,21 +11,21 @@ namespace Mlib {
 
 enum class CollidableMode;
 struct ColoredVertexArray;
-class RigidBody;
+class RigidBodyVehicle;
 class TransformedMesh;
 
 struct RigidBodyAndMeshes {
-    std::shared_ptr<RigidBody> rigid_body;
+    std::shared_ptr<RigidBodyVehicle> rigid_body;
     std::list<TypedMesh<std::pair<BoundingSphere<float, 3>, std::shared_ptr<ColoredVertexArray>>>> meshes;
 };
 
 struct RigidBodyAndTransformedMeshes {
-    std::shared_ptr<RigidBody> rigid_body;
+    std::shared_ptr<RigidBodyVehicle> rigid_body;
     std::list<TypedMesh<std::shared_ptr<TransformedMesh>>> meshes;
 };
 
 struct RigidBodyAndCollisionTriangleSphere {
-    RigidBody& rb;
+    RigidBodyVehicle& rb;
     CollisionTriangleSphere ctp;
 };
 
@@ -35,20 +35,20 @@ class RigidBodies {
 public:
     explicit RigidBodies(const PhysicsEngineConfig& cfg);
     void add_rigid_body(
-        const std::shared_ptr<RigidBody>& rigid_body,
+        const std::shared_ptr<RigidBodyVehicle>& rigid_body,
         const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
         const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
         CollidableMode collidable_mode);
-    void delete_rigid_body(const RigidBody* rigid_body);
+    void delete_rigid_body(const RigidBodyVehicle* rigid_body);
     void optimize_search_time(std::ostream& ostr) const;
     void print_search_time() const;
     void plot_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
-    std::list<std::shared_ptr<RigidBody>> static_rigid_bodies_;
+    std::list<std::shared_ptr<RigidBodyVehicle>> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndTransformedMeshes> transformed_objects_;
-    std::map<const RigidBody*, CollidableMode> collidable_modes_;
+    std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     Bvh<float, RigidBodyAndCollisionTriangleSphere, 3> bvh_;
     PhysicsEngineConfig cfg_;
 };

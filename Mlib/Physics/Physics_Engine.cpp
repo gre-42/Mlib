@@ -7,7 +7,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 
 using namespace Mlib;
@@ -46,8 +46,8 @@ PhysicsEngine::~PhysicsEngine() {
 }
 
 static void handle_triangle_triangle_intersection(
-    RigidBody& o0,
-    RigidBody& o1,
+    RigidBodyVehicle& o0,
+    RigidBodyVehicle& o1,
     const CollisionTriangleSphere& t0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
@@ -124,8 +124,8 @@ static void handle_triangle_triangle_intersection(
 }
 
 static void collide_triangle(
-    RigidBody& o0,
-    RigidBody& o1,
+    RigidBodyVehicle& o0,
+    RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh0,
     const TypedMesh<std::shared_ptr<TransformedMesh>>& msh1,
     const CollisionTriangleSphere& t0,
@@ -255,7 +255,7 @@ void PhysicsEngine::collide(
         return (rbtm.rigid_body->mass() != INFINITY);
     });
     {
-        std::list<std::shared_ptr<RigidBody>> olist;
+        std::list<std::shared_ptr<RigidBodyVehicle>> olist;
         for (const auto& o : rigid_bodies_.objects_) {
             if (o.rigid_body->mass() != INFINITY) {
                 o.rigid_body->reset_forces();

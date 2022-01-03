@@ -3,7 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>
@@ -17,7 +17,7 @@ Bullet::Bullet(
     SceneNodeResources& scene_node_resources,
     SceneNode& bullet_node,
     AdvanceTimes& advance_times,
-    RigidBody& rigid_body,
+    RigidBodyVehicle& rigid_body,
     const std::string& bullet_node_name,
     float max_lifetime,
     float damage,
@@ -51,7 +51,7 @@ void Bullet::advance_time(float dt) {
 
 void Bullet::notify_collided(
     const FixedArray<float, 3>& intersection_point,
-    RigidBody& rigid_body,
+    RigidBodyVehicle& rigid_body,
     CollisionRole collision_role,
     CollisionType& collision_type,
     bool& abort)

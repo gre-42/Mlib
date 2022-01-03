@@ -4,8 +4,8 @@
 #include <Mlib/Physics/Collision/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
@@ -236,7 +236,7 @@ float FrictionContactInfo2::max_impulse_friction() const {
 
 TireContactInfo1::TireContactInfo1(
     const FrictionContactInfo1& fci,
-    RigidBody& rb,
+    RigidBodyVehicle& rb,
     size_t tire_id,
     const FixedArray<float, 3>& vc,
     const FixedArray<float, 3>& n3,

@@ -10,7 +10,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Mlib_Pod_Bot/Pod_Bot_Player.hpp>
 #include <Mlib/Players/Pod_Bot_Mlib_Compat/mlib.hpp>
@@ -108,7 +108,7 @@ void Player::reset_node() {
     unstuck_start_ = std::chrono::steady_clock::time_point();
 }
 
-void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBody& rb) {
+void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBodyVehicle& rb) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (rb.driver_ != nullptr) {
         throw std::runtime_error("Rigid body already has a driver");
@@ -134,7 +134,7 @@ void Player::set_rigid_body(const std::string& scene_node_name, SceneNode& scene
     scene_node.add_destruction_observer(this);
 }
 
-const RigidBody& Player::rigid_body() const {
+const RigidBodyVehicle& Player::rigid_body() const {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_rigid_body()) {
         throw std::runtime_error("Player has no rigid body");
@@ -364,7 +364,7 @@ void Player::advance_time(float dt) {
     aim_and_shoot();
 }
 
-void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
+void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!burn_in) {
         if (game_mode_ == GameMode::POD_BOT_NPC) {

@@ -7,7 +7,7 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
@@ -56,7 +56,7 @@ void Gun::advance_time(float dt) {
     if ((seconds_since_last_shot_ == cool_down_) && triggered_) {
         seconds_since_last_shot_ = 0;
         triggered_ = false;
-        std::shared_ptr<RigidBody> rc = rigid_cuboid(rigid_bodies_, bullet_mass_, bullet_size_);
+        std::shared_ptr<RigidBodyVehicle> rc = rigid_cuboid(rigid_bodies_, bullet_mass_, bullet_size_);
         auto node = std::make_unique<SceneNode>();
         FixedArray<float, 3> t = absolute_model_matrix_.t();
         FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());

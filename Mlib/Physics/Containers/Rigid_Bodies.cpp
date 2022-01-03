@@ -5,7 +5,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
@@ -52,7 +52,7 @@ std::list<std::vector<CollisionTriangleSphere>> split_with_static_radius(
 }
 
 void RigidBodies::add_rigid_body(
-    const std::shared_ptr<RigidBody>& rigid_body,
+    const std::shared_ptr<RigidBodyVehicle>& rigid_body,
     const std::list<std::shared_ptr<ColoredVertexArray>>& hitbox,
     const std::list<std::shared_ptr<ColoredVertexArray>>& tirelines,
     CollidableMode collidable_mode)
@@ -130,7 +130,7 @@ void RigidBodies::add_rigid_body(
     }
 }
 
-void RigidBodies::delete_rigid_body(const RigidBody* rigid_body) {
+void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
     auto it = collidable_modes_.find(rigid_body);
     if (it == collidable_modes_.end()) {
         throw std::runtime_error("Could not find rigid body for deletion");

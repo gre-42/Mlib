@@ -8,7 +8,7 @@ template <class TData, size_t n>
 class TransformationMatrix;
 class RigidBodyPulses;
 struct RigidBodyIntegrator;
-class RigidBody;
+class RigidBodyVehicle;
 class RigidBodies;
 
 // Source: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
@@ -27,7 +27,7 @@ RigidBodyIntegrator rigid_cuboid_integrator(
     const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>());
 
-std::shared_ptr<RigidBody> rigid_cuboid(
+std::shared_ptr<RigidBodyVehicle> rigid_cuboid(
     RigidBodies& rigid_bodies,
     float mass,
     const FixedArray<float, 3>& size,

@@ -8,7 +8,7 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Iteration.hpp>
@@ -69,10 +69,10 @@ void test_physics_engine() {
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};
 
-    std::shared_ptr<RigidBody> rb0 = rigid_cuboid(pe.rigid_bodies_, INFINITY, {1, 2, 3});
-    std::shared_ptr<RigidBody> rb1_0 = rigid_cuboid(pe.rigid_bodies_, 3, {2, 3, 4});
-    std::shared_ptr<RigidBody> rb1_1 = rigid_cuboid(pe.rigid_bodies_, 3, {2, 3, 4});
-    std::shared_ptr<RigidBody> rb1_2 = rigid_cuboid(pe.rigid_bodies_, 3, {2, 3, 4});
+    std::shared_ptr<RigidBodyVehicle> rb0 = rigid_cuboid(pe.rigid_bodies_, INFINITY, {1, 2, 3});
+    std::shared_ptr<RigidBodyVehicle> rb1_0 = rigid_cuboid(pe.rigid_bodies_, 3, {2, 3, 4});
+    std::shared_ptr<RigidBodyVehicle> rb1_1 = rigid_cuboid(pe.rigid_bodies_, 3, {2, 3, 4});
+    std::shared_ptr<RigidBodyVehicle> rb1_2 = rigid_cuboid(pe.rigid_bodies_, 3, {2, 3, 4});
 
     std::vector<FixedArray<ColoredVertex, 3>> triangles0_raw{
         FixedArray<ColoredVertex, 3>{
