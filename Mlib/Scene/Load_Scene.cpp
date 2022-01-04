@@ -373,7 +373,7 @@ void LoadScene::operator()(
         "\\s+forward=([\\w+-.]+)"
         "\\s+backward=([\\w+-.]*)$");
     static const DECLARE_REGEX(player_set_tire_angle_reg,
-        "^\\s*player_set_tire_angle "
+        "^\\s*player_set_tire_angle"
         "\\s+player_name=([\\w+-.]+)"
         "\\s+tire_id=(\\d+)"
         "\\s+tire_angle_left=([\\w+-.]*)"
