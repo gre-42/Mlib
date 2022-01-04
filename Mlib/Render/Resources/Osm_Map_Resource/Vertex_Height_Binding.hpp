@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Strings/String.hpp>
 #include <cmath>
 #include <compare>
 #include <stdexcept>
