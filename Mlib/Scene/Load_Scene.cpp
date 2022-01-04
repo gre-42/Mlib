@@ -298,7 +298,8 @@ void LoadScene::operator()(
         "\\s+collidable_mode=(terrain|small_static|small_moving)"
         "(?:\\s+name=([\\w+-.]+))?$");
     static const DECLARE_REGEX(gun_reg,
-        "^\\s*gun node=([\\w+-.]+)"
+        "^\\s*gun"
+        "\\s+node=([\\w+-.]+)"
         "\\s+parent_rigid_body_node=([\\w+-.]+)"
         "\\s+cool-down=([\\w+-.]+)"
         "\\s+renderable=([\\w-. \\(\\)/+-]+)"
