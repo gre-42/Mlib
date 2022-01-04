@@ -510,6 +510,9 @@ void Player::step_on_breaks() {
     }
     rb_->set_surface_power("main", NAN);    // NAN=break
     rb_->set_surface_power("breaks", NAN);  // NAN=break
+    if (rb_->style_updater_ != nullptr) {
+        rb_->style_updater_->notify_movement_intent();
+    }
 }
 
 void Player::drive_forward() {
@@ -519,6 +522,9 @@ void Player::drive_forward() {
     }
     rb_->set_surface_power("main", surface_power_forward_);
     rb_->set_surface_power("breaks", 0);
+    if (rb_->style_updater_ != nullptr) {
+        rb_->style_updater_->notify_movement_intent();
+    }
 }
 
 void Player::drive_backwards() {
@@ -528,6 +534,9 @@ void Player::drive_backwards() {
     }
     rb_->set_surface_power("main", surface_power_backward_);
     rb_->set_surface_power("breaks", 0);
+    if (rb_->style_updater_ != nullptr) {
+        rb_->style_updater_->notify_movement_intent();
+    }
 }
 
 void Player::roll_tires() {
@@ -537,6 +546,9 @@ void Player::roll_tires() {
     }
     rb_->set_surface_power("main", 0);
     rb_->set_surface_power("breaks", 0);
+    if (rb_->style_updater_ != nullptr) {
+        rb_->style_updater_->notify_movement_intent();
+    }
 }
 
 void Player::steer_left_full() {

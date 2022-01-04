@@ -573,14 +573,16 @@ void LoadScene::operator()(
         "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+animation_name=([\\w+-.]*)"
-        "\\s+animation_loop_begin=([\\w+-.]+)"
-        "\\s+animation_loop_end=([\\w+-.]+)"
-        "\\s+animation_loop_time=([\\w+-.]+)$");
-    static const DECLARE_REGEX(set_renderable_style_updater_reg,
-        "^\\s*set_renderable_style_updater"
-        "\\s+node=([\\w+-.]*)"
-        "\\s+resource=([\\w+-.]+)$");
+        "(?:\\s+animation_name=([\\w+-.]*))?"
+        "(?:\\s+animation_loop_begin=([\\w+-.]+))?"
+        "(?:\\s+animation_loop_end=([\\w+-.]+))?"
+        "(?:\\s+animation_loop_time=([\\w+-.]+))?$");
+    static const DECLARE_REGEX(set_avatar_style_updater_reg,
+        "^\\s*set_avatar_style_updater"
+        "\\s+avatar_node=([\\w+-.]*)"
+        "\\s+gun_node=([\\w+-.]+)"
+        "\\s+resource_wo_gun=([\\w+-.]+)"
+        "\\s+resource_w_gun=([\\w+-.]+)$");
     static const DECLARE_REGEX(add_bvh_resource_reg,
         "^\\s*add_bvh_resource"
         "\\s+name=([\\w+-.]+)"
@@ -2517,23 +2519,26 @@ void LoadScene::operator()(
                     safe_stof(match[9].str()),
                     safe_stof(match[10].str()),
                     safe_stof(match[11].str())},
-                .skelletal_animation_name = match[12].str(),
+                .skelletal_animation_name = match[12].matched ? match[12].str() : "",
                 .skelletal_animation_frame = {
-                    .begin = safe_stof(match[13].str()),
-                    .end = safe_stof(match[14].str()),
-                    .time = safe_stof(match[15].str())}}));
-        } else if (Mlib::re::regex_match(line, match, set_renderable_style_updater_reg)) {
-            auto node = scene.get_node(match[1].str());
-            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+                    .begin = match[13].matched ? safe_stof(match[13].str()) : NAN,
+                    .end = match[14].matched ? safe_stof(match[14].str()) : NAN,
+                    .time = match[15].matched ? safe_stof(match[15].str()) : NAN}}));
+        } else if (Mlib::re::regex_match(line, match, set_avatar_style_updater_reg)) {
+            auto avatar_node = scene.get_node(match[1].str());
+            auto gun_node = scene.get_node(match[2].str());
+            std::string resource_wo_gun = match[3].str();
+            std::string resource_w_gun = match[4].str();
+            auto rb = dynamic_cast<RigidBodyVehicle*>(avatar_node->get_absolute_movable());
             if (rb == nullptr) {
                 throw std::runtime_error("Styled node movable is not a rigid body");
             }
             if (rb->style_updater_ != nullptr) {
                 throw std::runtime_error("Rigid body already has a style updater");
             }
-            auto updater = std::make_unique<AvatarAnimationUpdater>(*rb, match[2].str());
+            auto updater = std::make_unique<AvatarAnimationUpdater>(*rb, *gun_node, resource_wo_gun, resource_w_gun);
             StyleUpdater* ptr = updater.get();
-            node->set_style_updater(std::move(updater));
+            avatar_node->set_style_updater(std::move(updater));
             rb->style_updater_ = ptr;
         } else if (Mlib::re::regex_match(line, match, hud_image_reg)) {
             auto node = scene.get_node(match[1].str());

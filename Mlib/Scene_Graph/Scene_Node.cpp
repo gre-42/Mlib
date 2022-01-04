@@ -100,6 +100,10 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
     add_destruction_observer(absolute_observer.observer());
 }
 
+bool SceneNode::has_absolute_observer() const {
+    return absolute_observer_ != nullptr;
+}
+
 void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
     auto r = destruction_observers_.insert(destruction_observer);
     if (!r.second && !ignore_exists) {
