@@ -1,5 +1,6 @@
 #include "Avatar_Animation_Updater.hpp"
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
+#include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -31,11 +32,8 @@ void AvatarAnimationUpdater::notify_movement_intent() {
 }
 
 void AvatarAnimationUpdater::update_style(Style* style) {
-    Gun* gun = dynamic_cast<Gun*>(
-        gun_node_.has_absolute_observer()
-            ? gun_node_.get_absolute_observer()
-            : nullptr);
-    std::string resource_name = (gun == nullptr)
+    Gun* gun = dynamic_cast<Gun*>(gun_node_.get_absolute_observer());
+    std::string resource_name = gun->is_none_gun()
         ? resource_wo_gun_
         : resource_w_gun_;
     std::string new_animation;

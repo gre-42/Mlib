@@ -12,15 +12,16 @@
 using namespace Mlib;
 
 SceneNode::SceneNode(Scene* scene)
-: scene_{scene},
-  parent_{nullptr},
-  absolute_movable_{nullptr},
-  relative_movable_{nullptr},
-  absolute_observer_{nullptr},
-  position_{0.f, 0.f, 0.f},
-  rotation_{0.f, 0.f, 0.f},
-  scale_{1.f},
-  rotation_matrix_{fixed_identity_array<float, 3>()}
+: scene_{ scene },
+  parent_{ nullptr },
+  absolute_movable_{ nullptr },
+  relative_movable_{ nullptr },
+  absolute_observer_{ nullptr },
+  absolute_destruction_observer_{ nullptr },
+  position_{ 0.f, 0.f, 0.f },
+  rotation_{ 0.f, 0.f, 0.f },
+  scale_{ 1.f },
+  rotation_matrix_{ fixed_identity_array<float, 3>() }
 {}
 
 SceneNode::~SceneNode() {
@@ -46,6 +47,21 @@ void SceneNode::set_parent(SceneNode* parent) {
         throw std::runtime_error("Scene node already has a parent");
     }
     parent_ = parent;
+}
+
+NodeModifier* SceneNode::get_node_modifier() const {
+    if (node_modifier_ == nullptr) {
+        throw std::runtime_error("Node modifier not set");
+    }
+    return node_modifier_.get();
+}
+
+void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
+{
+    if (node_modifier_ != nullptr) {
+        throw std::runtime_error("Node modifier already set");
+    }
+    node_modifier_ = std::move(node_modifier);
 }
 
 AbsoluteMovable* SceneNode::get_absolute_movable() const {
@@ -98,10 +114,8 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
     absolute_observer_ = absolute_observer.get();
     absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
     add_destruction_observer(absolute_observer.observer());
-}
 
-bool SceneNode::has_absolute_observer() const {
-    return absolute_observer_ != nullptr;
+    absolute_destruction_observer_ = absolute_observer.observer();
 }
 
 void SceneNode::add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists) {
@@ -127,6 +141,18 @@ void SceneNode::add_renderable(
     }
     if (!renderables_.insert(std::make_pair(name, renderable)).second) {
         throw std::runtime_error("Renderable with name " + name + " already exists");
+    }
+}
+
+void SceneNode::clear_renderable_instance(const std::string& name) {
+    renderables_.erase(name);
+}
+
+void SceneNode::clear_absolute_observer() {
+    if (absolute_observer_ != nullptr) {
+        absolute_destruction_observer_->notify_destroyed(this);
+        absolute_destruction_observer_ = nullptr;
+        absolute_observer_ = nullptr;
     }
 }
 
@@ -264,6 +290,9 @@ void SceneNode::set_style_updater(std::unique_ptr<StyleUpdater>&& style_updater)
 }
 
 void SceneNode::move(const TransformationMatrix<float, 3>& v, float dt) {
+    if (node_modifier_ != nullptr) {
+        node_modifier_->modify_node();
+    }
     if (style_ != nullptr) {
         style_->skelletal_animation_frame.advance_time(dt, AnimationWrapMode::PERIODIC);
         style_->texture_animation.advance_time(dt, AnimationWrapMode::APERIODIC);

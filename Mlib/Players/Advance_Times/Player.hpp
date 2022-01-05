@@ -103,7 +103,7 @@ public:
     void set_rigid_body(const std::string& scene_node_name, SceneNode& scene_node, RigidBodyVehicle& rb);
     const RigidBodyVehicle& rigid_body() const;
     const std::string& scene_node_name() const;
-    void set_ypln(YawPitchLookAtNodes& ypln, Gun* gun);
+    void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
     void set_surface_power(float forward, float backward);
     void set_tire_angle_y(size_t tire_id, float angle_left, float angle_right);
     void set_angular_velocity(float angle_left, float angle_right);
@@ -173,6 +173,8 @@ private:
     void steer_left_partial(float angle);
     void steer_right_partial(float angle);
     const PointsAndAdjacency<float, 3>& waypoints() const;
+    const Gun* gun() const;
+    Gun* gun();
     Scene& scene_;
     CollisionQuery& collision_query_;
     Players& players_;
@@ -184,7 +186,7 @@ private:
     RigidBodyVehicle* rb_;
     RigidBodyIntegrator* target_rbi_;
     YawPitchLookAtNodes* ypln_;
-    Gun* gun_;
+    SceneNode* gun_node_;
     float surface_power_forward_;
     float surface_power_backward_;
     std::map<size_t, float> tire_angles_left_;

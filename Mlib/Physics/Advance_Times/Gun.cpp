@@ -103,6 +103,9 @@ void Gun::notify_destroyed(void* obj) {
 }
 
 void Gun::trigger() {
+    if (is_none_gun()) {
+        return;
+    }
     if (seconds_since_last_shot_ == cool_down_) {
         triggered_ = true;
     }
@@ -110,4 +113,8 @@ void Gun::trigger() {
 
 const TransformationMatrix<float, 3>& Gun::absolute_model_matrix() const {
     return absolute_model_matrix_;
+}
+
+bool Gun::is_none_gun() const {
+    return bullet_lifetime_ == 0;
 }

@@ -28,6 +28,7 @@
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
@@ -297,6 +298,19 @@ void LoadScene::operator()(
         "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "\\s+collidable_mode=(terrain|small_static|small_moving)"
         "(?:\\s+name=([\\w+-.]+))?$");
+    static const DECLARE_REGEX(create_weapon_inventory_reg,
+        "^\\s*create_weapon_inventory"
+        "\\s+visual_node=([\\w+-.]+)"
+        "\\s+physics_node=([\\w+-.]+)$");
+    static const DECLARE_REGEX(add_weapon_to_inventory_reg,
+        "^\\s*add_weapon_to_inventory"
+        "\\s+visual_node=([\\w+-.]+)"
+        "\\s+entry_name=([\\w-. \\(\\)/+-]+)"
+        "\\s+create=([\\s\\S]+)$");
+    static const DECLARE_REGEX(equip_weapon_reg,
+        "^\\s*equip_weapon"
+        "\\s+visual_node=([\\w+-.]+)"
+        "\\s+entry_name=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(gun_reg,
         "^\\s*gun"
         "\\s+node=([\\w+-.]+)"
@@ -351,6 +365,13 @@ void LoadScene::operator()(
         "\\s+gear_ratios=([ \\w+-.]+)"
         "(?:\\s+hand_brake_pulled=(0|1))?"
         "(?:\\s+audio=([\\w-. \\(\\)/+-]+))?");
+    static const DECLARE_REGEX(clear_renderable_instance_reg,
+        "^\\s*clear_renderable_instance"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+name=([\\w+-.]+)$");
+    static const DECLARE_REGEX(clear_absolute_observer_reg,
+        "^\\s*clear_absolute_observer"
+        "\\s+node=([\\w+-.]+)$");
     static const DECLARE_REGEX(player_create_reg,
         "^\\s*player_create"
         "\\s+name=([\\w+-.]+)"
@@ -1872,6 +1893,32 @@ void LoadScene::operator()(
                 hitbox,
                 tirelines,
                 collidable_mode_from_string(match[17].str()));
+        } else if (Mlib::re::regex_match(line, match, create_weapon_inventory_reg)) {
+            auto visual_node = scene.get_node(match[1].str());
+            auto physics_node = scene.get_node(match[2].str());
+            visual_node->set_node_modifier(
+                std::make_unique<WeaponInventory>(
+                    *visual_node,
+                    *physics_node));
+        } else if (Mlib::re::regex_match(line, match, add_weapon_to_inventory_reg)) {
+            auto visual_node = scene.get_node(match[1].str());
+            std::string entry_name = match[2].str();
+            std::string create = match[3].str();
+            WeaponInventory* wi = dynamic_cast<WeaponInventory*>(visual_node->get_node_modifier());
+            if (wi == nullptr) {
+                throw std::runtime_error("Node modifier is not a weapon inventory");
+            }
+            wi->add_weapon(entry_name, [macro_line_executor, create, &rsc](){
+                macro_line_executor(create, nullptr, rsc);
+            });
+        } else if (Mlib::re::regex_match(line, match, equip_weapon_reg)) {
+            auto visual_node = scene.get_node(match[1].str());
+            std::string entry_name = match[2].str();
+            WeaponInventory* wi = dynamic_cast<WeaponInventory*>(visual_node->get_node_modifier());
+            if (wi == nullptr) {
+                throw std::runtime_error("Node modifier is not a weapon inventory");
+            }
+            wi->equip_weapon(entry_name);
         } else if (Mlib::re::regex_match(line, match, gun_reg)) {
             auto parent_rb_node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBodyVehicle*>(parent_rb_node->get_absolute_movable());
@@ -2051,6 +2098,10 @@ void LoadScene::operator()(
             if (!ep.second) {
                 throw std::runtime_error("Engine with name \"" + match[2].str() + "\" already exists");
             }
+        } else if (Mlib::re::regex_match(line, match, clear_renderable_instance_reg)) {
+            scene.get_node(match[1].str())->clear_renderable_instance(match[2].str());
+        } else if (Mlib::re::regex_match(line, match, clear_absolute_observer_reg)) {
+            scene.get_node(match[1].str())->clear_absolute_observer();
         } else if (Mlib::re::regex_match(line, match, player_create_reg)) {
             auto player = std::make_unique<Player>(
                 scene,
@@ -2080,15 +2131,11 @@ void LoadScene::operator()(
             if (ypln == nullptr) {
                 throw std::runtime_error("Relative movable is not a ypln");
             }
-            Gun* gun = nullptr;
+            SceneNode* gun_node = nullptr;
             if (!match[3].str().empty()) {
-                auto gun_node = scene.get_node(match[3].str());
-                gun = dynamic_cast<Gun*>(gun_node->get_absolute_observer());
-                if (gun == nullptr) {
-                    throw std::runtime_error("Absolute observer is not a gun");
-                }
+                gun_node = scene.get_node(match[3].str());
             }
-            players.get_player(match[1].str()).set_ypln(*ypln, gun);
+            players.get_player(match[1].str()).set_ypln(*ypln, gun_node);
         } else if (Mlib::re::regex_match(line, match, player_set_surface_power_reg)) {
             players.get_player(match[1].str()).set_surface_power(
                 safe_stof(match[2].str()),

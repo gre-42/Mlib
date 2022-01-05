@@ -34,33 +34,33 @@ Player::Player(
     const DrivingMode& driving_mode,
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex)
-: scene_{scene},
-  collision_query_{collision_query},
-  players_{players},
-  name_{name},
-  team_{team},
-  scene_node_{nullptr},
-  target_scene_node_{nullptr},
-  rb_{nullptr},
-  target_rbi_{nullptr},
-  ypln_{nullptr},
-  gun_{nullptr},
-  surface_power_forward_{NAN},
-  surface_power_backward_{NAN},
-  angular_velocity_left_{NAN},
-  angular_velocity_right_{NAN},
-  waypoint_{fixed_nans<float, 3>()},
-  waypoint_id_{SIZE_MAX},
-  waypoint_reached_{false},
-  nwaypoints_reached_{0},
-  game_mode_{game_mode},
-  unstuck_mode_{unstuck_mode},
-  driving_mode_{driving_mode},
-  driving_direction_{driving_direction},
-  spotted_by_vip_{false},
-  nunstucked_{0},
-  record_waypoints_{false},
-  delete_node_mutex_{delete_node_mutex}
+: scene_{ scene },
+  collision_query_{ collision_query },
+  players_{ players },
+  name_{ name },
+  team_{ team },
+  scene_node_{ nullptr },
+  target_scene_node_{ nullptr },
+  rb_{ nullptr },
+  target_rbi_{ nullptr },
+  ypln_{ nullptr },
+  gun_node_{ nullptr },
+  surface_power_forward_{ NAN },
+  surface_power_backward_{ NAN },
+  angular_velocity_left_{ NAN },
+  angular_velocity_right_{ NAN },
+  waypoint_{ fixed_nans <float, 3>()},
+  waypoint_id_{ SIZE_MAX },
+  waypoint_reached_{ false },
+  nwaypoints_reached_{ 0 },
+  game_mode_{ game_mode },
+  unstuck_mode_{ unstuck_mode },
+  driving_mode_{ driving_mode },
+  driving_direction_{ driving_direction },
+  spotted_by_vip_{ false },
+  nunstucked_{ 0 },
+  record_waypoints_{ false },
+  delete_node_mutex_{ delete_node_mutex }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if ((game_mode_ == GameMode::POD_BOT_NPC) || (game_mode_ == GameMode::POD_BOT_PC)) {
@@ -98,7 +98,7 @@ void Player::reset_node() {
     scene_node_ = nullptr;
     rb_ = nullptr;
     ypln_ = nullptr;
-    gun_ = nullptr;
+    gun_node_ = nullptr;
     tire_angles_left_.clear();
     tire_angles_right_.clear();
     surface_power_forward_ = NAN;
@@ -148,13 +148,13 @@ const std::string& Player::scene_node_name() const {
     return scene_node_name_;
 }
 
-void Player::set_ypln(YawPitchLookAtNodes& ypln, Gun* gun) {
+void Player::set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (ypln_ != nullptr || gun_ != nullptr) {
+    if (ypln_ != nullptr || gun_node_ != nullptr) {
         throw std::runtime_error("ypln already set");
     }
     ypln_ = &ypln;
-    gun_ = gun;
+    gun_node_ = gun_node;
 }
 
 void Player::set_surface_power(float forward, float backward) {
@@ -457,10 +457,10 @@ bool Player::unstuck() {
 
 FixedArray<float, 3> Player::gun_direction() const {
     delete_node_mutex_.notify_reading();
-    if (gun_ == nullptr) {
+    if (gun_node_ == nullptr) {
         throw std::runtime_error("gun_direction despite gun nullptr in player \"" + name() + '"');
     }
-    return -z3_from_3x3(gun_->absolute_model_matrix().R());
+    return -z3_from_3x3(gun()->absolute_model_matrix().R());
 }
 
 void Player::run_move(
@@ -497,10 +497,10 @@ void Player::run_move(
 
 void Player::trigger_gun() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (gun_ == nullptr) {
+    if (gun_node_ == nullptr) {
         throw std::runtime_error("Player::trigger despite gun nullptr");
     }
-    gun_->trigger();
+    gun()->trigger();
 }
 
 void Player::step_on_breaks() {
@@ -625,6 +625,23 @@ bool Player::has_waypoints() const {
     return !it->second.points.empty();
 }
 
+const Gun* Player::gun() const {
+    if (gun_node_ == nullptr) {
+        throw std::runtime_error("Gun node not set");
+    }
+    Gun* gun;
+    gun = dynamic_cast<Gun*>(gun_node_->get_absolute_observer());
+    if (gun == nullptr) {
+        throw std::runtime_error("Absolute observer is not a gun");
+    }
+    return gun;
+}
+
+Gun* Player::gun() {
+    const Player* p = this;
+    return const_cast<Gun*>(p->gun());
+}
+
 bool Player::is_pedestrian() const {
     delete_node_mutex_.notify_reading();
     return driving_mode_.way_point_location == WayPointLocation::SIDEWALK;
@@ -647,14 +664,14 @@ void Player::aim_and_shoot() {
     }
     assert_true(scene_node_ == nullptr || scene_node_ != target_scene_node_);
     ypln_->set_followed(target_scene_node_, target_rbi_);
-    if (gun_ == nullptr) {
+    if (gun_node_ == nullptr) {
         return;
     }
     if (!skills_.can_shoot) {
         return;
     }
     if ((target_scene_node_ != nullptr) && (ypln_->target_locked_on())) {
-        gun_->trigger();
+        gun()->trigger();
     }
 }
 

@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Renderable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
+#include <Mlib/Scene_Graph/Transformation/Node_Modifier.hpp>
 #include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
 #include <map>
 #include <memory>
@@ -55,11 +56,12 @@ public:
     ~SceneNode();
     AbsoluteMovable* get_absolute_movable() const;
     RelativeMovable* get_relative_movable() const;
+    NodeModifier* get_node_modifier() const;
     AbsoluteObserver* get_absolute_observer() const;
     void set_absolute_movable(const observer_ptr<AbsoluteMovable>& absolute_movable);
     void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
+    void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
     void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
-    bool has_absolute_observer() const;
     void add_destruction_observer(DestructionObserver* destruction_observer, bool ignore_exists = false);
     void remove_destruction_observer(DestructionObserver* destruction_observer);
     void add_renderable(
@@ -69,6 +71,8 @@ public:
         const std::string& name,
         std::unique_ptr<SceneNode>&& node,
         bool is_registered = false);
+    void clear_renderable_instance(const std::string& name);
+    void clear_absolute_observer();
     SceneNode* get_child(const std::string& name) const;
     void add_aggregate_child(
         const std::string& name,
@@ -152,7 +156,9 @@ private:
     SceneNode* parent_;
     AbsoluteMovable* absolute_movable_;
     RelativeMovable* relative_movable_;
+    std::unique_ptr<NodeModifier> node_modifier_;
     AbsoluteObserver* absolute_observer_;
+    DestructionObserver* absolute_destruction_observer_;
     std::set<DestructionObserver*> destruction_observers_;
     std::unique_ptr<Camera> camera_;
     std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
