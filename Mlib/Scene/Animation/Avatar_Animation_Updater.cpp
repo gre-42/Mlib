@@ -37,7 +37,7 @@ void AvatarAnimationUpdater::update_style(Style* style) {
         ? resource_wo_gun_
         : resource_w_gun_;
     std::string new_animation;
-    if (gun == nullptr) {
+    if (gun->is_none_gun()) {
         new_animation = resource_name + ".walking";
     } else {
         if (std::isnan(surface_power_) || (surface_power_ == 0)) {
