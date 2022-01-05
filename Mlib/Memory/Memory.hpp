@@ -8,18 +8,18 @@ class observer_ptr {
 public:
     template <class T2>
     observer_ptr(T2* ptr)
-    : ptr_{ptr},
-      observer_{ptr}
+    :   ptr_{ptr},
+        observer_{ptr}
     {}
     observer_ptr(T* ptr, DestructionObserver* observer)
-    : ptr_{ptr},
-      observer_{observer}
+    :   ptr_{ptr},
+        observer_{observer}
     {}
     T* get() const {
-      return ptr_;
+        return ptr_;
     }
     DestructionObserver* observer() const {
-      return observer_;
+        return observer_;
     }
 private:
     T* ptr_;
