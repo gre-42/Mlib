@@ -301,7 +301,7 @@ void LoadScene::operator()(
         "^\\s*gun"
         "\\s+node=([\\w+-.]+)"
         "\\s+parent_rigid_body_node=([\\w+-.]+)"
-        "\\s+cool-down=([\\w+-.]+)"
+        "\\s+cool_down=([\\w+-.]+)"
         "\\s+renderable=([\\w-. \\(\\)/+-]+)"
         "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
         "\\s+mass=([\\w+-.]+)"
@@ -1883,7 +1883,7 @@ void LoadScene::operator()(
                 scene_node_resources,               // scene_node_resources
                 physics_engine.rigid_bodies_,       // rigid_bodies
                 physics_engine.advance_times_,      // advance_times
-                safe_stof(match[3].str()),          // cool-down
+                safe_stof(match[3].str()),          // cool_down
                 rb->rbi_,                           // parent_rigid_body_node
                 match[4].str(),                     // bullet-renderable-resource-name
                 match[5].str(),                     // bullet-hitbox-resource-name
