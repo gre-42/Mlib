@@ -150,6 +150,9 @@ void SceneNode::clear_renderable_instance(const std::string& name) {
 
 void SceneNode::clear_absolute_observer() {
     if (absolute_observer_ != nullptr) {
+        if (destruction_observers_.erase(absolute_destruction_observer_) != 1) {
+            throw std::runtime_error("Could not find absolute destruction observer for deletion");
+        }
         absolute_destruction_observer_->notify_destroyed(this);
         absolute_destruction_observer_ = nullptr;
         absolute_observer_ = nullptr;
