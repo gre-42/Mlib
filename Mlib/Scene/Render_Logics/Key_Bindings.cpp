@@ -38,6 +38,7 @@ KeyBindings::~KeyBindings() {
     for (auto& b : absolute_movable_idle_bindings_) { nodes.insert(b.node); }
     for (auto& b : absolute_movable_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : relative_movable_key_bindings_) { nodes.insert(b.node); }
+    for (auto& b : weapon_inventory_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : gun_key_bindings_) { nodes.insert(b.node); }
     for (auto& node : nodes) {
         node->remove_destruction_observer(this);
@@ -48,6 +49,7 @@ void KeyBindings::notify_destroyed(void* destroyed_object) {
     absolute_movable_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     absolute_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     relative_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    weapon_inventory_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     gun_key_bindings_.remove_if([this, destroyed_object](const auto& b){return b.node == destroyed_object;});
 }
 
