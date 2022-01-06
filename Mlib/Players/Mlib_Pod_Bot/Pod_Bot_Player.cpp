@@ -47,6 +47,12 @@ PodBotPlayer::PodBotPlayer(const Player& player)
     cb.bot->bInWater = false;
     cb.bot->curr_travel_flags = 0;
 
+    cb.bot->i_TaskDeep = 0;
+    cb.bot->i_PathDeep = 0;
+    cb.bot->i_ChatDeep = 0;
+    cb.bot->i_msecval = 0;  // KWo - 17.03.2007
+    cb.bot->f_msecvalrest = 0.0;  // KWo - 17.03.2007
+
     edict->v.weapons = (1 << weapon);
 }
 
