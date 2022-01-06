@@ -235,25 +235,25 @@ void BvhLoader::smoothen() {
     if (!cfg_.periodic) {
         throw std::runtime_error("Aperiodic smoothing not implemented");
     }
-    std::vector<std::map<std::string, OffsetAndQuaternion<float>>> smoothed_transformed_frames(transformed_frames_.size());
-    auto get_cyclic_frame = [this](int i){
-        return transformed_frames_[(size_t)mod(i, (int)transformed_frames_.size())];
+    std::vector<std::map<std::string, OffsetAndQuaternion<float>>> smoothed_transformed_frames((transformed_frames_.size() - 1));
+    const auto& get_cyclic_frame = [this](int i){
+        return transformed_frames_.at((size_t)mod(i, (int)(transformed_frames_.size() - 1)));
     };
-    for (int t = 0; t < (int)transformed_frames_.size(); ++t) {
+    for (int t = 0; t < (int)(transformed_frames_.size() - 1); ++t) {
         std::map<std::string, OffsetAndQuaternion<float>> fn = get_cyclic_frame(t - (int)cfg_.smooth_radius);
         for (int i = t - (int)cfg_.smooth_radius + 1; i < t; ++i) {
             for (const auto& f : get_cyclic_frame(i)) {
-                fn[f.first] = fn[f.first].slerp(f.second, cfg_.smooth_alpha);
+                fn.at(f.first) = fn.at(f.first).slerp(f.second, cfg_.smooth_alpha);
             }
         }
         std::map<std::string, OffsetAndQuaternion<float>> fp = get_cyclic_frame(t + (int)cfg_.smooth_radius);
         for (int i = t + (int)cfg_.smooth_radius - 1; i > t; --i) {
             for (const auto& f : get_cyclic_frame(i)) {
-                fp[f.first] = fp[f.first].slerp(f.second, cfg_.smooth_alpha);
+                fp.at(f.first) = fp.at(f.first).slerp(f.second, cfg_.smooth_alpha);
             }
         }
         for (const auto& en : fn) {
-            smoothed_transformed_frames[t][en.first] = en.second.slerp(fp[en.first], 0.5);
+            smoothed_transformed_frames.at(t)[en.first] = en.second.slerp(fp.at(en.first), 0.5);
         }
     }
     transformed_frames_ = std::move(smoothed_transformed_frames);
