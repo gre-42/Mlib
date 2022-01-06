@@ -16,6 +16,16 @@
 
 using namespace Mlib;
 
+WeaponCarrier Mlib::weapon_carrier_from_string(const std::string& s) {
+    if (s == "avatar") {
+        return WeaponCarrier::AVATAR;
+    } else if (s == "vehicle") {
+        return WeaponCarrier::VEHICLE;
+    } else {
+        throw std::runtime_error("Unknown weapon carrier: \"" + s + '"');
+    }
+}
+
 Gun::Gun(
     Scene& scene,
     SceneNodeResources& scene_node_resources,
@@ -23,6 +33,7 @@ Gun::Gun(
     AdvanceTimes& advance_times,
     float cool_down,
     const RigidBodyIntegrator& parent_rbi,
+    SceneNode& punch_angle_node,
     const std::string& bullet_renderable_resource_name,
     const std::string& bullet_hitbox_resource_name,
     float bullet_mass,
@@ -30,24 +41,30 @@ Gun::Gun(
     float bullet_lifetime,
     float bullet_damage,
     const FixedArray<float, 3>& bullet_size,
-    DeleteNodeMutex& delete_node_mutex)
-: scene_{scene},
-  scene_node_resources_{scene_node_resources},
-  rigid_bodies_{rigid_bodies},
-  advance_times_{advance_times},
-  parent_rbi_{parent_rbi},
-  bullet_renderable_resource_name_{bullet_renderable_resource_name},
-  bullet_hitbox_resource_name_{bullet_hitbox_resource_name},
-  bullet_mass_{bullet_mass},
-  bullet_velocity_{bullet_velocity},
-  bullet_lifetime_{bullet_lifetime},
-  bullet_damage_{bullet_damage},
-  bullet_size_{bullet_size},
-  triggered_{false},
-  cool_down_{cool_down},
-  seconds_since_last_shot_{0},
-  absolute_model_matrix_{fixed_nans<float, 4, 4>()},
-  delete_node_mutex_{delete_node_mutex}
+    float punch_angle,
+    DeleteNodeMutex& delete_node_mutex,
+    WeaponCarrier weapon_carrier)
+: scene_{ scene },
+  scene_node_resources_{ scene_node_resources },
+  rigid_bodies_{ rigid_bodies },
+  advance_times_{ advance_times },
+  parent_rbi_{ parent_rbi },
+  punch_angle_node_{ punch_angle_node },
+  bullet_renderable_resource_name_{ bullet_renderable_resource_name },
+  bullet_hitbox_resource_name_{ bullet_hitbox_resource_name },
+  bullet_mass_{ bullet_mass },
+  bullet_velocity_{ bullet_velocity },
+  bullet_lifetime_{ bullet_lifetime },
+  bullet_damage_{ bullet_damage },
+  bullet_size_{ bullet_size },
+  triggered_{ false },
+  cool_down_{ cool_down },
+  seconds_since_last_shot_{ 0 },
+  absolute_model_matrix_{fixed_nans<float, 4, 4 >() },
+  delete_node_mutex_{ delete_node_mutex },
+  punch_angle_{ 0.f, 0.f, 0.f },
+  weapon_carrier_{ weapon_carrier },
+  rng_{ 0, 0.f, punch_angle }
 {}
 
 void Gun::advance_time(float dt) {
@@ -56,41 +73,49 @@ void Gun::advance_time(float dt) {
     if ((seconds_since_last_shot_ == cool_down_) && triggered_) {
         seconds_since_last_shot_ = 0;
         triggered_ = false;
-        std::shared_ptr<RigidBodyVehicle> rc = rigid_cuboid(rigid_bodies_, bullet_mass_, bullet_size_);
-        auto node = std::make_unique<SceneNode>();
-        FixedArray<float, 3> t = absolute_model_matrix_.t();
-        FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());
-        node->set_position(t);
-        node->set_rotation(r);
-        node->set_absolute_movable(rc.get());
-        rc->rbi_.rbp_.v_ =
-            - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
-            + parent_rbi_.rbp_.v_;
-        scene_node_resources_.instantiate_renderable(
-            bullet_renderable_resource_name_,
-            "bullet",
-            *node,
-            SceneNodeResourceFilter());
-        rigid_bodies_.add_rigid_body(
-            rc,
-            scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->cvas,
-            {},
-            CollidableMode::SMALL_MOVING);
-        std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
-        auto bullet = std::make_shared<Bullet>(
-            scene_,
-            scene_node_resources_,
-            *node,
-            advance_times_,
-            *rc,
-            bullet_node_name,
-            bullet_lifetime_,
-            bullet_damage_,
-            delete_node_mutex_);
-        rc->collision_observers_.push_back(bullet);
-        advance_times_.add_advance_time(bullet);
-        scene_.add_root_node(bullet_node_name, std::move(node));
+        generate_bullet();
     }
+    punch_angle_node_.set_rotation(punch_angle_);
+    punch_angle_ *= 0.95f;
+}
+
+void Gun::generate_bullet() {
+    std::shared_ptr<RigidBodyVehicle> rc = rigid_cuboid(rigid_bodies_, bullet_mass_, bullet_size_);
+    auto node = std::make_unique<SceneNode>();
+    FixedArray<float, 3> t = absolute_model_matrix_.t();
+    FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());
+    node->set_position(t);
+    node->set_rotation(r);
+    node->set_absolute_movable(rc.get());
+    rc->rbi_.rbp_.v_ =
+        - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
+        + parent_rbi_.rbp_.v_;
+    scene_node_resources_.instantiate_renderable(
+        bullet_renderable_resource_name_,
+        "bullet",
+        *node,
+        SceneNodeResourceFilter());
+    rigid_bodies_.add_rigid_body(
+        rc,
+        scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->cvas,
+        {},
+        CollidableMode::SMALL_MOVING);
+    std::string bullet_node_name = "bullet-" + std::to_string(scene_.get_uuid());
+    auto bullet = std::make_shared<Bullet>(
+        scene_,
+        scene_node_resources_,
+        *node,
+        advance_times_,
+        *rc,
+        bullet_node_name,
+        bullet_lifetime_,
+        bullet_damage_,
+        delete_node_mutex_);
+    rc->collision_observers_.push_back(bullet);
+    advance_times_.add_advance_time(bullet);
+    scene_.add_root_node(bullet_node_name, std::move(node));
+    punch_angle_ += FixedArray<float, 3>{ rng_(), rng_(), 0.f };
+
 }
 
 void Gun::set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix)
@@ -117,4 +142,8 @@ const TransformationMatrix<float, 3>& Gun::absolute_model_matrix() const {
 
 bool Gun::is_none_gun() const {
     return bullet_lifetime_ == 0;
+}
+
+const FixedArray<float, 3>& Gun::punch_angle() const {
+    return punch_angle_;
 }

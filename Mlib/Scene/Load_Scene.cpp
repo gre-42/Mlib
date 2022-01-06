@@ -317,6 +317,7 @@ void LoadScene::operator()(
         "^\\s*gun"
         "\\s+node=([\\w+-.]+)"
         "\\s+parent_rigid_body_node=([\\w+-.]+)"
+        "\\s+punch_angle_node=([\\w+-.]+)"
         "\\s+cool_down=([\\w+-.]+)"
         "\\s+renderable=([\\w-. \\(\\)/+-]+)"
         "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
@@ -324,7 +325,9 @@ void LoadScene::operator()(
         "\\s+velocity=([\\w+-.]+)"
         "\\s+lifetime=([\\w+-.]+)"
         "\\s+damage=([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+punch_angle=([\\w+-.]+)"
+        "\\s+carrier=(avatar|vehicle)$");
     static const DECLARE_REGEX(trigger_gun_ai_reg,
         "^\\s*trigger_gun_ai"
         "\\s+base_shooter_node=([\\w+-.]+)"
@@ -1938,24 +1941,28 @@ void LoadScene::operator()(
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
+            auto punch_angle_node = scene.get_node(match[3].str());
             std::shared_ptr<Gun> gun = std::make_shared<Gun>(
-                scene,                              // scene
-                scene_node_resources,               // scene_node_resources
-                physics_engine.rigid_bodies_,       // rigid_bodies
-                physics_engine.advance_times_,      // advance_times
-                safe_stof(match[3].str()),          // cool_down
-                rb->rbi_,                           // parent_rigid_body_node
-                match[4].str(),                     // bullet-renderable-resource-name
-                match[5].str(),                     // bullet-hitbox-resource-name
-                safe_stof(match[6].str()),          // bullet-mass
-                safe_stof(match[7].str()),          // bullet_velocity
-                safe_stof(match[8].str()),          // bullet-lifetime
-                safe_stof(match[9].str()),          // bullet-damage
-                FixedArray<float, 3>{               // bullet-size
-                    safe_stof(match[10].str()),     // bullet-size-x
-                    safe_stof(match[11].str()),     // bullet-size-y
-                    safe_stof(match[12].str())},    // bullet-size-z
-                delete_node_mutex);                    // delete_node_mutex
+                scene,                                         // scene
+                scene_node_resources,                          // scene_node_resources
+                physics_engine.rigid_bodies_,                  // rigid_bodies
+                physics_engine.advance_times_,                 // advance_times
+                safe_stof(match[4].str()),                     // cool_down
+                rb->rbi_,                                      // parent_rigid_body_node
+                *punch_angle_node,                             // punch_angle_node
+                match[5].str(),                                // bullet-renderable-resource-name
+                match[6].str(),                                // bullet-hitbox-resource-name
+                safe_stof(match[7].str()),                     // bullet-mass
+                safe_stof(match[8].str()),                     // bullet_velocity
+                safe_stof(match[9].str()),                     // bullet-lifetime
+                safe_stof(match[10].str()),                    // bullet-damage
+                FixedArray<float, 3>{                          // bullet-size
+                    safe_stof(match[11].str()),                // bullet-size-x
+                    safe_stof(match[12].str()),                // bullet-size-y
+                    safe_stof(match[13].str())},               // bullet-size-z
+                safe_stof(match[14].str()),                    // punch_angle
+                delete_node_mutex,                             // delete_node_mutex
+                weapon_carrier_from_string(match[15].str()));  // weapon carrier
             linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
         } else if (Mlib::re::regex_match(line, match, trigger_gun_ai_reg)) {
             auto base_shooter_node = scene.get_node(match[1].str());

@@ -143,6 +143,7 @@ public:
     bool has_rigid_body() const;
     std::string vehicle_name() const;
     FixedArray<float, 3> gun_direction() const;
+    FixedArray<float, 3> punch_angle() const;
     void run_move(
         float yaw,
         float pitch,

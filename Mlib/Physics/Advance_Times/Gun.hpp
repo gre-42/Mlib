@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
+#include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <atomic>
 #include <mutex>
 
@@ -15,6 +16,14 @@ class Scene;
 class RigidBodies;
 class AdvanceTimes;
 class DeleteNodeMutex;
+class SceneNode;
+
+enum class WeaponCarrier {
+    AVATAR,
+    VEHICLE
+};
+
+WeaponCarrier weapon_carrier_from_string(const std::string& s);
 
 class Gun: public DestructionObserver, public AbsoluteObserver, public AdvanceTime {
 public:
@@ -24,6 +33,7 @@ public:
         AdvanceTimes& advance_times,
         float cool_down,
         const RigidBodyIntegrator& parent_rbi,
+        SceneNode& punch_angle_node,
         const std::string& bullet_renderable_resource_name,
         const std::string& bullet_hitbox_resource_name,
         float bullet_mass,
@@ -31,19 +41,24 @@ public:
         float bullet_lifetime,
         float bullet_damage,
         const FixedArray<float, 3>& bullet_size,
-        DeleteNodeMutex& delete_node_mutex);
+        float punch_angle,
+        DeleteNodeMutex& delete_node_mutex,
+        WeaponCarrier weapon_carrier);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
     void trigger();
     const TransformationMatrix<float, 3>& absolute_model_matrix() const;
     bool is_none_gun() const;
+    const FixedArray<float, 3>& punch_angle() const;
 private:
+    void generate_bullet();
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
     RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
     const RigidBodyIntegrator& parent_rbi_;
+    SceneNode& punch_angle_node_;
     std::string bullet_renderable_resource_name_;
     std::string bullet_hitbox_resource_name_;
     float bullet_mass_;
@@ -56,6 +71,9 @@ private:
     float seconds_since_last_shot_;
     TransformationMatrix<float, 3> absolute_model_matrix_;
     DeleteNodeMutex& delete_node_mutex_;
+    FixedArray<float, 3> punch_angle_;
+    WeaponCarrier weapon_carrier_;
+    NormalRandomNumberGenerator<float> rng_;
 };
 
 }

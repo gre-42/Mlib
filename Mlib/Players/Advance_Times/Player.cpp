@@ -463,6 +463,14 @@ FixedArray<float, 3> Player::gun_direction() const {
     return -z3_from_3x3(gun()->absolute_model_matrix().R());
 }
 
+FixedArray<float, 3> Player::punch_angle() const {
+    delete_node_mutex_.notify_reading();
+    if (gun_node_ == nullptr) {
+        throw std::runtime_error("punch_angle despite gun nullptr in player \"" + name() + '"');
+    }
+    return gun()->punch_angle();
+}
+
 void Player::run_move(
     float yaw,
     float pitch,
