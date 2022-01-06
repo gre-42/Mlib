@@ -22,7 +22,6 @@
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
-#include <Mlib/Physics/Advance_Times/Trigger_Gun_Ai.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
@@ -328,11 +327,6 @@ void LoadScene::operator()(
         "\\s+size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+punch_angle=([\\w+-.]+)"
         "\\s+carrier=(avatar|vehicle)$");
-    static const DECLARE_REGEX(trigger_gun_ai_reg,
-        "^\\s*trigger_gun_ai"
-        "\\s+base_shooter_node=([\\w+-.]+)"
-        "\\s+base_target_node=([\\w+-.]+)"
-        "\\s+gun_node=([\\w+-.]+)$");
     static const DECLARE_REGEX(damageable_reg,
         "^\\s*damageable node=([\\w+-.]+)"
         "\\s+health=([\\w+-.]+)$");
@@ -1964,31 +1958,6 @@ void LoadScene::operator()(
                 delete_node_mutex,                             // delete_node_mutex
                 weapon_carrier_from_string(match[15].str()));  // weapon carrier
             linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
-        } else if (Mlib::re::regex_match(line, match, trigger_gun_ai_reg)) {
-            auto base_shooter_node = scene.get_node(match[1].str());
-            auto rb_shooter = dynamic_cast<RigidBodyVehicle*>(base_shooter_node->get_absolute_movable());
-            if (rb_shooter == nullptr) {
-                throw std::runtime_error("Absolute movable is not a rigid body");
-            }
-            auto base_target_node = scene.get_node(match[2].str());
-            auto rb_target = dynamic_cast<RigidBodyVehicle*>(base_target_node->get_absolute_movable());
-            if (rb_target == nullptr) {
-                throw std::runtime_error("Absolute movable is not a rigid body");
-            }
-            auto gun_node = scene.get_node(match[3].str());
-            auto gun = dynamic_cast<Gun*>(gun_node->get_absolute_observer());
-            if (gun == nullptr) {
-                throw std::runtime_error("Absolute observer is not a gun");
-            }
-            std::shared_ptr<TriggerGunAi> trigger_gun_ai = std::make_shared<TriggerGunAi>(
-                *base_shooter_node,
-                *base_target_node,
-                *gun_node,
-                rb_shooter->rbi_,
-                rb_target->rbi_,
-                physics_engine,
-                *gun);
-            physics_engine.advance_times_.add_advance_time(trigger_gun_ai);
         } else if (Mlib::re::regex_match(line, match, damageable_reg)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
