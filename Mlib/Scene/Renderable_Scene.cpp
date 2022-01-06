@@ -13,6 +13,7 @@ RenderableScene::RenderableScene(
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
+    CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
     GLFWwindow* window,
     const SceneConfigResource& config,
@@ -31,6 +32,7 @@ RenderableScene::RenderableScene(
   selected_cameras_{scene_},
   button_states_{button_states},
   cursor_states_{cursor_states},
+  scroll_wheel_states_{scroll_wheel_states},
   user_object_{
       .base_user_object{
           .fullscreen_width = scene_config.render_config.fullscreen_width,
@@ -38,6 +40,7 @@ RenderableScene::RenderableScene(
       },
       .button_states = button_states,
       .cursor_states = cursor_states,
+      .scroll_wheel_states = scroll_wheel_states,
       .cameras = selected_cameras_,
       .focuses = ui_focus.focuses,
       .wire_frame = scene_config.render_config.wire_frame,

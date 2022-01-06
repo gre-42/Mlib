@@ -573,6 +573,7 @@ int main(int argc, char** argv) {
         Focuses focuses = {Focus::SCENE};
         ButtonStates button_states;
         CursorStates cursor_states;
+        CursorStates scroll_wheel_states;
         StandardCameraLogic standard_camera_logic{
             scene,
             selected_cameras,
@@ -584,6 +585,7 @@ int main(int argc, char** argv) {
         FlyingCameraUserClass user_object{
             .button_states = button_states,
             .cursor_states = cursor_states,
+            .scroll_wheel_states = scroll_wheel_states,
             .cameras = selected_cameras,
             .focuses = focuses,
             .wire_frame = render_config.wire_frame,

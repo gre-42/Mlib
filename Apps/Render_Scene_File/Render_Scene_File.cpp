@@ -199,6 +199,7 @@ int main(int argc, char** argv) {
 
         ButtonStates button_states;
         CursorStates cursor_states;
+        CursorStates scroll_wheel_states;
         UiFocus ui_focus;
         SubstitutionMap external_substitutions;
         // FifoLog fifo_log{10 * 1000};
@@ -293,6 +294,7 @@ int main(int argc, char** argv) {
                     scene_config,
                     button_states,
                     cursor_states,
+                    scroll_wheel_states,
                     ui_focus,
                     render2.window(),
                     renderable_scenes);

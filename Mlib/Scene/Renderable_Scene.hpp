@@ -62,6 +62,7 @@ public:
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,
+        CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
         GLFWwindow* window,
         const SceneConfigResource& config,
@@ -83,6 +84,7 @@ public:
     SelectedCameras selected_cameras_;
     ButtonStates& button_states_;
     CursorStates& cursor_states_;
+    CursorStates& scroll_wheel_states_;
     FlyingCameraUserClass user_object_;
     SetFps physics_set_fps_{"Physics FPS: "};
     FifoLog fifo_log_{10 * 1000};

@@ -8,6 +8,7 @@ struct CameraKeyBinding;
 struct AbsoluteMovableIdleBinding;
 struct AbsoluteMovableKeyBinding;
 struct RelativeMovableKeyBinding;
+struct WeaponInventoryKeyBinding;
 struct GunKeyBinding;
 class SelectedCameras;
 class ButtonPress;
@@ -31,12 +32,14 @@ public:
     void add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);
     void add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b);
     void add_relative_movable_key_binding(const RelativeMovableKeyBinding& b);
+    void add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b);
     void add_gun_key_binding(const GunKeyBinding& b);
 private:
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;
     std::list<AbsoluteMovableKeyBinding> absolute_movable_key_bindings_;
     std::list<RelativeMovableKeyBinding> relative_movable_key_bindings_;
+    std::list<WeaponInventoryKeyBinding> weapon_inventory_key_bindings_;
     std::list<GunKeyBinding> gun_key_bindings_;
 
     ButtonPress& button_press_;

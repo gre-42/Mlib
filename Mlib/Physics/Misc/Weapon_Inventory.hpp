@@ -14,6 +14,8 @@ public:
     virtual void modify_node() override;
     void add_weapon(const std::string& weapon_name, const std::function<void()>& create);
     void equip_weapon(const std::string& weapon_name);
+    void equip_next_weapon();
+    void equip_previous_weapon();
 private:
     SceneNode& weapon_visual_node_;
     SceneNode& weapon_physics_node_;

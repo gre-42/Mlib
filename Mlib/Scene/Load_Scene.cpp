@@ -44,6 +44,7 @@
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Controls_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Countdown_Logic.hpp>
@@ -174,6 +175,7 @@ void LoadScene::operator()(
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
+    CursorStates& scroll_wheel_states,
     UiFocus& ui_focus,
     GLFWwindow* window,
     std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes)
@@ -452,6 +454,16 @@ void LoadScene::operator()(
         "\\s+angular_velocity_press=([\\w+-.]+)"
         "\\s+angular_velocity_repeat=([\\w+-.]+)"
         "\\s+speed_cursor=([\\w+-.]+)$");
+    static const DECLARE_REGEX(weapon_inventory_key_binding_reg,
+        "^\\s*weapon_inventory_key_binding"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+key=([\\w+-.]+)"
+        "(?:\\s+gamepad_button=([\\w+-.]*))?"
+        "\\s+joystick_digital_axis=([\\w+-.]*)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
+        "(?:\\s+scroll_wheel_axis=(0|1))?"
+        "(?:\\s+scroll_wheel_sign_and_scale=([\\w+-.]+))?"
+        "\\s+weapon_increment=([\\d-]+)$");
     static const DECLARE_REGEX(gun_key_binding_reg,
         "^\\s*gun_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -864,6 +876,7 @@ void LoadScene::operator()(
                 scene_config,
                 button_states,
                 cursor_states,
+                scroll_wheel_states,
                 ui_focus,
                 window,
                 SceneConfigResource{
@@ -2236,6 +2249,25 @@ void LoadScene::operator()(
                 .angular_velocity_press = safe_stof(match[11].str()),
                 .angular_velocity_repeat = safe_stof(match[12].str()),
                 .speed_cursor = safe_stof(match[13].str())});
+        } else if (Mlib::re::regex_match(line, match, weapon_inventory_key_binding_reg)) {
+            try {
+                scene.get_node(match[1].str())->get_node_modifier();
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Node \"" + match[1].str() + "\": " + e.what());
+            }
+            key_bindings.add_weapon_inventory_key_binding(WeaponInventoryKeyBinding{
+                .base_key = {
+                    .key = match[2].str(),
+                    .gamepad_button = match[3].str(),
+                    .joystick_axis = match[4].str(),
+                    .joystick_axis_sign = safe_stof(match[5].str())},
+                .base_scroll_wheel_axis = {
+                    .axis = match[6].matched ? safe_stou(match[6].str()) : SIZE_MAX,
+                    .sign_and_scale = match[7].matched ? safe_stof(match[7].str()) : NAN,
+                },
+                .scroll_wheel_movement = std::make_shared<CursorMovement>(scroll_wheel_states),
+                .node = scene.get_node(match[1].str()),
+                .direction = safe_stoi(match[8].str())});
         } else if (Mlib::re::regex_match(line, match, gun_key_binding_reg)) {
             key_bindings.add_gun_key_binding(GunKeyBinding{
                 .base = {

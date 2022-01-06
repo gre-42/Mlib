@@ -33,6 +33,7 @@ public:
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,
+        CursorStates& scroll_wheel_states,
         UiFocus& ui_focus,
         GLFWwindow* window,
         std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);

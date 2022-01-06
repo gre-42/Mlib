@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <string>
 
@@ -11,7 +10,6 @@ class SceneNode;
 
 struct AbsoluteMovableKeyBinding {
     BaseKeyBinding base_key;
-    BaseAxisBinding base_axis;
     SceneNode* node;
     VectorAtPosition<float, 3> force;
     FixedArray<float, 3> rotate;

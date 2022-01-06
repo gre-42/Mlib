@@ -22,6 +22,7 @@ public:
     BaseUserObject base_user_object;
     ButtonStates& button_states;
     CursorStates& cursor_states;
+    CursorStates& scroll_wheel_states;
     SelectedCameras& cameras;
     Focuses& focuses;
     bool& wire_frame;

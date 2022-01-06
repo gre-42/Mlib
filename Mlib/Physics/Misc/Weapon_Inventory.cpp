@@ -28,3 +28,32 @@ void WeaponInventory::add_weapon(const std::string& weapon_name, const std::func
 void WeaponInventory::equip_weapon(const std::string& weapon_name) {
     desired_weapon_ = weapon_name;
 }
+
+void WeaponInventory::equip_next_weapon() {
+    if (create_weapons_.empty()) {
+        return;
+    }
+    auto it = create_weapons_.find(desired_weapon_);
+    if (it == create_weapons_.end()) {
+        desired_weapon_ = create_weapons_.begin()->first;
+    } else {
+        ++it;
+        if (it == create_weapons_.end()) {
+            return;
+        }
+        desired_weapon_ = it->first;
+    }
+}
+
+void WeaponInventory::equip_previous_weapon() {
+    if (create_weapons_.empty()) {
+        return;
+    }
+    auto it = create_weapons_.find(desired_weapon_);
+    if (it == create_weapons_.end()) {
+        desired_weapon_ = create_weapons_.rbegin()->first;
+    } else if (it != create_weapons_.begin()) {
+        --it;
+        desired_weapon_ = it->first;
+    }
+}

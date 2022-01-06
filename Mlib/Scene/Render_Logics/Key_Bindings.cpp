@@ -6,11 +6,13 @@
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
@@ -66,6 +68,11 @@ void KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBindi
 void KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
     b.node->add_destruction_observer(this, true);
     relative_movable_key_bindings_.push_back(b);
+}
+
+void KeyBindings::add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    weapon_inventory_key_bindings_.push_back(b);
 }
 
 void KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
@@ -228,6 +235,23 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     }
                 } else {
                     throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
+                }
+            }
+        }
+        for (auto& k : weapon_inventory_key_bindings_) {
+            float beta = k.scroll_wheel_movement->axis_alpha(k.base_scroll_wheel_axis);
+            if (!std::isnan(beta)) {
+                auto m = k.node->get_node_modifier();
+                auto inventory = dynamic_cast<WeaponInventory*>(m);
+                if (inventory == nullptr) {
+                    throw std::runtime_error("Node modifier is not a weapon inventory");
+                }
+                if (k.direction == 1) {
+                    inventory->equip_next_weapon();
+                } else if (k.direction == -1) {
+                    inventory->equip_previous_weapon();
+                } else {
+                    throw std::runtime_error("Inventory direction not -1 or 1");
                 }
             }
         }

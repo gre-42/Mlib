@@ -3,7 +3,6 @@
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
 #include <Mlib/Render/Input_Map/Mouse_Button_Map.hpp>
-#include <Mlib/Render/Key_Bindings/Base_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <cmath>
@@ -83,15 +82,6 @@ float ButtonPress::key_alpha(const BaseKeyBinding& k, float max_duration) {
         return std::min(duration.count(), max_duration) / max_duration;
     } else {
         key_down_time_[key_id] = default_time;
-        return NAN;
-    }
-}
-
-float ButtonPress::axis_beta(const BaseAxisBinding& k) {
-    std::lock_guard lock{button_states_.update_gamepad_state_mutex};
-    if (!k.joystick_axis.empty()) {
-        return button_states_.gamepad_state.axes[glfw_joystick_axes.at(k.joystick_axis)] * k.joystick_axis_sign;
-    } else {
         return NAN;
     }
 }
