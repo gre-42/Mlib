@@ -149,7 +149,7 @@ void RotatingLogic::render(
         1));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    scene_.render(vp, iv, render_config, scene_graph_config, frame_id.external_render_pass);
+    scene_.render(vp, iv, *cn, render_config, scene_graph_config, frame_id.external_render_pass);
 }
 
 float RotatingLogic::near_plane() const {

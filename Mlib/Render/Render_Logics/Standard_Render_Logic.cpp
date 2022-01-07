@@ -70,6 +70,7 @@ void StandardRenderLogic::render(
             scene_.render(
                 child_logic_.vp(),
                 child_logic_.iv(),
+                child_logic_.camera_node(),
                 render_config,
                 scene_graph_config,
                 frame_id.external_render_pass,
@@ -117,6 +118,10 @@ const FixedArray<float, 4, 4>& StandardRenderLogic::vp() const {
 
 const TransformationMatrix<float, 3>& StandardRenderLogic::iv() const {
     return child_logic_.iv();
+}
+
+const SceneNode& StandardRenderLogic::camera_node() const {
+    return child_logic_.camera_node();
 }
 
 bool StandardRenderLogic::requires_postprocessing() const {

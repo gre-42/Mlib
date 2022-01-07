@@ -14,10 +14,11 @@ HudImageLogic::HudImageLogic(
     ResourceUpdateCycle update_cycle,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size)
-: FillWithTextureLogic{image_resource_name, update_cycle},
-  advance_times_{advance_times},
-  center_{center},
-  size_{size}
+: FillWithTextureLogic{ image_resource_name, update_cycle },
+  advance_times_{ advance_times },
+  center_{ center },
+  size_{ size },
+  is_visible_{ false }
 {
     scene_node.add_destruction_observer(this);
 }
@@ -38,6 +39,9 @@ void HudImageLogic::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    if (!is_visible_) {
+        return;
+    }
     update_texture_id();
 
     float aspect_ratio = width / (float)height;
@@ -73,4 +77,17 @@ void HudImageLogic::render(
     CHK(glBindVertexArray(0));
     CHK(glDisable(GL_CULL_FACE));
     CHK(glDisable(GL_BLEND));
+}
+
+void HudImageLogic::notify_rendering(const SceneNode& scene_node, const SceneNode& camera_node) const
+{
+    const_cast<HudImageLogic*>(this)->is_visible_ = (&scene_node == &camera_node);
+}
+
+bool HudImageLogic::requires_render_pass() const {
+    return false;
+}
+
+bool HudImageLogic::requires_blending_pass() const {
+    return true;
 }

@@ -210,7 +210,7 @@ int main(int argc, char** argv)
         mat4x4_mul(mvp, p, m);
 
         glUseProgram(program);
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
+        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)mvp);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
         SDL_GL_SwapWindow(window);

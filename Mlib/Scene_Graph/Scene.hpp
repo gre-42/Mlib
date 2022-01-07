@@ -52,6 +52,7 @@ public:
     void render(
         const FixedArray<float, 4, 4>& vp,
         const TransformationMatrix<float, 3>& iv,
+        const SceneNode& camera_node,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,

@@ -1,6 +1,7 @@
 #include "Render_Logic.hpp"
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <stdexcept>
 
 using namespace Mlib;
 
@@ -25,6 +26,10 @@ const FixedArray<float, 4, 4>& RenderLogic::vp() const {
 
 const TransformationMatrix<float, 3>& RenderLogic::iv() const {
     throw std::runtime_error("iv not implemented");
+}
+
+const SceneNode& RenderLogic::camera_node() const {
+    throw std::runtime_error("camera_node not implemented");
 }
 
 bool RenderLogic::requires_postprocessing() const {

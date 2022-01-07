@@ -97,6 +97,7 @@ public:
         const FixedArray<float, 4, 4>& vp,
         const TransformationMatrix<float, 3>& parent_m,
         const TransformationMatrix<float, 3>& iv,
+        const SceneNode& camera_node,
         const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
         std::list<Blended>& blended,
         const RenderConfig& render_config,

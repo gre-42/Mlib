@@ -223,6 +223,7 @@ SceneNode* Scene::get_node(const std::string& name) const {
 void Scene::render(
     const FixedArray<float, 4, 4>& vp,
     const TransformationMatrix<float, 3>& iv,
+    const SceneNode& camera_node,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
@@ -239,7 +240,7 @@ void Scene::render(
         if (it == root_nodes_.end()) {
             throw std::runtime_error("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
         }
-        it->second->render(vp, TransformationMatrix<float, 3>::identity(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+        it->second->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
     } else {
         if (!external_render_pass.black_node_name.empty()) {
             throw std::runtime_error("Expected empty black node");
@@ -258,10 +259,10 @@ void Scene::render(
         }
         LOG_INFO("Scene::render non-blended");
         for (const auto& n : root_nodes_) {
-            n.second->render(vp, TransformationMatrix<float, 3>::identity(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+            n.second->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
         }
         for (const auto& n : static_root_nodes_) {
-            n.second->render(vp, TransformationMatrix<float, 3>::identity(), iv, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
+            n.second->render(vp, TransformationMatrix<float, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, style_.get());
         }
         LOG_INFO("Scene::render large_aggregate_renderer");
         if (large_aggregate_renderer_ != nullptr) {
@@ -375,7 +376,7 @@ void Scene::render(
             lights,
             scene_graph_config,
             render_config,
-            {external_render_pass, InternalRenderPass::BLENDED},
+            { external_render_pass, InternalRenderPass::BLENDED },
             b.style);
     }
 }

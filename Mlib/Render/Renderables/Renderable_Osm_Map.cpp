@@ -35,36 +35,6 @@ bool RenderableOsmMap::requires_blending_pass() const
     return false;
 }
 
-int RenderableOsmMap::continuous_blending_z_order() const
-{
-    return 0;
-}
-
-void RenderableOsmMap::render(
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
-    const TransformationMatrix<float, 3>& iv,
-    const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
-    const SceneGraphConfig& scene_graph_config,
-    const RenderConfig& render_config,
-    const RenderPass& render_pass,
-    const Style* style) const
-{}
-
-void RenderableOsmMap::append_sorted_aggregates_to_queue(
-    const FixedArray<float, 4, 4>& mvp,
-    const TransformationMatrix<float, 3>& m,
-    const SceneGraphConfig& scene_graph_config,
-    const ExternalRenderPass& external_render_pass,
-    std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const
-{}
-
-void RenderableOsmMap::append_large_aggregates_to_queue(
-    const TransformationMatrix<float, 3>& m,
-    const SceneGraphConfig& scene_graph_config,
-    std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const
-{}
-
 void RenderableOsmMap::append_sorted_instances_to_queue(
     const FixedArray<float, 4, 4>& mvp,
     const TransformationMatrix<float, 3>& m,
@@ -199,10 +169,3 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
         }
     }
 }
-
-void RenderableOsmMap::append_large_instances_to_queue(
-    const TransformationMatrix<float, 3>& m,
-    uint32_t billboard_id,
-    const SceneGraphConfig& scene_graph_config,
-    std::list<TransformedColoredVertexArray>& instances_queue) const
-{}

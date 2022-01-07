@@ -189,7 +189,7 @@ void Mlib::render(const std::vector<ColoredVertex>& vertices, bool rotate, Array
         mat4x4_mul(mvp, mvp, m);
 
         CHK(glUseProgram(program));
-        CHK(glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp));
+        CHK(glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)mvp));
         CHK(glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.size()));
 
         if (output != nullptr) {

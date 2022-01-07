@@ -361,6 +361,7 @@ void SceneNode::render(
     const FixedArray<float, 4, 4>& vp,
     const TransformationMatrix<float, 3>& parent_m,
     const TransformationMatrix<float, 3>& iv,
+    const SceneNode& camera_node,
     const std::list<std::pair<TransformationMatrix<float, 3>, Light*>>& lights,
     std::list<Blended>& blended,
     const RenderConfig& render_config,
@@ -379,27 +380,36 @@ void SceneNode::render(
         ? style_.get()
         : style;
     for (const auto& r : renderables_) {
+        r.second->notify_rendering(*this, camera_node);
         if (r.second->requires_blending_pass())
         {
-            blended.push_back(Blended{.z_order = r.second->continuous_blending_z_order(), .mvp = mvp, .m = m, .renderable = r.second.get(), .style = estyle});
+            blended.push_back(Blended{
+                .z_order = r.second->continuous_blending_z_order(),
+                .mvp = mvp,
+                .m = m,
+                .renderable = r.second.get(),
+                .style = estyle});
         }
-        r.second->render(
-            mvp,
-            m,
-            iv,
-            lights,
-            scene_graph_config,
-            render_config,
-            {external_render_pass, InternalRenderPass::INITIAL},
-            (estyle != nullptr) && Mlib::re::regex_search(r.first, estyle->selector)
-                ? estyle
-                : nullptr);
+        if (r.second->requires_render_pass()) {
+            r.second->render(
+                mvp,
+                m,
+                iv,
+                lights,
+                scene_graph_config,
+                render_config,
+                {external_render_pass, InternalRenderPass::INITIAL},
+                (estyle != nullptr) && Mlib::re::regex_search(r.first, estyle->selector)
+                    ? estyle
+                    : nullptr);
+        }
     }
     for (const auto& n : children_) {
         n.second.scene_node->render(
             mvp,
             m,
             iv,
+            camera_node,
             lights,
             blended,
             render_config,

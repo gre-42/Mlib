@@ -129,7 +129,7 @@ void SkyboxLogic::render(
         vp(1, 3) = 0;
         vp(2, 3) = 0;
         vp(3, 3) = 1;
-        CHK(glUniformMatrix4fv(rp_.vp_location, 1, GL_TRUE, (const GLfloat*) vp.flat_begin()));
+        CHK(glUniformMatrix4fv(rp_.vp_location, 1, GL_TRUE, vp.flat_begin()));
 
         CHK(glUniform1i(rp_.skybox_location, 0));
         CHK(glActiveTexture(GL_TEXTURE0));
@@ -159,6 +159,10 @@ const FixedArray<float, 4, 4>& SkyboxLogic::vp() const {
 
 const TransformationMatrix<float, 3>& SkyboxLogic::iv() const {
     return child_logic_.iv();
+}
+
+const SceneNode& SkyboxLogic::camera_node() const {
+    return child_logic_.camera_node();
 }
 
 bool SkyboxLogic::requires_postprocessing() const {

@@ -285,7 +285,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva glUseProgram");
     CHK(glUseProgram(rp.program));
     LOG_INFO("RenderableColoredVertexArray::render_cva mvp");
-    CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, (const GLfloat*) mvp.flat_begin()));
+    CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, mvp.flat_begin()));
     if (cva->material.number_of_frames != 1) {
         float uv_offset_u;
         if ((style != nullptr) &&
@@ -319,7 +319,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform2fv(rp.vertex_scale_location, n, (const GLfloat*)vertex_scale.data()));
     }
     if (!has_instances && has_lookat) {
-        CHK(glUniform3fv(rp.instance_position_location, 1, (const GLfloat*) m.t().flat_begin()));
+        CHK(glUniform3fv(rp.instance_position_location, 1, m.t().flat_begin()));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva textures");
     for (size_t i = 0; i < ntextures_color; ++i) {
@@ -357,12 +357,12 @@ void RenderableColoredVertexArray::render_cva(
     {
         bool light_dir_required = (any(diffusivity != 0.f) || any(specularity != 0.f));
         if (light_dir_required || fragments_depend_on_distance || fragments_depend_on_normal) {
-            CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, (const GLfloat*)m.affine().flat_begin()));
-            // CHK(glUniform3fv(rp.light_position_location, 1, (const GLfloat*) t3_from_4x4(filtered_lights.front().first).flat_begin()));
+            CHK(glUniformMatrix4fv(rp.m_location, 1, GL_TRUE, m.affine().flat_begin()));
+            // CHK(glUniform3fv(rp.light_position_location, 1, t3_from_4x4(filtered_lights.front().first).flat_begin()));
             if (light_dir_required) {
                 size_t i = 0;
                 for (const auto& l : filtered_lights) {
-                    CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, (const GLfloat*)z3_from_3x3(l.first.R()).flat_begin()));
+                    CHK(glUniform3fv(rp.light_dir_locations.at(i++), 1, z3_from_3x3(l.first.R()).flat_begin()));
                 }
             }
         }
@@ -371,13 +371,13 @@ void RenderableColoredVertexArray::render_cva(
         size_t i = 0;
         for (const auto& l : filtered_lights) {
             if (any(ambience != 0.f)) {
-                CHK(glUniform3fv(rp.light_ambiences.at(i), 1, (const GLfloat*) l.second->ambience.flat_begin()));
+                CHK(glUniform3fv(rp.light_ambiences.at(i), 1, l.second->ambience.flat_begin()));
             }
             if (any(diffusivity != 0.f)) {
-                CHK(glUniform3fv(rp.light_diffusivities.at(i), 1, (const GLfloat*) l.second->diffusivity.flat_begin()));
+                CHK(glUniform3fv(rp.light_diffusivities.at(i), 1, l.second->diffusivity.flat_begin()));
             }
             if (any(specularity != 0.f)) {
-                CHK(glUniform3fv(rp.light_specularities.at(i), 1, (const GLfloat*) l.second->specularity.flat_begin()));
+                CHK(glUniform3fv(rp.light_specularities.at(i), 1, l.second->specularity.flat_begin()));
             }
             ++i;
         }
@@ -386,16 +386,16 @@ void RenderableColoredVertexArray::render_cva(
         if (vc.orthographic()) {
             auto d = z3_from_3x3(iv.R());
             d /= std::sqrt(sum(squared(d)));
-            CHK(glUniform3fv(rp.view_dir, 1, (const GLfloat*) d.flat_begin()));
+            CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
         } else {
-            CHK(glUniform3fv(rp.view_pos, 1, (const GLfloat*) iv.t().flat_begin()));
+            CHK(glUniform3fv(rp.view_pos, 1, iv.t().flat_begin()));
         }
     }
     if (!rcva_->triangles_res_->bone_indices.empty()) {
         size_t i = 0;
         for (const auto& l : absolute_bone_transformations) {
-            CHK(glUniform3fv(rp.pose_positions.at(i), 1, (const GLfloat*) l.offset().flat_begin()));
-            CHK(glUniform4fv(rp.pose_quaternions.at(i), 1, (const GLfloat*) l.quaternion().vector().flat_begin()));
+            CHK(glUniform3fv(rp.pose_positions.at(i), 1, l.offset().flat_begin()));
+            CHK(glUniform4fv(rp.pose_quaternions.at(i), 1, l.quaternion().vector().flat_begin()));
             ++i;
         }
     }
@@ -429,7 +429,7 @@ void RenderableColoredVertexArray::render_cva(
                 std::string mname = "lightmap_color." + l.second->node_name;
                 const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
                 auto mvp_light = dot2d(light_vp, m.affine());
-                CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
+                CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
                 
                 CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + i)));
                 CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
@@ -450,7 +450,7 @@ void RenderableColoredVertexArray::render_cva(
                 std::string mname = "lightmap_depth" + l.second->node_name;
                 const auto& light_vp = secondary_rendering_resources_->get_vp(mname);
                 auto mvp_light = dot2d(light_vp, m.affine());
-                CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, (const GLfloat*) mvp_light.flat_begin()));
+                CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.flat_begin()));
 
                 CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + i)));
                 CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_->get_texture({.color = mname, .color_mode = ColorMode::RGB})));
@@ -480,7 +480,7 @@ void RenderableColoredVertexArray::render_cva(
         {
             const auto& dirtmap_vp = secondary_rendering_resources_->get_vp(mname);
             auto mvp_dirtmap = dot2d(dirtmap_vp, m.affine());
-            CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, (const GLfloat*)mvp_dirtmap.flat_begin()));
+            CHK(glUniformMatrix4fv(rp.mvp_dirtmap_location, 1, GL_TRUE, mvp_dirtmap.flat_begin()));
         }
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + ntextures_color + filtered_lights.size() + ntextures_normal + 0)));

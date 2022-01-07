@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <iosfwd>
-#include <stdexcept>
 
 namespace Mlib {
 
@@ -12,6 +11,7 @@ struct RenderResults;
 struct RenderedSceneDescriptor;
 struct SceneGraphConfig;
 struct FocusFilter;
+class SceneNode;
 
 class RenderLogic {
 public:
@@ -28,6 +28,7 @@ public:
     virtual float far_plane() const;
     virtual const FixedArray<float, 4, 4>& vp() const;
     virtual const TransformationMatrix<float, 3>& iv() const;
+    virtual const SceneNode& camera_node() const;
     virtual bool requires_postprocessing() const;
     virtual void print(std::ostream& ostr, size_t depth) const = 0;
 };

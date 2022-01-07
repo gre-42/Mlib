@@ -643,7 +643,8 @@ void LoadScene::operator()(
         "\\s+focus_mask=(menu|loading|countdown_any|scene)$");
     static const DECLARE_REGEX(hud_image_reg,
         "^\\s*hud_image"
-        "\\s+node=([\\w+-.]+)"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+camera_node=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+update=(once|always)"
         "\\s+center=([\\w+-.]+) ([\\w+-.]+)"
@@ -2612,19 +2613,20 @@ void LoadScene::operator()(
             avatar_node->set_style_updater(std::move(updater));
             rb->style_updater_ = ptr;
         } else if (Mlib::re::regex_match(line, match, hud_image_reg)) {
-            auto node = scene.get_node(match[1].str());
+            auto camera_node = scene.get_node(match[2].str());
             auto hud_image = std::make_shared<HudImageLogic>(
-                *node,
+                *camera_node,
                 physics_engine.advance_times_,
-                fpathp(match[2].str()),
-                resource_update_cycle_from_string(match[3].str()),
+                fpathp(match[3].str()),
+                resource_update_cycle_from_string(match[4].str()),
                 FixedArray<float, 2>{
-                    safe_stof(match[4].str()),
-                    safe_stof(match[5].str())},
+                    safe_stof(match[5].str()),
+                    safe_stof(match[6].str())},
                 FixedArray<float, 2>{
-                    safe_stof(match[6].str()),
-                    safe_stof(match[7].str())});
-            render_logics.append(node, hud_image);
+                    safe_stof(match[7].str()),
+                    safe_stof(match[8].str())});
+            render_logics.append(camera_node, hud_image);
+            camera_node->add_renderable(match[1].str(), hud_image);
             physics_engine.advance_times_.add_advance_time(hud_image);
         } else if (Mlib::re::regex_match(line, match, perspective_camera_reg)) {
             auto node = scene.get_node(match[1].str());

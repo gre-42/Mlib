@@ -104,7 +104,7 @@ void TextResource::render(
         (float)(flip_y_ ? screen_size(1) : 0),
         -2,
         2);
-    CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*) projection));
+    CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*)projection));
     CHK(glBindTexture(GL_TEXTURE_2D, ftex_));
     CHK(glBindVertexArray(va_.vertex_array));
 

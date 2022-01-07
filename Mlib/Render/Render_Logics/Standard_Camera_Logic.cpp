@@ -17,7 +17,8 @@ StandardCameraLogic::StandardCameraLogic(
     const DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   cameras_{ cameras },
-  delete_node_mutex_{ delete_node_mutex }
+  delete_node_mutex_{ delete_node_mutex },
+  camera_node_{ nullptr }
 {}
 
 void StandardCameraLogic::render(
@@ -34,23 +35,22 @@ void StandardCameraLogic::render(
     }
     float aspect_ratio = width / (float) height;
 
-    SceneNode* cn;
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
         throw std::runtime_error("Deletion mutex not locked in StandardCameraLogic::render");
     }
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_TO_TEXTURE) {
-        cn = scene_.get_node(frame_id.light_node_name);
+        camera_node_ = scene_.get_node(frame_id.light_node_name);
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
-        cn = scene_.get_node(cameras_.dirtmap_node_name);
+        camera_node_ = scene_.get_node(cameras_.dirtmap_node_name);
     } else {
-        cn = scene_.get_node(cameras_.camera_node_name());
+        camera_node_ = scene_.get_node(cameras_.camera_node_name());
     }
-    auto co = cn->get_camera()->copy();
-    co->set_aspect_ratio(aspect_ratio);
+    auto camera_object = camera_node_->get_camera()->copy();
+    camera_object->set_aspect_ratio(aspect_ratio);
     vp_ = dot2d(
-        co->projection_matrix(),
-        cn->absolute_view_matrix().affine());
-    iv_ = cn->absolute_model_matrix();
+        camera_object->projection_matrix(),
+        camera_node_->absolute_view_matrix().affine());
+    iv_ = camera_node_->absolute_model_matrix();
 }
 
 float StandardCameraLogic::near_plane() const {
@@ -62,11 +62,24 @@ float StandardCameraLogic::far_plane() const {
 }
 
 const FixedArray<float, 4, 4>& StandardCameraLogic::vp() const {
+    if (camera_node_ == nullptr) {
+        throw std::runtime_error("camera node not set in StandardCameraLogic::vp");
+    }
     return vp_;
 }
 
 const TransformationMatrix<float, 3>& StandardCameraLogic::iv() const {
+    if (camera_node_ == nullptr) {
+        throw std::runtime_error("camera node not set in StandardCameraLogic::iv");
+    }
     return iv_;
+}
+
+const SceneNode& StandardCameraLogic::camera_node() const {
+    if (camera_node_ == nullptr) {
+        throw std::runtime_error("camera node not set in StandardCameraLogic::camera_node");
+    }
+    return *camera_node_;
 }
 
 bool StandardCameraLogic::requires_postprocessing() const {

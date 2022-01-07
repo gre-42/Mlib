@@ -16,12 +16,14 @@ struct RenderPass;
 struct SceneGraphConfig;
 struct Style;
 struct ExternalRenderPass;
+class SceneNode;
 
 class Renderable {
 public:
+    virtual void notify_rendering(const SceneNode& scene_node, const SceneNode& camera_node) const;
     virtual bool requires_render_pass() const = 0;
     virtual bool requires_blending_pass() const = 0;
-    virtual int continuous_blending_z_order() const = 0;
+    virtual int continuous_blending_z_order() const;
     virtual void render(
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float, 3>& m,
@@ -30,29 +32,29 @@ public:
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const RenderPass& render_pass,
-        const Style* style) const = 0;
+        const Style* style) const;
     virtual void append_sorted_aggregates_to_queue(
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float, 3>& m,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
-        std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const = 0;
+        std::list<std::pair<float, std::shared_ptr<ColoredVertexArray>>>& aggregate_queue) const;
     virtual void append_large_aggregates_to_queue(
         const TransformationMatrix<float, 3>& m,
         const SceneGraphConfig& scene_graph_config,
-        std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const = 0;
+        std::list<std::shared_ptr<ColoredVertexArray>>& aggregate_queue) const;
     virtual void append_sorted_instances_to_queue(
         const FixedArray<float, 4, 4>& mvp,
         const TransformationMatrix<float, 3>& m,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
-        std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const = 0;
+        std::list<std::pair<float, TransformedColoredVertexArray>>& instances_queue) const;
     virtual void append_large_instances_to_queue(
         const TransformationMatrix<float, 3>& m,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
-        std::list<TransformedColoredVertexArray>& instances_queue) const = 0;
+        std::list<TransformedColoredVertexArray>& instances_queue) const;
 };
 
 }
