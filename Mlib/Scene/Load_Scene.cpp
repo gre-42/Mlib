@@ -201,9 +201,20 @@ void LoadScene::operator()(
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
         "(?:\\s+triangle_tangent_error_behavior=(zero|warn|raise))?"
         "(\\s+no_werror)?$");
-    static const DECLARE_REGEX(gen_triangle_rays_reg, "^\\s*gen_triangle_rays name=([\\w+-.]+) npoints=([\\w+-.]+) lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) delete_triangles=(0|1)$");
-    static const DECLARE_REGEX(gen_ray_reg, "^\\s*gen_ray name=([\\w+-.]+) from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
-    static const DECLARE_REGEX(downsample_reg, "^\\s*downsample name=([/\\w+-.]+) factor=(\\d+)$");
+    static const DECLARE_REGEX(gen_triangle_rays_reg,
+        "^\\s*gen_triangle_rays"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+npoints=([\\w+-.]+)"
+        "\\s+lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+delete_triangles=(0|1)$");
+    static const DECLARE_REGEX(gen_ray_reg,
+        "^\\s*gen_ray name=([\\w+-.]+)"
+        "\\s+from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(downsample_reg,
+        "^\\s*downsample"
+        "\\s+name=([/\\w+-.]+)"
+        "\\s+factor=(\\d+)$");
     static const DECLARE_REGEX(import_bone_weights_reg,
         "^\\s*import_bone_weights"
         "\\s+destination=([/\\w+-.]+)"
@@ -231,7 +242,12 @@ void LoadScene::operator()(
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
         "(?:\\s+number_of_frames=(\\d+))?"
         "(?:\\s+billboards=([\\s\\S]*))?$");
-    static const DECLARE_REGEX(blending_x_resource_reg, "^\\s*blending_x_resource name=([\\w+-.]+) texture_filename=([\\w+-. \\(\\)/\\\\:]+) min=([\\w+-.]+) ([\\w+-.]+) max=([\\w+-.]+) ([\\w+-.]+)$");
+    static const DECLARE_REGEX(blending_x_resource_reg,
+        "^\\s*blending_x_resource"
+        "\\s+name=([\\w+-.]+)"
+        "\\s+texture_filename=([\\w+-. \\(\\)/\\\\:]+)"
+        "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+max=([\\w+-.]+) ([\\w+-.]+)$");
     static const DECLARE_REGEX(binary_x_resource_reg,
         "^\\s*binary_x_resource"
         "\\s+name=([\\w+-.]+)"
