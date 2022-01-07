@@ -77,7 +77,9 @@ bool CollisionQuery::can_see(
                                     *seen_object = &o0.rigid_body->rbi_;
                                 }
                             } else {
-                                return false;
+                                return
+                                    (intersection_point != nullptr) ||
+                                    (intersection_normal != nullptr);
                             }
                         }
                     }
@@ -110,7 +112,9 @@ bool CollisionQuery::can_see(
                             }
                             return true;
                         } else {
-                            return false;
+                            return
+                                (intersection_point != nullptr) ||
+                                (intersection_normal != nullptr);
                         }
                     }
                     return true;

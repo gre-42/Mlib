@@ -49,13 +49,11 @@ const std::vector<CollisionTriangleSphere>& TransformedMesh::get_triangles_spher
     //    std::cerr << "Skipping mesh without triangles" << std::endl;
     //}
     if (!triangles_calculated_) {
-        {
-            std::lock_guard<std::mutex> lock{mutex_};
-            if (!triangles_calculated_) {
-                transformed_triangles_ = mesh_->transformed_triangles_sphere(transformation_matrix_);
-            }
+        std::lock_guard<std::mutex> lock{mutex_};
+        if (!triangles_calculated_) {
+            transformed_triangles_ = mesh_->transformed_triangles_sphere(transformation_matrix_);
+            triangles_calculated_ = true;
         }
-        triangles_calculated_ = true;
     }
     return transformed_triangles_;
 }
