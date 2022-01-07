@@ -12,6 +12,7 @@
 std::map<int, edict_t*> indexent_;
 static std::map<edict_t*, int> entindex_;
 static std::map<std::string, int> decal_map;
+// ::Vector g_dest_origin[32];
 
 edict_t* INDEXENT(int index) {
     auto it = indexent_.find(index);

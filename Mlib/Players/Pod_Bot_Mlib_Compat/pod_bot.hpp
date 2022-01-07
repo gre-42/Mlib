@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 
+// extern ::Vector g_dest_origin[32];
+
 inline char* GET_INFOKEYBUFFER(edict_t* edict) {
     return reinterpret_cast<char*>(&edict->info_key_buffer);
 }

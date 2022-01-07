@@ -14,6 +14,25 @@ static const uint8_t TE_WORLDDECAL = 116;
 static const uint8_t TE_WORLDDECALHIGH = 117;
 static const uint8_t TE_DECALHIGH = 118;
 
+static const float POD_BOT_IDLE_TIME = 0.f;  // Your Name, 07.01.2022.
+                                             // Original value: 10.0
+
+static const int FCVAR_ARCHIVE = 1;
+static const int FCVAR_USERINFO = 2;
+static const int FCVAR_SERVER = 4;
+static const int FCVAR_EXTDLL = 8;
+static const int FCVAR_CLIENTDLL = 16;
+static const int FCVAR_PROTECTED = 32;
+static const int FCVAR_SPONLY = 64;
+static const int FCVAR_PRINTABLEONLY = 128;
+static const int FCVAR_UNLOGGED = 256;
+
+static const int MAX_AMMO_SLOTS = 32;
+static const int MAX_WEAPONS = 32;
+
+static const bool TRUE = true;
+static const bool FALSE = false;
+
 enum InputButton {
     IN_ATTACK    = (1 << 0),
     IN_JUMP      = (1 << 1),
@@ -190,26 +209,10 @@ enum MESSAGE {
     SVC_HLTV = 50
 };
 
-typedef enum {
+enum META_RES {
     MRES_UNSET,
     MRES_IGNORED,
     MRES_HANDLED,
     MRES_OVERRIDE,
     MRES_SUPERCEDE,
-} META_RES;
-
-static const int FCVAR_ARCHIVE = 1;
-static const int FCVAR_USERINFO = 2;
-static const int FCVAR_SERVER = 4;
-static const int FCVAR_EXTDLL = 8;
-static const int FCVAR_CLIENTDLL = 16;
-static const int FCVAR_PROTECTED = 32;
-static const int FCVAR_SPONLY = 64;
-static const int FCVAR_PRINTABLEONLY = 128;
-static const int FCVAR_UNLOGGED = 256;
-
-static const int MAX_AMMO_SLOTS = 32;
-static const int MAX_WEAPONS = 32;
-
-static const bool TRUE = true;
-static const bool FALSE = false;
+};

@@ -6308,7 +6308,7 @@ void BotExecuteTask (bot_t *pBot)
             pBot->prev_time = gpGlobals->time + 0.5f;     // KWo - 25.02.2008
             pBot->fNoCollTime = gpGlobals->time + 1.f;   // KWo - 02.01.2010
 
-            if (((!g_bPathWasCalculated) && (g_i_botthink_index == g_iFrameCounter)) || (pBot->f_spawn_time + 10.0 < gpGlobals->time)) // KWo - 18.02.2008
+            if (((!g_bPathWasCalculated) && (g_i_botthink_index == g_iFrameCounter)) || (pBot->f_spawn_time + POD_BOT_IDLE_TIME < gpGlobals->time)) // KWo - 18.02.2008
             {
                DeleteSearchNodes (pBot);
 
@@ -8806,6 +8806,8 @@ void BotThink (bot_t *pBot)
       }
 
       fDistance = Length2D(pBot->dest_origin - (pEdict->v.origin + (pEdict->v.velocity * pBot->fTimeFrameInterval))); // KWo - 17.10.2006 - reverted back
+
+      // g_dest_origin[g_i_botthink_index] = pEdict->v.origin; // pBot->dest_origin;
 
       if ((paths[pBot->curr_wpt_index]->flags & W_FL_LADDER) && (!pBot->bOnLadder)
              && (pEdict->v.flags & FL_ONGROUND) && !(pEdict->v.flags & FL_DUCKING))  // KWo - 22.01.2012

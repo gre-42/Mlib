@@ -44,6 +44,9 @@ void PhysicsIteration::operator()() {
         physics_engine_.move_rigid_bodies(bcns);
     }
     {
+        // for(size_t i = 0; i < 32; ++i) {
+        //     beacons.push_back(Beacon{.position = p_q2o(g_dest_origin[i]), .resource_name = "flag"});
+        // }
         std::lock_guard lock{ delete_node_mutex_ };
         {
             static const DECLARE_REGEX(re, "^beacon.*");
