@@ -6305,7 +6305,7 @@ nobypass:
 
                      // to start strafing, we have to first figure out if the target is on the left side or right side
                      MAKE_VECTORS (vecMoveAngles);
-                     if (bCurrWptIndexOK && bPrevWptIndexOK) // KWo - 15.07.2006
+                     if (bCurrWptIndexOK && bPrevWptIndexOK && (pBot->curr_wpt_index != pBot->prev_wpt_index[0])) // KWo - 15.07.2006, Your Name - 07.01.2022
                         vec2DirToPoint = Make2D(paths[pBot->curr_wpt_index]->origin - paths[pBot->prev_wpt_index[0]]->origin);
                      else
                         vec2DirToPoint =  Make2D(pBot->dest_origin - pEdict->v.origin);
