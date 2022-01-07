@@ -76,10 +76,12 @@ bool CollisionQuery::can_see(
                                 if (seen_object != nullptr) {
                                     *seen_object = &o0.rigid_body->rbi_;
                                 }
-                            } else {
-                                return
-                                    (intersection_point != nullptr) ||
-                                    (intersection_normal != nullptr);
+                            }
+                            if ((intersection_point == nullptr) &&
+                                (intersection_normal == nullptr) &&
+                                (seen_object == nullptr))
+                            {
+                                return false;
                             }
                         }
                     }
@@ -114,7 +116,8 @@ bool CollisionQuery::can_see(
                         } else {
                             return
                                 (intersection_point != nullptr) ||
-                                (intersection_normal != nullptr);
+                                (intersection_normal != nullptr) ||
+                                (seen_object != nullptr);
                         }
                     }
                     return true;
