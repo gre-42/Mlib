@@ -48,7 +48,7 @@ PitchLookAtNode::~PitchLookAtNode() {
 }
 
 static float z_to_pitch(const FixedArray<float, 3>& z) {
-    return std::atan2(-z(1), z(2));
+    return std::atan2(-z(1), std::sqrt(squared(z(2)) + squared(z(0))));
 }
 
 void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
