@@ -81,7 +81,7 @@ void HudImageLogic::render(
 
 void HudImageLogic::notify_rendering(const SceneNode& scene_node, const SceneNode& camera_node) const
 {
-    const_cast<HudImageLogic*>(this)->is_visible_ = (&scene_node == &camera_node);
+    is_visible_ = (&scene_node == &camera_node);
 }
 
 bool HudImageLogic::requires_render_pass() const {

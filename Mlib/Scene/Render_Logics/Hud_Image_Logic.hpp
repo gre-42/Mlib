@@ -42,7 +42,7 @@ private:
     AdvanceTimes& advance_times_;
     FixedArray<float, 2> center_;
     FixedArray<float, 2> size_;
-    bool is_visible_;
+    mutable bool is_visible_;
 };
 
 }
