@@ -28,6 +28,8 @@ PodBots::~PodBots() {
     advance_times_.delete_advance_time(this);
     pod_bot_clear_players();
     BotFreeAllMemory();
+    gpGlobals->time = 0.f;
+    gpGlobals->frametime = 0.f;
 }
 
 void PodBots::advance_time(float dt) {
