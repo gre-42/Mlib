@@ -61,9 +61,13 @@ YawPitchLookAtNodes::~YawPitchLookAtNodes() {
     }
 }
 
+static float z_to_yaw(const FixedArray<float, 3>& z) {
+    return -std::atan2(-z(0), z(2));
+}
+
 void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
     relative_position_ = relative_model_matrix.t();
-    yaw_ = matrix_2_tait_bryan_angles(relative_model_matrix.R())(1);
+    yaw_ = z_to_yaw(z3_from_3x3(relative_model_matrix.R()));
 }
 
 void YawPitchLookAtNodes::set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
@@ -101,7 +105,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     rbi.rbp_.v_ -= follower_.rbp_.v_;
     rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
     FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
-    float dyaw = -std::atan2(p(0), -p(2));
+    float dyaw = z_to_yaw(-p);
     increment_yaw(dyaw);
     yaw_target_locked_on_ = (std::abs(dyaw) < yaw_locked_on_max_);
 }
@@ -117,7 +121,7 @@ void YawPitchLookAtNodes::set_yaw(float yaw) {
 
 TransformationMatrix<float, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {
     return TransformationMatrix<float, 3>{
-        tait_bryan_angles_2_matrix(FixedArray<float, 3>{0, yaw_, 0.f}),
+        tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, yaw_, 0.f}),
         relative_position_};
 }
 

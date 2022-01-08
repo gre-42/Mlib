@@ -47,9 +47,13 @@ PitchLookAtNode::~PitchLookAtNode() {
     }
 }
 
+static float z_to_pitch(const FixedArray<float, 3>& z) {
+    return std::atan2(-z(1), z(2));
+}
+
 void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
     relative_position_ = relative_model_matrix.t();
-    pitch_ = matrix_2_tait_bryan_angles(relative_model_matrix.R())(0);
+    pitch_ = z_to_pitch(z3_from_3x3(relative_model_matrix.R()));
 }
 
 void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) {
@@ -87,7 +91,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
     rbi.rbp_.v_ -= follower_.rbp_.v_;
     rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
     FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
-    float dpitch = std::atan2(p(1), -p(2));
+    float dpitch = z_to_pitch(-p);
     increment_pitch(dpitch);
     target_locked_on_ = (std::abs(dpitch) < locked_on_max_);
 }
