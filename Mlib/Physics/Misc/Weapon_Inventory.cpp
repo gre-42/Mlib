@@ -3,9 +3,10 @@
 
 using namespace Mlib;
 
-WeaponInventory::WeaponInventory(SceneNode& weapon_visual_node, SceneNode& weapon_physics_node)
-: weapon_visual_node_{ weapon_visual_node },
-  weapon_physics_node_{ weapon_physics_node }
+WeaponInventory::WeaponInventory()
+{}
+
+WeaponInventory::~WeaponInventory()
 {}
 
 void WeaponInventory::modify_node() {

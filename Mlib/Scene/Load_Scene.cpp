@@ -317,16 +317,15 @@ void LoadScene::operator()(
         "(?:\\s+name=([\\w+-.]+))?$");
     static const DECLARE_REGEX(create_weapon_inventory_reg,
         "^\\s*create_weapon_inventory"
-        "\\s+visual_node=([\\w+-.]+)"
-        "\\s+physics_node=([\\w+-.]+)$");
+        "\\s+storage_node=([\\w+-.]+)$");
     static const DECLARE_REGEX(add_weapon_to_inventory_reg,
         "^\\s*add_weapon_to_inventory"
-        "\\s+visual_node=([\\w+-.]+)"
+        "\\s+storage_node=([\\w+-.]+)"
         "\\s+entry_name=([\\w-. \\(\\)/+-]+)"
         "\\s+create=([\\s\\S]+)$");
     static const DECLARE_REGEX(equip_weapon_reg,
         "^\\s*equip_weapon"
-        "\\s+visual_node=([\\w+-.]+)"
+        "\\s+storage_node=([\\w+-.]+)"
         "\\s+entry_name=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(gun_reg,
         "^\\s*gun"
@@ -1921,17 +1920,13 @@ void LoadScene::operator()(
                 tirelines,
                 collidable_mode_from_string(match[17].str()));
         } else if (Mlib::re::regex_match(line, match, create_weapon_inventory_reg)) {
-            auto visual_node = scene.get_node(match[1].str());
-            auto physics_node = scene.get_node(match[2].str());
-            visual_node->set_node_modifier(
-                std::make_unique<WeaponInventory>(
-                    *visual_node,
-                    *physics_node));
+            auto storage_node = scene.get_node(match[1].str());
+            storage_node->set_node_modifier(std::make_unique<WeaponInventory>());
         } else if (Mlib::re::regex_match(line, match, add_weapon_to_inventory_reg)) {
-            auto visual_node = scene.get_node(match[1].str());
+            auto storage_node = scene.get_node(match[1].str());
             std::string entry_name = match[2].str();
             std::string create = match[3].str();
-            WeaponInventory* wi = dynamic_cast<WeaponInventory*>(visual_node->get_node_modifier());
+            WeaponInventory* wi = dynamic_cast<WeaponInventory*>(storage_node->get_node_modifier());
             if (wi == nullptr) {
                 throw std::runtime_error("Node modifier is not a weapon inventory");
             }
@@ -1939,9 +1934,9 @@ void LoadScene::operator()(
                 macro_line_executor(create, nullptr, rsc);
             });
         } else if (Mlib::re::regex_match(line, match, equip_weapon_reg)) {
-            auto visual_node = scene.get_node(match[1].str());
+            auto storage_node = scene.get_node(match[1].str());
             std::string entry_name = match[2].str();
-            WeaponInventory* wi = dynamic_cast<WeaponInventory*>(visual_node->get_node_modifier());
+            WeaponInventory* wi = dynamic_cast<WeaponInventory*>(storage_node->get_node_modifier());
             if (wi == nullptr) {
                 throw std::runtime_error("Node modifier is not a weapon inventory");
             }
