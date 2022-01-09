@@ -12,6 +12,8 @@
 
 using namespace Mlib;
 
+std::list<Beacon> Mlib::g_beacons;
+
 PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,
     Scene& scene,
@@ -31,7 +33,7 @@ PhysicsIteration::~PhysicsIteration()
 {}
 
 void PhysicsIteration::operator()() {
-    std::list<Beacon> beacons;
+    std::list<Beacon> beacons = g_beacons;
     for (size_t i = 0; i < physics_cfg_.oversampling; ++i) {
         std::list<Beacon>* bcns = (i == physics_cfg_.oversampling - 1)
             ? &beacons

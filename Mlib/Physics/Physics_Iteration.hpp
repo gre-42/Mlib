@@ -1,4 +1,5 @@
 #pragma once
+#include <list>
 #include <mutex>
 
 namespace Mlib {
@@ -12,6 +13,8 @@ class BaseLog;
 class DeleteNodeMutex;
 class DeleteRigidBodyMutex;
 class PhysicsLoop;
+struct Beacon;
+extern std::list<Beacon> g_beacons;
 
 class PhysicsIteration {
     friend PhysicsLoop;
