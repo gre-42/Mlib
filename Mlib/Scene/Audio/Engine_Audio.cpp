@@ -21,12 +21,12 @@ void EngineAudio::notify_idle(float w) {
     if (std::abs(w * WHEEL_RADIUS) < 1) {
         cross_fade_.play(*idle_buffer, idle_gain);
     } else {
-        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (200.f / 3.6f));
+        cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (80.f / 3.6f));
     }
 }
 
 void EngineAudio::notify_driving(float w) {
-    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (200.f / 3.6f));
+    cross_fade_.play(*driving_buffer, driving_gain, std::abs(w * WHEEL_RADIUS) / (80.f / 3.6f));
 }
 
 void EngineAudio::set_position(const FixedArray<float, 3>& position) {
