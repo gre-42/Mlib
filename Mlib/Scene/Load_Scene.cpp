@@ -613,8 +613,8 @@ void LoadScene::operator()(
         "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
     static const DECLARE_REGEX(set_renderable_style_reg,
         "^\\s*set_renderable_style"
-        "\\s+selector=([\\w+-.]*)"
-        "\\s+node=([\\w+-.]+)"
+        "\\s+selector=([^\\r\\n]*)\\r?\\n"
+        "\\s*node=([\\w+-.]+)"
         "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
         "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
