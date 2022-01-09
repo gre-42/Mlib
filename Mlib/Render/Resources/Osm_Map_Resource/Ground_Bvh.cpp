@@ -1,16 +1,41 @@
 #include "Ground_Bvh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Barycentric_Coordinates.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 
 using namespace Mlib;
 
-GroundBvh::GroundBvh(const std::list<std::shared_ptr<TriangleList>>& triangles)
+GroundBvh::GroundBvh()
 : bvh_{{0.1f, 0.1f}, 10}
+{}
+
+GroundBvh::GroundBvh(const std::list<std::shared_ptr<TriangleList>>& triangles)
+: GroundBvh()
 {
     for (const auto& l : triangles) {
         for (const auto& t : l->triangles_) {
+            Triangle2d tri2{
+                FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
+                FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
+                FixedArray<float, 2>{t(2).position(0), t(2).position(1)}};
+            if (triangle_area(tri2(0), tri2(1), tri2(2)) > 0) {
+                Triangle3d tri3{
+                    t(0).position,
+                    t(1).position,
+                    t(2).position};
+                bvh_.insert(tri2, tri3);
+            }
+        }
+    }
+}
+
+GroundBvh::GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray>>& cvas)
+: GroundBvh()
+{
+    for (const auto& l : cvas) {
+        for (const auto& t : l->triangles) {
             Triangle2d tri2{
                 FixedArray<float, 2>{t(0).position(0), t(0).position(1)},
                 FixedArray<float, 2>{t(1).position(0), t(1).position(1)},
@@ -44,4 +69,8 @@ bool GroundBvh::height(float& height, const FixedArray<float, 2>& pt) const
         }
         return true;
     });
+}
+
+void GroundBvh::print(std::ostream& ostr, const BvhPrintingOptions& opts, size_t rec) const {
+    bvh_.print(ostr, opts, rec);
 }

@@ -1419,6 +1419,9 @@ void LoadScene::operator()(
                 else if (key == "game_level") {
                     config.game_level = value;
                 }
+                else if (key == "base_osm_map_resource") {
+                    config.base_osm_map_resource = value;
+                }
                 else {
                     throw std::runtime_error("Unknown osm key: \"" + key + '"');
                 }

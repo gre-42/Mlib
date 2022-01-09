@@ -136,6 +136,7 @@ struct OsmResourceConfig {
     bool blend_street = false;
     Interp<float> layer_heights{std::vector<float>{}, std::vector<float>{}};
     std::string game_level;
+    std::string base_osm_map_resource;
 };
 
 }

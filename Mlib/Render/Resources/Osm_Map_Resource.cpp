@@ -798,7 +798,18 @@ OsmMapResource::OsmMapResource(
 
     {
         auto ground_bvh_triangles = osm_triangle_lists.tls_smooth();
-        GroundBvh ground_bvh{ ground_bvh_triangles };
+        std::unique_ptr<GroundBvh> ground_bvh;
+        if (config.with_terrain) {
+            if (!config.base_osm_map_resource.empty()) {
+                throw std::runtime_error("Terrain already set, cannot inherit from base OSM map");
+            }
+            ground_bvh = std::make_unique<GroundBvh>(ground_bvh_triangles);
+        } else {
+            if (config.base_osm_map_resource.empty()) {
+                throw std::runtime_error("Base OSM map resource not set");
+            }
+            ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_animated_arrays(config.base_osm_map_resource)->cvas);
+        }
         LOG_INFO("add_models_to_model_nodes");
         try {
             add_models_to_model_nodes(
@@ -806,7 +817,7 @@ OsmMapResource::OsmMapResource(
                 object_resource_descriptors_,
                 hitboxes_,
                 way_segments,
-                ground_bvh,
+                *ground_bvh,
                 scene_node_resources,
                 nodes,
                 ways,
@@ -856,7 +867,7 @@ OsmMapResource::OsmMapResource(
                 rnc,
                 config.min_dist_to_road,
                 all_holes_bvh,
-                ground_bvh,
+                *ground_bvh,
                 nodes,
                 config.scale);
         }
@@ -872,7 +883,7 @@ OsmMapResource::OsmMapResource(
                 rnc,
                 config.min_dist_to_road,
                 all_holes_bvh,
-                ground_bvh,
+                *ground_bvh,
                 nodes,
                 ways,
                 config.forest_outline_tree_distance,
@@ -901,31 +912,35 @@ OsmMapResource::OsmMapResource(
                 ways,
                 0,  // building_bottom
                 0); // default_building_top
-            for (const Building& bu : spawn_lines) {
-                auto iteam = bu.way.tags.find("team");
-                for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
-                    auto s = it;
-                    ++s;
-                    if (s != bu.way.nd.end()) {
-                        FixedArray<float, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.f;
-                        FixedArray<float, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
-                        float len2 = sum(squared(dir));
-                        if (len2 < 1e-12) {
-                            throw std::runtime_error("Spawn direction too small");
+            try {
+                for (const Building& bu : spawn_lines) {
+                    auto iteam = bu.way.tags.find("team");
+                    for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
+                        auto s = it;
+                        ++s;
+                        if (s != bu.way.nd.end()) {
+                            FixedArray<float, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.f;
+                            FixedArray<float, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
+                            float len2 = sum(squared(dir));
+                            if (len2 < 1e-12) {
+                                throw PointException{ p, "Spawn direction too small" };
+                            }
+                            dir /= std::sqrt(len2);
+                            float height;
+                            if (!ground_bvh->height(height, p)) {
+                                throw PointException{ p, "Spawn line out of bounds" };
+                            }
+                            spawn_points_.push_back(SpawnPoint{
+                                .type = SpawnPointType::SPAWN_LINE,
+                                .location = WayPointLocation::UNKNOWN,
+                                .position = {p(0), p(1), height},
+                                .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))},
+                                .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
                         }
-                        dir /= std::sqrt(len2);
-                        float height;
-                        if (!ground_bvh.height(height, p)) {
-                            throw std::runtime_error("Spawn line out of bounds");
-                        }
-                        spawn_points_.push_back(SpawnPoint{
-                            .type = SpawnPointType::SPAWN_LINE,
-                            .location = WayPointLocation::UNKNOWN,
-                            .position = {p(0), p(1), height},
-                            .rotation = {0.f, 0.f, std::atan2(dir(0), -dir(1))},
-                            .team = (iteam == bu.way.tags.end()) ? "" : iteam->second});
                     }
                 }
+            } catch (const PointException<2>& p) {
+                handle_point_exception2(p, "Bould not apply height map to spawn lines");
             }
         }
         {
@@ -936,21 +951,21 @@ OsmMapResource::OsmMapResource(
                     {},
                     way_point_edge_descriptors[WayPointLocation::STREET],
                     nodes,
-                    ground_bvh,
+                    *ground_bvh,
                     config.scale);
                 calculate_waypoint_adjacency(
                     way_points_[WayPointLocation::SIDEWALK],
                     {},
                     way_point_edge_descriptors[WayPointLocation::SIDEWALK],
                     nodes,
-                    ground_bvh,
+                    *ground_bvh,
                     config.scale);
                 calculate_waypoint_adjacency(
                     way_points_[WayPointLocation::EXPLICIT],
                     terrain_way_point_lines,
                     way_point_edge_descriptors[WayPointLocation::EXPLICIT],
                     nodes,
-                    ground_bvh,
+                    *ground_bvh,
                     config.scale);
             } catch (const PointException<2>& e) {
                 handle_point_exception2(e, "Could not calculate waypoint adjacency");

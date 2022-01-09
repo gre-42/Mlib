@@ -19,6 +19,7 @@ enum class TerrainType;
 template <class EntityType>
 class EntityTypeTriangleList;
 typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
+class GroundBvh;
 
 class OsmMapResource: public SceneNodeResource {
     friend class RenderableOsmMap;
@@ -54,6 +55,7 @@ public:
     void save_to_file(const std::string& filename) const;
     void save_to_obj_file(const std::string& filename) const;
 private:
+    std::unique_ptr<GroundBvh> ground_bvh_;
     std::list<std::shared_ptr<ColoredVertexArray>> cvas_;
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
