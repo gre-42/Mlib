@@ -197,6 +197,11 @@ static void collide_triangle(
                 .base_log = base_log});
             ++tire_id;
         }
+        if (tire_id != o1.tires_.size()) {
+            throw std::runtime_error(
+                "Number of tire-lines (" + std::to_string(tire_id) + ") does not equal the "
+                "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
+        }
     } else {
         throw std::runtime_error("Unknown mesh type");
     }
