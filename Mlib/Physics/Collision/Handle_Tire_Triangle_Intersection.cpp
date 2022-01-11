@@ -1,6 +1,8 @@
 #include "Handle_Tire_Triangle_Intersection.hpp"
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Physics/Misc/Steering_Type.hpp>
 
 using namespace Mlib;
 
@@ -202,25 +204,36 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
     if (!std::isnan(P.power)) {
         // std::cerr << "dx " << dx << std::endl;
         if (P.power != 0) {
-            float v = dot0d(rb.rbi_.rbp_.v_ - street_velocity, n3);
-            if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_brake_velocity) {
+            SteeringType steering_type = rb.controller().steering_type;
+            if (steering_type == SteeringType::TANK) {
                 if (P.power > 0) {
-                    break_positive(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
+                    accelerate_positive(rb, street_velocity, P.power, fixed_zeros<float, 3>(), 0.f, surface_normal, cfg, tire_id, force_min, force_max);
+                } else {
+                    accelerate_negative(rb, street_velocity, P.power, fixed_zeros<float, 3>(), 0.f, surface_normal, cfg, tire_id, force_min, force_max);
+                }
+            } else if (steering_type == SteeringType::CAR) {
+                float v = dot0d(rb.rbi_.rbp_.v_ - street_velocity, n3);
+                if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_brake_velocity) {
+                    if (P.power > 0) {
+                        break_positive(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
+                    } else if (P.power < 0) {
+                        break_negative(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
+                    }
+                } else if (P.power > 0) {
+                    if (P.type == PowerIntentType::BREAK_OR_IDLE) {
+                        idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
+                    } else {
+                        accelerate_positive(rb, street_velocity, P.power, vc, v0, surface_normal, cfg, tire_id, force_min, force_max);
+                    }
                 } else if (P.power < 0) {
-                    break_negative(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
+                    if (P.type == PowerIntentType::BREAK_OR_IDLE) {
+                        idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
+                    } else {
+                        accelerate_negative(rb, street_velocity, P.power, vc, v0, surface_normal, cfg, tire_id, force_min, force_max);
+                    }
                 }
-            } else if (P.power > 0) {
-                if (P.type == PowerIntentType::BREAK_OR_IDLE) {
-                    idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
-                } else {
-                    accelerate_positive(rb, street_velocity, P.power, vc, v0, surface_normal, cfg, tire_id, force_min, force_max);
-                }
-            } else if (P.power < 0) {
-                if (P.type == PowerIntentType::BREAK_OR_IDLE) {
-                    idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
-                } else {
-                    accelerate_negative(rb, street_velocity, P.power, vc, v0, surface_normal, cfg, tire_id, force_min, force_max);
-                }
+            } else {
+                throw std::runtime_error("Unknown steering type");
             }
         } else {
             idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);

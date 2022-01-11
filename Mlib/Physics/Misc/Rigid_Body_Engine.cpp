@@ -19,14 +19,14 @@ RigidBodyEngine::RigidBodyEngine(
     const EnginePower& engine_power,
     bool hand_brake_pulled,
     const std::shared_ptr<EngineEventListener>& audio)
-: engine_state{EngineState::OFF},
-  w_{NAN},
-  surface_power_{0},
-  delta_power_{0},
-  engine_power_{engine_power},
-  ntires_{0},
-  hand_brake_pulled_{hand_brake_pulled},
-  audio_{audio}
+: engine_state{ EngineState::OFF },
+  w_{ NAN },
+  surface_power_{ 0 },
+  delta_power_{ 0 },
+  engine_power_{ engine_power },
+  ntires_{ 0 },
+  hand_brake_pulled_{ hand_brake_pulled },
+  audio_{ audio }
 {}
 
 RigidBodyEngine::~RigidBodyEngine()
@@ -48,25 +48,21 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) 
     float max_surface_power = std::isnan(w_)
         ? 0.f
         : engine_power_.get_power(w);
-    float sp;
-    if (std::isnan(surface_power_)) {
-        sp = NAN;
+    if (hand_brake_pulled_ ||
+        std::isnan(surface_power_) ||
+        ((surface_power_ > 0) && (delta_power_ == -INFINITY)) ||
+        ((surface_power_ < 0) && (delta_power_ == INFINITY)))
+    {
+        return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
     } else if (max_surface_power == 0) {
-        sp = sign(surface_power_);
+        return PowerIntent{.power = sign(surface_power_ + delta_power_), .type = PowerIntentType::BREAK_OR_IDLE};
     } else {
         auto clip_power = [&max_surface_power](float p){
             return sign(p) * std::min(max_surface_power, std::abs(p));
         };
-        sp = clip_power(clip_power(surface_power_) + clip_power(delta_power_));
+        float sp = clip_power(surface_power_ + delta_power_);
+        return PowerIntent{.power = sp / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
     }
-
-    if (hand_brake_pulled_ || std::isnan(sp)) {
-        return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
-    }
-    if (max_surface_power == 0) {
-        return PowerIntent{.power = sp, .type = PowerIntentType::BREAK_OR_IDLE};
-    }
-    return PowerIntent{.power = sp / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
 }
 
 float RigidBodyEngine::surface_power() const {

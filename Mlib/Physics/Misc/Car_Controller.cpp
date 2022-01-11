@@ -1,5 +1,6 @@
 #include "Car_Controller.hpp"
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Misc/Steering_Type.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
 #include <stdexcept>
 
@@ -8,7 +9,7 @@ using namespace Mlib;
 CarController::CarController(
     RigidBodyVehicle* rb,
     const std::map<size_t, float>& tire_angles)
-: RigidBodyVehicleController{ rb },
+: RigidBodyVehicleController{ rb, SteeringType::CAR },
   tire_angles_{ tire_angles }
 {}
 

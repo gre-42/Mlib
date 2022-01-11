@@ -1,5 +1,6 @@
 #include "Human_Controller.hpp"
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Misc/Steering_Type.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
 #include <stdexcept>
 
@@ -9,7 +10,7 @@ HumanController::HumanController(
     RigidBodyVehicle* rb,
     float angular_velocity,
     float steering_multiplier)
-: RigidBodyVehicleController{ rb },
+: RigidBodyVehicleController{ rb, SteeringType::CAR },
   angular_velocity_{ angular_velocity },
   steering_multiplier_{ steering_multiplier }
 {}

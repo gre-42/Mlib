@@ -3,8 +3,11 @@
 
 using namespace Mlib;
 
-RigidBodyVehicleController::RigidBodyVehicleController(RigidBodyVehicle* rb)
-: rb_{ rb },
+RigidBodyVehicleController::RigidBodyVehicleController(
+    RigidBodyVehicle* rb,
+    SteeringType steering_type)
+: steering_type{ steering_type },
+  rb_{ rb },
   steer_angle_{ NAN },
   surface_power_{ NAN }
 {}
