@@ -25,8 +25,8 @@ void TankController::apply() {
         rb_->set_surface_power("left", NAN);
         rb_->set_surface_power("right", NAN);
     } else {
-        rb_->set_surface_power("left",  surface_power_, steer_angle_ == 0 ? 0.f : +steer_angle_ * steering_multiplier_);
-        rb_->set_surface_power("right", surface_power_, steer_angle_ == 0 ? 0.f : -steer_angle_ * steering_multiplier_);
+        rb_->set_surface_power("left",  surface_power_, steer_angle_ == 0 ? 0.f : -steer_angle_ * steering_multiplier_);
+        rb_->set_surface_power("right", surface_power_, steer_angle_ == 0 ? 0.f : +steer_angle_ * steering_multiplier_);
     }
     if (rb_->style_updater_ != nullptr) {
         rb_->style_updater_->notify_movement_intent();
