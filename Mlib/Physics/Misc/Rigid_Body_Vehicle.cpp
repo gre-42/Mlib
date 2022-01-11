@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Misc/Rigid_Body_Vehicle_Controller.hpp>
 #include <chrono>
 
 static const float WHEEL_RADIUS = 0.25f;
@@ -19,19 +20,20 @@ RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyIntegrator& rbi,
     const TransformationMatrix<double, 3>* geographic_mapping,
     const std::string& name)
-: rigid_bodies_{rigid_bodies},
-  max_velocity_{INFINITY},
+: rigid_bodies_{ rigid_bodies },
+  max_velocity_{ INFINITY },
 #ifdef COMPUTE_POWER
-  power_{NAN},
-  energy_old_{NAN},
+  power_{ NAN },
+  energy_old_{ NAN },
 #endif
   tires_z_{0.f, 0.f, -1.f },
-  rbi_{rbi},
-  name_{name},
-  damageable_{nullptr},
-  style_updater_{nullptr},
-  driver_{nullptr},
-  geographic_mapping_{geographic_mapping}
+  rbi_{ rbi },
+  name_{ name },
+  damageable_{ nullptr },
+  style_updater_{ nullptr },
+  driver_{ nullptr },
+  controller_{ nullptr},
+  geographic_mapping_{ geographic_mapping }
 {}
 
 RigidBodyVehicle::~RigidBodyVehicle()
@@ -273,12 +275,12 @@ PowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
     return e->second.consume_abs_surface_power(id, tire.angular_velocity);
 }
 
-void RigidBodyVehicle::set_surface_power(const std::string& engine_name, float surface_power) {
+void RigidBodyVehicle::set_surface_power(const std::string& engine_name, float surface_power, float delta_power) {
     auto e = engines_.find(engine_name);
     if (e == engines_.end()) {
         throw std::runtime_error("No engine with name \"" + engine_name + "\" exists");
     }
-    e->second.set_surface_power(surface_power);
+    e->second.set_surface_power(surface_power, delta_power);
 }
 
 float RigidBodyVehicle::get_tire_break_force(size_t id) const {
@@ -402,4 +404,11 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
             c->write_status(ostr, log_components);
         }
     }
+}
+
+RigidBodyVehicleController& RigidBodyVehicle::controller() {
+    if (controller_ == nullptr) {
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no controller");
+    }
+    return *controller_;
 }

@@ -105,8 +105,6 @@ public:
     const std::string& scene_node_name() const;
     void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
     void set_surface_power(float forward, float backward);
-    void set_tire_angle_y(size_t tire_id, float angle_left, float angle_right);
-    void set_angular_velocity(float angle_left, float angle_right);
     void draw_waypoint_history(const std::string& filename) const;
     void set_waypoint(const FixedArray<float, 3>& waypoint, size_t waypoint_id);
     void set_waypoint(const FixedArray<float, 3>& waypoint);
@@ -190,10 +188,6 @@ private:
     SceneNode* gun_node_;
     float surface_power_forward_;
     float surface_power_backward_;
-    std::map<size_t, float> tire_angles_left_;
-    std::map<size_t, float> tire_angles_right_;
-    float angular_velocity_left_;
-    float angular_velocity_right_;
     FixedArray<float, 3> waypoint_;
     std::list<FixedArray<float, 3>> waypoint_history_;
     std::map<WayPointLocation, PointsAndAdjacency<float, 3>> all_waypoints_;

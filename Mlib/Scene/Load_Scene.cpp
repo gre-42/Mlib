@@ -24,9 +24,12 @@
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
+#include <Mlib/Physics/Misc/Car_Controller.hpp>
+#include <Mlib/Physics/Misc/Human_Controller.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Misc/Tank_Controller.hpp>
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
@@ -43,6 +46,8 @@
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Vehicle_Controller_Idle_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Vehicle_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Controls_Logic.hpp>
@@ -408,17 +413,22 @@ void LoadScene::operator()(
         "\\s+player_name=([\\w+-.]+)"
         "\\s+forward=([\\w+-.]+)"
         "\\s+backward=([\\w+-.]*)$");
-    static const DECLARE_REGEX(player_set_tire_angle_reg,
-        "^\\s*player_set_tire_angle"
-        "\\s+player_name=([\\w+-.]+)"
-        "\\s+tire_id=(\\d+)"
-        "\\s+tire_angle_left=([\\w+-.]*)"
-        "\\s+tire_angle_right=([\\w+-.]*)$");
-    static const DECLARE_REGEX(player_set_angular_velocity_reg,
-        "^\\s*player_set_angular_velocity"
-        "\\s+player_name=([\\w+-.]+)"
-        "\\s+angular_velocity_left=([\\w+-.]*)"
-        "\\s+angular_velocity_right=([\\w+-.]*)$");
+    static const DECLARE_REGEX(create_car_controller_reg,
+        "^\\s*create_car_controller"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)$");
+    static const DECLARE_REGEX(create_tank_controller_reg,
+        "^\\s*create_tank_controller"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+left_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+right_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
+        "\\s+steering_multiplier=([\\w+-.]+)$");
+    static const DECLARE_REGEX(create_human_controller_reg,
+        "^\\s*create_human_controller"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+angular_velocity=([\\w+-.]+)"
+        "\\s+steering_multiplier=([\\w+-.]+)$");
     static const DECLARE_REGEX(player_set_waypoint_reg,
         "^\\s*player_set_waypoint"
         "\\s+player_name=([\\w+-.]+)"
@@ -466,6 +476,19 @@ void LoadScene::operator()(
         "\\s+angular_velocity_press=([\\w+-.]+)"
         "\\s+angular_velocity_repeat=([\\w+-.]+)"
         "\\s+speed_cursor=([\\w+-.]+)$");
+    static const DECLARE_REGEX(vehicle_controller_idle_binding_reg,
+        "^\\s*vehicle_controller_idle_binding"
+        "\\s+node=([\\w+-.]+)$");
+    static const DECLARE_REGEX(vehicle_controller_key_binding_reg,
+        "^\\s*vehicle_controller_key_binding"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+key=([\\w+-.]+)"
+        "(?:\\s+gamepad_button=([\\w+-.]*))?"
+        "\\s+joystick_digital_axis=([\\w+-.]*)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
+        "(?:\\s+surface_power=([\\w+-.]+))?"
+        "(?:\\s+tire_angle_velocities=([ \\w+-.]+))?"
+        "(?:\\s+tire_angles=([ \\w+-.]+))?$");
     static const DECLARE_REGEX(weapon_inventory_key_binding_reg,
         "^\\s*weapon_inventory_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -2144,15 +2167,56 @@ void LoadScene::operator()(
             players.get_player(match[1].str()).set_surface_power(
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str()));
-        } else if (Mlib::re::regex_match(line, match, player_set_tire_angle_reg)) {
-            players.get_player(match[1].str()).set_tire_angle_y(
-                safe_stoi(match[2].str()),
-                float(M_PI) / 180.f * safe_stof(match[3].str()),
-                float(M_PI) / 180.f * safe_stof(match[4].str()));
-        } else if (Mlib::re::regex_match(line, match, player_set_angular_velocity_reg)) {
-            players.get_player(match[1].str()).set_angular_velocity(
+        } else if (Mlib::re::regex_match(line, match, create_car_controller_reg)) {
+            auto node = scene.get_node(match[1].str());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Car movable is not a rigid body");
+            }
+            if (rb->controller_ != nullptr) {
+                throw std::runtime_error("Car controller already set");
+            }
+            std::vector<size_t> tire_ids = string_to_vector(match[2].str(), safe_stoz);
+            std::vector<float> tire_angles_deg = string_to_vector(match[3].str(), safe_stof);
+            if (tire_ids.size() != tire_angles_deg.size()) {
+                throw std::runtime_error("Tire IDs and angles have different lengths");
+            }
+            std::map<size_t, float> tire_angles_map;
+            for (size_t i = 0; i < tire_ids.size(); ++i) {
+                if (!tire_angles_map.insert({ tire_ids[i], float(M_PI) / 180.f * tire_angles_deg[i] }).second) {
+                    throw std::runtime_error("Duplicate tire ID");
+                }
+            }
+            rb->controller_ = std::make_unique<CarController>(rb, tire_angles_map);
+        } else if (Mlib::re::regex_match(line, match, create_tank_controller_reg)) {
+            auto node = scene.get_node(match[1].str());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Tank movable is not a rigid body");
+            }
+            if (rb->controller_ != nullptr) {
+                throw std::runtime_error("Tank controller already set");
+            }
+            std::vector<size_t> left_tire_ids = string_to_vector(match[2].str(), safe_stoz);
+            std::vector<size_t> right_tire_ids = string_to_vector(match[3].str(), safe_stoz);
+            rb->controller_ = std::make_unique<TankController>(
+                rb,
+                left_tire_ids,
+                right_tire_ids,
+                safe_stof(match[4].str()));
+        } else if (Mlib::re::regex_match(line, match, create_human_controller_reg)) {
+            auto node = scene.get_node(match[1].str());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Car movable is not a rigid body");
+            }
+            if (rb->controller_ != nullptr) {
+                throw std::runtime_error("Human controller already set");
+            }
+            rb->controller_ = std::make_unique<HumanController>(
+                rb,
                 float(M_PI) / 180.f * safe_stof(match[2].str()),
-                float(M_PI) / 180.f * safe_stof(match[3].str()));
+                safe_stof(match[3].str()));
         } else if (Mlib::re::regex_match(line, match, player_set_waypoint_reg)) {
             players.get_player(match[1].str()).set_waypoint({
                 safe_stof(match[2].str()),
@@ -2240,6 +2304,24 @@ void LoadScene::operator()(
                 .angular_velocity_press = safe_stof(match[11].str()),
                 .angular_velocity_repeat = safe_stof(match[12].str()),
                 .speed_cursor = safe_stof(match[13].str())});
+        } else if (Mlib::re::regex_match(line, match, vehicle_controller_idle_binding_reg)) {
+            key_bindings.add_vehicle_controller_idle_binding(VehicleControllerIdleBinding{
+                .node = scene.get_node(match[1].str())});
+        } else if (Mlib::re::regex_match(line, match, vehicle_controller_key_binding_reg)) {
+            key_bindings.add_vehicle_controller_key_binding(VehicleControllerKeyBinding{
+                .base_key = {
+                    .key = match[2].str(),
+                    .gamepad_button = match[3].str(),
+                    .joystick_axis = match[4].str(),
+                    .joystick_axis_sign = match[5].str().empty() ? 0 : safe_stof(match[5].str())},
+                .node = scene.get_node(match[1].str()),
+                .surface_power = match[6].matched ? safe_stof(match[6].str()) : std::optional<float>(),
+                .tire_angle_interp = match[7].matched
+                    ? Interp<float>{
+                        string_to_vector(match[7].str(), safe_stof),
+                        string_to_vector(match[8].str(), safe_stof),
+                        OutOfRangeBehavior::CLAMP}
+                    : std::optional<Interp<float>>()});
         } else if (Mlib::re::regex_match(line, match, weapon_inventory_key_binding_reg)) {
             try {
                 scene.get_node(match[1].str())->get_node_modifier();

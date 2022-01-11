@@ -22,6 +22,7 @@ RigidBodyEngine::RigidBodyEngine(
 : engine_state{EngineState::OFF},
   w_{NAN},
   surface_power_{0},
+  delta_power_{0},
   engine_power_{engine_power},
   ntires_{0},
   hand_brake_pulled_{hand_brake_pulled},
@@ -53,7 +54,10 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) 
     } else if (max_surface_power == 0) {
         sp = sign(surface_power_);
     } else {
-        sp = sign(surface_power_) * std::min(max_surface_power, std::abs(surface_power_));
+        auto clip_power = [&max_surface_power](float p){
+            return sign(p) * std::min(max_surface_power, std::abs(p));
+        };
+        sp = clip_power(clip_power(surface_power_) + clip_power(delta_power_));
     }
 
     if (hand_brake_pulled_ || std::isnan(sp)) {
@@ -69,8 +73,9 @@ float RigidBodyEngine::surface_power() const {
     return surface_power_;
 }
 
-void RigidBodyEngine::set_surface_power(float surface_power) {
+void RigidBodyEngine::set_surface_power(float surface_power, float delta_power) {
     surface_power_ = surface_power;
+    delta_power_ = delta_power;
 }
 
 void RigidBodyEngine::increment_ntires() {

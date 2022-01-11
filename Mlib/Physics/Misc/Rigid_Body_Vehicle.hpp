@@ -23,6 +23,7 @@ struct Beacon;
 class Damageable;
 class IPlayer;
 class StyleUpdater;
+class RigidBodyVehicleController;
 
 enum class TireAngularVelocityChange {
     OFF,
@@ -80,7 +81,7 @@ public:
         size_t id) const;
     float get_tire_radius(size_t id) const;
     PowerIntent consume_tire_surface_power(size_t id);
-    void set_surface_power(const std::string& engine_name, float surface_power);
+    void set_surface_power(const std::string& engine_name, float surface_power, float delta_power = 0.f);
     float get_tire_break_force(size_t id) const;
     TrackingWheel& get_tire_tracking_wheel(size_t id);
     FixedArray<float, 3> get_abs_tire_contact_position(size_t id) const;
@@ -94,6 +95,7 @@ public:
     virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
+    RigidBodyVehicleController& controller();
 
     RigidBodies& rigid_bodies_;
 
@@ -114,6 +116,7 @@ public:
     Damageable* damageable_;
     StyleUpdater* style_updater_;
     IPlayer* driver_;
+    std::unique_ptr<RigidBodyVehicleController> controller_;
     const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;
 };
