@@ -100,8 +100,7 @@ void RigidBodyIntegrator::reset_forces() {
 }
 
 float RigidBodyIntegrator::energy() const {
-    // From: http://farside.ph.utexas.edu/teaching/336k/Newtonhtml/node65.html
-    return 0.5f * (rbp_.mass_ * sum(squared(rbp_.v_)) + dot0d(rbp_.w_, dot1d(abs_I(), rbp_.w_)));
+    return rbp_.energy();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyIntegrator& rbi) {
