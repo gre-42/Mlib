@@ -525,22 +525,22 @@ void Player::roll_tires() {
 
 void Player::steer_left_full() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->controller().steer(-INFINITY);
+    rb_->controller().steer(INFINITY);
 }
 
 void Player::steer_right_full() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->controller().steer(INFINITY);
+    rb_->controller().steer(-INFINITY);
 }
 
 void Player::steer_left_partial(float angle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->controller().steer(-angle);
+    rb_->controller().steer(angle);
 }
 
 void Player::steer_right_partial(float angle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->controller().steer(angle);
+    rb_->controller().steer(-angle);
 }
 
 bool Player::has_rigid_body() const {
