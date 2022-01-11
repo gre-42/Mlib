@@ -512,7 +512,7 @@ void Player::drive_backwards() {
     if (!has_rigid_body()) {
         throw std::runtime_error("drive_backwards despite nullptr");
     }
-    rb_->controller().drive(-surface_power_backward_);
+    rb_->controller().drive(surface_power_backward_);
 }
 
 void Player::roll_tires() {
