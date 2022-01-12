@@ -19,12 +19,7 @@ HumanController::~HumanController()
 {}
 
 void HumanController::apply() {
-    rb_->set_surface_power("main", surface_power_); // NAN=break
-    if (std::isnan(surface_power_)) {
-        rb_->set_surface_power("breaks", NAN);      // NAN=break
-    } else {
-        rb_->set_surface_power("breaks", 0);
-    }
+    rb_->set_surface_power("legs", surface_power_); // NAN=break
     if (!std::isnan(angular_velocity_)) {
         rb_->rbi_.rbp_.w_(1) = sign(steer_angle_) * std::min(std::abs(steer_angle_ * steering_multiplier_), angular_velocity_);
     }
