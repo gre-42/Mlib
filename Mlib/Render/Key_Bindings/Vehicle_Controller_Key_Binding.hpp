@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <optional>
 
 namespace Mlib {
 
