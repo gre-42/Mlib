@@ -92,10 +92,6 @@ FixedArray<float, 3> Mlib::min_l2(const FixedArray<float, 3>& v, float max_lengt
     }
 }
 
-float signed_min(float v, float max_length) {
-    return sign(v) * std::min(std::abs(v), max_length);
-}
-
 /**
  * W = F * s
  * W = P * t

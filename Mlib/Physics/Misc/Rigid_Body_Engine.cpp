@@ -1,5 +1,6 @@
 #include "Rigid_Body_Engine.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Misc/Engine_Event_Listener.hpp>
 #include <cmath>
 
@@ -54,7 +55,7 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) 
         return PowerIntent{.power = sign(surface_power_ + delta_power_), .type = PowerIntentType::BREAK_OR_IDLE};
     } else {
         auto clip_power = [&max_surface_power](float p){
-            return sign(p) * std::min(max_surface_power, std::abs(p));
+            return signed_min(p, max_surface_power);
         };
         float sp = clip_power(clip_power(surface_power_) + delta_power_);
         return PowerIntent{.power = sp / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
