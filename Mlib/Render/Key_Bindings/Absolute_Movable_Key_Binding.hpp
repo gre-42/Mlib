@@ -3,6 +3,7 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <string>
+#include <optional>
 
 namespace Mlib {
 
@@ -13,7 +14,7 @@ struct AbsoluteMovableKeyBinding {
     SceneNode* node;
     VectorAtPosition<float, 3> force;
     FixedArray<float, 3> rotate;
-    float surface_power;
+    std::optional<float> car_surface_power;
     float max_velocity;
     size_t tire_id;
     Interp<float> tire_angle_interp;

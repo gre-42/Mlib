@@ -168,8 +168,10 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (any(k.rotate != 0.f)) {
                     rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues(alpha * k.rotate));
                 }
-                rb->set_surface_power("main", k.surface_power);
-                rb->set_surface_power("breaks", k.surface_power);
+                if (k.car_surface_power.has_value()) {
+                    rb->set_surface_power("main", k.car_surface_power.value());
+                    rb->set_surface_power("breaks", k.car_surface_power.value());
+                }
                 rb->set_max_velocity(k.max_velocity);
                 if (k.tire_id != SIZE_MAX) {
                     if (false) {

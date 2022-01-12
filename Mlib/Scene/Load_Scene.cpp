@@ -457,7 +457,7 @@ void LoadScene::operator()(
         "(?:\\r?\\n\\s*force=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
         "\\s*position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
         "(?:\\r?\\n\\s*rotate=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*surface_power=([\\w+-.]+))?"
+        "(?:\\r?\\n\\s*car_surface_power=([\\w+-.]+))?"
         "(?:\\r?\\n\\s*max_velocity=([\\w+-.]+))?"
         "(?:\\r?\\n\\s*tire_id=(\\d+)\\r?\\n"
         "\\s*tire_angle_velocities=([ \\w+-.]+)\\r?\\n"
@@ -2263,7 +2263,7 @@ void LoadScene::operator()(
                     match[12].str().empty() ? 0.f : safe_stof(match[12].str()),
                     match[13].str().empty() ? 0.f : safe_stof(match[13].str()),
                     match[14].str().empty() ? 0.f : safe_stof(match[14].str())},
-                .surface_power = match[15].str().empty() ? 0 : safe_stof(match[15].str()),
+                .car_surface_power = !match[15].matched ? std::optional<float>() : safe_stof(match[15].str()),
                 .max_velocity = match[16].str().empty() ? INFINITY : safe_stof(match[16].str()),
                 .tire_id = match[17].str().empty() ? SIZE_MAX : safe_stoi(match[17].str()),
                 .tire_angle_interp = Interp<float>{
