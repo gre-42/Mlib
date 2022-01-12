@@ -200,46 +200,46 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
     float& force_min,
     float& force_max)
 {
+    bool c;
+    switch (rb.controller().steering_type) {
+        case SteeringType::CAR:
+            c = true;
+            break;
+        case SteeringType::TANK:
+            c = false;
+            break;
+        default:
+            throw std::runtime_error("Unknown steering type");
+    }
     // F = W / s = W / v / t = P / v
     if (!std::isnan(P.power)) {
         // std::cerr << "dx " << dx << std::endl;
         if (P.power != 0) {
-            SteeringType steering_type = rb.controller().steering_type;
-            if (steering_type == SteeringType::TANK) {
+            float v = c ? dot0d(rb.rbi_.rbp_.v_ - street_velocity, n3) : -v0;
+            if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_brake_velocity) {
                 if (P.power > 0) {
-                    accelerate_positive(rb, street_velocity, P.power, fixed_zeros<float, 3>(), 0.f, surface_normal, cfg, tire_id, force_min, force_max);
-                } else {
-                    accelerate_negative(rb, street_velocity, P.power, fixed_zeros<float, 3>(), 0.f, surface_normal, cfg, tire_id, force_min, force_max);
-                }
-            } else if (steering_type == SteeringType::CAR) {
-                float v = dot0d(rb.rbi_.rbp_.v_ - street_velocity, n3);
-                if (sign(P.power) != sign(v) && std::abs(v) > cfg.hand_brake_velocity) {
-                    if (P.power > 0) {
-                        break_positive(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
-                    } else if (P.power < 0) {
-                        break_negative(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
-                    }
-                } else if (P.power > 0) {
-                    if (P.type == PowerIntentType::BREAK_OR_IDLE) {
-                        idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
-                    } else {
-                        accelerate_positive(rb, street_velocity, P.power, vc, v0, surface_normal, cfg, tire_id, force_min, force_max);
-                    }
+                    break_positive(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
                 } else if (P.power < 0) {
-                    if (P.type == PowerIntentType::BREAK_OR_IDLE) {
-                        idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
-                    } else {
-                        accelerate_negative(rb, street_velocity, P.power, vc, v0, surface_normal, cfg, tire_id, force_min, force_max);
-                    }
+                    break_negative(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
                 }
-            } else {
-                throw std::runtime_error("Unknown steering type");
+            } else if (P.power > 0) {
+                if (P.type == PowerIntentType::BREAK_OR_IDLE) {
+                    idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
+                } else {
+                    accelerate_positive(rb, street_velocity, P.power, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
+                }
+            } else if (P.power < 0) {
+                if (P.type == PowerIntentType::BREAK_OR_IDLE) {
+                    idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
+                } else {
+                    accelerate_negative(rb, street_velocity, P.power, c ? vc : fixed_zeros<float, 3>(), c ? v0 : 0.f, surface_normal, cfg, tire_id, force_min, force_max);
+                }
             }
         } else {
             idle(rb, street_velocity, surface_normal, tire_id, force_min, force_max);
         }
     } else {
-        float v = dot0d(rb.rbi_.rbp_.v_ - street_velocity, n3);
+        float v = c ? dot0d(rb.rbi_.rbp_.v_ - street_velocity, n3) : -v0;
         if (v < 0) {
             break_positive(rb, street_velocity, surface_normal, cfg, tire_id, force_min, force_max);
         } else {
