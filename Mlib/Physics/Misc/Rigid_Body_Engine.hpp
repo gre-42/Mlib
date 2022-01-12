@@ -35,7 +35,6 @@ public:
     float surface_power() const;
     void set_surface_power(float surface_power, float delta_power = 0.f);
     PowerIntent consume_abs_surface_power(size_t tire_id, float w);
-    void increment_ntires();
     void reset_forces();
     void advance_time(float dt, const FixedArray<float, 3>& position);
     void notify_off();
@@ -49,7 +48,7 @@ private:
     float delta_power_;
     std::set<size_t> tires_consumed_;
     EnginePower engine_power_;
-    size_t ntires_;
+    size_t ntires_old_;
     bool hand_brake_pulled_;
     std::shared_ptr<EngineEventListener> audio_;
 };
