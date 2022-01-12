@@ -48,11 +48,7 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) 
     float max_surface_power = std::isnan(w_)
         ? 0.f
         : engine_power_.get_power(w);
-    if (hand_brake_pulled_ ||
-        std::isnan(surface_power_) ||
-        ((surface_power_ > 0) && (delta_power_ == -INFINITY)) ||
-        ((surface_power_ < 0) && (delta_power_ == INFINITY)))
-    {
+    if (hand_brake_pulled_ || std::isnan(surface_power_)) {
         return PowerIntent{.power = NAN, .type = PowerIntentType::ALWAYS_BREAK};
     } else if (max_surface_power == 0) {
         return PowerIntent{.power = sign(surface_power_ + delta_power_), .type = PowerIntentType::BREAK_OR_IDLE};
@@ -60,7 +56,7 @@ PowerIntent RigidBodyEngine::consume_abs_surface_power(size_t tire_id, float w) 
         auto clip_power = [&max_surface_power](float p){
             return sign(p) * std::min(max_surface_power, std::abs(p));
         };
-        float sp = clip_power(surface_power_ + delta_power_);
+        float sp = clip_power(clip_power(surface_power_) + delta_power_);
         return PowerIntent{.power = sp / float(ntires_), .type = PowerIntentType::ACCELERATE_OR_BREAK};
     }
 }
