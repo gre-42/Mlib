@@ -17,12 +17,8 @@ CarController::~CarController()
 {}
 
 void CarController::apply() {
-    rb_->set_surface_power("main", surface_power_); // NAN=break
-    if (std::isnan(surface_power_)) {
-        rb_->set_surface_power("breaks", NAN);      // NAN=break
-    } else {
-        rb_->set_surface_power("breaks", 0);
-    }
+    rb_->set_surface_power("main", surface_power_);   // NAN=break
+    rb_->set_surface_power("breaks", surface_power_); // NAN=break
     for (const auto& x : tire_angles_) {
         float ang = sign(steer_angle_) * std::min(std::abs(steer_angle_), x.second);
         rb_->set_tire_angle_y(x.first, ang);
