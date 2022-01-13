@@ -617,6 +617,7 @@ int main(int argc, char** argv) {
             render_logics.append(nullptr, l);
         }
         render_logics.append(nullptr, read_pixels_logic);
+        // The following is required for animations.
         render_logics.append(nullptr, std::make_shared<MoveSceneLogic>(
             scene,
             delete_node_mutex,
