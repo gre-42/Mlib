@@ -624,7 +624,8 @@ int main(int argc, char** argv) {
 
         render2(
             render_logics,
-            SceneGraphConfig());
+            SceneGraphConfig(),
+            &button_states);
         if (args.has_named_value("--output")) {
             const Array<float>& array = render_results.outputs.at(rsd).rgb;
             if (!array.initialized()) {
