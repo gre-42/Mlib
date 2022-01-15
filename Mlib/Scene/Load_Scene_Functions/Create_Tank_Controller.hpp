@@ -3,11 +3,11 @@
 
 namespace Mlib {
 
-class LoadPlayers: public LoadSceneInstanceFunction {
+class CreateTankController: public LoadSceneInstanceFunction {
 public:
     static UserFunction user_function;
 private:
-    explicit LoadPlayers(RenderableScene& renderable_scene);
+    explicit CreateTankController(RenderableScene& renderable_scene);
     void execute(
         const std::smatch& match,
         const std::function<FPath(const std::string&)>& fpath,

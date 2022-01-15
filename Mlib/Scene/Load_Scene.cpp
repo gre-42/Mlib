@@ -80,6 +80,9 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Human_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -170,6 +173,9 @@ FixedArray<float, 3> parse_position(
 
 LoadScene::LoadScene() {
     user_functions_.push_back(LoadPlayers::user_function);
+    user_functions_.push_back(CreateCarController::user_function);
+    user_functions_.push_back(CreateHumanController::user_function);
+    user_functions_.push_back(CreateTankController::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -421,22 +427,6 @@ void LoadScene::operator()(
         "\\s+player_name=([\\w+-.]+)"
         "\\s+forward=([\\w+-.]+)"
         "\\s+backward=([\\w+-.]*)$");
-    static const DECLARE_REGEX(create_car_controller_reg,
-        "^\\s*create_car_controller"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)$");
-    static const DECLARE_REGEX(create_tank_controller_reg,
-        "^\\s*create_tank_controller"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+left_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+right_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+steering_multiplier=([\\w+-.]+)$");
-    static const DECLARE_REGEX(create_human_controller_reg,
-        "^\\s*create_human_controller"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+angular_velocity=([\\w+-.]+)"
-        "\\s+steering_multiplier=([\\w+-.]+)$");
     static const DECLARE_REGEX(player_set_waypoint_reg,
         "^\\s*player_set_waypoint"
         "\\s+player_name=([\\w+-.]+)"
@@ -2191,56 +2181,6 @@ void LoadScene::operator()(
         } else if (Mlib::re::regex_match(line, match, player_set_surface_power_reg)) {
             players.get_player(match[1].str()).set_surface_power(
                 safe_stof(match[2].str()),
-                safe_stof(match[3].str()));
-        } else if (Mlib::re::regex_match(line, match, create_car_controller_reg)) {
-            auto node = scene.get_node(match[1].str());
-            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
-            if (rb == nullptr) {
-                throw std::runtime_error("Car movable is not a rigid body");
-            }
-            if (rb->controller_ != nullptr) {
-                throw std::runtime_error("Car controller already set");
-            }
-            std::vector<size_t> tire_ids = string_to_vector(match[2].str(), safe_stoz);
-            std::vector<float> tire_angles_deg = string_to_vector(match[3].str(), safe_stof);
-            if (tire_ids.size() != tire_angles_deg.size()) {
-                throw std::runtime_error("Tire IDs and angles have different lengths");
-            }
-            std::map<size_t, float> tire_angles_map;
-            for (size_t i = 0; i < tire_ids.size(); ++i) {
-                if (!tire_angles_map.insert({ tire_ids[i], float(M_PI) / 180.f * tire_angles_deg[i] }).second) {
-                    throw std::runtime_error("Duplicate tire ID");
-                }
-            }
-            rb->controller_ = std::make_unique<CarController>(rb, tire_angles_map);
-        } else if (Mlib::re::regex_match(line, match, create_tank_controller_reg)) {
-            auto node = scene.get_node(match[1].str());
-            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
-            if (rb == nullptr) {
-                throw std::runtime_error("Tank movable is not a rigid body");
-            }
-            if (rb->controller_ != nullptr) {
-                throw std::runtime_error("Tank controller already set");
-            }
-            std::vector<size_t> left_tire_ids = string_to_vector(match[2].str(), safe_stoz);
-            std::vector<size_t> right_tire_ids = string_to_vector(match[3].str(), safe_stoz);
-            rb->controller_ = std::make_unique<TankController>(
-                rb,
-                left_tire_ids,
-                right_tire_ids,
-                safe_stof(match[4].str()));
-        } else if (Mlib::re::regex_match(line, match, create_human_controller_reg)) {
-            auto node = scene.get_node(match[1].str());
-            auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
-            if (rb == nullptr) {
-                throw std::runtime_error("Car movable is not a rigid body");
-            }
-            if (rb->controller_ != nullptr) {
-                throw std::runtime_error("Human controller already set");
-            }
-            rb->controller_ = std::make_unique<HumanController>(
-                rb,
-                float(M_PI) / 180.f * safe_stof(match[2].str()),
                 safe_stof(match[3].str()));
         } else if (Mlib::re::regex_match(line, match, player_set_waypoint_reg)) {
             players.get_player(match[1].str()).set_waypoint({
