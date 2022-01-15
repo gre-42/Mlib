@@ -83,6 +83,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Heli_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Human_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
@@ -173,6 +174,7 @@ FixedArray<float, 3> parse_position(
 }
 
 LoadScene::LoadScene() {
+    user_functions_.push_back(CreatePlayer::user_function);
     user_functions_.push_back(LoadPlayers::user_function);
     user_functions_.push_back(CreateCarController::user_function);
     user_functions_.push_back(CreateHeliController::user_function);
@@ -407,14 +409,6 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(clear_absolute_observer_reg,
         "^\\s*clear_absolute_observer"
         "\\s+node=([\\w+-.]+)$");
-    static const DECLARE_REGEX(player_create_reg,
-        "^\\s*player_create"
-        "\\s+name=([\\w+-.]+)"
-        "\\s+team=([\\w+-.]+)"
-        "\\s+game_mode=(ramming|racing|bystander|pod_bot_npc|pod_bot_pc)"
-        "\\s+unstuck_mode=(off|reverse|delete)"
-        "\\s+driving_mode=(pedestrian|car_city|car_arena)"
-        "\\s+driving_direction=(center|left|right)$");
     static const DECLARE_REGEX(player_set_node_reg,
         "^\\s*player_set_node"
         "\\s+player_name=([\\w+-.]+)"
@@ -2146,22 +2140,6 @@ void LoadScene::operator()(
             scene.get_node(match[1].str())->clear_renderable_instance(match[2].str());
         } else if (Mlib::re::regex_match(line, match, clear_absolute_observer_reg)) {
             scene.get_node(match[1].str())->clear_absolute_observer();
-        } else if (Mlib::re::regex_match(line, match, player_create_reg)) {
-            auto player = std::make_unique<Player>(
-                scene,
-                physics_engine.collision_query_,
-                players,
-                match[1].str(),
-                match[2].str(),
-                game_mode_from_string(match[3].str()),
-                unstuck_mode_from_string(match[4].str()),
-                driving_modes.at(match[5].str()),
-                driving_direction_from_string(match[6].str()),
-                delete_node_mutex);
-            Player* p = player.get();
-            players.add_player(std::move(player));
-            physics_engine.advance_times_.add_advance_time(p);
-            physics_engine.add_external_force_provider(p);
         } else if (Mlib::re::regex_match(line, match, player_set_node_reg)) {
             auto node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
