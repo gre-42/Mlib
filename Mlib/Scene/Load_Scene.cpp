@@ -81,6 +81,7 @@
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Heli_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Human_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
@@ -174,6 +175,7 @@ FixedArray<float, 3> parse_position(
 LoadScene::LoadScene() {
     user_functions_.push_back(LoadPlayers::user_function);
     user_functions_.push_back(CreateCarController::user_function);
+    user_functions_.push_back(CreateHeliController::user_function);
     user_functions_.push_back(CreateHumanController::user_function);
     user_functions_.push_back(CreateTankController::user_function);
 }
