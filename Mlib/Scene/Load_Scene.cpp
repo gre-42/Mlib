@@ -80,6 +80,7 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
@@ -166,6 +167,13 @@ FixedArray<float, 3> parse_position(
             safe_stof(z_str)};
     }
 }
+
+LoadScene::LoadScene() {
+    user_functions_.push_back(LoadPlayers::user_function);
+}
+
+LoadScene::~LoadScene()
+{}
 
 void LoadScene::operator()(
     const std::string& working_directory,
@@ -897,6 +905,28 @@ void LoadScene::operator()(
         const std::string& line,
         SubstitutionMap* local_substitutions) -> bool
     {
+        {
+            auto renderable_scene = [&]() -> RenderableScene& {
+                auto cit = renderable_scenes.find(context);
+                if (cit == renderable_scenes.end()) {
+                    throw std::runtime_error("Could not find renderable scene with name \"" + context + '"');
+                }
+                return *cit->second;
+            };
+            for (const auto& f : user_functions_) {
+                if (f(
+                    line,
+                    renderable_scene,
+                    fpath,
+                    macro_line_executor,
+                    external_substitutions,
+                    local_substitutions,
+                    rsc))
+                {
+                    return true;
+                }
+            }
+        }
         auto fpathp = [&](const std::string& v){return fpath(v).path;};
         Mlib::re::smatch match;
         if (Mlib::re::regex_match(line, match, create_scene_reg)) {

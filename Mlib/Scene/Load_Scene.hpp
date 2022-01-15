@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Macro_Recorder.hpp>
+#include <Mlib/Scene/Load_Scene_Instance_Function.hpp>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -21,6 +22,8 @@ class RenderLogics;
 
 class LoadScene {
 public:
+    LoadScene();
+    ~LoadScene();
     void operator () (
         const std::string& working_directory,
         const std::string& script_filename,
@@ -39,6 +42,7 @@ public:
         std::map<std::string, std::shared_ptr<RenderableScene>>& renderable_scenes);
 private:
     MacroRecorder macro_file_executor_;
+    std::list<LoadSceneInstanceFunction::UserFunction> user_functions_;
 };
 
 }

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Json.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <filesystem>
 #include <nlohmann/json.hpp>
@@ -11,24 +12,6 @@ namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 using namespace Mlib;
-
-template <class TData, size_t tsize>
-FixedArray<TData, tsize> get_fixed_array(const json& j) {
-    auto v = j.get<std::vector<float>>();
-    if (v.size() != tsize) {
-        throw std::runtime_error("Unsupported dimensionality");
-    }
-    return FixedArray<float, tsize>{v};
-}
-
-template <size_t tsize>
-std::vector<FixedArray<float, tsize>> load_vector(const json& j) {
-    std::list<FixedArray<float, tsize>> vertex_list;
-    for (const auto& vertex : j) {
-        vertex_list.push_back(get_fixed_array<float, tsize>(vertex));
-    }
-    return std::vector<FixedArray<float, tsize>>{vertex_list.begin(), vertex_list.end()};
-}
 
 // template <class TValue>
 // const auto& map_at(const std::map<std::string, TValue>& m, const std::string& n) {
@@ -240,8 +223,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .diffusivity = m.diffusivity,
                 .specularity = m.specularity}.compute_color_mode()};
         auto mesh = geometry.at("mesh");
-        std::vector<FixedArray<float, 3>> vertices = load_vector<3>(mesh.at("vertices"));
-        std::vector<FixedArray<float, 2>> uv_coordinates = load_vector<2>(mesh.at("uv_coordinates"));
+        std::vector<FixedArray<float, 3>> vertices = load_vector<float, 3>(mesh.at("vertices"));
+        std::vector<FixedArray<float, 2>> uv_coordinates = load_vector<float, 2>(mesh.at("uv_coordinates"));
         std::vector<std::list<BoneWeight>> vertex_bone_weights;
         vertex_bone_weights.resize(vertices.size());
         for (const auto& bw : mesh.at("weights").items()) {

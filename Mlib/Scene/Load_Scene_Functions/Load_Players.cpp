@@ -1,0 +1,111 @@
+#include "Load_Players.hpp"
+#include <Mlib/Json.hpp>
+#include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Regex_Select.hpp>
+#include <fstream>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+using namespace Mlib;
+
+LoadSceneInstanceFunction::UserFunction LoadPlayers::user_function = [](
+    const std::string& line,
+    const std::function<RenderableScene&()>& renderable_scene,
+    const std::function<FPath(const std::string&)>& fpath,
+    const MacroLineExecutor& macro_line_executor,
+    SubstitutionMap& external_substitutions,
+    SubstitutionMap* local_substitutions,
+    RegexSubstitutionCache& rsc)
+{
+    static DECLARE_REGEX(regex,
+        "^\\s*load_players"
+        "\\s+json=([\\w+-. \\(\\)/\\\\:]+)"
+        "\\s+way_points=([\\w+-.]+)$");
+    std::smatch match;
+    if (Mlib::re::regex_match(line, match, regex)) {
+        LoadPlayers(renderable_scene()).execute(
+            match,
+            fpath,
+            macro_line_executor,
+            local_substitutions,
+            rsc);
+        return true;
+    } else {
+        return false;
+    }
+};
+
+LoadPlayers::LoadPlayers(RenderableScene& renderable_scene) 
+: LoadSceneInstanceFunction{ renderable_scene }
+{}
+
+void LoadPlayers::execute(
+    const std::smatch& match,
+    const std::function<FPath(const std::string&)>& fpath,
+    const MacroLineExecutor& macro_line_executor,
+    SubstitutionMap* local_substitutions,
+    RegexSubstitutionCache& rsc)
+{
+    // Example JSON file:
+    // {
+    //     "library": "teams",
+    //     "game_mode": "racing",
+    //     "teams": {
+    //         "red": { "style": { "color": [1, 0.8, 0.8] },
+    //         "blue": { "style": { "color": [0.8, 0.8, 1] } }
+    //     },
+    //     "players": [
+    //         {
+    //             "controller": "pc", "name": "you", "team": "red",
+    //             "spawned_vehicle": { "type": "tiger_tank" }
+    //         },
+    //         {
+    //             "controller": "npc", "name": "npc1", "team": "red",
+    //             "spawned_vehicle": { "type": "tiger_tank" }
+    //         },
+    //         ...
+    //     ]
+    // }
+    //
+    // Example macro calls:
+    // macro_playback teams.create_player_and_car_for_pc DECIMATE: PLAYER_NAME:you CAR_NAME:_tiger_tank TEAM:red GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8;
+    // macro_playback teams.create_player_and_car_for_npc CAR_NAME:_tiger_tank DECIMATE: PLAYER_NAME:npc1 TEAM:red  GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8
+    //    TEAMS_WAY_POINTS_RESOURCE:TEAMS_WAY_POINTS_RESOURCE;
+
+    std::string filename = match[1].str();
+    json j;
+    std::ifstream f{filename};
+    if (f.fail()) {
+        throw std::runtime_error("Could not open file \"" + filename + '"');
+    }
+    f >> j;
+    if (f.fail()) {
+        throw std::runtime_error("Could not read from \"" + filename + '"');
+    }
+    for (const auto& player : j.at("players")) {
+        std::stringstream sstr;
+        std::string team = player.at("team").get<std::string>();
+        auto color = get_fixed_array<float, 3>(j.at("teams").at(team).at("style").at("color"));
+        auto controller = player.at("controller").get<std::string>();
+        sstr << "macro_playback " <<
+            j.at("library").get<std::string>() << ".create_player_and_car_for_" << controller <<
+            " DECIMATE:"
+            " PLAYER_NAME:" << player.at("name").get<std::string>() <<
+            " CAR_NAME:_" << player.at("spawned_vehicle").at("type").get<std::string>() <<
+            " TEAM:" << team <<
+            " GAME_MODE:" << j.at("game_mode").get<std::string>() <<
+            " IF_STYLE:"
+            " R:" << color(0) <<
+            " G:" << color(1) <<
+            " B:" << color(2);
+        if (controller == "pc") {
+            // Do nothing
+        } else if (controller == "npc") {
+            sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[2].str();
+        } else {
+            throw std::runtime_error("Unknown controller type");
+        }
+        macro_line_executor(sstr.str(), local_substitutions, rsc);
+    }
+}
