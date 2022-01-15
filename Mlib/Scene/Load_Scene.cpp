@@ -206,13 +206,13 @@ void LoadScene::operator()(
         "^\\s*obj_resource"
         "\\s+name=([\\w-. \\(\\)/+-]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+scale=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "(?:\\s+distances=([\\w+-.]+) ([\\w+-.]+))?"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+scale=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+is_small=(0|1)"
         "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
-        "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
         "\\s+occluded_type=(off|color|depth)"
         "\\s+occluder_type=(off|white|black)"
@@ -226,12 +226,12 @@ void LoadScene::operator()(
         "^\\s*gen_triangle_rays"
         "\\s+name=([\\w+-.]+)"
         "\\s+npoints=([\\w+-.]+)"
-        "\\s+lengths=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+lengths=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+delete_triangles=(0|1)$");
     static const DECLARE_REGEX(gen_ray_reg,
         "^\\s*gen_ray name=([\\w+-.]+)"
-        "\\s+from=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+to=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+from=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+to=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     static const DECLARE_REGEX(downsample_reg,
         "^\\s*downsample"
         "\\s+name=([/\\w+-.]+)"
@@ -245,20 +245,20 @@ void LoadScene::operator()(
         "^\\s*square_resource"
         "\\s+name=([\\w+-.]+)"
         "\\s+texture_filename=(#?[\\w-.\\(\\)/+-]+)"
-        "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+max=([\\w+-.]+) ([\\w+-.]+)"
-        "(?:\\s+distances=([\\w+-.]+) ([\\w+-.]+))?"
+        "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+is_small=(0|1)"
         "\\s+occluded_type=(off|color|depth)"
         "\\s+occluder_type=(off|white|black)"
         "\\s+occluded_by_black=(0|1)"
-        "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
         "(?:\\s+depth_func=(less_equal|less|equal))?"
-        "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
-        "(?:\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:\\s+translation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+translation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)"
         "(?:\\s+number_of_frames=(\\d+))?"
@@ -267,23 +267,23 @@ void LoadScene::operator()(
         "^\\s*blending_x_resource"
         "\\s+name=([\\w+-.]+)"
         "\\s+texture_filename=([\\w+-. \\(\\)/\\\\:]+)"
-        "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+max=([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)$");
     static const DECLARE_REGEX(binary_x_resource_reg,
         "^\\s*binary_x_resource"
         "\\s+name=([\\w+-.]+)"
         "\\s+texture_filename_0=(#?[\\w-.\\(\\)/+-]+)"
         "\\s+texture_filename_90=(#?[\\w-.\\(\\)/+-]+)"
-        "\\s+min=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+max=([\\w+-.]+) ([\\w+-.]+)"
-        "(?:\\s+distances=([\\w+-.]+) ([\\w+-.]+))?"
+        "\\s+min=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+max=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+is_small=(0|1)"
         "\\s+occluded_type=(off|color|depth)"
         "\\s+occluder_type=(off|white|black)"
         "\\s+occluded_by_black=(0|1)"
-        "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+blend_mode=(off|binary|semi_continuous|continuous)"
-        "\\s+alpha_distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+alpha_distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+cull_faces=(0|1)"
         "\\s+aggregate_mode=(off|once|sorted|instances_once|instances_sorted)"
         "\\s+transformation_mode=(all|position|position_lookat|position_yangle)$");
@@ -291,16 +291,16 @@ void LoadScene::operator()(
         "^\\s*root_node_instance"
         "\\s+type=(aggregate|instances|static|dynamic)"
         "\\s+name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+scale=([\\w+-.]+))?$");
     static const DECLARE_REGEX(child_node_instance_reg,
         "^\\s*child_node_instance"
         "\\s+type=(aggregate|instances|dynamic)"
         "\\s+parent=([\\w-.<>]+)"
         "\\s+name=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+rotation=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+rotation=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+scale=([\\w+-.]+))?$");
     static const DECLARE_REGEX(delete_root_node_reg,
         "^\\s*delete_root_node\\s+name=([\\w+-.]+)$");
@@ -330,10 +330,10 @@ void LoadScene::operator()(
         "\\s+hitbox=([\\w-. \\(\\)/+-]+)"
         "(?:\\s+tirelines=([\\w-. \\(\\)/+-]+))?"
         "\\s+mass=([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "(?:\\s+com=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "(?:\\s+com=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+v=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+w=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+collidable_mode=(terrain|small_static|small_moving)"
         "(?:\\s+name=([\\w+-.]+))?$");
     static const DECLARE_REGEX(create_weapon_inventory_reg,
@@ -360,7 +360,7 @@ void LoadScene::operator()(
         "\\s+velocity=([\\w+-.]+)"
         "\\s+lifetime=([\\w+-.]+)"
         "\\s+damage=([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+punch_angle=([\\w+-.]+)"
         "\\s+carrier=(avatar|vehicle)$");
     static const DECLARE_REGEX(damageable_reg,
@@ -372,13 +372,13 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(relative_transformer_reg,
         "^\\s*relative_transformer"
         "\\s+node=([\\w+-.]+)"
-        "(?:\\s+v=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:\\s+w=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
+        "(?:\\s+v=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+w=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     static const DECLARE_REGEX(wheel_reg,
         "^\\s*wheel"
         "\\s+rigid_body=([\\w+-.]+)"
         "\\s+node=([\\w+-.]*)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+radius=([\\w+-.]+)"
         "\\s+engine=([\\w+-.]+)"
         "\\s+break_force=([\\w+-.]+)"
@@ -446,7 +446,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(abs_idle_binding_reg,
         "^\\s*abs_idle_binding"
         "\\s+node=([\\w+-.]+)"
-        "\\s+tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     static const DECLARE_REGEX(abs_key_binding_reg,
         "^\\s*abs_key_binding\\r?\\n"
         "\\s*node=([\\w+-.]+)\\r?\\n"
@@ -454,15 +454,15 @@ void LoadScene::operator()(
         "(?:\\r?\\n\\s*gamepad_button=([\\w+-.]+))?"
         "(?:\\r?\\n\\s*joystick_digital_axis=([\\w+-.]+)\\r?\\n"
         "\\s*joystick_digital_axis_sign=([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*force=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*rotate=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:\\r?\\n\\s*force=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\r?\\n"
+        "\\s*position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\r?\\n\\s*rotate=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\r?\\n\\s*car_surface_power=([\\w+-.]+))?"
         "(?:\\r?\\n\\s*max_velocity=([\\w+-.]+))?"
         "(?:\\r?\\n\\s*tire_id=(\\d+)\\r?\\n"
         "\\s*tire_angle_velocities=([ \\w+-.]+)\\r?\\n"
         "\\s*tire_angles=([ \\w+-.]+))?"
-        "(?:\\r?\\n\\s*tires_z=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?$");
+        "(?:\\r?\\n\\s*tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     static const DECLARE_REGEX(rel_key_binding_reg,
         "^\\s*rel_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -472,7 +472,7 @@ void LoadScene::operator()(
         "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
         "(?:\\s+cursor_axis=(0|1))?"
         "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?"
-        "\\s+rotation_axis=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+rotation_axis=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+angular_velocity_press=([\\w+-.]+)"
         "\\s+angular_velocity_repeat=([\\w+-.]+)"
         "\\s+speed_cursor=([\\w+-.]+)$");
@@ -511,7 +511,7 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(visual_global_log_reg,
         "^\\s*visual_global_log"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+nentries=([\\d+]+)"
@@ -521,7 +521,7 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
     static const DECLARE_REGEX(visual_node_status_3rd_reg,
@@ -529,13 +529,13 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+format=(\\d+)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+offset=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)$");
     static const DECLARE_REGEX(focused_text_reg,
         "^\\s*focused_text"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
@@ -543,14 +543,14 @@ void LoadScene::operator()(
     static const DECLARE_REGEX(countdown_reg,
         "^\\s*countdown"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+nseconds=([\\w+-.]+)$");
     static const DECLARE_REGEX(players_stats_reg,
         "^\\s*players_stats"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+score_board=(\\d+)$");
@@ -576,7 +576,7 @@ void LoadScene::operator()(
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+scene_files=([\\s\\w+-.\\(\\)/:=%]+)$");
@@ -584,7 +584,7 @@ void LoadScene::operator()(
         "^\\s*scene_to_texture"
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
         "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(fill_pixel_region_with_texture_reg,
@@ -592,15 +592,15 @@ void LoadScene::operator()(
         "\\s+source_scene=([\\w+-.]+)"
         "\\s+texture_name=([\\w+-.]+)"
         "\\s+update=(once|always)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
         "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(scene_to_pixel_region_reg,
         "^\\s*scene_to_pixel_region"
         "\\s+target_scene=([\\w+-.]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+focus_mask=(none|base|menu|loading|countdown_any|scene|game_over|always)"
         "\\s+submenu=(\\w*)$");
     static const DECLARE_REGEX(controls_reg,
@@ -608,8 +608,8 @@ void LoadScene::operator()(
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
         "\\s+gamepad_texture=(#?[\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)$");
     static const DECLARE_REGEX(clear_parameters_reg,
         "^\\s*clear_parameters$");
     static const DECLARE_REGEX(parameter_setter_reg,
@@ -617,7 +617,7 @@ void LoadScene::operator()(
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+default=([\\d]+)"
@@ -629,7 +629,7 @@ void LoadScene::operator()(
         "\\s+id=([\\w+-.]+)"
         "\\s+title=([\\w+-. ]*)"
         "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+font_height=([\\w+-.]+)"
         "\\s+line_distance=([\\w+-.]+)"
         "\\s+default=([\\d]+)"
@@ -638,9 +638,9 @@ void LoadScene::operator()(
         "^\\s*set_renderable_style"
         "\\s+selector=([^\\r\\n]*)\\r?\\n"
         "\\s*node=([\\w+-.]+)"
-        "\\s+ambience=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+ambience=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+animation_name=([\\w+-.]*))?"
         "(?:\\s+animation_loop_begin=([\\w+-.]+))?"
         "(?:\\s+animation_loop_end=([\\w+-.]+))?"
@@ -669,8 +669,8 @@ void LoadScene::operator()(
         "\\s+camera_node=([\\w+-.]+)"
         "\\s+filename=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+update=(once|always)"
-        "\\s+center=([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+size=([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+center=([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)$");
     static const DECLARE_REGEX(perspective_camera_reg,
         "^\\s*perspective_camera"
         "\\s+node=([\\w+-.]+)"
@@ -695,9 +695,9 @@ void LoadScene::operator()(
         "\\s+update=(once|always)"
         "\\s+with_depth_texture=(0|1)"
         "\\s+ambience=([\\w+-.]+)"
-        "\\s+([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+diffusivity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+specularity=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+diffusivity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+specularity=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+shadow=(0|1)$");
     static const DECLARE_REGEX(look_at_node_reg,
         "^\\s*look_at_node"
@@ -707,7 +707,7 @@ void LoadScene::operator()(
         "^\\s*keep_offset"
         "\\s+follower=([\\w+-.]+)"
         "\\s+followed=([\\w+-.]+)"
-        "\\s+offset=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)$");
+        "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     static const DECLARE_REGEX(yaw_pitch_look_at_nodes_reg,
         "^\\s*yaw_pitch_look_at_nodes"
         "\\s+yaw_node=([\\w+-.]+)"
@@ -728,8 +728,8 @@ void LoadScene::operator()(
         "\\s+follower=([\\w+-.]+)"
         "\\s+followed=([\\w+-.]+)"
         "\\s+distance=([\\w+-.]+)"
-        "\\s+node_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+look_at_displacement=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+node_displacement=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+look_at_displacement=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+snappiness=([\\w+-.]+)"
         "\\s+y_adaptivity=([\\w+-.]+)"
         "\\s+y_snappiness=([\\w+-.]+)$");
@@ -748,8 +748,8 @@ void LoadScene::operator()(
         "(?:\\s+histogram=([#\\w-. \\(\\)/+-]+))?"
         "(?:\\s+mixed=([#\\w-. \\(\\)/+-]+))?"
         "(?:\\s+overlap_npixels=(\\d+))?"
-        "(?:\\s+mean_color=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
-        "(?:\\s+lighten=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+))?"
+        "(?:\\s+mean_color=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+lighten=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "\\s+anisotropic_filtering_level=(\\d+)$");
     static const DECLARE_REGEX(add_blend_map_texture_reg,
         "^\\s*add_blend_map_texture"
@@ -757,9 +757,9 @@ void LoadScene::operator()(
         "\\s+texture=(#?[\\w-.\\(\\)/+-]+)"
         "\\s+min_height=([\\w+-.]+)"
         "\\s+max_height=([\\w+-.]+)"
-        "\\s+distances=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+normal=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
-        "\\s+cosine=([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+) ([\\w+-.]+)"
+        "\\s+distances=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+normal=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+cosine=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "(?:\\s+discreteness=([\\w+-.]+))?"
         "\\s+scale=([\\w+-.]+)"
         "\\s+weight=([\\w+-.]+)$");
@@ -1063,7 +1063,7 @@ void LoadScene::operator()(
                         barrier_texture_reg,
                         "(?:\\s*name:(\\w+) "
                         "texture:(#?[\\w-.\\(\\)/+-]+) "
-                        "uv:([\\w+-.]+) ([\\w+-.]+) "
+                        "uv:([\\w+-.]+)\\s+([\\w+-.]+) "
                         "blend_mode:(off|binary|semi_continuous|continuous) "
                         "wrap_mode_t:(repeat|clamp_to_edge|clamp_to_border) "
                         "reorient_uv0:(0|1)|([\\s\\S]+))");
