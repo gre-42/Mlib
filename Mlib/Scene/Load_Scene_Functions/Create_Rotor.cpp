@@ -64,9 +64,9 @@ void CreateRotor::execute(
         safe_stof(match[3].str()),
         safe_stof(match[4].str())};
     FixedArray<float, 3> rotation{
-        safe_stof(match[5].str()),
-        safe_stof(match[6].str()),
-        safe_stof(match[7].str())};
+        safe_stof(match[5].str()) * float(M_PI / 180.f),
+        safe_stof(match[6].str()) * float(M_PI / 180.f),
+        safe_stof(match[7].str()) * float(M_PI / 180.f)};
     std::string engine = match[8].str();
     float power2lift = safe_stof(match[9].str());
     size_t tire_id = safe_stoz(match[10].str());

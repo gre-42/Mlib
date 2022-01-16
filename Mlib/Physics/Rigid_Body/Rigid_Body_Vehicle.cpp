@@ -94,7 +94,7 @@ void RigidBodyVehicle::collide_with_air(const PhysicsEngineConfig& cfg) {
         if (!std::isnan(P)) {
             integrate_force(
                 VectorAtPosition<float, 3>{
-                    .vector = abs_location.vector * consume_rotor_surface_power(r.first).power,
+                    .vector = abs_location.vector * P * r.second.power2lift,
                     .position = abs_location.position },
                 cfg);
         }
