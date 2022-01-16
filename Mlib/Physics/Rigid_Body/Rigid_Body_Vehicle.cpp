@@ -46,18 +46,29 @@ void RigidBodyVehicle::reset_forces() {
     }
 }
 
-void RigidBodyVehicle::integrate_force(const VectorAtPosition<float, 3>& F)
+void RigidBodyVehicle::integrate_force(
+    const VectorAtPosition<float, 3>& F,
+    const PhysicsEngineConfig& cfg)
 {
-    rbi_.integrate_force(F);
+    if (cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
+        rbi_.integrate_force(F);
+    } else if (cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
+        rbi_.rbp_.integrate_impulse(abs_F({
+            .vector = F.vector * (cfg.dt / cfg.oversampling),
+            .position = F.position}));
+    } else {
+        throw std::runtime_error("Unknown resolve collision type in integrate_force");
+    }
 }
 
 void RigidBodyVehicle::integrate_force(
     const VectorAtPosition<float, 3>& F,
     const FixedArray<float, 3>& n,
     float damping,
-    float friction)
+    float friction,
+    const PhysicsEngineConfig& cfg)
 {
-    integrate_force(F);
+    integrate_force(F, cfg);
     if (damping != 0) {
         auto vn = n * dot0d(rbi_.rbp_.v_, n);
         auto vt = rbi_.rbp_.v_ - vn;
@@ -76,12 +87,17 @@ void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
     rbi_.integrate_gravity(g);
 }
 
-void RigidBodyVehicle::collide_with_air() {
+void RigidBodyVehicle::collide_with_air(const PhysicsEngineConfig& cfg) {
     for (const auto& r : rotors_) {
-        auto abs_location = r.second.location.transformed(rbi_.rbp_.abs_transformation());
-        integrate_force(VectorAtPosition<float, 3>{
-            .vector = abs_location.vector * consume_rotor_surface_power(r.first).power,
-            .position = abs_location.position });
+        auto abs_location = r.second.rotated_location().transformed(rbi_.rbp_.abs_transformation());
+        float P = consume_rotor_surface_power(r.first).power;
+        if (!std::isnan(P)) {
+            integrate_force(
+                VectorAtPosition<float, 3>{
+                    .vector = abs_location.vector * consume_rotor_surface_power(r.first).power,
+                    .position = abs_location.position },
+                cfg);
+        }
     }
 }
 
@@ -183,7 +199,7 @@ FixedArray<float, 3, 3> RigidBodyVehicle::abs_I() const {
 VectorAtPosition<float, 3> RigidBodyVehicle::abs_F(const VectorAtPosition<float, 3>& F) const {
     return {
         .vector = dot1d(rbi_.rbp_.rotation_, F.vector),
-        .position = dot1d(rbi_.rbp_.rotation_, F.position) + rbi_.rbp_.abs_com_};
+        .position = dot1d(rbi_.rbp_.rotation_, F.position) + rbi_.rbp_.abs_position()};
 }
 
 FixedArray<float, 3> RigidBodyVehicle::velocity_at_position(const FixedArray<float, 3>& position) const {
@@ -216,6 +232,14 @@ void RigidBodyVehicle::set_tire_angle_y(size_t id, float angle_y) {
 // void RigidBodyVehicle::set_tire_accel_x(size_t id, float accel_x) {
 //     get_tire(id).accel_x = accel_x;
 // }
+
+void RigidBodyVehicle::set_rotor_angle_x(size_t id, float angle_x) {
+    get_rotor(id).angle_x = angle_x;
+}
+
+void RigidBodyVehicle::set_rotor_angle_z(size_t id, float angle_z) {
+    get_rotor(id).angle_z = angle_z;
+}
 
 FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {

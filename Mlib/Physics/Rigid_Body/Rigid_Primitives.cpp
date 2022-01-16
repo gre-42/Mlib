@@ -1,8 +1,8 @@
 #include "Rigid_Primitives.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 

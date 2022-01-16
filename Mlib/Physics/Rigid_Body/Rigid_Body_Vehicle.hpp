@@ -9,7 +9,7 @@
 #include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>
@@ -45,14 +45,17 @@ public:
         const std::string& name = "");
     ~RigidBodyVehicle();
     void reset_forces();
-    void integrate_force(const VectorAtPosition<float, 3>& F);
+    void integrate_force(
+        const VectorAtPosition<float, 3>& F,
+        const PhysicsEngineConfig& cfg);
     void integrate_force(
         const VectorAtPosition<float, 3>& F,
         const FixedArray<float, 3>& n,
         float damping,
-        float friction);
+        float friction,
+        const PhysicsEngineConfig& cfg);
     void integrate_gravity(const FixedArray<float, 3>& g);
-    void collide_with_air();
+    void collide_with_air(const PhysicsEngineConfig& cfg);
     void advance_time(
         float dt,
         float min_acceleration,
@@ -70,6 +73,8 @@ public:
     void set_max_velocity(float max_velocity);
     void set_tire_angle_y(size_t id, float angle_y);
     // void set_tire_accel_x(size_t id, float accel_x);
+    void set_rotor_angle_x(size_t id, float angle_x);
+    void set_rotor_angle_z(size_t id, float angle_z);
     FixedArray<float, 3, 3> get_abs_tire_rotation_matrix(size_t id) const;
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;

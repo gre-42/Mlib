@@ -1,7 +1,7 @@
 #include "Tank_Controller.hpp"
 #include <Mlib/Math/Signed_Min.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Misc/Steering_Type.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
 #include <Mlib/Scene_Graph/Style_Updater.hpp>
 #include <stdexcept>
 

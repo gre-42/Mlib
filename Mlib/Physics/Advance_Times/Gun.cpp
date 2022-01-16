@@ -7,8 +7,8 @@
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Node_Resource.hpp>

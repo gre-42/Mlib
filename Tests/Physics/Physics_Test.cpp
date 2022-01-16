@@ -6,10 +6,10 @@
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 
 using namespace Mlib;
@@ -159,8 +159,8 @@ void test_com() {
     // std::cerr << r1->rbi_.rbp_.v_ << std::endl;
     assert_allclose(r0->rbi_.rbp_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
     assert_allclose(r1->rbi_.rbp_.v_.to_array(), Array<float>{0, -0.163366, 0}, 1e-12);
-    r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
-    r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}});
+    r0->integrate_force({{1.2f, 3.4f, 5.6f}, com0 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}}, cfg);
+    r1->integrate_force({{1.2f, 3.4f, 5.6f}, com1 + FixedArray<float, 3>{7.8f, 6.5f, 4.3f}}, cfg);
     {
         r0->advance_time(cfg.dt, cfg.min_acceleration, cfg.min_velocity, cfg.min_angular_velocity, cfg.physics_type, cfg.resolve_collision_type, cfg.hand_brake_velocity, nullptr);
     }

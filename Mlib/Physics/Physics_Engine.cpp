@@ -7,7 +7,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Reverse_Iterator.hpp>
 
 using namespace Mlib;
@@ -277,7 +277,7 @@ void PhysicsEngine::collide(
                 std::cerr << "WARNING: Object has no meshes" << std::endl;
             }
             rigid_bodies_.transform_object_and_add(o);
-            o.rigid_body->collide_with_air();
+            o.rigid_body->collide_with_air(cfg_);
         }
     }
     SatTracker st;

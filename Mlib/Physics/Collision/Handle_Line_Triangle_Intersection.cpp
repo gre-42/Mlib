@@ -7,8 +7,8 @@
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Collision/Sat_Normals.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 
@@ -55,10 +55,10 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         auto a0 = (v - c.o0.rbi_.rbp_.v_) / (c.cfg.dt / c.cfg.oversampling);
         auto a1 = (v - c.o1.rbi_.rbp_.v_) / (c.cfg.dt / c.cfg.oversampling);
         if (c.o0.mass() != INFINITY) {
-            c.o0.integrate_force({c.o0.mass() * a0, intersection_point});
+            c.o0.integrate_force({c.o0.mass() * a0, intersection_point}, c.cfg);
         }
         if (c.o1.mass() != INFINITY) {
-            c.o1.integrate_force({c.o1.mass() * a1, intersection_point});
+            c.o1.integrate_force({c.o1.mass() * a1, intersection_point}, c.cfg);
         }
     } else if (collision_type == CollisionType::REFLECT) {
         // c.beacons.push_back({.position = intersection_point});
@@ -375,13 +375,13 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         // }
         if (c.cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
             if (frac0 != 0) {
-                c.o0.integrate_force({-force_n0 * plane.normal - tangential_force, intersection_point});
+                c.o0.rbi_.integrate_force({-force_n0 * plane.normal - tangential_force, intersection_point});
             }
             if (frac1 != 0) {
                 if (c.tire_id != SIZE_MAX) {
-                    c.o1.integrate_force({force_n1 * plane.normal + tangential_force, c.o1.get_abs_tire_contact_position(c.tire_id)});
+                    c.o1.rbi_.integrate_force({force_n1 * plane.normal + tangential_force, c.o1.get_abs_tire_contact_position(c.tire_id)});
                 } else {
-                    c.o1.integrate_force({force_n1 * plane.normal + tangential_force, intersection_point});
+                    c.o1.rbi_.integrate_force({force_n1 * plane.normal + tangential_force, intersection_point});
                 }
             }
         }

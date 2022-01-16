@@ -1,7 +1,8 @@
 #include "Create_Heli_Controller.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Heli_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Vehicle_Domain.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -21,7 +22,12 @@ LoadSceneInstanceFunction::UserFunction CreateHeliController::user_function = []
         "^\\s*create_heli_controller"
         "\\s+node=([\\w+-.]+)"
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)$");
+        "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
+        "\\s+main_rotor_id=(\\d+)"
+        "\\s+rear_rotor_id=(\\d+)"
+        "\\s+ascend_multiplier=([\\w+-.]+)"
+        "\\s+yaw_multiplier=([\\w+-.]+)"
+        "\\s+vehicle_domain=(air|ground)$");
     std::smatch match;
     if (Mlib::re::regex_match(line, match, regex)) {
         CreateHeliController(renderable_scene()).execute(
@@ -66,5 +72,12 @@ void CreateHeliController::execute(
             throw std::runtime_error("Duplicate tire ID");
         }
     }
-    rb->controller_ = std::make_unique<HeliController>(rb, tire_angles_map);
+    rb->controller_ = std::make_unique<HeliController>(
+        rb,
+        tire_angles_map,
+        safe_stoz(match[4].str()),  // main_rotor_id
+        safe_stoz(match[5].str()),  // rear_rotor_id
+        safe_stof(match[6].str()),  // ascend_multiplier
+        safe_stof(match[7].str()),  // yaw_multiplier
+        vehicle_domain_from_string(match[8].str()));
 }

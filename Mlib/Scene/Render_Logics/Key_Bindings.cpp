@@ -5,8 +5,8 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
@@ -156,15 +156,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (rb == nullptr) {
                     throw std::runtime_error("Absolute movable is not a rigid body");
                 }
-                if (cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
-                    rb->integrate_force(rb->abs_F(k.force));
-                } else if (cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-                    rb->rbi_.rbp_.integrate_impulse(rb->abs_F({
-                        .vector = k.force.vector * (cfg.dt / cfg.oversampling),
-                        .position = k.force.position}));
-                } else {
-                    throw std::runtime_error("Unknown resolve collision type in key_bindings");
-                }
+                rb->integrate_force(rb->abs_F(k.force), cfg);
                 if (any(k.rotate != 0.f)) {
                     rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues(alpha * k.rotate));
                 }
@@ -288,6 +280,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                         rb->rbi_.rbp_.v_,
                         rb->rbi_.rbp_.rotation_.column(2)));
                     rb->controller().steer(alpha * float(M_PI) / 180.f * k.tire_angle_interp.value()(v * 3.6f));
+                }
+                if (k.lift_power.has_value()) {
+                    rb->controller().ascend(k.lift_power.value());
                 }
             }
         }

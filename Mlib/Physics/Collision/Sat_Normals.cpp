@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 

@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
-#include <Mlib/Physics/Misc/Shock_Absorber.hpp>
 #include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
+#include <Mlib/Physics/Rigid_Body/Shock_Absorber.hpp>
 #include <string>
 
 namespace Mlib {

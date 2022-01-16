@@ -25,14 +25,14 @@
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
-#include <Mlib/Physics/Misc/Car_Controller.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Misc/Rigid_Primitives.hpp>
-#include <Mlib/Physics/Misc/Tank_Controller.hpp>
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Car_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Human_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Tank_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -80,11 +80,14 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
+#include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Heli_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Human_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Player.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Rotor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
@@ -114,33 +117,6 @@
 namespace fs = std::filesystem;
 
 using namespace Mlib;
-
-class Linker {
-public:
-    explicit Linker(AdvanceTimes& advance_times)
-    : advance_times_{advance_times}
-    {}
-
-    template <class TAbsoluteMovable>
-    void link_absolute_movable(SceneNode& node, const std::shared_ptr<TAbsoluteMovable>& absolute_movable) const {
-        // 1. Set movable, which updates the transformation-matrix
-        node.set_absolute_movable(absolute_movable.get());
-        // 2. Add to physics engine
-        advance_times_.add_advance_time(absolute_movable);
-    };
-    template <class TRelativeMovable>
-    void link_relative_movable(SceneNode& node, const std::shared_ptr<TRelativeMovable>& relative_movable) const {
-        node.set_relative_movable(relative_movable.get());
-        advance_times_.add_advance_time(relative_movable);
-    };
-    template <class TAbsoluteObserver>
-    void link_absolute_observer(SceneNode& node, const std::shared_ptr<TAbsoluteObserver>& absolute_observer) const {
-        node.set_absolute_observer(absolute_observer.get());
-        advance_times_.add_advance_time(absolute_observer);
-    };
-private:
-    AdvanceTimes& advance_times_;
-};
 
 FixedArray<float, 3> parse_position(
     const TransformationMatrix<double, 3>* inverse_geographic_coordinates,
@@ -180,6 +156,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateHeliController::user_function);
     user_functions_.push_back(CreateHumanController::user_function);
     user_functions_.push_back(CreateTankController::user_function);
+    user_functions_.push_back(CreateWheel::user_function);
+    user_functions_.push_back(CreateRotor::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -376,23 +354,6 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "(?:\\s+v=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
         "(?:\\s+w=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
-    static const DECLARE_REGEX(wheel_reg,
-        "^\\s*wheel"
-        "\\s+rigid_body=([\\w+-.]+)"
-        "\\s+node=([\\w+-.]*)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+radius=([\\w+-.]+)"
-        "\\s+engine=([\\w+-.]+)"
-        "\\s+break_force=([\\w+-.]+)"
-        "\\s+sKs=([\\w+-.]+)"
-        "\\s+sKa=([\\w+-.]+)"
-        "\\s+pKs=([\\w+-.]+)"
-        "\\s+pKa=([\\w+-.]+)"
-        "\\s+musF=([ \\w+-.]+)"
-        "\\s+musC=([ \\w+-.]+)"
-        "\\s+mufF=([ \\w+-.]+)"
-        "\\s+mufC=([ \\w+-.]+)"
-        "\\s+tire_id=(\\d+)$");
     static const DECLARE_REGEX(create_engine_reg,
         "^\\s*create_engine"
         "\\s+rigid_body=([\\w+-.]+)"
@@ -478,11 +439,12 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]*))?"
-        "\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
+        "(?:\\s+joystick_digital_axis=([\\w+-.]*))?"
+        "(?:\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(?:\\s+surface_power=([\\w+-.]+))?"
         "(?:\\s+tire_angle_velocities=([ \\w+-.]+))?"
-        "(?:\\s+tire_angles=([ \\w+-.]+))?$");
+        "(?:\\s+tire_angles=([ \\w+-.]+))?"
+        "(?:\\s+lift_power=([\\w+-.]+))?$");
     static const DECLARE_REGEX(weapon_inventory_key_binding_reg,
         "^\\s*weapon_inventory_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -2049,73 +2011,6 @@ void LoadScene::operator()(
             std::shared_ptr<RelativeTransformer> rt = std::make_shared<RelativeTransformer>(
                 physics_engine.advance_times_, v, w);
             linker.link_relative_movable(*scene.get_node(match[1].str()), rt);
-        } else if (Mlib::re::regex_match(line, match, wheel_reg)) {
-            std::string rigid_body = match[1].str();
-            std::string node = match[2].str();
-            FixedArray<float, 3> position{
-                safe_stof(match[3].str()),
-                safe_stof(match[4].str()),
-                safe_stof(match[5].str())};
-            float radius = safe_stof(match[6].str());
-            std::string engine = match[7].str();
-            float break_force = safe_stof(match[8].str());
-            float sKs = safe_stof(match[9].str());
-            float sKa = safe_stof(match[10].str());
-            float pKs = safe_stof(match[11].str());
-            float pKa = safe_stof(match[12].str());
-            Interp<float> mus{string_to_vector(match[13].str(), safe_stof), string_to_vector(match[14].str(), safe_stof), OutOfRangeBehavior::CLAMP};
-            Interp<float> muk{string_to_vector(match[15].str(), safe_stof), string_to_vector(match[16].str(), safe_stof), OutOfRangeBehavior::CLAMP};
-            size_t tire_id = safe_stoi(match[17].str());
-
-            auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(rigid_body)->get_absolute_movable());
-            if (rb == nullptr) {
-                throw std::runtime_error("Absolute movable is not a rigid body");
-            }
-            if (!node.empty()) {
-                std::shared_ptr<Wheel> wheel = std::make_shared<Wheel>(
-                    *rb,
-                    physics_engine.advance_times_,
-                    tire_id,
-                    radius,
-                    scene_config.physics_engine_config.physics_type,
-                    scene_config.physics_engine_config.resolve_collision_type);
-                linker.link_relative_movable(*scene.get_node(node), wheel);
-            }
-            {
-                // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
-                // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
-
-                // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-                size_t nsprings_tracking = 1;
-                float max_dist = 0.3f;
-                auto tp = rb->tires_.insert({
-                    tire_id,
-                    Tire{
-                        engine,
-                        break_force,
-                        sKs,
-                        sKa,
-                        mus,
-                        muk,
-                        ShockAbsorber{pKs, pKa},
-                        TrackingWheel{
-                            {1.f, 0.f, 0.f},
-                            radius,
-                            nsprings_tracking,
-                            max_dist,
-                            scene_config.physics_engine_config.dt / scene_config.physics_engine_config.oversampling},
-                        CombinedMagicFormula<float>{
-                            .f = FixedArray<MagicFormulaArgmax<float>, 2>{
-                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
-                                MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
-                            }
-                        },
-                        position,
-                        radius}});
-                if (!tp.second) {
-                    throw std::runtime_error("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
-                }
-            }
         } else if (Mlib::re::regex_match(line, match, create_engine_reg)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
             if (rb == nullptr) {
@@ -2266,7 +2161,10 @@ void LoadScene::operator()(
                         string_to_vector(match[7].str(), safe_stof),
                         string_to_vector(match[8].str(), safe_stof),
                         OutOfRangeBehavior::CLAMP}
-                    : std::optional<Interp<float>>()});
+                    : std::optional<Interp<float>>(),
+                .lift_power = match[9].matched
+                    ? safe_stof(match[9].str())
+                    : std::optional<float>()});
         } else if (Mlib::re::regex_match(line, match, weapon_inventory_key_binding_reg)) {
             try {
                 scene.get_node(match[1].str())->get_node_modifier();

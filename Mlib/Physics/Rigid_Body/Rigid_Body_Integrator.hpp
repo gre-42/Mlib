@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <iosfwd>
 
 namespace Mlib {

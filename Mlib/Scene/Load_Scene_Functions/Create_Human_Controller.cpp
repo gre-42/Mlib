@@ -1,6 +1,6 @@
 #include "Create_Human_Controller.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Human_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>

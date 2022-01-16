@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Physics/Misc/Sticky_Spring.hpp>
+#include <Mlib/Physics/Rigid_Body/Sticky_Spring.hpp>
 
 
 namespace Mlib {

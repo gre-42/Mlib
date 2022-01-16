@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 

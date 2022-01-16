@@ -1,5 +1,6 @@
-#include "Create_Car_Controller.hpp"
+#include "Create_Rotor.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
@@ -8,7 +9,7 @@
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateCarController::user_function = [](
+LoadSceneInstanceFunction::UserFunction CreateRotor::user_function = [](
     const std::string& line,
     const std::function<RenderableScene&()>& renderable_scene,
     const std::function<FPath(const std::string&)>& fpath,
@@ -18,13 +19,16 @@ LoadSceneInstanceFunction::UserFunction CreateCarController::user_function = [](
     RegexSubstitutionCache& rsc)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_car_controller"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)$");
+        "^\\s*rotor"
+        "\\s+rigid_body=([\\w+-.]+)"
+        "\\s+position=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
+        "\\s+engine=(\\w+)"
+        "\\s+power2lift=([\\w+-.]+)"
+        "\\s+tire_id=(\\d+)$");
     std::smatch match;
     if (Mlib::re::regex_match(line, match, regex)) {
-        CreateCarController(renderable_scene()).execute(
+        CreateRotor(renderable_scene()).execute(
             match,
             fpath,
             macro_line_executor,
@@ -36,11 +40,11 @@ LoadSceneInstanceFunction::UserFunction CreateCarController::user_function = [](
     }
 };
 
-CreateCarController::CreateCarController(RenderableScene& renderable_scene) 
+CreateRotor::CreateRotor(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateCarController::execute(
+void CreateRotor::execute(
     const std::smatch& match,
     const std::function<FPath(const std::string&)>& fpath,
     const MacroLineExecutor& macro_line_executor,
@@ -55,16 +59,27 @@ void CreateCarController::execute(
     if (rb->controller_ != nullptr) {
         throw std::runtime_error("Car controller already set");
     }
-    std::vector<size_t> tire_ids = string_to_vector(match[2].str(), safe_stoz);
-    std::vector<float> tire_angles_deg = string_to_vector(match[3].str(), safe_stof);
-    if (tire_ids.size() != tire_angles_deg.size()) {
-        throw std::runtime_error("Tire IDs and angles have different lengths");
+    FixedArray<float, 3> position{
+        safe_stof(match[2].str()),
+        safe_stof(match[3].str()),
+        safe_stof(match[4].str())};
+    FixedArray<float, 3> rotation{
+        safe_stof(match[5].str()),
+        safe_stof(match[6].str()),
+        safe_stof(match[7].str())};
+    std::string engine = match[8].str();
+    float power2lift = safe_stof(match[9].str());
+    size_t tire_id = safe_stoz(match[10].str());
+    auto r = tait_bryan_angles_2_matrix<float>(rotation);
+    auto tp = rb->rotors_.insert({
+        tire_id,
+        Rotor{
+            engine,
+            VectorAtPosition<float, 3>{
+                .vector = z3_from_3x3(r),
+                .position = position},
+            power2lift}});
+    if (!tp.second) {
+        throw std::runtime_error("Rotor with ID \"" + std::to_string(tire_id) + "\" already exists");
     }
-    std::map<size_t, float> tire_angles_map;
-    for (size_t i = 0; i < tire_ids.size(); ++i) {
-        if (!tire_angles_map.insert({ tire_ids[i], float(M_PI) / 180.f * tire_angles_deg[i] }).second) {
-            throw std::runtime_error("Duplicate tire ID");
-        }
-    }
-    rb->controller_ = std::make_unique<CarController>(rb, tire_angles_map);
 }

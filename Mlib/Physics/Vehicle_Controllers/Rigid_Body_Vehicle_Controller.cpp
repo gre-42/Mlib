@@ -9,7 +9,8 @@ RigidBodyVehicleController::RigidBodyVehicleController(
 : steering_type{ steering_type },
   rb_{ rb },
   steer_angle_{ NAN },
-  surface_power_{ NAN }
+  surface_power_{ NAN },
+  ascend_velocity_{ NAN }
 {}
 
 RigidBodyVehicleController::~RigidBodyVehicleController()
@@ -31,7 +32,12 @@ void RigidBodyVehicleController::steer(float angle) {
     steer_angle_ = angle;
 }
 
+void RigidBodyVehicleController::ascend(float velocity) {
+    ascend_velocity_ = velocity;
+}
+
 void RigidBodyVehicleController::reset() {
     surface_power_ = 0;
     steer_angle_ = 0;
+    ascend_velocity_ = NAN;
 }

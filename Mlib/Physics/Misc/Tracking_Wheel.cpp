@@ -4,7 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
 
 using namespace Mlib;
 

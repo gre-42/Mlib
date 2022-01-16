@@ -3,7 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Base_Log.hpp>
 #include <Mlib/Scene_Graph/Log_Entry_Severity.hpp>
 

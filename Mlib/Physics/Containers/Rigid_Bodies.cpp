@@ -5,7 +5,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Transformed_Mesh.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
 using namespace Mlib;
 

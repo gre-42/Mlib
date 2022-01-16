@@ -87,7 +87,7 @@ void RigidBodyIntegrator::integrate_force(const VectorAtPosition<float, 3>& F)
 void RigidBodyIntegrator::integrate_impulse(const VectorAtPosition<float, 3>& J)
 {
     rbp_.integrate_impulse(J);
-    L_ = dot1d(rbp_.abs_I(), rbp_.w_);
+    L_ = rbp_.dot1d_abs_I(rbp_.w_);
 }
 
 void RigidBodyIntegrator::integrate_gravity(const FixedArray<float, 3>& g) {

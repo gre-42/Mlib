@@ -1,8 +1,8 @@
 #include "Rigid_Body_Recorder_Gpx.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
