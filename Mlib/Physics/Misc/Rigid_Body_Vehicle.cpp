@@ -5,10 +5,10 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <chrono>
 
 static const float WHEEL_RADIUS = 0.25f;
@@ -74,6 +74,15 @@ void RigidBodyVehicle::integrate_force(
 
 void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
     rbi_.integrate_gravity(g);
+}
+
+void RigidBodyVehicle::collide_with_air() {
+    for (const auto& r : rotors_) {
+        auto abs_location = r.second.location.transformed(rbi_.rbp_.abs_transformation());
+        integrate_force(VectorAtPosition<float, 3>{
+            .vector = abs_location.vector * consume_rotor_surface_power(r.first).power,
+            .position = abs_location.position });
+    }
 }
 
 void RigidBodyVehicle::advance_time(
@@ -275,6 +284,15 @@ PowerIntent RigidBodyVehicle::consume_tire_surface_power(size_t id) {
     return e->second.consume_abs_surface_power(id, tire.angular_velocity);
 }
 
+PowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
+    Rotor& rotor = get_rotor(id);
+    auto e = engines_.find(rotor.engine);
+    if (e == engines_.end()) {
+        throw std::runtime_error("No engine with name \"" + rotor.engine + "\" exists");
+    }
+    return e->second.consume_abs_surface_power(id, rotor.angular_velocity);
+}
+
 void RigidBodyVehicle::set_surface_power(const std::string& engine_name, float surface_power, float delta_power) {
     auto e = engines_.find(engine_name);
     if (e == engines_.end()) {
@@ -303,6 +321,18 @@ Tire& RigidBodyVehicle::get_tire(size_t id) {
     auto it = tires_.find(id);
     if (it == tires_.end()) {
         throw std::runtime_error("No tire with ID " + std::to_string(id) + " exists");
+    }
+    return it->second;
+}
+
+const Rotor& RigidBodyVehicle::get_rotor(size_t id) const {
+    return const_cast<RigidBodyVehicle*>(this)->get_rotor(id);
+}
+
+Rotor& RigidBodyVehicle::get_rotor(size_t id) {
+    auto it = rotors_.find(id);
+    if (it == rotors_.end()) {
+        throw std::runtime_error("No rotor with ID " + std::to_string(id) + " exists");
     }
     return it->second;
 }

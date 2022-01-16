@@ -274,9 +274,10 @@ void PhysicsEngine::collide(
     for (const auto& o : rigid_bodies_.objects_) {
         if (o.rigid_body->mass() != INFINITY) {
             if (o.meshes.size() == 0) {
-                std::cerr << "Skipping object without meshes" << std::endl;
+                std::cerr << "WARNING: Object has no meshes" << std::endl;
             }
             rigid_bodies_.transform_object_and_add(o);
+            o.rigid_body->collide_with_air();
         }
     }
     SatTracker st;

@@ -1,7 +1,7 @@
 #include "Create_Heli_Controller.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
-#include <Mlib/Physics/Misc/Heli_Controller.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Heli_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>

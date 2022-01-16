@@ -3,12 +3,13 @@
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Actuators/Rotor.hpp>
+#include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Collision/Resolve_Collision_Type.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Integrator.hpp>
-#include <Mlib/Physics/Misc/Tire.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>
@@ -51,6 +52,7 @@ public:
         float damping,
         float friction);
     void integrate_gravity(const FixedArray<float, 3>& g);
+    void collide_with_air();
     void advance_time(
         float dt,
         float min_acceleration,
@@ -81,12 +83,15 @@ public:
         size_t id) const;
     float get_tire_radius(size_t id) const;
     PowerIntent consume_tire_surface_power(size_t id);
+    PowerIntent consume_rotor_surface_power(size_t id);
     void set_surface_power(const std::string& engine_name, float surface_power, float delta_power = 0.f);
     float get_tire_break_force(size_t id) const;
     TrackingWheel& get_tire_tracking_wheel(size_t id);
     FixedArray<float, 3> get_abs_tire_contact_position(size_t id) const;
     const Tire& get_tire(size_t id) const;
     Tire& get_tire(size_t id);
+    const Rotor& get_rotor(size_t id) const;
+    Rotor& get_rotor(size_t id);
     // void set_tire_sliding(size_t id, bool value);
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
@@ -105,6 +110,7 @@ public:
     float energy_old_;
 #endif
     std::map<size_t, Tire> tires_;
+    std::map<size_t, Rotor> rotors_;
     std::map<std::string, RigidBodyEngine> engines_;
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;

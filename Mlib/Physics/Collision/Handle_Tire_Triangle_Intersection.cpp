@@ -1,8 +1,8 @@
 #include "Handle_Tire_Triangle_Intersection.hpp"
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Misc/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Misc/Steering_Type.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 
 using namespace Mlib;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Physics/Misc/Engine_Power.hpp>
+#include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <cstddef>
 #include <memory>
 #include <set>

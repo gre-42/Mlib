@@ -7,6 +7,8 @@ namespace Mlib {
 template <class TData, size_t tsize>
 struct VectorAtPosition;
 class RigidBodyPulses;
+template <class TData, size_t n>
+class TransformationMatrix;
 
 std::ostream& operator << (std::ostream& ostr, const RigidBodyPulses& rbi);
 
@@ -25,6 +27,7 @@ public:
 
     FixedArray<float, 3> abs_z() const;
     FixedArray<float, 3> abs_position() const;
+    TransformationMatrix<float, 3> abs_transformation() const;
     const FixedArray<float, 3, 3>& abs_I() const;
     const FixedArray<float, 3, 3>& abs_I_inv() const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
-#include <Mlib/Physics/Misc/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <iosfwd>
 #include <list>
 
@@ -79,9 +79,9 @@ typedef BoundedConstraint1D<ShockAbsorberConstraint> BoundedShockAbsorberConstra
 
 class ContactInfo {
 public:
+    virtual ~ContactInfo() = default;
     virtual void solve(float dt, float relaxation) = 0;
     virtual void finalize() {}
-    virtual ~ContactInfo() = default;
 };
 
 class NormalContactInfo1: public ContactInfo {

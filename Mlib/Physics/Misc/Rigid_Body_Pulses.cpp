@@ -5,6 +5,7 @@
 #include <Mlib/Math/Fixed_Inverse.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation_Matrix.hpp>
 
 using namespace Mlib;
 
@@ -75,6 +76,10 @@ FixedArray<float, 3> RigidBodyPulses::velocity_at_position(const FixedArray<floa
 FixedArray<float, 3> RigidBodyPulses::abs_position() const {
     // abs_com_ = dot1d(rotation_, com_) + position_;
     return abs_com_ - dot1d(rotation_, com_);
+}
+
+TransformationMatrix<float, 3> RigidBodyPulses::abs_transformation() const {
+    return TransformationMatrix<float, 3>{ rotation_, abs_position() };
 }
 
 FixedArray<float, 3> RigidBodyPulses::transform_to_world_coordinates(const FixedArray<float, 3>& v) const {
