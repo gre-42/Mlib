@@ -34,14 +34,8 @@ void HeliController::apply() {
         for (const auto& x : tire_angles_) {
             rb_->set_tire_angle_y(x.first, 0.f);
         }
-        if (!std::isnan(ascend_velocity_) && (ascend_velocity_ != 0))
-        {
-            rb_->set_surface_power("main_rotor", ascend_multiplier_ * ascend_velocity_);
-        }
-        if (!std::isnan(surface_power_) && (surface_power_ != 0))
-        {
-            rb_->set_rotor_angle_x(main_rotor_id_, std::isnan(surface_power_) ? 0.f : 0.2f * sign(surface_power_));
-        }
+        rb_->set_surface_power("main_rotor", std::isnan(ascend_velocity_) ? 0.f : ascend_multiplier_ * ascend_velocity_);
+        rb_->set_rotor_angle_x(main_rotor_id_, std::isnan(surface_power_) ? 0.f : 0.2f * sign(surface_power_));
         float ang = signed_min(steer_angle_, 0.5f);
         rb_->set_surface_power("rear_rotor", yaw_multiplier_ * ang);
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {

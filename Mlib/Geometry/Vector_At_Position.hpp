@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <iosfwd>
 
 namespace Mlib {
 
@@ -16,5 +17,11 @@ struct VectorAtPosition {
             .position = m.transform(position)};
     }
 };
+
+template <class TData, size_t tsize>
+std::ostream& operator << (std::ostream& ostr, const VectorAtPosition<TData, tsize>& vp) {
+    ostr << "v: " << vp.vector << ", p: " << vp.position;
+    return ostr;
+}
 
 }
