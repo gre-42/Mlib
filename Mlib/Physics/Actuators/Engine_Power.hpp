@@ -1,9 +1,11 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
+#include <iosfwd>
 
 namespace Mlib {
 
 class EnginePower {
+    friend std::ostream& operator << (std::ostream& ostr, const EnginePower& engine_power);
 public:
     EnginePower(
         const Interp<float>& w_to_power,
@@ -16,5 +18,7 @@ private:
     size_t gear_;
     std::vector<float> gear_ratios_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const EnginePower& engine_power);
 
 }

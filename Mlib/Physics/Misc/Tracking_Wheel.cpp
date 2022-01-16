@@ -158,8 +158,8 @@ void TrackingWheel::update_position(
             }
             // std::cerr << "new3 " << s.spring.point_of_contact << " | " << s.normal << std::endl;
             if (slip && (beacons != nullptr)) {
-                beacons->push_back({dot1d(rotation, s.spring.point_of_contact) + translation});
-                beacons->push_back({.position = abs_pos, .resource_name = "beacon1"});
+                beacons->push_back(Beacon::create(dot1d(rotation, s.spring.point_of_contact) + translation, "beacon1"));
+                beacons->push_back(Beacon::create(abs_pos, "beacon1"));
             }
         }
     }

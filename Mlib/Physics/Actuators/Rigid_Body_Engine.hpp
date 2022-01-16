@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <cstddef>
+#include <iosfwd>
 #include <memory>
 #include <set>
 #include <vector>
@@ -26,6 +27,7 @@ struct PowerIntent {
 enum class EngineState;
 
 class RigidBodyEngine {
+    friend std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
 public:
     explicit RigidBodyEngine(
         const EnginePower& engine_power,
@@ -52,5 +54,8 @@ private:
     bool hand_brake_pulled_;
     std::shared_ptr<EngineEventListener> audio_;
 };
+
+std::ostream& operator << (std::ostream& ostr, const PowerIntent& power_intent);
+std::ostream& operator << (std::ostream& ostr, const RigidBodyEngine& engine);
 
 }

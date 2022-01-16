@@ -5,6 +5,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Geographic_Coordinates.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
@@ -53,9 +54,9 @@ void RigidBodyVehicle::integrate_force(
     if (cfg.resolve_collision_type == ResolveCollisionType::PENALTY) {
         rbi_.integrate_force(F);
     } else if (cfg.resolve_collision_type == ResolveCollisionType::SEQUENTIAL_PULSES) {
-        rbi_.rbp_.integrate_impulse(abs_F({
+        rbi_.rbp_.integrate_impulse({
             .vector = F.vector * (cfg.dt / cfg.oversampling),
-            .position = F.position}));
+            .position = F.position});
     } else {
         throw std::runtime_error("Unknown resolve collision type in integrate_force");
     }
@@ -88,15 +89,17 @@ void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
 }
 
 void RigidBodyVehicle::collide_with_air(const PhysicsEngineConfig& cfg) {
-    for (const auto& r : rotors_) {
-        auto abs_location = r.second.rotated_location().transformed(rbi_.rbp_.abs_transformation());
-        float P = consume_rotor_surface_power(r.first).power;
-        if (!std::isnan(P)) {
+    for (auto& r : rotors_) {
+        PowerIntent P = consume_rotor_surface_power(r.first);
+        if (P.type == PowerIntentType::ACCELERATE_OR_BREAK) {
+            auto abs_location = rbi_.rbp_.abs_transformation() * r.second.rotated_location();
             integrate_force(
                 VectorAtPosition<float, 3>{
-                    .vector = abs_location.vector * P * r.second.power2lift,
-                    .position = abs_location.position },
+                    .vector = z3_from_3x3(abs_location.R()) * P.power * r.second.power2lift,
+                    .position = abs_location.t() },
                 cfg);
+        } else {
+            set_base_angular_velocity(r.second, 0.f, TireAngularVelocityChange::IDLE);
         }
     }
 }
@@ -263,16 +266,19 @@ float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
 }
 
 void RigidBodyVehicle::set_tire_angular_velocity(size_t id, float w, TireAngularVelocityChange ch) {
-    Tire& tire = get_tire(id);
-    tire.angular_velocity = w;
+    set_base_angular_velocity(get_tire(id), w, ch);
+}
+
+void RigidBodyVehicle::set_base_angular_velocity(BaseRotor& base_rotor, float w, TireAngularVelocityChange ch) {
+    base_rotor.angular_velocity = w;
     if (ch == TireAngularVelocityChange::OFF) {
-        engines_.at(tire.engine).notify_off();
+        engines_.at(base_rotor.engine).notify_off();
     }
     if ((ch == TireAngularVelocityChange::IDLE) || (ch == TireAngularVelocityChange::BREAK)) {
-        engines_.at(tire.engine).notify_idle(w);
+        engines_.at(base_rotor.engine).notify_idle(w);
     }
     if (ch == TireAngularVelocityChange::ACCELERATE) {
-        engines_.at(tire.engine).notify_accelerate(w);
+        engines_.at(base_rotor.engine).notify_accelerate(w);
     }
 }
 

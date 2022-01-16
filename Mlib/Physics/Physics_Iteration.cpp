@@ -1,5 +1,5 @@
 #include "Physics_Iteration.hpp"
-#include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
@@ -33,7 +33,7 @@ PhysicsIteration::~PhysicsIteration()
 {}
 
 void PhysicsIteration::operator()() {
-    std::list<Beacon> beacons = g_beacons;
+    std::list<Beacon> beacons = std::move(g_beacons);
     for (size_t i = 0; i < physics_cfg_.oversampling; ++i) {
         std::list<Beacon>* bcns = (i == physics_cfg_.oversampling - 1)
             ? &beacons
@@ -57,7 +57,10 @@ void PhysicsIteration::operator()() {
             for (const auto& beacon : beacons) {
                 auto node = std::make_unique<SceneNode>();
                 scene_node_resources_.instantiate_renderable(beacon.resource_name, "box", *node, SceneNodeResourceFilter());
-                node->set_position(beacon.position);
+                node->set_relative_pose(
+                    beacon.location.t(),
+                    matrix_2_tait_bryan_angles<float>(beacon.location.R()),
+                    1.f);
                 // node->set_scale(0.05);
                 scene_.add_root_node("beacon" + std::to_string(i), std::move(node));
                 ++i;

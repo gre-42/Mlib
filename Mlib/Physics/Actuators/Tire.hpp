@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Misc/Tracking_Wheel.hpp>
 #include <Mlib/Physics/Rigid_Body/Shock_Absorber.hpp>
@@ -12,7 +13,7 @@ namespace Mlib {
  *
  * References: https://en.wikipedia.org/wiki/Tire_load_sensitivity
  */
-struct Tire {
+struct Tire: public BaseRotor {
     Tire(
         const std::string& engine,
         float break_force,
@@ -32,9 +33,7 @@ struct Tire {
     float shock_absorber_position;
     float angle_x;
     float angle_y;
-    float angular_velocity;
     // float accel_x;
-    std::string engine;
     float break_force;
     float sKs;
     float sKa;

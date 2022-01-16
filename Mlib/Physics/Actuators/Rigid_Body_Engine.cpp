@@ -100,3 +100,25 @@ void RigidBodyEngine::notify_accelerate(float w) {
     engine_state = EngineState::ACCELERATE;
     w_ = w;
 }
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const PowerIntent& power_intent) {
+    ostr << "Power intent\n";
+    ostr << "   intent type " << (int)power_intent.type << std::endl;
+    ostr << "   power " << power_intent.power << std::endl;
+    return ostr;
+}
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyEngine& engine) {
+    ostr << "Engine\n";
+    ostr << "   engine_state " << (int)engine.engine_state << '\n';
+    ostr << "   w " << engine.w_ << '\n';
+    ostr << "   surface_power " << engine.surface_power_ << '\n';
+    ostr << "   delta_power " << engine.delta_power_ << '\n';
+    for (size_t c : engine.tires_consumed_) {
+        ostr << "   consumed " << c << '\n';
+    }
+    ostr << engine.engine_power_ << '\n';
+    ostr << "   ntires_old " << engine.ntires_old_ << '\n';
+    ostr << "   hand_brake_pulled " << (int)engine.hand_brake_pulled_ << '\n';
+    return ostr;
+}

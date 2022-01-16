@@ -1,4 +1,5 @@
 #include "Engine_Power.hpp"
+#include <ostream>
 
 using namespace Mlib;
 
@@ -47,4 +48,14 @@ float EnginePower::engine_w(float tire_w) const {
 
 float EnginePower::get_power(float tire_w) const {
     return w_to_power_(engine_w(tire_w));
+}
+
+std::ostream& Mlib::operator << (std::ostream& ostr, const EnginePower& engine_power) {
+    ostr << "Engine power\n";
+    ostr << "   w_to_power " << engine_power.w_to_power_ << '\n';
+    ostr << "   gear " << engine_power.gear_ << '\n';
+    for (float r : engine_power.gear_ratios_) {
+        ostr << "   gear_ratio " << r << '\n';
+    }
+    return ostr;
 }

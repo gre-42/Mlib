@@ -75,9 +75,7 @@ void CreateRotor::execute(
         tire_id,
         Rotor{
             engine,
-            VectorAtPosition<float, 3>{
-                .vector = z3_from_3x3(r),
-                .position = position},
+            TransformationMatrix<float, 3>{ r, position },
             power2lift}});
     if (!tp.second) {
         throw std::runtime_error("Rotor with ID \"" + std::to_string(tire_id) + "\" already exists");
