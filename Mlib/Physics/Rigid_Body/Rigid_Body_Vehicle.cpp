@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
+#include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <chrono>
 
@@ -88,11 +89,14 @@ void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
     rbi_.integrate_gravity(g);
 }
 
+// namespace Mlib { extern std::list<Beacon> g_beacons; }
+
 void RigidBodyVehicle::collide_with_air(const PhysicsEngineConfig& cfg) {
     for (auto& r : rotors_) {
         PowerIntent P = consume_rotor_surface_power(r.first);
         if (P.type == PowerIntentType::ACCELERATE_OR_BREAK) {
             auto abs_location = rbi_.rbp_.abs_transformation() * r.second.rotated_location();
+            // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, 3>{
                     .vector = z3_from_3x3(abs_location.R()) * P.power * r.second.power2lift,
@@ -237,11 +241,15 @@ void RigidBodyVehicle::set_tire_angle_y(size_t id, float angle_y) {
 // }
 
 void RigidBodyVehicle::set_rotor_angle_x(size_t id, float angle_x) {
-    get_rotor(id).angle_x = angle_x;
+    get_rotor(id).angles(0) = angle_x;
+}
+
+void RigidBodyVehicle::set_rotor_angle_y(size_t id, float angle_y) {
+    get_rotor(id).angles(1) = angle_y;
 }
 
 void RigidBodyVehicle::set_rotor_angle_z(size_t id, float angle_z) {
-    get_rotor(id).angle_z = angle_z;
+    get_rotor(id).angles(2) = angle_z;
 }
 
 FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {

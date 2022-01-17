@@ -12,8 +12,7 @@ struct Rotor: public BaseRotor {
         float power2lift);
     TransformationMatrix<float, 3> rotated_location() const;
     TransformationMatrix<float, 3> rest_location;
-    float angle_x;
-    float angle_z;
+    FixedArray<float, 3> angles;
     float power2lift;
 };
 

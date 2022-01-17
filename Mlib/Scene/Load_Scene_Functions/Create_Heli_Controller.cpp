@@ -25,7 +25,9 @@ LoadSceneInstanceFunction::UserFunction CreateHeliController::user_function = []
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+main_rotor_id=(\\d+)"
         "\\s+rear_rotor_id=(\\d+)"
+        "\\s+pitch_multiplier=([\\w+-.]+)"
         "\\s+yaw_multiplier=([\\w+-.]+)"
+        "\\s+roll_multiplier=([\\w+-.]+)"
         "\\s+ascend_p=([\\w+-.]+)"
         "\\s+ascend_i=([\\w+-.]+)"
         "\\s+ascend_d=([\\w+-.]+)"
@@ -78,13 +80,16 @@ void CreateHeliController::execute(
     rb->controller_ = std::make_unique<HeliController>(
         rb,
         tire_angles_map,
-        safe_stoz(match[4].str()),        // main_rotor_id
-        safe_stoz(match[5].str()),        // rear_rotor_id
-        safe_stof(match[6].str()),        // yaw_multiplier
+        safe_stoz(match[4].str()),            // main_rotor_id
+        safe_stoz(match[5].str()),            // rear_rotor_id
+        FixedArray<float, 3>{
+            safe_stof(match[6].str()),        // pitch_multiplier
+            safe_stof(match[7].str()),        // yaw_multiplier
+            safe_stof(match[8].str())},       // roll_multiplier
         PidController<float, float>{
-            safe_stof(match[7].str()),    // p
-            safe_stof(match[8].str()),    // i
-            safe_stof(match[9].str()),   // d
-            safe_stof(match[10].str())},  // a
-        vehicle_domain_from_string(match[11].str()));
+            safe_stof(match[9].str()),        // p
+            safe_stof(match[10].str()),       // i
+            safe_stof(match[11].str()),       // d
+            safe_stof(match[12].str())},      // a
+        vehicle_domain_from_string(match[13].str()));
 }
