@@ -25,8 +25,11 @@ LoadSceneInstanceFunction::UserFunction CreateHeliController::user_function = []
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+main_rotor_id=(\\d+)"
         "\\s+rear_rotor_id=(\\d+)"
-        "\\s+ascend_multiplier=([\\w+-.]+)"
         "\\s+yaw_multiplier=([\\w+-.]+)"
+        "\\s+ascend_p=([\\w+-.]+)"
+        "\\s+ascend_i=([\\w+-.]+)"
+        "\\s+ascend_d=([\\w+-.]+)"
+        "\\s+ascend_a=([\\w+-.]+)"
         "\\s+vehicle_domain=(air|ground)$");
     std::smatch match;
     if (Mlib::re::regex_match(line, match, regex)) {
@@ -75,9 +78,13 @@ void CreateHeliController::execute(
     rb->controller_ = std::make_unique<HeliController>(
         rb,
         tire_angles_map,
-        safe_stoz(match[4].str()),  // main_rotor_id
-        safe_stoz(match[5].str()),  // rear_rotor_id
-        safe_stof(match[6].str()),  // ascend_multiplier
-        safe_stof(match[7].str()),  // yaw_multiplier
-        vehicle_domain_from_string(match[8].str()));
+        safe_stoz(match[4].str()),        // main_rotor_id
+        safe_stoz(match[5].str()),        // rear_rotor_id
+        safe_stof(match[6].str()),        // yaw_multiplier
+        PidController<float, float>{
+            safe_stof(match[7].str()),    // p
+            safe_stof(match[8].str()),    // i
+            safe_stof(match[9].str()),   // d
+            safe_stof(match[10].str())},  // a
+        vehicle_domain_from_string(match[11].str()));
 }

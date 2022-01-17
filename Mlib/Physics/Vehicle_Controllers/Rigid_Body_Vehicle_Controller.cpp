@@ -10,7 +10,7 @@ RigidBodyVehicleController::RigidBodyVehicleController(
   rb_{ rb },
   steer_angle_{ NAN },
   surface_power_{ NAN },
-  ascend_velocity_{ NAN }
+  target_height_{ NAN }
 {}
 
 RigidBodyVehicleController::~RigidBodyVehicleController()
@@ -32,12 +32,17 @@ void RigidBodyVehicleController::steer(float angle) {
     steer_angle_ = angle;
 }
 
-void RigidBodyVehicleController::ascend(float velocity) {
-    ascend_velocity_ = velocity;
+void RigidBodyVehicleController::ascend_to(float target_height) {
+    target_height_ = target_height;
+}
+
+void RigidBodyVehicleController::ascend_by(float delta_height) {
+    if (!std::isnan(target_height_)) {
+        target_height_ += delta_height;
+    }
 }
 
 void RigidBodyVehicleController::reset() {
     surface_power_ = 0;
     steer_angle_ = 0;
-    ascend_velocity_ = NAN;
 }

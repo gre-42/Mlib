@@ -13,17 +13,19 @@ HeliController::HeliController(
     const std::map<size_t, float>& tire_angles,
     size_t main_rotor_id,
     size_t rear_rotor_id,
-    float ascend_multiplier,
     float yaw_multiplier,
+    const PidController<float, float>& height_pid,
     VehicleDomain vehicle_domain)
 : RigidBodyVehicleController{ rb, SteeringType::CAR },
+  height_pid_{ height_pid },
   tire_angles_{ tire_angles },
   main_rotor_id_{ main_rotor_id },
   rear_rotor_id_{ rear_rotor_id },
-  ascend_multiplier_{ ascend_multiplier },
   yaw_multiplier_{ yaw_multiplier },
   vehicle_domain_{ vehicle_domain }
-{}
+{
+    ascend_to(rb->rbi_.abs_position()(1));
+}
 
 HeliController::~HeliController()
 {}
@@ -34,7 +36,11 @@ void HeliController::apply() {
         for (const auto& x : tire_angles_) {
             rb_->set_tire_angle_y(x.first, 0.f);
         }
-        rb_->set_surface_power("main_rotor", std::isnan(ascend_velocity_) ? 0.f : ascend_multiplier_ * ascend_velocity_);
+        rb_->set_surface_power(
+            "main_rotor",
+            std::isnan(target_height_)
+                ? 0.f
+                : std::min(0.f, height_pid_(rb_->rbi_.abs_position()(1) - target_height_)));
         rb_->set_rotor_angle_x(main_rotor_id_, std::isnan(surface_power_) ? 0.f : 0.8f * sign(surface_power_));
         float ang = signed_min(steer_angle_, 45 * float(M_PI / 180.f));
         rb_->set_surface_power("rear_rotor", yaw_multiplier_ * ang);

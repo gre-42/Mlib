@@ -15,7 +15,8 @@ public:
     void drive(float surface_power);
     void roll_tires();
     void steer(float angle);
-    void ascend(float velocity);
+    void ascend_to(float target_height);
+    void ascend_by(float delta_height);
     void reset();
     virtual void apply() = 0;
     const SteeringType steering_type;
@@ -23,7 +24,7 @@ protected:
     RigidBodyVehicle* rb_;
     float steer_angle_;
     float surface_power_;
-    float ascend_velocity_;
+    float target_height_;
 };
 
 }

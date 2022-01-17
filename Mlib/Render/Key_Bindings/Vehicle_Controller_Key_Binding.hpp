@@ -12,7 +12,7 @@ struct VehicleControllerKeyBinding {
     SceneNode* node;
     std::optional<float> surface_power;
     std::optional<Interp<float>> tire_angle_interp;
-    std::optional<float> lift_power;
+    std::optional<float> ascend_velocity;
 };
 
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 
 namespace Mlib {
 
@@ -6,13 +7,13 @@ template <class TData, class TFloat>
 class PidController {
 public:
     PidController(const TFloat& p, const TFloat& i, const TFloat& d, const TFloat& a)
-    : initialized_{false},
-      p_{p},
-      i_{i},
-      d_{d},
-      a_{a},
-      I_(0),
-      e_old_{NAN}
+    : initialized_{ false },
+      p_{ p },
+      i_{ i },
+      d_{ d },
+      a_{ a },
+      I_( 0 ),
+      e_old_{ NAN }
     {}
     TData operator () (const TData& e) {
         I_ = (1 - a_) * I_ + a_ * e;

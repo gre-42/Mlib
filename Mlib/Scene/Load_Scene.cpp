@@ -444,7 +444,7 @@ void LoadScene::operator()(
         "(?:\\s+surface_power=([\\w+-.]+))?"
         "(?:\\s+tire_angle_velocities=([ \\w+-.]+))?"
         "(?:\\s+tire_angles=([ \\w+-.]+))?"
-        "(?:\\s+lift_power=([\\w+-.]+))?$");
+        "(?:\\s+ascend_velocity=([\\w+-.]+))?$");
     static const DECLARE_REGEX(weapon_inventory_key_binding_reg,
         "^\\s*weapon_inventory_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -2162,7 +2162,7 @@ void LoadScene::operator()(
                         string_to_vector(match[8].str(), safe_stof),
                         OutOfRangeBehavior::CLAMP}
                     : std::optional<Interp<float>>(),
-                .lift_power = match[9].matched
+                .ascend_velocity = match[9].matched
                     ? safe_stof(match[9].str())
                     : std::optional<float>()});
         } else if (Mlib::re::regex_match(line, match, weapon_inventory_key_binding_reg)) {

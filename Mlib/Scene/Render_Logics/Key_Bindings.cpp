@@ -281,8 +281,8 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                         rb->rbi_.rbp_.rotation_.column(2)));
                     rb->controller().steer(alpha * float(M_PI) / 180.f * k.tire_angle_interp.value()(v * 3.6f));
                 }
-                if (k.lift_power.has_value()) {
-                    rb->controller().ascend(k.lift_power.value());
+                if (k.ascend_velocity.has_value()) {
+                    rb->controller().ascend_by(k.ascend_velocity.value() * cfg.dt);
                 }
             }
         }
