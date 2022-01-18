@@ -7,6 +7,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
@@ -95,7 +96,7 @@ void RigidBodyVehicle::collide_with_air(const PhysicsEngineConfig& cfg) {
     for (auto& r : rotors_) {
         PowerIntent P = consume_rotor_surface_power(r.first);
         if (P.type == PowerIntentType::ACCELERATE_OR_BREAK) {
-            auto abs_location = rbi_.rbp_.abs_transformation() * r.second.rotated_location();
+            auto abs_location = r.second.rotated_location(rbi_.rbp_.abs_transformation());
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, 3>{
@@ -254,7 +255,7 @@ void RigidBodyVehicle::set_rotor_angle_z(size_t id, float angle_z) {
 
 FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
-        return dot2d(rbi_.rbp_.rotation_, rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y));
+        return dot2d(rbi_.rbp_.rotation_, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y));
     } else {
         return rbi_.rbp_.rotation_;
     }
@@ -263,7 +264,7 @@ FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_z(size_t id) const {
     FixedArray<float, 3> z{tires_z_};
     if (auto t = tires_.find(id); t != tires_.end()) {
-        z = dot1d(rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y), z);
+        z = dot1d(rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y), z);
     }
     z = dot1d(rbi_.rbp_.rotation_, z);
     return z;
@@ -419,10 +420,10 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         // r / r2 = v * a / (w * v^2) = a / (w * v)
         if (float w2 = sum(squared(rbi_.rbp_.w_)); w2 > 1e-2) {
             ostr << "d: " << 2 * std::sqrt(sum(squared(rbi_.rbp_.v_)) / w2) << " m" << std::endl;
-            ostr << "d / d2(9.8): " << 9.8 / std::sqrt(w2 * sum(squared(rbi_.rbp_.v_))) << std::endl;
+            ostr << "d / d2(g): " << gravity_magnitude / std::sqrt(w2 * sum(squared(rbi_.rbp_.v_))) << std::endl;
         } else {
             ostr << "d: undefined" << std::endl;
-            ostr << "d / d2(9.8): undefined" << std::endl;
+            ostr << "d / d2(g): undefined" << std::endl;
         }
     }
     if (log_components & StatusComponents::DIAMETER2) {

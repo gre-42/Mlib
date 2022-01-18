@@ -1234,14 +1234,14 @@ std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays
     auto res = std::make_shared<AnimatedColoredVertexArrays>();
     res->cvas = cvas_;
     // Append scaled hitboxes
-    auto rx = rodrigues(FixedArray<float, 3>{1.f, 0.f, 0.f}, float{M_PI} / 2.f);
+    auto rx = rodrigues2(FixedArray<float, 3>{1.f, 0.f, 0.f}, float{M_PI} / 2.f);
     for (auto& p : hitboxes_) {
         for (auto& x : scene_node_resources_.get_animated_arrays(p.first)->cvas) {
             for (auto& y : p.second) {
                 res->cvas.push_back(x->transformed(
                     TransformationMatrix{
                         scale_ * dot2d(
-                            rodrigues(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
+                            rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),
                             rx),
                         y.position}));
             }

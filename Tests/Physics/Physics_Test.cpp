@@ -223,7 +223,7 @@ void test_tracking_wheel() {
     float stiction_force = 1e3;
     float friction_force = 1e2;
     {
-        FixedArray<float, 3, 3> rotation = rodrigues<float>({0, 1, 0}, 0.f);
+        FixedArray<float, 3, 3> rotation = rodrigues2<float>({0, 1, 0}, 0.f);
         FixedArray<float, 3> translation = {0.f, 0.f, 0.f};
         tw.set_w(1.23);
         tw.notify_intersection(rotation, translation, {0, -1, 0}, {1, 0, 0}, stiction_force, friction_force);

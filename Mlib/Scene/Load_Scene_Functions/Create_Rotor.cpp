@@ -25,6 +25,7 @@ LoadSceneInstanceFunction::UserFunction CreateRotor::user_function = [](
         "\\s+rotation=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
         "\\s+engine=(\\w+)"
         "\\s+power2lift=([\\w+-.]+)"
+        "(?:\\s+max_align_to_gravity=([\\w+-.]+))?"
         "\\s+tire_id=(\\d+)$");
     std::smatch match;
     if (Mlib::re::regex_match(line, match, regex)) {
@@ -69,14 +70,18 @@ void CreateRotor::execute(
         safe_stof(match[7].str()) * float(M_PI / 180.f)};
     std::string engine = match[8].str();
     float power2lift = safe_stof(match[9].str());
-    size_t tire_id = safe_stoz(match[10].str());
+    float max_align_to_gravity = match[10].matched
+        ? safe_stof(match[10].str()) * float(M_PI / 180.f)
+        : NAN;
+    size_t tire_id = safe_stoz(match[11].str());
     auto r = tait_bryan_angles_2_matrix<float>(rotation);
     auto tp = rb->rotors_.insert({
         tire_id,
         Rotor{
             engine,
             TransformationMatrix<float, 3>{ r, position },
-            power2lift}});
+            power2lift,
+            max_align_to_gravity}});
     if (!tp.second) {
         throw std::runtime_error("Rotor with ID \"" + std::to_string(tire_id) + "\" already exists");
     }

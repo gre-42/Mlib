@@ -9,11 +9,14 @@ struct Rotor: public BaseRotor {
     Rotor(
         const std::string& engine,
         const TransformationMatrix<float, 3>& rest_location,
-        float power2lift);
-    TransformationMatrix<float, 3> rotated_location() const;
+        float power2lift,
+        float max_align_to_gravity);
+    TransformationMatrix<float, 3> rotated_location(
+        const TransformationMatrix<float, 3>& parent_location) const;
     TransformationMatrix<float, 3> rest_location;
     FixedArray<float, 3> angles;
     float power2lift;
+    float max_align_to_gravity;
 };
 
 }

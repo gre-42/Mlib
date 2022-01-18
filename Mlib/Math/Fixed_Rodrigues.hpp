@@ -5,7 +5,7 @@
 namespace Mlib{
 
 template <class TData>
-FixedArray<TData, 3, 3> rodrigues(
+FixedArray<TData, 3, 3> rodrigues1(
     const FixedArray<TData, 3>& k,
     bool check_angle = true)
 {
@@ -13,12 +13,12 @@ FixedArray<TData, 3, 3> rodrigues(
         return fixed_identity_array<TData, 3>();
     } else {
         TData len_k = std::sqrt(sum(norm(k)));
-        return rodrigues(k / len_k, len_k, check_angle);
+        return rodrigues2(k / len_k, len_k, check_angle);
     }
 }
 
 template <class TData>
-FixedArray<TData, 3, 3> rodrigues(
+FixedArray<TData, 3, 3> rodrigues2(
     const FixedArray<TData, 3>& k,
     const TData& theta,
     bool check_angle = true)
@@ -38,9 +38,9 @@ FixedArray<TData, 3, 3> tait_bryan_angles_2_matrix(
 {
     assert(all(indices < size_t(3)));
     FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
-    FixedArray<TData, 3, 3> result = rodrigues(I[indices(0)], angles(indices(0)));
-    result = dot2d(rodrigues(I[indices(1)], angles(indices(1))), result);
-    result = dot2d(rodrigues(I[indices(2)], angles(indices(2))), result);
+    FixedArray<TData, 3, 3> result = rodrigues2(I[indices(0)], angles(indices(0)));
+    result = dot2d(rodrigues2(I[indices(1)], angles(indices(1))), result);
+    result = dot2d(rodrigues2(I[indices(2)], angles(indices(2))), result);
     return result;
 }
 
@@ -123,7 +123,7 @@ FixedArray<TData, 3> inverse_rodrigues2(const FixedArray<TData, 3, 3>& R) {
  */
  // template <class TData>
  // Array<TData> rodrigues_jacobian_dk(const Array<TData>& k, const Array<TData>& x) {
- //     auto R = rodrigues(k);
+ //     auto R = rodrigues1(k);
  //     auto K = cross(-dot(R.T(), x));
  //     return dot(R, (K, R));
  // }
@@ -134,7 +134,7 @@ FixedArray<TData, 3> rodrigues_gradient_dtheta(
     const TData& theta,
     const FixedArray<TData, 3>& x)
 {
-    auto R = rodrigues(k, theta);
+    auto R = rodrigues2(k, theta);
     auto v = cross(k, x);
     return dot(R, v);
 }
@@ -158,9 +158,9 @@ FixedArray<TData, 3, 3> tait_bryan_angles_dtheta(
     static const FixedArray<TData, 3> I0 = I[0];
     static const FixedArray<TData, 3> I1 = I[1];
     static const FixedArray<TData, 3> I2 = I[2];
-    FixedArray<TData, 3, 3> R0 = rodrigues(I0, theta(0));
-    FixedArray<TData, 3, 3> R1 = rodrigues(I1, theta(1));
-    FixedArray<TData, 3, 3> R2 = rodrigues(I2, theta(2));
+    FixedArray<TData, 3, 3> R0 = rodrigues2(I0, theta(0));
+    FixedArray<TData, 3, 3> R1 = rodrigues2(I1, theta(1));
+    FixedArray<TData, 3, 3> R2 = rodrigues2(I2, theta(2));
 
     FixedArray<TData, 3> r1 = dot1d(R0, x);
     FixedArray<TData, 3> r2 = dot1d(R1, r1);

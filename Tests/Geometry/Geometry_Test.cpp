@@ -163,7 +163,7 @@ FixedArray<float, 3> a2k(const FixedArray<float, 3>& angles) {
 }
 
 FixedArray<float, 3> k2a(const FixedArray<float, 3>& k) {
-    return matrix_2_tait_bryan_angles(rodrigues(k));
+    return matrix_2_tait_bryan_angles(rodrigues1(k));
 }
 
 void test_inverse_rodrigues() {
@@ -171,11 +171,11 @@ void test_inverse_rodrigues() {
         FixedArray<float, 3> k{1, 3, 1.2};
         k /= std::sqrt(sum(squared(k)));
         k *= 0.45;
-        assert_allclose(k, inverse_rodrigues(rodrigues(k)));
+        assert_allclose(k, inverse_rodrigues(rodrigues1(k)));
     }
     {
         FixedArray<float, 3> k{fixed_zeros<float, 3>()};
-        assert_allclose(k, inverse_rodrigues(rodrigues(k)));
+        assert_allclose(k, inverse_rodrigues(rodrigues1(k)));
     }
     {
         FixedArray<float, 3> a{-3.13672, -3.92299e-05, -3.14133};

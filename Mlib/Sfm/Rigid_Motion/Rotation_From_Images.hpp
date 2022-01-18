@@ -180,9 +180,9 @@ Array<TData> intensity_jacobian_fast(
     static const FixedArray<TData, 3> I1 = I[1];
     static const FixedArray<TData, 3> I2 = I[2];
 
-    FixedArray<TData, 3, 3> R0{rodrigues(I0, theta(0))};
-    FixedArray<TData, 3, 3> R1{rodrigues(I1, theta(1))};
-    FixedArray<TData, 3, 3> R2{rodrigues(I2, theta(2))};
+    FixedArray<TData, 3, 3> R0{rodrigues2(I0, theta(0))};
+    FixedArray<TData, 3, 3> R1{rodrigues2(I1, theta(1))};
+    FixedArray<TData, 3, 3> R2{rodrigues2(I2, theta(2))};
 
     FixedArray<TData, 3, 3> cross0{cross(I0)};
     FixedArray<TData, 3, 3> cross1{cross(I1)};

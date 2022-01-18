@@ -31,7 +31,7 @@ RigidBodyPulses::RigidBodyPulses(
 void RigidBodyPulses::advance_time(float dt)
 {
     abs_com_ += dt * v_;
-    rotation_ = dot2d(rodrigues(dt * w_, false), rotation_);  // false = check_angle
+    rotation_ = dot2d(rodrigues1(dt * w_, false), rotation_);  // false = check_angle
     if (!I_is_diagonal_) {
         update_abs_I_and_inv();
     }
@@ -46,7 +46,7 @@ void RigidBodyPulses::advance_time(float dt)
     //     w_ = 0;
     // } else {
     //     abs_com_ += dt * v_;
-    //     rotation_ = dot2d(rodrigues(dt * w_), rotation_);
+    //     rotation_ = dot2d(rodrigues1(dt * w_), rotation_);
     // }
 }
 

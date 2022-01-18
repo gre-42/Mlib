@@ -15,7 +15,7 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 
 TransformationMatrix<float, 3> Mlib::Cv::k_external(const FixedArray<float, 6>& kep) {
-    // auto ro = rodrigues<float>(Array<float>{k(0), k(1), k(2)});
+    // auto ro = rodrigues1<float>(Array<float>{k(0), k(1), k(2)});
     auto ro = tait_bryan_angles_2_matrix(FixedArray<float, 3>{kep(0), kep(1), kep(2)});
     return TransformationMatrix<float, 3>(ro, FixedArray<float, 3>{kep(3), kep(4), kep(5)});
 }
@@ -145,7 +145,7 @@ FixedArray<float, 2, 6> Mlib::Cv::projected_points_jacobian_dke_1p_1ke(
 
     // Numerical differentiation
     // Array<float> da_dkep = numerical_differentiation([&](
-    //     const Array<float>& kk){ return (rodrigues(kk(0), kk(1), kk(2)), x.row_range(0, 3)); },
+    //     const Array<float>& kk){ return (rodrigues1(kk(0), kk(1), kk(2)), x.row_range(0, 3)); },
     //     kep.row_range(0, 3),
     //     float(1e-3));
     FixedArray<float, 3, 3> da_dkep = tait_bryan_angles_dtheta(

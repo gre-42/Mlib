@@ -1,5 +1,6 @@
 #include "Renderable_Scene.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Pod_Bots.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
@@ -47,7 +48,7 @@ RenderableScene::RenderableScene(
       .depth_test = scene_config.render_config.depth_test,
       .cull_faces = scene_config.render_config.cull_faces,
       .physics_set_fps = &physics_set_fps_},
-  gefp_{FixedArray<float, 3>{0.f, -9.8f, 0.f}},
+  gefp_{gravity_vector},
   standard_camera_logic_{
       scene_,
       selected_cameras_,

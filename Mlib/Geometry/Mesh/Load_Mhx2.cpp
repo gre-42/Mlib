@@ -98,7 +98,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             //     eb.roll = mhBone["roll"]
             // {
             //     FixedArray<float, 4, 4> roll = assemble_homogeneous_4x4(
-            //         rodrigues(
+            //         rodrigues2(
             //             FixedArray<float, 3>{0, 0, 1},
             //             bone.at("roll").get<float>()),
             //         FixedArray<float, 3>{0, 0, 0});

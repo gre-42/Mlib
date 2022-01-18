@@ -42,7 +42,7 @@ TransformationMatrix<float, 3> RelativeTransformer::get_new_relative_model_matri
 
 void RelativeTransformer::advance_time(float dt) {
     transformation_matrix_.t() += dt * v_;
-    transformation_matrix_.R() = dot2d(rodrigues(dt * w_), transformation_matrix_.R());
+    transformation_matrix_.R() = dot2d(rodrigues1(dt * w_), transformation_matrix_.R());
 }
 
 void RelativeTransformer::notify_destroyed(void* obj) {

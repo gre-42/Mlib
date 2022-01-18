@@ -157,8 +157,8 @@ void test_inverse_tait_bryan_angles() {
 void test_rodrigues_fixed() {
     Array<float> k = uniform_random_array<float>(ArrayShape{3}, 1);
     auto kf = FixedArray<float, 3>{k};
-    FixedArray<float, 3, 3> rf = rodrigues(kf);
-    Array<float> r = rodrigues(k);
+    FixedArray<float, 3, 3> rf = rodrigues1(kf);
+    Array<float> r = rodrigues1(k);
     assert_allclose(r, rf.to_array());
 }
 
@@ -220,7 +220,7 @@ void test_project_depth_map() {
         // ke.t()(0) = 0.1f;
         ke.t() = FixedArray<float, 3>{ 0.1f, 0.2f, 0.15f };
         // ke.t()(2) = 0.1f;
-        ke.R() = rodrigues(FixedArray<float, 3>{0.f, 1.f, 0.f}, 0.2f);
+        ke.R() = rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, 0.2f);
         std::cerr << "ke\n" << ke.semi_affine() << std::endl;
 
         {

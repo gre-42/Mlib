@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
+#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
@@ -158,7 +159,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 }
                 rb->integrate_force(rb->abs_F(k.force), cfg);
                 if (any(k.rotate != 0.f)) {
-                    rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues(alpha * k.rotate));
+                    rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues1(alpha * k.rotate));
                 }
                 if (k.car_surface_power.has_value()) {
                     rb->set_surface_power("main", k.car_surface_power.value());
@@ -167,7 +168,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 rb->set_max_velocity(k.max_velocity);
                 if (k.tire_id != SIZE_MAX) {
                     if (false) {
-                        float a = 9.8f * 1;
+                        float a = gravity_magnitude * 1.f;
                         float l = 2.55f;
                         float r = sum(squared(rb->rbi_.rbp_.v_)) / a;
                         float angle = std::asin(std::clamp(l / r, 0.f, 1.f));
@@ -240,7 +241,7 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (rt != nullptr) {
                     // rt->w_ = beta * k.angular_velocity_repeat;
                     rt->transformation_matrix_.R() = dot2d(
-                        rodrigues(k.rotation_axis, dangle),
+                        rodrigues2(k.rotation_axis, dangle),
                         rt->transformation_matrix_.R());
                 } else if (ypln != nullptr) {
                     if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {

@@ -39,7 +39,7 @@ void Mlib::calculate_spawn_points(
             x(1), y(1), z(1),
             x(2), y(2), z(2)};
         auto r0 = matrix_2_tait_bryan_angles(R0);
-        auto r1 = matrix_2_tait_bryan_angles(dot2d(rodrigues(z, float(M_PI)), R0));
+        auto r1 = matrix_2_tait_bryan_angles(dot2d(rodrigues2(z, float(M_PI)), R0));
         auto create_spawn_point = [&spawn_points, &r, &ly, &scale](
             SpawnPointType spawn_point_type,
             float alpha,

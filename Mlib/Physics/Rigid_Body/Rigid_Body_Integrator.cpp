@@ -54,7 +54,7 @@ void RigidBodyIntegrator::advance_time(
         rbp_.w_ = 0;
     } else {
         rbp_.abs_com_ += dt * rbp_.v_;
-        rbp_.rotation_ = dot2d(rodrigues(dt * rbp_.w_), rbp_.rotation_);
+        rbp_.rotation_ = dot2d(rodrigues1(dt * rbp_.w_), rbp_.rotation_);
     }
 }
 

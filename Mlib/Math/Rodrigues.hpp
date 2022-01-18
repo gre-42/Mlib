@@ -5,25 +5,25 @@
 namespace Mlib{
 
 template <class TData>
-Array<TData> rodrigues(const Array<TData>& k, const TData& theta);
+Array<TData> rodrigues2(const Array<TData>& k, const TData& theta);
 
 template <class TData>
 Array<TData> tait_bryan_angles_2_matrix(const Array<TData>& angles);
 
 template <class TData>
-Array<TData> rodrigues(const Array<TData>& k) {
+Array<TData> rodrigues1(const Array<TData>& k) {
     assert(all(k.shape() == ArrayShape{3}));
     if (sum(squared(k)) < 1e-12) {
         static const Array<TData> I = identity_array<TData>(3);
         return I;
     } else {
         TData len_k = std::sqrt(sum(norm(k)));
-        return rodrigues(k / len_k, len_k);
+        return rodrigues2(k / len_k, len_k);
     }
 }
 
 template <class TData>
-Array<TData> rodrigues(const Array<TData>& k, const TData& theta) {
+Array<TData> rodrigues2(const Array<TData>& k, const TData& theta) {
     assert(all(k.shape() == ArrayShape{3}));
 
     // slow
@@ -51,9 +51,9 @@ Array<TData> tait_bryan_angles_2_matrix(const Array<TData>& angles)
 
     // slow
     // Array<TData> I = identity_array<TData>(3);
-    // Array<TData> result = rodrigues(I[0], alpha);
-    // result = (result, rodrigues(I[1], beta).T());
-    // result = (result, rodrigues(I[2], gamma).T());
+    // Array<TData> result = rodrigues2(I[0], alpha);
+    // result = (result, rodrigues2(I[1], beta).T());
+    // result = (result, rodrigues2(I[2], gamma).T());
     // return result;
 
     assert(angles.length() == 3);
@@ -62,9 +62,9 @@ Array<TData> tait_bryan_angles_2_matrix(const Array<TData>& angles)
     static const Array<TData> I1 = I[1];
     static const Array<TData> I2 = I[2];
     static thread_local Array<TData> tmp{ArrayShape{3, 3}};
-    Array<TData> ro = rodrigues(I0, angles(0));
-    dot2d(rodrigues(I1, angles(1)), ro, tmp);
-    dot2d(rodrigues(I2, angles(2)), tmp, ro);
+    Array<TData> ro = rodrigues2(I0, angles(0));
+    dot2d(rodrigues2(I1, angles(1)), ro, tmp);
+    dot2d(rodrigues2(I2, angles(2)), tmp, ro);
     return ro;
 }
 
