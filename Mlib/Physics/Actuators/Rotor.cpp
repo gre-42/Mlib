@@ -1,5 +1,6 @@
 #include "Rotor.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 
 using namespace Mlib;
@@ -8,16 +9,18 @@ Rotor::Rotor(
     const std::string& engine,
     const TransformationMatrix<float, 3>& rest_location,
     float power2lift,
-    float max_align_to_gravity)
+    float max_align_to_gravity,
+    const PidController<float, float>& align_to_gravity_pid)
 : BaseRotor{ engine },
   rest_location{ rest_location },
   angles{ 0.f, 0.f, 0.f },
   power2lift{ power2lift },
-  max_align_to_gravity{ max_align_to_gravity }
+  max_align_to_gravity{ max_align_to_gravity },
+  align_to_gravity_pid{ align_to_gravity_pid }
 {}
 
 TransformationMatrix<float, 3> Rotor::rotated_location(
-    const TransformationMatrix<float, 3>& parent_location) const
+    const TransformationMatrix<float, 3>& parent_location)
 {
     TransformationMatrix<float, 3> abs_rest_location = parent_location * rest_location;
     TransformationMatrix<float, 3> r_controller{
@@ -31,7 +34,8 @@ TransformationMatrix<float, 3> Rotor::rotated_location(
         if (len2 > 1e-12) {
             float len = std::sqrt(len2);
             d /= len;
-            FixedArray<float, 3, 3> m = rodrigues2(d, std::min(max_align_to_gravity, std::asin(len)));
+            float ang = align_to_gravity_pid(std::asin(len));
+            FixedArray<float, 3, 3> m = rodrigues2(d, signed_min(ang, max_align_to_gravity));
             TransformationMatrix<float, 3> M{ m, fixed_zeros<float, 3>() };
             return abs_rest_location * M * r_controller;
         }
