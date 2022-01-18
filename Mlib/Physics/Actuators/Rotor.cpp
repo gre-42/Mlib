@@ -10,34 +10,41 @@ Rotor::Rotor(
     const TransformationMatrix<float, 3>& rest_location,
     float power2lift,
     float max_align_to_gravity,
-    const PidController<float, float>& align_to_gravity_pid)
+    const PidController<float, float>& align_to_gravity_pid,
+    float drift_reduction_factor)
 : BaseRotor{ engine },
   rest_location{ rest_location },
   angles{ 0.f, 0.f, 0.f },
   power2lift{ power2lift },
-  max_align_to_gravity{ max_align_to_gravity },
-  align_to_gravity_pid{ align_to_gravity_pid }
+  max_align_to_gravity_{ max_align_to_gravity },
+  align_to_gravity_pid_{ align_to_gravity_pid },
+  drift_reduction_factor_{ drift_reduction_factor }
 {}
 
 TransformationMatrix<float, 3> Rotor::rotated_location(
-    const TransformationMatrix<float, 3>& parent_location)
+    const TransformationMatrix<float, 3>& parent_location,
+    const FixedArray<float, 3>& parent_velocity)
 {
     TransformationMatrix<float, 3> abs_rest_location = parent_location * rest_location;
     TransformationMatrix<float, 3> r_controller{
         tait_bryan_angles_2_matrix<float>(angles),
         fixed_zeros<float, 3>()};
-    if (!std::isnan(max_align_to_gravity)) {
-        FixedArray<float, 3> d = cross(
-            FixedArray<float, 3>{ 0.f, 0.f, 1.f },
-            abs_rest_location.inverted().rotate(gravity_direction));
-        float len2 = sum(squared(d));
-        if (len2 > 1e-12) {
-            float len = std::sqrt(len2);
-            d /= len;
-            float ang = align_to_gravity_pid(std::asin(len));
-            FixedArray<float, 3, 3> m = rodrigues2(d, signed_min(ang, max_align_to_gravity));
-            TransformationMatrix<float, 3> M{ m, fixed_zeros<float, 3>() };
-            return abs_rest_location * M * r_controller;
+    if (!std::isnan(max_align_to_gravity_) && !std::isnan(drift_reduction_factor_)) {
+        FixedArray<float, 3> x = parent_location.R().column(0);
+        FixedArray<float, 3> g = abs_rest_location.inverted().rotate(
+            gravity_direction + x * std::clamp(drift_reduction_factor_ * dot0d(x, parent_velocity), -1.f, 1.f));
+        float g_len2 = sum(squared(g));
+        if (g_len2 > 1e-12) {
+            FixedArray<float, 3> d = cross(FixedArray<float, 3>{ 0.f, 0.f, 1.f }, g);
+            float d_len2 = sum(squared(d));
+            if (d_len2 > 1e-12) {
+                float d_len = std::sqrt(d_len2);
+                d /= (d_len * std::sqrt(g_len2));
+                float ang = align_to_gravity_pid_(std::asin(std::clamp(d_len, 0.f, 1.f)));
+                FixedArray<float, 3, 3> m = rodrigues2(d, signed_min(ang, max_align_to_gravity_));
+                TransformationMatrix<float, 3> M{ m, fixed_zeros<float, 3>() };
+                return abs_rest_location * M * r_controller;
+            }
         }
     }
     return abs_rest_location * r_controller;

@@ -96,7 +96,7 @@ void RigidBodyVehicle::collide_with_air(const PhysicsEngineConfig& cfg) {
     for (auto& r : rotors_) {
         PowerIntent P = consume_rotor_surface_power(r.first);
         if (P.type == PowerIntentType::ACCELERATE_OR_BREAK) {
-            auto abs_location = r.second.rotated_location(rbi_.rbp_.abs_transformation());
+            auto abs_location = r.second.rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, 3>{
