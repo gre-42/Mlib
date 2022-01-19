@@ -90,7 +90,7 @@ public:
         RigidBodyPulses& rbp,
         const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<float, 3>& p);
-    void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation) override;
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
     }
@@ -108,8 +108,8 @@ public:
         const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<float, 3>& p,
         std::function<void(float)> notify_lambda_final = [](float){});
-    void solve(float dt, float relaxation) override;
-    void finalize() override;
+    virtual void solve(float dt, float relaxation) override;
+    virtual void finalize() override;
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
     }
@@ -127,7 +127,7 @@ public:
         RigidBodyPulses& rbp,
         const BoundedShockAbsorberConstraint& sc,
         const FixedArray<float, 3>& p);
-    void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation) override;
     const NormalImpulse& normal_impulse() const {
         return sc_.constraint.normal_impulse;
     }
@@ -154,7 +154,7 @@ public:
         float extra_stiction = 0,
         float extra_friction = 0,
         float extra_w = 0);
-    void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation) override;
     float max_impulse_stiction() const;
     float max_impulse_friction() const;
     const FixedArray<float, 3>& get_b() const;
@@ -203,7 +203,7 @@ public:
         float stiction_coefficient,
         float friction_coefficient,
         const FixedArray<float, 3>& b);
-    void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation) override;
     float max_impulse_stiction() const;
     float max_impulse_friction() const;
     void set_b(const FixedArray<float, 3>& b);
@@ -228,8 +228,8 @@ public:
         const FixedArray<float, 3>& n3,
         float v0,
         const PhysicsEngineConfig& cfg);
-    void solve(float dt, float relaxation) override;
-    void finalize() override;
+    virtual void solve(float dt, float relaxation) override;
+    virtual void finalize() override;
 private:
     FrictionContactInfo1 fci_;
     RigidBodyVehicle& rb_;
