@@ -277,7 +277,7 @@ void PhysicsEngine::collide(
                 std::cerr << "WARNING: Object has no meshes" << std::endl;
             }
             rigid_bodies_.transform_object_and_add(o);
-            o.rigid_body->collide_with_air(cfg_);
+            o.rigid_body->collide_with_air(cfg_, contact_infos);
         }
     }
     SatTracker st;

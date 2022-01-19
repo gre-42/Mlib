@@ -16,7 +16,7 @@ struct PointEqualityConstraint {
     FixedArray<float, 3> p1;
     float beta = 0.5;
     inline FixedArray<float, 3> v(float dt) const {
-        return beta / dt * (p0 - p1);
+        return beta / dt * (p1 - p0);
     }
 };
 

@@ -2,6 +2,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Gravity.hpp>
+#include <Mlib/Scene_Graph/Scene.hpp>
 
 using namespace Mlib;
 
@@ -11,15 +12,35 @@ Rotor::Rotor(
     float power2lift,
     float max_align_to_gravity,
     const PidController<float, float>& align_to_gravity_pid,
-    float drift_reduction_factor)
+    float drift_reduction_factor,
+    const FixedArray<float, 3>& vehicle_mount_0,
+    const FixedArray<float, 3>& vehicle_mount_1,
+    const FixedArray<float, 3>& blades_mount_0,
+    const FixedArray<float, 3>& blades_mount_1,
+    RigidBodyVehicle* blades_rb,
+    const std::string& blades_node_name,
+    Scene& scene)
 : BaseRotor{ engine },
   rest_location{ rest_location },
   angles{ 0.f, 0.f, 0.f },
   power2lift{ power2lift },
+  blades_rb{ blades_rb },
+  vehicle_mount_0{ vehicle_mount_0 },
+  vehicle_mount_1{ vehicle_mount_1 },
+  blades_mount_0{ blades_mount_0 },
+  blades_mount_1{ blades_mount_1 },
   max_align_to_gravity_{ max_align_to_gravity },
   align_to_gravity_pid_{ align_to_gravity_pid },
-  drift_reduction_factor_{ drift_reduction_factor }
+  drift_reduction_factor_{ drift_reduction_factor },
+  blades_node_name_{ blades_node_name },
+  scene_{ scene }
 {}
+
+Rotor::~Rotor() {
+    // if (!blades_node_name_.empty()) {
+    //     scene_.schedule_delete_root_node(blades_node_name_);
+    // }
+}
 
 TransformationMatrix<float, 3> Rotor::rotated_location(
     const TransformationMatrix<float, 3>& parent_location,

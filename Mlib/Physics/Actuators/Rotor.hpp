@@ -6,6 +6,9 @@
 
 namespace Mlib {
 
+class RigidBodyVehicle;
+class Scene;
+
 class Rotor: public BaseRotor {
 public:
     Rotor(
@@ -14,17 +17,34 @@ public:
         float power2lift,
         float max_align_to_gravity,
         const PidController<float, float>& align_to_gravity_pid,
-        float drift_reduction_factor);
+        float drift_reduction_factor,
+        const FixedArray<float, 3>& vehicle_mount_0,
+        const FixedArray<float, 3>& vehicle_mount_1,
+        const FixedArray<float, 3>& blades_mount_0,
+        const FixedArray<float, 3>& blades_mount_1,
+        RigidBodyVehicle* blades_rb,
+        const std::string& blades_node_name,
+        Scene& scene);
+    Rotor(const Rotor&) = delete;
+    Rotor& operator = (const Rotor&) = delete;
+    ~Rotor();
     TransformationMatrix<float, 3> rotated_location(
         const TransformationMatrix<float, 3>& parent_location,
         const FixedArray<float, 3>& parent_velocity);
     TransformationMatrix<float, 3> rest_location;
     FixedArray<float, 3> angles;
     float power2lift;
+    RigidBodyVehicle* blades_rb;
+    FixedArray<float, 3> vehicle_mount_0;
+    FixedArray<float, 3> vehicle_mount_1;
+    FixedArray<float, 3> blades_mount_0;
+    FixedArray<float, 3> blades_mount_1;
 private:
     float max_align_to_gravity_;
     PidController<float, float> align_to_gravity_pid_;
     float drift_reduction_factor_;
+    std::string blades_node_name_;
+    Scene& scene_;
 };
 
 }

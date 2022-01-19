@@ -7,6 +7,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
+#include <Mlib/Physics/Collision/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
@@ -92,19 +93,41 @@ void RigidBodyVehicle::integrate_gravity(const FixedArray<float, 3>& g) {
 
 // namespace Mlib { extern std::list<Beacon> g_beacons; }
 
-void RigidBodyVehicle::collide_with_air(const PhysicsEngineConfig& cfg) {
+void RigidBodyVehicle::collide_with_air(
+    const PhysicsEngineConfig& cfg,
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos) {
     for (auto& r : rotors_) {
         PowerIntent P = consume_rotor_surface_power(r.first);
         if (P.type == PowerIntentType::ACCELERATE_OR_BREAK) {
-            auto abs_location = r.second.rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
+            auto abs_location = r.second->rotated_location(rbi_.rbp_.abs_transformation(), rbi_.rbp_.v_);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, 3>{
-                    .vector = z3_from_3x3(abs_location.R()) * P.power * r.second.power2lift,
+                    .vector = z3_from_3x3(abs_location.R()) * P.power * r.second->power2lift,
                     .position = abs_location.t() },
                 cfg);
         } else {
-            set_base_angular_velocity(r.second, 0.f, TireAngularVelocityChange::IDLE);
+            set_base_angular_velocity(*r.second, 0.f, TireAngularVelocityChange::IDLE);
+        }
+        set_base_angular_velocity(*r.second, float(2 * M_PI) * 400.f / 60.f, TireAngularVelocityChange::ACCELERATE);
+        if (r.second->blades_rb != nullptr) {
+            r.second->blades_rb->rbi_.rbp_.w_ = r.second->angular_velocity * z3_from_3x3(r.second->blades_rb->rbi_.rbp_.rotation_);
+            auto T0 = rbi_.rbp_.abs_transformation();
+            auto T1 = r.second->blades_rb->rbi_.rbp_.abs_transformation();
+            contact_infos.push_back(std::make_unique<PointContactInfo2>(
+                rbi_.rbp_,
+                r.second->blades_rb->rbi_.rbp_,
+                PointEqualityConstraint{
+                    .p0 = T0.transform(r.second->vehicle_mount_0),
+                    .p1 = T1.transform(r.second->blades_mount_0),
+                    .beta = 0.02f}));
+            contact_infos.push_back(std::make_unique<PointContactInfo2>(
+                rbi_.rbp_,
+                r.second->blades_rb->rbi_.rbp_,
+                PointEqualityConstraint{
+                    .p0 = T0.transform(r.second->vehicle_mount_1),
+                    .p1 = T1.transform(r.second->blades_mount_1),
+                    .beta = 0.02f}));
         }
     }
 }
@@ -373,7 +396,7 @@ Rotor& RigidBodyVehicle::get_rotor(size_t id) {
     if (it == rotors_.end()) {
         throw std::runtime_error("No rotor with ID " + std::to_string(id) + " exists");
     }
-    return it->second;
+    return *it->second;
 }
 
 float RigidBodyVehicle::energy() const {

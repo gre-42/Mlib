@@ -26,6 +26,7 @@ class IPlayer;
 class StyleUpdater;
 class RigidBodyVehicleController;
 struct BaseRotor;
+class ContactInfo;
 
 enum class TireAngularVelocityChange {
     OFF,
@@ -56,7 +57,9 @@ public:
         float friction,
         const PhysicsEngineConfig& cfg);
     void integrate_gravity(const FixedArray<float, 3>& g);
-    void collide_with_air(const PhysicsEngineConfig& cfg);
+    void collide_with_air(
+        const PhysicsEngineConfig& cfg,
+        std::list<std::unique_ptr<ContactInfo>>& contact_infos);
     void advance_time(
         float dt,
         float min_acceleration,
@@ -118,7 +121,7 @@ public:
     float energy_old_;
 #endif
     std::map<size_t, Tire> tires_;
-    std::map<size_t, Rotor> rotors_;
+    std::map<size_t, std::unique_ptr<Rotor>> rotors_;
     std::map<std::string, RigidBodyEngine> engines_;
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
