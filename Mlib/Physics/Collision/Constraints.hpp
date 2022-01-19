@@ -11,6 +11,15 @@ class RigidBodyVehicle;
 class RigidBodyPulses;
 struct PhysicsEngineConfig;
 
+struct PointEqualityConstraint {
+    FixedArray<float, 3> p0;
+    FixedArray<float, 3> p1;
+    float beta = 0.5;
+    inline FixedArray<float, 3> v(float dt) const {
+        return beta / dt * (p0 - p1);
+    }
+};
+
 struct NormalImpulse {
     FixedArray<float, 3> normal;
     float lambda_total = 0;
@@ -20,7 +29,6 @@ struct PlaneEqualityConstraint {
     NormalImpulse normal_impulse;
     float intercept;
     float b = 0;
-    bool always_active = true;
     float beta = 0.5;
     inline float C(const FixedArray<float, 3>& x) const {
         return -(dot0d(normal_impulse.normal, x) + intercept);
@@ -82,6 +90,19 @@ public:
     virtual ~ContactInfo() = default;
     virtual void solve(float dt, float relaxation) = 0;
     virtual void finalize() {}
+};
+
+class PointContactInfo2: public ContactInfo {
+public:
+    PointContactInfo2(
+        RigidBodyPulses& rbp0,
+        RigidBodyPulses& rbp1,
+        const PointEqualityConstraint& pc);
+    virtual void solve(float dt, float relaxation) override;
+private:
+    RigidBodyPulses& rbp0_;
+    RigidBodyPulses& rbp1_;
+    PointEqualityConstraint pc_;
 };
 
 class NormalContactInfo1: public ContactInfo {

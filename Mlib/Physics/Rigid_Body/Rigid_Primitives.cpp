@@ -58,6 +58,33 @@ RigidBodyIntegrator Mlib::rigid_cuboid_integrator(
     };
 }
 
+RigidBodyIntegrator Mlib::rigid_disk_integrator(
+    float mass,
+    float radius,
+    const FixedArray<float, 3>& com,
+    const FixedArray<float, 3>& v,
+    const FixedArray<float, 3>& w)
+{
+    // From: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
+    FixedArray<float, 3, 3> I{
+        1.f / 4 * mass * squared(radius), 0.f, 0.f,
+        0.f, 1.f / 4 * mass * squared(radius), 0.f,
+        0.f, 0.f, 1.f / 2 * mass * squared(radius)};
+    
+    return RigidBodyIntegrator{
+        mass,
+        fixed_zeros<float, 3>(),            // L
+        I,                                  // I
+        com,                                // com
+        v,                                  // v
+        w,                                  // w
+        fixed_zeros<float, 3>(),            // T
+        fixed_nans<float, 3>(),             // position
+        fixed_zeros<float, 3>(),            // rotation (not NAN to pass rogridues angle assertion)
+        true                                // I_is_diagonal
+    };
+}
+
 std::shared_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
     RigidBodies& rigid_bodies,
     float mass,
@@ -71,6 +98,23 @@ std::shared_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
     return std::make_shared<RigidBodyVehicle>(
         rigid_bodies,
         rigid_cuboid_integrator(mass, size, com, v, w),
+        geographic_coordinates,
+        name);
+}
+
+std::shared_ptr<RigidBodyVehicle> Mlib::rigid_disk(
+    RigidBodies& rigid_bodies,
+    float mass,
+    float radius,
+    const FixedArray<float, 3>& com,
+    const FixedArray<float, 3>& v,
+    const FixedArray<float, 3>& w,
+    const TransformationMatrix<double, 3>* geographic_coordinates,
+    const std::string& name)
+{
+    return std::make_shared<RigidBodyVehicle>(
+        rigid_bodies,
+        rigid_disk_integrator(mass, radius, com, v, w),
         geographic_coordinates,
         name);
 }
