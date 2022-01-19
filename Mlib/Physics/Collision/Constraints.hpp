@@ -107,7 +107,7 @@ public:
         RigidBodyPulses& rbp1,
         const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<float, 3>& p,
-        std::function<void(float)> notify_lambda_final = [](float){});
+        const std::function<void(float)>& notify_lambda_final = [](float){});
     virtual void solve(float dt, float relaxation) override;
     virtual void finalize() override;
     const NormalImpulse& normal_impulse() const {
@@ -229,7 +229,6 @@ public:
         float v0,
         const PhysicsEngineConfig& cfg);
     virtual void solve(float dt, float relaxation) override;
-    virtual void finalize() override;
 private:
     FrictionContactInfo1 fci_;
     RigidBodyVehicle& rb_;
