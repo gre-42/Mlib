@@ -86,5 +86,5 @@ void CreateRigidDisk::execute(
         rb,
         hitbox,
         tirelines,
-        collidable_mode_from_string(match[17].str()));
+        collidable_mode_from_string(match[15].str()));
 }
