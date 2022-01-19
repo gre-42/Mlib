@@ -79,12 +79,14 @@ void CreateRigidDisk::execute(
     if (!match[3].str().empty()) {
         tirelines = scene_node_resources.get_animated_arrays(match[3].str())->cvas;
     }
+    CollidableMode collidable_mode = collidable_mode_from_string(match[15].str());
     // 1. Set movable, which updates the transformation-matrix
     scene.get_node(match[1].str())->set_absolute_movable(rb.get());
-    // 2. Add to physics engine
+    // 2. Add to physics engine. This should not fail,
+    //    i.e. all parsing is already done.
     physics_engine.rigid_bodies_.add_rigid_body(
         rb,
         hitbox,
         tirelines,
-        collidable_mode_from_string(match[15].str()));
+        collidable_mode);
 }
