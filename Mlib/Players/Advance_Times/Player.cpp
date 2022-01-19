@@ -718,6 +718,7 @@ void Player::move_to_waypoint() {
     if (std::isnan(surface_power_backward_)) {
         return;
     }
+    rb_->controller().reset();
     if (any(Mlib::isnan(waypoint_))) {
         step_on_breaks();
         rb_->controller().apply();
