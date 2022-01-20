@@ -56,11 +56,12 @@ TransformationMatrix<float, 3> Rotor::rotated_location(
             gravity_direction + x * std::clamp(drift_reduction_factor_ * dot0d(x, parent_velocity), -1.f, 1.f));
         float g_len2 = sum(squared(g));
         if (g_len2 > 1e-12) {
+            g /= std::sqrt(g_len2);
             FixedArray<float, 3> d = cross(FixedArray<float, 3>{ 0.f, 0.f, 1.f }, g);
             float d_len2 = sum(squared(d));
             if (d_len2 > 1e-12) {
                 float d_len = std::sqrt(d_len2);
-                d /= (d_len * std::sqrt(g_len2));
+                d /= d_len;
                 float ang = align_to_gravity_pid_(std::asin(std::clamp(d_len, 0.f, 1.f)));
                 FixedArray<float, 3, 3> m = rodrigues2(d, signed_min(ang, max_align_to_gravity_));
                 TransformationMatrix<float, 3> M{ m, fixed_zeros<float, 3>() };
