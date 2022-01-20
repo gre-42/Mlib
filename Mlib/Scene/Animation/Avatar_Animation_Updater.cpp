@@ -24,9 +24,9 @@ AvatarAnimationUpdater::AvatarAnimationUpdater(
 {}
 
 void AvatarAnimationUpdater::notify_movement_intent() {
-    auto it = rb_.engines_.find("main");
+    auto it = rb_.engines_.find("legs");
     if (it == rb_.engines_.end()) {
-        throw std::runtime_error("AvatarAnimationUpdater could not find main engine");
+        throw std::runtime_error("AvatarAnimationUpdater could not find \"legs\" engine");
     }
     surface_power_ = it->second.surface_power();
 }
