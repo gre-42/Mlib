@@ -343,9 +343,9 @@ void LoadScene::operator()(
         "\\s+damage=([\\w+-.]+)$");
     static const DECLARE_REGEX(relative_transformer_reg,
         "^\\s*relative_transformer"
-        "\\s+node=([\\w+-.]+)"
-        "(?:\\s+v=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\s+w=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
+        "\\s+node=\\s*([\\w+-.]+)"
+        "(?:\\s+v=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+w=\\s*([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     static const DECLARE_REGEX(create_engine_reg,
         "^\\s*create_engine"
         "\\s+rigid_body=([\\w+-.]+)"

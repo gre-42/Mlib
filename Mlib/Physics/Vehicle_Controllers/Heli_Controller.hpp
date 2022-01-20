@@ -15,7 +15,7 @@ public:
         RigidBodyVehicle* rb,
         const std::map<size_t, float>& tire_angles,
         size_t main_rotor_id,
-        size_t rear_rotor_id,
+        size_t tail_rotor_id,
         FixedArray<float, 3> angle_multipliers,
         const PidController<float, float>& height_pid,
         VehicleDomain vehicle_domain);
@@ -25,7 +25,7 @@ private:
     PidController<float, float> height_pid_;
     std::map<size_t, float> tire_angles_;
     size_t main_rotor_id_;
-    size_t rear_rotor_id_;
+    size_t tail_rotor_id_;
     FixedArray<float, 3> angle_multipliers_;
     VehicleDomain vehicle_domain_;
 };

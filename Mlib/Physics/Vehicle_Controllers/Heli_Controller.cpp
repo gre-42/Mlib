@@ -12,7 +12,7 @@ HeliController::HeliController(
     RigidBodyVehicle* rb,
     const std::map<size_t, float>& tire_angles,
     size_t main_rotor_id,
-    size_t rear_rotor_id,
+    size_t tail_rotor_id,
     FixedArray<float, 3> angle_multipliers,
     const PidController<float, float>& height_pid,
     VehicleDomain vehicle_domain)
@@ -20,7 +20,7 @@ HeliController::HeliController(
   height_pid_{ height_pid },
   tire_angles_{ tire_angles },
   main_rotor_id_{ main_rotor_id },
-  rear_rotor_id_{ rear_rotor_id },
+  tail_rotor_id_{ tail_rotor_id },
   angle_multipliers_{ angle_multipliers },
   vehicle_domain_{ vehicle_domain }
 {
@@ -50,7 +50,7 @@ void HeliController::apply() {
             : -angle_multipliers_(PITCH) * sign(surface_power_));
         float ang = signed_min(steer_angle_, 45 * float(M_PI / 180.f));
         rb_->set_rotor_angle_y(main_rotor_id_, angle_multipliers_(ROLL) * ang);
-        rb_->set_surface_power("rear_rotor", angle_multipliers_(YAW) * ang);
+        rb_->set_surface_power("tail_rotor", angle_multipliers_(YAW) * ang);
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {
         rb_->set_surface_power("wheels", surface_power_);  // NAN=break
         for (const auto& x : tire_angles_) {

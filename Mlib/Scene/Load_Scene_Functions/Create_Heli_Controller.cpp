@@ -24,7 +24,7 @@ LoadSceneInstanceFunction::UserFunction CreateHeliController::user_function = []
         "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)"
         "\\s+main_rotor_id=(\\d+)"
-        "\\s+rear_rotor_id=(\\d+)"
+        "\\s+tail_rotor_id=(\\d+)"
         "\\s+pitch_multiplier=([\\w+-.]+)"
         "\\s+yaw_multiplier=([\\w+-.]+)"
         "\\s+roll_multiplier=([\\w+-.]+)"
@@ -81,7 +81,7 @@ void CreateHeliController::execute(
         rb,
         tire_angles_map,
         safe_stoz(match[4].str()),            // main_rotor_id
-        safe_stoz(match[5].str()),            // rear_rotor_id
+        safe_stoz(match[5].str()),            // tail_rotor_id
         FixedArray<float, 3>{
             safe_stof(match[6].str()),        // pitch_multiplier
             safe_stof(match[7].str()),        // yaw_multiplier
