@@ -415,8 +415,8 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]*))?"
-        "\\s+joystick_digital_axis=([\\w+-.]*)"
-        "\\s+joystick_digital_axis_sign=([\\w+-.]+)"
+        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(?:\\s+cursor_axis=(0|1))?"
         "(?:\\s+cursor_sign_and_scale=([\\w+-.]+))?"
         "\\s+rotation_axis=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
@@ -2087,7 +2087,7 @@ void LoadScene::operator()(
                     .key = match[2].str(),
                     .gamepad_button = match[3].str(),
                     .joystick_axis = match[4].str(),
-                    .joystick_axis_sign = safe_stof(match[5].str())},
+                    .joystick_axis_sign = match[5].matched ? safe_stof(match[5].str()) : 0},
                 .base_cursor_axis = {
                     .axis = match[6].matched ? safe_stou(match[6].str()) : SIZE_MAX,
                     .sign_and_scale = match[7].matched ? safe_stof(match[7].str()) : NAN,
