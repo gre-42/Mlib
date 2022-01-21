@@ -395,21 +395,21 @@ void LoadScene::operator()(
         "\\s+node=([\\w+-.]+)"
         "\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
     static const DECLARE_REGEX(abs_key_binding_reg,
-        "^\\s*abs_key_binding\\r?\\n"
-        "\\s*node=([\\w+-.]+)\\r?\\n"
-        "\\s*key=([\\w+-.]+)"
-        "(?:\\r?\\n\\s*gamepad_button=([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*joystick_digital_axis=([\\w+-.]+)\\r?\\n"
-        "\\s*joystick_digital_axis_sign=([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*force=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)\\r?\\n"
-        "\\s*position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*rotate=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*car_surface_power=([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*max_velocity=([\\w+-.]+))?"
-        "(?:\\r?\\n\\s*tire_id=(\\d+)\\r?\\n"
-        "\\s*tire_angle_velocities=([ \\w+-.]+)\\r?\\n"
-        "\\s*tire_angles=([ \\w+-.]+))?"
-        "(?:\\r?\\n\\s*tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
+        "^\\s*abs_key_binding"
+        "\\s+node=([\\w+-.]+)"
+        "\\s+key=([\\w+-.]+)"
+        "(?:\\s+gamepad_button=([\\w+-.]+))?"
+        "(?:\\s+joystick_digital_axis=([\\w+-.]+)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
+        "(?:\\s+force=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+rotate=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?"
+        "(?:\\s+car_surface_power=([\\w+-.]+))?"
+        "(?:\\s+max_velocity=([\\w+-.]+))?"
+        "(?:\\s+tire_id=(\\d+)"
+        "\\s+tire_angle_velocities=([ \\w+-.]+)"
+        "\\s+tire_angles=([ \\w+-.]+))?"
+        "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     static const DECLARE_REGEX(rel_key_binding_reg,
         "^\\s*rel_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -2040,10 +2040,9 @@ void LoadScene::operator()(
                     match[3].str().empty() ? 0.f : safe_stof(match[3].str()),
                     match[4].str().empty() ? 1.f : safe_stof(match[4].str())}});
         } else if (Mlib::re::regex_match(line, match, abs_key_binding_reg)) {
-            try {
-                scene.get_node(match[1].str())->get_absolute_movable();
-            } catch (const std::runtime_error& e) {
-                throw std::runtime_error("Node \"" + match[1].str() + "\": " + e.what());
+            auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
+            if (rb == nullptr) {
+                throw std::runtime_error("Absolute movable is not a rigid body");
             }
             key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
                 .base_key = {
@@ -2058,9 +2057,9 @@ void LoadScene::operator()(
                         match[7].str().empty() ? 0.f : safe_stof(match[7].str()),
                         match[8].str().empty() ? 0.f : safe_stof(match[8].str())},
                     .position = {
-                        match[9].str().empty() ? 0.f : safe_stof(match[9].str()),
-                        match[10].str().empty() ? 0.f : safe_stof(match[10].str()),
-                        match[11].str().empty() ? 0.f : safe_stof(match[11].str())}},
+                        match[9].str().empty() ? rb->rbi_.rbp_.com_(0) : safe_stof(match[9].str()),
+                        match[10].str().empty() ? rb->rbi_.rbp_.com_(1) : safe_stof(match[10].str()),
+                        match[11].str().empty() ? rb->rbi_.rbp_.com_(2) : safe_stof(match[11].str())}},
                 .rotate = {
                     match[12].str().empty() ? 0.f : safe_stof(match[12].str()),
                     match[13].str().empty() ? 0.f : safe_stof(match[13].str()),
