@@ -90,6 +90,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rotor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
@@ -164,6 +165,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateRigidCuboid::user_function);
     user_functions_.push_back(CreateRigidDisk::user_function);
     user_functions_.push_back(SetRigidBodyTarget::user_function);
+    user_functions_.push_back(CreateYawPitchLookatNodes::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -658,21 +660,6 @@ void LoadScene::operator()(
         "\\s+follower=([\\w+-.]+)"
         "\\s+followed=([\\w+-.]+)"
         "\\s+offset=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)$");
-    static const DECLARE_REGEX(yaw_pitch_look_at_nodes_reg,
-        "^\\s*yaw_pitch_look_at_nodes"
-        "\\s+yaw_node=([\\w+-.]+)"
-        "\\s+pitch_node=([\\w+-.]+)"
-        "\\s+parent_follower_rigid_body_node=([\\w+-.]+)"
-        "\\s+followed=([\\w+-.]*)"
-        "\\s+bullet_start_offset=([\\w+-.]+)"
-        "\\s+bullet_velocity=([\\w+-.]+)"
-        "\\s+gravity=([\\w+-.]+)"
-        "\\s+dyaw_max=([\\w+-.]+)"
-        "\\s+pitch_min=([\\w+-.]+)"
-        "\\s+pitch_max=([\\w+-.]+)"
-        "\\s+dpitch_max=([\\w+-.]+)"
-        "\\s+yaw_locked_on_max=([\\w+-.]+)"
-        "\\s+pitch_locked_on_max=([\\w+-.]+)$");
     static const DECLARE_REGEX(follow_node_reg,
         "^\\s*follow_node"
         "\\s+follower=([\\w+-.]+)"
@@ -2576,39 +2563,6 @@ void LoadScene::operator()(
                     safe_stof(match[4].str()),
                     safe_stof(match[5].str())});
             linker.link_absolute_movable(*follower_node, follower);
-        } else if (Mlib::re::regex_match(line, match, yaw_pitch_look_at_nodes_reg)) {
-            auto yaw_node = scene.get_node(match[1].str());
-            auto pitch_node = scene.get_node(match[2].str());
-            auto follower_node = scene.get_node(match[3].str());
-            auto follower_rb = dynamic_cast<RigidBodyVehicle*>(follower_node->get_absolute_movable());
-            if (follower_rb == nullptr) {
-                throw std::runtime_error("Follower movable is not a rigid body");
-            }
-            SceneNode* followed_node = nullptr;
-            RigidBodyVehicle* followed_rb = nullptr;
-            if (!match[4].str().empty()) {
-                followed_node = scene.get_node(match[4].str());
-                followed_rb = dynamic_cast<RigidBodyVehicle*>(followed_node->get_absolute_movable());
-                if (followed_rb == nullptr) {
-                    throw std::runtime_error("Followed movable is not a rigid body");
-                }
-            }
-            auto follower = std::make_shared<YawPitchLookAtNodes>(
-                physics_engine.advance_times_,
-                *follower_rb,
-                safe_stof(match[5].str()),
-                safe_stof(match[6].str()),
-                safe_stof(match[7].str()),
-                safe_stof(match[8].str()) / 180.f * float(M_PI),
-                safe_stof(match[9].str()) / 180.f * float(M_PI),
-                safe_stof(match[10].str()) / 180.f * float(M_PI),
-                safe_stof(match[11].str()) / 180.f * float(M_PI),
-                safe_stof(match[12].str()) / 180.f * float(M_PI),
-                safe_stof(match[13].str()) / 180.f * float(M_PI),
-                scene_config.physics_engine_config);
-            follower->set_followed(followed_node, followed_rb);
-            linker.link_relative_movable(*yaw_node, follower);
-            linker.link_relative_movable(*pitch_node, follower->pitch_look_at_node());
         } else if (Mlib::re::regex_match(line, match, follow_node_reg)) {
             auto follower_node = scene.get_node(match[1].str());
             auto followed_node = scene.get_node(match[2].str());
