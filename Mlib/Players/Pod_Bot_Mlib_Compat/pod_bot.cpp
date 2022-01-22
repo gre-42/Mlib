@@ -152,11 +152,11 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
     }
     Vector intersection_point;
     Vector intersection_normal;
-    const Mlib::RigidBodyIntegrator* excluded0 = (pentIgnore == nullptr)
+    const Mlib::RigidBodyVehicle* excluded0 = (pentIgnore == nullptr)
         ? nullptr
-        : &Mlib::pod_bot_edict_to_player(pentIgnore).rigid_body().rbi_;
-    const Mlib::RigidBodyIntegrator* excluded1 = nullptr;
-    const Mlib::RigidBodyIntegrator* seen_object = nullptr;
+        : &Mlib::pod_bot_edict_to_player(pentIgnore).rigid_body();
+    const Mlib::RigidBodyVehicle* excluded1 = nullptr;
+    const Mlib::RigidBodyVehicle* seen_object = nullptr;
     if (g_collision_query->can_see(
         Mlib::p_q2o(vecSource),
         Mlib::p_q2o(vecDest),
@@ -179,7 +179,7 @@ void TRACE_LINE(const Vector& vecSource, const Vector& vecDest, int ignored, con
             tr->pHit = g_solid_edict;
         } else {
             tr->fStartSolid = 0.f;
-            tr->pHit = Mlib::get_edict(Mlib::get_player_name(*seen_object));
+            tr->pHit = Mlib::get_edict(Mlib::get_player_name(seen_object->rbi_));
         }
         tr->vecEndPos = Mlib::p_o2q(*intersection_point);
         tr->vecPlaneNormal = Mlib::u_o2q(*intersection_normal);

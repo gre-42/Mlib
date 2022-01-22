@@ -6,16 +6,14 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Physics_Engine_Config.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Scene_Node.hpp>
 
 using namespace Mlib;
 
 YawPitchLookAtNodes::YawPitchLookAtNodes(
-    SceneNode* followed_node,
     AdvanceTimes& advance_times,
-    const RigidBodyIntegrator& follower,
-    const RigidBodyIntegrator* followed,
+    const RigidBodyVehicle& follower,
     float bullet_start_offset,
     float bullet_velocity,
     float gravity,
@@ -26,19 +24,17 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     float yaw_locked_on_max,
     float pitch_locked_on_max,
     const PhysicsEngineConfig& cfg)
-: yaw_{NAN},
-  dyaw_max_{dyaw_max},
-  yaw_locked_on_max_{yaw_locked_on_max},
-  yaw_target_locked_on_{false},
-  followed_node_{nullptr},
-  advance_times_{advance_times},
-  follower_{follower},
-  followed_{nullptr},
-  pitch_look_at_node_{std::make_shared<PitchLookAtNode>(
-      followed_node,
+: yaw_{ NAN },
+  dyaw_max_{ dyaw_max },
+  yaw_locked_on_max_{ yaw_locked_on_max },
+  yaw_target_locked_on_{ false },
+  followed_node_{ nullptr },
+  advance_times_{ advance_times },
+  follower_{ follower },
+  followed_{ nullptr },
+  pitch_look_at_node_{ std::make_shared<PitchLookAtNode>(
       advance_times,
       follower,
-      followed,
       bullet_start_offset,
       bullet_velocity,
       gravity,
@@ -46,14 +42,12 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
       pitch_max,
       dpitch_max,
       pitch_locked_on_max,
-      cfg)},
-  bullet_start_offset_{bullet_start_offset},
-  bullet_velocity_{bullet_velocity},
-  gravity_{gravity},
-  cfg_{cfg}
-{
-    set_followed(followed_node, followed);
-}
+      cfg) },
+  bullet_start_offset_{ bullet_start_offset },
+  bullet_velocity_{ bullet_velocity },
+  gravity_{ gravity },
+  cfg_{ cfg }
+{}
 
 YawPitchLookAtNodes::~YawPitchLookAtNodes() {
     if (followed_node_ != nullptr) {
@@ -82,13 +76,13 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     auto offset = fixed_zeros<float, 3>();
     float t = 0;
     for (size_t i = 0; i < 10; ++i) {
-        RigidBodyIntegrator rbi = *followed_;
+        RigidBodyIntegrator rbi = followed_->rbi_;
         rbi.a_ = 0;
-        rbi.rbp_.v_ -= follower_.rbp_.v_;
+        rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         Aim aim{
             absolute_model_matrix.t(),
-            rbi.abs_position(),
+            rbi.rbp_.transform_to_world_coordinates(followed_->target_),
             bullet_start_offset_,
             bullet_velocity_,
             gravity_,
@@ -100,11 +94,12 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
         t = aim.time;
         offset(1) = aim.aim_offset;
     }
-    RigidBodyIntegrator rbi = *followed_;
+    RigidBodyIntegrator rbi = followed_->rbi_;
     rbi.a_ = 0;
-    rbi.rbp_.v_ -= follower_.rbp_.v_;
+    rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
     rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
-    FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(offset + rbi.abs_position());
+    FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(
+        offset + rbi.rbp_.transform_to_world_coordinates(followed_->target_));
     float dyaw = z_to_yaw(-p);
     increment_yaw(dyaw);
     yaw_target_locked_on_ = (std::abs(dyaw) < yaw_locked_on_max_);
@@ -125,7 +120,10 @@ TransformationMatrix<float, 3> YawPitchLookAtNodes::get_new_relative_model_matri
         relative_position_};
 }
 
-void YawPitchLookAtNodes::set_followed(SceneNode* followed_node, const RigidBodyIntegrator* followed) {
+void YawPitchLookAtNodes::set_followed(
+    SceneNode* followed_node,
+    const RigidBodyVehicle* followed)
+{
     assert_true(!followed_node == !followed);
     if (followed_node_ != nullptr) {
         followed_node_->remove_destruction_observer(this);
@@ -135,7 +133,9 @@ void YawPitchLookAtNodes::set_followed(SceneNode* followed_node, const RigidBody
     if (followed_node != nullptr) {
         followed_node->add_destruction_observer(this);
     }
-    pitch_look_at_node_->set_followed(followed_node, followed);
+    pitch_look_at_node_->set_followed(
+        followed_node,
+        followed);
 }
 
 bool YawPitchLookAtNodes::target_locked_on() const {

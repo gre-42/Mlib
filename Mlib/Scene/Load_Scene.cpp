@@ -91,6 +91,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
@@ -162,6 +163,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateRotor::user_function);
     user_functions_.push_back(CreateRigidCuboid::user_function);
     user_functions_.push_back(CreateRigidDisk::user_function);
+    user_functions_.push_back(SetRigidBodyTarget::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -2592,10 +2594,8 @@ void LoadScene::operator()(
                 }
             }
             auto follower = std::make_shared<YawPitchLookAtNodes>(
-                followed_node,
                 physics_engine.advance_times_,
-                follower_rb->rbi_,
-                followed_rb == nullptr ? nullptr : &followed_rb->rbi_,
+                *follower_rb,
                 safe_stof(match[5].str()),
                 safe_stof(match[6].str()),
                 safe_stof(match[7].str()),
@@ -2606,6 +2606,7 @@ void LoadScene::operator()(
                 safe_stof(match[12].str()) / 180.f * float(M_PI),
                 safe_stof(match[13].str()) / 180.f * float(M_PI),
                 scene_config.physics_engine_config);
+            follower->set_followed(followed_node, followed_rb);
             linker.link_relative_movable(*yaw_node, follower);
             linker.link_relative_movable(*pitch_node, follower->pitch_look_at_node());
         } else if (Mlib::re::regex_match(line, match, follow_node_reg)) {

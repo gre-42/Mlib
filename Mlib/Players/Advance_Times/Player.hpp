@@ -15,7 +15,6 @@
 namespace Mlib {
 
 class RigidBodyVehicle;
-struct RigidBodyIntegrator;
 class Players;
 class SceneNode;
 class Scene;
@@ -118,7 +117,7 @@ public:
     float car_health() const;
     GameMode game_mode() const;
     bool can_see(
-        const RigidBodyIntegrator& rbi,
+        const RigidBodyVehicle& rbi,
         bool only_terrain = false,
         float height_offset = 0,
         float time_offset = 0) const;
@@ -183,7 +182,7 @@ private:
     SceneNode* scene_node_;
     SceneNode* target_scene_node_;
     RigidBodyVehicle* rb_;
-    RigidBodyIntegrator* target_rbi_;
+    RigidBodyVehicle* target_rb_;
     YawPitchLookAtNodes* ypln_;
     SceneNode* gun_node_;
     float surface_power_forward_;

@@ -43,7 +43,7 @@ Player::Player(
   scene_node_{ nullptr },
   target_scene_node_{ nullptr },
   rb_{ nullptr },
-  target_rbi_{ nullptr },
+  target_rb_{ nullptr },
   ypln_{ nullptr },
   gun_node_{ nullptr },
   surface_power_forward_{ NAN },
@@ -245,7 +245,7 @@ GameMode Player::game_mode() const {
 }
 
 bool Player::can_see(
-    const RigidBodyIntegrator& rbi,
+    const RigidBodyVehicle& rb,
     bool only_terrain,
     float height_offset,
     float time_offset) const
@@ -255,8 +255,8 @@ bool Player::can_see(
         throw std::runtime_error("Player::can_see requires rb");
     }
     return collision_query_.can_see(
-        rb_->rbi_,
-        rbi,
+        *rb_,
+        rb,
         only_terrain,
         height_offset,
         time_offset);
@@ -273,7 +273,7 @@ bool Player::can_see(
         throw std::runtime_error("Player::can_see requires rb");
     }
     return collision_query_.can_see(
-        rb_->rbi_,
+        *rb_,
         pos,
         only_terrain,
         height_offset,
@@ -294,8 +294,8 @@ bool Player::can_see(
         throw std::runtime_error("Player::can_see requires target rb");
     }
     return collision_query_.can_see(
-        rb_->rbi_,
-        player.rb_->rbi_,
+        *rb_,
+        *player.rb_,
         only_terrain,
         height_offset,
         time_offset);
@@ -337,7 +337,7 @@ void Player::notify_destroyed(void* destroyed_object) {
     }
     if (destroyed_object == target_scene_node_) {
         target_scene_node_ = nullptr;
-        target_rbi_ = nullptr;
+        target_rb_ = nullptr;
     }
 }
 
@@ -354,7 +354,7 @@ void Player::increment_external_forces(const std::list<std::shared_ptr<RigidBody
             // std::cerr << "Game mode pod_bot_npc not yet implemented" << std::endl;
         } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
             if (ramming()) {
-                auto tpos = target_rbi_->abs_position();
+                auto tpos = target_rb_->abs_target();
                 set_waypoint(tpos);
             } else {
                 if (has_waypoints()) {
@@ -603,15 +603,15 @@ void Player::aim_and_shoot() {
     if (game_mode_ == GameMode::POD_BOT_NPC) {
         return;
     }
-    assert_true(!target_scene_node_ == !target_rbi_);
-    if (has_rigid_body() && ((target_rbi_ == nullptr) || !can_see(*target_rbi_))) {
+    assert_true(!target_scene_node_ == !target_rb_);
+    if (has_rigid_body() && ((target_rb_ == nullptr) || !can_see(*target_rb_))) {
         select_opponent();
     }
     if (ypln_ == nullptr) {
         return;
     }
     assert_true(scene_node_ == nullptr || scene_node_ != target_scene_node_);
-    ypln_->set_followed(target_scene_node_, target_rbi_);
+    ypln_->set_followed(target_scene_node_, target_rb_);
     if (gun_node_ == nullptr) {
         return;
     }
@@ -701,7 +701,7 @@ void Player::select_next_waypoint() {
 
 bool Player::ramming() const {
     delete_node_mutex_.notify_reading();
-    return (game_mode_ == GameMode::RAMMING) && (target_rbi_ != nullptr);
+    return (game_mode_ == GameMode::RAMMING) && (target_rb_ != nullptr);
 }
 
 void Player::move_to_waypoint() {
@@ -748,7 +748,7 @@ void Player::move_to_waypoint() {
             continue;
         }
         if (ramming() &&
-            (&p.second->rb_->rbi_ == target_rbi_))
+            (p.second->rb_ == target_rb_))
         {
             continue;
         }
@@ -835,7 +835,7 @@ void Player::select_opponent() {
     if (target_scene_node_ != nullptr) {
         target_scene_node_->remove_destruction_observer(this);
         target_scene_node_ = nullptr;
-        target_rbi_ = nullptr;
+        target_rb_ = nullptr;
     }
     for (const auto& p : players_.players()) {
         if (p.second->team_ != team_) {
@@ -843,9 +843,9 @@ void Player::select_opponent() {
             if (!p.second->has_rigid_body()) {
                 continue;
             }
-            if (can_see(p.second->rb_->rbi_)) {
+            if (can_see(*p.second->rb_)) {
                 target_scene_node_ = p.second->scene_node_;
-                target_rbi_ = &p.second->rb_->rbi_;
+                target_rb_ = p.second->rb_;
                 target_scene_node_->add_destruction_observer(this);
                 break;
             }

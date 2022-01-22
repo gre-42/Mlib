@@ -72,6 +72,7 @@ public:
     float mass() const;
     FixedArray<float, 3> abs_com() const;
     FixedArray<float, 3, 3> abs_I() const;
+    FixedArray<float, 3> abs_target() const;
     VectorAtPosition<float, 3> abs_F(const VectorAtPosition<float, 3>& F) const;
     FixedArray<float, 3> velocity_at_position(const FixedArray<float, 3>& position) const;
     void set_max_velocity(float max_velocity);
@@ -128,6 +129,8 @@ public:
     std::map<std::string, RigidBodyEngine> engines_;
     // std::map<size_t, bool> tire_sliding_;
     FixedArray<float, 3> tires_z_;
+
+    FixedArray<float, 3> target_;
 
     RigidBodyIntegrator rbi_;
     std::list<std::shared_ptr<CollisionObserver>> collision_observers_;

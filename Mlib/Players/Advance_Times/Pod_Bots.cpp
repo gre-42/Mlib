@@ -101,20 +101,20 @@ void PodBots::advance_time(float dt) {
         bot_t& bot = bots[player_indices[bot_rel_index]];
         client_t& client = clients[player_indices[bot_rel_index]];
         Player& player = pod_bot_edict_to_player(bot.pEdict);
-        const RigidBodyPulses& rbp = player.rigid_body().rbi_.rbp_;
-        bot.pEdict->v.origin = p_o2q(rbp.abs_position());
-        bot.pEdict->v.angles = UTIL_VecToAngles(p_o2q(-rbp.abs_z()));
+        const RigidBodyVehicle& rb = player.rigid_body();
+        bot.pEdict->v.origin = p_o2q(rb.abs_target());
+        bot.pEdict->v.angles = UTIL_VecToAngles(p_o2q(-rb.rbi_.rbp_.abs_z()));
         bot.pEdict->v.v_angle = UTIL_VecToAngles(p_o2q(player.gun_direction()));
         bot.pEdict->v.absmin = bot.pEdict->v.origin + ::Vector{ -0.5f, -0.5f, -1.f } * s_o2q;
         bot.pEdict->v.size = ::Vector{ 1.f, 1.f, 1.8f } * s_o2q;
-        bot.pEdict->v.velocity = p_o2q(rbp.v_);
+        bot.pEdict->v.velocity = p_o2q(rb.rbi_.rbp_.v_);
         bot.pEdict->v.view_ofs = VIEW_OFS;
         bot.pEdict->v.punchangle = player.punch_angle() * 180.f / float{ M_PI };
         bot.pEdict->v.maxspeed = 100.f;
         bot.pEdict->v.fov = 130.f;
         bot.pEdict->v.light_level = 100;
         bot.pEdict->v.health = player.rigid_body().damageable_->health();
-        if (sum(squared(rbp.v_)) > 1.f) {
+        if (sum(squared(rb.rbi_.rbp_.v_)) > 1.f) {
             bot.pEdict->v.movetype = MOVETYPE_WALK;
         } else {
             bot.pEdict->v.movetype = MOVETYPE_NONE;

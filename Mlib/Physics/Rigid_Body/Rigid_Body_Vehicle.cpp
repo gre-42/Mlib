@@ -30,7 +30,8 @@ RigidBodyVehicle::RigidBodyVehicle(
   power_{ NAN },
   energy_old_{ NAN },
 #endif
-  tires_z_{0.f, 0.f, -1.f },
+  tires_z_{ 0.f, 0.f, -1.f },
+  target_{ 0.f, 0.f, 0.f },
   rbi_{ rbi },
   name_{ name },
   damageable_{ nullptr },
@@ -225,6 +226,10 @@ FixedArray<float, 3> RigidBodyVehicle::abs_com() const {
 
 FixedArray<float, 3, 3> RigidBodyVehicle::abs_I() const {
     return rbi_.abs_I();
+}
+
+FixedArray<float, 3> RigidBodyVehicle::abs_target() const {
+    return rbi_.rbp_.transform_to_world_coordinates(target_);
 }
 
 VectorAtPosition<float, 3> RigidBodyVehicle::abs_F(const VectorAtPosition<float, 3>& F) const {

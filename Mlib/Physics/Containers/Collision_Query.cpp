@@ -13,12 +13,12 @@ CollisionQuery::CollisionQuery(PhysicsEngine& physics_engine)
 bool CollisionQuery::can_see(
     const FixedArray<float, 3>& watcher,
     const FixedArray<float, 3>& watched,
-    const RigidBodyIntegrator* excluded0,
-    const RigidBodyIntegrator* excluded1,
+    const RigidBodyVehicle* excluded0,
+    const RigidBodyVehicle* excluded1,
     bool only_terrain,
     FixedArray<float, 3>* intersection_point,
     FixedArray<float, 3>* intersection_normal,
-    const RigidBodyIntegrator** seen_object)
+    const RigidBodyVehicle** seen_object)
 {
     FixedArray<float, 3> start = watcher;
     FixedArray<float, 3> dir = watched - start;
@@ -40,8 +40,8 @@ bool CollisionQuery::can_see(
         BoundingSphere<float, 3> bs{ l };
         if (!only_terrain) {
             for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
-                if (&o0.rigid_body->rbi_ == excluded0 ||
-                    &o0.rigid_body->rbi_ == excluded1)
+                if (o0.rigid_body.get() == excluded0 ||
+                    o0.rigid_body.get() == excluded1)
                 {
                     continue;
                 }
@@ -74,7 +74,7 @@ bool CollisionQuery::can_see(
                                     triangle_min = &t0.triangle;
                                 }
                                 if (seen_object != nullptr) {
-                                    *seen_object = &o0.rigid_body->rbi_;
+                                    *seen_object = o0.rigid_body.get();
                                 }
                             }
                             if ((intersection_point == nullptr) &&
@@ -134,24 +134,24 @@ bool CollisionQuery::can_see(
 }
 
 bool CollisionQuery::can_see(
-    const RigidBodyIntegrator& watcher,
-    const RigidBodyIntegrator& watched,
+    const RigidBodyVehicle& watcher,
+    const RigidBodyVehicle& watched,
     bool only_terrain,
     float height_offset,
     float time_offset,
     FixedArray<float, 3>* intersection_point,
     FixedArray<float, 3>* intersection_normal,
-    const RigidBodyIntegrator** seen_object)
+    const RigidBodyVehicle** seen_object)
 {
     FixedArray<float, 3> d = {0.f, height_offset, 0.f};
     if (time_offset != 0) {
-        RigidBodyPulses watcher_rbp = watcher.rbp_;
-        RigidBodyPulses watched_rbp = watched.rbp_;
+        RigidBodyPulses watcher_rbp = watcher.rbi_.rbp_;
+        RigidBodyPulses watched_rbp = watched.rbi_.rbp_;
         watcher_rbp.advance_time(time_offset);
         watched_rbp.advance_time(time_offset);
         return can_see(
-            watcher_rbp.abs_position() + d,
-            watched_rbp.abs_position() + d,
+            watcher_rbp.transform_to_world_coordinates(watcher.target_) + d,
+            watched_rbp.transform_to_world_coordinates(watched.target_) + d,
             &watcher,
             &watched,
             only_terrain,
@@ -160,8 +160,8 @@ bool CollisionQuery::can_see(
             seen_object);
     } else {
         return can_see(
-            watcher.abs_position() + d,
-            watched.abs_position() + d,
+            watcher.abs_target() + d,
+            watched.abs_target() + d,
             &watcher,
             &watched,
             only_terrain,
@@ -172,21 +172,21 @@ bool CollisionQuery::can_see(
 }
 
 bool CollisionQuery::can_see(
-    const RigidBodyIntegrator& watcher,
+    const RigidBodyVehicle& watcher,
     const FixedArray<float, 3>& watched,
     bool only_terrain,
     float height_offset,
     float time_offset,
     FixedArray<float, 3>* intersection_point,
     FixedArray<float, 3>* intersection_normal,
-    const RigidBodyIntegrator** seen_object)
+    const RigidBodyVehicle** seen_object)
 {
     FixedArray<float, 3> d = {0.f, height_offset, 0.f };
     if (time_offset != 0) {
-        RigidBodyPulses rbp = watcher.rbp_;
+        RigidBodyPulses rbp = watcher.rbi_.rbp_;
         rbp.advance_time(time_offset);
         return can_see(
-            rbp.abs_position() + d,
+            rbp.transform_to_world_coordinates(watcher.target_) + d,
             watched + d,
             &watcher,
             nullptr,
@@ -196,7 +196,7 @@ bool CollisionQuery::can_see(
             seen_object);
     } else {
         return can_see(
-            watcher.abs_position() + d,
+            watcher.abs_target() + d,
             watched + d,
             &watcher,
             nullptr,

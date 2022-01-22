@@ -8,15 +8,13 @@ namespace Mlib {
 
 class AdvanceTimes;
 struct PhysicsEngineConfig;
-struct RigidBodyIntegrator;
+struct RigidBodyVehicle;
 
 class PitchLookAtNode: public DestructionObserver, public RelativeMovable, public AdvanceTime {
 public:
     PitchLookAtNode(
-        SceneNode* followed_node,
         AdvanceTimes& advance_times,
-        const RigidBodyIntegrator& follower,        
-        const RigidBodyIntegrator* followed,
+        const RigidBodyVehicle& follower,        
         float bullet_start_offset,
         float bullet_velocity,
         float gravity,
@@ -35,7 +33,9 @@ public:
     void increment_pitch(float dpitch);
     void set_pitch(float pitch);
 
-    void set_followed(SceneNode* followed_node, const RigidBodyIntegrator* followed);
+    void set_followed(
+        SceneNode* followed_node,
+        const RigidBodyVehicle* followed);
 
     bool target_locked_on() const;
 
@@ -49,8 +49,8 @@ private:
     FixedArray<float, 3> relative_position_;
     SceneNode* followed_node_;
     AdvanceTimes& advance_times_;
-    const RigidBodyIntegrator& follower_;
-    const RigidBodyIntegrator* followed_;
+    const RigidBodyVehicle& follower_;
+    const RigidBodyVehicle* followed_;
     float bullet_start_offset_;
     float bullet_velocity_;
     float gravity_;
