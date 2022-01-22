@@ -56,7 +56,8 @@ for d in $SOURCE_DIRS; do
             echo "Use BuildDebug.bat for building"
         else
             cmake -G Ninja ${CMAKE_OPTIONS-} -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../
-            ninja -v
+            cmake --build . --verbose
+            # ninja -v
         fi
         cd -
     else
