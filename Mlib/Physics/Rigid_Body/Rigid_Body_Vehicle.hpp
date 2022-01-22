@@ -80,6 +80,9 @@ public:
     void set_rotor_angle_x(size_t id, float angle_x);
     void set_rotor_angle_y(size_t id, float angle_y);
     void set_rotor_angle_z(size_t id, float angle_z);
+    void set_rotor_movement_x(size_t id, float movement_x);
+    void set_rotor_movement_y(size_t id, float movement_y);
+    void set_rotor_movement_z(size_t id, float movement_z);
     FixedArray<float, 3, 3> get_abs_tire_rotation_matrix(size_t id) const;
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;

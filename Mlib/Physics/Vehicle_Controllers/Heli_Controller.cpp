@@ -45,11 +45,11 @@ void HeliController::apply() {
             std::isnan(target_height_)
                 ? 0.f
                 : std::min(0.f, height_pid_(rb_->rbi_.abs_position()(1) - target_height_)));
-        rb_->set_rotor_angle_x(main_rotor_id_, std::isnan(surface_power_)
+        rb_->set_rotor_movement_y(main_rotor_id_, std::isnan(surface_power_)
             ? 0.f
-            : -angle_multipliers_(PITCH) * sign(surface_power_));
+            : angle_multipliers_(PITCH) * sign(surface_power_));
         float ang = signed_min(steer_angle_, 45 * float(M_PI / 180.f));
-        rb_->set_rotor_angle_y(main_rotor_id_, angle_multipliers_(ROLL) * ang);
+        rb_->set_rotor_movement_x(main_rotor_id_, angle_multipliers_(ROLL) * ang);
         rb_->set_surface_power("tail_rotor", angle_multipliers_(YAW) * ang);
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {
         rb_->set_surface_power("wheels", surface_power_);  // NAN=break

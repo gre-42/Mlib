@@ -276,6 +276,18 @@ void RigidBodyVehicle::set_rotor_angle_z(size_t id, float angle_z) {
     get_rotor(id).angles(2) = angle_z;
 }
 
+void RigidBodyVehicle::set_rotor_movement_x(size_t id, float movement_x) {
+    get_rotor(id).movement(0) = movement_x;
+}
+
+void RigidBodyVehicle::set_rotor_movement_y(size_t id, float movement_y) {
+    get_rotor(id).movement(1) = movement_y;
+}
+
+void RigidBodyVehicle::set_rotor_movement_z(size_t id, float movement_z) {
+    get_rotor(id).movement(2) = movement_z;
+}
+
 FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {
     if (auto t = tires_.find(id); t != tires_.end()) {
         return dot2d(rbi_.rbp_.rotation_, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y));
