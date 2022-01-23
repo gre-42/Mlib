@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
+#include <functional>
 
 namespace Mlib {
 
@@ -22,6 +23,7 @@ public:
         float pitch_max,
         float dpitch_max,
         float locked_on_max,
+        const std::function<float()>& velocity_estimation_error,
         const PhysicsEngineConfig& cfg);
     ~PitchLookAtNode();
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, 3>& relative_model_matrix) override;
@@ -54,6 +56,7 @@ private:
     float bullet_start_offset_;
     float bullet_velocity_;
     float gravity_;
+    std::function<float()> velocity_estimation_error_;
     const PhysicsEngineConfig& cfg_;
 };
 

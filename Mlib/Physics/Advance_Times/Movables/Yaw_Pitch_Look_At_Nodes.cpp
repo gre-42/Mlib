@@ -23,6 +23,7 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     float dpitch_max,
     float yaw_locked_on_max,
     float pitch_locked_on_max,
+    const std::function<float()>& velocity_estimation_error,
     const PhysicsEngineConfig& cfg)
 : yaw_{ NAN },
   dyaw_max_{ dyaw_max },
@@ -42,10 +43,12 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
       pitch_max,
       dpitch_max,
       pitch_locked_on_max,
+      velocity_estimation_error,
       cfg) },
   bullet_start_offset_{ bullet_start_offset },
   bullet_velocity_{ bullet_velocity },
   gravity_{ gravity },
+  velocity_estimation_error_{ velocity_estimation_error },
   cfg_{ cfg }
 {}
 
@@ -73,11 +76,13 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     if (followed_ == nullptr) {
         return;
     }
+    float verr = velocity_estimation_error_();
     auto offset = fixed_zeros<float, 3>();
     float t = 0;
     for (size_t i = 0; i < 10; ++i) {
         RigidBodyIntegrator rbi = followed_->rbi_;
         rbi.a_ = 0;
+        rbi.rbp_.v_ *= (1 + verr);
         rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         Aim aim{
@@ -96,6 +101,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     }
     RigidBodyIntegrator rbi = followed_->rbi_;
     rbi.a_ = 0;
+    rbi.rbp_.v_ *= (1 + verr);
     rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
     rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
     FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(

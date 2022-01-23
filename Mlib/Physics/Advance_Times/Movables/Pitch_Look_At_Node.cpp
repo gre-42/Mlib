@@ -20,6 +20,7 @@ PitchLookAtNode::PitchLookAtNode(
     float pitch_max,
     float dpitch_max,
     float locked_on_max,
+    const std::function<float()>& velocity_estimation_error,
     const PhysicsEngineConfig& cfg)
 : pitch_{ NAN },
   pitch_min_{ pitch_min },
@@ -34,6 +35,7 @@ PitchLookAtNode::PitchLookAtNode(
   bullet_start_offset_{ bullet_start_offset },
   bullet_velocity_{ bullet_velocity },
   gravity_{ gravity },
+  velocity_estimation_error_{ velocity_estimation_error },
   cfg_{ cfg }
 {}
 
@@ -61,11 +63,13 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
     if (followed_ == nullptr) {
         return;
     }
+    float verr = velocity_estimation_error_();
     auto offset = fixed_zeros<float, 3>();
     float t = 0;
     for (size_t i = 0; i < 10; ++i) {
         RigidBodyIntegrator rbi = followed_->rbi_;
         rbi.a_ = 0;
+        rbi.rbp_.v_ *= (1 + verr);
         rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         Aim aim{
@@ -84,6 +88,7 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
     }
     RigidBodyIntegrator rbi = followed_->rbi_;
     rbi.a_ = 0;
+    rbi.rbp_.v_ *= (1 + verr);
     rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
     rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
     FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(

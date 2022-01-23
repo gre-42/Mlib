@@ -7,6 +7,9 @@
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
+#include <Mlib/Signal/Exponential_Smoother.hpp>
+#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Random_Process.hpp>
 
 using namespace Mlib;
 
@@ -27,6 +30,8 @@ DECLARE_OPTION(PITCH_MAX);
 DECLARE_OPTION(DPITCH_MAX);
 DECLARE_OPTION(YAW_LOCKED_ON_MAX);
 DECLARE_OPTION(PITCH_LOCKED_ON_MAX);
+DECLARE_OPTION(VERROR_STD);
+DECLARE_OPTION(VERROR_ALPHA);
 
 LoadSceneInstanceFunction::UserFunction CreateYawPitchLookatNodes::user_function = [](
     const std::string& line,
@@ -51,7 +56,9 @@ LoadSceneInstanceFunction::UserFunction CreateYawPitchLookatNodes::user_function
         "\\s+pitch_max=([\\w+-.]+)"
         "\\s+dpitch_max=([\\w+-.]+)"
         "\\s+yaw_locked_on_max=([\\w+-.]+)"
-        "\\s+pitch_locked_on_max=([\\w+-.]+)$");
+        "\\s+pitch_locked_on_max=([\\w+-.]+)"
+        "\\s+verror_std=([\\w+-.]+)"
+        "\\s+verror_alpha=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(line, match, regex)) {
         CreateYawPitchLookatNodes(renderable_scene()).execute(
@@ -94,6 +101,16 @@ void CreateYawPitchLookatNodes::execute(
             throw std::runtime_error("Followed movable is not a rigid body");
         }
     }
+    float verror_std = safe_stof(match[VERROR_STD].str());
+    float verror_alpha = safe_stof(match[VERROR_ALPHA].str());
+    // octave> a=0.002; a/sum((a * (1 - a).^(0 : 100000)).^2)
+    // ans = 1.9980
+    // octave> a=0.004; a/sum((a * (1 - a).^(0 : 100000)).^2)
+    // ans = 1.9960
+    // => var = a / 2, std = sqrt(a / 2)
+    auto rp = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
+        NormalRandomNumberGenerator<float>{ 0, 0.f, verror_std * std::sqrt(2.f / verror_alpha) },
+        ExponentialSmoother<float>{ verror_alpha, verror_std } };
     auto follower = std::make_shared<YawPitchLookAtNodes>(
         physics_engine.advance_times_,
         *follower_rb,
@@ -106,6 +123,7 @@ void CreateYawPitchLookatNodes::execute(
         safe_stof(match[DPITCH_MAX].str()) / 180.f * float(M_PI),
         safe_stof(match[YAW_LOCKED_ON_MAX].str()) / 180.f * float(M_PI),
         safe_stof(match[PITCH_LOCKED_ON_MAX].str()) / 180.f * float(M_PI),
+        [rp]()mutable{return rp();},
         scene_config.physics_engine_config);
     follower->set_followed(followed_node, followed_rb);
     linker.link_relative_movable(*yaw_node, follower);
