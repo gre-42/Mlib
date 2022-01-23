@@ -82,8 +82,8 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     for (size_t i = 0; i < 10; ++i) {
         RigidBodyIntegrator rbi = followed_->rbi_;
         rbi.a_ = 0;
-        rbi.rbp_.v_ *= (1 + verr);
         rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
+        rbi.rbp_.v_ *= (1 + verr);
         rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
         Aim aim{
             absolute_model_matrix.t(),
@@ -101,8 +101,8 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     }
     RigidBodyIntegrator rbi = followed_->rbi_;
     rbi.a_ = 0;
-    rbi.rbp_.v_ *= (1 + verr);
     rbi.rbp_.v_ -= follower_.rbi_.rbp_.v_;
+    rbi.rbp_.v_ *= (1 + verr);
     rbi.advance_time(t, cfg_.min_acceleration, cfg_.min_velocity, cfg_.min_angular_velocity);
     FixedArray<float, 3> p = absolute_model_matrix.inverted_scaled().transform(
         offset + rbi.rbp_.transform_to_world_coordinates(followed_->target_));
