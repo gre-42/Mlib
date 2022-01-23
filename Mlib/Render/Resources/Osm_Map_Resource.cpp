@@ -24,6 +24,7 @@
 #include <Mlib/Render/Resources/Osm_Map_Resource/Calculate_Waypoint_Adjacency.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Delete_Backfacing_Triangles.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Building_Walls.hpp>
+#include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Ceilings.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Render/Resources/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
@@ -499,21 +500,7 @@ OsmMapResource::OsmMapResource(
     }
     if (config.with_ceilings) {
         LOG_INFO("draw_ceilings");
-        draw_buildings_ceiling_or_ground(
-            tls_buildings,
-            Material{
-                .textures = {{.texture_descriptor = {.color = config.ceiling_texture}}},
-                .occluder_type = OccluderType::BLACK,
-                .aggregate_mode = AggregateMode::ONCE,
-                .ambience = {1.f, 1.f, 1.f},
-                .specularity = {0.f, 0.f, 0.f},
-                .draw_distance_noperations = 1000}.compute_color_mode(),
-            buildings,
-            nodes,
-            config.scale,
-            config.uv_scale_ceiling,
-            config.max_wall_width,
-            DrawBuildingPartType::CEILING);
+        draw_ceilings(tls_buildings, config, buildings, nodes);
     }
     if (config.remove_backfacing_triangles) {
         LOG_INFO("remove_backfacing_triangles");
