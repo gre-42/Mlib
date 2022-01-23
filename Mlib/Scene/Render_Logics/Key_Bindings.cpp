@@ -9,10 +9,12 @@
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Vehicle_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Vehicle_Controller_Key_Binding.hpp>
@@ -46,6 +48,7 @@ KeyBindings::~KeyBindings() {
     for (auto& b : vehicle_controller_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : weapon_inventory_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : gun_key_bindings_) { nodes.insert(b.node); }
+    for (auto& b : player_key_bindings_) { nodes.insert(b.node); }
     for (auto& node : nodes) {
         node->remove_destruction_observer(this);
     }
@@ -59,6 +62,7 @@ void KeyBindings::notify_destroyed(void* destroyed_object) {
     vehicle_controller_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     weapon_inventory_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     gun_key_bindings_.remove_if([this, destroyed_object](const auto& b){return b.node == destroyed_object;});
+    player_key_bindings_.remove_if([this, destroyed_object](const auto& b){return b.node == destroyed_object;});
 }
 
 void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
@@ -98,6 +102,11 @@ void KeyBindings::add_weapon_inventory_key_binding(const WeaponInventoryKeyBindi
 void KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
     b.node->add_destruction_observer(this, true);
     gun_key_bindings_.push_back(b);
+}
+
+void KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    player_key_bindings_.push_back(b);
 }
 
 void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) {
@@ -157,7 +166,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                 if (rb == nullptr) {
                     throw std::runtime_error("Absolute movable is not a rigid body");
                 }
-                rb->integrate_force(rb->abs_F(k.force), cfg);
+                if (any(k.force.vector != 0.f)) {
+                    rb->integrate_force(rb->abs_F(k.force), cfg);
+                }
                 if (any(k.rotate != 0.f)) {
                     rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues1(alpha * k.rotate));
                 }
@@ -165,7 +176,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     rb->set_surface_power("main", k.car_surface_power.value());
                     rb->set_surface_power("breaks", k.car_surface_power.value());
                 }
-                rb->set_max_velocity(k.max_velocity);
+                if (k.max_velocity != INFINITY) {
+                    rb->set_max_velocity(k.max_velocity);
+                }
                 if (k.tire_id != SIZE_MAX) {
                     if (false) {
                         float a = gravity_magnitude * 1.f;
@@ -181,7 +194,9 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     rb->set_tire_angle_y(k.tire_id, alpha * float(M_PI) / 180.f * k.tire_angle_interp(v * 3.6f));
                     // rb->set_tire_accel_x(k.tire_id, alpha * sign(k.tire_angle_interp(0)));
                 }
-                rb->tires_z_ += k.tires_z;
+                if (any(k.tires_z != 0.f)) {
+                    rb->tires_z_ += k.tires_z;
+                }
             }
         }
         for (const auto& k : absolute_movable_idle_bindings_) {
@@ -315,13 +330,34 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
         }
         // Gun
         for (const auto& k : gun_key_bindings_) {
-            if (button_press_.key_down(k.base)) {
+            if (button_press_.key_down(k.base_key)) {
                 auto m = k.node->get_absolute_observer();
                 auto gun = dynamic_cast<Gun*>(m);
                 if (gun == nullptr) {
                     throw std::runtime_error("Absolute observer is not a gun");
                 }
                 gun->trigger();
+            }
+        }
+        // Player
+        for (const auto& k : player_key_bindings_) {
+            float alpha = button_press_.key_alpha(k.base_key, 0.05f);
+            if (!std::isnan(alpha) && alpha == 0) {
+                auto m = k.node->get_absolute_movable();
+                auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+                if (rb == nullptr) {
+                    throw std::runtime_error("Absolute movable is not a rigid body");
+                }
+                if (rb->driver_ == nullptr) {
+                    throw std::runtime_error("Rigid body has no driver");
+                }
+                Player* player = dynamic_cast<Player*>(rb->driver_);
+                if (player == nullptr) {
+                    throw std::runtime_error("Driver is not a player");
+                }
+                if (k.select_next_opponent) {
+                    player->select_next_opponent();
+                }
             }
         }
     }

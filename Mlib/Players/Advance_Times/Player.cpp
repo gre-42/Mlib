@@ -605,7 +605,7 @@ void Player::aim_and_shoot() {
     }
     assert_true(!target_scene_node_ == !target_rb_);
     if (has_rigid_body() && ((target_rb_ == nullptr) || !can_see(*target_rb_))) {
-        select_opponent();
+        select_next_opponent();
     }
     if (ypln_ == nullptr) {
         return;
@@ -826,26 +826,56 @@ void Player::move_to_waypoint() {
     rb_->controller().apply();
 }
 
-void Player::select_opponent() {
+void Player::select_next_opponent() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     assert_true(!scene_node_ == !rb_);
     if (!has_rigid_body()) {
         return;
     }
-    if (target_scene_node_ != nullptr) {
-        target_scene_node_->remove_destruction_observer(this);
-        target_scene_node_ = nullptr;
-        target_rb_ = nullptr;
+    if (players_.players().empty()) {
+        throw std::runtime_error("List of players is empty");
     }
+    size_t current_opponent_index = SIZE_MAX;
+    std::vector<const Player*> players_vec;
+    players_vec.reserve(players_.players().size());
     for (const auto& p : players_.players()) {
-        if (p.second->team_ != team_) {
-            assert_true(!p.second->scene_node_ == !p.second->rb_);
-            if (!p.second->has_rigid_body()) {
+        if ((target_scene_node_ != nullptr) &&
+            (target_scene_node_ == p.second->scene_node_))
+        {
+            if (current_opponent_index != SIZE_MAX) {
+                throw std::runtime_error("Found multiple players with target node");
+            }
+            current_opponent_index = players_vec.size();
+        }
+        players_vec.push_back(p.second.get());
+    }
+    size_t i = current_opponent_index;
+    while (true) {
+        if ((current_opponent_index == SIZE_MAX) &&
+            (i == players_vec.size() - 1))
+        {
+            break;
+        }
+        i = (i + 1) % players_vec.size();
+        if ((current_opponent_index != SIZE_MAX) &&
+            (i == current_opponent_index))
+        {
+            break;
+        }
+        const Player& p = *players_vec[i];
+        if (p.team_ != team_) {
+            assert_true(!p.scene_node_ == !p.rb_);
+            if (!p.has_rigid_body()) {
                 continue;
             }
-            if (can_see(*p.second->rb_)) {
-                target_scene_node_ = p.second->scene_node_;
-                target_rb_ = p.second->rb_;
+            if (can_see(*p.rb_)) {
+                if (target_scene_node_ != nullptr) {
+                    target_scene_node_->remove_destruction_observer(this);
+                    target_scene_node_ = nullptr;
+                    target_rb_ = nullptr;
+                }
+                target_scene_node_ = p.scene_node_;
+                target_rb_ = p.rb_;
                 target_scene_node_->add_destruction_observer(this);
                 break;
             }

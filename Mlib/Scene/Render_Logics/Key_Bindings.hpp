@@ -12,6 +12,7 @@ struct VehicleControllerIdleBinding;
 struct VehicleControllerKeyBinding;
 struct WeaponInventoryKeyBinding;
 struct GunKeyBinding;
+struct PlayerKeyBinding;
 class SelectedCameras;
 class ButtonPress;
 class Scene;
@@ -38,6 +39,7 @@ public:
     void add_vehicle_controller_key_binding(const VehicleControllerKeyBinding& b);
     void add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b);
     void add_gun_key_binding(const GunKeyBinding& b);
+    void add_player_key_binding(const PlayerKeyBinding& b);
 private:
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;
@@ -47,6 +49,7 @@ private:
     std::list<VehicleControllerKeyBinding> vehicle_controller_key_bindings_;
     std::list<WeaponInventoryKeyBinding> weapon_inventory_key_bindings_;
     std::list<GunKeyBinding> gun_key_bindings_;
+    std::list<PlayerKeyBinding> player_key_bindings_;
 
     ButtonPress& button_press_;
     bool print_gamepad_buttons_;

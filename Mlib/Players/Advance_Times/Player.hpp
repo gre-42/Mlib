@@ -147,16 +147,20 @@ public:
         float forwardmove,
         float sidemove);
     void trigger_gun();
+    void select_next_opponent();
 
+    // IPlayer
     virtual const std::string& name() const override;
     virtual void notify_lap_time(
         float lap_time,
         const std::list<TrackElement>& track) override;
+    // DestructionObserver
     virtual void notify_destroyed(void* destroyed_object) override;
+    // AdvanceTime
     virtual void advance_time(float dt) override;
+    // ExternalForceProvider
     virtual void increment_external_forces(const std::list<std::shared_ptr<RigidBodyVehicle>>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
 private:
-    void select_opponent();
     void aim_and_shoot();
     void move_to_waypoint();
     void select_next_waypoint();
