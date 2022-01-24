@@ -79,43 +79,51 @@ void LoadPlayers::execute(
     // macro_playback teams.create_player_and_car_for_npc CAR_NAME:_tiger_tank DECIMATE: PLAYER_NAME:npc1 TEAM:red  GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8
     //    TEAMS_WAY_POINTS_RESOURCE:TEAMS_WAY_POINTS_RESOURCE;
 
-    std::string filename = match[JSON].str();
-    json j;
-    std::ifstream f{filename};
-    if (f.fail()) {
-        throw std::runtime_error("Could not open file \"" + filename + '"');
-    }
-    f >> j;
-    if (f.fail()) {
-        throw std::runtime_error("Could not read from \"" + filename + '"');
-    }
-    for (const auto& player : j.at("players")) {
-        std::stringstream sstr;
-        std::string team = player.at("team").get<std::string>();
-        auto color = get_fixed_array<float, 3>(j.at("teams").at(team).at("style").at("color"));
-        auto controller = player.at("controller").get<std::string>();
-        sstr << "macro_playback " <<
-            j.at("library").get<std::string>() << ".create_player_and_car_for_" << controller <<
-            " DECIMATE:"
-            " PLAYER_NAME:" << player.at("name").get<std::string>() <<
-            " CAR_NAME:_" << player.at("spawned_vehicle").at("type").get<std::string>() <<
-            " TEAM:" << team <<
-            " GAME_MODE:" << j.at("game_mode").get<std::string>() <<
-            " IF_STYLE:"
-            " R:" << color(0) <<
-            " G:" << color(1) <<
-            " B:" << color(2);
-        if (player.contains("manual_aim")) {
-            sstr << " IF_MANUAL_AIM:" << 
-                (player.at("manual_aim").get<bool>() ? "" : "#");
+    try {
+        std::string filename = match[JSON].str();
+        json j;
+        std::ifstream f{filename};
+        if (f.fail()) {
+            throw std::runtime_error("Could not open file \"" + filename + '"');
         }
-        if (controller == "pc") {
-            // Do nothing
-        } else if (controller == "npc") {
-            sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
-        } else {
-            throw std::runtime_error("Unknown controller type");
+        f >> j;
+        if (f.fail()) {
+            throw std::runtime_error("Could not read from \"" + filename + '"');
         }
-        macro_line_executor(sstr.str(), local_substitutions, rsc);
+        json default_skills = j.at("default_skills");
+        for (const auto& player : j.at("players")) {
+            auto get_skill = [&default_skills, &player](const std::string& name){
+                return player.contains("skills") && player.at("skills").contains(name)
+                    ? player.at("skills").at(name)
+                    : default_skills.at(name);
+            };
+            std::stringstream sstr;
+            std::string team = player.at("team").get<std::string>();
+            auto color = get_fixed_array<float, 3>(j.at("teams").at(team).at("style").at("color"));
+            auto controller = player.at("controller").get<std::string>();
+            sstr << "macro_playback " <<
+                j.at("library").get<std::string>() << ".create_player_and_car_for_" << controller <<
+                " DECIMATE:"
+                " PLAYER_NAME:" << player.at("name").get<std::string>() <<
+                " CAR_NAME:_" << player.at("spawned_vehicle").at("type").get<std::string>() <<
+                " TEAM:" << team <<
+                " GAME_MODE:" << j.at("game_mode").get<std::string>() <<
+                " IF_STYLE:"
+                " R:" << color(0) <<
+                " G:" << color(1) <<
+                " B:" << color(2);
+            sstr << " IF_MANUAL_AIM:" << (get_skill("manual_aim").get<bool>() ? "" : "#");
+            sstr << " VERROR_STD:" << get_skill("verror_std").get<float>();
+            if (controller == "pc") {
+                // Do nothing
+            } else if (controller == "npc") {
+                sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
+            } else {
+                throw std::runtime_error("Unknown controller type");
+            }
+            macro_line_executor(sstr.str(), local_substitutions, rsc);
+        }
+    } catch (const nlohmann::detail::exception& e) {
+        throw std::runtime_error(e.what());
     }
 }
