@@ -6,8 +6,14 @@
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
-
 using namespace Mlib;
+
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(JSON);
+DECLARE_OPTION(WAY_POINTS);
 
 LoadSceneInstanceFunction::UserFunction LoadPlayers::user_function = [](
     const std::string& line,
@@ -73,7 +79,7 @@ void LoadPlayers::execute(
     // macro_playback teams.create_player_and_car_for_npc CAR_NAME:_tiger_tank DECIMATE: PLAYER_NAME:npc1 TEAM:red  GAME_MODE:racing IF_STYLE: R:1 G:0.8 B:0.8
     //    TEAMS_WAY_POINTS_RESOURCE:TEAMS_WAY_POINTS_RESOURCE;
 
-    std::string filename = match[1].str();
+    std::string filename = match[JSON].str();
     json j;
     std::ifstream f{filename};
     if (f.fail()) {
@@ -99,10 +105,14 @@ void LoadPlayers::execute(
             " R:" << color(0) <<
             " G:" << color(1) <<
             " B:" << color(2);
+        if (player.contains("manual_aim")) {
+            sstr << " IF_MANUAL_AIM:" << 
+                (player.at("manual_aim").get<bool>() ? "" : "# ");
+        }
         if (controller == "pc") {
             // Do nothing
         } else if (controller == "npc") {
-            sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[2].str();
+            sstr << " TEAMS_WAY_POINTS_RESOURCE:" << match[WAY_POINTS].str();
         } else {
             throw std::runtime_error("Unknown controller type");
         }
