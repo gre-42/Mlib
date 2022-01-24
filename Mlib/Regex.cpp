@@ -64,8 +64,8 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
     std::string new_line = "";
     // 1. Substitute expressions with and without default value, assigning default values.
     // 2. Substitute simple expressions.
-    //                                  1         2        3         4           5   6       7          8
-    static const DECLARE_REGEX(s0, "(?:(\\w+):(?:(\\w+)-)?(\\w*)(?:=(\\S*))?|(?:(-?)(\\w+))|([^-\\w]+)|(.))");
+    //                                  1         2        3         4           5      6       7          8
+    static const DECLARE_REGEX(s0, "(?:(\\w+):(?:(\\w+)-)?(\\w*)(?:=(\\S*))?|(?:([-!]?)(\\w+))|([^-!\\w]+)|(.))");
     find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
         // if (v[1].str() == "-DECIMATE") {
         //     std::cerr << "x" << std::endl;
@@ -94,12 +94,21 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
         else if (v[6].matched) {
             auto it = replacements.find(v[6].str());
             if (it != replacements.end()) {
-                new_line += it->second;
+                if (v[5] == "!") {
+                    if (it->second == "") {
+                        new_line += "#";
+                    } else if (it->second != "#") {
+                        throw std::runtime_error("Could not negate \"" + it->second + '"');
+                    }
+                } else {
+                    new_line += it->second;
+                }
             }
             else {
                 new_line += v[5].str() + v[6].str();
             }
         }
+        // This group is a performance optimization to avoid the single-character case 8.
         else if (v[7].matched) {
             new_line += v[7].str();
         }

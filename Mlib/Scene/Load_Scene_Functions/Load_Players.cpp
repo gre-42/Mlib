@@ -107,7 +107,7 @@ void LoadPlayers::execute(
             " B:" << color(2);
         if (player.contains("manual_aim")) {
             sstr << " IF_MANUAL_AIM:" << 
-                (player.at("manual_aim").get<bool>() ? "" : "# ");
+                (player.at("manual_aim").get<bool>() ? "" : "#");
         }
         if (controller == "pc") {
             // Do nothing
