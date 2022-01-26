@@ -7,7 +7,7 @@ enum class SteeringType;
 
 class RigidBodyVehicleController {
 public:
-    explicit RigidBodyVehicleController(
+    RigidBodyVehicleController(
         RigidBodyVehicle* rb,
         SteeringType steering_type);
     virtual ~RigidBodyVehicleController();

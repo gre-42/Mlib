@@ -63,7 +63,7 @@ void CreateHeliController::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Heli movable is not a rigid body");
     }
-    if (rb->controller_ != nullptr) {
+    if (rb->vehicle_controller_ != nullptr) {
         throw std::runtime_error("Heli controller already set");
     }
     std::vector<size_t> tire_ids = string_to_vector(match[2].str(), safe_stoz);
@@ -77,7 +77,7 @@ void CreateHeliController::execute(
             throw std::runtime_error("Duplicate tire ID");
         }
     }
-    rb->controller_ = std::make_unique<HeliController>(
+    rb->vehicle_controller_ = std::make_unique<HeliController>(
         rb,
         tire_angles_map,
         safe_stoz(match[4].str()),            // main_rotor_id

@@ -5,13 +5,13 @@
 
 namespace Mlib {
 
-class HumanController: public RigidBodyVehicleController {
+class HumanAsCarController: public RigidBodyVehicleController {
 public:
-    explicit HumanController(
+    HumanAsCarController(
         RigidBodyVehicle* rb,
         float angular_velocity,
         float steering_multiplier);
-    virtual ~HumanController() override;
+    virtual ~HumanAsCarController() override;
     virtual void apply() override;
 private:
     float angular_velocity_;

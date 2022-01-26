@@ -11,7 +11,7 @@ enum class VehicleDomain;
 
 class HeliController: public RigidBodyVehicleController {
 public:
-    explicit HeliController(
+    HeliController(
         RigidBodyVehicle* rb,
         const std::map<size_t, float>& tire_angles,
         size_t main_rotor_id,

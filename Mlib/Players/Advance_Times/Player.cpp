@@ -420,8 +420,8 @@ bool Player::unstuck() {
             // }
             if (unstuck_mode_ == UnstuckMode::REVERSE) {
                 drive_backwards();
-                rb_->controller().steer(0);
-                rb_->controller().apply();
+                rb_->vehicle_controller().steer(0);
+                rb_->vehicle_controller().apply();
             } else if (unstuck_mode_ == UnstuckMode::DELETE) {
                 // std::lock_guard lock{ mutex_ };
                 // scene_.delete_root_node(scene_node_name_);
@@ -475,8 +475,7 @@ void Player::run_move(
     } else {
         float len = std::sqrt(len2);
         rb_->tires_z_ = direction / len;
-        rb_->set_surface_power("main", len * surface_power_forward_);
-        rb_->set_surface_power("breaks", len * surface_power_forward_);
+        rb_->set_surface_power("legs", len * surface_power_forward_);
     }
     if (rb_->style_updater_ != nullptr) {
         rb_->style_updater_->notify_movement_intent();
@@ -496,7 +495,7 @@ void Player::step_on_breaks() {
     if (!has_rigid_body()) {
         throw std::runtime_error("step_on_breaks despite nullptr");
     }
-    rb_->controller().step_on_breaks();
+    rb_->vehicle_controller().step_on_breaks();
 }
 
 void Player::drive_forward() {
@@ -504,7 +503,7 @@ void Player::drive_forward() {
     if (!has_rigid_body()) {
         throw std::runtime_error("drive_forward despite nullptr");
     }
-    rb_->controller().drive(surface_power_forward_);
+    rb_->vehicle_controller().drive(surface_power_forward_);
 }
 
 void Player::drive_backwards() {
@@ -512,7 +511,7 @@ void Player::drive_backwards() {
     if (!has_rigid_body()) {
         throw std::runtime_error("drive_backwards despite nullptr");
     }
-    rb_->controller().drive(surface_power_backward_);
+    rb_->vehicle_controller().drive(surface_power_backward_);
 }
 
 void Player::roll_tires() {
@@ -520,27 +519,27 @@ void Player::roll_tires() {
     if (!has_rigid_body()) {
         throw std::runtime_error("roll despite nullptr");
     }
-    rb_->controller().roll_tires();
+    rb_->vehicle_controller().roll_tires();
 }
 
 void Player::steer_left_full() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->controller().steer(INFINITY);
+    rb_->vehicle_controller().steer(INFINITY);
 }
 
 void Player::steer_right_full() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->controller().steer(-INFINITY);
+    rb_->vehicle_controller().steer(-INFINITY);
 }
 
 void Player::steer_left_partial(float angle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->controller().steer(angle);
+    rb_->vehicle_controller().steer(angle);
 }
 
 void Player::steer_right_partial(float angle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    rb_->controller().steer(-angle);
+    rb_->vehicle_controller().steer(-angle);
 }
 
 bool Player::has_rigid_body() const {
@@ -718,10 +717,10 @@ void Player::move_to_waypoint() {
     if (std::isnan(surface_power_backward_)) {
         return;
     }
-    rb_->controller().reset();
+    rb_->vehicle_controller().reset();
     if (any(Mlib::isnan(waypoint_))) {
         step_on_breaks();
-        rb_->controller().apply();
+        rb_->vehicle_controller().apply();
         return;
     }
     // Stop when distance to waypoint is small enough (break).
@@ -729,7 +728,7 @@ void Player::move_to_waypoint() {
         FixedArray<float, 3> pos3 = rb_->rbi_.abs_position();
         if (sum(squared(pos3 - waypoint_)) < squared(driving_mode_.rest_radius)) {
             step_on_breaks();
-            rb_->controller().apply();
+            rb_->vehicle_controller().apply();
             if (waypoint_id_ != SIZE_MAX) {
                 last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
             }
@@ -758,7 +757,7 @@ void Player::move_to_waypoint() {
             auto z = rb_->rbi_.abs_z();
             if (dot0d(d, z) < 0) {
                 step_on_breaks();
-                rb_->controller().apply();
+                rb_->vehicle_controller().apply();
                 return;
             }
         } else if (dl2 < squared(driving_mode_.collision_avoidance_radius_correct)) {
@@ -823,7 +822,7 @@ void Player::move_to_waypoint() {
             }
         }
     }
-    rb_->controller().apply();
+    rb_->vehicle_controller().apply();
 }
 
 void Player::select_next_opponent() {

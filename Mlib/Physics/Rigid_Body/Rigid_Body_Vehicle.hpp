@@ -25,6 +25,7 @@ class Damageable;
 class IPlayer;
 class StyleUpdater;
 class RigidBodyVehicleController;
+class RigidBodyAvatarController;
 struct BaseRotor;
 class ContactInfo;
 
@@ -115,7 +116,8 @@ public:
     virtual TransformationMatrix<float, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(void* obj) override;
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
-    RigidBodyVehicleController& controller();
+    RigidBodyAvatarController& avatar_controller();
+    RigidBodyVehicleController& vehicle_controller();
 
     RigidBodies& rigid_bodies_;
 
@@ -139,7 +141,8 @@ public:
     Damageable* damageable_;
     StyleUpdater* style_updater_;
     IPlayer* driver_;
-    std::unique_ptr<RigidBodyVehicleController> controller_;
+    std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
+    std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
     const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;
 };

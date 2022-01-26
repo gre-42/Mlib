@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <chrono>
 
@@ -37,7 +38,8 @@ RigidBodyVehicle::RigidBodyVehicle(
   damageable_{ nullptr },
   style_updater_{ nullptr },
   driver_{ nullptr },
-  controller_{ nullptr},
+  avatar_controller_{ nullptr},
+  vehicle_controller_{ nullptr},
   geographic_mapping_{ geographic_mapping }
 {}
 
@@ -515,9 +517,16 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     }
 }
 
-RigidBodyVehicleController& RigidBodyVehicle::controller() {
-    if (controller_ == nullptr) {
-        throw std::runtime_error("Rigid body \"" + name() + "\" has no controller");
+RigidBodyVehicleController& RigidBodyVehicle::vehicle_controller() {
+    if (vehicle_controller_ == nullptr) {
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no vehicle controller");
     }
-    return *controller_;
+    return *vehicle_controller_;
+}
+
+RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
+    if (avatar_controller_ == nullptr) {
+        throw std::runtime_error("Rigid body \"" + name() + "\" has no avatar controller");
+    }
+    return *avatar_controller_;
 }

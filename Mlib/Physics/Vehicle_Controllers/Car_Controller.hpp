@@ -7,7 +7,7 @@ namespace Mlib {
 
 class CarController: public RigidBodyVehicleController {
 public:
-    explicit CarController(
+    CarController(
         RigidBodyVehicle* rb,
         const std::map<size_t, float>& tire_angles);
     virtual ~CarController() override;

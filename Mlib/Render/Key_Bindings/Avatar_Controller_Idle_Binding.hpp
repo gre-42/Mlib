@@ -4,7 +4,7 @@ namespace Mlib {
 
 class SceneNode;
 
-struct VehicleControllerIdleBinding {
+struct AvatarControllerIdleBinding {
     SceneNode* node;
 };
 

@@ -201,7 +201,7 @@ FixedArray<float, 3> Mlib::updated_tire_speed(
     float& force_max)
 {
     bool c;
-    switch (rb.controller().steering_type) {
+    switch (rb.vehicle_controller().steering_type) {
         case SteeringType::CAR:
             c = true;
             break;

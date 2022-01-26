@@ -3,11 +3,11 @@
 
 namespace Mlib {
 
-class CreateHumanController: public LoadSceneInstanceFunction {
+class CreateHumanAsCarController: public LoadSceneInstanceFunction {
 public:
     static UserFunction user_function;
 private:
-    explicit CreateHumanController(RenderableScene& renderable_scene);
+    explicit CreateHumanAsCarController(RenderableScene& renderable_scene);
     void execute(
         const std::smatch& match,
         const std::function<FPath(const std::string&)>& fpath,

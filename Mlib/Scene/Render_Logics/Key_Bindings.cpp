@@ -8,16 +8,19 @@
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Avatar_Controller_Idle_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Vehicle_Controller_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Vehicle_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -44,8 +47,10 @@ KeyBindings::~KeyBindings() {
     for (auto& b : absolute_movable_idle_bindings_) { nodes.insert(b.node); }
     for (auto& b : absolute_movable_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : relative_movable_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : vehicle_controller_idle_bindings_) { nodes.insert(b.node); }
-    for (auto& b : vehicle_controller_key_bindings_) { nodes.insert(b.node); }
+    for (auto& b : car_controller_idle_bindings_) { nodes.insert(b.node); }
+    for (auto& b : car_controller_key_bindings_) { nodes.insert(b.node); }
+    for (auto& b : avatar_controller_idle_bindings_) { nodes.insert(b.node); }
+    for (auto& b : avatar_controller_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : weapon_inventory_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : gun_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : player_key_bindings_) { nodes.insert(b.node); }
@@ -58,8 +63,10 @@ void KeyBindings::notify_destroyed(void* destroyed_object) {
     absolute_movable_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     absolute_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     relative_movable_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
-    vehicle_controller_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
-    vehicle_controller_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    car_controller_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    car_controller_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    avatar_controller_idle_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
+    avatar_controller_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     weapon_inventory_key_bindings_.remove_if([destroyed_object](const auto& b){return b.node == destroyed_object;});
     gun_key_bindings_.remove_if([this, destroyed_object](const auto& b){return b.node == destroyed_object;});
     player_key_bindings_.remove_if([this, destroyed_object](const auto& b){return b.node == destroyed_object;});
@@ -84,14 +91,24 @@ void KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBindi
     relative_movable_key_bindings_.push_back(b);
 }
 
-void KeyBindings::add_vehicle_controller_idle_binding(const VehicleControllerIdleBinding& b) {
+void KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
     b.node->add_destruction_observer(this, true);
-    vehicle_controller_idle_bindings_.push_back(b);
+    car_controller_idle_bindings_.push_back(b);
 }
 
-void KeyBindings::add_vehicle_controller_key_binding(const VehicleControllerKeyBinding& b) {
+void KeyBindings::add_car_controller_key_binding(const CarControllerKeyBinding& b) {
     b.node->add_destruction_observer(this, true);
-    vehicle_controller_key_bindings_.push_back(b);
+    car_controller_key_bindings_.push_back(b);
+}
+
+void KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    avatar_controller_idle_bindings_.push_back(b);
+}
+
+void KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b) {
+    b.node->add_destruction_observer(this, true);
+    avatar_controller_key_bindings_.push_back(b);
 }
 
 void KeyBindings::add_weapon_inventory_key_binding(const WeaponInventoryKeyBinding& b) {
@@ -250,37 +267,91 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
                 }
             }
-            float beta = k.cursor_movement->axis_alpha(k.base_cursor_axis);
-            if (!std::isnan(beta)) {
-                float dangle = beta * k.speed_cursor * k.angular_velocity_repeat;
-                if (rt != nullptr) {
-                    // rt->w_ = beta * k.angular_velocity_repeat;
-                    rt->transformation_matrix_.R() = dot2d(
-                        rodrigues2(k.rotation_axis, dangle),
-                        rt->transformation_matrix_.R());
-                } else if (ypln != nullptr) {
-                    if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {
-                        ypln->increment_yaw(dangle);
-                    } else if (all(k.rotation_axis == FixedArray<float, 3>{1, 0, 0})) {
-                        ypln->pitch_look_at_node()->increment_pitch(dangle);
+            if (k.cursor_movement != nullptr) {
+                float beta = k.cursor_movement->axis_alpha(k.base_cursor_axis);
+                if (!std::isnan(beta)) {
+                    float dangle = beta * k.speed_cursor;
+                    if (rt != nullptr) {
+                        // rt->w_ = beta * k.angular_velocity_repeat;
+                        rt->transformation_matrix_.R() = dot2d(
+                            rodrigues2(k.rotation_axis, dangle),
+                            rt->transformation_matrix_.R());
+                    } else if (ypln != nullptr) {
+                        if (all(k.rotation_axis == FixedArray<float, 3>{0, 1, 0})) {
+                            ypln->increment_yaw(dangle);
+                        } else if (all(k.rotation_axis == FixedArray<float, 3>{1, 0, 0})) {
+                            ypln->pitch_look_at_node()->increment_pitch(dangle);
+                        } else {
+                            throw std::runtime_error("Unsupported rotation axis for yaw/pitch-look-at-nodes");
+                        }
                     } else {
-                        throw std::runtime_error("Unsupported rotation axis for yaw/pitch-look-at-nodes");
+                        throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
                     }
-                } else {
-                    throw std::runtime_error("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
                 }
             }
         }
-        // Vehicle controller
-        for (const auto& k : vehicle_controller_idle_bindings_) {
+        // Avatar controller
+        for (const auto& k : avatar_controller_idle_bindings_) {
             auto m = k.node->get_absolute_movable();
             auto rb = dynamic_cast<RigidBodyVehicle*>(m);
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            rb->controller().reset();
+            rb->avatar_controller().reset();
         }
-        for (const auto& k : vehicle_controller_key_bindings_) {
+        for (const auto& k : avatar_controller_key_bindings_) {
+            auto m = k.node->get_absolute_movable();
+            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            if (rb == nullptr) {
+                throw std::runtime_error("Absolute movable is not a rigid body");
+            }
+            float alpha = button_press_.key_alpha(k.base_key, 0.05f);
+            if (!std::isnan(alpha)) {
+                if (k.surface_power.has_value()) {
+                    rb->avatar_controller().walk(k.surface_power.value());
+                    rb->avatar_controller().increment_tires_z(k.tires_z.value());
+                }
+                if (k.angular_velocity_press.has_value() && k.angular_velocity_repeat.has_value()) {
+                    float w = ((1 - alpha) * k.angular_velocity_press.value() + alpha * k.angular_velocity_repeat.value());
+                    if (k.yaw) {
+                        rb->avatar_controller().increment_yaw(w * cfg.dt);
+                    }
+                    if (k.pitch) {
+                        rb->avatar_controller().increment_pitch(w * cfg.dt);
+                    }
+                }
+            }
+            if (k.cursor_movement != nullptr) {
+                float beta = k.cursor_movement->axis_alpha(k.base_cursor_axis);
+                if (!std::isnan(beta) && k.speed_cursor.has_value()) {
+                    float dangle = beta * k.speed_cursor.value();
+                    if (k.yaw) {
+                        rb->avatar_controller().increment_yaw(dangle);
+                    }
+                    if (k.pitch) {
+                        rb->avatar_controller().increment_pitch(dangle);
+                    }
+                }
+            }
+        }
+        for (const auto& k : avatar_controller_idle_bindings_) {
+            auto m = k.node->get_absolute_movable();
+            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            if (rb == nullptr) {
+                throw std::runtime_error("Absolute movable is not a rigid body");
+            }
+            rb->avatar_controller().apply();
+        }
+        // Vehicle controller
+        for (const auto& k : car_controller_idle_bindings_) {
+            auto m = k.node->get_absolute_movable();
+            auto rb = dynamic_cast<RigidBodyVehicle*>(m);
+            if (rb == nullptr) {
+                throw std::runtime_error("Absolute movable is not a rigid body");
+            }
+            rb->vehicle_controller().reset();
+        }
+        for (const auto& k : car_controller_key_bindings_) {
             float alpha = button_press_.key_alpha(k.base_key, 0.05f);
             if (!std::isnan(alpha)) {
                 auto m = k.node->get_absolute_movable();
@@ -289,26 +360,26 @@ void KeyBindings::increment_external_forces(const std::list<std::shared_ptr<Rigi
                     throw std::runtime_error("Absolute movable is not a rigid body");
                 }
                 if (k.surface_power.has_value()) {
-                    rb->controller().drive(k.surface_power.value());
+                    rb->vehicle_controller().drive(k.surface_power.value());
                 }
                 if (k.tire_angle_interp.has_value()) {
                     float v = std::abs(dot0d(
                         rb->rbi_.rbp_.v_,
                         rb->rbi_.rbp_.rotation_.column(2)));
-                    rb->controller().steer(alpha * float(M_PI) / 180.f * k.tire_angle_interp.value()(v * 3.6f));
+                    rb->vehicle_controller().steer(alpha * float(M_PI) / 180.f * k.tire_angle_interp.value()(v * 3.6f));
                 }
                 if (k.ascend_velocity.has_value()) {
-                    rb->controller().ascend_by(k.ascend_velocity.value() * cfg.dt);
+                    rb->vehicle_controller().ascend_by(k.ascend_velocity.value() * cfg.dt);
                 }
             }
         }
-        for (const auto& k : vehicle_controller_idle_bindings_) {
+        for (const auto& k : car_controller_idle_bindings_) {
             auto m = k.node->get_absolute_movable();
             auto rb = dynamic_cast<RigidBodyVehicle*>(m);
             if (rb == nullptr) {
                 throw std::runtime_error("Absolute movable is not a rigid body");
             }
-            rb->controller().apply();
+            rb->vehicle_controller().apply();
         }
         // Weapon inventory
         for (auto& k : weapon_inventory_key_bindings_) {

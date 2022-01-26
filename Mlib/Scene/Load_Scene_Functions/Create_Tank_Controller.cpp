@@ -53,12 +53,12 @@ void CreateTankController::execute(
     if (rb == nullptr) {
         throw std::runtime_error("Tank movable is not a rigid body");
     }
-    if (rb->controller_ != nullptr) {
+    if (rb->vehicle_controller_ != nullptr) {
         throw std::runtime_error("Tank controller already set");
     }
     std::vector<size_t> left_tire_ids = string_to_vector(match[2].str(), safe_stoz);
     std::vector<size_t> right_tire_ids = string_to_vector(match[3].str(), safe_stoz);
-    rb->controller_ = std::make_unique<TankController>(
+    rb->vehicle_controller_ = std::make_unique<TankController>(
         rb,
         left_tire_ids,
         right_tire_ids,

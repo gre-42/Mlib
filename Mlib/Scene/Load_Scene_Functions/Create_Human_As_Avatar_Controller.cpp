@@ -1,14 +1,18 @@
-#include "Create_Human_Controller.hpp"
-#include <Mlib/Macro_Line_Executor.hpp>
+#include "Create_Human_As_Avatar_Controller.hpp"
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Human_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Human_As_Avatar_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
-#include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateHumanController::user_function = [](
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
+
+LoadSceneInstanceFunction::UserFunction CreateHumanAsAvatarController::user_function = [](
     const std::string& line,
     const std::function<RenderableScene&()>& renderable_scene,
     const std::function<FPath(const std::string&)>& fpath,
@@ -18,13 +22,11 @@ LoadSceneInstanceFunction::UserFunction CreateHumanController::user_function = [
     RegexSubstitutionCache& rsc)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_human_controller"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+angular_velocity=([\\w+-.]+)"
-        "\\s+steering_multiplier=([\\w+-.]+)$");
+        "^\\s*create_human_as_avatar_controller"
+        "\\s+node=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(line, match, regex)) {
-        CreateHumanController(renderable_scene()).execute(
+        CreateHumanAsAvatarController(renderable_scene()).execute(
             match,
             fpath,
             macro_line_executor,
@@ -36,27 +38,21 @@ LoadSceneInstanceFunction::UserFunction CreateHumanController::user_function = [
     }
 };
 
-CreateHumanController::CreateHumanController(RenderableScene& renderable_scene) 
+CreateHumanAsAvatarController::CreateHumanAsAvatarController(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateHumanController::execute(
+void CreateHumanAsAvatarController::execute(
     const std::smatch& match,
     const std::function<FPath(const std::string&)>& fpath,
     const MacroLineExecutor& macro_line_executor,
     SubstitutionMap* local_substitutions,
     RegexSubstitutionCache& rsc)
 {
-    auto node = scene.get_node(match[1].str());
+    auto node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
     if (rb == nullptr) {
-        throw std::runtime_error("Car movable is not a rigid body");
+        throw std::runtime_error("Absolute movable is not a rigid body vehicle");
     }
-    if (rb->controller_ != nullptr) {
-        throw std::runtime_error("Human controller already set");
-    }
-    rb->controller_ = std::make_unique<HumanController>(
-        rb,
-        float(M_PI) / 180.f * safe_stof(match[2].str()),
-        safe_stof(match[3].str()));
+    rb->avatar_controller_ = std::make_unique<HumanAsAvatarController>(node);
 }

@@ -25,13 +25,12 @@
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Game_History.hpp>
-#include <Mlib/Physics/Misc/Weapon_Inventory.hpp>
 #include <Mlib/Physics/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Loop.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controller.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Human_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Human_As_Car_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Tank_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -44,10 +43,10 @@
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Absolute_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Vehicle_Controller_Idle_Binding.hpp>
-#include <Mlib/Render/Key_Bindings/Vehicle_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Weapon_Inventory_Key_Binding.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Controls_Logic.hpp>
@@ -81,18 +80,25 @@
 #include <Mlib/Scene/Animation/Avatar_Animation_Updater.hpp>
 #include <Mlib/Scene/Audio/Engine_Audio.hpp>
 #include <Mlib/Scene/Linker.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Add_Weapon_To_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Abs_Key_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Avatar_Controller_Idle_Binding.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Avatar_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Car_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Driver_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Heli_Controller.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Create_Human_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Human_As_Avatar_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Human_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rotor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Weapon_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Equip_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
@@ -160,7 +166,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(LoadPlayers::user_function);
     user_functions_.push_back(CreateCarController::user_function);
     user_functions_.push_back(CreateHeliController::user_function);
-    user_functions_.push_back(CreateHumanController::user_function);
+    user_functions_.push_back(CreateHumanAsAvatarController::user_function);
+    user_functions_.push_back(CreateHumanAsCarController::user_function);
     user_functions_.push_back(CreateTankController::user_function);
     user_functions_.push_back(CreateWheel::user_function);
     user_functions_.push_back(CreateRotor::user_function);
@@ -170,6 +177,12 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateYawPitchLookatNodes::user_function);
     user_functions_.push_back(CreateDriverKeyBinding::user_function);
     user_functions_.push_back(CreateAbsKeyBinding::user_function);
+    user_functions_.push_back(CreateCarControllerKeyBinding::user_function);
+    user_functions_.push_back(CreateAvatarControllerIdleBinding::user_function);
+    user_functions_.push_back(CreateAvatarControllerKeyBinding::user_function);
+    user_functions_.push_back(CreateWeaponInventory::user_function);
+    user_functions_.push_back(AddWeaponToInventory::user_function);
+    user_functions_.push_back(EquipWeapon::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -316,18 +329,6 @@ void LoadScene::operator()(
         "\\s+name=([\\w+-.]+)"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w-. \\(\\)/+-]+)");
-    static const DECLARE_REGEX(create_weapon_inventory_reg,
-        "^\\s*create_weapon_inventory"
-        "\\s+storage_node=([\\w+-.]+)$");
-    static const DECLARE_REGEX(add_weapon_to_inventory_reg,
-        "^\\s*add_weapon_to_inventory"
-        "\\s+storage_node=([\\w+-.]+)"
-        "\\s+entry_name=([\\w-. \\(\\)/+-]+)"
-        "\\s+create=([\\s\\S]+)$");
-    static const DECLARE_REGEX(equip_weapon_reg,
-        "^\\s*equip_weapon"
-        "\\s+storage_node=([\\w+-.]+)"
-        "\\s+entry_name=([\\w-. \\(\\)/+-]+)$");
     static const DECLARE_REGEX(gun_reg,
         "^\\s*gun"
         "\\s+node=([\\w+-.]+)"
@@ -415,20 +416,9 @@ void LoadScene::operator()(
         "\\s+angular_velocity_press=([\\w+-.]+)"
         "\\s+angular_velocity_repeat=([\\w+-.]+)"
         "\\s+speed_cursor=([\\w+-.]+)$");
-    static const DECLARE_REGEX(vehicle_controller_idle_binding_reg,
-        "^\\s*vehicle_controller_idle_binding"
+    static const DECLARE_REGEX(car_controller_idle_binding_reg,
+        "^\\s*car_controller_idle_binding"
         "\\s+node=([\\w+-.]+)$");
-    static const DECLARE_REGEX(vehicle_controller_key_binding_reg,
-        "^\\s*vehicle_controller_key_binding"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+key=([\\w+-.]+)"
-        "(?:\\s+gamepad_button=([\\w+-.]*))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]*))?"
-        "(?:\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
-        "(?:\\s+surface_power=([\\w+-.]+))?"
-        "(?:\\s+tire_angle_velocities=([ \\w+-.]+))?"
-        "(?:\\s+tire_angles=([ \\w+-.]+))?"
-        "(?:\\s+ascend_velocity=([\\w+-.]+))?$");
     static const DECLARE_REGEX(weapon_inventory_key_binding_reg,
         "^\\s*weapon_inventory_key_binding"
         "\\s+node=([\\w+-.]+)"
@@ -1857,28 +1847,6 @@ void LoadScene::operator()(
                 match[3].str(),
                 match[1].str(),
                 *node);
-        } else if (Mlib::re::regex_match(line, match, create_weapon_inventory_reg)) {
-            auto storage_node = scene.get_node(match[1].str());
-            storage_node->set_node_modifier(std::make_unique<WeaponInventory>());
-        } else if (Mlib::re::regex_match(line, match, add_weapon_to_inventory_reg)) {
-            auto storage_node = scene.get_node(match[1].str());
-            std::string entry_name = match[2].str();
-            std::string create = match[3].str();
-            WeaponInventory* wi = dynamic_cast<WeaponInventory*>(storage_node->get_node_modifier());
-            if (wi == nullptr) {
-                throw std::runtime_error("Node modifier is not a weapon inventory");
-            }
-            wi->add_weapon(entry_name, [macro_line_executor, create, &rsc](){
-                macro_line_executor(create, nullptr, rsc);
-            });
-        } else if (Mlib::re::regex_match(line, match, equip_weapon_reg)) {
-            auto storage_node = scene.get_node(match[1].str());
-            std::string entry_name = match[2].str();
-            WeaponInventory* wi = dynamic_cast<WeaponInventory*>(storage_node->get_node_modifier());
-            if (wi == nullptr) {
-                throw std::runtime_error("Node modifier is not a weapon inventory");
-            }
-            wi->equip_weapon(entry_name);
         } else if (Mlib::re::regex_match(line, match, gun_reg)) {
             auto parent_rb_node = scene.get_node(match[2].str());
             auto rb = dynamic_cast<RigidBodyVehicle*>(parent_rb_node->get_absolute_movable());
@@ -2041,27 +2009,9 @@ void LoadScene::operator()(
                 .angular_velocity_press = safe_stof(match[11].str()),
                 .angular_velocity_repeat = safe_stof(match[12].str()),
                 .speed_cursor = safe_stof(match[13].str())});
-        } else if (Mlib::re::regex_match(line, match, vehicle_controller_idle_binding_reg)) {
-            key_bindings.add_vehicle_controller_idle_binding(VehicleControllerIdleBinding{
+        } else if (Mlib::re::regex_match(line, match, car_controller_idle_binding_reg)) {
+            key_bindings.add_car_controller_idle_binding(CarControllerIdleBinding{
                 .node = scene.get_node(match[1].str())});
-        } else if (Mlib::re::regex_match(line, match, vehicle_controller_key_binding_reg)) {
-            key_bindings.add_vehicle_controller_key_binding(VehicleControllerKeyBinding{
-                .base_key = {
-                    .key = match[2].str(),
-                    .gamepad_button = match[3].str(),
-                    .joystick_axis = match[4].str(),
-                    .joystick_axis_sign = match[5].str().empty() ? 0 : safe_stof(match[5].str())},
-                .node = scene.get_node(match[1].str()),
-                .surface_power = match[6].matched ? safe_stof(match[6].str()) : std::optional<float>(),
-                .tire_angle_interp = match[7].matched
-                    ? Interp<float>{
-                        string_to_vector(match[7].str(), safe_stof),
-                        string_to_vector(match[8].str(), safe_stof),
-                        OutOfRangeBehavior::CLAMP}
-                    : std::optional<Interp<float>>(),
-                .ascend_velocity = match[9].matched
-                    ? safe_stof(match[9].str())
-                    : std::optional<float>()});
         } else if (Mlib::re::regex_match(line, match, weapon_inventory_key_binding_reg)) {
             try {
                 scene.get_node(match[1].str())->get_node_modifier();

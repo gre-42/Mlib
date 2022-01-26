@@ -1,14 +1,22 @@
-#include "Create_Car_Controller.hpp"
+#include "Create_Human_As_Car_Controller.hpp"
 #include <Mlib/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Car_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Human_As_Car_Controller.hpp>
 #include <Mlib/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateCarController::user_function = [](
+#define BEGIN_OPTIONS static size_t option_id = 1
+#define DECLARE_OPTION(a) static const size_t a = option_id++
+
+BEGIN_OPTIONS;
+DECLARE_OPTION(NODE);
+DECLARE_OPTION(ANGULAR_VELOCITY);
+DECLARE_OPTION(STEERING_MULTIPLIER);
+
+LoadSceneInstanceFunction::UserFunction CreateHumanAsCarController::user_function = [](
     const std::string& line,
     const std::function<RenderableScene&()>& renderable_scene,
     const std::function<FPath(const std::string&)>& fpath,
@@ -18,13 +26,13 @@ LoadSceneInstanceFunction::UserFunction CreateCarController::user_function = [](
     RegexSubstitutionCache& rsc)
 {
     static DECLARE_REGEX(regex,
-        "^\\s*create_car_controller"
+        "^\\s*create_human_as_car_controller"
         "\\s+node=([\\w+-.]+)"
-        "\\s+tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
-        "\\s+tire_angles=((?:[\\w+-.]+)?(?:\\s+[\\w+-.]+)*)$");
+        "\\s+angular_velocity=([\\w+-.]+)"
+        "\\s+steering_multiplier=([\\w+-.]+)$");
     std::smatch match;
     if (Mlib::re::regex_match(line, match, regex)) {
-        CreateCarController(renderable_scene()).execute(
+        CreateHumanAsCarController(renderable_scene()).execute(
             match,
             fpath,
             macro_line_executor,
@@ -36,35 +44,27 @@ LoadSceneInstanceFunction::UserFunction CreateCarController::user_function = [](
     }
 };
 
-CreateCarController::CreateCarController(RenderableScene& renderable_scene) 
+CreateHumanAsCarController::CreateHumanAsCarController(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void CreateCarController::execute(
+void CreateHumanAsCarController::execute(
     const std::smatch& match,
     const std::function<FPath(const std::string&)>& fpath,
     const MacroLineExecutor& macro_line_executor,
     SubstitutionMap* local_substitutions,
     RegexSubstitutionCache& rsc)
 {
-    auto node = scene.get_node(match[1].str());
+    auto node = scene.get_node(match[NODE].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());
     if (rb == nullptr) {
         throw std::runtime_error("Car movable is not a rigid body");
     }
     if (rb->vehicle_controller_ != nullptr) {
-        throw std::runtime_error("Car controller already set");
+        throw std::runtime_error("Human controller already set");
     }
-    std::vector<size_t> tire_ids = string_to_vector(match[2].str(), safe_stoz);
-    std::vector<float> tire_angles_deg = string_to_vector(match[3].str(), safe_stof);
-    if (tire_ids.size() != tire_angles_deg.size()) {
-        throw std::runtime_error("Tire IDs and angles have different lengths");
-    }
-    std::map<size_t, float> tire_angles_map;
-    for (size_t i = 0; i < tire_ids.size(); ++i) {
-        if (!tire_angles_map.insert({ tire_ids[i], float(M_PI) / 180.f * tire_angles_deg[i] }).second) {
-            throw std::runtime_error("Duplicate tire ID");
-        }
-    }
-    rb->vehicle_controller_ = std::make_unique<CarController>(rb, tire_angles_map);
+    rb->vehicle_controller_ = std::make_unique<HumanAsCarController>(
+        rb,
+        float(M_PI) / 180.f * safe_stof(match[ANGULAR_VELOCITY].str()),
+        safe_stof(match[STEERING_MULTIPLIER].str()));
 }

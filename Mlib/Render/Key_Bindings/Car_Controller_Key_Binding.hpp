@@ -7,7 +7,7 @@ namespace Mlib {
 
 class SceneNode;
 
-struct VehicleControllerKeyBinding {
+struct CarControllerKeyBinding {
     BaseKeyBinding base_key;
     SceneNode* node;
     std::optional<float> surface_power;
