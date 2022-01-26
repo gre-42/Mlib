@@ -36,11 +36,11 @@ LoadSceneInstanceFunction::UserFunction CreateCarControllerKeyBinding::user_func
         "\\s+node=([\\w+-.]+)"
         "\\s+key=([\\w+-.]+)"
         "(?:\\s+gamepad_button=([\\w+-.]*))?"
-        "(?:\\s+joystick_digital_axis=([\\w+-.]*))?"
-        "(?:\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
+        "(?:\\s+joystick_digital_axis=([\\w+-.]*)"
+        "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(?:\\s+surface_power=([\\w+-.]+))?"
-        "(?:\\s+tire_angle_velocities=([ \\w+-.]+))?"
-        "(?:\\s+tire_angles=([ \\w+-.]+))?"
+        "(?:\\s+tire_angle_velocities=([ \\w+-.]+)"
+        "\\s+tire_angles=([ \\w+-.]+))?"
         "(?:\\s+ascend_velocity=([\\w+-.]+))?$");
     std::smatch match;
     if (Mlib::re::regex_match(line, match, regex)) {
@@ -73,8 +73,8 @@ void CreateCarControllerKeyBinding::execute(
             .gamepad_button = match[GAMEPAD_BUTTON].str(),
             .joystick_axis = match[JOYSTICK_DIGITAL_AXIS].str(),
             .joystick_axis_sign = match[JOYSTICK_DIGITAL_AXIS_SIGN].matched
-                ? 0
-                : safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())},
+                ? safe_stof(match[JOYSTICK_DIGITAL_AXIS_SIGN].str())
+                : 0},
         .node = scene.get_node(match[NODE].str()),
         .surface_power = match[SURFACE_POWER].matched
             ? safe_stof(match[SURFACE_POWER].str())
