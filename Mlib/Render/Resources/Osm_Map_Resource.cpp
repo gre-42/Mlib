@@ -498,7 +498,7 @@ OsmMapResource::OsmMapResource(
             roof_height0,
             roof_height1);
     }
-    if (config.with_ceilings) {
+    if (config.with_ceilings && !tls_buildings.empty()) {
         LOG_INFO("draw_ceilings");
         draw_ceilings(tls_buildings, config, buildings, nodes);
     }
