@@ -1,11 +1,9 @@
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Scene_Graph/Spawn_Point.hpp>
-#include <list>
-#include <map>
-#include <mutex>
-#include <string>
+#include <Mlib/Players/Game_Logic/Bystanders.hpp>
+#include <Mlib/Players/Game_Logic/Spawn.hpp>
+#include <Mlib/Players/Game_Logic/Team_Deathmatch.hpp>
+
 
 namespace Mlib {
 
@@ -27,40 +25,12 @@ public:
         Players& players,
         DeleteNodeMutex& delete_node_mutex);
     ~GameLogic();
-    void set_spawn_points(
-        const SceneNode& node,
-        const std::list<SpawnPoint>& spawn_points);
-    void set_preferred_car_spawner(
-        Player& player,
-        const std::function<void(const SpawnPoint&)>& preferred_car_spawner);
-    void set_vip(Player* vip);
-    void respawn_all_players();
     virtual void advance_time(float dt) override;
+    Spawn spawn;
+    Bystanders bystanders;
 private:
-    void handle_team_deathmatch();
-    void handle_bystanders();
-    void spawn_at_spawn_point(
-        Player& player,
-        const SpawnPoint& sp);
-    bool spawn_for_vip(
-        Player& player,
-        const FixedArray<float, 3>& vip_z,
-        const FixedArray<float, 3>& vip_pos);
-    bool delete_for_vip(
-        Player& player,
-        const FixedArray<float, 3>& vip_z,
-        const FixedArray<float, 3>& vip_pos);
-    Scene& scene_;
+    TeamDeathmatch team_deathmatch_;
     AdvanceTimes& advance_times_;
-    Players& players_;
-    Player* vip_;
-    std::map<const Player*, std::function<void(const SpawnPoint&)>> preferred_car_spawners_;
-    DeleteNodeMutex& delete_node_mutex_;
-    std::mt19937 current_bystander_rng_;
-    std::mt19937 current_bvh_rng_;
-    std::vector<SpawnPoint> spawn_points_;
-    std::vector<std::unique_ptr<Bvh<float, const SpawnPoint*, 3>>> spawn_points_bvhs_;
-    size_t current_bvh_;
     // size_t nspawns_;
     // size_t ndelete_;
 };

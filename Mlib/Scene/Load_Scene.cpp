@@ -100,7 +100,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Equip_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Load_Players.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Set_Rigid_Body_Target.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Set_Spawn_Points.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene/Render_Logics/Parameter_Setter_Logic.hpp>
@@ -183,6 +185,8 @@ LoadScene::LoadScene() {
     user_functions_.push_back(CreateWeaponInventory::user_function);
     user_functions_.push_back(AddWeaponToInventory::user_function);
     user_functions_.push_back(EquipWeapon::user_function);
+    user_functions_.push_back(SetPreferredCarSpawner::user_function);
+    user_functions_.push_back(SetSpawnPoints::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -740,11 +744,6 @@ void LoadScene::operator()(
         "^\\s*set_skybox"
         "\\s+alias=([\\w+-.]+)"
         "\\s+filenames=([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+) ([\\w-. \\(\\)/+-]+)$");
-    static const DECLARE_REGEX(set_preferred_car_spawner_reg,
-        "^\\s*set_preferred_car_spawner"
-        "\\s+player=([\\w+-.]+)"
-        "\\s+macro=([\\w.]+)"
-        "\\s+parameters=([\\s\\S]*)$");
     static const DECLARE_REGEX(set_vip_reg, "^\\s*set_vip player=([\\w+-.]+)$");
     static const DECLARE_REGEX(respawn_all_players_reg, "^\\s*respawn_all_players$");
     static const DECLARE_REGEX(burn_in_reg, "^\\s*burn_in seconds=([\\w+-.]+)$");
@@ -758,10 +757,6 @@ void LoadScene::operator()(
         "^\\s+min_dist:([\\w+-.]+)"
         "\\s+max_dist:([\\w+-.]+)"
         "([\\s:\\w-. \\(\\)/+-]*)$");
-    static const DECLARE_REGEX(set_spawn_points_reg, "^\\s*"
-        "\\s+set_spawn_points"
-        "\\s+node=([\\w+-.]+)"
-        "\\s+resource=([\\w+-.]+)$");
     static const DECLARE_REGEX(set_way_points_reg, "^\\s*"
         "set_way_points"
         "\\s+player=([\\w+-.]+)"
@@ -2597,45 +2592,10 @@ void LoadScene::operator()(
                 fpathp(match[6].str()),
                 fpathp(match[7].str())},
                 match[1].str());
-        } else if (Mlib::re::regex_match(line, match, set_preferred_car_spawner_reg)) {
-            std::string player = match[1].str();
-            std::string macro = match[2].str();
-            std::string parameters = match[3].str();
-            game_logic.set_preferred_car_spawner(
-                players.get_player(player),
-                [macro_line_executor, player, macro, parameters, primary_rendering_context, secondary_rendering_context, &rsc](const SpawnPoint& p){
-                    RenderingContextGuard rrg0{primary_rendering_context};
-                    RenderingContextGuard rrg1{secondary_rendering_context};
-                    auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
-                    std::stringstream sstr;
-                    sstr <<
-                        "macro_playback " <<
-                        macro <<
-                        " CAR_NODE_X:" << p.position(0) <<
-                        " CAR_NODE_Y:" << p.position(1) <<
-                        " CAR_NODE_Z:" << p.position(2) <<
-                        " CAR_NODE_ANGLE_X:" << 180.f / float(M_PI) * p.rotation(0) <<
-                        " CAR_NODE_ANGLE_Y:" << 180.f / float(M_PI) * p.rotation(1) <<
-                        " CAR_NODE_ANGLE_Z:" << 180.f / float(M_PI) * p.rotation(2) <<
-                        " HUMAN_NODE_ANGLE_Y:" << 180.f / float(M_PI) * std::atan2(z(0), z(2)) <<
-                        " " << parameters <<
-                        " SUFFIX:_" << player <<
-                        " IF_WITH_GRAPHICS:" <<
-                        " IF_WITH_PHYSICS:" <<
-                        " IF_RACING:#" <<
-                        " IF_RALLY:" <<
-                        " PLAYER_NAME:" << player;
-                    macro_line_executor(sstr.str(), nullptr, rsc);
-                }
-            );
         } else if (Mlib::re::regex_match(line, match, set_vip_reg)) {
-            game_logic.set_vip(&players.get_player(match[1].str()));
-        }else if (Mlib::re::regex_match(line, match, respawn_all_players_reg)) {
-            game_logic.respawn_all_players();
-        } else if (Mlib::re::regex_match(line, match, set_spawn_points_reg)) {
-            SceneNode* node = scene.get_node(match[1].str());
-            std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[2].str());
-            game_logic.set_spawn_points(*node, spawn_points);
+            game_logic.bystanders.set_vip(&players.get_player(match[1].str()));
+        } else if (Mlib::re::regex_match(line, match, respawn_all_players_reg)) {
+            game_logic.spawn.respawn_all_players();
         } else if (Mlib::re::regex_match(line, match, set_way_points_reg)) {
             Player& player = players.get_player(match[1].str());
             SceneNode* node = scene.get_node(match[2].str());
