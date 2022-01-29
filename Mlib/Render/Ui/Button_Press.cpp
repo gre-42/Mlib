@@ -6,7 +6,6 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <cmath>
-#include <iostream>
 
 using namespace Mlib;
 
@@ -15,43 +14,7 @@ ButtonPress::ButtonPress(const ButtonStates& button_states)
 {}
 
 void ButtonPress::print(bool physical, bool only_pressed) const {
-    std::lock_guard lock{button_states_.update_gamepad_state_mutex};
-    if (button_states_.has_gamepad) {
-        std::cerr << std::endl;
-        std::cerr << std::endl;
-        if (physical) {
-            for (size_t i = 0; i < 15; ++i) {
-                if (only_pressed && !button_states_.gamepad_state.buttons[i]) {
-                    continue;
-                }
-                std::cerr << i << "=" << (unsigned int)button_states_.gamepad_state.buttons[i] << " ";
-            }
-            std::cerr << std::endl;
-            for (size_t i = 0; i < 6; ++i) {
-                if (only_pressed && (std::fabs(button_states_.gamepad_state.axes[i]) != 1.0)) {
-                    continue;
-                }
-                std::cerr << i << "=" << button_states_.gamepad_state.axes[i] << " ";
-            }
-        } else {
-            for (const auto& b : glfw_gamepad_buttons) {
-                if (only_pressed && !button_states_.gamepad_state.buttons[b.second]) {
-                    continue;
-                }
-                std::cerr << b.first << "=" << (unsigned int)button_states_.gamepad_state.buttons[b.second] << " ";
-            }
-            std::cerr << std::endl;
-            for (const auto& b : glfw_joystick_axes) {
-                if (only_pressed && (std::fabs(button_states_.gamepad_state.axes[b.second]) != 1.0)) {
-                    continue;
-                }
-                std::cerr << b.first << "=" << button_states_.gamepad_state.axes[b.second] << " ";
-            }
-        }
-        std::cerr << std::endl;
-    } else {
-        std::cerr << "No gamepad attached." << std::endl;
-    }
+    button_states_.print(physical, only_pressed);
 }
 
 bool ButtonPress::key_down(const BaseKeyBinding& k) const {

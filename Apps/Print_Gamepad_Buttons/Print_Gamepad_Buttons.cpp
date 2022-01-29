@@ -25,11 +25,10 @@ int main(int argc, char** argv) {
     }
 
     ButtonStates bs;
-    ButtonPress bp{bs};
     while(true) {
         bs.update_gamepad_state();
-        bp.print();
-        bp.print(
+        bs.print();
+        bs.print(
             false,  // physical
             true);  // only_pressed
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
