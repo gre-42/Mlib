@@ -203,7 +203,7 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
                 throw std::runtime_error("Node \"" + n.first + "\" may not be unregistered");
             }
             if (nodes_.erase(n.first) != 1) {
-                throw std::runtime_error("Could not find node with name \"" + n.first + '"');
+                throw std::runtime_error("Could not find node with name (1) \"" + n.first + '"');
             }
         }
     }
@@ -215,7 +215,7 @@ SceneNode* Scene::get_node(const std::string& name) const {
     }
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
-        throw std::runtime_error("Could not find node with name \"" + name + '"');
+        throw std::runtime_error("Could not find node with name (2) \"" + name + '"');
     }
     return it->second;
 }
@@ -432,7 +432,7 @@ bool Scene::shutting_down() const {
 void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
-        throw std::runtime_error("Could not find node with name (0) \"" + name + '"');
+        throw std::runtime_error("Could not find node with name (3) \"" + name + '"');
     }
     if (!nodes_not_allowed_to_be_unregistered_.insert(name).second) {
         throw std::runtime_error("Node \"" + name + "\" already in list of nodes not allowed to be unregistered");
@@ -442,7 +442,7 @@ void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
 void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!contains_node(name)) {
-        throw std::runtime_error("Could not find node with name (1) \"" + name + '"');
+        throw std::runtime_error("Could not find node with name (4) \"" + name + '"');
     }
     if (nodes_not_allowed_to_be_unregistered_.erase(name) != 1) {
         throw std::runtime_error("Could not find node \"" + name + "\" in list of nodes not allowed to be unregistered");
