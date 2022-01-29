@@ -118,6 +118,9 @@ void Player::set_rigid_body(const PlayerVehicle& pv) {
     if (pv.rb == nullptr) {
         throw std::runtime_error("Rigid body is null");
     }
+    if (pv.scene_node_name.empty()) {
+        throw std::runtime_error("Rigid body scene node name is empty");
+    }
     if (pv.scene_node == nullptr) {
         throw std::runtime_error("Rigid body scene node is null");
     }
