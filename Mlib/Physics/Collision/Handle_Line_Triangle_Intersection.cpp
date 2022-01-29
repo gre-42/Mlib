@@ -61,6 +61,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             c.o1.integrate_force({c.o1.mass() * a1, intersection_point}, c.cfg);
         }
     } else if (collision_type == CollisionType::REFLECT) {
+        bool sat_used = false;
         // c.beacons.push_back({.position = intersection_point});
         PlaneNd<float, 3> plane;
         if (!c.lines_are_normals && c.o0.mass() != INFINITY && c.o1.mass() != INFINITY) {
@@ -69,6 +70,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                     c.o1.abs_com() - c.o0.abs_com(),
                     intersection_point};
             } else {
+                sat_used = true;
                 // n = -st.get_collision_normal(o1, o0);
                 // n = st->get_collision_normal(o0, o1);
                 float min_overlap0;
@@ -125,7 +127,19 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             }
         }
         // c.beacons.push_back({.position = c.l1(penetrating_id)});
-        assert_true((dist >= 0) || (std::abs(dist) < 1e-3));
+        if (dist < float{ -1e-3 }) {
+            if (sat_used) {
+                throw std::runtime_error(
+                    "Line and triangle do not overlap. "
+                    "Are the objects non-convex? Gap: " +
+                    std::to_string(-dist));
+            } else {
+                throw std::runtime_error(
+                    "Line and triangle do not overlap. "
+                    "Gap: " +
+                    std::to_string(-dist));
+            }
+        }
         if (c.tire_id != SIZE_MAX) {
             dist = std::max(0.f, dist - c.cfg.wheel_penetration_depth - c.o1.tires_.at(c.tire_id).shock_absorber.position());
             // std::cerr << "pos " << c.o1.tires_.at(c.tire_id).shock_absorber.position() << std::endl;
