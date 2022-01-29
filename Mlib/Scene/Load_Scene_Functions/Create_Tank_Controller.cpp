@@ -8,14 +8,7 @@
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateTankController::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction CreateTankController::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*create_tank_controller"
@@ -24,13 +17,8 @@ LoadSceneInstanceFunction::UserFunction CreateTankController::user_function = []
         "\\s+right_tire_ids=((?:\\d+)?(?:\\s+\\d+)*)"
         "\\s+steering_multiplier=([\\w+-.]+)$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        CreateTankController(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreateTankController(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -43,10 +31,7 @@ CreateTankController::CreateTankController(RenderableScene& renderable_scene)
 
 void CreateTankController::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     auto node = scene.get_node(match[1].str());
     auto rb = dynamic_cast<RigidBodyVehicle*>(node->get_absolute_movable());

@@ -15,27 +15,15 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(NODE);
 DECLARE_OPTION(RESOURCE);
 
-LoadSceneInstanceFunction::UserFunction SetSpawnPoints::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction SetSpawnPoints::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_spawn_points"
         "\\s+node=([\\w+-.]+)"
         "\\s+resource=([\\w+-.]+)$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        SetSpawnPoints(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        SetSpawnPoints(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -48,10 +36,7 @@ SetSpawnPoints::SetSpawnPoints(RenderableScene& renderable_scene)
 
 void SetSpawnPoints::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     SceneNode* node = scene.get_node(match[NODE].str());
     std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(match[RESOURCE].str());

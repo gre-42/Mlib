@@ -28,6 +28,7 @@ class RigidBodyVehicleController;
 class RigidBodyAvatarController;
 struct BaseRotor;
 class ContactInfo;
+enum class VehicleType;
 
 enum class TireAngularVelocityChange {
     OFF,
@@ -143,6 +144,7 @@ public:
     IPlayer* driver_;
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
+    VehicleType vehicle_type_;
     const TransformationMatrix<double, 3>* geographic_mapping_;
     mutable std::mutex advance_time_mutex_;
 };

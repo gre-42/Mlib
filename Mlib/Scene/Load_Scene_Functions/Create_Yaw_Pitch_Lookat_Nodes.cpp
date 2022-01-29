@@ -33,14 +33,7 @@ DECLARE_OPTION(PITCH_LOCKED_ON_MAX);
 DECLARE_OPTION(VERROR_STD);
 DECLARE_OPTION(VERROR_ALPHA);
 
-LoadSceneInstanceFunction::UserFunction CreateYawPitchLookatNodes::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction CreateYawPitchLookatNodes::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*yaw_pitch_look_at_nodes"
@@ -60,13 +53,8 @@ LoadSceneInstanceFunction::UserFunction CreateYawPitchLookatNodes::user_function
         "\\s+verror_std=([\\w+-.]+)"
         "\\s+verror_alpha=([\\w+-.]+)$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        CreateYawPitchLookatNodes(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreateYawPitchLookatNodes(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -79,10 +67,7 @@ CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(RenderableScene& renderable
 
 void CreateYawPitchLookatNodes::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
     auto yaw_node = scene.get_node(match[YAW_NODE].str());

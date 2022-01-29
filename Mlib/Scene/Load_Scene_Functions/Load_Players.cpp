@@ -15,27 +15,15 @@ BEGIN_OPTIONS;
 DECLARE_OPTION(JSON);
 DECLARE_OPTION(WAY_POINTS);
 
-LoadSceneInstanceFunction::UserFunction LoadPlayers::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction LoadPlayers::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*load_players"
         "\\s+json=([\\w+-. \\(\\)/\\\\:]+)"
         "\\s+way_points=([\\w+-.]+)$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        LoadPlayers(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        LoadPlayers(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -48,10 +36,7 @@ LoadPlayers::LoadPlayers(RenderableScene& renderable_scene)
 
 void LoadPlayers::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     // Example JSON file:
     // {
@@ -121,7 +106,7 @@ void LoadPlayers::execute(
             } else {
                 throw std::runtime_error("Unknown controller type");
             }
-            macro_line_executor(sstr.str(), local_substitutions, rsc);
+            args.macro_line_executor(sstr.str(), args.local_substitutions, args.rsc);
         }
     } catch (const nlohmann::detail::exception& e) {
         throw std::runtime_error(e.what());

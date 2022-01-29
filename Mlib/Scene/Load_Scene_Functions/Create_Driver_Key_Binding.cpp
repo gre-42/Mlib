@@ -19,14 +19,7 @@ DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS);
 DECLARE_OPTION(JOYSTICK_DIGITAL_AXIS_SIGN);
 DECLARE_OPTION(SELECT_NEXT_OPPONENT);
 
-LoadSceneInstanceFunction::UserFunction CreateDriverKeyBinding::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction CreateDriverKeyBinding::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*player_key_binding"
@@ -37,13 +30,8 @@ LoadSceneInstanceFunction::UserFunction CreateDriverKeyBinding::user_function = 
         "\\s+joystick_digital_axis_sign=([\\w+-.]+))?"
         "(\\s+select_next_opponent)?$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        CreateDriverKeyBinding(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreateDriverKeyBinding(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -56,10 +44,7 @@ CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene
 
 void CreateDriverKeyBinding::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     SceneNode* node = scene.get_node(match[NODE].str());
     bool select_next_opponent = match[SELECT_NEXT_OPPONENT].matched;

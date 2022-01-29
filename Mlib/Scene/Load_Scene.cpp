@@ -94,6 +94,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Rotor.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Create_Tab_Menu_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Weapon_Inventory.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Wheel.hpp>
@@ -187,6 +188,7 @@ LoadScene::LoadScene() {
     user_functions_.push_back(EquipWeapon::user_function);
     user_functions_.push_back(SetPreferredCarSpawner::user_function);
     user_functions_.push_back(SetSpawnPoints::user_function);
+    user_functions_.push_back(CreateTabMenuLogic::user_function);
 }
 
 LoadScene::~LoadScene()
@@ -346,8 +348,7 @@ void LoadScene::operator()(
         "\\s+lifetime=([\\w+-.]+)"
         "\\s+damage=([\\w+-.]+)"
         "\\s+size=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+punch_angle=([\\w+-.]+)"
-        "\\s+carrier=(avatar|vehicle)$");
+        "\\s+punch_angle=([\\w+-.]+)$");
     static const DECLARE_REGEX(damageable_reg,
         "^\\s*damageable node=([\\w+-.]+)"
         "\\s+health=([\\w+-.]+)$");
@@ -558,16 +559,6 @@ void LoadScene::operator()(
         "\\s+on_init=([\\w+-.:= ]*)"
         "\\s+on_change=([\\w+-.:= ]*)"
         "\\s+parameters=([\\s\\S]*)$");
-    static const DECLARE_REGEX(tab_menu_reg,
-        "^\\s*tab_menu"
-        "\\s+id=([\\w+-.]+)"
-        "\\s+title=([\\w+-. ]*)"
-        "\\s+ttf_file=([\\w-. \\(\\)/+-]+)"
-        "\\s+position=([\\w+-.]+)\\s+([\\w+-.]+)"
-        "\\s+font_height=([\\w+-.]+)"
-        "\\s+line_distance=([\\w+-.]+)"
-        "\\s+default=([\\d]+)"
-        "\\s+reload_transient_objects=([\\w+-.:= ]*)$");
     static const DECLARE_REGEX(set_renderable_style_reg,
         "^\\s*set_renderable_style"
         "\\s+selector=([^\\r\\n]*)\\r?\\n"
@@ -815,15 +806,20 @@ void LoadScene::operator()(
                 }
                 return *cit->second;
             };
+            UserFunctionArgs args{
+                .line = line,
+                .renderable_scene = renderable_scene,
+                .fpath = fpath,
+                .macro_line_executor = macro_line_executor,
+                .external_substitutions = external_substitutions,
+                .local_substitutions = local_substitutions,
+                .rsc = rsc,
+                .ui_focus = ui_focus,
+                .num_renderings = num_renderings,
+                .script_filename = script_filename,
+                .next_scene_filename = next_scene_filename};
             for (const auto& f : user_functions_) {
-                if (f(
-                    line,
-                    renderable_scene,
-                    fpath,
-                    macro_line_executor,
-                    external_substitutions,
-                    local_substitutions,
-                    rsc))
+                if (f(args))
                 {
                     return true;
                 }
@@ -1868,8 +1864,8 @@ void LoadScene::operator()(
                     safe_stof(match[12].str()),                  // bullet-size-y
                     safe_stof(match[13].str())},                 // bullet-size-z
                 safe_stof(match[14].str()) * float(M_PI / 180),  // punch_angle
-                delete_node_mutex,                               // delete_node_mutex
-                weapon_carrier_from_string(match[15].str()));    // weapon carrier
+                delete_node_mutex);                              // delete_node_mutex
+                
             linker.link_absolute_observer(*scene.get_node(match[1].str()), gun);
         } else if (Mlib::re::regex_match(line, match, damageable_reg)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
@@ -2297,42 +2293,6 @@ void LoadScene::operator()(
             }
             RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
             render_logics.append(nullptr, parameter_setter_logic);
-        } else if (Mlib::re::regex_match(line, match, tab_menu_reg)) {
-            std::string id = match[1].str();
-            std::string title = match[2].str();
-            std::string ttf_filename = fpathp(match[3].str());
-            FixedArray<float, 2> position{
-                safe_stof(match[4].str()),
-                safe_stof(match[5].str()) };
-            float font_height_pixels = safe_stof(match[6].str());
-            float line_distance_pixels = safe_stof(match[7].str());
-            size_t deflt = safe_stoz(match[8].str());
-            std::string reload_transient_objects = match[9].str();
-            // If the selection_ids array is not yet initialized, apply the default value.
-            ui_focus.selection_ids.insert({ id, deflt });
-            auto tab_menu_logic = std::make_shared<TabMenuLogic>(
-                title,
-                ui_focus.submenu_titles,
-                ttf_filename,
-                position,
-                font_height_pixels,
-                line_distance_pixels,
-                ui_focus,
-                num_renderings,
-                button_press,
-                ui_focus.selection_ids.at(id),
-                script_filename,
-                next_scene_filename,
-                [macro_line_executor, reload_transient_objects, &rsc]() {
-                    if (!reload_transient_objects.empty()) {
-                        macro_line_executor(reload_transient_objects, nullptr, rsc);
-                        // This results in a deadlock because both "delete_node_mutex" and "delete_rigid_body_mutex" are acquired.
-                        // std::lock_guard rb_lock{ delete_rigid_body_mutex };
-                        // macro_line_executor(reload_transient_objects, nullptr, rsc);
-                    }
-                });
-            RenderingContextGuard rcg{ RenderingContext {.rendering_resources = secondary_rendering_context.rendering_resources, .z_order = 1} };
-            render_logics.append(nullptr, tab_menu_logic);
         } else if (Mlib::re::regex_match(line, match, ui_background_reg)) {
             auto bg = std::make_shared<MainMenuBackgroundLogic>(
                 fpathp(match[1].str()),

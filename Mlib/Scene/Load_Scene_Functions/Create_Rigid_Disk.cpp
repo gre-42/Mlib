@@ -10,14 +10,7 @@
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateRigidDisk::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction CreateRigidDisk::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*rigid_disk"
@@ -32,13 +25,8 @@ LoadSceneInstanceFunction::UserFunction CreateRigidDisk::user_function = [](
         "\\s+collidable_mode=(terrain|small_static|small_moving)"
         "(?:\\s+name=([\\w+-.]+))?$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        CreateRigidDisk(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreateRigidDisk(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -51,10 +39,7 @@ CreateRigidDisk::CreateRigidDisk(RenderableScene& renderable_scene)
 
 void CreateRigidDisk::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     std::shared_ptr<RigidBodyVehicle> rb = rigid_disk(
         physics_engine.rigid_bodies_,

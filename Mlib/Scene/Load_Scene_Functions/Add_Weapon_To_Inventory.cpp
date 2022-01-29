@@ -14,14 +14,7 @@ DECLARE_OPTION(STORAGE_NODE);
 DECLARE_OPTION(ENTRY_NAME);
 DECLARE_OPTION(CREATE);
 
-LoadSceneInstanceFunction::UserFunction AddWeaponToInventory::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction AddWeaponToInventory::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*add_weapon_to_inventory"
@@ -29,13 +22,8 @@ LoadSceneInstanceFunction::UserFunction AddWeaponToInventory::user_function = []
         "\\s+entry_name=([\\w-. \\(\\)/+-]+)"
         "\\s+create=([\\s\\S]+)$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        AddWeaponToInventory(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        AddWeaponToInventory(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -48,10 +36,7 @@ AddWeaponToInventory::AddWeaponToInventory(RenderableScene& renderable_scene)
 
 void AddWeaponToInventory::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     auto storage_node = scene.get_node(match[STORAGE_NODE].str());
     std::string entry_name = match[ENTRY_NAME].str();
@@ -60,7 +45,7 @@ void AddWeaponToInventory::execute(
     if (wi == nullptr) {
         throw std::runtime_error("Node modifier is not a weapon inventory");
     }
-    wi->add_weapon(entry_name, [macro_line_executor, create, &rsc](){
+    wi->add_weapon(entry_name, [macro_line_executor = args.macro_line_executor, create, &rsc = args.rsc](){
         macro_line_executor(create, nullptr, rsc);
     });
 }

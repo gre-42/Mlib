@@ -18,13 +18,6 @@ class AdvanceTimes;
 class DeleteNodeMutex;
 class SceneNode;
 
-enum class WeaponCarrier {
-    AVATAR,
-    VEHICLE
-};
-
-WeaponCarrier weapon_carrier_from_string(const std::string& s);
-
 class Gun: public DestructionObserver, public AbsoluteObserver, public AdvanceTime {
 public:
     Gun(Scene& scene,
@@ -42,8 +35,7 @@ public:
         float bullet_damage,
         const FixedArray<float, 3>& bullet_size,
         float punch_angle,
-        DeleteNodeMutex& delete_node_mutex,
-        WeaponCarrier weapon_carrier);
+        DeleteNodeMutex& delete_node_mutex);
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, 3>& absolute_model_matrix) override;
     virtual void notify_destroyed(void* obj) override;
@@ -72,7 +64,6 @@ private:
     TransformationMatrix<float, 3> absolute_model_matrix_;
     DeleteNodeMutex& delete_node_mutex_;
     FixedArray<float, 3> punch_angle_;
-    WeaponCarrier weapon_carrier_;
     NormalRandomNumberGenerator<float> rng_;
 };
 

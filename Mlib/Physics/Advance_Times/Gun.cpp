@@ -16,16 +16,6 @@
 
 using namespace Mlib;
 
-WeaponCarrier Mlib::weapon_carrier_from_string(const std::string& s) {
-    if (s == "avatar") {
-        return WeaponCarrier::AVATAR;
-    } else if (s == "vehicle") {
-        return WeaponCarrier::VEHICLE;
-    } else {
-        throw std::runtime_error("Unknown weapon carrier: \"" + s + '"');
-    }
-}
-
 Gun::Gun(
     Scene& scene,
     SceneNodeResources& scene_node_resources,
@@ -42,8 +32,7 @@ Gun::Gun(
     float bullet_damage,
     const FixedArray<float, 3>& bullet_size,
     float punch_angle,
-    DeleteNodeMutex& delete_node_mutex,
-    WeaponCarrier weapon_carrier)
+    DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   scene_node_resources_{ scene_node_resources },
   rigid_bodies_{ rigid_bodies },
@@ -63,7 +52,6 @@ Gun::Gun(
   absolute_model_matrix_{fixed_nans<float, 4, 4 >() },
   delete_node_mutex_{ delete_node_mutex },
   punch_angle_{ 0.f, 0.f, 0.f },
-  weapon_carrier_{ weapon_carrier },
   rng_{ 0, 0.f, punch_angle }
 {}
 

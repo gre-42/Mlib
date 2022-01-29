@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
+#include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <chrono>
@@ -40,6 +41,7 @@ RigidBodyVehicle::RigidBodyVehicle(
   driver_{ nullptr },
   avatar_controller_{ nullptr},
   vehicle_controller_{ nullptr},
+  vehicle_type_{ VehicleType::UNDEFINED },
   geographic_mapping_{ geographic_mapping }
 {}
 

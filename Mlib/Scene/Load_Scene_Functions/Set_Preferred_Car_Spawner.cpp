@@ -18,14 +18,7 @@ DECLARE_OPTION(PLAYER);
 DECLARE_OPTION(MACRO);
 DECLARE_OPTION(PARAMETERS);
 
-LoadSceneInstanceFunction::UserFunction SetPreferredCarSpawner::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction SetPreferredCarSpawner::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*set_preferred_car_spawner"
@@ -33,13 +26,8 @@ LoadSceneInstanceFunction::UserFunction SetPreferredCarSpawner::user_function = 
         "\\s+macro=([\\w.]+)"
         "\\s+parameters=([\\s\\S]*)$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        SetPreferredCarSpawner(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        SetPreferredCarSpawner(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -52,10 +40,7 @@ SetPreferredCarSpawner::SetPreferredCarSpawner(RenderableScene& renderable_scene
 
 void SetPreferredCarSpawner::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     auto primary_rendering_context = RenderingContextStack::primary_resource_context();
     auto secondary_rendering_context = RenderingContextStack::resource_context();
@@ -64,7 +49,13 @@ void SetPreferredCarSpawner::execute(
     std::string parameters = match[3].str();
     game_logic.spawn.set_preferred_car_spawner(
         players.get_player(player),
-        [macro_line_executor, player, macro, parameters, primary_rendering_context, secondary_rendering_context, &rsc](const SpawnPoint& p){
+        [macro_line_executor = args.macro_line_executor,
+         player,
+         macro,
+         parameters,
+         primary_rendering_context,
+         secondary_rendering_context,
+         &rsc = args.rsc](const SpawnPoint& p){
             RenderingContextGuard rrg0{primary_rendering_context};
             RenderingContextGuard rrg1{secondary_rendering_context};
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));

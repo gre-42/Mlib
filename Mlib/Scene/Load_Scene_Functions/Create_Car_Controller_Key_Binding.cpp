@@ -22,14 +22,7 @@ DECLARE_OPTION(TIRE_ANGLE_VELOCITIES);
 DECLARE_OPTION(TIRE_ANGLES);
 DECLARE_OPTION(ASCEND_VELOCITY);
 
-LoadSceneInstanceFunction::UserFunction CreateCarControllerKeyBinding::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction CreateCarControllerKeyBinding::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*car_controller_key_binding"
@@ -43,13 +36,8 @@ LoadSceneInstanceFunction::UserFunction CreateCarControllerKeyBinding::user_func
         "\\s+tire_angles=([ \\w+-.]+))?"
         "(?:\\s+ascend_velocity=([\\w+-.]+))?$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        CreateCarControllerKeyBinding(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreateCarControllerKeyBinding(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -62,10 +50,7 @@ CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& re
 
 void CreateCarControllerKeyBinding::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
         .base_key = {

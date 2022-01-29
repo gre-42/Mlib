@@ -53,14 +53,7 @@ DECLARE_OPTION(DRIFT_REDUCTION_FACTOR);
 DECLARE_OPTION(DRIFT_REDUCTION_REFERENCE_VELOCITY);
 DECLARE_OPTION(TIRE_ID);
 
-LoadSceneInstanceFunction::UserFunction CreateRotor::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction CreateRotor::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*rotor"
@@ -85,13 +78,8 @@ LoadSceneInstanceFunction::UserFunction CreateRotor::user_function = [](
         "(?:\\s+drift_reduction_reference_velocity=([\\w+-.]+))?"
         "\\s+tire_id=(\\d+)$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        CreateRotor(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreateRotor(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -104,10 +92,7 @@ CreateRotor::CreateRotor(RenderableScene& renderable_scene)
 
 void CreateRotor::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     auto vehicle_node = scene.get_node(match[VEHICLE].str());
     auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(vehicle_node->get_absolute_movable());

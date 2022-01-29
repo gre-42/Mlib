@@ -4,11 +4,11 @@
 
 namespace Mlib {
 
-class SetPreferredCarSpawner: public LoadSceneInstanceFunction {
+class CreateTabMenuLogic: public LoadSceneInstanceFunction {
 public:
     static UserFunction user_function;
 private:
-    explicit SetPreferredCarSpawner(RenderableScene& renderable_scene);
+    explicit CreateTabMenuLogic(RenderableScene& renderable_scene);
     void execute(const std::smatch& match, const UserFunctionArgs& args);
 };
 

@@ -8,14 +8,7 @@
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreatePlayer::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction CreatePlayer::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*player_create"
@@ -26,13 +19,8 @@ LoadSceneInstanceFunction::UserFunction CreatePlayer::user_function = [](
         "\\s+driving_mode=(pedestrian|car_city|car_arena)"
         "\\s+driving_direction=(center|left|right)$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        CreatePlayer(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreatePlayer(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -45,10 +33,7 @@ CreatePlayer::CreatePlayer(RenderableScene& renderable_scene)
 
 void CreatePlayer::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     auto player = std::make_unique<Player>(
         scene,

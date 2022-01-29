@@ -9,14 +9,7 @@
 
 using namespace Mlib;
 
-LoadSceneInstanceFunction::UserFunction CreateAbsKeyBinding::user_function = [](
-    const std::string& line,
-    const std::function<RenderableScene&()>& renderable_scene,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap& external_substitutions,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+LoadSceneInstanceFunction::UserFunction CreateAbsKeyBinding::user_function = [](const UserFunctionArgs& args)
 {
     static DECLARE_REGEX(regex,
         "^\\s*abs_key_binding"
@@ -35,13 +28,8 @@ LoadSceneInstanceFunction::UserFunction CreateAbsKeyBinding::user_function = [](
         "\\s+tire_angles=([ \\w+-.]+))?"
         "(?:\\s+tires_z=([\\w+-.]+)\\s+([\\w+-.]+)\\s+([\\w+-.]+))?$");
     std::smatch match;
-    if (Mlib::re::regex_match(line, match, regex)) {
-        CreateAbsKeyBinding(renderable_scene()).execute(
-            match,
-            fpath,
-            macro_line_executor,
-            local_substitutions,
-            rsc);
+    if (Mlib::re::regex_match(args.line, match, regex)) {
+        CreateAbsKeyBinding(args.renderable_scene()).execute(match, args);
         return true;
     } else {
         return false;
@@ -54,10 +42,7 @@ CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene)
 
 void CreateAbsKeyBinding::execute(
     const std::smatch& match,
-    const std::function<FPath(const std::string&)>& fpath,
-    const MacroLineExecutor& macro_line_executor,
-    SubstitutionMap* local_substitutions,
-    RegexSubstitutionCache& rsc)
+    const UserFunctionArgs& args)
 {
     auto rb = dynamic_cast<RigidBodyVehicle*>(scene.get_node(match[1].str())->get_absolute_movable());
     if (rb == nullptr) {
